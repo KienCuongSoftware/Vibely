@@ -1,0 +1,21 @@
+# Root dependencies and build outputs
+node_modules/
+dist/
+build/
+target/
+
+# Logs
+*.log
+logs/
+
+# Environment and secrets
+.env
+.env.*
+*.pem
+*.key
+*.p12
+
+# Local backend config
+backend/src/main/resources/application-local.yaml
+backend/src/main/resources/*.secret.yaml
+backend/src/main/resources/*.local.yaml
