@@ -3,3 +3,21 @@ spring:
     url: jdbc:postgresql://localhost:5432/vibely
     username: postgres
     password: ${DB_PASSWORD}
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+app:
+  cors:
+    allowed-origins: http://localhost:5173,http://127.0.0.1:5173
+  oauth2:
+    enabled: true
+    frontend-success-url: http://localhost:5173/login
+    frontend-failure-url: http://localhost:5173/login
