@@ -25,3 +25,14 @@ When reporting, include:
 - Initial triage and severity assessment
 - Fix development and validation
 - Responsible disclosure after patch release
+
+## Security Configuration Notes
+
+- Never commit real secrets to source control.
+- Use environment variables for `DB_PASSWORD`, `JWT_SECRET`, and production DB credentials.
+- Rotate JWT secret and database credentials after any suspected exposure.
+
+## Operational Hardening
+
+- Use `X-Request-Id` for request tracing in logs during incident response.
+- Keep refresh tokens short-lived in production and revoke tokens on suspicious activity.
