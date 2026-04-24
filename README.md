@@ -26,7 +26,8 @@ Vibely is a full-stack short-video platform inspired by TikTok.
 1. Create a PostgreSQL database named `vibely`.
 2. Set environment variables:
    - `DB_PASSWORD`
-   - (optional for production) `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`
+   - `JWT_SECRET`
+   - (optional for production) `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `CORS_ALLOWED_ORIGINS`
 3. Run the backend:
 
 ```bash
@@ -46,9 +47,28 @@ npm run dev
 
 Flyway migration scripts are located at:
 
-`backend/src/main/resources/database/migration`
+`backend/src/main/resources/db/migration`
 
 Migrations run automatically when the backend starts.
+
+## API Notes
+
+- All API responses use a consistent envelope:
+  - success: `{ "success": true, "data": ... }`
+  - error: `{ "success": false, "error": { "status": ..., "message": ... } }`
+- Feed supports pagination and sort:
+  - `GET /api/feed?page=0&size=10&sort=latest`
+  - `GET /api/feed?page=0&size=10&sort=trending-lite`
+- Following feed endpoint:
+  - `GET /api/feed/following?page=0&size=10`
+- Readiness check:
+  - `GET /api/health/readiness`
+
+## Security and Operations
+
+- Access token + refresh token flow is enabled for auth.
+- Request size limits are configured for upload metadata endpoints.
+- Request correlation ID is returned via `X-Request-Id` response header.
 
 ## Contributing
 
