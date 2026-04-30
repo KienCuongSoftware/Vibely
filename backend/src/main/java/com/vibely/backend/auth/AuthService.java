@@ -111,9 +111,22 @@ public class AuthService {
             .ifPresent(token -> token.setRevoked(true));
     }
 
-    public AuthResponse authenticateWithGoogle(String email, String displayName, String googleAvatarUrl) {
+    /**
+     * Upsert user and issue tokens after Google or Facebook OAuth2 login.
+     *
+     * @param registrationId Spring client registration id, e.g. {@code google} or {@code facebook}
+     */
+    public AuthResponse authenticateWithOAuthProvider(
+        String email,
+        String displayName,
+        String oauthAvatarUrl,
+        String registrationId
+    ) {
+        boolean isFacebook = "facebook".equalsIgnoreCase(registrationId);
+        String providerLabel = isFacebook ? "Facebook" : "Google";
+
         if (email == null || email.isBlank()) {
-            throw new BadRequestException("Tài khoản Google chưa cung cấp email hợp lệ");
+            throw new BadRequestException("Tài khoản " + providerLabel + " chưa cung cấp email hợp lệ");
         }
 
         User user = userRepository.findByEmail(email)
@@ -121,7 +134,7 @@ public class AuthService {
                 User created = new User();
                 created.setEmail(email);
                 created.setRole(Role.USER);
-                String generatedUsername = usernameService.generateFromDisplayNameOrEmail(displayName, email);
+                String generatedUsername = usernameService.generateFromGoogleEmail(email, null);
                 created.setUsername(generatedUsername);
                 created.setDisplayName(
                     displayName != null && !displayName.isBlank() ? displayName.trim() : generatedUsername
@@ -130,16 +143,26 @@ public class AuthService {
                 return created;
             });
 
+        // Ensure OAuth-linked users have a Vibely ID derived from email local-part:
+        // - lowercase
+        // - remove Vietnamese diacritics
+        // - remove special characters (keep only a-z0-9)
+        boolean usernameMissingOrNotAlphanumeric =
+            user.getUsername() == null
+                || user.getUsername().isBlank()
+                || !user.getUsername().matches("^[a-z0-9]{4,24}$");
+
+        if (usernameMissingOrNotAlphanumeric) {
+            user.setUsername(usernameService.generateFromGoogleEmail(email, user.getUsername()));
+        }
+
         if (user.getDisplayName() == null || user.getDisplayName().isBlank()) {
             user.setDisplayName(
                 displayName != null && !displayName.isBlank() ? displayName.trim() : user.getUsername()
             );
         }
-        if (displayName != null && !displayName.isBlank() && (user.getBio() == null || user.getBio().isBlank())) {
-            user.setBio("Google user: " + displayName);
-        }
-        if (googleAvatarUrl != null && !googleAvatarUrl.isBlank()) {
-            user.setGoogleAvatarUrl(googleAvatarUrl);
+        if (oauthAvatarUrl != null && !oauthAvatarUrl.isBlank()) {
+            user.setGoogleAvatarUrl(oauthAvatarUrl);
         }
 
         User saved = userRepository.save(user);
