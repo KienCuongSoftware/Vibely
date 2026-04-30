@@ -29,7 +29,7 @@ public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
     ) throws IOException, ServletException {
         String redirectUrl = UriComponentsBuilder.fromUriString(frontendFailureUrl)
             .queryParam("oauth", "error")
-            .queryParam("message", "Đăng nhập Google thất bại, vui lòng thử lại")
+            .queryParam("message", "Đăng nhập bằng tài khoản liên kết thất bại, vui lòng thử lại")
             .build(true)
             .toUriString();
         response.sendRedirect(redirectUrl);
