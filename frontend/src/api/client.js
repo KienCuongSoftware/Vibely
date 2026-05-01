@@ -83,6 +83,8 @@ export const apiClient = {
   exchangeOAuthCode: (code) =>
     request('/api/auth/oauth/exchange', { method: 'POST', body: { code } }),
   me: (token) => request('/api/auth/me', { token }),
+  updateMyProfile: (token, payload) =>
+    request('/api/users/me', { method: 'PUT', token, body: payload }),
   checkUsername: (username) => request(`/api/users/check-username${toQuery({ username })}`),
   getPublicProfile: (username) => request(`/api/users/${encodeURIComponent(username)}`),
   getFeed: ({ page = 0, size = 10, sort = 'latest' } = {}) =>
