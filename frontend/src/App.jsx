@@ -18,16 +18,16 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/foryou" replace />} />
           <Route path="/foryou" element={<FeedPage />} />
-          <Route path="/feed" element={<FeedPage />} />
+          <Route path="/feed" element={<Navigate to="/foryou" replace />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signin" element={<Navigate to="/login" replace />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/register" element={<Navigate to="/signup" replace />} />
-          <Route path="/legal/page/row/terms-of-service/vi" element={<TermsOfServicePage />} />
-          <Route path="/legal/page/row/privacy-policy/vi" element={<PrivacyPolicyPage />} />
+          <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
+          <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/upload" element={<Navigate to="/login" replace />} />
           <Route path="/profile" element={<Navigate to="/login" replace />} />
-          <Route path="/@:username" element={<ProfilePage />} />
+          <Route path="/:username" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/foryou" replace />} />
         </Routes>
       </div>
@@ -46,9 +46,9 @@ function App() {
         <Route path="/register" element={<Navigate to="/foryou" replace />} />
         <Route path="/upload" element={<UploadPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/@:username" element={<ProfilePage />} />
-        <Route path="/legal/page/row/terms-of-service/vi" element={<TermsOfServicePage />} />
-        <Route path="/legal/page/row/privacy-policy/vi" element={<PrivacyPolicyPage />} />
+        <Route path="/:username" element={<ProfilePage />} />
+        <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
+        <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="*" element={<Navigate to="/foryou" replace />} />
       </Routes>
     </div>

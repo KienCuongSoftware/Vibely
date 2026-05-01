@@ -23,7 +23,7 @@ describe('App smoke', () => {
     })
 
     render(
-      <MemoryRouter initialEntries={['/feed']}>
+      <MemoryRouter initialEntries={['/foryou']}>
         <AuthContext.Provider value={authMock}>
           <App />
         </AuthContext.Provider>
