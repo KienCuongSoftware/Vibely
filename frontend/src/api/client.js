@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
+import { resolveApiBaseUrl } from '../config/apiBase.js'
+
+const API_BASE_URL = resolveApiBaseUrl()
 
 const ERROR_MESSAGES_VI = {
   AUTH_REQUIRED: 'Bạn cần đăng nhập để tiếp tục.',
