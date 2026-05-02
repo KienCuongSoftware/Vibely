@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { FeedPage } from './FeedPage'
 import { AuthContext } from '../state/auth-context'
+import { MemoryRouter } from 'react-router-dom'
 
 vi.mock('../api/client', () => ({
   apiClient: {
@@ -43,20 +44,22 @@ describe('FeedPage', () => {
     })
 
     render(
-      <AuthContext.Provider
-        value={{
-          token: 'token',
-          refreshToken: 'refresh',
-          user: null,
-          login: vi.fn(),
-          register: vi.fn(),
-          refreshSession: vi.fn(),
-          refreshProfile: vi.fn(),
-          logout: vi.fn(),
-        }}
-      >
-        <FeedPage />
-      </AuthContext.Provider>,
+      <MemoryRouter initialEntries={['/foryou']}>
+        <AuthContext.Provider
+          value={{
+            token: 'token',
+            refreshToken: 'refresh',
+            user: null,
+            login: vi.fn(),
+            register: vi.fn(),
+            refreshSession: vi.fn(),
+            refreshProfile: vi.fn(),
+            logout: vi.fn(),
+          }}
+        >
+          <FeedPage />
+        </AuthContext.Provider>
+      </MemoryRouter>,
     )
 
     await waitFor(() => {
