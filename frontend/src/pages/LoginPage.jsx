@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../state/useAuth";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { apiClient } from "../api/client";
-import { FaUser } from "react-icons/fa";
+import { FaFacebook, FaUser } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import {
   IoArrowBack,
@@ -12,7 +12,9 @@ import {
   IoEyeOutline,
 } from "react-icons/io5";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+import { resolveBackendOrigin } from "../config/apiBase.js";
+
+const OAUTH_BACKEND_ORIGIN = resolveBackendOrigin();
 
 export function LoginPage() {
   const { token, login, completeOAuthLogin } = useAuth();
@@ -24,17 +26,19 @@ export function LoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [status, setStatus] = useState(
-    "Chọn phương thức đăng nhập để tiếp tục",
-  );
+  const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const canSubmit =
     identifier.trim().length > 0 && password.trim().length > 0 && !loading;
   const oauthErrorMessage =
     searchParams.get("oauth") === "error"
-      ? searchParams.get("message") ??
-        "Đăng nhập Google thất bại, vui lòng thử lại"
+      ? (searchParams.get("message") ??
+        "Đăng nhập bằng tài khoản liên kết thất bại, vui lòng thử lại")
       : "";
+
+  useEffect(() => {
+    document.title = "Đăng nhập | Vibely";
+  }, []);
 
   useEffect(() => {
     if (token) {
@@ -69,28 +73,51 @@ export function LoginPage() {
     apiClient
       .exchangeOAuthCode(oneTimeCode)
       .then((oauthData) => {
-        completeOAuthLogin({
-          accessToken: oauthData.accessToken,
-          refreshToken: oauthData.refreshToken,
-          userId: Number(oauthData.userId),
-          username: oauthData.username,
-          displayName: oauthData.displayName,
-          email: oauthData.email,
-          avatarUrl: oauthData.avatarUrl,
-        });
-        navigate("/foryou", { replace: true });
+        // Bảo đảm có đủ `username/avatarUrl` bằng cách re-fetch `/api/auth/me`
+        // (trường hợp backend trả thiếu field ở bước oauth exchange).
+        apiClient
+          .me(oauthData.accessToken)
+          .then((me) => {
+            completeOAuthLogin({
+              accessToken: oauthData.accessToken,
+              refreshToken: oauthData.refreshToken,
+              userId: Number(me?.id ?? oauthData.userId),
+              username: me?.username ?? oauthData.username,
+              displayName: me?.displayName ?? oauthData.displayName,
+              email: me?.email ?? oauthData.email,
+              avatarUrl: me?.avatarUrl ?? oauthData.avatarUrl,
+            });
+            navigate("/foryou", { replace: true });
+          })
+          .catch(() => {
+            // Fallback: vẫn login theo payload exchange nếu `/me` không thành công.
+            completeOAuthLogin({
+              accessToken: oauthData.accessToken,
+              refreshToken: oauthData.refreshToken,
+              userId: Number(oauthData.userId),
+              username: oauthData.username,
+              displayName: oauthData.displayName,
+              email: oauthData.email,
+              avatarUrl: oauthData.avatarUrl,
+            });
+            navigate("/foryou", { replace: true });
+          });
       })
       .catch((error) => {
         oauthInFlightRef.current = false;
         navigate(
-          `/login?oauth=error&message=${encodeURIComponent(error.message || "Đăng nhập Google thất bại, vui lòng thử lại")}`,
+          `/login?oauth=error&message=${encodeURIComponent(error.message || "Đăng nhập bằng tài khoản liên kết thất bại, vui lòng thử lại")}`,
           { replace: true },
         );
       });
   }, [completeOAuthLogin, navigate, searchParams, token]);
 
   const handleGoogleAuth = () => {
-    window.location.href = `${API_BASE_URL}/oauth2/authorization/google`;
+    window.location.href = `${OAUTH_BACKEND_ORIGIN}/oauth2/authorization/google`;
+  };
+
+  const handleFacebookAuth = () => {
+    window.location.href = `${OAUTH_BACKEND_ORIGIN}/oauth2/authorization/facebook`;
   };
 
   const submitWithCredentials = async (event) => {
@@ -124,7 +151,7 @@ export function LoginPage() {
           <>
             <div className="flex justify-end p-4">
               <Link
-                to="/feed"
+                to="/foryou"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
                 aria-label="Đóng"
               >
@@ -140,28 +167,44 @@ export function LoginPage() {
               <div className="space-y-3">
                 <button
                   type="button"
-                  className="flex w-full items-center gap-4 rounded-xl bg-zinc-800 px-4 py-4 text-left text-base hover:bg-zinc-700"
+                  className="flex h-[60px] w-full min-h-[60px] items-center gap-4 rounded-xl bg-zinc-800 px-4 text-left text-base hover:bg-zinc-700"
                   onClick={() => {
                     setView("credentials");
                     setStatus("");
                   }}
                 >
-                  <FaUser className="text-xl text-zinc-100" />
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center">
+                    <FaUser className="text-xl text-zinc-100" aria-hidden />
+                  </span>
                   <span>Dùng email / username</span>
                 </button>
                 <button
                   type="button"
-                  className="flex w-full items-center gap-4 rounded-xl bg-zinc-800 px-4 py-4 text-left text-base hover:bg-zinc-700"
+                  className="flex h-[60px] w-full min-h-[60px] items-center gap-4 rounded-xl bg-zinc-800 px-4 text-left text-base hover:bg-zinc-700"
                   onClick={handleGoogleAuth}
                 >
-                  <FcGoogle className="text-2xl" />
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center">
+                    <FcGoogle className="text-[28px]" aria-hidden />
+                  </span>
                   <span>Tiếp tục với Google</span>
+                </button>
+                <button
+                  type="button"
+                  className="flex h-[60px] w-full min-h-[60px] items-center gap-4 rounded-xl bg-zinc-800 px-4 text-left text-base hover:bg-zinc-700"
+                  onClick={handleFacebookAuth}
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1877F2]">
+                    <FaFacebook className="text-[22px] text-white" aria-hidden />
+                  </span>
+                  <span>Tiếp tục với Facebook</span>
                 </button>
               </div>
 
-              <p className="text-center text-xs text-zinc-400">
-                {oauthErrorMessage || status}
-              </p>
+              {(oauthErrorMessage || status) ? (
+                <p className="text-center text-xs text-zinc-400">
+                  {oauthErrorMessage || status}
+                </p>
+              ) : null}
             </div>
           </>
         ) : (
@@ -176,7 +219,7 @@ export function LoginPage() {
                 <IoArrowBack className="text-2xl" />
               </button>
               <Link
-                to="/feed"
+                to="/foryou"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
                 aria-label="Đóng"
               >
@@ -248,7 +291,7 @@ export function LoginPage() {
             Bằng việc tiếp tục với một tài khoản tại Việt Nam, bạn đồng ý với{" "}
             <a
               className="text-zinc-200 underline hover:text-white"
-              href="/legal/page/row/terms-of-service/vi"
+              href="/legal/page/row/terms-of-service"
               target="_blank"
               rel="noreferrer"
             >
@@ -257,7 +300,7 @@ export function LoginPage() {
             và xác nhận rằng bạn đã đọc{" "}
             <a
               className="text-zinc-200 underline hover:text-white"
-              href="/legal/page/row/privacy-policy/vi"
+              href="/legal/page/row/privacy-policy"
               target="_blank"
               rel="noreferrer"
             >

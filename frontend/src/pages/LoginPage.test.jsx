@@ -12,6 +12,7 @@ const authMock = {
   register: async () => ({}),
   refreshProfile: async () => null,
   logout: () => {},
+  completeOAuthLogin: () => {},
 }
 
 describe('LoginPage', () => {
@@ -27,6 +28,9 @@ describe('LoginPage', () => {
     expect(screen.getByRole('heading', { name: 'Đăng nhập vào Vibely' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Dùng email / username' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Tiếp tục với Google' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Tiếp tục với Facebook' }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Điều Khoản Dịch Vụ' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Chính Sách Quyền Riêng Tư' })).toBeInTheDocument()
   })
