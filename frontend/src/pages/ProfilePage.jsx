@@ -4,13 +4,13 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { apiClient } from '../api/client'
 import { useAuth } from '../state/useAuth'
 import { Sidebar } from '../components/Sidebar'
-import { TooltipHoverWrap, TooltipIconButton } from '../components/TooltipControls'
+import { TooltipHoverWrap } from '../components/TooltipControls'
+import { AccountActionsPill } from '../components/AccountActionsPill'
 import {
   IoArrowBack,
   IoArrowRedo,
   IoCameraOutline,
   IoCompass,
-  IoCashOutline,
   IoClose,
   IoEllipsisHorizontal,
   IoHome,
@@ -18,7 +18,6 @@ import {
   IoPaperPlane,
   IoPeople,
   IoPerson,
-  IoPhonePortraitOutline,
   IoSettingsOutline,
   IoVideocam,
 } from 'react-icons/io5'
@@ -44,7 +43,7 @@ function profileHrefFromAuthUsername(raw) {
 
 export function ProfilePage() {
   const { username } = useParams()
-  const { token, user, refreshProfile, updateProfile } = useAuth()
+  const { token, user, refreshProfile, updateProfile, logout } = useAuth()
   const navigate = useNavigate()
   const [status, setStatus] = useState('')
   const [publicProfile, setPublicProfile] = useState(null)
@@ -139,7 +138,7 @@ export function ProfilePage() {
 
   const activeMenu = 'profile'
   const handleSelectMenu = (id) => {
-    if (id === 'profile') return
+    if (id === 'profile' || id === 'more') return
     // Profile page tập trung nội dung trang profile; các mục khác quay về feed.
     navigate('/foryou', { replace: true })
   }
@@ -255,9 +254,36 @@ export function ProfilePage() {
         onSelectMenu={handleSelectMenu}
         token={token}
         user={profile ?? user}
+        onLogout={token ? logout : undefined}
       />
 
       <div className="relative flex flex-1 items-center justify-center px-6 py-5">
+        {token ? (
+          <AccountActionsPill className="absolute right-8 top-5 z-10" tone="profile">
+            <TooltipHoverWrap tip="Tài khoản">
+              <Link
+                to={profileHrefFromAuthUsername(user?.username)}
+                className="flex cursor-pointer rounded-full p-0.5 ring-1 ring-zinc-700 transition hover:ring-zinc-500"
+                aria-label="Tài khoản"
+              >
+                <img
+                  className="h-7 w-7 rounded-full object-cover"
+                  src={
+                    user?.avatarUrl && user.avatarUrl.trim()
+                      ? user.avatarUrl
+                      : DEFAULT_USER_AVATAR_URL
+                  }
+                  alt=""
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.src = DEFAULT_USER_AVATAR_URL
+                  }}
+                />
+              </Link>
+            </TooltipHoverWrap>
+          </AccountActionsPill>
+        ) : null}
+
         {!username && !token ? (
           <section className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
             <h2 className="text-xl font-semibold">Hồ sơ</h2>
@@ -269,7 +295,7 @@ export function ProfilePage() {
           </section>
         ) : (
           <section className="w-full max-w-5xl bg-black px-4 py-6 md:px-8">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-4">
               <div className="flex min-w-0 flex-1 items-start gap-5">
                 <img
                   className="h-28 w-28 rounded-full border border-zinc-800 object-cover md:h-32 md:w-32"
@@ -338,42 +364,6 @@ export function ProfilePage() {
                   </p>
                 </div>
               </div>
-
-              {token ? (
-                <div className="flex shrink-0 items-center gap-0.5 rounded-full border border-zinc-700 bg-zinc-800/95 px-1 py-1 shadow-lg">
-                  <TooltipIconButton tip="Nhận xu" ariaLabel="Nhận xu">
-                    <IoCashOutline className="text-[17px]" />
-                  </TooltipIconButton>
-                  <TooltipIconButton tip="Tải ứng dụng" ariaLabel="Tải ứng dụng">
-                    <IoPhonePortraitOutline className="text-[17px]" />
-                  </TooltipIconButton>
-                  <div
-                    className="mx-0.5 h-6 w-px shrink-0 bg-zinc-600 self-center"
-                    aria-hidden
-                  />
-                  <TooltipHoverWrap tip="Tài khoản">
-                    <Link
-                      to={profileHrefFromAuthUsername(user?.username)}
-                      className="flex cursor-pointer rounded-full p-0.5 ring-1 ring-zinc-700 transition hover:ring-zinc-500"
-                      aria-label="Tài khoản"
-                    >
-                      <img
-                        className="h-8 w-8 rounded-full object-cover"
-                        src={
-                          user?.avatarUrl && user.avatarUrl.trim()
-                            ? user.avatarUrl
-                            : DEFAULT_USER_AVATAR_URL
-                        }
-                        alt=""
-                        referrerPolicy="no-referrer"
-                        onError={(e) => {
-                          e.currentTarget.src = DEFAULT_USER_AVATAR_URL
-                        }}
-                      />
-                    </Link>
-                  </TooltipHoverWrap>
-                </div>
-              ) : null}
             </div>
 
             <div className="mt-6 flex items-center justify-between border-b border-zinc-900">
