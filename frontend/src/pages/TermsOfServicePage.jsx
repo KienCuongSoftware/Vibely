@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 const sections = [
@@ -112,6 +112,10 @@ const sections = [
 ]
 
 export function TermsOfServicePage() {
+  useEffect(() => {
+    document.title = 'Điều khoản dịch vụ | Vibely'
+  }, [])
+
   return (
     <section className="min-h-screen bg-zinc-950 text-zinc-100">
       <header className="border-b border-zinc-800">
