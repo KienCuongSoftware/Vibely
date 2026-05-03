@@ -87,13 +87,23 @@ public class VideoService {
             .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
     }
 
+    private static String resolveAuthorDisplayName(User author) {
+        String raw = author.getDisplayName();
+        if (raw != null && !raw.isBlank()) {
+            return raw.trim();
+        }
+        return author.getUsername();
+    }
+
     private VideoResponse toResponse(Video video) {
         long likeCount = likeRepository.countByVideo(video);
         long commentCount = commentRepository.countByVideo(video);
+        String authorDisplayName = resolveAuthorDisplayName(video.getAuthor());
         return new VideoResponse(
             video.getId(),
             video.getAuthor().getId(),
             video.getAuthor().getUsername(),
+            authorDisplayName,
             video.getTitle(),
             video.getDescription(),
             video.getVideoUrl(),

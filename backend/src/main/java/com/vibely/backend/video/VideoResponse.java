@@ -6,6 +6,7 @@ public record VideoResponse(
     Long id,
     Long authorId,
     String authorUsername,
+    String authorDisplayName,
     String title,
     String description,
     String videoUrl,
