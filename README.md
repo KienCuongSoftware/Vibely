@@ -1,6 +1,6 @@
 # Vibely
 
-Vibely is a full-stack short-video platform inspired by TikTok.
+Vibely is a full-stack short-video platform.
 
 ## Tech Stack
 
