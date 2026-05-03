@@ -1,5 +1,16 @@
 @import "tailwindcss";
+
+/* Cuộn được nhưng không hiện thanh trượt (feed dọc). */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 body {
   margin: 0;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
+
