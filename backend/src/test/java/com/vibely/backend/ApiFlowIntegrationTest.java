@@ -96,6 +96,34 @@ class ApiFlowIntegrationTest {
             .andExpect(status().isOk());
 
         mockMvc.perform(
+                post("/api/videos/" + videoId + "/bookmarks")
+                    .header("Authorization", "Bearer " + token)
+            )
+            .andExpect(status().isOk());
+
+        mockMvc.perform(
+                get("/api/videos/" + videoId + "/me")
+                    .header("Authorization", "Bearer " + token)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.liked").value(true))
+            .andExpect(jsonPath("$.data.bookmarked").value(true));
+
+        mockMvc.perform(
+                get("/api/users/me/liked-videos?page=0&size=10")
+                    .header("Authorization", "Bearer " + token)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.items[0].title").value("First Vibely Clip"));
+
+        mockMvc.perform(
+                get("/api/users/me/bookmarked-videos?page=0&size=10")
+                    .header("Authorization", "Bearer " + token)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.items[0].title").value("First Vibely Clip"));
+
+        mockMvc.perform(
                 post("/api/videos/" + videoId + "/comments")
                     .header("Authorization", "Bearer " + token)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -143,6 +171,34 @@ class ApiFlowIntegrationTest {
                     .header("Authorization", "Bearer " + token)
             )
             .andExpect(status().isOk());
+
+        mockMvc.perform(
+                get("/api/videos/" + videoId + "/me")
+                    .header("Authorization", "Bearer " + token)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.liked").value(false))
+            .andExpect(jsonPath("$.data.bookmarked").value(true));
+
+        mockMvc.perform(
+                get("/api/users/me/liked-videos?page=0&size=10")
+                    .header("Authorization", "Bearer " + token)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.items").isEmpty());
+
+        mockMvc.perform(
+                delete("/api/videos/" + videoId + "/bookmarks")
+                    .header("Authorization", "Bearer " + token)
+            )
+            .andExpect(status().isOk());
+
+        mockMvc.perform(
+                get("/api/users/me/bookmarked-videos?page=0&size=10")
+                    .header("Authorization", "Bearer " + token)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.items").isEmpty());
 
         mockMvc.perform(
                 post("/api/videos/" + videoId + "/report")
