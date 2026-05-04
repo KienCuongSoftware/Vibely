@@ -8,13 +8,16 @@ import { TooltipHoverWrap } from "../components/TooltipControls";
 import { AccountActionsPill } from "../components/AccountActionsPill";
 import {
   IoArrowRedo,
+  IoArrowUp,
   IoBookmark,
-  IoChatbubble,
+  IoChatbubbleOutline,
   IoChevronDown,
   IoChevronUp,
   IoCompass,
   IoEllipsisHorizontal,
+  IoHappyOutline,
   IoHeart,
+  IoHeartOutline,
   IoHome,
   IoLogOutOutline,
   IoNotifications,
@@ -109,6 +112,11 @@ function resolveFeedAuthorDisplayName(video) {
   return fallback || "Nhà sáng tạo";
 }
 
+function isBackendVideoId(id) {
+  if (id == null) return false;
+  return /^\d+$/.test(String(id));
+}
+
 const guestFallbackVideos = [
   {
     id: "guest-1",
@@ -142,6 +150,77 @@ const guestFallbackVideos = [
   },
 ];
 
+/** Bình luận minh hoạ giao diện (chưa nối API). */
+const FEED_DEMO_COMMENTS = [
+  {
+    id: "demo-1",
+    author: "Minh An",
+    text: "Nội dung rất ổn áp, xem đi xem lại vẫn hay.",
+    timeLabel: "5 giờ trước",
+    likes: 97,
+    replyCount: 4,
+  },
+  {
+    id: "demo-2",
+    author: "Lan Hương",
+    text: "[Nhãn dán]",
+    timeLabel: "1 ngày trước",
+    likes: 12,
+    replyCount: 0,
+  },
+  {
+    id: "demo-3",
+    author: "Vibely Fan",
+    text: "Cho mình xin tên bài nhạc với ạ.",
+    timeLabel: "2 ngày trước",
+    likes: 34,
+    replyCount: 2,
+  },
+  {
+    id: "demo-4",
+    author: "Hoàng",
+    text: "Góc quay đẹp quá!",
+    timeLabel: "3 ngày trước",
+    likes: 5,
+    replyCount: 0,
+  },
+];
+
+/** Nút tròn viền xám — đồng bộ mũi tên chuyển video & thích / bình luận / lưu / chia sẻ. */
+const FEED_ROUND_ICON_BUTTON =
+  "flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-zinc-600/90 bg-zinc-900/95 text-xl text-zinc-100 shadow-lg transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-35";
+
+function FeedChevronNav({ variant, activeIndex, videoCount, setActiveIndex }) {
+  const shell =
+    variant === "dock"
+      ? "flex shrink-0 flex-col justify-center gap-2.5 bg-zinc-950/60 px-1.5"
+      : "absolute right-4 top-1/2 z-20 flex -translate-y-1/2 flex-col gap-2.5";
+  return (
+    <div className={shell}>
+      <button
+        type="button"
+        aria-label="Video trước"
+        className={FEED_ROUND_ICON_BUTTON}
+        disabled={activeIndex === 0}
+        onClick={() => setActiveIndex((prev) => Math.max(prev - 1, 0))}
+      >
+        <IoChevronUp aria-hidden />
+      </button>
+      <button
+        type="button"
+        aria-label="Video tiếp theo"
+        className={FEED_ROUND_ICON_BUTTON}
+        disabled={activeIndex >= videoCount - 1}
+        onClick={() =>
+          setActiveIndex((prev) => Math.min(prev + 1, videoCount - 1))
+        }
+      >
+        <IoChevronDown aria-hidden />
+      </button>
+    </div>
+  );
+}
+
 function ForYouFeedPage({ token, user, onLogout }) {
   const navigate = useNavigate();
   const [videos, setVideos] = useState(guestFallbackVideos);
@@ -161,6 +240,12 @@ function ForYouFeedPage({ token, user, onLogout }) {
   const [feedProgressScrubbing, setFeedProgressScrubbing] = useState(false);
   const [feedMoreMenuOpen, setFeedMoreMenuOpen] = useState(false);
   const [feedAutoScrollEnabled, setFeedAutoScrollEnabled] = useState(false);
+  const [feedCommentsOpen, setFeedCommentsOpen] = useState(false);
+  const [feedSidePanelTab, setFeedSidePanelTab] = useState("comments");
+  const [commentDraft, setCommentDraft] = useState("");
+  const [likedCommentKeys, setLikedCommentKeys] = useState(
+    () => new Set(),
+  );
 
   const activeVideo = videos[activeIndex] ?? guestFallbackVideos[0];
 
@@ -212,8 +297,51 @@ function ForYouFeedPage({ token, user, onLogout }) {
   }, [activeIndex]);
 
   useEffect(() => {
+    if (!token || !isBackendVideoId(activeVideo?.id)) {
+      return;
+    }
+    let cancelled = false;
+    apiClient
+      .getVideoMeState(activeVideo.id, token)
+      .then((s) => {
+        if (!cancelled) {
+          setLiked(Boolean(s?.liked));
+          setBookmarked(Boolean(s?.bookmarked));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLiked(false);
+          setBookmarked(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [token, activeVideo?.id]);
+
+  useEffect(() => {
     setFeedMoreMenuOpen(false);
   }, [activeIndex]);
+
+  useEffect(() => {
+    setCommentDraft("");
+    setFeedSidePanelTab("comments");
+    setLikedCommentKeys(new Set());
+  }, [activeIndex]);
+
+  useEffect(() => {
+    if (!feedCommentsOpen) setFeedSidePanelTab("comments");
+  }, [feedCommentsOpen]);
+
+  useEffect(() => {
+    if (!feedCommentsOpen) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") setFeedCommentsOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [feedCommentsOpen]);
 
   useEffect(() => {
     if (!feedMoreMenuOpen) return undefined;
@@ -421,22 +549,38 @@ function ForYouFeedPage({ token, user, onLogout }) {
     }
   };
 
-  const actionCircle =
-    "flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-black/40 text-lg text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:bg-black/55";
+  const suggestedFeedSlots = React.useMemo(
+    () =>
+      videos
+        .map((video, idx) => ({ video, idx }))
+        .filter(({ idx }) => idx !== activeIndex),
+    [videos, activeIndex],
+  );
 
   return (
     <section className="flex h-dvh max-h-dvh min-h-0 w-full overflow-hidden bg-black text-zinc-100">
-      <Sidebar
-        menuItems={mainMenuItems}
-        activeMenu={activeMenu}
-        onSelectMenu={handleSidebarSelect}
-        token={token}
-        user={user}
-        onLogout={token ? onLogout : undefined}
-      />
+      {!feedCommentsOpen ? (
+        <Sidebar
+          menuItems={mainMenuItems}
+          activeMenu={activeMenu}
+          onSelectMenu={handleSidebarSelect}
+          token={token}
+          user={user}
+          onLogout={token ? onLogout : undefined}
+        />
+      ) : null}
 
-      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-6 py-5">
-        <AccountActionsPill className="absolute right-8 top-5 z-10" tone="profile">
+      <div
+        className={`relative flex min-h-0 flex-1 overflow-hidden ${
+          feedCommentsOpen
+            ? "flex-row items-stretch"
+            : "items-center justify-center px-6 py-5"
+        }`}
+      >
+        <AccountActionsPill
+          className="absolute right-8 top-5 z-40"
+          tone="profile"
+        >
           {!token ? (
             <Link
               to="/login"
@@ -494,6 +638,12 @@ function ForYouFeedPage({ token, user, onLogout }) {
           )}
         </AccountActionsPill>
 
+        <div
+          className={`flex min-h-0 flex-1 items-center justify-center ${
+            feedCommentsOpen ? "min-w-0" : ""
+          }`}
+        >
+        <div className="flex max-w-full flex-row items-end justify-center gap-0">
         <div className="group relative h-[88vh] max-h-[860px] w-[min(390px,92vw)] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl">
           {activeVideo.videoUrl ? (
             <div
@@ -778,24 +928,59 @@ function ForYouFeedPage({ token, user, onLogout }) {
           </button>
           <button
             type="button"
-            className={actionCircle}
-            onClick={() => setLiked((prev) => !prev)}
+            className={FEED_ROUND_ICON_BUTTON}
+            aria-pressed={liked}
+            aria-label={liked ? "Bỏ thích" : "Thích"}
+            onClick={() => {
+              if (!token || !isBackendVideoId(activeVideo?.id)) {
+                setLiked((prev) => !prev);
+                return;
+              }
+              const next = !liked;
+              setLiked(next);
+              const req = next
+                ? apiClient.likeVideo(activeVideo.id, token)
+                : apiClient.unlikeVideo(activeVideo.id, token);
+              req.catch(() => setLiked(!next));
+            }}
           >
-            <IoHeart className={liked ? "text-red-500" : ""} />
+            <IoHeart
+              className={liked ? "text-red-500" : "text-zinc-100"}
+              aria-hidden
+            />
           </button>
           <span className="text-xs text-zinc-300">
             {formatCompactCount(activeVideo.likeCount)}
           </span>
-          <button type="button" className={actionCircle}>
-            <IoChatbubble />
+          <button
+            type="button"
+            className={`${FEED_ROUND_ICON_BUTTON} ${feedCommentsOpen ? "ring-2 ring-white/35 ring-offset-2 ring-offset-black" : ""}`}
+            aria-label="Bình luận"
+            aria-expanded={feedCommentsOpen}
+            onClick={() => setFeedCommentsOpen((open) => !open)}
+          >
+            <IoChatbubbleOutline className="text-zinc-100" aria-hidden />
           </button>
           <span className="text-xs text-zinc-300">
             {formatCompactCount(activeVideo.commentCount)}
           </span>
           <button
             type="button"
-            className={actionCircle}
-            onClick={() => setBookmarked((prev) => !prev)}
+            className={FEED_ROUND_ICON_BUTTON}
+            aria-pressed={bookmarked}
+            aria-label={bookmarked ? "Bỏ lưu yêu thích" : "Lưu yêu thích"}
+            onClick={() => {
+              if (!token || !isBackendVideoId(activeVideo?.id)) {
+                setBookmarked((prev) => !prev);
+                return;
+              }
+              const next = !bookmarked;
+              setBookmarked(next);
+              const req = next
+                ? apiClient.bookmarkVideo(activeVideo.id, token)
+                : apiClient.unbookmarkVideo(activeVideo.id, token);
+              req.catch(() => setBookmarked(!next));
+            }}
           >
             <IoBookmark className={bookmarked ? "text-white" : ""} />
           </button>
@@ -804,7 +989,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
           </span>
           <button
             type="button"
-            className={actionCircle}
+            className={FEED_ROUND_ICON_BUTTON}
             onClick={() => setShared((prev) => !prev)}
           >
             <IoArrowRedo className={shared ? "text-white" : ""} />
@@ -826,29 +1011,239 @@ function ForYouFeedPage({ token, user, onLogout }) {
             />
           </button>
         </div>
-
-        <div className="absolute right-4 top-1/2 z-20 flex -translate-y-1/2 flex-col gap-2.5">
-          <button
-            type="button"
-            aria-label="Video trước"
-            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-zinc-600/90 bg-zinc-900/95 text-xl text-zinc-100 shadow-lg transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-35"
-            disabled={activeIndex === 0}
-            onClick={() => setActiveIndex((prev) => Math.max(prev - 1, 0))}
-          >
-            <IoChevronUp aria-hidden />
-          </button>
-          <button
-            type="button"
-            aria-label="Video tiếp theo"
-            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-zinc-600/90 bg-zinc-900/95 text-xl text-zinc-100 shadow-lg transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-35"
-            disabled={activeIndex >= videos.length - 1}
-            onClick={() =>
-              setActiveIndex((prev) => Math.min(prev + 1, videos.length - 1))
-            }
-          >
-            <IoChevronDown aria-hidden />
-          </button>
         </div>
+        </div>
+
+        <FeedChevronNav
+          variant={feedCommentsOpen ? "dock" : "float"}
+          activeIndex={activeIndex}
+          videoCount={videos.length}
+          setActiveIndex={setActiveIndex}
+        />
+
+        {feedCommentsOpen ? (
+          <aside
+            className="flex h-full min-h-0 w-[min(380px,42vw)] shrink-0 flex-col border-l border-zinc-800 bg-black pt-[4.5rem] text-zinc-100 shadow-[inset_1px_0_0_rgba(255,255,255,0.05)]"
+            aria-label="Bình luận và đề xuất"
+          >
+            <div className="relative z-50 flex shrink-0 items-stretch border-b border-zinc-800 bg-black">
+              <div className="flex min-w-0 flex-1" role="tablist">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={feedSidePanelTab === "comments"}
+                  className={`min-w-0 flex-1 border-b-2 px-2 py-3 text-left text-[15px] font-semibold transition-colors sm:px-3 ${
+                    feedSidePanelTab === "comments"
+                      ? "border-white text-zinc-100"
+                      : "border-transparent text-zinc-500 hover:text-zinc-300"
+                  }`}
+                  onClick={() => setFeedSidePanelTab("comments")}
+                >
+                  Bình luận{" "}
+                  <span className="font-normal text-zinc-400">
+                    {formatCompactCount(activeVideo.commentCount)}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={feedSidePanelTab === "suggested"}
+                  className={`min-w-0 flex-1 border-b-2 px-2 py-3 text-left text-[15px] font-semibold transition-colors sm:px-3 ${
+                    feedSidePanelTab === "suggested"
+                      ? "border-white text-zinc-100"
+                      : "border-transparent text-zinc-500 hover:text-zinc-300"
+                  }`}
+                  onClick={() => setFeedSidePanelTab("suggested")}
+                >
+                  Bạn có thể thích
+                </button>
+              </div>
+            </div>
+
+            {feedSidePanelTab === "comments" ? (
+              <>
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1">
+                  {FEED_DEMO_COMMENTS.map((c) => (
+                    <div
+                      key={`${activeVideo.id ?? activeIndex}-${c.id}`}
+                      className="flex gap-2.5 border-b border-zinc-800/70 px-3 py-3 last:border-b-0"
+                    >
+                      <img
+                        src={`https://i.pravatar.cc/80?u=${encodeURIComponent(c.author)}`}
+                        alt=""
+                        className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-zinc-700"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-zinc-100">
+                          {c.author}
+                        </p>
+                        <p className="mt-0.5 text-[15px] leading-snug text-zinc-200">
+                          {c.text}
+                        </p>
+                        {c.replyCount > 0 ? (
+                          <button
+                            type="button"
+                            className="mt-2 flex items-center gap-1.5 text-xs font-medium text-zinc-400 transition hover:text-zinc-200"
+                          >
+                            <span
+                              className="inline-block h-px w-5 bg-zinc-600"
+                              aria-hidden
+                            />
+                            Xem {c.replyCount} câu trả lời
+                            <IoChevronDown
+                              className="text-sm opacity-80"
+                              aria-hidden
+                            />
+                          </button>
+                        ) : null}
+                        <div className="mt-1 flex items-center justify-between gap-2 text-xs text-zinc-500">
+                          <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            <span>{c.timeLabel}</span>
+                            <button
+                              type="button"
+                              className="font-medium text-zinc-400 transition hover:text-zinc-200"
+                            >
+                              Trả lời
+                            </button>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-0.5">
+                            <button
+                              type="button"
+                              aria-label="Thích bình luận"
+                              aria-pressed={likedCommentKeys.has(
+                                `${activeVideo.id ?? activeIndex}-${c.id}`,
+                              )}
+                              className="rounded-full p-1 text-zinc-500 transition hover:bg-zinc-800"
+                              onClick={() => {
+                                const key = `${activeVideo.id ?? activeIndex}-${c.id}`;
+                                setLikedCommentKeys((prev) => {
+                                  const next = new Set(prev);
+                                  if (next.has(key)) next.delete(key);
+                                  else next.add(key);
+                                  return next;
+                                });
+                              }}
+                            >
+                              {likedCommentKeys.has(
+                                `${activeVideo.id ?? activeIndex}-${c.id}`,
+                              ) ? (
+                                <IoHeart
+                                  className="text-lg text-red-500"
+                                  aria-hidden
+                                />
+                              ) : (
+                                <IoHeartOutline
+                                  className="text-lg text-zinc-400"
+                                  aria-hidden
+                                />
+                              )}
+                            </button>
+                            <span className="text-[11px] tabular-nums text-zinc-500">
+                              {c.likes}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex shrink-0 items-end gap-2 border-t border-zinc-800 px-3 py-3">
+                  <img
+                    className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-zinc-700"
+                    src={
+                      user?.avatarUrl && String(user.avatarUrl).trim()
+                        ? user.avatarUrl
+                        : DEFAULT_USER_AVATAR_URL
+                    }
+                    alt=""
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      e.currentTarget.src = DEFAULT_USER_AVATAR_URL;
+                    }}
+                  />
+                  <div className="relative min-w-0 flex-1">
+                    <input
+                      type="text"
+                      value={commentDraft}
+                      onChange={(e) => setCommentDraft(e.target.value)}
+                      placeholder="Thêm bình luận..."
+                      className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-[5.25rem] text-sm text-zinc-100 placeholder:text-zinc-500 outline-none ring-red-500/20 focus:border-zinc-600 focus:ring-2"
+                    />
+                    <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
+                      <button
+                        type="button"
+                        className="rounded-full px-2 py-1 text-sm font-semibold text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-200"
+                        aria-label="Nhắc tên"
+                      >
+                        @
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-full p-1.5 text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-200"
+                        aria-label="Chèn biểu tượng cảm xúc"
+                      >
+                        <IoHappyOutline className="text-lg" aria-hidden />
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600 text-white shadow-md transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label="Gửi bình luận"
+                    disabled={!commentDraft.trim()}
+                    onClick={() => setCommentDraft("")}
+                  >
+                    <IoArrowUp className="text-xl" aria-hidden />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 py-3">
+                {suggestedFeedSlots.length === 0 ? (
+                  <p className="px-2 py-6 text-center text-sm text-zinc-500">
+                    Chưa có video gợi ý khác.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {suggestedFeedSlots.map(({ video, idx }) => (
+                      <button
+                        key={String(video.id ?? idx)}
+                        type="button"
+                        className="group text-left"
+                        onClick={() => setActiveIndex(idx)}
+                      >
+                        <div className="relative aspect-[9/16] w-full overflow-hidden rounded-lg bg-zinc-900 ring-1 ring-zinc-800 transition group-hover:ring-zinc-600">
+                          <img
+                            src={
+                              video.thumbnailUrl ??
+                              guestFallbackVideos[0].thumbnailUrl
+                            }
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                          <span className="absolute bottom-1 left-1 flex items-center gap-0.5 text-[11px] font-semibold text-white drop-shadow-md">
+                            <IoVideocam className="text-xs opacity-90" aria-hidden />
+                            {formatCompactCount(video.likeCount ?? 0)}
+                          </span>
+                        </div>
+                        <p className="mt-1.5 line-clamp-2 text-xs leading-snug text-zinc-200">
+                          {video.title ?? "Video"}
+                        </p>
+                        <p className="mt-0.5 truncate text-[11px] text-zinc-500">
+                          @
+                          {String(
+                            video.authorUsername ?? "vibely",
+                          ).replace(/^@/, "")}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </aside>
+        ) : null}
       </div>
 
       {showLogoutConfirm ? (
