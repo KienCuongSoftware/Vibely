@@ -38,6 +38,32 @@ public class InteractionController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @PostMapping("/videos/{videoId}/bookmarks")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ApiResponse<Void>> bookmarkVideo(Authentication authentication, @PathVariable Long videoId) {
+        interactionService.bookmarkVideo(authentication.getName(), videoId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/videos/{videoId}/bookmarks")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ApiResponse<Void>> unbookmarkVideo(
+        Authentication authentication,
+        @PathVariable Long videoId
+    ) {
+        interactionService.unbookmarkVideo(authentication.getName(), videoId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @GetMapping("/videos/{videoId}/me")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<VideoMeStateResponse> videoMeState(
+        Authentication authentication,
+        @PathVariable Long videoId
+    ) {
+        return ApiResponse.success(interactionService.getVideoMeState(authentication.getName(), videoId));
+    }
+
     @PostMapping("/videos/{videoId}/comments")
     @PreAuthorize("hasRole('USER')")
     public ApiResponse<CommentResponse> addComment(

@@ -19,6 +19,7 @@ public class InteractionService {
     private final UserRepository userRepository;
     private final VideoService videoService;
     private final LikeRepository likeRepository;
+    private final VideoBookmarkRepository videoBookmarkRepository;
     private final CommentRepository commentRepository;
     private final FollowRepository followRepository;
 
@@ -26,12 +27,14 @@ public class InteractionService {
         UserRepository userRepository,
         VideoService videoService,
         LikeRepository likeRepository,
+        VideoBookmarkRepository videoBookmarkRepository,
         CommentRepository commentRepository,
         FollowRepository followRepository
     ) {
         this.userRepository = userRepository;
         this.videoService = videoService;
         this.likeRepository = likeRepository;
+        this.videoBookmarkRepository = videoBookmarkRepository;
         this.commentRepository = commentRepository;
         this.followRepository = followRepository;
     }
@@ -52,6 +55,34 @@ public class InteractionService {
         User user = getUser(email);
         Video video = videoService.getVideoOrThrow(videoId);
         likeRepository.deleteByUserAndVideo(user, video);
+    }
+
+    public void bookmarkVideo(String email, Long videoId) {
+        User user = getUser(email);
+        Video video = videoService.getVideoOrThrow(videoId);
+        if (videoBookmarkRepository.existsByUserAndVideo(user, video)) {
+            return;
+        }
+        VideoBookmarkEntity row = new VideoBookmarkEntity();
+        row.setUser(user);
+        row.setVideo(video);
+        videoBookmarkRepository.save(row);
+    }
+
+    public void unbookmarkVideo(String email, Long videoId) {
+        User user = getUser(email);
+        Video video = videoService.getVideoOrThrow(videoId);
+        videoBookmarkRepository.deleteByUserAndVideo(user, video);
+    }
+
+    @Transactional(readOnly = true)
+    public VideoMeStateResponse getVideoMeState(String email, Long videoId) {
+        User user = getUser(email);
+        Video video = videoService.getVideoOrThrow(videoId);
+        return new VideoMeStateResponse(
+            likeRepository.existsByUserAndVideo(user, video),
+            videoBookmarkRepository.existsByUserAndVideo(user, video)
+        );
     }
 
     public CommentResponse addComment(String email, Long videoId, String content) {

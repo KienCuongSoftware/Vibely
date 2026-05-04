@@ -110,7 +110,9 @@ public class SecurityConfig {
                     "/api/auth/oauth/exchange"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/feed/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users/me/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/videos/*/me").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*/comments").permitAll()
                 .anyRequest().authenticated()
             )

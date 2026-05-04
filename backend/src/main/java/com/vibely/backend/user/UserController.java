@@ -4,7 +4,10 @@ import com.vibely.backend.auth.UserAvatarResolver;
 import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.feed.FeedPageResponse;
+import com.vibely.backend.video.VideoService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,20 +24,43 @@ public class UserController {
     private final UserRepository userRepository;
     private final UsernameService usernameService;
     private final UserAvatarResolver userAvatarResolver;
+    private final VideoService videoService;
 
     public UserController(
         UserRepository userRepository,
         UsernameService usernameService,
-        UserAvatarResolver userAvatarResolver
+        UserAvatarResolver userAvatarResolver,
+        VideoService videoService
     ) {
         this.userRepository = userRepository;
         this.usernameService = usernameService;
         this.userAvatarResolver = userAvatarResolver;
+        this.videoService = videoService;
     }
 
     @GetMapping("/check-username")
     public ApiResponse<UsernameCheckResponse> checkUsername(@RequestParam("username") String username) {
         return ApiResponse.success(usernameService.checkAvailability(username));
+    }
+
+    @GetMapping("/me/liked-videos")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<FeedPageResponse> myLikedVideos(
+        Authentication authentication,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "12") int size
+    ) {
+        return ApiResponse.success(videoService.getMyLikedVideos(authentication.getName(), page, size));
+    }
+
+    @GetMapping("/me/bookmarked-videos")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<FeedPageResponse> myBookmarkedVideos(
+        Authentication authentication,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "12") int size
+    ) {
+        return ApiResponse.success(videoService.getMyBookmarkedVideos(authentication.getName(), page, size));
     }
 
     @PutMapping("/me")

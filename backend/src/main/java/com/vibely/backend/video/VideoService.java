@@ -7,6 +7,7 @@ import com.vibely.backend.interaction.CommentRepository;
 import com.vibely.backend.interaction.FollowEntity;
 import com.vibely.backend.interaction.FollowRepository;
 import com.vibely.backend.interaction.LikeRepository;
+import com.vibely.backend.interaction.VideoBookmarkRepository;
 import com.vibely.backend.user.User;
 import com.vibely.backend.user.UserRepository;
 import java.util.Collections;
@@ -23,6 +24,7 @@ public class VideoService {
     private final VideoRepository videoRepository;
     private final UserRepository userRepository;
     private final LikeRepository likeRepository;
+    private final VideoBookmarkRepository videoBookmarkRepository;
     private final CommentRepository commentRepository;
     private final FollowRepository followRepository;
 
@@ -30,12 +32,14 @@ public class VideoService {
         VideoRepository videoRepository,
         UserRepository userRepository,
         LikeRepository likeRepository,
+        VideoBookmarkRepository videoBookmarkRepository,
         CommentRepository commentRepository,
         FollowRepository followRepository
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
         this.likeRepository = likeRepository;
+        this.videoBookmarkRepository = videoBookmarkRepository;
         this.commentRepository = commentRepository;
         this.followRepository = followRepository;
     }
@@ -80,6 +84,28 @@ public class VideoService {
             pageable
         );
         return toFeedPageResponse(resultPage, "following");
+    }
+
+    @Transactional(readOnly = true)
+    public FeedPageResponse getMyLikedVideos(String email, int page, int size) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        Pageable pageable = PageRequest.of(page, Math.min(size, 50));
+        Page<Video> resultPage = likeRepository.findLikedVideosForUser(user, VideoStatus.ACTIVE, pageable);
+        return toFeedPageResponse(resultPage, "liked");
+    }
+
+    @Transactional(readOnly = true)
+    public FeedPageResponse getMyBookmarkedVideos(String email, int page, int size) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        Pageable pageable = PageRequest.of(page, Math.min(size, 50));
+        Page<Video> resultPage = videoBookmarkRepository.findBookmarkedVideosForUser(
+            user,
+            VideoStatus.ACTIVE,
+            pageable
+        );
+        return toFeedPageResponse(resultPage, "bookmarks");
     }
 
     public Video getVideoOrThrow(Long id) {
