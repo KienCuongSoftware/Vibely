@@ -96,6 +96,15 @@ export const apiClient = {
   createVideo: (payload, token) => request('/api/videos', { method: 'POST', body: payload, token }),
   likeVideo: (videoId, token) => request(`/api/videos/${videoId}/likes`, { method: 'POST', token }),
   unlikeVideo: (videoId, token) => request(`/api/videos/${videoId}/likes`, { method: 'DELETE', token }),
+  bookmarkVideo: (videoId, token) =>
+    request(`/api/videos/${videoId}/bookmarks`, { method: 'POST', token }),
+  unbookmarkVideo: (videoId, token) =>
+    request(`/api/videos/${videoId}/bookmarks`, { method: 'DELETE', token }),
+  getVideoMeState: (videoId, token) => request(`/api/videos/${videoId}/me`, { token }),
+  getMyLikedVideos: (token, { page = 0, size = 24 } = {}) =>
+    request(`/api/users/me/liked-videos${toQuery({ page, size })}`, { token }),
+  getMyBookmarkedVideos: (token, { page = 0, size = 24 } = {}) =>
+    request(`/api/users/me/bookmarked-videos${toQuery({ page, size })}`, { token }),
   getComments: (videoId) => request(`/api/videos/${videoId}/comments`),
   addComment: (videoId, content, token) =>
     request(`/api/videos/${videoId}/comments`, {
