@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:classpath:application-local.yaml
   datasource:
     url: jdbc:postgresql://localhost:5432/vibely
     username: postgres
