@@ -26,3 +26,14 @@ app:
     secret: ${JWT_SECRET:change-this-in-real-environments}
     expiration-seconds: 86400
     refresh-expiration-seconds: 604800
+  # Presigned PUT (env: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION — không commit secret)
+  s3:
+    enabled: ${APP_S3_ENABLED:false}
+    bucket: ${AWS_S3_BUCKET:}
+    region: ${AWS_REGION:ap-southeast-2}
+    # Chỉ dùng local (application-local.yaml — đã gitignore). Để trống → DefaultCredentialsProvider / biến môi trường.
+    access-key-id: ${AWS_ACCESS_KEY_ID:}
+    secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+    presign-expiration-minutes: ${APP_S3_PRESIGN_EXPIRATION_MINUTES:15}
+    # Tuỳ chọn: URL gốc khi dùng CloudFront, ví dụ https://dxxxx.cloudfront.net
+    public-url-base: ${APP_S3_PUBLIC_URL_BASE:}
