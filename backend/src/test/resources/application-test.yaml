@@ -14,5 +14,7 @@ app:
   jwt:
     secret: test-secret-key-with-at-least-thirty-two-chars
     expiration-seconds: 3600
+  s3:
+    enabled: false
   cors:
     allowed-origins: http://localhost:5173
