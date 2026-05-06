@@ -95,6 +95,12 @@ public class InteractionController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @GetMapping("/follows/friends")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<List<FriendMentionResponse>> getMentionableFriends(Authentication authentication) {
+        return ApiResponse.success(interactionService.getMutualFriends(authentication.getName()));
+    }
+
     @PostMapping("/videos/{videoId}/report")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<Void>> reportVideo(
