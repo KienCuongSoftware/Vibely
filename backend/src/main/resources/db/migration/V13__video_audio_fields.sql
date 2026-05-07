@@ -1,0 +1,3 @@
+ALTER TABLE videos ADD COLUMN audio_url TEXT;
+ALTER TABLE videos ADD COLUMN audio_title VARCHAR(180);
+
