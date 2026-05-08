@@ -7,12 +7,17 @@ public record VideoResponse(
     Long authorId,
     String authorUsername,
     String authorDisplayName,
+    String authorAvatarUrl,
     String title,
     String description,
     String videoUrl,
     String thumbnailUrl,
+    String audioUrl,
+    String audioTitle,
     long likeCount,
     long commentCount,
+    long bookmarkCount,
+    long shareCount,
     LocalDateTime createdAt
 ) {
 }
