@@ -39,6 +39,12 @@ public class Video {
     @Column(name = "thumbnail_url", columnDefinition = "TEXT")
     private String thumbnailUrl;
 
+    @Column(name = "audio_url", columnDefinition = "TEXT")
+    private String audioUrl;
+
+    @Column(name = "audio_title", length = 180)
+    private String audioTitle;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private VideoStatus status;
@@ -51,6 +57,9 @@ public class Video {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "share_count", nullable = false)
+    private long shareCount;
 
     @PrePersist
     void prePersist() {
@@ -106,6 +115,22 @@ public class Video {
         this.thumbnailUrl = thumbnailUrl;
     }
 
+    public String getAudioUrl() {
+        return audioUrl;
+    }
+
+    public void setAudioUrl(String audioUrl) {
+        this.audioUrl = audioUrl;
+    }
+
+    public String getAudioTitle() {
+        return audioTitle;
+    }
+
+    public void setAudioTitle(String audioTitle) {
+        this.audioTitle = audioTitle;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -132,5 +157,13 @@ public class Video {
 
     public void setReportedAt(LocalDateTime reportedAt) {
         this.reportedAt = reportedAt;
+    }
+
+    public long getShareCount() {
+        return shareCount;
+    }
+
+    public void setShareCount(long shareCount) {
+        this.shareCount = shareCount;
     }
 }
