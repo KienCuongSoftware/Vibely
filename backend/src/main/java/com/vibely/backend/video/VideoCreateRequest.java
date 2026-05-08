@@ -16,6 +16,9 @@ public class VideoCreateRequest {
     private String videoUrl;
 
     private String thumbnailUrl;
+    private String audioUrl;
+    @Size(max = 180, message = "Tên âm thanh tối đa 180 ký tự")
+    private String audioTitle;
 
     public String getTitle() {
         return title;
@@ -47,5 +50,21 @@ public class VideoCreateRequest {
 
     public void setThumbnailUrl(String thumbnailUrl) {
         this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public String getAudioUrl() {
+        return audioUrl;
+    }
+
+    public void setAudioUrl(String audioUrl) {
+        this.audioUrl = audioUrl;
+    }
+
+    public String getAudioTitle() {
+        return audioTitle;
+    }
+
+    public void setAudioTitle(String audioTitle) {
+        this.audioTitle = audioTitle;
     }
 }
