@@ -1,5 +1,6 @@
 package com.vibely.backend.interaction;
 
+import com.vibely.backend.auth.UserAvatarResolver;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.user.User;
@@ -8,7 +9,9 @@ import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoStatus;
 import com.vibely.backend.video.VideoService;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +25,7 @@ public class InteractionService {
     private final VideoBookmarkRepository videoBookmarkRepository;
     private final CommentRepository commentRepository;
     private final FollowRepository followRepository;
+    private final UserAvatarResolver userAvatarResolver;
 
     public InteractionService(
         UserRepository userRepository,
@@ -29,7 +33,8 @@ public class InteractionService {
         LikeRepository likeRepository,
         VideoBookmarkRepository videoBookmarkRepository,
         CommentRepository commentRepository,
-        FollowRepository followRepository
+        FollowRepository followRepository,
+        UserAvatarResolver userAvatarResolver
     ) {
         this.userRepository = userRepository;
         this.videoService = videoService;
@@ -37,6 +42,7 @@ public class InteractionService {
         this.videoBookmarkRepository = videoBookmarkRepository;
         this.commentRepository = commentRepository;
         this.followRepository = followRepository;
+        this.userAvatarResolver = userAvatarResolver;
     }
 
     public void likeVideo(String email, Long videoId) {
@@ -127,6 +133,28 @@ public class InteractionService {
         followRepository.deleteByFollowerAndFollowing(follower, following);
     }
 
+    @Transactional(readOnly = true)
+    public List<FriendMentionResponse> getMutualFriends(String email) {
+        User me = getUser(email);
+        List<FollowEntity> myFollowing = followRepository.findByFollower(me);
+        Map<Long, FriendMentionResponse> friends = new LinkedHashMap<>();
+        for (FollowEntity relation : myFollowing) {
+            User candidate = relation.getFollowing();
+            if (candidate == null || candidate.getId() == null) continue;
+            if (!followRepository.existsByFollowerAndFollowing(candidate, me)) continue;
+            friends.put(
+                candidate.getId(),
+                new FriendMentionResponse(
+                    candidate.getId(),
+                    candidate.getUsername(),
+                    candidate.getDisplayName(),
+                    candidate.getAvatarUrl()
+                )
+            );
+        }
+        return List.copyOf(friends.values());
+    }
+
     public void reportVideo(String email, Long videoId, String reason) {
         getUser(email);
         Video video = videoService.getVideoOrThrow(videoId);
@@ -149,7 +177,8 @@ public class InteractionService {
             entity.getUser().getId(),
             entity.getUser().getUsername(),
             entity.getContent(),
-            entity.getCreatedAt()
+            entity.getCreatedAt(),
+            userAvatarResolver.resolve(entity.getUser())
         );
     }
 }
