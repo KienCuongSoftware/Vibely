@@ -3,5 +3,7 @@ package com.vibely.backend.video;
 public enum VideoStatus {
     ACTIVE,
     REPORTED,
-    HIDDEN
+    HIDDEN,
+    /** Đã gỡ bởi tác giả — không hiển thị công khai */
+    REMOVED
 }
