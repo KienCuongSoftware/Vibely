@@ -13,6 +13,8 @@ public interface VideoBookmarkRepository extends JpaRepository<VideoBookmarkEnti
 
     boolean existsByUserAndVideo(User user, Video video);
 
+    long countByVideo_Id(Long videoId);
+
     void deleteByUserAndVideo(User user, Video video);
 
     long countByUser(User user);
