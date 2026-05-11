@@ -63,6 +63,25 @@ public class UserController {
         return ApiResponse.success(videoService.getMyBookmarkedVideos(authentication.getName(), page, size));
     }
 
+    @GetMapping("/me/videos")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<FeedPageResponse> myUploadedVideos(
+        Authentication authentication,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "24") int size
+    ) {
+        return ApiResponse.success(videoService.getMyUploadedVideos(authentication.getName(), page, size));
+    }
+
+    @GetMapping("/{username}/videos")
+    public ApiResponse<FeedPageResponse> publicUserVideos(
+        @PathVariable("username") String username,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "24") int size
+    ) {
+        return ApiResponse.success(videoService.getPublicVideosForUsername(username, page, size));
+    }
+
     @PutMapping("/me")
     public ApiResponse<PublicUserProfileResponse> updateMe(
         Authentication authentication,
