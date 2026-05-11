@@ -33,6 +33,14 @@ public class S3PresignedUploadService {
     private static final Set<String> ALLOWED_CONTENT_TYPES = MIME_TO_EXT.keySet();
     private static final Pattern SAFE_EXT = Pattern.compile("\\.(mp4|webm|mov)$", Pattern.CASE_INSENSITIVE);
 
+    private static final Map<String, String> THUMB_MIME_TO_EXT = Map.of(
+        "image/jpeg", ".jpg",
+        "image/png", ".png",
+        "image/webp", ".webp"
+    );
+    private static final Set<String> THUMB_CONTENT_TYPES = THUMB_MIME_TO_EXT.keySet();
+    private static final Pattern THUMB_SAFE_EXT = Pattern.compile("\\.(jpe?g|png|webp)$", Pattern.CASE_INSENSITIVE);
+
     private final S3Presigner presigner;
     private final S3Properties properties;
     private final UserRepository userRepository;
@@ -80,6 +88,69 @@ public class S3PresignedUploadService {
             playbackUrl,
             expiresAt.toEpochMilli()
         );
+    }
+
+    /**
+     * Presign PUT cho ảnh bìa (JPG, PNG, WebP), key dưới thư mục thumbnails/.
+     */
+    public PresignedUploadResponse presignThumbnail(String userEmail, VideoPresignRequest request) {
+        if (properties.getBucket() == null || properties.getBucket().isBlank()) {
+            throw new BadRequestException("Chưa cấu hình AWS_S3_BUCKET.");
+        }
+        String contentType = normalizeContentType(request.getContentType());
+        if ("image/jpg".equals(contentType)) {
+            contentType = "image/jpeg";
+        }
+        if (!THUMB_CONTENT_TYPES.contains(contentType)) {
+            throw new BadRequestException("Chỉ chấp nhận ảnh JPG, PNG hoặc WebP.");
+        }
+        String extension = resolveThumbExtension(request.getFileName(), contentType);
+        long authorId = userRepository.findByEmail(userEmail)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"))
+            .getId();
+        String key = "thumbnails/" + authorId + "/" + UUID.randomUUID() + extension;
+
+        PutObjectRequest put = PutObjectRequest.builder()
+            .bucket(properties.getBucket())
+            .key(key)
+            .contentType(contentType)
+            .build();
+
+        Instant expiresAt = Instant.now().plus(properties.getPresignExpirationMinutes(), ChronoUnit.MINUTES);
+        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+            .signatureDuration(Duration.ofMinutes(properties.getPresignExpirationMinutes()))
+            .putObjectRequest(put)
+            .build();
+
+        PresignedPutObjectRequest presigned = presigner.presignPutObject(presignRequest);
+        String publicUrl = buildPlaybackUrl(key);
+
+        return new PresignedUploadResponse(
+            presigned.url().toString(),
+            "PUT",
+            contentType,
+            key,
+            publicUrl,
+            expiresAt.toEpochMilli()
+        );
+    }
+
+    private static String resolveThumbExtension(String fileName, String contentType) {
+        Optional<String> fromName = Optional.ofNullable(fileName)
+            .map(String::trim)
+            .filter(n -> !n.isEmpty())
+            .filter(n -> THUMB_SAFE_EXT.matcher(n).find())
+            .map(n -> {
+                String lower = n.toLowerCase(Locale.ROOT);
+                if (lower.endsWith(".png")) {
+                    return ".png";
+                }
+                if (lower.endsWith(".webp")) {
+                    return ".webp";
+                }
+                return ".jpg";
+            });
+        return fromName.orElse(THUMB_MIME_TO_EXT.get(contentType));
     }
 
     private static String normalizeContentType(String raw) {
