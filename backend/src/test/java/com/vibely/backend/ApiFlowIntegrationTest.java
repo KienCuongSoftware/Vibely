@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -124,6 +125,32 @@ class ApiFlowIntegrationTest {
             .andExpect(jsonPath("$.data.items[0].title").value("First Vibely Clip"));
 
         mockMvc.perform(
+                get("/api/users/me/videos?page=0&size=10")
+                    .header("Authorization", "Bearer " + token)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.sort").value("my-uploads"))
+            .andExpect(jsonPath("$.data.items[0].title").value("First Vibely Clip"));
+
+        mockMvc.perform(get("/api/videos/" + videoId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.title").value("First Vibely Clip"));
+
+        mockMvc.perform(get("/api/users/demo_user/videos?page=0&size=10"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.sort").value("profile-uploads"))
+            .andExpect(jsonPath("$.data.items[0].title").value("First Vibely Clip"));
+
+        mockMvc.perform(
+                put("/api/videos/" + videoId)
+                    .header("Authorization", "Bearer " + token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"title\":\"Updated title\",\"description\":\"new desc\"}")
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.title").value("Updated title"));
+
+        mockMvc.perform(
                 post("/api/videos/" + videoId + "/comments")
                     .header("Authorization", "Bearer " + token)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -135,6 +162,13 @@ class ApiFlowIntegrationTest {
         mockMvc.perform(get("/api/videos/" + videoId + "/comments"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data[0].content").value("Great!"));
+
+        mockMvc.perform(post("/api/videos/" + videoId + "/shares"))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/videos/" + videoId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.shareCount").value(1));
 
         MvcResult loginResult = mockMvc.perform(
                 post("/api/auth/login")
@@ -211,6 +245,15 @@ class ApiFlowIntegrationTest {
         mockMvc.perform(get("/api/feed?page=0&size=10&sort=latest"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.items").isEmpty());
+
+        mockMvc.perform(
+                delete("/api/videos/" + videoId)
+                    .header("Authorization", "Bearer " + token)
+            )
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/videos/" + videoId))
+            .andExpect(status().isNotFound());
 
         mockMvc.perform(
                 get("/api/auth/me")
