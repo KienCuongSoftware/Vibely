@@ -10,7 +10,6 @@ import {
   IoArrowRedo,
   IoArrowUp,
   IoBookmark,
-  IoChatbubbleOutline,
   IoChevronDown,
   IoChevronUp,
   IoCompass,
@@ -34,6 +33,7 @@ import {
   LuHeartOff,
   LuPictureInPicture2,
 } from "react-icons/lu";
+import { FaComment } from "react-icons/fa6";
 import { MdOutlineFileUpload } from "react-icons/md";
 
 const DEFAULT_USER_AVATAR_URL = "/images/users/default-avatar.jpeg";
@@ -117,6 +117,15 @@ function isBackendVideoId(id) {
   return /^\d+$/.test(String(id));
 }
 
+/** Avatar tác giả từ API; không dùng pravatar (tránh lệch với hồ sơ thật). */
+const FEED_DEFAULT_AUTHOR_AVATAR = "/images/users/default-avatar.jpeg";
+
+function resolveVideoAuthorAvatar(item) {
+  const raw = item?.authorAvatarUrl;
+  if (raw != null && String(raw).trim()) return String(raw).trim();
+  return FEED_DEFAULT_AUTHOR_AVATAR;
+}
+
 const guestFallbackVideos = [
   {
     id: "guest-1",
@@ -131,7 +140,7 @@ const guestFallbackVideos = [
     likeCount: 1600000,
     commentCount: 9007,
     shareCount: 770400,
-    favoriteCount: 119400,
+    bookmarkCount: 119400,
   },
   {
     id: "guest-2",
@@ -146,45 +155,27 @@ const guestFallbackVideos = [
     likeCount: 885000,
     commentCount: 4200,
     shareCount: 312000,
-    favoriteCount: 98000,
+    bookmarkCount: 98000,
   },
 ];
 
-/** Bình luận minh hoạ giao diện (chưa nối API). */
-const FEED_DEMO_COMMENTS = [
-  {
-    id: "demo-1",
-    author: "Minh An",
-    text: "Nội dung rất ổn áp, xem đi xem lại vẫn hay.",
-    timeLabel: "5 giờ trước",
-    likes: 97,
-    replyCount: 4,
-  },
-  {
-    id: "demo-2",
-    author: "Lan Hương",
-    text: "[Nhãn dán]",
-    timeLabel: "1 ngày trước",
-    likes: 12,
-    replyCount: 0,
-  },
-  {
-    id: "demo-3",
-    author: "Vibely Fan",
-    text: "Cho mình xin tên bài nhạc với ạ.",
-    timeLabel: "2 ngày trước",
-    likes: 34,
-    replyCount: 2,
-  },
-  {
-    id: "demo-4",
-    author: "Hoàng",
-    text: "Góc quay đẹp quá!",
-    timeLabel: "3 ngày trước",
-    likes: 5,
-    replyCount: 0,
-  },
-];
+function formatRelativeTimeVi(isoOrMs) {
+  if (isoOrMs == null) return "";
+  const d =
+    typeof isoOrMs === "string" || typeof isoOrMs === "number"
+      ? new Date(isoOrMs)
+      : isoOrMs;
+  if (!(d instanceof Date) || Number.isNaN(d.getTime())) return "";
+  const sec = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (sec < 45) return "Vừa xong";
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min} phút trước`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} giờ trước`;
+  const day = Math.floor(hr / 24);
+  if (day < 14) return `${day} ngày trước`;
+  return d.toLocaleDateString("vi-VN");
+}
 
 /** Nút tròn viền xám — đồng bộ mũi tên chuyển video & thích / bình luận / lưu / chia sẻ. */
 const FEED_ROUND_ICON_BUTTON =
@@ -223,6 +214,8 @@ function FeedChevronNav({ variant, activeIndex, videoCount, setActiveIndex }) {
 
 function ForYouFeedPage({ token, user, onLogout }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const studioNavRef = useRef(null);
   const [videos, setVideos] = useState(guestFallbackVideos);
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeMenu, setActiveMenu] = useState("latest");
@@ -243,45 +236,126 @@ function ForYouFeedPage({ token, user, onLogout }) {
   const [feedCommentsOpen, setFeedCommentsOpen] = useState(false);
   const [feedSidePanelTab, setFeedSidePanelTab] = useState("comments");
   const [commentDraft, setCommentDraft] = useState("");
-  const [likedCommentKeys, setLikedCommentKeys] = useState(
-    () => new Set(),
-  );
+  const [feedComments, setFeedComments] = useState([]);
+  const [feedCommentsLoading, setFeedCommentsLoading] = useState(false);
+  const [feedCommentsError, setFeedCommentsError] = useState("");
+  const [commentPostError, setCommentPostError] = useState("");
+  const viewedVideoIdsRef = useRef(new Set());
 
   const activeVideo = videos[activeIndex] ?? guestFallbackVideos[0];
 
+  const patchVideoById = useCallback((videoId, patch) => {
+    if (videoId == null) return;
+    setVideos((prev) =>
+      prev.map((v) =>
+        String(v.id) === String(videoId) ? { ...v, ...patch } : v,
+      ),
+    );
+  }, []);
+
+  useEffect(() => {
+    const raw = location.state?.focusVideoId;
+    if (raw == null && location.state?.openComments == null) return;
+    const idNum = Number(raw);
+    studioNavRef.current = {
+      id: Number.isFinite(idNum) ? idNum : null,
+      openComments: Boolean(location.state?.openComments),
+    };
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.state, location.pathname, navigate]);
+
   useEffect(() => {
     let isMounted = true;
-    const request =
-      token && activeMenu === "following"
-        ? apiClient.getFollowingFeed(token, { page: 0, size: 8 })
-        : apiClient.getFeed({ page: 0, size: 8, sort: "latest" });
+    const params = new URLSearchParams(location.search);
+    const rawV = params.get("v");
+    let queryFocusId = null;
+    let queryOpenComments = false;
+    if (rawV != null) {
+      const n = Number(rawV);
+      if (Number.isFinite(n)) {
+        queryFocusId = n;
+        queryOpenComments = params.get("comments") === "1";
+      }
+      const path = location.pathname;
+      queueMicrotask(() =>
+        navigate({ pathname: path, search: "" }, { replace: true }),
+      );
+    }
 
-    request
-      .then((response) => {
+    const pending = studioNavRef.current;
+    if (pending != null) {
+      studioNavRef.current = null;
+    }
+    const focusId =
+      pending?.id != null && Number.isFinite(pending.id)
+        ? pending.id
+        : queryFocusId;
+    const openComments =
+      Boolean(pending?.openComments) || queryOpenComments;
+
+    (async () => {
+      const request =
+        token && activeMenu === "following"
+          ? apiClient.getFollowingFeed(token, { page: 0, size: 8 })
+          : apiClient.getFeed({ page: 0, size: 8, sort: "latest" });
+
+      try {
+        const response = await request;
         const items = response?.items ?? [];
         if (!isMounted || items.length === 0) return;
-        const normalized = items.map((item) => ({
+
+        let normalized = items.map((item) => ({
           ...item,
           authorDisplayName:
             item.authorDisplayName != null &&
             String(item.authorDisplayName).trim()
               ? String(item.authorDisplayName).trim()
               : undefined,
-          avatarUrl: `https://i.pravatar.cc/120?u=${encodeURIComponent(item.authorUsername ?? item.id)}`,
-          shareCount: item.likeCount ? item.likeCount * 2 : 1280,
-          favoriteCount: item.commentCount ? item.commentCount * 3 : 640,
+          avatarUrl: resolveVideoAuthorAvatar(item),
+          shareCount: Number(item.shareCount ?? 0),
+          bookmarkCount: Number(item.bookmarkCount ?? 0),
         }));
+
+        if (focusId != null) {
+          const has = normalized.some((v) => String(v.id) === String(focusId));
+          if (!has) {
+            try {
+              const one = await apiClient.getVideo(focusId);
+              const focusNorm = {
+                ...one,
+                authorDisplayName:
+                  one.authorDisplayName != null &&
+                  String(one.authorDisplayName).trim()
+                    ? String(one.authorDisplayName).trim()
+                    : undefined,
+                avatarUrl: resolveVideoAuthorAvatar(one),
+                shareCount: Number(one.shareCount ?? 0),
+                bookmarkCount: Number(one.bookmarkCount ?? 0),
+              };
+              normalized = [focusNorm, ...normalized];
+            } catch {
+              /* không tải được video (đã gỡ / lỗi mạng) */
+            }
+          }
+          const idx = normalized.findIndex((v) => String(v.id) === String(focusId));
+          if (idx >= 0) {
+            setActiveIndex(idx);
+            if (openComments) setFeedCommentsOpen(true);
+          }
+        }
+
         setVideos(normalized);
-      })
-      .catch(() => {
+      } catch {
         if (isMounted) {
           setVideos(guestFallbackVideos);
         }
-      });
+      }
+    })();
+
     return () => {
       isMounted = false;
     };
-  }, [token, activeMenu]);
+  }, [token, activeMenu, location.key, navigate, location.pathname]);
 
   useEffect(() => {
     setActiveIndex((idx) => {
@@ -327,12 +401,51 @@ function ForYouFeedPage({ token, user, onLogout }) {
   useEffect(() => {
     setCommentDraft("");
     setFeedSidePanelTab("comments");
-    setLikedCommentKeys(new Set());
+    setFeedComments([]);
+    setFeedCommentsError("");
+    setCommentPostError("");
   }, [activeIndex]);
+
+  useEffect(() => {
+    if (!feedCommentsOpen || !isBackendVideoId(activeVideo?.id)) {
+      return undefined;
+    }
+    let cancelled = false;
+    const vid = activeVideo.id;
+    setFeedCommentsLoading(true);
+    setFeedCommentsError("");
+    apiClient
+      .getComments(vid)
+      .then((list) => {
+        if (!cancelled) setFeedComments(Array.isArray(list) ? list : []);
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setFeedCommentsError(
+            e instanceof Error ? e.message : "Không tải được bình luận.",
+          );
+          setFeedComments([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setFeedCommentsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [feedCommentsOpen, activeVideo?.id]);
 
   useEffect(() => {
     if (!feedCommentsOpen) setFeedSidePanelTab("comments");
   }, [feedCommentsOpen]);
+
+  useEffect(() => {
+    if (!isBackendVideoId(activeVideo?.id)) return;
+    const id = Number(activeVideo.id);
+    if (viewedVideoIdsRef.current.has(id)) return;
+    viewedVideoIdsRef.current.add(id);
+    apiClient.recordVideoView(id).catch(() => {});
+  }, [activeVideo?.id]);
 
   useEffect(() => {
     if (!feedCommentsOpen) return undefined;
@@ -469,6 +582,10 @@ function ForYouFeedPage({ token, user, onLogout }) {
       navigate(buildProfilePath(token, user));
       return;
     }
+    if (id === "upload") {
+      navigate("/vibelystudio/upload");
+      return;
+    }
     setActiveMenu(id);
   };
 
@@ -559,16 +676,14 @@ function ForYouFeedPage({ token, user, onLogout }) {
 
   return (
     <section className="flex h-dvh max-h-dvh min-h-0 w-full overflow-hidden bg-black text-zinc-100">
-      {!feedCommentsOpen ? (
-        <Sidebar
-          menuItems={mainMenuItems}
-          activeMenu={activeMenu}
-          onSelectMenu={handleSidebarSelect}
-          token={token}
-          user={user}
-          onLogout={token ? onLogout : undefined}
-        />
-      ) : null}
+      <Sidebar
+        menuItems={mainMenuItems}
+        activeMenu={activeMenu}
+        onSelectMenu={handleSidebarSelect}
+        token={token}
+        user={user}
+        onLogout={token ? onLogout : undefined}
+      />
 
       <div
         className={`relative flex min-h-0 flex-1 overflow-hidden ${
@@ -578,7 +693,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
         }`}
       >
         <AccountActionsPill
-          className="absolute right-8 top-5 z-40"
+          className="absolute right-8 top-5 z-[100]"
           tone="profile"
         >
           {!token ? (
@@ -590,7 +705,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
             </Link>
           ) : (
             <div className="relative" ref={accountMenuRef}>
-              <TooltipHoverWrap tip="Tài khoản">
+              <TooltipHoverWrap tip="Tài khoản" tipHidden={showAccountMenu} hoverOnly>
                 <button
                   type="button"
                   className="flex cursor-pointer rounded-full p-0.5 ring-1 ring-zinc-700 transition hover:ring-zinc-500"
@@ -613,7 +728,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
                 </button>
               </TooltipHoverWrap>
               {showAccountMenu ? (
-                <div className="absolute right-0 mt-2 w-44 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-800 py-1 shadow-2xl">
+                <div className="absolute right-0 z-[110] mt-2 w-44 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-800 py-1 shadow-2xl">
                   <Link
                     to={buildProfilePath(token, user)}
                     className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-100 hover:bg-zinc-700"
@@ -639,8 +754,8 @@ function ForYouFeedPage({ token, user, onLogout }) {
         </AccountActionsPill>
 
         <div
-          className={`flex min-h-0 flex-1 items-center justify-center ${
-            feedCommentsOpen ? "min-w-0" : ""
+          className={`flex min-h-0 flex-1 items-center ${
+            feedCommentsOpen ? "min-w-0 justify-end pr-1" : "justify-center"
           }`}
         >
         <div className="flex max-w-full flex-row items-end justify-center gap-0">
@@ -658,7 +773,11 @@ function ForYouFeedPage({ token, user, onLogout }) {
               ref={feedVideoRef}
               className="h-full w-full cursor-pointer object-cover"
               src={activeVideo.videoUrl}
-              poster={activeVideo.thumbnailUrl ?? undefined}
+              poster={
+                activeVideo.thumbnailUrl?.trim()
+                  ? activeVideo.thumbnailUrl
+                  : FEED_DEFAULT_AUTHOR_AVATAR
+              }
               playsInline
               muted={feedMuted}
               loop
@@ -919,7 +1038,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
           >
             <img
               className="h-full w-full rounded-full object-cover"
-              src={activeVideo.avatarUrl ?? "https://i.pravatar.cc/120?img=15"}
+              src={activeVideo.avatarUrl ?? FEED_DEFAULT_AUTHOR_AVATAR}
               alt={`avatar-${activeVideo.authorUsername}`}
             />
             <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-red-600 px-1 text-[10px] leading-3 text-white">
@@ -937,11 +1056,18 @@ function ForYouFeedPage({ token, user, onLogout }) {
                 return;
               }
               const next = !liked;
+              const prevCount = Number(activeVideo.likeCount ?? 0);
               setLiked(next);
+              patchVideoById(activeVideo.id, {
+                likeCount: Math.max(0, prevCount + (next ? 1 : -1)),
+              });
               const req = next
                 ? apiClient.likeVideo(activeVideo.id, token)
                 : apiClient.unlikeVideo(activeVideo.id, token);
-              req.catch(() => setLiked(!next));
+              req.catch(() => {
+                setLiked(!next);
+                patchVideoById(activeVideo.id, { likeCount: prevCount });
+              });
             }}
           >
             <IoHeart
@@ -959,7 +1085,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
             aria-expanded={feedCommentsOpen}
             onClick={() => setFeedCommentsOpen((open) => !open)}
           >
-            <IoChatbubbleOutline className="text-zinc-100" aria-hidden />
+            <FaComment className="text-lg text-zinc-100" aria-hidden />
           </button>
           <span className="text-xs text-zinc-300">
             {formatCompactCount(activeVideo.commentCount)}
@@ -975,22 +1101,58 @@ function ForYouFeedPage({ token, user, onLogout }) {
                 return;
               }
               const next = !bookmarked;
+              const prevBm = Number(activeVideo.bookmarkCount ?? 0);
               setBookmarked(next);
+              patchVideoById(activeVideo.id, {
+                bookmarkCount: Math.max(0, prevBm + (next ? 1 : -1)),
+              });
               const req = next
                 ? apiClient.bookmarkVideo(activeVideo.id, token)
                 : apiClient.unbookmarkVideo(activeVideo.id, token);
-              req.catch(() => setBookmarked(!next));
+              req.catch(() => {
+                setBookmarked(!next);
+                patchVideoById(activeVideo.id, { bookmarkCount: prevBm });
+              });
             }}
           >
             <IoBookmark className={bookmarked ? "text-white" : ""} />
           </button>
           <span className="text-xs text-zinc-300">
-            {formatCompactCount(activeVideo.favoriteCount)}
+            {formatCompactCount(activeVideo.bookmarkCount)}
           </span>
           <button
             type="button"
             className={FEED_ROUND_ICON_BUTTON}
-            onClick={() => setShared((prev) => !prev)}
+            aria-label="Chia sẻ"
+            onClick={async () => {
+              if (!isBackendVideoId(activeVideo?.id)) {
+                setShared((prev) => !prev);
+                return;
+              }
+              const vid = activeVideo.id;
+              const prevShares = Number(activeVideo.shareCount ?? 0);
+              try {
+                await apiClient.recordVideoShare(vid);
+                patchVideoById(vid, { shareCount: prevShares + 1 });
+              } catch {
+                /* vẫn cho chia sẻ cục bộ */
+              }
+              const shareUrl = `${window.location.origin}/foryou?v=${encodeURIComponent(vid)}`;
+              try {
+                if (navigator.share) {
+                  await navigator.share({
+                    title: "Vibely",
+                    text: activeVideo.title ?? "",
+                    url: shareUrl,
+                  });
+                } else if (navigator.clipboard?.writeText) {
+                  await navigator.clipboard.writeText(shareUrl);
+                }
+              } catch {
+                /* người dùng huỷ hoặc trình duyệt không hỗ trợ */
+              }
+              setShared(true);
+            }}
           >
             <IoArrowRedo className={shared ? "text-white" : ""} />
           </button>
@@ -1001,10 +1163,20 @@ function ForYouFeedPage({ token, user, onLogout }) {
             type="button"
             aria-label="Âm thanh đang phát"
             className="relative mt-1 flex h-11 w-11 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-white/35 bg-zinc-950 shadow-lg"
+            onClick={() => {
+              const rawAudioUrl = String(activeVideo?.audioUrl ?? "").trim();
+              if (!rawAudioUrl) return;
+              const q = new URLSearchParams({
+                audioUrl: rawAudioUrl,
+                title: String(activeVideo?.audioTitle ?? "").trim(),
+                creator: resolveFeedAuthorDisplayName(activeVideo),
+              });
+              navigate(`/sound?${q.toString()}`);
+            }}
           >
             <img
               src={
-                activeVideo.avatarUrl ?? "https://i.pravatar.cc/120?img=15"
+                activeVideo.avatarUrl ?? FEED_DEFAULT_AUTHOR_AVATAR
               }
               alt=""
               className="h-full w-full scale-110 object-cover animate-[spin_12s_linear_infinite]"
@@ -1023,10 +1195,10 @@ function ForYouFeedPage({ token, user, onLogout }) {
 
         {feedCommentsOpen ? (
           <aside
-            className="flex h-full min-h-0 w-[min(380px,42vw)] shrink-0 flex-col border-l border-zinc-800 bg-black pt-[4.5rem] text-zinc-100 shadow-[inset_1px_0_0_rgba(255,255,255,0.05)]"
+            className="relative z-0 flex h-full min-h-0 w-[min(380px,42vw)] shrink-0 flex-col border-l border-zinc-800 bg-black pt-[4.5rem] text-zinc-100 shadow-[inset_1px_0_0_rgba(255,255,255,0.05)]"
             aria-label="Bình luận và đề xuất"
           >
-            <div className="relative z-50 flex shrink-0 items-stretch border-b border-zinc-800 bg-black">
+            <div className="relative z-10 flex shrink-0 items-stretch border-b border-zinc-800 bg-black">
               <div className="flex min-w-0 flex-1" role="tablist">
                 <button
                   type="button"
@@ -1063,139 +1235,151 @@ function ForYouFeedPage({ token, user, onLogout }) {
             {feedSidePanelTab === "comments" ? (
               <>
                 <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1">
-                  {FEED_DEMO_COMMENTS.map((c) => (
-                    <div
-                      key={`${activeVideo.id ?? activeIndex}-${c.id}`}
-                      className="flex gap-2.5 border-b border-zinc-800/70 px-3 py-3 last:border-b-0"
-                    >
-                      <img
-                        src={`https://i.pravatar.cc/80?u=${encodeURIComponent(c.author)}`}
-                        alt=""
-                        className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-zinc-700"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-zinc-100">
-                          {c.author}
-                        </p>
-                        <p className="mt-0.5 text-[15px] leading-snug text-zinc-200">
-                          {c.text}
-                        </p>
-                        {c.replyCount > 0 ? (
-                          <button
-                            type="button"
-                            className="mt-2 flex items-center gap-1.5 text-xs font-medium text-zinc-400 transition hover:text-zinc-200"
-                          >
-                            <span
-                              className="inline-block h-px w-5 bg-zinc-600"
-                              aria-hidden
-                            />
-                            Xem {c.replyCount} câu trả lời
-                            <IoChevronDown
-                              className="text-sm opacity-80"
-                              aria-hidden
-                            />
-                          </button>
-                        ) : null}
-                        <div className="mt-1 flex items-center justify-between gap-2 text-xs text-zinc-500">
-                          <div className="flex min-w-0 flex-wrap items-center gap-2">
-                            <span>{c.timeLabel}</span>
-                            <button
-                              type="button"
-                              className="font-medium text-zinc-400 transition hover:text-zinc-200"
-                            >
-                              Trả lời
-                            </button>
-                          </div>
-                          <div className="flex shrink-0 items-center gap-0.5">
-                            <button
-                              type="button"
-                              aria-label="Thích bình luận"
-                              aria-pressed={likedCommentKeys.has(
-                                `${activeVideo.id ?? activeIndex}-${c.id}`,
-                              )}
-                              className="rounded-full p-1 text-zinc-500 transition hover:bg-zinc-800"
-                              onClick={() => {
-                                const key = `${activeVideo.id ?? activeIndex}-${c.id}`;
-                                setLikedCommentKeys((prev) => {
-                                  const next = new Set(prev);
-                                  if (next.has(key)) next.delete(key);
-                                  else next.add(key);
-                                  return next;
-                                });
-                              }}
-                            >
-                              {likedCommentKeys.has(
-                                `${activeVideo.id ?? activeIndex}-${c.id}`,
-                              ) ? (
-                                <IoHeart
-                                  className="text-lg text-red-500"
-                                  aria-hidden
-                                />
-                              ) : (
-                                <IoHeartOutline
-                                  className="text-lg text-zinc-400"
-                                  aria-hidden
-                                />
-                              )}
-                            </button>
-                            <span className="text-[11px] tabular-nums text-zinc-500">
-                              {c.likes}
-                            </span>
+                  {!isBackendVideoId(activeVideo?.id) ? (
+                    <p className="px-3 py-8 text-center text-sm text-zinc-500">
+                      Bình luận chỉ khả dụng cho video trên Vibely (đã đăng nhập).
+                    </p>
+                  ) : feedCommentsLoading ? (
+                    <p className="px-3 py-8 text-center text-sm text-zinc-500">
+                      Đang tải bình luận…
+                    </p>
+                  ) : feedCommentsError ? (
+                    <p className="px-3 py-8 text-center text-sm text-red-400">
+                      {feedCommentsError}
+                    </p>
+                  ) : feedComments.length === 0 ? (
+                    <p className="px-3 py-8 text-center text-sm text-zinc-500">
+                      Chưa có bình luận — hãy là người đầu tiên.
+                    </p>
+                  ) : (
+                    feedComments.map((c) => (
+                      <div
+                        key={String(c.id)}
+                        className="flex gap-2.5 border-b border-zinc-800/70 px-3 py-3 last:border-b-0"
+                      >
+                        <img
+                          src={
+                            c.authorAvatarUrl &&
+                            String(c.authorAvatarUrl).trim()
+                              ? String(c.authorAvatarUrl).trim()
+                              : FEED_DEFAULT_AUTHOR_AVATAR
+                          }
+                          alt=""
+                          className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-zinc-700"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            e.currentTarget.src = FEED_DEFAULT_AUTHOR_AVATAR;
+                          }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-zinc-100">
+                            {c.username ?? "Người dùng"}
+                          </p>
+                          <p className="mt-0.5 text-[15px] leading-snug text-zinc-200">
+                            {c.content}
+                          </p>
+                          <div className="mt-1 text-xs text-zinc-500">
+                            {formatRelativeTimeVi(c.createdAt)}
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
 
-                <div className="flex shrink-0 items-end gap-2 border-t border-zinc-800 px-3 py-3">
-                  <img
-                    className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-zinc-700"
-                    src={
-                      user?.avatarUrl && String(user.avatarUrl).trim()
-                        ? user.avatarUrl
-                        : DEFAULT_USER_AVATAR_URL
-                    }
-                    alt=""
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      e.currentTarget.src = DEFAULT_USER_AVATAR_URL;
-                    }}
-                  />
-                  <div className="relative min-w-0 flex-1">
-                    <input
-                      type="text"
-                      value={commentDraft}
-                      onChange={(e) => setCommentDraft(e.target.value)}
-                      placeholder="Thêm bình luận..."
-                      className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-[5.25rem] text-sm text-zinc-100 placeholder:text-zinc-500 outline-none ring-red-500/20 focus:border-zinc-600 focus:ring-2"
+                <div className="flex shrink-0 flex-col gap-1 border-t border-zinc-800 px-3 pt-2 pb-3">
+                  {commentPostError ? (
+                    <p className="text-xs text-red-400">{commentPostError}</p>
+                  ) : null}
+                  <div className="flex items-end gap-2">
+                    <img
+                      className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-zinc-700"
+                      src={
+                        user?.avatarUrl && String(user.avatarUrl).trim()
+                          ? user.avatarUrl
+                          : DEFAULT_USER_AVATAR_URL
+                      }
+                      alt=""
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        e.currentTarget.src = DEFAULT_USER_AVATAR_URL;
+                      }}
                     />
-                    <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
-                      <button
-                        type="button"
-                        className="rounded-full px-2 py-1 text-sm font-semibold text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-200"
-                        aria-label="Nhắc tên"
-                      >
-                        @
-                      </button>
-                      <button
-                        type="button"
-                        className="rounded-full p-1.5 text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-200"
-                        aria-label="Chèn biểu tượng cảm xúc"
-                      >
-                        <IoHappyOutline className="text-lg" aria-hidden />
-                      </button>
+                    <div className="relative min-w-0 flex-1">
+                      <input
+                        type="text"
+                        value={commentDraft}
+                        onChange={(e) => setCommentDraft(e.target.value)}
+                        placeholder={
+                          token
+                            ? "Thêm bình luận..."
+                            : "Đăng nhập để bình luận..."
+                        }
+                        disabled={
+                          !token || !isBackendVideoId(activeVideo?.id)
+                        }
+                        className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-[5.25rem] text-sm text-zinc-100 placeholder:text-zinc-500 outline-none ring-red-500/20 focus:border-zinc-600 focus:ring-2 disabled:opacity-50"
+                      />
+                      <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
+                        <button
+                          type="button"
+                          className="rounded-full px-2 py-1 text-sm font-semibold text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-200"
+                          aria-label="Nhắc tên"
+                        >
+                          @
+                        </button>
+                        <button
+                          type="button"
+                          className="rounded-full p-1.5 text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-200"
+                          aria-label="Chèn biểu tượng cảm xúc"
+                        >
+                          <IoHappyOutline className="text-lg" aria-hidden />
+                        </button>
+                      </div>
                     </div>
+                    <button
+                      type="button"
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600 text-white shadow-md transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                      aria-label="Gửi bình luận"
+                      disabled={
+                        !commentDraft.trim() ||
+                        !token ||
+                        !isBackendVideoId(activeVideo?.id)
+                      }
+                      onClick={async () => {
+                        const text = commentDraft.trim();
+                        if (
+                          !text ||
+                          !token ||
+                          !isBackendVideoId(activeVideo?.id)
+                        ) {
+                          return;
+                        }
+                        setCommentPostError("");
+                        try {
+                          const created = await apiClient.addComment(
+                            activeVideo.id,
+                            text,
+                            token,
+                          );
+                          setCommentDraft("");
+                          setFeedComments((prev) => [created, ...prev]);
+                          const prevCc = Number(activeVideo.commentCount ?? 0);
+                          patchVideoById(activeVideo.id, {
+                            commentCount: prevCc + 1,
+                          });
+                        } catch (e) {
+                          setCommentPostError(
+                            e instanceof Error
+                              ? e.message
+                              : "Không gửi được bình luận.",
+                          );
+                        }
+                      }}
+                    >
+                      <IoArrowUp className="text-xl" aria-hidden />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600 text-white shadow-md transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
-                    aria-label="Gửi bình luận"
-                    disabled={!commentDraft.trim()}
-                    onClick={() => setCommentDraft("")}
-                  >
-                    <IoArrowUp className="text-xl" aria-hidden />
-                  </button>
                 </div>
               </>
             ) : (
