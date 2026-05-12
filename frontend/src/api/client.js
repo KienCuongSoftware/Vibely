@@ -64,6 +64,19 @@ async function request(path, { method = 'GET', body, token } = {}) {
   return payload
 }
 
+/** PUT file trực tiếp lên S3 bằng URL đã ký (không qua JSON API). */
+export async function uploadToPresignedPutUrl(uploadUrl, file, contentType) {
+  const ct = contentType || file?.type || 'application/octet-stream'
+  const response = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': ct },
+    body: file,
+  })
+  if (!response.ok) {
+    throw new Error(`Tải file lên kho lưu trữ thất bại (mã ${response.status}).`)
+  }
+}
+
 function toQuery(params = {}) {
   const query = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => {
@@ -89,11 +102,28 @@ export const apiClient = {
     request('/api/users/me', { method: 'PUT', token, body: payload }),
   checkUsername: (username) => request(`/api/users/check-username${toQuery({ username })}`),
   getPublicProfile: (username) => request(`/api/users/${encodeURIComponent(username)}`),
+  getVideosByUsername: (username, { page = 0, size = 48 } = {}) => {
+    const u = String(username ?? '').trim().replace(/^@/, '')
+    return request(`/api/users/${encodeURIComponent(u)}/videos${toQuery({ page, size })}`)
+  },
   getFeed: ({ page = 0, size = 10, sort = 'latest' } = {}) =>
     request(`/api/feed${toQuery({ page, size, sort })}`),
+  getStudioAnalyticsOverview: (token, { days = 7 } = {}) =>
+    request(`/api/studio/analytics/overview${toQuery({ days })}`, { token }),
   getFollowingFeed: (token, { page = 0, size = 10 } = {}) =>
     request(`/api/feed/following${toQuery({ page, size })}`, { token }),
   createVideo: (payload, token) => request('/api/videos', { method: 'POST', body: payload, token }),
+  getVideo: (videoId) => request(`/api/videos/${videoId}`),
+  getVideosBySound: (audioUrl, { page = 0, size = 24 } = {}) =>
+    request(`/api/videos/sound${toQuery({ audioUrl, page, size })}`),
+  updateVideo: (videoId, payload, token) =>
+    request(`/api/videos/${videoId}`, { method: 'PUT', body: payload, token }),
+  deleteVideo: (videoId, token) =>
+    request(`/api/videos/${videoId}`, { method: 'DELETE', token }),
+  presignVideoUpload: (token, body) =>
+    request('/api/videos/upload/presign', { method: 'POST', body, token }),
+  presignThumbnailUpload: (token, body) =>
+    request('/api/videos/upload/presign-thumbnail', { method: 'POST', body, token }),
   likeVideo: (videoId, token) => request(`/api/videos/${videoId}/likes`, { method: 'POST', token }),
   unlikeVideo: (videoId, token) => request(`/api/videos/${videoId}/likes`, { method: 'DELETE', token }),
   bookmarkVideo: (videoId, token) =>
@@ -105,6 +135,8 @@ export const apiClient = {
     request(`/api/users/me/liked-videos${toQuery({ page, size })}`, { token }),
   getMyBookmarkedVideos: (token, { page = 0, size = 24 } = {}) =>
     request(`/api/users/me/bookmarked-videos${toQuery({ page, size })}`, { token }),
+  getMyUploadedVideos: (token, { page = 0, size = 24 } = {}) =>
+    request(`/api/users/me/videos${toQuery({ page, size })}`, { token }),
   getComments: (videoId) => request(`/api/videos/${videoId}/comments`),
   addComment: (videoId, content, token) =>
     request(`/api/videos/${videoId}/comments`, {
@@ -120,4 +152,21 @@ export const apiClient = {
     }),
   follow: (userId, token) => request(`/api/follows/${userId}`, { method: 'POST', token }),
   unfollow: (userId, token) => request(`/api/follows/${userId}`, { method: 'DELETE', token }),
+  getMentionableFriends: (token) => request('/api/follows/friends', { token }),
+  recordVideoView: (videoId) => request(`/api/videos/${videoId}/views`, { method: 'POST' }),
+  recordVideoShare: (videoId) =>
+    request(`/api/videos/${videoId}/shares`, { method: 'POST' }),
+}
+
+/** Tải blob ảnh bìa lên S3 qua presign, trả về URL công khai. */
+export async function uploadThumbnailToStorage(token, blob, fileName = 'cover.jpg') {
+  const ct =
+    blob.type && String(blob.type).startsWith('image/') ? blob.type : 'image/jpeg'
+  const name = fileName && /\.(jpe?g|png|webp)$/i.test(fileName) ? fileName : 'cover.jpg'
+  const presign = await apiClient.presignThumbnailUpload(token, {
+    contentType: ct === 'image/jpg' ? 'image/jpeg' : ct,
+    fileName: name,
+  })
+  await uploadToPresignedPutUrl(presign.uploadUrl, blob, presign.contentType)
+  return presign.playbackUrl
 }
