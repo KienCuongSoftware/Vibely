@@ -39,16 +39,25 @@ export function TooltipIconButton({
 }
 
 /** Bọc Link/button tuỳ ý để hiện tooltip khi hover */
-export function TooltipHoverWrap({ tip, className = "", children }) {
+export function TooltipHoverWrap({
+  tip,
+  className = "",
+  tipHidden = false,
+  /** true: chỉ hover — không dùng focus-within (tránh click avatar vẫn dính tooltip). */
+  hoverOnly = false,
+  children,
+}) {
+  const showTipClasses = hoverOnly
+    ? "group-hover/hovertip:opacity-100"
+    : "group-hover/hovertip:opacity-100 group-focus-within/hovertip:opacity-100";
   return (
     <div className={`group/hovertip relative inline-flex ${className}`}>
       {children}
-      <span
-        role="tooltip"
-        className={`${tipClasses} group-hover/hovertip:opacity-100 group-focus-within/hovertip:opacity-100`}
-      >
-        {tip}
-      </span>
+      {!tipHidden ? (
+        <span role="tooltip" className={`${tipClasses} ${showTipClasses}`}>
+          {tip}
+        </span>
+      ) : null}
     </div>
   );
 }
