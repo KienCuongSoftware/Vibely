@@ -4,9 +4,12 @@ import { LoginPage } from './pages/LoginPage.jsx'
 import { SignupPage } from './pages/SignupPage.jsx'
 import { FeedPage } from './pages/FeedPage.jsx'
 import { UploadPage } from './pages/UploadPage.jsx'
+import { StudioHomePage } from './pages/StudioHomePage.jsx'
+import { StudioPostsPage } from './pages/StudioPostsPage.jsx'
 import { ProfilePage } from './pages/ProfilePage.jsx'
 import { TermsOfServicePage } from './pages/TermsOfServicePage.jsx'
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage.jsx'
+import { SoundPage } from './pages/SoundPage.jsx'
 import { useAuth } from './state/useAuth'
 
 function App() {
@@ -25,7 +28,11 @@ function App() {
           <Route path="/register" element={<Navigate to="/signup" replace />} />
           <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
           <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
-          <Route path="/upload" element={<Navigate to="/login" replace />} />
+          <Route path="/sound" element={<SoundPage />} />
+          <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
+          <Route path="/vibelystudio/home" element={<Navigate to="/login" replace />} />
+          <Route path="/vibelystudio/posts" element={<Navigate to="/login" replace />} />
+          <Route path="/vibelystudio/upload" element={<Navigate to="/login" replace />} />
           <Route path="/profile" element={<Navigate to="/login" replace />} />
           <Route path="/:username" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/foryou" replace />} />
@@ -44,11 +51,16 @@ function App() {
         <Route path="/signin" element={<Navigate to="/foryou" replace />} />
         <Route path="/signup" element={<Navigate to="/foryou" replace />} />
         <Route path="/register" element={<Navigate to="/foryou" replace />} />
-        <Route path="/upload" element={<UploadPage />} />
+        <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
+        <Route path="/vibelystudio" element={<Navigate to="/vibelystudio/home" replace />} />
+        <Route path="/vibelystudio/home" element={<StudioHomePage />} />
+        <Route path="/vibelystudio/posts" element={<StudioPostsPage />} />
+        <Route path="/vibelystudio/upload" element={<UploadPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/:username" element={<ProfilePage />} />
         <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
         <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/sound" element={<SoundPage />} />
         <Route path="*" element={<Navigate to="/foryou" replace />} />
       </Routes>
     </div>
