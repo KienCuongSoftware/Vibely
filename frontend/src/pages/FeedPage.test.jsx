@@ -72,4 +72,45 @@ describe('FeedPage', () => {
       expect(apiClient.getFollowingFeed).toHaveBeenCalled()
     })
   })
+
+  it('keeps the left sidebar visible when the comments panel is open', async () => {
+    apiClient.getFeed.mockResolvedValue({
+      items: [],
+      page: 0,
+      size: 8,
+      total: 0,
+      hasNext: false,
+      sort: 'latest',
+    })
+
+    render(
+      <MemoryRouter initialEntries={['/foryou']}>
+        <AuthContext.Provider
+          value={{
+            token: null,
+            refreshToken: null,
+            user: null,
+            login: vi.fn(),
+            register: vi.fn(),
+            refreshSession: vi.fn(),
+            refreshProfile: vi.fn(),
+            logout: vi.fn(),
+          }}
+        >
+          <FeedPage />
+        </AuthContext.Provider>
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('navigation')).toBeInTheDocument()
+    })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Bình luận' }))
+
+    expect(screen.getByRole('navigation')).toBeInTheDocument()
+    expect(
+      screen.getByRole('complementary', { name: /bình luận và đề xuất/i }),
+    ).toBeInTheDocument()
+  })
 })
