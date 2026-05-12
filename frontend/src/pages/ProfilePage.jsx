@@ -10,12 +10,14 @@ import {
   IoAlbumsOutline,
   IoArrowBack,
   IoArrowRedo,
+  IoBookmark,
   IoBookmarkOutline,
   IoCheckmark,
   IoCameraOutline,
   IoCompass,
   IoClose,
   IoEllipsisHorizontal,
+  IoHeart,
   IoHeartOutline,
   IoHome,
   IoLogOutOutline,
@@ -28,8 +30,26 @@ import {
 } from 'react-icons/io5'
 import { MdOutlineFileUpload } from 'react-icons/md'
 import { LuGrid2X2 } from 'react-icons/lu'
+import { FaComment } from 'react-icons/fa6'
 
 const DEFAULT_USER_AVATAR_URL = '/images/users/default-avatar.jpeg'
+
+function formatCompactCount(value) {
+  const count = Number(value ?? 0)
+  if (count >= 1_000_000) {
+    const formatted =
+      count >= 10_000_000
+        ? (count / 1_000_000).toFixed(0)
+        : (count / 1_000_000).toFixed(1)
+    return `${formatted.replace(/\.0$/, '')}M`
+  }
+  if (count >= 1_000) {
+    const formatted =
+      count >= 10_000 ? (count / 1_000).toFixed(0) : (count / 1_000).toFixed(1)
+    return `${formatted.replace(/\.0$/, '')}K`
+  }
+  return String(count)
+}
 
 /** Legacy auto-filled OAuth bios — không hiển thị như tiểu sử thật. */
 function resolveProfileBio(rawBio) {
@@ -88,6 +108,8 @@ export function ProfilePage() {
   const [collectionDraftName, setCollectionDraftName] = useState('')
   const [collectionDraftPublic, setCollectionDraftPublic] = useState(false)
   const [collectionPickIds, setCollectionPickIds] = useState(() => new Set())
+  const [profileVideos, setProfileVideos] = useState([])
+  const [profileVideosLoading, setProfileVideosLoading] = useState(false)
 
   const COLLECTION_NAME_MAX = 30
 
@@ -192,6 +214,34 @@ export function ProfilePage() {
       setSearchParams({ tab: next }, { replace: true })
     }
   }
+
+  useEffect(() => {
+    if (profileMainTab !== 'videos' || !profile?.username) {
+      return
+    }
+    let cancelled = false
+    setProfileVideosLoading(true)
+    ;(async () => {
+      try {
+        let data
+        if (isOwnProfile && token) {
+          data = await apiClient.getMyUploadedVideos(token, { page: 0, size: 48 })
+        } else {
+          data = await apiClient.getVideosByUsername(profile.username, { page: 0, size: 48 })
+        }
+        if (!cancelled) {
+          setProfileVideos(Array.isArray(data?.items) ? data.items : [])
+        }
+      } catch {
+        if (!cancelled) setProfileVideos([])
+      } finally {
+        if (!cancelled) setProfileVideosLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [profileMainTab, profile?.username, isOwnProfile, token])
 
   useEffect(() => {
     if (!token || !isOwnProfile) {
@@ -313,6 +363,10 @@ export function ProfilePage() {
   const activeMenu = 'profile'
   const handleSelectMenu = (id) => {
     if (id === 'profile' || id === 'more') return
+    if (id === 'upload') {
+      navigate('/vibelystudio/upload')
+      return
+    }
     // Profile page tập trung nội dung trang profile; các mục khác quay về feed.
     navigate('/foryou', { replace: true })
   }
@@ -435,7 +489,7 @@ export function ProfilePage() {
         {token ? (
           <AccountActionsPill className="absolute right-8 top-5 z-10" tone="profile">
             <div className="relative" ref={accountMenuRef}>
-              <TooltipHoverWrap tip="Tài khoản">
+              <TooltipHoverWrap tip="Tài khoản" tipHidden={showAccountMenu} hoverOnly>
                 <button
                   type="button"
                   className="flex cursor-pointer rounded-full p-0.5 ring-1 ring-zinc-700 transition hover:ring-zinc-500"
@@ -689,12 +743,81 @@ export function ProfilePage() {
             </div>
 
             {profileMainTab === 'videos' ? (
-              <div className="flex min-h-[320px] flex-col items-center justify-center py-14 text-center">
-                <div className="mb-4 rounded-full bg-zinc-800 p-6 text-zinc-200">
-                  <LuGrid2X2 className="text-3xl" aria-hidden />
-                </div>
-                <p className="text-3xl font-bold">Tải video đầu tiên của bạn lên</p>
-                <p className="mt-1 text-base text-zinc-400">Video của bạn sẽ xuất hiện tại đây</p>
+              <div className="min-h-[320px] px-2 py-4 sm:px-4 sm:py-5">
+                {profileVideosLoading && profileVideos.length === 0 ? (
+                  <p className="py-10 text-center text-sm text-zinc-500">Đang tải video…</p>
+                ) : profileVideos.length > 0 ? (
+                  <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                    {profileVideos.map((v) => (
+                      <li key={v.id}>
+                        <Link to="/foryou" state={{ focusVideoId: v.id }} className="block">
+                          <div className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600">
+                            {v.thumbnailUrl?.trim() ? (
+                              <img
+                                src={v.thumbnailUrl}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            ) : v.videoUrl ? (
+                              <video
+                                src={v.videoUrl}
+                                muted
+                                playsInline
+                                className="h-full w-full object-cover"
+                                preload="metadata"
+                              />
+                            ) : null}
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent px-1.5 pb-1 pt-8">
+                              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-semibold text-white drop-shadow-md">
+                                <span className="inline-flex items-center gap-0.5">
+                                  <IoHeart className="text-[11px]" aria-hidden />
+                                  {formatCompactCount(v.likeCount)}
+                                </span>
+                                <span className="inline-flex items-center gap-0.5">
+                                  <FaComment className="text-[10px]" aria-hidden />
+                                  {formatCompactCount(v.commentCount)}
+                                </span>
+                                <span className="inline-flex items-center gap-0.5">
+                                  <IoBookmark className="text-[11px]" aria-hidden />
+                                  {formatCompactCount(v.bookmarkCount)}
+                                </span>
+                                <span className="inline-flex items-center gap-0.5">
+                                  <IoArrowRedo className="text-[11px]" aria-hidden />
+                                  {formatCompactCount(v.shareCount)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <p className="mt-1.5 line-clamp-2 text-xs font-medium leading-snug text-zinc-200">
+                            {(v.description && String(v.description).trim()) || v.title || 'Video'}
+                          </p>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-14 text-center">
+                    <div className="mb-4 rounded-full bg-zinc-800 p-6 text-zinc-200">
+                      <LuGrid2X2 className="text-3xl" aria-hidden />
+                    </div>
+                    <p className="text-3xl font-bold">
+                      {isOwnProfile ? 'Tải video đầu tiên của bạn lên' : 'Chưa có video công khai'}
+                    </p>
+                    <p className="mt-1 text-base text-zinc-400">
+                      {isOwnProfile
+                        ? 'Video của bạn sẽ xuất hiện tại đây'
+                        : 'Người dùng này chưa có video hiển thị trên hồ sơ.'}
+                    </p>
+                    {isOwnProfile ? (
+                      <Link
+                        to="/vibelystudio/upload"
+                        className="mt-6 rounded-md bg-red-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-red-500"
+                      >
+                        Tải lên
+                      </Link>
+                    ) : null}
+                  </div>
+                )}
               </div>
             ) : null}
 
@@ -734,6 +857,26 @@ export function ProfilePage() {
                                   alt=""
                                   className="h-full w-full object-cover"
                                 />
+                                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent px-1.5 pb-1 pt-8">
+                                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-semibold text-white drop-shadow-md">
+                                    <span className="inline-flex items-center gap-0.5">
+                                      <IoHeart className="text-[11px]" aria-hidden />
+                                      {formatCompactCount(v.likeCount)}
+                                    </span>
+                                    <span className="inline-flex items-center gap-0.5">
+                                      <FaComment className="text-[10px]" aria-hidden />
+                                      {formatCompactCount(v.commentCount)}
+                                    </span>
+                                    <span className="inline-flex items-center gap-0.5">
+                                      <IoBookmark className="text-[11px]" aria-hidden />
+                                      {formatCompactCount(v.bookmarkCount)}
+                                    </span>
+                                    <span className="inline-flex items-center gap-0.5">
+                                      <IoArrowRedo className="text-[11px]" aria-hidden />
+                                      {formatCompactCount(v.shareCount)}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
                               <p className="mt-1.5 line-clamp-2 text-xs font-medium leading-snug text-zinc-200">
                                 {v.title ?? 'Video'}
@@ -803,6 +946,26 @@ export function ProfilePage() {
                                   alt=""
                                   className="h-full w-full object-cover"
                                 />
+                                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent px-1.5 pb-1 pt-8">
+                                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-semibold text-white drop-shadow-md">
+                                    <span className="inline-flex items-center gap-0.5">
+                                      <IoHeart className="text-[11px]" aria-hidden />
+                                      {formatCompactCount(v.likeCount)}
+                                    </span>
+                                    <span className="inline-flex items-center gap-0.5">
+                                      <FaComment className="text-[10px]" aria-hidden />
+                                      {formatCompactCount(v.commentCount)}
+                                    </span>
+                                    <span className="inline-flex items-center gap-0.5">
+                                      <IoBookmark className="text-[11px]" aria-hidden />
+                                      {formatCompactCount(v.bookmarkCount)}
+                                    </span>
+                                    <span className="inline-flex items-center gap-0.5">
+                                      <IoArrowRedo className="text-[11px]" aria-hidden />
+                                      {formatCompactCount(v.shareCount)}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
                               <p className="mt-1.5 line-clamp-2 text-xs font-medium leading-snug text-zinc-200">
                                 {v.title ?? 'Video'}
