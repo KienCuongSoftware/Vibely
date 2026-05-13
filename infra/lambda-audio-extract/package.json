@@ -1,0 +1,14 @@
+{
+  "name": "vibely-lambda-audio-extract",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.mjs",
+  "scripts": {
+    "zip": "powershell -Command \"if (Test-Path dist.zip) { Remove-Item dist.zip }; Compress-Archive -Path index.mjs,README.md,event.sample.json,iam-policy.sample.json -DestinationPath dist.zip\""
+  },
+  "dependencies": {
+    "@aws-sdk/client-mediaconvert": "^3.917.0"
+  }
+}
+
