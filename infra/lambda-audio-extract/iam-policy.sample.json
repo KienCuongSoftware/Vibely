@@ -1,0 +1,41 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadUploadedVideos",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:GetObjectTagging"
+      ],
+      "Resource": "arn:aws:s3:::your-vibely-bucket/uploads/*"
+    },
+    {
+      "Sid": "WriteExtractedAudio",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:PutObjectAcl",
+        "s3:PutObjectTagging"
+      ],
+      "Resource": "arn:aws:s3:::your-vibely-bucket/audios/*"
+    },
+    {
+      "Sid": "MediaConvertControl",
+      "Effect": "Allow",
+      "Action": [
+        "mediaconvert:DescribeEndpoints",
+        "mediaconvert:CreateJob",
+        "mediaconvert:GetJob"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "PassMediaConvertRole",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "arn:aws:iam::123456789012:role/MediaConvert_Default_Role"
+    }
+  ]
+}
+
