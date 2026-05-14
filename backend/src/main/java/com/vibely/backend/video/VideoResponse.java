@@ -18,6 +18,11 @@ public record VideoResponse(
     long commentCount,
     long bookmarkCount,
     long shareCount,
-    LocalDateTime createdAt
+    long viewCount,
+    LocalDateTime createdAt,
+    VideoStatus status,
+    String masterPlaylistUrl,
+    Integer durationSeconds,
+    String processingError
 ) {
 }

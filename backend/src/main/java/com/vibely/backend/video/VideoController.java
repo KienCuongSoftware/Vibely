@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,8 +47,17 @@ public class VideoController {
     }
 
     @GetMapping("/{videoId}")
-    public ApiResponse<VideoResponse> getVideo(@PathVariable Long videoId) {
-        return ApiResponse.success(videoService.getVideoByIdPublic(videoId));
+    public ApiResponse<VideoResponse> getVideo(
+        @PathVariable Long videoId,
+        Authentication authentication
+    ) {
+        String viewerEmail = null;
+        if (authentication != null
+            && authentication.isAuthenticated()
+            && !(authentication instanceof AnonymousAuthenticationToken)) {
+            viewerEmail = authentication.getName();
+        }
+        return ApiResponse.success(videoService.getVideoByIdForViewer(videoId, viewerEmail));
     }
 
     @GetMapping("/sound")
@@ -112,8 +122,11 @@ public class VideoController {
     }
 
     @PostMapping("/{videoId}/views")
-    public ApiResponse<Void> recordView(@PathVariable Long videoId) {
-        videoService.recordView(videoId);
+    public ApiResponse<Void> recordView(
+        @PathVariable Long videoId,
+        @RequestBody(required = false) VideoViewRequest body
+    ) {
+        videoService.recordView(videoId, body);
         return ApiResponse.success(null);
     }
 

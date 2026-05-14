@@ -51,4 +51,22 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     @Modifying
     @Query("UPDATE Video v SET v.shareCount = v.shareCount + 1 WHERE v.id = :id AND v.status = :status")
     int incrementShareCount(@Param("id") Long id, @Param("status") VideoStatus status);
+
+    @Query("""
+        select v from Video v
+        where v.status = :status
+        and (
+            :cTime is null
+            or v.createdAt < :cTime
+            or (v.createdAt = :cTime and v.id < :cId)
+        )
+        order by v.createdAt desc, v.id desc
+        """)
+    Page<Video> findReadyFeedKeyset(
+        @Param("status") VideoStatus status,
+        @Param("cTime") java.time.LocalDateTime cTime,
+        @Param("cId") Long cId,
+        Pageable pageable
+    );
 }
+

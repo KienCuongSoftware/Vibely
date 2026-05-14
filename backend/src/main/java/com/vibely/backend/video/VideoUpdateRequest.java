@@ -12,6 +12,9 @@ public class VideoUpdateRequest {
     @Size(max = 1000, message = "Mô tả tối đa 1000 ký tự")
     private String description;
 
+    @Size(max = 2048, message = "URL ảnh bìa tối đa 2048 ký tự")
+    private String thumbnailUrl;
+
     public String getTitle() {
         return title;
     }
@@ -26,5 +29,13 @@ public class VideoUpdateRequest {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 }

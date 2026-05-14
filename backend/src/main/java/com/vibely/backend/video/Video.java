@@ -45,6 +45,15 @@ public class Video {
     @Column(name = "audio_title", length = 180)
     private String audioTitle;
 
+    @Column(name = "master_playlist_url", columnDefinition = "TEXT")
+    private String masterPlaylistUrl;
+
+    @Column(name = "duration_seconds")
+    private Integer durationSeconds;
+
+    @Column(name = "processing_error", columnDefinition = "TEXT")
+    private String processingError;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private VideoStatus status;
@@ -67,7 +76,7 @@ public class Video {
             createdAt = LocalDateTime.now();
         }
         if (status == null) {
-            status = VideoStatus.ACTIVE;
+            status = VideoStatus.RAW;
         }
     }
 
@@ -129,6 +138,30 @@ public class Video {
 
     public void setAudioTitle(String audioTitle) {
         this.audioTitle = audioTitle;
+    }
+
+    public String getMasterPlaylistUrl() {
+        return masterPlaylistUrl;
+    }
+
+    public void setMasterPlaylistUrl(String masterPlaylistUrl) {
+        this.masterPlaylistUrl = masterPlaylistUrl;
+    }
+
+    public Integer getDurationSeconds() {
+        return durationSeconds;
+    }
+
+    public void setDurationSeconds(Integer durationSeconds) {
+        this.durationSeconds = durationSeconds;
+    }
+
+    public String getProcessingError() {
+        return processingError;
+    }
+
+    public void setProcessingError(String processingError) {
+        this.processingError = processingError;
     }
 
     public LocalDateTime getCreatedAt() {

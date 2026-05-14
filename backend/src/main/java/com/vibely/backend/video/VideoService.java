@@ -2,6 +2,7 @@ package com.vibely.backend.video;
 
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.feed.FeedCursorCodec;
 import com.vibely.backend.feed.FeedPageResponse;
 import com.vibely.backend.feed.FeedSort;
 import com.vibely.backend.interaction.CommentRepository;
@@ -10,15 +11,19 @@ import com.vibely.backend.interaction.FollowRepository;
 import com.vibely.backend.interaction.LikeRepository;
 import com.vibely.backend.interaction.VideoViewEntity;
 import com.vibely.backend.interaction.VideoViewRepository;
+import com.vibely.backend.processing.VideoProcessingEnqueueService;
 import com.vibely.backend.auth.UserAvatarResolver;
 import com.vibely.backend.interaction.VideoBookmarkRepository;
+import com.vibely.backend.storage.S3PresignedUploadService;
 import com.vibely.backend.user.User;
 import com.vibely.backend.user.UserRepository;
 import com.vibely.backend.user.UsernameService;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +34,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class VideoService {
     private static final Pattern VIDEO_EXT_PATTERN = Pattern.compile("\\.(mp4|webm|mov)(\\?.*)?$", Pattern.CASE_INSENSITIVE);
 
+    /** Tối thiểu ~2s phát thật (sau upload/S3 + pipeline) — không tính chỉ impression trên feed. */
+    private static final long VIEW_MIN_PLAYED_MS = 2_000L;
+    private static final long VIEW_MIN_CLIENT_MS = 500L;
+    private static final long VIEW_SANITY_MAX_MS = 3_600_000L;
+    /** Clip ngắn hơn 2s: cần ≥ 25% duration (ms). */
+    private static final int SHORT_CLIP_QUALIFY_PERCENT = 25;
+
     private final VideoRepository videoRepository;
     private final UserRepository userRepository;
     private final LikeRepository likeRepository;
@@ -38,6 +50,8 @@ public class VideoService {
     private final VideoViewRepository videoViewRepository;
     private final UserAvatarResolver userAvatarResolver;
     private final UsernameService usernameService;
+    private final VideoProcessingEnqueueService videoProcessingEnqueueService;
+    private final ObjectProvider<S3PresignedUploadService> presignedUploadService;
 
     public VideoService(
         VideoRepository videoRepository,
@@ -48,7 +62,9 @@ public class VideoService {
         FollowRepository followRepository,
         VideoViewRepository videoViewRepository,
         UserAvatarResolver userAvatarResolver,
-        UsernameService usernameService
+        UsernameService usernameService,
+        VideoProcessingEnqueueService videoProcessingEnqueueService,
+        ObjectProvider<S3PresignedUploadService> presignedUploadService
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
@@ -59,6 +75,8 @@ public class VideoService {
         this.videoViewRepository = videoViewRepository;
         this.userAvatarResolver = userAvatarResolver;
         this.usernameService = usernameService;
+        this.videoProcessingEnqueueService = videoProcessingEnqueueService;
+        this.presignedUploadService = presignedUploadService;
     }
 
     public VideoResponse createVideo(String email, VideoCreateRequest request) {
@@ -80,18 +98,59 @@ public class VideoService {
             audioTitle = "âm thanh gốc - " + resolveAuthorDisplayName(author);
         }
         video.setAudioTitle(audioTitle);
-        video.setStatus(VideoStatus.ACTIVE);
+        video.setStatus(VideoStatus.RAW);
         Video saved = videoRepository.save(video);
+        videoProcessingEnqueueService.enqueueAfterVideoPersisted(saved);
         return toResponse(saved);
     }
 
     @Transactional(readOnly = true)
     public FeedPageResponse getFeed(int page, int size, FeedSort sort) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Video> resultPage = sort == FeedSort.TRENDING_LITE
-            ? videoRepository.findTrendingByStatus(VideoStatus.ACTIVE, pageable)
-            : videoRepository.findByStatusOrderByCreatedAtDesc(VideoStatus.ACTIVE, pageable);
-        return toFeedPageResponse(resultPage, sort.name().toLowerCase());
+        if (sort == FeedSort.TRENDING_LITE) {
+            Page<Video> resultPage = videoRepository.findTrendingByStatus(VideoStatus.READY, pageable);
+            return toFeedPageResponse(resultPage, sort.name().toLowerCase(), null);
+        }
+        Page<Video> resultPage = videoRepository.findByStatusOrderByCreatedAtDesc(VideoStatus.READY, pageable);
+        String nextCursor = null;
+        if (resultPage.hasNext() && !resultPage.getContent().isEmpty()) {
+            Video last = resultPage.getContent().get(resultPage.getContent().size() - 1);
+            nextCursor = FeedCursorCodec.encode(last.getCreatedAt(), last.getId());
+        }
+        return toFeedPageResponse(resultPage, sort.name().toLowerCase(), nextCursor);
+    }
+
+    /**
+     * Keyset pagination for the public latest feed (stable order: {@code createdAt desc, id desc}).
+     */
+    @Transactional(readOnly = true)
+    public FeedPageResponse getLatestFeedKeyset(String cursor, int size) {
+        int req = Math.max(1, Math.min(size, 50));
+        LocalDateTime cTime = null;
+        Long cId = null;
+        if (cursor != null && !cursor.isBlank()) {
+            FeedCursorCodec.Decoded d = FeedCursorCodec.decode(cursor);
+            cTime = d.createdAt();
+            cId = d.id();
+        }
+        Pageable p = PageRequest.of(0, req + 1);
+        Page<Video> slice = videoRepository.findReadyFeedKeyset(VideoStatus.READY, cTime, cId, p);
+        boolean hasNext = slice.getContent().size() > req;
+        List<Video> rows = slice.getContent().stream().limit(req).toList();
+        String next = null;
+        if (hasNext && !rows.isEmpty()) {
+            Video last = rows.get(rows.size() - 1);
+            next = FeedCursorCodec.encode(last.getCreatedAt(), last.getId());
+        }
+        return new FeedPageResponse(
+            rows.stream().map(this::toResponse).toList(),
+            0,
+            req,
+            hasNext ? -1L : rows.size(),
+            hasNext,
+            "latest",
+            next
+        );
     }
 
     @Transactional(readOnly = true)
@@ -102,12 +161,12 @@ public class VideoService {
             .map(FollowEntity::getFollowing)
             .toList();
         if (followedUsers.isEmpty()) {
-            return new FeedPageResponse(Collections.emptyList(), page, size, 0, false, "following");
+            return new FeedPageResponse(Collections.emptyList(), page, size, 0, false, "following", null);
         }
         Pageable pageable = PageRequest.of(page, size);
         Page<Video> resultPage = videoRepository.findByAuthorInAndStatusOrderByCreatedAtDesc(
             followedUsers,
-            VideoStatus.ACTIVE,
+            VideoStatus.READY,
             pageable
         );
         return toFeedPageResponse(resultPage, "following");
@@ -122,7 +181,7 @@ public class VideoService {
         Pageable pageable = PageRequest.of(page, Math.min(size, 50));
         Page<Video> resultPage = videoRepository.findByAudioUrlAndStatusOrderByCreatedAtDesc(
             normalizedAudioUrl,
-            VideoStatus.ACTIVE,
+            VideoStatus.READY,
             pageable
         );
         return toFeedPageResponse(resultPage, "sound");
@@ -133,7 +192,17 @@ public class VideoService {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
         Pageable pageable = PageRequest.of(page, Math.min(size, 50));
-        Page<Video> resultPage = likeRepository.findLikedVideosForUser(user, VideoStatus.ACTIVE, pageable);
+        VideoStatus ready = VideoStatus.READY;
+        VideoStatus removed = VideoStatus.REMOVED;
+        VideoStatus failed = VideoStatus.FAILED;
+        Page<Video> resultPage = likeRepository.findLikedVideosForUser(
+            user,
+            ready,
+            user.getId(),
+            removed,
+            failed,
+            pageable
+        );
         return toFeedPageResponse(resultPage, "liked");
     }
 
@@ -142,9 +211,15 @@ public class VideoService {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
         Pageable pageable = PageRequest.of(page, Math.min(size, 50));
+        VideoStatus ready = VideoStatus.READY;
+        VideoStatus removed = VideoStatus.REMOVED;
+        VideoStatus failed = VideoStatus.FAILED;
         Page<Video> resultPage = videoBookmarkRepository.findBookmarkedVideosForUser(
             user,
-            VideoStatus.ACTIVE,
+            ready,
+            user.getId(),
+            removed,
+            failed,
             pageable
         );
         return toFeedPageResponse(resultPage, "bookmarks");
@@ -171,16 +246,30 @@ public class VideoService {
         Pageable pageable = PageRequest.of(page, Math.min(size, 50));
         Page<Video> resultPage = videoRepository.findByAuthorIdAndStatusEquals(
             author.getId(),
-            VideoStatus.ACTIVE,
+            VideoStatus.READY,
             pageable
         );
         return toFeedPageResponse(resultPage, "profile-uploads");
     }
 
+    /**
+     * Public: READY for everyone. Other statuses (e.g. RAW) only for the author when viewerEmail is set.
+     */
     @Transactional(readOnly = true)
-    public VideoResponse getVideoByIdPublic(Long id) {
+    public VideoResponse getVideoByIdForViewer(Long id, String viewerEmail) {
         Video video = getVideoOrThrow(id);
-        if (video.getStatus() != VideoStatus.ACTIVE) {
+        if (video.getStatus() == VideoStatus.REMOVED) {
+            throw new NotFoundException("Không tìm thấy video");
+        }
+        if (video.getStatus() == VideoStatus.READY) {
+            return toResponse(video);
+        }
+        if (viewerEmail == null || viewerEmail.isBlank()) {
+            throw new NotFoundException("Không tìm thấy video");
+        }
+        User viewer = userRepository.findByEmail(viewerEmail.trim())
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
+        if (!Objects.equals(video.getAuthor().getId(), viewer.getId())) {
             throw new NotFoundException("Không tìm thấy video");
         }
         return toResponse(video);
@@ -200,6 +289,9 @@ public class VideoService {
         video.setTitle(request.getTitle().trim());
         String desc = request.getDescription();
         video.setDescription(desc == null || desc.isBlank() ? null : desc.trim());
+        if (request.getThumbnailUrl() != null) {
+            video.setThumbnailUrl(normalizeText(request.getThumbnailUrl()));
+        }
         Video saved = videoRepository.save(video);
         return toResponse(saved);
     }
@@ -224,19 +316,43 @@ public class VideoService {
             .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
     }
 
-    public void recordView(Long id) {
-        Video video = getVideoOrThrow(id);
-        if (video.getStatus() != VideoStatus.ACTIVE) {
+    private static boolean qualifiesPlaybackForView(Long watchedMs, Long durationMs) {
+        if (watchedMs == null || watchedMs < VIEW_MIN_CLIENT_MS) {
+            return false;
+        }
+        if (watchedMs > VIEW_SANITY_MAX_MS) {
+            return false;
+        }
+        long dur = durationMs != null && durationMs > 0 ? durationMs : 0L;
+        if (dur > 0 && dur < VIEW_MIN_PLAYED_MS) {
+            return watchedMs * 100L >= dur * SHORT_CLIP_QUALIFY_PERCENT;
+        }
+        return watchedMs >= VIEW_MIN_PLAYED_MS;
+    }
+
+    /**
+     * Ghi một lượt xem đủ thời lượng phát (client gửi watchedMs từ trình phát).
+     * Mọi trạng thái trừ REMOVED. Body thiếu hoặc không đạt ngưỡng: bỏ qua (200, không tăng đếm).
+     */
+    @Transactional
+    public void recordView(Long id, VideoViewRequest body) {
+        if (body == null || !qualifiesPlaybackForView(body.watchedMs(), body.durationMs())) {
+            return;
+        }
+        Video target = getVideoOrThrow(id);
+        if (target.getStatus() == VideoStatus.REMOVED) {
             return;
         }
         VideoViewEntity row = new VideoViewEntity();
-        row.setVideo(video);
+        row.setVideo(target);
+        row.setWatchedMs(body.watchedMs());
+        row.setDurationMs(body.durationMs());
         videoViewRepository.save(row);
     }
 
     @Transactional
     public void recordShare(Long videoId) {
-        videoRepository.incrementShareCount(videoId, VideoStatus.ACTIVE);
+        videoRepository.incrementShareCount(videoId, VideoStatus.READY);
     }
 
     private static String resolveAuthorDisplayName(User author) {
@@ -263,13 +379,28 @@ public class VideoService {
         return mp3.replace("/uploads/", "/audios/");
     }
 
+    private String presignPlaybackUrlIfConfigured(String url) {
+        if (url == null || url.isBlank()) {
+            return url;
+        }
+        S3PresignedUploadService svc = presignedUploadService.getIfAvailable();
+        if (svc == null) {
+            return url;
+        }
+        return svc.presignGetForPlayback(url).orElse(url);
+    }
+
     private VideoResponse toResponse(Video video) {
         Long videoId = video.getId();
         long likeCount = likeRepository.countByVideoId(videoId);
         long commentCount = commentRepository.countByVideoId(videoId);
         long bookmarkCount = videoBookmarkRepository.countByVideo_Id(videoId);
+        long viewCount = videoViewRepository.countByVideo_Id(videoId);
         User author = video.getAuthor();
         String authorDisplayName = resolveAuthorDisplayName(author);
+        String videoUrl = presignPlaybackUrlIfConfigured(video.getVideoUrl());
+        String thumbUrl = presignPlaybackUrlIfConfigured(video.getThumbnailUrl());
+        String audioUrl = presignPlaybackUrlIfConfigured(video.getAudioUrl());
         return new VideoResponse(
             video.getId(),
             author.getId(),
@@ -278,26 +409,36 @@ public class VideoService {
             userAvatarResolver.resolve(author),
             video.getTitle(),
             video.getDescription(),
-            video.getVideoUrl(),
-            video.getThumbnailUrl(),
-            video.getAudioUrl(),
+            videoUrl,
+            thumbUrl,
+            audioUrl,
             video.getAudioTitle(),
             likeCount,
             commentCount,
             bookmarkCount,
             video.getShareCount(),
-            video.getCreatedAt()
+            viewCount,
+            video.getCreatedAt(),
+            video.getStatus(),
+            video.getMasterPlaylistUrl(),
+            video.getDurationSeconds(),
+            video.getProcessingError()
         );
     }
 
     private FeedPageResponse toFeedPageResponse(Page<Video> page, String sort) {
+        return toFeedPageResponse(page, sort, null);
+    }
+
+    private FeedPageResponse toFeedPageResponse(Page<Video> page, String sort, String nextCursor) {
         return new FeedPageResponse(
             page.getContent().stream().map(this::toResponse).toList(),
             page.getNumber(),
             page.getSize(),
             page.getTotalElements(),
             page.hasNext(),
-            sort
+            sort,
+            nextCursor
         );
     }
 }
