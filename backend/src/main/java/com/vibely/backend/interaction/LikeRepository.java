@@ -19,31 +19,66 @@ public interface LikeRepository extends JpaRepository<LikeEntity, Long> {
     long countByVideoId(Long videoId);
 
     long countByUser(User user);
-    long countByVideoAuthorIdAndVideoStatusNotAndCreatedAtGreaterThanEqual(
-        Long authorId,
-        VideoStatus excludedStatus,
-        LocalDateTime from
+    long countByVideo_Author_IdAndVideo_Status(Long authorId, VideoStatus status);
+
+    @Query("""
+        select count(l) from LikeEntity l
+        where l.video.author.id = :authorId
+          and l.video.status in :statuses
+          and l.createdAt >= :from
+        """)
+    long countLikesForAuthorVideoStatusesSince(
+        @Param("authorId") Long authorId,
+        @Param("statuses") List<VideoStatus> statuses,
+        @Param("from") LocalDateTime from
     );
 
     @Query("""
-        select function('date', l.createdAt) as day, count(l.id) as total
+        select cast(l.createdAt as date) as day, count(l.id) as total
         from LikeEntity l
-        where l.video.author.id = :authorId and l.video.status <> :excludedStatus and l.createdAt >= :from
-        group by function('date', l.createdAt)
-        order by function('date', l.createdAt)
+        where l.video.author.id = :authorId
+          and l.video.status in :statuses
+          and l.createdAt >= :from
+        group by cast(l.createdAt as date)
+        order by cast(l.createdAt as date)
         """)
-    List<DailyCountProjection> countDailyByAuthorSinceExcludingStatus(
+    List<DailyCountProjection> countDailyLikesForAuthorVideoStatusesSince(
         @Param("authorId") Long authorId,
-        @Param("from") LocalDateTime from,
-        @Param("excludedStatus") VideoStatus excludedStatus
+        @Param("statuses") List<VideoStatus> statuses,
+        @Param("from") LocalDateTime from
     );
 
+    @Query("""
+        select count(l) from LikeEntity l
+        where l.video.id = :videoId and l.createdAt >= :from
+        """)
+    long countLikesForVideoSince(@Param("videoId") Long videoId, @Param("from") LocalDateTime from);
+
+    @Query("""
+        select cast(l.createdAt as date) as day, count(l.id) as total
+        from LikeEntity l
+        where l.video.id = :videoId and l.createdAt >= :from
+        group by cast(l.createdAt as date)
+        order by cast(l.createdAt as date)
+        """)
+    List<DailyCountProjection> countDailyLikesForVideoSince(
+        @Param("videoId") Long videoId,
+        @Param("from") LocalDateTime from
+    );
+
+    /** Video READY công khai hoặc bài của chính user (chưa gỡ / chưa failed). */
     @Query(
-        "SELECT l.video FROM LikeEntity l WHERE l.user = :user AND l.video.status = :status ORDER BY l.id DESC"
+        "SELECT l.video FROM LikeEntity l WHERE l.user = :user AND ("
+            + "l.video.status = :ready OR "
+            + "(l.video.author.id = :userId AND l.video.status <> :removed AND l.video.status <> :failed)"
+            + ") ORDER BY l.id DESC"
     )
     Page<Video> findLikedVideosForUser(
         @Param("user") User user,
-        @Param("status") VideoStatus status,
+        @Param("ready") VideoStatus ready,
+        @Param("userId") Long userId,
+        @Param("removed") VideoStatus removed,
+        @Param("failed") VideoStatus failed,
         Pageable pageable
     );
 }

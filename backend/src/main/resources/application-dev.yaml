@@ -31,6 +31,23 @@ spring:
             user-info-uri: https://graph.facebook.com/v19.0/me?fields=id,name,email,picture.type(large)
             user-name-attribute: id
 app:
+  # Bật S3 trên profile dev. Luu y: bien moi truong APP_S3_ENABLED uu tien CAO hon YAML — neu APP_S3_ENABLED=false thi S3Client van khong tao du file nay ghi true.
+  # application-local.yaml co do uu tien thap hon application.yaml cho cung key voi file goc.
+  s3:
+    enabled: true
+    # Bucket private: trình duyệt cần URL GET đã ký mới phát được video_url trong JSON.
+    playback-presign-expiry-hours: ${APP_S3_PLAYBACK_PRESIGN_EXPIRY_HOURS:24}
+  # Worker + FFmpeg HLS chỉ chạy khi có bean S3Client (s3.enabled=true ở trên + bucket/credential).
+  # File application-local.yaml (optional) có thể ghi đè app.processing — kiểm tra nếu vẫn không có thư mục hls/ trên S3.
+  # Windows: neu log loi "Cannot run program ffprobe" / CreateProcess error=2 — JVM khong tim thay ffmpeg trong PATH.
+  # Cai FFmpeg, roi dat bien FFMPEG_PATH / FFPROBE_PATH tro toi .exe day du, vi du:
+  #   FFMPEG_PATH=C:\ffmpeg\bin\ffmpeg.exe
+  #   FFPROBE_PATH=C:\ffmpeg\bin\ffprobe.exe
+  # (uploads/ chi co 1 file mp4 goc la dung; HLS nam o prefix hls/{authorId}/{videoId}/)
+  processing:
+    worker:
+      enabled: true
+    dry-run-promote-when-worker-disabled: false
   cors:
     allowed-origins: http://localhost:5173,http://127.0.0.1:5173
   oauth2:

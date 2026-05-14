@@ -9,6 +9,7 @@ public record FeedPageResponse(
     int size,
     long total,
     boolean hasNext,
-    String sort
+    String sort,
+    String nextCursor
 ) {
 }

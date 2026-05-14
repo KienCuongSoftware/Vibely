@@ -9,6 +9,11 @@ public class S3Properties {
     private String bucket = "";
     private String region = "ap-southeast-2";
     private int presignExpirationMinutes = 15;
+    /**
+     * When positive, API may replace stored S3/CloudFront media URLs with presigned GET URLs for private buckets.
+     * Env: {@code APP_S3_PLAYBACK_PRESIGN_EXPIRY_HOURS}. Production with public CloudFront usually uses 0.
+     */
+    private int playbackPresignExpiryHours = 0;
     /** Base URL for playback (optional CloudFront). No trailing slash. */
     private String publicUrlBase = "";
     /** Optional local overrides; prefer IAM/instance credentials in production. */
@@ -45,6 +50,14 @@ public class S3Properties {
 
     public void setPresignExpirationMinutes(int presignExpirationMinutes) {
         this.presignExpirationMinutes = presignExpirationMinutes;
+    }
+
+    public int getPlaybackPresignExpiryHours() {
+        return playbackPresignExpiryHours;
+    }
+
+    public void setPlaybackPresignExpiryHours(int playbackPresignExpiryHours) {
+        this.playbackPresignExpiryHours = playbackPresignExpiryHours;
     }
 
     public String getPublicUrlBase() {

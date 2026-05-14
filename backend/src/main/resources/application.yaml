@@ -35,5 +35,33 @@ app:
     access-key-id: ${AWS_ACCESS_KEY_ID:}
     secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
     presign-expiration-minutes: ${APP_S3_PRESIGN_EXPIRATION_MINUTES:15}
+    # 0 = tắt. >0 = API trả URL GET đã ký cho video (bucket private). Dev thường 24; prod có CloudFront public thì 0.
+    playback-presign-expiry-hours: ${APP_S3_PLAYBACK_PRESIGN_EXPIRY_HOURS:0}
     # Tuỳ chọn: URL gốc khi dùng CloudFront, ví dụ https://dxxxx.cloudfront.net
     public-url-base: ${APP_S3_PUBLIC_URL_BASE:}
+  processing:
+    # FFmpeg + HLS: chỉ chạy khi worker.enabled=true VÀ app.s3.enabled=true (có bean S3Client).
+    # Kết quả trên S3: hls/{authorId}/{videoId}/playlist.m3u8 + các segment .ts; có thể thêm thumbnails/...
+    # Mặc định worker=false: listener sau commit có thể promote RAW→READY không transcode (dry-run), bucket chỉ còn file .mp4 gốc.
+    dry-run-promote-when-worker-disabled: ${APP_PROCESSING_DRY_RUN_PROMOTE:true}
+    poll-interval-ms: ${APP_PROCESSING_POLL_INTERVAL_MS:5000}
+    ffmpeg-path: ${FFMPEG_PATH:ffmpeg}
+    ffprobe-path: ${FFPROBE_PATH:ffprobe}
+    max-job-attempts: ${APP_PROCESSING_MAX_JOB_ATTEMPTS:3}
+    worker:
+      # Bật trên máy/container có ffmpeg+ffprobe và quyền S3 Get/Put; API-only pod nên để false.
+      # Profile dev: document --- ở cuối file ghi đè (mặc định true nếu không đặt APP_PROCESSING_WORKER_ENABLED).
+      enabled: ${APP_PROCESSING_WORKER_ENABLED:false}
+---
+# Chỉ merge khi spring.profiles.active chứa dev: ghi đè mặc định “an toàn” ở document trên — không cần biến APP_* vẫn bật S3 + worker trên máy dev (trừ khi bạn đặt APP_S3_ENABLED=false / APP_PROCESSING_WORKER_ENABLED=false).
+spring:
+  config:
+    activate:
+      on-profile: dev
+app:
+  s3:
+    enabled: ${APP_S3_ENABLED:true}
+  processing:
+    dry-run-promote-when-worker-disabled: false
+    worker:
+      enabled: ${APP_PROCESSING_WORKER_ENABLED:true}

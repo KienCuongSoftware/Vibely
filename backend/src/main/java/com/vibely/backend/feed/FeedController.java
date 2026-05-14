@@ -20,6 +20,7 @@ public class FeedController {
 
     @GetMapping
     public ApiResponse<FeedPageResponse> latest(
+        @RequestParam(required = false) String cursor,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size,
         @RequestParam(defaultValue = "latest") String sort
@@ -27,6 +28,9 @@ public class FeedController {
         FeedSort feedSort = "trending-lite".equalsIgnoreCase(sort)
             ? FeedSort.TRENDING_LITE
             : FeedSort.LATEST;
+        if (feedSort == FeedSort.LATEST && cursor != null && !cursor.isBlank()) {
+            return ApiResponse.success(videoService.getLatestFeedKeyset(cursor, Math.min(size, 50)));
+        }
         return ApiResponse.success(videoService.getFeed(page, Math.min(size, 50), feedSort));
     }
 

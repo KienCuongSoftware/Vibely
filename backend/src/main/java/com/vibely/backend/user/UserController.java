@@ -5,7 +5,11 @@ import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.feed.FeedPageResponse;
+import com.vibely.backend.interaction.FollowRepository;
+import com.vibely.backend.interaction.LikeRepository;
+import com.vibely.backend.interaction.VideoViewRepository;
 import com.vibely.backend.video.VideoService;
+import com.vibely.backend.video.VideoStatus;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -25,17 +29,45 @@ public class UserController {
     private final UsernameService usernameService;
     private final UserAvatarResolver userAvatarResolver;
     private final VideoService videoService;
+    private final FollowRepository followRepository;
+    private final LikeRepository likeRepository;
+    private final VideoViewRepository videoViewRepository;
 
     public UserController(
         UserRepository userRepository,
         UsernameService usernameService,
         UserAvatarResolver userAvatarResolver,
-        VideoService videoService
+        VideoService videoService,
+        FollowRepository followRepository,
+        LikeRepository likeRepository,
+        VideoViewRepository videoViewRepository
     ) {
         this.userRepository = userRepository;
         this.usernameService = usernameService;
         this.userAvatarResolver = userAvatarResolver;
         this.videoService = videoService;
+        this.followRepository = followRepository;
+        this.likeRepository = likeRepository;
+        this.videoViewRepository = videoViewRepository;
+    }
+
+    private PublicUserProfileResponse toPublicProfile(User user) {
+        long uid = user.getId();
+        long followingCount = followRepository.countByFollower_Id(uid);
+        long followerCount = followRepository.countByFollowing_Id(uid);
+        long totalLikeCount = likeRepository.countByVideo_Author_IdAndVideo_Status(uid, VideoStatus.READY);
+        long totalViewCount = videoViewRepository.countByVideo_Author_IdAndVideo_Status(uid, VideoStatus.READY);
+        return new PublicUserProfileResponse(
+            user.getId(),
+            user.getUsername(),
+            user.getDisplayName(),
+            user.getBio(),
+            userAvatarResolver.resolve(user),
+            followingCount,
+            followerCount,
+            totalLikeCount,
+            totalViewCount
+        );
     }
 
     @GetMapping("/check-username")
@@ -104,15 +136,7 @@ public class UserController {
             : request.avatarUrl().trim());
         User saved = userRepository.save(user);
 
-        return ApiResponse.success(
-            new PublicUserProfileResponse(
-                saved.getId(),
-                saved.getUsername(),
-                saved.getDisplayName(),
-                saved.getBio(),
-                userAvatarResolver.resolve(saved)
-            )
-        );
+        return ApiResponse.success(toPublicProfile(saved));
     }
 
     @GetMapping("/{username}")
@@ -120,14 +144,6 @@ public class UserController {
         String normalized = usernameService.normalize(username);
         User user = userRepository.findByUsername(normalized)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
-        return ApiResponse.success(
-            new PublicUserProfileResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getDisplayName(),
-                user.getBio(),
-                userAvatarResolver.resolve(user)
-            )
-        );
+        return ApiResponse.success(toPublicProfile(user));
     }
 }

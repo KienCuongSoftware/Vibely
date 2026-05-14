@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +49,7 @@ public class InteractionService {
     public void likeVideo(String email, Long videoId) {
         User user = getUser(email);
         Video video = videoService.getVideoOrThrow(videoId);
+        requireEngagementAllowed(video, user);
         if (likeRepository.existsByUserAndVideo(user, video)) {
             return;
         }
@@ -60,12 +62,14 @@ public class InteractionService {
     public void unlikeVideo(String email, Long videoId) {
         User user = getUser(email);
         Video video = videoService.getVideoOrThrow(videoId);
+        requireEngagementAllowed(video, user);
         likeRepository.deleteByUserAndVideo(user, video);
     }
 
     public void bookmarkVideo(String email, Long videoId) {
         User user = getUser(email);
         Video video = videoService.getVideoOrThrow(videoId);
+        requireEngagementAllowed(video, user);
         if (videoBookmarkRepository.existsByUserAndVideo(user, video)) {
             return;
         }
@@ -78,6 +82,7 @@ public class InteractionService {
     public void unbookmarkVideo(String email, Long videoId) {
         User user = getUser(email);
         Video video = videoService.getVideoOrThrow(videoId);
+        requireEngagementAllowed(video, user);
         videoBookmarkRepository.deleteByUserAndVideo(user, video);
     }
 
@@ -94,6 +99,7 @@ public class InteractionService {
     public CommentResponse addComment(String email, Long videoId, String content) {
         User user = getUser(email);
         Video video = videoService.getVideoOrThrow(videoId);
+        requireEngagementAllowed(video, user);
         CommentEntity comment = new CommentEntity();
         comment.setUser(user);
         comment.setVideo(video);
@@ -102,9 +108,20 @@ public class InteractionService {
         return toCommentResponse(saved);
     }
 
+    /**
+     * Công khai khi video {@link VideoStatus#READY}; bản nháp/xử lý chỉ tác giả (khớp luật xem trong
+     * {@link VideoService#getVideoByIdForViewer(Long, String)}).
+     */
     @Transactional(readOnly = true)
-    public List<CommentResponse> getComments(Long videoId) {
+    public List<CommentResponse> getComments(Long videoId, String viewerEmail) {
         Video video = videoService.getVideoOrThrow(videoId);
+        User viewer = null;
+        if (viewerEmail != null && !viewerEmail.isBlank()) {
+            viewer = userRepository.findByEmail(viewerEmail.trim()).orElse(null);
+        }
+        if (!canViewComments(video, viewer)) {
+            return List.of();
+        }
         return commentRepository.findByVideoOrderByCreatedAtDesc(video).stream()
             .map(this::toCommentResponse)
             .toList();
@@ -161,6 +178,9 @@ public class InteractionService {
         if (video.getStatus() == VideoStatus.HIDDEN) {
             throw new BadRequestException("Video đã bị ẩn trước đó");
         }
+        if (video.getStatus() != VideoStatus.READY) {
+            throw new BadRequestException("Chỉ có thể báo cáo video đang công khai.");
+        }
         video.setStatus(VideoStatus.REPORTED);
         video.setReportReason(reason);
         video.setReportedAt(LocalDateTime.now());
@@ -169,6 +189,46 @@ public class InteractionService {
     private User getUser(String email) {
         return userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+    }
+
+    /**
+     * Thích / lưu / bình luận: công khai chỉ khi READY; tác giả được tương tác khi video còn RAW/PROCESSING
+     * (đang xử lý) hoặc HIDDEN/REPORTED (chỉ chủ bài).
+     */
+    private static void requireEngagementAllowed(Video video, User actor) {
+        VideoStatus s = video.getStatus();
+        if (s == VideoStatus.REMOVED || s == VideoStatus.FAILED) {
+            throw new BadRequestException("Video không khả dụng.");
+        }
+        Long authorId = video.getAuthor() != null ? video.getAuthor().getId() : null;
+        boolean isAuthor = authorId != null && Objects.equals(authorId, actor.getId());
+        if (s == VideoStatus.HIDDEN || s == VideoStatus.REPORTED) {
+            if (!isAuthor) {
+                throw new BadRequestException("Video không khả dụng.");
+            }
+            return;
+        }
+        if (s == VideoStatus.READY) {
+            return;
+        }
+        if (!isAuthor) {
+            throw new BadRequestException("Video chưa sẵn sàng hoặc không khả dụng.");
+        }
+    }
+
+    private static boolean canViewComments(Video video, User viewer) {
+        VideoStatus s = video.getStatus();
+        if (s == VideoStatus.REMOVED || s == VideoStatus.FAILED) {
+            return false;
+        }
+        if (s == VideoStatus.READY) {
+            return true;
+        }
+        if (viewer == null) {
+            return false;
+        }
+        Long authorId = video.getAuthor() != null ? video.getAuthor().getId() : null;
+        return authorId != null && Objects.equals(authorId, viewer.getId());
     }
 
     private CommentResponse toCommentResponse(CommentEntity entity) {

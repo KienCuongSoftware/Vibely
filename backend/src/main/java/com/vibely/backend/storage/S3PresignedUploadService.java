@@ -3,8 +3,6 @@ package com.vibely.backend.storage;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.user.UserRepository;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -16,8 +14,11 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
@@ -43,11 +44,18 @@ public class S3PresignedUploadService {
 
     private final S3Presigner presigner;
     private final S3Properties properties;
+    private final S3ObjectUrlBuilder objectUrlBuilder;
     private final UserRepository userRepository;
 
-    public S3PresignedUploadService(S3Presigner presigner, S3Properties properties, UserRepository userRepository) {
+    public S3PresignedUploadService(
+        S3Presigner presigner,
+        S3Properties properties,
+        S3ObjectUrlBuilder objectUrlBuilder,
+        UserRepository userRepository
+    ) {
         this.presigner = presigner;
         this.properties = properties;
+        this.objectUrlBuilder = objectUrlBuilder;
         this.userRepository = userRepository;
     }
 
@@ -78,7 +86,7 @@ public class S3PresignedUploadService {
             .build();
 
         PresignedPutObjectRequest presigned = presigner.presignPutObject(presignRequest);
-        String playbackUrl = buildPlaybackUrl(key);
+        String playbackUrl = objectUrlBuilder.toPublicHttpsUrl(key);
 
         return new PresignedUploadResponse(
             presigned.url().toString(),
@@ -123,7 +131,7 @@ public class S3PresignedUploadService {
             .build();
 
         PresignedPutObjectRequest presigned = presigner.presignPutObject(presignRequest);
-        String publicUrl = buildPlaybackUrl(key);
+        String publicUrl = objectUrlBuilder.toPublicHttpsUrl(key);
 
         return new PresignedUploadResponse(
             presigned.url().toString(),
@@ -133,6 +141,36 @@ public class S3PresignedUploadService {
             publicUrl,
             expiresAt.toEpochMilli()
         );
+    }
+
+    /**
+     * Presigned GET so the browser can load {@code uploads/…} or {@code thumbnails/…} from a private bucket.
+     */
+    public Optional<String> presignGetForPlayback(String storedPublicUrl) {
+        int hours = properties.getPlaybackPresignExpiryHours();
+        if (hours <= 0 || storedPublicUrl == null || storedPublicUrl.isBlank()) {
+            return Optional.empty();
+        }
+        Optional<ResolvedS3Object> resolved = objectUrlBuilder.resolveObjectFromUrl(storedPublicUrl.trim());
+        if (resolved.isEmpty()) {
+            return Optional.empty();
+        }
+        ResolvedS3Object obj = resolved.get();
+        String cfgBucket = properties.getBucket();
+        if (cfgBucket == null || cfgBucket.isBlank() || !cfgBucket.equalsIgnoreCase(obj.bucket())) {
+            return Optional.empty();
+        }
+        int safeHours = Math.min(Math.max(hours, 1), 168);
+        GetObjectRequest get = GetObjectRequest.builder()
+            .bucket(obj.bucket())
+            .key(obj.key())
+            .build();
+        GetObjectPresignRequest pr = GetObjectPresignRequest.builder()
+            .signatureDuration(Duration.ofHours(safeHours))
+            .getObjectRequest(get)
+            .build();
+        PresignedGetObjectRequest signed = presigner.presignGetObject(pr);
+        return Optional.of(signed.url().toString());
     }
 
     private static String resolveThumbExtension(String fileName, String contentType) {
@@ -180,26 +218,4 @@ public class S3PresignedUploadService {
         return fromName.orElse(MIME_TO_EXT.get(contentType));
     }
 
-    private String buildPlaybackUrl(String key) {
-        String base = properties.getPublicUrlBase();
-        if (base != null && !base.isBlank()) {
-            String normalized = base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
-            return normalized + "/" + encodeKeyForUrl(key);
-        }
-        String bucket = properties.getBucket();
-        String region = properties.getRegion();
-        return "https://" + bucket + ".s3." + region + ".amazonaws.com/" + encodeKeyForUrl(key);
-    }
-
-    private static String encodeKeyForUrl(String key) {
-        String[] parts = key.split("/");
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < parts.length; i++) {
-            if (i > 0) {
-                sb.append('/');
-            }
-            sb.append(URLEncoder.encode(parts[i], StandardCharsets.UTF_8).replace("+", "%20"));
-        }
-        return sb.toString();
-    }
 }

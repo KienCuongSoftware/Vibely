@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -77,8 +78,17 @@ public class InteractionController {
     }
 
     @GetMapping("/videos/{videoId}/comments")
-    public ApiResponse<List<CommentResponse>> getComments(@PathVariable Long videoId) {
-        return ApiResponse.success(interactionService.getComments(videoId));
+    public ApiResponse<List<CommentResponse>> getComments(
+        @PathVariable Long videoId,
+        Authentication authentication
+    ) {
+        String viewerEmail = null;
+        if (authentication != null
+            && authentication.isAuthenticated()
+            && !(authentication instanceof AnonymousAuthenticationToken)) {
+            viewerEmail = authentication.getName();
+        }
+        return ApiResponse.success(interactionService.getComments(videoId, viewerEmail));
     }
 
     @PostMapping("/follows/{userId}")

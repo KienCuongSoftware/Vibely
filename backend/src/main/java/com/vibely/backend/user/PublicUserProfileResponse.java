@@ -5,6 +5,10 @@ public record PublicUserProfileResponse(
     String username,
     String displayName,
     String bio,
-    String avatarUrl
+    String avatarUrl,
+    long followingCount,
+    long followerCount,
+    long totalLikeCount,
+    long totalViewCount
 ) {
 }
