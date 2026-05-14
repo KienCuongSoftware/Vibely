@@ -28,6 +28,14 @@ public class VideoViewEntity {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    /** Thời lượng đã phát (ms) khi client báo; null = bản ghi cũ trước khi có cột. */
+    @Column(name = "watched_ms")
+    private Long watchedMs;
+
+    /** Thời lượng video theo client tại thời điểm báo (ms); có thể null. */
+    @Column(name = "duration_ms")
+    private Long durationMs;
+
     @PrePersist
     void prePersist() {
         if (createdAt == null) {
@@ -37,5 +45,21 @@ public class VideoViewEntity {
 
     public void setVideo(Video video) {
         this.video = video;
+    }
+
+    public Long getWatchedMs() {
+        return watchedMs;
+    }
+
+    public void setWatchedMs(Long watchedMs) {
+        this.watchedMs = watchedMs;
+    }
+
+    public Long getDurationMs() {
+        return durationMs;
+    }
+
+    public void setDurationMs(Long durationMs) {
+        this.durationMs = durationMs;
     }
 }
