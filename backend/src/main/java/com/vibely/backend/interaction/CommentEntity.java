@@ -30,6 +30,10 @@ public class CommentEntity {
     @JoinColumn(name = "video_id", nullable = false)
     private Video video;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_comment_id")
+    private CommentEntity parentComment;
+
     @Column(nullable = false, length = 500)
     private String content;
 
@@ -61,6 +65,14 @@ public class CommentEntity {
 
     public void setVideo(Video video) {
         this.video = video;
+    }
+
+    public CommentEntity getParentComment() {
+        return parentComment;
+    }
+
+    public void setParentComment(CommentEntity parentComment) {
+        this.parentComment = parentComment;
     }
 
     public String getContent() {

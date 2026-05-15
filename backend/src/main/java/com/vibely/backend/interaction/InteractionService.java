@@ -96,7 +96,7 @@ public class InteractionService {
         );
     }
 
-    public CommentResponse addComment(String email, Long videoId, String content) {
+    public CommentResponse addComment(String email, Long videoId, String content, Long parentCommentId) {
         User user = getUser(email);
         Video video = videoService.getVideoOrThrow(videoId);
         requireEngagementAllowed(video, user);
@@ -104,8 +104,40 @@ public class InteractionService {
         comment.setUser(user);
         comment.setVideo(video);
         comment.setContent(content);
+        if (parentCommentId != null) {
+            CommentEntity parent = commentRepository
+                .findById(parentCommentId)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy bình luận gốc"));
+            if (!parent.getVideo().getId().equals(video.getId())) {
+                throw new BadRequestException("Bình luận gốc không thuộc video này.");
+            }
+            comment.setParentComment(parent);
+        }
         CommentEntity saved = commentRepository.save(comment);
         return toCommentResponse(saved);
+    }
+
+    /**
+     * Xóa một bình luận; các phản hồi trỏ tới nó bị xóa theo CASCADE ở DB (toàn bộ nhánh con).
+     * Chỉ chủ video hoặc chủ bình luận được phép.
+     */
+    public void deleteComment(String email, Long videoId, Long commentId) {
+        User user = getUser(email);
+        Video video = videoService.getVideoOrThrow(videoId);
+        requireEngagementAllowed(video, user);
+        CommentEntity comment = commentRepository
+            .findById(commentId)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy bình luận"));
+        if (!comment.getVideo().getId().equals(video.getId())) {
+            throw new BadRequestException("Bình luận không thuộc video này.");
+        }
+        Long authorId = video.getAuthor() != null ? video.getAuthor().getId() : null;
+        boolean isVideoAuthor = authorId != null && authorId.equals(user.getId());
+        boolean isCommentAuthor = comment.getUser().getId().equals(user.getId());
+        if (!isVideoAuthor && !isCommentAuthor) {
+            throw new BadRequestException("Bạn không thể xóa bình luận này.");
+        }
+        commentRepository.delete(comment);
     }
 
     /**
@@ -232,13 +264,16 @@ public class InteractionService {
     }
 
     private CommentResponse toCommentResponse(CommentEntity entity) {
+        CommentEntity parent = entity.getParentComment();
+        Long parentId = parent != null ? parent.getId() : null;
         return new CommentResponse(
             entity.getId(),
             entity.getUser().getId(),
             entity.getUser().getUsername(),
             entity.getContent(),
             entity.getCreatedAt(),
-            userAvatarResolver.resolve(entity.getUser())
+            userAvatarResolver.resolve(entity.getUser()),
+            parentId
         );
     }
 }

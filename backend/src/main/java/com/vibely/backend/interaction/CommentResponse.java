@@ -8,6 +8,7 @@ public record CommentResponse(
     String username,
     String content,
     LocalDateTime createdAt,
-    String authorAvatarUrl
+    String authorAvatarUrl,
+    Long parentCommentId
 ) {
 }

@@ -73,8 +73,24 @@ public class InteractionController {
         @Valid @RequestBody CommentCreateRequest request
     ) {
         return ApiResponse.success(
-            interactionService.addComment(authentication.getName(), videoId, request.getContent())
+            interactionService.addComment(
+                authentication.getName(),
+                videoId,
+                request.getContent(),
+                request.getParentCommentId()
+            )
         );
+    }
+
+    @DeleteMapping("/videos/{videoId}/comments/{commentId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ApiResponse<Void>> deleteComment(
+        Authentication authentication,
+        @PathVariable Long videoId,
+        @PathVariable Long commentId
+    ) {
+        interactionService.deleteComment(authentication.getName(), videoId, commentId);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     @GetMapping("/videos/{videoId}/comments")

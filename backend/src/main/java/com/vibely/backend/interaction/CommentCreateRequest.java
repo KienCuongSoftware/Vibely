@@ -6,8 +6,11 @@ import jakarta.validation.constraints.Size;
 public class CommentCreateRequest {
 
     @NotBlank(message = "Nội dung bình luận là bắt buộc")
-    @Size(max = 500, message = "Bình luận tối đa 500 ký tự")
+    @Size(max = 150, message = "Bình luận tối đa 150 ký tự")
     private String content;
+
+    /** Trả lời một bình luận khác trên cùng video (nullable). */
+    private Long parentCommentId;
 
     public String getContent() {
         return content;
@@ -15,5 +18,13 @@ public class CommentCreateRequest {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public Long getParentCommentId() {
+        return parentCommentId;
+    }
+
+    public void setParentCommentId(Long parentCommentId) {
+        this.parentCommentId = parentCommentId;
     }
 }
