@@ -51,6 +51,13 @@ public class Video {
     @Column(name = "duration_seconds")
     private Integer durationSeconds;
 
+    /** Kích thước pixel stream video gốc (ffprobe); dùng feed layout khi rotate làm khung thực tế ngang. */
+    @Column(name = "source_width_px")
+    private Integer sourceWidthPx;
+
+    @Column(name = "source_height_px")
+    private Integer sourceHeightPx;
+
     @Column(name = "processing_error", columnDefinition = "TEXT")
     private String processingError;
 
@@ -154,6 +161,22 @@ public class Video {
 
     public void setDurationSeconds(Integer durationSeconds) {
         this.durationSeconds = durationSeconds;
+    }
+
+    public Integer getSourceWidthPx() {
+        return sourceWidthPx;
+    }
+
+    public void setSourceWidthPx(Integer sourceWidthPx) {
+        this.sourceWidthPx = sourceWidthPx;
+    }
+
+    public Integer getSourceHeightPx() {
+        return sourceHeightPx;
+    }
+
+    public void setSourceHeightPx(Integer sourceHeightPx) {
+        this.sourceHeightPx = sourceHeightPx;
     }
 
     public String getProcessingError() {

@@ -23,6 +23,8 @@ public record VideoResponse(
     VideoStatus status,
     String masterPlaylistUrl,
     Integer durationSeconds,
+    Integer sourceWidthPx,
+    Integer sourceHeightPx,
     String processingError
 ) {
 }

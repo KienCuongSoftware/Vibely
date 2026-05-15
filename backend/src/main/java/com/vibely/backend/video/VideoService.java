@@ -422,6 +422,8 @@ public class VideoService {
             video.getStatus(),
             video.getMasterPlaylistUrl(),
             video.getDurationSeconds(),
+            video.getSourceWidthPx(),
+            video.getSourceHeightPx(),
             video.getProcessingError()
         );
     }
