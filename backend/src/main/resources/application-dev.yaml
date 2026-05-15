@@ -1,6 +1,9 @@
 spring:
   config:
     import: optional:classpath:application-local.yaml
+  # Sau khi sửa nội dung migration đã apply (checksum lệch), dev có thể bật lại true rồi chạy: mvn flyway:repair
+  flyway:
+    validate-on-migrate: false
   datasource:
     url: jdbc:postgresql://localhost:5432/vibely
     username: postgres

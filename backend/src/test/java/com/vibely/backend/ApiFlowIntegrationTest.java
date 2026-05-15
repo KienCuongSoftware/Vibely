@@ -132,9 +132,85 @@ class ApiFlowIntegrationTest {
             .andExpect(jsonPath("$.data.sort").value("my-uploads"))
             .andExpect(jsonPath("$.data.items[0].title").value("First Vibely Clip"));
 
+        mockMvc.perform(
+                get("/api/studio/analytics/video/" + videoId + "?days=7")
+                    .header("Authorization", "Bearer " + token)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.data.days").value(7))
+            .andExpect(jsonPath("$.data.periodViews").exists())
+            .andExpect(jsonPath("$.data.periodLikes").exists())
+            .andExpect(jsonPath("$.data.periodComments").exists())
+            .andExpect(jsonPath("$.data.periodBookmarks").exists())
+            .andExpect(jsonPath("$.data.video.id").value((int) videoId))
+            .andExpect(jsonPath("$.data.video.title").value("First Vibely Clip"))
+            .andExpect(jsonPath("$.data.points").isArray())
+            .andExpect(jsonPath("$.data.playbackSampleSize").exists())
+            .andExpect(jsonPath("$.data.retention").isArray())
+            .andExpect(jsonPath("$.data.trafficSources").isArray())
+            .andExpect(jsonPath("$.data.searchKeywords").isArray());
+
         mockMvc.perform(get("/api/videos/" + videoId))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data.title").value("First Vibely Clip"));
+            .andExpect(jsonPath("$.data.viewCount").value(0));
+
+        mockMvc.perform(post("/api/videos/" + videoId + "/views"))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/videos/" + videoId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.viewCount").value(0));
+
+        mockMvc.perform(
+                post("/api/videos/" + videoId + "/views")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"watchedMs\":500}")
+            )
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/videos/" + videoId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.viewCount").value(0));
+
+        mockMvc.perform(
+                post("/api/videos/" + videoId + "/views")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"watchedMs\":2500,\"durationMs\":10000}")
+            )
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/videos/" + videoId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.viewCount").value(1));
+
+        mockMvc.perform(
+                post("/api/videos/" + videoId + "/views")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"watchedMs\":3000,\"durationMs\":10000}")
+            )
+            .andExpect(status().isOk());
+
+        mockMvc.perform(
+                post("/api/videos/" + videoId + "/views")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"watched_ms\":4000,\"duration_ms\":10000}")
+            )
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/videos/" + videoId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.viewCount").value(3));
+
+        mockMvc.perform(
+                get("/api/studio/analytics/video/" + videoId + "?days=7")
+                    .header("Authorization", "Bearer " + token)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.playbackSampleSize").value(3))
+            .andExpect(jsonPath("$.data.periodTotalWatchMs").value(9500))
+            .andExpect(jsonPath("$.data.retention.length()").value(21))
+            .andExpect(jsonPath("$.data.trafficSources.length()").value(4));
 
         mockMvc.perform(get("/api/users/demo_user/videos?page=0&size=10"))
             .andExpect(status().isOk())
