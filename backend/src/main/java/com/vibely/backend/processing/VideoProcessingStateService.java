@@ -24,7 +24,9 @@ public class VideoProcessingStateService {
         long videoId,
         String masterPlaylistUrl,
         Integer durationSeconds,
-        String thumbnailUrl
+        String thumbnailUrl,
+        Integer sourceWidthPx,
+        Integer sourceHeightPx
     ) {
         VideoProcessingJobEntity job = jobRepository.findById(jobId).orElseThrow();
         Video video = videoRepository.findById(videoId).orElseThrow();
@@ -34,6 +36,10 @@ public class VideoProcessingStateService {
         video.setMasterPlaylistUrl(masterPlaylistUrl);
         video.setDurationSeconds(durationSeconds);
         video.setProcessingError(null);
+        if (sourceWidthPx != null && sourceWidthPx > 0 && sourceHeightPx != null && sourceHeightPx > 0) {
+            video.setSourceWidthPx(sourceWidthPx);
+            video.setSourceHeightPx(sourceHeightPx);
+        }
         if (thumbnailUrl != null && !thumbnailUrl.isBlank()) {
             video.setThumbnailUrl(thumbnailUrl);
         }

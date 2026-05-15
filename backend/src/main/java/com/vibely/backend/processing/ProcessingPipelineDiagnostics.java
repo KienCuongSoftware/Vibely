@@ -82,6 +82,11 @@ public class ProcessingPipelineDiagnostics {
                     "Worker tắt và dry-run-promote-when-worker-disabled=false: video mới ở trạng thái RAW có thể không lên feed cho đến khi bật worker hoặc bật lại dry-run."
                 );
             }
+            if (pipeline) {
+                log.info(
+                    "HLS on S3: prefix hls/{authorId}/{videoId}/ (same bucket root as uploads/, thumbnails/, audios/). Raw MP4 stays under uploads/ only."
+                );
+            }
         }
     }
 }

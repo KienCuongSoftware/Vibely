@@ -1,11 +1,12 @@
 package com.vibely.backend.processing;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vibely.backend.storage.ResolvedS3Object;
 import com.vibely.backend.storage.S3ObjectUrlBuilder;
 import com.vibely.backend.storage.S3Properties;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,19 +44,22 @@ public class FfmpegHlsPipelineRunner {
     private final S3ObjectUrlBuilder objectUrlBuilder;
     private final ProcessingProperties processingProperties;
     private final VideoProcessingStateService stateService;
+    private final ObjectMapper objectMapper;
 
     public FfmpegHlsPipelineRunner(
         S3Client s3Client,
         S3Properties s3Properties,
         S3ObjectUrlBuilder objectUrlBuilder,
         ProcessingProperties processingProperties,
-        VideoProcessingStateService stateService
+        VideoProcessingStateService stateService,
+        ObjectMapper objectMapper
     ) {
         this.s3Client = s3Client;
         this.s3Properties = s3Properties;
         this.objectUrlBuilder = objectUrlBuilder;
         this.processingProperties = processingProperties;
         this.stateService = stateService;
+        this.objectMapper = objectMapper;
     }
 
     public void run(VideoPipelineWorkItem item) {
@@ -108,8 +112,12 @@ public class FfmpegHlsPipelineRunner {
         try {
             Path sourceFile = workRoot.resolve("source" + extensionFromKey(source.key()));
             downloadObject(source.bucket(), source.key(), sourceFile);
+            log.info("HLS pipeline downloaded local file sizeBytes={}", Files.size(sourceFile));
 
-            Integer durationSeconds = probeDurationSeconds(sourceFile);
+            Integer durationSeconds = probeDurationSeconds(sourceFile, workRoot);
+            log.info("HLS pipeline ffprobe durationSeconds={}", durationSeconds);
+            SourceDimensions dims = probeSourceVideoDimensions(sourceFile, workRoot);
+            log.info("HLS pipeline ffprobe source dimensions width={} height={}", dims.widthPx(), dims.heightPx());
 
             String thumbnailUrl = item.existingThumbnailUrl();
             if (thumbnailUrl == null || thumbnailUrl.isBlank()) {
@@ -121,19 +129,29 @@ public class FfmpegHlsPipelineRunner {
             }
 
             Path transcodeDir = Files.createDirectories(workRoot.resolve("hls"));
+            log.info("HLS pipeline ffmpeg transcode starting videoId={}", item.videoId());
             transcodeToHls(sourceFile, transcodeDir);
+            log.info("HLS pipeline ffmpeg transcode finished videoId={}", item.videoId());
 
             String prefix = "hls/" + item.authorId() + "/" + item.videoId() + "/";
+            int uploaded = 0;
             try (Stream<Path> paths = Files.walk(transcodeDir)) {
                 for (Path p : paths.filter(Files::isRegularFile).toList()) {
                     String relative = transcodeDir.relativize(p).toString().replace('\\', '/');
                     String destKey = prefix + relative;
                     uploadObject(destKey, p, contentTypeForFileName(relative));
+                    uploaded++;
                 }
             }
-
             String masterKey = prefix + "playlist.m3u8";
             String masterUrl = objectUrlBuilder.toPublicHttpsUrl(masterKey);
+            log.info(
+                "HLS uploaded {} object(s). Bucket={}, prefix={} (NOT under uploads/; in S3 console open folder hls then authorId then videoId). masterUrl={}",
+                uploaded,
+                s3Properties.getBucket(),
+                prefix,
+                masterUrl
+            );
             log.info(
                 "HLS pipeline done videoId={} masterKey={} durationSeconds={}",
                 item.videoId(),
@@ -145,7 +163,9 @@ public class FfmpegHlsPipelineRunner {
                 item.videoId(),
                 masterUrl,
                 durationSeconds,
-                thumbnailUrl
+                thumbnailUrl,
+                dims.widthPx(),
+                dims.heightPx()
             );
         } finally {
             deleteRecursively(workRoot);
@@ -168,37 +188,155 @@ public class FfmpegHlsPipelineRunner {
         s3Client.putObject(put, RequestBody.fromFile(file));
     }
 
-    private Integer probeDurationSeconds(Path input) throws Exception {
-        List<String> cmd = List.of(
-            processingProperties.getFfprobePath(),
-            "-v",
-            "error",
-            "-show_entries",
-            "format=duration",
-            "-of",
-            "default=noprint_wrappers=1:nokey=1",
-            input.toAbsolutePath().toString()
-        );
-        ProcessBuilder pb = new ProcessBuilder(cmd);
-        pb.redirectErrorStream(true);
-        Process p = startProcessOrExplain(pb, processingProperties.getFfprobePath());
-        boolean finished = p.waitFor(5, TimeUnit.MINUTES);
-        if (!finished) {
-            p.destroyForcibly();
-            throw new IllegalStateException("ffprobe timeout");
+    /**
+     * Writes ffprobe stdout+stderr to a file so the subprocess never blocks on a full pipe
+     * (same class of deadlock as long-running ffmpeg when using {@link ProcessBuilder.Redirect#PIPE}).
+     */
+    private Integer probeDurationSeconds(Path input, Path workRoot) throws Exception {
+        Path probeLog = Files.createTempFile(workRoot, "ffprobe-", ".log");
+        try {
+            List<String> cmd = List.of(
+                processingProperties.getFfprobePath(),
+                "-v",
+                "error",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "default=noprint_wrappers=1:nokey=1",
+                input.toAbsolutePath().toString()
+            );
+            ProcessBuilder pb = new ProcessBuilder(cmd);
+            pb.redirectErrorStream(true);
+            pb.redirectOutput(ProcessBuilder.Redirect.to(probeLog.toFile()));
+            Process p = startProcessOrExplain(pb, processingProperties.getFfprobePath());
+            boolean finished = p.waitFor(5, TimeUnit.MINUTES);
+            if (!finished) {
+                p.destroyForcibly();
+                throw new IllegalStateException("ffprobe timeout");
+            }
+            if (p.exitValue() != 0) {
+                throw new IllegalStateException(
+                    "ffprobe exited with " + p.exitValue() + ": " + tailOfFile(probeLog, 4000)
+                );
+            }
+            String raw = Files.readString(probeLog, StandardCharsets.UTF_8).trim();
+            if (raw.isBlank()) {
+                return null;
+            }
+            String[] lines = raw.split("\\R");
+            for (int i = lines.length - 1; i >= 0; i--) {
+                String candidate = lines[i].trim();
+                if (candidate.isEmpty()) {
+                    continue;
+                }
+                try {
+                    double seconds = Double.parseDouble(candidate);
+                    return (int) Math.round(seconds);
+                } catch (NumberFormatException ignored) {
+                    // keep scanning (stderr may precede duration line when merged)
+                }
+            }
+            return null;
+        } finally {
+            Files.deleteIfExists(probeLog);
         }
-        if (p.exitValue() != 0) {
-            throw new IllegalStateException("ffprobe exited with " + p.exitValue());
+    }
+
+    private record SourceDimensions(Integer widthPx, Integer heightPx) {}
+
+    /**
+     * Kích thước stream video đầu tiên; tag {@code rotate} 90°/270° (hoặc -90°) → đổi chỗ w/h theo hướng hiển thị.
+     * Lỗi ffprobe không làm fail pipeline.
+     */
+    private SourceDimensions probeSourceVideoDimensions(Path input, Path workRoot) {
+        Path probeLog = null;
+        try {
+            probeLog = Files.createTempFile(workRoot, "ffprobe-dim-", ".json");
+            List<String> cmd = List.of(
+                processingProperties.getFfprobePath(),
+                "-v",
+                "error",
+                "-select_streams",
+                "v:0",
+                "-show_entries",
+                "stream=width,height",
+                "-show_entries",
+                "stream_tags=rotate",
+                "-of",
+                "json",
+                input.toAbsolutePath().toString()
+            );
+            ProcessBuilder pb = new ProcessBuilder(cmd);
+            pb.redirectErrorStream(true);
+            pb.redirectOutput(ProcessBuilder.Redirect.to(probeLog.toFile()));
+            Process p = startProcessOrExplain(pb, processingProperties.getFfprobePath());
+            boolean finished = p.waitFor(5, TimeUnit.MINUTES);
+            if (!finished) {
+                p.destroyForcibly();
+                log.warn("ffprobe dimensions timeout for {}", input);
+                return new SourceDimensions(null, null);
+            }
+            if (p.exitValue() != 0) {
+                log.warn(
+                    "ffprobe dimensions exit {} for {}: {}",
+                    p.exitValue(),
+                    input,
+                    tailOfFile(probeLog, 2000)
+                );
+                return new SourceDimensions(null, null);
+            }
+            String json = Files.readString(probeLog, StandardCharsets.UTF_8).trim();
+            if (json.isBlank()) {
+                return new SourceDimensions(null, null);
+            }
+            JsonNode root = objectMapper.readTree(json);
+            JsonNode streams = root.get("streams");
+            if (streams == null || !streams.isArray() || streams.isEmpty()) {
+                return new SourceDimensions(null, null);
+            }
+            JsonNode s0 = streams.get(0);
+            int w = s0.path("width").asInt(0);
+            int h = s0.path("height").asInt(0);
+            if (w <= 0 || h <= 0) {
+                return new SourceDimensions(null, null);
+            }
+            Integer rot = parseRotateTag(s0.get("tags"));
+            boolean swap = rot != null && (rot == 90 || rot == 270 || rot == -90);
+            int outW = swap ? h : w;
+            int outH = swap ? w : h;
+            return new SourceDimensions(outW, outH);
+        } catch (Exception e) {
+            log.warn("ffprobe dimensions failed for {}: {}", input, e.toString());
+            return new SourceDimensions(null, null);
+        } finally {
+            if (probeLog != null) {
+                try {
+                    Files.deleteIfExists(probeLog);
+                } catch (IOException ignored) {
+                    // best-effort
+                }
+            }
         }
-        String line;
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
-            line = r.readLine();
-        }
-        if (line == null || line.isBlank()) {
+    }
+
+    private static Integer parseRotateTag(JsonNode tags) {
+        if (tags == null || tags.isNull() || !tags.has("rotate")) {
             return null;
         }
-        double seconds = Double.parseDouble(line.trim());
-        return (int) Math.round(seconds);
+        JsonNode n = tags.get("rotate");
+        if (n.isIntegralNumber()) {
+            return n.intValue();
+        }
+        String s = n.asText("").trim();
+        if (s.isEmpty()) {
+            return null;
+        }
+        try {
+            double d = Double.parseDouble(s);
+            return (int) Math.round(d);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     private void extractThumbnail(Path input, Path output) throws Exception {
@@ -240,24 +378,36 @@ public class FfmpegHlsPipelineRunner {
         cmd.add("vod");
         cmd.add("-hls_segment_filename");
         cmd.add("segment_%03d.ts");
+        cmd.add("-f");
+        cmd.add("hls");
         cmd.add("playlist.m3u8");
         runProcess(cmd, outDir);
     }
 
+    /**
+     * Runs ffmpeg with merged stderr redirected to a file. Waiting on {@code waitFor()} without draining
+     * a PIPE causes a classic deadlock: ffmpeg fills the pipe buffer with progress logs and blocks forever.
+     */
     private void runProcess(List<String> command, Path workingDir) throws Exception {
+        Path logFile = Files.createTempFile(workingDir, "ffmpeg-", ".log");
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.directory(workingDir.toFile());
         pb.redirectErrorStream(true);
+        pb.redirectOutput(ProcessBuilder.Redirect.to(logFile.toFile()));
         String exec = command.isEmpty() ? "ffmpeg" : command.get(0);
         Process p = startProcessOrExplain(pb, exec);
-        boolean finished = p.waitFor(2, TimeUnit.HOURS);
-        if (!finished) {
-            p.destroyForcibly();
-            throw new IllegalStateException("ffmpeg timeout: " + command);
-        }
-        if (p.exitValue() != 0) {
-            String err = readAll(p);
-            throw new IllegalStateException("ffmpeg failed (exit " + p.exitValue() + "): " + err);
+        try {
+            boolean finished = p.waitFor(2, TimeUnit.HOURS);
+            if (!finished) {
+                p.destroyForcibly();
+                throw new IllegalStateException("ffmpeg timeout: " + command);
+            }
+            if (p.exitValue() != 0) {
+                String err = tailOfFile(logFile, 4000);
+                throw new IllegalStateException("ffmpeg failed (exit " + p.exitValue() + "): " + err);
+            }
+        } finally {
+            Files.deleteIfExists(logFile);
         }
     }
 
@@ -291,18 +441,21 @@ public class FfmpegHlsPipelineRunner {
         return sb.toString();
     }
 
-    private static String readAll(Process p) throws Exception {
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = r.readLine()) != null) {
-                if (sb.length() > 4000) {
-                    break;
-                }
-                sb.append(line).append('\n');
-            }
-            return sb.toString();
+    private static String tailOfFile(Path logFile, int maxChars) throws IOException {
+        if (!Files.exists(logFile)) {
+            return "";
         }
+        long len = Files.size(logFile);
+        if (len == 0) {
+            return "";
+        }
+        int toRead = (int) Math.min(len, maxChars);
+        byte[] buf = new byte[toRead];
+        try (RandomAccessFile raf = new RandomAccessFile(logFile.toFile(), "r")) {
+            raf.seek(len - toRead);
+            raf.readFully(buf);
+        }
+        return new String(buf, StandardCharsets.UTF_8);
     }
 
     private static String extensionFromKey(String key) {
