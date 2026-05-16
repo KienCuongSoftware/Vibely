@@ -10,10 +10,12 @@ vi.mock('../api/client', () => ({
   apiClient: {
     getFeed: vi.fn(),
     getFollowingFeed: vi.fn(),
+    getMyUploadedVideos: vi.fn(),
     getComments: vi.fn(),
     likeVideo: vi.fn(),
     addComment: vi.fn(),
     reportVideo: vi.fn(),
+    recordVideoView: vi.fn().mockResolvedValue(undefined),
   },
 }))
 
@@ -23,6 +25,7 @@ describe('FeedPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     apiClient.getComments.mockResolvedValue([])
+    apiClient.getMyUploadedVideos.mockResolvedValue({ items: [], hasNext: false })
   })
 
   it('switches between latest and following feed calls', async () => {
@@ -75,10 +78,33 @@ describe('FeedPage', () => {
 
   it('keeps the left sidebar visible when the comments panel is open', async () => {
     apiClient.getFeed.mockResolvedValue({
-      items: [],
+      items: [
+        {
+          id: 101,
+          authorId: 1,
+          authorUsername: 'demo_creator',
+          authorDisplayName: 'Demo',
+          authorAvatarUrl: '',
+          title: 'Clip test',
+          description: '',
+          videoUrl: 'https://example.com/clip.mp4',
+          thumbnailUrl: '',
+          audioUrl: '',
+          audioTitle: '',
+          likeCount: 0,
+          commentCount: 0,
+          bookmarkCount: 0,
+          shareCount: 0,
+          createdAt: '2026-01-01T12:00:00',
+          status: 'READY',
+          masterPlaylistUrl: null,
+          durationSeconds: 10,
+          processingError: null,
+        },
+      ],
       page: 0,
       size: 8,
-      total: 0,
+      total: 1,
       hasNext: false,
       sort: 'latest',
     })
