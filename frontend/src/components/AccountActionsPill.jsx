@@ -31,30 +31,35 @@ export function AccountActionsPill({
   className = "",
   tone = "feed",
   density = "compact",
+  showCoinAndApp = true,
 }) {
   const d = densityClasses[density] ?? densityClasses.compact;
   return (
     <div
       className={`flex items-center rounded-full border shadow-lg ${d.shell} leading-none ${toneClasses[tone] ?? toneClasses.feed} ${className}`}
     >
-      <TooltipIconButton
-        tip="Nhận xu"
-        ariaLabel="Nhận xu"
-        size={d.iconBtnSize}
-      >
-        <IoCashOutline className={d.icon} />
-      </TooltipIconButton>
-      <TooltipIconButton
-        tip="Tải ứng dụng"
-        ariaLabel="Tải ứng dụng"
-        size={d.iconBtnSize}
-      >
-        <IoPhonePortraitOutline className={d.icon} />
-      </TooltipIconButton>
-      <div
-        className={`mx-0.5 w-px shrink-0 self-center bg-zinc-600 ${d.rule}`}
-        aria-hidden
-      />
+      {showCoinAndApp ? (
+        <>
+          <TooltipIconButton
+            tip="Nhận xu"
+            ariaLabel="Nhận xu"
+            size={d.iconBtnSize}
+          >
+            <IoCashOutline className={d.icon} />
+          </TooltipIconButton>
+          <TooltipIconButton
+            tip="Tải ứng dụng"
+            ariaLabel="Tải ứng dụng"
+            size={d.iconBtnSize}
+          >
+            <IoPhonePortraitOutline className={d.icon} />
+          </TooltipIconButton>
+          <div
+            className={`mx-0.5 w-px shrink-0 self-center bg-zinc-600 ${d.rule}`}
+            aria-hidden
+          />
+        </>
+      ) : null}
       {children}
     </div>
   );
