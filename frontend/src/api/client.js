@@ -1,172 +1,222 @@
-import { resolveApiBaseUrl } from '../config/apiBase.js'
+import { resolveApiBaseUrl } from "../config/apiBase.js";
 
-const API_BASE_URL = resolveApiBaseUrl()
+const API_BASE_URL = resolveApiBaseUrl();
 
 const ERROR_MESSAGES_VI = {
-  AUTH_REQUIRED: 'Bạn cần đăng nhập để tiếp tục.',
-  ACCESS_DENIED: 'Bạn không có quyền thực hiện thao tác này.',
-  RATE_LIMITED: 'Bạn thao tác quá nhanh, vui lòng thử lại sau.',
-  VALIDATION_ERROR: 'Dữ liệu gửi lên chưa hợp lệ.',
-  BAD_REQUEST: 'Yêu cầu chưa hợp lệ, vui lòng kiểm tra lại.',
-  NOT_FOUND: 'Không tìm thấy dữ liệu yêu cầu.',
-  INTERNAL_SERVER_ERROR: 'Hệ thống đang bận, vui lòng thử lại sau.',
-}
+  AUTH_REQUIRED: "Bạn cần đăng nhập để tiếp tục.",
+  ACCESS_DENIED: "Bạn không có quyền thực hiện thao tác này.",
+  RATE_LIMITED: "Bạn thao tác quá nhanh, vui lòng thử lại sau.",
+  VALIDATION_ERROR: "Dữ liệu gửi lên chưa hợp lệ.",
+  BAD_REQUEST: "Yêu cầu chưa hợp lệ, vui lòng kiểm tra lại.",
+  NOT_FOUND: "Không tìm thấy dữ liệu yêu cầu.",
+  INTERNAL_SERVER_ERROR: "Hệ thống đang bận, vui lòng thử lại sau.",
+};
 
 function localizeError(code, fallbackMessage) {
+  const msg = String(fallbackMessage ?? "").trim();
+  if (msg) return msg;
   if (code && ERROR_MESSAGES_VI[code]) {
-    return ERROR_MESSAGES_VI[code]
+    return ERROR_MESSAGES_VI[code];
   }
-  return fallbackMessage
+  return "Đã có lỗi xảy ra.";
 }
 
-async function request(path, { method = 'GET', body, token } = {}) {
-  const headers = { 'Content-Type': 'application/json' }
+async function request(path, { method = "GET", body, token } = {}) {
+  const headers = { "Content-Type": "application/json" };
   if (token) {
-    headers.Authorization = `Bearer ${token}`
+    headers.Authorization = `Bearer ${token}`;
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
-  })
+  });
 
   if (!response.ok) {
-    let message = `Yêu cầu thất bại (mã ${response.status})`
-    let code
+    let message = `Yêu cầu thất bại (mã ${response.status})`;
+    let code;
     try {
-      const payload = await response.json()
-      code = payload?.error?.code
+      const payload = await response.json();
+      code = payload?.error?.code;
       if (payload?.error?.message) {
-        message = payload.error.message
+        message = payload.error.message;
       } else if (payload?.message) {
-        message = payload.message
+        message = payload.message;
       }
     } catch {
       // Keep default message when response is not JSON.
     }
-    throw new Error(localizeError(code, message))
+    throw new Error(localizeError(code, message));
   }
 
   if (response.status === 204) {
-    return null
+    return null;
   }
 
-  const payload = await response.json()
-  if (Object.prototype.hasOwnProperty.call(payload, 'success')) {
+  const payload = await response.json();
+  if (Object.prototype.hasOwnProperty.call(payload, "success")) {
     if (!payload.success) {
-      const code = payload?.error?.code
-      const fallbackMessage = payload?.error?.message ?? 'Yêu cầu thất bại'
-      throw new Error(localizeError(code, fallbackMessage))
+      const code = payload?.error?.code;
+      const fallbackMessage = payload?.error?.message ?? "Yêu cầu thất bại";
+      throw new Error(localizeError(code, fallbackMessage));
     }
-    return payload.data
+    return payload.data;
   }
-  return payload
+  return payload;
 }
 
 /** PUT file trực tiếp lên S3 bằng URL đã ký (không qua JSON API). */
 export async function uploadToPresignedPutUrl(uploadUrl, file, contentType) {
-  const ct = contentType || file?.type || 'application/octet-stream'
+  const ct = contentType || file?.type || "application/octet-stream";
   const response = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: { 'Content-Type': ct },
+    method: "PUT",
+    headers: { "Content-Type": ct },
     body: file,
-  })
+  });
   if (!response.ok) {
-    throw new Error(`Tải file lên kho lưu trữ thất bại (mã ${response.status}).`)
+    throw new Error(
+      `Tải file lên kho lưu trữ thất bại (mã ${response.status}).`,
+    );
   }
 }
 
 function toQuery(params = {}) {
-  const query = new URLSearchParams()
+  const query = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
-      query.set(key, String(value))
+      query.set(key, String(value));
     }
-  })
-  const queryString = query.toString()
-  return queryString ? `?${queryString}` : ''
+  });
+  const queryString = query.toString();
+  return queryString ? `?${queryString}` : "";
 }
 
 export const apiClient = {
-  login: (payload) => request('/api/auth/login', { method: 'POST', body: payload }),
-  register: (payload) => request('/api/auth/register', { method: 'POST', body: payload }),
-  refresh: (refreshToken) => request('/api/auth/refresh', { method: 'POST', body: { refreshToken } }),
-  logout: (refreshToken) => request('/api/auth/logout', { method: 'POST', body: { refreshToken } }),
-  sendCode: (payload) => request('/api/auth/send-code', { method: 'POST', body: payload }),
-  verifyCode: (payload) => request('/api/auth/verify-code', { method: 'POST', body: payload }),
+  login: (payload) =>
+    request("/api/auth/login", { method: "POST", body: payload }),
+  register: (payload) =>
+    request("/api/auth/register", { method: "POST", body: payload }),
+  refresh: (refreshToken) =>
+    request("/api/auth/refresh", { method: "POST", body: { refreshToken } }),
+  logout: (refreshToken) =>
+    request("/api/auth/logout", { method: "POST", body: { refreshToken } }),
+  sendCode: (payload) =>
+    request("/api/auth/send-code", { method: "POST", body: payload }),
+  verifyCode: (payload) =>
+    request("/api/auth/verify-code", { method: "POST", body: payload }),
   exchangeOAuthCode: (code) =>
-    request('/api/auth/oauth/exchange', { method: 'POST', body: { code } }),
-  me: (token) => request('/api/auth/me', { token }),
+    request("/api/auth/oauth/exchange", { method: "POST", body: { code } }),
+  me: (token) => request("/api/auth/me", { token }),
   updateMyProfile: (token, payload) =>
-    request('/api/users/me', { method: 'PUT', token, body: payload }),
-  checkUsername: (username) => request(`/api/users/check-username${toQuery({ username })}`),
-  getPublicProfile: (username) => request(`/api/users/${encodeURIComponent(username)}`),
+    request("/api/users/me", { method: "PUT", token, body: payload }),
+  checkUsername: (username) =>
+    request(`/api/users/check-username${toQuery({ username })}`),
+  getPublicProfile: (username) =>
+    request(`/api/users/${encodeURIComponent(username)}`),
   getVideosByUsername: (username, { page = 0, size = 48 } = {}) => {
-    const u = String(username ?? '').trim().replace(/^@/, '')
-    return request(`/api/users/${encodeURIComponent(u)}/videos${toQuery({ page, size })}`)
+    const u = String(username ?? "")
+      .trim()
+      .replace(/^@/, "");
+    return request(
+      `/api/users/${encodeURIComponent(u)}/videos${toQuery({ page, size })}`,
+    );
   },
-  getFeed: ({ page = 0, size = 10, sort = 'latest' } = {}) =>
-    request(`/api/feed${toQuery({ page, size, sort })}`),
+  getFeed: ({ page = 0, size = 10, sort = "latest", cursor } = {}) =>
+    request(`/api/feed${toQuery({ page, size, sort, cursor })}`),
   getStudioAnalyticsOverview: (token, { days = 7 } = {}) =>
     request(`/api/studio/analytics/overview${toQuery({ days })}`, { token }),
+  getStudioVideoAnalytics: (token, videoId, { days = 7 } = {}) =>
+    request(`/api/studio/analytics/video/${videoId}${toQuery({ days })}`, {
+      token,
+    }),
   getFollowingFeed: (token, { page = 0, size = 10 } = {}) =>
     request(`/api/feed/following${toQuery({ page, size })}`, { token }),
-  createVideo: (payload, token) => request('/api/videos', { method: 'POST', body: payload, token }),
-  getVideo: (videoId) => request(`/api/videos/${videoId}`),
+  createVideo: (payload, token) =>
+    request("/api/videos", { method: "POST", body: payload, token }),
+  getVideo: (videoId, { token } = {}) =>
+    request(`/api/videos/${videoId}`, token ? { token } : {}),
   getVideosBySound: (audioUrl, { page = 0, size = 24 } = {}) =>
     request(`/api/videos/sound${toQuery({ audioUrl, page, size })}`),
   updateVideo: (videoId, payload, token) =>
-    request(`/api/videos/${videoId}`, { method: 'PUT', body: payload, token }),
+    request(`/api/videos/${videoId}`, { method: "PUT", body: payload, token }),
   deleteVideo: (videoId, token) =>
-    request(`/api/videos/${videoId}`, { method: 'DELETE', token }),
+    request(`/api/videos/${videoId}`, { method: "DELETE", token }),
   presignVideoUpload: (token, body) =>
-    request('/api/videos/upload/presign', { method: 'POST', body, token }),
+    request("/api/videos/upload/presign", { method: "POST", body, token }),
   presignThumbnailUpload: (token, body) =>
-    request('/api/videos/upload/presign-thumbnail', { method: 'POST', body, token }),
-  likeVideo: (videoId, token) => request(`/api/videos/${videoId}/likes`, { method: 'POST', token }),
-  unlikeVideo: (videoId, token) => request(`/api/videos/${videoId}/likes`, { method: 'DELETE', token }),
+    request("/api/videos/upload/presign-thumbnail", {
+      method: "POST",
+      body,
+      token,
+    }),
+  likeVideo: (videoId, token) =>
+    request(`/api/videos/${videoId}/likes`, { method: "POST", token }),
+  unlikeVideo: (videoId, token) =>
+    request(`/api/videos/${videoId}/likes`, { method: "DELETE", token }),
   bookmarkVideo: (videoId, token) =>
-    request(`/api/videos/${videoId}/bookmarks`, { method: 'POST', token }),
+    request(`/api/videos/${videoId}/bookmarks`, { method: "POST", token }),
   unbookmarkVideo: (videoId, token) =>
-    request(`/api/videos/${videoId}/bookmarks`, { method: 'DELETE', token }),
-  getVideoMeState: (videoId, token) => request(`/api/videos/${videoId}/me`, { token }),
+    request(`/api/videos/${videoId}/bookmarks`, { method: "DELETE", token }),
+  getVideoMeState: (videoId, token) =>
+    request(`/api/videos/${videoId}/me`, { token }),
   getMyLikedVideos: (token, { page = 0, size = 24 } = {}) =>
     request(`/api/users/me/liked-videos${toQuery({ page, size })}`, { token }),
   getMyBookmarkedVideos: (token, { page = 0, size = 24 } = {}) =>
-    request(`/api/users/me/bookmarked-videos${toQuery({ page, size })}`, { token }),
+    request(`/api/users/me/bookmarked-videos${toQuery({ page, size })}`, {
+      token,
+    }),
   getMyUploadedVideos: (token, { page = 0, size = 24 } = {}) =>
     request(`/api/users/me/videos${toQuery({ page, size })}`, { token }),
-  getComments: (videoId) => request(`/api/videos/${videoId}/comments`),
-  addComment: (videoId, content, token) =>
+  getComments: (videoId, { token } = {}) =>
+    request(`/api/videos/${videoId}/comments`, token ? { token } : {}),
+  addComment: (videoId, content, token, { parentCommentId } = {}) =>
     request(`/api/videos/${videoId}/comments`, {
-      method: 'POST',
-      body: { content },
+      method: "POST",
+      body: {
+        content,
+        ...(parentCommentId != null ? { parentCommentId } : {}),
+      },
+      token,
+    }),
+  deleteComment: (videoId, commentId, token) =>
+    request(`/api/videos/${videoId}/comments/${commentId}`, {
+      method: "DELETE",
       token,
     }),
   reportVideo: (videoId, reason, token) =>
     request(`/api/videos/${videoId}/report`, {
-      method: 'POST',
+      method: "POST",
       body: { reason },
       token,
     }),
-  follow: (userId, token) => request(`/api/follows/${userId}`, { method: 'POST', token }),
-  unfollow: (userId, token) => request(`/api/follows/${userId}`, { method: 'DELETE', token }),
-  getMentionableFriends: (token) => request('/api/follows/friends', { token }),
-  recordVideoView: (videoId) => request(`/api/videos/${videoId}/views`, { method: 'POST' }),
+  follow: (userId, token) =>
+    request(`/api/follows/${userId}`, { method: "POST", token }),
+  unfollow: (userId, token) =>
+    request(`/api/follows/${userId}`, { method: "DELETE", token }),
+  getMentionableFriends: (token) => request("/api/follows/friends", { token }),
+  recordVideoView: (videoId, body) =>
+    request(`/api/videos/${videoId}/views`, { method: "POST", body }),
   recordVideoShare: (videoId) =>
-    request(`/api/videos/${videoId}/shares`, { method: 'POST' }),
-}
+    request(`/api/videos/${videoId}/shares`, { method: "POST" }),
+};
 
 /** Tải blob ảnh bìa lên S3 qua presign, trả về URL công khai. */
-export async function uploadThumbnailToStorage(token, blob, fileName = 'cover.jpg') {
+export async function uploadThumbnailToStorage(
+  token,
+  blob,
+  fileName = "cover.jpg",
+) {
   const ct =
-    blob.type && String(blob.type).startsWith('image/') ? blob.type : 'image/jpeg'
-  const name = fileName && /\.(jpe?g|png|webp)$/i.test(fileName) ? fileName : 'cover.jpg'
+    blob.type && String(blob.type).startsWith("image/")
+      ? blob.type
+      : "image/jpeg";
+  const name =
+    fileName && /\.(jpe?g|png|webp)$/i.test(fileName) ? fileName : "cover.jpg";
   const presign = await apiClient.presignThumbnailUpload(token, {
-    contentType: ct === 'image/jpg' ? 'image/jpeg' : ct,
+    contentType: ct === "image/jpg" ? "image/jpeg" : ct,
     fileName: name,
-  })
-  await uploadToPresignedPutUrl(presign.uploadUrl, blob, presign.contentType)
-  return presign.playbackUrl
+  });
+  await uploadToPresignedPutUrl(presign.uploadUrl, blob, presign.contentType);
+  return presign.playbackUrl;
 }
