@@ -1,5 +1,5 @@
 import React from 'react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { apiClient } from '../api/client'
 import { useAuth } from '../state/useAuth'
@@ -10,14 +10,12 @@ import {
   IoAlbumsOutline,
   IoArrowBack,
   IoArrowRedo,
-  IoBookmark,
   IoBookmarkOutline,
   IoCheckmark,
   IoCameraOutline,
   IoCompass,
   IoClose,
   IoEllipsisHorizontal,
-  IoHeart,
   IoHeartOutline,
   IoHome,
   IoLogOutOutline,
@@ -25,12 +23,12 @@ import {
   IoPaperPlane,
   IoPeople,
   IoPerson,
+  IoPlayOutline,
   IoSettingsOutline,
   IoVideocam,
 } from 'react-icons/io5'
 import { MdOutlineFileUpload } from 'react-icons/md'
 import { LuGrid2X2 } from 'react-icons/lu'
-import { FaComment } from 'react-icons/fa6'
 
 const DEFAULT_USER_AVATAR_URL = '/images/users/default-avatar.jpeg'
 
@@ -51,6 +49,17 @@ function formatCompactCount(value) {
   return String(count)
 }
 
+/** Lưới hồ sơ: mới đăng trước (giống TikTok tab Video → Mới nhất). */
+function sortVideosNewestFirst(items) {
+  const list = Array.isArray(items) ? [...items] : []
+  return list.sort((a, b) => {
+    const ta = new Date(a?.createdAt ?? 0).getTime()
+    const tb = new Date(b?.createdAt ?? 0).getTime()
+    if (tb !== ta) return tb - ta
+    return Number(b?.id ?? 0) - Number(a?.id ?? 0)
+  })
+}
+
 /** Legacy auto-filled OAuth bios — không hiển thị như tiểu sử thật. */
 function resolveProfileBio(rawBio) {
   const trimmed = String(rawBio ?? '').trim()
@@ -66,6 +75,71 @@ function profileHrefFromAuthUsername(raw) {
   return id ? `/@${encodeURIComponent(id)}` : '/profile'
 }
 
+function normalizeProfileUsernameKey(raw) {
+  return String(raw ?? '')
+    .trim()
+    .replace(/^@/, '')
+    .toLowerCase()
+}
+
+/** Permalink /@author/video/id — dùng author của video (đúng khi xem từ Yêu thích / Đã thích). */
+function profileVideoPermalinkForGrid(video, fallbackUsernameRaw) {
+  const slug =
+    normalizeProfileUsernameKey(video?.authorUsername) ||
+    normalizeProfileUsernameKey(fallbackUsernameRaw)
+  const id = video?.id
+  if (!slug || id == null || !/^\d+$/.test(String(id))) return '/foryou'
+  return `/@${encodeURIComponent(slug)}/video/${encodeURIComponent(String(id))}`
+}
+
+/** Ô lưới hồ sơ: chỉ phát khi `playing`; tắt tiếng, loop. */
+function ProfileGridMedia({ item: v, playing = false }) {
+  const videoRef = useRef(null)
+  const url = typeof v?.videoUrl === 'string' ? v.videoUrl.trim() : ''
+  const thumb = typeof v?.thumbnailUrl === 'string' ? v.thumbnailUrl.trim() : ''
+
+  useEffect(() => {
+    const el = videoRef.current
+    if (!el || !url) return
+    if (playing) {
+      const p = el.play()
+      if (p?.catch) p.catch(() => {})
+    } else {
+      el.pause()
+      try {
+        el.currentTime = 0
+      } catch {
+        /* noop */
+      }
+    }
+  }, [playing, url])
+
+  if (url) {
+    return (
+      <video
+        ref={videoRef}
+        src={url}
+        poster={thumb || undefined}
+        muted
+        loop
+        playsInline
+        className="h-full w-full object-cover"
+        preload="metadata"
+      />
+    )
+  }
+  if (thumb) {
+    return <img src={thumb} alt="" className="h-full w-full object-cover" />
+  }
+  return (
+    <img
+      src="https://picsum.photos/seed/vibely-thumb/360/640"
+      alt=""
+      className="h-full w-full object-cover"
+    />
+  )
+}
+
 export function ProfilePage() {
   const { username } = useParams()
   const { token, user, refreshProfile, updateProfile, logout } = useAuth()
@@ -74,6 +148,8 @@ export function ProfilePage() {
   const [favoritesSubTab, setFavoritesSubTab] = useState('posts')
   const [status, setStatus] = useState('')
   const [publicProfile, setPublicProfile] = useState(null)
+  /** GET /users/:username — dùng thêm cho /profile (cùng mình) để có chỉ số follow / lượt xem tổng. */
+  const [ownPublicProfile, setOwnPublicProfile] = useState(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editForm, setEditForm] = useState({
     username: '',
@@ -110,6 +186,8 @@ export function ProfilePage() {
   const [collectionPickIds, setCollectionPickIds] = useState(() => new Set())
   const [profileVideos, setProfileVideos] = useState([])
   const [profileVideosLoading, setProfileVideosLoading] = useState(false)
+  /** Video đang preview trong lưới hồ sơ; đổi khi hover ô khác, không reset khi rời chuột. */
+  const [profileGridPlayingId, setProfileGridPlayingId] = useState(null)
 
   const COLLECTION_NAME_MAX = 30
 
@@ -141,11 +219,31 @@ export function ProfilePage() {
       }
     }
 
-    if (!token) return
+    if (!token) return undefined
     refreshProfile()
       .then(() => setStatus('Đã tải hồ sơ'))
       .catch((error) => setStatus(error.message))
+    return undefined
   }, [token, refreshProfile, username])
+
+  useEffect(() => {
+    if (username || !token || !user?.username) {
+      setOwnPublicProfile(null)
+      return undefined
+    }
+    let cancelled = false
+    apiClient
+      .getPublicProfile(user.username)
+      .then((p) => {
+        if (!cancelled) setOwnPublicProfile(p)
+      })
+      .catch(() => {
+        if (!cancelled) setOwnPublicProfile(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [token, username, user?.username])
 
   useEffect(() => {
     if (!showAccountMenu) return undefined
@@ -192,13 +290,25 @@ export function ProfilePage() {
     return () => document.removeEventListener('keydown', handleEscape)
   }, [newCollectionOpen, closeNewCollectionModal])
 
-  const profile = username ? publicProfile : user
+  const profile = useMemo(() => {
+    if (username) return publicProfile
+    if (!user) return null
+    if (!ownPublicProfile) return user
+    return {
+      ...user,
+      followingCount: ownPublicProfile.followingCount,
+      followerCount: ownPublicProfile.followerCount,
+      totalLikeCount: ownPublicProfile.totalLikeCount,
+      totalViewCount: ownPublicProfile.totalViewCount,
+    }
+  }, [username, publicProfile, user, ownPublicProfile])
   const isPublicProfileLoading = Boolean(username) && !publicProfile && !status
   const normalizeUsername = (value) => String(value ?? '').trim().replace(/^@/, '').toLowerCase()
   const isOwnProfile =
-    Boolean(user?.username) &&
-    Boolean(profile?.username) &&
-    normalizeUsername(user.username) === normalizeUsername(profile.username)
+    (Boolean(token) && !username) ||
+    (Boolean(user?.username) &&
+      Boolean(profile?.username) &&
+      normalizeUsername(user.username) === normalizeUsername(profile.username))
 
   const profileMainTab =
     searchParams.get('tab') === 'favorites'
@@ -230,7 +340,7 @@ export function ProfilePage() {
           data = await apiClient.getVideosByUsername(profile.username, { page: 0, size: 48 })
         }
         if (!cancelled) {
-          setProfileVideos(Array.isArray(data?.items) ? data.items : [])
+          setProfileVideos(sortVideosNewestFirst(data?.items))
         }
       } catch {
         if (!cancelled) setProfileVideos([])
@@ -305,6 +415,31 @@ export function ProfilePage() {
 
   const collectionTotal = 0
 
+  const profileGridVideoList = useMemo(() => {
+    if (profileMainTab === 'videos') return profileVideos
+    if (profileMainTab === 'favorites' && favoritesSubTab === 'posts') return bookmarkItems
+    if (profileMainTab === 'liked') return likedItems
+    return []
+  }, [profileMainTab, favoritesSubTab, profileVideos, bookmarkItems, likedItems])
+
+  useEffect(() => {
+    if (profileGridVideoList.length === 0) {
+      setProfileGridPlayingId(null)
+      return
+    }
+    setProfileGridPlayingId((prev) => {
+      if (prev != null && profileGridVideoList.some((v) => Number(v.id) === Number(prev))) {
+        return prev
+      }
+      return profileGridVideoList[0]?.id ?? null
+    })
+  }, [profileGridVideoList])
+
+  const focusProfileGridVideo = useCallback((videoId) => {
+    if (videoId == null) return
+    setProfileGridPlayingId(videoId)
+  }, [])
+
   const bioDraftLength = editForm.bio.length
   const normalizeEditForm = (value) => ({
     username: normalizeUsername(value?.username),
@@ -362,12 +497,20 @@ export function ProfilePage() {
 
   const activeMenu = 'profile'
   const handleSelectMenu = (id) => {
-    if (id === 'profile' || id === 'more') return
+    if (id === 'more') return
+    if (id === 'profile') {
+      if (!token) {
+        navigate('/login')
+        return
+      }
+      navigate(profileHrefFromAuthUsername(user?.username))
+      return
+    }
     if (id === 'upload') {
       navigate('/vibelystudio/upload')
       return
     }
-    // Profile page tập trung nội dung trang profile; các mục khác quay về feed.
+    // Các mục khác: về feed.
     navigate('/foryou', { replace: true })
   }
 
@@ -481,7 +624,7 @@ export function ProfilePage() {
         activeMenu={activeMenu}
         onSelectMenu={handleSelectMenu}
         token={token}
-        user={profile ?? user}
+        user={user}
         onLogout={token ? logout : undefined}
       />
 
@@ -579,13 +722,28 @@ export function ProfilePage() {
 
                   <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-300">
                     <span>
-                      <span className="font-semibold text-zinc-100">0</span> Đã follow
+                      <span className="font-semibold text-zinc-100">
+                        {formatCompactCount(profile?.followingCount ?? 0)}
+                      </span>{' '}
+                      Đã follow
                     </span>
                     <span>
-                      <span className="font-semibold text-zinc-100">0</span> Follower
+                      <span className="font-semibold text-zinc-100">
+                        {formatCompactCount(profile?.followerCount ?? 0)}
+                      </span>{' '}
+                      Follower
                     </span>
                     <span>
-                      <span className="font-semibold text-zinc-100">0</span> Lượt thích
+                      <span className="font-semibold text-zinc-100">
+                        {formatCompactCount(profile?.totalLikeCount ?? 0)}
+                      </span>{' '}
+                      Lượt thích
+                    </span>
+                    <span>
+                      <span className="font-semibold text-zinc-100">
+                        {formatCompactCount(profile?.totalViewCount ?? 0)}
+                      </span>{' '}
+                      Lượt xem
                     </span>
                   </div>
 
@@ -750,47 +908,25 @@ export function ProfilePage() {
                   <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                     {profileVideos.map((v) => (
                       <li key={v.id}>
-                        <Link to="/foryou" state={{ focusVideoId: v.id }} className="block">
-                          <div className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600">
-                            {v.thumbnailUrl?.trim() ? (
-                              <img
-                                src={v.thumbnailUrl}
-                                alt=""
-                                className="h-full w-full object-cover"
-                              />
-                            ) : v.videoUrl ? (
-                              <video
-                                src={v.videoUrl}
-                                muted
-                                playsInline
-                                className="h-full w-full object-cover"
-                                preload="metadata"
-                              />
-                            ) : null}
-                            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent px-1.5 pb-1 pt-8">
-                              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-semibold text-white drop-shadow-md">
-                                <span className="inline-flex items-center gap-0.5">
-                                  <IoHeart className="text-[11px]" aria-hidden />
-                                  {formatCompactCount(v.likeCount)}
-                                </span>
-                                <span className="inline-flex items-center gap-0.5">
-                                  <FaComment className="text-[10px]" aria-hidden />
-                                  {formatCompactCount(v.commentCount)}
-                                </span>
-                                <span className="inline-flex items-center gap-0.5">
-                                  <IoBookmark className="text-[11px]" aria-hidden />
-                                  {formatCompactCount(v.bookmarkCount)}
-                                </span>
-                                <span className="inline-flex items-center gap-0.5">
-                                  <IoArrowRedo className="text-[11px]" aria-hidden />
-                                  {formatCompactCount(v.shareCount)}
-                                </span>
+                        <Link
+                          to={profileVideoPermalinkForGrid(v, profile?.username ?? username)}
+                          className="block"
+                        >
+                          <div
+                            className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
+                            onMouseEnter={() => focusProfileGridVideo(v.id)}
+                          >
+                            <ProfileGridMedia
+                              item={v}
+                              playing={Number(v.id) === Number(profileGridPlayingId)}
+                            />
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
+                              <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
+                                <IoPlayOutline className="text-[13px]" aria-hidden />
+                                <span>{formatCompactCount(v.viewCount ?? 0)}</span>
                               </div>
                             </div>
                           </div>
-                          <p className="mt-1.5 line-clamp-2 text-xs font-medium leading-snug text-zinc-200">
-                            {(v.description && String(v.description).trim()) || v.title || 'Video'}
-                          </p>
                         </Link>
                       </li>
                     ))}
@@ -808,14 +944,6 @@ export function ProfilePage() {
                         ? 'Video của bạn sẽ xuất hiện tại đây'
                         : 'Người dùng này chưa có video hiển thị trên hồ sơ.'}
                     </p>
-                    {isOwnProfile ? (
-                      <Link
-                        to="/vibelystudio/upload"
-                        className="mt-6 rounded-md bg-red-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-red-500"
-                      >
-                        Tải lên
-                      </Link>
-                    ) : null}
                   </div>
                 )}
               </div>
@@ -846,41 +974,25 @@ export function ProfilePage() {
                       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                         {bookmarkItems.map((v) => (
                           <li key={v.id}>
-                            <Link to="/foryou" className="block">
-                              <div className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600">
-                                <img
-                                  src={
-                                    v.thumbnailUrl?.trim()
-                                      ? v.thumbnailUrl
-                                      : 'https://picsum.photos/seed/vibely-thumb/360/640'
-                                  }
-                                  alt=""
-                                  className="h-full w-full object-cover"
+                            <Link
+                              to={profileVideoPermalinkForGrid(v, profile?.username ?? username)}
+                              className="block"
+                            >
+                              <div
+                                className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
+                                onMouseEnter={() => focusProfileGridVideo(v.id)}
+                              >
+                                <ProfileGridMedia
+                                  item={v}
+                                  playing={Number(v.id) === Number(profileGridPlayingId)}
                                 />
-                                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent px-1.5 pb-1 pt-8">
-                                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-semibold text-white drop-shadow-md">
-                                    <span className="inline-flex items-center gap-0.5">
-                                      <IoHeart className="text-[11px]" aria-hidden />
-                                      {formatCompactCount(v.likeCount)}
-                                    </span>
-                                    <span className="inline-flex items-center gap-0.5">
-                                      <FaComment className="text-[10px]" aria-hidden />
-                                      {formatCompactCount(v.commentCount)}
-                                    </span>
-                                    <span className="inline-flex items-center gap-0.5">
-                                      <IoBookmark className="text-[11px]" aria-hidden />
-                                      {formatCompactCount(v.bookmarkCount)}
-                                    </span>
-                                    <span className="inline-flex items-center gap-0.5">
-                                      <IoArrowRedo className="text-[11px]" aria-hidden />
-                                      {formatCompactCount(v.shareCount)}
-                                    </span>
+                                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
+                                  <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
+                                    <IoPlayOutline className="text-[13px]" aria-hidden />
+                                    <span>{formatCompactCount(v.viewCount ?? 0)}</span>
                                   </div>
                                 </div>
                               </div>
-                              <p className="mt-1.5 line-clamp-2 text-xs font-medium leading-snug text-zinc-200">
-                                {v.title ?? 'Video'}
-                              </p>
                             </Link>
                           </li>
                         ))}
@@ -935,41 +1047,25 @@ export function ProfilePage() {
                       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                         {likedItems.map((v) => (
                           <li key={v.id}>
-                            <Link to="/foryou" className="block">
-                              <div className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600">
-                                <img
-                                  src={
-                                    v.thumbnailUrl?.trim()
-                                      ? v.thumbnailUrl
-                                      : 'https://picsum.photos/seed/vibely-thumb/360/640'
-                                  }
-                                  alt=""
-                                  className="h-full w-full object-cover"
+                            <Link
+                              to={profileVideoPermalinkForGrid(v, profile?.username ?? username)}
+                              className="block"
+                            >
+                              <div
+                                className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
+                                onMouseEnter={() => focusProfileGridVideo(v.id)}
+                              >
+                                <ProfileGridMedia
+                                  item={v}
+                                  playing={Number(v.id) === Number(profileGridPlayingId)}
                                 />
-                                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent px-1.5 pb-1 pt-8">
-                                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-semibold text-white drop-shadow-md">
-                                    <span className="inline-flex items-center gap-0.5">
-                                      <IoHeart className="text-[11px]" aria-hidden />
-                                      {formatCompactCount(v.likeCount)}
-                                    </span>
-                                    <span className="inline-flex items-center gap-0.5">
-                                      <FaComment className="text-[10px]" aria-hidden />
-                                      {formatCompactCount(v.commentCount)}
-                                    </span>
-                                    <span className="inline-flex items-center gap-0.5">
-                                      <IoBookmark className="text-[11px]" aria-hidden />
-                                      {formatCompactCount(v.bookmarkCount)}
-                                    </span>
-                                    <span className="inline-flex items-center gap-0.5">
-                                      <IoArrowRedo className="text-[11px]" aria-hidden />
-                                      {formatCompactCount(v.shareCount)}
-                                    </span>
+                                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
+                                  <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
+                                    <IoPlayOutline className="text-[13px]" aria-hidden />
+                                    <span>{formatCompactCount(v.viewCount ?? 0)}</span>
                                   </div>
                                 </div>
                               </div>
-                              <p className="mt-1.5 line-clamp-2 text-xs font-medium leading-snug text-zinc-200">
-                                {v.title ?? 'Video'}
-                              </p>
                             </Link>
                           </li>
                         ))}
@@ -988,7 +1084,6 @@ export function ProfilePage() {
               </div>
             ) : null}
 
-            {status ? <p className="text-xs text-zinc-500">{status}</p> : null}
           </section>
         )}
         </div>
@@ -1341,15 +1436,7 @@ export function ProfilePage() {
                                 className="relative block w-full cursor-pointer text-left"
                               >
                                 <div className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-950 ring-1 ring-zinc-700">
-                                  <img
-                                    src={
-                                      v.thumbnailUrl?.trim()
-                                        ? v.thumbnailUrl
-                                        : 'https://picsum.photos/seed/vibely-thumb/360/640'
-                                    }
-                                    alt=""
-                                    className="h-full w-full object-cover"
-                                  />
+                                  <ProfileGridMedia item={v} playing={false} />
                                   <span
                                     className={`absolute bottom-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 ${
                                       selected

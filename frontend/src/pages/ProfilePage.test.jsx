@@ -40,7 +40,7 @@ describe('ProfilePage', () => {
     expect(screen.getByText('Vui lòng đăng nhập để xem hồ sơ.')).toBeInTheDocument()
   })
 
-  it('shows fetch error from profile refresh', async () => {
+  it('calls refreshProfile on mount and still renders own profile when refresh fails', async () => {
     const refreshProfile = vi.fn().mockRejectedValue(new Error('Profile API failed'))
     render(
       <AuthContext.Provider
@@ -64,8 +64,9 @@ describe('ProfilePage', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Profile API failed')).toBeInTheDocument()
+      expect(refreshProfile).toHaveBeenCalled()
     })
+    expect(screen.getByText('@demo')).toBeInTheDocument()
   })
 
   it('shows Yêu thích empty state when URL has tab=favorites', async () => {
