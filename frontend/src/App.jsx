@@ -6,7 +6,11 @@ import { FeedPage } from './pages/FeedPage.jsx'
 import { UploadPage } from './pages/UploadPage.jsx'
 import { StudioHomePage } from './pages/StudioHomePage.jsx'
 import { StudioPostsPage } from './pages/StudioPostsPage.jsx'
+import { StudioEditPostPage } from './pages/StudioEditPostPage.jsx'
+import { StudioVideoAnalyticsPage } from './pages/StudioVideoAnalyticsPage.jsx'
+import { StudioPostCommentsPage } from './pages/StudioPostCommentsPage.jsx'
 import { ProfilePage } from './pages/ProfilePage.jsx'
+import { VideoWatchPage } from './pages/VideoWatchPage.jsx'
 import { TermsOfServicePage } from './pages/TermsOfServicePage.jsx'
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage.jsx'
 import { SoundPage } from './pages/SoundPage.jsx'
@@ -14,10 +18,11 @@ import { useAuth } from './state/useAuth'
 
 function App() {
   const { token } = useAuth()
+  const shellClass = 'min-h-screen bg-black text-zinc-100'
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-black text-zinc-100">
+      <div className={shellClass}>
         <Routes>
           <Route path="/" element={<Navigate to="/foryou" replace />} />
           <Route path="/foryou" element={<FeedPage />} />
@@ -33,6 +38,9 @@ function App() {
           <Route path="/vibelystudio/home" element={<Navigate to="/login" replace />} />
           <Route path="/vibelystudio/posts" element={<Navigate to="/login" replace />} />
           <Route path="/vibelystudio/upload" element={<Navigate to="/login" replace />} />
+          <Route path="/vibelystudio/upload/post/:videoId" element={<Navigate to="/login" replace />} />
+          <Route path="/vibelystudio/comment/:videoId" element={<Navigate to="/login" replace />} />
+          <Route path="/:username/video/:videoId" element={<VideoWatchPage />} />
           <Route path="/profile" element={<Navigate to="/login" replace />} />
           <Route path="/:username" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/foryou" replace />} />
@@ -42,7 +50,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100">
+    <div className={shellClass}>
       <Routes>
         <Route path="/" element={<Navigate to="/foryou" replace />} />
         <Route path="/foryou" element={<FeedPage />} />
@@ -56,6 +64,10 @@ function App() {
         <Route path="/vibelystudio/home" element={<StudioHomePage />} />
         <Route path="/vibelystudio/posts" element={<StudioPostsPage />} />
         <Route path="/vibelystudio/upload" element={<UploadPage />} />
+        <Route path="/vibelystudio/upload/post/:videoId" element={<StudioEditPostPage />} />
+        <Route path="/vibelystudio/analytics/:videoId" element={<StudioVideoAnalyticsPage />} />
+        <Route path="/vibelystudio/comment/:videoId" element={<StudioPostCommentsPage />} />
+        <Route path="/:username/video/:videoId" element={<VideoWatchPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/:username" element={<ProfilePage />} />
         <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
