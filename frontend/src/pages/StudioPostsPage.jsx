@@ -3,9 +3,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
+  IoBarChartOutline,
   IoChatbubbleEllipsesOutline,
   IoEllipsisHorizontal,
-  IoEyeOutline,
   IoPencil,
   IoTrashOutline,
 } from 'react-icons/io5'
@@ -23,10 +23,6 @@ export function StudioPostsPage() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [editingVideo, setEditingVideo] = useState(null)
-  const [editTitle, setEditTitle] = useState('')
-  const [editDescription, setEditDescription] = useState('')
-  const [editSaving, setEditSaving] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleteBusy, setDeleteBusy] = useState(false)
   /** Menu nổi (fixed + portal) tránh bị cắt bởi overflow-x-auto của khối bảng */
@@ -72,12 +68,6 @@ export function StudioPostsPage() {
   }, [successMessage, load, navigate, location.pathname])
 
   useEffect(() => {
-    if (!editingVideo) return
-    setEditTitle(editingVideo.title ?? '')
-    setEditDescription(editingVideo.description ?? '')
-  }, [editingVideo])
-
-  useEffect(() => {
     if (moreMenu == null) return undefined
     const onPointerDown = (e) => {
       const t = e.target
@@ -100,31 +90,6 @@ export function StudioPostsPage() {
       window.removeEventListener('resize', onScrollOrResize)
     }
   }, [moreMenu])
-
-  const openEditor = (v) => {
-    setMoreMenu(null)
-    setEditingVideo(v)
-  }
-
-  const saveEdit = async () => {
-    if (!token || !editingVideo) return
-    const title = String(editTitle ?? '').trim()
-    if (!title) return
-    setEditSaving(true)
-    try {
-      await apiClient.updateVideo(
-        editingVideo.id,
-        { title, description: String(editDescription ?? '').trim() || null },
-        token,
-      )
-      setEditingVideo(null)
-      await load()
-    } catch (e) {
-      setError(e.message ?? 'Không lưu được thay đổi.')
-    } finally {
-      setEditSaving(false)
-    }
-  }
 
   const confirmDelete = async () => {
     if (!token || !deleteTarget) return
@@ -242,23 +207,26 @@ export function StudioPostsPage() {
                           <button
                             type="button"
                             className="rounded-md p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-pink-400"
-                            title="Sửa tiêu đề và mô tả"
-                            aria-label="Sửa bài đăng"
-                            onClick={() => openEditor(v)}
+                            title="Chỉnh sửa bài đăng"
+                            aria-label="Chỉnh sửa bài đăng"
+                            onClick={() => {
+                              setMoreMenu(null)
+                              navigate(`/vibelystudio/upload/post/${v.id}`)
+                            }}
                           >
                             <IoPencil className="h-5 w-5" aria-hidden />
                           </button>
                           <button
                             type="button"
-                            className="rounded-md p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-pink-400"
-                            title="Xem trên feed"
-                            aria-label="Xem chi tiết trên feed"
+                            className="cursor-pointer rounded-md p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-pink-400"
+                            title="Thống kê bài đăng"
+                            aria-label="Thống kê bài đăng"
                             onClick={() => {
                               setMoreMenu(null)
-                              navigate('/foryou', { state: { focusVideoId: v.id } })
+                              navigate(`/vibelystudio/analytics/${v.id}`)
                             }}
                           >
-                            <IoEyeOutline className="h-5 w-5" aria-hidden />
+                            <IoBarChartOutline className="h-5 w-5" aria-hidden />
                           </button>
                           <button
                             type="button"
@@ -267,9 +235,7 @@ export function StudioPostsPage() {
                             aria-label="Xem bình luận"
                             onClick={() => {
                               setMoreMenu(null)
-                              navigate('/foryou', {
-                                state: { focusVideoId: v.id, openComments: true },
-                              })
+                              navigate(`/vibelystudio/comment/${v.id}`)
                             }}
                           >
                             <IoChatbubbleEllipsesOutline className="h-5 w-5" aria-hidden />
@@ -338,58 +304,6 @@ export function StudioPostsPage() {
             document.body,
           )
         : null}
-
-      {editingVideo ? (
-        <div
-          className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="edit-post-title"
-          onClick={() => !editSaving && setEditingVideo(null)}
-        >
-          <div
-            className="w-full max-w-md rounded-xl border border-zinc-700 bg-zinc-900 p-5 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-            role="presentation"
-          >
-            <h2 id="edit-post-title" className="text-lg font-semibold text-zinc-100">
-              Sửa bài đăng
-            </h2>
-            <label className="mt-4 block text-xs font-medium text-zinc-400">Tiêu đề</label>
-            <input
-              className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100"
-              value={editTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
-              maxLength={120}
-            />
-            <label className="mt-3 block text-xs font-medium text-zinc-400">Mô tả</label>
-            <textarea
-              className="mt-1 min-h-[88px] w-full resize-y rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100"
-              value={editDescription}
-              onChange={(e) => setEditDescription(e.target.value)}
-              maxLength={1000}
-            />
-            <div className="mt-5 flex justify-end gap-2">
-              <button
-                type="button"
-                className="rounded-md px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800"
-                onClick={() => setEditingVideo(null)}
-                disabled={editSaving}
-              >
-                Hủy
-              </button>
-              <button
-                type="button"
-                className="rounded-md bg-pink-600 px-4 py-2 text-sm font-semibold text-white hover:bg-pink-500 disabled:opacity-50"
-                onClick={() => void saveEdit()}
-                disabled={editSaving || !String(editTitle ?? '').trim()}
-              >
-                {editSaving ? 'Đang lưu…' : 'Lưu'}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
 
       {deleteTarget ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4">
