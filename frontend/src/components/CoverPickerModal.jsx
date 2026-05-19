@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { IoClose, IoCloudUploadOutline } from 'react-icons/io5'
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { IoChevronBack, IoChevronForward, IoClose, IoCloudUploadOutline } from 'react-icons/io5'
 import { uploadThumbnailToStorage } from '../api/client'
 
 const FRAME_COUNT = 10
@@ -122,6 +122,43 @@ export function CoverPickerModal({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const coverImageInputRef = useRef(null)
+  const filmstripRef = useRef(null)
+  const filmstripTrackRef = useRef(null)
+  const [filmstripAtStart, setFilmstripAtStart] = useState(true)
+  const [filmstripAtEnd, setFilmstripAtEnd] = useState(true)
+
+  const syncFilmstripScrollState = useCallback(() => {
+    const el = filmstripRef.current
+    if (!el) {
+      setFilmstripAtStart(true)
+      setFilmstripAtEnd(true)
+      return
+    }
+    const { scrollLeft, clientWidth, scrollWidth } = el
+    const maxScroll = Math.max(0, scrollWidth - clientWidth)
+    const hasOverflow = scrollWidth > clientWidth + 2
+    if (!hasOverflow) {
+      setFilmstripAtStart(true)
+      setFilmstripAtEnd(true)
+      return
+    }
+    setFilmstripAtStart(scrollLeft <= 2)
+    setFilmstripAtEnd(scrollLeft >= maxScroll - 2)
+  }, [])
+
+  const scrollFilmstrip = useCallback((direction) => {
+    const el = filmstripRef.current
+    if (!el) return
+    const { scrollLeft, clientWidth, scrollWidth } = el
+    const maxScroll = Math.max(0, scrollWidth - clientWidth)
+    if (scrollWidth <= clientWidth + 1) return
+    const step = Math.max(120, Math.round(clientWidth * 0.55))
+    const target =
+      direction > 0 ? Math.min(maxScroll, scrollLeft + step) : Math.max(0, scrollLeft - step)
+    el.scrollTo({ left: target, behavior: 'smooth' })
+    syncFilmstripScrollState()
+    requestAnimationFrame(() => syncFilmstripScrollState())
+  }, [syncFilmstripScrollState])
 
   useEffect(() => {
     if (!open) return
@@ -163,6 +200,20 @@ export function CoverPickerModal({
       cancelled = true
     }
   }, [open, videoFile])
+
+  useLayoutEffect(() => {
+    syncFilmstripScrollState()
+  }, [frames, syncFilmstripScrollState])
+
+  useEffect(() => {
+    const inner = filmstripTrackRef.current
+    const outer = filmstripRef.current
+    if (!inner || !frames.length) return
+    const ro = new ResizeObserver(() => syncFilmstripScrollState())
+    ro.observe(inner)
+    if (outer) ro.observe(outer)
+    return () => ro.disconnect()
+  }, [frames.length, syncFilmstripScrollState, open])
 
   useEffect(() => {
     return () => {
@@ -252,7 +303,7 @@ export function CoverPickerModal({
       aria-modal="true"
       aria-labelledby="cover-modal-title"
     >
-      <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-900 shadow-2xl">
+      <div className="flex max-h-[90vh] w-full min-w-0 max-w-lg flex-col overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-900 shadow-2xl">
         <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
           <h2 id="cover-modal-title" className="text-base font-bold text-white">
             Ảnh bìa
@@ -294,7 +345,7 @@ export function CoverPickerModal({
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-4">
           {tab === 'video' ? (
             <>
               {!canUseVideoTab ? (
@@ -316,23 +367,72 @@ export function CoverPickerModal({
                     ) : null}
                   </div>
                   <p className="mt-3 text-center text-xs text-zinc-500">
-                    Chọn một khung trong dải hình bên dưới
+                    Chọn một khung trong dải hình bên dưới — mũi tên chỉ để cuộn danh sách
                   </p>
-                    <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-                    {frames.map((f, i) => (
-                      <button
-                        key={`${f.time}-${i}`}
-                        type="button"
-                        onClick={() => setSelectedIdx(i)}
-                          className={`h-24 w-14 shrink-0 overflow-hidden rounded-md border-2 transition ${
-                          selectedIdx === i
-                            ? 'border-sky-500 ring-1 ring-sky-400'
-                            : 'border-zinc-700 opacity-80 hover:opacity-100'
-                        }`}
-                      >
-                        <img src={f.dataUrl} alt="" className="h-full w-full object-cover" />
-                      </button>
-                    ))}
+                  <div className="mt-3 flex min-w-0 w-full items-center gap-2">
+                    <button
+                      type="button"
+                      aria-label="Cuộn dải ảnh sang trái"
+                      aria-disabled={filmstripAtStart}
+                      onClick={() => scrollFilmstrip(-1)}
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800/95 text-zinc-100 shadow-md transition hover:border-zinc-500 hover:bg-zinc-700 hover:text-white ${
+                        filmstripAtStart ? 'cursor-default opacity-40' : ''
+                      }`}
+                    >
+                      <IoChevronBack className="text-xl" aria-hidden />
+                    </button>
+                    <div
+                      ref={filmstripRef}
+                      role="region"
+                      aria-label="Dải khung hình"
+                      tabIndex={0}
+                      onScroll={syncFilmstripScrollState}
+                      onKeyDown={(e) => {
+                        if (e.key === 'ArrowLeft') {
+                          e.preventDefault()
+                          scrollFilmstrip(-1)
+                        } else if (e.key === 'ArrowRight') {
+                          e.preventDefault()
+                          scrollFilmstrip(1)
+                        }
+                      }}
+                      className="min-h-24 min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain pb-1 scrollbar-none touch-pan-x"
+                    >
+                      <div ref={filmstripTrackRef} className="flex w-max gap-1.5 pr-0.5">
+                        {frames.map((f, i) => (
+                          <button
+                            key={`${f.time}-${i}`}
+                            type="button"
+                            onClick={() => setSelectedIdx(i)}
+                            className={`h-24 w-14 shrink-0 overflow-hidden rounded-md border-2 transition ${
+                              selectedIdx === i
+                                ? 'border-sky-500 ring-1 ring-sky-400'
+                                : 'border-zinc-700 opacity-80 hover:opacity-100'
+                            }`}
+                          >
+                            <img
+                              src={f.dataUrl}
+                              alt=""
+                              className="h-full w-full object-cover"
+                              loading="eager"
+                              decoding="async"
+                              onLoad={syncFilmstripScrollState}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label="Cuộn dải ảnh sang phải"
+                      aria-disabled={filmstripAtEnd}
+                      onClick={() => scrollFilmstrip(1)}
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800/95 text-zinc-100 shadow-md transition hover:border-zinc-500 hover:bg-zinc-700 hover:text-white ${
+                        filmstripAtEnd ? 'cursor-default opacity-40' : ''
+                      }`}
+                    >
+                      <IoChevronForward className="text-xl" aria-hidden />
+                    </button>
                   </div>
                 </>
               )}
