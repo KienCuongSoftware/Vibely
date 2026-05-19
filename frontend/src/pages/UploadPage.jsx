@@ -1,28 +1,34 @@
 import React from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { apiClient, uploadThumbnailToStorage, uploadToPresignedPutUrl } from '../api/client'
 import { CoverPickerModal } from '../components/CoverPickerModal'
 import { StudioLayout } from '../components/StudioLayout'
 import { useAuth } from '../state/useAuth'
+import { LuHeart, LuLayoutGrid, LuMinimize2, LuRepeat2, LuSmartphone, LuWifi } from 'react-icons/lu'
 import {
-  IoAddCircleOutline,
+  IoArrowRedoOutline,
+  IoBatteryFullOutline,
   IoBookmarkOutline,
   IoChatbubbleEllipsesOutline,
   IoCheckmarkCircle,
+  IoChevronBack,
   IoCloudUploadOutline,
+  IoEllipsisHorizontal,
+  IoExpandOutline,
   IoHeartOutline,
   IoHomeOutline,
   IoInformationCircleOutline,
-  IoMailOutline,
+  IoMusicalNotesOutline,
+  IoPaperPlaneOutline,
+  IoPause,
   IoPeopleOutline,
   IoPersonOutline,
+  IoPlay,
   IoRefreshOutline,
   IoSearchOutline,
-  IoShareSocialOutline,
-  IoExpandOutline,
-  IoVolumeMuteOutline,
   IoVolumeHighOutline,
+  IoVolumeMuteOutline,
 } from 'react-icons/io5'
 
 const DESC_MAX = 4000
@@ -45,35 +51,54 @@ function formatResolutionLabel(width, height) {
   return '540P'
 }
 
-function readVideoMetadata(file) {
+function readVideoMetadata(file, timeoutMs = 25000) {
   return new Promise((resolve, reject) => {
     const v = document.createElement('video')
     const url = URL.createObjectURL(file)
-    const cleanup = () => URL.revokeObjectURL(url)
+    let settled = false
+    const cleanup = () => {
+      URL.revokeObjectURL(url)
+      v.removeAttribute('src')
+      v.load()
+    }
+    const done = (fn, arg) => {
+      if (settled) return
+      settled = true
+      clearTimeout(watchdog)
+      cleanup()
+      fn(arg)
+    }
+    const watchdog = setTimeout(() => {
+      done(reject, new Error('Hết thời gian đọc thông tin video.'))
+    }, timeoutMs)
     v.preload = 'metadata'
     v.onloadedmetadata = () => {
-      resolve({
+      done(resolve, {
         duration: Number(v.duration || 0),
         width: v.videoWidth,
         height: v.videoHeight,
       })
-      cleanup()
     }
     v.onerror = () => {
-      cleanup()
-      reject(new Error('Không thể đọc thông tin video.'))
+      done(reject, new Error('Không thể đọc thông tin video.'))
     }
     v.src = url
+    v.load()
   })
 }
 
-function extractThumbnailBlob(file, atSecond = 1) {
+function extractThumbnailBlob(file, atSecond = 1, timeoutMs = 20000) {
   return new Promise((resolve, reject) => {
     const video = document.createElement('video')
     const url = URL.createObjectURL(file)
     let settled = false
+    let watchdog = null
 
     const cleanup = () => {
+      if (watchdog != null) {
+        clearTimeout(watchdog)
+        watchdog = null
+      }
       URL.revokeObjectURL(url)
       video.removeAttribute('src')
       video.load()
@@ -86,21 +111,18 @@ function extractThumbnailBlob(file, atSecond = 1) {
       cb(value)
     }
 
-    video.preload = 'metadata'
-    video.muted = true
-    video.playsInline = true
-
-    video.onloadedmetadata = () => {
-      const duration = Number(video.duration || 0)
-      const seekTo = Math.max(0, Math.min(atSecond, duration > 0 ? duration * 0.3 : atSecond))
-      video.currentTime = seekTo
-    }
-
-    video.onseeked = () => {
+    const drawAndResolve = () => {
+      if (settled) return
       try {
+        const w = video.videoWidth || 0
+        const h = video.videoHeight || 0
+        if (w < 2 || h < 2) {
+          done(reject, new Error('Không thể đọc khung hình video (kích thước 0).'))
+          return
+        }
         const canvas = document.createElement('canvas')
-        canvas.width = video.videoWidth || 720
-        canvas.height = video.videoHeight || 1280
+        canvas.width = w
+        canvas.height = h
         const ctx = canvas.getContext('2d')
         if (!ctx) {
           done(reject, new Error('Không thể tạo canvas thumbnail.'))
@@ -123,19 +145,72 @@ function extractThumbnailBlob(file, atSecond = 1) {
       }
     }
 
+    const scheduleWatchdog = () => {
+      if (watchdog != null) clearTimeout(watchdog)
+      watchdog = setTimeout(() => {
+        if (settled) return
+        if (video.readyState >= 2 && (video.videoWidth || 0) >= 2 && (video.videoHeight || 0) >= 2) {
+          drawAndResolve()
+          return
+        }
+        done(reject, new Error('Hết thời gian khi tạo ảnh bìa tự động.'))
+      }, timeoutMs)
+    }
+
+    video.preload = 'auto'
+    video.muted = true
+    video.playsInline = true
+    video.setAttribute('playsinline', '')
+    video.setAttribute('webkit-playsinline', '')
+
+    video.onloadedmetadata = () => {
+      const duration = Number(video.duration || 0)
+      const finite = Number.isFinite(duration) && duration > 0
+      let seekTo
+      if (finite) {
+        const cap = Math.min(duration * 0.999, Math.max(duration - 0.04, 0.02))
+        const fromDuration = Math.min(duration * 0.25, cap)
+        const fromAt = Math.min(Math.max(atSecond, 0.1), cap)
+        seekTo = Math.min(fromDuration, fromAt)
+        seekTo = Math.max(seekTo, Math.min(0.1, cap))
+        if (Math.abs(seekTo - video.currentTime) < 0.001) {
+          seekTo = Math.min(seekTo + 0.05, cap)
+        }
+        if (!Number.isFinite(seekTo) || seekTo < 0) {
+          seekTo = Math.min(0.05, cap)
+        }
+      } else {
+        seekTo = Math.min(Math.max(atSecond, 0.05), 1)
+      }
+      scheduleWatchdog()
+      try {
+        video.currentTime = seekTo
+      } catch {
+        drawAndResolve()
+      }
+    }
+
+    video.onseeked = () => {
+      drawAndResolve()
+    }
+
     video.onerror = () => {
       done(reject, new Error('Không thể đọc video để tạo thumbnail.'))
     }
 
     video.src = url
+    video.load()
+    scheduleWatchdog()
   })
 }
 
-function formatPreviewTime(seconds) {
+/** Preview studio (Bảng tin): hiển thị hh:mm:ss giống TikTok */
+function formatStudioPreviewClock(seconds) {
   const safe = Number.isFinite(seconds) ? Math.max(0, seconds) : 0
-  const m = Math.floor(safe / 60)
+  const h = Math.floor(safe / 3600)
+  const m = Math.floor((safe % 3600) / 60)
   const s = Math.floor(safe % 60)
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
 function deriveAudioUrlFromVideoUrl(videoUrl) {
@@ -154,6 +229,7 @@ export function UploadPage() {
   const coverVideoRef = useRef(null)
   const previewVideoRef = useRef(null)
   const previewFrameRef = useRef(null)
+  const webPreviewFrameRef = useRef(null)
   const [videoFile, setVideoFile] = useState(null)
   const [uploadedVideo, setUploadedVideo] = useState(null)
   const [description, setDescription] = useState('')
@@ -178,10 +254,59 @@ export function UploadPage() {
   const [previewDuration, setPreviewDuration] = useState(0)
   const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false)
   const [isPreviewMuted, setIsPreviewMuted] = useState(true)
+  /** Đồng bộ UI play/pause với thẻ video (autoplay / click có thể thay đổi trạng thái) */
+  const [previewUiPlaying, setPreviewUiPlaying] = useState(false)
+  /** TikTok-style: ngang / vuông → letterbox trong khung 9:16; dọc → phủ khung */
+  const [studioPreviewObjectFit, setStudioPreviewObjectFit] = useState('cover')
+
+  const onStudioPreviewVideoMetadata = useCallback((e) => {
+    const el = e.currentTarget
+    const w = Number(el.videoWidth || 0)
+    const h = Number(el.videoHeight || 0)
+    if (w > 0 && h > 0) {
+      setStudioPreviewObjectFit(w >= h ? 'contain' : 'cover')
+    }
+  }, [])
 
   useEffect(() => {
     document.title = 'VibelyStudio | Upload'
   }, [])
+
+  useEffect(() => {
+    setStudioPreviewObjectFit('cover')
+  }, [uploadedVideo?.playbackUrl])
+
+  useEffect(() => {
+    setPreviewUiPlaying(false)
+  }, [uploadedVideo?.playbackUrl, previewTab])
+
+  /** Autoplay preview Bảng tin / Web */
+  useLayoutEffect(() => {
+    if (
+      (previewTab !== 'feed' && previewTab !== 'web') ||
+      !uploadedVideo?.playbackUrl ||
+      isPreviewFullscreen
+    )
+      return undefined
+    const el = previewVideoRef.current
+    if (!el) return undefined
+    let cancelled = false
+    const tryPlay = () => {
+      if (cancelled) return
+      void el.play().catch(() => {})
+    }
+    tryPlay()
+    const onReady = () => {
+      if (!cancelled) tryPlay()
+    }
+    el.addEventListener('loadeddata', onReady)
+    el.addEventListener('canplay', onReady)
+    return () => {
+      cancelled = true
+      el.removeEventListener('loadeddata', onReady)
+      el.removeEventListener('canplay', onReady)
+    }
+  }, [previewTab, uploadedVideo?.playbackUrl, isPreviewFullscreen, isPreviewMuted])
 
   const uploadGuides = [
     {
@@ -285,8 +410,10 @@ export function UploadPage() {
 
   useEffect(() => {
     const onFullscreenChange = () => {
-      const host = previewFrameRef.current
-      setIsPreviewFullscreen(Boolean(host && document.fullscreenElement === host))
+      const fs = document.fullscreenElement
+      const feedHost = previewFrameRef.current
+      const webHost = webPreviewFrameRef.current
+      setIsPreviewFullscreen(Boolean(fs && (fs === feedHost || fs === webHost)))
     }
     document.addEventListener('fullscreenchange', onFullscreenChange)
     return () => document.removeEventListener('fullscreenchange', onFullscreenChange)
@@ -468,6 +595,12 @@ export function UploadPage() {
       ? user.avatarUrl
       : '/images/users/default-avatar.jpeg'
   const previewCaption = description.trim()
+  /** Luôn không có @ đầu (Auth đã chuẩn hoá); @ hiển thị riêng để không bị cắt / lệch RTL */
+  const studioPreviewHandle = useMemo(() => {
+    return String(user?.username ?? 'vibely.user')
+      .trim()
+      .replace(/^@/, '')
+  }, [user?.username])
 
   const togglePreviewPlayback = () => {
     const video = previewVideoRef.current
@@ -485,7 +618,8 @@ export function UploadPage() {
       await document.exitFullscreen().catch(() => {})
       return
     }
-    const host = previewFrameRef.current
+    const host =
+      previewTab === 'web' ? webPreviewFrameRef.current : previewFrameRef.current
     if (!host?.requestFullscreen) return
     try {
       await host.requestFullscreen()
@@ -513,18 +647,6 @@ export function UploadPage() {
         onConfirm={(url) => setThumbnailUrl(url)}
       />
       <div className="flex min-h-0 flex-col">
-        <header className="mb-6 flex items-center justify-between gap-4 border-b border-zinc-800/80 pb-4">
-          <span className="text-lg font-bold text-white sm:text-xl">Vibely Studio</span>
-          <Link to="/profile" className="shrink-0">
-            <img
-              src={avatarSrc}
-              alt=""
-              className="h-9 w-9 rounded-full border border-zinc-700 object-cover"
-              referrerPolicy="no-referrer"
-            />
-          </Link>
-        </header>
-
         <input
           ref={fileInputRef}
           type="file"
@@ -676,8 +798,11 @@ export function UploadPage() {
                           src={uploadedVideo.playbackUrl}
                           muted
                           playsInline
-                          className="aspect-9/16 max-h-[280px] w-full object-cover"
+                          className={`aspect-9/16 max-h-[280px] w-full ${
+                            studioPreviewObjectFit === 'contain' ? 'object-contain' : 'object-cover'
+                          }`}
                           preload="metadata"
+                          onLoadedMetadata={onStudioPreviewVideoMetadata}
                         />
                       )}
                       <button
@@ -907,25 +1032,38 @@ export function UploadPage() {
               </div>
 
               <aside className="w-full shrink-0 lg:sticky lg:top-6 lg:w-[340px]">
-                <div className="mb-3 flex gap-1 rounded-lg bg-zinc-900/90 p-1 ring-1 ring-zinc-800">
-                  {[
-                    ['feed', 'Bảng tin'],
-                    ['profile', 'Hồ sơ'],
-                    ['web', 'Web'],
-                  ].map(([id, label]) => (
+                <div className="mb-3 flex items-center gap-1">
+                  <div className="flex min-w-0 flex-1 gap-1 rounded-lg bg-zinc-900/90 p-1 ring-1 ring-zinc-800">
+                    {[
+                      ['feed', 'Bảng tin'],
+                      ['profile', 'Hồ sơ'],
+                      ['web', 'Web'],
+                    ].map(([id, label]) => (
+                      <button
+                        key={id}
+                        type="button"
+                        className={`min-w-0 flex-1 rounded-md px-2 py-2 text-xs font-medium transition ${
+                          previewTab === id
+                            ? 'bg-zinc-800 text-white shadow'
+                            : 'text-zinc-500 hover:text-zinc-300'
+                        }`}
+                        onClick={() => setPreviewTab(id)}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {previewTab === 'web' ? (
                     <button
-                      key={id}
                       type="button"
-                      className={`flex-1 rounded-md px-2 py-2 text-xs font-medium transition ${
-                        previewTab === id
-                          ? 'bg-zinc-800 text-white shadow'
-                          : 'text-zinc-500 hover:text-zinc-300'
-                      }`}
-                      onClick={() => setPreviewTab(id)}
+                      onClick={() => setPreviewTab('feed')}
+                      className="shrink-0 rounded-md border border-zinc-600 bg-zinc-800 p-2 text-white shadow-sm transition hover:bg-zinc-700"
+                      title="Preview trên điện thoại"
+                      aria-label="Chuyển sang preview điện thoại"
                     >
-                      {label}
+                      <LuSmartphone className="text-base" strokeWidth={2} aria-hidden />
                     </button>
-                  ))}
+                  ) : null}
                 </div>
 
                 <div className="rounded-2xl border border-zinc-800 bg-[#0f0f11] p-3 shadow-2xl">
@@ -951,46 +1089,136 @@ export function UploadPage() {
                             poster={thumbnailUrl || undefined}
                             muted={isPreviewMuted}
                             playsInline
+                            preload="auto"
                             loop
-                            className="h-full w-full object-cover"
+                            className={`h-full w-full ${
+                              studioPreviewObjectFit === 'contain' ? 'object-contain' : 'object-cover'
+                            }`}
                             autoPlay
+                            onLoadedMetadata={onStudioPreviewVideoMetadata}
+                            onPlay={() => setPreviewUiPlaying(true)}
+                            onPause={() => setPreviewUiPlaying(false)}
+                            onEnded={() => setPreviewUiPlaying(false)}
                           />
                           {!isPreviewFullscreen ? (
                             <>
-                              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-black/70 to-transparent opacity-0 transition-opacity duration-150 group-hover/preview:opacity-100" />
-                              <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between px-3 pt-3 text-[11px] text-white/95">
-                                <span>LIVE</span>
-                                <span className="opacity-80">Following</span>
-                                <span className="font-bold underline decoration-2 underline-offset-4">
-                                  Dành cho bạn
+                              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-32 bg-linear-to-t from-black/75 via-black/20 to-transparent opacity-0 transition-opacity duration-150 group-hover/preview:opacity-100" />
+                              {/* Top: LIVE + tabs (giống TikTok) + search */}
+                              <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between px-2.5 pt-2.5 text-white">
+                                <span
+                                  className="mt-0.5 flex shrink-0 items-center gap-0.5 rounded border border-white/30 bg-white/10 px-1 py-0.5 text-[8px] font-extrabold leading-none tracking-wide text-white shadow-sm"
+                                  aria-hidden
+                                >
+                                  LIVE
                                 </span>
-                                <IoSearchOutline className="text-base" />
+                                <div className="pointer-events-none absolute left-1/2 top-2.5 flex -translate-x-1/2 items-end gap-7 text-[12px] font-semibold leading-none">
+                                  <span className="pb-1.5 text-white/45">Following</span>
+                                  <span className="relative pb-1.5 text-white">
+                                    For You
+                                    <span className="absolute bottom-0 left-1/2 h-[2px] w-6 -translate-x-1/2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
+                                  </span>
+                                </div>
+                                <IoSearchOutline className="mt-0.5 shrink-0 text-lg text-white drop-shadow-sm" aria-hidden />
                               </div>
-                              <div className="pointer-events-none absolute bottom-14 left-3 right-14 text-xs text-white drop-shadow-md">
-                                <p className="font-bold">@{user?.username ?? 'vibely.user'}</p>
+                              {/* Meta trái — phía trên thanh tab dưới */}
+                              <div className="pointer-events-none absolute bottom-[54px] left-3 right-17 z-20 text-[12px] leading-snug text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+                                <p
+                                  className="flex min-w-0 max-w-full items-baseline gap-0 font-bold"
+                                  dir="ltr"
+                                >
+                                  <span className="shrink-0">@</span>
+                                  <span className="min-w-0 flex-1 truncate">{studioPreviewHandle}</span>
+                                </p>
                                 {previewCaption ? (
-                                  <p className="mt-1 line-clamp-2 opacity-95">{highlightTags(previewCaption)}</p>
+                                  <p className="mt-0.5 line-clamp-2 text-[11px] font-normal opacity-95">
+                                    {highlightTags(previewCaption)}
+                                  </p>
                                 ) : null}
-                                <p className="mt-1 truncate opacity-80">
-                                  ♫ nhạc gốc - {user?.displayName ?? 'Vibely'}
+                                <p className="mt-1 flex items-center gap-1 truncate text-[11px] opacity-85">
+                                  <IoMusicalNotesOutline className="shrink-0 text-sm opacity-90" aria-hidden />
+                                  <span className="truncate">
+                                    Original sound — {user?.displayName ?? 'Vibely'}
+                                  </span>
                                 </p>
                               </div>
-                              <div className="pointer-events-none absolute bottom-16 right-2 flex flex-col items-center gap-3 text-white">
-                                <img
-                                  src={avatarSrc}
-                                  alt=""
-                                  className="h-9 w-9 rounded-full border border-white/60 object-cover"
-                                  referrerPolicy="no-referrer"
-                                />
-                                <IoHeartOutline className="text-xl" />
-                                <IoChatbubbleEllipsesOutline className="text-xl" />
-                                <IoBookmarkOutline className="text-xl" />
-                                <IoShareSocialOutline className="text-xl" />
+                              {/* Cột icon phải (TikTok) */}
+                              <div className="pointer-events-none absolute bottom-[58px] right-1.5 z-20 flex w-12 flex-col items-center gap-[14px] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
+                                <div className="relative flex flex-col items-center">
+                                  <img
+                                    src={avatarSrc}
+                                    alt=""
+                                    className="h-11 w-11 rounded-full border-[1.5px] border-white object-cover"
+                                    referrerPolicy="no-referrer"
+                                  />
+                                  <span className="absolute -bottom-1.5 left-1/2 flex h-[18px] w-[18px] -translate-x-1/2 items-center justify-center rounded-full bg-[#fe2c55] text-[13px] font-bold leading-none text-white shadow-md ring-[2.5px] ring-black">
+                                    +
+                                  </span>
+                                </div>
+                                <IoHeartOutline className="h-[26px] w-[26px]" strokeWidth={22} aria-hidden />
+                                <IoChatbubbleEllipsesOutline className="h-[25px] w-[25px]" strokeWidth={22} aria-hidden />
+                                <IoBookmarkOutline className="h-[24px] w-[24px]" strokeWidth={22} aria-hidden />
+                                <IoArrowRedoOutline className="mb-0.5 h-[26px] w-[26px]" strokeWidth={22} aria-hidden />
+                                <div
+                                  className="mt-0.5 flex h-[34px] w-[34px] shrink-0 animate-[spin_9s_linear_infinite] items-center justify-center rounded-full bg-zinc-950 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35)] ring-[1.5px] ring-white/90"
+                                  aria-hidden
+                                >
+                                  <div className="h-[15px] w-[15px] rounded-full border border-dashed border-white/55" />
+                                </div>
                               </div>
-                              <div className="absolute inset-x-3 bottom-9 z-10 opacity-0 transition-opacity duration-150 group-hover/preview:opacity-100">
-                                <div className="mb-1 flex items-center justify-between text-[10px] text-zinc-100/85">
-                                  <span>{formatPreviewTime(previewCurrentTime)}</span>
-                                  <span>{formatPreviewTime(previewDuration)}</span>
+                              <div
+                                className="absolute inset-x-2 bottom-[50px] z-30 opacity-0 transition-opacity duration-150 pointer-events-none group-hover/preview:pointer-events-auto group-hover/preview:opacity-100"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <div className="flex items-center justify-between gap-2 pb-1 text-white">
+                                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                                    <button
+                                      type="button"
+                                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25"
+                                      aria-label={previewUiPlaying ? 'Tạm dừng' : 'Phát'}
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        togglePreviewPlayback()
+                                      }}
+                                    >
+                                      {previewUiPlaying ? (
+                                        <IoPause className="h-4 w-4" aria-hidden />
+                                      ) : (
+                                        <IoPlay className="h-4 w-4 pl-0.5" aria-hidden />
+                                      )}
+                                    </button>
+                                    <span className="truncate text-[10px] font-medium tabular-nums tracking-tight text-white/95">
+                                      {formatStudioPreviewClock(previewCurrentTime)} /{' '}
+                                      {formatStudioPreviewClock(previewDuration)}
+                                    </span>
+                                  </div>
+                                  <div className="flex shrink-0 items-center gap-1">
+                                    <button
+                                      type="button"
+                                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25"
+                                      aria-label={isPreviewMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        togglePreviewMuted(e)
+                                      }}
+                                    >
+                                      {isPreviewMuted ? (
+                                        <IoVolumeMuteOutline className="text-base" aria-hidden />
+                                      ) : (
+                                        <IoVolumeHighOutline className="text-base" aria-hidden />
+                                      )}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25"
+                                      aria-label="Toàn màn hình"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        void togglePreviewFullscreen(e)
+                                      }}
+                                    >
+                                      <IoExpandOutline className="text-base" aria-hidden />
+                                    </button>
+                                  </div>
                                 </div>
                                 <input
                                   type="range"
@@ -1007,116 +1235,308 @@ export function UploadPage() {
                                     setPreviewCurrentTime(next)
                                   }}
                                   onClick={(e) => e.stopPropagation()}
-                                  className="h-0.5 w-full cursor-pointer accent-white"
+                                  onPointerDown={(e) => e.stopPropagation()}
+                                  className="h-1 w-full cursor-pointer accent-white"
                                 />
                               </div>
-                              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-9 bg-black/65">
-                                <div className="mt-2 flex items-center justify-around text-[10px] text-zinc-300">
-                                  <span className="flex items-center gap-1">
-                                    <IoHomeOutline className="text-[11px]" /> Home
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <IoPeopleOutline className="text-[11px]" /> Bạn bè
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <IoAddCircleOutline className="text-[11px]" /> +
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <IoMailOutline className="text-[11px]" /> Inbox
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <IoPersonOutline className="text-[11px]" /> Tôi
-                                  </span>
+                              {/* Thanh điều hướng dưới (TikTok) */}
+                              <nav
+                                className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex h-[50px] items-end justify-between border-t border-white/6 bg-black px-0.5 pb-1.5 pt-1 text-white"
+                                aria-hidden
+                              >
+                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5 opacity-95">
+                                  <IoHomeOutline className="text-[22px] text-white" />
+                                  <span className="text-[9px] font-semibold tracking-tight text-white/90">Home</span>
                                 </div>
-                              </div>
+                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5 opacity-95">
+                                  <IoPeopleOutline className="text-[21px] text-white" />
+                                  <span className="text-[9px] font-semibold tracking-tight text-white/90">Friends</span>
+                                </div>
+                                <div className="flex min-w-0 flex-none flex-col items-center justify-end px-1 pb-0.5">
+                                  <div className="flex items-center gap-px">
+                                    <span className="h-7 w-[2.5px] shrink-0 rounded-sm bg-[#25f4ee]" />
+                                    <div className="flex h-9 w-[46px] items-center justify-center rounded-md border border-white bg-black shadow-inner">
+                                      <span className="text-[22px] font-light leading-none text-white">+</span>
+                                    </div>
+                                    <span className="h-7 w-[2.5px] shrink-0 rounded-sm bg-[#fe2c55]" />
+                                  </div>
+                                </div>
+                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5 opacity-95">
+                                  <IoPaperPlaneOutline className="text-[20px] text-white" />
+                                  <span className="text-[9px] font-semibold tracking-tight text-white/90">Inbox</span>
+                                </div>
+                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5 opacity-95">
+                                  <IoPersonOutline className="text-[21px] text-white" />
+                                  <span className="text-[9px] font-semibold tracking-tight text-white/90">Me</span>
+                                </div>
+                              </nav>
                             </>
                           ) : null}
                         </div>
-                        <button
-                          type="button"
-                          onClick={togglePreviewFullscreen}
-                          className={`absolute z-20 rounded bg-black/60 p-1 text-zinc-100 transition-opacity duration-150 hover:bg-black/80 ${
-                            isPreviewFullscreen
-                              ? 'top-4 right-4 opacity-100'
-                              : 'right-3 bottom-11 opacity-0 group-hover/preview:opacity-100'
-                          }`}
-                          aria-label="Thu/phóng màn hình"
-                        >
-                          <IoExpandOutline className="text-sm" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={togglePreviewMuted}
-                          className={`absolute z-20 rounded bg-black/60 p-1 text-zinc-100 transition-opacity duration-150 hover:bg-black/80 ${
-                            isPreviewFullscreen
-                              ? 'top-4 right-14 opacity-100'
-                              : 'right-11 bottom-11 opacity-0 group-hover/preview:opacity-100'
-                          }`}
-                          aria-label={isPreviewMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
-                        >
-                          {isPreviewMuted ? (
-                            <IoVolumeMuteOutline className="text-sm" />
-                          ) : (
-                            <IoVolumeHighOutline className="text-sm" />
-                          )}
-                        </button>
+                        {isPreviewFullscreen ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={togglePreviewFullscreen}
+                              className="absolute top-4 right-4 z-20 rounded bg-black/60 p-1 text-zinc-100 opacity-100 transition-opacity duration-150 hover:bg-black/80"
+                              aria-label="Thu/phóng màn hình"
+                            >
+                              <IoExpandOutline className="text-sm" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={togglePreviewMuted}
+                              className="absolute top-4 right-14 z-20 rounded bg-black/60 p-1 text-zinc-100 opacity-100 transition-opacity duration-150 hover:bg-black/80"
+                              aria-label={isPreviewMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+                            >
+                              {isPreviewMuted ? (
+                                <IoVolumeMuteOutline className="text-sm" />
+                              ) : (
+                                <IoVolumeHighOutline className="text-sm" />
+                              )}
+                            </button>
+                          </>
+                        ) : null}
                       </div>
                     ) : previewTab === 'profile' ? (
-                      <div className="aspect-9/16 bg-zinc-100 p-3 text-zinc-900">
-                        <div className="mt-1 flex items-center justify-between text-[11px]">
-                          <span>‹</span>
-                          <span>•••</span>
-                        </div>
-                        <div className="mt-4 flex flex-col items-center">
-                          <img
-                            src={avatarSrc}
-                            alt=""
-                            className="h-12 w-12 rounded-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                          <p className="mt-1 text-xs font-semibold">
-                            {user?.displayName ?? 'Người Ổn Bất Tỉnh'}
-                          </p>
-                          <p className="mt-0.5 text-[11px] text-zinc-600">@{user?.username ?? 'vibely.user'}</p>
-                          <div className="mt-2 h-3 w-24 rounded bg-zinc-200" />
-                          <div className="mt-1 flex gap-1">
-                            <div className="h-3 w-10 rounded bg-zinc-200" />
-                            <div className="h-3 w-10 rounded bg-zinc-200" />
+                      <div className="flex aspect-9/16 min-h-0 flex-col overflow-hidden bg-white text-zinc-900">
+                        <div className="flex shrink-0 items-center justify-between px-3 pt-2 pb-0.5 text-[11px] font-semibold tabular-nums text-zinc-900">
+                          <span>8:00</span>
+                          <div className="flex items-center gap-1.5 text-zinc-800" aria-hidden>
+                            <div className="flex items-end gap-px pb-0.5">
+                              <span className="h-1 w-[3px] rounded-[1px] bg-zinc-700" />
+                              <span className="h-1.5 w-[3px] rounded-[1px] bg-zinc-700" />
+                              <span className="h-2 w-[3px] rounded-[1px] bg-zinc-700" />
+                              <span className="h-2.5 w-[3px] rounded-[1px] bg-zinc-700" />
+                            </div>
+                            <LuWifi className="text-[15px] text-zinc-800" strokeWidth={2.25} />
+                            <IoBatteryFullOutline className="text-[17px]" />
                           </div>
                         </div>
-                        <div className="mt-4 grid grid-cols-3 border-t border-zinc-300 pt-2">
-                          <div className="aspect-3/4 overflow-hidden border-r border-b border-zinc-300 bg-zinc-200">
-                            <video
-                              src={uploadedVideo.playbackUrl}
-                              poster={thumbnailUrl || undefined}
-                              muted
-                              className="h-full w-full object-cover"
+                        <div className="flex shrink-0 items-center justify-between px-2 pb-2 pt-0.5">
+                          <IoChevronBack className="text-2xl text-zinc-900" aria-hidden />
+                          <IoEllipsisHorizontal className="text-xl text-zinc-900" aria-hidden />
+                        </div>
+                        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                          <div className="flex shrink-0 flex-col items-center px-4 pb-3">
+                            <img
+                              src={avatarSrc}
+                              alt=""
+                              className="h-[4.5rem] w-[4.5rem] rounded-full object-cover ring-1 ring-zinc-200/90"
+                              referrerPolicy="no-referrer"
                             />
+                            <p className="mt-2.5 max-w-full px-1 text-center text-[15px] font-bold leading-snug text-zinc-900">
+                              {user?.displayName ?? 'Người Ổn Bất Tỉnh'}
+                            </p>
+                            <p
+                              className="mt-1 flex max-w-full justify-center text-[13px] text-zinc-600"
+                              dir="ltr"
+                            >
+                              <span className="inline-flex min-w-0 max-w-full items-baseline gap-0">
+                                <span className="shrink-0">@</span>
+                                <span className="min-w-0 truncate">{studioPreviewHandle}</span>
+                              </span>
+                            </p>
+                            <div className="mt-3 h-2.5 w-40 max-w-[85%] rounded-md bg-zinc-200" />
+                            <div className="mt-2 flex w-full max-w-[10.5rem] justify-center gap-2">
+                              <div className="h-2.5 min-w-0 flex-1 rounded-md bg-zinc-200" />
+                              <div className="h-2.5 min-w-0 flex-1 rounded-md bg-zinc-200" />
+                            </div>
                           </div>
-                          {[1, 2, 3, 4, 5].map((i) => (
-                            <div key={i} className="aspect-3/4 border-r border-b border-zinc-300 bg-zinc-200" />
-                          ))}
+                          <div className="flex shrink-0 items-end justify-around border-b border-zinc-200 px-2">
+                            <div className="flex flex-1 flex-col items-center pb-0.5 pt-1 text-zinc-900">
+                              <LuLayoutGrid className="text-[22px]" strokeWidth={2.25} aria-hidden />
+                              <span className="mt-1.5 h-[2.5px] w-7 rounded-full bg-zinc-900" aria-hidden />
+                            </div>
+                            <div className="flex flex-1 flex-col items-center pb-2 pt-1 text-zinc-400">
+                              <LuRepeat2 className="text-[22px]" strokeWidth={2.25} aria-hidden />
+                            </div>
+                            <div className="flex flex-1 flex-col items-center pb-2 pt-1 text-zinc-400">
+                              <LuHeart className="text-[22px]" strokeWidth={2.25} aria-hidden />
+                            </div>
+                          </div>
+                          <div className="grid min-h-0 flex-1 grid-cols-3 grid-rows-3 gap-px bg-white p-px">
+                            <div className="relative min-h-0 overflow-hidden bg-zinc-200">
+                              <video
+                                src={uploadedVideo.playbackUrl}
+                                poster={thumbnailUrl || undefined}
+                                muted
+                                playsInline
+                                loop
+                                className="absolute inset-0 h-full w-full object-cover"
+                                onLoadedMetadata={onStudioPreviewVideoMetadata}
+                              />
+                            </div>
+                            {Array.from({ length: 8 }).map((_, i) => (
+                              <div
+                                key={i}
+                                className="min-h-0 bg-zinc-200"
+                                aria-hidden
+                              />
+                            ))}
+                          </div>
                         </div>
                       </div>
                     ) : (
-                      <div className="relative aspect-video bg-black">
-                        <video
-                          ref={previewVideoRef}
-                          src={uploadedVideo.playbackUrl}
-                          poster={thumbnailUrl || undefined}
-                          muted
-                          playsInline
-                          loop
-                          autoPlay
-                          className="h-full w-full object-contain"
-                        />
-                        <div className="pointer-events-none absolute inset-y-0 right-2 flex flex-col items-center justify-center gap-2 text-white">
-                          <span>🟡</span>
-                          <span>♥</span>
-                          <span>💬</span>
-                          <span>🔖</span>
-                          <span>↗</span>
+                      <div
+                        ref={webPreviewFrameRef}
+                        className={`group/webpreview relative overflow-hidden bg-black shadow-inner ${
+                          isPreviewFullscreen
+                            ? 'flex h-full w-full flex-col'
+                            : 'aspect-video w-full rounded-xl border border-zinc-600/70'
+                        }`}
+                        onClick={isPreviewFullscreen ? undefined : togglePreviewPlayback}
+                      >
+                        <div
+                          className={
+                            isPreviewFullscreen
+                              ? 'flex min-h-0 flex-1 cursor-pointer items-center justify-center bg-black'
+                              : 'relative h-full w-full'
+                          }
+                          onClick={isPreviewFullscreen ? togglePreviewPlayback : undefined}
+                        >
+                          <video
+                            ref={previewVideoRef}
+                            src={uploadedVideo.playbackUrl}
+                            poster={thumbnailUrl || undefined}
+                            muted={isPreviewMuted}
+                            playsInline
+                            preload="auto"
+                            loop
+                            autoPlay
+                            className={
+                              isPreviewFullscreen
+                                ? 'max-h-full max-w-full object-contain'
+                                : 'h-full w-full object-contain'
+                            }
+                            onLoadedMetadata={onStudioPreviewVideoMetadata}
+                            onPlay={() => setPreviewUiPlaying(true)}
+                            onPause={() => setPreviewUiPlaying(false)}
+                            onEnded={() => setPreviewUiPlaying(false)}
+                            onClick={isPreviewFullscreen ? (e) => e.stopPropagation() : undefined}
+                          />
                         </div>
+                        {!isPreviewFullscreen ? (
+                          <>
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-end justify-between bg-linear-to-t from-black/80 via-black/40 to-transparent px-3 pb-3 pt-12">
+                              <button
+                                type="button"
+                                className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
+                                aria-label={previewUiPlaying ? 'Tạm dừng' : 'Phát'}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  togglePreviewPlayback()
+                                }}
+                              >
+                                {previewUiPlaying ? (
+                                  <IoPause className="h-4 w-4" aria-hidden />
+                                ) : (
+                                  <IoPlay className="h-4 w-4 pl-0.5" aria-hidden />
+                                )}
+                              </button>
+                              <div className="pointer-events-auto flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  className="flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
+                                  aria-label={isPreviewMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    togglePreviewMuted(e)
+                                  }}
+                                >
+                                  {isPreviewMuted ? (
+                                    <IoVolumeMuteOutline className="text-lg" aria-hidden />
+                                  ) : (
+                                    <IoVolumeHighOutline className="text-lg" aria-hidden />
+                                  )}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
+                                  aria-label="Toàn màn hình"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    void togglePreviewFullscreen(e)
+                                  }}
+                                >
+                                  <IoExpandOutline className="text-lg" aria-hidden />
+                                </button>
+                              </div>
+                            </div>
+                            <div className="pointer-events-none absolute inset-y-6 right-2 z-20 flex w-11 flex-col items-center justify-center gap-3.5 rounded-xl border border-white/10 bg-black/40 px-1 py-4 text-white shadow-lg backdrop-blur-[3px]">
+                              <div className="relative flex flex-col items-center">
+                                <img
+                                  src={avatarSrc}
+                                  alt=""
+                                  className="h-9 w-9 rounded-full border border-white/55 object-cover"
+                                  referrerPolicy="no-referrer"
+                                />
+                                <span className="absolute -bottom-1 left-1/2 flex h-[15px] w-[15px] -translate-x-1/2 items-center justify-center rounded-full bg-[#fe2c55] text-[10px] font-bold leading-none text-white ring-2 ring-black/80">
+                                  +
+                                </span>
+                              </div>
+                              <IoHeartOutline className="text-xl" strokeWidth={22} aria-hidden />
+                              <IoChatbubbleEllipsesOutline className="text-xl" strokeWidth={22} aria-hidden />
+                              <IoBookmarkOutline className="text-[19px]" strokeWidth={22} aria-hidden />
+                              <IoArrowRedoOutline className="text-xl" strokeWidth={22} aria-hidden />
+                            </div>
+                          </>
+                        ) : (
+                          <div
+                            className="flex shrink-0 items-center justify-between gap-4 border-t border-white/10 bg-zinc-950 px-4 py-2.5 text-white"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="flex min-w-0 flex-1 items-center gap-3">
+                              <button
+                                type="button"
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+                                aria-label={previewUiPlaying ? 'Tạm dừng' : 'Phát'}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  togglePreviewPlayback()
+                                }}
+                              >
+                                {previewUiPlaying ? (
+                                  <IoPause className="h-4 w-4" aria-hidden />
+                                ) : (
+                                  <IoPlay className="h-4 w-4 pl-0.5" aria-hidden />
+                                )}
+                              </button>
+                              <span className="min-w-0 truncate text-[11px] font-medium tabular-nums text-zinc-400">
+                                {formatStudioPreviewClock(previewCurrentTime)} /{' '}
+                                {formatStudioPreviewClock(previewDuration)}
+                              </span>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-1">
+                              <button
+                                type="button"
+                                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+                                aria-label={isPreviewMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  togglePreviewMuted(e)
+                                }}
+                              >
+                                {isPreviewMuted ? (
+                                  <IoVolumeMuteOutline className="text-lg" aria-hidden />
+                                ) : (
+                                  <IoVolumeHighOutline className="text-lg" aria-hidden />
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+                                aria-label="Thoát toàn màn hình"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  void togglePreviewFullscreen(e)
+                                }}
+                              >
+                                <LuMinimize2 className="text-base" strokeWidth={2.5} aria-hidden />
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
