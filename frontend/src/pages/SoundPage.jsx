@@ -1,8 +1,164 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { BiDotsVerticalRounded } from 'react-icons/bi'
+import { IoMusicalNotes, IoPause, IoPlay } from 'react-icons/io5'
 import { apiClient } from '../api/client'
+import { useAuth } from '../state/useAuth'
 
 const DEFAULT_COVER = '/images/users/default-avatar.jpeg'
+
+function soundProfilePath(username) {
+  const raw = String(username ?? 'vibely')
+    .trim()
+    .replace(/^@/, '')
+  return raw ? `/@${encodeURIComponent(raw)}` : ''
+}
+
+function resolveAuthorDisplayName(video) {
+  const name = String(video?.authorDisplayName ?? '').trim()
+  if (name) return name
+  const u = String(video?.authorUsername ?? '')
+    .trim()
+    .replace(/^@/, '')
+  return u || 'Vibely'
+}
+
+function renderCaptionWithHashtags(text) {
+  const s = String(text ?? '')
+  if (!s) return null
+  const parts = s.split(/(#[^\s#]+)/g)
+  return parts.map((part, i) => {
+    if (part.startsWith('#')) {
+      return (
+        <span key={i} className="text-sky-400">
+          {part}
+        </span>
+      )
+    }
+    return <span key={i}>{part}</span>
+  })
+}
+
+/** Popover bên cạnh thẻ — không nút; đóng khi mouseleave vùng thẻ (kèm cầu nối hover). */
+function SoundVideoDetailPopover({
+  video,
+  formatCount,
+  soundPageHref,
+  soundOwnerVibelyId,
+}) {
+  if (!video) return null
+  const rawUser = String(video.authorUsername ?? 'vibely')
+    .trim()
+    .replace(/^@/, '')
+  const ownerId = String(soundOwnerVibelyId ?? '')
+    .trim()
+    .replace(/^@/, '')
+  const soundLine = ownerId
+    ? `nhạc nền - ${ownerId}`
+    : video.audioTitle?.trim() || `nhạc nền - ${rawUser}`
+  const avatar =
+    String(video.authorAvatarUrl ?? video.avatarUrl ?? '').trim() ||
+    String(video.thumbnailUrl ?? '').trim() ||
+    DEFAULT_COVER
+  const caption =
+    String(video.description ?? '').trim() || String(video.title ?? '').trim()
+  const profile = soundProfilePath(rawUser)
+
+  return (
+    <div
+      role="dialog"
+      aria-label="Chi tiết video"
+      className="pointer-events-auto relative z-[80] w-[min(400px,calc(100vw-2rem))] max-w-[400px] rounded-xl border border-white/12 bg-[#1f1f1f] p-5 text-left shadow-2xl ring-1 ring-black/40 before:pointer-events-none before:absolute before:left-0 before:top-[72%] before:z-10 before:-translate-x-full before:-translate-y-1/2 before:border-y-[8px] before:border-r-[10px] before:border-y-transparent before:border-r-[#1f1f1f] before:content-['']"
+    >
+      {profile ? (
+        <Link
+          to={profile}
+          className="-m-1 flex items-start gap-3 rounded-lg p-1 transition hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/35"
+          aria-label={`Hồ sơ ${rawUser}`}
+        >
+          <img
+            src={avatar}
+            alt=""
+            className="h-10 w-10 shrink-0 rounded-full border border-white/12 object-cover"
+            referrerPolicy="no-referrer"
+          />
+          <div className="min-w-0 flex-1 pt-1">
+            <p className="truncate text-[15px] font-bold leading-tight text-white">
+              {rawUser}
+            </p>
+            <p className="mt-0.5 truncate text-[12px] text-zinc-400">
+              {resolveAuthorDisplayName(video)}
+            </p>
+          </div>
+        </Link>
+      ) : (
+        <div className="flex items-start gap-3">
+          <img
+            src={avatar}
+            alt=""
+            className="h-10 w-10 shrink-0 rounded-full border border-white/12 object-cover"
+            referrerPolicy="no-referrer"
+          />
+          <div className="min-w-0 flex-1 pt-1">
+            <p className="truncate text-[15px] font-bold leading-tight text-white">
+              {rawUser}
+            </p>
+            <p className="mt-0.5 truncate text-[12px] text-zinc-400">
+              {resolveAuthorDisplayName(video)}
+            </p>
+          </div>
+        </div>
+      )}
+      {caption ? (
+        <p className="mt-3 text-[13px] leading-snug text-white/95">
+          {renderCaptionWithHashtags(caption)}
+        </p>
+      ) : null}
+      <div className="mt-2.5 flex items-start gap-2 text-[13px] text-zinc-200">
+        <IoMusicalNotes
+          className="mt-0.5 shrink-0 text-lg text-zinc-500"
+          aria-hidden
+        />
+        {soundPageHref ? (
+          <Link
+            to={soundPageHref}
+            className="min-w-0 leading-snug text-sky-400 transition hover:text-sky-300 hover:underline"
+          >
+            {soundLine}
+          </Link>
+        ) : (
+          <span className="min-w-0 leading-snug">{soundLine}</span>
+        )}
+      </div>
+      <div className="mt-4 grid grid-cols-3 divide-x divide-white/10 border-t border-white/10 pt-3 text-center">
+        <div>
+          <p className="text-[15px] font-bold tabular-nums text-white">
+            {formatCount(video.likeCount)}
+          </p>
+          <p className="mt-0.5 text-[11px] text-zinc-500">Thích</p>
+        </div>
+        <div>
+          <p className="text-[15px] font-bold tabular-nums text-white">
+            {formatCount(video.commentCount)}
+          </p>
+          <p className="mt-0.5 text-[11px] text-zinc-500">Bình luận</p>
+        </div>
+        <div>
+          <p className="text-[15px] font-bold tabular-nums text-white">
+            {formatCount(video.shareCount)}
+          </p>
+          <p className="mt-0.5 text-[11px] text-zinc-500">Chia sẻ</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function parseSourceVideoId(raw) {
+  if (raw == null || String(raw).trim() === '') return null
+  const n = Number(raw)
+  return Number.isFinite(n) && n > 0 ? n : null
+}
 
 function formatCompactCount(value) {
   const count = Number(value ?? 0)
@@ -11,14 +167,250 @@ function formatCompactCount(value) {
   return String(count)
 }
 
+/** Thumbnail + VibelyID trên video; mô tả + ⋮ (chỉ khi hover mô tả); popover bên phải khi bấm ⋮. */
+function SoundGridVideoCard({
+  video,
+  coverFallback,
+  wideSource,
+  soundPageHref,
+  soundOwnerVibelyId,
+}) {
+  const [popoverOpen, setPopoverOpen] = useState(false)
+
+  useEffect(() => {
+    if (!popoverOpen) return undefined
+    const onKey = (e) => {
+      if (e.key === 'Escape') setPopoverOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [popoverOpen])
+
+  const rawUser = String(video.authorUsername ?? 'vibely')
+    .trim()
+    .replace(/^@/, '')
+  const profile = soundProfilePath(rawUser)
+  const oneLine =
+    String(video.description ?? '').trim() ||
+    String(video.title ?? '').trim() ||
+    '\u00A0'
+  const poster =
+    String(video.thumbnailUrl ?? '').trim() || coverFallback || DEFAULT_COVER
+  const overlayAvatar =
+    String(video.authorAvatarUrl ?? video.avatarUrl ?? '').trim() || poster
+
+  const thumb = (
+    <>
+      <Link
+        to="/foryou"
+        state={{ focusVideoId: video.id }}
+        className="absolute inset-0 z-0 block"
+        aria-label="Mở video trong feed"
+      />
+      {video.thumbnailUrl?.trim() ? (
+        <img
+          src={video.thumbnailUrl}
+          alt=""
+          className="relative z-[1] h-full w-full object-cover pointer-events-none"
+        />
+      ) : video.videoUrl?.trim() ? (
+        <video
+          src={video.videoUrl}
+          poster={poster}
+          muted
+          loop
+          playsInline
+          autoPlay={Boolean(wideSource)}
+          preload={wideSource ? undefined : 'metadata'}
+          className="relative z-[1] h-full w-full object-cover pointer-events-none"
+        />
+      ) : (
+        <img
+          src={DEFAULT_COVER}
+          alt=""
+          className="relative z-[1] h-full w-full object-cover pointer-events-none"
+        />
+      )}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-linear-to-t from-black/75 via-black/15 to-transparent px-2 pb-1.5 pt-5">
+        <div className="pointer-events-auto inline-flex max-w-[calc(100%-4px)] items-center">
+          {profile ? (
+            <Link
+              to={profile}
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex max-w-full items-center gap-1.5 transition hover:opacity-90"
+              aria-label={`Hồ sơ ${rawUser}`}
+            >
+              <img
+                src={overlayAvatar}
+                alt=""
+                className="h-6 w-6 shrink-0 rounded-full object-cover shadow-[0_2px_10px_rgba(0,0,0,0.55)]"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.src = DEFAULT_COVER
+                }}
+              />
+              <span className="truncate text-[11px] font-bold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.95),0_0_1px_rgba(0,0,0,0.8)]">
+                {rawUser}
+              </span>
+            </Link>
+          ) : (
+            <span className="inline-flex max-w-full items-center gap-1.5">
+              <img
+                src={overlayAvatar}
+                alt=""
+                className="h-6 w-6 shrink-0 rounded-full object-cover shadow-[0_2px_10px_rgba(0,0,0,0.55)]"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.src = DEFAULT_COVER
+                }}
+              />
+              <span className="truncate text-[11px] font-bold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.95),0_0_1px_rgba(0,0,0,0.8)]">
+                {rawUser}
+              </span>
+            </span>
+          )}
+        </div>
+      </div>
+    </>
+  )
+
+  const frameClass = wideSource
+    ? 'relative aspect-9/16 w-[min(200px,55vw)] overflow-hidden rounded-xl bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600'
+    : 'relative mx-auto aspect-9/16 w-full max-w-[96px] overflow-hidden rounded-lg bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600'
+
+  const descRowClass = wideSource ? 'mt-2 w-[min(200px,55vw)]' : 'mt-1.5 w-full max-w-[96px] mx-auto'
+
+  return (
+    <div
+      className={
+        wideSource
+          ? 'relative inline-flex max-w-full flex-col'
+          : 'relative flex w-full flex-col'
+      }
+      onMouseLeave={() => setPopoverOpen(false)}
+    >
+      <div className={frameClass}>{thumb}</div>
+      <div
+        className={`group/desc flex min-w-0 cursor-default items-start gap-0.5 rounded-md px-0.5 py-0.5 transition-colors hover:bg-white/[0.06] ${descRowClass}`}
+      >
+        <p className="line-clamp-1 flex-1 text-[11px] leading-snug text-zinc-400 group-hover/desc:text-zinc-200">
+          {oneLine}
+        </p>
+        <button
+          type="button"
+          aria-label="Chi tiết video"
+          aria-expanded={popoverOpen}
+          className="shrink-0 rounded-full p-0.5 text-lg text-zinc-300 opacity-0 transition-opacity hover:bg-white/10 hover:text-white group-hover/desc:opacity-100 group-focus-within/desc:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+          onClick={(e) => {
+            e.preventDefault()
+            setPopoverOpen((o) => !o)
+          }}
+        >
+          <BiDotsVerticalRounded aria-hidden className="block h-[18px] w-[18px]" />
+        </button>
+      </div>
+      {popoverOpen ? (
+        <div className="pointer-events-auto absolute left-full top-0 bottom-0 z-[68] flex items-center pl-1">
+          <div className="h-full min-h-[72px] w-5 shrink-0" aria-hidden />
+          <div className="ml-1.5 shrink-0">
+            <SoundVideoDetailPopover
+              video={video}
+              formatCount={formatCompactCount}
+              soundPageHref={soundPageHref}
+              soundOwnerVibelyId={soundOwnerVibelyId}
+            />
+          </div>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 export function SoundPage() {
+  const { token } = useAuth()
   const [searchParams] = useSearchParams()
   const audioUrl = String(searchParams.get('audioUrl') ?? '').trim()
   const audioTitleFromQuery = String(searchParams.get('title') ?? '').trim()
   const creatorFromQuery = String(searchParams.get('creator') ?? '').trim()
+  const creatorAvatarFromQuery = String(
+    searchParams.get('creatorAvatar') ?? '',
+  ).trim()
+  const creatorUsernameFromQuery = String(
+    searchParams.get('creatorUsername') ?? '',
+  )
+    .trim()
+    .replace(/^@/, '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [items, setItems] = useState([])
+  const sourceVideoId = useMemo(
+    () => parseSourceVideoId(searchParams.get('sourceVideoId')),
+    [searchParams],
+  )
+  const [sourceVideo, setSourceVideo] = useState(null)
+  const [sourceLoading, setSourceLoading] = useState(false)
+  const [sourceError, setSourceError] = useState('')
+  const soundAudioRef = useRef(null)
+  const [soundPlaying, setSoundPlaying] = useState(false)
+
+  useEffect(() => {
+    const el = soundAudioRef.current
+    if (!el) return undefined
+    const onPlay = () => setSoundPlaying(true)
+    const onPause = () => setSoundPlaying(false)
+    const onEnded = () => setSoundPlaying(false)
+    el.addEventListener('play', onPlay)
+    el.addEventListener('pause', onPause)
+    el.addEventListener('ended', onEnded)
+    return () => {
+      el.removeEventListener('play', onPlay)
+      el.removeEventListener('pause', onPause)
+      el.removeEventListener('ended', onEnded)
+    }
+  }, [audioUrl])
+
+  useEffect(() => {
+    const el = soundAudioRef.current
+    if (!el) return
+    el.pause()
+    el.currentTime = 0
+    setSoundPlaying(false)
+  }, [audioUrl])
+
+  useEffect(() => {
+    return () => {
+      soundAudioRef.current?.pause()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (sourceVideoId == null) {
+      setSourceVideo(null)
+      setSourceError('')
+      setSourceLoading(false)
+      return undefined
+    }
+    let cancelled = false
+    setSourceLoading(true)
+    setSourceError('')
+    apiClient
+      .getVideo(sourceVideoId, { token })
+      .then((v) => {
+        if (!cancelled) setSourceVideo(v)
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setSourceVideo(null)
+          setSourceError(e?.message || 'Không tải được video gốc.')
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setSourceLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [sourceVideoId, token])
 
   useEffect(() => {
     if (!audioUrl) return
@@ -41,19 +433,76 @@ export function SoundPage() {
     }
   }, [audioUrl])
 
+  const creatorAvatar = useMemo(() => {
+    const fromItem = String(items[0]?.authorAvatarUrl ?? '').trim()
+    return fromItem || creatorAvatarFromQuery
+  }, [items, creatorAvatarFromQuery])
+
   const cover = useMemo(() => {
-    if (items[0]?.thumbnailUrl?.trim()) return items[0].thumbnailUrl
+    if (creatorAvatar) return creatorAvatar
+    if (items[0]?.thumbnailUrl?.trim()) return items[0].thumbnailUrl.trim()
+    const st = String(sourceVideo?.thumbnailUrl ?? '').trim()
+    if (st) return st
     return DEFAULT_COVER
-  }, [items])
+  }, [items, creatorAvatar, sourceVideo])
 
   const title = items[0]?.audioTitle || audioTitleFromQuery || 'Âm thanh gốc'
   const creator = items[0]?.authorDisplayName || creatorFromQuery || 'Nhà sáng tạo'
-  const creatorUsername = String(items[0]?.authorUsername ?? '').trim().replace(/^@/, '')
-  const creatorProfileHref = creatorUsername ? `/@${encodeURIComponent(creatorUsername)}` : ''
-  const heroVideo = items[0]?.videoUrl?.trim() ? items[0].videoUrl : ''
+  const creatorUsername = String(items[0]?.authorUsername ?? '')
+    .trim()
+    .replace(/^@/, '')
+  const creatorUsernameResolved =
+    creatorUsername || creatorUsernameFromQuery
+  const creatorProfileHref = creatorUsernameResolved
+    ? `/@${encodeURIComponent(creatorUsernameResolved)}`
+    : ''
+  const heroVideo = useMemo(() => {
+    const fromItem = String(items[0]?.videoUrl ?? '').trim()
+    if (fromItem) return fromItem
+    return String(sourceVideo?.videoUrl ?? '').trim()
+  }, [items, sourceVideo])
+
+  /** API có thể trả 0 bài; video gốc từ query vẫn hiển thị — cộng vào số đếm nếu chưa có trong danh sách. */
+  const displayedVideoCount = useMemo(() => {
+    const ids = new Set(items.map((v) => String(v.id)))
+    let n = items.length
+    if (
+      sourceVideo?.id != null &&
+      String(sourceVideo.videoUrl ?? '').trim() !== '' &&
+      !ids.has(String(sourceVideo.id))
+    ) {
+      n += 1
+    }
+    return n
+  }, [items, sourceVideo])
+
+  const soundPageHref = useMemo(() => {
+    const q = searchParams.toString()
+    return q ? `/sound?${q}` : null
+  }, [searchParams])
+
+  const soundOwnerVibelyId = useMemo(() => {
+    const r = String(creatorUsernameResolved ?? '')
+      .trim()
+      .replace(/^@/, '')
+    if (r) return r
+    const i = String(items[0]?.authorUsername ?? '')
+      .trim()
+      .replace(/^@/, '')
+    if (i) return i
+    return String(creatorUsernameFromQuery ?? '')
+      .trim()
+      .replace(/^@/, '')
+  }, [creatorUsernameResolved, items, creatorUsernameFromQuery])
 
   return (
     <div className="min-h-screen bg-black text-zinc-100">
+      <audio
+        ref={soundAudioRef}
+        src={audioUrl || undefined}
+        preload="metadata"
+        className="hidden"
+      />
       <div className="relative overflow-hidden border-b border-zinc-800/90">
         {heroVideo ? (
           <video
@@ -75,20 +524,43 @@ export function SoundPage() {
         <div className="absolute inset-0 bg-linear-to-b from-black/70 via-black/75 to-black" />
         <div className="relative mx-auto w-full max-w-[1200px] px-4 py-5">
           <header className="mt-2 flex flex-wrap items-start gap-4">
-            <div className="relative h-24 w-20 overflow-hidden rounded-md ring-1 ring-zinc-700">
-              {items[0]?.videoUrl?.trim() ? (
-                <video
-                  src={items[0].videoUrl}
-                  poster={cover}
-                  muted
-                  autoPlay
-                  loop
-                  playsInline
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <img src={cover} alt="" className="h-full w-full object-cover" />
-              )}
+            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg ring-1 ring-zinc-700">
+              <img
+                src={cover}
+                alt=""
+                className="h-full w-full object-cover"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.src = DEFAULT_COVER
+                }}
+              />
+              <button
+                type="button"
+                disabled={!audioUrl}
+                aria-label={soundPlaying ? 'Tạm dừng âm thanh' : 'Phát âm thanh'}
+                className="absolute inset-0 flex items-center justify-center bg-black/35 transition hover:bg-black/45 disabled:cursor-not-allowed disabled:opacity-40"
+                onClick={() => {
+                  const el = soundAudioRef.current
+                  if (!el || !audioUrl) return
+                  if (soundPlaying) {
+                    el.pause()
+                  } else {
+                    void el.play().catch(() => {})
+                  }
+                }}
+              >
+                {soundPlaying ? (
+                  <IoPause
+                    aria-hidden
+                    className="h-11 w-11 shrink-0 text-white drop-shadow-md"
+                  />
+                ) : (
+                  <IoPlay
+                    aria-hidden
+                    className="h-11 w-11 shrink-0 translate-x-0.5 text-white drop-shadow-md"
+                  />
+                )}
+              </button>
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="line-clamp-2 text-[clamp(22px,3.2vw,42px)] font-extrabold leading-[1.08] tracking-tight">
@@ -104,12 +576,10 @@ export function SoundPage() {
               ) : (
                 <p className="mt-1 text-lg italic text-zinc-200">{creator}</p>
               )}
-              <p className="mt-1 text-xs text-zinc-400">{items.length} videos</p>
-              {audioUrl ? (
-                <audio className="mt-2.5 w-full max-w-md" controls src={audioUrl}>
-                  Trình duyệt không hỗ trợ phát audio.
-                </audio>
-              ) : null}
+              <p className="mt-1 text-xs text-zinc-400">
+                {displayedVideoCount}{' '}
+                {displayedVideoCount === 1 ? 'video' : 'videos'}
+              </p>
             </div>
           </header>
         </div>
@@ -120,37 +590,42 @@ export function SoundPage() {
           {loading ? <p className="text-zinc-400">Đang tải video…</p> : null}
           {error ? <p className="text-red-400">{error}</p> : null}
           {!loading && !error && items.length === 0 ? (
-            <p className="text-zinc-500">Chưa có video nào dùng âm thanh này.</p>
+            <div className="space-y-5">
+              {sourceVideoId != null && sourceLoading ? (
+                <p className="text-zinc-400">Đang tải video gốc…</p>
+              ) : null}
+              {sourceVideoId != null && sourceError && !sourceVideo ? (
+                <p className="text-sm text-red-400/90">{sourceError}</p>
+              ) : null}
+              {sourceVideo?.videoUrl?.trim() ? (
+                <SoundGridVideoCard
+                  video={sourceVideo}
+                  coverFallback={cover}
+                  wideSource
+                  soundPageHref={soundPageHref}
+                  soundOwnerVibelyId={soundOwnerVibelyId}
+                />
+              ) : null}
+              {!sourceLoading &&
+              !sourceVideo?.videoUrl?.trim() &&
+              !(sourceVideoId != null && sourceError) ? (
+                <p className="text-zinc-500">
+                  Chưa có video nào dùng âm thanh này.
+                </p>
+              ) : null}
+            </div>
           ) : null}
           {items.length > 0 ? (
             <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
               {items.map((v) => (
-                <Link key={String(v.id)} to="/foryou" state={{ focusVideoId: v.id }} className="group">
-                  <div className="relative aspect-9/16 overflow-hidden rounded-lg bg-zinc-900 ring-1 ring-zinc-800 transition group-hover:ring-zinc-600">
-                    {v.thumbnailUrl?.trim() ? (
-                      <img src={v.thumbnailUrl} alt="" className="h-full w-full object-cover" />
-                    ) : v.videoUrl?.trim() ? (
-                      <video
-                        src={v.videoUrl}
-                        poster={cover}
-                        muted
-                        playsInline
-                        preload="metadata"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <img src={DEFAULT_COVER} alt="" className="h-full w-full object-cover" />
-                    )}
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 py-1.5">
-                      <p className="line-clamp-1 text-[10px] font-medium text-zinc-100">
-                        {v.authorDisplayName || v.authorUsername || 'Vibely'}
-                      </p>
-                    </div>
-                    <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-zinc-200">
-                      ♥ {formatCompactCount(v.likeCount)}
-                    </span>
-                  </div>
-                </Link>
+                <SoundGridVideoCard
+                  key={String(v.id)}
+                  video={v}
+                  coverFallback={cover}
+                  wideSource={false}
+                  soundPageHref={soundPageHref}
+                  soundOwnerVibelyId={soundOwnerVibelyId}
+                />
               ))}
             </div>
           ) : null}
