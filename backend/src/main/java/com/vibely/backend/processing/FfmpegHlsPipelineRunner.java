@@ -2,6 +2,8 @@ package com.vibely.backend.processing;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vibely.backend.processing.audio.AudioEnhancementService;
+import com.vibely.backend.processing.audio.AudioProcessingResult;
 import com.vibely.backend.storage.ResolvedS3Object;
 import com.vibely.backend.storage.S3ObjectUrlBuilder;
 import com.vibely.backend.storage.S3Properties;
@@ -45,6 +47,7 @@ public class FfmpegHlsPipelineRunner {
     private final ProcessingProperties processingProperties;
     private final VideoProcessingStateService stateService;
     private final ObjectMapper objectMapper;
+    private final AudioEnhancementService audioEnhancementService;
 
     public FfmpegHlsPipelineRunner(
         S3Client s3Client,
@@ -52,7 +55,8 @@ public class FfmpegHlsPipelineRunner {
         S3ObjectUrlBuilder objectUrlBuilder,
         ProcessingProperties processingProperties,
         VideoProcessingStateService stateService,
-        ObjectMapper objectMapper
+        ObjectMapper objectMapper,
+        AudioEnhancementService audioEnhancementService
     ) {
         this.s3Client = s3Client;
         this.s3Properties = s3Properties;
@@ -60,6 +64,7 @@ public class FfmpegHlsPipelineRunner {
         this.processingProperties = processingProperties;
         this.stateService = stateService;
         this.objectMapper = objectMapper;
+        this.audioEnhancementService = audioEnhancementService;
     }
 
     public void run(VideoPipelineWorkItem item) {
@@ -129,9 +134,24 @@ public class FfmpegHlsPipelineRunner {
             }
 
             Path transcodeDir = Files.createDirectories(workRoot.resolve("hls"));
+            AudioProcessingResult audioPlan = audioEnhancementService.planEnhancement(sourceFile, workRoot);
+            log.info(
+                "HLS pipeline audio plan videoId={} profile={} enhanced={} notes={}",
+                item.videoId(),
+                audioPlan.profile(),
+                audioPlan.enhancementApplied(),
+                audioPlan.notes()
+            );
             log.info("HLS pipeline ffmpeg transcode starting videoId={}", item.videoId());
-            transcodeToHls(sourceFile, transcodeDir);
-            log.info("HLS pipeline ffmpeg transcode finished videoId={}", item.videoId());
+            long transcodeStarted = System.nanoTime();
+            transcodeToHls(sourceFile, transcodeDir, audioPlan);
+            long transcodeMs = (System.nanoTime() - transcodeStarted) / 1_000_000;
+            log.info(
+                "HLS pipeline ffmpeg transcode finished videoId={} durationMs={} audioBitrate={}",
+                item.videoId(),
+                transcodeMs,
+                audioPlan.audioBitrateArg()
+            );
 
             String prefix = "hls/" + item.authorId() + "/" + item.videoId() + "/";
             int uploaded = 0;
@@ -356,7 +376,7 @@ public class FfmpegHlsPipelineRunner {
         runProcess(cmd, input.getParent());
     }
 
-    private void transcodeToHls(Path input, Path outDir) throws Exception {
+    private void transcodeToHls(Path input, Path outDir, AudioProcessingResult audioPlan) throws Exception {
         List<String> cmd = new ArrayList<>();
         cmd.add(processingProperties.getFfmpegPath());
         cmd.add("-y");
@@ -368,10 +388,20 @@ public class FfmpegHlsPipelineRunner {
         cmd.add("veryfast");
         cmd.add("-crf");
         cmd.add("23");
-        cmd.add("-c:a");
-        cmd.add("aac");
-        cmd.add("-b:a");
-        cmd.add("128k");
+        if (audioPlan.hasAudioStream()) {
+            if (audioPlan.hasAudioFilter()) {
+                cmd.add("-af");
+                cmd.add(audioPlan.filterChain());
+            }
+            cmd.add("-c:a");
+            cmd.add("aac");
+            cmd.add("-b:a");
+            cmd.add(audioPlan.audioBitrateArg());
+            cmd.add("-ar");
+            cmd.add(String.valueOf(audioPlan.sampleRateHz()));
+        } else {
+            cmd.add("-an");
+        }
         cmd.add("-hls_time");
         cmd.add("6");
         cmd.add("-hls_playlist_type");
