@@ -30,6 +30,9 @@ public class ProcessingProperties {
 
     private int maxJobAttempts = 3;
 
+    @NestedConfigurationProperty
+    private Audio audio = new Audio();
+
     public Worker getWorker() {
         return worker;
     }
@@ -76,6 +79,91 @@ public class ProcessingProperties {
 
     public void setMaxJobAttempts(int maxJobAttempts) {
         this.maxJobAttempts = maxJobAttempts;
+    }
+
+    public Audio getAudio() {
+        return audio;
+    }
+
+    public void setAudio(Audio audio) {
+        this.audio = audio;
+    }
+
+    /**
+     * Mobile-first mastering during HLS transcode (FFmpeg {@code -af} chain).
+     */
+    public static class Audio {
+
+        private boolean enabled = true;
+
+        /** Run an extra ffmpeg volumedetect pass for profile heuristics. */
+        private boolean volumeDetectEnabled = true;
+
+        private double integratedLoudnessLufs = -12.0;
+
+        private double loudnessRange = 7.0;
+
+        private double truePeakDb = -1.0;
+
+        private int bitrateKbps = 128;
+
+        private int sampleRateHz = 48_000;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public boolean isVolumeDetectEnabled() {
+            return volumeDetectEnabled;
+        }
+
+        public void setVolumeDetectEnabled(boolean volumeDetectEnabled) {
+            this.volumeDetectEnabled = volumeDetectEnabled;
+        }
+
+        public double getIntegratedLoudnessLufs() {
+            return integratedLoudnessLufs;
+        }
+
+        public void setIntegratedLoudnessLufs(double integratedLoudnessLufs) {
+            this.integratedLoudnessLufs = integratedLoudnessLufs;
+        }
+
+        public double getLoudnessRange() {
+            return loudnessRange;
+        }
+
+        public void setLoudnessRange(double loudnessRange) {
+            this.loudnessRange = loudnessRange;
+        }
+
+        public double getTruePeakDb() {
+            return truePeakDb;
+        }
+
+        public void setTruePeakDb(double truePeakDb) {
+            this.truePeakDb = truePeakDb;
+        }
+
+        public int getBitrateKbps() {
+            return bitrateKbps;
+        }
+
+        public void setBitrateKbps(int bitrateKbps) {
+            this.bitrateKbps = bitrateKbps;
+        }
+
+        public int getSampleRateHz() {
+            return sampleRateHz;
+        }
+
+        public void setSampleRateHz(int sampleRateHz) {
+            this.sampleRateHz = sampleRateHz;
+        }
     }
 
     public static class Worker {
