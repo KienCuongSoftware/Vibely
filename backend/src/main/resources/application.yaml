@@ -3,6 +3,16 @@ spring:
     name: vibely-backend
   profiles:
     active: dev
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: ${REDIS_TIMEOUT:2s}
+      lettuce:
+        pool:
+          max-active: ${REDIS_POOL_MAX_ACTIVE:16}
+          max-idle: ${REDIS_POOL_MAX_IDLE:8}
   servlet:
     multipart:
       max-file-size: 50MB
@@ -22,6 +32,21 @@ logging:
   pattern:
     level: "%5p [req:%X{requestId:-na}]"
 app:
+  urls:
+    frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
+    backend-base-url: ${BACKEND_BASE_URL:http://localhost:8080}
+    short-link-base-url: ${SHORT_LINK_BASE_URL:http://localhost:8080}
+    deep-link-scheme: ${APP_DEEP_LINK_SCHEME:vibely}
+  share:
+    short-code-length: ${APP_SHARE_SHORT_CODE_LENGTH:8}
+    redirect-cache-ttl-seconds: ${APP_SHARE_REDIRECT_CACHE_TTL_SECONDS:604800}
+    idempotency-window-hours: ${APP_SHARE_IDEMPOTENCY_WINDOW_HOURS:24}
+    redirect-rate-limit-per-minute: ${APP_SHARE_REDIRECT_RATE_LIMIT:120}
+    share-write-rate-limit-per-minute: ${APP_SHARE_SHARE_WRITE_RATE_LIMIT:40}
+    negative-cache-ttl-seconds: ${APP_SHARE_NEGATIVE_CACHE_TTL_SECONDS:60}
+  redis:
+    enabled: ${APP_REDIS_ENABLED:false}
+    key-prefix: ${APP_REDIS_KEY_PREFIX:vibely}
   jwt:
     secret: ${JWT_SECRET:change-this-in-real-environments}
     expiration-seconds: 86400
@@ -48,12 +73,20 @@ app:
     ffmpeg-path: ${FFMPEG_PATH:ffmpeg}
     ffprobe-path: ${FFPROBE_PATH:ffprobe}
     max-job-attempts: ${APP_PROCESSING_MAX_JOB_ATTEMPTS:3}
+    audio:
+      enabled: ${APP_PROCESSING_AUDIO_ENABLED:true}
+      volume-detect-enabled: ${APP_PROCESSING_AUDIO_VOLUME_DETECT:true}
+      integrated-loudness-lufs: ${APP_PROCESSING_AUDIO_LUFS:-12}
+      loudness-range: ${APP_PROCESSING_AUDIO_LRA:7}
+      true-peak-db: ${APP_PROCESSING_AUDIO_TP:-1}
+      bitrate-kbps: ${APP_PROCESSING_AUDIO_BITRATE_KBPS:128}
+      sample-rate-hz: ${APP_PROCESSING_AUDIO_SAMPLE_RATE:48000}
     worker:
       # Bật trên máy/container có ffmpeg+ffprobe và quyền S3 Get/Put; API-only pod nên để false.
       # Profile dev: document --- ở cuối file ghi đè (mặc định true nếu không đặt APP_PROCESSING_WORKER_ENABLED).
       enabled: ${APP_PROCESSING_WORKER_ENABLED:false}
 ---
-# Chỉ merge khi spring.profiles.active chứa dev: ghi đè mặc định “an toàn” ở document trên — không cần biến APP_* vẫn bật S3 + worker trên máy dev (trừ khi bạn đặt APP_S3_ENABLED=false / APP_PROCESSING_WORKER_ENABLED=false).
+# Chỉ merge khi spring.profiles.active chứa dev: ghi đè mặc định “an toàn” ở document trên — không cần biến APP_* vẫn bật S3 + worker + Redis trên máy dev (trừ khi bạn đặt APP_S3_ENABLED=false / APP_PROCESSING_WORKER_ENABLED=false / APP_REDIS_ENABLED=false).
 spring:
   config:
     activate:
@@ -61,6 +94,8 @@ spring:
 app:
   s3:
     enabled: ${APP_S3_ENABLED:true}
+  redis:
+    enabled: ${APP_REDIS_ENABLED:true}
   processing:
     dry-run-promote-when-worker-disabled: false
     worker:
