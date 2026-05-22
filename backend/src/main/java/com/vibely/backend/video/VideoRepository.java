@@ -52,6 +52,9 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     @Query("UPDATE Video v SET v.shareCount = v.shareCount + 1 WHERE v.id = :id AND v.status = :status")
     int incrementShareCount(@Param("id") Long id, @Param("status") VideoStatus status);
 
+    @Query("SELECT v.author.id FROM Video v WHERE v.id = :id")
+    java.util.Optional<Long> findAuthorIdById(@Param("id") Long id);
+
     @Query("""
         select v from Video v
         where v.status = :status
