@@ -109,6 +109,7 @@ public class SecurityConfig {
                     "/api/auth/verify-code",
                     "/api/auth/oauth/exchange"
                 ).permitAll()
+                .requestMatchers(HttpMethod.GET, "/v/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/feed/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/me/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
@@ -117,6 +118,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/videos/sound").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/videos/*/views").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/videos/*/shares").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/videos/*/share").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/videos/*/share/analytics").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*").permitAll()
                 .anyRequest().authenticated()
             )
