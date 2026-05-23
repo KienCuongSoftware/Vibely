@@ -51,6 +51,9 @@ app:
     worker:
       enabled: true
     dry-run-promote-when-worker-disabled: false
+  # Share cache + rate limit. Trước khi chạy backend: docker compose up -d redis (host/port mặc định localhost:6379).
+  redis:
+    enabled: true
   cors:
     allowed-origins: http://localhost:5173,http://127.0.0.1:5173
   oauth2:
