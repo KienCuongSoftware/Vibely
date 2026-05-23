@@ -2,6 +2,8 @@ package com.vibely.backend.security;
 
 import com.vibely.backend.common.ApiError;
 import com.vibely.backend.common.ApiResponse;
+import com.vibely.backend.share.ShareClientHints;
+import com.vibely.backend.share.ShareRateLimiter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -24,9 +26,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private final Map<String, Counter> counters = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper;
+    private final ShareRateLimiter shareRateLimiter;
 
-    public RateLimitFilter(ObjectMapper objectMapper) {
+    public RateLimitFilter(ObjectMapper objectMapper, ShareRateLimiter shareRateLimiter) {
         this.objectMapper = objectMapper;
+        this.shareRateLimiter = shareRateLimiter;
     }
 
     @Override
@@ -39,26 +43,45 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String method = request.getMethod();
         boolean authRoute = uri.startsWith("/api/auth/");
         boolean commentWriteRoute = uri.matches("^/api/videos/\\d+/comments$") && "POST".equals(method);
+        boolean redirectRoute = uri.matches("^/v/[0-9A-Za-z]+$") && "GET".equals(method);
+        boolean shareWriteRoute = uri.matches("^/api/v1/videos/\\d+/share$") && "POST".equals(method);
 
-        if (authRoute || commentWriteRoute) {
+        if (redirectRoute) {
+            if (!shareRateLimiter.allowRedirect(ShareClientHints.clientIp(request))) {
+                writeRateLimited(response);
+                return;
+            }
+        } else if (shareWriteRoute) {
+            String subject = request.getHeader("Authorization") != null
+                ? "user:" + request.getRemoteAddr()
+                : "guest:" + request.getRemoteAddr();
+            if (!shareRateLimiter.allowShareWrite(subject)) {
+                writeRateLimited(response);
+                return;
+            }
+        } else if (authRoute || commentWriteRoute) {
             int limit = authRoute ? AUTH_LIMIT : COMMENT_LIMIT;
             String userKey = request.getHeader("Authorization") != null ? "auth-user" : "guest";
             String key = request.getRemoteAddr() + ":" + userKey + ":" + uri;
             if (!allowRequest(key, limit)) {
-                response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-                response.setContentType("application/json");
-                ApiResponse<Void> payload = ApiResponse.failure(
-                    ApiError.of(
-                        HttpStatus.TOO_MANY_REQUESTS.value(),
-                        "RATE_LIMITED",
-                        "Bạn thao tác quá nhanh, vui lòng thử lại sau"
-                    )
-                );
-                response.getWriter().write(objectMapper.writeValueAsString(payload));
+                writeRateLimited(response);
                 return;
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    private void writeRateLimited(HttpServletResponse response) throws IOException {
+        response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+        response.setContentType("application/json");
+        ApiResponse<Void> payload = ApiResponse.failure(
+            ApiError.of(
+                HttpStatus.TOO_MANY_REQUESTS.value(),
+                "RATE_LIMITED",
+                "Bạn thao tác quá nhanh, vui lòng thử lại sau"
+            )
+        );
+        response.getWriter().write(objectMapper.writeValueAsString(payload));
     }
 
     private boolean allowRequest(String key, int limit) {
