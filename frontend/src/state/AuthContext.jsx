@@ -88,12 +88,26 @@ function mapUserWithDefaultAvatar(userLike) {
   };
 }
 
+function isUnauthorizedError(err) {
+  if (err?.status === 401 || err?.code === "AUTH_REQUIRED") return true;
+  const msg = String(err?.message ?? "");
+  return (
+    msg.includes("401") ||
+    msg.includes("AUTH_REQUIRED") ||
+    msg.includes("đăng nhập")
+  );
+}
+
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem(TOKEN_KEY));
   const [refreshToken, setRefreshToken] = useState(
     localStorage.getItem(REFRESH_TOKEN_KEY),
   );
   const [user, setUser] = useState(null);
+  /** false while validating token with `/api/auth/me` (avoids protected API calls with stale JWT). */
+  const [authReady, setAuthReady] = useState(
+    () => !localStorage.getItem(TOKEN_KEY),
+  );
 
   const login = async (email, password) => {
     const result = await apiClient.login({ email, password });
@@ -202,9 +216,15 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    if (refreshToken) {
-      apiClient.logout(refreshToken).catch(() => {});
+    const refreshTok = localStorage.getItem(REFRESH_TOKEN_KEY);
+    if (refreshTok) {
+      apiClient.logout(refreshTok).catch(() => {});
     }
+    clearSession();
+    setAuthReady(true);
+  };
+
+  const clearSession = () => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_CACHE_KEY);
@@ -218,8 +238,11 @@ export function AuthProvider({ children }) {
     if (!token) {
       setUser(null);
       localStorage.removeItem(USER_CACHE_KEY);
+      setAuthReady(true);
       return;
     }
+
+    setAuthReady(false);
 
     const cachedBootstrap = readCachedUserPayload();
     if (cachedBootstrap) {
@@ -262,14 +285,10 @@ export function AuthProvider({ children }) {
         const me = await apiClient.me(token);
         if (cancelled) return;
         applyMePayload(me, token);
+        setAuthReady(true);
       } catch (e) {
         if (cancelled) return;
-        const msg = String(e?.message ?? "");
-        const looksUnauthorized =
-          msg.includes("401") ||
-          msg.includes("AUTH_REQUIRED") ||
-          msg.includes("đăng nhập");
-        if (looksUnauthorized && refreshTok) {
+        if (isUnauthorizedError(e) && refreshTok) {
           try {
             const result = await apiClient.refresh(refreshTok);
             if (cancelled) return;
@@ -280,12 +299,22 @@ export function AuthProvider({ children }) {
             const me2 = await apiClient.me(result.accessToken);
             if (cancelled) return;
             applyMePayload(me2, result.accessToken);
+            setAuthReady(true);
             return;
           } catch {
-            // tiếp tục fallback cache
+            // refresh failed — clear stale session below
           }
         }
+        if (isUnauthorizedError(e)) {
+          if (refreshTok) {
+            apiClient.logout(refreshTok).catch(() => {});
+          }
+          clearSession();
+          setAuthReady(true);
+          return;
+        }
         fallbackToCache(token);
+        setAuthReady(true);
       }
     })();
 
@@ -298,6 +327,7 @@ export function AuthProvider({ children }) {
     token,
     refreshToken,
     user,
+    authReady,
     login,
     register,
     refreshSession,

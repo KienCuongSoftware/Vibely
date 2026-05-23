@@ -14,7 +14,7 @@ import { StudioLayout } from '../components/StudioLayout'
 import { useAuth } from '../state/useAuth'
 
 export function StudioPostsPage() {
-  const { token } = useAuth()
+  const { token, authReady } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const successMessage = location.state?.successMessage
@@ -29,6 +29,7 @@ export function StudioPostsPage() {
   const [moreMenu, setMoreMenu] = useState(null)
 
   const load = useCallback(async () => {
+    if (!authReady) return
     if (!token) {
       setItems([])
       setTotal(0)
@@ -48,7 +49,7 @@ export function StudioPostsPage() {
     } finally {
       setLoading(false)
     }
-  }, [token])
+  }, [authReady, token])
 
   useEffect(() => {
     document.title = 'VibelyStudio | Bài đăng'
