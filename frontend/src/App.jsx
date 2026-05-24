@@ -1,5 +1,5 @@
 import React from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { SignupPage } from './pages/SignupPage.jsx'
 import { FeedPage } from './pages/FeedPage.jsx'
@@ -15,6 +15,15 @@ import { TermsOfServicePage } from './pages/TermsOfServicePage.jsx'
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage.jsx'
 import { SoundPage } from './pages/SoundPage.jsx'
 import { useAuth } from './state/useAuth'
+
+function WatchRedirect() {
+  const { videoId } = useParams()
+  const id = String(videoId ?? '').trim()
+  if (!/^\d+$/.test(id)) {
+    return <Navigate to="/foryou" replace />
+  }
+  return <Navigate to={`/foryou?v=${encodeURIComponent(id)}`} replace />
+}
 
 function App() {
   const { token } = useAuth()
@@ -34,6 +43,7 @@ function App() {
           <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
           <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/sound" element={<SoundPage />} />
+          <Route path="/watch/:videoId" element={<WatchRedirect />} />
           <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
           <Route path="/vibelystudio/home" element={<Navigate to="/login" replace />} />
           <Route path="/vibelystudio/posts" element={<Navigate to="/login" replace />} />
@@ -73,6 +83,7 @@ function App() {
         <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
         <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/sound" element={<SoundPage />} />
+        <Route path="/watch/:videoId" element={<WatchRedirect />} />
         <Route path="*" element={<Navigate to="/foryou" replace />} />
       </Routes>
     </div>
