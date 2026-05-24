@@ -5,6 +5,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { apiClient } from "../api/client";
 import { FaFacebook, FaUser } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
+import { SiLine } from "react-icons/si";
 import {
   IoArrowBack,
   IoClose,
@@ -13,8 +14,15 @@ import {
 } from "react-icons/io5";
 
 import { resolveBackendOrigin } from "../config/apiBase.js";
+import { normalizeLastLoginMethod } from "../auth/lastLoginMethod.js";
+import {
+  persistLastLoginMethod,
+  useLastLoginMethod,
+} from "../auth/useLastLoginMethod.js";
+import { LoginMethodButton } from "../components/auth/LoginMethodButton.jsx";
 
 const OAUTH_BACKEND_ORIGIN = resolveBackendOrigin();
+const OAUTH_ONBOARDING_KEY = "vibely_oauth_pending";
 
 export function LoginPage() {
   const { token, login, completeOAuthLogin } = useAuth();
@@ -28,6 +36,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const lastLoginMethod = useLastLoginMethod();
   const canSubmit =
     identifier.trim().length > 0 && password.trim().length > 0 && !loading;
   const oauthErrorMessage =
@@ -52,10 +61,14 @@ export function LoginPage() {
       return;
     }
 
+    const oauthProvider = normalizeLastLoginMethod(
+      searchParams.get("provider"),
+    );
+
     const oneTimeCode = searchParams.get("code");
     if (!oneTimeCode) {
       navigate(
-        "/login?oauth=error&message=Thi%E1%BA%BFu%20m%C3%A3%20x%C3%A1c%20th%E1%BB%B1c%20Google%2C%20vui%20l%C3%B2ng%20th%E1%BB%AD%20l%E1%BA%A1i",
+        "/login?oauth=error&message=Thi%E1%BA%BFu%20m%C3%A3%20x%C3%A1c%20th%E1%BB%B1c%20OAuth%2C%20vui%20l%C3%B2ng%20th%E1%BB%AD%20l%E1%BA%A1i",
         { replace: true },
       );
       return;
@@ -72,36 +85,48 @@ export function LoginPage() {
 
     apiClient
       .exchangeOAuthCode(oneTimeCode)
-      .then((oauthData) => {
-        // Bảo đảm có đủ `username/avatarUrl` bằng cách re-fetch `/api/auth/me`
-        // (trường hợp backend trả thiếu field ở bước oauth exchange).
-        apiClient
-          .me(oauthData.accessToken)
-          .then((me) => {
-            completeOAuthLogin({
+      .then(async (oauthData) => {
+        let profile = oauthData;
+        let me = null;
+        try {
+          me = await apiClient.me(oauthData.accessToken);
+          profile = { ...oauthData, ...me };
+        } catch {
+          // Giữ payload exchange nếu `/me` không thành công.
+        }
+
+        const needsOnboarding =
+          Boolean(oauthData?.needsOnboarding) || Boolean(me?.needsOnboarding);
+        if (needsOnboarding) {
+          sessionStorage.setItem(
+            OAUTH_ONBOARDING_KEY,
+            JSON.stringify({
               accessToken: oauthData.accessToken,
               refreshToken: oauthData.refreshToken,
-              userId: Number(me?.id ?? oauthData.userId),
-              username: me?.username ?? oauthData.username,
-              displayName: me?.displayName ?? oauthData.displayName,
-              email: me?.email ?? oauthData.email,
-              avatarUrl: me?.avatarUrl ?? oauthData.avatarUrl,
-            });
-            navigate("/foryou", { replace: true });
-          })
-          .catch(() => {
-            // Fallback: vẫn login theo payload exchange nếu `/me` không thành công.
-            completeOAuthLogin({
-              accessToken: oauthData.accessToken,
-              refreshToken: oauthData.refreshToken,
-              userId: Number(oauthData.userId),
-              username: oauthData.username,
-              displayName: oauthData.displayName,
-              email: oauthData.email,
-              avatarUrl: oauthData.avatarUrl,
-            });
-            navigate("/foryou", { replace: true });
-          });
+              userId: Number(profile.userId ?? profile.id),
+              email: profile.email ?? oauthData.email,
+              displayName: profile.displayName ?? oauthData.displayName,
+              avatarUrl: profile.avatarUrl ?? oauthData.avatarUrl,
+              provider: oauthProvider ?? undefined,
+            }),
+          );
+          navigate("/signup?onboarding=oauth", { replace: true });
+          return;
+        }
+
+        if (oauthProvider) {
+          persistLastLoginMethod(oauthProvider);
+        }
+        completeOAuthLogin({
+          accessToken: oauthData.accessToken,
+          refreshToken: oauthData.refreshToken,
+          userId: Number(profile.userId ?? profile.id ?? oauthData.userId),
+          username: profile.username ?? oauthData.username,
+          displayName: profile.displayName ?? oauthData.displayName,
+          email: profile.email ?? oauthData.email,
+          avatarUrl: profile.avatarUrl ?? oauthData.avatarUrl,
+        });
+        navigate("/foryou", { replace: true });
       })
       .catch((error) => {
         oauthInFlightRef.current = false;
@@ -112,12 +137,8 @@ export function LoginPage() {
       });
   }, [completeOAuthLogin, navigate, searchParams, token]);
 
-  const handleGoogleAuth = () => {
-    window.location.href = `${OAUTH_BACKEND_ORIGIN}/oauth2/authorization/google`;
-  };
-
-  const handleFacebookAuth = () => {
-    window.location.href = `${OAUTH_BACKEND_ORIGIN}/oauth2/authorization/facebook`;
+  const startOAuth = (provider) => {
+    window.location.href = `${OAUTH_BACKEND_ORIGIN}/oauth2/authorization/${provider}`;
   };
 
   const submitWithCredentials = async (event) => {
@@ -136,6 +157,7 @@ export function LoginPage() {
     setStatus("Đang đăng nhập...");
     try {
       await login(identifier, password);
+      persistLastLoginMethod("email");
       setStatus("Đăng nhập thành công");
     } catch (error) {
       setStatus(error.message);
@@ -145,8 +167,9 @@ export function LoginPage() {
   };
 
   return (
-    <section className="relative flex min-h-screen items-center justify-center bg-black/70 px-4 py-8 text-zinc-100">
-      <div className="w-full max-w-2xl rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
+    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black/70 px-4 py-6 text-zinc-100">
+      <div className="flex max-h-[94vh] w-full max-w-[520px] flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
+        <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#27272a_transparent] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-800 [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar]:w-1.5">
         {view === "methods" ? (
           <>
             <div className="flex justify-end p-4">
@@ -158,46 +181,48 @@ export function LoginPage() {
                 <IoClose className="text-2xl" />
               </Link>
             </div>
-            <div className="mx-auto max-w-lg space-y-4 px-6 pb-8 text-sm">
-              <h2 className="text-center text-3xl font-bold">
+            <div className="mx-auto w-full max-w-[380px] space-y-4 px-5 pb-7 text-sm">
+              <h2 className="text-center text-3xl font-bold leading-tight">
                 Đăng nhập vào Vibely
               </h2>
               <div className="mx-auto h-1 w-11/12 rounded-full bg-zinc-800" />
 
               <div className="space-y-3">
-                <button
-                  type="button"
-                  className="flex h-[60px] w-full min-h-[60px] items-center gap-4 rounded-xl bg-zinc-800 px-4 text-left text-base hover:bg-zinc-700"
+                <LoginMethodButton
+                  label="Dùng email / username"
+                  recentlyUsed={lastLoginMethod === "email"}
                   onClick={() => {
                     setView("credentials");
                     setStatus("");
                   }}
-                >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center">
-                    <FaUser className="text-xl text-zinc-100" aria-hidden />
-                  </span>
-                  <span>Dùng email / username</span>
-                </button>
-                <button
-                  type="button"
-                  className="flex h-[60px] w-full min-h-[60px] items-center gap-4 rounded-xl bg-zinc-800 px-4 text-left text-base hover:bg-zinc-700"
-                  onClick={handleGoogleAuth}
-                >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center">
-                    <FcGoogle className="text-[28px]" aria-hidden />
-                  </span>
-                  <span>Tiếp tục với Google</span>
-                </button>
-                <button
-                  type="button"
-                  className="flex h-[60px] w-full min-h-[60px] items-center gap-4 rounded-xl bg-zinc-800 px-4 text-left text-base hover:bg-zinc-700"
-                  onClick={handleFacebookAuth}
-                >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1877F2]">
-                    <FaFacebook className="text-[22px] text-white" aria-hidden />
-                  </span>
-                  <span>Tiếp tục với Facebook</span>
-                </button>
+                  icon={<FaUser className="text-xl text-zinc-100" aria-hidden />}
+                />
+                <LoginMethodButton
+                  label="Tiếp tục với Google"
+                  recentlyUsed={lastLoginMethod === "google"}
+                  onClick={() => startOAuth("google")}
+                  icon={<FcGoogle className="text-[28px]" aria-hidden />}
+                />
+                <LoginMethodButton
+                  label="Tiếp tục với Facebook"
+                  recentlyUsed={lastLoginMethod === "facebook"}
+                  onClick={() => startOAuth("facebook")}
+                  icon={
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877F2]">
+                      <FaFacebook className="text-[22px] text-white" aria-hidden />
+                    </span>
+                  }
+                />
+                <LoginMethodButton
+                  label="Tiếp tục với LINE"
+                  recentlyUsed={lastLoginMethod === "line"}
+                  onClick={() => startOAuth("line")}
+                  icon={
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#06C755]">
+                      <SiLine className="text-[22px] text-white" aria-hidden />
+                    </span>
+                  }
+                />
               </div>
 
               {(oauthErrorMessage || status) ? (
@@ -226,21 +251,23 @@ export function LoginPage() {
                 <IoClose className="text-2xl" />
               </Link>
             </div>
-            <div className="mx-auto max-w-lg space-y-4 px-6 pb-8 text-sm">
-              <h2 className="text-center text-3xl font-bold">Đăng nhập</h2>
-              <div className="text-base font-medium text-zinc-100">
+            <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
+              <h2 className="text-center text-3xl font-bold leading-tight">
+                Đăng nhập
+              </h2>
+              <div className="text-[13px] font-medium text-zinc-100">
                 Email hoặc tên người dùng
               </div>
-              <form className="space-y-3" onSubmit={submitWithCredentials}>
+              <form className="space-y-2.5" onSubmit={submitWithCredentials}>
                 <input
-                  className="w-full rounded bg-zinc-800 px-4 py-3 text-base"
+                  className="h-10 w-full rounded bg-zinc-800 px-4 text-[13px]"
                   placeholder="Email hoặc tên người dùng"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                 />
                 <div className="relative">
                   <input
-                    className="w-full runded bg-zinc-800 px-4 py-3 text-base"
+                    className="h-10 w-full rounded bg-zinc-800 px-4 text-[13px]"
                     placeholder="Mật khẩu"
                     type={showPassword ? "text" : "password"}
                     value={password}
@@ -257,7 +284,7 @@ export function LoginPage() {
                 </div>
                 <button
                   type="button"
-                  className="text-sm text-zinc-200 hover:text-white"
+                  className="text-[12px] text-zinc-200 hover:text-white"
                   onClick={() =>
                     setStatus(
                       "Luồng quên mật khẩu sẽ được bổ sung ở bước tiếp theo",
@@ -267,7 +294,7 @@ export function LoginPage() {
                   Quên mật khẩu?
                 </button>
                 <button
-                  className={`w-full rounded px-3 py-3 text-base font-semibold transition ${
+                  className={`h-10 w-full rounded px-3 text-xl font-medium leading-none transition ${
                     canSubmit
                       ? "bg-red-600 text-white hover:bg-red-500"
                       : "cursor-not-allowed bg-zinc-800 text-zinc-400"
@@ -286,8 +313,9 @@ export function LoginPage() {
             </div>
           </>
         )}
-        <div className="rounded-b-2xl border-t border-zinc-800 bg-zinc-900/70 px-6 py-5 text-center">
-          <p className="mx-auto max-w-xl text-xs leading-relaxed text-zinc-400">
+        </div>
+        <div className="rounded-b-2xl border-t border-zinc-800 bg-zinc-900/70 px-5 py-4 text-center">
+          <p className="mx-auto max-w-[380px] text-[11px] leading-relaxed text-zinc-400">
             Bằng việc tiếp tục với một tài khoản tại Việt Nam, bạn đồng ý với{" "}
             <a
               className="text-zinc-200 underline hover:text-white"
@@ -308,7 +336,7 @@ export function LoginPage() {
             </a>
             .
           </p>
-          <p className="mt-5 text-sm text-zinc-300">
+          <p className="mt-3 text-[13px] text-zinc-300">
             Chưa có tài khoản?{" "}
             <Link className="font-semibold text-red-500" to="/signup">
               Đăng ký

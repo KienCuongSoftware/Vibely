@@ -47,7 +47,10 @@ async function request(path, { method = "GET", body, token } = {}) {
     } catch {
       // Keep default message when response is not JSON.
     }
-    throw new Error(localizeError(code, message));
+    const err = new Error(localizeError(code, message));
+    err.status = response.status;
+    if (code) err.code = code;
+    throw err;
   }
 
   if (response.status === 204) {
@@ -107,6 +110,12 @@ export const apiClient = {
     request("/api/auth/verify-code", { method: "POST", body: payload }),
   exchangeOAuthCode: (code) =>
     request("/api/auth/oauth/exchange", { method: "POST", body: { code } }),
+  completeOnboarding: (token, payload) =>
+    request("/api/auth/complete-onboarding", {
+      method: "POST",
+      token,
+      body: payload,
+    }),
   me: (token) => request("/api/auth/me", { token }),
   updateMyProfile: (token, payload) =>
     request("/api/users/me", { method: "PUT", token, body: payload }),
@@ -199,6 +208,12 @@ export const apiClient = {
     request(`/api/videos/${videoId}/views`, { method: "POST", body }),
   recordVideoShare: (videoId) =>
     request(`/api/videos/${videoId}/shares`, { method: "POST" }),
+  createVideoShare: (videoId, token, body) =>
+    request(`/api/v1/videos/${videoId}/share`, {
+      method: "POST",
+      body: body ?? {},
+      token,
+    }),
 };
 
 /** Tải blob ảnh bìa lên S3 qua presign, trả về URL công khai. */

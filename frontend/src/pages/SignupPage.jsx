@@ -1,8 +1,9 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { FaFacebook, FaUser } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
+import { SiLine } from "react-icons/si";
 import {
   IoAlertCircleOutline,
   IoArrowBack,
@@ -15,16 +16,25 @@ import { apiClient } from "../api/client";
 import { useAuth } from "../state/useAuth";
 
 import { resolveBackendOrigin } from "../config/apiBase.js";
+import {
+  persistLastLoginMethod,
+  useLastLoginMethod,
+} from "../auth/useLastLoginMethod.js";
+import { LoginMethodButton } from "../components/auth/LoginMethodButton.jsx";
 
 const OAUTH_BACKEND_ORIGIN = resolveBackendOrigin();
+const OAUTH_ONBOARDING_KEY = "vibely_oauth_pending";
 
 function normalizeVibelyId(value) {
   return value.trim().toLowerCase().replace(/^@+/, "");
 }
 
 export function SignupPage() {
-  const { register } = useAuth();
+  const { register, completeOAuthLogin } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [view, setView] = useState("methods");
+  const [oauthPending, setOauthPending] = useState(null);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [vibelyId, setVibelyId] = useState("");
@@ -51,6 +61,7 @@ export function SignupPage() {
   const [resendSeconds, setResendSeconds] = useState(0);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const lastLoginMethod = useLastLoginMethod();
   const normalizedEmail = identifier.trim();
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
   const showEmailError =
@@ -63,6 +74,26 @@ export function SignupPage() {
   useEffect(() => {
     document.title = "Đăng ký | Vibely";
   }, []);
+
+  useEffect(() => {
+    if (searchParams.get("onboarding") !== "oauth") return;
+    const raw = sessionStorage.getItem(OAUTH_ONBOARDING_KEY);
+    if (!raw) {
+      navigate("/login", { replace: true });
+      return;
+    }
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed?.accessToken) {
+        navigate("/login", { replace: true });
+        return;
+      }
+      setOauthPending(parsed);
+      setView("oauth-birth");
+    } catch {
+      navigate("/login", { replace: true });
+    }
+  }, [navigate, searchParams]);
 
   const canContinueToUsername =
     birthMonth &&
@@ -80,6 +111,15 @@ export function SignupPage() {
     usernameAvailable &&
     !usernameChecking &&
     !loading;
+  const canContinueOAuthBirth = Boolean(
+    birthMonth && birthDay && birthYear && !loading,
+  );
+  const canSubmitOAuthUsername =
+    normalizedVibelyId.length > 0 &&
+    usernameAvailable &&
+    !usernameChecking &&
+    !loading &&
+    Boolean(oauthPending?.accessToken);
   const passwordHasValidLength = password.length >= 8 && password.length <= 20;
   const passwordHasRequiredCharacters =
     /[A-Za-z]/.test(password) &&
@@ -164,7 +204,7 @@ export function SignupPage() {
   }, [resendSeconds]);
 
   useEffect(() => {
-    if (view !== "username") return undefined;
+    if (view !== "username" && view !== "oauth-username") return undefined;
     if (!normalizedVibelyId) {
       return undefined;
     }
@@ -188,8 +228,8 @@ export function SignupPage() {
     return () => clearTimeout(timeoutId);
   }, [normalizedVibelyId, view]);
 
-  const buildSuggestedUsername = () => {
-    const fromEmail = normalizeVibelyId(normalizedEmail.split("@")[0] ?? "")
+  const buildSuggestedUsername = (emailSource = normalizedEmail) => {
+    const fromEmail = normalizeVibelyId(String(emailSource).split("@")[0] ?? "")
       .replace(/[^a-z0-9._]/g, ".")
       .replace(/\.+/g, ".")
       .replace(/^\.+|\.+$/g, "")
@@ -198,18 +238,86 @@ export function SignupPage() {
     return "vibely.user";
   };
 
+  const continueOAuthBirthStep = (event) => {
+    event.preventDefault();
+    if (!birthMonth || !birthDay || !birthYear) {
+      setStatus("Vui lòng chọn ngày sinh");
+      return;
+    }
+    const suggestion = buildSuggestedUsername(oauthPending?.email ?? "");
+    setUsernameChecking(true);
+    setVibelyId(suggestion);
+    setView("oauth-username");
+    setStatus("Chọn Vibely ID để hoàn tất đăng ký.");
+  };
+
+  const submitOAuthOnboarding = async (event) => {
+    event.preventDefault();
+    if (!oauthPending?.accessToken) {
+      setStatus("Phiên đăng ký đã hết hạn, vui lòng đăng nhập lại");
+      navigate("/login", { replace: true });
+      return;
+    }
+    if (!normalizedVibelyId) {
+      setStatus("Vui lòng nhập Vibely ID");
+      return;
+    }
+    if (!usernameAvailable) {
+      const suggestionText = usernameSuggestion
+        ? ` Gợi ý: @${usernameSuggestion}`
+        : "";
+      setStatus(`Vibely ID chưa hợp lệ hoặc đã tồn tại.${suggestionText}`);
+      return;
+    }
+    if (!birthMonth || !birthDay || !birthYear) {
+      setStatus("Vui lòng chọn ngày sinh");
+      setView("oauth-birth");
+      return;
+    }
+
+    const birthDate = `${birthYear}-${String(birthMonth).padStart(2, "0")}-${String(birthDay).padStart(2, "0")}`;
+
+    setLoading(true);
+    setStatus("Đang hoàn tất đăng ký...");
+    try {
+      const result = await apiClient.completeOnboarding(
+        oauthPending.accessToken,
+        {
+          username: normalizedVibelyId,
+          birthDate,
+        },
+      );
+      sessionStorage.removeItem(OAUTH_ONBOARDING_KEY);
+      const provider = oauthPending?.provider;
+      if (provider) {
+        persistLastLoginMethod(provider);
+      }
+      completeOAuthLogin({
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        userId: Number(result.userId),
+        username: result.username,
+        displayName: result.displayName,
+        email: result.email,
+        avatarUrl: result.avatarUrl,
+      });
+      setStatus("Đăng ký thành công");
+      navigate("/foryou", { replace: true });
+    } catch (error) {
+      setStatus(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleOpenChallengeModal = () => {
     setChallengeSelection([]);
     setChallengeError("");
     setShowChallengeModal(true);
   };
 
-  const handleGoogleAuth = () => {
-    window.location.href = `${OAUTH_BACKEND_ORIGIN}/oauth2/authorization/google`;
-  };
-
-  const handleFacebookAuth = () => {
-    window.location.href = `${OAUTH_BACKEND_ORIGIN}/oauth2/authorization/facebook`;
+  const startOAuth = (provider) => {
+    window.location.href = `${OAUTH_BACKEND_ORIGIN}/oauth2/authorization/${provider}`;
   };
 
   const toggleChallengeSelection = (shapeId) => {
@@ -327,6 +435,14 @@ export function SignupPage() {
       return;
     }
 
+    if (!birthMonth || !birthDay || !birthYear) {
+      setStatus("Vui lòng chọn ngày sinh");
+      setView("credentials");
+      return;
+    }
+
+    const birthDate = `${birthYear}-${String(birthMonth).padStart(2, "0")}-${String(birthDay).padStart(2, "0")}`;
+
     setLoading(true);
     setStatus("Đang tạo tài khoản...");
     try {
@@ -336,6 +452,7 @@ export function SignupPage() {
         email: normalizedEmail,
         password,
         bio: "",
+        birthDate,
       });
       setStatus("Đăng ký thành công");
     } catch (error) {
@@ -346,7 +463,7 @@ export function SignupPage() {
   };
 
   return (
-    <section className="relative flex h-screen overflow-hidden items-start justify-center bg-black/70 px-4 py-6 text-zinc-100">
+    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black/70 px-4 py-6 text-zinc-100">
       <div className="flex max-h-[94vh] w-full max-w-[520px] flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
         <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#27272a_transparent] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-800 [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar]:w-1.5">
           {view === "methods" ? (
@@ -361,45 +478,47 @@ export function SignupPage() {
                 </Link>
               </div>
               <div className="mx-auto w-full max-w-[380px] space-y-4 px-5 pb-7 text-sm">
-                <h2 className="text-center text-[42px] font-bold leading-tight">
+                <h2 className="text-center text-3xl font-bold leading-tight">
                   Đăng ký Vibely
                 </h2>
                 <div className="mx-auto h-1 w-11/12 rounded-full bg-zinc-800" />
 
                 <div className="space-y-3">
-                  <button
-                    type="button"
-                    className="flex h-[52px] w-full min-h-[52px] items-center gap-4 rounded-xl bg-zinc-800 px-4 text-left text-sm hover:bg-zinc-700"
+                  <LoginMethodButton
+                    label="Sử dụng email"
+                    recentlyUsed={lastLoginMethod === "email"}
                     onClick={() => {
                       setView("credentials");
                       setStatus("");
                     }}
-                  >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center">
-                      <FaUser className="text-xl text-zinc-100" aria-hidden />
-                    </span>
-                    <span>Sử dụng email</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="flex h-[52px] w-full min-h-[52px] items-center gap-4 rounded-xl bg-zinc-800 px-4 text-left text-sm hover:bg-zinc-700"
-                    onClick={handleGoogleAuth}
-                  >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center">
-                      <FcGoogle className="text-[28px]" aria-hidden />
-                    </span>
-                    <span>Tiếp tục với Google</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="flex h-[52px] w-full min-h-[52px] items-center gap-4 rounded-xl bg-zinc-800 px-4 text-left text-sm hover:bg-zinc-700"
-                    onClick={handleFacebookAuth}
-                  >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1877F2]">
-                      <FaFacebook className="text-[22px] text-white" aria-hidden />
-                    </span>
-                    <span>Tiếp tục với Facebook</span>
-                  </button>
+                    icon={<FaUser className="text-xl text-zinc-100" aria-hidden />}
+                  />
+                  <LoginMethodButton
+                    label="Tiếp tục với Google"
+                    recentlyUsed={lastLoginMethod === "google"}
+                    onClick={() => startOAuth("google")}
+                    icon={<FcGoogle className="text-[28px]" aria-hidden />}
+                  />
+                  <LoginMethodButton
+                    label="Tiếp tục với Facebook"
+                    recentlyUsed={lastLoginMethod === "facebook"}
+                    onClick={() => startOAuth("facebook")}
+                    icon={
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877F2]">
+                        <FaFacebook className="text-[22px] text-white" aria-hidden />
+                      </span>
+                    }
+                  />
+                  <LoginMethodButton
+                    label="Tiếp tục với LINE"
+                    recentlyUsed={lastLoginMethod === "line"}
+                    onClick={() => startOAuth("line")}
+                    icon={
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#06C755]">
+                        <SiLine className="text-[22px] text-white" aria-hidden />
+                      </span>
+                    }
+                  />
                 </div>
 
                 {status ? (
@@ -427,7 +546,7 @@ export function SignupPage() {
                 </Link>
               </div>
               <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
-                <h2 className="text-center text-[42px] font-bold leading-tight">
+                <h2 className="text-center text-3xl font-bold leading-tight">
                   Đăng ký
                 </h2>
                 <p className="text-[13px] text-zinc-100">
@@ -647,7 +766,194 @@ export function SignupPage() {
                 ) : null}
               </div>
             </>
-          ) : (
+          ) : view === "oauth-birth" ? (
+            <>
+              <div className="flex justify-end p-4">
+                <Link
+                  to="/foryou"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+                  aria-label="Đóng"
+                >
+                  <IoClose className="text-2xl" />
+                </Link>
+              </div>
+              <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
+                <h2 className="text-center text-3xl font-bold leading-tight">
+                  Đăng ký
+                </h2>
+                <p className="text-[13px] text-zinc-100">
+                  Vui lòng cho biết ngày sinh của bạn.
+                </p>
+                <form className="space-y-2.5" onSubmit={continueOAuthBirthStep}>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="relative">
+                      <select
+                        className="h-10 w-full appearance-none rounded bg-zinc-800 px-3 pr-9 text-[13px] text-zinc-200 scheme-dark"
+                        value={birthMonth}
+                        onChange={(e) => setBirthMonth(e.target.value)}
+                      >
+                        <option value="">Tháng</option>
+                        {monthOptions.map((label, index) => (
+                          <option key={index + 1} value={String(index + 1)}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                      <IoChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-300" />
+                    </div>
+                    <div className="relative">
+                      <select
+                        className="h-10 w-full appearance-none rounded bg-zinc-800 px-3 pr-9 text-[13px] text-zinc-200 scheme-dark"
+                        value={birthDay}
+                        onChange={(e) => setBirthDay(e.target.value)}
+                      >
+                        <option value="">Ngày</option>
+                        {Array.from({ length: 31 }).map((_, index) => (
+                          <option key={index + 1} value={String(index + 1)}>
+                            {index + 1}
+                          </option>
+                        ))}
+                      </select>
+                      <IoChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-300" />
+                    </div>
+                    <div className="relative">
+                      <select
+                        className="h-10 w-full appearance-none rounded bg-zinc-800 px-3 pr-9 text-[13px] text-zinc-200 scheme-dark"
+                        value={birthYear}
+                        onChange={(e) => setBirthYear(e.target.value)}
+                      >
+                        <option value="">Năm</option>
+                        {yearOptions.map((year) => (
+                          <option key={year} value={year}>
+                            {year}
+                          </option>
+                        ))}
+                      </select>
+                      <IoChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-300" />
+                    </div>
+                  </div>
+                  <p className="text-[12px] text-zinc-500">
+                    Ngày sinh của bạn sẽ không được hiển thị công khai.
+                  </p>
+                  <button
+                    className={`h-10 w-full rounded px-3 text-xl font-medium leading-none transition ${
+                      canContinueOAuthBirth
+                        ? "bg-red-600 text-white hover:bg-red-500"
+                        : "cursor-not-allowed bg-zinc-800 text-zinc-400"
+                    }`}
+                    type="submit"
+                    disabled={!canContinueOAuthBirth}
+                  >
+                    Tiếp
+                  </button>
+                </form>
+                {status ? (
+                  <p className="text-center text-xs text-zinc-400">{status}</p>
+                ) : null}
+              </div>
+            </>
+          ) : view === "oauth-username" ? (
+            <>
+              <div className="flex items-center justify-between p-4">
+                <button
+                  type="button"
+                  onClick={() => setView("oauth-birth")}
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+                  aria-label="Quay lại"
+                >
+                  <IoArrowBack className="text-2xl" />
+                </button>
+                <Link
+                  to="/foryou"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+                  aria-label="Đóng"
+                >
+                  <IoClose className="text-2xl" />
+                </Link>
+              </div>
+              <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
+                <h2 className="text-center text-3xl font-bold leading-tight">
+                  Đăng ký
+                </h2>
+                <p className="text-[13px] text-zinc-100">Tạo Vibely ID</p>
+                <form
+                  className="space-y-2.5"
+                  onSubmit={submitOAuthOnboarding}
+                >
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-zinc-400">
+                      @
+                    </span>
+                    <input
+                      className="h-10 w-full rounded bg-zinc-800 pl-7 pr-4 text-[13px] text-zinc-200"
+                      placeholder="your.id"
+                      value={vibelyId}
+                      onChange={(event) => {
+                        const nextValue = event.target.value;
+                        setVibelyId(nextValue);
+                        setUsernameChecking(
+                          normalizeVibelyId(nextValue).length > 0,
+                        );
+                        setUsernameAvailable(false);
+                        setUsernameSuggestion("");
+                        setUsernameMessage("");
+                      }}
+                    />
+                  </div>
+                  <p
+                    className={`text-[12px] ${
+                      usernameChecking
+                        ? "text-zinc-400"
+                        : usernameAvailable
+                          ? "text-emerald-400"
+                          : "text-zinc-500"
+                    }`}
+                  >
+                    {usernameChecking
+                      ? "Đang kiểm tra Vibely ID..."
+                      : normalizedVibelyId
+                        ? usernameMessage || "Bạn luôn có thể thay đổi sau"
+                        : "Nhập Vibely ID để kiểm tra"}
+                  </p>
+                  {usernameSuggestion && !usernameAvailable ? (
+                    <button
+                      type="button"
+                      className="text-[12px] text-zinc-300 underline hover:text-white"
+                      onClick={() => {
+                        setUsernameChecking(true);
+                        setVibelyId(usernameSuggestion);
+                      }}
+                    >
+                      Dùng gợi ý: @{usernameSuggestion}
+                    </button>
+                  ) : null}
+                  <button
+                    className={`h-10 w-full rounded px-3 text-xl font-medium leading-none transition ${
+                      canSubmitOAuthUsername
+                        ? "bg-red-600 text-white hover:bg-red-500"
+                        : "cursor-not-allowed bg-zinc-800 text-zinc-400"
+                    }`}
+                    type="submit"
+                    disabled={!canSubmitOAuthUsername}
+                  >
+                    {loading ? (
+                      <span
+                        className="inline-flex items-center justify-center"
+                        aria-label="Đang xử lý"
+                      >
+                        <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      </span>
+                    ) : (
+                      "Hoàn tất"
+                    )}
+                  </button>
+                </form>
+                {status ? (
+                  <p className="text-center text-xs text-zinc-400">{status}</p>
+                ) : null}
+              </div>
+            </>
+          ) : view === "username" ? (
             <>
               <div className="flex items-center justify-between p-4">
                 <button
@@ -667,7 +973,7 @@ export function SignupPage() {
                 </Link>
               </div>
               <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
-                <h2 className="text-center text-[42px] font-bold leading-tight">
+                <h2 className="text-center text-3xl font-bold leading-tight">
                   Đăng ký
                 </h2>
                 <p className="text-[13px] text-zinc-100">Tạo Vibely ID</p>
@@ -758,7 +1064,7 @@ export function SignupPage() {
                 ) : null}
               </div>
             </>
-          )}
+          ) : null}
         </div>
 
         <div className="rounded-b-2xl border-t border-zinc-800 bg-zinc-900/70 px-5 py-4 text-center">
