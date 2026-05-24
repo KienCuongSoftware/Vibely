@@ -54,7 +54,8 @@ class FollowingFeedIntegrationTest {
             {
               "username":"%s",
               "email":"%s",
-              "password":"secret123"
+              "password":"secret123",
+              "birthDate":"2000-01-15"
             }
             """.formatted(username, email);
 

@@ -10,6 +10,7 @@ import com.vibely.backend.user.UsernameService;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HexFormat;
@@ -79,6 +80,8 @@ public class AuthService {
         user.setBio(request.getBio());
         user.setRole(Role.USER);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setBirthDate(validateBirthDate(request.getBirthDate()));
+        user.setOnboardingCompleted(true);
         User saved = userRepository.save(user);
         return issueTokens(saved);
     }
@@ -114,7 +117,7 @@ public class AuthService {
     /**
      * Upsert user and issue tokens after Google or Facebook OAuth2 login.
      *
-     * @param registrationId Spring client registration id, e.g. {@code google} or {@code facebook}
+     * @param registrationId Spring client registration id, e.g. {@code google}, {@code facebook}, or {@code line}
      */
     public AuthResponse authenticateWithOAuthProvider(
         String email,
@@ -122,38 +125,35 @@ public class AuthService {
         String oauthAvatarUrl,
         String registrationId
     ) {
-        boolean isFacebook = "facebook".equalsIgnoreCase(registrationId);
-        String providerLabel = isFacebook ? "Facebook" : "Google";
+        String providerLabel = oauthProviderLabel(registrationId);
 
         if (email == null || email.isBlank()) {
             throw new BadRequestException("Tài khoản " + providerLabel + " chưa cung cấp email hợp lệ");
         }
 
-        User user = userRepository.findByEmail(email)
-            .orElseGet(() -> {
-                User created = new User();
-                created.setEmail(email);
-                created.setRole(Role.USER);
-                String generatedUsername = usernameService.generateFromGoogleEmail(email, null);
-                created.setUsername(generatedUsername);
-                created.setDisplayName(
-                    displayName != null && !displayName.isBlank() ? displayName.trim() : generatedUsername
-                );
-                created.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
-                return created;
-            });
+        User user = userRepository.findByEmail(email).orElse(null);
+        boolean isNewUser = user == null;
+        if (isNewUser) {
+            user = new User();
+            user.setEmail(email);
+            user.setRole(Role.USER);
+            user.setUsername(generatePendingUsername());
+            user.setOnboardingCompleted(false);
+            user.setDisplayName(
+                displayName != null && !displayName.isBlank() ? displayName.trim() : user.getUsername()
+            );
+            user.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
+        }
 
-        // Ensure OAuth-linked users have a Vibely ID derived from email local-part:
-        // - lowercase
-        // - remove Vietnamese diacritics
-        // - remove special characters (keep only a-z0-9)
-        boolean usernameMissingOrNotAlphanumeric =
-            user.getUsername() == null
-                || user.getUsername().isBlank()
-                || !user.getUsername().matches("^[a-z0-9]{4,24}$");
+        if (user.isOnboardingCompleted()) {
+            boolean usernameMissingOrNotAlphanumeric =
+                user.getUsername() == null
+                    || user.getUsername().isBlank()
+                    || !user.getUsername().matches("^[a-z0-9]{4,24}$");
 
-        if (usernameMissingOrNotAlphanumeric) {
-            user.setUsername(usernameService.generateFromGoogleEmail(email, user.getUsername()));
+            if (usernameMissingOrNotAlphanumeric) {
+                user.setUsername(usernameService.generateFromGoogleEmail(email, user.getUsername()));
+            }
         }
 
         if (user.getDisplayName() == null || user.getDisplayName().isBlank()) {
@@ -167,6 +167,81 @@ public class AuthService {
 
         User saved = userRepository.save(user);
         return issueTokens(saved);
+    }
+
+    public boolean userRequiresOnboarding(User user) {
+        return userRequiresOnboardingCheck(user);
+    }
+
+    public AuthResponse completeOnboarding(String email, CompleteOnboardingRequest request) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng"));
+        if (!userRequiresOnboardingCheck(user)) {
+            throw new BadRequestException("Tài khoản đã hoàn tất thiết lập");
+        }
+
+        user.setBirthDate(validateBirthDate(request.getBirthDate()));
+
+        if (userNeedsUsernameSelection(user)) {
+            String normalizedUsername = usernameService.validateForRegistration(request.getUsername());
+            boolean takenByOther =
+                userRepository.existsByUsername(normalizedUsername)
+                    && !normalizedUsername.equals(user.getUsername());
+            if (takenByOther) {
+                UsernameCheckResponse usernameCheck = usernameService.checkAvailability(normalizedUsername);
+                String suffix = usernameCheck.suggestion() != null ? " Gợi ý: @" + usernameCheck.suggestion() : "";
+                throw new BadRequestException("Vibely ID đã tồn tại." + suffix);
+            }
+            user.setUsername(normalizedUsername);
+            if (user.getDisplayName() == null || user.getDisplayName().isBlank()) {
+                user.setDisplayName(normalizedUsername);
+            }
+        }
+
+        user.setOnboardingCompleted(true);
+        User saved = userRepository.save(user);
+        return issueTokens(saved);
+    }
+
+    /** Google, Facebook, LINE — chưa hoàn tất hồ sơ (Vibely ID tạm hoặc thiếu ngày sinh). */
+    private static boolean userRequiresOnboardingCheck(User user) {
+        if (!user.isOnboardingCompleted()) {
+            return true;
+        }
+        if (user.getBirthDate() == null) {
+            return true;
+        }
+        return userNeedsUsernameSelection(user);
+    }
+
+    private static boolean userNeedsUsernameSelection(User user) {
+        String username = user.getUsername();
+        if (username == null || username.isBlank()) {
+            return true;
+        }
+        return username.startsWith("tmp.");
+    }
+
+    private static LocalDate validateBirthDate(LocalDate birthDate) {
+        if (birthDate == null) {
+            throw new BadRequestException("Vui lòng chọn ngày sinh");
+        }
+        if (birthDate.isAfter(LocalDate.now().minusYears(13))) {
+            throw new BadRequestException("Bạn phải đủ 13 tuổi để sử dụng Vibely");
+        }
+        if (birthDate.isBefore(LocalDate.of(1900, 1, 1))) {
+            throw new BadRequestException("Ngày sinh không hợp lệ");
+        }
+        return birthDate;
+    }
+
+    private String generatePendingUsername() {
+        String candidate;
+        do {
+            String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+            candidate = "tmp." + suffix;
+        } while (userRepository.existsByUsername(candidate));
+        return candidate;
     }
 
     public AuthResponse exchangeOauthCode(String code) {
@@ -192,8 +267,20 @@ public class AuthService {
             user.getUsername(),
             user.getDisplayName(),
             user.getEmail(),
-            userAvatarResolver.resolve(user)
+            userAvatarResolver.resolve(user),
+            userRequiresOnboardingCheck(user)
         );
+    }
+
+    private static String oauthProviderLabel(String registrationId) {
+        if (registrationId == null) {
+            return "Google";
+        }
+        return switch (registrationId.toLowerCase()) {
+            case "facebook" -> "Facebook";
+            case "line" -> "LINE";
+            default -> "Google";
+        };
     }
 
     private String generateRefreshToken() {

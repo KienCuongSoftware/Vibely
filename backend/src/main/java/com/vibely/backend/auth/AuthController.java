@@ -70,6 +70,14 @@ public class AuthController {
         return ApiResponse.success(authService.exchangeOauthCode(request.getCode()));
     }
 
+    @PostMapping("/complete-onboarding")
+    public ApiResponse<AuthResponse> completeOnboarding(
+        Authentication authentication,
+        @Valid @RequestBody CompleteOnboardingRequest request
+    ) {
+        return ApiResponse.success(authService.completeOnboarding(authentication.getName(), request));
+    }
+
     @GetMapping("/me")
     public ApiResponse<MeResponse> me(Authentication authentication) {
         User user = userRepository.findByEmail(authentication.getName())
@@ -81,7 +89,8 @@ public class AuthController {
                 user.getDisplayName(),
                 user.getEmail(),
                 user.getBio(),
-                userAvatarResolver.resolve(user)
+                userAvatarResolver.resolve(user),
+                authService.userRequiresOnboarding(user)
             )
         );
     }

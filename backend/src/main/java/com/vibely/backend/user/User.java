@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.springframework.util.StringUtils;
 
@@ -45,6 +46,12 @@ public class User {
 
     @Column(name = "google_avatar_url", length = 512)
     private String googleAvatarUrl;
+
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
+    @Column(name = "onboarding_completed", nullable = false)
+    private boolean onboardingCompleted = false;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -138,6 +145,22 @@ public class User {
 
     public void setGoogleAvatarUrl(String googleAvatarUrl) {
         this.googleAvatarUrl = googleAvatarUrl;
+    }
+
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    public boolean isOnboardingCompleted() {
+        return onboardingCompleted;
+    }
+
+    public void setOnboardingCompleted(boolean onboardingCompleted) {
+        this.onboardingCompleted = onboardingCompleted;
     }
 
     public String resolveAvatarUrl(String fallbackAvatarUrl) {

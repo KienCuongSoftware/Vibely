@@ -2,7 +2,9 @@ package com.vibely.backend.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 
 public class RegisterRequest {
 
@@ -23,6 +25,9 @@ public class RegisterRequest {
 
     @Size(min = 2, max = 80, message = "Tên hiển thị phải từ 2 đến 80 ký tự")
     private String displayName;
+
+    @NotNull(message = "Ngày sinh là bắt buộc")
+    private LocalDate birthDate;
 
     public String getUsername() {
         return username;
@@ -62,5 +67,13 @@ public class RegisterRequest {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
     }
 }
