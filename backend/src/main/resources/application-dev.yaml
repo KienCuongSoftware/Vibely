@@ -27,31 +27,38 @@ spring:
               - public_profile
               - email
             client-name: Facebook
+          line:
+            client-id: ${LINE_CHANNEL_ID}
+            client-secret: ${LINE_CHANNEL_SECRET}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            # Chỉ dùng http://localhost:8080/... trên LINE Developers (bỏ 127.0.0.1 để tránh lệch redirect_uri).
+            redirect-uri: ${LINE_REDIRECT_URI:http://localhost:8080/login/oauth2/code/line}
+            scope:
+              - openid
+              - profile
+            client-name: LINE
         provider:
           facebook:
             authorization-uri: https://www.facebook.com/v19.0/dialog/oauth
             token-uri: https://graph.facebook.com/v19.0/oauth/access_token
             user-info-uri: https://graph.facebook.com/v19.0/me?fields=id,name,email,picture.type(large)
             user-name-attribute: id
+          line:
+            authorization-uri: https://access.line.me/oauth2/v2.1/authorize
+            token-uri: https://api.line.me/oauth2/v2.1/token
+            user-info-uri: https://api.line.me/oauth2/v2.1/userinfo
+            issuer-uri: https://access.line.me
+            jwk-set-uri: https://api.line.me/oauth2/v2.1/certs
+            user-name-attribute: sub
 app:
-  # Bật S3 trên profile dev. Luu y: bien moi truong APP_S3_ENABLED uu tien CAO hon YAML — neu APP_S3_ENABLED=false thi S3Client van khong tao du file nay ghi true.
-  # application-local.yaml co do uu tien thap hon application.yaml cho cung key voi file goc.
   s3:
     enabled: true
-    # Bucket private: trình duyệt cần URL GET đã ký mới phát được video_url trong JSON.
     playback-presign-expiry-hours: ${APP_S3_PLAYBACK_PRESIGN_EXPIRY_HOURS:24}
-  # Worker + FFmpeg HLS chỉ chạy khi có bean S3Client (s3.enabled=true ở trên + bucket/credential).
-  # File application-local.yaml (optional) có thể ghi đè app.processing — kiểm tra nếu vẫn không có thư mục hls/ trên S3.
-  # Windows: neu log loi "Cannot run program ffprobe" / CreateProcess error=2 — JVM khong tim thay ffmpeg trong PATH.
-  # Cai FFmpeg, roi dat bien FFMPEG_PATH / FFPROBE_PATH tro toi .exe day du, vi du:
-  #   FFMPEG_PATH=C:\ffmpeg\bin\ffmpeg.exe
-  #   FFPROBE_PATH=C:\ffmpeg\bin\ffprobe.exe
-  # (uploads/ chi co 1 file mp4 goc la dung; HLS nam o prefix hls/{authorId}/{videoId}/)
   processing:
     worker:
       enabled: true
     dry-run-promote-when-worker-disabled: false
-  # Share cache + rate limit. Trước khi chạy backend: docker compose up -d redis (host/port mặc định localhost:6379).
   redis:
     enabled: true
   cors:

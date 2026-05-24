@@ -1,8 +1,6 @@
 package com.vibely.backend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vibely.backend.auth.OAuth2LoginFailureHandler;
-import com.vibely.backend.auth.OAuth2LoginSuccessHandler;
 import com.vibely.backend.common.ApiError;
 import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.observability.RequestCorrelationFilter;
@@ -15,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -41,8 +40,6 @@ public class SecurityConfig {
     private final RateLimitFilter rateLimitFilter;
     private final RequestCorrelationFilter requestCorrelationFilter;
     private final ObjectMapper objectMapper;
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
 
     @Value("${app.cors.allowed-origins:}")
     private String allowedOrigins;
@@ -55,20 +52,17 @@ public class SecurityConfig {
         JwtAuthenticationFilter jwtAuthenticationFilter,
         RateLimitFilter rateLimitFilter,
         RequestCorrelationFilter requestCorrelationFilter,
-        ObjectMapper objectMapper,
-        OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
-        OAuth2LoginFailureHandler oAuth2LoginFailureHandler
+        ObjectMapper objectMapper
     ) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.rateLimitFilter = rateLimitFilter;
         this.requestCorrelationFilter = requestCorrelationFilter;
         this.objectMapper = objectMapper;
-        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
-        this.oAuth2LoginFailureHandler = oAuth2LoginFailureHandler;
     }
 
     @Bean
+    @Order(2)
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         HttpSecurity security = http
             .csrf(csrf -> csrf.disable())
@@ -97,7 +91,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/health/**").permitAll()
-                .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                .requestMatchers("/oauth2/**", "/login/**").permitAll()
                 // Không dùng /api/auth/** permitAll — có thể khiến GET /api/auth/me không bắt buộc JWT.
                 .requestMatchers(
                     HttpMethod.POST,
@@ -128,12 +122,7 @@ public class SecurityConfig {
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        if (oauth2Enabled) {
-            security.oauth2Login(oauth2 -> oauth2
-                .successHandler(oAuth2LoginSuccessHandler)
-                .failureHandler(oAuth2LoginFailureHandler)
-            );
-        }
+        // OAuth2 login is handled by OAuth2LoginSecurityConfiguration (@Order(1)).
 
         return security.build();
     }

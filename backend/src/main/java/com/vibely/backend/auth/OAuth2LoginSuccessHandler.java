@@ -45,18 +45,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             ? token.getAuthorizedClientRegistrationId()
             : "google";
 
-        String email;
-        if ("facebook".equalsIgnoreCase(registrationId)) {
-            String fbId = stringValue(attributes.get("id"));
-            if (fbId.isBlank()) {
-                throw new BadRequestException("Đăng nhập Facebook thiếu id người dùng, vui lòng thử lại");
-            }
-            String graphEmail = stringValue(attributes.get("email"));
-            email = graphEmail.isBlank() ? "fb." + fbId + "@oauth.facebook.vibely" : graphEmail.trim();
-        } else {
-            email = stringValue(attributes.get("email"));
-        }
-        String name = stringValue(attributes.get("name"));
+        String email = resolveOAuthEmail(registrationId, attributes);
+        String name = resolveOAuthDisplayName(registrationId, attributes);
         String picture = extractProfilePictureUrl(attributes);
 
         AuthResponse authResponse =
@@ -65,10 +55,48 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String redirectUrl = UriComponentsBuilder.fromUriString(frontendSuccessUrl)
             .queryParam("oauth", "success")
             .queryParam("code", oneTimeCode)
+            .queryParam("provider", registrationId)
             .build(true)
             .toUriString();
 
         response.sendRedirect(redirectUrl);
+    }
+
+    private String resolveOAuthEmail(String registrationId, Map<String, Object> attributes) {
+        if ("facebook".equalsIgnoreCase(registrationId)) {
+            String fbId = stringValue(attributes.get("id"));
+            if (fbId.isBlank()) {
+                throw new BadRequestException("Đăng nhập Facebook thiếu id người dùng, vui lòng thử lại");
+            }
+            String graphEmail = stringValue(attributes.get("email"));
+            return graphEmail.isBlank() ? "fb." + fbId + "@oauth.facebook.vibely" : graphEmail.trim();
+        }
+        if ("line".equalsIgnoreCase(registrationId)) {
+            String lineEmail = stringValue(attributes.get("email"));
+            if (!lineEmail.isBlank()) {
+                return lineEmail.trim();
+            }
+            String sub = stringValue(attributes.get("sub"));
+            if (sub.isBlank()) {
+                sub = stringValue(attributes.get("userId"));
+            }
+            if (sub.isBlank()) {
+                throw new BadRequestException("Đăng nhập LINE thiếu id người dùng, vui lòng thử lại");
+            }
+            return "line." + sub + "@oauth.line.vibely";
+        }
+        return stringValue(attributes.get("email"));
+    }
+
+    private String resolveOAuthDisplayName(String registrationId, Map<String, Object> attributes) {
+        String name = stringValue(attributes.get("name"));
+        if (!name.isBlank()) {
+            return name;
+        }
+        if ("line".equalsIgnoreCase(registrationId)) {
+            return stringValue(attributes.get("displayName"));
+        }
+        return name;
     }
 
     private String stringValue(Object value) {
@@ -101,6 +129,10 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             return picture;
         }
         picture = stringValue(attributes.get("profile_picture"));
+        if (!picture.isBlank()) {
+            return picture;
+        }
+        picture = stringValue(attributes.get("pictureUrl"));
         if (!picture.isBlank()) {
             return picture;
         }
