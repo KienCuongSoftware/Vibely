@@ -37,6 +37,78 @@ html {
   }
 }
 
+/* Thanh âm lượng feed (TikTok-style, hiện khi hover video). */
+.feed-volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+}
+.feed-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+.feed-volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+.feed-volume-slider:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+.share-modal-panel {
+  position: relative;
+}
+
+.share-modal-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+}
+
+.share-modal-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.share-modal-scroll-row::before,
+.share-modal-scroll-row::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.share-modal-scroll-row::before {
+  left: 0;
+  background: linear-gradient(to right, #252525 0%, transparent 100%);
+}
+
+.share-modal-scroll-row::after {
+  right: 0;
+  background: linear-gradient(to left, #252525 0%, transparent 100%);
+}
+
+.group\/share-modal:hover .share-modal-scroll-row::before,
+.group\/share-modal:hover .share-modal-scroll-row::after {
+  opacity: 1;
+}
+
 body {
   margin: 0;
   min-height: 100%;

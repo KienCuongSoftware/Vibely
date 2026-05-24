@@ -10,6 +10,12 @@ import { useAuth } from "../state/useAuth";
 import { Sidebar } from "../components/Sidebar";
 import { TooltipHoverWrap } from "../components/TooltipControls";
 import { AccountActionsPill } from "../components/AccountActionsPill";
+import { VideoShareModal } from "../components/VideoShareModal";
+import {
+  BookmarkCollectionPopover,
+  BookmarkSaveToast,
+  NewCollectionModal,
+} from "../components/BookmarkSaveFeedback";
 import {
   watchTimeNearPlaythroughEnd,
   watchTimeQualifiesForViewRecord,
@@ -251,14 +257,22 @@ function ForYouFeedPage({ token, user, onLogout }) {
   const [activeMenu, setActiveMenu] = useState("latest");
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
-  const [shared, setShared] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [bookmarkToastOpen, setBookmarkToastOpen] = useState(false);
+  const [bookmarkManageOpen, setBookmarkManageOpen] = useState(false);
+  const [newCollectionOpen, setNewCollectionOpen] = useState(false);
+  const bookmarkButtonRef = useRef(null);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const accountMenuRef = useRef(null);
   const feedVideoRef = useRef(null);
   const feedProgressTrackRef = useRef(null);
   const feedProgressScrubbingRef = useRef(false);
-  const [feedMuted, setFeedMuted] = useState(true);
+  /** 0–1; mặc định giữa = âm lượng vừa phải khi bật tiếng. */
+  const [feedVolume, setFeedVolume] = useState(0.5);
+  /** Tắt khi load để autoplay; bật khi user chỉnh slider / icon. */
+  const [feedSoundOn, setFeedSoundOn] = useState(false);
+  const feedMuted = !feedSoundOn || feedVolume === 0;
   const [feedProgressPct, setFeedProgressPct] = useState(0);
   const [feedProgressScrubbing, setFeedProgressScrubbing] = useState(false);
   const [feedMoreMenuOpen, setFeedMoreMenuOpen] = useState(false);
@@ -323,6 +337,43 @@ function ForYouFeedPage({ token, user, onLogout }) {
       ),
     );
   }, []);
+
+  const openBookmarkManagePopover = useCallback(() => {
+    setBookmarkToastOpen(false);
+    setBookmarkManageOpen(true);
+  }, []);
+
+  const openNewCollectionModal = useCallback(() => {
+    setBookmarkManageOpen(false);
+    setNewCollectionOpen(true);
+  }, []);
+
+  const handleBookmarkToggle = useCallback(() => {
+    if (!token || !isBackendVideoId(activeVideo?.id)) {
+      setBookmarked((prev) => !prev);
+      return;
+    }
+    const next = !bookmarked;
+    const prevBm = Number(activeVideo.bookmarkCount ?? 0);
+    setBookmarked(next);
+    patchVideoById(activeVideo.id, {
+      bookmarkCount: Math.max(0, prevBm + (next ? 1 : -1)),
+    });
+    if (next) {
+      setBookmarkToastOpen(true);
+    } else {
+      setBookmarkToastOpen(false);
+      setBookmarkManageOpen(false);
+    }
+    const req = next
+      ? apiClient.bookmarkVideo(activeVideo.id, token)
+      : apiClient.unbookmarkVideo(activeVideo.id, token);
+    req.catch(() => {
+      setBookmarked(!next);
+      patchVideoById(activeVideo.id, { bookmarkCount: prevBm });
+      if (next) setBookmarkToastOpen(false);
+    });
+  }, [token, activeVideo, bookmarked, patchVideoById]);
 
   const loadMoreFeed = useCallback(async () => {
     if (activeMenu === "following") return;
@@ -537,7 +588,9 @@ function ForYouFeedPage({ token, user, onLogout }) {
   useEffect(() => {
     setLiked(false);
     setBookmarked(false);
-    setShared(false);
+    setShareModalOpen(false);
+    setBookmarkToastOpen(false);
+    setBookmarkManageOpen(false);
     setFeedMoreMenuOpen(false);
   }, [activeIndex]);
 
@@ -708,6 +761,14 @@ function ForYouFeedPage({ token, user, onLogout }) {
       /* autoplay / jsdom */
     }
   }, [activeIndex, activeVideo?.id, activeVideo?.videoUrl]);
+
+  useEffect(() => {
+    const el = feedVideoRef.current;
+    if (!el) return;
+    const v = Math.min(1, Math.max(0, feedVolume));
+    el.volume = v;
+    el.muted = feedMuted;
+  }, [feedVolume, feedMuted, activeIndex, activeVideo?.id]);
 
   useEffect(() => {
     const el = feedVideoRef.current;
@@ -1059,12 +1120,12 @@ function ForYouFeedPage({ token, user, onLogout }) {
               ) : (
                 <>
                   <p className="text-lg font-semibold text-zinc-100">
-                    Feed Đề xuất đang trống
+                    For You chưa có video
                   </p>
-                  <p className="mt-2 max-w-xs text-sm leading-relaxed text-zinc-400">
-                    Đẩy lên video đầu tiên của bạn — video sẽ xuất hiện ở đây sau
-                    khi xử lý xong (READY). Bạn cũng có thể xem mọi bản upload
-                    trong Hồ sơ.
+                  <p className="mt-2 max-w-sm text-sm leading-relaxed text-zinc-400">
+                    Đây là nơi bạn xem video được gợi ý từ cộng đồng Vibely. Khi
+                    có bài đăng công khai, chúng sẽ hiện tại đây — bạn cũng có thể
+                    tải video lên để chia sẻ với mọi người.
                   </p>
                   <Link
                     to="/vibelystudio/upload"
@@ -1082,40 +1143,50 @@ function ForYouFeedPage({ token, user, onLogout }) {
                 feedCommentsOpen ? "min-w-0 shrink items-center" : "items-end"
               }`}
             >
-              <FeedPhoneStage
-                videos={videos}
-                activeIndex={activeIndex}
-                setActiveIndex={setActiveIndex}
-                feedSlotHeightPx={feedSlotHeightPx}
-                virtualFeedRef={virtualFeedRef}
-                loadMoreFeed={loadMoreFeed}
-                feedVideoRef={feedVideoRef}
-                feedMuted={feedMuted}
-                setFeedMuted={setFeedMuted}
-                feedMoreMenuOpen={feedMoreMenuOpen}
-                setFeedMoreMenuOpen={setFeedMoreMenuOpen}
-                feedMoreMenuSubpage={feedMoreMenuSubpage}
-                setFeedMoreMenuSubpage={setFeedMoreMenuSubpage}
-                feedVideoQuality={feedVideoQuality}
-                setFeedVideoQuality={setFeedVideoQuality}
-                feedAutoScrollEnabled={feedAutoScrollEnabled}
-                setFeedAutoScrollEnabled={setFeedAutoScrollEnabled}
-                feedProgressTrackRef={feedProgressTrackRef}
-                feedProgressPct={feedProgressPct}
-                setFeedProgressPct={setFeedProgressPct}
-                feedProgressScrubbingRef={feedProgressScrubbingRef}
-                feedProgressScrubbing={feedProgressScrubbing}
-                setFeedProgressScrubbing={setFeedProgressScrubbing}
-                seekFeedVideo={seekFeedVideo}
-                toggleFeedPlayback={toggleFeedPlayback}
-                toggleFeedPictureInPicture={toggleFeedPictureInPicture}
-                resolveFeedAuthorDisplayName={resolveFeedAuthorDisplayName}
-                feedDefaultAuthorAvatar={FEED_DEFAULT_AUTHOR_AVATAR}
-                thumbnailFallbackUrl={undefined}
-                playbackFlash={playbackFlash}
-                onActiveFeedPlaybackTick={onActiveFeedPlaybackTick}
-                commentsDockOpen={feedCommentsOpen}
-              />
+              <div className="relative">
+                <FeedPhoneStage
+                  videos={videos}
+                  activeIndex={activeIndex}
+                  setActiveIndex={setActiveIndex}
+                  feedSlotHeightPx={feedSlotHeightPx}
+                  virtualFeedRef={virtualFeedRef}
+                  loadMoreFeed={loadMoreFeed}
+                  feedVideoRef={feedVideoRef}
+                  feedVolume={feedVolume}
+                  setFeedVolume={setFeedVolume}
+                  feedSoundOn={feedSoundOn}
+                  setFeedSoundOn={setFeedSoundOn}
+                  feedMuted={feedMuted}
+                  feedMoreMenuOpen={feedMoreMenuOpen}
+                  setFeedMoreMenuOpen={setFeedMoreMenuOpen}
+                  feedMoreMenuSubpage={feedMoreMenuSubpage}
+                  setFeedMoreMenuSubpage={setFeedMoreMenuSubpage}
+                  feedVideoQuality={feedVideoQuality}
+                  setFeedVideoQuality={setFeedVideoQuality}
+                  feedAutoScrollEnabled={feedAutoScrollEnabled}
+                  setFeedAutoScrollEnabled={setFeedAutoScrollEnabled}
+                  feedProgressTrackRef={feedProgressTrackRef}
+                  feedProgressPct={feedProgressPct}
+                  setFeedProgressPct={setFeedProgressPct}
+                  feedProgressScrubbingRef={feedProgressScrubbingRef}
+                  feedProgressScrubbing={feedProgressScrubbing}
+                  setFeedProgressScrubbing={setFeedProgressScrubbing}
+                  seekFeedVideo={seekFeedVideo}
+                  toggleFeedPlayback={toggleFeedPlayback}
+                  toggleFeedPictureInPicture={toggleFeedPictureInPicture}
+                  resolveFeedAuthorDisplayName={resolveFeedAuthorDisplayName}
+                  feedDefaultAuthorAvatar={FEED_DEFAULT_AUTHOR_AVATAR}
+                  thumbnailFallbackUrl={undefined}
+                  playbackFlash={playbackFlash}
+                  onActiveFeedPlaybackTick={onActiveFeedPlaybackTick}
+                  commentsDockOpen={feedCommentsOpen}
+                />
+                <BookmarkSaveToast
+                  open={bookmarkToastOpen}
+                  onManage={openBookmarkManagePopover}
+                  onDismiss={() => setBookmarkToastOpen(false)}
+                />
+              </div>
               <div className="ml-4 flex flex-col items-center gap-3">
                 <button
                   type="button"
@@ -1178,29 +1249,12 @@ function ForYouFeedPage({ token, user, onLogout }) {
                   {formatCompactCount(activeVideo?.commentCount)}
                 </span>
                 <button
+                  ref={bookmarkButtonRef}
                   type="button"
                   className={FEED_ROUND_ICON_BUTTON}
                   aria-pressed={bookmarked}
                   aria-label={bookmarked ? "Bỏ lưu yêu thích" : "Lưu yêu thích"}
-                  onClick={() => {
-                    if (!token || !isBackendVideoId(activeVideo?.id)) {
-                      setBookmarked((prev) => !prev);
-                      return;
-                    }
-                    const next = !bookmarked;
-                    const prevBm = Number(activeVideo.bookmarkCount ?? 0);
-                    setBookmarked(next);
-                    patchVideoById(activeVideo.id, {
-                      bookmarkCount: Math.max(0, prevBm + (next ? 1 : -1)),
-                    });
-                    const req = next
-                      ? apiClient.bookmarkVideo(activeVideo.id, token)
-                      : apiClient.unbookmarkVideo(activeVideo.id, token);
-                    req.catch(() => {
-                      setBookmarked(!next);
-                      patchVideoById(activeVideo.id, { bookmarkCount: prevBm });
-                    });
-                  }}
+                  onClick={handleBookmarkToggle}
                 >
                   <IoBookmark
                     className={
@@ -1218,37 +1272,13 @@ function ForYouFeedPage({ token, user, onLogout }) {
                   type="button"
                   className={FEED_ROUND_ICON_BUTTON}
                   aria-label="Chia sẻ"
-                  onClick={async () => {
-                    if (!isBackendVideoId(activeVideo?.id)) {
-                      setShared((prev) => !prev);
-                      return;
-                    }
-                    const vid = activeVideo.id;
-                    const prevShares = Number(activeVideo.shareCount ?? 0);
-                    try {
-                      await apiClient.recordVideoShare(vid);
-                      patchVideoById(vid, { shareCount: prevShares + 1 });
-                    } catch {
-                      /* vẫn cho chia sẻ cục bộ */
-                    }
-                    const shareUrl = `${window.location.origin}/foryou?v=${encodeURIComponent(vid)}`;
-                    try {
-                      if (navigator.share) {
-                        await navigator.share({
-                          title: "Vibely",
-                          text: activeVideo.title ?? "",
-                          url: shareUrl,
-                        });
-                      } else if (navigator.clipboard?.writeText) {
-                        await navigator.clipboard.writeText(shareUrl);
-                      }
-                    } catch {
-                      /* người dùng huỷ hoặc trình duyệt không hỗ trợ */
-                    }
-                    setShared(true);
+                  aria-expanded={shareModalOpen}
+                  onClick={() => {
+                    if (!isBackendVideoId(activeVideo?.id)) return;
+                    setShareModalOpen(true);
                   }}
                 >
-                  <IoArrowRedo className={shared ? "text-white" : ""} />
+                  <IoArrowRedo aria-hidden />
                 </button>
                 <span className="text-xs text-zinc-300">
                   {formatCompactCount(activeVideo?.shareCount)}
@@ -1563,6 +1593,39 @@ function ForYouFeedPage({ token, user, onLogout }) {
           </div>
         </div>
       ) : null}
+
+      <BookmarkCollectionPopover
+        open={bookmarkManageOpen}
+        anchorRef={bookmarkButtonRef}
+        onCreateCollection={openNewCollectionModal}
+        onClose={() => setBookmarkManageOpen(false)}
+      />
+
+      <NewCollectionModal
+        open={newCollectionOpen}
+        onClose={() => setNewCollectionOpen(false)}
+        token={token}
+        initialPickVideoId={activeVideo?.id ?? null}
+      />
+
+      <VideoShareModal
+        open={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        videoId={activeVideo?.id}
+        videoTitle={activeVideo?.title ?? ""}
+        token={token}
+        onShareCountChange={(shareCount) => {
+          const vid = activeVideo?.id;
+          if (!vid) return;
+          if (shareCount != null) {
+            patchVideoById(vid, { shareCount });
+            return;
+          }
+          patchVideoById(vid, {
+            shareCount: Number(activeVideo?.shareCount ?? 0) + 1,
+          });
+        }}
+      />
     </section>
   );
 }

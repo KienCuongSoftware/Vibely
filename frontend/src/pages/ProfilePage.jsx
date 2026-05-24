@@ -1388,7 +1388,7 @@ export function ProfilePage() {
                     type="button"
                     disabled={!collectionDraftName.trim() || bookmarkLoading}
                     onClick={() => setNewCollectionStep('pick')}
-                    className="mt-1 w-full rounded-xl py-3 text-sm font-semibold text-white transition enabled:cursor-pointer enabled:bg-[#7b202c] enabled:hover:bg-[#651a24] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="mt-1 w-full rounded-xl py-3 text-sm font-semibold text-white transition enabled:cursor-pointer enabled:bg-[#FE2C55] enabled:hover:bg-[#f02850] disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Tiếp
                   </button>

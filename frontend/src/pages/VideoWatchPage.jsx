@@ -9,6 +9,7 @@ import {
 import { Sidebar } from '../components/Sidebar'
 import { TooltipHoverWrap } from '../components/TooltipControls'
 import { AccountActionsPill } from '../components/AccountActionsPill'
+import { VideoShareModal } from '../components/VideoShareModal'
 import { useAuth } from '../state/useAuth'
 import {
   IoArrowUp,
@@ -133,6 +134,7 @@ export function VideoWatchPage() {
   const [commentDraft, setCommentDraft] = useState('')
   const [commentPostError, setCommentPostError] = useState('')
   const [shareCopied, setShareCopied] = useState(false)
+  const [shareModalOpen, setShareModalOpen] = useState(false)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
   const accountMenuRef = useRef(null)
 
@@ -347,29 +349,21 @@ export function VideoWatchPage() {
     }
   }
 
-  const handleShareTap = async () => {
+  const handleShareTap = () => {
     if (!isBackendVideoId(video?.id)) return
-    const url = typeof window !== 'undefined' ? window.location.href : ''
-    const prev = Number(video?.shareCount ?? 0)
-    try {
-      await apiClient.recordVideoShare(String(video.id))
-      patchVideo({ shareCount: prev + 1 })
-    } catch {
-      /* vẫn cho chia sẻ / sao chép */
-    }
-    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && url) {
-      try {
-        await navigator.share({
-          title: document.title,
-          url,
-        })
-        return
-      } catch {
-        /* hủy hoặc lỗi */
-      }
-    }
-    void copyShareLink()
+    setShareModalOpen(true)
   }
+
+  const handleShareCountChange = useCallback(
+    (shareCount) => {
+      if (shareCount != null) {
+        patchVideo({ shareCount })
+        return
+      }
+      patchVideo({ shareCount: Number(video?.shareCount ?? 0) + 1 })
+    },
+    [patchVideo, video?.shareCount],
+  )
 
   const focusCommentField = () => {
     const el = commentInputRef.current
@@ -793,6 +787,15 @@ export function VideoWatchPage() {
           </aside>
         </div>
       </div>
+
+      <VideoShareModal
+        open={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        videoId={video?.id}
+        videoTitle={video?.title ?? ''}
+        token={token}
+        onShareCountChange={handleShareCountChange}
+      />
     </section>
   )
 }

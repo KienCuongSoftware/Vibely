@@ -15,6 +15,8 @@ import {
   IoPause,
   IoPlay,
   IoVolumeHighOutline,
+  IoVolumeLowOutline,
+  IoVolumeMediumOutline,
   IoVolumeMuteOutline,
 } from "react-icons/io5";
 import {
@@ -102,6 +104,80 @@ export const FEED_STAGE_OUTER_WIDTH_CLASS_WIDE_DOCKED =
 /** Skeleton / chỗ chưa biết tỉ lệ: dùng khung dọc. */
 export const FEED_STAGE_OUTER_WIDTH_CLASS = FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT;
 
+const FEED_VOLUME_DEFAULT = 0.5;
+
+function FeedVolumeIcon({ soundOn, volume }) {
+  if (!soundOn || volume === 0) {
+    return <IoVolumeMuteOutline aria-hidden />;
+  }
+  if (volume < 0.34) {
+    return <IoVolumeLowOutline aria-hidden />;
+  }
+  if (volume < 0.67) {
+    return <IoVolumeMediumOutline aria-hidden />;
+  }
+  return <IoVolumeHighOutline aria-hidden />;
+}
+
+/** Điều khiển âm lượng góc trên trái (icon + slider ngang), hiện khi hover slide. */
+function FeedVolumeControl({
+  volume,
+  onVolumeChange,
+  soundOn,
+  onSoundOnChange,
+}) {
+  const toggleSound = (e) => {
+    e.stopPropagation();
+    if (soundOn && volume > 0) {
+      onSoundOnChange(false);
+      return;
+    }
+    onSoundOnChange(true);
+    if (volume === 0) {
+      onVolumeChange(FEED_VOLUME_DEFAULT);
+    }
+  };
+
+  const onSlider = (e) => {
+    e.stopPropagation();
+    const v = Number(e.target.value);
+    onVolumeChange(v);
+    onSoundOnChange(v > 0);
+  };
+
+  return (
+    <div
+      className="feed-volume-control pointer-events-none flex max-w-[2.75rem] items-center gap-0 overflow-hidden rounded-full bg-black/45 py-2 pl-2.5 pr-2.5 text-xl text-white opacity-0 backdrop-blur-sm transition-[max-width,opacity,gap,padding] duration-200 group-hover:pointer-events-auto group-hover:max-w-[9.5rem] group-hover:gap-2 group-hover:pr-3 group-hover:opacity-100 group-has-[.feed-video-more-panel:hover]:pointer-events-none group-has-[.feed-video-more-panel:hover]:max-w-[2.75rem] group-has-[.feed-video-more-panel:hover]:opacity-0 focus-within:pointer-events-auto focus-within:max-w-[9.5rem] focus-within:gap-2 focus-within:pr-3 focus-within:opacity-100"
+      onMouseDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        type="button"
+        aria-label={soundOn && volume > 0 ? "Tắt âm thanh" : "Bật âm thanh"}
+        className="shrink-0 cursor-pointer rounded-full p-0.5 hover:bg-white/10"
+        onClick={toggleSound}
+      >
+        <FeedVolumeIcon soundOn={soundOn} volume={volume} />
+      </button>
+      <input
+        type="range"
+        min={0}
+        max={1}
+        step={0.01}
+        value={volume}
+        aria-label="Âm lượng"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(volume * 100)}
+        className="feed-volume-slider pointer-events-none w-0 shrink opacity-0 transition-[width,opacity] duration-200 group-hover:pointer-events-auto group-hover:w-[5.5rem] group-hover:opacity-100 focus-within:pointer-events-auto focus-within:w-[5.5rem] focus-within:opacity-100"
+        onChange={onSlider}
+        onInput={onSlider}
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
+  );
+}
+
 export function FeedPhoneStage({
   videos,
   activeIndex,
@@ -110,8 +186,11 @@ export function FeedPhoneStage({
   virtualFeedRef,
   loadMoreFeed,
   feedVideoRef,
+  feedVolume,
+  setFeedVolume,
+  feedSoundOn,
+  setFeedSoundOn,
   feedMuted,
-  setFeedMuted,
   feedMoreMenuOpen,
   setFeedMoreMenuOpen,
   feedMoreMenuSubpage,
@@ -327,21 +406,12 @@ export function FeedPhoneStage({
                     }
                   >
                   <div className="pointer-events-none absolute inset-x-0 top-0 z-[50] flex items-center justify-between px-3 pt-3">
-                    <button
-                      type="button"
-                      aria-label={feedMuted ? "Bật âm thanh" : "Tắt âm thanh"}
-                      className="pointer-events-none cursor-pointer rounded-full bg-black/45 p-2.5 text-xl text-white opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-has-[.feed-video-more-panel:hover]:pointer-events-none group-has-[.feed-video-more-panel:hover]:opacity-0 focus-visible:pointer-events-auto focus-visible:opacity-100 hover:bg-black/60"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setFeedMuted((m) => !m);
-                      }}
-                    >
-                      {feedMuted ? (
-                        <IoVolumeMuteOutline aria-hidden />
-                      ) : (
-                        <IoVolumeHighOutline aria-hidden />
-                      )}
-                    </button>
+                    <FeedVolumeControl
+                      volume={feedVolume}
+                      onVolumeChange={setFeedVolume}
+                      soundOn={feedSoundOn}
+                      onSoundOnChange={setFeedSoundOn}
+                    />
                     <button
                       type="button"
                       aria-label="Menu video"
