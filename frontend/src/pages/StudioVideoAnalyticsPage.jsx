@@ -15,6 +15,7 @@ import {
 import { apiClient } from '../api/client'
 import { StudioLayout } from '../components/StudioLayout'
 import { useAuth } from '../state/useAuth'
+import { buildProfileVideoUrl, isVideoPublicId, normalizeVideoPublicId } from '../utils/videoPublicId.js'
 import {
   watchTimeNearPlaythroughEnd,
   watchTimeQualifiesForViewRecord,
@@ -232,8 +233,12 @@ function buildEngagementChartMeta(points) {
 }
 
 export function StudioVideoAnalyticsPage() {
-  const { videoId: videoIdParam } = useParams()
-  const videoId = Number(videoIdParam)
+  const { publicId: publicIdParam } = useParams()
+  const publicId = useMemo(
+    () => normalizeVideoPublicId(publicIdParam),
+    [publicIdParam],
+  )
+  const validPublicId = isVideoPublicId(publicId)
   const navigate = useNavigate()
   const { token } = useAuth()
   const [days, setDays] = useState(7)
@@ -256,16 +261,16 @@ export function StudioVideoAnalyticsPage() {
     retentionQualifyRecordedRef.current = false
     retentionPlaythroughRecordedRef.current = false
     setAnalyticsRefreshTick(0)
-  }, [videoId, days])
+  }, [publicId, days])
 
   useEffect(() => {
-    document.title = Number.isFinite(videoId)
-      ? `VibelyStudio | Thống kê #${videoId}`
+    document.title = validPublicId
+      ? 'VibelyStudio | Thống kê'
       : 'VibelyStudio | Thống kê'
-  }, [videoId])
+  }, [validPublicId])
 
   useEffect(() => {
-    if (!token || !Number.isFinite(videoId)) return
+    if (!token || !validPublicId || !publicId) return
     let cancelled = false
     const showFullLoader = analyticsRefreshTick === 0
     if (showFullLoader) {
@@ -276,7 +281,7 @@ export function StudioVideoAnalyticsPage() {
       const maxAttempts = 2
       for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
         try {
-          const data = await apiClient.getStudioVideoAnalytics(token, videoId, { days })
+          const data = await apiClient.getStudioVideoAnalytics(token, publicId, { days })
           if (cancelled) return
           const rawPoints = Array.isArray(data?.points) ? data.points : []
           const points =
@@ -324,7 +329,7 @@ export function StudioVideoAnalyticsPage() {
     return () => {
       cancelled = true
     }
-  }, [token, videoId, days, analyticsRefreshTick])
+  }, [token, publicId, validPublicId, days, analyticsRefreshTick])
 
   const video = payload?.video
   const points = payload?.points ?? buildZeroPoints(days)
@@ -382,13 +387,13 @@ export function StudioVideoAnalyticsPage() {
 
   const svgIds = useMemo(
     () => ({
-      va: `st-va-fill-${Number.isFinite(videoId) ? videoId : 0}`,
-      ret: `st-ret-fill-${Number.isFinite(videoId) ? videoId : 0}`,
+      va: `st-va-fill-${publicId ?? 'invalid'}`,
+      ret: `st-ret-fill-${publicId ?? 'invalid'}`,
     }),
-    [videoId],
+    [publicId],
   )
 
-  if (!Number.isFinite(videoId)) {
+  if (!validPublicId || !publicId) {
     return (
       <StudioLayout active="posts" title="Thống kê" subtitle="Mã video không hợp lệ">
         <p className="text-sm text-zinc-500">Đường dẫn không hợp lệ.</p>
@@ -445,10 +450,16 @@ export function StudioVideoAnalyticsPage() {
             <h1 className="text-lg font-semibold text-white sm:text-xl">{desc}</h1>
             <p className="mt-1 text-xs text-zinc-500">
               Đăng ngày {postedLabel}
-              {video?.id ? <span className="text-zinc-600"> · Mã #{video.id}</span> : null}
+              {video?.publicId ? (
+                <span className="text-zinc-600 font-mono text-xs"> · {video.publicId}</span>
+              ) : null}
             </p>
             <Link
-              to={video?.authorUsername ? `/${video.authorUsername}/video/${videoId}` : '#'}
+              to={
+                video?.authorUsername && publicId
+                  ? buildProfileVideoUrl(video.authorUsername, publicId)
+                  : '#'
+              }
               className={`mt-2 inline-block text-xs ${
                 video?.authorUsername
                   ? 'cursor-pointer font-medium text-sky-400 hover:underline'
@@ -777,7 +788,7 @@ export function StudioVideoAnalyticsPage() {
                     ) {
                       retentionPlaythroughRecordedRef.current = true
                       apiClient
-                        .recordVideoView(String(videoId), {
+                        .recordVideoView(String(publicId), {
                           watchedMs,
                           durationMs,
                         })
@@ -794,7 +805,7 @@ export function StudioVideoAnalyticsPage() {
                     if (!watchTimeQualifiesForViewRecord(watchedMs, durationMs)) return
                     retentionQualifyRecordedRef.current = true
                     apiClient
-                      .recordVideoView(String(videoId), {
+                      .recordVideoView(String(publicId), {
                         watchedMs,
                         ...(durationMs != null ? { durationMs } : {}),
                       })

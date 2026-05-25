@@ -96,7 +96,7 @@ export function StudioPostsPage() {
     if (!token || !deleteTarget) return
     setDeleteBusy(true)
     try {
-      await apiClient.deleteVideo(deleteTarget.id, token)
+      await apiClient.deleteVideo(deleteTarget.publicId, token)
       setDeleteTarget(null)
       await load()
     } catch (e) {
@@ -174,7 +174,7 @@ export function StudioPostsPage() {
                       })
                     : '—'
                   return (
-                    <tr key={v.id} className="border-b border-zinc-800/80">
+                    <tr key={v.publicId} className="border-b border-zinc-800/80">
                       <td className="py-3 pr-4">
                         <div className="flex items-center gap-3">
                           <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-md bg-zinc-800">
@@ -196,7 +196,7 @@ export function StudioPostsPage() {
                           </div>
                           <div className="min-w-0">
                             <p className="line-clamp-2 font-medium text-zinc-100">{desc}</p>
-                            <p className="mt-0.5 text-xs text-zinc-500">Mã #{v.id}</p>
+                            <p className="mt-0.5 text-xs text-zinc-500">Mã #{v.publicId}</p>
                           </div>
                         </div>
                       </td>
@@ -212,7 +212,7 @@ export function StudioPostsPage() {
                             aria-label="Chỉnh sửa bài đăng"
                             onClick={() => {
                               setMoreMenu(null)
-                              navigate(`/vibelystudio/upload/post/${v.id}`)
+                              navigate(`/vibelystudio/upload/post/${v.publicId}`)
                             }}
                           >
                             <IoPencil className="h-5 w-5" aria-hidden />
@@ -224,7 +224,7 @@ export function StudioPostsPage() {
                             aria-label="Thống kê bài đăng"
                             onClick={() => {
                               setMoreMenu(null)
-                              navigate(`/vibelystudio/analytics/${v.id}`)
+                              navigate(`/vibelystudio/analytics/${v.publicId}`)
                             }}
                           >
                             <IoBarChartOutline className="h-5 w-5" aria-hidden />
@@ -236,7 +236,7 @@ export function StudioPostsPage() {
                             aria-label="Xem bình luận"
                             onClick={() => {
                               setMoreMenu(null)
-                              navigate(`/vibelystudio/comment/${v.id}`)
+                              navigate(`/vibelystudio/comment/${v.publicId}`)
                             }}
                           >
                             <IoChatbubbleEllipsesOutline className="h-5 w-5" aria-hidden />
@@ -247,12 +247,12 @@ export function StudioPostsPage() {
                             className="rounded-md p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-pink-400"
                             title="Thêm"
                             aria-label="Thêm thao tác"
-                            aria-expanded={moreMenu?.video?.id === v.id}
+                            aria-expanded={moreMenu?.video?.publicId === v.publicId}
                             onClick={(e) => {
                               e.stopPropagation()
                               const rect = e.currentTarget.getBoundingClientRect()
                               setMoreMenu((cur) =>
-                                cur?.video?.id === v.id
+                                cur?.video?.publicId === v.publicId
                                   ? null
                                   : {
                                       video: v,

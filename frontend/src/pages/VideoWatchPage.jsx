@@ -12,6 +12,12 @@ import { AccountActionsPill } from '../components/AccountActionsPill'
 import { VideoShareModal } from '../components/VideoShareModal'
 import { useAuth } from '../state/useAuth'
 import {
+  buildProfileVideoUrl,
+  isVideoPublicId,
+  normalizeVideoPublicId,
+  videoPublicIdOf,
+} from '../utils/videoPublicId.js'
+import {
   IoArrowUp,
   IoBookmark,
   IoBookmarkOutline,
@@ -83,15 +89,8 @@ function normalizeUsernameKey(raw) {
     .toLowerCase()
 }
 
-function isBackendVideoId(id) {
-  if (id == null) return false
-  return /^\d+$/.test(String(id))
-}
-
-/** ID từ URL — giữ dạng chuỗi để không mất chính xác với số lớn. */
-function digitsFromParam(raw) {
-  const s = String(raw ?? '').trim()
-  return /^\d+$/.test(s) ? s : ''
+function isWatchableVideo(video) {
+  return isVideoPublicId(videoPublicIdOf(video))
 }
 
 function formatRelativeTime(iso) {
@@ -114,7 +113,7 @@ const ACTION_ROW =
   'flex items-center gap-1.5 rounded-md px-0.5 py-1 text-zinc-100 transition hover:bg-zinc-900/80'
 
 export function VideoWatchPage() {
-  const { username: usernameParam, videoId: videoIdParam } = useParams()
+  const { username: usernameParam, publicId: publicIdParam } = useParams()
   const navigate = useNavigate()
   const { token, user, logout } = useAuth()
   const videoRef = useRef(null)
@@ -139,7 +138,10 @@ export function VideoWatchPage() {
   const accountMenuRef = useRef(null)
 
   const routeSlug = useMemo(() => normalizeUsernameKey(usernameParam), [usernameParam])
-  const videoIdFromRoute = useMemo(() => digitsFromParam(videoIdParam), [videoIdParam])
+  const publicIdFromRoute = useMemo(
+    () => normalizeVideoPublicId(publicIdParam),
+    [publicIdParam],
+  )
 
   const menuItems = useMemo(
     () => [
@@ -190,7 +192,7 @@ export function VideoWatchPage() {
   }, [video?.authorUsername, profileBackPath])
 
   useEffect(() => {
-    if (!videoIdFromRoute) {
+    if (!publicIdFromRoute) {
       setLoading(false)
       setLoadError('Liên kết video không hợp lệ.')
       setVideo(null)
@@ -200,13 +202,14 @@ export function VideoWatchPage() {
     setLoading(true)
     setLoadError('')
     apiClient
-      .getVideo(videoIdFromRoute, { token })
+      .getVideo(publicIdFromRoute, { token })
       .then((v) => {
         if (cancelled) return
         setVideo(v)
         const authorKey = normalizeUsernameKey(v?.authorUsername)
-        if (authorKey && routeSlug && authorKey !== routeSlug) {
-          navigate(`/@${encodeURIComponent(authorKey)}/video/${videoIdFromRoute}`, {
+        const canonical = buildProfileVideoUrl(authorKey, videoPublicIdOf(v))
+        if (canonical && routeSlug && authorKey !== routeSlug) {
+          navigate(canonical, {
             replace: true,
           })
         }
@@ -222,14 +225,14 @@ export function VideoWatchPage() {
     return () => {
       cancelled = true
     }
-  }, [videoIdFromRoute, token, navigate, routeSlug])
+  }, [publicIdFromRoute, token, navigate, routeSlug])
 
   useEffect(() => {
     watchQualifySentRef.current = false
     watchPlaythroughSentRef.current = false
     const el = videoRef.current
-    if (!el || !isBackendVideoId(video?.id)) return undefined
-    const key = String(video.id)
+    if (!el || !isWatchableVideo(video)) return undefined
+    const key = String(video.publicId)
     const onPlaybackSample = () => {
       const watchedMs = Math.floor(el.currentTime * 1000)
       const d = el.duration
@@ -273,13 +276,13 @@ export function VideoWatchPage() {
       el.removeEventListener('seeked', onPlaybackSample)
       el.removeEventListener('ended', onPlaybackSample)
     }
-  }, [video?.id])
+  }, [video?.publicId])
 
   useEffect(() => {
-    if (!token || !isBackendVideoId(video?.id)) return
+    if (!token || !isWatchableVideo(video)) return
     let cancelled = false
     apiClient
-      .getVideoMeState(video.id, token)
+      .getVideoMeState(video.publicId, token)
       .then((s) => {
         if (cancelled || !s) return
         setLiked(Boolean(s.liked))
@@ -289,15 +292,15 @@ export function VideoWatchPage() {
     return () => {
       cancelled = true
     }
-  }, [token, video?.id])
+  }, [token, video?.publicId])
 
   useEffect(() => {
-    if (!isBackendVideoId(video?.id)) return
+    if (!isWatchableVideo(video)) return
     let cancelled = false
     setCommentsLoading(true)
     setCommentsError('')
     apiClient
-      .getComments(video.id, { token })
+      .getComments(video.publicId, { token })
       .then((list) => {
         if (!cancelled) setComments(Array.isArray(list) ? list : [])
       })
@@ -313,7 +316,7 @@ export function VideoWatchPage() {
     return () => {
       cancelled = true
     }
-  }, [video?.id, token])
+  }, [video?.publicId, token])
 
   useEffect(() => {
     document.title = video?.title
@@ -350,7 +353,7 @@ export function VideoWatchPage() {
   }
 
   const handleShareTap = () => {
-    if (!isBackendVideoId(video?.id)) return
+    if (!isWatchableVideo(video)) return
     setShareModalOpen(true)
   }
 
@@ -459,7 +462,7 @@ export function VideoWatchPage() {
               </div>
             ) : video?.videoUrl ? (
               <video
-                key={String(video.id)}
+                key={String(video.publicId)}
                 ref={videoRef}
                 src={video.videoUrl}
                 controls
@@ -542,7 +545,7 @@ export function VideoWatchPage() {
                     aria-pressed={liked}
                     aria-label={liked ? 'Bỏ thích' : 'Thích'}
                     onClick={() => {
-                      if (!token || !isBackendVideoId(video.id)) {
+                      if (!token || !isWatchableVideo(video)) {
                         if (!token) navigate('/login')
                         return
                       }
@@ -551,8 +554,8 @@ export function VideoWatchPage() {
                       setLiked(next)
                       patchVideo({ likeCount: Math.max(0, prevCount + (next ? 1 : -1)) })
                       const req = next
-                        ? apiClient.likeVideo(video.id, token)
-                        : apiClient.unlikeVideo(video.id, token)
+                        ? apiClient.likeVideo(video.publicId, token)
+                        : apiClient.unlikeVideo(video.publicId, token)
                       req.catch(() => {
                         setLiked(!next)
                         patchVideo({ likeCount: prevCount })
@@ -590,7 +593,7 @@ export function VideoWatchPage() {
                     }
                     aria-label={bookmarked ? 'Bỏ lưu' : 'Lưu'}
                     onClick={() => {
-                      if (!token || !isBackendVideoId(video.id)) {
+                      if (!token || !isWatchableVideo(video)) {
                         if (!token) navigate('/login')
                         return
                       }
@@ -599,8 +602,8 @@ export function VideoWatchPage() {
                       setBookmarked(next)
                       patchVideo({ bookmarkCount: Math.max(0, prevCount + (next ? 1 : -1)) })
                       const req = next
-                        ? apiClient.bookmarkVideo(video.id, token)
-                        : apiClient.unbookmarkVideo(video.id, token)
+                        ? apiClient.bookmarkVideo(video.publicId, token)
+                        : apiClient.unbookmarkVideo(video.publicId, token)
                       req.catch(() => {
                         setBookmarked(!next)
                         patchVideo({ bookmarkCount: prevCount })
@@ -736,7 +739,7 @@ export function VideoWatchPage() {
                         placeholder={
                           token ? 'Thêm bình luận...' : 'Đăng nhập để bình luận...'
                         }
-                        disabled={!token || !isBackendVideoId(video.id)}
+                        disabled={!token || !isWatchableVideo(video)}
                         className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-[5.25rem] text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-zinc-600 disabled:opacity-50"
                       />
                       <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
@@ -760,13 +763,13 @@ export function VideoWatchPage() {
                       type="button"
                       className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600 text-white shadow-md transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
                       aria-label="Gửi bình luận"
-                      disabled={!commentDraft.trim() || !token || !isBackendVideoId(video.id)}
+                      disabled={!commentDraft.trim() || !token || !isWatchableVideo(video)}
                       onClick={async () => {
                         const text = commentDraft.trim()
-                        if (!text || !token || !isBackendVideoId(video.id)) return
+                        if (!text || !token || !isWatchableVideo(video)) return
                         setCommentPostError('')
                         try {
-                          const created = await apiClient.addComment(video.id, text, token)
+                          const created = await apiClient.addComment(video.publicId, text, token)
                           setCommentDraft('')
                           setComments((prev) => [created, ...prev])
                           const prevCc = Number(video.commentCount ?? 0)
@@ -791,7 +794,7 @@ export function VideoWatchPage() {
       <VideoShareModal
         open={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
-        videoId={video?.id}
+        videoId={video?.publicId}
         videoTitle={video?.title ?? ''}
         token={token}
         onShareCountChange={handleShareCountChange}

@@ -21,14 +21,10 @@ import { apiClient } from '../api/client'
 import { CoverPickerModal } from '../components/CoverPickerModal'
 import { StudioLayout } from '../components/StudioLayout'
 import { useAuth } from '../state/useAuth'
+import { isVideoPublicId, normalizeVideoPublicId } from '../utils/videoPublicId.js'
 
 const TITLE_MAX = 120
 const DESC_MAX = 1000
-
-function isBackendVideoId(raw) {
-  const s = String(raw ?? '').trim()
-  return /^\d+$/.test(s)
-}
 
 function formatPreviewTime(seconds) {
   const safe = Number.isFinite(seconds) ? Math.max(0, seconds) : 0
@@ -38,7 +34,7 @@ function formatPreviewTime(seconds) {
 }
 
 export function StudioEditPostPage() {
-  const { videoId: videoIdParam } = useParams()
+  const { publicId: publicIdParam } = useParams()
   const navigate = useNavigate()
   const { token, user } = useAuth()
   const coverVideoRef = useRef(null)
@@ -77,8 +73,11 @@ export function StudioEditPostPage() {
   const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false)
   const [isPreviewMuted, setIsPreviewMuted] = useState(true)
 
-  const videoId = useMemo(() => String(videoIdParam ?? '').trim(), [videoIdParam])
-  const validId = isBackendVideoId(videoId)
+  const publicId = useMemo(
+    () => normalizeVideoPublicId(publicIdParam),
+    [publicIdParam],
+  )
+  const validId = isVideoPublicId(publicId)
 
   const privacyLabels = {
     everyone: 'Mọi người',
@@ -103,7 +102,7 @@ export function StudioEditPostPage() {
     setLoadError('')
     setSavedSnapshot(null)
     apiClient
-      .getVideo(videoId, { token })
+      .getVideo(publicId, { token })
       .then((v) => {
         if (cancelled || !v) return
         const snapTitle = String(v.title ?? '')
@@ -132,7 +131,7 @@ export function StudioEditPostPage() {
     return () => {
       cancelled = true
     }
-  }, [token, videoId, validId])
+  }, [token, publicId, validId])
 
   useEffect(() => {
     if (!token || !video) return
@@ -288,7 +287,7 @@ export function StudioEditPostPage() {
     setStatus('')
     try {
       await apiClient.updateVideo(
-        videoId,
+        publicId,
         {
           title: t,
           description: String(description ?? '').trim() || null,
@@ -355,7 +354,7 @@ export function StudioEditPostPage() {
         </Link>
         {validId ? (
           <span className="text-xs text-zinc-500">
-            Mã <span className="font-mono text-zinc-400">#{videoId}</span>
+            Mã <span className="font-mono text-zinc-400">#{publicId}</span>
           </span>
         ) : null}
       </div>

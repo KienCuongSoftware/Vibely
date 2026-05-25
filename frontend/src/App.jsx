@@ -15,12 +15,25 @@ import { TermsOfServicePage } from './pages/TermsOfServicePage.jsx'
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage.jsx'
 import { SoundPage } from './pages/SoundPage.jsx'
 import { useAuth } from './state/useAuth'
+import { isVideoPublicId } from './utils/videoPublicId.js'
 
 function WatchRedirect() {
-  const { videoId } = useParams()
-  const id = String(videoId ?? '').trim()
-  if (!/^\d+$/.test(id)) {
-    return <Navigate to="/foryou" replace />
+  const { publicId } = useParams()
+  const id = String(publicId ?? '').trim()
+  if (!isVideoPublicId(id)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-black px-6 text-center text-zinc-300">
+        <div>
+          <p className="text-lg font-semibold text-white">Liên kết video không hợp lệ</p>
+          <p className="mt-2 text-sm text-zinc-400">
+            Video được chia sẻ bằng mã UUID. Liên kết cũ dạng số không còn được hỗ trợ.
+          </p>
+          <a href="/foryou" className="mt-4 inline-block text-sm text-red-400 hover:text-red-300">
+            Về trang feed
+          </a>
+        </div>
+      </div>
+    )
   }
   return <Navigate to={`/foryou?v=${encodeURIComponent(id)}`} replace />
 }
@@ -43,14 +56,14 @@ function App() {
           <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
           <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/sound" element={<SoundPage />} />
-          <Route path="/watch/:videoId" element={<WatchRedirect />} />
+          <Route path="/watch/:publicId" element={<WatchRedirect />} />
           <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
           <Route path="/vibelystudio/home" element={<Navigate to="/login" replace />} />
           <Route path="/vibelystudio/posts" element={<Navigate to="/login" replace />} />
           <Route path="/vibelystudio/upload" element={<Navigate to="/login" replace />} />
-          <Route path="/vibelystudio/upload/post/:videoId" element={<Navigate to="/login" replace />} />
-          <Route path="/vibelystudio/comment/:videoId" element={<Navigate to="/login" replace />} />
-          <Route path="/:username/video/:videoId" element={<VideoWatchPage />} />
+          <Route path="/vibelystudio/upload/post/:publicId" element={<Navigate to="/login" replace />} />
+          <Route path="/vibelystudio/comment/:publicId" element={<Navigate to="/login" replace />} />
+          <Route path="/:username/video/:publicId" element={<VideoWatchPage />} />
           <Route path="/profile" element={<Navigate to="/login" replace />} />
           <Route path="/:username" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/foryou" replace />} />
@@ -74,16 +87,16 @@ function App() {
         <Route path="/vibelystudio/home" element={<StudioHomePage />} />
         <Route path="/vibelystudio/posts" element={<StudioPostsPage />} />
         <Route path="/vibelystudio/upload" element={<UploadPage />} />
-        <Route path="/vibelystudio/upload/post/:videoId" element={<StudioEditPostPage />} />
-        <Route path="/vibelystudio/analytics/:videoId" element={<StudioVideoAnalyticsPage />} />
-        <Route path="/vibelystudio/comment/:videoId" element={<StudioPostCommentsPage />} />
-        <Route path="/:username/video/:videoId" element={<VideoWatchPage />} />
+        <Route path="/vibelystudio/upload/post/:publicId" element={<StudioEditPostPage />} />
+        <Route path="/vibelystudio/analytics/:publicId" element={<StudioVideoAnalyticsPage />} />
+        <Route path="/vibelystudio/comment/:publicId" element={<StudioPostCommentsPage />} />
+        <Route path="/:username/video/:publicId" element={<VideoWatchPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/:username" element={<ProfilePage />} />
         <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
         <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/sound" element={<SoundPage />} />
-        <Route path="/watch/:videoId" element={<WatchRedirect />} />
+        <Route path="/watch/:publicId" element={<WatchRedirect />} />
         <Route path="*" element={<Navigate to="/foryou" replace />} />
       </Routes>
     </div>

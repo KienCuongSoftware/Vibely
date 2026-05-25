@@ -232,16 +232,16 @@ export function NewCollectionModal({
               <div className="flex flex-1 flex-col overflow-hidden px-3 pb-3 pt-2">
                 <ul className="grid max-h-[min(360px,45vh)] grid-cols-3 gap-2 overflow-y-auto sm:grid-cols-4">
                   {bookmarkItems.map((v) => {
-                    const selected = pickIds.has(v.id);
+                    const selected = pickIds.has(v.publicId);
                     return (
-                      <li key={v.id}>
+                      <li key={v.publicId}>
                         <button
                           type="button"
                           onClick={() =>
                             setPickIds((prev) => {
                               const next = new Set(prev);
-                              if (next.has(v.id)) next.delete(v.id);
-                              else next.add(v.id);
+                              if (next.has(v.publicId)) next.delete(v.publicId);
+                              else next.add(v.publicId);
                               return next;
                             })
                           }

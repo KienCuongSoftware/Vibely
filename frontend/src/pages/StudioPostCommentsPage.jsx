@@ -19,6 +19,7 @@ import { apiClient } from '../api/client'
 import { StudioCommentDateRangePicker } from '../components/StudioCommentDateRangePicker'
 import { StudioLayout } from '../components/StudioLayout'
 import { useAuth } from '../state/useAuth'
+import { isVideoPublicId, normalizeVideoPublicId } from '../utils/videoPublicId.js'
 
 function formatCount(n) {
   const v = Math.max(0, Number(n) || 0)
@@ -215,15 +216,15 @@ function StudioCommentRow({
 
 /** Trang bình luận theo video — layout theo TikTok Studio (theme tối). */
 export function StudioPostCommentsPage() {
-  const { videoId: videoIdParam } = useParams()
+  const { publicId: publicIdParam } = useParams()
   const navigate = useNavigate()
   const { token, user } = useAuth()
   const draftRef = useRef(null)
 
-  const videoId = useMemo(() => {
-    const n = Number(videoIdParam)
-    return Number.isFinite(n) && n > 0 ? n : null
-  }, [videoIdParam])
+  const publicId = useMemo(
+    () => normalizeVideoPublicId(publicIdParam),
+    [publicIdParam],
+  )
 
   const [video, setVideo] = useState(null)
   const [comments, setComments] = useState([])
@@ -271,7 +272,7 @@ export function StudioPostCommentsPage() {
   }, [])
 
   const loadAll = useCallback(async () => {
-    if (!token || !videoId) {
+    if (!token || !publicId) {
       setVideo(null)
       setComments([])
       setLoading(false)
@@ -284,14 +285,14 @@ export function StudioPostCommentsPage() {
     setLoading(true)
     setError('')
     try {
-      const v = await apiClient.getVideo(videoId, { token })
+      const v = await apiClient.getVideo(publicId, { token })
       setVideo(v)
       if (Number(v?.authorId) !== Number(user.id)) {
         setError('Bạn chỉ xem được bình luận của bài đăng của chính mình.')
         setComments([])
         return
       }
-      const list = await apiClient.getComments(videoId, { token })
+      const list = await apiClient.getComments(publicId, { token })
       setComments(Array.isArray(list) ? list : [])
     } catch (e) {
       setError(e.message ?? 'Không tải được dữ liệu.')
@@ -300,7 +301,7 @@ export function StudioPostCommentsPage() {
     } finally {
       setLoading(false)
     }
-  }, [token, videoId, user?.id])
+  }, [token, publicId, user?.id])
 
   useEffect(() => {
     document.title = 'VibelyStudio | Bình luận'
@@ -403,14 +404,14 @@ export function StudioPostCommentsPage() {
     'Bài đăng'
 
   const submitReply = async () => {
-    if (!token || !videoId || submitBusy) return
+    if (!token || !publicId || submitBusy) return
     const text = draft.trim()
     if (!text) return
     setSubmitBusy(true)
     setError('')
     try {
       const parentId = replyingTo?.id != null ? Number(replyingTo.id) : undefined
-      await apiClient.addComment(videoId, text, token, {
+      await apiClient.addComment(publicId, text, token, {
         parentCommentId: Number.isFinite(parentId) ? parentId : undefined,
       })
       setDraft('')
@@ -435,11 +436,11 @@ export function StudioPostCommentsPage() {
 
   const confirmDeleteComment = async () => {
     const c = deleteTarget
-    if (!c || !token || !videoId || deletingId != null) return
+    if (!c || !token || !publicId || deletingId != null) return
     setDeletingId(c.id)
     setError('')
     try {
-      await apiClient.deleteComment(videoId, c.id, token)
+      await apiClient.deleteComment(publicId, c.id, token)
       setReplyingTo(null)
       setDeleteTarget(null)
       await loadAll()
@@ -504,7 +505,7 @@ export function StudioPostCommentsPage() {
     error && error.includes('chính mình') && video,
   )
 
-  if (!videoId) {
+  if (!publicId) {
     return (
       <StudioLayout active="comments" title="Bình luận" subtitle="Mã video không hợp lệ">
         <p className="text-sm text-amber-400">Đường dẫn không hợp lệ.</p>
@@ -583,7 +584,7 @@ export function StudioPostCommentsPage() {
                     <h1 className="text-base font-semibold leading-snug text-zinc-100 sm:text-lg">
                       {postTitle}
                     </h1>
-                    <p className="mt-1 text-xs text-zinc-500">Mã #{video.id}</p>
+                    <p className="mt-1 truncate text-xs text-zinc-500 font-mono">{video.publicId}</p>
                     <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-zinc-800/80 pt-4 text-[13px] text-zinc-400">
                       <span className="inline-flex items-center gap-1.5" title="Lượt xem">
                         <IoVideocamOutline className="h-[18px] w-[18px] text-zinc-500" aria-hidden />
@@ -964,15 +965,15 @@ export function StudioPostCommentsPage() {
                             minute: '2-digit',
                           })
                         : '—'
-                      const isCurrent = Number(v.id) === Number(videoId)
+                      const isCurrent = v.publicId === publicId
                       return (
-                        <li key={v.id}>
+                        <li key={v.publicId}>
                           <button
                             type="button"
                             onClick={() => {
                               closePostPicker()
                               if (!isCurrent) {
-                                navigate(`/vibelystudio/comment/${v.id}`)
+                                navigate(`/vibelystudio/comment/${v.publicId}`)
                               }
                             }}
                             className={`flex w-full gap-3 rounded-lg px-2 py-3 text-left transition sm:px-3 ${

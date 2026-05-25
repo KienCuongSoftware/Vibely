@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { apiClient } from '../api/client'
 import { useAuth } from '../state/useAuth'
+import { buildProfileVideoUrl, videoPublicIdOf } from '../utils/videoPublicId.js'
 import { Sidebar } from '../components/Sidebar'
 import { TooltipHoverWrap } from '../components/TooltipControls'
 import { AccountActionsPill } from '../components/AccountActionsPill'
@@ -82,14 +83,13 @@ function normalizeProfileUsernameKey(raw) {
     .toLowerCase()
 }
 
-/** Permalink /@author/video/id — dùng author của video (đúng khi xem từ Yêu thích / Đã thích). */
+/** Permalink /@author/video/publicId — dùng author của video (đúng khi xem từ Yêu thích / Đã thích). */
 function profileVideoPermalinkForGrid(video, fallbackUsernameRaw) {
   const slug =
     normalizeProfileUsernameKey(video?.authorUsername) ||
     normalizeProfileUsernameKey(fallbackUsernameRaw)
-  const id = video?.id
-  if (!slug || id == null || !/^\d+$/.test(String(id))) return '/foryou'
-  return `/@${encodeURIComponent(slug)}/video/${encodeURIComponent(String(id))}`
+  const link = buildProfileVideoUrl(slug, videoPublicIdOf(video))
+  return link || '/foryou'
 }
 
 /** Ô lưới hồ sơ: chỉ phát khi `playing`; tắt tiếng, loop. */
@@ -428,16 +428,16 @@ export function ProfilePage() {
       return
     }
     setProfileGridPlayingId((prev) => {
-      if (prev != null && profileGridVideoList.some((v) => Number(v.id) === Number(prev))) {
+      if (prev != null && profileGridVideoList.some((v) => v.publicId === prev)) {
         return prev
       }
-      return profileGridVideoList[0]?.id ?? null
+      return profileGridVideoList[0]?.publicId ?? null
     })
   }, [profileGridVideoList])
 
-  const focusProfileGridVideo = useCallback((videoId) => {
-    if (videoId == null) return
-    setProfileGridPlayingId(videoId)
+  const focusProfileGridVideo = useCallback((publicId) => {
+    if (publicId == null) return
+    setProfileGridPlayingId(publicId)
   }, [])
 
   const bioDraftLength = editForm.bio.length
@@ -907,18 +907,18 @@ export function ProfilePage() {
                 ) : profileVideos.length > 0 ? (
                   <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                     {profileVideos.map((v) => (
-                      <li key={v.id}>
+                      <li key={v.publicId}>
                         <Link
                           to={profileVideoPermalinkForGrid(v, profile?.username ?? username)}
                           className="block"
                         >
                           <div
                             className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
-                            onMouseEnter={() => focusProfileGridVideo(v.id)}
+                            onMouseEnter={() => focusProfileGridVideo(v.publicId)}
                           >
                             <ProfileGridMedia
                               item={v}
-                              playing={Number(v.id) === Number(profileGridPlayingId)}
+                              playing={v.publicId === profileGridPlayingId}
                             />
                             <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
                               <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
@@ -973,18 +973,18 @@ export function ProfilePage() {
                     {!bookmarkLoading && bookmarkItems.length > 0 ? (
                       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                         {bookmarkItems.map((v) => (
-                          <li key={v.id}>
+                          <li key={v.publicId}>
                             <Link
                               to={profileVideoPermalinkForGrid(v, profile?.username ?? username)}
                               className="block"
                             >
                               <div
                                 className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
-                                onMouseEnter={() => focusProfileGridVideo(v.id)}
+                                onMouseEnter={() => focusProfileGridVideo(v.publicId)}
                               >
                                 <ProfileGridMedia
                                   item={v}
-                                  playing={Number(v.id) === Number(profileGridPlayingId)}
+                                  playing={v.publicId === profileGridPlayingId}
                                 />
                                 <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
                                   <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
@@ -1046,18 +1046,18 @@ export function ProfilePage() {
                     {!likedLoading && likedItems.length > 0 ? (
                       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                         {likedItems.map((v) => (
-                          <li key={v.id}>
+                          <li key={v.publicId}>
                             <Link
                               to={profileVideoPermalinkForGrid(v, profile?.username ?? username)}
                               className="block"
                             >
                               <div
                                 className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
-                                onMouseEnter={() => focusProfileGridVideo(v.id)}
+                                onMouseEnter={() => focusProfileGridVideo(v.publicId)}
                               >
                                 <ProfileGridMedia
                                   item={v}
-                                  playing={Number(v.id) === Number(profileGridPlayingId)}
+                                  playing={v.publicId === profileGridPlayingId}
                                 />
                                 <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
                                   <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
@@ -1420,16 +1420,16 @@ export function ProfilePage() {
                     <div className="flex flex-1 flex-col overflow-hidden px-3 pb-3 pt-2">
                       <ul className="grid max-h-[min(360px,45vh)] grid-cols-3 gap-2 overflow-y-auto sm:grid-cols-4">
                         {bookmarkItems.map((v) => {
-                          const selected = collectionPickIds.has(v.id)
+                          const selected = collectionPickIds.has(v.publicId)
                           return (
-                            <li key={v.id}>
+                            <li key={v.publicId}>
                               <button
                                 type="button"
                                 onClick={() =>
                                   setCollectionPickIds((prev) => {
                                     const next = new Set(prev)
-                                    if (next.has(v.id)) next.delete(v.id)
-                                    else next.add(v.id)
+                                    if (next.has(v.publicId)) next.delete(v.publicId)
+                                    else next.add(v.publicId)
                                     return next
                                   })
                                 }

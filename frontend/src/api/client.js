@@ -131,26 +131,26 @@ export const apiClient = {
       `/api/users/${encodeURIComponent(u)}/videos${toQuery({ page, size })}`,
     );
   },
-  getFeed: ({ page = 0, size = 10, sort = "latest", cursor } = {}) =>
-    request(`/api/feed${toQuery({ page, size, sort, cursor })}`),
+  getFeed: ({ size = 10, sort = "latest", cursor } = {}) =>
+    request(`/api/feed${toQuery({ size, sort, cursor })}`),
   getStudioAnalyticsOverview: (token, { days = 7 } = {}) =>
     request(`/api/studio/analytics/overview${toQuery({ days })}`, { token }),
-  getStudioVideoAnalytics: (token, videoId, { days = 7 } = {}) =>
-    request(`/api/studio/analytics/video/${videoId}${toQuery({ days })}`, {
+  getStudioVideoAnalytics: (token, publicId, { days = 7 } = {}) =>
+    request(`/api/studio/analytics/video/${publicId}${toQuery({ days })}`, {
       token,
     }),
   getFollowingFeed: (token, { page = 0, size = 10 } = {}) =>
     request(`/api/feed/following${toQuery({ page, size })}`, { token }),
   createVideo: (payload, token) =>
     request("/api/videos", { method: "POST", body: payload, token }),
-  getVideo: (videoId, { token } = {}) =>
-    request(`/api/videos/${videoId}`, token ? { token } : {}),
+  getVideo: (publicId, { token } = {}) =>
+    request(`/api/videos/${publicId}`, token ? { token } : {}),
   getVideosBySound: (audioUrl, { page = 0, size = 24 } = {}) =>
     request(`/api/videos/sound${toQuery({ audioUrl, page, size })}`),
-  updateVideo: (videoId, payload, token) =>
-    request(`/api/videos/${videoId}`, { method: "PUT", body: payload, token }),
-  deleteVideo: (videoId, token) =>
-    request(`/api/videos/${videoId}`, { method: "DELETE", token }),
+  updateVideo: (publicId, payload, token) =>
+    request(`/api/videos/${publicId}`, { method: "PUT", body: payload, token }),
+  deleteVideo: (publicId, token) =>
+    request(`/api/videos/${publicId}`, { method: "DELETE", token }),
   presignVideoUpload: (token, body) =>
     request("/api/videos/upload/presign", { method: "POST", body, token }),
   presignThumbnailUpload: (token, body) =>
@@ -159,16 +159,16 @@ export const apiClient = {
       body,
       token,
     }),
-  likeVideo: (videoId, token) =>
-    request(`/api/videos/${videoId}/likes`, { method: "POST", token }),
-  unlikeVideo: (videoId, token) =>
-    request(`/api/videos/${videoId}/likes`, { method: "DELETE", token }),
-  bookmarkVideo: (videoId, token) =>
-    request(`/api/videos/${videoId}/bookmarks`, { method: "POST", token }),
-  unbookmarkVideo: (videoId, token) =>
-    request(`/api/videos/${videoId}/bookmarks`, { method: "DELETE", token }),
-  getVideoMeState: (videoId, token) =>
-    request(`/api/videos/${videoId}/me`, { token }),
+  likeVideo: (publicId, token) =>
+    request(`/api/videos/${publicId}/likes`, { method: "POST", token }),
+  unlikeVideo: (publicId, token) =>
+    request(`/api/videos/${publicId}/likes`, { method: "DELETE", token }),
+  bookmarkVideo: (publicId, token) =>
+    request(`/api/videos/${publicId}/bookmarks`, { method: "POST", token }),
+  unbookmarkVideo: (publicId, token) =>
+    request(`/api/videos/${publicId}/bookmarks`, { method: "DELETE", token }),
+  getVideoMeState: (publicId, token) =>
+    request(`/api/videos/${publicId}/me`, { token }),
   getMyLikedVideos: (token, { page = 0, size = 24 } = {}) =>
     request(`/api/users/me/liked-videos${toQuery({ page, size })}`, { token }),
   getMyBookmarkedVideos: (token, { page = 0, size = 24 } = {}) =>
@@ -177,10 +177,10 @@ export const apiClient = {
     }),
   getMyUploadedVideos: (token, { page = 0, size = 24 } = {}) =>
     request(`/api/users/me/videos${toQuery({ page, size })}`, { token }),
-  getComments: (videoId, { token } = {}) =>
-    request(`/api/videos/${videoId}/comments`, token ? { token } : {}),
-  addComment: (videoId, content, token, { parentCommentId } = {}) =>
-    request(`/api/videos/${videoId}/comments`, {
+  getComments: (publicId, { token } = {}) =>
+    request(`/api/videos/${publicId}/comments`, token ? { token } : {}),
+  addComment: (publicId, content, token, { parentCommentId } = {}) =>
+    request(`/api/videos/${publicId}/comments`, {
       method: "POST",
       body: {
         content,
@@ -188,13 +188,13 @@ export const apiClient = {
       },
       token,
     }),
-  deleteComment: (videoId, commentId, token) =>
-    request(`/api/videos/${videoId}/comments/${commentId}`, {
+  deleteComment: (publicId, commentId, token) =>
+    request(`/api/videos/${publicId}/comments/${commentId}`, {
       method: "DELETE",
       token,
     }),
-  reportVideo: (videoId, reason, token) =>
-    request(`/api/videos/${videoId}/report`, {
+  reportVideo: (publicId, reason, token) =>
+    request(`/api/videos/${publicId}/report`, {
       method: "POST",
       body: { reason },
       token,
@@ -204,12 +204,12 @@ export const apiClient = {
   unfollow: (userId, token) =>
     request(`/api/follows/${userId}`, { method: "DELETE", token }),
   getMentionableFriends: (token) => request("/api/follows/friends", { token }),
-  recordVideoView: (videoId, body) =>
-    request(`/api/videos/${videoId}/views`, { method: "POST", body }),
-  recordVideoShare: (videoId) =>
-    request(`/api/videos/${videoId}/shares`, { method: "POST" }),
-  createVideoShare: (videoId, token, body) =>
-    request(`/api/v1/videos/${videoId}/share`, {
+  recordVideoView: (publicId, body) =>
+    request(`/api/videos/${publicId}/views`, { method: "POST", body }),
+  recordVideoShare: (publicId) =>
+    request(`/api/videos/${publicId}/shares`, { method: "POST" }),
+  createVideoShare: (publicId, token, body) =>
+    request(`/api/v1/videos/${publicId}/share`, {
       method: "POST",
       body: body ?? {},
       token,

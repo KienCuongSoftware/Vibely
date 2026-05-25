@@ -138,11 +138,13 @@ function FriendChip({ friend, onClick }) {
 export function VideoShareModal({
   open,
   onClose,
-  videoId,
+  videoPublicId,
+  videoId: legacyVideoId,
   videoTitle = "",
   token,
   onShareCountChange,
 }) {
+  const videoId = videoPublicId ?? legacyVideoId;
   const [friends, setFriends] = useState([]);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState("");
