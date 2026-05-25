@@ -14,14 +14,19 @@ import com.vibely.backend.interaction.VideoViewRepository;
 import com.vibely.backend.processing.VideoProcessingEnqueueService;
 import com.vibely.backend.auth.UserAvatarResolver;
 import com.vibely.backend.interaction.VideoBookmarkRepository;
+import com.vibely.backend.storage.S3ObjectUrlBuilder;
 import com.vibely.backend.storage.S3PresignedUploadService;
 import com.vibely.backend.user.User;
 import com.vibely.backend.user.UserRepository;
 import com.vibely.backend.user.UsernameService;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
@@ -52,6 +57,7 @@ public class VideoService {
     private final UsernameService usernameService;
     private final VideoProcessingEnqueueService videoProcessingEnqueueService;
     private final ObjectProvider<S3PresignedUploadService> presignedUploadService;
+    private final S3ObjectUrlBuilder objectUrlBuilder;
 
     public VideoService(
         VideoRepository videoRepository,
@@ -64,7 +70,8 @@ public class VideoService {
         UserAvatarResolver userAvatarResolver,
         UsernameService usernameService,
         VideoProcessingEnqueueService videoProcessingEnqueueService,
-        ObjectProvider<S3PresignedUploadService> presignedUploadService
+        ObjectProvider<S3PresignedUploadService> presignedUploadService,
+        S3ObjectUrlBuilder objectUrlBuilder
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
@@ -77,6 +84,7 @@ public class VideoService {
         this.usernameService = usernameService;
         this.videoProcessingEnqueueService = videoProcessingEnqueueService;
         this.presignedUploadService = presignedUploadService;
+        this.objectUrlBuilder = objectUrlBuilder;
     }
 
     public VideoResponse createVideo(String email, VideoCreateRequest request) {
@@ -134,7 +142,9 @@ public class VideoService {
             cId = d.id();
         }
         Pageable p = PageRequest.of(0, req + 1);
-        Page<Video> slice = videoRepository.findReadyFeedKeyset(VideoStatus.READY, cTime, cId, p);
+        Page<Video> slice = cTime == null || cId == null
+            ? videoRepository.findReadyFeedFirstPage(VideoStatus.READY, p)
+            : videoRepository.findReadyFeedKeyset(VideoStatus.READY, cTime, cId, p);
         boolean hasNext = slice.getContent().size() > req;
         List<Video> rows = slice.getContent().stream().limit(req).toList();
         String next = null;
@@ -143,7 +153,7 @@ public class VideoService {
             next = FeedCursorCodec.encode(last.getCreatedAt(), last.getId());
         }
         return new FeedPageResponse(
-            rows.stream().map(this::toResponse).toList(),
+            toFeedResponses(rows),
             0,
             req,
             hasNext ? -1L : rows.size(),
@@ -179,11 +189,20 @@ public class VideoService {
             throw new BadRequestException("Thiếu đường dẫn âm thanh.");
         }
         Pageable pageable = PageRequest.of(page, Math.min(size, 50));
-        Page<Video> resultPage = videoRepository.findByAudioUrlAndStatusOrderByCreatedAtDesc(
-            normalizedAudioUrl,
-            VideoStatus.READY,
-            pageable
-        );
+        Optional<String> audioKey = objectUrlBuilder.resolveKeyFromUrl(normalizedAudioUrl);
+        Page<Video> resultPage = audioKey
+            .filter(key -> !key.isBlank())
+            .map(key -> videoRepository.findByAudioUrlOrKeyEndingAndStatus(
+                normalizedAudioUrl,
+                key,
+                VideoStatus.READY,
+                pageable
+            ))
+            .orElseGet(() -> videoRepository.findByAudioUrlAndStatusOrderByCreatedAtDesc(
+                normalizedAudioUrl,
+                VideoStatus.READY,
+                pageable
+            ));
         return toFeedPageResponse(resultPage, "sound");
     }
 
@@ -252,6 +271,11 @@ public class VideoService {
         return toFeedPageResponse(resultPage, "profile-uploads");
     }
 
+    @Transactional(readOnly = true)
+    public VideoResponse getVideoByPublicIdForViewer(UUID publicId, String viewerEmail) {
+        return getVideoByIdForViewer(getVideoByPublicIdOrThrow(publicId).getId(), viewerEmail);
+    }
+
     /**
      * Public: READY for everyone. Other statuses (e.g. RAW) only for the author when viewerEmail is set.
      */
@@ -276,6 +300,11 @@ public class VideoService {
     }
 
     @Transactional
+    public VideoResponse updateVideo(String email, UUID publicId, VideoUpdateRequest request) {
+        return updateVideo(email, getVideoByPublicIdOrThrow(publicId).getId(), request);
+    }
+
+    @Transactional
     public VideoResponse updateVideo(String email, Long videoId, VideoUpdateRequest request) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
@@ -297,6 +326,11 @@ public class VideoService {
     }
 
     @Transactional
+    public void deleteVideo(String email, UUID publicId) {
+        deleteVideo(email, getVideoByPublicIdOrThrow(publicId).getId());
+    }
+
+    @Transactional
     public void deleteVideo(String email, Long videoId) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
@@ -309,6 +343,11 @@ public class VideoService {
         }
         video.setStatus(VideoStatus.REMOVED);
         videoRepository.save(video);
+    }
+
+    public Video getVideoByPublicIdOrThrow(UUID publicId) {
+        return videoRepository.findByPublicId(publicId)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
     }
 
     public Video getVideoOrThrow(Long id) {
@@ -335,6 +374,11 @@ public class VideoService {
      * Mọi trạng thái trừ REMOVED. Body thiếu hoặc không đạt ngưỡng: bỏ qua (200, không tăng đếm).
      */
     @Transactional
+    public void recordView(UUID publicId, VideoViewRequest body) {
+        recordView(getVideoByPublicIdOrThrow(publicId).getId(), body);
+    }
+
+    @Transactional
     public void recordView(Long id, VideoViewRequest body) {
         if (body == null || !qualifiesPlaybackForView(body.watchedMs(), body.durationMs())) {
             return;
@@ -348,6 +392,11 @@ public class VideoService {
         row.setWatchedMs(body.watchedMs());
         row.setDurationMs(body.durationMs());
         videoViewRepository.save(row);
+    }
+
+    @Transactional
+    public void recordShare(UUID publicId) {
+        recordShare(getVideoByPublicIdOrThrow(publicId).getId());
     }
 
     @Transactional
@@ -391,18 +440,63 @@ public class VideoService {
     }
 
     private VideoResponse toResponse(Video video) {
+        return toResponse(video, null);
+    }
+
+    private record FeedInteractionCounts(
+        Map<Long, Long> likes,
+        Map<Long, Long> comments,
+        Map<Long, Long> bookmarks,
+        Map<Long, Long> views
+    ) {
+    }
+
+    private List<VideoResponse> toFeedResponses(List<Video> videos) {
+        if (videos.isEmpty()) {
+            return List.of();
+        }
+        List<Long> ids = videos.stream().map(Video::getId).toList();
+        FeedInteractionCounts counts = new FeedInteractionCounts(
+            countMap(likeRepository.countGroupedByVideoIds(ids)),
+            countMap(commentRepository.countGroupedByVideoIds(ids)),
+            countMap(videoBookmarkRepository.countGroupedByVideoIds(ids)),
+            countMap(videoViewRepository.countGroupedByVideoIds(ids))
+        );
+        return videos.stream().map(v -> toResponse(v, counts)).toList();
+    }
+
+    private static Map<Long, Long> countMap(List<Object[]> rows) {
+        Map<Long, Long> out = new HashMap<>();
+        for (Object[] row : rows) {
+            if (row == null || row.length < 2 || row[0] == null || row[1] == null) {
+                continue;
+            }
+            out.put(((Number) row[0]).longValue(), ((Number) row[1]).longValue());
+        }
+        return out;
+    }
+
+    private VideoResponse toResponse(Video video, FeedInteractionCounts batch) {
         Long videoId = video.getId();
-        long likeCount = likeRepository.countByVideoId(videoId);
-        long commentCount = commentRepository.countByVideoId(videoId);
-        long bookmarkCount = videoBookmarkRepository.countByVideo_Id(videoId);
-        long viewCount = videoViewRepository.countByVideo_Id(videoId);
+        long likeCount = batch != null
+            ? batch.likes().getOrDefault(videoId, 0L)
+            : likeRepository.countByVideoId(videoId);
+        long commentCount = batch != null
+            ? batch.comments().getOrDefault(videoId, 0L)
+            : commentRepository.countByVideoId(videoId);
+        long bookmarkCount = batch != null
+            ? batch.bookmarks().getOrDefault(videoId, 0L)
+            : videoBookmarkRepository.countByVideo_Id(videoId);
+        long viewCount = batch != null
+            ? batch.views().getOrDefault(videoId, 0L)
+            : videoViewRepository.countByVideo_Id(videoId);
         User author = video.getAuthor();
         String authorDisplayName = resolveAuthorDisplayName(author);
         String videoUrl = presignPlaybackUrlIfConfigured(video.getVideoUrl());
         String thumbUrl = presignPlaybackUrlIfConfigured(video.getThumbnailUrl());
         String audioUrl = presignPlaybackUrlIfConfigured(video.getAudioUrl());
         return new VideoResponse(
-            video.getId(),
+            video.getPublicId(),
             author.getId(),
             author.getUsername(),
             authorDisplayName,
@@ -434,7 +528,7 @@ public class VideoService {
 
     private FeedPageResponse toFeedPageResponse(Page<Video> page, String sort, String nextCursor) {
         return new FeedPageResponse(
-            page.getContent().stream().map(this::toResponse).toList(),
+            toFeedResponses(page.getContent()),
             page.getNumber(),
             page.getSize(),
             page.getTotalElements(),

@@ -3,6 +3,7 @@ package com.vibely.backend.interaction;
 import com.vibely.backend.studio.DailyCountProjection;
 import com.vibely.backend.video.VideoStatus;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -10,6 +11,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface VideoViewRepository extends JpaRepository<VideoViewEntity, Long> {
     long countByVideo_Id(Long videoId);
+
+    @Query("SELECT vv.video.id, COUNT(vv) FROM VideoViewEntity vv WHERE vv.video.id IN :ids GROUP BY vv.video.id")
+    List<Object[]> countGroupedByVideoIds(@Param("ids") Collection<Long> ids);
 
     long countByVideo_Author_IdAndVideo_Status(Long authorId, VideoStatus status);
 

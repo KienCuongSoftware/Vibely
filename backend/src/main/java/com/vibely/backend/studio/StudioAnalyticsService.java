@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -163,7 +164,7 @@ public class StudioAnalyticsService {
     }
 
     @Transactional(readOnly = true)
-    public StudioVideoAnalyticsResponse getVideoAnalytics(String email, Long videoId, int days) {
+    public StudioVideoAnalyticsResponse getVideoAnalytics(String email, UUID videoPublicId, int days) {
         if (!ALLOWED_DAYS.contains(days)) {
             throw new BadRequestException("Khoảng ngày không hợp lệ. Chỉ chấp nhận 7, 28, 60, 90.");
         }
@@ -171,10 +172,12 @@ public class StudioAnalyticsService {
         User me = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
 
-        VideoResponse video = videoService.getVideoByIdForViewer(videoId, email);
+        VideoResponse video = videoService.getVideoByPublicIdForViewer(videoPublicId, email);
         if (!Objects.equals(video.authorId(), me.getId())) {
             throw new BadRequestException("Bạn không có quyền xem thống kê video này.");
         }
+
+        long videoId = videoService.getVideoByPublicIdOrThrow(videoPublicId).getId();
 
         LocalDate startDay = LocalDate.now().minusDays(days - 1L);
         LocalDateTime from = startDay.atStartOfDay();

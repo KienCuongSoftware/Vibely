@@ -153,7 +153,7 @@ public class FfmpegHlsPipelineRunner {
                 audioPlan.audioBitrateArg()
             );
 
-            String prefix = "hls/" + item.authorId() + "/" + item.videoId() + "/";
+            String prefix = "hls/" + item.authorId() + "/" + item.videoPublicId() + "/";
             int uploaded = 0;
             try (Stream<Path> paths = Files.walk(transcodeDir)) {
                 for (Path p : paths.filter(Files::isRegularFile).toList()) {

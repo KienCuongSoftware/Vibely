@@ -1,6 +1,7 @@
 package com.vibely.backend.studio;
 
 import com.vibely.backend.common.ApiResponse;
+import com.vibely.backend.video.VideoPublicIds;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,15 +29,19 @@ public class StudioAnalyticsController {
         return ApiResponse.success(studioAnalyticsService.getOverview(authentication.getName(), days));
     }
 
-    @GetMapping("/video/{videoId}")
+    @GetMapping("/video/{publicId}")
     @PreAuthorize("hasRole('USER')")
     public ApiResponse<StudioVideoAnalyticsResponse> video(
         Authentication authentication,
-        @PathVariable Long videoId,
+        @PathVariable String publicId,
         @RequestParam(defaultValue = "7") int days
     ) {
         return ApiResponse.success(
-            studioAnalyticsService.getVideoAnalytics(authentication.getName(), videoId, days)
+            studioAnalyticsService.getVideoAnalytics(
+                authentication.getName(),
+                VideoPublicIds.parse(publicId),
+                days
+            )
         );
     }
 }

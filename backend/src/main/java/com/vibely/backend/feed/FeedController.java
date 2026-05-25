@@ -28,7 +28,7 @@ public class FeedController {
         FeedSort feedSort = "trending-lite".equalsIgnoreCase(sort)
             ? FeedSort.TRENDING_LITE
             : FeedSort.LATEST;
-        if (feedSort == FeedSort.LATEST && cursor != null && !cursor.isBlank()) {
+        if (feedSort == FeedSort.LATEST) {
             return ApiResponse.success(videoService.getLatestFeedKeyset(cursor, Math.min(size, 50)));
         }
         return ApiResponse.success(videoService.getFeed(page, Math.min(size, 50), feedSort));

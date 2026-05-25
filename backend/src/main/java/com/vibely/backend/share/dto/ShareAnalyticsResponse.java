@@ -1,9 +1,10 @@
 package com.vibely.backend.share.dto;
 
 import java.util.List;
+import java.util.UUID;
 
 public record ShareAnalyticsResponse(
-    long videoId,
+    UUID publicId,
     long totalShareEvents,
     long totalLinkClicks,
     long uniqueVisitors,

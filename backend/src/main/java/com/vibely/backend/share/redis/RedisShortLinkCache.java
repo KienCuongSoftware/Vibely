@@ -51,7 +51,7 @@ public class RedisShortLinkCache implements ShortLinkCache {
         try {
             CachedPayload payload = objectMapper.readValue(raw, CachedPayload.class);
             return Optional.of(new ShortLinkCacheEntry(
-                payload.videoId(),
+                payload.videoPublicId(),
                 payload.shortCode(),
                 ShortLinkStatus.valueOf(payload.status())
             ));
@@ -70,7 +70,7 @@ public class RedisShortLinkCache implements ShortLinkCache {
         String normalized = normalize(entry.shortCode());
         try {
             String json = objectMapper.writeValueAsString(new CachedPayload(
-                entry.videoId(),
+                entry.videoPublicId(),
                 normalized,
                 entry.status().name()
             ));
@@ -129,5 +129,5 @@ public class RedisShortLinkCache implements ShortLinkCache {
         return shortCode == null ? "" : shortCode.trim();
     }
 
-    private record CachedPayload(long videoId, String shortCode, String status) {}
+    private record CachedPayload(java.util.UUID videoPublicId, String shortCode, String status) {}
 }

@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,9 +47,9 @@ public class InteractionService {
         this.userAvatarResolver = userAvatarResolver;
     }
 
-    public void likeVideo(String email, Long videoId) {
+    public void likeVideo(String email, UUID videoPublicId) {
         User user = getUser(email);
-        Video video = videoService.getVideoOrThrow(videoId);
+        Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
         requireEngagementAllowed(video, user);
         if (likeRepository.existsByUserAndVideo(user, video)) {
             return;
@@ -59,16 +60,16 @@ public class InteractionService {
         likeRepository.save(like);
     }
 
-    public void unlikeVideo(String email, Long videoId) {
+    public void unlikeVideo(String email, UUID videoPublicId) {
         User user = getUser(email);
-        Video video = videoService.getVideoOrThrow(videoId);
+        Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
         requireEngagementAllowed(video, user);
         likeRepository.deleteByUserAndVideo(user, video);
     }
 
-    public void bookmarkVideo(String email, Long videoId) {
+    public void bookmarkVideo(String email, UUID videoPublicId) {
         User user = getUser(email);
-        Video video = videoService.getVideoOrThrow(videoId);
+        Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
         requireEngagementAllowed(video, user);
         if (videoBookmarkRepository.existsByUserAndVideo(user, video)) {
             return;
@@ -79,26 +80,26 @@ public class InteractionService {
         videoBookmarkRepository.save(row);
     }
 
-    public void unbookmarkVideo(String email, Long videoId) {
+    public void unbookmarkVideo(String email, UUID videoPublicId) {
         User user = getUser(email);
-        Video video = videoService.getVideoOrThrow(videoId);
+        Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
         requireEngagementAllowed(video, user);
         videoBookmarkRepository.deleteByUserAndVideo(user, video);
     }
 
     @Transactional(readOnly = true)
-    public VideoMeStateResponse getVideoMeState(String email, Long videoId) {
+    public VideoMeStateResponse getVideoMeState(String email, UUID videoPublicId) {
         User user = getUser(email);
-        Video video = videoService.getVideoOrThrow(videoId);
+        Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
         return new VideoMeStateResponse(
             likeRepository.existsByUserAndVideo(user, video),
             videoBookmarkRepository.existsByUserAndVideo(user, video)
         );
     }
 
-    public CommentResponse addComment(String email, Long videoId, String content, Long parentCommentId) {
+    public CommentResponse addComment(String email, UUID videoPublicId, String content, Long parentCommentId) {
         User user = getUser(email);
-        Video video = videoService.getVideoOrThrow(videoId);
+        Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
         requireEngagementAllowed(video, user);
         CommentEntity comment = new CommentEntity();
         comment.setUser(user);
@@ -121,9 +122,9 @@ public class InteractionService {
      * Xóa một bình luận; các phản hồi trỏ tới nó bị xóa theo CASCADE ở DB (toàn bộ nhánh con).
      * Chỉ chủ video hoặc chủ bình luận được phép.
      */
-    public void deleteComment(String email, Long videoId, Long commentId) {
+    public void deleteComment(String email, UUID videoPublicId, Long commentId) {
         User user = getUser(email);
-        Video video = videoService.getVideoOrThrow(videoId);
+        Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
         requireEngagementAllowed(video, user);
         CommentEntity comment = commentRepository
             .findById(commentId)
@@ -145,8 +146,8 @@ public class InteractionService {
      * {@link VideoService#getVideoByIdForViewer(Long, String)}).
      */
     @Transactional(readOnly = true)
-    public List<CommentResponse> getComments(Long videoId, String viewerEmail) {
-        Video video = videoService.getVideoOrThrow(videoId);
+    public List<CommentResponse> getComments(UUID videoPublicId, String viewerEmail) {
+        Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
         User viewer = null;
         if (viewerEmail != null && !viewerEmail.isBlank()) {
             viewer = userRepository.findByEmail(viewerEmail.trim()).orElse(null);
@@ -204,9 +205,9 @@ public class InteractionService {
         return List.copyOf(friends.values());
     }
 
-    public void reportVideo(String email, Long videoId, String reason) {
+    public void reportVideo(String email, UUID videoPublicId, String reason) {
         getUser(email);
-        Video video = videoService.getVideoOrThrow(videoId);
+        Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
         if (video.getStatus() == VideoStatus.HIDDEN) {
             throw new BadRequestException("Video đã bị ẩn trước đó");
         }

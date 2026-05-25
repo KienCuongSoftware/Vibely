@@ -1,6 +1,7 @@
 package com.vibely.backend.share.redis;
 
 import java.time.Duration;
+import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -26,16 +27,16 @@ public class RedisShareCounterCache {
         this.redisShareProperties = redisShareProperties;
     }
 
-    public void increment(long videoId) {
-        String key = key(videoId);
+    public void increment(UUID videoPublicId) {
+        String key = key(videoPublicId);
         Long value = redis.opsForValue().increment(key);
         if (value != null && value == 1L) {
             redis.expire(key, TTL);
         }
     }
 
-    public long getOrZero(long videoId) {
-        String raw = redis.opsForValue().get(key(videoId));
+    public long getOrZero(UUID videoPublicId) {
+        String raw = redis.opsForValue().get(key(videoPublicId));
         if (raw == null || raw.isBlank()) {
             return 0L;
         }
@@ -46,15 +47,15 @@ public class RedisShareCounterCache {
         }
     }
 
-    public void set(long videoId, long count) {
-        redis.opsForValue().set(key(videoId), String.valueOf(count), TTL);
+    public void set(UUID videoPublicId, long count) {
+        redis.opsForValue().set(key(videoPublicId), String.valueOf(count), TTL);
     }
 
-    public void evict(long videoId) {
-        redis.delete(key(videoId));
+    public void evict(UUID videoPublicId) {
+        redis.delete(key(videoPublicId));
     }
 
-    private String key(long videoId) {
-        return redisShareProperties.prefixed(ShareRedisKeys.VIDEO_SHARE_COUNT + videoId);
+    private String key(UUID videoPublicId) {
+        return redisShareProperties.prefixed(ShareRedisKeys.VIDEO_SHARE_COUNT + videoPublicId);
     }
 }

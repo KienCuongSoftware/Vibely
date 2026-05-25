@@ -12,6 +12,7 @@ import com.vibely.backend.share.ShortLinkCacheEntry;
 import com.vibely.backend.share.ShortLinkStatus;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,13 +45,14 @@ class RedisShortLinkCacheTest {
 
     @Test
     void get_deserializesCachedPayload() {
+        UUID publicId = UUID.fromString("018fc2c7-f2e9-7a41-b9d7-0123456789ab");
         when(valueOps.get("vibely:sl:abc123"))
-            .thenReturn("{\"videoId\":29,\"shortCode\":\"abc123\",\"status\":\"ACTIVE\"}");
+            .thenReturn("{\"videoPublicId\":\"" + publicId + "\",\"shortCode\":\"abc123\",\"status\":\"ACTIVE\"}");
 
         Optional<ShortLinkCacheEntry> entry = cache.get("abc123");
 
         assertThat(entry).isPresent();
-        assertThat(entry.get().videoId()).isEqualTo(29L);
+        assertThat(entry.get().videoPublicId()).isEqualTo(publicId);
         assertThat(entry.get().status()).isEqualTo(ShortLinkStatus.ACTIVE);
     }
 

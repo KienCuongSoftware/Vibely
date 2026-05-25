@@ -1,5 +1,6 @@
 package com.vibely.backend.config;
 
+import java.util.UUID;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -20,20 +21,20 @@ public class AppUrlProperties {
         return stripTrailingSlash(shortLinkBaseUrl);
     }
 
-    public String watchUrl(long videoId) {
-        return normalizedFrontendBaseUrl() + "/watch/" + videoId;
+    public String watchUrl(UUID videoPublicId) {
+        return normalizedFrontendBaseUrl() + "/watch/" + videoPublicId;
     }
 
-    public String embedUrl(long videoId) {
-        return normalizedFrontendBaseUrl() + "/embed/" + videoId;
+    public String embedUrl(UUID videoPublicId) {
+        return normalizedFrontendBaseUrl() + "/embed/" + videoPublicId;
     }
 
     public String shortUrl(String shortCode) {
         return normalizedShortLinkBaseUrl() + "/v/" + shortCode;
     }
 
-    public String deepLink(long videoId) {
-        return deepLinkScheme + "://video/" + videoId;
+    public String deepLink(UUID videoPublicId) {
+        return deepLinkScheme + "://video/" + videoPublicId;
     }
 
     private static String stripTrailingSlash(String raw) {

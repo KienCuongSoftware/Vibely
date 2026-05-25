@@ -5,6 +5,7 @@ import com.vibely.backend.video.VideoRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -116,12 +117,12 @@ public class ShareAsyncRecorder {
 
     @Async("shareTaskExecutor")
     @Transactional
-    public void bumpVideoShareCount(long videoId) {
+    public void bumpVideoShareCount(long videoId, UUID videoPublicId) {
         try {
             videoRepository.incrementShareCount(videoId, com.vibely.backend.video.VideoStatus.READY);
-            shareCounterCache.ifAvailable(cache -> cache.increment(videoId));
+            shareCounterCache.ifAvailable(cache -> cache.increment(videoPublicId));
         } catch (Exception ex) {
-            log.warn("Failed to increment share_count videoId={}", videoId, ex);
+            log.warn("Failed to increment share_count videoPublicId={}", videoPublicId, ex);
         }
     }
 

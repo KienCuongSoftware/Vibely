@@ -1,5 +1,6 @@
 package com.vibely.backend.share;
 
+import com.vibely.backend.common.UuidV7;
 import com.vibely.backend.video.Video;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

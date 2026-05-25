@@ -1,6 +1,7 @@
 package com.vibely.backend.interaction;
 
 import com.vibely.backend.common.ApiResponse;
+import com.vibely.backend.video.VideoPublicIds;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -25,77 +26,92 @@ public class InteractionController {
         this.interactionService = interactionService;
     }
 
-    @PostMapping("/videos/{videoId}/likes")
+    @PostMapping("/videos/{publicId}/likes")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<ApiResponse<Void>> likeVideo(Authentication authentication, @PathVariable Long videoId) {
-        interactionService.likeVideo(authentication.getName(), videoId);
+    public ResponseEntity<ApiResponse<Void>> likeVideo(
+        Authentication authentication,
+        @PathVariable String publicId
+    ) {
+        interactionService.likeVideo(authentication.getName(), VideoPublicIds.parse(publicId));
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @DeleteMapping("/videos/{videoId}/likes")
+    @DeleteMapping("/videos/{publicId}/likes")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<ApiResponse<Void>> unlikeVideo(Authentication authentication, @PathVariable Long videoId) {
-        interactionService.unlikeVideo(authentication.getName(), videoId);
+    public ResponseEntity<ApiResponse<Void>> unlikeVideo(
+        Authentication authentication,
+        @PathVariable String publicId
+    ) {
+        interactionService.unlikeVideo(authentication.getName(), VideoPublicIds.parse(publicId));
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @PostMapping("/videos/{videoId}/bookmarks")
+    @PostMapping("/videos/{publicId}/bookmarks")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<ApiResponse<Void>> bookmarkVideo(Authentication authentication, @PathVariable Long videoId) {
-        interactionService.bookmarkVideo(authentication.getName(), videoId);
+    public ResponseEntity<ApiResponse<Void>> bookmarkVideo(
+        Authentication authentication,
+        @PathVariable String publicId
+    ) {
+        interactionService.bookmarkVideo(authentication.getName(), VideoPublicIds.parse(publicId));
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @DeleteMapping("/videos/{videoId}/bookmarks")
+    @DeleteMapping("/videos/{publicId}/bookmarks")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<Void>> unbookmarkVideo(
         Authentication authentication,
-        @PathVariable Long videoId
+        @PathVariable String publicId
     ) {
-        interactionService.unbookmarkVideo(authentication.getName(), videoId);
+        interactionService.unbookmarkVideo(authentication.getName(), VideoPublicIds.parse(publicId));
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @GetMapping("/videos/{videoId}/me")
+    @GetMapping("/videos/{publicId}/me")
     @PreAuthorize("hasRole('USER')")
     public ApiResponse<VideoMeStateResponse> videoMeState(
         Authentication authentication,
-        @PathVariable Long videoId
+        @PathVariable String publicId
     ) {
-        return ApiResponse.success(interactionService.getVideoMeState(authentication.getName(), videoId));
+        return ApiResponse.success(
+            interactionService.getVideoMeState(authentication.getName(), VideoPublicIds.parse(publicId))
+        );
     }
 
-    @PostMapping("/videos/{videoId}/comments")
+    @PostMapping("/videos/{publicId}/comments")
     @PreAuthorize("hasRole('USER')")
     public ApiResponse<CommentResponse> addComment(
         Authentication authentication,
-        @PathVariable Long videoId,
+        @PathVariable String publicId,
         @Valid @RequestBody CommentCreateRequest request
     ) {
         return ApiResponse.success(
             interactionService.addComment(
                 authentication.getName(),
-                videoId,
+                VideoPublicIds.parse(publicId),
                 request.getContent(),
                 request.getParentCommentId()
             )
         );
     }
 
-    @DeleteMapping("/videos/{videoId}/comments/{commentId}")
+    @DeleteMapping("/videos/{publicId}/comments/{commentId}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<Void>> deleteComment(
         Authentication authentication,
-        @PathVariable Long videoId,
+        @PathVariable String publicId,
         @PathVariable Long commentId
     ) {
-        interactionService.deleteComment(authentication.getName(), videoId, commentId);
+        interactionService.deleteComment(
+            authentication.getName(),
+            VideoPublicIds.parse(publicId),
+            commentId
+        );
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @GetMapping("/videos/{videoId}/comments")
+    @GetMapping("/videos/{publicId}/comments")
     public ApiResponse<List<CommentResponse>> getComments(
-        @PathVariable Long videoId,
+        @PathVariable String publicId,
         Authentication authentication
     ) {
         String viewerEmail = null;
@@ -104,7 +120,9 @@ public class InteractionController {
             && !(authentication instanceof AnonymousAuthenticationToken)) {
             viewerEmail = authentication.getName();
         }
-        return ApiResponse.success(interactionService.getComments(videoId, viewerEmail));
+        return ApiResponse.success(
+            interactionService.getComments(VideoPublicIds.parse(publicId), viewerEmail)
+        );
     }
 
     @PostMapping("/follows/{userId}")
@@ -127,14 +145,18 @@ public class InteractionController {
         return ApiResponse.success(interactionService.getMutualFriends(authentication.getName()));
     }
 
-    @PostMapping("/videos/{videoId}/report")
+    @PostMapping("/videos/{publicId}/report")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<Void>> reportVideo(
         Authentication authentication,
-        @PathVariable Long videoId,
+        @PathVariable String publicId,
         @Valid @RequestBody ReportVideoRequest request
     ) {
-        interactionService.reportVideo(authentication.getName(), videoId, request.getReason());
+        interactionService.reportVideo(
+            authentication.getName(),
+            VideoPublicIds.parse(publicId),
+            request.getReason()
+        );
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 }

@@ -5,6 +5,7 @@ import com.vibely.backend.user.User;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoStatus;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,9 @@ public interface LikeRepository extends JpaRepository<LikeEntity, Long> {
     void deleteByUserAndVideo(User user, Video video);
     long countByVideo(Video video);
     long countByVideoId(Long videoId);
+
+    @Query("SELECT l.video.id, COUNT(l) FROM LikeEntity l WHERE l.video.id IN :ids GROUP BY l.video.id")
+    List<Object[]> countGroupedByVideoIds(@Param("ids") Collection<Long> ids);
 
     long countByUser(User user);
     long countByVideo_Author_IdAndVideo_Status(Long authorId, VideoStatus status);

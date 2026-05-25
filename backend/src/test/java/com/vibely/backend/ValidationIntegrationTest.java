@@ -49,7 +49,8 @@ class ValidationIntegrationTest {
             {
               "username":"comment_tester",
               "email":"comment@vibely.dev",
-              "password":"secret123"
+              "password":"secret123",
+              "birthDate":"2000-01-15"
             }
             """;
 
@@ -72,7 +73,7 @@ class ValidationIntegrationTest {
             }
             """;
 
-        long videoId = objectMapper.readTree(
+        String videoPublicId = objectMapper.readTree(
                 mockMvc.perform(
                         post("/api/videos")
                             .header("Authorization", "Bearer " + token)
@@ -85,11 +86,11 @@ class ValidationIntegrationTest {
                     .getContentAsString()
             )
             .get("data")
-            .get("id")
-            .asLong();
+            .get("publicId")
+            .asText();
 
         mockMvc.perform(
-                post("/api/videos/" + videoId + "/comments")
+                post("/api/videos/" + videoPublicId + "/comments")
                     .header("Authorization", "Bearer " + token)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"content\":\"   \"}")

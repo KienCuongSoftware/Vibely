@@ -4,6 +4,7 @@ import com.vibely.backend.studio.DailyCountProjection;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoStatus;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +15,9 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
     List<CommentEntity> findByVideoOrderByCreatedAtDesc(Video video);
     long countByVideo(Video video);
     long countByVideoId(Long videoId);
+
+    @Query("SELECT c.video.id, COUNT(c) FROM CommentEntity c WHERE c.video.id IN :ids GROUP BY c.video.id")
+    List<Object[]> countGroupedByVideoIds(@Param("ids") Collection<Long> ids);
 
     @Query("""
         select count(c) from CommentEntity c

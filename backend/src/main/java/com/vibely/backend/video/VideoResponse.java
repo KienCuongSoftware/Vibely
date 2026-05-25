@@ -1,9 +1,10 @@
 package com.vibely.backend.video;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record VideoResponse(
-    Long id,
+    UUID publicId,
     Long authorId,
     String authorUsername,
     String authorDisplayName,

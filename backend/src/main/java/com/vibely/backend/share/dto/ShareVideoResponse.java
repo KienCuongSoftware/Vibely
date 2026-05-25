@@ -1,7 +1,9 @@
 package com.vibely.backend.share.dto;
 
+import java.util.UUID;
+
 public record ShareVideoResponse(
-    long videoId,
+    UUID publicId,
     String shortCode,
     String shortUrl,
     String watchUrl,

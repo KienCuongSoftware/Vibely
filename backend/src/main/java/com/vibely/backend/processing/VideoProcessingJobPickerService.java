@@ -48,6 +48,7 @@ public class VideoProcessingJobPickerService {
             new VideoPipelineWorkItem(
                 job.getId(),
                 video.getId(),
+                video.getPublicId(),
                 video.getAuthor().getId(),
                 video.getVideoUrl(),
                 video.getThumbnailUrl()

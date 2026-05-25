@@ -4,6 +4,7 @@ import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.share.dto.ShareAnalyticsResponse;
 import com.vibely.backend.share.dto.ShareVideoRequest;
 import com.vibely.backend.share.dto.ShareVideoResponse;
+import com.vibely.backend.video.VideoPublicIds;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,29 +27,34 @@ public class ShareV1Controller {
         this.shareService = shareService;
     }
 
-    @PostMapping("/{videoId}/share")
+    @PostMapping("/{publicId}/share")
     @PreAuthorize("hasRole('USER')")
     public ApiResponse<ShareVideoResponse> shareVideo(
-        @PathVariable Long videoId,
+        @PathVariable String publicId,
         Authentication authentication,
         @Valid @RequestBody(required = false) ShareVideoRequest request,
         HttpServletRequest httpRequest
     ) {
         ShareVideoRequest body = request == null ? new ShareVideoRequest(null, null, null) : request;
         return ApiResponse.success(
-            shareService.createShare(videoId, authentication.getName(), body, httpRequest)
+            shareService.createShare(
+                VideoPublicIds.parse(publicId),
+                authentication.getName(),
+                body,
+                httpRequest
+            )
         );
     }
 
-    @GetMapping("/{videoId}/share/analytics")
+    @GetMapping("/{publicId}/share/analytics")
     @PreAuthorize("hasRole('USER')")
     public ApiResponse<ShareAnalyticsResponse> shareAnalytics(
-        @PathVariable Long videoId,
+        @PathVariable String publicId,
         Authentication authentication,
         @RequestParam(defaultValue = "7") int days
     ) {
         return ApiResponse.success(
-            shareService.getAnalytics(videoId, authentication.getName(), days)
+            shareService.getAnalytics(VideoPublicIds.parse(publicId), authentication.getName(), days)
         );
     }
 }

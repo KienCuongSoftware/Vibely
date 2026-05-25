@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +47,7 @@ public class RedirectService {
 
         Optional<ShortLinkCacheEntry> cached = shortLinkCache.get(normalized);
         if (cached.isPresent() && cached.get().isActive()) {
-            sendRedirect(cached.get().videoId(), normalized, null, request, response);
+            sendRedirect(cached.get().videoPublicId(), normalized, null, request, response);
             return;
         }
 
@@ -64,22 +65,22 @@ public class RedirectService {
         }
 
         shortLinkCache.put(new ShortLinkCacheEntry(
-            link.getVideo().getId(),
+            link.getVideo().getPublicId(),
             link.getShortCode(),
             link.getStatus()
         ));
 
-        sendRedirect(link.getVideo().getId(), normalized, link, request, response);
+        sendRedirect(link.getVideo().getPublicId(), normalized, link, request, response);
     }
 
     private void sendRedirect(
-        long videoId,
+        UUID videoPublicId,
         String shortCode,
         ShortLink linkForAnalytics,
         HttpServletRequest request,
         HttpServletResponse response
     ) throws IOException {
-        String target = appUrlProperties.watchUrl(videoId)
+        String target = appUrlProperties.watchUrl(videoPublicId)
             + "?ref=sl&code=" + shortCode;
         response.setStatus(HttpStatus.FOUND.value());
         response.setHeader("Location", target);

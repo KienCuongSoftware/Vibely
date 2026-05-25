@@ -4,6 +4,8 @@ import com.vibely.backend.user.User;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoStatus;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,6 +17,9 @@ public interface VideoBookmarkRepository extends JpaRepository<VideoBookmarkEnti
     boolean existsByUserAndVideo(User user, Video video);
 
     long countByVideo_Id(Long videoId);
+
+    @Query("SELECT b.video.id, COUNT(b) FROM VideoBookmarkEntity b WHERE b.video.id IN :ids GROUP BY b.video.id")
+    List<Object[]> countGroupedByVideoIds(@Param("ids") Collection<Long> ids);
 
     void deleteByUserAndVideo(User user, Video video);
 

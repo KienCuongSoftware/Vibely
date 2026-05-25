@@ -37,7 +37,8 @@ class ApiFlowIntegrationTest {
               "username":"demo_user",
               "email":"demo@vibely.dev",
               "password":"secret123",
-              "bio":"hello"
+              "bio":"hello",
+              "birthDate":"2000-01-15"
             }
             """;
 
@@ -72,13 +73,16 @@ class ApiFlowIntegrationTest {
                     .content(videoPayload)
             )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data.id").isNumber())
+            .andExpect(jsonPath("$.data.publicId").isNotEmpty())
             .andReturn();
 
-        long videoId = objectMapper.readTree(videoResult.getResponse().getContentAsString())
+        String videoPublicId = objectMapper.readTree(videoResult.getResponse().getContentAsString())
             .get("data")
-            .get("id")
-            .asLong();
+            .get("publicId")
+            .asText();
+
+        mockMvc.perform(get("/api/videos/123"))
+            .andExpect(status().isBadRequest());
 
         mockMvc.perform(get("/api/feed?page=0&size=10&sort=latest"))
             .andExpect(status().isOk())
@@ -91,19 +95,19 @@ class ApiFlowIntegrationTest {
             .andExpect(jsonPath("$.data.sort").value("trending_lite"));
 
         mockMvc.perform(
-                post("/api/videos/" + videoId + "/likes")
+                post("/api/videos/" + videoPublicId + "/likes")
                     .header("Authorization", "Bearer " + token)
             )
             .andExpect(status().isOk());
 
         mockMvc.perform(
-                post("/api/videos/" + videoId + "/bookmarks")
+                post("/api/videos/" + videoPublicId + "/bookmarks")
                     .header("Authorization", "Bearer " + token)
             )
             .andExpect(status().isOk());
 
         mockMvc.perform(
-                get("/api/videos/" + videoId + "/me")
+                get("/api/videos/" + videoPublicId + "/me")
                     .header("Authorization", "Bearer " + token)
             )
             .andExpect(status().isOk())
@@ -133,7 +137,7 @@ class ApiFlowIntegrationTest {
             .andExpect(jsonPath("$.data.items[0].title").value("First Vibely Clip"));
 
         mockMvc.perform(
-                get("/api/studio/analytics/video/" + videoId + "?days=7")
+                get("/api/studio/analytics/video/" + videoPublicId + "?days=7")
                     .header("Authorization", "Bearer " + token)
             )
             .andExpect(status().isOk())
@@ -143,7 +147,7 @@ class ApiFlowIntegrationTest {
             .andExpect(jsonPath("$.data.periodLikes").exists())
             .andExpect(jsonPath("$.data.periodComments").exists())
             .andExpect(jsonPath("$.data.periodBookmarks").exists())
-            .andExpect(jsonPath("$.data.video.id").value((int) videoId))
+            .andExpect(jsonPath("$.data.video.publicId").value(videoPublicId))
             .andExpect(jsonPath("$.data.video.title").value("First Vibely Clip"))
             .andExpect(jsonPath("$.data.points").isArray())
             .andExpect(jsonPath("$.data.playbackSampleSize").exists())
@@ -151,59 +155,59 @@ class ApiFlowIntegrationTest {
             .andExpect(jsonPath("$.data.trafficSources").isArray())
             .andExpect(jsonPath("$.data.searchKeywords").isArray());
 
-        mockMvc.perform(get("/api/videos/" + videoId))
+        mockMvc.perform(get("/api/videos/" + videoPublicId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.viewCount").value(0));
 
-        mockMvc.perform(post("/api/videos/" + videoId + "/views"))
+        mockMvc.perform(post("/api/videos/" + videoPublicId + "/views"))
             .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/videos/" + videoId))
+        mockMvc.perform(get("/api/videos/" + videoPublicId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.viewCount").value(0));
 
         mockMvc.perform(
-                post("/api/videos/" + videoId + "/views")
+                post("/api/videos/" + videoPublicId + "/views")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"watchedMs\":500}")
             )
             .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/videos/" + videoId))
+        mockMvc.perform(get("/api/videos/" + videoPublicId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.viewCount").value(0));
 
         mockMvc.perform(
-                post("/api/videos/" + videoId + "/views")
+                post("/api/videos/" + videoPublicId + "/views")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"watchedMs\":2500,\"durationMs\":10000}")
             )
             .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/videos/" + videoId))
+        mockMvc.perform(get("/api/videos/" + videoPublicId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.viewCount").value(1));
 
         mockMvc.perform(
-                post("/api/videos/" + videoId + "/views")
+                post("/api/videos/" + videoPublicId + "/views")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"watchedMs\":3000,\"durationMs\":10000}")
             )
             .andExpect(status().isOk());
 
         mockMvc.perform(
-                post("/api/videos/" + videoId + "/views")
+                post("/api/videos/" + videoPublicId + "/views")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"watched_ms\":4000,\"duration_ms\":10000}")
             )
             .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/videos/" + videoId))
+        mockMvc.perform(get("/api/videos/" + videoPublicId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.viewCount").value(3));
 
         mockMvc.perform(
-                get("/api/studio/analytics/video/" + videoId + "?days=7")
+                get("/api/studio/analytics/video/" + videoPublicId + "?days=7")
                     .header("Authorization", "Bearer " + token)
             )
             .andExpect(status().isOk())
@@ -218,7 +222,7 @@ class ApiFlowIntegrationTest {
             .andExpect(jsonPath("$.data.items[0].title").value("First Vibely Clip"));
 
         mockMvc.perform(
-                put("/api/videos/" + videoId)
+                put("/api/videos/" + videoPublicId)
                     .header("Authorization", "Bearer " + token)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"title\":\"Updated title\",\"description\":\"new desc\"}")
@@ -227,7 +231,7 @@ class ApiFlowIntegrationTest {
             .andExpect(jsonPath("$.data.title").value("Updated title"));
 
         mockMvc.perform(
-                post("/api/videos/" + videoId + "/comments")
+                post("/api/videos/" + videoPublicId + "/comments")
                     .header("Authorization", "Bearer " + token)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"content\":\"Great!\"}")
@@ -235,14 +239,14 @@ class ApiFlowIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.content").value("Great!"));
 
-        mockMvc.perform(get("/api/videos/" + videoId + "/comments"))
+        mockMvc.perform(get("/api/videos/" + videoPublicId + "/comments"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data[0].content").value("Great!"));
 
-        mockMvc.perform(post("/api/videos/" + videoId + "/shares"))
+        mockMvc.perform(post("/api/videos/" + videoPublicId + "/shares"))
             .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/videos/" + videoId))
+        mockMvc.perform(get("/api/videos/" + videoPublicId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.shareCount").value(1));
 
@@ -277,13 +281,13 @@ class ApiFlowIntegrationTest {
         assertThat(refreshedAccessToken).isNotBlank();
 
         mockMvc.perform(
-                delete("/api/videos/" + videoId + "/likes")
+                delete("/api/videos/" + videoPublicId + "/likes")
                     .header("Authorization", "Bearer " + token)
             )
             .andExpect(status().isOk());
 
         mockMvc.perform(
-                get("/api/videos/" + videoId + "/me")
+                get("/api/videos/" + videoPublicId + "/me")
                     .header("Authorization", "Bearer " + token)
             )
             .andExpect(status().isOk())
@@ -298,7 +302,7 @@ class ApiFlowIntegrationTest {
             .andExpect(jsonPath("$.data.items").isEmpty());
 
         mockMvc.perform(
-                delete("/api/videos/" + videoId + "/bookmarks")
+                delete("/api/videos/" + videoPublicId + "/bookmarks")
                     .header("Authorization", "Bearer " + token)
             )
             .andExpect(status().isOk());
@@ -311,7 +315,7 @@ class ApiFlowIntegrationTest {
             .andExpect(jsonPath("$.data.items").isEmpty());
 
         mockMvc.perform(
-                post("/api/videos/" + videoId + "/report")
+                post("/api/videos/" + videoPublicId + "/report")
                     .header("Authorization", "Bearer " + token)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"reason\":\"unsafe content\"}")
@@ -323,12 +327,12 @@ class ApiFlowIntegrationTest {
             .andExpect(jsonPath("$.data.items").isEmpty());
 
         mockMvc.perform(
-                delete("/api/videos/" + videoId)
+                delete("/api/videos/" + videoPublicId)
                     .header("Authorization", "Bearer " + token)
             )
             .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/videos/" + videoId))
+        mockMvc.perform(get("/api/videos/" + videoPublicId))
             .andExpect(status().isNotFound());
 
         mockMvc.perform(

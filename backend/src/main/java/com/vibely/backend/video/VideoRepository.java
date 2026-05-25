@@ -2,6 +2,8 @@ package com.vibely.backend.video;
 
 import com.vibely.backend.user.User;
 import java.util.Collection;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,9 +13,28 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface VideoRepository extends JpaRepository<Video, Long> {
+    Optional<Video> findByPublicId(UUID publicId);
+
+    @Query("SELECT v.author.id FROM Video v WHERE v.publicId = :publicId")
+    Optional<Long> findAuthorIdByPublicId(@Param("publicId") UUID publicId);
+
     Page<Video> findByStatusOrderByCreatedAtDesc(VideoStatus status, Pageable pageable);
     Page<Video> findByAuthorInAndStatusOrderByCreatedAtDesc(Collection<User> authors, VideoStatus status, Pageable pageable);
     Page<Video> findByAudioUrlAndStatusOrderByCreatedAtDesc(String audioUrl, VideoStatus status, Pageable pageable);
+
+    /** Khớp URL âm thanh canonical hoặc cùng S3 object key (presigned GET có query khác). */
+    @Query("""
+        select v from Video v
+        where v.status = :status
+        and (v.audioUrl = :exactUrl or v.audioUrl like concat('%', :audioKey))
+        order by v.createdAt desc
+        """)
+    Page<Video> findByAudioUrlOrKeyEndingAndStatus(
+        @Param("exactUrl") String exactUrl,
+        @Param("audioKey") String audioKey,
+        @Param("status") VideoStatus status,
+        Pageable pageable
+    );
 
     @Query("""
         select v from Video v
@@ -56,13 +77,19 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     java.util.Optional<Long> findAuthorIdById(@Param("id") Long id);
 
     @Query("""
-        select v from Video v
+        select v from Video v join fetch v.author
         where v.status = :status
-        and (
-            :cTime is null
-            or v.createdAt < :cTime
-            or (v.createdAt = :cTime and v.id < :cId)
-        )
+        order by v.createdAt desc, v.id desc
+        """)
+    Page<Video> findReadyFeedFirstPage(
+        @Param("status") VideoStatus status,
+        Pageable pageable
+    );
+
+    @Query("""
+        select v from Video v join fetch v.author
+        where v.status = :status
+        and (v.createdAt < :cTime or (v.createdAt = :cTime and v.id < :cId))
         order by v.createdAt desc, v.id desc
         """)
     Page<Video> findReadyFeedKeyset(

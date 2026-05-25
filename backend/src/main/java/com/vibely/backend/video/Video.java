@@ -1,5 +1,6 @@
 package com.vibely.backend.video;
 
+import com.vibely.backend.common.UuidV7;
 import com.vibely.backend.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +15,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "videos")
@@ -22,6 +24,9 @@ public class Video {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "public_id", nullable = false, unique = true, updatable = false)
+    private UUID publicId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "author_id", nullable = false)
@@ -79,6 +84,9 @@ public class Video {
 
     @PrePersist
     void prePersist() {
+        if (publicId == null) {
+            publicId = UuidV7.generate();
+        }
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
@@ -89,6 +97,10 @@ public class Video {
 
     public Long getId() {
         return id;
+    }
+
+    public UUID getPublicId() {
+        return publicId;
     }
 
     public User getAuthor() {

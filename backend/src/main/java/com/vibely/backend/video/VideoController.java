@@ -6,6 +6,7 @@ import com.vibely.backend.storage.PresignedUploadResponse;
 import com.vibely.backend.storage.S3PresignedUploadService;
 import com.vibely.backend.storage.VideoPresignRequest;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -46,18 +47,19 @@ public class VideoController {
         return ApiResponse.success(videoService.createVideo(authentication.getName(), request));
     }
 
-    @GetMapping("/{videoId}")
+    @GetMapping("/{publicId}")
     public ApiResponse<VideoResponse> getVideo(
-        @PathVariable Long videoId,
+        @PathVariable String publicId,
         Authentication authentication
     ) {
+        UUID videoPublicId = VideoPublicIds.parse(publicId);
         String viewerEmail = null;
         if (authentication != null
             && authentication.isAuthenticated()
             && !(authentication instanceof AnonymousAuthenticationToken)) {
             viewerEmail = authentication.getName();
         }
-        return ApiResponse.success(videoService.getVideoByIdForViewer(videoId, viewerEmail));
+        return ApiResponse.success(videoService.getVideoByPublicIdForViewer(videoPublicId, viewerEmail));
     }
 
     @GetMapping("/sound")
@@ -69,20 +71,22 @@ public class VideoController {
         return ApiResponse.success(videoService.getVideosByAudio(audioUrl, page, size));
     }
 
-    @PutMapping("/{videoId}")
+    @PutMapping("/{publicId}")
     @PreAuthorize("hasRole('USER')")
     public ApiResponse<VideoResponse> updateVideo(
         Authentication authentication,
-        @PathVariable Long videoId,
+        @PathVariable String publicId,
         @Valid @RequestBody VideoUpdateRequest request
     ) {
-        return ApiResponse.success(videoService.updateVideo(authentication.getName(), videoId, request));
+        return ApiResponse.success(
+            videoService.updateVideo(authentication.getName(), VideoPublicIds.parse(publicId), request)
+        );
     }
 
-    @DeleteMapping("/{videoId}")
+    @DeleteMapping("/{publicId}")
     @PreAuthorize("hasRole('USER')")
-    public ApiResponse<Void> deleteVideo(Authentication authentication, @PathVariable Long videoId) {
-        videoService.deleteVideo(authentication.getName(), videoId);
+    public ApiResponse<Void> deleteVideo(Authentication authentication, @PathVariable String publicId) {
+        videoService.deleteVideo(authentication.getName(), VideoPublicIds.parse(publicId));
         return ApiResponse.success(null);
     }
 
@@ -121,18 +125,18 @@ public class VideoController {
         return ApiResponse.success(svc.presignThumbnail(authentication.getName(), request));
     }
 
-    @PostMapping("/{videoId}/views")
+    @PostMapping("/{publicId}/views")
     public ApiResponse<Void> recordView(
-        @PathVariable Long videoId,
+        @PathVariable String publicId,
         @RequestBody(required = false) VideoViewRequest body
     ) {
-        videoService.recordView(videoId, body);
+        videoService.recordView(VideoPublicIds.parse(publicId), body);
         return ApiResponse.success(null);
     }
 
-    @PostMapping("/{videoId}/shares")
-    public ApiResponse<Void> recordShare(@PathVariable Long videoId) {
-        videoService.recordShare(videoId);
+    @PostMapping("/{publicId}/shares")
+    public ApiResponse<Void> recordShare(@PathVariable String publicId) {
+        videoService.recordShare(VideoPublicIds.parse(publicId));
         return ApiResponse.success(null);
     }
 }

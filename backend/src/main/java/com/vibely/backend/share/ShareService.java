@@ -17,6 +17,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,12 +63,12 @@ public class ShareService {
 
     @Transactional
     public ShareVideoResponse createShare(
-        Long videoId,
+        UUID videoPublicId,
         String userEmail,
         ShareVideoRequest request,
         HttpServletRequest httpRequest
     ) {
-        Video video = videoRepository.findById(videoId)
+        Video video = videoRepository.findByPublicId(videoPublicId)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
         if (video.getStatus() != VideoStatus.READY) {
             throw new BadRequestException("Video chưa sẵn sàng để chia sẻ");
@@ -112,20 +113,19 @@ public class ShareService {
 
         shareAsyncRecorder.recordShareCreated(share);
         videoRepository.incrementShareCount(video.getId(), VideoStatus.READY);
-        Video refreshed = videoRepository.findById(videoId).orElse(video);
-        long shareVideoId = refreshed.getId();
-        shareCounterCache.ifAvailable(cache -> cache.increment(shareVideoId));
+        Video refreshed = videoRepository.findByPublicId(videoPublicId).orElse(video);
+        shareCounterCache.ifAvailable(cache -> cache.increment(refreshed.getPublicId()));
 
         return toResponse(refreshed, link);
     }
 
     @Transactional(readOnly = true)
-    public ShareAnalyticsResponse getAnalytics(Long videoId, String requesterEmail, int days) {
-        Video video = videoRepository.findById(videoId)
+    public ShareAnalyticsResponse getAnalytics(UUID videoPublicId, String requesterEmail, int days) {
+        Video video = videoRepository.findByPublicId(videoPublicId)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
         User requester = userRepository.findByEmail(requesterEmail)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
-        Long authorId = videoRepository.findAuthorIdById(videoId)
+        Long authorId = videoRepository.findAuthorIdByPublicId(videoPublicId)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
         if (!authorId.equals(requester.getId())) {
             throw new BadRequestException("Bạn không có quyền xem analytics video này");
@@ -133,9 +133,10 @@ public class ShareService {
 
         int windowDays = Math.max(1, Math.min(days, 90));
         OffsetDateTime since = OffsetDateTime.now().minusDays(windowDays);
+        long internalVideoId = video.getId();
 
         List<ShareAnalyticsBucketResponse> buckets = new ArrayList<>();
-        for (Object[] row : shareAnalyticsRepository.aggregateSinceRaw(videoId, since)) {
+        for (Object[] row : shareAnalyticsRepository.aggregateSinceRaw(internalVideoId, since)) {
             buckets.add(new ShareAnalyticsBucketResponse(
                 stringAt(row, 0),
                 stringAt(row, 1),
@@ -146,10 +147,10 @@ public class ShareService {
         }
 
         return new ShareAnalyticsResponse(
-            videoId,
-            shareAnalyticsRepository.countShareEventsSince(videoId, since),
-            shareAnalyticsRepository.countLinkClicksSince(videoId, since),
-            shareAnalyticsRepository.countUniqueVisitorsSince(videoId, since),
+            video.getPublicId(),
+            shareAnalyticsRepository.countShareEventsSince(internalVideoId, since),
+            shareAnalyticsRepository.countLinkClicksSince(internalVideoId, since),
+            shareAnalyticsRepository.countUniqueVisitorsSince(internalVideoId, since),
             video.getShareCount(),
             buckets
         );
@@ -175,7 +176,7 @@ public class ShareService {
 
     private void warmCache(ShortLink link) {
         shortLinkCache.put(new ShortLinkCacheEntry(
-            link.getVideo().getId(),
+            link.getVideo().getPublicId(),
             link.getShortCode(),
             link.getStatus()
         ));
@@ -183,12 +184,12 @@ public class ShareService {
 
     private ShareVideoResponse toResponse(Video video, ShortLink link) {
         return new ShareVideoResponse(
-            video.getId(),
+            video.getPublicId(),
             link.getShortCode(),
             appUrlProperties.shortUrl(link.getShortCode()),
-            appUrlProperties.watchUrl(video.getId()),
-            appUrlProperties.embedUrl(video.getId()),
-            appUrlProperties.deepLink(video.getId()),
+            appUrlProperties.watchUrl(video.getPublicId()),
+            appUrlProperties.embedUrl(video.getPublicId()),
+            appUrlProperties.deepLink(video.getPublicId()),
             video.getShareCount()
         );
     }
