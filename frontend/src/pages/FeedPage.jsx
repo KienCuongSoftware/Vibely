@@ -41,6 +41,13 @@ import {
 } from "react-icons/io5";
 import { FaComment } from "react-icons/fa6";
 import { MdOutlineFileUpload } from "react-icons/md";
+import {
+  isVideoPublicId,
+  normalizeVideoPublicId,
+  videoPublicIdOf,
+} from "../utils/videoPublicId.js";
+import { FEED_CONFIG } from "../feed/feedConfig.js";
+import { trimFeedItemsIfNeeded } from "../feed/trimFeedItems.js";
 
 const DEFAULT_USER_AVATAR_URL = "/images/users/default-avatar.jpeg";
 
@@ -118,9 +125,17 @@ function resolveFeedAuthorDisplayName(video) {
   return fallback || "Nhà sáng tạo";
 }
 
-function isBackendVideoId(id) {
-  if (id == null) return false;
-  return /^\d+$/.test(String(id));
+function mergeVideosByPublicId(prev, incoming) {
+  const seen = new Set(prev.map((v) => videoPublicIdOf(v)).filter(Boolean));
+  const out = [...prev];
+  for (const raw of incoming) {
+    const item = normalizeVideoItem(raw);
+    const id = videoPublicIdOf(item);
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    out.push(item);
+  }
+  return out;
 }
 
 /** Avatar tác giả từ API; không dùng pravatar (tránh lệch với hồ sơ thật). */
@@ -166,20 +181,6 @@ function normalizeVideoItem(item) {
     shareCount: Number(item.shareCount ?? 0),
     bookmarkCount: Number(item.bookmarkCount ?? 0),
   };
-}
-
-function mergeVideosById(prev, incoming) {
-  const seen = new Set(prev.map((v) => String(v.id)));
-  const out = [...prev];
-  for (const raw of incoming) {
-    const item = normalizeVideoItem(raw);
-    const id = String(item.id);
-    if (!seen.has(id)) {
-      seen.add(id);
-      out.push(item);
-    }
-  }
-  return out;
 }
 
 function FeedChevronNav({
@@ -229,7 +230,7 @@ function FeedChevronNav({
   );
 }
 
-function ForYouFeedPage({ token, user, onLogout }) {
+function ForYouFeedPage({ token, user, onLogout, authReady }) {
   const navigate = useNavigate();
   const location = useLocation();
   const studioNavRef = useRef(null);
@@ -266,15 +267,14 @@ function ForYouFeedPage({ token, user, onLogout }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const accountMenuRef = useRef(null);
   const feedVideoRef = useRef(null);
-  const feedProgressTrackRef = useRef(null);
-  const feedProgressScrubbingRef = useRef(false);
-  /** 0–1; mặc định giữa = âm lượng vừa phải khi bật tiếng. */
-  const [feedVolume, setFeedVolume] = useState(0.5);
-  /** Tắt khi load để autoplay; bật khi user chỉnh slider / icon. */
+  /** 0–1; khi bật tiếng dùng max. */
+  const [feedVolume, setFeedVolume] = useState(1);
+  /** Tắt tiếng mặc định để autoplay ổn định (TikTok-style). */
   const [feedSoundOn, setFeedSoundOn] = useState(false);
   const feedMuted = !feedSoundOn || feedVolume === 0;
-  const [feedProgressPct, setFeedProgressPct] = useState(0);
-  const [feedProgressScrubbing, setFeedProgressScrubbing] = useState(false);
+  /** Trình duyệt chỉ cho autoplay có tiếng sau gesture — tạm mute đến khi user chạm/click. */
+  const [soundUnlocked, setSoundUnlocked] = useState(false);
+  const playbackMuted = feedMuted || (feedSoundOn && !soundUnlocked);
   const [feedMoreMenuOpen, setFeedMoreMenuOpen] = useState(false);
   /** 'main' | 'quality' — màn phụ chọn chất lượng trong menu ⋯ */
   const [feedMoreMenuSubpage, setFeedMoreMenuSubpage] = useState("main");
@@ -292,6 +292,13 @@ function ForYouFeedPage({ token, user, onLogout }) {
   const feedViewQualifySentRef = useRef(new Set());
   const feedViewPlaythroughSentRef = useRef(new Set());
   const playbackFlashTimerRef = useRef(null);
+
+  useEffect(() => {
+    const unlock = () => setSoundUnlocked(true);
+    window.addEventListener("pointerdown", unlock, { once: true, capture: true });
+    return () =>
+      window.removeEventListener("pointerdown", unlock, { capture: true });
+  }, []);
   /** TikTok-style: brief center icon after tap — 'play' | 'pause' */
   const [playbackFlash, setPlaybackFlash] = useState(null);
   /** false cho đến khi lần fetch feed (theo token/menu/location) chạy xong — tránh flash “feed trống” khi reload. */
@@ -301,8 +308,8 @@ function ForYouFeedPage({ token, user, onLogout }) {
 
   useEffect(() => {
     const id =
-      activeVideo?.id != null && isBackendVideoId(activeVideo.id)
-        ? String(activeVideo.id)
+      activeVideo?.publicId != null && isVideoPublicId(activeVideo.publicId)
+        ? String(activeVideo.publicId)
         : null;
     return () => {
       if (id != null) {
@@ -310,7 +317,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
         feedViewPlaythroughSentRef.current.delete(id);
       }
     };
-  }, [activeVideo?.id]);
+  }, [activeVideo?.publicId]);
 
   useEffect(() => {
     setPlaybackFlash(null);
@@ -318,7 +325,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
       clearTimeout(playbackFlashTimerRef.current);
       playbackFlashTimerRef.current = null;
     }
-  }, [activeVideo?.id]);
+  }, [activeVideo?.publicId]);
 
   useEffect(
     () => () => {
@@ -329,11 +336,12 @@ function ForYouFeedPage({ token, user, onLogout }) {
     [],
   );
 
-  const patchVideoById = useCallback((videoId, patch) => {
-    if (videoId == null) return;
+  const patchVideoByPublicId = useCallback((publicId, patch) => {
+    const key = normalizeVideoPublicId(publicId);
+    if (!key) return;
     setVideos((prev) =>
       prev.map((v) =>
-        String(v.id) === String(videoId) ? { ...v, ...patch } : v,
+        videoPublicIdOf(v) === key ? { ...v, ...patch } : v,
       ),
     );
   }, []);
@@ -349,14 +357,14 @@ function ForYouFeedPage({ token, user, onLogout }) {
   }, []);
 
   const handleBookmarkToggle = useCallback(() => {
-    if (!token || !isBackendVideoId(activeVideo?.id)) {
+    if (!token || !isVideoPublicId(activeVideo?.publicId)) {
       setBookmarked((prev) => !prev);
       return;
     }
     const next = !bookmarked;
     const prevBm = Number(activeVideo.bookmarkCount ?? 0);
     setBookmarked(next);
-    patchVideoById(activeVideo.id, {
+    patchVideoByPublicId(activeVideo.publicId, {
       bookmarkCount: Math.max(0, prevBm + (next ? 1 : -1)),
     });
     if (next) {
@@ -366,14 +374,14 @@ function ForYouFeedPage({ token, user, onLogout }) {
       setBookmarkManageOpen(false);
     }
     const req = next
-      ? apiClient.bookmarkVideo(activeVideo.id, token)
-      : apiClient.unbookmarkVideo(activeVideo.id, token);
+      ? apiClient.bookmarkVideo(activeVideo.publicId, token)
+      : apiClient.unbookmarkVideo(activeVideo.publicId, token);
     req.catch(() => {
       setBookmarked(!next);
-      patchVideoById(activeVideo.id, { bookmarkCount: prevBm });
+      patchVideoByPublicId(activeVideo.publicId, { bookmarkCount: prevBm });
       if (next) setBookmarkToastOpen(false);
     });
-  }, [token, activeVideo, bookmarked, patchVideoById]);
+  }, [token, activeVideo, bookmarked, patchVideoByPublicId]);
 
   const loadMoreFeed = useCallback(async () => {
     if (activeMenu === "following") return;
@@ -381,13 +389,20 @@ function ForYouFeedPage({ token, user, onLogout }) {
     loadMoreLockRef.current = true;
     try {
       const response = await apiClient.getFeed({
-        size: 8,
+        size: FEED_CONFIG.PAGE_SIZE,
         sort: "latest",
         cursor: nextCursor,
       });
       const items = response?.items ?? [];
       const chunk = items.map(normalizeVideoItem);
-      setVideos((prev) => mergeVideosById(prev, chunk));
+      setVideos((prev) => {
+        const merged = mergeVideosByPublicId(prev, chunk);
+        const trimmed = trimFeedItemsIfNeeded(merged, activeIndex);
+        if (trimmed.activeIndex !== activeIndex) {
+          queueMicrotask(() => setActiveIndex(trimmed.activeIndex));
+        }
+        return trimmed.items;
+      });
       setHasMoreFeed(Boolean(response?.hasNext));
       setNextCursor(response?.nextCursor ?? null);
     } catch {
@@ -395,20 +410,22 @@ function ForYouFeedPage({ token, user, onLogout }) {
     } finally {
       loadMoreLockRef.current = false;
     }
-  }, [activeMenu, hasMoreFeed, nextCursor]);
+  }, [activeMenu, hasMoreFeed, nextCursor, activeIndex]);
 
   useEffect(() => {
-    const raw = location.state?.focusVideoId;
+    const raw =
+      location.state?.focusVideoPublicId ?? location.state?.focusVideoId;
     if (raw == null && location.state?.openComments == null) return;
-    const idNum = Number(raw);
     studioNavRef.current = {
-      id: Number.isFinite(idNum) ? idNum : null,
+      publicId: normalizeVideoPublicId(raw),
       openComments: Boolean(location.state?.openComments),
     };
     navigate(location.pathname, { replace: true, state: null });
   }, [location.state, location.pathname, navigate]);
 
   useEffect(() => {
+    if (!authReady) return undefined;
+
     let isMounted = true;
     setFeedHydrated(false);
     const params = new URLSearchParams(location.search);
@@ -416,9 +433,8 @@ function ForYouFeedPage({ token, user, onLogout }) {
     let queryFocusId = null;
     let queryOpenComments = false;
     if (rawV != null) {
-      const n = Number(rawV);
-      if (Number.isFinite(n)) {
-        queryFocusId = n;
+      queryFocusId = normalizeVideoPublicId(rawV);
+      if (queryFocusId) {
         queryOpenComments = params.get("comments") === "1";
       }
       const path = location.pathname;
@@ -431,10 +447,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
     if (pending != null) {
       studioNavRef.current = null;
     }
-    const focusId =
-      pending?.id != null && Number.isFinite(pending.id)
-        ? pending.id
-        : queryFocusId;
+    const focusId = pending?.publicId ?? queryFocusId;
     const openComments =
       Boolean(pending?.openComments) || queryOpenComments;
 
@@ -443,7 +456,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
         const request =
           token && activeMenu === "following"
             ? apiClient.getFollowingFeed(token, { page: 0, size: 8 })
-            : apiClient.getFeed({ size: 8, sort: "latest" });
+            : apiClient.getFeed({ size: FEED_CONFIG.PAGE_SIZE, sort: "latest" });
 
         try {
           const response = await request;
@@ -508,7 +521,9 @@ function ForYouFeedPage({ token, user, onLogout }) {
           }
 
           if (focusId != null) {
-            const has = normalized.some((v) => String(v.id) === String(focusId));
+            const has = normalized.some(
+              (v) => videoPublicIdOf(v) === focusId,
+            );
             if (!has) {
               try {
                 const one = await apiClient.getVideo(focusId, { token });
@@ -518,7 +533,9 @@ function ForYouFeedPage({ token, user, onLogout }) {
                 /* không tải được video (đã gỡ / lỗi mạng) */
               }
             }
-            const idx = normalized.findIndex((v) => String(v.id) === String(focusId));
+            const idx = normalized.findIndex(
+              (v) => videoPublicIdOf(v) === focusId,
+            );
             if (idx >= 0) {
               setActiveIndex(idx);
               if (openComments) setFeedCommentsOpen(true);
@@ -569,7 +586,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
     return () => {
       isMounted = false;
     };
-  }, [token, activeMenu, location.key, navigate, location.pathname]);
+  }, [authReady, token, activeMenu, location.key, navigate, location.pathname]);
 
   useEffect(() => {
     setActiveIndex((idx) => {
@@ -595,12 +612,12 @@ function ForYouFeedPage({ token, user, onLogout }) {
   }, [activeIndex]);
 
   useEffect(() => {
-    if (!token || !isBackendVideoId(activeVideo?.id)) {
+    if (!authReady || !token || !isVideoPublicId(activeVideo?.publicId)) {
       return;
     }
     let cancelled = false;
     apiClient
-      .getVideoMeState(activeVideo.id, token)
+      .getVideoMeState(activeVideo.publicId, token)
       .then((s) => {
         if (!cancelled) {
           setLiked(Boolean(s?.liked));
@@ -616,7 +633,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
     return () => {
       cancelled = true;
     };
-  }, [token, activeVideo?.id]);
+  }, [authReady, token, activeVideo?.publicId]);
 
   useEffect(() => {
     setCommentDraft("");
@@ -627,11 +644,11 @@ function ForYouFeedPage({ token, user, onLogout }) {
   }, [activeIndex]);
 
   useEffect(() => {
-    if (!feedCommentsOpen || !isBackendVideoId(activeVideo?.id)) {
+    if (!feedCommentsOpen || !isVideoPublicId(activeVideo?.publicId)) {
       return undefined;
     }
     let cancelled = false;
-    const vid = activeVideo.id;
+    const vid = activeVideo.publicId;
     setFeedCommentsLoading(true);
     setFeedCommentsError("");
     apiClient
@@ -653,7 +670,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
     return () => {
       cancelled = true;
     };
-  }, [feedCommentsOpen, activeVideo?.id, token]);
+  }, [feedCommentsOpen, activeVideo?.publicId, token]);
 
   useEffect(() => {
     if (!feedCommentsOpen) setFeedSidePanelTab("comments");
@@ -704,14 +721,8 @@ function ForYouFeedPage({ token, user, onLogout }) {
         /* noop */
       }
     }
-    if (Number.isFinite(dur) && dur > 0) {
-      setFeedProgressPct(
-        Math.min(100, Math.max(0, (el.currentTime / dur) * 100)),
-      );
-    }
-
     const id = String(idAttr);
-    if (!isBackendVideoId(id)) return;
+    if (!isVideoPublicId(id)) return;
 
     const watchedMs = Math.floor(el.currentTime * 1000);
     const durationMs =
@@ -749,26 +760,21 @@ function ForYouFeedPage({ token, user, onLogout }) {
 
   useEffect(() => {
     const el = feedVideoRef.current;
-    if (!el || !activeVideo?.videoUrl) return;
-    setFeedProgressPct(0);
-    el.currentTime = 0;
-    try {
-      const pending = el.play();
-      if (pending !== undefined && typeof pending.catch === "function") {
-        pending.catch(() => {});
-      }
-    } catch {
-      /* autoplay / jsdom */
-    }
-  }, [activeIndex, activeVideo?.id, activeVideo?.videoUrl]);
-
-  useEffect(() => {
-    const el = feedVideoRef.current;
     if (!el) return;
     const v = Math.min(1, Math.max(0, feedVolume));
     el.volume = v;
-    el.muted = feedMuted;
-  }, [feedVolume, feedMuted, activeIndex, activeVideo?.id]);
+    el.muted = playbackMuted;
+  }, [feedVolume, playbackMuted, activeIndex, activeVideo?.publicId]);
+
+  useEffect(() => {
+    if (!soundUnlocked) return undefined;
+    const el = feedVideoRef.current;
+    if (!el) return undefined;
+    el.muted = playbackMuted;
+    el.volume = Math.min(1, Math.max(0, feedVolume));
+    void el.play().catch(() => {});
+    return undefined;
+  }, [soundUnlocked, playbackMuted, feedVolume, activeVideo?.publicId]);
 
   useEffect(() => {
     const el = feedVideoRef.current;
@@ -787,7 +793,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
       el.removeEventListener("playing", onPlay);
       el.removeEventListener("loadeddata", sync);
     };
-  }, [activeIndex, activeVideo?.id, activeVideo?.videoUrl]);
+  }, [activeIndex, activeVideo?.publicId, activeVideo?.videoUrl]);
 
   useEffect(() => {
     if (!showAccountMenu) return undefined;
@@ -899,61 +905,6 @@ function ForYouFeedPage({ token, user, onLogout }) {
       playbackFlashTimerRef.current = null;
     }, 620);
   }, []);
-
-  const seekFeedVideo = useCallback((clientX, trackEl) => {
-    if (!trackEl) return;
-    const rect = trackEl.getBoundingClientRect();
-    const el = feedVideoRef.current;
-    if (!el) return;
-    const w = rect.width;
-    if (!(w > 0)) return;
-
-    let pct = (clientX - rect.left) / w;
-    pct = Math.min(1, Math.max(0, pct));
-
-    if (Number.isFinite(el.duration) && el.duration > 0) {
-      el.currentTime = pct * el.duration;
-    } else if (el.seekable?.length) {
-      try {
-        const end = el.seekable.end(el.seekable.length - 1);
-        if (Number.isFinite(end) && end > 0) el.currentTime = pct * end;
-      } catch {
-        /* noop */
-      }
-    }
-
-    setFeedProgressPct(pct * 100);
-  }, []);
-
-  useEffect(() => {
-    const onMove = (e) => {
-      if (!feedProgressScrubbingRef.current) return;
-      const track = feedProgressTrackRef.current;
-      if (!track) return;
-      if (e.cancelable && e.type === "touchmove") e.preventDefault();
-      const cx =
-        e.type === "touchmove" ? e.touches[0]?.clientX : e.clientX;
-      if (cx == null) return;
-      seekFeedVideo(cx, track);
-    };
-    const onEnd = () => {
-      if (!feedProgressScrubbingRef.current) return;
-      feedProgressScrubbingRef.current = false;
-      setFeedProgressScrubbing(false);
-    };
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onEnd);
-    window.addEventListener("touchmove", onMove, { passive: false });
-    window.addEventListener("touchend", onEnd);
-    window.addEventListener("touchcancel", onEnd);
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onEnd);
-      window.removeEventListener("touchmove", onMove);
-      window.removeEventListener("touchend", onEnd);
-      window.removeEventListener("touchcancel", onEnd);
-    };
-  }, [seekFeedVideo]);
 
   const toggleFeedPictureInPicture = async () => {
     const el = feedVideoRef.current;
@@ -1156,7 +1107,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
                   setFeedVolume={setFeedVolume}
                   feedSoundOn={feedSoundOn}
                   setFeedSoundOn={setFeedSoundOn}
-                  feedMuted={feedMuted}
+                  playbackMuted={playbackMuted}
                   feedMoreMenuOpen={feedMoreMenuOpen}
                   setFeedMoreMenuOpen={setFeedMoreMenuOpen}
                   feedMoreMenuSubpage={feedMoreMenuSubpage}
@@ -1165,13 +1116,6 @@ function ForYouFeedPage({ token, user, onLogout }) {
                   setFeedVideoQuality={setFeedVideoQuality}
                   feedAutoScrollEnabled={feedAutoScrollEnabled}
                   setFeedAutoScrollEnabled={setFeedAutoScrollEnabled}
-                  feedProgressTrackRef={feedProgressTrackRef}
-                  feedProgressPct={feedProgressPct}
-                  setFeedProgressPct={setFeedProgressPct}
-                  feedProgressScrubbingRef={feedProgressScrubbingRef}
-                  feedProgressScrubbing={feedProgressScrubbing}
-                  setFeedProgressScrubbing={setFeedProgressScrubbing}
-                  seekFeedVideo={seekFeedVideo}
                   toggleFeedPlayback={toggleFeedPlayback}
                   toggleFeedPictureInPicture={toggleFeedPictureInPicture}
                   resolveFeedAuthorDisplayName={resolveFeedAuthorDisplayName}
@@ -1209,22 +1153,22 @@ function ForYouFeedPage({ token, user, onLogout }) {
                   aria-pressed={liked}
                   aria-label={liked ? "Bỏ thích" : "Thích"}
                   onClick={() => {
-                    if (!token || !isBackendVideoId(activeVideo?.id)) {
+                    if (!token || !isVideoPublicId(activeVideo?.publicId)) {
                       setLiked((prev) => !prev);
                       return;
                     }
                     const next = !liked;
                     const prevCount = Number(activeVideo.likeCount ?? 0);
                     setLiked(next);
-                    patchVideoById(activeVideo.id, {
+                    patchVideoByPublicId(activeVideo.publicId, {
                       likeCount: Math.max(0, prevCount + (next ? 1 : -1)),
                     });
                     const req = next
-                      ? apiClient.likeVideo(activeVideo.id, token)
-                      : apiClient.unlikeVideo(activeVideo.id, token);
+                      ? apiClient.likeVideo(activeVideo.publicId, token)
+                      : apiClient.unlikeVideo(activeVideo.publicId, token);
                     req.catch(() => {
                       setLiked(!next);
-                      patchVideoById(activeVideo.id, { likeCount: prevCount });
+                      patchVideoByPublicId(activeVideo.publicId, { likeCount: prevCount });
                     });
                   }}
                 >
@@ -1274,7 +1218,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
                   aria-label="Chia sẻ"
                   aria-expanded={shareModalOpen}
                   onClick={() => {
-                    if (!isBackendVideoId(activeVideo?.id)) return;
+                    if (!isVideoPublicId(activeVideo?.publicId)) return;
                     setShareModalOpen(true);
                   }}
                 >
@@ -1301,9 +1245,9 @@ function ForYouFeedPage({ token, user, onLogout }) {
                       .trim()
                       .replace(/^@/, "");
                     if (un) q.set("creatorUsername", un);
-                    const sid = activeVideo?.id;
-                    if (sid != null && /^\d+$/.test(String(sid))) {
-                      q.set("sourceVideoId", String(sid));
+                    const sid = activeVideo?.publicId;
+                    if (isVideoPublicId(sid)) {
+                      q.set("sourceVideoId", String(sid).toLowerCase());
                     }
                     navigate(`/sound?${q.toString()}`);
                   }}
@@ -1373,7 +1317,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
             {feedSidePanelTab === "comments" ? (
               <>
                 <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1">
-                  {!isBackendVideoId(activeVideo?.id) ? (
+                  {!isVideoPublicId(activeVideo?.publicId) ? (
                     <p className="px-3 py-8 text-center text-sm text-zinc-500">
                       Bình luận chỉ khả dụng cho video trên Vibely (đã đăng nhập).
                     </p>
@@ -1454,7 +1398,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
                             : "Đăng nhập để bình luận..."
                         }
                         disabled={
-                          !token || !isBackendVideoId(activeVideo?.id)
+                          !token || !isVideoPublicId(activeVideo?.publicId)
                         }
                         className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-[5.25rem] text-sm text-zinc-100 placeholder:text-zinc-500 outline-none ring-red-500/20 focus:border-zinc-600 focus:ring-2 disabled:opacity-50"
                       />
@@ -1482,28 +1426,28 @@ function ForYouFeedPage({ token, user, onLogout }) {
                       disabled={
                         !commentDraft.trim() ||
                         !token ||
-                        !isBackendVideoId(activeVideo?.id)
+                        !isVideoPublicId(activeVideo?.publicId)
                       }
                       onClick={async () => {
                         const text = commentDraft.trim();
                         if (
                           !text ||
                           !token ||
-                          !isBackendVideoId(activeVideo?.id)
+                          !isVideoPublicId(activeVideo?.publicId)
                         ) {
                           return;
                         }
                         setCommentPostError("");
                         try {
                           const created = await apiClient.addComment(
-                            activeVideo.id,
+                            activeVideo.publicId,
                             text,
                             token,
                           );
                           setCommentDraft("");
                           setFeedComments((prev) => [created, ...prev]);
                           const prevCc = Number(activeVideo.commentCount ?? 0);
-                          patchVideoById(activeVideo.id, {
+                          patchVideoByPublicId(activeVideo.publicId, {
                             commentCount: prevCc + 1,
                           });
                         } catch (e) {
@@ -1530,7 +1474,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
                   <div className="grid grid-cols-2 gap-2.5">
                     {suggestedFeedSlots.map(({ video, idx }) => (
                       <button
-                        key={String(video.id ?? idx)}
+                        key={String(video.publicId ?? idx)}
                         type="button"
                         className="group text-left"
                         onClick={() => setActiveIndex(idx)}
@@ -1605,23 +1549,23 @@ function ForYouFeedPage({ token, user, onLogout }) {
         open={newCollectionOpen}
         onClose={() => setNewCollectionOpen(false)}
         token={token}
-        initialPickVideoId={activeVideo?.id ?? null}
+        initialPickVideoId={activeVideo?.publicId ?? null}
       />
 
       <VideoShareModal
         open={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
-        videoId={activeVideo?.id}
+        videoId={activeVideo?.publicId}
         videoTitle={activeVideo?.title ?? ""}
         token={token}
         onShareCountChange={(shareCount) => {
-          const vid = activeVideo?.id;
+          const vid = activeVideo?.publicId;
           if (!vid) return;
           if (shareCount != null) {
-            patchVideoById(vid, { shareCount });
+            patchVideoByPublicId(vid, { shareCount });
             return;
           }
-          patchVideoById(vid, {
+          patchVideoByPublicId(vid, {
             shareCount: Number(activeVideo?.shareCount ?? 0) + 1,
           });
         }}
@@ -1631,7 +1575,7 @@ function ForYouFeedPage({ token, user, onLogout }) {
 }
 
 export function FeedPage() {
-  const { token, user, logout } = useAuth();
+  const { token, user, logout, authReady } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
@@ -1642,5 +1586,12 @@ export function FeedPage() {
     }
   }, [location.pathname]);
 
-  return <ForYouFeedPage token={token} user={user} onLogout={logout} />;
+  return (
+    <ForYouFeedPage
+      token={token}
+      user={user}
+      onLogout={logout}
+      authReady={authReady}
+    />
+  );
 }

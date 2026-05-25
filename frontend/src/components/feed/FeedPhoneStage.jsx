@@ -1,5 +1,6 @@
 import React, {
   useCallback,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -25,20 +26,14 @@ import {
   LuHeartOff,
   LuPictureInPicture2,
 } from "react-icons/lu";
+import { resolveFeedPlaybackUrl } from "../../feed/feedPlayback.js";
+import { useFeedPrefetch } from "../../feed/useFeedPrefetch.js";
 
 function feedAuthorProfilePath(video) {
   const raw = String(video?.authorUsername ?? "vibely")
     .trim()
     .replace(/^@/, "");
   return raw ? `/@${encodeURIComponent(raw)}` : "";
-}
-
-/** Ưu tiên master HLS (.m3u8) nếu có; không thì URL phát thường. */
-function feedPlaybackUrl(video) {
-  const master = String(video?.masterPlaylistUrl ?? "").trim();
-  if (master && /\.m3u8(\?|$)/i.test(master)) return master;
-  const direct = String(video?.videoUrl ?? "").trim();
-  return direct || null;
 }
 
 function feedQualityLabel(mode) {
@@ -104,7 +99,7 @@ export const FEED_STAGE_OUTER_WIDTH_CLASS_WIDE_DOCKED =
 /** Skeleton / chỗ chưa biết tỉ lệ: dùng khung dọc. */
 export const FEED_STAGE_OUTER_WIDTH_CLASS = FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT;
 
-const FEED_VOLUME_DEFAULT = 0.5;
+const FEED_VOLUME_DEFAULT = 1;
 
 function FeedVolumeIcon({ soundOn, volume }) {
   if (!soundOn || volume === 0) {
@@ -190,7 +185,7 @@ export function FeedPhoneStage({
   setFeedVolume,
   feedSoundOn,
   setFeedSoundOn,
-  feedMuted,
+  playbackMuted,
   feedMoreMenuOpen,
   setFeedMoreMenuOpen,
   feedMoreMenuSubpage,
@@ -199,13 +194,6 @@ export function FeedPhoneStage({
   setFeedVideoQuality,
   feedAutoScrollEnabled,
   setFeedAutoScrollEnabled,
-  feedProgressTrackRef,
-  feedProgressPct,
-  setFeedProgressPct,
-  feedProgressScrubbingRef,
-  feedProgressScrubbing,
-  setFeedProgressScrubbing,
-  seekFeedVideo,
   toggleFeedPlayback,
   toggleFeedPictureInPicture,
   resolveFeedAuthorDisplayName,
@@ -218,9 +206,134 @@ export function FeedPhoneStage({
 }) {
   /** Khung rộng từ trình duyệt (videoWidth/Height sau decode). */
   const [clientWideForLandscape, setClientWideForLandscape] = useState(false);
+  const progressTrackRef = useRef(null);
+  const progressFillRef = useRef(null);
+  const progressKnobRef = useRef(null);
+  const progressScrubbingRef = useRef(false);
+  const [progressScrubbing, setProgressScrubbing] = useState(false);
+
+  const setProgressPct = useCallback((pct) => {
+    const p = Math.min(100, Math.max(0, pct));
+    if (progressFillRef.current) {
+      progressFillRef.current.style.width = `${p}%`;
+    }
+    if (progressKnobRef.current) {
+      progressKnobRef.current.style.left = `${p}%`;
+    }
+    progressTrackRef.current?.setAttribute(
+      "aria-valuenow",
+      String(Math.round(p)),
+    );
+  }, []);
+
+  const updateProgressFromVideo = useCallback(
+    (el) => {
+      if (!el || el.tagName !== "VIDEO" || progressScrubbingRef.current) {
+        return;
+      }
+      let dur = el.duration;
+      if (!Number.isFinite(dur) || dur <= 0) {
+        try {
+          if (el.seekable?.length) {
+            dur = el.seekable.end(el.seekable.length - 1);
+          }
+        } catch {
+          /* noop */
+        }
+      }
+      if (Number.isFinite(dur) && dur > 0) {
+        setProgressPct((el.currentTime / dur) * 100);
+      }
+    },
+    [setProgressPct],
+  );
+
+  const seekFeedVideo = useCallback(
+    (clientX, trackEl) => {
+      if (!trackEl) return;
+      const rect = trackEl.getBoundingClientRect();
+      const el = feedVideoRef.current;
+      if (!el) return;
+      const w = rect.width;
+      if (!(w > 0)) return;
+
+      let pct = (clientX - rect.left) / w;
+      pct = Math.min(1, Math.max(0, pct));
+
+      if (Number.isFinite(el.duration) && el.duration > 0) {
+        el.currentTime = pct * el.duration;
+      } else if (el.seekable?.length) {
+        try {
+          const end = el.seekable.end(el.seekable.length - 1);
+          if (Number.isFinite(end) && end > 0) el.currentTime = pct * end;
+        } catch {
+          /* noop */
+        }
+      }
+
+      setProgressPct(pct * 100);
+    },
+    [feedVideoRef, setProgressPct],
+  );
+
+  const handleActivePlaybackTick = useCallback(
+    (e) => {
+      updateProgressFromVideo(e.currentTarget);
+      onActiveFeedPlaybackTick?.(e);
+    },
+    [onActiveFeedPlaybackTick, updateProgressFromVideo],
+  );
 
   const activeVideo = videos[activeIndex];
-  const activeVideoId = activeVideo?.id;
+
+  useEffect(() => {
+    const el = feedVideoRef.current;
+    if (!el || !activeVideo?.videoUrl) return;
+    setProgressPct(0);
+    try {
+      el.currentTime = 0;
+    } catch {
+      /* chưa sẵn sàng metadata */
+    }
+  }, [
+    activeIndex,
+    activeVideo?.publicId,
+    activeVideo?.videoUrl,
+    feedVideoRef,
+    setProgressPct,
+  ]);
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!progressScrubbingRef.current) return;
+      const track = progressTrackRef.current;
+      if (!track) return;
+      if (e.cancelable && e.type === "touchmove") e.preventDefault();
+      const cx =
+        e.type === "touchmove" ? e.touches[0]?.clientX : e.clientX;
+      if (cx == null) return;
+      seekFeedVideo(cx, track);
+    };
+    const onEnd = () => {
+      if (!progressScrubbingRef.current) return;
+      progressScrubbingRef.current = false;
+      setProgressScrubbing(false);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onEnd);
+    window.addEventListener("touchmove", onMove, { passive: false });
+    window.addEventListener("touchend", onEnd);
+    window.addEventListener("touchcancel", onEnd);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onEnd);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend", onEnd);
+      window.removeEventListener("touchcancel", onEnd);
+    };
+  }, [seekFeedVideo]);
+
+  const activeVideoPublicId = activeVideo?.publicId;
   const sourceW = activeVideo?.sourceWidthPx;
   const sourceH = activeVideo?.sourceHeightPx;
   const apiWideForLandscape =
@@ -231,8 +344,8 @@ export function FeedPhoneStage({
     Number(sourceW) >= Number(sourceH);
 
   /** Tránh callback từ slide cũ (RAF/HLS) ghi đè slide đang active. */
-  const activeSlideVideoIdRef = useRef(activeVideoId);
-  activeSlideVideoIdRef.current = activeVideoId;
+  const activeSlideVideoIdRef = useRef(activeVideoPublicId);
+  activeSlideVideoIdRef.current = activeVideoPublicId;
 
   const onActiveIntrinsicLandscape = useCallback((isLandscape, fromVideoId) => {
     if (fromVideoId == null || fromVideoId !== activeSlideVideoIdRef.current) {
@@ -244,7 +357,7 @@ export function FeedPhoneStage({
   /** useLayoutEffect: reset trước paint để không thua race với useEffect của player con. */
   useLayoutEffect(() => {
     setClientWideForLandscape(false);
-  }, [activeIndex, activeVideoId]);
+  }, [activeIndex, activeVideoPublicId]);
 
   const stageWideForLandscape = apiWideForLandscape || clientWideForLandscape;
 
@@ -255,6 +368,8 @@ export function FeedPhoneStage({
     : FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT;
 
   const stackedLandscapeMeta = stageWideForLandscape && commentsDockOpen;
+
+  useFeedPrefetch(videos, activeIndex);
 
   return (
     <div
@@ -270,7 +385,7 @@ export function FeedPhoneStage({
         onNearEnd={loadMoreFeed}
         scrollClassName="rounded-xl sm:rounded-2xl"
       >
-        {({ video, loadMedia, isActive }) => {
+        {({ video, loadMedia, isActive, visibilityRatio }) => {
           const poster =
             video.thumbnailUrl?.trim() ||
             thumbnailFallbackUrl ||
@@ -283,7 +398,7 @@ export function FeedPhoneStage({
             String(video.description ?? "").trim() ||
             String(video.title ?? "").trim() ||
             "\u00A0";
-          const playbackUrl = feedPlaybackUrl(video);
+          const playbackUrl = resolveFeedPlaybackUrl(video);
           const hasPlayback = Boolean(playbackUrl);
           const useStackedMeta = stackedLandscapeMeta && isActive && hasPlayback;
           return (
@@ -303,18 +418,19 @@ export function FeedPhoneStage({
                   }
                 >
                   <FeedVideoPlayer
-                    key={String(video.id)}
+                    key={String(video.publicId)}
                     ref={isActive ? feedVideoRef : undefined}
                     videoUrl={playbackUrl}
                     poster={poster}
-                    muted={!isActive || feedMuted}
+                    muted={!isActive || playbackMuted}
                     loop
                     loadMedia={loadMedia && hasPlayback}
                     isActive={isActive}
-                    feedVideoId={video.id}
+                    visibilityRatio={visibilityRatio}
+                    feedVideoId={video.publicId}
                     streamQuality={feedVideoQuality}
                     onPlaybackTick={
-                      isActive ? onActiveFeedPlaybackTick : undefined
+                      isActive ? handleActivePlaybackTick : undefined
                     }
                     className="relative z-0 h-full w-full cursor-pointer"
                     containLandscape
@@ -322,7 +438,7 @@ export function FeedPhoneStage({
                     onIntrinsicLandscape={
                       isActive
                         ? (wide) =>
-                            onActiveIntrinsicLandscape(wide, video.id)
+                            onActiveIntrinsicLandscape(wide, video.publicId)
                         : undefined
                     }
                   />
@@ -333,18 +449,19 @@ export function FeedPhoneStage({
                 </div>
               ) : (
                 <FeedVideoPlayer
-                  key={String(video.id)}
+                  key={String(video.publicId)}
                   ref={isActive ? feedVideoRef : undefined}
                   videoUrl={playbackUrl}
                   poster={poster}
-                  muted={!isActive || feedMuted}
+                  muted={!isActive || playbackMuted}
                   loop
                   loadMedia={loadMedia && hasPlayback}
                   isActive={isActive}
-                  feedVideoId={video.id}
+                  visibilityRatio={visibilityRatio}
+                  feedVideoId={video.publicId}
                   streamQuality={feedVideoQuality}
                   onPlaybackTick={
-                    isActive ? onActiveFeedPlaybackTick : undefined
+                    isActive ? handleActivePlaybackTick : undefined
                   }
                   className="relative z-0 h-full w-full cursor-pointer"
                   containLandscape
@@ -352,7 +469,7 @@ export function FeedPhoneStage({
                   onIntrinsicLandscape={
                     isActive
                       ? (wide) =>
-                          onActiveIntrinsicLandscape(wide, video.id)
+                          onActiveIntrinsicLandscape(wide, video.publicId)
                       : undefined
                   }
                 />
@@ -607,7 +724,7 @@ export function FeedPhoneStage({
                   ) : null}
 
                   <div
-                    ref={feedProgressTrackRef}
+                    ref={progressTrackRef}
                     className={`group/progress pointer-events-auto flex min-h-8 w-full cursor-pointer flex-col justify-end overflow-visible pb-0 ${
                       useStackedMeta
                         ? "relative z-40 shrink-0"
@@ -617,22 +734,22 @@ export function FeedPhoneStage({
                     tabIndex={0}
                     aria-valuemin={0}
                     aria-valuemax={100}
-                    aria-valuenow={Math.round(feedProgressPct)}
+                    aria-valuenow={0}
                     aria-label="Tiến độ phát"
                     onMouseDown={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      feedProgressScrubbingRef.current = true;
-                      setFeedProgressScrubbing(true);
-                      seekFeedVideo(e.clientX, feedProgressTrackRef.current);
+                      progressScrubbingRef.current = true;
+                      setProgressScrubbing(true);
+                      seekFeedVideo(e.clientX, progressTrackRef.current);
                     }}
                     onTouchStart={(e) => {
                       e.stopPropagation();
-                      feedProgressScrubbingRef.current = true;
-                      setFeedProgressScrubbing(true);
+                      progressScrubbingRef.current = true;
+                      setProgressScrubbing(true);
                       const cx = e.touches[0]?.clientX;
                       if (cx != null)
-                        seekFeedVideo(cx, feedProgressTrackRef.current);
+                        seekFeedVideo(cx, progressTrackRef.current);
                     }}
                     onClick={(e) => e.stopPropagation()}
                     onKeyDown={(e) => {
@@ -647,22 +764,21 @@ export function FeedPhoneStage({
                         el.duration,
                         Math.max(0, el.currentTime + delta),
                       );
-                      setFeedProgressPct((el.currentTime / el.duration) * 100);
+                      setProgressPct((el.currentTime / el.duration) * 100);
                     }}
                   >
                     <div className="relative flex w-full items-end pb-0 pt-1">
                       <div className="relative h-[4px] w-full transition-[height] duration-150 ease-out group-hover/progress:h-[6px]">
                         <div className="absolute inset-0 rounded-full bg-white/30" />
                         <div
-                          className={`absolute inset-y-0 left-0 rounded-full bg-red-600 ${feedProgressScrubbing ? "" : "transition-[width] duration-150 ease-out"}`}
-                          style={{
-                            width: `${feedProgressPct}%`,
-                            maxWidth: "100%",
-                          }}
+                          ref={progressFillRef}
+                          className={`absolute inset-y-0 left-0 rounded-full bg-red-600 ${progressScrubbing ? "" : "transition-[width] duration-150 ease-out"}`}
+                          style={{ width: "0%", maxWidth: "100%" }}
                         />
                         <div
-                          className={`pointer-events-none absolute top-1/2 z-10 h-3 w-3 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-200 ease-out ${feedProgressScrubbing ? "opacity-100" : "opacity-0 group-hover/progress:opacity-100"}`}
-                          style={{ left: `${feedProgressPct}%` }}
+                          ref={progressKnobRef}
+                          className={`pointer-events-none absolute top-1/2 z-10 h-3 w-3 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-200 ease-out ${progressScrubbing ? "opacity-100" : "opacity-0 group-hover/progress:opacity-100"}`}
+                          style={{ left: "0%" }}
                           aria-hidden
                         >
                           <div className="h-full w-full rounded-full bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.45)] ring-2 ring-black/25 transition-transform duration-200 ease-out group-hover/progress:scale-110" />

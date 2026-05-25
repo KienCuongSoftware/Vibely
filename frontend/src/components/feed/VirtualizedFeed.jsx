@@ -1,13 +1,21 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
-import React, { useCallback, useEffect, useImperativeHandle, useRef, forwardRef } from 'react'
+import React, { useCallback, useEffect, useImperativeHandle, useRef, useState, forwardRef, memo } from 'react'
+import { FEED_CONFIG } from '../../feed/feedConfig.js'
 
-const NEAR_END_SLOTS = 5
+/** Coarse buckets — avoid re-rendering the whole feed on every IO micro-update. */
+function visibilityBucket(ratio) {
+  if (ratio >= FEED_CONFIG.PLAY_VISIBILITY_RATIO) return 'play'
+  if (ratio >= FEED_CONFIG.PAUSE_VISIBILITY_RATIO) return 'mid'
+  if (ratio > 0.02) return 'low'
+  return 'off'
+}
 
 /**
  * Vertical snap-scrolling list with windowed DOM: only virtualized rows mount.
  * Active index is derived from {@link IntersectionObserver} ratios (most visible slide).
+ * Media (HLS) attaches only within {@link FEED_CONFIG.MEDIA_WINDOW_RADIUS}.
  */
-export const VirtualizedFeed = forwardRef(function VirtualizedFeed(
+const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
   {
     videos,
     itemHeightPx,
@@ -15,6 +23,7 @@ export const VirtualizedFeed = forwardRef(function VirtualizedFeed(
     activeIndex,
     onActiveIndexChange,
     onNearEnd,
+    mediaWindowRadius = FEED_CONFIG.MEDIA_WINDOW_RADIUS,
     children,
   },
   forwardedRef,
@@ -23,12 +32,17 @@ export const VirtualizedFeed = forwardRef(function VirtualizedFeed(
   const ratiosRef = useRef(new Map())
   const rafRef = useRef(0)
   const obsRef = useRef(null)
+  const visibilitySnapshotRef = useRef('')
+  const activeIndexRef = useRef(activeIndex)
+  activeIndexRef.current = activeIndex
+  /** Bumps on IO updates so slide visibility ratios reach players without mounting all rows. */
+  const [visibilityTick, setVisibilityTick] = useState(0)
 
   const rowVirtualizer = useVirtualizer({
     count: videos.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => itemHeightPx,
-    overscan: 2,
+    overscan: FEED_CONFIG.VIRTUAL_OVERSCAN,
   })
 
   useImperativeHandle(
@@ -51,10 +65,27 @@ export const VirtualizedFeed = forwardRef(function VirtualizedFeed(
         bestIdx = idx
       }
     })
-    if (bestIdx >= 0 && best >= 0.34) {
+    if (bestIdx >= 0 && best >= FEED_CONFIG.ACTIVE_INDEX_MIN_RATIO) {
       onActiveIndexChange(bestIdx)
     }
-  }, [onActiveIndexChange])
+
+    const center =
+      bestIdx >= 0 && best >= FEED_CONFIG.ACTIVE_INDEX_MIN_RATIO
+        ? bestIdx
+        : activeIndexRef.current
+    const lo = Math.max(0, center - mediaWindowRadius - 1)
+    const hi = Math.min(videos.length - 1, center + mediaWindowRadius + 1)
+    const parts = []
+    for (let i = lo; i <= hi; i += 1) {
+      const ratio = ratiosRef.current.get(i) ?? 0
+      parts.push(`${i}:${visibilityBucket(ratio)}`)
+    }
+    const snap = parts.join('|')
+    if (snap !== visibilitySnapshotRef.current) {
+      visibilitySnapshotRef.current = snap
+      setVisibilityTick((t) => t + 1)
+    }
+  }, [mediaWindowRadius, onActiveIndexChange, videos.length])
 
   useEffect(() => {
     const root = scrollRef.current
@@ -74,7 +105,11 @@ export const VirtualizedFeed = forwardRef(function VirtualizedFeed(
         cancelAnimationFrame(rafRef.current)
         rafRef.current = requestAnimationFrame(flushActive)
       },
-      { root, rootMargin: '0px', threshold: [0, 0.1, 0.25, 0.34, 0.5, 0.65, 0.8, 1] },
+      {
+        root,
+        rootMargin: '0px',
+        threshold: [0, 0.1, 0.2, 0.35, 0.5, 0.65, 0.7, 0.85, 1],
+      },
     )
     obsRef.current = obs
     return () => {
@@ -98,7 +133,10 @@ export const VirtualizedFeed = forwardRef(function VirtualizedFeed(
       const max = videos.length
       if (max === 0) return
       const { scrollTop, clientHeight, scrollHeight } = root
-      if (scrollHeight - (scrollTop + clientHeight) < itemHeightPx * NEAR_END_SLOTS) {
+      if (
+        scrollHeight - (scrollTop + clientHeight) <
+        itemHeightPx * FEED_CONFIG.NEAR_END_SLOTS
+      ) {
         onNearEnd()
       }
     }
@@ -106,6 +144,8 @@ export const VirtualizedFeed = forwardRef(function VirtualizedFeed(
     queueMicrotask(onScroll)
     return () => root.removeEventListener('scroll', onScroll)
   }, [videos.length, itemHeightPx, onNearEnd])
+
+  void visibilityTick
 
   const virtualItems = rowVirtualizer.getVirtualItems()
 
@@ -115,8 +155,8 @@ export const VirtualizedFeed = forwardRef(function VirtualizedFeed(
       className={`snap-y snap-mandatory overflow-y-auto overflow-x-hidden overscroll-y-contain scrollbar-none ${scrollClassName}`}
       style={{
         height: itemHeightPx,
-        WebkitOverflowScrolling: "touch",
-        clipPath: "inset(0 0 -14px 0)",
+        WebkitOverflowScrolling: 'touch',
+        clipPath: 'inset(0 0 -14px 0)',
       }}
     >
       <div
@@ -126,7 +166,10 @@ export const VirtualizedFeed = forwardRef(function VirtualizedFeed(
         {virtualItems.map((vi) => {
           const video = videos[vi.index]
           if (!video) return null
-          const loadMedia = Math.abs(vi.index - activeIndex) <= 1
+          const distance = Math.abs(vi.index - activeIndex)
+          const loadMedia = distance <= mediaWindowRadius
+          const visibilityRatio = ratiosRef.current.get(vi.index) ?? 0
+          const isActive = vi.index === activeIndex
           return (
             <div
               key={vi.key}
@@ -145,7 +188,8 @@ export const VirtualizedFeed = forwardRef(function VirtualizedFeed(
                 video,
                 index: vi.index,
                 loadMedia,
-                isActive: vi.index === activeIndex,
+                isActive,
+                visibilityRatio,
               })}
             </div>
           )
@@ -154,3 +198,5 @@ export const VirtualizedFeed = forwardRef(function VirtualizedFeed(
     </div>
   )
 })
+
+export const VirtualizedFeed = memo(VirtualizedFeedInner)

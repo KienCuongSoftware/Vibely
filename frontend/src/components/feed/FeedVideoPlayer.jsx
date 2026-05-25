@@ -1,6 +1,21 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Hls from 'hls.js'
+import { FEED_CONFIG } from '../../feed/feedConfig.js'
+import { isHlsPlaybackUrl } from '../../feed/feedPlayback.js'
 import { detectLetterboxedLandscapeLayout } from './feedLetterboxLayout'
+
+function buildHlsInstance() {
+  return new Hls({
+    enableWorker: true,
+    lowLatencyMode: false,
+    startFragPrefetch: true,
+    /** Keep buffers small — mobile memory budget */
+    maxBufferLength: 12,
+    maxMaxBufferLength: 24,
+    backBufferLength: 0,
+    maxBufferSize: 18 * 1000 * 1000,
+  })
+}
 
 /**
  * @param {import('hls.js').default} hls
@@ -37,21 +52,32 @@ function applyStreamQuality(hls, mode) {
 }
 
 function isHlsUrl(url) {
-  return typeof url === 'string' && /\.m3u8(\?|$)/i.test(url)
+  return isHlsPlaybackUrl(url)
 }
 
-/** Cho canvas letterbox-detect: cross-origin cần CORS trên bucket/CDN. */
-function playbackCrossOrigin(url) {
-  if (typeof url !== 'string' || !url.trim()) return undefined
-  if (/^blob:/i.test(url)) return undefined
-  try {
-    const u = new URL(url, typeof window !== 'undefined' ? window.location.href : undefined)
-    if (typeof window !== 'undefined' && u.origin === window.location.origin) {
-      return undefined
+/** Autoplay: thử có tiếng trước; trình duyệt chặn thì mute rồi play lại. */
+async function playWithAutoplayPolicy(videoEl, wantsSound) {
+  if (!videoEl) return
+  if (wantsSound) {
+    videoEl.muted = false
+    try {
+      await videoEl.play()
+      return
+    } catch {
+      videoEl.muted = true
+      try {
+        await videoEl.play()
+      } catch {
+        /* autoplay policy */
+      }
     }
-    return 'anonymous'
-  } catch {
-    return undefined
+  } else {
+    videoEl.muted = true
+    try {
+      await videoEl.play()
+    } catch {
+      /* autoplay policy */
+    }
   }
 }
 
@@ -59,7 +85,7 @@ function playbackCrossOrigin(url) {
  * HTML5 video for the feed. When {@code loadMedia} is false, no {@code src} is set (memory release).
  * HLS (.m3u8) dùng hls.js khi trình duyệt hỗ trợ; {@code streamQuality} điều khiển rendition (ABR khi auto).
  */
-export const FeedVideoPlayer = React.forwardRef(function FeedVideoPlayer(
+export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPlayer(
   {
     videoUrl,
     poster,
@@ -67,6 +93,7 @@ export const FeedVideoPlayer = React.forwardRef(function FeedVideoPlayer(
     loop = true,
     loadMedia,
     isActive,
+    visibilityRatio = 0,
     playsInline = true,
     className = '',
     onClick,
@@ -90,7 +117,36 @@ export const FeedVideoPlayer = React.forwardRef(function FeedVideoPlayer(
   onIntrinsicLandscapeRef.current = onIntrinsicLandscape
   const feedVideoIdRef = useRef(feedVideoId)
   feedVideoIdRef.current = feedVideoId
+  const isActiveRef = useRef(isActive)
+  isActiveRef.current = isActive
+  const mutedRef = useRef(muted)
+  mutedRef.current = muted
   const [isWideAspect, setIsWideAspect] = useState(false)
+
+  useEffect(() => {
+    const el = innerRef.current
+    if (el && el.tagName === 'VIDEO') {
+      el.muted = muted
+    }
+  }, [muted])
+
+  const tryPlayActive = useCallback(() => {
+    const el = innerRef.current
+    if (!el || el.tagName !== 'VIDEO' || !loadMedia || !videoUrl || !isActiveRef.current) {
+      return
+    }
+    const visibleEnough =
+      visibilityRatio >= FEED_CONFIG.PLAY_VISIBILITY_RATIO ||
+      (isActiveRef.current && visibilityRatio === 0)
+    const shouldPause =
+      visibilityRatio > 0 &&
+      visibilityRatio < FEED_CONFIG.PAUSE_VISIBILITY_RATIO
+    if (!visibleEnough || shouldPause) return
+    void playWithAutoplayPolicy(el, !mutedRef.current)
+  }, [loadMedia, videoUrl, visibilityRatio])
+
+  const tryPlayActiveRef = useRef(tryPlayActive)
+  tryPlayActiveRef.current = tryPlayActive
 
   useEffect(() => {
     setIsWideAspect(false)
@@ -157,8 +213,13 @@ export const FeedVideoPlayer = React.forwardRef(function FeedVideoPlayer(
     if (!isHlsUrl(videoUrl)) {
       destroyHls()
       el.src = videoUrl
+      const onCanPlay = () => {
+        if (!cancelled) tryPlayActiveRef.current()
+      }
+      el.addEventListener('canplay', onCanPlay)
       return () => {
         if (cancelled) return
+        el.removeEventListener('canplay', onCanPlay)
         try {
           el.pause()
           el.removeAttribute('src')
@@ -170,10 +231,7 @@ export const FeedVideoPlayer = React.forwardRef(function FeedVideoPlayer(
     }
 
     if (Hls.isSupported()) {
-      const hls = new Hls({
-        enableWorker: true,
-        lowLatencyMode: false,
-      })
+      const hls = buildHlsInstance()
       hlsRef.current = hls
       hls.loadSource(videoUrl)
       hls.attachMedia(el)
@@ -181,6 +239,7 @@ export const FeedVideoPlayer = React.forwardRef(function FeedVideoPlayer(
         if (cancelled) return
         applyStreamQuality(hls, streamQualityRef.current)
         requestAnimationFrame(() => reportIntrinsicLayout(el))
+        tryPlayActiveRef.current()
       }
       const onLevelSwitch = () => {
         if (cancelled) return
@@ -239,13 +298,15 @@ export const FeedVideoPlayer = React.forwardRef(function FeedVideoPlayer(
   useEffect(() => {
     const el = innerRef.current
     if (!el || el.tagName !== 'VIDEO' || !loadMedia || !videoUrl) return undefined
-    if (isActive) {
-      try {
-        const p = el.play()
-        if (p !== undefined && typeof p.catch === 'function') p.catch(() => {})
-      } catch {
-        /* autoplay policy */
-      }
+    const visibleEnough =
+      visibilityRatio >= FEED_CONFIG.PLAY_VISIBILITY_RATIO ||
+      (isActive && visibilityRatio === 0)
+    const shouldPlay = isActive && visibleEnough
+    const shouldPause =
+      visibilityRatio > 0 &&
+      visibilityRatio < FEED_CONFIG.PAUSE_VISIBILITY_RATIO
+    if (shouldPlay && !shouldPause) {
+      void playWithAutoplayPolicy(el, !muted)
     } else {
       try {
         el.pause()
@@ -254,7 +315,7 @@ export const FeedVideoPlayer = React.forwardRef(function FeedVideoPlayer(
       }
     }
     return undefined
-  }, [isActive, loadMedia, videoUrl])
+  }, [isActive, loadMedia, videoUrl, visibilityRatio, muted])
 
   useEffect(() => {
     if (!loadMedia || !videoUrl || !isActive) return undefined
@@ -310,6 +371,7 @@ export const FeedVideoPlayer = React.forwardRef(function FeedVideoPlayer(
     const el = e.currentTarget
     reportIntrinsicLayout(el)
     requestAnimationFrame(() => reportIntrinsicLayout(el))
+    tryPlayActiveRef.current()
     onPlaybackTick?.(e)
   }
 
@@ -337,13 +399,12 @@ export const FeedVideoPlayer = React.forwardRef(function FeedVideoPlayer(
   return (
     <video
       ref={setRefs}
-      crossOrigin={playbackCrossOrigin(videoUrl)}
       className={`${className} ${fitClass}${boostClass}`}
       poster={poster || undefined}
       playsInline={playsInline}
       muted={muted}
       loop={loop}
-      preload={isActive ? 'auto' : 'metadata'}
+      preload={isActive ? 'metadata' : 'none'}
       data-feed-video-id={feedVideoId != null ? String(feedVideoId) : undefined}
       onLoadedMetadata={handleLoadedMetadata}
       onLoadedData={handleLoadedData}
@@ -353,4 +414,4 @@ export const FeedVideoPlayer = React.forwardRef(function FeedVideoPlayer(
       onClick={onClick}
     />
   )
-})
+}))

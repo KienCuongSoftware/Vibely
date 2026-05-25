@@ -58,6 +58,7 @@ describe('FeedPage', () => {
             refreshSession: vi.fn(),
             refreshProfile: vi.fn(),
             logout: vi.fn(),
+            authReady: true,
           }}
         >
           <FeedPage />
@@ -80,7 +81,7 @@ describe('FeedPage', () => {
     apiClient.getFeed.mockResolvedValue({
       items: [
         {
-          id: 101,
+          publicId: '018fc2c7-f2e9-7a41-b9d7-0123456789ab',
           authorId: 1,
           authorUsername: 'demo_creator',
           authorDisplayName: 'Demo',
@@ -121,6 +122,7 @@ describe('FeedPage', () => {
             refreshSession: vi.fn(),
             refreshProfile: vi.fn(),
             logout: vi.fn(),
+            authReady: true,
           }}
         >
           <FeedPage />
