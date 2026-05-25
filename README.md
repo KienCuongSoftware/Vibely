@@ -98,10 +98,10 @@ flowchart TB
   end
 
   subgraph API["Spring Boot API"]
-    Feed[/api/feed]
-    Videos[/api/videos]
-    Auth[/api/auth]
-    Share[/api/v1/share]
+    Feed["/api/feed"]
+    Videos["/api/videos"]
+    Auth["/api/auth"]
+    Share["/api/v1/share"]
   end
 
   subgraph Data
