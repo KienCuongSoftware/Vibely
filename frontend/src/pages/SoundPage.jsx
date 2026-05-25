@@ -4,6 +4,7 @@ import { BiDotsVerticalRounded } from 'react-icons/bi'
 import { IoMusicalNotes, IoPause, IoPlay } from 'react-icons/io5'
 import { apiClient } from '../api/client'
 import { useAuth } from '../state/useAuth'
+import { normalizeVideoPublicId } from '../utils/videoPublicId.js'
 
 const DEFAULT_COVER = '/images/users/default-avatar.jpeg'
 
@@ -154,10 +155,8 @@ function SoundVideoDetailPopover({
   )
 }
 
-function parseSourceVideoId(raw) {
-  if (raw == null || String(raw).trim() === '') return null
-  const n = Number(raw)
-  return Number.isFinite(n) && n > 0 ? n : null
+function parseSourceVideoPublicId(raw) {
+  return normalizeVideoPublicId(raw)
 }
 
 function formatCompactCount(value) {
@@ -203,7 +202,7 @@ function SoundGridVideoCard({
     <>
       <Link
         to="/foryou"
-        state={{ focusVideoId: video.id }}
+        state={{ focusVideoPublicId: video.publicId }}
         className="absolute inset-0 z-0 block"
         aria-label="Mở video trong feed"
       />
@@ -344,7 +343,7 @@ export function SoundPage() {
   const [error, setError] = useState('')
   const [items, setItems] = useState([])
   const sourceVideoId = useMemo(
-    () => parseSourceVideoId(searchParams.get('sourceVideoId')),
+    () => parseSourceVideoPublicId(searchParams.get('sourceVideoId')),
     [searchParams],
   )
   const [sourceVideo, setSourceVideo] = useState(null)
@@ -464,12 +463,13 @@ export function SoundPage() {
 
   /** API có thể trả 0 bài; video gốc từ query vẫn hiển thị — cộng vào số đếm nếu chưa có trong danh sách. */
   const displayedVideoCount = useMemo(() => {
-    const ids = new Set(items.map((v) => String(v.id)))
+    const ids = new Set(items.map((v) => String(v.publicId)))
     let n = items.length
+    const sourcePublicId = normalizeVideoPublicId(sourceVideo?.publicId)
     if (
-      sourceVideo?.id != null &&
+      sourcePublicId &&
       String(sourceVideo.videoUrl ?? '').trim() !== '' &&
-      !ids.has(String(sourceVideo.id))
+      !ids.has(sourcePublicId)
     ) {
       n += 1
     }
@@ -619,7 +619,7 @@ export function SoundPage() {
             <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
               {items.map((v) => (
                 <SoundGridVideoCard
-                  key={String(v.id)}
+                  key={String(v.publicId)}
                   video={v}
                   coverFallback={cover}
                   wideSource={false}

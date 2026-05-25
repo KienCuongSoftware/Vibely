@@ -52,6 +52,30 @@ function decodeJwtSubject(token) {
   }
 }
 
+function decodeJwtPayload(token) {
+  try {
+    if (isBlank(token)) return null;
+    const parts = String(token).split(".");
+    if (parts.length < 2) return null;
+    const payload = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = payload.padEnd(
+      payload.length + ((4 - (payload.length % 4)) % 4),
+      "=",
+    );
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+}
+
+/** True when access JWT is missing exp or past expiry (30s skew). */
+function isAccessTokenExpired(token, skewMs = 30_000) {
+  const payload = decodeJwtPayload(token);
+  const expSec = payload?.exp;
+  if (typeof expSec !== "number" || !Number.isFinite(expSec)) return false;
+  return Date.now() >= expSec * 1000 - skewMs;
+}
+
 function normalizeVibelyId(raw) {
   if (isBlank(raw)) return "";
   return String(raw).trim().replace(/^@/, "").toLowerCase();
@@ -171,8 +195,18 @@ export function AuthProvider({ children }) {
 
   const refreshProfile = async () => {
     if (!token) return null;
-    const me = await apiClient.me(token);
-    const emailFromToken = decodeJwtSubject(token);
+    let accessToken = token;
+    const refreshTok = localStorage.getItem(REFRESH_TOKEN_KEY);
+    if (isAccessTokenExpired(accessToken) && refreshTok) {
+      const result = await apiClient.refresh(refreshTok);
+      localStorage.setItem(TOKEN_KEY, result.accessToken);
+      localStorage.setItem(REFRESH_TOKEN_KEY, result.refreshToken);
+      setToken(result.accessToken);
+      setRefreshToken(result.refreshToken);
+      accessToken = result.accessToken;
+    }
+    const me = await apiClient.me(accessToken);
+    const emailFromToken = decodeJwtSubject(accessToken);
     const fixedMe = {
       ...me,
       email: isBlank(me?.email) ? emailFromToken : me?.email,
@@ -281,10 +315,35 @@ export function AuthProvider({ children }) {
 
     (async () => {
       const refreshTok = localStorage.getItem(REFRESH_TOKEN_KEY);
+      let accessToken = token;
+
+      if (isAccessTokenExpired(accessToken)) {
+        if (!refreshTok) {
+          clearSession();
+          setAuthReady(true);
+          return;
+        }
+        try {
+          const result = await apiClient.refresh(refreshTok);
+          if (cancelled) return;
+          localStorage.setItem(TOKEN_KEY, result.accessToken);
+          localStorage.setItem(REFRESH_TOKEN_KEY, result.refreshToken);
+          setToken(result.accessToken);
+          setRefreshToken(result.refreshToken);
+          accessToken = result.accessToken;
+        } catch {
+          if (cancelled) return;
+          apiClient.logout(refreshTok).catch(() => {});
+          clearSession();
+          setAuthReady(true);
+          return;
+        }
+      }
+
       try {
-        const me = await apiClient.me(token);
+        const me = await apiClient.me(accessToken);
         if (cancelled) return;
-        applyMePayload(me, token);
+        applyMePayload(me, accessToken);
         setAuthReady(true);
       } catch (e) {
         if (cancelled) return;
@@ -313,7 +372,7 @@ export function AuthProvider({ children }) {
           setAuthReady(true);
           return;
         }
-        fallbackToCache(token);
+        fallbackToCache(accessToken);
         setAuthReady(true);
       }
     })();
