@@ -9,6 +9,7 @@ public record PublicUserProfileResponse(
     long followingCount,
     long followerCount,
     long totalLikeCount,
-    long totalViewCount
+    long totalViewCount,
+    boolean followedByViewer
 ) {
 }
