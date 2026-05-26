@@ -42,7 +42,7 @@ function renderCaptionWithHashtags(text) {
           key={i}
           to={hashtagPagePath(part)}
           onClick={(e) => e.stopPropagation()}
-          className="text-sky-400 transition hover:text-sky-300 hover:underline"
+          className="font-semibold text-sky-400 transition hover:text-sky-300 hover:underline"
         >
           {part}
         </Link>
@@ -54,7 +54,7 @@ function renderCaptionWithHashtags(text) {
           key={i}
           to={`/@${encodeURIComponent(part.slice(1))}`}
           onClick={(e) => e.stopPropagation()}
-          className="text-sky-400 transition hover:text-sky-300 hover:underline"
+          className="font-semibold text-sky-400 transition hover:text-sky-300 hover:underline"
         >
           {part}
         </Link>
@@ -195,6 +195,81 @@ function formatCompactCount(value) {
   return String(count)
 }
 
+/** Preview card: chỉ phát khi `playing`; rời chuột không tự reset, chỉ đổi khi hover ô khác. */
+function SoundGridMedia({
+  item: video,
+  playing = false,
+  coverFallback,
+}) {
+  const videoRef = useRef(null)
+  const url = String(video?.videoUrl ?? '').trim()
+  const thumb = String(video?.thumbnailUrl ?? '').trim()
+  const poster = thumb || coverFallback || DEFAULT_COVER
+  const [videoReady, setVideoReady] = useState(false)
+
+  useEffect(() => {
+    if (!playing) {
+      setVideoReady(false)
+    }
+  }, [playing, url])
+
+  useEffect(() => {
+    const el = videoRef.current
+    if (!el || !url || !playing) return undefined
+    const playback = el.play()
+    if (playback?.catch) {
+      playback.catch(() => {})
+    }
+    return () => {
+      try {
+        el.pause()
+      } catch {
+        /* noop */
+      }
+      try {
+        el.currentTime = 0
+      } catch {
+        /* noop */
+      }
+    }
+  }, [playing, url])
+
+  const thumbNode = (
+    <img
+      src={poster}
+      alt=""
+      loading="lazy"
+      className="h-full w-full object-cover"
+      referrerPolicy="no-referrer"
+      onError={(e) => {
+        e.currentTarget.src = DEFAULT_COVER
+      }}
+    />
+  )
+
+  if (url && playing) {
+    return (
+      <>
+        {!videoReady ? <div className="absolute inset-0">{thumbNode}</div> : null}
+        <video
+          ref={videoRef}
+          src={url}
+          poster={poster || undefined}
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          className="h-full w-full object-cover"
+          onLoadedData={() => setVideoReady(true)}
+          onCanPlay={() => setVideoReady(true)}
+        />
+      </>
+    )
+  }
+
+  return thumbNode
+}
+
 /** Thumbnail + VibelyID trên video; mô tả + ⋮ (chỉ khi hover mô tả); popover bên phải khi bấm ⋮. */
 export function SoundGridVideoCard({
   video,
@@ -203,6 +278,8 @@ export function SoundGridVideoCard({
   soundPageHref,
   soundOwnerVibelyId,
   narrowWidthClass = 'max-w-[96px]',
+  playing = false,
+  onHoverPreview,
 }) {
   const [popoverOpen, setPopoverOpen] = useState(false)
   const [popoverSide, setPopoverSide] = useState('right')
@@ -271,30 +348,13 @@ export function SoundGridVideoCard({
         className="absolute inset-0 z-0 block"
         aria-label="Mở video trong feed"
       />
-      {video.thumbnailUrl?.trim() ? (
-        <img
-          src={video.thumbnailUrl}
-          alt=""
-          className="relative z-[1] h-full w-full object-cover pointer-events-none"
+      <div className="pointer-events-none relative z-[1] h-full w-full">
+        <SoundGridMedia
+          item={video}
+          playing={playing}
+          coverFallback={coverFallback}
         />
-      ) : video.videoUrl?.trim() ? (
-        <video
-          src={video.videoUrl}
-          poster={poster}
-          muted
-          loop
-          playsInline
-          autoPlay={Boolean(wideSource)}
-          preload={wideSource ? undefined : 'metadata'}
-          className="relative z-[1] h-full w-full object-cover pointer-events-none"
-        />
-      ) : (
-        <img
-          src={DEFAULT_COVER}
-          alt=""
-          className="relative z-[1] h-full w-full object-cover pointer-events-none"
-        />
-      )}
+      </div>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-linear-to-t from-black/75 via-black/15 to-transparent px-2 pb-1.5 pt-5">
         <div className="pointer-events-auto inline-flex max-w-[calc(100%-4px)] items-center">
           {profile ? (
@@ -354,6 +414,11 @@ export function SoundGridVideoCard({
           ? 'relative inline-flex max-w-full flex-col'
           : 'relative flex w-full flex-col'
       }
+      onMouseEnter={() => {
+        if (video?.publicId != null) {
+          onHoverPreview?.(video.publicId)
+        }
+      }}
       onMouseLeave={() => setPopoverOpen(false)}
     >
       <div className={frameClass}>{thumb}</div>
@@ -361,7 +426,7 @@ export function SoundGridVideoCard({
         className={`group/desc flex min-w-0 cursor-default items-start gap-0.5 rounded-md px-0.5 py-0.5 transition-colors hover:bg-white/[0.06] ${descRowClass}`}
       >
         <p className="line-clamp-1 flex-1 text-[11px] leading-snug text-zinc-400 group-hover/desc:text-zinc-200">
-          {oneLine}
+          {renderCaptionWithHashtags(oneLine)}
         </p>
         <button
           ref={triggerRef}
@@ -439,6 +504,7 @@ export function SoundPage() {
   const [sourceError, setSourceError] = useState('')
   const soundAudioRef = useRef(null)
   const [soundPlaying, setSoundPlaying] = useState(false)
+  const [soundGridPlayingId, setSoundGridPlayingId] = useState(null)
 
   useEffect(() => {
     const el = soundAudioRef.current
@@ -583,6 +649,27 @@ export function SoundPage() {
       .replace(/^@/, '')
   }, [creatorUsernameResolved, items, creatorUsernameFromQuery])
 
+  const soundGridVideoIds = useMemo(() => {
+    const ids = items.map((v) => v?.publicId).filter(Boolean)
+    if (ids.length > 0) return ids
+    const sourceId = sourceVideo?.publicId
+    return sourceId && String(sourceVideo?.videoUrl ?? '').trim() ? [sourceId] : []
+  }, [items, sourceVideo?.publicId, sourceVideo?.videoUrl])
+
+  useEffect(() => {
+    setSoundGridPlayingId((prev) => {
+      if (prev != null && soundGridVideoIds.includes(prev)) {
+        return prev
+      }
+      return null
+    })
+  }, [soundGridVideoIds])
+
+  const focusSoundGridVideo = React.useCallback((publicId) => {
+    if (publicId == null) return
+    setSoundGridPlayingId(publicId)
+  }, [])
+
   return (
     <div className="scrollbar-none h-dvh max-h-dvh overflow-y-auto overscroll-y-contain bg-black text-zinc-100">
       <audio
@@ -692,6 +779,8 @@ export function SoundPage() {
                   wideSource
                   soundPageHref={soundPageHref}
                   soundOwnerVibelyId={soundOwnerVibelyId}
+                  playing={sourceVideo?.publicId === soundGridPlayingId}
+                  onHoverPreview={focusSoundGridVideo}
                 />
               ) : null}
               {!sourceLoading &&
@@ -713,6 +802,8 @@ export function SoundPage() {
                   wideSource={false}
                   soundPageHref={soundPageHref}
                   soundOwnerVibelyId={soundOwnerVibelyId}
+                  playing={v.publicId === soundGridPlayingId}
+                  onHoverPreview={focusSoundGridVideo}
                 />
               ))}
             </div>

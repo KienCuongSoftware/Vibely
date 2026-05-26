@@ -30,6 +30,7 @@ export function HashtagPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [items, setItems] = useState([])
+  const [hashtagGridPlayingId, setHashtagGridPlayingId] = useState(null)
 
   const menuItems = useMemo(
     () => [
@@ -106,11 +107,30 @@ export function HashtagPage() {
 
   const postCount = items.length
 
+  const hashtagVideoIds = useMemo(
+    () => items.map((video) => video?.publicId).filter(Boolean),
+    [items],
+  )
+
+  useEffect(() => {
+    setHashtagGridPlayingId((prev) => {
+      if (prev != null && hashtagVideoIds.includes(prev)) {
+        return prev
+      }
+      return null
+    })
+  }, [hashtagVideoIds])
+
+  const focusHashtagGridVideo = React.useCallback((publicId) => {
+    if (publicId == null) return
+    setHashtagGridPlayingId(publicId)
+  }, [])
+
   return (
     <section className="flex h-dvh max-h-dvh min-h-0 bg-black text-zinc-100">
       <Sidebar
         menuItems={menuItems}
-        activeMenu="explore"
+        activeMenu={null}
         onSelectMenu={handleSelectMenu}
         token={token}
         user={user}
@@ -172,6 +192,8 @@ export function HashtagPage() {
                     soundPageHref={null}
                     soundOwnerVibelyId=""
                     narrowWidthClass="max-w-none"
+                  playing={video.publicId === hashtagGridPlayingId}
+                  onHoverPreview={focusHashtagGridVideo}
                   />
                 ))}
               </div>
