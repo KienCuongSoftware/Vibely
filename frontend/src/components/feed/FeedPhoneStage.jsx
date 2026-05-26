@@ -36,6 +36,46 @@ function feedAuthorProfilePath(video) {
   return raw ? `/@${encodeURIComponent(raw)}` : "";
 }
 
+function feedHashtagPath(token) {
+  const raw = String(token ?? "").trim().replace(/^#/, "");
+  return raw ? `/tag/${encodeURIComponent(raw)}` : "/foryou";
+}
+
+function renderInteractiveCaption(caption) {
+  const source = String(caption ?? "");
+  if (!source) return "\u00A0";
+  const parts = source.split(/([#@][^\s#@]+)/g);
+  return parts.map((part, index) => {
+    if (!part) return null;
+    if (/^@[^\s#@]+$/.test(part)) {
+      const username = part.slice(1);
+      return (
+        <Link
+          key={`${part}-${index}`}
+          to={`/@${encodeURIComponent(username)}`}
+          onClick={(e) => e.stopPropagation()}
+          className="cursor-pointer font-semibold text-white hover:underline"
+        >
+          {part}
+        </Link>
+      );
+    }
+    if (/^#[^\s#@]+$/.test(part)) {
+      return (
+        <Link
+          key={`${part}-${index}`}
+          to={feedHashtagPath(part)}
+          onClick={(e) => e.stopPropagation()}
+          className="cursor-pointer font-semibold text-white hover:underline"
+        >
+          {part}
+        </Link>
+      );
+    }
+    return <React.Fragment key={`${part}-${index}`}>{part}</React.Fragment>;
+  });
+}
+
 function feedQualityLabel(mode) {
   if (mode === "720") return "720P";
   if (mode === "540") return "540P";
@@ -68,7 +108,7 @@ function FeedSlideAuthorMeta({
       <div className="pointer-events-auto shrink-0 border-t border-white/10 bg-black px-3 py-2.5 sm:px-4">
         <div className="inline-flex max-w-full">{nameEl}</div>
         <p className="mt-0.5 line-clamp-2 min-w-0 text-sm leading-snug text-white/90">
-          {captionOneLine}
+          {renderInteractiveCaption(captionOneLine)}
         </p>
       </div>
     );
@@ -78,7 +118,7 @@ function FeedSlideAuthorMeta({
     <div className="pointer-events-auto bg-linear-to-t from-black/85 via-black/25 to-transparent px-3 pb-6 pt-7 sm:px-4 sm:pb-7 sm:pt-9">
       <div className="inline-flex max-w-full">{nameEl}</div>
       <p className="mt-1 line-clamp-2 min-w-0 text-sm leading-snug text-white/90 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]">
-        {captionOneLine}
+        {renderInteractiveCaption(captionOneLine)}
       </p>
     </div>
   );

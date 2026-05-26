@@ -36,6 +36,34 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         Pageable pageable
     );
 
+    @Query(
+        value = """
+            select *
+            from videos v
+            where v.status = :status
+              and (
+                coalesce(v.description, '') ~* concat('(^|[^[:alnum:]_])#', :tagRegex, '($|[^[:alnum:]_])')
+                or coalesce(v.title, '') ~* concat('(^|[^[:alnum:]_])#', :tagRegex, '($|[^[:alnum:]_])')
+              )
+            order by v.created_at desc
+            """,
+        countQuery = """
+            select count(*)
+            from videos v
+            where v.status = :status
+              and (
+                coalesce(v.description, '') ~* concat('(^|[^[:alnum:]_])#', :tagRegex, '($|[^[:alnum:]_])')
+                or coalesce(v.title, '') ~* concat('(^|[^[:alnum:]_])#', :tagRegex, '($|[^[:alnum:]_])')
+              )
+            """,
+        nativeQuery = true
+    )
+    Page<Video> findByHashtag(
+        @Param("status") String status,
+        @Param("tagRegex") String tagRegex,
+        Pageable pageable
+    );
+
     @Query("""
         select v from Video v
         where v.author.id = :authorId and v.status <> :excludedStatus

@@ -14,6 +14,7 @@ import { VideoWatchPage } from './pages/VideoWatchPage.jsx'
 import { TermsOfServicePage } from './pages/TermsOfServicePage.jsx'
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage.jsx'
 import { SoundPage } from './pages/SoundPage.jsx'
+import { HashtagPage } from './pages/HashtagPage.jsx'
 import { useAuth } from './state/useAuth'
 import { isVideoPublicId } from './utils/videoPublicId.js'
 
@@ -56,6 +57,7 @@ function App() {
           <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
           <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/sound" element={<SoundPage />} />
+          <Route path="/tag/:tag" element={<HashtagPage />} />
           <Route path="/watch/:publicId" element={<WatchRedirect />} />
           <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
           <Route path="/vibelystudio/home" element={<Navigate to="/login" replace />} />
@@ -96,6 +98,7 @@ function App() {
         <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
         <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/sound" element={<SoundPage />} />
+        <Route path="/tag/:tag" element={<HashtagPage />} />
         <Route path="/watch/:publicId" element={<WatchRedirect />} />
         <Route path="*" element={<Navigate to="/foryou" replace />} />
       </Routes>

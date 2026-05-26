@@ -71,6 +71,15 @@ public class VideoController {
         return ApiResponse.success(videoService.getVideosByAudio(audioUrl, page, size));
     }
 
+    @GetMapping("/hashtag")
+    public ApiResponse<FeedPageResponse> getVideosByHashtag(
+        @RequestParam String tag,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "24") int size
+    ) {
+        return ApiResponse.success(videoService.getVideosByHashtag(tag, page, size));
+    }
+
     @PutMapping("/{publicId}")
     @PreAuthorize("hasRole('USER')")
     public ApiResponse<VideoResponse> updateVideo(

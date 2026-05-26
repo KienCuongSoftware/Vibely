@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class VideoService {
     private static final Pattern VIDEO_EXT_PATTERN = Pattern.compile("\\.(mp4|webm|mov)(\\?.*)?$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern REGEX_META_PATTERN = Pattern.compile("([\\\\.^$|?*+()\\[\\]{}-])");
 
     /** Tối thiểu ~2s phát thật (sau upload/S3 + pipeline) — không tính chỉ impression trên feed. */
     private static final long VIEW_MIN_PLAYED_MS = 2_000L;
@@ -204,6 +205,21 @@ public class VideoService {
                 pageable
             ));
         return toFeedPageResponse(resultPage, "sound");
+    }
+
+    @Transactional(readOnly = true)
+    public FeedPageResponse getVideosByHashtag(String tag, int page, int size) {
+        String normalizedTag = normalizeHashtag(tag);
+        if (normalizedTag == null) {
+            throw new BadRequestException("Thiếu hashtag.");
+        }
+        Pageable pageable = PageRequest.of(page, Math.min(size, 60));
+        Page<Video> resultPage = videoRepository.findByHashtag(
+            VideoStatus.READY.name(),
+            escapeRegexLiteral(normalizedTag),
+            pageable
+        );
+        return toFeedPageResponse(resultPage, "hashtag");
     }
 
     @Transactional(readOnly = true)
@@ -416,6 +432,19 @@ public class VideoService {
         if (raw == null) return null;
         String trimmed = raw.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private static String normalizeHashtag(String raw) {
+        String normalized = normalizeText(raw);
+        if (normalized == null) {
+            return null;
+        }
+        String withoutHash = normalized.replaceFirst("^#+", "").trim();
+        return withoutHash.isEmpty() ? null : withoutHash;
+    }
+
+    private static String escapeRegexLiteral(String raw) {
+        return REGEX_META_PATTERN.matcher(raw).replaceAll("\\\\$1");
     }
 
     private static String deriveAudioUrlFromVideoUrl(String videoUrl) {

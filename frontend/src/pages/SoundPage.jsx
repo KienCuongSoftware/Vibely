@@ -6,7 +6,7 @@ import { apiClient } from '../api/client'
 import { useAuth } from '../state/useAuth'
 import { normalizeVideoPublicId } from '../utils/videoPublicId.js'
 
-const DEFAULT_COVER = '/images/users/default-avatar.jpeg'
+export const DEFAULT_COVER = '/images/users/default-avatar.jpeg'
 
 function soundProfilePath(username) {
   const raw = String(username ?? 'vibely')
@@ -24,19 +24,43 @@ function resolveAuthorDisplayName(video) {
   return u || 'Vibely'
 }
 
+function hashtagPagePath(token) {
+  const raw = String(token ?? '')
+    .trim()
+    .replace(/^#/, '')
+  return raw ? `/tag/${encodeURIComponent(raw)}` : '/foryou'
+}
+
 function renderCaptionWithHashtags(text) {
   const s = String(text ?? '')
   if (!s) return null
-  const parts = s.split(/(#[^\s#]+)/g)
+  const parts = s.split(/([#@][^\s#@]+)/g)
   return parts.map((part, i) => {
-    if (part.startsWith('#')) {
+    if (/^#[^\s#@]+$/.test(part)) {
       return (
-        <span key={i} className="text-sky-400">
+        <Link
+          key={i}
+          to={hashtagPagePath(part)}
+          onClick={(e) => e.stopPropagation()}
+          className="text-sky-400 transition hover:text-sky-300 hover:underline"
+        >
           {part}
-        </span>
+        </Link>
       )
     }
-    return <span key={i}>{part}</span>
+    if (/^@[^\s#@]+$/.test(part)) {
+      return (
+        <Link
+          key={i}
+          to={`/@${encodeURIComponent(part.slice(1))}`}
+          onClick={(e) => e.stopPropagation()}
+          className="text-sky-400 transition hover:text-sky-300 hover:underline"
+        >
+          {part}
+        </Link>
+      )
+    }
+    return <React.Fragment key={i}>{part}</React.Fragment>
   })
 }
 
@@ -46,6 +70,7 @@ function SoundVideoDetailPopover({
   formatCount,
   soundPageHref,
   soundOwnerVibelyId,
+  side = 'right',
 }) {
   if (!video) return null
   const rawUser = String(video.authorUsername ?? 'vibely')
@@ -69,7 +94,11 @@ function SoundVideoDetailPopover({
     <div
       role="dialog"
       aria-label="Chi tiết video"
-      className="pointer-events-auto relative z-[80] w-[min(400px,calc(100vw-2rem))] max-w-[400px] rounded-xl border border-white/12 bg-[#1f1f1f] p-5 text-left shadow-2xl ring-1 ring-black/40 before:pointer-events-none before:absolute before:left-0 before:top-[72%] before:z-10 before:-translate-x-full before:-translate-y-1/2 before:border-y-[8px] before:border-r-[10px] before:border-y-transparent before:border-r-[#1f1f1f] before:content-['']"
+      className={`pointer-events-auto relative z-[80] w-[min(400px,calc(100vw-2rem))] max-w-[400px] rounded-xl border border-white/12 bg-[#1f1f1f] p-5 text-left shadow-2xl ring-1 ring-black/40 before:pointer-events-none before:absolute before:top-1/2 before:z-10 before:-translate-y-1/2 before:border-y-[8px] before:border-y-transparent before:content-[''] ${
+        side === 'left'
+          ? "before:right-0 before:translate-x-full before:border-l-[10px] before:border-l-[#1f1f1f]"
+          : "before:left-0 before:-translate-x-full before:border-r-[10px] before:border-r-[#1f1f1f]"
+      }`}
     >
       {profile ? (
         <Link
@@ -167,23 +196,59 @@ function formatCompactCount(value) {
 }
 
 /** Thumbnail + VibelyID trên video; mô tả + ⋮ (chỉ khi hover mô tả); popover bên phải khi bấm ⋮. */
-function SoundGridVideoCard({
+export function SoundGridVideoCard({
   video,
   coverFallback,
   wideSource,
   soundPageHref,
   soundOwnerVibelyId,
+  narrowWidthClass = 'max-w-[96px]',
 }) {
   const [popoverOpen, setPopoverOpen] = useState(false)
+  const [popoverSide, setPopoverSide] = useState('right')
+  const cardRef = useRef(null)
+  const triggerRef = useRef(null)
+  const [popoverAnchorTop, setPopoverAnchorTop] = useState(null)
+  const [popoverAnchorLeft, setPopoverAnchorLeft] = useState(null)
+  const [popoverAnchorRight, setPopoverAnchorRight] = useState(null)
+
+  const updatePopoverSide = React.useCallback(() => {
+    const cardRect = cardRef.current?.getBoundingClientRect()
+    const triggerRect = triggerRef.current?.getBoundingClientRect()
+    if (!cardRect || !triggerRect) return
+    const popoverGapPx = 4
+    const viewportWidth =
+      globalThis.window?.innerWidth ?? document.documentElement.clientWidth ?? 0
+    const estimatedPopoverWidth = Math.min(416, Math.max(viewportWidth - 24, 0))
+    const roomRight = viewportWidth - triggerRect.right
+    const roomLeft = triggerRect.left
+    const anchorTop = triggerRect.top - cardRect.top + triggerRect.height / 2
+
+    setPopoverAnchorTop(anchorTop)
+    setPopoverAnchorLeft(triggerRect.right - cardRect.left + popoverGapPx)
+    setPopoverAnchorRight(cardRect.right - triggerRect.left + popoverGapPx)
+
+    if (roomRight >= estimatedPopoverWidth || roomRight >= roomLeft) {
+      setPopoverSide('right')
+      return
+    }
+    setPopoverSide('left')
+  }, [])
 
   useEffect(() => {
     if (!popoverOpen) return undefined
     const onKey = (e) => {
       if (e.key === 'Escape') setPopoverOpen(false)
     }
+    const onResize = () => updatePopoverSide()
+    updatePopoverSide()
     document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [popoverOpen])
+    globalThis.window?.addEventListener('resize', onResize)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      globalThis.window?.removeEventListener('resize', onResize)
+    }
+  }, [popoverOpen, updatePopoverSide])
 
   const rawUser = String(video.authorUsername ?? 'vibely')
     .trim()
@@ -275,12 +340,15 @@ function SoundGridVideoCard({
 
   const frameClass = wideSource
     ? 'relative aspect-9/16 w-[min(200px,55vw)] overflow-hidden rounded-xl bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600'
-    : 'relative mx-auto aspect-9/16 w-full max-w-[96px] overflow-hidden rounded-lg bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600'
+    : `relative mx-auto aspect-9/16 w-full ${narrowWidthClass} overflow-hidden rounded-lg bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600`
 
-  const descRowClass = wideSource ? 'mt-2 w-[min(200px,55vw)]' : 'mt-1.5 w-full max-w-[96px] mx-auto'
+  const descRowClass = wideSource
+    ? 'mt-2 w-[min(200px,55vw)]'
+    : `mt-1.5 w-full ${narrowWidthClass} mx-auto`
 
   return (
     <div
+      ref={cardRef}
       className={
         wideSource
           ? 'relative inline-flex max-w-full flex-col'
@@ -296,12 +364,16 @@ function SoundGridVideoCard({
           {oneLine}
         </p>
         <button
+          ref={triggerRef}
           type="button"
           aria-label="Chi tiết video"
           aria-expanded={popoverOpen}
           className="shrink-0 rounded-full p-0.5 text-lg text-zinc-300 opacity-0 transition-opacity hover:bg-white/10 hover:text-white group-hover/desc:opacity-100 group-focus-within/desc:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
           onClick={(e) => {
             e.preventDefault()
+            if (!popoverOpen) {
+              updatePopoverSide()
+            }
             setPopoverOpen((o) => !o)
           }}
         >
@@ -309,16 +381,32 @@ function SoundGridVideoCard({
         </button>
       </div>
       {popoverOpen ? (
-        <div className="pointer-events-auto absolute left-full top-0 bottom-0 z-[68] flex items-center pl-1">
-          <div className="h-full min-h-[72px] w-5 shrink-0" aria-hidden />
-          <div className="ml-1.5 shrink-0">
+        <div
+          className="pointer-events-auto absolute z-[68] -translate-y-1/2"
+          style={{
+            top: popoverAnchorTop ?? '50%',
+            ...(popoverSide === 'left'
+              ? { right: popoverAnchorRight ?? undefined }
+              : { left: popoverAnchorLeft ?? undefined }),
+          }}
+        >
+          {popoverSide === 'left' ? (
             <SoundVideoDetailPopover
               video={video}
               formatCount={formatCompactCount}
               soundPageHref={soundPageHref}
               soundOwnerVibelyId={soundOwnerVibelyId}
+              side="left"
             />
-          </div>
+          ) : (
+            <SoundVideoDetailPopover
+              video={video}
+              formatCount={formatCompactCount}
+              soundPageHref={soundPageHref}
+              soundOwnerVibelyId={soundOwnerVibelyId}
+              side="right"
+            />
+          )}
         </div>
       ) : null}
     </div>
@@ -496,7 +584,7 @@ export function SoundPage() {
   }, [creatorUsernameResolved, items, creatorUsernameFromQuery])
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100">
+    <div className="scrollbar-none h-dvh max-h-dvh overflow-y-auto overscroll-y-contain bg-black text-zinc-100">
       <audio
         ref={soundAudioRef}
         src={audioUrl || undefined}
