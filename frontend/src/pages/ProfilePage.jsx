@@ -543,7 +543,7 @@ export function ProfilePage() {
       if (prev != null && profileGridVideoList.some((v) => v.publicId === prev)) {
         return prev
       }
-      return profileGridVideoList[0]?.publicId ?? null
+      return null
     })
   }, [profileGridVideoList])
 
