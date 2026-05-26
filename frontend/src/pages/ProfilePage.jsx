@@ -7,6 +7,7 @@ import { buildProfileVideoUrl, videoPublicIdOf } from '../utils/videoPublicId.js
 import { Sidebar } from '../components/Sidebar'
 import { TooltipHoverWrap } from '../components/TooltipControls'
 import { AccountActionsPill } from '../components/AccountActionsPill'
+import { ProfileFollowListModal } from '../components/ProfileFollowListModal'
 import {
   IoAlbumsOutline,
   IoArrowBack,
@@ -97,15 +98,27 @@ function ProfileGridMedia({ item: v, playing = false }) {
   const videoRef = useRef(null)
   const url = typeof v?.videoUrl === 'string' ? v.videoUrl.trim() : ''
   const thumb = typeof v?.thumbnailUrl === 'string' ? v.thumbnailUrl.trim() : ''
+  const [videoReady, setVideoReady] = useState(false)
+
+  useEffect(() => {
+    if (!playing) {
+      setVideoReady(false)
+    }
+  }, [playing, url])
 
   useEffect(() => {
     const el = videoRef.current
-    if (!el || !url) return
+    if (!el || !url || !playing) return
     if (playing) {
       const p = el.play()
       if (p?.catch) p.catch(() => {})
-    } else {
-      el.pause()
+    }
+    return () => {
+      try {
+        el.pause()
+      } catch {
+        /* noop */
+      }
       try {
         el.currentTime = 0
       } catch {
@@ -114,30 +127,46 @@ function ProfileGridMedia({ item: v, playing = false }) {
     }
   }, [playing, url])
 
-  if (url) {
-    return (
-      <video
-        ref={videoRef}
-        src={url}
-        poster={thumb || undefined}
-        muted
-        loop
-        playsInline
-        className="h-full w-full object-cover"
-        preload="metadata"
-      />
-    )
-  }
-  if (thumb) {
-    return <img src={thumb} alt="" className="h-full w-full object-cover" />
-  }
-  return (
+  const thumbNode = thumb ? (
+    <img
+      src={thumb}
+      alt=""
+      loading="lazy"
+      className="h-full w-full object-cover"
+    />
+  ) : (
     <img
       src="https://picsum.photos/seed/vibely-thumb/360/640"
       alt=""
+      loading="lazy"
       className="h-full w-full object-cover"
     />
   )
+
+  if (url && playing) {
+    return (
+      <>
+        {!videoReady ? (
+          <div className="absolute inset-0">
+            {thumbNode}
+          </div>
+        ) : null}
+        <video
+          ref={videoRef}
+          src={url}
+          poster={thumb || undefined}
+          muted
+          loop
+          playsInline
+          className="h-full w-full object-cover"
+          preload="metadata"
+          onLoadedData={() => setVideoReady(true)}
+          onCanPlay={() => setVideoReady(true)}
+        />
+      </>
+    )
+  }
+  return thumbNode
 }
 
 export function ProfilePage() {
@@ -188,6 +217,10 @@ export function ProfilePage() {
   const [profileVideosLoading, setProfileVideosLoading] = useState(false)
   /** Video đang preview trong lưới hồ sơ; đổi khi hover ô khác, không reset khi rời chuột. */
   const [profileGridPlayingId, setProfileGridPlayingId] = useState(null)
+  const [profileActionNotice, setProfileActionNotice] = useState('')
+  const [followBusy, setFollowBusy] = useState(false)
+  const [followListOpen, setFollowListOpen] = useState(false)
+  const [followListTab, setFollowListTab] = useState('following')
 
   const COLLECTION_NAME_MAX = 30
 
@@ -203,7 +236,7 @@ export function ProfilePage() {
     if (username) {
       let isMounted = true
       apiClient
-        .getPublicProfile(username)
+        .getPublicProfile(username, token)
         .then((profile) => {
           if (!isMounted) return
           setPublicProfile(profile)
@@ -233,7 +266,7 @@ export function ProfilePage() {
     }
     let cancelled = false
     apiClient
-      .getPublicProfile(user.username)
+      .getPublicProfile(user.username, token)
       .then((p) => {
         if (!cancelled) setOwnPublicProfile(p)
       })
@@ -309,6 +342,85 @@ export function ProfilePage() {
     (Boolean(user?.username) &&
       Boolean(profile?.username) &&
       normalizeUsername(user.username) === normalizeUsername(profile.username))
+  const isFollowingProfile = Boolean(profile?.followedByViewer)
+
+  useEffect(() => {
+    setProfileActionNotice('')
+  }, [profile?.username])
+
+  useEffect(() => {
+    setFollowListOpen(false)
+  }, [profile?.username])
+
+  const patchPublicProfile = useCallback((patch) => {
+    setPublicProfile((prev) => (prev ? { ...prev, ...patch } : prev))
+  }, [])
+
+  const handleProfileFollowToggle = useCallback(async () => {
+    if (!profile?.id || isOwnProfile) return
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    if (followBusy) return
+    setProfileActionNotice('')
+    const next = !isFollowingProfile
+    const prevFollowerCount = Number(profile?.followerCount ?? 0)
+    setFollowBusy(true)
+    patchPublicProfile({
+      followedByViewer: next,
+      followerCount: Math.max(0, prevFollowerCount + (next ? 1 : -1)),
+    })
+    try {
+      if (next) await apiClient.follow(profile.id, token)
+      else await apiClient.unfollow(profile.id, token)
+    } catch (error) {
+      patchPublicProfile({
+        followedByViewer: !next,
+        followerCount: prevFollowerCount,
+      })
+      setProfileActionNotice(error?.message || 'Không thể cập nhật trạng thái theo dõi.')
+    } finally {
+      setFollowBusy(false)
+    }
+  }, [profile?.id, profile?.followerCount, isOwnProfile, token, followBusy, isFollowingProfile, navigate, patchPublicProfile])
+
+  const handleProfileMessageClick = useCallback(() => {
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    setProfileActionNotice('Tin nhắn riêng sẽ sớm có mặt.')
+  }, [token, navigate])
+
+  const handleProfileShareClick = useCallback(async () => {
+    try {
+      const url = typeof window !== 'undefined' ? window.location.href : ''
+      if (!url) return
+      await navigator.clipboard.writeText(url)
+      setProfileActionNotice('Đã sao chép liên kết hồ sơ.')
+    } catch {
+      setProfileActionNotice('Không thể sao chép liên kết hồ sơ.')
+    }
+  }, [])
+
+  const handleProfileMoreClick = useCallback(() => {
+    setProfileActionNotice('Thêm tuỳ chọn hồ sơ sẽ sớm có mặt.')
+  }, [])
+
+  const openFollowListModal = useCallback((tab) => {
+    if (!profile?.username) return
+    setFollowListTab(tab === 'followers' ? 'followers' : 'following')
+    setFollowListOpen(true)
+  }, [profile?.username])
+
+  const closeFollowListModal = useCallback(() => {
+    setFollowListOpen(false)
+  }, [])
+
+  const handleFollowListRequireLogin = useCallback(() => {
+    navigate('/login')
+  }, [navigate])
 
   const profileMainTab =
     searchParams.get('tab') === 'favorites'
@@ -495,7 +607,7 @@ export function ProfilePage() {
     { id: 'more', label: 'Thêm', icon: IoEllipsisHorizontal },
   ]
 
-  const activeMenu = 'profile'
+  const activeMenu = isOwnProfile ? 'profile' : null
   const handleSelectMenu = (id) => {
     if (id === 'more') return
     if (id === 'profile') {
@@ -618,7 +730,7 @@ export function ProfilePage() {
   }
 
   return (
-    <section className="flex h-dvh min-h-0 bg-black text-zinc-100">
+    <section className="flex min-h-screen bg-black text-zinc-100">
       <Sidebar
         menuItems={menuItems}
         activeMenu={activeMenu}
@@ -628,7 +740,7 @@ export function ProfilePage() {
         onLogout={token ? logout : undefined}
       />
 
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden px-6 py-5">
+      <div className="relative flex flex-1 flex-col overflow-visible px-6 py-5">
         {token ? (
           <AccountActionsPill className="absolute right-8 top-5 z-10" tone="profile">
             <div className="relative" ref={accountMenuRef}>
@@ -688,7 +800,7 @@ export function ProfilePage() {
           </AccountActionsPill>
         ) : null}
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain">
+        <div className="flex flex-1 flex-col overflow-visible">
         {!username && !token ? (
           <section className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
             <h2 className="text-xl font-semibold">Hồ sơ</h2>
@@ -721,18 +833,28 @@ export function ProfilePage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-300">
-                    <span>
+                    <button
+                      type="button"
+                      className="cursor-pointer rounded-full transition hover:text-zinc-100"
+                      aria-label="Mở danh sách đã follow"
+                      onClick={() => openFollowListModal('following')}
+                    >
                       <span className="font-semibold text-zinc-100">
                         {formatCompactCount(profile?.followingCount ?? 0)}
                       </span>{' '}
                       Đã follow
-                    </span>
-                    <span>
+                    </button>
+                    <button
+                      type="button"
+                      className="cursor-pointer rounded-full transition hover:text-zinc-100"
+                      aria-label="Mở danh sách follower"
+                      onClick={() => openFollowListModal('followers')}
+                    >
                       <span className="font-semibold text-zinc-100">
                         {formatCompactCount(profile?.followerCount ?? 0)}
                       </span>{' '}
                       Follower
-                    </span>
+                    </button>
                     <span>
                       <span className="font-semibold text-zinc-100">
                         {formatCompactCount(profile?.totalLikeCount ?? 0)}
@@ -777,6 +899,60 @@ export function ProfilePage() {
                         <IoArrowRedo />
                       </button>
                     </div>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        className={`min-w-[112px] rounded-full px-5 py-2 text-sm font-semibold transition ${
+                          isFollowingProfile
+                            ? 'border border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800'
+                            : 'bg-[#FE2C55] text-white hover:bg-[#ea284f]'
+                        } ${followBusy ? 'cursor-wait opacity-80' : 'cursor-pointer'}`}
+                        onClick={() => void handleProfileFollowToggle()}
+                        disabled={followBusy}
+                      >
+                        {followBusy
+                          ? 'Đang lưu...'
+                          : isFollowingProfile
+                            ? 'Đã follow'
+                            : 'Follow'}
+                      </button>
+                      <button
+                        type="button"
+                        className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"
+                        onClick={handleProfileMessageClick}
+                      >
+                        Tin nhắn
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Bạn chung"
+                        className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
+                        onClick={handleProfileMoreClick}
+                      >
+                        <IoPeople />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Chia sẻ hồ sơ"
+                        className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
+                        onClick={() => void handleProfileShareClick()}
+                      >
+                        <IoArrowRedo />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Thêm tuỳ chọn hồ sơ"
+                        className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
+                        onClick={handleProfileMoreClick}
+                      >
+                        <IoEllipsisHorizontal />
+                      </button>
+                    </div>
+                  )}
+
+                  {profileActionNotice ? (
+                    <p className="text-sm text-zinc-400">{profileActionNotice}</p>
                   ) : null}
 
                   <p className="text-sm text-zinc-300">
@@ -1087,6 +1263,19 @@ export function ProfilePage() {
           </section>
         )}
         </div>
+        <ProfileFollowListModal
+          open={followListOpen}
+          onClose={closeFollowListModal}
+          username={profile?.username}
+          displayName={profile?.displayName}
+          activeTab={followListTab}
+          onTabChange={setFollowListTab}
+          followingCount={profile?.followingCount ?? 0}
+          followerCount={profile?.followerCount ?? 0}
+          token={token}
+          onRequireLogin={handleFollowListRequireLogin}
+          isOwnProfile={isOwnProfile}
+        />
         {isEditModalOpen ? (
           <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
             <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl">

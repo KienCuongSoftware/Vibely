@@ -104,13 +104,14 @@ export function Sidebar({
                 key={item.id}
                 type="button"
                 title={collapsed ? item.label : undefined}
+                aria-current={isActive ? "page" : undefined}
                 className={`flex w-full cursor-pointer items-center rounded-lg ${
                   collapsed
                     ? "justify-center px-0 py-2.5"
                     : "gap-3 px-3 py-2 text-left"
                 } ${
                   isActive
-                    ? "bg-zinc-900 font-semibold text-red-500"
+                    ? "bg-zinc-900 font-semibold text-red-500 ring-1 ring-zinc-800/80"
                     : "hover:bg-zinc-900"
                 }`}
                 onClick={() => handleNavClick(item)}

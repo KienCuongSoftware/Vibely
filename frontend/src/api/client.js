@@ -121,14 +121,35 @@ export const apiClient = {
     request("/api/users/me", { method: "PUT", token, body: payload }),
   checkUsername: (username) =>
     request(`/api/users/check-username${toQuery({ username })}`),
-  getPublicProfile: (username) =>
-    request(`/api/users/${encodeURIComponent(username)}`),
+  getPublicProfile: (username, token) =>
+    request(
+      `/api/users/${encodeURIComponent(username)}`,
+      token ? { token } : {},
+    ),
   getVideosByUsername: (username, { page = 0, size = 48 } = {}) => {
     const u = String(username ?? "")
       .trim()
       .replace(/^@/, "");
     return request(
       `/api/users/${encodeURIComponent(u)}/videos${toQuery({ page, size })}`,
+    );
+  },
+  getProfileFollowing: (username, { page = 0, size = 20, token } = {}) => {
+    const u = String(username ?? "")
+      .trim()
+      .replace(/^@/, "");
+    return request(
+      `/api/users/${encodeURIComponent(u)}/following${toQuery({ page, size })}`,
+      token ? { token } : {},
+    );
+  },
+  getProfileFollowers: (username, { page = 0, size = 20, token } = {}) => {
+    const u = String(username ?? "")
+      .trim()
+      .replace(/^@/, "");
+    return request(
+      `/api/users/${encodeURIComponent(u)}/followers${toQuery({ page, size })}`,
+      token ? { token } : {},
     );
   },
   getFeed: ({ size = 10, sort = "latest", cursor } = {}) =>
@@ -147,6 +168,8 @@ export const apiClient = {
     request(`/api/videos/${publicId}`, token ? { token } : {}),
   getVideosBySound: (audioUrl, { page = 0, size = 24 } = {}) =>
     request(`/api/videos/sound${toQuery({ audioUrl, page, size })}`),
+  getVideosByHashtag: (tag, { page = 0, size = 24 } = {}) =>
+    request(`/api/videos/hashtag${toQuery({ tag, page, size })}`),
   updateVideo: (publicId, payload, token) =>
     request(`/api/videos/${publicId}`, { method: "PUT", body: payload, token }),
   deleteVideo: (publicId, token) =>
