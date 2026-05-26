@@ -26,6 +26,7 @@ import {
   IoBookmark,
   IoChevronDown,
   IoChevronUp,
+  IoCheckmark,
   IoCompass,
   IoEllipsisHorizontal,
   IoHappyOutline,
@@ -50,6 +51,7 @@ import { FEED_CONFIG } from "../feed/feedConfig.js";
 import { trimFeedItemsIfNeeded } from "../feed/trimFeedItems.js";
 
 const DEFAULT_USER_AVATAR_URL = "/images/users/default-avatar.jpeg";
+const FEED_FOLLOWED_AUTHORS_STORAGE_PREFIX = "vibely:feed-followed-authors:";
 
 function deriveVibelyIdFromEmail(email) {
   const safeEmail = String(email ?? "").trim();
@@ -99,6 +101,43 @@ function buildProfilePath(token, user) {
   return `/@${encodeURIComponent(vibelyId || "vibely.user")}`;
 }
 
+function feedFollowedAuthorsStorageKey(token) {
+  const subject = decodeJwtSubject(token);
+  return `${FEED_FOLLOWED_AUTHORS_STORAGE_PREFIX}${subject || "guest"}`;
+}
+
+function readFeedFollowedAuthorIds(token) {
+  if (typeof window === "undefined" || !token) return new Set();
+  try {
+    const raw = window.sessionStorage.getItem(feedFollowedAuthorsStorageKey(token));
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(
+      parsed
+        .map((value) => Number(value))
+        .filter((value) => Number.isFinite(value) && value > 0),
+    );
+  } catch {
+    return new Set();
+  }
+}
+
+function writeFeedFollowedAuthorIds(token, ids) {
+  if (typeof window === "undefined" || !token) return;
+  try {
+    const values = [...ids]
+      .map((value) => Number(value))
+      .filter((value) => Number.isFinite(value) && value > 0);
+    window.sessionStorage.setItem(
+      feedFollowedAuthorsStorageKey(token),
+      JSON.stringify(values),
+    );
+  } catch {
+    /* noop */
+  }
+}
+
 function formatCompactCount(value) {
   const count = Number(value ?? 0);
   if (count >= 1_000_000) {
@@ -123,6 +162,13 @@ function resolveFeedAuthorDisplayName(video) {
     .trim()
     .replace(/^@/, "");
   return fallback || "Nhà sáng tạo";
+}
+
+function feedAuthorProfilePath(video) {
+  const raw = String(video?.authorUsername ?? "")
+    .trim()
+    .replace(/^@/, "");
+  return raw ? `/@${encodeURIComponent(raw)}` : "";
 }
 
 function mergeVideosByPublicId(prev, incoming) {
@@ -172,12 +218,17 @@ const FEED_ROUND_ICON_BUTTON =
 function normalizeVideoItem(item) {
   return {
     ...item,
+    authorId:
+      item?.authorId == null || Number.isNaN(Number(item.authorId))
+        ? null
+        : Number(item.authorId),
     authorDisplayName:
       item.authorDisplayName != null &&
       String(item.authorDisplayName).trim()
         ? String(item.authorDisplayName).trim()
         : undefined,
     avatarUrl: resolveVideoAuthorAvatar(item),
+    isAuthorFollowed: Boolean(item?.followedByViewer || item?.isAuthorFollowed),
     shareCount: Number(item.shareCount ?? 0),
     bookmarkCount: Number(item.bookmarkCount ?? 0),
   };
@@ -289,9 +340,15 @@ function ForYouFeedPage({ token, user, onLogout, authReady }) {
   const [feedCommentsLoading, setFeedCommentsLoading] = useState(false);
   const [feedCommentsError, setFeedCommentsError] = useState("");
   const [commentPostError, setCommentPostError] = useState("");
+  const [followBusyAuthorId, setFollowBusyAuthorId] = useState(null);
+  const [followSuccessPublicId, setFollowSuccessPublicId] = useState(null);
+  const [followedAuthorIds, setFollowedAuthorIds] = useState(() =>
+    readFeedFollowedAuthorIds(token),
+  );
   const feedViewQualifySentRef = useRef(new Set());
   const feedViewPlaythroughSentRef = useRef(new Set());
   const playbackFlashTimerRef = useRef(null);
+  const followBadgeTimerRef = useRef(null);
 
   useEffect(() => {
     const unlock = () => setSoundUnlocked(true);
@@ -299,12 +356,49 @@ function ForYouFeedPage({ token, user, onLogout, authReady }) {
     return () =>
       window.removeEventListener("pointerdown", unlock, { capture: true });
   }, []);
+
+  useEffect(() => {
+    setFollowedAuthorIds(readFeedFollowedAuthorIds(token));
+  }, [token]);
+
+  useEffect(() => {
+    if (followedAuthorIds.size === 0) return;
+    setVideos((prev) => {
+      let changed = false;
+      const next = prev.map((video) => {
+        const authorId = Number(video?.authorId);
+        if (
+          Number.isFinite(authorId) &&
+          followedAuthorIds.has(authorId) &&
+          !video?.isAuthorFollowed
+        ) {
+          changed = true;
+          return { ...video, isAuthorFollowed: true };
+        }
+        return video;
+      });
+      return changed ? next : prev;
+    });
+  }, [followedAuthorIds, videos]);
+
+  useEffect(
+    () => () => {
+      if (followBadgeTimerRef.current != null) {
+        clearTimeout(followBadgeTimerRef.current);
+      }
+    },
+    [],
+  );
   /** TikTok-style: brief center icon after tap — 'play' | 'pause' */
   const [playbackFlash, setPlaybackFlash] = useState(null);
   /** false cho đến khi lần fetch feed (theo token/menu/location) chạy xong — tránh flash “feed trống” khi reload. */
   const [feedHydrated, setFeedHydrated] = useState(false);
 
   const activeVideo = videos[activeIndex] ?? null;
+  const activeAuthorProfilePath = useMemo(
+    () => feedAuthorProfilePath(activeVideo),
+    [activeVideo],
+  );
 
   useEffect(() => {
     const id =
@@ -345,6 +439,123 @@ function ForYouFeedPage({ token, user, onLogout, authReady }) {
       ),
     );
   }, []);
+
+  const patchVideosByAuthorId = useCallback((authorId, patch) => {
+    const key = Number(authorId);
+    if (!Number.isFinite(key)) return;
+    setVideos((prev) =>
+      prev.map((video) =>
+        Number(video?.authorId) === key ? { ...video, ...patch } : video,
+      ),
+    );
+  }, []);
+
+  const markAuthorFollowedInSession = useCallback(
+    (authorId) => {
+      const key = Number(authorId);
+      if (!Number.isFinite(key) || key <= 0) return;
+      setFollowedAuthorIds((prev) => {
+        const next = new Set(prev);
+        next.add(key);
+        writeFeedFollowedAuthorIds(token, next);
+        return next;
+      });
+    },
+    [token],
+  );
+
+  const hydrateFeedFollowState = useCallback(
+    (items) =>
+      items.map((item) => {
+        const normalized = normalizeVideoItem(item);
+        const authorId = Number(normalized?.authorId);
+        if (Number.isFinite(authorId) && followedAuthorIds.has(authorId)) {
+          return { ...normalized, isAuthorFollowed: true };
+        }
+        return normalized;
+      }),
+    [followedAuthorIds],
+  );
+
+  const startFollowSuccessFlash = useCallback((publicId) => {
+    const key = normalizeVideoPublicId(publicId);
+    if (!key) return;
+    if (followBadgeTimerRef.current != null) {
+      clearTimeout(followBadgeTimerRef.current);
+    }
+    setFollowSuccessPublicId(key);
+    followBadgeTimerRef.current = setTimeout(() => {
+      setFollowSuccessPublicId((current) => (current === key ? null : current));
+      followBadgeTimerRef.current = null;
+    }, 500);
+  }, []);
+
+  const clearFollowSuccessFlash = useCallback((publicId) => {
+    const key = normalizeVideoPublicId(publicId);
+    if (!key) return;
+    if (followBadgeTimerRef.current != null) {
+      clearTimeout(followBadgeTimerRef.current);
+      followBadgeTimerRef.current = null;
+    }
+    setFollowSuccessPublicId((current) => (current === key ? null : current));
+  }, []);
+
+  const showActiveAuthorFollowBadge = useMemo(() => {
+    if (!activeVideo) return false;
+    const authorId = Number(activeVideo.authorId);
+    if (!Number.isFinite(authorId) || authorId <= 0) return false;
+    if (Number(user?.id) === authorId) return false;
+    return !Boolean(activeVideo.isAuthorFollowed);
+  }, [activeVideo, user?.id]);
+
+  const showActiveAuthorFollowSuccess = useMemo(() => {
+    return (
+      normalizeVideoPublicId(activeVideo?.publicId) != null &&
+      normalizeVideoPublicId(activeVideo?.publicId) === followSuccessPublicId
+    );
+  }, [activeVideo?.publicId, followSuccessPublicId]);
+
+  const handleActiveAuthorFollow = useCallback(
+    async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const authorId = Number(activeVideo?.authorId);
+      const publicId = normalizeVideoPublicId(activeVideo?.publicId);
+      if (!Number.isFinite(authorId) || authorId <= 0) return;
+      if (!publicId) return;
+      if (Number(user?.id) === authorId) return;
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+      if (followBusyAuthorId === authorId) return;
+
+      setFollowBusyAuthorId(authorId);
+      markAuthorFollowedInSession(authorId);
+      patchVideosByAuthorId(authorId, { isAuthorFollowed: true });
+      startFollowSuccessFlash(publicId);
+      try {
+        await apiClient.follow(authorId, token);
+      } catch {
+        clearFollowSuccessFlash(publicId);
+        patchVideosByAuthorId(authorId, { isAuthorFollowed: false });
+      } finally {
+        setFollowBusyAuthorId(null);
+      }
+    },
+    [
+      activeVideo?.authorId,
+      activeVideo?.publicId,
+      clearFollowSuccessFlash,
+      followBusyAuthorId,
+      markAuthorFollowedInSession,
+      navigate,
+      patchVideosByAuthorId,
+      startFollowSuccessFlash,
+      token,
+      user?.id,
+    ],
+  );
 
   const openBookmarkManagePopover = useCallback(() => {
     setBookmarkToastOpen(false);
@@ -394,7 +605,7 @@ function ForYouFeedPage({ token, user, onLogout, authReady }) {
         cursor: nextCursor,
       });
       const items = response?.items ?? [];
-      const chunk = items.map(normalizeVideoItem);
+      const chunk = hydrateFeedFollowState(items);
       setVideos((prev) => {
         const merged = mergeVideosByPublicId(prev, chunk);
         const trimmed = trimFeedItemsIfNeeded(merged, activeIndex);
@@ -410,7 +621,7 @@ function ForYouFeedPage({ token, user, onLogout, authReady }) {
     } finally {
       loadMoreLockRef.current = false;
     }
-  }, [activeMenu, hasMoreFeed, nextCursor, activeIndex]);
+  }, [activeMenu, hasMoreFeed, nextCursor, activeIndex, hydrateFeedFollowState]);
 
   useEffect(() => {
     const raw =
@@ -463,13 +674,13 @@ function ForYouFeedPage({ token, user, onLogout, authReady }) {
           const items = response?.items ?? [];
           if (!isMounted) return;
 
-          let normalized = items.map(normalizeVideoItem);
+          let normalized = hydrateFeedFollowState(items);
 
           if (items.length === 0) {
             if (focusId != null) {
               try {
                 const one = await apiClient.getVideo(focusId, { token });
-                const focusNorm = normalizeVideoItem(one);
+                const focusNorm = hydrateFeedFollowState([one])[0];
                 normalized = [focusNorm];
                 const idx = 0;
                 setActiveIndex(idx);
@@ -498,7 +709,7 @@ function ForYouFeedPage({ token, user, onLogout, authReady }) {
                 });
                 const mineItems = Array.isArray(mine?.items) ? mine.items : [];
                 if (mineItems.length > 0) {
-                  normalized = mineItems.map(normalizeVideoItem);
+                  normalized = hydrateFeedFollowState(mineItems);
                   setActiveIndex(0);
                   setVideos(normalized);
                   setNextCursor(null);
@@ -527,7 +738,7 @@ function ForYouFeedPage({ token, user, onLogout, authReady }) {
             if (!has) {
               try {
                 const one = await apiClient.getVideo(focusId, { token });
-                const focusNorm = normalizeVideoItem(one);
+                const focusNorm = hydrateFeedFollowState([one])[0];
                 normalized = [focusNorm, ...normalized];
               } catch {
                 /* không tải được video (đã gỡ / lỗi mạng) */
@@ -562,7 +773,7 @@ function ForYouFeedPage({ token, user, onLogout, authReady }) {
                 });
                 const mineItems = Array.isArray(mine?.items) ? mine.items : [];
                 if (mineItems.length > 0) {
-                  setVideos(mineItems.map(normalizeVideoItem));
+                  setVideos(hydrateFeedFollowState(mineItems));
                   setHasMoreFeed(Boolean(mine?.hasNext));
                   setNextCursor(null);
                   return;
@@ -1131,22 +1342,43 @@ function ForYouFeedPage({ token, user, onLogout, authReady }) {
                   onDismiss={() => setBookmarkToastOpen(false)}
                 />
               </div>
-              <div className="ml-4 flex flex-col items-center gap-3">
-                <button
-                  type="button"
-                  className="relative h-12 w-12 cursor-pointer rounded-full border-2 border-white/90 bg-zinc-700 p-[2px]"
-                >
-                  <img
-                    className="h-full w-full rounded-full object-cover"
-                    src={
-                      activeVideo?.avatarUrl ?? FEED_DEFAULT_AUTHOR_AVATAR
-                    }
-                    alt={`avatar-${activeVideo?.authorUsername ?? "user"}`}
-                  />
-                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-red-600 px-1 text-[10px] leading-3 text-white">
-                    +
-                  </span>
-                </button>
+              <div className="ml-4 flex flex-col items-center gap-3 pb-12 sm:pb-14">
+                <div className="relative mb-3 h-12 w-12">
+                  <Link
+                    to={activeAuthorProfilePath || "#"}
+                    aria-label={`Xem hồ sơ ${activeVideo?.authorUsername ?? "user"}`}
+                    className={`block h-12 w-12 rounded-full ${
+                      activeAuthorProfilePath ? "cursor-pointer" : "pointer-events-none"
+                    }`}
+                  >
+                    <img
+                      className="h-full w-full rounded-full object-cover"
+                      src={
+                        activeVideo?.avatarUrl ?? FEED_DEFAULT_AUTHOR_AVATAR
+                      }
+                      alt={`avatar-${activeVideo?.authorUsername ?? "user"}`}
+                    />
+                  </Link>
+                  {showActiveAuthorFollowSuccess ? (
+                    <span
+                      aria-label={`Đã theo dõi ${activeVideo?.authorUsername ?? "user"}`}
+                      className="absolute bottom-0 left-1/2 flex h-6 w-6 -translate-x-1/2 translate-y-[38%] items-center justify-center rounded-full border border-zinc-500 bg-zinc-200 text-sm text-red-500 shadow-[0_3px_10px_rgba(0,0,0,0.45)]"
+                    >
+                      <IoCheckmark aria-hidden />
+                    </span>
+                  ) : null}
+                  {showActiveAuthorFollowBadge && !showActiveAuthorFollowSuccess ? (
+                    <button
+                      type="button"
+                      aria-label={`Theo dõi ${activeVideo?.authorUsername ?? "user"}`}
+                      className="absolute bottom-0 left-1/2 flex h-6 w-6 -translate-x-1/2 translate-y-[38%] cursor-pointer items-center justify-center rounded-full border-2 border-black bg-red-500 text-base leading-none text-white shadow-[0_3px_10px_rgba(0,0,0,0.45)] disabled:cursor-wait disabled:opacity-75"
+                      onClick={handleActiveAuthorFollow}
+                      disabled={followBusyAuthorId === Number(activeVideo?.authorId)}
+                    >
+                      <span className="-translate-y-px">+</span>
+                    </button>
+                  ) : null}
+                </div>
                 <button
                   type="button"
                   className={FEED_ROUND_ICON_BUTTON}
