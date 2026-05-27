@@ -1,15 +1,16 @@
 import React from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { apiClient } from '../api/client'
 import {
   watchTimeNearPlaythroughEnd,
   watchTimeQualifiesForViewRecord,
 } from '../utils/watchQualifiesForViewRecord'
-import { Sidebar } from '../components/Sidebar'
 import { TooltipHoverWrap } from '../components/TooltipControls'
 import { AccountActionsPill } from '../components/AccountActionsPill'
 import { VideoShareModal } from '../components/VideoShareModal'
+import { feedPrefetchManager } from '../feed/FeedPrefetchManager.js'
+import { resolveFeedPlaybackUrl, isHlsPlaybackUrl } from '../feed/feedPlayback.js'
 import { useAuth } from '../state/useAuth'
 import {
   buildProfileVideoUrl,
@@ -22,24 +23,22 @@ import {
   IoBookmark,
   IoBookmarkOutline,
   IoChatbubbleEllipsesOutline,
-  IoCompass,
+  IoChevronDown,
+  IoChevronUp,
+  IoClose,
   IoEllipsisHorizontal,
   IoHappyOutline,
   IoHeart,
   IoHeartOutline,
-  IoHome,
   IoLogOutOutline,
   IoMusicalNotes,
-  IoNotifications,
-  IoPaperPlane,
-  IoPeople,
   IoPerson,
+  IoSearchOutline,
   IoShareOutline,
-  IoVideocam,
 } from 'react-icons/io5'
-import { MdOutlineFileUpload } from 'react-icons/md'
 
 const DEFAULT_USER_AVATAR_URL = '/images/users/default-avatar.jpeg'
+const EXPLORE_PAGE_TITLE = 'Khám phá - Tìm video bạn thích trên Vibely'
 
 function formatCompactCount(value) {
   const count = Number(value ?? 0)
@@ -82,6 +81,40 @@ function watchPageCaption(v) {
   return pick
 }
 
+function renderInteractiveText(text) {
+  const source = String(text ?? '')
+  if (!source) return null
+  const parts = source.split(/([#@][^\s#@]+)/g)
+  return parts.map((part, idx) => {
+    if (!part) return null
+    if (/^#[^\s#@]+$/.test(part)) {
+      const tag = part.slice(1)
+      return (
+        <Link
+          key={`${part}-${idx}`}
+          to={tag ? `/tag/${encodeURIComponent(tag)}` : '/foryou'}
+          className="font-semibold text-sky-300 transition hover:text-sky-200 hover:underline"
+        >
+          {part}
+        </Link>
+      )
+    }
+    if (/^@[^\s#@]+$/.test(part)) {
+      const user = part.slice(1)
+      return (
+        <Link
+          key={`${part}-${idx}`}
+          to={`/@${encodeURIComponent(user)}`}
+          className="font-semibold text-sky-300 transition hover:text-sky-200 hover:underline"
+        >
+          {part}
+        </Link>
+      )
+    }
+    return <React.Fragment key={`${part}-${idx}`}>{part}</React.Fragment>
+  })
+}
+
 function normalizeUsernameKey(raw) {
   return String(raw ?? '')
     .trim()
@@ -112,8 +145,75 @@ function formatRelativeTime(iso) {
 const ACTION_ROW =
   'flex items-center gap-1.5 rounded-md px-0.5 py-1 text-zinc-100 transition hover:bg-zinc-900/80'
 
+const WATCH_CHROME_BTN =
+  'flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-zinc-600/45 text-xl text-zinc-100 transition hover:bg-zinc-600/75'
+
+function WatchSpinner() {
+  return (
+    <svg
+      className="h-10 w-10 animate-spin text-rose-500"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <path
+        d="M12 2a10 10 0 0 1 10 10"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+function resolveWatchOrientation(video, intrinsic) {
+  const w = Number(video?.sourceWidthPx)
+  const h = Number(video?.sourceHeightPx)
+  if (Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) {
+    return w >= h ? 'landscape' : 'portrait'
+  }
+  if (intrinsic?.width > 0 && intrinsic?.height > 0) {
+    return intrinsic.width >= intrinsic.height ? 'landscape' : 'portrait'
+  }
+  return 'portrait'
+}
+
+function watchMediaPlacementClass(orientation) {
+  if (orientation === 'landscape') {
+    return 'inset-x-0 top-1/2 max-h-full w-full -translate-y-1/2'
+  }
+  return 'inset-y-0 left-1/2 h-full w-auto max-w-full -translate-x-1/2'
+}
+
+function watchVideoClass(orientation) {
+  const placement = watchMediaPlacementClass(orientation)
+  const fit = orientation === 'landscape' ? 'object-contain' : 'object-cover'
+  return `${placement} z-[2] ${fit}`
+}
+
+function resolveWatchPlaybackUrl(video) {
+  const progressive = String(video?.videoUrl ?? '').trim()
+  const preferred = resolveFeedPlaybackUrl(video)
+  if (preferred && isHlsPlaybackUrl(preferred)) {
+    return progressive || preferred
+  }
+  return preferred || progressive || ''
+}
+
+function mergeExploreItems(existing, incoming) {
+  const map = new Map()
+  ;[...(Array.isArray(existing) ? existing : []), ...(Array.isArray(incoming) ? incoming : [])].forEach(
+    (row) => {
+      const key = normalizeVideoPublicId(row?.publicId)
+      if (key) map.set(key, row)
+    },
+  )
+  return Array.from(map.values())
+}
+
 export function VideoWatchPage() {
   const { username: usernameParam, publicId: publicIdParam } = useParams()
+  const location = useLocation()
   const navigate = useNavigate()
   const { token, user, logout } = useAuth()
   const videoRef = useRef(null)
@@ -125,6 +225,7 @@ export function VideoWatchPage() {
   const [video, setVideo] = useState(null)
   const [loadError, setLoadError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [videoReady, setVideoReady] = useState(false)
   const [liked, setLiked] = useState(false)
   const [bookmarked, setBookmarked] = useState(false)
   const [comments, setComments] = useState([])
@@ -135,7 +236,18 @@ export function VideoWatchPage() {
   const [shareCopied, setShareCopied] = useState(false)
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [intrinsicSize, setIntrinsicSize] = useState(null)
+  const [exploreQueue, setExploreQueue] = useState([])
+  const [exploreCursor, setExploreCursor] = useState(null)
+  const [exploreHasNext, setExploreHasNext] = useState(false)
+  const [exploreLoadingMore, setExploreLoadingMore] = useState(false)
   const accountMenuRef = useRef(null)
+  const exploreInitRef = useRef(false)
+  const videoDetailCacheRef = useRef(new Map())
+  const displayPosterRef = useRef('')
+  const exploreQueueRef = useRef(exploreQueue)
+  exploreQueueRef.current = exploreQueue
 
   const routeSlug = useMemo(() => normalizeUsernameKey(usernameParam), [usernameParam])
   const publicIdFromRoute = useMemo(
@@ -143,53 +255,160 @@ export function VideoWatchPage() {
     [publicIdParam],
   )
 
-  const menuItems = useMemo(
-    () => [
-      { id: 'latest', label: 'Đề xuất', icon: IoHome },
-      { id: 'explore', label: 'Khám phá', icon: IoCompass },
-      { id: 'following', label: 'Đã follow', icon: IoPeople },
-      ...(token
-        ? [
-            { id: 'friends', label: 'Bạn bè', icon: IoPeople },
-            { id: 'messages', label: 'Tin nhắn', icon: IoPaperPlane },
-            { id: 'activity', label: 'Hoạt động', icon: IoNotifications },
-          ]
-        : []),
-      { id: 'live', label: 'LIVE', icon: IoVideocam },
-      { id: 'upload', label: 'Tải lên', icon: MdOutlineFileUpload },
-      { id: 'profile', label: 'Hồ sơ', icon: IoPerson },
-      { id: 'more', label: 'Thêm', icon: IoEllipsisHorizontal },
-    ],
-    [token],
-  )
-
-  const handleSelectMenu = (id) => {
-    if (id === 'more') return
-    if (id === 'profile') {
-      if (!token) {
-        navigate('/login')
-        return
-      }
-      navigate('/profile')
-      return
-    }
-    if (id === 'upload') {
-      navigate('/vibelystudio/upload')
-      return
-    }
-    navigate('/foryou')
-  }
-
   const profileBackPath = useMemo(() => {
     const slug = routeSlug
     return slug ? `/@${encodeURIComponent(slug)}` : '/foryou'
   }, [routeSlug])
 
+  const isFromExplore = useMemo(
+    () =>
+      location.pathname.startsWith('/explore/view/') ||
+      Boolean(location.state?.fromExplore),
+    [location.pathname, location.state],
+  )
+
+  const resolvedVideo = useMemo(() => {
+    const routeId = publicIdFromRoute
+    if (!routeId) return null
+    if (video && normalizeVideoPublicId(video.publicId) === routeId) return video
+    const cached = videoDetailCacheRef.current.get(routeId)
+    if (cached) return cached
+    if (isFromExplore) {
+      return (
+        exploreQueue.find((row) => normalizeVideoPublicId(row?.publicId) === routeId) ?? null
+      )
+    }
+    return null
+  }, [exploreQueue, isFromExplore, publicIdFromRoute, video])
+
+  const activeVideo = resolvedVideo ?? video
+  const activePosterUrl = activeVideo?.thumbnailUrl?.trim() || ''
+  const activePlaybackUrl = resolveWatchPlaybackUrl(activeVideo)
+
+  if (
+    activePosterUrl &&
+    normalizeVideoPublicId(activeVideo?.publicId) === publicIdFromRoute
+  ) {
+    displayPosterRef.current = activePosterUrl
+  }
+  const displayPosterUrl = activePosterUrl || displayPosterRef.current
+
+  useLayoutEffect(() => {
+    setVideoReady(false)
+    setIntrinsicSize(null)
+  }, [publicIdFromRoute])
+
+  const isVideoFrameReady =
+    videoReady && normalizeVideoPublicId(activeVideo?.publicId) === publicIdFromRoute
+
+  const watchOrientation = useMemo(
+    () => resolveWatchOrientation(activeVideo, intrinsicSize),
+    [activeVideo, intrinsicSize],
+  )
+
+  const watchVideoSizing = watchVideoClass(watchOrientation)
+  const watchPosterSizing = `${watchMediaPlacementClass(watchOrientation)} z-[1] ${
+    watchOrientation === 'landscape' ? 'object-contain' : 'object-cover'
+  }`
+
+  const backPath = isFromExplore ? '/explore' : profileBackPath
+  const exploreContext = isFromExplore ? location.state?.exploreContext : null
+
+  const loadExploreChunk = useCallback(
+    async (nextCursor) => {
+      const slug =
+        String(exploreContext?.slug ?? '').trim() && exploreContext?.slug !== 'all'
+          ? exploreContext.slug
+          : 'all'
+      return slug === 'all'
+        ? apiClient.getExploreTrending({ cursor: nextCursor, size: 12 })
+        : apiClient.getExploreCategory(slug, { cursor: nextCursor, size: 12 })
+    },
+    [exploreContext?.slug],
+  )
+
+  const buildExploreNavContext = useCallback(
+    (queueOverride) => ({
+      slug: exploreContext?.slug ?? 'all',
+      seedItems: (queueOverride ?? exploreQueue).slice(0, 48),
+      nextCursor: exploreCursor,
+      hasNext: exploreHasNext,
+    }),
+    [exploreContext?.slug, exploreCursor, exploreHasNext, exploreQueue],
+  )
+
+  const appendExploreChunk = useCallback(async () => {
+    if (!exploreHasNext || exploreLoadingMore) return null
+    setExploreLoadingMore(true)
+    try {
+      const res = await loadExploreChunk(exploreCursor)
+      const rows = Array.isArray(res?.items) ? res.items : []
+      let merged = exploreQueue
+      setExploreQueue((prev) => {
+        merged = mergeExploreItems(prev, rows)
+        return merged
+      })
+      setExploreCursor(res?.nextCursor ?? null)
+      setExploreHasNext(Boolean(res?.hasNext))
+      return merged
+    } finally {
+      setExploreLoadingMore(false)
+    }
+  }, [exploreCursor, exploreHasNext, exploreLoadingMore, exploreQueue, loadExploreChunk])
+
+  const handleWatchSearch = (e) => {
+    e.preventDefault()
+    const q = searchQuery.trim()
+    if (!q) return
+    const tag = q.replace(/^#+/, '').trim()
+    if (tag) {
+      navigate(`/tag/${encodeURIComponent(tag)}`)
+      return
+    }
+    navigate('/explore')
+  }
+
   const authorProfilePath = useMemo(() => {
-    const a = video?.authorUsername
+    const a = activeVideo?.authorUsername
     const slug = normalizeUsernameKey(a)
     return slug ? `/@${encodeURIComponent(slug)}` : profileBackPath
-  }, [video?.authorUsername, profileBackPath])
+  }, [activeVideo?.authorUsername, profileBackPath])
+
+  useEffect(() => {
+    if (!isFromExplore || exploreInitRef.current) return
+    exploreInitRef.current = true
+    const seedItems = Array.isArray(exploreContext?.seedItems) ? exploreContext.seedItems : []
+    const mergedSeed = mergeExploreItems(seedItems, video ? [video] : [])
+    setExploreQueue(mergedSeed)
+    setExploreCursor(exploreContext?.nextCursor ?? null)
+    setExploreHasNext(Boolean(exploreContext?.hasNext))
+  }, [exploreContext, isFromExplore, video])
+
+  useEffect(() => {
+    if (!isFromExplore || !video?.publicId) return
+    setExploreQueue((prev) => mergeExploreItems(prev, [video]))
+  }, [isFromExplore, video])
+
+  useEffect(() => {
+    if (!isFromExplore || exploreQueue.length > 0 || exploreLoadingMore) return
+    let cancelled = false
+    setExploreLoadingMore(true)
+    loadExploreChunk(null)
+      .then((res) => {
+        if (cancelled) return
+        const rows = Array.isArray(res?.items) ? res.items : []
+        setExploreQueue((prev) => mergeExploreItems(prev, rows))
+        setExploreCursor(res?.nextCursor ?? null)
+        setExploreHasNext(Boolean(res?.hasNext))
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setExploreLoadingMore(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [exploreLoadingMore, exploreQueue.length, isFromExplore, loadExploreChunk])
 
   useEffect(() => {
     if (!publicIdFromRoute) {
@@ -199,25 +418,44 @@ export function VideoWatchPage() {
       return
     }
     let cancelled = false
-    setLoading(true)
-    setLoadError('')
+    const cached = videoDetailCacheRef.current.get(publicIdFromRoute)
+    const cardFromQueue = isFromExplore
+      ? exploreQueueRef.current.find(
+          (row) => normalizeVideoPublicId(row?.publicId) === publicIdFromRoute,
+        )
+      : null
+    const optimistic = cached ?? cardFromQueue
+
+    if (optimistic) {
+      setVideo(optimistic)
+      setLoadError('')
+      setLoading(false)
+    } else {
+      setLoading(true)
+      setLoadError('')
+    }
+
     apiClient
       .getVideo(publicIdFromRoute, { token })
       .then((v) => {
         if (cancelled) return
+        videoDetailCacheRef.current.set(publicIdFromRoute, v)
         setVideo(v)
         const authorKey = normalizeUsernameKey(v?.authorUsername)
         const canonical = buildProfileVideoUrl(authorKey, videoPublicIdOf(v))
         if (canonical && routeSlug && authorKey !== routeSlug) {
           navigate(canonical, {
             replace: true,
+            state: location.state,
           })
         }
       })
       .catch((e) => {
         if (cancelled) return
-        setVideo(null)
-        setLoadError(e instanceof Error ? e.message : 'Không tải được video.')
+        if (!optimistic) {
+          setVideo(null)
+          setLoadError(e instanceof Error ? e.message : 'Không tải được video.')
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -225,7 +463,7 @@ export function VideoWatchPage() {
     return () => {
       cancelled = true
     }
-  }, [publicIdFromRoute, token, navigate, routeSlug])
+  }, [isFromExplore, location.state, publicIdFromRoute, token, navigate, routeSlug])
 
   useEffect(() => {
     watchQualifySentRef.current = false
@@ -250,9 +488,7 @@ export function VideoWatchPage() {
             watchedMs,
             durationMs,
           })
-          .catch(() => {
-            watchPlaythroughSentRef.current = false
-          })
+          .catch(() => {})
         return
       }
 
@@ -264,9 +500,7 @@ export function VideoWatchPage() {
           watchedMs,
           ...(durationMs != null ? { durationMs } : {}),
         })
-        .catch(() => {
-          watchQualifySentRef.current = false
-        })
+        .catch(() => {})
     }
     el.addEventListener('timeupdate', onPlaybackSample)
     el.addEventListener('seeked', onPlaybackSample)
@@ -319,10 +553,16 @@ export function VideoWatchPage() {
   }, [video?.publicId, token])
 
   useEffect(() => {
-    document.title = video?.title
-      ? `${String(video.title).slice(0, 40)} | Vibely`
-      : 'Video | Vibely'
-  }, [video?.title])
+    if (isFromExplore) {
+      document.title = EXPLORE_PAGE_TITLE
+      return
+    }
+    const display =
+      String(video?.authorDisplayName ?? '').trim() || 'Người dùng Vibely'
+    const id =
+      normalizeUsernameKey(video?.authorUsername) || routeSlug || 'user'
+    document.title = `${display} (@${id}) | Vibely`
+  }, [isFromExplore, video?.authorDisplayName, video?.authorUsername, routeSlug])
 
   useEffect(() => {
     if (!showAccountMenu) return undefined
@@ -338,7 +578,109 @@ export function VideoWatchPage() {
     setVideo((prev) => (prev ? { ...prev, ...patch } : prev))
   }, [])
 
-  const caption = watchPageCaption(video ?? {})
+  const caption = watchPageCaption(activeVideo ?? {})
+  const panelVideo = activeVideo ?? video
+  const currentExploreIndex = useMemo(() => {
+    const currentId = publicIdFromRoute
+    if (!currentId) return -1
+    return exploreQueue.findIndex((row) => normalizeVideoPublicId(row?.publicId) === currentId)
+  }, [exploreQueue, publicIdFromRoute])
+
+  const hasPrevExplore = isFromExplore && currentExploreIndex > 0
+  const hasNextExplore = isFromExplore && (
+    currentExploreIndex >= 0
+      ? currentExploreIndex < exploreQueue.length - 1 || exploreHasNext
+      : exploreHasNext
+  )
+
+  useEffect(() => {
+    if (!isFromExplore || currentExploreIndex < 0) return undefined
+    feedPrefetchManager.prefetchAround(exploreQueue, currentExploreIndex, resolveFeedPlaybackUrl)
+    for (let offset = -1; offset <= 2; offset += 1) {
+      const row = exploreQueue[currentExploreIndex + offset]
+      const poster = row?.thumbnailUrl?.trim()
+      if (poster) feedPrefetchManager.prefetchPoster(poster)
+      const id = normalizeVideoPublicId(row?.publicId)
+      if (!id || videoDetailCacheRef.current.has(id)) continue
+      apiClient
+        .getVideo(id, { token })
+        .then((detail) => {
+          videoDetailCacheRef.current.set(id, detail)
+        })
+        .catch(() => {})
+    }
+    return () => feedPrefetchManager.cancelPending()
+  }, [currentExploreIndex, exploreQueue, isFromExplore, token])
+
+  useEffect(() => {
+    if (!isFromExplore || currentExploreIndex < 0 || !exploreHasNext || exploreLoadingMore) {
+      return
+    }
+    if (exploreQueue.length - currentExploreIndex <= 3) {
+      void appendExploreChunk()
+    }
+  }, [
+    appendExploreChunk,
+    currentExploreIndex,
+    exploreHasNext,
+    exploreLoadingMore,
+    exploreQueue.length,
+    isFromExplore,
+  ])
+
+  const moveToExploreVideo = useCallback(
+    async (direction) => {
+      if (!isFromExplore) return
+      const offset = direction === 'prev' ? -1 : 1
+      let targetIndex = currentExploreIndex + offset
+      if (targetIndex < 0) return
+
+      let queue = exploreQueue
+      if (targetIndex >= queue.length && exploreHasNext && !exploreLoadingMore) {
+        const merged = await appendExploreChunk()
+        if (merged) queue = merged
+        targetIndex = currentExploreIndex + offset
+        if (targetIndex >= queue.length) return
+      }
+
+      const nextVideo = queue[targetIndex]
+      if (!nextVideo?.publicId) return
+      const nextPath =
+        buildProfileVideoUrl(nextVideo?.authorUsername, nextVideo?.publicId) ??
+        `/explore/view/${encodeURIComponent(String(nextVideo.publicId))}`
+      navigate(nextPath, {
+        state: {
+          fromExplore: true,
+          exploreContext: buildExploreNavContext(queue),
+        },
+      })
+    },
+    [
+      appendExploreChunk,
+      buildExploreNavContext,
+      currentExploreIndex,
+      exploreHasNext,
+      exploreLoadingMore,
+      exploreQueue,
+      isFromExplore,
+      navigate,
+    ],
+  )
+
+  useEffect(() => {
+    if (!isFromExplore) return undefined
+    const onKeyDown = (e) => {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        void moveToExploreVideo('prev')
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        void moveToExploreVideo('next')
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [isFromExplore, moveToExploreVideo])
 
   const copyShareLink = async () => {
     const url = typeof window !== 'undefined' ? window.location.href : ''
@@ -353,7 +695,7 @@ export function VideoWatchPage() {
   }
 
   const handleShareTap = () => {
-    if (!isWatchableVideo(video)) return
+    if (!isWatchableVideo(panelVideo)) return
     setShareModalOpen(true)
   }
 
@@ -375,17 +717,11 @@ export function VideoWatchPage() {
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
 
+  const showVideoSpinner =
+    loading && !activePlaybackUrl && !displayPosterUrl && !loadError
+
   return (
     <section className="flex h-dvh min-h-0 bg-black text-zinc-100">
-      <Sidebar
-        menuItems={menuItems}
-        activeMenu="latest"
-        onSelectMenu={handleSelectMenu}
-        token={token}
-        user={user}
-        onLogout={token ? logout : undefined}
-      />
-
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
         {token ? (
           <AccountActionsPill className="absolute right-6 top-4 z-20" tone="profile" showCoinAndApp={false}>
@@ -446,39 +782,158 @@ export function VideoWatchPage() {
           </AccountActionsPill>
         ) : null}
 
-        <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-          <div className="relative flex min-h-[42vh] flex-1 items-center justify-center bg-black lg:min-h-0">
-            {loading ? (
-              <p className="text-sm text-zinc-500">Đang tải video…</p>
-            ) : loadError ? (
-              <div className="max-w-sm px-6 text-center">
-                <p className="text-sm text-red-400">{loadError}</p>
-                <Link
-                  to={profileBackPath}
-                  className="mt-4 inline-block rounded-full border border-zinc-600 px-4 py-2 text-sm font-semibold text-zinc-200 hover:bg-zinc-900"
+        <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-stretch">
+          <div className="relative min-h-0 flex-1 overflow-hidden bg-black">
+            <div className="absolute inset-0">
+              {loadError ? (
+                <div className="flex h-full items-center justify-center px-6">
+                  <div className="max-w-sm text-center">
+                    <p className="text-sm text-red-400">{loadError}</p>
+                    <Link
+                      to={backPath}
+                      className="mt-4 inline-block rounded-full border border-zinc-600 px-4 py-2 text-sm font-semibold text-zinc-200 hover:bg-zinc-900"
+                    >
+                      Quay lại
+                    </Link>
+                  </div>
+                </div>
+              ) : activePlaybackUrl || displayPosterUrl ? (
+                <div className="relative h-full min-h-0 overflow-hidden">
+                  {displayPosterUrl ? (
+                    <div
+                      className="pointer-events-none absolute inset-0 scale-110 bg-cover bg-center opacity-40 blur-3xl"
+                      style={{ backgroundImage: `url(${displayPosterUrl})` }}
+                      aria-hidden
+                    />
+                  ) : null}
+                  {!isVideoFrameReady && displayPosterUrl ? (
+                    <img
+                      src={displayPosterUrl}
+                      alt=""
+                      className={`absolute bg-black ${watchPosterSizing}`}
+                    />
+                  ) : null}
+                  {activePlaybackUrl ? (
+                    <video
+                      key={String(activeVideo?.publicId ?? publicIdFromRoute)}
+                      ref={videoRef}
+                      src={activePlaybackUrl}
+                      controls={isVideoFrameReady}
+                      playsInline
+                      muted
+                      autoPlay
+                      preload="auto"
+                      className={`absolute bg-black transition-opacity duration-200 ${watchVideoSizing} ${isVideoFrameReady ? 'opacity-100' : 'opacity-0'}`}
+                      poster={displayPosterUrl || undefined}
+                      onLoadedData={() => setVideoReady(true)}
+                      onCanPlay={() => setVideoReady(true)}
+                      onPlaying={() => setVideoReady(true)}
+                      onLoadedMetadata={(e) => {
+                        const el = e.currentTarget
+                        if (el.videoWidth > 0 && el.videoHeight > 0) {
+                          setIntrinsicSize({
+                            width: el.videoWidth,
+                            height: el.videoHeight,
+                          })
+                        }
+                      }}
+                    />
+                  ) : null}
+                </div>
+              ) : !loading ? (
+                <div className="flex h-full items-center justify-center">
+                  <p className="text-sm text-zinc-500">Video chưa sẵn sàng phát.</p>
+                </div>
+              ) : null}
+
+              {showVideoSpinner ? (
+                <div
+                  className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
+                  aria-busy="true"
+                  aria-label={loading ? 'Đang tải video' : 'Đang tải dữ liệu phát'}
                 >
-                  Quay lại
-                </Link>
+                  <WatchSpinner />
+                </div>
+              ) : null}
+            </div>
+
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex h-16 items-center bg-gradient-to-b from-black/70 via-black/30 to-transparent px-6 sm:h-[4.5rem] sm:px-10">
+              <div className="pointer-events-auto flex w-11 shrink-0 justify-start sm:w-12">
+                <TooltipHoverWrap tip="Đóng" hoverOnly>
+                  <button
+                    type="button"
+                    className={WATCH_CHROME_BTN}
+                    aria-label="Đóng"
+                    onClick={() => navigate(backPath)}
+                  >
+                    <IoClose />
+                  </button>
+                </TooltipHoverWrap>
               </div>
-            ) : video?.videoUrl ? (
-              <video
-                key={String(video.publicId)}
-                ref={videoRef}
-                src={video.videoUrl}
-                controls
-                playsInline
-                muted
-                autoPlay
-                className="max-h-[min(88dvh,920px)] w-full max-w-md rounded-lg bg-zinc-950 ring-1 ring-zinc-800"
-                poster={video.thumbnailUrl?.trim() ? video.thumbnailUrl : undefined}
-              />
-            ) : (
-              <p className="text-sm text-zinc-500">Video chưa sẵn sàng phát.</p>
-            )}
+
+              <div className="pointer-events-auto flex min-w-0 flex-1 justify-center px-2 sm:px-4">
+                <form
+                  onSubmit={handleWatchSearch}
+                  className="flex h-11 w-full max-w-[560px] items-center rounded-full border border-white/10 bg-zinc-900/55 px-4 shadow-lg backdrop-blur-md"
+                >
+                  <input
+                    type="search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Tìm nội dung liên quan"
+                    className="min-w-0 flex-1 bg-transparent text-[15px] text-zinc-100 placeholder:text-zinc-400 focus:outline-none"
+                    aria-label="Tìm nội dung liên quan"
+                  />
+                  <span className="mx-3 h-5 w-px shrink-0 bg-zinc-500/80" aria-hidden />
+                  <button
+                    type="submit"
+                    className="flex shrink-0 cursor-pointer items-center justify-center rounded-full p-1 text-xl text-zinc-300 transition hover:text-zinc-100"
+                    aria-label="Tìm kiếm"
+                  >
+                    <IoSearchOutline />
+                  </button>
+                </form>
+              </div>
+
+              <div className="pointer-events-auto flex w-11 shrink-0 justify-end sm:w-12">
+                <TooltipHoverWrap tip="Thêm" hoverOnly>
+                  <button
+                    type="button"
+                    className={`${WATCH_CHROME_BTN} ${token ? 'invisible' : ''}`}
+                    aria-label="Thêm"
+                  >
+                    <IoEllipsisHorizontal />
+                  </button>
+                </TooltipHoverWrap>
+              </div>
+            </div>
+
+            {isFromExplore ? (
+              <div className="pointer-events-none absolute right-3 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-2 sm:right-4">
+                <button
+                  type="button"
+                  className={`${WATCH_CHROME_BTN} pointer-events-auto ${hasPrevExplore ? '' : 'cursor-not-allowed opacity-45'}`}
+                  aria-label="Video trước"
+                  disabled={!hasPrevExplore}
+                  onClick={() => void moveToExploreVideo('prev')}
+                >
+                  <IoChevronUp />
+                </button>
+                <button
+                  type="button"
+                  className={`${WATCH_CHROME_BTN} pointer-events-auto ${hasNextExplore ? '' : 'cursor-not-allowed opacity-45'}`}
+                  aria-label="Video sau"
+                  disabled={!hasNextExplore}
+                  onClick={() => void moveToExploreVideo('next')}
+                >
+                  <IoChevronDown />
+                </button>
+              </div>
+            ) : null}
           </div>
 
-          <aside className="flex h-[min(52dvh,520px)] w-full shrink-0 flex-col border-t border-zinc-800 bg-black lg:h-auto lg:max-h-none lg:w-[min(420px,40vw)] lg:border-l lg:border-t-0">
-            {!video || loading ? (
+          <aside className="flex h-[min(46dvh,480px)] w-full shrink-0 flex-col border-t border-zinc-800 bg-black lg:h-auto lg:max-h-none lg:min-h-0 lg:w-[min(400px,34vw)] lg:border-l lg:border-t-0">
+            {!activeVideo ? (
               <div className="flex flex-1 items-center justify-center p-6">
                 <p className="text-sm text-zinc-500">…</p>
               </div>
@@ -488,8 +943,8 @@ export function VideoWatchPage() {
                   <Link to={authorProfilePath} className="shrink-0">
                     <img
                       src={
-                        video.authorAvatarUrl?.trim()
-                          ? video.authorAvatarUrl
+                        panelVideo.authorAvatarUrl?.trim()
+                          ? panelVideo.authorAvatarUrl
                           : DEFAULT_USER_AVATAR_URL
                       }
                       alt=""
@@ -506,26 +961,26 @@ export function VideoWatchPage() {
                         to={authorProfilePath}
                         className="truncate text-sm font-semibold text-zinc-100 hover:underline"
                       >
-                        {String(video.authorDisplayName ?? '').trim() || 'Nhà sáng tạo'}
+                        {String(panelVideo.authorDisplayName ?? '').trim() || 'Nhà sáng tạo'}
                       </Link>
                       <span className="shrink-0 text-xs text-zinc-500">
-                        {formatRelativeTime(video.createdAt)}
+                        {formatRelativeTime(panelVideo.createdAt)}
                       </span>
                     </div>
                     <p className="truncate text-xs text-zinc-400">
-                      @{normalizeUsernameKey(video.authorUsername) || 'user'}
+                      @{normalizeUsernameKey(panelVideo.authorUsername) || 'user'}
                     </p>
                     {caption ? (
                       <p className="mt-2 whitespace-pre-wrap text-sm leading-snug text-zinc-200">
-                        {caption}
+                        {renderInteractiveText(caption)}
                       </p>
                     ) : null}
                     <div className="mt-2 flex items-center gap-1.5 text-xs text-zinc-400">
                       <IoMusicalNotes className="shrink-0 text-base text-zinc-500" aria-hidden />
                       <span className="truncate">
-                        {video.audioTitle?.trim()
-                          ? video.audioTitle
-                          : `Âm thanh gốc — ${String(video.authorDisplayName ?? '').trim() || 'Nhà sáng tạo'}`}
+                        {panelVideo.audioTitle?.trim()
+                          ? panelVideo.audioTitle
+                          : `Âm thanh gốc — ${String(panelVideo.authorDisplayName ?? '').trim() || 'Nhà sáng tạo'}`}
                       </span>
                     </div>
                   </div>
@@ -545,17 +1000,17 @@ export function VideoWatchPage() {
                     aria-pressed={liked}
                     aria-label={liked ? 'Bỏ thích' : 'Thích'}
                     onClick={() => {
-                      if (!token || !isWatchableVideo(video)) {
+                      if (!token || !isWatchableVideo(panelVideo)) {
                         if (!token) navigate('/login')
                         return
                       }
                       const next = !liked
-                      const prevCount = Number(video.likeCount ?? 0)
+                      const prevCount = Number(panelVideo.likeCount ?? 0)
                       setLiked(next)
                       patchVideo({ likeCount: Math.max(0, prevCount + (next ? 1 : -1)) })
                       const req = next
-                        ? apiClient.likeVideo(video.publicId, token)
-                        : apiClient.unlikeVideo(video.publicId, token)
+                        ? apiClient.likeVideo(panelVideo.publicId, token)
+                        : apiClient.unlikeVideo(panelVideo.publicId, token)
                       req.catch(() => {
                         setLiked(!next)
                         patchVideo({ likeCount: prevCount })
@@ -568,7 +1023,7 @@ export function VideoWatchPage() {
                       <IoHeartOutline className="text-2xl text-white" aria-hidden />
                     )}
                     <span className="text-sm font-semibold tabular-nums text-white">
-                      {formatCompactCount(video.likeCount ?? 0)}
+                      {formatCompactCount(panelVideo.likeCount ?? 0)}
                     </span>
                   </button>
                   <button
@@ -579,7 +1034,7 @@ export function VideoWatchPage() {
                   >
                     <IoChatbubbleEllipsesOutline className="text-2xl text-white" aria-hidden />
                     <span className="text-sm font-semibold tabular-nums text-white">
-                      {formatCompactCount(video.commentCount ?? 0)}
+                      {formatCompactCount(panelVideo.commentCount ?? 0)}
                     </span>
                   </button>
                   <button
@@ -593,17 +1048,17 @@ export function VideoWatchPage() {
                     }
                     aria-label={bookmarked ? 'Bỏ lưu' : 'Lưu'}
                     onClick={() => {
-                      if (!token || !isWatchableVideo(video)) {
+                      if (!token || !isWatchableVideo(panelVideo)) {
                         if (!token) navigate('/login')
                         return
                       }
                       const next = !bookmarked
-                      const prevCount = Number(video.bookmarkCount ?? 0)
+                      const prevCount = Number(panelVideo.bookmarkCount ?? 0)
                       setBookmarked(next)
                       patchVideo({ bookmarkCount: Math.max(0, prevCount + (next ? 1 : -1)) })
                       const req = next
-                        ? apiClient.bookmarkVideo(video.publicId, token)
-                        : apiClient.unbookmarkVideo(video.publicId, token)
+                        ? apiClient.bookmarkVideo(panelVideo.publicId, token)
+                        : apiClient.unbookmarkVideo(panelVideo.publicId, token)
                       req.catch(() => {
                         setBookmarked(!next)
                         patchVideo({ bookmarkCount: prevCount })
@@ -616,7 +1071,7 @@ export function VideoWatchPage() {
                       <IoBookmarkOutline className="text-2xl text-white" aria-hidden />
                     )}
                     <span className="text-sm font-semibold tabular-nums text-white">
-                      {formatCompactCount(video.bookmarkCount ?? 0)}
+                      {formatCompactCount(panelVideo.bookmarkCount ?? 0)}
                     </span>
                   </button>
                   <button
@@ -627,7 +1082,7 @@ export function VideoWatchPage() {
                   >
                     <IoShareOutline className="text-2xl text-white" aria-hidden />
                     <span className="text-sm font-semibold tabular-nums text-white">
-                      {formatCompactCount(video.shareCount ?? 0)}
+                      {formatCompactCount(panelVideo.shareCount ?? 0)}
                     </span>
                   </button>
                 </div>
@@ -659,7 +1114,7 @@ export function VideoWatchPage() {
                   >
                     Bình luận{' '}
                     <span className="font-normal text-zinc-400">
-                      ({formatCompactCount(video.commentCount ?? 0)})
+                      ({formatCompactCount(panelVideo.commentCount ?? 0)})
                     </span>
                   </button>
                   <Link
@@ -703,7 +1158,7 @@ export function VideoWatchPage() {
                               @{c.username ?? 'user'}
                             </p>
                             <p className="mt-0.5 whitespace-pre-wrap text-sm text-zinc-100">
-                              {c.content}
+                              {renderInteractiveText(c.content)}
                             </p>
                           </div>
                         </li>
@@ -739,7 +1194,7 @@ export function VideoWatchPage() {
                         placeholder={
                           token ? 'Thêm bình luận...' : 'Đăng nhập để bình luận...'
                         }
-                        disabled={!token || !isWatchableVideo(video)}
+                        disabled={!token || !isWatchableVideo(panelVideo)}
                         className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-[5.25rem] text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-zinc-600 disabled:opacity-50"
                       />
                       <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
@@ -763,16 +1218,16 @@ export function VideoWatchPage() {
                       type="button"
                       className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600 text-white shadow-md transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
                       aria-label="Gửi bình luận"
-                      disabled={!commentDraft.trim() || !token || !isWatchableVideo(video)}
+                      disabled={!commentDraft.trim() || !token || !isWatchableVideo(panelVideo)}
                       onClick={async () => {
                         const text = commentDraft.trim()
-                        if (!text || !token || !isWatchableVideo(video)) return
+                        if (!text || !token || !isWatchableVideo(panelVideo)) return
                         setCommentPostError('')
                         try {
-                          const created = await apiClient.addComment(video.publicId, text, token)
+                          const created = await apiClient.addComment(panelVideo.publicId, text, token)
                           setCommentDraft('')
                           setComments((prev) => [created, ...prev])
-                          const prevCc = Number(video.commentCount ?? 0)
+                          const prevCc = Number(panelVideo.commentCount ?? 0)
                           patchVideo({ commentCount: prevCc + 1 })
                         } catch (e) {
                           setCommentPostError(
@@ -794,11 +1249,12 @@ export function VideoWatchPage() {
       <VideoShareModal
         open={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
-        videoId={video?.publicId}
-        videoTitle={video?.title ?? ''}
+        videoId={panelVideo?.publicId}
+        videoTitle={panelVideo?.title ?? ''}
         token={token}
         onShareCountChange={handleShareCountChange}
       />
     </section>
   )
 }
+
