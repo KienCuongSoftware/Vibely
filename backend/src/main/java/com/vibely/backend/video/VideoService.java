@@ -2,6 +2,15 @@ package com.vibely.backend.video;
 
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.explore.Hashtag;
+import com.vibely.backend.explore.HashtagRepository;
+import com.vibely.backend.explore.VideoCategory;
+import com.vibely.backend.explore.VideoCategoryRepository;
+import com.vibely.backend.explore.VideoHashtag;
+import com.vibely.backend.explore.VideoHashtagRepository;
+import com.vibely.backend.explore.service.CategoryClassifierService;
+import com.vibely.backend.explore.service.ExploreCacheService;
+import com.vibely.backend.explore.service.ExploreRankingService;
 import com.vibely.backend.feed.FeedCursorCodec;
 import com.vibely.backend.feed.FeedPageResponse;
 import com.vibely.backend.feed.FeedSort;
@@ -59,6 +68,12 @@ public class VideoService {
     private final VideoProcessingEnqueueService videoProcessingEnqueueService;
     private final ObjectProvider<S3PresignedUploadService> presignedUploadService;
     private final S3ObjectUrlBuilder objectUrlBuilder;
+    private final CategoryClassifierService categoryClassifierService;
+    private final VideoCategoryRepository videoCategoryRepository;
+    private final VideoHashtagRepository videoHashtagRepository;
+    private final HashtagRepository hashtagRepository;
+    private final ExploreRankingService exploreRankingService;
+    private final ExploreCacheService exploreCacheService;
 
     public VideoService(
         VideoRepository videoRepository,
@@ -72,7 +87,13 @@ public class VideoService {
         UsernameService usernameService,
         VideoProcessingEnqueueService videoProcessingEnqueueService,
         ObjectProvider<S3PresignedUploadService> presignedUploadService,
-        S3ObjectUrlBuilder objectUrlBuilder
+        S3ObjectUrlBuilder objectUrlBuilder,
+        CategoryClassifierService categoryClassifierService,
+        VideoCategoryRepository videoCategoryRepository,
+        VideoHashtagRepository videoHashtagRepository,
+        HashtagRepository hashtagRepository,
+        ExploreRankingService exploreRankingService,
+        ExploreCacheService exploreCacheService
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
@@ -86,6 +107,12 @@ public class VideoService {
         this.videoProcessingEnqueueService = videoProcessingEnqueueService;
         this.presignedUploadService = presignedUploadService;
         this.objectUrlBuilder = objectUrlBuilder;
+        this.categoryClassifierService = categoryClassifierService;
+        this.videoCategoryRepository = videoCategoryRepository;
+        this.videoHashtagRepository = videoHashtagRepository;
+        this.hashtagRepository = hashtagRepository;
+        this.exploreRankingService = exploreRankingService;
+        this.exploreCacheService = exploreCacheService;
     }
 
     public VideoResponse createVideo(String email, VideoCreateRequest request) {
@@ -109,6 +136,7 @@ public class VideoService {
         video.setAudioTitle(audioTitle);
         video.setStatus(VideoStatus.RAW);
         Video saved = videoRepository.save(video);
+        syncExploreSignals(saved);
         videoProcessingEnqueueService.enqueueAfterVideoPersisted(saved);
         return toResponse(saved);
     }
@@ -338,7 +366,36 @@ public class VideoService {
             video.setThumbnailUrl(normalizeText(request.getThumbnailUrl()));
         }
         Video saved = videoRepository.save(video);
+        syncExploreSignals(saved);
         return toResponse(saved);
+    }
+
+    private void syncExploreSignals(Video video) {
+        videoCategoryRepository.deleteByVideoId(video.getId());
+        videoHashtagRepository.deleteByVideoId(video.getId());
+        List<CategoryClassifierService.ScoredCategory> inferred = categoryClassifierService.inferCategories(
+            video.getTitle(),
+            video.getDescription()
+        );
+        for (CategoryClassifierService.ScoredCategory scored : inferred) {
+            videoCategoryRepository.save(new VideoCategory(video, scored.category(), scored.score()));
+        }
+        List<String> tags = categoryClassifierService.extractHashtags(video.getTitle(), video.getDescription());
+        for (String tag : tags) {
+            Hashtag hashtag = hashtagRepository.findByTag(tag)
+                .orElseGet(() -> hashtagRepository.save(newHashtag(tag)));
+            videoHashtagRepository.save(new VideoHashtag(video, hashtag));
+        }
+        exploreRankingService.recomputeVideo(video);
+        exploreCacheService.evictByPrefix("trending");
+        exploreCacheService.evictByPrefix("category:");
+        exploreCacheService.evictByPrefix("related:" + video.getPublicId());
+    }
+
+    private Hashtag newHashtag(String tag) {
+        Hashtag hashtag = new Hashtag();
+        hashtag.setTag(tag);
+        return hashtag;
     }
 
     @Transactional
@@ -367,7 +424,7 @@ public class VideoService {
     }
 
     public Video getVideoOrThrow(Long id) {
-        return videoRepository.findById(id)
+        return videoRepository.findById(Objects.requireNonNull(id, "id"))
             .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
     }
 
@@ -408,6 +465,10 @@ public class VideoService {
         row.setWatchedMs(body.watchedMs());
         row.setDurationMs(body.durationMs());
         videoViewRepository.save(row);
+        exploreRankingService.recomputeVideo(target);
+        exploreCacheService.evictByPrefix("trending");
+        exploreCacheService.evictByPrefix("category:");
+        exploreCacheService.evictByPrefix("related:" + target.getPublicId());
     }
 
     @Transactional

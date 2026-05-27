@@ -3,6 +3,8 @@ package com.vibely.backend.interaction;
 import com.vibely.backend.auth.UserAvatarResolver;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.explore.service.ExploreCacheService;
+import com.vibely.backend.explore.service.ExploreRankingService;
 import com.vibely.backend.user.User;
 import com.vibely.backend.user.UserRepository;
 import com.vibely.backend.video.Video;
@@ -28,6 +30,8 @@ public class InteractionService {
     private final CommentRepository commentRepository;
     private final FollowRepository followRepository;
     private final UserAvatarResolver userAvatarResolver;
+    private final ExploreRankingService exploreRankingService;
+    private final ExploreCacheService exploreCacheService;
 
     public InteractionService(
         UserRepository userRepository,
@@ -36,7 +40,9 @@ public class InteractionService {
         VideoBookmarkRepository videoBookmarkRepository,
         CommentRepository commentRepository,
         FollowRepository followRepository,
-        UserAvatarResolver userAvatarResolver
+        UserAvatarResolver userAvatarResolver,
+        ExploreRankingService exploreRankingService,
+        ExploreCacheService exploreCacheService
     ) {
         this.userRepository = userRepository;
         this.videoService = videoService;
@@ -45,6 +51,8 @@ public class InteractionService {
         this.commentRepository = commentRepository;
         this.followRepository = followRepository;
         this.userAvatarResolver = userAvatarResolver;
+        this.exploreRankingService = exploreRankingService;
+        this.exploreCacheService = exploreCacheService;
     }
 
     public void likeVideo(String email, UUID videoPublicId) {
@@ -58,6 +66,7 @@ public class InteractionService {
         like.setUser(user);
         like.setVideo(video);
         likeRepository.save(like);
+        refreshExploreFor(video);
     }
 
     public void unlikeVideo(String email, UUID videoPublicId) {
@@ -65,6 +74,7 @@ public class InteractionService {
         Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
         requireEngagementAllowed(video, user);
         likeRepository.deleteByUserAndVideo(user, video);
+        refreshExploreFor(video);
     }
 
     public void bookmarkVideo(String email, UUID videoPublicId) {
@@ -115,6 +125,7 @@ public class InteractionService {
             comment.setParentComment(parent);
         }
         CommentEntity saved = commentRepository.save(comment);
+        refreshExploreFor(video);
         return toCommentResponse(saved);
     }
 
@@ -139,6 +150,7 @@ public class InteractionService {
             throw new BadRequestException("Bạn không thể xóa bình luận này.");
         }
         commentRepository.delete(comment);
+        refreshExploreFor(video);
     }
 
     /**
@@ -276,5 +288,12 @@ public class InteractionService {
             userAvatarResolver.resolve(entity.getUser()),
             parentId
         );
+    }
+
+    private void refreshExploreFor(Video video) {
+        exploreRankingService.recomputeVideo(video);
+        exploreCacheService.evictByPrefix("trending");
+        exploreCacheService.evictByPrefix("category:");
+        exploreCacheService.evictByPrefix("related:" + video.getPublicId());
     }
 }

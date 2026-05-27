@@ -3,6 +3,8 @@ package com.vibely.backend.share;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.config.AppUrlProperties;
+import com.vibely.backend.explore.service.ExploreCacheService;
+import com.vibely.backend.explore.service.ExploreRankingService;
 import com.vibely.backend.share.dto.ShareAnalyticsBucketResponse;
 import com.vibely.backend.share.dto.ShareAnalyticsResponse;
 import com.vibely.backend.share.dto.ShareVideoRequest;
@@ -36,6 +38,8 @@ public class ShareService {
     private final AppUrlProperties appUrlProperties;
     private final ShareAsyncRecorder shareAsyncRecorder;
     private final ObjectProvider<RedisShareCounterCache> shareCounterCache;
+    private final ExploreRankingService exploreRankingService;
+    private final ExploreCacheService exploreCacheService;
 
     public ShareService(
         VideoRepository videoRepository,
@@ -47,7 +51,9 @@ public class ShareService {
         ShortLinkCache shortLinkCache,
         AppUrlProperties appUrlProperties,
         ShareAsyncRecorder shareAsyncRecorder,
-        ObjectProvider<RedisShareCounterCache> shareCounterCache
+        ObjectProvider<RedisShareCounterCache> shareCounterCache,
+        ExploreRankingService exploreRankingService,
+        ExploreCacheService exploreCacheService
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
@@ -59,6 +65,8 @@ public class ShareService {
         this.appUrlProperties = appUrlProperties;
         this.shareAsyncRecorder = shareAsyncRecorder;
         this.shareCounterCache = shareCounterCache;
+        this.exploreRankingService = exploreRankingService;
+        this.exploreCacheService = exploreCacheService;
     }
 
     @Transactional
@@ -115,6 +123,10 @@ public class ShareService {
         videoRepository.incrementShareCount(video.getId(), VideoStatus.READY);
         Video refreshed = videoRepository.findByPublicId(videoPublicId).orElse(video);
         shareCounterCache.ifAvailable(cache -> cache.increment(refreshed.getPublicId()));
+        exploreRankingService.recomputeVideo(refreshed);
+        exploreCacheService.evictByPrefix("trending");
+        exploreCacheService.evictByPrefix("category:");
+        exploreCacheService.evictByPrefix("related:" + refreshed.getPublicId());
 
         return toResponse(refreshed, link);
     }

@@ -82,6 +82,12 @@ public class Video {
     @Column(name = "share_count", nullable = false)
     private long shareCount;
 
+    @Column(name = "explore_score", nullable = false)
+    private double exploreScore;
+
+    @Column(name = "explore_score_updated_at")
+    private LocalDateTime exploreScoreUpdatedAt;
+
     @PrePersist
     void prePersist() {
         if (publicId == null) {
@@ -233,5 +239,21 @@ public class Video {
 
     public void setShareCount(long shareCount) {
         this.shareCount = shareCount;
+    }
+
+    public double getExploreScore() {
+        return exploreScore;
+    }
+
+    public void setExploreScore(double exploreScore) {
+        this.exploreScore = exploreScore;
+    }
+
+    public LocalDateTime getExploreScoreUpdatedAt() {
+        return exploreScoreUpdatedAt;
+    }
+
+    public void setExploreScoreUpdatedAt(LocalDateTime exploreScoreUpdatedAt) {
+        this.exploreScoreUpdatedAt = exploreScoreUpdatedAt;
     }
 }
