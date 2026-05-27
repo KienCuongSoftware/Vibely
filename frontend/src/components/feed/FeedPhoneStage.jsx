@@ -54,7 +54,7 @@ function renderInteractiveCaption(caption) {
           key={`${part}-${index}`}
           to={`/@${encodeURIComponent(username)}`}
           onClick={(e) => e.stopPropagation()}
-          className="cursor-pointer font-semibold text-white hover:underline"
+          className="cursor-pointer font-semibold text-sky-300 hover:text-sky-200 hover:underline"
         >
           {part}
         </Link>
@@ -66,7 +66,7 @@ function renderInteractiveCaption(caption) {
           key={`${part}-${index}`}
           to={feedHashtagPath(part)}
           onClick={(e) => e.stopPropagation()}
-          className="cursor-pointer font-semibold text-white hover:underline"
+          className="cursor-pointer font-semibold text-sky-300 hover:text-sky-200 hover:underline"
         >
           {part}
         </Link>
