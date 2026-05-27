@@ -57,6 +57,10 @@ export function HashtagPage() {
       navigate(token ? '/profile' : '/login')
       return
     }
+    if (id === 'explore') {
+      navigate('/explore')
+      return
+    }
     if (id === 'upload') {
       navigate('/vibelystudio/upload')
       return

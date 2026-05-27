@@ -618,6 +618,10 @@ export function ProfilePage() {
       navigate(profileHrefFromAuthUsername(user?.username))
       return
     }
+    if (id === 'explore') {
+      navigate('/explore')
+      return
+    }
     if (id === 'upload') {
       navigate('/vibelystudio/upload')
       return

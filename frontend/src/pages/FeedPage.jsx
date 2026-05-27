@@ -1090,6 +1090,10 @@ function ForYouFeedPage({ token, user, onLogout, authReady }) {
       navigate(buildProfilePath(token, user));
       return;
     }
+    if (id === "explore") {
+      navigate("/explore");
+      return;
+    }
     if (id === "upload") {
       navigate("/vibelystudio/upload");
       return;
