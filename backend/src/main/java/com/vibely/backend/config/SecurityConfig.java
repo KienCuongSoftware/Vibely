@@ -105,6 +105,7 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/v/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/feed/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/explore/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/me/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*/me").authenticated()

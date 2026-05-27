@@ -1,0 +1,12 @@
+package com.vibely.backend.explore;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+public interface VideoHashtagRepository extends JpaRepository<VideoHashtag, VideoHashtagId> {
+    @Modifying
+    @Query("delete from VideoHashtag vh where vh.id.videoId = :videoId")
+    void deleteByVideoId(@Param("videoId") Long videoId);
+}
