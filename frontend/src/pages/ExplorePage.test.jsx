@@ -1,0 +1,58 @@
+import React from 'react'
+import { render, screen, waitFor } from '@testing-library/react'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
+import { ExplorePage } from './ExplorePage'
+import { AuthContext } from '../state/auth-context'
+
+vi.mock('../api/client', () => ({
+  apiClient: {
+    getExploreCategories: vi.fn(),
+    getExploreTrending: vi.fn(),
+    getExploreCategory: vi.fn(),
+    searchExplore: vi.fn(),
+  },
+}))
+
+import { apiClient } from '../api/client'
+
+describe('ExplorePage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    apiClient.getExploreCategories.mockResolvedValue([{ slug: 'all', name: 'Tất cả', videoCount: 99 }])
+    apiClient.getExploreTrending.mockResolvedValue({ items: [], hasNext: false, nextCursor: null })
+    apiClient.getExploreCategory.mockResolvedValue({ items: [], hasNext: false, nextCursor: null })
+    apiClient.searchExplore.mockResolvedValue({ items: [], hasNext: false, nextCursor: null })
+  })
+
+  it('loads categories and trending feed on mount', async () => {
+    render(
+      <MemoryRouter initialEntries={['/explore']}>
+        <AuthContext.Provider value={{ token: null, refreshToken: null, user: null, login: vi.fn(), register: vi.fn(), refreshSession: vi.fn(), refreshProfile: vi.fn(), logout: vi.fn(), authReady: true }}>
+          <ExplorePage />
+        </AuthContext.Provider>
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => {
+      expect(apiClient.getExploreCategories).toHaveBeenCalled()
+      expect(apiClient.getExploreTrending).toHaveBeenCalled()
+    })
+  })
+
+  it('does not render search input anymore', async () => {
+    render(
+      <MemoryRouter initialEntries={['/explore']}>
+        <AuthContext.Provider value={{ token: null, refreshToken: null, user: null, login: vi.fn(), register: vi.fn(), refreshSession: vi.fn(), refreshProfile: vi.fn(), logout: vi.fn(), authReady: true }}>
+          <ExplorePage />
+        </AuthContext.Provider>
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => {
+      expect(apiClient.getExploreTrending).toHaveBeenCalled()
+    })
+    expect(screen.queryByPlaceholderText(/tìm hashtag/i)).not.toBeInTheDocument()
+    expect(apiClient.searchExplore).not.toHaveBeenCalled()
+  })
+})

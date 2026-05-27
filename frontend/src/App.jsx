@@ -15,6 +15,8 @@ import { TermsOfServicePage } from './pages/TermsOfServicePage.jsx'
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage.jsx'
 import { SoundPage } from './pages/SoundPage.jsx'
 import { HashtagPage } from './pages/HashtagPage.jsx'
+import { ExplorePage } from './pages/ExplorePage.jsx'
+import { ExploreViewerPage } from './pages/ExploreViewerPage.jsx'
 import { useAuth } from './state/useAuth'
 import { isVideoPublicId } from './utils/videoPublicId.js'
 
@@ -57,6 +59,8 @@ function App() {
           <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
           <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/sound" element={<SoundPage />} />
+          <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/explore/view/:publicId" element={<ExploreViewerPage />} />
           <Route path="/tag/:tag" element={<HashtagPage />} />
           <Route path="/watch/:publicId" element={<WatchRedirect />} />
           <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
@@ -98,6 +102,8 @@ function App() {
         <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
         <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/sound" element={<SoundPage />} />
+        <Route path="/explore" element={<ExplorePage />} />
+        <Route path="/explore/view/:publicId" element={<ExploreViewerPage />} />
         <Route path="/tag/:tag" element={<HashtagPage />} />
         <Route path="/watch/:publicId" element={<WatchRedirect />} />
         <Route path="*" element={<Navigate to="/foryou" replace />} />

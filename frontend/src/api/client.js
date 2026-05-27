@@ -170,6 +170,15 @@ export const apiClient = {
     request(`/api/videos/sound${toQuery({ audioUrl, page, size })}`),
   getVideosByHashtag: (tag, { page = 0, size = 24 } = {}) =>
     request(`/api/videos/hashtag${toQuery({ tag, page, size })}`),
+  getExploreCategories: () => request("/api/explore/categories"),
+  getExploreTrending: ({ cursor, size = 24 } = {}) =>
+    request(`/api/explore/trending${toQuery({ cursor, size })}`),
+  getExploreCategory: (slug, { cursor, size = 24 } = {}) =>
+    request(`/api/explore/category/${encodeURIComponent(slug)}${toQuery({ cursor, size })}`),
+  searchExplore: (q, { cursor, size = 24 } = {}) =>
+    request(`/api/explore/search${toQuery({ q, cursor, size })}`),
+  getExploreRelated: (publicId, { size = 18 } = {}) =>
+    request(`/api/explore/video/${encodeURIComponent(publicId)}/related${toQuery({ size })}`),
   updateVideo: (publicId, payload, token) =>
     request(`/api/videos/${publicId}`, { method: "PUT", body: payload, token }),
   deleteVideo: (publicId, token) =>
