@@ -14,6 +14,9 @@ public class VerifyCodeRequest {
     @Pattern(regexp = "\\d{6}", message = "Mã xác minh phải gồm 6 chữ số")
     private String code;
 
+    /** REGISTER (mặc định) hoặc PASSWORD_RESET */
+    private String purpose;
+
     public String getEmail() {
         return email;
     }
@@ -28,5 +31,13 @@ public class VerifyCodeRequest {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getPurpose() {
+        return purpose;
+    }
+
+    public void setPurpose(String purpose) {
+        this.purpose = purpose;
     }
 }

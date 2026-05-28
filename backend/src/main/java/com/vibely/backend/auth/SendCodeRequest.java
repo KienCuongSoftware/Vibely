@@ -11,6 +11,9 @@ public class SendCodeRequest {
 
     private boolean challengePassed;
 
+    /** REGISTER (mặc định) hoặc PASSWORD_RESET */
+    private String purpose;
+
     public String getEmail() {
         return email;
     }
@@ -25,5 +28,13 @@ public class SendCodeRequest {
 
     public void setChallengePassed(boolean challengePassed) {
         this.challengePassed = challengePassed;
+    }
+
+    public String getPurpose() {
+        return purpose;
+    }
+
+    public void setPurpose(String purpose) {
+        this.purpose = purpose;
     }
 }

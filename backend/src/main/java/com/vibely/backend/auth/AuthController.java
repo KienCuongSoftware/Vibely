@@ -4,12 +4,14 @@ import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.user.User;
 import com.vibely.backend.user.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,7 +23,6 @@ public class AuthController {
     private final OtpVerificationService otpVerificationService;
     private final UserRepository userRepository;
     private final UserAvatarResolver userAvatarResolver;
-
     public AuthController(
         AuthService authService,
         OtpVerificationService otpVerificationService,
@@ -35,13 +36,19 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ApiResponse<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ApiResponse.success(authService.register(request));
+    public ApiResponse<AuthResponse> register(
+        @Valid @RequestBody RegisterRequest request,
+        HttpServletRequest httpRequest
+    ) {
+        return ApiResponse.success(authService.register(request, httpRequest));
     }
 
     @PostMapping("/login")
-    public ApiResponse<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
-        return ApiResponse.success(authService.login(request));
+    public ApiResponse<AuthResponse> login(
+        @Valid @RequestBody AuthRequest request,
+        HttpServletRequest httpRequest
+    ) {
+        return ApiResponse.success(authService.login(request, httpRequest));
     }
 
     @PostMapping("/refresh")
@@ -56,13 +63,25 @@ public class AuthController {
     }
 
     @PostMapping("/send-code")
-    public ApiResponse<SendCodeResponse> sendCode(@Valid @RequestBody SendCodeRequest request) {
-        return ApiResponse.success(otpVerificationService.sendCode(request));
+    public ApiResponse<SendCodeResponse> sendCode(
+        @Valid @RequestBody SendCodeRequest request,
+        @RequestHeader(
+            value = com.vibely.backend.antibot.auth.AuthProtectionService.CAPTCHA_VERIFICATION_HEADER,
+            required = false
+        ) String verificationToken
+    ) {
+        return ApiResponse.success(otpVerificationService.sendCode(request, verificationToken));
     }
 
     @PostMapping("/verify-code")
     public ApiResponse<VerifyCodeResponse> verifyCode(@Valid @RequestBody VerifyCodeRequest request) {
         return ApiResponse.success(otpVerificationService.verifyCode(request));
+    }
+
+    @PostMapping("/reset-password")
+    public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        otpVerificationService.resetPassword(request);
+        return ApiResponse.success(null);
     }
 
     @PostMapping("/oauth/exchange")

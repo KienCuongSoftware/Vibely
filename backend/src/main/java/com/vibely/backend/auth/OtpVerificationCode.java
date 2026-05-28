@@ -20,6 +20,9 @@ public class OtpVerificationCode {
     @Column(nullable = false, length = 120)
     private String email;
 
+    @Column(nullable = false, length = 32)
+    private String purpose = OtpCodePurpose.REGISTER.name();
+
     @Column(name = "code_hash", nullable = false, length = 128)
     private String codeHash;
 
@@ -53,6 +56,14 @@ public class OtpVerificationCode {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPurpose() {
+        return purpose;
+    }
+
+    public void setPurpose(String purpose) {
+        this.purpose = purpose;
     }
 
     public String getCodeHash() {

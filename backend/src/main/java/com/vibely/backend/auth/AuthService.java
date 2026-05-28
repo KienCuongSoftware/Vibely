@@ -1,6 +1,8 @@
 package com.vibely.backend.auth;
 
+import com.vibely.backend.antibot.auth.AuthProtectionService;
 import com.vibely.backend.common.BadRequestException;
+import jakarta.servlet.http.HttpServletRequest;
 import com.vibely.backend.security.JwtService;
 import com.vibely.backend.user.Role;
 import com.vibely.backend.user.User;
@@ -36,6 +38,7 @@ public class AuthService {
     private final UsernameService usernameService;
     private final UserAvatarResolver userAvatarResolver;
     private final long refreshExpirationSeconds;
+    private final AuthProtectionService authProtectionService;
 
     public AuthService(
         UserRepository userRepository,
@@ -46,6 +49,7 @@ public class AuthService {
         OAuthLoginCodeStore oAuthLoginCodeStore,
         UsernameService usernameService,
         UserAvatarResolver userAvatarResolver,
+        AuthProtectionService authProtectionService,
         @Value("${app.jwt.refresh-expiration-seconds:604800}") long refreshExpirationSeconds
     ) {
         this.userRepository = userRepository;
@@ -56,10 +60,18 @@ public class AuthService {
         this.oAuthLoginCodeStore = oAuthLoginCodeStore;
         this.usernameService = usernameService;
         this.userAvatarResolver = userAvatarResolver;
+        this.authProtectionService = authProtectionService;
         this.refreshExpirationSeconds = refreshExpirationSeconds;
     }
 
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
+        authProtectionService.guardRegister(
+            request.getEmail(),
+            httpRequest.getHeader(AuthProtectionService.CAPTCHA_VERIFICATION_HEADER),
+            httpRequest.getHeader("X-Session-Id"),
+            httpRequest.getHeader("X-Device-Hash"),
+            httpRequest
+        );
         String normalizedUsername = usernameService.validateForRegistration(request.getUsername());
         UsernameCheckResponse usernameCheck = usernameService.checkAvailability(normalizedUsername);
         if (!usernameCheck.available()) {
@@ -83,19 +95,31 @@ public class AuthService {
         user.setBirthDate(validateBirthDate(request.getBirthDate()));
         user.setOnboardingCompleted(true);
         User saved = userRepository.save(user);
+        authProtectionService.consumeRegisterVerification(httpRequest);
+        authProtectionService.onRegisterSuccess(request.getEmail(), httpRequest);
         return issueTokens(saved);
     }
 
-    public AuthResponse login(AuthRequest request) {
+    public AuthResponse login(AuthRequest request, HttpServletRequest httpRequest) {
+        authProtectionService.guardLogin(
+            request.getEmail(),
+            httpRequest.getHeader(AuthProtectionService.CAPTCHA_VERIFICATION_HEADER),
+            httpRequest.getHeader("X-Session-Id"),
+            httpRequest.getHeader("X-Device-Hash"),
+            httpRequest
+        );
         try {
             authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
         } catch (AuthenticationException ex) {
+            authProtectionService.onLoginFailure(request.getEmail(), httpRequest);
             throw new BadRequestException("Thông tin đăng nhập không chính xác");
         }
         User user = userRepository.findByEmail(request.getEmail())
             .orElseThrow(() -> new BadRequestException("Thông tin đăng nhập không chính xác"));
+        authProtectionService.consumeLoginVerification(httpRequest);
+        authProtectionService.onLoginSuccess(request.getEmail(), httpRequest);
         return issueTokens(user);
     }
 
