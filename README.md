@@ -17,22 +17,23 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 
 ## Highlights
 
-| Area | What Vibely does |
-|------|------------------|
-| **Feed** | TikTok-style infinite scroll with virtualization, media windowing, and HLS manifest prefetch |
-| **Streaming** | FFmpeg → HLS segments → S3 → CDN-ready URLs → `hls.js` playback |
-| **Identity** | Dual-key model: `BIGINT` internally, **UUIDv7 `publicId`** externally |
-| **Auth** | JWT + refresh rotation, OAuth (Google / Facebook / LINE), email OTP signup, forgot-password flow |
-| **Anti-bot** | Risk scoring, rotate/slider/checkbox captcha, behavior telemetry, auth hardening (`428` challenge) |
-| **Messaging** | Direct chat with message requests, STOMP/WebSocket realtime, share-to-chat from videos |
+| Area            | What Vibely does                                                                                      |
+| --------------- | ----------------------------------------------------------------------------------------------------- |
+| **Feed**        | TikTok-style infinite scroll with virtualization, media windowing, and HLS manifest prefetch          |
+| **Streaming**   | FFmpeg → HLS segments → S3 → CDN-ready URLs → `hls.js` playback                                       |
+| **Identity**    | Dual-key model: `BIGINT` internally, **UUIDv7 `publicId`** externally                                 |
+| **Auth**        | JWT + refresh rotation, OAuth (Google / Facebook / LINE), email OTP signup, forgot-password flow      |
+| **Anti-bot**    | Risk scoring, rotate/slider/checkbox captcha, behavior telemetry, auth hardening (`428` challenge)    |
+| **Messaging**   | Direct chat with message requests, STOMP/WebSocket realtime, share-to-chat from videos                |
 | **Performance** | Keyset pagination, batched feed queries, Redis share/redirect cache, aggressive client memory cleanup |
-| **Studio** | Upload, post editing, per-video analytics, comment moderation UI |
+| **Studio**      | Upload, post editing, per-video analytics, comment moderation UI                                      |
 
 ---
 
 ## Features
 
 ### Feed & playback
+
 - **Cursor-based infinite feed** with opaque keyset cursors (`FeedCursorCodec`)
 - **Virtualized rendering** via TanStack Virtual — never mounts the full dataset
 - **Media windowing** — typically **3–7 active `<video>` elements** at once
@@ -41,6 +42,7 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 - **Poster placeholders** for off-window slides (no hidden autoplay leaks)
 
 ### Backend & data
+
 - **Spring Boot** REST API with consistent response envelope
 - **PostgreSQL** + **Flyway** migrations, JPA/Hibernate
 - **Keyset pagination** (`ORDER BY createdAt DESC, id DESC`) — no offset scanning on the hot feed path
@@ -48,6 +50,7 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 - **Redis** for short-link cache, share counters, and rate-limit backing (optional but first-class)
 
 ### Media pipeline
+
 - Presigned **S3 uploads** for raw video and thumbnails
 - **FFmpeg** transcoding to multi-bitrate **HLS** (`.m3u8` + `.ts`)
 - **Audio mastering** pipeline (loudness normalization, mobile-speaker optimization)
@@ -55,6 +58,7 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 - Public paths organized by **`publicId`** — CDN-friendly, non-enumerable
 
 ### Security & identity
+
 - **UUIDv7 public identifiers** for all video URLs and API routes
 - Numeric-only IDs rejected at the API boundary
 - **JWT + refresh token** rotation (captcha token consumed only after successful auth)
@@ -64,12 +68,14 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 - Share links, redirect analytics, and idempotent share writes
 
 ### Messaging
+
 - **Direct messages** with conversation list and media preview
 - **Message requests** — accept/reject before strangers can chat
 - **STOMP over WebSocket** for realtime delivery (`/ws`)
 - **Share video to chat** from the watch/feed UI
 
 ### Creator studio
+
 - Upload flow with cover picker and preview
 - Post editor, analytics dashboard, comment management
 - View/playthrough tracking for retention insights
@@ -78,17 +84,17 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 
 ## Tech stack
 
-| Layer | Technologies |
-|-------|----------------|
-| **Frontend** | React 19, Vite 8, React Router 7, Tailwind CSS 4, TanStack Virtual, HLS.js, Vitest |
-| **Backend** | Spring Boot 3.5, Spring Security, Spring Data JPA, Flyway, PostgreSQL |
-| **Cache** | Redis 7 (share cache, captcha sessions, rate limits) |
-| **Messaging** | Spring WebSocket + STOMP |
-| **Media** | FFmpeg, FFprobe, HLS (adaptive streaming) |
-| **Storage** | AWS S3 (presigned upload + CDN-ready public URLs) |
-| **Auth** | JWT (HS256), refresh tokens, OAuth 2.0 / OIDC, SMTP OTP |
-| **Anti-bot** | Procedural captcha, HMAC verification tokens, optional Kafka telemetry |
-| **Tooling** | Maven, ESLint, Docker Compose (Redis; Kafka optional profile) |
+| Layer         | Technologies                                                                       |
+| ------------- | ---------------------------------------------------------------------------------- |
+| **Frontend**  | React 19, Vite 8, React Router 7, Tailwind CSS 4, TanStack Virtual, HLS.js, Vitest |
+| **Backend**   | Spring Boot 3.5, Spring Security, Spring Data JPA, Flyway, PostgreSQL              |
+| **Cache**     | Redis 7 (share cache, captcha sessions, rate limits)                               |
+| **Messaging** | Spring WebSocket + STOMP                                                           |
+| **Media**     | FFmpeg, FFprobe, HLS (adaptive streaming)                                          |
+| **Storage**   | AWS S3 (presigned upload + CDN-ready public URLs)                                  |
+| **Auth**      | JWT (HS256), refresh tokens, OAuth 2.0 / OIDC, SMTP OTP                            |
+| **Anti-bot**  | Procedural captcha, HMAC verification tokens, optional Kafka telemetry             |
+| **Tooling**   | Maven, ESLint, Docker Compose (Redis; Kafka optional profile)                      |
 
 ---
 
@@ -190,12 +196,12 @@ The feed is designed for **virtually infinite scrolling** without rendering or b
 
 **Client tuning** (`frontend/src/feed/feedConfig.js`)
 
-| Constant | Value | Purpose |
-|----------|-------|---------|
-| `MEDIA_WINDOW_RADIUS` | 2 | Max ~5 HLS players |
-| `PLAY_VISIBILITY_RATIO` | 0.70 | Autoplay threshold |
-| `PAUSE_VISIBILITY_RATIO` | 0.20 | Pause off-screen slides |
-| `PREFETCH_AHEAD_COUNT` | 2 | Manifest prefetch depth |
+| Constant                 | Value | Purpose                 |
+| ------------------------ | ----- | ----------------------- |
+| `MEDIA_WINDOW_RADIUS`    | 2     | Max ~5 HLS players      |
+| `PLAY_VISIBILITY_RATIO`  | 0.70  | Autoplay threshold      |
+| `PAUSE_VISIBILITY_RATIO` | 0.20  | Pause off-screen slides |
+| `PREFETCH_AHEAD_COUNT`   | 2     | Manifest prefetch depth |
 
 ---
 
@@ -203,9 +209,9 @@ The feed is designed for **virtually infinite scrolling** without rendering or b
 
 Vibely uses a **dual-key architecture** — internal performance, external opacity.
 
-| Layer | Identifier | Used for |
-|-------|------------|----------|
-| Database | `BIGINT id` | PK/FK, joins, feed cursors |
+| Layer      | Identifier           | Used for                             |
+| ---------- | -------------------- | ------------------------------------ |
+| Database   | `BIGINT id`          | PK/FK, joins, feed cursors           |
 | Public API | `UUID publicId` (v7) | URLs, share links, client cache keys |
 
 **Example routes**
@@ -229,12 +235,12 @@ Legacy numeric routes are **rejected** — no silent fallback to internal IDs.
 
 ## Authentication
 
-| Token | TTL | Storage |
-|-------|-----|---------|
-| Access (JWT) | **15 minutes** | Memory / client state |
-| Refresh | **14 days** | HttpOnly-style client contract via API |
+| Token                | TTL            | Storage                                            |
+| -------------------- | -------------- | -------------------------------------------------- |
+| Access (JWT)         | **15 minutes** | Memory / client state                              |
+| Refresh              | **14 days**    | HttpOnly-style client contract via API             |
 | Captcha verification | **~5 minutes** | `sessionStorage` (`X-Captcha-Verification` header) |
-| Email OTP | **10 minutes** | PostgreSQL `otp_verification_codes` |
+| Email OTP            | **10 minutes** | PostgreSQL `otp_verification_codes`                |
 
 **Email signup** — birth date + password → `POST /api/auth/send-code` (purpose `REGISTER`, captcha when required) → verify OTP → `POST /api/auth/register`.
 
@@ -277,14 +283,14 @@ Raw uploads remain under `uploads/`; processed HLS lives under `hls/` — never 
 
 ## Performance optimizations
 
-| Layer | Technique |
-|-------|-----------|
-| **Feed API** | Keyset pagination, `JOIN FETCH author`, batched count queries (4/page vs 4×N) |
-| **Redis** | Short-link cache, share counter mirror, redirect negative cache |
+| Layer        | Technique                                                                       |
+| ------------ | ------------------------------------------------------------------------------- |
+| **Feed API** | Keyset pagination, `JOIN FETCH author`, batched count queries (4/page vs 4×N)   |
+| **Redis**    | Short-link cache, share counter mirror, redirect negative cache                 |
 | **Frontend** | Virtualization, media windowing, `React.memo` on player, manifest-only prefetch |
-| **HLS** | `maxBufferLength: 12s`, `backBufferLength: 0`, first-segment prefetch |
-| **Memory** | Destroy HLS instances off-window; trim metadata list after long sessions |
-| **Mobile** | Touch scroll, snap slides, small concurrent prefetch pool |
+| **HLS**      | `maxBufferLength: 12s`, `backBufferLength: 0`, first-segment prefetch           |
+| **Memory**   | Destroy HLS instances off-window; trim metadata list after long sessions        |
+| **Mobile**   | Touch scroll, snap slides, small concurrent prefetch pool                       |
 
 ---
 
@@ -433,14 +439,14 @@ Vibely/
 
 ### Prerequisites
 
-| Tool | Version |
-|------|---------|
-| Java | 17+ |
-| Maven | 3.9+ |
-| Node.js | 20+ |
-| PostgreSQL | 14+ |
-| FFmpeg / FFprobe | 6+ (on `PATH` or via `FFMPEG_PATH`) |
-| Redis | 7+ (optional; enabled in `dev` profile) |
+| Tool             | Version                                 |
+| ---------------- | --------------------------------------- |
+| Java             | 17+                                     |
+| Maven            | 3.9+                                    |
+| Node.js          | 20+                                     |
+| PostgreSQL       | 14+                                     |
+| FFmpeg / FFprobe | 6+ (on `PATH` or via `FFMPEG_PATH`)     |
+| Redis            | 7+ (optional; enabled in `dev` profile) |
 
 ### 1. Start Redis (and optional Kafka)
 
@@ -456,26 +462,26 @@ Create a PostgreSQL database named `vibely` (or configure `DB_URL`).
 
 ### 3. Backend environment
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DB_PASSWORD` | PostgreSQL password | *(required)* |
-| `JWT_SECRET` | Signing key for JWT | change in production |
-| `DB_URL` | JDBC URL | local PostgreSQL |
-| `DB_USERNAME` | DB user | `postgres` |
-| `REDIS_HOST` | Redis host | `localhost` |
-| `APP_REDIS_ENABLED` | Enable Redis features | `true` in dev profile |
-| `APP_S3_ENABLED` | Enable S3 uploads/HLS | `true` in dev profile |
-| `AWS_S3_BUCKET` | S3 bucket name | — |
-| `AWS_ACCESS_KEY_ID` | AWS credentials | — |
-| `AWS_SECRET_ACCESS_KEY` | AWS credentials | — |
-| `FFMPEG_PATH` | FFmpeg binary | `ffmpeg` |
-| `FFPROBE_PATH` | FFprobe binary | `ffprobe` |
-| `APP_PROCESSING_WORKER_ENABLED` | Run in-process HLS worker | `true` in dev |
-| `CORS_ALLOWED_ORIGINS` | Frontend origin | `http://localhost:5173` |
-| `APP_MAIL_ENABLED` | Send real OTP emails | `false` (use `demoCode` in API) |
-| `SMTP_HOST` / `SMTP_PORT` | SMTP server | Gmail `587` when mail enabled |
-| `SMTP_USERNAME` / `SMTP_PASSWORD` | SMTP credentials | — |
-| `ANTIBOT_HMAC_SECRET` | Captcha/token signing | dev default in `application-dev.yaml` |
+| Variable                          | Description               | Default                               |
+| --------------------------------- | ------------------------- | ------------------------------------- |
+| `DB_PASSWORD`                     | PostgreSQL password       | _(required)_                          |
+| `JWT_SECRET`                      | Signing key for JWT       | change in production                  |
+| `DB_URL`                          | JDBC URL                  | local PostgreSQL                      |
+| `DB_USERNAME`                     | DB user                   | `postgres`                            |
+| `REDIS_HOST`                      | Redis host                | `localhost`                           |
+| `APP_REDIS_ENABLED`               | Enable Redis features     | `true` in dev profile                 |
+| `APP_S3_ENABLED`                  | Enable S3 uploads/HLS     | `true` in dev profile                 |
+| `AWS_S3_BUCKET`                   | S3 bucket name            | —                                     |
+| `AWS_ACCESS_KEY_ID`               | AWS credentials           | —                                     |
+| `AWS_SECRET_ACCESS_KEY`           | AWS credentials           | —                                     |
+| `FFMPEG_PATH`                     | FFmpeg binary             | `ffmpeg`                              |
+| `FFPROBE_PATH`                    | FFprobe binary            | `ffprobe`                             |
+| `APP_PROCESSING_WORKER_ENABLED`   | Run in-process HLS worker | `true` in dev                         |
+| `CORS_ALLOWED_ORIGINS`            | Frontend origin           | `http://localhost:5173`               |
+| `APP_MAIL_ENABLED`                | Send real OTP emails      | `false` (use `demoCode` in API)       |
+| `SMTP_HOST` / `SMTP_PORT`         | SMTP server               | Gmail `587` when mail enabled         |
+| `SMTP_USERNAME` / `SMTP_PASSWORD` | SMTP credentials          | —                                     |
+| `ANTIBOT_HMAC_SECRET`             | Captcha/token signing     | dev default in `application-dev.yaml` |
 
 Merge mail/OAuth/S3 secrets into `backend/src/main/resources/application-local.yaml` (gitignored; see `application-dev.yaml` for keys).
 
@@ -514,18 +520,21 @@ cd frontend && npm test
 
 ## Screenshots
 
-> Add screenshots to `docs/screenshots/` and uncomment the lines below.
+### For You feed
 
-<!-- 
-![For You feed](docs/screenshots/feed.png)
-![Watch page](docs/screenshots/watch.png)
-![Creator studio](docs/screenshots/studio.png)
-![Mobile layout](docs/screenshots/mobile.png)
--->
+<p align="center">
+  <img src="docs/screenshots/Feed.png" alt="For You feed" width="720" />
+</p>
 
-| Feed | Studio |
-|:----:|:------:|
-| *screenshot coming soon* | *screenshot coming soon* |
+<p align="center"><sub>TikTok-style infinite scroll, HLS playback, likes / comments / share</sub></p>
+
+### Creator studio
+
+<p align="center">
+  <img src="docs/screenshots/Studio.png" alt="Vibely Studio" width="720" />
+</p>
+
+<p align="center"><sub>Home dashboard, 7-day metrics, posts and comments</sub></p>
 
 ---
 
