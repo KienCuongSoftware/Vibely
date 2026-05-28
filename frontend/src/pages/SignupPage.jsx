@@ -1,5 +1,4 @@
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { FaFacebook, FaUser } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
@@ -7,7 +6,6 @@ import { SiLine } from "react-icons/si";
 import {
   IoAlertCircleOutline,
   IoArrowBack,
-  IoChevronDown,
   IoClose,
   IoEyeOffOutline,
   IoEyeOutline,
@@ -20,7 +18,21 @@ import {
   persistLastLoginMethod,
   useLastLoginMethod,
 } from "../auth/useLastLoginMethod.js";
+import {
+  AUTH_FIELD_AT,
+  AUTH_FIELD_ERROR,
+  AUTH_FIELD_OTP,
+  AUTH_FIELD_WITH_ICON,
+} from "../components/auth/authFieldClasses.js";
+import { BirthDateFields } from "../components/auth/BirthDateSelect.jsx";
 import { LoginMethodButton } from "../components/auth/LoginMethodButton.jsx";
+import { ChallengeModal } from "../security/captcha/ChallengeModal.jsx";
+import {
+  buildAntiBotHeaders,
+  CAPTCHA_VERIFICATION_HEADER,
+} from "../security/headers/buildAntiBotHeaders.js";
+import { useAntiBot } from "../security/hooks/useAntiBot.js";
+import { clearVerificationToken } from "../security/sdk/antiBotClient.js";
 
 const OAUTH_BACKEND_ORIGIN = resolveBackendOrigin();
 const OAUTH_ONBOARDING_KEY = "vibely_oauth_pending";
@@ -47,10 +59,9 @@ export function SignupPage() {
   const [emailTouched, setEmailTouched] = useState(false);
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
-  const [showChallengeModal, setShowChallengeModal] = useState(false);
-  const [challengeSelection, setChallengeSelection] = useState([]);
-  const [challengeError, setChallengeError] = useState("");
+  const [sendCodeError, setSendCodeError] = useState("");
   const [sendingCode, setSendingCode] = useState(false);
+  const pendingCaptchaActionRef = useRef(null);
   const [usernameChecking, setUsernameChecking] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState(false);
   const [usernameSuggestion, setUsernameSuggestion] = useState("");
@@ -62,6 +73,14 @@ export function SignupPage() {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const lastLoginMethod = useLastLoginMethod();
+  const {
+    challengeOpen,
+    challengeLevel,
+    closeChallenge,
+    onChallengeVerified,
+    ensureHuman,
+    handleCaptchaRequired,
+  } = useAntiBot("register");
   const normalizedEmail = identifier.trim();
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
   const showEmailError =
@@ -155,42 +174,6 @@ export function SignupPage() {
   const yearOptions = Array.from({ length: 2026 - 1900 + 1 }, (_, index) =>
     String(2026 - index),
   );
-  const challengeShapes = [
-    {
-      id: 1,
-      type: "circle",
-      label: "Hình tròn A",
-      className: "left-8 top-10 h-12 w-12 bg-yellow-300",
-    },
-    {
-      id: 2,
-      type: "triangle",
-      label: "Hình tam giác",
-      className:
-        "left-28 top-8 h-14 w-14 bg-red-300 [clip-path:polygon(50%_0%,0%_100%,100%_100%)]",
-    },
-    {
-      id: 3,
-      type: "hexagon",
-      label: "Lục giác",
-      className:
-        "left-52 top-6 h-12 w-12 bg-sky-300 [clip-path:polygon(25%_0%,75%_0%,100%_50%,75%_100%,25%_100%,0%_50%)]",
-    },
-    {
-      id: 4,
-      type: "circle",
-      label: "Hình tròn B",
-      className: "right-10 top-16 h-12 w-12 bg-yellow-300",
-    },
-    {
-      id: 5,
-      type: "square",
-      label: "Hình vuông",
-      className: "left-40 bottom-10 h-12 w-12 bg-zinc-300",
-    },
-  ];
-  const hasTwoSelections = challengeSelection.length === 2;
-
   useEffect(() => {
     if (resendSeconds <= 0) {
       return undefined;
@@ -310,66 +293,61 @@ export function SignupPage() {
     }
   };
 
-  const handleOpenChallengeModal = () => {
-    setChallengeSelection([]);
-    setChallengeError("");
-    setShowChallengeModal(true);
+  const doSendVerificationCode = async () => {
+    setSendingCode(true);
+    setSendCodeError("");
+    try {
+      const headers = buildAntiBotHeaders();
+      const result = await apiClient.sendCode(
+        {
+          email: normalizedEmail,
+          purpose: "REGISTER",
+          challengePassed: !headers[CAPTCHA_VERIFICATION_HEADER],
+        },
+        headers,
+      );
+      const cooldown = Number(result?.resendAfterSeconds) || 60;
+      setResendSeconds(cooldown);
+      setVerifiedCodeSnapshot("");
+      setVerifiedEmailSnapshot("");
+      if (result?.emailSent) {
+        setStatus(
+          `Đã gửi mã 6 số tới ${normalizedEmail}. Kiểm tra hộp thư đến (và cả thư rác/quảng cáo).`,
+        );
+      } else if (result?.demoCode) {
+        setStatus(
+          `Chưa bật gửi email (dev). Mã xác minh: ${result.demoCode}`,
+        );
+      } else {
+        setStatus(
+          "Không gửi được email xác minh. Liên hệ quản trị hoặc thử lại sau.",
+        );
+      }
+    } catch (error) {
+      setSendCodeError(error.message);
+    } finally {
+      setSendingCode(false);
+    }
+  };
+
+  const handleSendVerificationCode = async () => {
+    if (!canSendVerificationCode) return;
+    pendingCaptchaActionRef.current = "sendCode";
+    setSendCodeError("");
+    try {
+      const human = await ensureHuman();
+      if (human.verified) {
+        pendingCaptchaActionRef.current = null;
+        await doSendVerificationCode();
+      }
+    } catch (error) {
+      pendingCaptchaActionRef.current = null;
+      setSendCodeError(error.message);
+    }
   };
 
   const startOAuth = (provider) => {
     window.location.href = `${OAUTH_BACKEND_ORIGIN}/oauth2/authorization/${provider}`;
-  };
-
-  const toggleChallengeSelection = (shapeId) => {
-    setChallengeError("");
-    setChallengeSelection((previous) => {
-      if (previous.includes(shapeId)) {
-        return previous.filter((id) => id !== shapeId);
-      }
-      if (previous.length >= 2) {
-        return [previous[1], shapeId];
-      }
-      return [...previous, shapeId];
-    });
-  };
-
-  const handleChallengeConfirm = async () => {
-    if (!hasTwoSelections) {
-      setChallengeError("Vui lòng chọn đủ 2 hình để tiếp tục");
-      return;
-    }
-
-    const selectedShapes = challengeShapes.filter((shape) =>
-      challengeSelection.includes(shape.id),
-    );
-    if (selectedShapes[0]?.type !== selectedShapes[1]?.type) {
-      setChallengeError("Hai hình chưa cùng dạng, vui lòng thử lại");
-      return;
-    }
-
-    setSendingCode(true);
-    setChallengeError("");
-    try {
-      const result = await apiClient.sendCode({
-        email: normalizedEmail,
-        challengePassed: true,
-      });
-      const cooldown = Number(result?.resendAfterSeconds) || 60;
-      setResendSeconds(cooldown);
-      setShowChallengeModal(false);
-      setChallengeSelection([]);
-      setVerifiedCodeSnapshot("");
-      setVerifiedEmailSnapshot("");
-      setStatus(
-        result?.demoCode
-          ? `Mã xác minh demo: ${result.demoCode}`
-          : "Đã gửi mã xác minh, vui lòng kiểm tra email của bạn",
-      );
-    } catch (error) {
-      setChallengeError(error.message);
-    } finally {
-      setSendingCode(false);
-    }
   };
 
   const continueToUsernameStep = async (event) => {
@@ -400,6 +378,7 @@ export function SignupPage() {
         await apiClient.verifyCode({
           email: normalizedEmail,
           code: normalizedCode,
+          purpose: "REGISTER",
         });
         setVerifiedCodeSnapshot(normalizedCode);
         setVerifiedEmailSnapshot(normalizedEmail);
@@ -446,16 +425,42 @@ export function SignupPage() {
     setLoading(true);
     setStatus("Đang tạo tài khoản...");
     try {
-      await register({
-        username: normalizedVibelyId,
-        displayName: normalizedVibelyId,
-        email: normalizedEmail,
-        password,
-        bio: "",
-        birthDate,
-      });
+      pendingCaptchaActionRef.current = "register";
+      const human = await ensureHuman();
+      if (!human.verified) {
+        setStatus("Vui lòng hoàn thành xác minh bảo mật");
+        setLoading(false);
+        return;
+      }
+      pendingCaptchaActionRef.current = null;
+      await register(
+        {
+          username: normalizedVibelyId,
+          displayName: normalizedVibelyId,
+          email: normalizedEmail,
+          password,
+          bio: "",
+          birthDate,
+        },
+        buildAntiBotHeaders(),
+      );
+      clearVerificationToken();
       setStatus("Đăng ký thành công");
     } catch (error) {
+      if (error.status === 428 && error.captchaRequired) {
+        handleCaptchaRequired(error.captchaRequired);
+        setStatus("Vui lòng hoàn thành xác minh bảo mật");
+        return;
+      }
+      if (
+        typeof error.message === "string" &&
+        error.message.includes("Captcha verification")
+      ) {
+        clearVerificationToken();
+        handleCaptchaRequired({ challengeLevel: "ROTATE" });
+        setStatus("Captcha đã hết hạn, vui lòng xác minh lại");
+        return;
+      }
       setStatus(error.message);
     } finally {
       setLoading(false);
@@ -464,6 +469,22 @@ export function SignupPage() {
 
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black/70 px-4 py-6 text-zinc-100">
+      <ChallengeModal
+        open={challengeOpen}
+        challengeLevel={challengeLevel}
+        purpose="REGISTER"
+        onClose={closeChallenge}
+        onVerified={() => {
+          onChallengeVerified();
+          const action = pendingCaptchaActionRef.current;
+          pendingCaptchaActionRef.current = null;
+          if (action === "sendCode") {
+            void doSendVerificationCode();
+          } else if (action === "register") {
+            submitRegisterWithUsername({ preventDefault: () => {} });
+          }
+        }}
+      />
       <div className="flex max-h-[94vh] w-full max-w-[520px] flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
         <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#27272a_transparent] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-800 [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar]:w-1.5">
           {view === "methods" ? (
@@ -553,53 +574,16 @@ export function SignupPage() {
                   Vui lòng cho biết ngày sinh của bạn.
                 </p>
                 <form className="space-y-2.5" onSubmit={continueToUsernameStep}>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="relative">
-                      <select
-                        className="h-10 w-full appearance-none rounded bg-zinc-800 px-3 pr-9 text-[13px] text-zinc-200 scheme-dark"
-                        value={birthMonth}
-                        onChange={(e) => setBirthMonth(e.target.value)}
-                      >
-                        <option value="">Tháng</option>
-                        {monthOptions.map((label, index) => (
-                          <option key={index + 1} value={String(index + 1)}>
-                            {label}
-                          </option>
-                        ))}
-                      </select>
-                      <IoChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-300" />
-                    </div>
-                    <div className="relative">
-                      <select
-                        className="h-10 w-full appearance-none rounded bg-zinc-800 px-3 pr-9 text-[13px] text-zinc-200 scheme-dark"
-                        value={birthDay}
-                        onChange={(e) => setBirthDay(e.target.value)}
-                      >
-                        <option value="">Ngày</option>
-                        {Array.from({ length: 31 }).map((_, index) => (
-                          <option key={index + 1} value={String(index + 1)}>
-                            {index + 1}
-                          </option>
-                        ))}
-                      </select>
-                      <IoChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-300" />
-                    </div>
-                    <div className="relative">
-                      <select
-                        className="h-10 w-full appearance-none rounded bg-zinc-800 px-3 pr-9 text-[13px] text-zinc-200 scheme-dark"
-                        value={birthYear}
-                        onChange={(e) => setBirthYear(e.target.value)}
-                      >
-                        <option value="">Năm</option>
-                        {yearOptions.map((year) => (
-                          <option key={year} value={year}>
-                            {year}
-                          </option>
-                        ))}
-                      </select>
-                      <IoChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-300" />
-                    </div>
-                  </div>
+                  <BirthDateFields
+                    birthMonth={birthMonth}
+                    birthDay={birthDay}
+                    birthYear={birthYear}
+                    onMonthChange={setBirthMonth}
+                    onDayChange={setBirthDay}
+                    onYearChange={setBirthYear}
+                    monthOptions={monthOptions}
+                    yearOptions={yearOptions}
+                  />
 
                   <p className="text-[12px] text-zinc-500">
                     Ngày sinh của bạn sẽ không được hiển thị công khai.
@@ -617,11 +601,9 @@ export function SignupPage() {
                   </div>
                   <div className="relative">
                     <input
-                      className={`h-10 w-full rounded bg-zinc-800 px-4 pr-10 text-[13px] ${
-                        showEmailError
-                          ? "border border-red-500 text-red-400 focus:outline-none"
-                          : ""
-                      }`}
+                      className={
+                        showEmailError ? AUTH_FIELD_ERROR : AUTH_FIELD_WITH_ICON
+                      }
                       placeholder="Địa chỉ email"
                       value={identifier}
                       onChange={(e) => {
@@ -646,7 +628,7 @@ export function SignupPage() {
                   ) : null}
                   <div className="relative">
                     <input
-                      className="h-10 w-full rounded bg-zinc-800 px-4 text-[13px]"
+                      className={AUTH_FIELD_WITH_ICON}
                       placeholder="Mật khẩu"
                       type={showPassword ? "text" : "password"}
                       value={password}
@@ -701,7 +683,7 @@ export function SignupPage() {
                   ) : null}
                   <div className="flex">
                     <input
-                      className="h-10 flex-1 rounded-l bg-zinc-800 px-4 text-[13px]"
+                      className={AUTH_FIELD_OTP}
                       placeholder="Nhập mã gồm 6 chữ số"
                       value={verificationCode}
                       maxLength={6}
@@ -718,8 +700,8 @@ export function SignupPage() {
                           ? "bg-red-600 text-white hover:bg-red-500"
                           : "cursor-not-allowed bg-zinc-700 text-zinc-400"
                       }`}
-                      onClick={handleOpenChallengeModal}
-                      disabled={!canSendVerificationCode}
+                      onClick={handleSendVerificationCode}
+                      disabled={!canSendVerificationCode || sendingCode}
                     >
                       {sendingCode
                         ? "Đang gửi..."
@@ -728,6 +710,9 @@ export function SignupPage() {
                           : "Gửi mã"}
                     </button>
                   </div>
+                  {sendCodeError ? (
+                    <p className="text-sm text-red-400">{sendCodeError}</p>
+                  ) : null}
                   <label className="flex items-start gap-2 text-[12px] leading-4 text-zinc-300">
                     <input
                       type="checkbox"
@@ -785,53 +770,16 @@ export function SignupPage() {
                   Vui lòng cho biết ngày sinh của bạn.
                 </p>
                 <form className="space-y-2.5" onSubmit={continueOAuthBirthStep}>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="relative">
-                      <select
-                        className="h-10 w-full appearance-none rounded bg-zinc-800 px-3 pr-9 text-[13px] text-zinc-200 scheme-dark"
-                        value={birthMonth}
-                        onChange={(e) => setBirthMonth(e.target.value)}
-                      >
-                        <option value="">Tháng</option>
-                        {monthOptions.map((label, index) => (
-                          <option key={index + 1} value={String(index + 1)}>
-                            {label}
-                          </option>
-                        ))}
-                      </select>
-                      <IoChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-300" />
-                    </div>
-                    <div className="relative">
-                      <select
-                        className="h-10 w-full appearance-none rounded bg-zinc-800 px-3 pr-9 text-[13px] text-zinc-200 scheme-dark"
-                        value={birthDay}
-                        onChange={(e) => setBirthDay(e.target.value)}
-                      >
-                        <option value="">Ngày</option>
-                        {Array.from({ length: 31 }).map((_, index) => (
-                          <option key={index + 1} value={String(index + 1)}>
-                            {index + 1}
-                          </option>
-                        ))}
-                      </select>
-                      <IoChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-300" />
-                    </div>
-                    <div className="relative">
-                      <select
-                        className="h-10 w-full appearance-none rounded bg-zinc-800 px-3 pr-9 text-[13px] text-zinc-200 scheme-dark"
-                        value={birthYear}
-                        onChange={(e) => setBirthYear(e.target.value)}
-                      >
-                        <option value="">Năm</option>
-                        {yearOptions.map((year) => (
-                          <option key={year} value={year}>
-                            {year}
-                          </option>
-                        ))}
-                      </select>
-                      <IoChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-300" />
-                    </div>
-                  </div>
+                  <BirthDateFields
+                    birthMonth={birthMonth}
+                    birthDay={birthDay}
+                    birthYear={birthYear}
+                    onMonthChange={setBirthMonth}
+                    onDayChange={setBirthDay}
+                    onYearChange={setBirthYear}
+                    monthOptions={monthOptions}
+                    yearOptions={yearOptions}
+                  />
                   <p className="text-[12px] text-zinc-500">
                     Ngày sinh của bạn sẽ không được hiển thị công khai.
                   </p>
@@ -885,7 +833,7 @@ export function SignupPage() {
                       @
                     </span>
                     <input
-                      className="h-10 w-full rounded bg-zinc-800 pl-7 pr-4 text-[13px] text-zinc-200"
+                      className={AUTH_FIELD_AT}
                       placeholder="your.id"
                       value={vibelyId}
                       onChange={(event) => {
@@ -986,7 +934,7 @@ export function SignupPage() {
                       @
                     </span>
                     <input
-                      className="h-10 w-full rounded bg-zinc-800 pl-7 pr-4 text-[13px] text-zinc-200"
+                      className={AUTH_FIELD_AT}
                       placeholder="your.id"
                       value={vibelyId}
                       onChange={(event) => {
@@ -1098,66 +1046,6 @@ export function SignupPage() {
         </div>
       </div>
 
-      {showChallengeModal ? (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-[520px] rounded-2xl border border-zinc-700 bg-zinc-900 p-5 shadow-2xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-xl font-semibold">
-                Chọn 2 đối tượng có hình dạng giống nhau
-              </h3>
-              <button
-                type="button"
-                className="text-zinc-300 hover:text-white"
-                onClick={() => setShowChallengeModal(false)}
-                aria-label="Đóng xác minh"
-              >
-                <IoClose className="text-2xl" />
-              </button>
-            </div>
-
-            <div className="relative mb-4 h-56 rounded-xl bg-zinc-100">
-              {challengeShapes.map((shape) => {
-                const selectedIndex = challengeSelection.indexOf(shape.id);
-                return (
-                  <button
-                    key={shape.id}
-                    type="button"
-                    onClick={() => toggleChallengeSelection(shape.id)}
-                    className={`absolute rounded-full transition ${shape.className} ${
-                      selectedIndex >= 0
-                        ? "ring-4 ring-red-500 ring-offset-2 ring-offset-zinc-100"
-                        : ""
-                    }`}
-                    aria-label={shape.label}
-                  >
-                    {selectedIndex >= 0 ? (
-                      <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-semibold text-white">
-                        {selectedIndex + 1}
-                      </span>
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
-
-            {challengeError ? (
-              <p className="mb-3 text-sm text-red-400">{challengeError}</p>
-            ) : null}
-            <button
-              type="button"
-              className={`h-12 w-full rounded-lg text-xl font-semibold text-white ${
-                sendingCode
-                  ? "cursor-not-allowed bg-red-400/60"
-                  : "bg-red-500 hover:bg-red-400"
-              }`}
-              onClick={handleChallengeConfirm}
-              disabled={sendingCode}
-            >
-              {sendingCode ? "Đang xác nhận..." : "Xác nhận"}
-            </button>
-          </div>
-        </div>
-      ) : null}
     </section>
   );
 }

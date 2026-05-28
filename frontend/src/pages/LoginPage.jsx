@@ -19,7 +19,19 @@ import {
   persistLastLoginMethod,
   useLastLoginMethod,
 } from "../auth/useLastLoginMethod.js";
+import {
+  AUTH_FIELD,
+  AUTH_FIELD_OTP,
+  AUTH_FIELD_WITH_ICON,
+} from "../components/auth/authFieldClasses.js";
 import { LoginMethodButton } from "../components/auth/LoginMethodButton.jsx";
+import { ChallengeModal } from "../security/captcha/ChallengeModal.jsx";
+import {
+  buildAntiBotHeaders,
+  CAPTCHA_VERIFICATION_HEADER,
+} from "../security/headers/buildAntiBotHeaders.js";
+import { useAntiBot } from "../security/hooks/useAntiBot.js";
+import { clearVerificationToken } from "../security/sdk/antiBotClient.js";
 
 const OAUTH_BACKEND_ORIGIN = resolveBackendOrigin();
 const OAUTH_ONBOARDING_KEY = "vibely_oauth_pending";
@@ -30,15 +42,55 @@ export function LoginPage() {
   const [searchParams] = useSearchParams();
   const oauthInFlightRef = useRef(false);
   const processedOAuthCodeRef = useRef("");
+  const pendingCaptchaActionRef = useRef(null);
   const [view, setView] = useState("methods");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetCode, setResetCode] = useState("");
+  const [resetPassword, setResetPassword] = useState("");
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resendSeconds, setResendSeconds] = useState(0);
+  const [sendingResetCode, setSendingResetCode] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [sendResetError, setSendResetError] = useState("");
+  const [isResetPasswordFocused, setIsResetPasswordFocused] = useState(false);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const lastLoginMethod = useLastLoginMethod();
+  const {
+    challengeOpen,
+    challengeLevel,
+    closeChallenge,
+    onChallengeVerified,
+    ensureHuman,
+    handleCaptchaRequired,
+  } = useAntiBot("login");
   const canSubmit =
     identifier.trim().length > 0 && password.trim().length > 0 && !loading;
+  const normalizedResetEmail = resetEmail.trim().toLowerCase();
+  const isResetEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedResetEmail);
+  const resetPasswordHasValidLength =
+    resetPassword.length >= 8 && resetPassword.length <= 20;
+  const resetPasswordHasRequiredCharacters =
+    /[A-Za-z]/.test(resetPassword) &&
+    /\d/.test(resetPassword) &&
+    /[^A-Za-z0-9]/.test(resetPassword);
+  const hasResetPasswordInput = resetPassword.length > 0;
+  const isResetPasswordValid =
+    resetPasswordHasValidLength && resetPasswordHasRequiredCharacters;
+  const canSendResetCode =
+    isResetEmailValid && resendSeconds === 0 && !sendingResetCode;
+  const canResetPassword =
+    isResetEmailValid &&
+    resetCode.trim().length === 6 &&
+    isResetPasswordValid &&
+    !resetLoading;
+  const challengePurpose =
+    pendingCaptchaActionRef.current === "sendResetCode"
+      ? "PASSWORD_RESET"
+      : "LOGIN";
   const oauthErrorMessage =
     searchParams.get("oauth") === "error"
       ? (searchParams.get("message") ??
@@ -46,8 +98,19 @@ export function LoginPage() {
       : "";
 
   useEffect(() => {
-    document.title = "Đăng nhập | Vibely";
-  }, []);
+    document.title =
+      view === "forgot" ? "Đặt lại mật khẩu | Vibely" : "Đăng nhập | Vibely";
+  }, [view]);
+
+  useEffect(() => {
+    if (resendSeconds <= 0) {
+      return undefined;
+    }
+    const timer = window.setInterval(() => {
+      setResendSeconds((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [resendSeconds]);
 
   useEffect(() => {
     if (token) {
@@ -141,6 +204,132 @@ export function LoginPage() {
     window.location.href = `${OAUTH_BACKEND_ORIGIN}/oauth2/authorization/${provider}`;
   };
 
+  const performLogin = async () => {
+    setLoading(true);
+    setStatus("Đang đăng nhập...");
+    try {
+      await login(identifier, password, buildAntiBotHeaders());
+      clearVerificationToken();
+      persistLastLoginMethod("email");
+      setStatus("Đăng nhập thành công");
+    } catch (error) {
+      if (error.status === 428 && error.captchaRequired) {
+        handleCaptchaRequired(error.captchaRequired);
+        setStatus("Vui lòng hoàn thành xác minh bảo mật");
+        return;
+      }
+      if (
+        typeof error.message === "string" &&
+        error.message.includes("Captcha verification")
+      ) {
+        clearVerificationToken();
+        handleCaptchaRequired({ challengeLevel: "ROTATE" });
+        setStatus("Captcha đã hết hạn, vui lòng xác minh lại");
+        return;
+      }
+      setStatus(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const doSendResetCode = async () => {
+    setSendingResetCode(true);
+    setSendResetError("");
+    try {
+      const headers = buildAntiBotHeaders();
+      const result = await apiClient.sendCode(
+        {
+          email: normalizedResetEmail,
+          purpose: "PASSWORD_RESET",
+          challengePassed: !headers[CAPTCHA_VERIFICATION_HEADER],
+        },
+        headers,
+      );
+      const cooldown = Number(result?.resendAfterSeconds) || 60;
+      setResendSeconds(cooldown);
+      clearVerificationToken();
+      if (result?.emailSent) {
+        setStatus(
+          `Nếu tài khoản tồn tại, mã 6 số đã được gửi tới ${normalizedResetEmail}. Kiểm tra hộp thư đến và thư rác.`,
+        );
+      } else if (result?.demoCode) {
+        setStatus(`Chưa bật gửi email (dev). Mã đặt lại mật khẩu: ${result.demoCode}`);
+      } else {
+        setStatus(
+          "Nếu email đã đăng ký, mã sẽ được gửi. Kiểm tra hộp thư hoặc thử lại sau.",
+        );
+      }
+    } catch (error) {
+      if (
+        typeof error.message === "string" &&
+        error.message.includes("Captcha verification")
+      ) {
+        clearVerificationToken();
+        pendingCaptchaActionRef.current = "sendResetCode";
+        handleCaptchaRequired({ challengeLevel: "ROTATE" });
+        setSendResetError("Captcha đã hết hạn, vui lòng xác minh lại");
+        return;
+      }
+      setSendResetError(error.message);
+    } finally {
+      setSendingResetCode(false);
+    }
+  };
+
+  const handleSendResetCode = async () => {
+    if (!canSendResetCode) return;
+    pendingCaptchaActionRef.current = "sendResetCode";
+    setSendResetError("");
+    try {
+      const human = await ensureHuman();
+      if (human.verified) {
+        pendingCaptchaActionRef.current = null;
+        await doSendResetCode();
+      }
+    } catch (error) {
+      pendingCaptchaActionRef.current = null;
+      setSendResetError(error.message);
+    }
+  };
+
+  const submitResetPassword = async (event) => {
+    event.preventDefault();
+    if (!canResetPassword) {
+      setStatus("Vui lòng nhập đầy đủ email, mã 6 số và mật khẩu hợp lệ");
+      return;
+    }
+    setResetLoading(true);
+    setStatus("Đang đặt lại mật khẩu...");
+    try {
+      await apiClient.resetPassword({
+        email: normalizedResetEmail,
+        code: resetCode.trim(),
+        newPassword: resetPassword,
+      });
+      setStatus("Đặt lại mật khẩu thành công. Bạn có thể đăng nhập.");
+      setIdentifier(normalizedResetEmail);
+      setPassword("");
+      setResetCode("");
+      setResetPassword("");
+      setView("credentials");
+    } catch (error) {
+      setStatus(error.message);
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const openForgotPassword = () => {
+    clearVerificationToken();
+    setView("forgot");
+    setStatus("");
+    setSendResetError("");
+    if (identifier.includes("@")) {
+      setResetEmail(identifier.trim());
+    }
+  };
+
   const submitWithCredentials = async (event) => {
     event.preventDefault();
     if (!identifier.trim() || !password.trim()) {
@@ -153,21 +342,36 @@ export function LoginPage() {
       );
       return;
     }
-    setLoading(true);
-    setStatus("Đang đăng nhập...");
     try {
-      await login(identifier, password);
-      persistLastLoginMethod("email");
-      setStatus("Đăng nhập thành công");
+      const human = await ensureHuman();
+      if (!human.verified) {
+        setStatus("Vui lòng hoàn thành xác minh bảo mật");
+        return;
+      }
+      await performLogin();
     } catch (error) {
       setStatus(error.message);
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black/70 px-4 py-6 text-zinc-100">
+      <ChallengeModal
+        open={challengeOpen}
+        challengeLevel={challengeLevel}
+        purpose={challengePurpose}
+        onClose={closeChallenge}
+        onVerified={() => {
+          onChallengeVerified();
+          const action = pendingCaptchaActionRef.current;
+          pendingCaptchaActionRef.current = null;
+          if (action === "sendResetCode") {
+            doSendResetCode();
+            return;
+          }
+          performLogin();
+        }}
+      />
       <div className="flex max-h-[94vh] w-full max-w-[520px] flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
         <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#27272a_transparent] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-800 [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar]:w-1.5">
         {view === "methods" ? (
@@ -232,12 +436,15 @@ export function LoginPage() {
               ) : null}
             </div>
           </>
-        ) : (
+        ) : view === "credentials" ? (
           <>
             <div className="flex items-center justify-between p-4">
               <button
                 type="button"
-                onClick={() => setView("methods")}
+                onClick={() => {
+                  setView("methods");
+                  setStatus("");
+                }}
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
                 aria-label="Quay lại"
               >
@@ -260,14 +467,14 @@ export function LoginPage() {
               </div>
               <form className="space-y-2.5" onSubmit={submitWithCredentials}>
                 <input
-                  className="h-10 w-full rounded bg-zinc-800 px-4 text-[13px]"
+                  className={AUTH_FIELD}
                   placeholder="Email hoặc tên người dùng"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                 />
                 <div className="relative">
                   <input
-                    className="h-10 w-full rounded bg-zinc-800 px-4 text-[13px]"
+                    className={AUTH_FIELD_WITH_ICON}
                     placeholder="Mật khẩu"
                     type={showPassword ? "text" : "password"}
                     value={password}
@@ -285,11 +492,7 @@ export function LoginPage() {
                 <button
                   type="button"
                   className="text-[12px] text-zinc-200 hover:text-white"
-                  onClick={() =>
-                    setStatus(
-                      "Luồng quên mật khẩu sẽ được bổ sung ở bước tiếp theo",
-                    )
-                  }
+                  onClick={openForgotPassword}
                 >
                   Quên mật khẩu?
                 </button>
@@ -309,6 +512,156 @@ export function LoginPage() {
                 <p className="text-center text-xs text-zinc-400">
                   {oauthErrorMessage || status}
                 </p>
+              ) : null}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-between p-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setView("credentials");
+                  setStatus("");
+                  setSendResetError("");
+                }}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+                aria-label="Quay lại"
+              >
+                <IoArrowBack className="text-2xl" />
+              </button>
+              <Link
+                to="/foryou"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+                aria-label="Đóng"
+              >
+                <IoClose className="text-2xl" />
+              </Link>
+            </div>
+            <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
+              <h2 className="text-center text-3xl font-bold leading-tight">
+                Đặt lại mật khẩu
+              </h2>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[13px] font-semibold text-zinc-100">
+                  Nhập địa chỉ email
+                </span>
+                <button
+                  type="button"
+                  className="shrink-0 text-[12px] text-zinc-400 hover:text-zinc-200"
+                  onClick={() =>
+                    setStatus("Đặt lại bằng số điện thoại sẽ được bổ sung sau")
+                  }
+                >
+                  Đặt lại bằng số điện thoại
+                </button>
+              </div>
+              <form className="space-y-2.5" onSubmit={submitResetPassword}>
+                <input
+                  className={AUTH_FIELD}
+                  placeholder="Địa chỉ email"
+                  type="email"
+                  autoComplete="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                />
+                <div className="flex">
+                  <input
+                    className={AUTH_FIELD_OTP}
+                    placeholder="Nhập mã gồm 6 chữ số"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={resetCode}
+                    onChange={(e) =>
+                      setResetCode(e.target.value.replace(/\D/g, ""))
+                    }
+                  />
+                  <button
+                    type="button"
+                    className={`h-10 shrink-0 rounded-r px-4 text-[13px] transition ${
+                      canSendResetCode
+                        ? "bg-red-600 text-white hover:bg-red-500"
+                        : "cursor-not-allowed bg-zinc-700 text-zinc-400"
+                    }`}
+                    onClick={handleSendResetCode}
+                    disabled={!canSendResetCode || sendingResetCode}
+                  >
+                    {sendingResetCode
+                      ? "Đang gửi..."
+                      : resendSeconds > 0
+                        ? `Gửi lại mã: ${resendSeconds}s`
+                        : "Gửi mã"}
+                  </button>
+                </div>
+                {sendResetError ? (
+                  <p className="text-[12px] text-red-400">{sendResetError}</p>
+                ) : null}
+                <div className="relative">
+                  <input
+                    className={AUTH_FIELD_WITH_ICON}
+                    placeholder="Mật khẩu"
+                    type={showResetPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    value={resetPassword}
+                    onChange={(e) => setResetPassword(e.target.value)}
+                    onFocus={() => setIsResetPasswordFocused(true)}
+                    onBlur={() => setIsResetPasswordFocused(false)}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-2xl text-zinc-400 hover:text-zinc-200"
+                    onClick={() => setShowResetPassword((prev) => !prev)}
+                    aria-label={
+                      showResetPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
+                    }
+                  >
+                    {showResetPassword ? <IoEyeOutline /> : <IoEyeOffOutline />}
+                  </button>
+                </div>
+                {isResetPasswordFocused ? (
+                  <div className="space-y-0.5 text-[12px] text-zinc-300">
+                    <p className="font-medium text-zinc-200">
+                      Mật khẩu của bạn phải gồm:
+                    </p>
+                    <p
+                      className={`pl-3 ${
+                        !hasResetPasswordInput
+                          ? "text-zinc-400"
+                          : resetPasswordHasValidLength
+                            ? "text-emerald-400"
+                            : "text-red-400"
+                      }`}
+                    >
+                      {resetPasswordHasValidLength ? "✓" : "·"} 8 đến 20 ký tự
+                    </p>
+                    <p
+                      className={`pl-3 ${
+                        !hasResetPasswordInput
+                          ? "text-zinc-400"
+                          : resetPasswordHasRequiredCharacters
+                            ? "text-emerald-400"
+                            : "text-red-400"
+                      }`}
+                    >
+                      {resetPasswordHasRequiredCharacters ? "✓" : "·"} Các chữ
+                      cái, số và ký tự đặc biệt
+                    </p>
+                  </div>
+                ) : null}
+                <button
+                  className={`h-10 w-full rounded px-3 text-xl font-medium leading-none transition ${
+                    canResetPassword
+                      ? "bg-red-600 text-white hover:bg-red-500"
+                      : "cursor-not-allowed bg-zinc-800 text-zinc-400"
+                  }`}
+                  type="submit"
+                  disabled={!canResetPassword}
+                >
+                  {resetLoading ? "Đang xử lý..." : "Đặt lại mật khẩu"}
+                </button>
+              </form>
+              {status ? (
+                <p className="text-center text-xs text-zinc-400">{status}</p>
               ) : null}
             </div>
           </>

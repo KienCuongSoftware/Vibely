@@ -6,6 +6,8 @@ const ERROR_MESSAGES_VI = {
   AUTH_REQUIRED: "Bạn cần đăng nhập để tiếp tục.",
   ACCESS_DENIED: "Bạn không có quyền thực hiện thao tác này.",
   RATE_LIMITED: "Bạn thao tác quá nhanh, vui lòng thử lại sau.",
+  CAPTCHA_REQUIRED: "Yêu cầu xác minh captcha trước khi tiếp tục.",
+  SUSPICIOUS_LOGIN: "Đăng nhập tạm khóa do hoạt động bất thường.",
   VALIDATION_ERROR: "Dữ liệu gửi lên chưa hợp lệ.",
   BAD_REQUEST: "Yêu cầu chưa hợp lệ, vui lòng kiểm tra lại.",
   NOT_FOUND: "Không tìm thấy dữ liệu yêu cầu.",
@@ -21,8 +23,8 @@ function localizeError(code, fallbackMessage) {
   return "Đã có lỗi xảy ra.";
 }
 
-async function request(path, { method = "GET", body, token } = {}) {
-  const headers = { "Content-Type": "application/json" };
+async function request(path, { method = "GET", body, token, headers: extraHeaders } = {}) {
+  const headers = { "Content-Type": "application/json", ...(extraHeaders || {}) };
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
@@ -36,9 +38,11 @@ async function request(path, { method = "GET", body, token } = {}) {
   if (!response.ok) {
     let message = `Yêu cầu thất bại (mã ${response.status})`;
     let code;
+    let captchaRequired;
     try {
       const payload = await response.json();
       code = payload?.error?.code;
+      captchaRequired = payload?.data;
       if (payload?.error?.message) {
         message = payload.error.message;
       } else if (payload?.message) {
@@ -50,6 +54,9 @@ async function request(path, { method = "GET", body, token } = {}) {
     const err = new Error(localizeError(code, message));
     err.status = response.status;
     if (code) err.code = code;
+    if (response.status === 428 && captchaRequired) {
+      err.captchaRequired = captchaRequired;
+    }
     throw err;
   }
 
@@ -96,18 +103,20 @@ function toQuery(params = {}) {
 }
 
 export const apiClient = {
-  login: (payload) =>
-    request("/api/auth/login", { method: "POST", body: payload }),
-  register: (payload) =>
-    request("/api/auth/register", { method: "POST", body: payload }),
+  login: (payload, headers) =>
+    request("/api/auth/login", { method: "POST", body: payload, headers }),
+  register: (payload, headers) =>
+    request("/api/auth/register", { method: "POST", body: payload, headers }),
   refresh: (refreshToken) =>
     request("/api/auth/refresh", { method: "POST", body: { refreshToken } }),
   logout: (refreshToken) =>
     request("/api/auth/logout", { method: "POST", body: { refreshToken } }),
-  sendCode: (payload) =>
-    request("/api/auth/send-code", { method: "POST", body: payload }),
+  sendCode: (payload, headers) =>
+    request("/api/auth/send-code", { method: "POST", body: payload, headers }),
   verifyCode: (payload) =>
     request("/api/auth/verify-code", { method: "POST", body: payload }),
+  resetPassword: (payload) =>
+    request("/api/auth/reset-password", { method: "POST", body: payload }),
   exchangeOAuthCode: (code) =>
     request("/api/auth/oauth/exchange", { method: "POST", body: { code } }),
   completeOnboarding: (token, payload) =>
@@ -274,6 +283,11 @@ export const apiClient = {
     }),
   rejectChatMessageRequest: (conversationId, token) =>
     request(`/api/chat/conversations/${conversationId}/reject`, {
+      method: "POST",
+      token,
+    }),
+  deleteChatConversation: (conversationId, token) =>
+    request(`/api/chat/conversations/${conversationId}/delete`, {
       method: "POST",
       token,
     }),

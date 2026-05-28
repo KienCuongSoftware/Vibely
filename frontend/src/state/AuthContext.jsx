@@ -133,8 +133,8 @@ export function AuthProvider({ children }) {
     () => !localStorage.getItem(TOKEN_KEY),
   );
 
-  const login = async (email, password) => {
-    const result = await apiClient.login({ email, password });
+  const login = async (email, password, headers) => {
+    const result = await apiClient.login({ email, password }, headers);
     localStorage.setItem(TOKEN_KEY, result.accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, result.refreshToken);
     setToken(result.accessToken);
@@ -158,8 +158,8 @@ export function AuthProvider({ children }) {
     return result;
   };
 
-  const register = async (payload) => {
-    const result = await apiClient.register(payload);
+  const register = async (payload, headers) => {
+    const result = await apiClient.register(payload, headers);
     localStorage.setItem(TOKEN_KEY, result.accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, result.refreshToken);
     setToken(result.accessToken);

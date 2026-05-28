@@ -9,6 +9,53 @@
   display: none;
 }
 
+/* Dropdown ngày sinh đăng ký (giới hạn chiều cao, không viền trắng). */
+.birth-date-select-list {
+  scrollbar-width: thin;
+  scrollbar-color: #52525b transparent;
+}
+.birth-date-select-list::-webkit-scrollbar {
+  width: 6px;
+}
+.birth-date-select-list::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: #52525b;
+}
+.birth-date-select-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Ô nhập đăng nhập / đăng ký — không viền trắng khi focus (kiểu TikTok). */
+.vibely-auth-input {
+  border: 1px solid transparent !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  --tw-ring-width: 0 !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-ring-offset-width: 0 !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+  -webkit-tap-highlight-color: transparent;
+}
+.vibely-auth-input:focus,
+.vibely-auth-input:focus-visible,
+.vibely-auth-input:focus-within {
+  outline: none !important;
+  outline-width: 0 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  background-color: #3f3f46 !important;
+}
+.vibely-auth-input--error {
+  border-color: rgb(239 68 68) !important;
+  color: rgb(248 113 113);
+}
+.vibely-auth-input--error:focus,
+.vibely-auth-input--error:focus-visible {
+  border-color: rgb(239 68 68) !important;
+  background-color: #3f3f46 !important;
+}
+
 html {
   scrollbar-gutter: stable;
   background-color: #000;
