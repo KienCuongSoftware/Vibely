@@ -90,6 +90,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/api/health/**").permitAll()
                 .requestMatchers("/oauth2/**", "/login/**").permitAll()
                 // Không dùng /api/auth/** permitAll — có thể khiến GET /api/auth/me không bắt buộc JWT.
