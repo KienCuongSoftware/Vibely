@@ -92,6 +92,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/api/health/**").permitAll()
+                .requestMatchers("/actuator/health", "/actuator/info", "/actuator/prometheus").permitAll()
                 .requestMatchers("/oauth2/**", "/login/**").permitAll()
                 // Không dùng /api/auth/** permitAll — có thể khiến GET /api/auth/me không bắt buộc JWT.
                 .requestMatchers(
@@ -102,8 +103,15 @@ public class SecurityConfig {
                     "/api/auth/logout",
                     "/api/auth/send-code",
                     "/api/auth/verify-code",
+                    "/api/auth/reset-password",
                     "/api/auth/oauth/exchange"
                 ).permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/risk/evaluate").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/captcha/challenge").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/captcha/verify").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/fingerprint/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/behavior/track").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/trust/evaluate").permitAll()
                 .requestMatchers(HttpMethod.GET, "/v/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/feed/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/explore/**").permitAll()

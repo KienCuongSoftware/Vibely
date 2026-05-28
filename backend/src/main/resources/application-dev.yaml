@@ -1,6 +1,21 @@
 spring:
   config:
     import: optional:classpath:application-local.yaml
+  mail:
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
   # Sau khi sửa nội dung migration đã apply (checksum lệch), dev có thể bật lại true rồi chạy: mvn flyway:repair
   flyway:
     validate-on-migrate: false
@@ -51,7 +66,36 @@ spring:
             issuer-uri: https://access.line.me
             jwk-set-uri: https://api.line.me/oauth2/v2.1/certs
             user-name-attribute: sub
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
 app:
+  auth:
+    otp-resend-seconds: 60
+    otp-expiry-seconds: 600
+  mail:
+    enabled: ${APP_MAIL_ENABLED:false}
+    from: ${APP_MAIL_FROM:${SMTP_USERNAME:}}
+    from-name: Vibely
+    expose-code-in-api: ${APP_MAIL_EXPOSE_CODE:true}
+  antibot:
+    enabled: true
+    auth-protection-enabled: true
+    always-require-captcha-on-auth: false
+    hmac-secret: ${ANTIBOT_HMAC_SECRET:vibely-antibot-dev-secret}
+    captcha-ttl-seconds: 120
+    verification-token-ttl-seconds: 300
+    kafka-enabled: false
+    max-failed-logins-per-ip-per-hour: 40
+    max-failed-logins-per-email-per-hour: 12
+    low-failure-threshold: 2
+    medium-failure-threshold: 4
+    high-failure-threshold: 7
+    extreme-failure-threshold: 12
   s3:
     enabled: true
     playback-presign-expiry-hours: ${APP_S3_PLAYBACK_PRESIGN_EXPIRY_HOURS:24}
