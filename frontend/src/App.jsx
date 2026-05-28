@@ -3,6 +3,9 @@ import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { SignupPage } from './pages/SignupPage.jsx'
 import { FeedPage } from './pages/FeedPage.jsx'
+import { FollowingPage } from './pages/FollowingPage.jsx'
+import { FriendsPage } from './pages/FriendsPage.jsx'
+import { MessagesPage } from './pages/MessagesPage.jsx'
 import { UploadPage } from './pages/UploadPage.jsx'
 import { StudioHomePage } from './pages/StudioHomePage.jsx'
 import { StudioPostsPage } from './pages/StudioPostsPage.jsx'
@@ -51,6 +54,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/foryou" replace />} />
           <Route path="/foryou" element={<FeedPage />} />
+          <Route path="/following" element={<FollowingPage />} />
+          <Route path="/friends" element={<FriendsPage />} />
+          <Route path="/messages" element={<Navigate to="/login" replace />} />
           <Route path="/feed" element={<Navigate to="/foryou" replace />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signin" element={<Navigate to="/login" replace />} />
@@ -83,6 +89,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/foryou" replace />} />
         <Route path="/foryou" element={<FeedPage />} />
+        <Route path="/following" element={<FollowingPage />} />
+        <Route path="/friends" element={<FriendsPage />} />
+        <Route path="/messages" element={<MessagesPage />} />
         <Route path="/feed" element={<Navigate to="/foryou" replace />} />
         <Route path="/login" element={<Navigate to="/foryou" replace />} />
         <Route path="/signin" element={<Navigate to="/foryou" replace />} />

@@ -152,8 +152,10 @@ export const apiClient = {
       token ? { token } : {},
     );
   },
-  getFeed: ({ size = 10, sort = "latest", cursor } = {}) =>
-    request(`/api/feed${toQuery({ size, sort, cursor })}`),
+  getSuggestedCreators: (token, { page = 0, size = 24 } = {}) =>
+    request(`/api/users/me/suggested-creators${toQuery({ page, size })}`, { token }),
+  getFeed: ({ size = 10, sort = "latest", cursor, token } = {}) =>
+    request(`/api/feed${toQuery({ size, sort, cursor })}`, token ? { token } : {}),
   getStudioAnalyticsOverview: (token, { days = 7 } = {}) =>
     request(`/api/studio/analytics/overview${toQuery({ days })}`, { token }),
   getStudioVideoAnalytics: (token, publicId, { days = 7 } = {}) =>
@@ -244,6 +246,35 @@ export const apiClient = {
     request(`/api/v1/videos/${publicId}/share`, {
       method: "POST",
       body: body ?? {},
+      token,
+    }),
+  getChatConversations: (token) => request("/api/chat/conversations", { token }),
+  createOrGetDirectConversation: (userId, token) =>
+    request(`/api/chat/conversations/direct/${userId}`, { method: "POST", token }),
+  getChatMessages: (conversationId, token, { page = 0, size = 30 } = {}) =>
+    request(
+      `/api/chat/conversations/${conversationId}/messages${toQuery({ page, size })}`,
+      { token },
+    ),
+  sendChatMessage: (conversationId, content, token) =>
+    request(`/api/chat/conversations/${conversationId}/messages`, {
+      method: "POST",
+      body: { content },
+      token,
+    }),
+  markChatConversationRead: (conversationId, token) =>
+    request(`/api/chat/conversations/${conversationId}/read`, {
+      method: "POST",
+      token,
+    }),
+  acceptChatMessageRequest: (conversationId, token) =>
+    request(`/api/chat/conversations/${conversationId}/accept`, {
+      method: "POST",
+      token,
+    }),
+  rejectChatMessageRequest: (conversationId, token) =>
+    request(`/api/chat/conversations/${conversationId}/reject`, {
+      method: "POST",
       token,
     }),
 };
