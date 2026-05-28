@@ -37,7 +37,9 @@ function feedAuthorProfilePath(video) {
 }
 
 function feedHashtagPath(token) {
-  const raw = String(token ?? "").trim().replace(/^#/, "");
+  const raw = String(token ?? "")
+    .trim()
+    .replace(/^#/, "");
   return raw ? `/tag/${encodeURIComponent(raw)}` : "/foryou";
 }
 
@@ -76,6 +78,99 @@ function renderInteractiveCaption(caption) {
   });
 }
 
+const CAPTION_TEXT_CLASS =
+  "min-w-0 text-sm leading-snug text-white/90 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]";
+
+/** Mô tả dài: 1 dòng + …; «Thêm» mở rộng; «Ẩn bớt» thu lại. */
+function FeedVideoCaption({ caption }) {
+  const text = String(caption ?? "").trim();
+  const [expanded, setExpanded] = useState(false);
+  const [overflowsOneLine, setOverflowsOneLine] = useState(false);
+  const visibleRef = useRef(null);
+  const overflowsRef = useRef(false);
+
+  useEffect(() => {
+    setExpanded(false);
+    overflowsRef.current = false;
+    setOverflowsOneLine(false);
+  }, [text]);
+
+  const measureCaption = useCallback(() => {
+    const el = visibleRef.current;
+    if (!el || !text) {
+      overflowsRef.current = false;
+      setOverflowsOneLine(false);
+      return;
+    }
+    if (expanded) {
+      setOverflowsOneLine(overflowsRef.current);
+      return;
+    }
+    const overflow = el.scrollHeight > el.clientHeight + 1;
+    overflowsRef.current = overflow;
+    setOverflowsOneLine(overflow);
+  }, [text, expanded]);
+
+  useLayoutEffect(() => {
+    measureCaption();
+  }, [measureCaption]);
+
+  useEffect(() => {
+    const el = visibleRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return undefined;
+    const ro = new ResizeObserver(() => measureCaption());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [measureCaption]);
+
+  if (!text) {
+    return (
+      <p className={`${CAPTION_TEXT_CLASS} line-clamp-1`}>
+        {renderInteractiveCaption("\u00A0")}
+      </p>
+    );
+  }
+
+  const collapsed = overflowsOneLine && !expanded;
+
+  return (
+    <div className="relative min-w-0 w-full">
+      <p
+        ref={visibleRef}
+        className={`${CAPTION_TEXT_CLASS} break-words ${
+          !expanded ? "line-clamp-1" : ""
+        } ${collapsed ? "pr-[3.5rem]" : ""}`}
+      >
+        {renderInteractiveCaption(text)}
+      </p>
+      {collapsed ? (
+        <button
+          type="button"
+          className="absolute bottom-0 right-0 z-10 cursor-pointer bg-transparent p-0 text-sm font-semibold leading-snug text-white/95 hover:text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]"
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded(true);
+          }}
+        >
+          … Thêm
+        </button>
+      ) : null}
+      {overflowsOneLine && expanded ? (
+        <button
+          type="button"
+          className="mt-0.5 cursor-pointer bg-transparent p-0 text-sm font-semibold leading-snug text-white/95 hover:text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]"
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded(false);
+          }}
+        >
+          Ẩn bớt
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 function feedQualityLabel(mode) {
   if (mode === "720") return "720P";
   if (mode === "540") return "540P";
@@ -86,7 +181,7 @@ function feedQualityLabel(mode) {
 function FeedSlideAuthorMeta({
   rawVibelyUser,
   authorProfilePath,
-  captionOneLine,
+  captionText,
   stacked = false,
 }) {
   const nameClass =
@@ -107,19 +202,19 @@ function FeedSlideAuthorMeta({
     return (
       <div className="pointer-events-auto shrink-0 border-t border-white/10 bg-black px-3 py-2.5 sm:px-4">
         <div className="inline-flex max-w-full">{nameEl}</div>
-        <p className="mt-0.5 line-clamp-2 min-w-0 text-sm leading-snug text-white/90">
-          {renderInteractiveCaption(captionOneLine)}
-        </p>
+        <div className="mt-0.5">
+          <FeedVideoCaption caption={captionText} />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="pointer-events-auto bg-linear-to-t from-black/85 via-black/25 to-transparent px-3 pb-6 pt-7 sm:px-4 sm:pb-7 sm:pt-9">
+    <div className="pointer-events-auto bg-linear-to-t from-black/85 via-black/25 to-transparent px-3 pb-8 pt-7 sm:px-4 sm:pb-9 sm:pt-9">
       <div className="inline-flex max-w-full">{nameEl}</div>
-      <p className="mt-1 line-clamp-2 min-w-0 text-sm leading-snug text-white/90 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]">
-        {renderInteractiveCaption(captionOneLine)}
-      </p>
+      <div className="mt-1">
+        <FeedVideoCaption caption={captionText} />
+      </div>
     </div>
   );
 }
@@ -137,7 +232,8 @@ export const FEED_STAGE_OUTER_WIDTH_CLASS_WIDE_DOCKED =
   "w-[min(280px,68vw)] shrink-0 md:w-[min(340px,42vw)] lg:w-[min(400px,min(38vw,480px))] xl:w-[min(440px,min(36vw,520px))]";
 
 /** Skeleton / chỗ chưa biết tỉ lệ: dùng khung dọc. */
-export const FEED_STAGE_OUTER_WIDTH_CLASS = FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT;
+export const FEED_STAGE_OUTER_WIDTH_CLASS =
+  FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT;
 
 const FEED_VOLUME_DEFAULT = 1;
 
@@ -349,8 +445,7 @@ export function FeedPhoneStage({
       const track = progressTrackRef.current;
       if (!track) return;
       if (e.cancelable && e.type === "touchmove") e.preventDefault();
-      const cx =
-        e.type === "touchmove" ? e.touches[0]?.clientX : e.clientX;
+      const cx = e.type === "touchmove" ? e.touches[0]?.clientX : e.clientX;
       if (cx == null) return;
       seekFeedVideo(cx, track);
     };
@@ -434,13 +529,14 @@ export function FeedPhoneStage({
             .trim()
             .replace(/^@/, "");
           const authorProfilePath = feedAuthorProfilePath(video);
-          const captionOneLine =
+          const captionText =
             String(video.description ?? "").trim() ||
             String(video.title ?? "").trim() ||
-            "\u00A0";
+            "";
           const playbackUrl = resolveFeedPlaybackUrl(video);
           const hasPlayback = Boolean(playbackUrl);
-          const useStackedMeta = stackedLandscapeMeta && isActive && hasPlayback;
+          const useStackedMeta =
+            stackedLandscapeMeta && isActive && hasPlayback;
           return (
             <div
               className={`relative h-full w-full ${
@@ -454,7 +550,7 @@ export function FeedPhoneStage({
                   className={
                     useStackedMeta
                       ? "relative min-h-0 flex-1 overflow-hidden rounded-xl sm:rounded-2xl"
-                      : "absolute inset-x-0 top-0 bottom-3 overflow-hidden rounded-xl sm:rounded-2xl"
+                      : "absolute inset-x-0 top-0 bottom-0 overflow-hidden rounded-xl sm:rounded-2xl"
                   }
                 >
                   <FeedVideoPlayer
@@ -515,13 +611,10 @@ export function FeedPhoneStage({
                 />
               )}
 
-              {isActive &&
-              hasPlayback &&
-              playbackFlash &&
-              !feedMoreMenuOpen ? (
+              {isActive && hasPlayback && playbackFlash && !feedMoreMenuOpen ? (
                 <div
                   className={`pointer-events-none absolute inset-x-0 z-[30] flex items-center justify-center ${
-                    useStackedMeta ? "inset-y-0" : "top-0 bottom-3"
+                    useStackedMeta ? "inset-y-0" : "top-0 bottom-0"
                   }`}
                   aria-hidden
                 >
@@ -559,213 +652,220 @@ export function FeedPhoneStage({
                     className={
                       useStackedMeta
                         ? "pointer-events-none absolute inset-0 z-[11]"
-                        : "pointer-events-none absolute inset-x-0 top-0 bottom-3 z-[11] flex flex-col justify-end"
+                        : "pointer-events-none absolute inset-x-0 top-0 bottom-0 z-[11] flex flex-col justify-end"
                     }
                   >
-                  <div className="pointer-events-none absolute inset-x-0 top-0 z-[50] flex items-center justify-between px-3 pt-3">
-                    <FeedVolumeControl
-                      volume={feedVolume}
-                      onVolumeChange={setFeedVolume}
-                      soundOn={feedSoundOn}
-                      onSoundOnChange={setFeedSoundOn}
-                    />
-                    <button
-                      type="button"
-                      aria-label="Menu video"
-                      aria-expanded={feedMoreMenuOpen}
-                      aria-haspopup="dialog"
-                      className={`cursor-pointer rounded-full bg-black/45 p-2.5 text-xl text-white backdrop-blur-sm transition-opacity duration-200 hover:bg-black/60 focus-visible:pointer-events-auto focus-visible:opacity-100 ${
-                        feedMoreMenuOpen
-                          ? "pointer-events-auto opacity-100"
-                          : "pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100"
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setFeedMoreMenuOpen((open) => !open);
-                      }}
-                    >
-                      <IoEllipsisHorizontal aria-hidden />
-                    </button>
-                  </div>
-
-                  {feedMoreMenuOpen ? (
-                    <div
-                      role="dialog"
-                      aria-modal="true"
-                      aria-label="Menu video"
-                      className="feed-video-more-panel pointer-events-auto absolute top-[64px] right-[6px] z-40 w-[min(232px,calc(100%-12px))] overflow-visible"
-                      onMouseDown={(e) => e.stopPropagation()}
-                    >
-                      <div
-                        aria-hidden
-                        className="pointer-events-none absolute top-[-5px] right-[21px] z-10 h-2.5 w-2.5 rotate-45 rounded-[1px] border-l border-t border-white/18 bg-[rgba(72,72,74,0.92)] shadow-sm"
+                    <div className="pointer-events-none absolute inset-x-0 top-0 z-[50] flex items-center justify-between px-3 pt-3">
+                      <FeedVolumeControl
+                        volume={feedVolume}
+                        onVolumeChange={setFeedVolume}
+                        soundOn={feedSoundOn}
+                        onSoundOnChange={setFeedSoundOn}
                       />
-                      <div className="overflow-hidden rounded-xl border border-white/18 bg-[rgba(72,72,74,0.92)] py-1 shadow-[0_12px_36px_rgba(0,0,0,0.28)] backdrop-blur-xl">
-                        {feedMoreMenuSubpage === "main" ? (
-                          <>
-                            <button
-                              type="button"
-                              className="flex w-full items-center gap-3 border-b border-white/10 px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14"
-                              onClick={() =>
-                                setFeedMoreMenuSubpage("quality")
-                              }
-                            >
-                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/28 text-[10px] font-semibold tracking-wide text-white/95">
-                                HD
-                              </span>
-                              <span className="min-w-0 flex-1 font-medium">
-                                Chất lượng
-                              </span>
-                              <span className="shrink-0 text-[15px] text-white/55">
-                                {feedQualityLabel(feedVideoQuality)}
-                              </span>
-                              <IoChevronForward
-                                className="h-5 w-5 shrink-0 text-white/45"
-                                aria-hidden
-                              />
-                            </button>
+                      <button
+                        type="button"
+                        aria-label="Menu video"
+                        aria-expanded={feedMoreMenuOpen}
+                        aria-haspopup="dialog"
+                        className={`cursor-pointer rounded-full bg-black/45 p-2.5 text-xl text-white backdrop-blur-sm transition-opacity duration-200 hover:bg-black/60 focus-visible:pointer-events-auto focus-visible:opacity-100 ${
+                          feedMoreMenuOpen
+                            ? "pointer-events-auto opacity-100"
+                            : "pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100"
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setFeedMoreMenuOpen((open) => !open);
+                        }}
+                      >
+                        <IoEllipsisHorizontal aria-hidden />
+                      </button>
+                    </div>
 
-                            <button
-                              type="button"
-                              className="flex w-full items-center gap-3 border-b border-white/10 px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14"
-                            >
-                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/28 text-[10px] font-semibold tracking-wide text-white/95">
-                                CC
-                              </span>
-                              <span className="font-medium">Phụ đề</span>
-                            </button>
-
-                            <div className="flex w-full items-center gap-3 border-b border-white/10 px-3.5 py-[13px] text-[15px] leading-snug text-white">
-                              <LuArrowDownFromLine
-                                strokeWidth={1.5}
-                                className="h-[22px] w-[22px] shrink-0 text-white"
-                                aria-hidden
-                              />
-                              <span className="min-w-0 flex-1 font-medium">
-                                Cuộn tự động
-                              </span>
+                    {feedMoreMenuOpen ? (
+                      <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Menu video"
+                        className="feed-video-more-panel pointer-events-auto absolute top-[64px] right-[6px] z-40 w-[min(232px,calc(100%-12px))] overflow-visible"
+                        onMouseDown={(e) => e.stopPropagation()}
+                      >
+                        <div
+                          aria-hidden
+                          className="pointer-events-none absolute top-[-5px] right-[21px] z-10 h-2.5 w-2.5 rotate-45 rounded-[1px] border-l border-t border-white/18 bg-[rgba(72,72,74,0.92)] shadow-sm"
+                        />
+                        <div className="overflow-hidden rounded-xl border border-white/18 bg-[rgba(72,72,74,0.92)] py-1 shadow-[0_12px_36px_rgba(0,0,0,0.28)] backdrop-blur-xl">
+                          {feedMoreMenuSubpage === "main" ? (
+                            <>
                               <button
                                 type="button"
-                                role="switch"
-                                aria-checked={feedAutoScrollEnabled}
-                                className={`relative h-7 w-[52px] shrink-0 rounded-full transition-colors ${feedAutoScrollEnabled ? "bg-red-600" : "bg-white/30"}`}
+                                className="flex w-full items-center gap-3 border-b border-white/10 px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14"
                                 onClick={() =>
-                                  setFeedAutoScrollEnabled((prev) => !prev)
+                                  setFeedMoreMenuSubpage("quality")
                                 }
                               >
-                                <span
-                                  className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200 ${feedAutoScrollEnabled ? "translate-x-[26px]" : "translate-x-0"}`}
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/28 text-[10px] font-semibold tracking-wide text-white/95">
+                                  HD
+                                </span>
+                                <span className="min-w-0 flex-1 font-medium">
+                                  Chất lượng
+                                </span>
+                                <span className="shrink-0 text-[15px] text-white/55">
+                                  {feedQualityLabel(feedVideoQuality)}
+                                </span>
+                                <IoChevronForward
+                                  className="h-5 w-5 shrink-0 text-white/45"
+                                  aria-hidden
                                 />
                               </button>
-                            </div>
 
-                            <button
-                              type="button"
-                              className="flex w-full items-center gap-3 border-b border-white/10 px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14"
-                              onClick={() => void toggleFeedPictureInPicture()}
-                            >
-                              <LuPictureInPicture2
-                                strokeWidth={1.5}
-                                className="h-[22px] w-[22px] shrink-0 text-white"
-                                aria-hidden
-                              />
-                              <span className="font-medium">Trình phát nổi</span>
-                            </button>
+                              <button
+                                type="button"
+                                className="flex w-full items-center gap-3 border-b border-white/10 px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14"
+                              >
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/28 text-[10px] font-semibold tracking-wide text-white/95">
+                                  CC
+                                </span>
+                                <span className="font-medium">Phụ đề</span>
+                              </button>
 
-                            <button
-                              type="button"
-                              className="flex w-full items-center gap-3 border-b border-white/10 px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14"
-                              onClick={() => setFeedMoreMenuOpen(false)}
-                            >
-                              <LuHeartOff
-                                strokeWidth={1.5}
-                                className="h-[22px] w-[22px] shrink-0 text-white"
-                                aria-hidden
-                              />
-                              <span className="font-medium">Không quan tâm</span>
-                            </button>
-
-                            <button
-                              type="button"
-                              className="flex w-full items-center gap-3 px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14"
-                              onClick={() => setFeedMoreMenuOpen(false)}
-                            >
-                              <LuFlag
-                                strokeWidth={1.5}
-                                className="h-[22px] w-[22px] shrink-0 text-white"
-                                aria-hidden
-                              />
-                              <span className="font-medium">Báo cáo</span>
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              type="button"
-                              className="flex w-full items-center gap-2 border-b border-white/10 px-3 py-2.5 text-left text-[15px] font-semibold text-white transition-colors hover:bg-white/10 active:bg-white/14"
-                              onClick={() =>
-                                setFeedMoreMenuSubpage("main")
-                              }
-                            >
-                              <IoChevronBack
-                                className="h-5 w-5 shrink-0 text-white"
-                                aria-hidden
-                              />
-                              <span>Chất lượng</span>
-                            </button>
-                            {["auto", "540", "720"].map((q) => {
-                              const selected = feedVideoQuality === q;
-                              return (
+                              <div className="flex w-full items-center gap-3 border-b border-white/10 px-3.5 py-[13px] text-[15px] leading-snug text-white">
+                                <LuArrowDownFromLine
+                                  strokeWidth={1.5}
+                                  className="h-[22px] w-[22px] shrink-0 text-white"
+                                  aria-hidden
+                                />
+                                <span className="min-w-0 flex-1 font-medium">
+                                  Cuộn tự động
+                                </span>
                                 <button
-                                  key={q}
                                   type="button"
-                                  className={`flex w-full items-center justify-between px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14 ${selected ? "bg-white/12" : ""}`}
-                                  onClick={() => {
-                                    setFeedVideoQuality(q);
-                                    setFeedMoreMenuSubpage("main");
-                                  }}
+                                  role="switch"
+                                  aria-checked={feedAutoScrollEnabled}
+                                  className={`relative h-7 w-[52px] shrink-0 rounded-full transition-colors ${feedAutoScrollEnabled ? "bg-red-600" : "bg-white/30"}`}
+                                  onClick={() =>
+                                    setFeedAutoScrollEnabled((prev) => !prev)
+                                  }
                                 >
-                                  <span className="font-medium">
-                                    {feedQualityLabel(q)}
-                                  </span>
-                                  {selected ? (
-                                    <IoCheckmark
-                                      className="h-5 w-5 shrink-0 text-white"
-                                      aria-hidden
-                                    />
-                                  ) : (
-                                    <span className="h-5 w-5 shrink-0" aria-hidden />
-                                  )}
+                                  <span
+                                    className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200 ${feedAutoScrollEnabled ? "translate-x-[26px]" : "translate-x-0"}`}
+                                  />
                                 </button>
-                              );
-                            })}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ) : null}
+                              </div>
 
-                  {!useStackedMeta ? (
-                    <FeedSlideAuthorMeta
-                      rawVibelyUser={rawVibelyUser}
-                      authorProfilePath={authorProfilePath}
-                      captionOneLine={captionOneLine}
-                    />
-                  ) : null}
-                </div>
+                              <button
+                                type="button"
+                                className="flex w-full items-center gap-3 border-b border-white/10 px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14"
+                                onClick={() =>
+                                  void toggleFeedPictureInPicture()
+                                }
+                              >
+                                <LuPictureInPicture2
+                                  strokeWidth={1.5}
+                                  className="h-[22px] w-[22px] shrink-0 text-white"
+                                  aria-hidden
+                                />
+                                <span className="font-medium">
+                                  Trình phát nổi
+                                </span>
+                              </button>
+
+                              <button
+                                type="button"
+                                className="flex w-full items-center gap-3 border-b border-white/10 px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14"
+                                onClick={() => setFeedMoreMenuOpen(false)}
+                              >
+                                <LuHeartOff
+                                  strokeWidth={1.5}
+                                  className="h-[22px] w-[22px] shrink-0 text-white"
+                                  aria-hidden
+                                />
+                                <span className="font-medium">
+                                  Không quan tâm
+                                </span>
+                              </button>
+
+                              <button
+                                type="button"
+                                className="flex w-full items-center gap-3 px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14"
+                                onClick={() => setFeedMoreMenuOpen(false)}
+                              >
+                                <LuFlag
+                                  strokeWidth={1.5}
+                                  className="h-[22px] w-[22px] shrink-0 text-white"
+                                  aria-hidden
+                                />
+                                <span className="font-medium">Báo cáo</span>
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                className="flex w-full items-center gap-2 border-b border-white/10 px-3 py-2.5 text-left text-[15px] font-semibold text-white transition-colors hover:bg-white/10 active:bg-white/14"
+                                onClick={() => setFeedMoreMenuSubpage("main")}
+                              >
+                                <IoChevronBack
+                                  className="h-5 w-5 shrink-0 text-white"
+                                  aria-hidden
+                                />
+                                <span>Chất lượng</span>
+                              </button>
+                              {["auto", "540", "720"].map((q) => {
+                                const selected = feedVideoQuality === q;
+                                return (
+                                  <button
+                                    key={q}
+                                    type="button"
+                                    className={`flex w-full items-center justify-between px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14 ${selected ? "bg-white/12" : ""}`}
+                                    onClick={() => {
+                                      setFeedVideoQuality(q);
+                                      setFeedMoreMenuSubpage("main");
+                                    }}
+                                  >
+                                    <span className="font-medium">
+                                      {feedQualityLabel(q)}
+                                    </span>
+                                    {selected ? (
+                                      <IoCheckmark
+                                        className="h-5 w-5 shrink-0 text-white"
+                                        aria-hidden
+                                      />
+                                    ) : (
+                                      <span
+                                        className="h-5 w-5 shrink-0"
+                                        aria-hidden
+                                      />
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {!useStackedMeta ? (
+                      <FeedSlideAuthorMeta
+                        rawVibelyUser={rawVibelyUser}
+                        authorProfilePath={authorProfilePath}
+                        captionText={captionText}
+                      />
+                    ) : null}
+                  </div>
 
                   {useStackedMeta ? (
                     <FeedSlideAuthorMeta
                       rawVibelyUser={rawVibelyUser}
                       authorProfilePath={authorProfilePath}
-                      captionOneLine={captionOneLine}
+                      captionText={captionText}
                       stacked
                     />
                   ) : null}
 
                   <div
                     ref={progressTrackRef}
-                    className={`group/progress pointer-events-auto flex min-h-8 w-full cursor-pointer flex-col justify-end overflow-visible pb-0 ${
+                    className={`group/progress pointer-events-auto flex w-full cursor-pointer flex-col justify-end overflow-visible ${
                       useStackedMeta
                         ? "relative z-40 shrink-0"
                         : "absolute inset-x-0 bottom-0 z-40"
@@ -807,34 +907,34 @@ export function FeedPhoneStage({
                       setProgressPct((el.currentTime / el.duration) * 100);
                     }}
                   >
-                    <div className="relative flex w-full items-end pb-0 pt-1">
-                      <div className="relative h-[4px] w-full transition-[height] duration-150 ease-out group-hover/progress:h-[6px]">
-                        <div className="absolute inset-0 rounded-full bg-white/30" />
+                    <div className="relative w-full">
+                      <div className="relative h-[3px] w-full transition-[height] duration-150 ease-out group-hover/progress:h-[5px]">
+                        <div className="absolute inset-0 rounded-none bg-white/30" />
                         <div
                           ref={progressFillRef}
-                          className={`absolute inset-y-0 left-0 rounded-full bg-red-600 ${progressScrubbing ? "" : "transition-[width] duration-150 ease-out"}`}
+                          className={`absolute inset-y-0 left-0 rounded-none bg-red-600 ${progressScrubbing ? "" : "transition-[width] duration-150 ease-out"}`}
                           style={{ width: "0%", maxWidth: "100%" }}
                         />
                         <div
                           ref={progressKnobRef}
-                          className={`pointer-events-none absolute top-1/2 z-10 h-3 w-3 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-200 ease-out ${progressScrubbing ? "opacity-100" : "opacity-0 group-hover/progress:opacity-100"}`}
+                          className={`pointer-events-none absolute top-1/2 left-0 z-20 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-200 ease-out ${progressScrubbing ? "opacity-100" : "opacity-0 group-hover/progress:opacity-100"}`}
                           style={{ left: "0%" }}
                           aria-hidden
                         >
-                          <div className="h-full w-full rounded-full bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.45)] ring-2 ring-black/25 transition-transform duration-200 ease-out group-hover/progress:scale-110" />
+                          <div className="h-full w-full rounded-full bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.45)] ring-2 ring-black/25 transition-transform duration-200 ease-out group-hover/progress:scale-125" />
                         </div>
                       </div>
                     </div>
                   </div>
                 </>
               ) : !hasPlayback ? (
-                <div className="pointer-events-none absolute inset-x-0 bottom-3 bg-linear-to-t from-black/80 via-black/40 to-transparent p-4">
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/40 to-transparent p-4 pb-5">
                   <p className="truncate text-sm font-semibold text-white">
                     @{rawVibelyUser}
                   </p>
-                  <p className="mt-1 line-clamp-1 text-xs text-zinc-300">
-                    {captionOneLine}
-                  </p>
+                  <div className="mt-1 text-xs text-zinc-300">
+                    <FeedVideoCaption caption={captionText} />
+                  </div>
                 </div>
               ) : null}
             </div>

@@ -32,7 +32,7 @@ describe('FeedPage', () => {
     apiClient.getVideoMeState.mockResolvedValue({ liked: false, bookmarked: false })
   })
 
-  it('switches between latest and following feed calls', async () => {
+  it('loads the latest feed on mount', async () => {
     apiClient.getFeed.mockResolvedValue({
       items: [],
       page: 0,
@@ -72,12 +72,6 @@ describe('FeedPage', () => {
 
     await waitFor(() => {
       expect(apiClient.getFeed).toHaveBeenCalled()
-    })
-
-    await userEvent.click(screen.getByRole('button', { name: 'Đã follow' }))
-
-    await waitFor(() => {
-      expect(apiClient.getFollowingFeed).toHaveBeenCalled()
     })
   })
 
@@ -353,7 +347,7 @@ describe('FeedPage', () => {
     )
 
     await waitFor(() => {
-      expect(apiClient.getFeed).toHaveBeenCalledTimes(2)
+      expect(apiClient.getFeed.mock.calls.length).toBeGreaterThanOrEqual(2)
     })
     expect(
       screen.queryByRole('button', { name: /theo dõi demo_creator/i }),

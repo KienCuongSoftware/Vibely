@@ -12,6 +12,7 @@ import { VideoShareModal } from '../components/VideoShareModal'
 import { feedPrefetchManager } from '../feed/FeedPrefetchManager.js'
 import { resolveFeedPlaybackUrl, isHlsPlaybackUrl } from '../feed/feedPlayback.js'
 import { useAuth } from '../state/useAuth'
+import { useRapidStepNavigation } from '../hooks/useRapidStepNavigation.js'
 import {
   buildProfileVideoUrl,
   isVideoPublicId,
@@ -248,6 +249,13 @@ export function VideoWatchPage() {
   const displayPosterRef = useRef('')
   const exploreQueueRef = useRef(exploreQueue)
   exploreQueueRef.current = exploreQueue
+  const exploreNavLockRef = useRef(false)
+  const exploreNavGenRef = useRef(0)
+  const detailPrefetchGenRef = useRef(0)
+  const videoLoadGenRef = useRef(0)
+  const moveToExploreVideoByOffsetRef = useRef(null)
+  const currentExploreIndexRef = useRef(-1)
+  const [exploreNavBusy, setExploreNavBusy] = useState(false)
 
   const routeSlug = useMemo(() => normalizeUsernameKey(usernameParam), [usernameParam])
   const publicIdFromRoute = useMemo(
@@ -294,8 +302,21 @@ export function VideoWatchPage() {
   const displayPosterUrl = activePosterUrl || displayPosterRef.current
 
   useLayoutEffect(() => {
+    exploreNavGenRef.current += 1
     setVideoReady(false)
     setIntrinsicSize(null)
+    setExploreNavBusy(false)
+    exploreNavLockRef.current = false
+    const el = videoRef.current
+    if (el) {
+      el.pause()
+      try {
+        el.removeAttribute('src')
+        el.load()
+      } catch {
+        /* noop */
+      }
+    }
   }, [publicIdFromRoute])
 
   const isVideoFrameReady =
@@ -418,6 +439,7 @@ export function VideoWatchPage() {
       return
     }
     let cancelled = false
+    const loadGen = ++videoLoadGenRef.current
     const cached = videoDetailCacheRef.current.get(publicIdFromRoute)
     const cardFromQueue = isFromExplore
       ? exploreQueueRef.current.find(
@@ -438,7 +460,7 @@ export function VideoWatchPage() {
     apiClient
       .getVideo(publicIdFromRoute, { token })
       .then((v) => {
-        if (cancelled) return
+        if (cancelled || loadGen !== videoLoadGenRef.current) return
         videoDetailCacheRef.current.set(publicIdFromRoute, v)
         setVideo(v)
         const authorKey = normalizeUsernameKey(v?.authorUsername)
@@ -451,14 +473,14 @@ export function VideoWatchPage() {
         }
       })
       .catch((e) => {
-        if (cancelled) return
+        if (cancelled || loadGen !== videoLoadGenRef.current) return
         if (!optimistic) {
           setVideo(null)
           setLoadError(e instanceof Error ? e.message : 'Không tải được video.')
         }
       })
       .finally(() => {
-        if (!cancelled) setLoading(false)
+        if (!cancelled && loadGen === videoLoadGenRef.current) setLoading(false)
       })
     return () => {
       cancelled = true
@@ -469,8 +491,9 @@ export function VideoWatchPage() {
     watchQualifySentRef.current = false
     watchPlaythroughSentRef.current = false
     const el = videoRef.current
-    if (!el || !isWatchableVideo(video)) return undefined
-    const key = String(video.publicId)
+    const routeId = publicIdFromRoute
+    if (!el || !routeId) return undefined
+    const key = routeId
     const onPlaybackSample = () => {
       const watchedMs = Math.floor(el.currentTime * 1000)
       const d = el.duration
@@ -510,13 +533,14 @@ export function VideoWatchPage() {
       el.removeEventListener('seeked', onPlaybackSample)
       el.removeEventListener('ended', onPlaybackSample)
     }
-  }, [video?.publicId])
+  }, [publicIdFromRoute])
 
   useEffect(() => {
-    if (!token || !isWatchableVideo(video)) return
+    const routeId = publicIdFromRoute
+    if (!token || !routeId) return
     let cancelled = false
     apiClient
-      .getVideoMeState(video.publicId, token)
+      .getVideoMeState(routeId, token)
       .then((s) => {
         if (cancelled || !s) return
         setLiked(Boolean(s.liked))
@@ -526,15 +550,16 @@ export function VideoWatchPage() {
     return () => {
       cancelled = true
     }
-  }, [token, video?.publicId])
+  }, [publicIdFromRoute, token])
 
   useEffect(() => {
-    if (!isWatchableVideo(video)) return
+    const routeId = publicIdFromRoute
+    if (!routeId) return
     let cancelled = false
     setCommentsLoading(true)
     setCommentsError('')
     apiClient
-      .getComments(video.publicId, { token })
+      .getComments(routeId, { token })
       .then((list) => {
         if (!cancelled) setComments(Array.isArray(list) ? list : [])
       })
@@ -550,7 +575,7 @@ export function VideoWatchPage() {
     return () => {
       cancelled = true
     }
-  }, [video?.publicId, token])
+  }, [publicIdFromRoute, token])
 
   useEffect(() => {
     if (isFromExplore) {
@@ -585,6 +610,7 @@ export function VideoWatchPage() {
     if (!currentId) return -1
     return exploreQueue.findIndex((row) => normalizeVideoPublicId(row?.publicId) === currentId)
   }, [exploreQueue, publicIdFromRoute])
+  currentExploreIndexRef.current = currentExploreIndex
 
   const hasPrevExplore = isFromExplore && currentExploreIndex > 0
   const hasNextExplore = isFromExplore && (
@@ -595,21 +621,29 @@ export function VideoWatchPage() {
 
   useEffect(() => {
     if (!isFromExplore || currentExploreIndex < 0) return undefined
-    feedPrefetchManager.prefetchAround(exploreQueue, currentExploreIndex, resolveFeedPlaybackUrl)
-    for (let offset = -1; offset <= 2; offset += 1) {
-      const row = exploreQueue[currentExploreIndex + offset]
-      const poster = row?.thumbnailUrl?.trim()
-      if (poster) feedPrefetchManager.prefetchPoster(poster)
-      const id = normalizeVideoPublicId(row?.publicId)
-      if (!id || videoDetailCacheRef.current.has(id)) continue
-      apiClient
-        .getVideo(id, { token })
-        .then((detail) => {
-          videoDetailCacheRef.current.set(id, detail)
-        })
-        .catch(() => {})
+    const gen = ++detailPrefetchGenRef.current
+    const timer = window.setTimeout(() => {
+      if (gen !== detailPrefetchGenRef.current) return
+      feedPrefetchManager.prefetchAround(exploreQueue, currentExploreIndex, resolveFeedPlaybackUrl)
+      for (const offset of [-1, 1]) {
+        const row = exploreQueue[currentExploreIndex + offset]
+        const poster = row?.thumbnailUrl?.trim()
+        if (poster) feedPrefetchManager.prefetchPoster(poster)
+        const id = normalizeVideoPublicId(row?.publicId)
+        if (!id || videoDetailCacheRef.current.has(id)) continue
+        apiClient
+          .getVideo(id, { token })
+          .then((detail) => {
+            if (gen !== detailPrefetchGenRef.current) return
+            videoDetailCacheRef.current.set(id, detail)
+          })
+          .catch(() => {})
+      }
+    }, 280)
+    return () => {
+      window.clearTimeout(timer)
+      feedPrefetchManager.cancelPending()
     }
-    return () => feedPrefetchManager.cancelPending()
   }, [currentExploreIndex, exploreQueue, isFromExplore, token])
 
   useEffect(() => {
@@ -628,43 +662,78 @@ export function VideoWatchPage() {
     isFromExplore,
   ])
 
-  const moveToExploreVideo = useCallback(
-    async (direction) => {
-      if (!isFromExplore) return
-      const offset = direction === 'prev' ? -1 : 1
-      let targetIndex = currentExploreIndex + offset
+  const moveToExploreVideoByOffset = useCallback(
+    async (offsetSteps) => {
+      if (!isFromExplore || !offsetSteps || exploreNavLockRef.current) return
+
+      let targetIndex = currentExploreIndexRef.current + offsetSteps
       if (targetIndex < 0) return
 
-      let queue = exploreQueue
-      if (targetIndex >= queue.length && exploreHasNext && !exploreLoadingMore) {
-        const merged = await appendExploreChunk()
-        if (merged) queue = merged
-        targetIndex = currentExploreIndex + offset
-        if (targetIndex >= queue.length) return
-      }
+      const navGen = ++exploreNavGenRef.current
+      exploreNavLockRef.current = true
+      setExploreNavBusy(true)
+      let navigated = false
+      try {
+        let queue = exploreQueueRef.current
+        if (targetIndex >= queue.length && exploreHasNext && !exploreLoadingMore) {
+          const merged = await appendExploreChunk()
+          if (navGen !== exploreNavGenRef.current) return
+          if (merged) queue = merged
+          targetIndex = currentExploreIndexRef.current + offsetSteps
+          if (targetIndex >= queue.length) return
+        }
 
-      const nextVideo = queue[targetIndex]
-      if (!nextVideo?.publicId) return
-      const nextPath =
-        buildProfileVideoUrl(nextVideo?.authorUsername, nextVideo?.publicId) ??
-        `/explore/view/${encodeURIComponent(String(nextVideo.publicId))}`
-      navigate(nextPath, {
-        state: {
-          fromExplore: true,
-          exploreContext: buildExploreNavContext(queue),
-        },
-      })
+        const nextVideo = queue[targetIndex]
+        if (!nextVideo?.publicId) return
+        if (navGen !== exploreNavGenRef.current) return
+        const nextPath =
+          buildProfileVideoUrl(nextVideo?.authorUsername, nextVideo?.publicId) ??
+          `/explore/view/${encodeURIComponent(String(nextVideo.publicId))}`
+        navigate(nextPath, {
+          replace: true,
+          state: {
+            fromExplore: true,
+            exploreContext: buildExploreNavContext(queue),
+          },
+        })
+        navigated = true
+      } finally {
+        if (!navigated) {
+          exploreNavLockRef.current = false
+          setExploreNavBusy(false)
+        }
+      }
     },
     [
       appendExploreChunk,
       buildExploreNavContext,
-      currentExploreIndex,
       exploreHasNext,
       exploreLoadingMore,
-      exploreQueue,
       isFromExplore,
       navigate,
     ],
+  )
+  moveToExploreVideoByOffsetRef.current = moveToExploreVideoByOffset
+
+  const { requestStep: requestExploreNavStep, reset: resetExploreNavPending } =
+    useRapidStepNavigation({
+      onStep: (steps) => {
+        void moveToExploreVideoByOffsetRef.current?.(steps)
+      },
+      delayMs: 220,
+      maxBurst: 3,
+      cooldownMs: 320,
+    })
+
+  useLayoutEffect(() => {
+    resetExploreNavPending()
+  }, [publicIdFromRoute, resetExploreNavPending])
+
+  const moveToExploreVideo = useCallback(
+    (direction) => {
+      requestExploreNavStep(direction === 'prev' ? -1 : 1)
+    },
+    [requestExploreNavStep],
   )
 
   useEffect(() => {
@@ -672,10 +741,10 @@ export function VideoWatchPage() {
     const onKeyDown = (e) => {
       if (e.key === 'ArrowUp') {
         e.preventDefault()
-        void moveToExploreVideo('prev')
+        moveToExploreVideo('prev')
       } else if (e.key === 'ArrowDown') {
         e.preventDefault()
-        void moveToExploreVideo('next')
+        moveToExploreVideo('next')
       }
     }
     window.addEventListener('keydown', onKeyDown)
@@ -818,13 +887,17 @@ export function VideoWatchPage() {
                       key={String(activeVideo?.publicId ?? publicIdFromRoute)}
                       ref={videoRef}
                       src={activePlaybackUrl}
+                      className={`watch-video-el absolute bg-black transition-opacity duration-200 ${watchVideoSizing} ${isVideoFrameReady ? 'opacity-100' : 'opacity-0'}`}
                       controls={isVideoFrameReady}
+                      controlsList="nofullscreen nodownload noremoteplayback noplaybackrate"
+                      disablePictureInPicture
+                      disableRemotePlayback
                       playsInline
                       muted
                       autoPlay
                       preload="auto"
-                      className={`absolute bg-black transition-opacity duration-200 ${watchVideoSizing} ${isVideoFrameReady ? 'opacity-100' : 'opacity-0'}`}
                       poster={displayPosterUrl || undefined}
+                      onDoubleClick={(e) => e.preventDefault()}
                       onLoadedData={() => setVideoReady(true)}
                       onCanPlay={() => setVideoReady(true)}
                       onPlaying={() => setVideoReady(true)}
@@ -874,7 +947,7 @@ export function VideoWatchPage() {
               <div className="pointer-events-auto flex min-w-0 flex-1 justify-center px-2 sm:px-4">
                 <form
                   onSubmit={handleWatchSearch}
-                  className="flex h-11 w-full max-w-[560px] items-center rounded-full border border-white/10 bg-zinc-900/55 px-4 shadow-lg backdrop-blur-md"
+                  className="flex h-11 w-full max-w-[360px] items-center rounded-full border border-white/10 bg-zinc-900/55 px-4 shadow-lg backdrop-blur-md"
                 >
                   <input
                     type="search"
@@ -912,19 +985,19 @@ export function VideoWatchPage() {
               <div className="pointer-events-none absolute right-3 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-2 sm:right-4">
                 <button
                   type="button"
-                  className={`${WATCH_CHROME_BTN} pointer-events-auto ${hasPrevExplore ? '' : 'cursor-not-allowed opacity-45'}`}
+                  className={`${WATCH_CHROME_BTN} pointer-events-auto ${hasPrevExplore && !exploreNavBusy ? '' : 'cursor-not-allowed opacity-45'}`}
                   aria-label="Video trước"
-                  disabled={!hasPrevExplore}
-                  onClick={() => void moveToExploreVideo('prev')}
+                  disabled={!hasPrevExplore || exploreNavBusy}
+                  onClick={() => moveToExploreVideo('prev')}
                 >
                   <IoChevronUp />
                 </button>
                 <button
                   type="button"
-                  className={`${WATCH_CHROME_BTN} pointer-events-auto ${hasNextExplore ? '' : 'cursor-not-allowed opacity-45'}`}
+                  className={`${WATCH_CHROME_BTN} pointer-events-auto ${hasNextExplore && !exploreNavBusy ? '' : 'cursor-not-allowed opacity-45'}`}
                   aria-label="Video sau"
-                  disabled={!hasNextExplore}
-                  onClick={() => void moveToExploreVideo('next')}
+                  disabled={!hasNextExplore || exploreNavBusy}
+                  onClick={() => moveToExploreVideo('next')}
                 >
                   <IoChevronDown />
                 </button>

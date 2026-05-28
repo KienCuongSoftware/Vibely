@@ -15,7 +15,6 @@ import com.vibely.backend.feed.FeedCursorCodec;
 import com.vibely.backend.feed.FeedPageResponse;
 import com.vibely.backend.feed.FeedSort;
 import com.vibely.backend.interaction.CommentRepository;
-import com.vibely.backend.interaction.FollowEntity;
 import com.vibely.backend.interaction.FollowRepository;
 import com.vibely.backend.interaction.LikeRepository;
 import com.vibely.backend.interaction.VideoViewEntity;
@@ -29,13 +28,17 @@ import com.vibely.backend.user.User;
 import com.vibely.backend.user.UserRepository;
 import com.vibely.backend.user.UsernameService;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
@@ -142,11 +145,12 @@ public class VideoService {
     }
 
     @Transactional(readOnly = true)
-    public FeedPageResponse getFeed(int page, int size, FeedSort sort) {
+    public FeedPageResponse getFeed(int page, int size, FeedSort sort, String viewerEmail) {
         Pageable pageable = PageRequest.of(page, size);
+        Long viewerId = resolveViewerId(viewerEmail);
         if (sort == FeedSort.TRENDING_LITE) {
             Page<Video> resultPage = videoRepository.findTrendingByStatus(VideoStatus.READY, pageable);
-            return toFeedPageResponse(resultPage, sort.name().toLowerCase(), null);
+            return toFeedPageResponse(resultPage, sort.name().toLowerCase(), null, viewerId);
         }
         Page<Video> resultPage = videoRepository.findByStatusOrderByCreatedAtDesc(VideoStatus.READY, pageable);
         String nextCursor = null;
@@ -154,14 +158,15 @@ public class VideoService {
             Video last = resultPage.getContent().get(resultPage.getContent().size() - 1);
             nextCursor = FeedCursorCodec.encode(last.getCreatedAt(), last.getId());
         }
-        return toFeedPageResponse(resultPage, sort.name().toLowerCase(), nextCursor);
+        return toFeedPageResponse(resultPage, sort.name().toLowerCase(), nextCursor, viewerId);
     }
 
     /**
      * Keyset pagination for the public latest feed (stable order: {@code createdAt desc, id desc}).
      */
     @Transactional(readOnly = true)
-    public FeedPageResponse getLatestFeedKeyset(String cursor, int size) {
+    public FeedPageResponse getLatestFeedKeyset(String cursor, int size, String viewerEmail) {
+        Long viewerId = resolveViewerId(viewerEmail);
         int req = Math.max(1, Math.min(size, 50));
         LocalDateTime cTime = null;
         Long cId = null;
@@ -176,13 +181,14 @@ public class VideoService {
             : videoRepository.findReadyFeedKeyset(VideoStatus.READY, cTime, cId, p);
         boolean hasNext = slice.getContent().size() > req;
         List<Video> rows = slice.getContent().stream().limit(req).toList();
+        rows = shuffleFeedRows(rows);
         String next = null;
         if (hasNext && !rows.isEmpty()) {
             Video last = rows.get(rows.size() - 1);
             next = FeedCursorCodec.encode(last.getCreatedAt(), last.getId());
         }
         return new FeedPageResponse(
-            toFeedResponses(rows),
+            toFeedResponses(rows, viewerId),
             0,
             req,
             hasNext ? -1L : rows.size(),
@@ -196,19 +202,25 @@ public class VideoService {
     public FeedPageResponse getFollowingFeed(String email, int page, int size) {
         User follower = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
-        List<User> followedUsers = followRepository.findByFollower(follower).stream()
-            .map(FollowEntity::getFollowing)
-            .toList();
-        if (followedUsers.isEmpty()) {
+        if (followRepository.countByFollower_Id(follower.getId()) == 0) {
             return new FeedPageResponse(Collections.emptyList(), page, size, 0, false, "following", null);
         }
         Pageable pageable = PageRequest.of(page, size);
-        Page<Video> resultPage = videoRepository.findByAuthorInAndStatusOrderByCreatedAtDesc(
-            followedUsers,
+        Page<Video> resultPage = videoRepository.findReadyVideosFromFollowedCreators(
+            follower.getId(),
             VideoStatus.READY,
             pageable
         );
-        return toFeedPageResponse(resultPage, "following");
+        List<Video> shuffled = shuffleFeedRows(new ArrayList<>(resultPage.getContent()));
+        return new FeedPageResponse(
+            toFeedResponses(shuffled, follower.getId()),
+            resultPage.getNumber(),
+            resultPage.getSize(),
+            resultPage.getTotalElements(),
+            resultPage.hasNext(),
+            "following",
+            null
+        );
     }
 
     @Transactional(readOnly = true)
@@ -330,7 +342,7 @@ public class VideoService {
             throw new NotFoundException("Không tìm thấy video");
         }
         if (video.getStatus() == VideoStatus.READY) {
-            return toResponse(video);
+            return toResponse(video, resolveFollowedByViewer(video, viewerEmail));
         }
         if (viewerEmail == null || viewerEmail.isBlank()) {
             throw new NotFoundException("Không tìm thấy video");
@@ -529,8 +541,47 @@ public class VideoService {
         return svc.presignGetForPlayback(url).orElse(url);
     }
 
+    private Long resolveViewerId(String viewerEmail) {
+        if (viewerEmail == null || viewerEmail.isBlank()) {
+            return null;
+        }
+        return userRepository.findByEmail(viewerEmail.trim())
+            .map(User::getId)
+            .orElse(null);
+    }
+
+    private boolean resolveFollowedByViewer(Video video, String viewerEmail) {
+        if (viewerEmail == null || viewerEmail.isBlank()) {
+            return false;
+        }
+        User viewer = userRepository.findByEmail(viewerEmail.trim()).orElse(null);
+        if (viewer == null) {
+            return false;
+        }
+        return followRepository.existsByFollowerAndFollowing(viewer, video.getAuthor());
+    }
+
+    private Set<Long> resolveFollowedAuthorIds(Long viewerId, List<Video> videos) {
+        if (viewerId == null || videos.isEmpty()) {
+            return Set.of();
+        }
+        List<Long> authorIds = videos.stream()
+            .map(v -> v.getAuthor().getId())
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+        if (authorIds.isEmpty()) {
+            return Set.of();
+        }
+        return new HashSet<>(followRepository.findFollowingIdsForFollower(viewerId, authorIds));
+    }
+
     private VideoResponse toResponse(Video video) {
-        return toResponse(video, null);
+        return toResponse(video, null, false);
+    }
+
+    private VideoResponse toResponse(Video video, boolean followedByViewer) {
+        return toResponse(video, null, followedByViewer);
     }
 
     private record FeedInteractionCounts(
@@ -541,7 +592,7 @@ public class VideoService {
     ) {
     }
 
-    private List<VideoResponse> toFeedResponses(List<Video> videos) {
+    private List<VideoResponse> toFeedResponses(List<Video> videos, Long viewerId) {
         if (videos.isEmpty()) {
             return List.of();
         }
@@ -552,7 +603,10 @@ public class VideoService {
             countMap(videoBookmarkRepository.countGroupedByVideoIds(ids)),
             countMap(videoViewRepository.countGroupedByVideoIds(ids))
         );
-        return videos.stream().map(v -> toResponse(v, counts)).toList();
+        Set<Long> followedAuthorIds = resolveFollowedAuthorIds(viewerId, videos);
+        return videos.stream()
+            .map(v -> toResponse(v, counts, followedAuthorIds.contains(v.getAuthor().getId())))
+            .toList();
     }
 
     private static Map<Long, Long> countMap(List<Object[]> rows) {
@@ -566,7 +620,7 @@ public class VideoService {
         return out;
     }
 
-    private VideoResponse toResponse(Video video, FeedInteractionCounts batch) {
+    private VideoResponse toResponse(Video video, FeedInteractionCounts batch, boolean followedByViewer) {
         Long videoId = video.getId();
         long likeCount = batch != null
             ? batch.likes().getOrDefault(videoId, 0L)
@@ -608,17 +662,36 @@ public class VideoService {
             video.getDurationSeconds(),
             video.getSourceWidthPx(),
             video.getSourceHeightPx(),
-            video.getProcessingError()
+            video.getProcessingError(),
+            followedByViewer
         );
     }
 
+    private List<Video> shuffleFeedRows(List<Video> rows) {
+        if (rows == null || rows.size() < 2) {
+            return rows == null ? List.of() : rows;
+        }
+        List<Video> shuffled = new ArrayList<>(rows);
+        Collections.shuffle(shuffled, ThreadLocalRandom.current());
+        return shuffled;
+    }
+
     private FeedPageResponse toFeedPageResponse(Page<Video> page, String sort) {
-        return toFeedPageResponse(page, sort, null);
+        return toFeedPageResponse(page, sort, null, null);
     }
 
     private FeedPageResponse toFeedPageResponse(Page<Video> page, String sort, String nextCursor) {
+        return toFeedPageResponse(page, sort, nextCursor, null);
+    }
+
+    private FeedPageResponse toFeedPageResponse(
+        Page<Video> page,
+        String sort,
+        String nextCursor,
+        Long viewerId
+    ) {
         return new FeedPageResponse(
-            toFeedResponses(page.getContent()),
+            toFeedResponses(page.getContent(), viewerId),
             page.getNumber(),
             page.getSize(),
             page.getTotalElements(),

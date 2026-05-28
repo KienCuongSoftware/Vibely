@@ -41,6 +41,7 @@ public class UserController {
     private final FollowRepository followRepository;
     private final LikeRepository likeRepository;
     private final VideoViewRepository videoViewRepository;
+    private final UserDiscoveryService userDiscoveryService;
 
     public UserController(
         UserRepository userRepository,
@@ -49,7 +50,8 @@ public class UserController {
         VideoService videoService,
         FollowRepository followRepository,
         LikeRepository likeRepository,
-        VideoViewRepository videoViewRepository
+        VideoViewRepository videoViewRepository,
+        UserDiscoveryService userDiscoveryService
     ) {
         this.userRepository = userRepository;
         this.usernameService = usernameService;
@@ -58,6 +60,7 @@ public class UserController {
         this.followRepository = followRepository;
         this.likeRepository = likeRepository;
         this.videoViewRepository = videoViewRepository;
+        this.userDiscoveryService = userDiscoveryService;
     }
 
     private User getViewer(Authentication authentication) {
@@ -164,6 +167,18 @@ public class UserController {
         @RequestParam(defaultValue = "24") int size
     ) {
         return ApiResponse.success(videoService.getMyUploadedVideos(authentication.getName(), page, size));
+    }
+
+    @GetMapping("/me/suggested-creators")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<SuggestedCreatorsResponse> suggestedCreators(
+        Authentication authentication,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "24") int size
+    ) {
+        return ApiResponse.success(
+            userDiscoveryService.getSuggestedCreators(authentication.getName(), page, size)
+        );
     }
 
     @GetMapping("/{username}/videos")

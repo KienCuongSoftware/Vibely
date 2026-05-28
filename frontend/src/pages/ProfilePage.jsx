@@ -2,9 +2,14 @@ import React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { apiClient } from '../api/client'
+import {
+  markFeedAuthorFollowed,
+  markFeedAuthorUnfollowed,
+} from '../utils/feedFollowState.js'
 import { useAuth } from '../state/useAuth'
 import { buildProfileVideoUrl, videoPublicIdOf } from '../utils/videoPublicId.js'
 import { Sidebar } from '../components/Sidebar'
+import { handleSidebarMenuSelect } from '../utils/sidebarNavigation.js'
 import { TooltipHoverWrap } from '../components/TooltipControls'
 import { AccountActionsPill } from '../components/AccountActionsPill'
 import { ProfileFollowListModal } from '../components/ProfileFollowListModal'
@@ -372,8 +377,13 @@ export function ProfilePage() {
       followerCount: Math.max(0, prevFollowerCount + (next ? 1 : -1)),
     })
     try {
-      if (next) await apiClient.follow(profile.id, token)
-      else await apiClient.unfollow(profile.id, token)
+      if (next) {
+        await apiClient.follow(profile.id, token)
+        markFeedAuthorFollowed(token, profile.id)
+      } else {
+        await apiClient.unfollow(profile.id, token)
+        markFeedAuthorUnfollowed(token, profile.id)
+      }
     } catch (error) {
       patchPublicProfile({
         followedByViewer: !next,
@@ -385,13 +395,22 @@ export function ProfilePage() {
     }
   }, [profile?.id, profile?.followerCount, isOwnProfile, token, followBusy, isFollowingProfile, navigate, patchPublicProfile])
 
-  const handleProfileMessageClick = useCallback(() => {
+  const handleProfileMessageClick = useCallback(async () => {
     if (!token) {
       navigate('/login')
       return
     }
-    setProfileActionNotice('Tin nhắn riêng sẽ sớm có mặt.')
-  }, [token, navigate])
+    if (!profile?.id || isOwnProfile) {
+      navigate('/messages')
+      return
+    }
+    try {
+      const convo = await apiClient.createOrGetDirectConversation(profile.id, token)
+      navigate(`/messages?c=${encodeURIComponent(convo.id)}`)
+    } catch (error) {
+      setProfileActionNotice(error?.message || 'Không thể mở hội thoại lúc này.')
+    }
+  }, [token, profile?.id, isOwnProfile, navigate])
 
   const handleProfileShareClick = useCallback(async () => {
     try {
@@ -609,25 +628,10 @@ export function ProfilePage() {
 
   const activeMenu = isOwnProfile ? 'profile' : null
   const handleSelectMenu = (id) => {
-    if (id === 'more') return
-    if (id === 'profile') {
-      if (!token) {
-        navigate('/login')
-        return
-      }
-      navigate(profileHrefFromAuthUsername(user?.username))
-      return
-    }
-    if (id === 'explore') {
-      navigate('/explore')
-      return
-    }
-    if (id === 'upload') {
-      navigate('/vibelystudio/upload')
-      return
-    }
-    // Các mục khác: về feed.
-    navigate('/foryou', { replace: true })
+    handleSidebarMenuSelect(navigate, id, {
+      token,
+      profilePath: token ? profileHrefFromAuthUsername(user?.username) : undefined,
+    })
   }
 
   const openEditProfileModal = () => {

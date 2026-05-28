@@ -4,6 +4,7 @@ import { IoChevronBack, IoChevronForward, IoCompass, IoEllipsisHorizontal, IoHom
 import { MdOutlineFileUpload } from 'react-icons/md'
 import { apiClient } from '../api/client'
 import { Sidebar } from '../components/Sidebar'
+import { handleSidebarMenuSelect } from '../utils/sidebarNavigation.js'
 import { feedPrefetchManager } from '../feed/FeedPrefetchManager.js'
 import { resolveFeedPlaybackUrl } from '../feed/feedPlayback.js'
 import { DEFAULT_COVER, SoundGridVideoCard } from './SoundPage.jsx'
@@ -26,6 +27,8 @@ export function ExplorePage() {
   const allCategoryButtonRef = useRef(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
+  const loadGenerationRef = useRef(0)
+  const openVideoLockRef = useRef(false)
 
   const categoriesWithAll = useMemo(() => {
     const rows = Array.isArray(categories) ? categories : []
@@ -96,16 +99,22 @@ export function ExplorePage() {
   }, [updateCategoryScrollState])
 
   const load = React.useCallback((nextCursor = null, append = false) => {
+    const generation = ++loadGenerationRef.current
     setLoading(true)
     const req = activeSlug === 'all'
       ? apiClient.getExploreTrending({ cursor: nextCursor, size: 24 })
       : apiClient.getExploreCategory(activeSlug, { cursor: nextCursor, size: 24 })
-    req.then((res) => {
-      const rows = Array.isArray(res?.items) ? res.items : []
-      setItems((prev) => (append ? [...prev, ...rows] : rows))
-      setCursor(res?.nextCursor ?? null)
-      setHasNext(Boolean(res?.hasNext))
-    }).finally(() => setLoading(false))
+    req
+      .then((res) => {
+        if (generation !== loadGenerationRef.current) return
+        const rows = Array.isArray(res?.items) ? res.items : []
+        setItems((prev) => (append ? [...prev, ...rows] : rows))
+        setCursor(res?.nextCursor ?? null)
+        setHasNext(Boolean(res?.hasNext))
+      })
+      .finally(() => {
+        if (generation === loadGenerationRef.current) setLoading(false)
+      })
   }, [activeSlug])
 
   useEffect(() => {
@@ -123,13 +132,19 @@ export function ExplorePage() {
   }, [items])
 
   const handleSelectMenu = (id) => {
-    if (id === 'profile') return navigate(token ? '/profile' : '/login')
-    if (id === 'upload') return navigate('/vibelystudio/upload')
-    if (id === 'explore') return navigate('/explore')
-    navigate('/foryou')
+    handleSidebarMenuSelect(navigate, id, {
+      token,
+      profilePath: token ? '/profile' : undefined,
+    })
   }
 
   const handleOpenVideo = React.useCallback((video) => {
+    if (openVideoLockRef.current) return
+    openVideoLockRef.current = true
+    const unlockTimer = window.setTimeout(() => {
+      openVideoLockRef.current = false
+    }, 500)
+
     const exploreContext = {
       slug: activeSlug,
       seedItems: items.slice(0, 24),
@@ -143,7 +158,10 @@ export function ExplorePage() {
     }
     if (video?.publicId) {
       navigate(`/explore/view/${video.publicId}`, { state: { fromExplore: true, exploreContext } })
+      return
     }
+    window.clearTimeout(unlockTimer)
+    openVideoLockRef.current = false
   }, [activeSlug, cursor, hasNext, items, navigate])
 
   return (

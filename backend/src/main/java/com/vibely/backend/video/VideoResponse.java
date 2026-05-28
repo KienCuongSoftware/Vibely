@@ -26,6 +26,7 @@ public record VideoResponse(
     Integer durationSeconds,
     Integer sourceWidthPx,
     Integer sourceHeightPx,
-    String processingError
+    String processingError,
+    boolean followedByViewer
 ) {
 }

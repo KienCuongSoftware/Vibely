@@ -20,6 +20,21 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
 
     Page<Video> findByStatusOrderByCreatedAtDesc(VideoStatus status, Pageable pageable);
     Page<Video> findByAuthorInAndStatusOrderByCreatedAtDesc(Collection<User> authors, VideoStatus status, Pageable pageable);
+
+    @Query("""
+        select v from Video v
+        join fetch v.author
+        where v.status = :status
+        and v.author.id in (
+            select f.following.id from FollowEntity f where f.follower.id = :followerId
+        )
+        order by v.createdAt desc
+        """)
+    Page<Video> findReadyVideosFromFollowedCreators(
+        @Param("followerId") Long followerId,
+        @Param("status") VideoStatus status,
+        Pageable pageable
+    );
     Page<Video> findByAudioUrlAndStatusOrderByCreatedAtDesc(String audioUrl, VideoStatus status, Pageable pageable);
 
     /** Khớp URL âm thanh canonical hoặc cùng S3 object key (presigned GET có query khác). */

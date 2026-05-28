@@ -13,6 +13,7 @@ import { MdOutlineFileUpload } from 'react-icons/md'
 import { useNavigate, useParams } from 'react-router-dom'
 import { apiClient } from '../api/client'
 import { Sidebar } from '../components/Sidebar'
+import { handleSidebarMenuSelect } from '../utils/sidebarNavigation.js'
 import { DEFAULT_COVER, SoundGridVideoCard } from './SoundPage.jsx'
 import { useAuth } from '../state/useAuth'
 
@@ -53,19 +54,10 @@ export function HashtagPage() {
   )
 
   const handleSelectMenu = (id) => {
-    if (id === 'profile') {
-      navigate(token ? '/profile' : '/login')
-      return
-    }
-    if (id === 'explore') {
-      navigate('/explore')
-      return
-    }
-    if (id === 'upload') {
-      navigate('/vibelystudio/upload')
-      return
-    }
-    navigate('/foryou')
+    handleSidebarMenuSelect(navigate, id, {
+      token,
+      profilePath: token ? '/profile' : undefined,
+    })
   }
 
   useEffect(() => {

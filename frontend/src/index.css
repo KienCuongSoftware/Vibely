@@ -193,3 +193,17 @@ body {
   );
 }
 
+/* VideoWatch / Explore viewer: keep play + timeline, hide volume/fullscreen/overflow. */
+.watch-video-el::-webkit-media-controls-mute-button,
+.watch-video-el::-webkit-media-controls-volume-slider,
+.watch-video-el::-webkit-media-controls-fullscreen-button,
+.watch-video-el::-webkit-media-controls-overflow-button,
+.watch-video-el::-webkit-media-controls-toggle-closed-captions-button,
+.watch-video-el::-webkit-media-controls-cast-button {
+  display: none !important;
+}
+.watch-video-el::-moz-media-controls-volume-control,
+.watch-video-el::-moz-media-controls-fullscreen-button {
+  display: none !important;
+}
+
