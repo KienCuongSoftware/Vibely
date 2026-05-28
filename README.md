@@ -9,7 +9,7 @@
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)](https://redis.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Vibely is a full-stack short-video platform engineered like a modern consumer social product — not a CRUD demo. It combines **cursor-based feeds**, **virtualized rendering**, **HLS adaptive streaming**, **FFmpeg transcoding**, **Redis caching**, **JWT authentication with refresh tokens**, and a **UUIDv7 public identity layer** on top of a high-performance internal relational schema.
+Vibely is a full-stack short-video platform engineered like a modern consumer social product — not a CRUD demo. It combines **cursor-based feeds**, **virtualized rendering**, **HLS adaptive streaming**, **FFmpeg transcoding**, **Redis caching**, **JWT authentication with refresh tokens**, **adaptive anti-bot captcha**, **email OTP signup**, **WebSocket chat**, and a **UUIDv7 public identity layer** on top of a high-performance internal relational schema.
 
 Built for engineers who care about **real pagination**, **media pipelines**, **mobile-first UX**, and **production-oriented backend design**.
 
@@ -22,7 +22,9 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 | **Feed** | TikTok-style infinite scroll with virtualization, media windowing, and HLS manifest prefetch |
 | **Streaming** | FFmpeg → HLS segments → S3 → CDN-ready URLs → `hls.js` playback |
 | **Identity** | Dual-key model: `BIGINT` internally, **UUIDv7 `publicId`** externally |
-| **Auth** | JWT access tokens (15 min) + refresh tokens (14 days), OAuth (Google / Facebook / LINE) |
+| **Auth** | JWT + refresh rotation, OAuth (Google / Facebook / LINE), email OTP signup, forgot-password flow |
+| **Anti-bot** | Risk scoring, rotate/slider/checkbox captcha, behavior telemetry, auth hardening (`428` challenge) |
+| **Messaging** | Direct chat with message requests, STOMP/WebSocket realtime, share-to-chat from videos |
 | **Performance** | Keyset pagination, batched feed queries, Redis share/redirect cache, aggressive client memory cleanup |
 | **Studio** | Upload, post editing, per-video analytics, comment moderation UI |
 
@@ -55,9 +57,17 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 ### Security & identity
 - **UUIDv7 public identifiers** for all video URLs and API routes
 - Numeric-only IDs rejected at the API boundary
-- **JWT + refresh token** rotation
+- **JWT + refresh token** rotation (captcha token consumed only after successful auth)
 - **OAuth 2.0 / OIDC** login (Google, Facebook, LINE) with onboarding flow
+- **Email OTP** for signup (`send-code` / `verify-code`) and **password reset** (`PASSWORD_RESET` purpose)
+- **Adaptive captcha** on login, register, and sensitive OTP sends — see `frontend/src/security/`
 - Share links, redirect analytics, and idempotent share writes
+
+### Messaging
+- **Direct messages** with conversation list and media preview
+- **Message requests** — accept/reject before strangers can chat
+- **STOMP over WebSocket** for realtime delivery (`/ws`)
+- **Share video to chat** from the watch/feed UI
 
 ### Creator studio
 - Upload flow with cover picker and preview
@@ -72,11 +82,13 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 |-------|----------------|
 | **Frontend** | React 19, Vite 8, React Router 7, Tailwind CSS 4, TanStack Virtual, HLS.js, Vitest |
 | **Backend** | Spring Boot 3.5, Spring Security, Spring Data JPA, Flyway, PostgreSQL |
-| **Cache** | Redis 7 (Lettuce connection pool) |
+| **Cache** | Redis 7 (share cache, captcha sessions, rate limits) |
+| **Messaging** | Spring WebSocket + STOMP |
 | **Media** | FFmpeg, FFprobe, HLS (adaptive streaming) |
 | **Storage** | AWS S3 (presigned upload + CDN-ready public URLs) |
-| **Auth** | JWT (HS256), refresh tokens, OAuth 2.0 / OIDC |
-| **Tooling** | Maven, ESLint, Docker Compose (Redis) |
+| **Auth** | JWT (HS256), refresh tokens, OAuth 2.0 / OIDC, SMTP OTP |
+| **Anti-bot** | Procedural captcha, HMAC verification tokens, optional Kafka telemetry |
+| **Tooling** | Maven, ESLint, Docker Compose (Redis; Kafka optional profile) |
 
 ---
 
@@ -101,6 +113,8 @@ flowchart TB
     Feed["/api/feed"]
     Videos["/api/videos"]
     Auth["/api/auth"]
+    Chat["/api/chat"]
+    Captcha["/api/captcha"]
     Share["/api/v1/share"]
   end
 
@@ -219,30 +233,18 @@ Legacy numeric routes are **rejected** — no silent fallback to internal IDs.
 |-------|-----|---------|
 | Access (JWT) | **15 minutes** | Memory / client state |
 | Refresh | **14 days** | HttpOnly-style client contract via API |
+| Captcha verification | **~5 minutes** | `sessionStorage` (`X-Captcha-Verification` header) |
+| Email OTP | **10 minutes** | PostgreSQL `otp_verification_codes` |
 
-**Flow**
+**Email signup** — birth date + password → `POST /api/auth/send-code` (purpose `REGISTER`, captcha when required) → verify OTP → `POST /api/auth/register`.
 
-```mermaid
-sequenceDiagram
-  participant C as Client
-  participant A as /api/auth
-  participant DB as PostgreSQL
+**Forgot password** — `POST /api/auth/send-code` (purpose `PASSWORD_RESET`) → `POST /api/auth/reset-password` with OTP + new password. See [docs/auth/PASSWORD_RESET.md](docs/auth/PASSWORD_RESET.md).
 
-  C->>A: POST /login (email + password)
-  A->>DB: validate credentials
-  A-->>C: accessToken + refreshToken
-
-  C->>A: GET /api/feed (Authorization: Bearer)
-  Note over C,A: access token expires
-
-  C->>A: POST /refresh (refreshToken)
-  A-->>C: new accessToken (+ rotated refresh)
-
-  C->>A: POST /logout
-  A-->>C: invalidate refresh session
-```
+**Login** — may require captcha (`428 CAPTCHA_REQUIRED`); complete challenge via `GET /api/captcha/challenge` + `POST /api/captcha/verify`, then retry with `X-Captcha-Verification`. Failed attempts do not burn the captcha token until login succeeds.
 
 OAuth providers (Google, Facebook, LINE) exchange through a dedicated security filter chain, then issue the same JWT session model after onboarding (birth date, Vibely ID).
+
+**Deeper docs:** [docs/auth/](docs/auth/) · [docs/anti-bot/](docs/anti-bot/)
 
 ---
 
@@ -353,11 +355,37 @@ POST   /api/v1/videos/{publicId}/share
 ### Auth
 
 ```http
-POST /api/auth/register
+POST /api/auth/register          # X-Captcha-Verification when required
 POST /api/auth/login
 POST /api/auth/refresh
 POST /api/auth/logout
-POST /api/auth/onboarding/complete
+GET  /api/auth/me
+POST /api/auth/send-code         # purpose: REGISTER | PASSWORD_RESET
+POST /api/auth/verify-code
+POST /api/auth/reset-password
+POST /api/auth/oauth/exchange
+POST /api/auth/complete-onboarding
+```
+
+### Anti-bot
+
+```http
+GET  /api/captcha/challenge?level=ROTATE
+POST /api/captcha/verify
+POST /api/risk/evaluate
+POST /api/fingerprint/register
+POST /api/behavior/track
+```
+
+### Chat
+
+```http
+GET  /api/chat/conversations
+POST /api/chat/conversations/direct/{userId}
+GET  /api/chat/conversations/{id}/messages
+POST /api/chat/conversations/{id}/messages
+POST /api/chat/conversations/{id}/accept
+POST /api/chat/conversations/{id}/reject
 ```
 
 ### Health
@@ -374,7 +402,9 @@ GET /api/health/readiness
 Vibely/
 ├── backend/                    # Spring Boot API
 │   └── src/main/java/com/vibely/backend/
-│       ├── auth/               # JWT, OAuth, onboarding
+│       ├── antibot/            # Captcha, risk engine, auth protection
+│       ├── auth/               # JWT, OAuth, OTP, mail
+│       ├── chat/               # Conversations, WebSocket publisher
 │       ├── feed/               # FeedCursorCodec, feed controllers
 │       ├── interaction/        # Likes, comments, bookmarks, views
 │       ├── processing/         # FFmpeg HLS pipeline, job workers
@@ -386,10 +416,12 @@ Vibely/
 │   └── src/
 │       ├── components/feed/    # VirtualizedFeed, FeedVideoPlayer
 │       ├── feed/               # feedConfig, prefetch, trim helpers
-│       ├── pages/              # Feed, Watch, Studio, Profile
+│       ├── pages/              # Feed, Watch, Studio, Profile, Messages
+│       ├── security/           # Anti-bot SDK, captcha UI, fingerprint
 │       └── api/                # API client
+├── docs/                       # Engineering docs (auth, anti-bot, API, …)
 ├── infra/                      # Lambda audio extract (optional)
-├── docker-compose.yml          # Redis for local dev
+├── docker-compose.yml          # Redis (+ optional Kafka profile)
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 └── LICENSE
@@ -410,10 +442,12 @@ Vibely/
 | FFmpeg / FFprobe | 6+ (on `PATH` or via `FFMPEG_PATH`) |
 | Redis | 7+ (optional; enabled in `dev` profile) |
 
-### 1. Start Redis
+### 1. Start Redis (and optional Kafka)
 
 ```bash
 docker compose up -d redis
+# Optional anti-bot telemetry:
+# docker compose --profile kafka up -d
 ```
 
 ### 2. Database
@@ -438,6 +472,14 @@ Create a PostgreSQL database named `vibely` (or configure `DB_URL`).
 | `FFPROBE_PATH` | FFprobe binary | `ffprobe` |
 | `APP_PROCESSING_WORKER_ENABLED` | Run in-process HLS worker | `true` in dev |
 | `CORS_ALLOWED_ORIGINS` | Frontend origin | `http://localhost:5173` |
+| `APP_MAIL_ENABLED` | Send real OTP emails | `false` (use `demoCode` in API) |
+| `SMTP_HOST` / `SMTP_PORT` | SMTP server | Gmail `587` when mail enabled |
+| `SMTP_USERNAME` / `SMTP_PASSWORD` | SMTP credentials | — |
+| `ANTIBOT_HMAC_SECRET` | Captcha/token signing | dev default in `application-dev.yaml` |
+
+Merge mail/OAuth/S3 secrets into `backend/src/main/resources/application-local.yaml` (gitignored; see `application-dev.yaml` for keys).
+
+**Engineering docs:** [docs/README.md](docs/README.md)
 
 ```bash
 cd backend
@@ -491,7 +533,8 @@ cd frontend && npm test
 
 - [ ] **Recommendation engine** — personalized ranking beyond chronological / trending-lite
 - [ ] **Push notifications** — follows, likes, comments
-- [ ] **Real-time** — WebSocket live comment counts and presence
+- [x] **Direct messaging** — STOMP chat with message requests (see [docs/chat/](docs/chat/))
+- [ ] **Real-time** — live comment counts and presence on watch feed
 - [ ] **Mobile apps** — React Native client sharing the same API
 - [ ] **Live streaming** — RTMP ingest → LL-HLS
 - [ ] **AI moderation** — automated content safety pipeline
