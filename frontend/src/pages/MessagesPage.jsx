@@ -21,6 +21,7 @@ const PAGE_TITLE = "Tin nhắn | Vibely";
 const DEFAULT_AVATAR = "/images/users/default-avatar.jpeg";
 const IMAGE_MESSAGE_PREFIX = "__img__:";
 const VIDEO_MESSAGE_PREFIX = "__vid__:";
+const SHARED_VIDEO_ID_PREFIX = "__vshare__:";
 const MAX_MEDIA_VIDEO_SECONDS = 15;
 
 function buildPendingMediaItem(file, selectionOrder) {
@@ -71,13 +72,45 @@ function extractImageMessageUrl(content) {
 function extractVideoMessageUrl(content) {
   const value = String(content ?? "");
   if (!value.startsWith(VIDEO_MESSAGE_PREFIX)) return null;
-  const url = value.slice(VIDEO_MESSAGE_PREFIX.length).trim();
+  const payload = value.slice(VIDEO_MESSAGE_PREFIX.length).trim();
+  if (!payload) return null;
+  const [firstLine] = payload.split(/\r?\n/, 1);
+  const url = String(firstLine ?? "").trim();
   return url || null;
+}
+
+function extractVideoMessageCaption(content) {
+  const value = String(content ?? "");
+  if (!value.startsWith(VIDEO_MESSAGE_PREFIX)) return "";
+  const payload = value.slice(VIDEO_MESSAGE_PREFIX.length).trim();
+  if (!payload) return "";
+  const lines = payload.split(/\r?\n/);
+  const caption = lines.slice(1).join("\n").trim();
+  return caption;
+}
+
+function extractSharedVideoId(content) {
+  const value = String(content ?? "");
+  if (!value.startsWith(SHARED_VIDEO_ID_PREFIX)) return "";
+  const payload = value.slice(SHARED_VIDEO_ID_PREFIX.length).trim();
+  if (!payload) return "";
+  const [firstLine] = payload.split(/\r?\n/, 1);
+  return String(firstLine ?? "").trim();
+}
+
+function extractSharedVideoCaption(content) {
+  const value = String(content ?? "");
+  if (!value.startsWith(SHARED_VIDEO_ID_PREFIX)) return "";
+  const payload = value.slice(SHARED_VIDEO_ID_PREFIX.length).trim();
+  if (!payload) return "";
+  const lines = payload.split(/\r?\n/);
+  return lines.slice(1).join("\n").trim();
 }
 
 function toConversationPreview(content) {
   if (extractImageMessageUrl(content)) return "Đã gửi một ảnh";
   if (extractVideoMessageUrl(content)) return "Đã gửi một video";
+  if (extractSharedVideoId(content)) return "Đã chia sẻ một video";
   return content || "Bắt đầu cuộc trò chuyện";
 }
 
@@ -114,8 +147,11 @@ export function MessagesPage() {
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [imageBusy, setImageBusy] = useState(false);
   const [activeVideoViewerUrl, setActiveVideoViewerUrl] = useState("");
+  const [videoViewerReady, setVideoViewerReady] = useState(false);
+  const [videoViewerBuffering, setVideoViewerBuffering] = useState(false);
   const [pendingMediaItems, setPendingMediaItems] = useState([]);
   const [pendingMediaNotice, setPendingMediaNotice] = useState("");
+  const [sharedVideoUrlsById, setSharedVideoUrlsById] = useState({});
   const activeConversationRef = useRef(null);
   const pendingMediaItemsRef = useRef([]);
   const selectionOrderRef = useRef(1);
@@ -145,6 +181,16 @@ export function MessagesPage() {
   }, [activeConversationId]);
 
   useEffect(() => {
+    if (!activeVideoViewerUrl) {
+      setVideoViewerReady(false);
+      setVideoViewerBuffering(false);
+      return;
+    }
+    setVideoViewerReady(false);
+    setVideoViewerBuffering(true);
+  }, [activeVideoViewerUrl]);
+
+  useEffect(() => {
     const hasTooLongVideo = pendingMediaItems.some((item) => item.kind === "video" && item.tooLong);
     setPendingMediaNotice(hasTooLongVideo ? "Vui lòng bỏ chọn tập tin dài hơn 15 giây" : "");
   }, [pendingMediaItems]);
@@ -152,6 +198,31 @@ export function MessagesPage() {
   useEffect(() => {
     pendingMediaItemsRef.current = pendingMediaItems;
   }, [pendingMediaItems]);
+
+  useEffect(() => {
+    const ids = Array.from(
+      new Set(
+        messages
+          .map((msg) => extractSharedVideoId(msg?.content))
+          .filter((id) => id && !sharedVideoUrlsById[id]),
+      ),
+    );
+    if (ids.length === 0) return;
+    ids.forEach((id) => {
+      apiClient
+        .getVideo(id, token ? { token } : {})
+        .then((video) => {
+          const url =
+            String(video?.videoUrl ?? "").trim() ||
+            String(video?.playbackUrl ?? "").trim();
+          if (!url) return;
+          setSharedVideoUrlsById((prev) => ({ ...prev, [id]: url }));
+        })
+        .catch(() => {
+          /* noop */
+        });
+    });
+  }, [messages, token, sharedVideoUrlsById]);
 
   useEffect(() => () => {
     pendingMediaItemsRef.current.forEach((item) => URL.revokeObjectURL(item.previewUrl));
@@ -220,12 +291,7 @@ export function MessagesPage() {
   useEffect(() => {
     if (!activeConversationId) return;
     void loadMessages(activeConversationId);
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.set("c", String(activeConversationId));
-      return next;
-    }, { replace: true });
-  }, [activeConversationId, loadMessages, setSearchParams]);
+  }, [activeConversationId, loadMessages]);
 
   useEffect(() => {
     if (!token) return undefined;
@@ -307,6 +373,7 @@ export function MessagesPage() {
     pendingMediaCount <= 1
       ? "mt-1 flex w-full items-center justify-center rounded-lg border-y border-zinc-700/80 py-5"
       : "rounded-lg bg-zinc-700/60 p-2";
+  const hasBlockingOverlay = Boolean(deleteTargetConversationId || pendingMediaItems.length > 0 || activeVideoViewerUrl);
   const canSendActiveMessage = Boolean(activeConversation?.canSendMessage ?? true);
   const canAcceptActiveRequest = Boolean(activeConversation?.canAcceptMessageRequest);
   const requestConversations = useMemo(
@@ -332,6 +399,18 @@ export function MessagesPage() {
       setListMode("normal");
     }
   }, [listMode, requestConversations.length]);
+
+  useEffect(() => {
+    if (!hasBlockingOverlay) return undefined;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, [hasBlockingOverlay]);
 
   useEffect(() => {
     if (!activeConversationId) return;
@@ -533,8 +612,22 @@ export function MessagesPage() {
     setDeleteBusy(true);
     setComposerNotice("");
     try {
-      await apiClient.rejectChatMessageRequest(targetId, token);
-      setConversations((prev) => prev.filter((conv) => Number(conv.id) !== targetId));
+      const targetConversation = conversations.find((conv) => Number(conv.id) === targetId);
+      const targetPeerUserId = Number(targetConversation?.peerUserId);
+      if (targetConversation?.canAcceptMessageRequest) {
+        await apiClient.rejectChatMessageRequest(targetId, token);
+      } else {
+        await apiClient.deleteChatConversation(targetId, token);
+      }
+      setConversations((prev) =>
+        prev.filter((conv) => {
+          if (Number(conv.id) === targetId) return false;
+          if (!targetConversation?.canAcceptMessageRequest && Number.isFinite(targetPeerUserId) && targetPeerUserId > 0) {
+            return Number(conv.peerUserId) !== targetPeerUserId;
+          }
+          return true;
+        }),
+      );
       setMessages([]);
       if (Number(activeConversationId) === targetId) {
         setActiveConversationId(null);
@@ -776,7 +869,7 @@ export function MessagesPage() {
                   </div>
                 </div>
               </div>
-              <div ref={messageScrollRef} className="min-h-0 flex-1 overflow-y-auto bg-black px-4 py-4">
+              <div ref={messageScrollRef} className="scrollbar-none min-h-0 flex-1 overflow-y-auto bg-black px-4 py-4">
                 {messagesLoading ? (
                   <p className="text-sm text-zinc-500">Đang tải tin nhắn…</p>
                 ) : messages.length === 0 ? (
@@ -789,6 +882,14 @@ export function MessagesPage() {
                     <div className="space-y-2">
                     {messages.map((msg) => {
                       const mine = Boolean(msg.mine);
+                      const imageUrl = extractImageMessageUrl(msg.content);
+                      const directVideoUrl = extractVideoMessageUrl(msg.content);
+                      const directVideoCaption = extractVideoMessageCaption(msg.content);
+                      const sharedVideoId = extractSharedVideoId(msg.content);
+                      const sharedVideoUrl = sharedVideoId ? sharedVideoUrlsById[sharedVideoId] : "";
+                      const sharedVideoCaption = extractSharedVideoCaption(msg.content);
+                      const videoUrl = directVideoUrl || sharedVideoUrl;
+                      const videoCaption = directVideoCaption || sharedVideoCaption;
                       return (
                         <div key={msg.id} className="space-y-1">
                           <div className="flex justify-center">
@@ -806,45 +907,66 @@ export function MessagesPage() {
                                 }}
                               />
                             ) : null}
-                            <div
-                              className={`w-fit max-w-88 rounded-2xl text-sm leading-5 ${
-                                mine
-                                  ? "rounded-br-md bg-sky-500 text-white"
-                                  : "rounded-bl-md bg-zinc-800 text-zinc-100"
-                              } ${extractImageMessageUrl(msg.content) || extractVideoMessageUrl(msg.content) ? "overflow-hidden" : "px-3 py-2"}`}
-                            >
-                              {extractImageMessageUrl(msg.content) ? (
-                                <img
-                                  src={extractImageMessageUrl(msg.content)}
-                                  alt="Ảnh đã gửi"
-                                  className="max-h-72 w-full max-w-72 rounded-xl object-cover"
-                                  referrerPolicy="no-referrer"
-                                  loading="lazy"
-                                />
-                              ) : extractVideoMessageUrl(msg.content) ? (
-                                <button
-                                  type="button"
-                                  onClick={() => setActiveVideoViewerUrl(extractVideoMessageUrl(msg.content))}
-                                  className="relative block cursor-pointer overflow-hidden rounded-xl bg-black"
-                                  aria-label="Mở video"
-                                >
-                                  <video
-                                    src={extractVideoMessageUrl(msg.content)}
-                                    className="h-44 w-36 object-cover"
-                                    preload="metadata"
-                                    muted
-                                    playsInline
-                                  />
-                                  <span className="absolute inset-0 flex items-center justify-center bg-black/10">
-                                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white">
-                                      <IoPlay className="ml-0.5 h-5 w-5" aria-hidden />
+                            {videoUrl || sharedVideoId ? (
+                              <div className={`w-fit max-w-88 ${mine ? "ml-auto" : "mr-auto"}`}>
+                                {videoUrl ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => setActiveVideoViewerUrl(videoUrl)}
+                                    className="relative block cursor-pointer overflow-hidden rounded-xl bg-black"
+                                    aria-label="Mở video"
+                                  >
+                                    <video
+                                      src={videoUrl}
+                                      className="h-44 w-36 object-cover"
+                                      preload="metadata"
+                                      muted
+                                      playsInline
+                                    />
+                                    <span className="absolute inset-0 flex items-center justify-center bg-black/10">
+                                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white">
+                                        <IoPlay className="ml-0.5 h-5 w-5" aria-hidden />
+                                      </span>
                                     </span>
-                                  </span>
-                                </button>
-                              ) : (
-                                <p className="whitespace-pre-wrap wrap-break-word">{msg.content}</p>
-                              )}
-                            </div>
+                                  </button>
+                                ) : (
+                                  <div className="rounded-xl bg-zinc-900 px-3 py-2 text-xs text-zinc-300">
+                                    Đang tải preview video...
+                                  </div>
+                                )}
+                                {videoCaption ? (
+                                  <div
+                                    className={`mt-1 w-fit max-w-88 rounded-2xl px-3 py-2 text-sm leading-5 ${
+                                      mine
+                                        ? "rounded-br-md bg-sky-500 text-white"
+                                        : "rounded-bl-md bg-zinc-800 text-zinc-100"
+                                    } ${mine ? "ml-auto" : "mr-auto"}`}
+                                  >
+                                    <p className="whitespace-pre-wrap wrap-break-word">{videoCaption}</p>
+                                  </div>
+                                ) : null}
+                              </div>
+                            ) : (
+                              <div
+                                className={`w-fit max-w-88 rounded-2xl text-sm leading-5 ${
+                                  mine
+                                    ? "rounded-br-md bg-sky-500 text-white"
+                                    : "rounded-bl-md bg-zinc-800 text-zinc-100"
+                                } ${imageUrl ? "overflow-hidden" : "px-3 py-2"}`}
+                              >
+                                {imageUrl ? (
+                                  <img
+                                    src={imageUrl}
+                                    alt="Ảnh đã gửi"
+                                    className="max-h-72 w-full max-w-72 rounded-xl object-cover"
+                                    referrerPolicy="no-referrer"
+                                    loading="lazy"
+                                  />
+                                ) : (
+                                  <p className="whitespace-pre-wrap wrap-break-word">{msg.content}</p>
+                                )}
+                              </div>
+                            )}
                             {mine ? (
                               <img
                                 src={user?.avatarUrl || DEFAULT_AVATAR}
@@ -998,7 +1120,7 @@ export function MessagesPage() {
               </div>
             ) : null}
             <div className={pendingPreviewWrapClass}>
-              <div className={`max-h-[360px] ${pendingGridDisplayClass} ${pendingGridColsClass} ${pendingGridJustifyClass} gap-2 overflow-y-auto`}>
+              <div className={`scrollbar-none max-h-[360px] ${pendingGridDisplayClass} ${pendingGridColsClass} ${pendingGridJustifyClass} gap-2 overflow-y-auto`}>
                 {[...pendingMediaItems]
                   .sort((a, b) => Number(a.selectionOrder) - Number(b.selectionOrder))
                   .map((item, index) => (
@@ -1075,13 +1197,37 @@ export function MessagesPage() {
             >
               <IoClose className="h-5 w-5" aria-hidden />
             </button>
-            <video
-              src={activeVideoViewerUrl}
-              controls
-              autoPlay
-              className="max-h-[78vh] w-full rounded-xl bg-black"
-              preload="metadata"
-            />
+            <div className="relative">
+              {!videoViewerReady || videoViewerBuffering ? (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-xl bg-[#070911]">
+                  <div className="h-10 w-10 rounded-full border-2 border-white/20 border-t-[#fe2c55] animate-spin" />
+                  <p className="text-sm font-medium text-zinc-300">Đang tải...</p>
+                </div>
+              ) : null}
+              <video
+                src={activeVideoViewerUrl}
+                autoPlay
+                controlsList="nodownload noplaybackrate nofullscreen noremoteplayback"
+                disablePictureInPicture
+                className={`watch-video-el max-h-[78vh] w-full rounded-xl ${videoViewerReady && !videoViewerBuffering ? "bg-transparent opacity-100" : "bg-zinc-900 opacity-0"} transition-opacity duration-200`}
+                preload="metadata"
+                onLoadedData={() => {
+                  setVideoViewerReady(true);
+                  setVideoViewerBuffering(false);
+                }}
+                onCanPlay={() => {
+                  setVideoViewerReady(true);
+                  setVideoViewerBuffering(false);
+                }}
+                onPlaying={() => setVideoViewerBuffering(false)}
+                onWaiting={() => setVideoViewerBuffering(true)}
+                onStalled={() => setVideoViewerBuffering(true)}
+                onError={() => {
+                  setVideoViewerReady(true);
+                  setVideoViewerBuffering(false);
+                }}
+              />
+            </div>
           </div>
         </div>
       ) : null}

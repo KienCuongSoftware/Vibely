@@ -72,4 +72,10 @@ public class ChatController {
         chatService.rejectMessageRequest(authentication.getName(), conversationId);
         return ApiResponse.success(null);
     }
+
+    @PostMapping("/conversations/{conversationId}/delete")
+    public ApiResponse<Void> deleteConversation(Authentication authentication, @PathVariable Long conversationId) {
+        chatService.deleteConversationForMe(authentication.getName(), conversationId);
+        return ApiResponse.success(null);
+    }
 }

@@ -6,8 +6,11 @@ import com.vibely.backend.interaction.FollowRepository;
 import com.vibely.backend.user.User;
 import com.vibely.backend.user.UserRepository;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -58,14 +61,16 @@ public class ChatService {
 
         ConversationEntity conversation = conversationRepository
             .findDirectConversationBetweenUsers(meId, peerId)
+            .stream()
+            .sorted(Comparator
+                .comparing(ConversationEntity::getLastMessageAt, Comparator.nullsLast(Comparator.reverseOrder()))
+                .thenComparing(ConversationEntity::getId, Comparator.nullsLast(Comparator.reverseOrder())))
+            .filter(candidate -> participantRepository
+                .findByConversationAndUser(candidate, me)
+                .map(participant -> participant.getHiddenAt() == null)
+                .orElse(false))
+            .findFirst()
             .orElseGet(() -> createDirectConversation(me, peer));
-        ConversationParticipantEntity mine = participantRepository
-            .findByConversationAndUser(conversation, me)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy thành viên hội thoại"));
-        if (mine.getHiddenAt() != null) {
-            mine.setHiddenAt(null);
-            participantRepository.save(mine);
-        }
 
         return toConversationResponse(conversation, me);
     }
@@ -81,8 +86,14 @@ public class ChatService {
             .sorted(Comparator.comparing(ChatConversationResponse::lastMessageAt,
                 Comparator.nullsLast(Comparator.reverseOrder())))
             .toList();
-
-        return new ChatConversationListResponse(items);
+        Map<String, ChatConversationResponse> deduped = new LinkedHashMap<>();
+        for (ChatConversationResponse item : items) {
+            String key = item.direct()
+                ? "direct:" + String.valueOf(item.peerUserId())
+                : "group:" + String.valueOf(item.id());
+            deduped.putIfAbsent(key, item);
+        }
+        return new ChatConversationListResponse(new ArrayList<>(deduped.values()));
     }
 
     @Transactional(readOnly = true)
@@ -170,6 +181,49 @@ public class ChatService {
         mine.setHiddenAt(LocalDateTime.now());
         mine.setLastReadAt(LocalDateTime.now());
         participantRepository.save(mine);
+    }
+
+    @Transactional
+    public void deleteConversationForMe(String email, Long conversationId) {
+        User me = findUserByEmail(email);
+        ConversationEntity conversation = findMemberConversation(conversationId, me);
+        LocalDateTime now = LocalDateTime.now();
+        ConversationParticipantEntity mine = requireParticipant(conversation, me);
+        mine.setHiddenAt(now);
+        mine.setLastReadAt(now);
+        participantRepository.save(mine);
+
+        if (!conversation.isDirect()) {
+            return;
+        }
+        long meId = requireUserId(me);
+        List<ConversationParticipantEntity> participants = participantRepository.findByConversation(conversation);
+        User peer = participants.stream()
+            .map(ConversationParticipantEntity::getUser)
+            .filter(u -> requireUserId(u) != meId)
+            .findFirst()
+            .orElse(null);
+        if (peer == null) {
+            return;
+        }
+        long peerId = requireUserId(peer);
+        List<ConversationParticipantEntity> myVisibleParticipants =
+            participantRepository.findByUserAndHiddenAtIsNullOrderByConversation_LastMessageAtDesc(me);
+        for (ConversationParticipantEntity participant : myVisibleParticipants) {
+            ConversationEntity current = participant.getConversation();
+            if (current == null || !current.isDirect()) continue;
+            List<ConversationParticipantEntity> currentParticipants = participantRepository.findByConversation(current);
+            User currentPeer = currentParticipants.stream()
+                .map(ConversationParticipantEntity::getUser)
+                .filter(u -> requireUserId(u) != meId)
+                .findFirst()
+                .orElse(null);
+            if (currentPeer == null) continue;
+            if (requireUserId(currentPeer) != peerId) continue;
+            participant.setHiddenAt(now);
+            participant.setLastReadAt(now);
+            participantRepository.save(participant);
+        }
     }
 
     @Transactional

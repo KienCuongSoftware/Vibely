@@ -6,6 +6,7 @@ import {
   FaWhatsapp,
 } from "react-icons/fa";
 import {
+  IoCheckmarkCircle,
   IoChevronBack,
   IoChevronForward,
   IoClose,
@@ -24,6 +25,7 @@ import {
 } from "../utils/shareLinks";
 
 const DEFAULT_AVATAR = "/images/users/default-avatar.jpeg";
+const SHARED_VIDEO_ID_PREFIX = "__vshare__:";
 
 const SCROLL_ARROW =
   "share-modal-scroll-arrow pointer-events-none absolute top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-[#3a3a3a]/95 text-2xl text-white shadow-lg opacity-0 transition-all duration-200 group-hover/share-modal:pointer-events-auto group-hover/share-modal:opacity-100 hover:bg-[#505050] hover:brightness-110";
@@ -135,6 +137,35 @@ function FriendChip({ friend, onClick }) {
   );
 }
 
+function ConversationRecipientChip({ row, selected, onToggle, disabled = false }) {
+  const name = String(row?.peerDisplayName ?? row?.peerUsername ?? "Người dùng").trim() || "Người dùng";
+  const avatar = String(row?.peerAvatarUrl ?? "").trim() || DEFAULT_AVATAR;
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onToggle}
+      className={`group relative flex w-[92px] shrink-0 flex-col items-center gap-2 rounded-xl px-1.5 py-2.5 transition-colors ${
+        disabled
+          ? "cursor-not-allowed opacity-50"
+          : "cursor-pointer hover:bg-white/10"
+      }`}
+    >
+      <span className={`relative h-[68px] w-[68px] overflow-hidden rounded-full bg-zinc-700 ring-1 transition ${disabled ? "" : "group-hover:brightness-110"} ${selected ? "ring-pink-500/80" : "ring-white/10"} ${disabled ? "" : "group-hover:ring-white/25"}`}>
+        <img src={avatar} alt="" className="h-full w-full object-cover" />
+      </span>
+      {selected ? (
+        <span className="absolute right-3 top-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-pink-500 text-white">
+          <IoCheckmarkCircle className="h-4 w-4" aria-hidden />
+        </span>
+      ) : null}
+      <span className="max-w-full truncate text-center text-xs text-zinc-100 transition group-hover:text-white">
+        {name}
+      </span>
+    </button>
+  );
+}
+
 export function VideoShareModal({
   open,
   onClose,
@@ -146,6 +177,9 @@ export function VideoShareModal({
 }) {
   const videoId = videoPublicId ?? legacyVideoId;
   const [friends, setFriends] = useState([]);
+  const [chatRecipients, setChatRecipients] = useState([]);
+  const [selectedConversationIds, setSelectedConversationIds] = useState([]);
+  const [directNote, setDirectNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState("");
 
@@ -161,6 +195,8 @@ export function VideoShareModal({
   useEffect(() => {
     if (!open) {
       setToast("");
+      setSelectedConversationIds([]);
+      setDirectNote("");
       return undefined;
     }
     const onKey = (e) => {
@@ -178,6 +214,7 @@ export function VideoShareModal({
   useEffect(() => {
     if (!open || !token) {
       setFriends([]);
+      setChatRecipients([]);
       return undefined;
     }
     let cancelled = false;
@@ -190,6 +227,25 @@ export function VideoShareModal({
       })
       .catch(() => {
         if (!cancelled) setFriends([]);
+      });
+    apiClient
+      .getChatConversations(token)
+      .then((data) => {
+        if (cancelled) return;
+        const rows = Array.isArray(data?.items) ? data.items : [];
+        setChatRecipients(
+          rows.filter((row) => {
+            if (Number(row?.id) <= 0) return false;
+            const hasRealMessage = Boolean(
+              (typeof row?.lastMessage === "string" && row.lastMessage.trim()) ||
+              row?.lastMessageAt,
+            );
+            return hasRealMessage;
+          }),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setChatRecipients([]);
       });
     return () => {
       cancelled = true;
@@ -271,11 +327,46 @@ export function VideoShareModal({
     await copyText(snippet, "embed");
   }, [embedUrl, copyText]);
 
+  const sendToSelectedChats = useCallback(async () => {
+    if (!token || selectedConversationIds.length === 0 || busy) return;
+    setBusy(true);
+    try {
+      const note = String(directNote ?? "").trim();
+      const normalizedVideoId = String(videoId ?? "").trim();
+      if (!normalizedVideoId) return;
+      const payload = note
+        ? `${SHARED_VIDEO_ID_PREFIX}${normalizedVideoId}\n${note}`
+        : `${SHARED_VIDEO_ID_PREFIX}${normalizedVideoId}`;
+      const results = await Promise.allSettled(
+        selectedConversationIds.map((conversationId) =>
+          apiClient.sendChatMessage(conversationId, payload, token),
+        ),
+      );
+      const successCount = results.filter((item) => item.status === "fulfilled").length;
+      if (successCount === 0) {
+        throw new Error("Không gửi được vào tin nhắn");
+      }
+      await recordShare("direct");
+      showToast(
+        successCount === selectedConversationIds.length
+          ? "Đã gửi vào tin nhắn"
+          : `Đã gửi ${successCount}/${selectedConversationIds.length} cuộc trò chuyện`,
+      );
+      setSelectedConversationIds([]);
+      setDirectNote("");
+      onClose?.();
+    } catch {
+      showToast("Không gửi được vào tin nhắn");
+    } finally {
+      setBusy(false);
+    }
+  }, [token, selectedConversationIds, busy, directNote, videoId, recordShare, showToast, onClose]);
+
   if (!open || !videoId) return null;
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-end justify-center bg-black/55 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-120 flex items-end justify-center bg-black/55 p-0 sm:items-center sm:p-4"
       role="presentation"
       onClick={onClose}
     >
@@ -307,79 +398,130 @@ export function VideoShareModal({
           </button>
         </header>
 
-        {friends.length > 0 ? (
-          <div className="border-b border-white/10 px-3 py-5">
-            <ShareModalScrollRow className="px-1">
-              {friends.map((f) => (
-                <FriendChip
-                  key={f.id ?? f.username}
-                  friend={f}
-                  onClick={() => void copyText(watchUrl, "copy")}
-                />
-              ))}
+        {chatRecipients.length > 0 ? (
+          <div className="border-b border-white/10 px-3 py-3">
+            <ShareModalScrollRow className="mt-2 px-1">
+              {chatRecipients.map((row) => {
+                const cid = Number(row.id);
+                const selected = selectedConversationIds.includes(cid);
+                const canSend = Boolean(row?.canSendMessage ?? true);
+                return (
+                  <ConversationRecipientChip
+                    key={cid}
+                    row={row}
+                    selected={selected}
+                    disabled={!canSend}
+                    onToggle={() => {
+                      if (!canSend) {
+                        showToast("Cuộc trò chuyện này hiện chưa thể gửi");
+                        return;
+                      }
+                      setSelectedConversationIds((prev) =>
+                        selected ? prev.filter((id) => id !== cid) : [...prev, cid],
+                      );
+                    }}
+                  />
+                );
+              })}
             </ShareModalScrollRow>
           </div>
         ) : null}
 
-        <div className="px-3 py-5">
-          <ShareModalScrollRow className="px-1">
-            <ShareCircleButton
-              label="Sao chép"
-              bgClass="bg-[#0075DC]"
-              icon={<IoLink className="text-[30px]" aria-hidden />}
-              disabled={busy}
-              onClick={() => void copyText(watchUrl, "copy")}
-            />
-            <ShareCircleButton
-              label="WhatsApp"
-              bgClass="bg-[#25D366]"
-              icon={<FaWhatsapp className="text-[28px]" aria-hidden />}
-              disabled={busy}
-              onClick={() => void openPlatform("whatsapp")}
-            />
-            <ShareCircleButton
-              label="Facebook"
-              bgClass="bg-[#1877F2]"
-              icon={<FaFacebookF className="text-[26px]" aria-hidden />}
-              disabled={busy}
-              onClick={() => void openPlatform("facebook")}
-            />
-            <ShareCircleButton
-              label="Telegram"
-              bgClass="bg-[#29A9EA]"
-              icon={<FaTelegramPlane className="text-[26px]" aria-hidden />}
-              disabled={busy}
-              onClick={() => void openPlatform("telegram")}
-            />
-            <ShareCircleButton
-              label="X"
-              bgClass="bg-black ring-1 ring-zinc-600"
-              icon={<SiX className="text-[22px]" aria-hidden />}
-              disabled={busy}
-              onClick={() => void openPlatform("twitter")}
-            />
-            <ShareCircleButton
-              label="LinkedIn"
-              bgClass="bg-[#0A66C2]"
-              icon={<FaLinkedinIn className="text-[24px]" aria-hidden />}
-              disabled={busy}
-              onClick={() => void openPlatform("linkedin")}
-            />
-            <ShareCircleButton
-              label="Email"
-              bgClass="bg-[#5B9BD5]"
-              icon={<IoMailOutline className="text-[30px]" aria-hidden />}
-              disabled={busy}
-              onClick={() => void openPlatform("email")}
-            />
-            <ShareCircleButton
-              label="Nhúng"
-              bgClass="bg-[#20D5EC]"
-              icon={<IoCodeSlash className="text-[30px] text-black" aria-hidden />}
-              disabled={busy}
-              onClick={() => void handleEmbed()}
-            />
-          </ShareModalScrollRow>
+        <div className="min-h-[188px] px-3 py-5">
+          {selectedConversationIds.length === 0 ? (
+            <>
+              {friends.length > 0 ? (
+                <div className="mb-3 border-b border-white/10 pb-3">
+                  <ShareModalScrollRow className="px-1">
+                    {friends.map((f) => (
+                      <FriendChip
+                        key={f.id ?? f.username}
+                        friend={f}
+                        onClick={() => void copyText(watchUrl, "copy")}
+                      />
+                    ))}
+                  </ShareModalScrollRow>
+                </div>
+              ) : null}
+              <ShareModalScrollRow className="px-1">
+                <ShareCircleButton
+                  label="Sao chép"
+                  bgClass="bg-[#0075DC]"
+                  icon={<IoLink className="text-[30px]" aria-hidden />}
+                  disabled={busy}
+                  onClick={() => void copyText(watchUrl, "copy")}
+                />
+                <ShareCircleButton
+                  label="WhatsApp"
+                  bgClass="bg-[#25D366]"
+                  icon={<FaWhatsapp className="text-[28px]" aria-hidden />}
+                  disabled={busy}
+                  onClick={() => void openPlatform("whatsapp")}
+                />
+                <ShareCircleButton
+                  label="Facebook"
+                  bgClass="bg-[#1877F2]"
+                  icon={<FaFacebookF className="text-[26px]" aria-hidden />}
+                  disabled={busy}
+                  onClick={() => void openPlatform("facebook")}
+                />
+                <ShareCircleButton
+                  label="Telegram"
+                  bgClass="bg-[#29A9EA]"
+                  icon={<FaTelegramPlane className="text-[26px]" aria-hidden />}
+                  disabled={busy}
+                  onClick={() => void openPlatform("telegram")}
+                />
+                <ShareCircleButton
+                  label="X"
+                  bgClass="bg-black ring-1 ring-zinc-600"
+                  icon={<SiX className="text-[22px]" aria-hidden />}
+                  disabled={busy}
+                  onClick={() => void openPlatform("twitter")}
+                />
+                <ShareCircleButton
+                  label="LinkedIn"
+                  bgClass="bg-[#0A66C2]"
+                  icon={<FaLinkedinIn className="text-[24px]" aria-hidden />}
+                  disabled={busy}
+                  onClick={() => void openPlatform("linkedin")}
+                />
+                <ShareCircleButton
+                  label="Email"
+                  bgClass="bg-[#5B9BD5]"
+                  icon={<IoMailOutline className="text-[30px]" aria-hidden />}
+                  disabled={busy}
+                  onClick={() => void openPlatform("email")}
+                />
+                <ShareCircleButton
+                  label="Nhúng"
+                  bgClass="bg-[#20D5EC]"
+                  icon={<IoCodeSlash className="text-[30px] text-black" aria-hidden />}
+                  disabled={busy}
+                  onClick={() => void handleEmbed()}
+                />
+              </ShareModalScrollRow>
+            </>
+          ) : (
+            <div className="flex h-full min-h-[148px] flex-col">
+              <input
+                value={directNote}
+                onChange={(e) => setDirectNote(e.target.value)}
+                placeholder="Viết một tin nhắn..."
+                className="h-11 w-full rounded-none border-0 bg-transparent px-0 text-sm text-zinc-200 placeholder:text-zinc-500 outline-none"
+              />
+              <div className="mt-auto flex justify-end pt-3">
+                <button
+                  type="button"
+                  onClick={() => void sendToSelectedChats()}
+                  disabled={busy}
+                  className="h-10 min-w-[56px] cursor-pointer rounded-md bg-[#fe2c55] px-3 text-sm font-semibold text-white transition hover:bg-[#db2449] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Gửi
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {toast ? (
