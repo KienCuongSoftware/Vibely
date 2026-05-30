@@ -1,5 +1,7 @@
 package com.vibely.backend.explore.service;
 
+import com.vibely.backend.discovery.service.ExploreDiscoveryEngine;
+import com.vibely.backend.discovery.service.RelatedVideoDiscoveryService;
 import com.vibely.backend.explore.CategoryRepository;
 import com.vibely.backend.explore.ExploreCursorCodec;
 import com.vibely.backend.explore.ExploreQueryRepository;
@@ -30,6 +32,8 @@ public class ExploreService {
     private final VideoBookmarkRepository bookmarkRepository;
     private final VideoViewRepository viewRepository;
     private final ExploreCacheService cacheService;
+    private final ExploreDiscoveryEngine exploreDiscoveryEngine;
+    private final RelatedVideoDiscoveryService relatedVideoDiscoveryService;
 
     public ExploreService(
         ExploreQueryRepository exploreQueryRepository,
@@ -39,7 +43,9 @@ public class ExploreService {
         CommentRepository commentRepository,
         VideoBookmarkRepository bookmarkRepository,
         VideoViewRepository viewRepository,
-        ExploreCacheService cacheService
+        ExploreCacheService cacheService,
+        ExploreDiscoveryEngine exploreDiscoveryEngine,
+        RelatedVideoDiscoveryService relatedVideoDiscoveryService
     ) {
         this.exploreQueryRepository = exploreQueryRepository;
         this.categoryRepository = categoryRepository;
@@ -49,6 +55,8 @@ public class ExploreService {
         this.bookmarkRepository = bookmarkRepository;
         this.viewRepository = viewRepository;
         this.cacheService = cacheService;
+        this.exploreDiscoveryEngine = exploreDiscoveryEngine;
+        this.relatedVideoDiscoveryService = relatedVideoDiscoveryService;
     }
 
     @Transactional(readOnly = true)
@@ -61,7 +69,9 @@ public class ExploreService {
     @Transactional(readOnly = true)
     public ExplorePageDto trending(String cursor, int size) {
         return cachedPage("trending:" + (cursor == null ? "first" : cursor), () -> toPage(
-            exploreQueryRepository.findTrending(score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1)),
+            exploreDiscoveryEngine.isHybridEnabled()
+                ? exploreDiscoveryEngine.trending(score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1))
+                : exploreQueryRepository.findTrending(score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1)),
             capSize(size)
         ));
     }
@@ -70,7 +80,9 @@ public class ExploreService {
     public ExplorePageDto category(String slug, String cursor, int size) {
         String normalized = String.valueOf(slug == null ? "" : slug).trim().toLowerCase();
         return cachedPage("category:" + normalized + ":" + (cursor == null ? "first" : cursor), () -> toPage(
-            exploreQueryRepository.findByCategorySlug(normalized, score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1)),
+            exploreDiscoveryEngine.isHybridEnabled()
+                ? exploreDiscoveryEngine.category(normalized, score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1))
+                : exploreQueryRepository.findByCategorySlug(normalized, score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1)),
             capSize(size)
         ));
     }
@@ -78,15 +90,26 @@ public class ExploreService {
     @Transactional(readOnly = true)
     public ExplorePageDto search(String q, String cursor, int size) {
         String query = String.valueOf(q == null ? "" : q).trim();
-        return toPage(exploreQueryRepository.search(query, score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1)), capSize(size));
+        return toPage(
+            exploreDiscoveryEngine.isHybridEnabled()
+                ? exploreDiscoveryEngine.search(query, score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1))
+                : exploreQueryRepository.search(query, score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1)),
+            capSize(size)
+        );
     }
 
     @Transactional(readOnly = true)
     public ExplorePageDto related(String publicId, int size) {
-        return cachedPage("related:" + publicId, () -> toPage(
-            exploreQueryRepository.related(java.util.UUID.fromString(publicId), PageRequest.of(0, capSize(size) + 1)),
-            capSize(size)
-        ));
+        return cachedPage("related:" + publicId, () -> {
+            var hybrid = relatedVideoDiscoveryService.related(java.util.UUID.fromString(publicId), capSize(size) + 1);
+            if (!hybrid.isEmpty()) {
+                return toPage(hybrid, capSize(size));
+            }
+            return toPage(
+                exploreQueryRepository.related(java.util.UUID.fromString(publicId), PageRequest.of(0, capSize(size) + 1)),
+                capSize(size)
+            );
+        });
     }
 
     private ExplorePageDto toPage(List<ExploreVideoProjection> rows, int size) {

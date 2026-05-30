@@ -73,4 +73,27 @@ public interface VideoViewRepository extends JpaRepository<VideoViewEntity, Long
         @Param("videoId") Long videoId,
         @Param("from") LocalDateTime from
     );
+
+    @Query("SELECT COALESCE(SUM(vv.watchedMs), 0) FROM VideoViewEntity vv WHERE vv.video.id = :videoId")
+    long sumWatchedMsByVideoId(@Param("videoId") Long videoId);
+
+    @Query("""
+        SELECT COALESCE(AVG(
+            CASE WHEN vv.durationMs IS NOT NULL AND vv.durationMs > 0
+                THEN LEAST(1.0, vv.watchedMs * 1.0 / vv.durationMs)
+                ELSE NULL END
+        ), 0)
+        FROM VideoViewEntity vv
+        WHERE vv.video.id = :videoId
+        """)
+    double avgCompletionRateByVideoId(@Param("videoId") Long videoId);
+
+    @Query("""
+        SELECT CASE WHEN COUNT(vv) <= 1 THEN 0
+            ELSE LEAST(1.0, (COUNT(vv) - COUNT(DISTINCT COALESCE(vv.watchedMs, 0))) * 1.0 / COUNT(vv))
+            END
+        FROM VideoViewEntity vv
+        WHERE vv.video.id = :videoId
+        """)
+    double rewatchRateByVideoId(@Param("videoId") Long videoId);
 }

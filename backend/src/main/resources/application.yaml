@@ -76,6 +76,31 @@ app:
       sample-rate-hz: ${APP_PROCESSING_AUDIO_SAMPLE_RATE:48000}
     worker:
       enabled: ${APP_PROCESSING_WORKER_ENABLED:false}
+  discovery:
+    enabled: ${DISCOVERY_ENABLED:true}
+    open-ai-enabled: ${DISCOVERY_OPENAI_ENABLED:true}
+    open-ai-api-key: ${OPENAI_API_KEY:}
+    open-ai-base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+    understanding-model: ${DISCOVERY_OPENAI_MODEL:gpt-4o-mini}
+    embedding-model: ${DISCOVERY_EMBEDDING_MODEL:text-embedding-3-small}
+    embedding-dimensions: ${DISCOVERY_EMBEDDING_DIMENSIONS:1536}
+    async-indexing: ${DISCOVERY_ASYNC_INDEXING:true}
+    hybrid-explore: ${DISCOVERY_HYBRID_EXPLORE:true}
+    hybrid-related: ${DISCOVERY_HYBRID_RELATED:true}
+    hybrid-search: ${DISCOVERY_HYBRID_SEARCH:true}
+    embedding-similarity-weight: ${DISCOVERY_EMBEDDING_WEIGHT:0.70}
+    topic-similarity-weight: ${DISCOVERY_TOPIC_WEIGHT:0.30}
+    hashtag-weight-cap: ${DISCOVERY_HASHTAG_WEIGHT_CAP:0.25}
+    ranking:
+      watch-time: ${DISCOVERY_RANK_WATCH_TIME:0.35}
+      completion: ${DISCOVERY_RANK_COMPLETION:0.20}
+      share: ${DISCOVERY_RANK_SHARE:0.15}
+      save: ${DISCOVERY_RANK_SAVE:0.10}
+      comment: ${DISCOVERY_RANK_COMMENT:0.10}
+      follow: ${DISCOVERY_RANK_FOLLOW:0.05}
+      freshness: ${DISCOVERY_RANK_FRESHNESS:0.05}
+  explore:
+    ranking-recompute-interval-ms: ${EXPLORE_RANKING_RECOMPUTE_MS:300000}
 ---
 spring:
   config:

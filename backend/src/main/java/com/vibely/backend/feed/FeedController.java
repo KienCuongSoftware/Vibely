@@ -40,6 +40,15 @@ public class FeedController {
         );
     }
 
+    @GetMapping("/for-you")
+    public ApiResponse<FeedPageResponse> forYou(
+        Authentication authentication,
+        @RequestParam(defaultValue = "20") int size
+    ) {
+        String viewerEmail = authentication != null ? authentication.getName() : null;
+        return ApiResponse.success(videoService.getForYouFeed(viewerEmail, Math.min(size, 50)));
+    }
+
     @GetMapping("/following")
     public ApiResponse<FeedPageResponse> following(
         Authentication authentication,

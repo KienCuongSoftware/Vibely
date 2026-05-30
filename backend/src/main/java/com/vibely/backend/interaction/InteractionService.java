@@ -3,6 +3,8 @@ package com.vibely.backend.interaction;
 import com.vibely.backend.auth.UserAvatarResolver;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.discovery.service.UserInterestSignalProcessor;
+import com.vibely.backend.discovery.service.VideoEngagementStatsService;
 import com.vibely.backend.explore.service.ExploreCacheService;
 import com.vibely.backend.explore.service.ExploreRankingService;
 import com.vibely.backend.user.User;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +35,8 @@ public class InteractionService {
     private final UserAvatarResolver userAvatarResolver;
     private final ExploreRankingService exploreRankingService;
     private final ExploreCacheService exploreCacheService;
+    private final ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor;
+    private final ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService;
 
     public InteractionService(
         UserRepository userRepository,
@@ -42,7 +47,9 @@ public class InteractionService {
         FollowRepository followRepository,
         UserAvatarResolver userAvatarResolver,
         ExploreRankingService exploreRankingService,
-        ExploreCacheService exploreCacheService
+        ExploreCacheService exploreCacheService,
+        ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor,
+        ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService
     ) {
         this.userRepository = userRepository;
         this.videoService = videoService;
@@ -53,6 +60,8 @@ public class InteractionService {
         this.userAvatarResolver = userAvatarResolver;
         this.exploreRankingService = exploreRankingService;
         this.exploreCacheService = exploreCacheService;
+        this.userInterestSignalProcessor = userInterestSignalProcessor;
+        this.videoEngagementStatsService = videoEngagementStatsService;
     }
 
     public void likeVideo(String email, UUID videoPublicId) {
@@ -66,6 +75,7 @@ public class InteractionService {
         like.setUser(user);
         like.setVideo(video);
         likeRepository.save(like);
+        userInterestSignalProcessor.ifAvailable(p -> p.onLike(user.getId(), video));
         refreshExploreFor(video);
     }
 
@@ -88,6 +98,7 @@ public class InteractionService {
         row.setUser(user);
         row.setVideo(video);
         videoBookmarkRepository.save(row);
+        userInterestSignalProcessor.ifAvailable(p -> p.onSave(user.getId(), video));
     }
 
     public void unbookmarkVideo(String email, UUID videoPublicId) {
@@ -125,6 +136,7 @@ public class InteractionService {
             comment.setParentComment(parent);
         }
         CommentEntity saved = commentRepository.save(comment);
+        userInterestSignalProcessor.ifAvailable(p -> p.onComment(user.getId(), video));
         refreshExploreFor(video);
         return toCommentResponse(saved);
     }
@@ -292,6 +304,7 @@ public class InteractionService {
 
     private void refreshExploreFor(Video video) {
         exploreRankingService.recomputeVideo(video);
+        videoEngagementStatsService.ifAvailable(s -> s.recompute(video));
         exploreCacheService.evictByPrefix("trending");
         exploreCacheService.evictByPrefix("category:");
         exploreCacheService.evictByPrefix("related:" + video.getPublicId());

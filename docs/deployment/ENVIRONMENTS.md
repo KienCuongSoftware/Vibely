@@ -16,6 +16,8 @@
 | `app.antibot.kafka-enabled` | false | true |
 | `spring.jpa.show-sql` | true | false |
 | JWT secret | dev | Secrets Manager |
+| `OPENAI_API_KEY` | `application-local.yaml` or env | Secrets Manager |
+| `DISCOVERY_OPENAI_ENABLED` | `true` | `true` |
 
 ## 3–15.
 

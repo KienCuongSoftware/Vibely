@@ -88,6 +88,9 @@ public class Video {
     @Column(name = "explore_score_updated_at")
     private LocalDateTime exploreScoreUpdatedAt;
 
+    @Column(name = "ranking_score")
+    private Double rankingScore;
+
     @PrePersist
     void prePersist() {
         if (publicId == null) {
@@ -255,5 +258,13 @@ public class Video {
 
     public void setExploreScoreUpdatedAt(LocalDateTime exploreScoreUpdatedAt) {
         this.exploreScoreUpdatedAt = exploreScoreUpdatedAt;
+    }
+
+    public Double getRankingScore() {
+        return rankingScore;
+    }
+
+    public void setRankingScore(Double rankingScore) {
+        this.rankingScore = rankingScore;
     }
 }

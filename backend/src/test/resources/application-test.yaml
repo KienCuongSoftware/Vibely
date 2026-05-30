@@ -24,3 +24,7 @@ app:
       enabled: false
   cors:
     allowed-origins: http://localhost:5173
+  discovery:
+    enabled: true
+    open-ai-enabled: false
+    open-ai-api-key:

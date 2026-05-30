@@ -482,8 +482,16 @@ Create a PostgreSQL database named `vibely` (or configure `DB_URL`).
 | `SMTP_HOST` / `SMTP_PORT`         | SMTP server               | Gmail `587` when mail enabled         |
 | `SMTP_USERNAME` / `SMTP_PASSWORD` | SMTP credentials          | —                                     |
 | `ANTIBOT_HMAC_SECRET`             | Captcha/token signing     | dev default in `application-dev.yaml` |
+| `OPENAI_API_KEY`                  | OpenAI key for discovery  | — (set in `application-local.yaml`)   |
+| `DISCOVERY_OPENAI_ENABLED`        | Enable OpenAI indexing    | `true`                                |
 
-Merge mail/OAuth/S3 secrets into `backend/src/main/resources/application-local.yaml` (gitignored; see `application-dev.yaml` for keys).
+Merge mail/OAuth/S3/discovery secrets into `backend/src/main/resources/application-local.yaml` (gitignored; see `application-dev.yaml` for keys).
+
+```bash
+# Discovery (content understanding on upload/edit)
+OPENAI_API_KEY=sk-...
+DISCOVERY_OPENAI_ENABLED=true
+```
 
 **Engineering docs:** [docs/README.md](docs/README.md)
 

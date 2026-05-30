@@ -2,6 +2,7 @@ package com.vibely.backend.video;
 
 import com.vibely.backend.user.User;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -141,5 +142,28 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         @Param("cId") Long cId,
         Pageable pageable
     );
+
+    @Query("""
+        select v.id from Video v
+        where v.author.id = :authorId and v.status = :status
+        order by v.createdAt desc
+        """)
+    List<Long> findTopIdsByAuthorAndStatus(
+        @Param("authorId") Long authorId,
+        @Param("status") VideoStatus status,
+        Pageable pageable
+    );
+
+    @Query("""
+        select v.id from Video v
+        where v.status = :status
+        order by coalesce(v.rankingScore, v.exploreScore) desc, v.createdAt desc
+        """)
+    List<Long> findTopRankingVideoIds(@Param("status") VideoStatus status, Pageable pageable);
+
+    @Query("""
+        select v from Video v join fetch v.author where v.id in :ids
+        """)
+    List<Video> findWithAuthorByIdIn(@Param("ids") Collection<Long> ids);
 }
 

@@ -6,3 +6,6 @@ spring:
 app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  discovery:
+    open-ai-enabled: ${DISCOVERY_OPENAI_ENABLED:true}
+    open-ai-api-key: ${OPENAI_API_KEY:}

@@ -22,8 +22,8 @@ import { CoverPickerModal } from '../components/CoverPickerModal'
 import { StudioLayout } from '../components/StudioLayout'
 import { useAuth } from '../state/useAuth'
 import { isVideoPublicId, normalizeVideoPublicId } from '../utils/videoPublicId.js'
+import { resolveUploadedFileLabel } from '../utils/videoFileLabel.js'
 
-const TITLE_MAX = 120
 const DESC_MAX = 1000
 
 function formatPreviewTime(seconds) {
@@ -43,7 +43,6 @@ export function StudioEditPostPage() {
 
   const [video, setVideo] = useState(null)
   const [savedSnapshot, setSavedSnapshot] = useState(null)
-  const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [thumbnailUrl, setThumbnailUrl] = useState('')
   const [loading, setLoading] = useState(true)
@@ -114,7 +113,6 @@ export function StudioEditPostPage() {
           thumbnailUrl: snapThumb,
         })
         setVideo(v)
-        setTitle(snapTitle)
         setDescription(snapDesc)
         setThumbnailUrl(snapThumb)
       })
@@ -202,15 +200,13 @@ export function StudioEditPostPage() {
 
   const hasUnsavedChanges = useMemo(() => {
     if (!savedSnapshot) return false
-    const t = String(title ?? '').trim()
     const d = String(description ?? '').trim()
     const th = String(thumbnailUrl ?? '').trim()
     return (
-      t !== String(savedSnapshot.title ?? '').trim() ||
       d !== String(savedSnapshot.description ?? '').trim() ||
       th !== String(savedSnapshot.thumbnailUrl ?? '').trim()
     )
-  }, [title, description, thumbnailUrl, savedSnapshot])
+  }, [description, thumbnailUrl, savedSnapshot])
 
   const highlightTags = useCallback((text) => {
     const source = String(text ?? '')
@@ -228,11 +224,9 @@ export function StudioEditPostPage() {
     })
   }, [])
 
-  const previewCaption = useMemo(() => {
-    const d = String(description ?? '').trim()
-    if (d) return d
-    return String(title ?? '').trim()
-  }, [description, title])
+  const previewCaption = useMemo(() => String(description ?? '').trim(), [description])
+
+  const postHeaderLabel = useMemo(() => resolveUploadedFileLabel(video), [video])
 
   const musicLine = useMemo(() => {
     const a = String(video?.audioTitle ?? '').trim()
@@ -270,11 +264,8 @@ export function StudioEditPostPage() {
 
   const save = async () => {
     if (!token || !validId || !hasUnsavedChanges) return
-    const t = String(title ?? '').trim()
-    if (!t) {
-      setStatus('Tiêu đề không được để trống.')
-      return
-    }
+    const preservedTitle =
+      String(video?.title ?? savedSnapshot?.title ?? 'Video').trim() || 'Video'
     if (invalidMentions.length > 0) {
       setStatus('Chỉ được tag bạn bè đã follow lẫn nhau.')
       return
@@ -289,7 +280,7 @@ export function StudioEditPostPage() {
       await apiClient.updateVideo(
         publicId,
         {
-          title: t,
+          title: preservedTitle,
           description: String(description ?? '').trim() || null,
           thumbnailUrl: String(thumbnailUrl ?? '').trim() || null,
         },
@@ -380,16 +371,14 @@ export function StudioEditPostPage() {
                   <div className="flex flex-wrap items-start justify-between gap-3 p-4">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="truncate font-medium text-zinc-100">
-                          {String(title || video?.title || 'Video').trim() || 'Video'}
-                        </p>
+                        <p className="truncate font-medium text-zinc-100">{postHeaderLabel}</p>
                         <span className="shrink-0 rounded bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold text-zinc-300">
                           Đã đăng
                         </span>
                       </div>
                       <p className="mt-2 flex items-center gap-1.5 text-sm text-emerald-400">
                         <IoCheckmarkCircle className="text-lg" aria-hidden />
-                        Chỉnh sửa nội dung hiển thị (tiêu đề, mô tả, ảnh bìa)
+                        Chỉnh sửa nội dung hiển thị (mô tả, ảnh bìa)
                       </p>
                     </div>
                     <Link
@@ -404,21 +393,6 @@ export function StudioEditPostPage() {
 
                 <div>
                   <h2 className="text-xl font-bold text-white">Chi tiết</h2>
-
-                  <div className="mt-4">
-                    <label className="mb-2 block text-sm font-medium text-zinc-300">Tiêu đề</label>
-                    <input
-                      type="text"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      maxLength={TITLE_MAX}
-                      className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600"
-                      placeholder="Tiêu đề video"
-                    />
-                    <p className="mt-1 text-right text-[11px] text-zinc-500">
-                      {String(title).length}/{TITLE_MAX}
-                    </p>
-                  </div>
 
                   <div className="mt-4">
                     <label className="mb-2 block text-sm font-medium text-zinc-300">Mô tả</label>
@@ -591,7 +565,7 @@ export function StudioEditPostPage() {
                               </div>
                             ) : null}
                             <p className="mt-1 text-[11px] text-zinc-600">
-                              Tuỳ chọn riêng tư hiển thị để đồng bộ giao diện; API Vibely hiện chỉ lưu tiêu đề / mô tả /
+                              Tuỳ chọn riêng tư hiển thị để đồng bộ giao diện; API Vibely hiện chỉ lưu mô tả /
                               ảnh bìa.
                             </p>
                           </div>

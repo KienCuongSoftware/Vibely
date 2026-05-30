@@ -111,3 +111,6 @@ app:
     enabled: true
     frontend-success-url: http://localhost:5173/login
     frontend-failure-url: http://localhost:5173/login
+  discovery:
+    open-ai-enabled: ${DISCOVERY_OPENAI_ENABLED:true}
+    open-ai-api-key: ${OPENAI_API_KEY:sk-...}

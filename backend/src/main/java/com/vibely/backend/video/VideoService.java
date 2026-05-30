@@ -2,6 +2,10 @@ package com.vibely.backend.video;
 
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.discovery.service.RecommendationService;
+import com.vibely.backend.discovery.service.UserInterestSignalProcessor;
+import com.vibely.backend.discovery.service.VideoDiscoveryIndexer;
+import com.vibely.backend.discovery.service.VideoEngagementStatsService;
 import com.vibely.backend.explore.Hashtag;
 import com.vibely.backend.explore.HashtagRepository;
 import com.vibely.backend.explore.VideoCategory;
@@ -77,6 +81,10 @@ public class VideoService {
     private final HashtagRepository hashtagRepository;
     private final ExploreRankingService exploreRankingService;
     private final ExploreCacheService exploreCacheService;
+    private final ObjectProvider<VideoDiscoveryIndexer> videoDiscoveryIndexer;
+    private final ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService;
+    private final ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor;
+    private final ObjectProvider<RecommendationService> recommendationService;
 
     public VideoService(
         VideoRepository videoRepository,
@@ -96,7 +104,11 @@ public class VideoService {
         VideoHashtagRepository videoHashtagRepository,
         HashtagRepository hashtagRepository,
         ExploreRankingService exploreRankingService,
-        ExploreCacheService exploreCacheService
+        ExploreCacheService exploreCacheService,
+        ObjectProvider<VideoDiscoveryIndexer> videoDiscoveryIndexer,
+        ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService,
+        ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor,
+        ObjectProvider<RecommendationService> recommendationService
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
@@ -116,6 +128,10 @@ public class VideoService {
         this.hashtagRepository = hashtagRepository;
         this.exploreRankingService = exploreRankingService;
         this.exploreCacheService = exploreCacheService;
+        this.videoDiscoveryIndexer = videoDiscoveryIndexer;
+        this.videoEngagementStatsService = videoEngagementStatsService;
+        this.userInterestSignalProcessor = userInterestSignalProcessor;
+        this.recommendationService = recommendationService;
     }
 
     public VideoResponse createVideo(String email, VideoCreateRequest request) {
@@ -195,6 +211,32 @@ public class VideoService {
             hasNext,
             "latest",
             next
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public FeedPageResponse getForYouFeed(String viewerEmail, int size) {
+        RecommendationService rec = recommendationService.getIfAvailable();
+        Long viewerId = resolveViewerId(viewerEmail);
+        int req = Math.max(1, Math.min(size, 50));
+        if (rec == null) {
+            return getLatestFeedKeyset(null, req, viewerEmail);
+        }
+        List<Long> ids = rec.forYouVideoIds(viewerId, req);
+        if (ids.isEmpty()) {
+            return getLatestFeedKeyset(null, req, viewerEmail);
+        }
+        Map<Long, Video> byId = videoRepository.findWithAuthorByIdIn(ids).stream()
+            .collect(java.util.stream.Collectors.toMap(Video::getId, v -> v, (a, b) -> a));
+        List<Video> ordered = ids.stream().map(byId::get).filter(Objects::nonNull).toList();
+        return new FeedPageResponse(
+            toFeedResponses(ordered, viewerId),
+            0,
+            req,
+            ordered.size(),
+            false,
+            "for-you",
+            null
         );
     }
 
@@ -402,6 +444,7 @@ public class VideoService {
         exploreCacheService.evictByPrefix("trending");
         exploreCacheService.evictByPrefix("category:");
         exploreCacheService.evictByPrefix("related:" + video.getPublicId());
+        videoDiscoveryIndexer.ifAvailable(indexer -> indexer.indexAfterLegacySync(video.getId()));
     }
 
     private Hashtag newHashtag(String tag) {
@@ -460,11 +503,21 @@ public class VideoService {
      */
     @Transactional
     public void recordView(UUID publicId, VideoViewRequest body) {
-        recordView(getVideoByPublicIdOrThrow(publicId).getId(), body);
+        recordView(getVideoByPublicIdOrThrow(publicId).getId(), body, null);
+    }
+
+    @Transactional
+    public void recordView(UUID publicId, VideoViewRequest body, String viewerEmail) {
+        recordView(getVideoByPublicIdOrThrow(publicId).getId(), body, viewerEmail);
     }
 
     @Transactional
     public void recordView(Long id, VideoViewRequest body) {
+        recordView(id, body, null);
+    }
+
+    @Transactional
+    public void recordView(Long id, VideoViewRequest body, String viewerEmail) {
         if (body == null || !qualifiesPlaybackForView(body.watchedMs(), body.durationMs())) {
             return;
         }
@@ -478,6 +531,11 @@ public class VideoService {
         row.setDurationMs(body.durationMs());
         videoViewRepository.save(row);
         exploreRankingService.recomputeVideo(target);
+        videoEngagementStatsService.ifAvailable(s -> s.recompute(target));
+        Long viewerId = resolveViewerId(viewerEmail);
+        if (viewerId != null) {
+            userInterestSignalProcessor.ifAvailable(p -> p.onView(viewerId, target, body.watchedMs(), body.durationMs()));
+        }
         exploreCacheService.evictByPrefix("trending");
         exploreCacheService.evictByPrefix("category:");
         exploreCacheService.evictByPrefix("related:" + target.getPublicId());

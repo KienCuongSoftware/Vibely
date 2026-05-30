@@ -53,6 +53,12 @@ public interface FollowRepository extends JpaRepository<FollowEntity, Long> {
     @Query("""
         select f.following.id from FollowEntity f
         where f.follower.id = :followerId
+        """)
+    List<Long> findFollowingIds(@Param("followerId") Long followerId);
+
+    @Query("""
+        select f.following.id from FollowEntity f
+        where f.follower.id = :followerId
         and f.following.id in :candidateIds
         """)
     List<Long> findFollowingIdsForFollower(
