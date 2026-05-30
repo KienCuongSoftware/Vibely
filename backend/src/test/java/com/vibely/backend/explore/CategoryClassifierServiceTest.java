@@ -27,11 +27,23 @@ class CategoryClassifierServiceTest {
     }
 
     @Test
+    void inferMapsLyricsHashtagToMusicCategory() {
+        Category all = category("all", "All");
+        Category music = category("music", "Music");
+        when(categoryRepository.findByEnabledTrueOrderByNameAsc()).thenReturn(List.of(all, music));
+
+        List<CategoryClassifierService.ScoredCategory> inferred = classifierService.inferCategories(
+            "bùa yêu",
+            "#lyrics #gfx #fyp #xh"
+        );
+
+        assertThat(inferred).isNotEmpty();
+        assertThat(inferred.get(0).category().getSlug()).isEqualTo("music");
+    }
+
+    @Test
     void inferFallsBackToAllCategoryWhenNoSignal() {
-        Category all = new Category();
-        all.setSlug("all");
-        all.setName("Tất cả");
-        all.setEnabled(true);
+        Category all = category("all", "Tất cả");
         when(categoryRepository.findByEnabledTrueOrderByNameAsc()).thenReturn(List.of(all));
         when(categoryRepository.findBySlugAndEnabledTrue("all")).thenReturn(java.util.Optional.of(all));
 
@@ -39,5 +51,13 @@ class CategoryClassifierServiceTest {
 
         assertThat(inferred).hasSize(1);
         assertThat(inferred.get(0).category().getSlug()).isEqualTo("all");
+    }
+
+    private static Category category(String slug, String name) {
+        Category category = new Category();
+        category.setSlug(slug);
+        category.setName(name);
+        category.setEnabled(true);
+        return category;
     }
 }

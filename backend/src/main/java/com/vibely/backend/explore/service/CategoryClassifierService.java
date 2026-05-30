@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 public class CategoryClassifierService {
     private static final Pattern HASHTAG_PATTERN = Pattern.compile("#([\\p{L}\\p{N}_]{2,80})");
     private static final Map<String, Set<String>> KEYWORDS = Map.of(
-        "music", Set.of("music", "song", "amnhac", "nhac", "remix", "cover"),
+        "music", Set.of("music", "song", "amnhac", "nhac", "remix", "cover", "lyrics", "lyric", "karaoke", "sing", "audio"),
         "dance", Set.of("dance", "nhay", "choreography"),
         "food", Set.of("food", "monan", "anuong", "recipe", "nauan"),
         "travel", Set.of("travel", "dulich", "trip", "review"),
@@ -27,6 +27,39 @@ public class CategoryClassifierService {
         "fitness", Set.of("fitness", "gym", "workout"),
         "comedy", Set.of("funny", "hai", "comedy"),
         "technology", Set.of("tech", "congnghe", "ai", "coding")
+    );
+
+    /** Hashtags that should map to a explore category slug (not 1:1 with tag name). */
+    private static final Map<String, String> HASHTAG_CATEGORY_ALIASES = Map.ofEntries(
+        Map.entry("lyrics", "music"),
+        Map.entry("lyric", "music"),
+        Map.entry("lyricvideo", "music"),
+        Map.entry("singing", "music"),
+        Map.entry("sing", "music"),
+        Map.entry("karaoke", "music"),
+        Map.entry("nhac", "music"),
+        Map.entry("amnhac", "music"),
+        Map.entry("remix", "music"),
+        Map.entry("cover", "music"),
+        Map.entry("audio", "music"),
+        Map.entry("sound", "music"),
+        Map.entry("beat", "music"),
+        Map.entry("edm", "music"),
+        Map.entry("hiphop", "music"),
+        Map.entry("choreography", "dance"),
+        Map.entry("dancing", "dance"),
+        Map.entry("nhay", "dance"),
+        Map.entry("monan", "food"),
+        Map.entry("anuong", "food"),
+        Map.entry("nauan", "food"),
+        Map.entry("dulich", "travel"),
+        Map.entry("lamdep", "beauty"),
+        Map.entry("makeup", "beauty"),
+        Map.entry("skincare", "beauty"),
+        Map.entry("congnghe", "technology"),
+        Map.entry("coding", "technology"),
+        Map.entry("anime", "anime"),
+        Map.entry("manga", "anime")
     );
 
     private final CategoryRepository categoryRepository;
@@ -47,30 +80,50 @@ public class CategoryClassifierService {
 
     public List<ScoredCategory> inferCategories(String title, String description) {
         String normalized = normalizeToken(String.join(" ", String.valueOf(title == null ? "" : title), String.valueOf(description == null ? "" : description)));
+        List<Category> enabled = categoryRepository.findByEnabledTrueOrderByNameAsc();
+        Map<String, Category> bySlug = enabled.stream().collect(java.util.stream.Collectors.toMap(Category::getSlug, c -> c));
+
         Map<String, Double> score = new LinkedHashMap<>();
         List<String> tags = extractHashtags(title, description);
         for (String tag : tags) {
-            score.merge(tag, 2.0, Double::sum);
+            String categorySlug = resolveCategorySlug(tag, bySlug);
+            if (categorySlug != null) {
+                score.merge(categorySlug, 2.0, Double::sum);
+            }
         }
         for (Map.Entry<String, Set<String>> entry : KEYWORDS.entrySet()) {
+            if (!bySlug.containsKey(entry.getKey())) {
+                continue;
+            }
             for (String kw : entry.getValue()) {
                 if (normalized.contains(kw)) {
                     score.merge(entry.getKey(), 1.0, Double::sum);
                 }
             }
         }
-        List<Category> enabled = categoryRepository.findByEnabledTrueOrderByNameAsc();
-        Map<String, Category> bySlug = enabled.stream().collect(java.util.stream.Collectors.toMap(Category::getSlug, c -> c));
         List<ScoredCategory> result = score.entrySet().stream()
             .map(e -> new ScoredCategory(bySlug.get(e.getKey()), e.getValue()))
             .filter(sc -> sc.category() != null)
             .sorted(Comparator.comparingDouble(ScoredCategory::score).reversed())
             .limit(3)
             .toList();
-        if (!result.isEmpty()) return result;
+        if (!result.isEmpty()) {
+            return result;
+        }
         return categoryRepository.findBySlugAndEnabledTrue("all")
             .map(c -> List.of(new ScoredCategory(c, 1.0)))
             .orElseGet(List::of);
+    }
+
+    private String resolveCategorySlug(String tag, Map<String, Category> bySlug) {
+        if (bySlug.containsKey(tag)) {
+            return tag;
+        }
+        String alias = HASHTAG_CATEGORY_ALIASES.get(tag);
+        if (alias != null && bySlug.containsKey(alias)) {
+            return alias;
+        }
+        return null;
     }
 
     private String normalizeToken(String raw) {
