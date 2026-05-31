@@ -25,6 +25,9 @@ public class Topic {
     @Column(name = "display_name", nullable = false, length = 160)
     private String displayName;
 
+    @Column(length = 500)
+    private String description;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_topic_id")
     private Topic parentTopic;
@@ -57,6 +60,14 @@ public class Topic {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Topic getParentTopic() {
