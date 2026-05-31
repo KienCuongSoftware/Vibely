@@ -6,8 +6,10 @@ import com.vibely.backend.discovery.model.VideoTopic;
 import com.vibely.backend.discovery.repository.TopicRepository;
 import com.vibely.backend.discovery.repository.VideoTopicRepository;
 import com.vibely.backend.video.Video;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,27 +17,41 @@ import org.springframework.transaction.annotation.Transactional;
 public class TopicGraphService {
     private final TopicRepository topicRepository;
     private final VideoTopicRepository videoTopicRepository;
+    private final CanonicalTopicRegistry canonicalTopicRegistry;
 
-    public TopicGraphService(TopicRepository topicRepository, VideoTopicRepository videoTopicRepository) {
+    public TopicGraphService(
+        TopicRepository topicRepository,
+        VideoTopicRepository videoTopicRepository,
+        CanonicalTopicRegistry canonicalTopicRegistry
+    ) {
         this.topicRepository = topicRepository;
         this.videoTopicRepository = videoTopicRepository;
+        this.canonicalTopicRegistry = canonicalTopicRegistry;
     }
 
     @Transactional
     public void replaceVideoTopics(Video video, List<ContentUnderstandingResult.ScoredTopic> topics, String source) {
         videoTopicRepository.deleteByVideoId(video.getId());
+        Map<String, Double> merged = new LinkedHashMap<>();
         for (ContentUnderstandingResult.ScoredTopic scored : topics) {
             if (scored.name() == null || scored.name().isBlank()) {
                 continue;
             }
-            Topic topic = upsertTopic(scored.name());
-            videoTopicRepository.save(new VideoTopic(video, topic, scored.score(), source));
+            String canonical = canonicalTopicRegistry.resolveCanonicalSlug(scored.name());
+            if (canonical.isBlank()) {
+                continue;
+            }
+            merged.merge(canonical, scored.score(), Math::max);
+        }
+        for (Map.Entry<String, Double> entry : merged.entrySet()) {
+            Topic topic = upsertTopic(entry.getKey());
+            videoTopicRepository.save(new VideoTopic(video, topic, entry.getValue(), source));
         }
     }
 
     @Transactional
     public Topic upsertTopic(String slug) {
-        String normalized = OpenAiContentUnderstandingService.normalizeTopic(slug);
+        String normalized = canonicalTopicRegistry.resolveCanonicalSlug(slug);
         return topicRepository.findBySlug(normalized)
             .orElseGet(() -> {
                 Topic topic = new Topic();
@@ -46,6 +62,9 @@ public class TopicGraphService {
     }
 
     private static String toDisplayName(String slug) {
+        if ("ai".equals(slug)) {
+            return "AI";
+        }
         String[] parts = slug.split("_");
         StringBuilder sb = new StringBuilder();
         for (String part : parts) {
