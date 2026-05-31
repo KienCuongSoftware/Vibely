@@ -1,6 +1,7 @@
 package com.vibely.backend.explore.service;
 
 import com.vibely.backend.discovery.service.ExploreDiscoveryEngine;
+import com.vibely.backend.discovery.service.RecommendationService;
 import com.vibely.backend.discovery.service.RelatedVideoDiscoveryService;
 import com.vibely.backend.explore.CategoryRepository;
 import com.vibely.backend.explore.ExploreCursorCodec;
@@ -9,6 +10,7 @@ import com.vibely.backend.explore.ExploreVideoProjection;
 import com.vibely.backend.explore.VideoCategoryRepository;
 import com.vibely.backend.explore.dto.ExploreCategoryDto;
 import com.vibely.backend.explore.dto.ExplorePageDto;
+import com.vibely.backend.explore.dto.ExploreTabDto;
 import com.vibely.backend.explore.dto.ExploreVideoCardDto;
 import com.vibely.backend.interaction.CommentRepository;
 import com.vibely.backend.interaction.LikeRepository;
@@ -34,6 +36,8 @@ public class ExploreService {
     private final ExploreCacheService cacheService;
     private final ExploreDiscoveryEngine exploreDiscoveryEngine;
     private final RelatedVideoDiscoveryService relatedVideoDiscoveryService;
+    private final PersonalizedExploreTabsService personalizedExploreTabsService;
+    private final RecommendationService recommendationService;
 
     public ExploreService(
         ExploreQueryRepository exploreQueryRepository,
@@ -45,7 +49,9 @@ public class ExploreService {
         VideoViewRepository viewRepository,
         ExploreCacheService cacheService,
         ExploreDiscoveryEngine exploreDiscoveryEngine,
-        RelatedVideoDiscoveryService relatedVideoDiscoveryService
+        RelatedVideoDiscoveryService relatedVideoDiscoveryService,
+        PersonalizedExploreTabsService personalizedExploreTabsService,
+        RecommendationService recommendationService
     ) {
         this.exploreQueryRepository = exploreQueryRepository;
         this.categoryRepository = categoryRepository;
@@ -57,6 +63,13 @@ public class ExploreService {
         this.cacheService = cacheService;
         this.exploreDiscoveryEngine = exploreDiscoveryEngine;
         this.relatedVideoDiscoveryService = relatedVideoDiscoveryService;
+        this.personalizedExploreTabsService = personalizedExploreTabsService;
+        this.recommendationService = recommendationService;
+    }
+
+    @Transactional(readOnly = true)
+    public List<ExploreTabDto> tabs(String viewerEmail) {
+        return personalizedExploreTabsService.tabs(viewerEmail);
     }
 
     @Transactional(readOnly = true)
@@ -85,6 +98,31 @@ public class ExploreService {
                 : exploreQueryRepository.findByCategorySlug(normalized, score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1)),
             capSize(size)
         ));
+    }
+
+    @Transactional(readOnly = true)
+    public ExplorePageDto topic(String slug, String cursor, int size) {
+        String normalized = String.valueOf(slug == null ? "" : slug).trim().toLowerCase();
+        return cachedPage("topic:" + normalized + ":" + (cursor == null ? "first" : cursor), () -> toPage(
+            exploreDiscoveryEngine.isHybridEnabled()
+                ? exploreDiscoveryEngine.topic(normalized, score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1))
+                : List.of(),
+            capSize(size)
+        ));
+    }
+
+    @Transactional(readOnly = true)
+    public ExplorePageDto forYou(String viewerEmail, String cursor, int size) {
+        int capped = capSize(size);
+        String viewerKey = viewerEmail == null || viewerEmail.isBlank() ? "anon" : viewerEmail.trim().toLowerCase();
+        return cachedPage("for-you:" + viewerKey + ":" + (cursor == null ? "first" : cursor), () -> {
+            Long userId = personalizedExploreTabsService.resolveUserId(viewerEmail);
+            if (userId == null) {
+                return trending(cursor, capped);
+            }
+            List<ExploreVideoProjection> rows = recommendationService.forYouFeed(userId, capped + 1);
+            return toPage(rows, capped);
+        });
     }
 
     @Transactional(readOnly = true)

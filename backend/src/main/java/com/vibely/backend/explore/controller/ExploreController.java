@@ -3,8 +3,10 @@ package com.vibely.backend.explore.controller;
 import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.explore.dto.ExploreCategoryDto;
 import com.vibely.backend.explore.dto.ExplorePageDto;
+import com.vibely.backend.explore.dto.ExploreTabDto;
 import com.vibely.backend.explore.service.ExploreService;
 import java.util.List;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +22,12 @@ public class ExploreController {
         this.exploreService = exploreService;
     }
 
+    @GetMapping("/tabs")
+    public ApiResponse<List<ExploreTabDto>> tabs(Authentication authentication) {
+        String viewerEmail = authentication != null ? authentication.getName() : null;
+        return ApiResponse.success(exploreService.tabs(viewerEmail));
+    }
+
     @GetMapping("/categories")
     public ApiResponse<List<ExploreCategoryDto>> categories() {
         return ApiResponse.success(exploreService.categories());
@@ -33,6 +41,16 @@ public class ExploreController {
         return ApiResponse.success(exploreService.trending(cursor, size));
     }
 
+    @GetMapping("/for-you")
+    public ApiResponse<ExplorePageDto> forYou(
+        Authentication authentication,
+        @RequestParam(required = false) String cursor,
+        @RequestParam(defaultValue = "24") int size
+    ) {
+        String viewerEmail = authentication != null ? authentication.getName() : null;
+        return ApiResponse.success(exploreService.forYou(viewerEmail, cursor, size));
+    }
+
     @GetMapping("/category/{slug}")
     public ApiResponse<ExplorePageDto> category(
         @PathVariable String slug,
@@ -40,6 +58,15 @@ public class ExploreController {
         @RequestParam(defaultValue = "24") int size
     ) {
         return ApiResponse.success(exploreService.category(slug, cursor, size));
+    }
+
+    @GetMapping("/topic/{slug}")
+    public ApiResponse<ExplorePageDto> topic(
+        @PathVariable String slug,
+        @RequestParam(required = false) String cursor,
+        @RequestParam(defaultValue = "24") int size
+    ) {
+        return ApiResponse.success(exploreService.topic(slug, cursor, size));
     }
 
     @GetMapping("/search")
