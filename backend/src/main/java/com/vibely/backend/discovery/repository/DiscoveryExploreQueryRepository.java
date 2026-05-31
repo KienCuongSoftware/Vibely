@@ -60,7 +60,7 @@ public interface DiscoveryExploreQueryRepository extends Repository<com.vibely.b
                 where c2.slug = :slug and c2.enabled = true and vcs.score >= 0.35
                 union
                 select vt.video_id from video_topics vt
-                join category_topic_map ctm on ctm.topic_id = vt.topic_id
+                join topic_category_mapping ctm on ctm.topic_id = vt.topic_id
                 join categories c3 on c3.id = ctm.category_id
                 where c3.slug = :slug and c3.enabled = true and vt.score >= 0.35
               )
@@ -72,6 +72,50 @@ public interface DiscoveryExploreQueryRepository extends Repository<com.vibely.b
     )
     List<ExploreVideoProjection> findByCategorySlugHybrid(
         @Param("slug") String slug,
+        @Param("cursorScore") Double cursorScore,
+        @Param("cursorTime") LocalDateTime cursorTime,
+        @Param("cursorId") Long cursorId,
+        Pageable pageable
+    );
+
+    @Query(
+        value = """
+            select v.id as id, v.public_id as publicId, v.title as title, v.description as description,
+                   v.video_url as videoUrl, v.thumbnail_url as thumbnailUrl, v.master_playlist_url as masterPlaylistUrl,
+                   v.share_count as shareCount,
+                   v.created_at as createdAt,
+                   (vt_rank.score * 0.35
+                     + coalesce(ves.ranking_score, v.ranking_score, v.explore_score, 0) / 100.0 * 0.55
+                     + case when v.created_at >= :freshSince then 0.10 else 0 end
+                   ) as exploreScore,
+                   u.id as authorId, u.username as authorUsername, u.display_name as authorDisplayName, u.avatar_url as authorAvatarUrl
+            from videos v
+            join users u on u.id = v.author_id
+            left join video_engagement_stats ves on ves.video_id = v.id
+            join video_topics vt_rank on vt_rank.video_id = v.id
+            join topics t_rank on t_rank.id = vt_rank.topic_id and t_rank.slug = :slug
+            where v.status = 'READY'
+              and vt_rank.score >= 0.25
+              and (:cursorScore is null or (
+                (vt_rank.score * 0.35
+                  + coalesce(ves.ranking_score, v.ranking_score, v.explore_score, 0) / 100.0 * 0.55
+                  + case when v.created_at >= :freshSince then 0.10 else 0 end
+                ) < :cursorScore
+                or (
+                  (vt_rank.score * 0.35
+                    + coalesce(ves.ranking_score, v.ranking_score, v.explore_score, 0) / 100.0 * 0.55
+                    + case when v.created_at >= :freshSince then 0.10 else 0 end
+                  ) = :cursorScore and (v.created_at < :cursorTime
+                  or (v.created_at = :cursorTime and v.id < :cursorId))
+                )
+              ))
+            order by exploreScore desc, v.created_at desc, v.id desc
+            """,
+        nativeQuery = true
+    )
+    List<ExploreVideoProjection> findByTopicSlugHybrid(
+        @Param("slug") String slug,
+        @Param("freshSince") LocalDateTime freshSince,
         @Param("cursorScore") Double cursorScore,
         @Param("cursorTime") LocalDateTime cursorTime,
         @Param("cursorId") Long cursorId,

@@ -5,16 +5,13 @@ import com.vibely.backend.discovery.repository.DiscoveryExploreQueryRepository;
 import com.vibely.backend.discovery.repository.VideoEmbeddingRepository;
 import com.vibely.backend.discovery.repository.VideoTopicRepository;
 import com.vibely.backend.explore.ExploreVideoProjection;
-import com.vibely.backend.explore.service.ExploreCacheService;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,26 +46,51 @@ public class RelatedVideoDiscoveryService {
         if (sourceId == null) {
             return List.of();
         }
-        var sourceEmbedding = videoEmbeddingRepository.findByVideoId(sourceId);
         List<Object[]> topicScores = videoTopicRepository.findTopicScoresByVideoId(sourceId);
-        Set<Long> topicRelated = new LinkedHashSet<>(videoTopicRepository.findRelatedVideoIdsByTopics(sourceId, size * 4));
+        if (!topicScores.isEmpty()) {
+            return relatedByTopicOverlap(sourceId, topicScores, size);
+        }
+        return relatedByEmbedding(sourceId, size);
+    }
 
-        Map<Long, Double> combined = new HashMap<>();
-        if (sourceEmbedding.isPresent()) {
-            List<Object[]> candidates = videoEmbeddingRepository.findCandidateEmbeddings(sourceId, size * 8);
-            for (Object[] row : candidates) {
-                Long candidateId = ((Number) row[0]).longValue();
-                String json = (String) row[1];
-                double embeddingSim = embeddingSimilarityService.cosineSimilarity(
-                    sourceEmbedding.get().getEmbeddingJson(),
-                    json
-                );
-                combined.merge(candidateId, embeddingSim * properties.getEmbeddingSimilarityWeight(), Math::max);
+    private List<ExploreVideoProjection> relatedByTopicOverlap(Long sourceId, List<Object[]> sourceTopics, int size) {
+        List<Long> candidateIds = videoTopicRepository.findRelatedVideoIdsByTopics(sourceId, size * 6);
+        Map<Long, Double> ranked = new LinkedHashMap<>();
+        for (Long candidateId : candidateIds) {
+            double overlap = topicOverlapScore(sourceId, candidateId, sourceTopics);
+            if (overlap > 0) {
+                ranked.put(candidateId, overlap);
             }
         }
-        for (Long candidateId : topicRelated) {
-            double topicSim = topicOverlapScore(sourceId, candidateId, topicScores);
-            combined.merge(candidateId, topicSim * properties.getTopicSimilarityWeight(), Double::sum);
+        List<Long> rankedIds = ranked.entrySet().stream()
+            .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
+            .limit(size + 1)
+            .map(Map.Entry::getKey)
+            .toList();
+        if (rankedIds.isEmpty()) {
+            return List.of();
+        }
+        return discoveryExploreQueryRepository.findByVideoIds(new ArrayList<>(rankedIds)).stream()
+            .sorted(Comparator.comparingInt(v -> rankedIds.indexOf(v.getId())))
+            .limit(size + 1)
+            .toList();
+    }
+
+    private List<ExploreVideoProjection> relatedByEmbedding(Long sourceId, int size) {
+        var sourceEmbedding = videoEmbeddingRepository.findByVideoId(sourceId);
+        if (sourceEmbedding.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, Double> combined = new HashMap<>();
+        List<Object[]> candidates = videoEmbeddingRepository.findCandidateEmbeddings(sourceId, size * 8);
+        for (Object[] row : candidates) {
+            Long candidateId = ((Number) row[0]).longValue();
+            String json = (String) row[1];
+            double embeddingSim = embeddingSimilarityService.cosineSimilarity(
+                sourceEmbedding.get().getEmbeddingJson(),
+                json
+            );
+            combined.merge(candidateId, embeddingSim, Math::max);
         }
         List<Long> rankedIds = combined.entrySet().stream()
             .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
@@ -85,9 +107,6 @@ public class RelatedVideoDiscoveryService {
     }
 
     private double topicOverlapScore(Long sourceId, Long candidateId, List<Object[]> sourceTopics) {
-        if (sourceTopics.isEmpty()) {
-            return 0.2;
-        }
         List<Object[]> candidateTopics = videoTopicRepository.findTopicScoresByVideoId(candidateId);
         if (candidateTopics.isEmpty()) {
             return 0;

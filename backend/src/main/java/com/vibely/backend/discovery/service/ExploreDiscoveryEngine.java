@@ -43,6 +43,25 @@ public class ExploreDiscoveryEngine {
     }
 
     @Transactional(readOnly = true)
+    public List<ExploreVideoProjection> topic(
+        String slug,
+        Double cursorScore,
+        LocalDateTime cursorTime,
+        Long cursorId,
+        Pageable pageable
+    ) {
+        LocalDateTime freshSince = LocalDateTime.now().minusHours(24);
+        return discoveryExploreQueryRepository.findByTopicSlugHybrid(
+            slug,
+            freshSince,
+            cursorScore,
+            cursorTime,
+            cursorId,
+            pageable
+        );
+    }
+
+    @Transactional(readOnly = true)
     public List<ExploreVideoProjection> search(
         String q,
         Double cursorScore,

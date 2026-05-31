@@ -21,6 +21,8 @@ public class DiscoveryProperties {
     private double embeddingSimilarityWeight = 0.70;
     private double topicSimilarityWeight = 0.30;
     private RankingWeights ranking = new RankingWeights();
+    private TopicFeedRankingWeights topicFeedRanking = new TopicFeedRankingWeights();
+    private UserInterestWeights interest = new UserInterestWeights();
 
     public boolean isEnabled() {
         return enabled;
@@ -150,18 +152,34 @@ public class DiscoveryProperties {
         this.ranking = ranking;
     }
 
+    public TopicFeedRankingWeights getTopicFeedRanking() {
+        return topicFeedRanking;
+    }
+
+    public void setTopicFeedRanking(TopicFeedRankingWeights topicFeedRanking) {
+        this.topicFeedRanking = topicFeedRanking;
+    }
+
+    public UserInterestWeights getInterest() {
+        return interest;
+    }
+
+    public void setInterest(UserInterestWeights interest) {
+        this.interest = interest;
+    }
+
     public boolean hasOpenAiCredentials() {
         return openAiEnabled && openAiApiKey != null && !openAiApiKey.isBlank();
     }
 
     public static class RankingWeights {
-        private double watchTime = 0.35;
-        private double completion = 0.20;
+        private double watchTime = 0.20;
+        private double completion = 0.35;
         private double share = 0.15;
         private double save = 0.10;
         private double comment = 0.10;
         private double follow = 0.05;
-        private double freshness = 0.05;
+        private double freshness = 0.10;
 
         public double getWatchTime() {
             return watchTime;
@@ -217,6 +235,120 @@ public class DiscoveryProperties {
 
         public void setFreshness(double freshness) {
             this.freshness = freshness;
+        }
+    }
+
+    public static class TopicFeedRankingWeights {
+        private double topicRelevance = 0.35;
+        private double engagement = 0.55;
+        private double freshness = 0.10;
+
+        public double getTopicRelevance() {
+            return topicRelevance;
+        }
+
+        public void setTopicRelevance(double topicRelevance) {
+            this.topicRelevance = topicRelevance;
+        }
+
+        public double getEngagement() {
+            return engagement;
+        }
+
+        public void setEngagement(double engagement) {
+            this.engagement = engagement;
+        }
+
+        public double getFreshness() {
+            return freshness;
+        }
+
+        public void setFreshness(double freshness) {
+            this.freshness = freshness;
+        }
+    }
+
+    public static class UserInterestWeights {
+        private double highCompletionBoost = 0.12;
+        private double mediumCompletionBoost = 0.07;
+        private double lowCompletionBoost = 0.03;
+        private double skipPenalty = 0.05;
+        private double likeBoost = 0.10;
+        private double saveBoost = 0.12;
+        private double commentBoost = 0.08;
+        private double shareBoost = 0.14;
+        private double followBoost = 0.05;
+
+        public double getHighCompletionBoost() {
+            return highCompletionBoost;
+        }
+
+        public void setHighCompletionBoost(double highCompletionBoost) {
+            this.highCompletionBoost = highCompletionBoost;
+        }
+
+        public double getMediumCompletionBoost() {
+            return mediumCompletionBoost;
+        }
+
+        public void setMediumCompletionBoost(double mediumCompletionBoost) {
+            this.mediumCompletionBoost = mediumCompletionBoost;
+        }
+
+        public double getLowCompletionBoost() {
+            return lowCompletionBoost;
+        }
+
+        public void setLowCompletionBoost(double lowCompletionBoost) {
+            this.lowCompletionBoost = lowCompletionBoost;
+        }
+
+        public double getSkipPenalty() {
+            return skipPenalty;
+        }
+
+        public void setSkipPenalty(double skipPenalty) {
+            this.skipPenalty = skipPenalty;
+        }
+
+        public double getLikeBoost() {
+            return likeBoost;
+        }
+
+        public void setLikeBoost(double likeBoost) {
+            this.likeBoost = likeBoost;
+        }
+
+        public double getSaveBoost() {
+            return saveBoost;
+        }
+
+        public void setSaveBoost(double saveBoost) {
+            this.saveBoost = saveBoost;
+        }
+
+        public double getCommentBoost() {
+            return commentBoost;
+        }
+
+        public void setCommentBoost(double commentBoost) {
+            this.commentBoost = commentBoost;
+        }
+
+        public double getShareBoost() {
+            return shareBoost;
+        }
+
+        public void setShareBoost(double shareBoost) {
+            this.shareBoost = shareBoost;
+        }
+
+        public double getFollowBoost() {
+            return followBoost;
+        }
+
+        public void setFollowBoost(double followBoost) {
+            this.followBoost = followBoost;
         }
     }
 }
