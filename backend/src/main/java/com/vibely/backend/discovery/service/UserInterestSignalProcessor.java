@@ -1,5 +1,6 @@
 package com.vibely.backend.discovery.service;
 
+import com.vibely.backend.discovery.config.DiscoveryProperties;
 import com.vibely.backend.discovery.model.UserTopicInterest;
 import com.vibely.backend.discovery.model.VideoTopic;
 import com.vibely.backend.discovery.repository.UserTopicInterestRepository;
@@ -13,17 +14,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserInterestSignalProcessor {
-    private static final double DECAY = 0.92;
+    private static final double DECAY = 0.94;
+    private static final double MIN_SCORE = 0.0;
+    private static final double MAX_SCORE = 1.0;
 
+    private final DiscoveryProperties properties;
     private final UserTopicInterestRepository userTopicInterestRepository;
     private final VideoTopicRepository videoTopicRepository;
     private final UserRepository userRepository;
 
     public UserInterestSignalProcessor(
+        DiscoveryProperties properties,
         UserTopicInterestRepository userTopicInterestRepository,
         VideoTopicRepository videoTopicRepository,
         UserRepository userRepository
     ) {
+        this.properties = properties;
         this.userTopicInterestRepository = userTopicInterestRepository;
         this.videoTopicRepository = videoTopicRepository;
         this.userRepository = userRepository;
@@ -35,28 +41,36 @@ public class UserInterestSignalProcessor {
             return;
         }
         double completion = completionRate(watchedMs, durationMs);
-        double weight = 0.15 + completion * 0.35;
-        applyVideoTopics(userId, video.getId(), weight);
+        var weights = properties.getInterest();
+        if (completion >= 0.95) {
+            applyVideoTopics(userId, video.getId(), weights.getHighCompletionBoost(), completion);
+        } else if (completion >= 0.70) {
+            applyVideoTopics(userId, video.getId(), weights.getMediumCompletionBoost(), completion);
+        } else if (completion >= 0.30) {
+            applyVideoTopics(userId, video.getId(), weights.getLowCompletionBoost(), completion);
+        } else if (completion < 0.15) {
+            applyVideoTopics(userId, video.getId(), -weights.getSkipPenalty(), completion);
+        }
     }
 
     @Transactional
     public void onLike(Long userId, Video video) {
-        applyVideoTopics(userId, video.getId(), 0.45);
+        applyVideoTopics(userId, video.getId(), properties.getInterest().getLikeBoost(), 1.0);
     }
 
     @Transactional
     public void onSave(Long userId, Video video) {
-        applyVideoTopics(userId, video.getId(), 0.55);
+        applyVideoTopics(userId, video.getId(), properties.getInterest().getSaveBoost(), 1.0);
     }
 
     @Transactional
     public void onComment(Long userId, Video video) {
-        applyVideoTopics(userId, video.getId(), 0.35);
+        applyVideoTopics(userId, video.getId(), properties.getInterest().getCommentBoost(), 1.0);
     }
 
     @Transactional
     public void onShare(Long userId, Video video) {
-        applyVideoTopics(userId, video.getId(), 0.65);
+        applyVideoTopics(userId, video.getId(), properties.getInterest().getShareBoost(), 1.0);
     }
 
     @Transactional
@@ -64,12 +78,16 @@ public class UserInterestSignalProcessor {
         if (recentCreatorVideos == null) {
             return;
         }
+        double boost = properties.getInterest().getFollowBoost();
         for (Video video : recentCreatorVideos.stream().limit(5).toList()) {
-            applyVideoTopics(userId, video.getId(), 0.25);
+            applyVideoTopics(userId, video.getId(), boost, 0.75);
         }
     }
 
-    private void applyVideoTopics(Long userId, Long videoId, double signalWeight) {
+    private void applyVideoTopics(Long userId, Long videoId, double signalWeight, double completion) {
+        if (signalWeight == 0) {
+            return;
+        }
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return;
@@ -86,8 +104,10 @@ public class UserInterestSignalProcessor {
             UserTopicInterest interest = userTopicInterestRepository
                 .findByUserIdAndTopicId(userId, topic.getId())
                 .orElseGet(() -> new UserTopicInterest(user, topic));
-            double blended = interest.getScore() * DECAY + signalWeight * vt.getScore();
-            interest.setScore(Math.min(1.0, blended));
+            double topicWeight = vt.getScore();
+            double delta = signalWeight * topicWeight * (0.65 + completion * 0.35);
+            double next = interest.getScore() * DECAY + delta;
+            interest.setScore(clamp(next));
             interest.setSignalCount(interest.getSignalCount() + 1);
             userTopicInterestRepository.save(interest);
         }
@@ -98,5 +118,9 @@ public class UserInterestSignalProcessor {
             return watchedMs >= 2000 ? 0.5 : 0.1;
         }
         return Math.min(1.0, watchedMs * 1.0 / durationMs);
+    }
+
+    private static double clamp(double value) {
+        return Math.max(MIN_SCORE, Math.min(MAX_SCORE, value));
     }
 }

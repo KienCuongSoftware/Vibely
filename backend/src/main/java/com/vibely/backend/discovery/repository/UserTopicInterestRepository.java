@@ -12,7 +12,8 @@ public interface UserTopicInterestRepository extends JpaRepository<UserTopicInte
     @Query(
         value = """
             select uti from UserTopicInterest uti
-            join fetch uti.topic
+            join fetch uti.topic t
+            left join fetch t.parentTopic
             where uti.user.id = :userId
             order by uti.score desc
             """,
