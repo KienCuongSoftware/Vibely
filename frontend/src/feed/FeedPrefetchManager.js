@@ -78,7 +78,7 @@ export class FeedPrefetchManager {
             method: "GET",
             signal: controller.signal,
             credentials: "omit",
-            cache: "force-cache",
+            cache: "default",
             headers: { Accept: "application/vnd.apple.mpegurl,*/*" },
           });
           this.manifestDone.add(url);

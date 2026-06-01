@@ -13,7 +13,7 @@ Legacy `video_categories` continues to run in parallel during migration. New tab
 | `topics` | Unlimited topic nodes (music, edm, valorant, …) |
 | `topic_relations` | Hierarchical edges (music → edm) |
 | `video_topics` | AI topic scores per video |
-| `category_topic_map` | Topic → Explore category bridge |
+| `topic_category_mapping` | Topic → Explore category bridge |
 | `video_category_scores` | AI category scores (multi-category) |
 | `video_content_understanding` | Cached OpenAI / fallback JSON |
 | `video_embeddings` | pgvector-ready JSON vectors |
@@ -38,9 +38,13 @@ If OpenAI fails or `OPENAI_API_KEY` is missing → **legacy classifier fallback*
 
 Feed, Explore, Search, Related, For You read **only PostgreSQL + Redis cache**:
 
-- Hybrid Explore: union of `video_categories`, `video_category_scores`, `category_topic_map`
+- Hybrid Explore: union of `video_categories`, `video_category_scores`, `topic_category_mapping`
+- Personalized tabs: `GET /api/explore/tabs` (grouped topic tabs + default categories)
 - Search: text + topic slug/name match + ranking
-- Related: 70% embedding cosine + 30% topic overlap (precomputed vectors)
+- Related: topic overlap (shared topics + score product); embedding fallback when no topics
+- Topic feed ranking: `35% topic relevance + 55% engagement ranking + 10% freshness`
+- User interests: watch completion (boost/penalty), like, save, comment, share, follow
+- Canonical topics: GPT aliases normalized via `topic_aliases` table
 - For You: candidate generation from user interests + follow graph + engagement ranking
 
 ## Configuration

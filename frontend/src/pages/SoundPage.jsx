@@ -2,8 +2,10 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { BiDotsVerticalRounded } from 'react-icons/bi'
 import { IoMusicalNotes, IoPause, IoPlay } from 'react-icons/io5'
+import Hls from 'hls.js'
 import { apiClient } from '../api/client'
 import { useAuth } from '../state/useAuth'
+import { isHlsPlaybackUrl, resolveFeedPlaybackUrl } from '../feed/feedPlayback.js'
 import { normalizeVideoPublicId } from '../utils/videoPublicId.js'
 
 export const DEFAULT_COVER = '/images/users/default-avatar.jpeg'
@@ -202,7 +204,8 @@ function SoundGridMedia({
   coverFallback,
 }) {
   const videoRef = useRef(null)
-  const url = String(video?.videoUrl ?? '').trim()
+  const hlsRef = useRef(null)
+  const playbackUrl = resolveFeedPlaybackUrl(video)
   const thumb = String(video?.thumbnailUrl ?? '').trim()
   const poster = thumb || coverFallback || DEFAULT_COVER
   const [videoReady, setVideoReady] = useState(false)
@@ -211,28 +214,97 @@ function SoundGridMedia({
     if (!playing) {
       setVideoReady(false)
     }
-  }, [playing, url])
+  }, [playing, playbackUrl])
 
   useEffect(() => {
     const el = videoRef.current
-    if (!el || !url || !playing) return undefined
-    const playback = el.play()
-    if (playback?.catch) {
-      playback.catch(() => {})
+    if (!el || !playbackUrl || !playing) return undefined
+
+    let cancelled = false
+    const destroyHls = () => {
+      if (hlsRef.current) {
+        try {
+          hlsRef.current.destroy()
+        } catch {
+          /* noop */
+        }
+        hlsRef.current = null
+      }
     }
+
+    const tryPlay = () => {
+      if (cancelled) return
+      const playback = el.play()
+      if (playback?.catch) playback.catch(() => {})
+    }
+
+    const markReady = () => {
+      if (!cancelled) setVideoReady(true)
+    }
+
+    if (isHlsPlaybackUrl(playbackUrl)) {
+      if (Hls.isSupported()) {
+        const hls = new Hls({
+          enableWorker: true,
+          maxBufferLength: 8,
+          maxMaxBufferLength: 12,
+          backBufferLength: 0,
+        })
+        hlsRef.current = hls
+        hls.loadSource(playbackUrl)
+        hls.attachMedia(el)
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          markReady()
+          tryPlay()
+        })
+        return () => {
+          cancelled = true
+          destroyHls()
+          try {
+            el.pause()
+            el.removeAttribute('src')
+            el.load()
+          } catch {
+            /* noop */
+          }
+        }
+      }
+      if (el.canPlayType('application/vnd.apple.mpegurl')) {
+        el.src = playbackUrl
+        el.addEventListener('canplay', markReady)
+        tryPlay()
+        return () => {
+          cancelled = true
+          el.removeEventListener('canplay', markReady)
+          try {
+            el.pause()
+            el.removeAttribute('src')
+            el.load()
+          } catch {
+            /* noop */
+          }
+        }
+      }
+    }
+
+    el.src = playbackUrl
+    el.addEventListener('loadeddata', markReady)
+    el.addEventListener('canplay', markReady)
+    tryPlay()
     return () => {
+      cancelled = true
+      destroyHls()
+      el.removeEventListener('loadeddata', markReady)
+      el.removeEventListener('canplay', markReady)
       try {
         el.pause()
-      } catch {
-        /* noop */
-      }
-      try {
-        el.currentTime = 0
+        el.removeAttribute('src')
+        el.load()
       } catch {
         /* noop */
       }
     }
-  }, [playing, url])
+  }, [playing, playbackUrl])
 
   const thumbNode = (
     <img
@@ -247,21 +319,18 @@ function SoundGridMedia({
     />
   )
 
-  if (url && playing) {
+  if (playbackUrl && playing) {
     return (
       <>
         {!videoReady ? <div className="absolute inset-0">{thumbNode}</div> : null}
         <video
           ref={videoRef}
-          src={url}
           poster={poster || undefined}
           muted
           loop
           playsInline
-          preload="metadata"
+          preload="none"
           className="h-full w-full object-cover"
-          onLoadedData={() => setVideoReady(true)}
-          onCanPlay={() => setVideoReady(true)}
         />
       </>
     )
