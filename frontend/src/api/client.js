@@ -182,10 +182,16 @@ export const apiClient = {
   getVideosByHashtag: (tag, { page = 0, size = 24 } = {}) =>
     request(`/api/videos/hashtag${toQuery({ tag, page, size })}`),
   getExploreCategories: () => request("/api/explore/categories"),
+  getExploreTabs: ({ token } = {}) =>
+    request("/api/explore/tabs", token ? { token } : {}),
   getExploreTrending: ({ cursor, size = 24 } = {}) =>
     request(`/api/explore/trending${toQuery({ cursor, size })}`),
+  getExploreForYou: ({ cursor, size = 24, token } = {}) =>
+    request(`/api/explore/for-you${toQuery({ cursor, size })}`, token ? { token } : {}),
   getExploreCategory: (slug, { cursor, size = 24 } = {}) =>
     request(`/api/explore/category/${encodeURIComponent(slug)}${toQuery({ cursor, size })}`),
+  getExploreTopic: (slug, { cursor, size = 24 } = {}) =>
+    request(`/api/explore/topic/${encodeURIComponent(slug)}${toQuery({ cursor, size })}`),
   searchExplore: (q, { cursor, size = 24 } = {}) =>
     request(`/api/explore/search${toQuery({ q, cursor, size })}`),
   getExploreRelated: (publicId, { size = 18 } = {}) =>
@@ -247,10 +253,10 @@ export const apiClient = {
   unfollow: (userId, token) =>
     request(`/api/follows/${userId}`, { method: "DELETE", token }),
   getMentionableFriends: (token) => request("/api/follows/friends", { token }),
-  recordVideoView: (publicId, body) =>
-    request(`/api/videos/${publicId}/views`, { method: "POST", body }),
-  recordVideoShare: (publicId) =>
-    request(`/api/videos/${publicId}/shares`, { method: "POST" }),
+  recordVideoView: (publicId, body, { token } = {}) =>
+    request(`/api/videos/${publicId}/views`, { method: "POST", body, ...(token ? { token } : {}) }),
+  recordVideoShare: (publicId, { token } = {}) =>
+    request(`/api/videos/${publicId}/shares`, { method: "POST", ...(token ? { token } : {}) }),
   createVideoShare: (publicId, token, body) =>
     request(`/api/v1/videos/${publicId}/share`, {
       method: "POST",

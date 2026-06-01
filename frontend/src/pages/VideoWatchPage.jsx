@@ -510,7 +510,7 @@ export function VideoWatchPage() {
           .recordVideoView(key, {
             watchedMs,
             durationMs,
-          })
+          }, { token })
           .catch(() => {})
         return
       }
@@ -522,7 +522,7 @@ export function VideoWatchPage() {
         .recordVideoView(key, {
           watchedMs,
           ...(durationMs != null ? { durationMs } : {}),
-        })
+        }, { token })
         .catch(() => {})
     }
     el.addEventListener('timeupdate', onPlaybackSample)

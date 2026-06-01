@@ -945,7 +945,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
         .recordVideoView(id, {
           watchedMs,
           durationMs,
-        })
+        }, { token })
         .catch(() => {
           feedViewPlaythroughSentRef.current.delete(id);
         });
@@ -959,11 +959,11 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
       .recordVideoView(id, {
         watchedMs,
         ...(durationMs != null ? { durationMs } : {}),
-      })
+      }, { token })
       .catch(() => {
         feedViewQualifySentRef.current.delete(id);
       });
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     const el = feedVideoRef.current;

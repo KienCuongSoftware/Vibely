@@ -16,8 +16,8 @@ const EXPLORE_PAGE_TITLE = 'Khám phá - Tìm video bạn thích trên Vibely'
 export function ExplorePage() {
   const navigate = useNavigate()
   const { token, user, logout } = useAuth()
-  const [categories, setCategories] = useState([])
-  const [activeSlug, setActiveSlug] = useState('all')
+  const [tabs, setTabs] = useState([])
+  const [activeTab, setActiveTab] = useState({ slug: 'all', kind: 'category' })
   const [items, setItems] = useState([])
   const [cursor, setCursor] = useState(null)
   const [hasNext, setHasNext] = useState(false)
@@ -29,13 +29,6 @@ export function ExplorePage() {
   const [canScrollRight, setCanScrollRight] = useState(false)
   const loadGenerationRef = useRef(0)
   const openVideoLockRef = useRef(false)
-
-  const categoriesWithAll = useMemo(() => {
-    const rows = Array.isArray(categories) ? categories : []
-    const withoutAll = rows.filter((row) => row?.slug !== 'all')
-    const allFromApi = rows.find((row) => row?.slug === 'all')
-    return [allFromApi ?? { slug: 'all', name: 'Tất cả', videoCount: 0 }, ...withoutAll]
-  }, [categories])
 
   const menuItems = useMemo(() => [
     { id: 'latest', label: 'Đề xuất', icon: IoHome },
@@ -53,12 +46,19 @@ export function ExplorePage() {
   }, [])
 
   useEffect(() => {
-    apiClient.getExploreCategories().then((res) => {
+    apiClient.getExploreTabs({ token }).then((res) => {
       const rows = Array.isArray(res) ? res : []
-      setCategories(rows)
-      setActiveSlug('all')
-    }).catch(() => setCategories([{ slug: 'all', name: 'Tất cả', videoCount: 0 }]))
-  }, [])
+      setTabs(rows)
+      const first = rows[0]
+      setActiveTab({
+        slug: first?.slug ?? 'all',
+        kind: first?.kind ?? 'category',
+      })
+    }).catch(() => {
+      setTabs([{ slug: 'all', name: 'Tất cả', kind: 'category', personalized: false, videoCount: 0 }])
+      setActiveTab({ slug: 'all', kind: 'category' })
+    })
+  }, [token])
 
   const updateCategoryScrollState = React.useCallback(() => {
     const el = categoryScrollRef.current
@@ -80,7 +80,7 @@ export function ExplorePage() {
     const handleResize = () => updateCategoryScrollState()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [updateCategoryScrollState, categoriesWithAll.length])
+  }, [updateCategoryScrollState, tabs.length])
 
   useEffect(() => {
     const scroller = categoryScrollRef.current
@@ -96,14 +96,21 @@ export function ExplorePage() {
       allCategoryButtonRef.current?.focus({ preventScroll: true })
     }, 120)
     return () => window.clearTimeout(focusTimer)
-  }, [updateCategoryScrollState])
+  }, [updateCategoryScrollState, activeTab.slug])
 
   const load = React.useCallback((nextCursor = null, append = false) => {
     const generation = ++loadGenerationRef.current
     setLoading(true)
-    const req = activeSlug === 'all'
-      ? apiClient.getExploreTrending({ cursor: nextCursor, size: 24 })
-      : apiClient.getExploreCategory(activeSlug, { cursor: nextCursor, size: 24 })
+    let req
+    if (activeTab.kind === 'for_you') {
+      req = apiClient.getExploreForYou({ cursor: nextCursor, size: 24, token })
+    } else if (activeTab.kind === 'topic') {
+      req = apiClient.getExploreTopic(activeTab.slug, { cursor: nextCursor, size: 24 })
+    } else if (activeTab.slug === 'all') {
+      req = apiClient.getExploreTrending({ cursor: nextCursor, size: 24 })
+    } else {
+      req = apiClient.getExploreCategory(activeTab.slug, { cursor: nextCursor, size: 24 })
+    }
     req
       .then((res) => {
         if (generation !== loadGenerationRef.current) return
@@ -115,7 +122,7 @@ export function ExplorePage() {
       .finally(() => {
         if (generation === loadGenerationRef.current) setLoading(false)
       })
-  }, [activeSlug])
+  }, [activeTab, token])
 
   useEffect(() => {
     load(null, false)
@@ -146,7 +153,8 @@ export function ExplorePage() {
     }, 500)
 
     const exploreContext = {
-      slug: activeSlug,
+      slug: activeTab.slug,
+      kind: activeTab.kind,
       seedItems: items.slice(0, 24),
       nextCursor: cursor,
       hasNext,
@@ -162,7 +170,7 @@ export function ExplorePage() {
     }
     window.clearTimeout(unlockTimer)
     openVideoLockRef.current = false
-  }, [activeSlug, cursor, hasNext, items, navigate])
+  }, [activeTab, cursor, hasNext, items, navigate])
 
   return (
     <section className="flex h-dvh max-h-dvh min-h-0 bg-black text-zinc-100">
@@ -186,15 +194,15 @@ export function ExplorePage() {
               className="scrollbar-none min-w-0 flex-1 overflow-x-auto"
             >
               <div className="flex w-max gap-2 pb-1">
-                {categoriesWithAll.map((cat) => (
+                {tabs.map((tab) => (
                   <button
-                    key={cat.slug}
-                    ref={cat.slug === 'all' ? allCategoryButtonRef : undefined}
+                    key={`${tab.kind}:${tab.slug}`}
+                    ref={tab.slug === 'all' ? allCategoryButtonRef : undefined}
                     type="button"
-                    onClick={() => setActiveSlug(cat.slug)}
-                    className={`cursor-pointer whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-semibold transition ${activeSlug === cat.slug ? 'border-white bg-white font-bold text-black' : 'border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-800'}`}
+                    onClick={() => setActiveTab({ slug: tab.slug, kind: tab.kind ?? 'category' })}
+                    className={`cursor-pointer whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-semibold transition ${activeTab.slug === tab.slug && activeTab.kind === (tab.kind ?? 'category') ? 'border-white bg-white font-bold text-black' : 'border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-800'}`}
                   >
-                    {cat.name}
+                    {tab.name}
                   </button>
                 ))}
               </div>
