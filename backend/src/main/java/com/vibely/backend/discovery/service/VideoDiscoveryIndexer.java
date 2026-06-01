@@ -65,7 +65,7 @@ public class VideoDiscoveryIndexer {
                 video,
                 categoryClassifierService.extractHashtags(video.getTitle(), video.getDescription())
             );
-            videoEngagementStatsService.recompute(video);
+            videoEngagementStatsService.recomputeSafely(video);
             exploreCacheService.evictByPrefix("trending");
             exploreCacheService.evictByPrefix("category:");
             exploreCacheService.evictByPrefix("related:" + video.getPublicId());

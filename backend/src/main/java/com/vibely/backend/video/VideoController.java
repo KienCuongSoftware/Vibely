@@ -136,16 +136,26 @@ public class VideoController {
 
     @PostMapping("/{publicId}/views")
     public ApiResponse<Void> recordView(
+        Authentication authentication,
         @PathVariable String publicId,
         @RequestBody(required = false) VideoViewRequest body
     ) {
-        videoService.recordView(VideoPublicIds.parse(publicId), body);
+        String viewerEmail = authentication != null && !(authentication instanceof AnonymousAuthenticationToken)
+            ? authentication.getName()
+            : null;
+        videoService.recordView(VideoPublicIds.parse(publicId), body, viewerEmail);
         return ApiResponse.success(null);
     }
 
     @PostMapping("/{publicId}/shares")
-    public ApiResponse<Void> recordShare(@PathVariable String publicId) {
-        videoService.recordShare(VideoPublicIds.parse(publicId));
+    public ApiResponse<Void> recordShare(
+        Authentication authentication,
+        @PathVariable String publicId
+    ) {
+        String viewerEmail = authentication != null && !(authentication instanceof AnonymousAuthenticationToken)
+            ? authentication.getName()
+            : null;
+        videoService.recordShare(VideoPublicIds.parse(publicId), viewerEmail);
         return ApiResponse.success(null);
     }
 }

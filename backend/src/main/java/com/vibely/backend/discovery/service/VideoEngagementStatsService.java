@@ -1,7 +1,6 @@
 package com.vibely.backend.discovery.service;
 
 import com.vibely.backend.discovery.config.DiscoveryProperties;
-import com.vibely.backend.discovery.model.VideoEngagementStats;
 import com.vibely.backend.discovery.repository.VideoEngagementStatsRepository;
 import com.vibely.backend.interaction.CommentRepository;
 import com.vibely.backend.interaction.LikeRepository;
@@ -11,11 +10,17 @@ import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class VideoEngagementStatsService {
+    private static final Logger log = LoggerFactory.getLogger(VideoEngagementStatsService.class);
+
     private final DiscoveryProperties properties;
     private final VideoEngagementStatsRepository statsRepository;
     private final VideoRepository videoRepository;
@@ -23,6 +28,7 @@ public class VideoEngagementStatsService {
     private final CommentRepository commentRepository;
     private final VideoViewRepository videoViewRepository;
     private final VideoBookmarkRepository bookmarkRepository;
+    private final ObjectProvider<VideoEngagementStatsService> self;
 
     public VideoEngagementStatsService(
         DiscoveryProperties properties,
@@ -31,7 +37,8 @@ public class VideoEngagementStatsService {
         LikeRepository likeRepository,
         CommentRepository commentRepository,
         VideoViewRepository videoViewRepository,
-        VideoBookmarkRepository bookmarkRepository
+        VideoBookmarkRepository bookmarkRepository,
+        ObjectProvider<VideoEngagementStatsService> self
     ) {
         this.properties = properties;
         this.statsRepository = statsRepository;
@@ -40,18 +47,23 @@ public class VideoEngagementStatsService {
         this.commentRepository = commentRepository;
         this.videoViewRepository = videoViewRepository;
         this.bookmarkRepository = bookmarkRepository;
+        this.self = self;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recompute(Video video) {
-        long likes = likeRepository.countByVideoId(video.getId());
-        long comments = commentRepository.countByVideoId(video.getId());
+        if (video == null || video.getId() == null) {
+            return;
+        }
+        long videoId = video.getId();
+        long likes = likeRepository.countByVideoId(videoId);
+        long comments = commentRepository.countByVideoId(videoId);
         long shares = Math.max(0L, video.getShareCount());
-        long saves = bookmarkRepository.countByVideo_Id(video.getId());
-        long views = videoViewRepository.countByVideo_Id(video.getId());
-        long watchTimeMs = videoViewRepository.sumWatchedMsByVideoId(video.getId());
-        double avgCompletion = videoViewRepository.avgCompletionRateByVideoId(video.getId());
-        double rewatchRate = videoViewRepository.rewatchRateByVideoId(video.getId());
+        long saves = bookmarkRepository.countByVideo_Id(videoId);
+        long views = videoViewRepository.countByVideo_Id(videoId);
+        long watchTimeMs = videoViewRepository.sumWatchedMsByVideoId(videoId);
+        double avgCompletion = videoViewRepository.avgCompletionRateByVideoId(videoId);
+        double rewatchRate = videoViewRepository.rewatchRateByVideoId(videoId);
 
         double viewDenom = Math.max(1.0, views);
         double shareRate = shares / viewDenom;
@@ -74,26 +86,34 @@ public class VideoEngagementStatsService {
         double exploreScore = likes * 3 + comments * 5 + shares * 8 + views * 0.05 + freshness * 24 * 0.8 - ageHours * 0.35;
         double rankingScore = engagementScore * 100 + exploreScore;
 
-        VideoEngagementStats stats = statsRepository.findByVideoId(video.getId()).orElseGet(VideoEngagementStats::new);
-        stats.setVideo(video);
-        stats.setViews(views);
-        stats.setWatchTimeMs(watchTimeMs);
-        stats.setCompletionRate(avgCompletion);
-        stats.setRewatchRate(rewatchRate);
-        stats.setShareRate(shareRate);
-        stats.setSaveRate(saveRate);
-        stats.setCommentRate(commentRate);
-        stats.setFollowConversionRate(0);
-        stats.setEngagementScore(engagementScore);
-        stats.setExploreScore(exploreScore);
-        stats.setRankingScore(rankingScore);
-        stats.setUpdatedAt(LocalDateTime.now());
-        statsRepository.save(stats);
+        statsRepository.upsert(
+            videoId,
+            views,
+            watchTimeMs,
+            avgCompletion,
+            rewatchRate,
+            shareRate,
+            saveRate,
+            commentRate,
+            engagementScore,
+            exploreScore,
+            rankingScore
+        );
 
-        video.setExploreScore(exploreScore);
-        video.setRankingScore(rankingScore);
-        video.setExploreScoreUpdatedAt(LocalDateTime.now());
-        videoRepository.save(video);
+        videoRepository.findById(videoId).ifPresent(row -> {
+            row.setExploreScore(exploreScore);
+            row.setRankingScore(rankingScore);
+            row.setExploreScoreUpdatedAt(LocalDateTime.now());
+            videoRepository.save(row);
+        });
+    }
+
+    public void recomputeSafely(Video video) {
+        try {
+            self.getObject().recompute(video);
+        } catch (Exception ex) {
+            log.warn("Failed to recompute engagement stats for video {}: {}", video.getId(), ex.getMessage());
+        }
     }
 
     private static double normalizeWatchTime(long watchTimeMs, long views) {

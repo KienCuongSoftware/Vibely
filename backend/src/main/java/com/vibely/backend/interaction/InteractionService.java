@@ -6,12 +6,12 @@ import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.discovery.service.UserInterestSignalProcessor;
 import com.vibely.backend.discovery.service.VideoEngagementStatsService;
 import com.vibely.backend.explore.service.ExploreCacheService;
-import com.vibely.backend.explore.service.ExploreRankingService;
 import com.vibely.backend.user.User;
 import com.vibely.backend.user.UserRepository;
 import com.vibely.backend.video.Video;
-import com.vibely.backend.video.VideoStatus;
+import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoService;
+import com.vibely.backend.video.VideoStatus;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,10 +34,10 @@ public class InteractionService {
     private final CommentRepository commentRepository;
     private final FollowRepository followRepository;
     private final UserAvatarResolver userAvatarResolver;
-    private final ExploreRankingService exploreRankingService;
     private final ExploreCacheService exploreCacheService;
     private final ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor;
     private final ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService;
+    private final VideoRepository videoRepository;
 
     public InteractionService(
         UserRepository userRepository,
@@ -46,10 +47,10 @@ public class InteractionService {
         CommentRepository commentRepository,
         FollowRepository followRepository,
         UserAvatarResolver userAvatarResolver,
-        ExploreRankingService exploreRankingService,
         ExploreCacheService exploreCacheService,
         ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor,
-        ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService
+        ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService,
+        VideoRepository videoRepository
     ) {
         this.userRepository = userRepository;
         this.videoService = videoService;
@@ -58,10 +59,10 @@ public class InteractionService {
         this.commentRepository = commentRepository;
         this.followRepository = followRepository;
         this.userAvatarResolver = userAvatarResolver;
-        this.exploreRankingService = exploreRankingService;
         this.exploreCacheService = exploreCacheService;
         this.userInterestSignalProcessor = userInterestSignalProcessor;
         this.videoEngagementStatsService = videoEngagementStatsService;
+        this.videoRepository = videoRepository;
     }
 
     public void likeVideo(String email, UUID videoPublicId) {
@@ -198,6 +199,12 @@ public class InteractionService {
         follow.setFollower(follower);
         follow.setFollowing(following);
         followRepository.save(follow);
+        List<Video> recentVideos = videoRepository.findByAuthorIdAndStatusEquals(
+            following.getId(),
+            VideoStatus.READY,
+            PageRequest.of(0, 5)
+        ).getContent();
+        userInterestSignalProcessor.ifAvailable(p -> p.onFollowCreator(follower.getId(), following.getId(), recentVideos));
     }
 
     public void unfollow(String email, Long followingUserId) {
@@ -303,8 +310,7 @@ public class InteractionService {
     }
 
     private void refreshExploreFor(Video video) {
-        exploreRankingService.recomputeVideo(video);
-        videoEngagementStatsService.ifAvailable(s -> s.recompute(video));
+        videoEngagementStatsService.ifAvailable(s -> s.recomputeSafely(video));
         exploreCacheService.evictByPrefix("trending");
         exploreCacheService.evictByPrefix("category:");
         exploreCacheService.evictByPrefix("related:" + video.getPublicId());

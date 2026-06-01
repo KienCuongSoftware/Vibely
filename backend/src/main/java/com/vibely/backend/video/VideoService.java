@@ -530,12 +530,13 @@ public class VideoService {
         row.setWatchedMs(body.watchedMs());
         row.setDurationMs(body.durationMs());
         videoViewRepository.save(row);
-        exploreRankingService.recomputeVideo(target);
-        videoEngagementStatsService.ifAvailable(s -> s.recompute(target));
         Long viewerId = resolveViewerId(viewerEmail);
         if (viewerId != null) {
-            userInterestSignalProcessor.ifAvailable(p -> p.onView(viewerId, target, body.watchedMs(), body.durationMs()));
+            userInterestSignalProcessor.ifAvailable(p ->
+                p.onView(viewerId, target, body.watchedMs(), body.durationMs())
+            );
         }
+        videoEngagementStatsService.ifAvailable(s -> s.recomputeSafely(target));
         exploreCacheService.evictByPrefix("trending");
         exploreCacheService.evictByPrefix("category:");
         exploreCacheService.evictByPrefix("related:" + target.getPublicId());
@@ -543,12 +544,28 @@ public class VideoService {
 
     @Transactional
     public void recordShare(UUID publicId) {
-        recordShare(getVideoByPublicIdOrThrow(publicId).getId());
+        recordShare(publicId, null);
+    }
+
+    @Transactional
+    public void recordShare(UUID publicId, String viewerEmail) {
+        recordShare(getVideoByPublicIdOrThrow(publicId).getId(), viewerEmail);
     }
 
     @Transactional
     public void recordShare(Long videoId) {
+        recordShare(videoId, null);
+    }
+
+    @Transactional
+    public void recordShare(Long videoId, String viewerEmail) {
         videoRepository.incrementShareCount(videoId, VideoStatus.READY);
+        Video target = getVideoOrThrow(videoId);
+        videoEngagementStatsService.ifAvailable(s -> s.recomputeSafely(target));
+        Long viewerId = resolveViewerId(viewerEmail);
+        if (viewerId != null) {
+            userInterestSignalProcessor.ifAvailable(p -> p.onShare(viewerId, target));
+        }
     }
 
     private static String resolveAuthorDisplayName(User author) {
