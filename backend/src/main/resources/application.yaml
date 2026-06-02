@@ -101,6 +101,10 @@ app:
       freshness: ${DISCOVERY_RANK_FRESHNESS:0.05}
   explore:
     ranking-recompute-interval-ms: ${EXPLORE_RANKING_RECOMPUTE_MS:300000}
+  search:
+    suggest-cache-ttl-seconds: ${SEARCH_SUGGEST_CACHE_TTL_SECONDS:300}
+    suggest-group-limit: ${SEARCH_SUGGEST_GROUP_LIMIT:8}
+    candidate-multiplier: ${SEARCH_CANDIDATE_MULTIPLIER:4}
 ---
 spring:
   config:
