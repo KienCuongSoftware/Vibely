@@ -94,7 +94,8 @@ public class CategoryTopicMapper {
         if (key.isBlank()) {
             return;
         }
-        scores.merge(key, Math.max(0, Math.min(1, score)), Math::max);
+        double clamped = Math.max(0, Math.min(1, score));
+        scores.put(key, Math.max(scores.getOrDefault(key, 0.0), clamped));
     }
 
     private static String normalize(String raw) {

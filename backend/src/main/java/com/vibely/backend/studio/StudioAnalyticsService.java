@@ -304,7 +304,7 @@ public class StudioAnalyticsService {
             }
             Long rawW = row.watchedMs();
             boolean explicit = rawW != null;
-            long effWatch = explicit ? rawW : imputeWatchedMsWhenMissing(effDur);
+            long effWatch = explicit ? rawW.longValue() : imputeWatchedMsWhenMissing(effDur);
             out.add(new EffectivePlaybackSample(effWatch, effDur, explicit));
         }
         return out;

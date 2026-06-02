@@ -90,7 +90,7 @@ public class RelatedVideoDiscoveryService {
                 sourceEmbedding.get().getEmbeddingJson(),
                 json
             );
-            combined.merge(candidateId, embeddingSim, Math::max);
+            combined.put(candidateId, Math.max(combined.getOrDefault(candidateId, 0.0), embeddingSim));
         }
         List<Long> rankedIds = combined.entrySet().stream()
             .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())

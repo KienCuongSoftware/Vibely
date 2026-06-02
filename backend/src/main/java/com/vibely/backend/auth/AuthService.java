@@ -155,19 +155,19 @@ public class AuthService {
             throw new BadRequestException("Tài khoản " + providerLabel + " chưa cung cấp email hợp lệ");
         }
 
-        User user = userRepository.findByEmail(email).orElse(null);
-        boolean isNewUser = user == null;
-        if (isNewUser) {
-            user = new User();
-            user.setEmail(email);
-            user.setRole(Role.USER);
-            user.setUsername(generatePendingUsername());
-            user.setOnboardingCompleted(false);
-            user.setDisplayName(
-                displayName != null && !displayName.isBlank() ? displayName.trim() : user.getUsername()
+        var existingUser = userRepository.findByEmail(email);
+        User user = existingUser.orElseGet(() -> {
+            User created = new User();
+            created.setEmail(email);
+            created.setRole(Role.USER);
+            created.setUsername(generatePendingUsername());
+            created.setOnboardingCompleted(false);
+            created.setDisplayName(
+                displayName != null && !displayName.isBlank() ? displayName.trim() : created.getUsername()
             );
-            user.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
-        }
+            created.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
+            return created;
+        });
 
         if (user.isOnboardingCompleted()) {
             boolean usernameMissingOrNotAlphanumeric =

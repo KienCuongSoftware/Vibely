@@ -23,8 +23,6 @@ public class SliderCaptchaImageGenerator {
     public static final int HEIGHT = 180;
     public static final int PIECE_SIZE = 52;
 
-    private final Random random = new Random();
-
     public SliderPuzzle generate(long seed) {
         BufferedImage background = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = background.createGraphics();

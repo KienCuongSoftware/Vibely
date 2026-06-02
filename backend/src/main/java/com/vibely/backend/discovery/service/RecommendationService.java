@@ -1,31 +1,26 @@
 package com.vibely.backend.discovery.service;
 
-import com.vibely.backend.discovery.config.DiscoveryProperties;
 import com.vibely.backend.discovery.model.UserTopicInterest;
 import com.vibely.backend.discovery.repository.DiscoveryExploreQueryRepository;
 import com.vibely.backend.discovery.repository.UserTopicInterestRepository;
 import com.vibely.backend.discovery.repository.VideoTopicRepository;
 import com.vibely.backend.explore.ExploreVideoProjection;
 import com.vibely.backend.interaction.FollowRepository;
-import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class RecommendationService {
-    private final DiscoveryProperties properties;
     private final UserTopicInterestRepository userTopicInterestRepository;
     private final VideoTopicRepository videoTopicRepository;
     private final DiscoveryExploreQueryRepository discoveryExploreQueryRepository;
@@ -34,7 +29,6 @@ public class RecommendationService {
     private final ForYouRankingService forYouRankingService;
 
     public RecommendationService(
-        DiscoveryProperties properties,
         UserTopicInterestRepository userTopicInterestRepository,
         VideoTopicRepository videoTopicRepository,
         DiscoveryExploreQueryRepository discoveryExploreQueryRepository,
@@ -42,7 +36,6 @@ public class RecommendationService {
         FollowRepository followRepository,
         ForYouRankingService forYouRankingService
     ) {
-        this.properties = properties;
         this.userTopicInterestRepository = userTopicInterestRepository;
         this.videoTopicRepository = videoTopicRepository;
         this.discoveryExploreQueryRepository = discoveryExploreQueryRepository;

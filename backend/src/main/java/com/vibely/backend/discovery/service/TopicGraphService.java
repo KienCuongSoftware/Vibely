@@ -41,7 +41,8 @@ public class TopicGraphService {
             if (canonical.isBlank()) {
                 continue;
             }
-            merged.merge(canonical, scored.score(), Math::max);
+            double score = scored.score();
+            merged.put(canonical, Math.max(merged.getOrDefault(canonical, 0.0), score));
         }
         for (Map.Entry<String, Double> entry : merged.entrySet()) {
             Topic topic = upsertTopic(entry.getKey());

@@ -11,7 +11,6 @@ import com.vibely.backend.antibot.reputation.IpReputationService;
 import com.vibely.backend.antibot.risk.RiskEngine;
 import com.vibely.backend.antibot.security.VerificationTokenStore;
 import com.vibely.backend.antibot.telemetry.AntiBotTelemetryPublisher;
-import com.vibely.backend.antibot.trust.TrustScoringService;
 import com.vibely.backend.common.BadRequestException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -28,7 +27,6 @@ public class AuthProtectionService {
     private final VerificationTokenStore verificationTokenStore;
     private final LoginAttemptTracker loginAttemptTracker;
     private final IpReputationService ipReputationService;
-    private final TrustScoringService trustScoringService;
     private final AntiBotTelemetryPublisher telemetryPublisher;
 
     public AuthProtectionService(
@@ -37,7 +35,6 @@ public class AuthProtectionService {
         VerificationTokenStore verificationTokenStore,
         LoginAttemptTracker loginAttemptTracker,
         IpReputationService ipReputationService,
-        TrustScoringService trustScoringService,
         AntiBotTelemetryPublisher telemetryPublisher
     ) {
         this.properties = properties;
@@ -45,7 +42,6 @@ public class AuthProtectionService {
         this.verificationTokenStore = verificationTokenStore;
         this.loginAttemptTracker = loginAttemptTracker;
         this.ipReputationService = ipReputationService;
-        this.trustScoringService = trustScoringService;
         this.telemetryPublisher = telemetryPublisher;
     }
 

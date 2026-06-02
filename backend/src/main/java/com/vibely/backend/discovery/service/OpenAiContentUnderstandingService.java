@@ -76,12 +76,15 @@ public class OpenAiContentUnderstandingService {
         List<CategoryClassifierService.ScoredCategory> categories = classifierService.inferCategories(title, description);
         Map<String, Double> topicScores = new LinkedHashMap<>();
         for (String tag : hashtags) {
-            topicScores.merge(normalizeTopic(tag), properties.getHashtagWeightCap(), Math::max);
+            String key = normalizeTopic(tag);
+            double cap = properties.getHashtagWeightCap();
+            topicScores.put(key, Math.max(topicScores.getOrDefault(key, 0.0), cap));
         }
         for (CategoryClassifierService.ScoredCategory scored : categories) {
             String slug = scored.category().getSlug();
             double normalized = Math.min(1.0, scored.score() / 6.0);
-            topicScores.merge(normalizeTopic(slug), normalized, Math::max);
+            String key = normalizeTopic(slug);
+            topicScores.put(key, Math.max(topicScores.getOrDefault(key, 0.0), normalized));
         }
         List<ContentUnderstandingResult.ScoredTopic> topics = topicScores.entrySet().stream()
             .map(e -> new ContentUnderstandingResult.ScoredTopic(e.getKey(), e.getValue()))

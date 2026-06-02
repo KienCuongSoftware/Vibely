@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 public class UsernameService {
 
     private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-z0-9._]{4,24}$");
-    private static final Pattern GOOGLE_USERNAME_PATTERN = Pattern.compile("^[a-z0-9]{4,24}$");
     private final UserRepository userRepository;
 
     public UsernameService(UserRepository userRepository) {
