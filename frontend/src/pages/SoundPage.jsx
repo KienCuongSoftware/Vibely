@@ -10,6 +10,12 @@ import { normalizeVideoPublicId } from '../utils/videoPublicId.js'
 
 export const DEFAULT_COVER = '/images/users/default-avatar.jpeg'
 
+function resolveGridAuthorAvatar(video) {
+  const raw = video?.authorAvatarUrl ?? video?.avatarUrl
+  if (raw != null && String(raw).trim()) return String(raw).trim()
+  return DEFAULT_COVER
+}
+
 function soundProfilePath(username) {
   const raw = String(username ?? 'vibely')
     .trim()
@@ -84,10 +90,7 @@ function SoundVideoDetailPopover({
   const soundLine = ownerId
     ? `nhạc nền - ${ownerId}`
     : video.audioTitle?.trim() || `nhạc nền - ${rawUser}`
-  const avatar =
-    String(video.authorAvatarUrl ?? video.avatarUrl ?? '').trim() ||
-    String(video.thumbnailUrl ?? '').trim() ||
-    DEFAULT_COVER
+  const avatar = resolveGridAuthorAvatar(video)
   const caption =
     String(video.description ?? '').trim() || String(video.title ?? '').trim()
   const profile = soundProfilePath(rawUser)
@@ -406,8 +409,7 @@ export function SoundGridVideoCard({
     '\u00A0'
   const poster =
     String(video.thumbnailUrl ?? '').trim() || coverFallback || DEFAULT_COVER
-  const overlayAvatar =
-    String(video.authorAvatarUrl ?? video.avatarUrl ?? '').trim() || poster
+  const overlayAvatar = resolveGridAuthorAvatar(video)
 
   const thumb = (
     <>

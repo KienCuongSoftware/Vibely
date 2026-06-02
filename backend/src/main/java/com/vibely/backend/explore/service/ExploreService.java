@@ -16,6 +16,7 @@ import com.vibely.backend.interaction.CommentRepository;
 import com.vibely.backend.interaction.LikeRepository;
 import com.vibely.backend.interaction.VideoBookmarkRepository;
 import com.vibely.backend.interaction.VideoViewRepository;
+import com.vibely.backend.storage.MediaUrlPresigner;
 import java.util.List;
 import java.util.Map;
 import java.util.Collections;
@@ -38,6 +39,7 @@ public class ExploreService {
     private final RelatedVideoDiscoveryService relatedVideoDiscoveryService;
     private final PersonalizedExploreTabsService personalizedExploreTabsService;
     private final RecommendationService recommendationService;
+    private final MediaUrlPresigner mediaUrlPresigner;
 
     public ExploreService(
         ExploreQueryRepository exploreQueryRepository,
@@ -51,7 +53,8 @@ public class ExploreService {
         ExploreDiscoveryEngine exploreDiscoveryEngine,
         RelatedVideoDiscoveryService relatedVideoDiscoveryService,
         PersonalizedExploreTabsService personalizedExploreTabsService,
-        RecommendationService recommendationService
+        RecommendationService recommendationService,
+        MediaUrlPresigner mediaUrlPresigner
     ) {
         this.exploreQueryRepository = exploreQueryRepository;
         this.categoryRepository = categoryRepository;
@@ -65,6 +68,7 @@ public class ExploreService {
         this.relatedVideoDiscoveryService = relatedVideoDiscoveryService;
         this.personalizedExploreTabsService = personalizedExploreTabsService;
         this.recommendationService = recommendationService;
+        this.mediaUrlPresigner = mediaUrlPresigner;
     }
 
     @Transactional(readOnly = true)
@@ -128,12 +132,12 @@ public class ExploreService {
     @Transactional(readOnly = true)
     public ExplorePageDto search(String q, String cursor, int size) {
         String query = String.valueOf(q == null ? "" : q).trim();
-        return toPage(
+        return presignExplorePage(toPage(
             exploreDiscoveryEngine.isHybridEnabled()
                 ? exploreDiscoveryEngine.search(query, score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1))
                 : exploreQueryRepository.search(query, score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1)),
             capSize(size)
-        );
+        ));
     }
 
     @Transactional(readOnly = true)
@@ -158,25 +162,9 @@ public class ExploreService {
         Map<Long, Long> comments = videoIds.isEmpty() ? Collections.emptyMap() : groupCount(commentRepository.countGroupedByVideoIds(videoIds));
         Map<Long, Long> bookmarks = videoIds.isEmpty() ? Collections.emptyMap() : groupCount(bookmarkRepository.countGroupedByVideoIds(videoIds));
         Map<Long, Long> views = videoIds.isEmpty() ? Collections.emptyMap() : groupCount(viewRepository.countGroupedByVideoIds(videoIds));
-        List<ExploreVideoCardDto> cards = data.stream().map(v -> new ExploreVideoCardDto(
-            v.getPublicId(),
-            v.getAuthorId(),
-            v.getAuthorUsername(),
-            v.getAuthorDisplayName(),
-            v.getAuthorAvatarUrl(),
-            v.getTitle(),
-            v.getDescription(),
-            v.getVideoUrl(),
-            v.getThumbnailUrl(),
-            v.getMasterPlaylistUrl(),
-            likes.getOrDefault(v.getId(), 0L),
-            comments.getOrDefault(v.getId(), 0L),
-            bookmarks.getOrDefault(v.getId(), 0L),
-            v.getShareCount() == null ? 0L : v.getShareCount(),
-            views.getOrDefault(v.getId(), 0L),
-            v.getCreatedAt(),
-            v.getExploreScore() == null ? 0 : v.getExploreScore()
-        )).toList();
+        List<ExploreVideoCardDto> cards = data.stream()
+            .map(v -> toCard(v, likes, comments, bookmarks, views))
+            .toList();
         String next = null;
         if (hasNext && !data.isEmpty()) {
             ExploreVideoProjection last = data.get(data.size() - 1);
@@ -209,11 +197,68 @@ public class ExploreService {
         return cursor == null || cursor.isBlank() ? null : ExploreCursorCodec.decode(cursor).id();
     }
 
+    private ExploreVideoCardDto toCard(
+        ExploreVideoProjection v,
+        Map<Long, Long> likes,
+        Map<Long, Long> comments,
+        Map<Long, Long> bookmarks,
+        Map<Long, Long> views
+    ) {
+        return new ExploreVideoCardDto(
+            v.getPublicId(),
+            v.getAuthorId(),
+            v.getAuthorUsername(),
+            v.getAuthorDisplayName(),
+            v.getAuthorAvatarUrl(),
+            v.getTitle(),
+            v.getDescription(),
+            v.getVideoUrl(),
+            v.getThumbnailUrl(),
+            v.getMasterPlaylistUrl(),
+            likes.getOrDefault(v.getId(), 0L),
+            comments.getOrDefault(v.getId(), 0L),
+            bookmarks.getOrDefault(v.getId(), 0L),
+            v.getShareCount() == null ? 0L : v.getShareCount(),
+            views.getOrDefault(v.getId(), 0L),
+            v.getCreatedAt(),
+            v.getExploreScore() == null ? 0 : v.getExploreScore()
+        );
+    }
+
     private ExplorePageDto cachedPage(String key, java.util.function.Supplier<ExplorePageDto> supplier) {
-        return cacheService.getPage(key).orElseGet(() -> {
+        ExplorePageDto page = cacheService.getPage(key).orElseGet(() -> {
             ExplorePageDto value = supplier.get();
             cacheService.putPage(key, value);
             return value;
         });
+        return presignExplorePage(page);
+    }
+
+    private ExplorePageDto presignExplorePage(ExplorePageDto page) {
+        if (page == null || page.items() == null || page.items().isEmpty()) {
+            return page;
+        }
+        List<ExploreVideoCardDto> items = page.items().stream()
+            .map(item -> new ExploreVideoCardDto(
+                item.publicId(),
+                item.authorId(),
+                item.authorUsername(),
+                item.authorDisplayName(),
+                mediaUrlPresigner.presignPlaybackUrl(item.authorAvatarUrl()),
+                item.title(),
+                item.description(),
+                mediaUrlPresigner.presignPlaybackUrl(item.videoUrl()),
+                mediaUrlPresigner.presignPlaybackUrl(item.thumbnailUrl()),
+                mediaUrlPresigner.presignPlaybackUrl(item.masterPlaylistUrl()),
+                item.likeCount(),
+                item.commentCount(),
+                item.bookmarkCount(),
+                item.shareCount(),
+                item.viewCount(),
+                item.createdAt(),
+                item.exploreScore()
+            ))
+            .toList();
+        return new ExplorePageDto(items, page.nextCursor(), page.hasNext());
     }
 }
