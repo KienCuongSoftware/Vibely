@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useSearchModal } from "../state/SearchModalContext.jsx";
 import {
   IoBagHandleOutline,
   IoCashOutline,
@@ -26,7 +27,10 @@ export function Sidebar({
   user,
   onLogout,
   forceCollapsed = false,
+  onOpenSearch,
 }) {
+  const searchModal = useSearchModal();
+  const openSearch = onOpenSearch ?? searchModal?.openSearch;
   const [moreOpen, setMoreOpen] = useState(false);
   const [darkModeOn, setDarkModeOn] = useState(true);
 
@@ -96,6 +100,7 @@ export function Sidebar({
         {collapsed ? (
           <button
             type="button"
+            onClick={() => openSearch?.()}
             className="mb-4 flex h-10 w-full cursor-pointer items-center justify-center rounded-full bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
             aria-label="Tìm kiếm"
           >
@@ -104,6 +109,7 @@ export function Sidebar({
         ) : (
           <button
             type="button"
+            onClick={() => openSearch?.()}
             className="mb-4 flex h-10 w-full cursor-pointer items-center gap-2 rounded-full bg-zinc-900 px-4 text-left text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
           >
             <IoSearchOutline

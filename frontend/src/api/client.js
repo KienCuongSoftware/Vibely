@@ -194,6 +194,26 @@ export const apiClient = {
     request(`/api/explore/topic/${encodeURIComponent(slug)}${toQuery({ cursor, size })}`),
   searchExplore: (q, { cursor, size = 24 } = {}) =>
     request(`/api/explore/search${toQuery({ q, cursor, size })}`),
+  getSearchSuggest: (q, { token } = {}) =>
+    request(`/api/search/suggest${toQuery({ q: q ?? "" })}`, token ? { token } : {}),
+  getSearchUsers: (q, { limit = 20 } = {}) =>
+    request(`/api/search/users${toQuery({ q, limit })}`),
+  getSearchVideos: (q, { limit = 20 } = {}) =>
+    request(`/api/search/videos${toQuery({ q, limit })}`),
+  getSearchHashtags: (q, { limit = 20 } = {}) =>
+    request(`/api/search/hashtags${toQuery({ q, limit })}`),
+  getSearchTrending: ({ limit = 20 } = {}) =>
+    request(`/api/search/trending${toQuery({ limit })}`),
+  getSearchHistory: (token, { limit = 30 } = {}) =>
+    request(`/api/search/history${toQuery({ limit })}`, { token }),
+  recordSearchHistory: (token, query) =>
+    request("/api/search/history", {
+      method: "POST",
+      token,
+      body: { query },
+    }),
+  clearSearchHistory: (token) =>
+    request("/api/search/history", { method: "DELETE", token }),
   getExploreRelated: (publicId, { size = 18 } = {}) =>
     request(`/api/explore/video/${encodeURIComponent(publicId)}/related${toQuery({ size })}`),
   updateVideo: (publicId, payload, token) =>

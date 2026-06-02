@@ -8,6 +8,7 @@ import { AuthContext } from '../state/auth-context'
 vi.mock('../api/client', () => ({
   apiClient: {
     getExploreCategories: vi.fn(),
+    getExploreTabs: vi.fn(),
     getExploreTrending: vi.fn(),
     getExploreCategory: vi.fn(),
     searchExplore: vi.fn(),
@@ -19,7 +20,7 @@ import { apiClient } from '../api/client'
 describe('ExplorePage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    apiClient.getExploreCategories.mockResolvedValue([{ slug: 'all', name: 'Tất cả', videoCount: 99 }])
+    apiClient.getExploreTabs.mockResolvedValue([{ slug: 'all', name: 'Tất cả', kind: 'category', videoCount: 99 }])
     apiClient.getExploreTrending.mockResolvedValue({ items: [], hasNext: false, nextCursor: null })
     apiClient.getExploreCategory.mockResolvedValue({ items: [], hasNext: false, nextCursor: null })
     apiClient.searchExplore.mockResolvedValue({ items: [], hasNext: false, nextCursor: null })
@@ -35,7 +36,7 @@ describe('ExplorePage', () => {
     )
 
     await waitFor(() => {
-      expect(apiClient.getExploreCategories).toHaveBeenCalled()
+      expect(apiClient.getExploreTabs).toHaveBeenCalled()
       expect(apiClient.getExploreTrending).toHaveBeenCalled()
     })
   })
