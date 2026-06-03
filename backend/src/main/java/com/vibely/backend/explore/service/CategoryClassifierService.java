@@ -18,7 +18,11 @@ import org.springframework.stereotype.Service;
 public class CategoryClassifierService {
     private static final Pattern HASHTAG_PATTERN = Pattern.compile("#([\\p{L}\\p{N}_]{2,80})");
     private static final Map<String, Set<String>> KEYWORDS = Map.of(
-        "music", Set.of("music", "song", "amnhac", "nhac", "remix", "cover", "lyrics", "lyric", "karaoke", "sing", "audio"),
+        "music", Set.of(
+            "music", "song", "amnhac", "am nhac", "nhac", "remix", "cover",
+            "lyrics", "lyric", "karaoke", "sing", "audio", "am thanh",
+            "sound", "soundtrack", "melody", "lofi", "ballad", "rap", "hiphop", "edm"
+        ),
         "dance", Set.of("dance", "nhay", "choreography"),
         "food", Set.of("food", "monan", "anuong", "recipe", "nauan"),
         "travel", Set.of("travel", "dulich", "trip", "review"),
@@ -79,7 +83,24 @@ public class CategoryClassifierService {
     }
 
     public List<ScoredCategory> inferCategories(String title, String description) {
-        String normalized = normalizeToken(String.join(" ", String.valueOf(title == null ? "" : title), String.valueOf(description == null ? "" : description)));
+        return inferCategories(title, description, null);
+    }
+
+    public List<ScoredCategory> inferCategories(String title, String description, String audioTitle) {
+        String normalizedAudioTitle = normalizeToken(audioTitle);
+        // Ignore default auto-generated label to avoid forcing every video into music.
+        if (normalizedAudioTitle.startsWith("am thanh goc")) {
+            normalizedAudioTitle = "";
+        }
+        String normalized = normalizeToken(
+            String.join(
+                " ",
+                String.valueOf(title == null ? "" : title),
+                String.valueOf(description == null ? "" : description),
+                normalizedAudioTitle
+            )
+        );
+        String compact = normalized.replace(" ", "");
         List<Category> enabled = categoryRepository.findByEnabledTrueOrderByNameAsc();
         Map<String, Category> bySlug = enabled.stream().collect(java.util.stream.Collectors.toMap(Category::getSlug, c -> c));
 
@@ -96,7 +117,7 @@ public class CategoryClassifierService {
                 continue;
             }
             for (String kw : entry.getValue()) {
-                if (normalized.contains(kw)) {
+                if (containsKeyword(normalized, compact, kw)) {
                     score.merge(entry.getKey(), 1.0, Double::sum);
                 }
             }
@@ -130,6 +151,18 @@ public class CategoryClassifierService {
         String lower = String.valueOf(raw).toLowerCase(Locale.ROOT).trim();
         String normalized = Normalizer.normalize(lower, Normalizer.Form.NFD).replaceAll("\\p{M}+", "");
         return normalized.replaceAll("[^\\p{L}\\p{N}_\\s]", "");
+    }
+
+    private boolean containsKeyword(String normalizedText, String compactText, String keyword) {
+        String normalizedKeyword = normalizeToken(keyword);
+        if (normalizedKeyword.isBlank()) {
+            return false;
+        }
+        if (normalizedText.contains(normalizedKeyword)) {
+            return true;
+        }
+        String compactKeyword = normalizedKeyword.replace(" ", "");
+        return !compactKeyword.isBlank() && compactText.contains(compactKeyword);
     }
 
     public record ScoredCategory(Category category, double score) {

@@ -134,6 +134,7 @@ public class VideoService {
         this.recommendationService = recommendationService;
     }
 
+    @Transactional
     public VideoResponse createVideo(String email, VideoCreateRequest request) {
         User author = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
@@ -429,7 +430,8 @@ public class VideoService {
         videoHashtagRepository.deleteByVideoId(video.getId());
         List<CategoryClassifierService.ScoredCategory> inferred = categoryClassifierService.inferCategories(
             video.getTitle(),
-            video.getDescription()
+            video.getDescription(),
+            video.getAudioTitle()
         );
         for (CategoryClassifierService.ScoredCategory scored : inferred) {
             videoCategoryRepository.save(new VideoCategory(video, scored.category(), scored.score()));
