@@ -114,6 +114,39 @@ html {
   outline-offset: 2px;
 }
 
+/* Thanh âm lượng dọc trang xem video (TikTok-style). */
+.watch-volume-slider-vertical {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 3px;
+  height: 5.25rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+  writing-mode: vertical-lr;
+  direction: rtl;
+}
+.watch-volume-slider-vertical::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+.watch-volume-slider-vertical::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+.watch-volume-slider-vertical:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 3px;
+}
+
 .share-modal-panel {
   position: relative;
 }
@@ -243,6 +276,7 @@ body {
 /* VideoWatch / Explore viewer: keep play + timeline, hide volume/fullscreen/overflow. */
 .watch-video-el::-webkit-media-controls-mute-button,
 .watch-video-el::-webkit-media-controls-volume-slider,
+.watch-video-el::-webkit-media-controls-picture-in-picture-button,
 .watch-video-el::-webkit-media-controls-fullscreen-button,
 .watch-video-el::-webkit-media-controls-overflow-button,
 .watch-video-el::-webkit-media-controls-toggle-closed-captions-button,

@@ -19,6 +19,7 @@ import {
   normalizeVideoPublicId,
   videoPublicIdOf,
 } from '../utils/videoPublicId.js'
+import { recordProfileLastWatchedFromVideo } from '../utils/profileLastWatched.js'
 import {
   IoArrowUp,
   IoBookmark,
@@ -36,7 +37,12 @@ import {
   IoPerson,
   IoSearchOutline,
   IoShareOutline,
+  IoVolumeHighOutline,
+  IoVolumeLowOutline,
+  IoVolumeMediumOutline,
+  IoVolumeMuteOutline,
 } from 'react-icons/io5'
+import { LuPictureInPicture2 } from 'react-icons/lu'
 
 const DEFAULT_USER_AVATAR_URL = '/images/users/default-avatar.jpeg'
 const EXPLORE_PAGE_TITLE = 'Khám phá - Tìm video bạn thích trên Vibely'
@@ -149,6 +155,78 @@ const ACTION_ROW =
 const WATCH_CHROME_BTN =
   'flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-zinc-600/45 text-xl text-zinc-100 transition hover:bg-zinc-600/75'
 
+const WATCH_VOLUME_DEFAULT = 1
+
+function WatchVolumeIcon({ muted, volume }) {
+  if (muted || volume === 0) {
+    return <IoVolumeMuteOutline aria-hidden />
+  }
+  if (volume < 0.34) {
+    return <IoVolumeLowOutline aria-hidden />
+  }
+  if (volume < 0.67) {
+    return <IoVolumeMediumOutline aria-hidden />
+  }
+  return <IoVolumeHighOutline aria-hidden />
+}
+
+/** Âm lượng dọc + nút loa (TikTok-style). */
+function WatchVolumeControl({ volume, onVolumeChange, muted, onMutedChange }) {
+  const onSlider = (e) => {
+    e.stopPropagation()
+    const v = Number(e.target.value)
+    onVolumeChange(v)
+    onMutedChange(false)
+  }
+
+  const toggleMute = (e) => {
+    e.stopPropagation()
+    if (!muted) {
+      onMutedChange(true)
+      return
+    }
+    onMutedChange(false)
+    if (volume === 0) {
+      onVolumeChange(WATCH_VOLUME_DEFAULT)
+    }
+  }
+
+  return (
+    <div
+      className="group/vol flex flex-col items-center"
+      onMouseDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="pointer-events-none mb-2 flex h-[6.5rem] w-10 items-center justify-center rounded-full bg-zinc-800/92 px-1 py-3 opacity-0 shadow-lg transition-opacity duration-200 group-hover/vol:pointer-events-auto group-hover/vol:opacity-100 group-focus-within/vol:pointer-events-auto group-focus-within/vol:opacity-100">
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.01}
+          value={volume}
+          aria-label="Âm lượng"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(volume * 100)}
+          className="watch-volume-slider-vertical pointer-events-auto"
+          onChange={onSlider}
+          onInput={onSlider}
+          onClick={(e) => e.stopPropagation()}
+        />
+      </div>
+      <button
+        type="button"
+        className={`${WATCH_CHROME_BTN} bg-black/55 hover:bg-black/75`}
+        aria-label={muted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+        aria-pressed={!muted}
+        onClick={toggleMute}
+      >
+        <WatchVolumeIcon muted={muted} volume={volume} />
+      </button>
+    </div>
+  )
+}
+
 function WatchSpinner() {
   return (
     <svg
@@ -212,6 +290,17 @@ function mergeExploreItems(existing, incoming) {
   return Array.from(map.values())
 }
 
+/** Hàng đợi video trên hồ sơ: mới đăng trước (khớp tab Video → Mới nhất). */
+function sortVideosNewestFirst(items) {
+  const list = Array.isArray(items) ? [...items] : []
+  return list.sort((a, b) => {
+    const ta = new Date(a?.createdAt ?? 0).getTime()
+    const tb = new Date(b?.createdAt ?? 0).getTime()
+    if (tb !== ta) return tb - ta
+    return Number(b?.id ?? 0) - Number(a?.id ?? 0)
+  })
+}
+
 export function VideoWatchPage() {
   const { username: usernameParam, publicId: publicIdParam } = useParams()
   const location = useLocation()
@@ -240,6 +329,7 @@ export function VideoWatchPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [intrinsicSize, setIntrinsicSize] = useState(null)
   const [exploreQueue, setExploreQueue] = useState([])
+  const [creatorQueue, setCreatorQueue] = useState([])
   const [exploreCursor, setExploreCursor] = useState(null)
   const [exploreHasNext, setExploreHasNext] = useState(false)
   const [exploreLoadingMore, setExploreLoadingMore] = useState(false)
@@ -249,13 +339,21 @@ export function VideoWatchPage() {
   const displayPosterRef = useRef('')
   const exploreQueueRef = useRef(exploreQueue)
   exploreQueueRef.current = exploreQueue
+  const creatorQueueRef = useRef(creatorQueue)
+  creatorQueueRef.current = creatorQueue
   const exploreNavLockRef = useRef(false)
+  const creatorNavLockRef = useRef(false)
   const exploreNavGenRef = useRef(0)
   const detailPrefetchGenRef = useRef(0)
   const videoLoadGenRef = useRef(0)
   const moveToExploreVideoByOffsetRef = useRef(null)
+  const moveToCreatorVideoByOffsetRef = useRef(null)
   const currentExploreIndexRef = useRef(-1)
+  const currentCreatorIndexRef = useRef(-1)
   const [exploreNavBusy, setExploreNavBusy] = useState(false)
+  const [watchMuted, setWatchMuted] = useState(true)
+  const [watchVolume, setWatchVolume] = useState(WATCH_VOLUME_DEFAULT)
+  const [pipActive, setPipActive] = useState(false)
 
   const routeSlug = useMemo(() => normalizeUsernameKey(usernameParam), [usernameParam])
   const publicIdFromRoute = useMemo(
@@ -273,6 +371,18 @@ export function VideoWatchPage() {
       location.pathname.startsWith('/explore/view/') ||
       Boolean(location.state?.fromExplore),
     [location.pathname, location.state],
+  )
+
+  const isCreatorWatch = useMemo(
+    () => !isFromExplore && Boolean(routeSlug) && Boolean(publicIdFromRoute),
+    [isFromExplore, routeSlug, publicIdFromRoute],
+  )
+
+  const isOwnCreatorProfile = useMemo(
+    () =>
+      Boolean(routeSlug) &&
+      normalizeUsernameKey(user?.username) === routeSlug,
+    [routeSlug, user?.username],
   )
 
   const resolvedVideo = useMemo(() => {
@@ -301,12 +411,19 @@ export function VideoWatchPage() {
   }
   const displayPosterUrl = activePosterUrl || displayPosterRef.current
 
+  useEffect(() => {
+    recordProfileLastWatchedFromVideo(activeVideo, { tab: 'videos' })
+  }, [activeVideo?.publicId, activeVideo?.authorUsername])
+
   useLayoutEffect(() => {
     exploreNavGenRef.current += 1
     setVideoReady(false)
     setIntrinsicSize(null)
     setExploreNavBusy(false)
+    setWatchMuted(true)
+    setPipActive(false)
     exploreNavLockRef.current = false
+    creatorNavLockRef.current = false
     const el = videoRef.current
     if (el) {
       el.pause()
@@ -321,6 +438,46 @@ export function VideoWatchPage() {
 
   const isVideoFrameReady =
     videoReady && normalizeVideoPublicId(activeVideo?.publicId) === publicIdFromRoute
+
+  useEffect(() => {
+    const el = videoRef.current
+    if (!el) return undefined
+    el.muted = watchMuted
+    el.volume = watchVolume
+    const onEnterPip = () => setPipActive(true)
+    const onLeavePip = () => setPipActive(false)
+    el.addEventListener('enterpictureinpicture', onEnterPip)
+    el.addEventListener('leavepictureinpicture', onLeavePip)
+    if (document.pictureInPictureElement === el) {
+      setPipActive(true)
+    }
+    return () => {
+      el.removeEventListener('enterpictureinpicture', onEnterPip)
+      el.removeEventListener('leavepictureinpicture', onLeavePip)
+    }
+  }, [watchMuted, watchVolume, isVideoFrameReady, activePlaybackUrl, publicIdFromRoute])
+
+  const toggleWatchPictureInPicture = useCallback(async () => {
+    const el = videoRef.current
+    if (!el || typeof el.requestPictureInPicture !== 'function') return
+    try {
+      if (document.pictureInPictureElement === el) {
+        await document.exitPictureInPicture?.()
+      } else {
+        await el.requestPictureInPicture()
+      }
+    } catch {
+      /* PiP không khả dụng hoặc trình duyệt chặn */
+    }
+  }, [])
+
+  const exitWatchPictureInPicture = useCallback(async () => {
+    try {
+      await document.exitPictureInPicture?.()
+    } catch {
+      /* noop */
+    }
+  }, [])
 
   const watchOrientation = useMemo(
     () => resolveWatchOrientation(activeVideo, intrinsicSize),
@@ -432,6 +589,42 @@ export function VideoWatchPage() {
   }, [exploreLoadingMore, exploreQueue.length, isFromExplore, loadExploreChunk])
 
   useEffect(() => {
+    if (!isCreatorWatch || !routeSlug) {
+      setCreatorQueue([])
+      return undefined
+    }
+    let cancelled = false
+    const slug = routeSlug
+    setCreatorQueue([])
+    ;(async () => {
+      try {
+        const data =
+          isOwnCreatorProfile && token
+            ? await apiClient.getMyUploadedVideos(token, { page: 0, size: 48 })
+            : await apiClient.getVideosByUsername(slug, { page: 0, size: 48 })
+        if (cancelled) return
+        setCreatorQueue(sortVideosNewestFirst(data?.items))
+      } catch {
+        if (!cancelled) setCreatorQueue([])
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [isCreatorWatch, isOwnCreatorProfile, routeSlug, token])
+
+  useEffect(() => {
+    if (!isCreatorWatch || !video?.publicId) return
+    setCreatorQueue((prev) => {
+      const id = normalizeVideoPublicId(video.publicId)
+      if (!id || prev.some((row) => normalizeVideoPublicId(row?.publicId) === id)) {
+        return prev
+      }
+      return sortVideosNewestFirst([...prev, video])
+    })
+  }, [isCreatorWatch, video])
+
+  useEffect(() => {
     if (!publicIdFromRoute) {
       setLoading(false)
       setLoadError('Liên kết video không hợp lệ.')
@@ -445,7 +638,11 @@ export function VideoWatchPage() {
       ? exploreQueueRef.current.find(
           (row) => normalizeVideoPublicId(row?.publicId) === publicIdFromRoute,
         )
-      : null
+      : isCreatorWatch
+        ? creatorQueueRef.current.find(
+            (row) => normalizeVideoPublicId(row?.publicId) === publicIdFromRoute,
+          )
+        : null
     const optimistic = cached ?? cardFromQueue
 
     if (optimistic) {
@@ -485,7 +682,15 @@ export function VideoWatchPage() {
     return () => {
       cancelled = true
     }
-  }, [isFromExplore, location.state, publicIdFromRoute, token, navigate, routeSlug])
+  }, [
+    isCreatorWatch,
+    isFromExplore,
+    location.state,
+    publicIdFromRoute,
+    token,
+    navigate,
+    routeSlug,
+  ])
 
   useEffect(() => {
     watchQualifySentRef.current = false
@@ -612,12 +817,32 @@ export function VideoWatchPage() {
   }, [exploreQueue, publicIdFromRoute])
   currentExploreIndexRef.current = currentExploreIndex
 
+  const currentCreatorIndex = useMemo(() => {
+    const currentId = publicIdFromRoute
+    if (!currentId || !isCreatorWatch) return -1
+    return creatorQueue.findIndex(
+      (row) => normalizeVideoPublicId(row?.publicId) === currentId,
+    )
+  }, [creatorQueue, isCreatorWatch, publicIdFromRoute])
+  currentCreatorIndexRef.current = currentCreatorIndex
+
   const hasPrevExplore = isFromExplore && currentExploreIndex > 0
   const hasNextExplore = isFromExplore && (
     currentExploreIndex >= 0
       ? currentExploreIndex < exploreQueue.length - 1 || exploreHasNext
       : exploreHasNext
   )
+
+  const hasPrevCreator =
+    isCreatorWatch && currentCreatorIndex > 0 && creatorQueue.length > 1
+  const hasNextCreator =
+    isCreatorWatch &&
+    currentCreatorIndex >= 0 &&
+    currentCreatorIndex < creatorQueue.length - 1
+  const hasPrevWatch = hasPrevExplore || hasPrevCreator
+  const hasNextWatch = hasNextExplore || hasNextCreator
+  const showWatchNavArrows =
+    isFromExplore || (isCreatorWatch && creatorQueue.length > 1)
 
   useEffect(() => {
     if (!isFromExplore || currentExploreIndex < 0) return undefined
@@ -736,20 +961,72 @@ export function VideoWatchPage() {
     [requestExploreNavStep],
   )
 
+  const moveToCreatorVideoByOffset = useCallback(
+    (offsetSteps) => {
+      if (!isCreatorWatch || !offsetSteps || creatorNavLockRef.current) return
+      const targetIndex = currentCreatorIndexRef.current + offsetSteps
+      if (targetIndex < 0 || targetIndex >= creatorQueueRef.current.length) return
+      const nextVideo = creatorQueueRef.current[targetIndex]
+      const nextId = normalizeVideoPublicId(nextVideo?.publicId)
+      const slug = routeSlug
+      if (!nextId || !slug) return
+      creatorNavLockRef.current = true
+      setExploreNavBusy(true)
+      const nextPath = buildProfileVideoUrl(slug, nextId)
+      if (!nextPath) {
+        creatorNavLockRef.current = false
+        setExploreNavBusy(false)
+        return
+      }
+      navigate(nextPath, { replace: true })
+    },
+    [isCreatorWatch, navigate, routeSlug],
+  )
+  moveToCreatorVideoByOffsetRef.current = moveToCreatorVideoByOffset
+
+  const { requestStep: requestCreatorNavStep, reset: resetCreatorNavPending } =
+    useRapidStepNavigation({
+      onStep: (steps) => {
+        moveToCreatorVideoByOffsetRef.current?.(steps)
+      },
+      delayMs: 220,
+      maxBurst: 3,
+      cooldownMs: 320,
+    })
+
+  useLayoutEffect(() => {
+    resetCreatorNavPending()
+  }, [publicIdFromRoute, resetCreatorNavPending])
+
+  const moveToCreatorVideo = useCallback(
+    (direction) => {
+      requestCreatorNavStep(direction === 'prev' ? -1 : 1)
+    },
+    [requestCreatorNavStep],
+  )
+
+  const moveWatchVideo = useCallback(
+    (direction) => {
+      if (isFromExplore) moveToExploreVideo(direction)
+      else if (isCreatorWatch) moveToCreatorVideo(direction)
+    },
+    [isCreatorWatch, isFromExplore, moveToCreatorVideo, moveToExploreVideo],
+  )
+
   useEffect(() => {
-    if (!isFromExplore) return undefined
+    if (!isFromExplore && !isCreatorWatch) return undefined
     const onKeyDown = (e) => {
       if (e.key === 'ArrowUp') {
         e.preventDefault()
-        moveToExploreVideo('prev')
+        moveWatchVideo('prev')
       } else if (e.key === 'ArrowDown') {
         e.preventDefault()
-        moveToExploreVideo('next')
+        moveWatchVideo('next')
       }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [isFromExplore, moveToExploreVideo])
+  }, [isCreatorWatch, isFromExplore, moveWatchVideo])
 
   const copyShareLink = async () => {
     const url = typeof window !== 'undefined' ? window.location.href : ''
@@ -867,7 +1144,7 @@ export function VideoWatchPage() {
                   </div>
                 </div>
               ) : activePlaybackUrl || displayPosterUrl ? (
-                <div className="relative h-full min-h-0 overflow-hidden">
+                <div className="group/watch relative h-full min-h-0 overflow-hidden">
                   {displayPosterUrl ? (
                     <div
                       className="pointer-events-none absolute inset-0 scale-110 bg-cover bg-center opacity-40 blur-3xl"
@@ -890,10 +1167,9 @@ export function VideoWatchPage() {
                       className={`watch-video-el absolute bg-black transition-opacity duration-200 ${watchVideoSizing} ${isVideoFrameReady ? 'opacity-100' : 'opacity-0'}`}
                       controls={isVideoFrameReady}
                       controlsList="nofullscreen nodownload noremoteplayback noplaybackrate"
-                      disablePictureInPicture
                       disableRemotePlayback
                       playsInline
-                      muted
+                      muted={watchMuted}
                       autoPlay
                       preload="auto"
                       poster={displayPosterUrl || undefined}
@@ -911,6 +1187,42 @@ export function VideoWatchPage() {
                         }
                       }}
                     />
+                  ) : null}
+
+                  {pipActive ? (
+                    <div className="absolute inset-0 z-[25] flex flex-col items-center justify-center gap-4 bg-black px-6 text-center">
+                      <p className="text-lg font-semibold text-white">Đã bật Trình phát nổi</p>
+                      <button
+                        type="button"
+                        className="rounded-lg bg-zinc-800 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-700"
+                        onClick={() => void exitWatchPictureInPicture()}
+                      >
+                        Tắt
+                      </button>
+                    </div>
+                  ) : null}
+
+                  {isVideoFrameReady && activePlaybackUrl && !pipActive ? (
+                    <div className="pointer-events-none absolute inset-x-0 bottom-12 z-40 flex justify-end px-4 sm:bottom-14 sm:px-6">
+                      <div className="pointer-events-auto flex items-end gap-2">
+                        <WatchVolumeControl
+                          volume={watchVolume}
+                          onVolumeChange={setWatchVolume}
+                          muted={watchMuted}
+                          onMutedChange={setWatchMuted}
+                        />
+                        <TooltipHoverWrap tip="Trình phát nổi" hoverOnly>
+                          <button
+                            type="button"
+                            className={`${WATCH_CHROME_BTN} bg-black/55 hover:bg-black/75`}
+                            aria-label="Trình phát nổi"
+                            onClick={() => void toggleWatchPictureInPicture()}
+                          >
+                            <LuPictureInPicture2 className="text-[1.15rem]" strokeWidth={1.75} aria-hidden />
+                          </button>
+                        </TooltipHoverWrap>
+                      </div>
+                    </div>
                   ) : null}
                 </div>
               ) : !loading ? (
@@ -981,23 +1293,23 @@ export function VideoWatchPage() {
               </div>
             </div>
 
-            {isFromExplore ? (
+            {showWatchNavArrows ? (
               <div className="pointer-events-none absolute right-3 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-2 sm:right-4">
                 <button
                   type="button"
-                  className={`${WATCH_CHROME_BTN} pointer-events-auto ${hasPrevExplore && !exploreNavBusy ? '' : 'cursor-not-allowed opacity-45'}`}
+                  className={`${WATCH_CHROME_BTN} pointer-events-auto ${hasPrevWatch && !exploreNavBusy ? '' : 'cursor-not-allowed opacity-45'}`}
                   aria-label="Video trước"
-                  disabled={!hasPrevExplore || exploreNavBusy}
-                  onClick={() => moveToExploreVideo('prev')}
+                  disabled={!hasPrevWatch || exploreNavBusy}
+                  onClick={() => moveWatchVideo('prev')}
                 >
                   <IoChevronUp />
                 </button>
                 <button
                   type="button"
-                  className={`${WATCH_CHROME_BTN} pointer-events-auto ${hasNextExplore && !exploreNavBusy ? '' : 'cursor-not-allowed opacity-45'}`}
+                  className={`${WATCH_CHROME_BTN} pointer-events-auto ${hasNextWatch && !exploreNavBusy ? '' : 'cursor-not-allowed opacity-45'}`}
                   aria-label="Video sau"
-                  disabled={!hasNextExplore || exploreNavBusy}
-                  onClick={() => moveToExploreVideo('next')}
+                  disabled={!hasNextWatch || exploreNavBusy}
+                  onClick={() => moveWatchVideo('next')}
                 >
                   <IoChevronDown />
                 </button>
