@@ -152,7 +152,7 @@ function FeedVideoCaption({ caption }) {
             setExpanded(true);
           }}
         >
-          … Thêm
+          Thêm
         </button>
       ) : null}
       {overflowsOneLine && expanded ? (
@@ -175,6 +175,37 @@ function feedQualityLabel(mode) {
   if (mode === "720") return "720P";
   if (mode === "540") return "540P";
   return "Tự động";
+}
+
+function resolveVideoDurationSeconds(el) {
+  if (!el || el.tagName !== "VIDEO") return 0;
+  if (Number.isFinite(el.duration) && el.duration > 0) return el.duration;
+  try {
+    if (el.seekable?.length) {
+      const end = el.seekable.end(el.seekable.length - 1);
+      if (Number.isFinite(end) && end > 0) return end;
+    }
+  } catch {
+    /* noop */
+  }
+  return 0;
+}
+
+function formatPlaybackTime(seconds) {
+  const total = Math.max(0, Math.floor(Number(seconds) || 0));
+  const hour = Math.floor(total / 3600);
+  const minute = Math.floor((total % 3600) / 60);
+  const second = total % 60;
+  if (hour > 0) {
+    return `${String(hour).padStart(2, "0")}:${String(minute).padStart(
+      2,
+      "0",
+    )}:${String(second).padStart(2, "0")}`;
+  }
+  return `${String(minute).padStart(2, "0")}:${String(second).padStart(
+    2,
+    "0",
+  )}`;
 }
 
 /** Vibely ID + caption dưới video (stacked) hoặc overlay đáy (mặc định). */
@@ -342,11 +373,19 @@ export function FeedPhoneStage({
 }) {
   /** Khung rộng từ trình duyệt (videoWidth/Height sau decode). */
   const [clientWideForLandscape, setClientWideForLandscape] = useState(false);
+  /** Fallback: suy luận ngang từ thumbnail natural size. */
+  const [thumbWideForLandscape, setThumbWideForLandscape] = useState(false);
   const progressTrackRef = useRef(null);
   const progressFillRef = useRef(null);
   const progressKnobRef = useRef(null);
   const progressScrubbingRef = useRef(false);
   const [progressScrubbing, setProgressScrubbing] = useState(false);
+  const [progressPreview, setProgressPreview] = useState({
+    visible: false,
+    pct: 0,
+    current: 0,
+    duration: 0,
+  });
 
   const setProgressPct = useCallback((pct) => {
     const p = Math.min(100, Math.max(0, pct));
@@ -396,21 +435,21 @@ export function FeedPhoneStage({
       let pct = (clientX - rect.left) / w;
       pct = Math.min(1, Math.max(0, pct));
 
-      if (Number.isFinite(el.duration) && el.duration > 0) {
-        el.currentTime = pct * el.duration;
-      } else if (el.seekable?.length) {
-        try {
-          const end = el.seekable.end(el.seekable.length - 1);
-          if (Number.isFinite(end) && end > 0) el.currentTime = pct * end;
-        } catch {
-          /* noop */
-        }
-      }
+      const duration = resolveVideoDurationSeconds(el);
+      const current = duration > 0 ? pct * duration : 0;
+      if (duration > 0) el.currentTime = current;
 
       setProgressPct(pct * 100);
+      setProgressPreview({
+        visible: true,
+        pct: pct * 100,
+        current,
+        duration,
+      });
     },
     [feedVideoRef, setProgressPct],
   );
+
 
   const handleActivePlaybackTick = useCallback(
     (e) => {
@@ -453,6 +492,7 @@ export function FeedPhoneStage({
       if (!progressScrubbingRef.current) return;
       progressScrubbingRef.current = false;
       setProgressScrubbing(false);
+      setProgressPreview((prev) => ({ ...prev, visible: false }));
     };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onEnd);
@@ -492,9 +532,37 @@ export function FeedPhoneStage({
   /** useLayoutEffect: reset trước paint để không thua race với useEffect của player con. */
   useLayoutEffect(() => {
     setClientWideForLandscape(false);
+    setThumbWideForLandscape(false);
   }, [activeIndex, activeVideoPublicId]);
 
-  const stageWideForLandscape = apiWideForLandscape || clientWideForLandscape;
+  useEffect(() => {
+    const thumb = String(activeVideo?.thumbnailUrl ?? "").trim();
+    if (!thumb) {
+      setThumbWideForLandscape(false);
+      return undefined;
+    }
+    let cancelled = false;
+    const img = new Image();
+    img.decoding = "async";
+    img.referrerPolicy = "no-referrer";
+    img.onload = () => {
+      if (cancelled) return;
+      const w = Number(img.naturalWidth || 0);
+      const h = Number(img.naturalHeight || 0);
+      setThumbWideForLandscape(w > 0 && h > 0 && w >= h);
+    };
+    img.onerror = () => {
+      if (cancelled) return;
+      setThumbWideForLandscape(false);
+    };
+    img.src = thumb;
+    return () => {
+      cancelled = true;
+    };
+  }, [activeVideo?.thumbnailUrl, activeVideoPublicId]);
+
+  const stageWideForLandscape =
+    apiWideForLandscape || clientWideForLandscape || thumbWideForLandscape;
 
   const stageWidthClass = stageWideForLandscape
     ? commentsDockOpen
@@ -908,6 +976,15 @@ export function FeedPhoneStage({
                     }}
                   >
                     <div className="relative w-full">
+                      <div
+                        className={`pointer-events-none absolute bottom-[calc(100%+26px)] left-1/2 z-30 -translate-x-1/2 text-[2rem] leading-none font-semibold text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.85)] transition-opacity duration-150 ${
+                          progressScrubbing ? "opacity-100" : "opacity-0"
+                        }`}
+                        aria-hidden
+                      >
+                        {formatPlaybackTime(progressPreview.current)} /{" "}
+                        {formatPlaybackTime(progressPreview.duration)}
+                      </div>
                       <div className="relative h-[3px] w-full transition-[height] duration-150 ease-out group-hover/progress:h-[5px]">
                         <div className="absolute inset-0 rounded-none bg-white/30" />
                         <div
