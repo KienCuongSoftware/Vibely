@@ -51,6 +51,7 @@ import {
 import { handleSidebarMenuSelect } from "../../utils/sidebarNavigation.js";
 import { buildProfilePath } from "../../utils/buildProfilePath.js";
 import { buildMainSidebarMenuItems } from "../../utils/mainSidebarMenuItems.js";
+import { recordProfileLastWatchedFromVideo } from "../../utils/profileLastWatched.js";
 
 const DEFAULT_USER_AVATAR_URL = "/images/users/default-avatar.jpeg";
 
@@ -338,6 +339,10 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     () => feedAuthorProfilePath(activeVideo),
     [activeVideo],
   );
+
+  useEffect(() => {
+    recordProfileLastWatchedFromVideo(activeVideo, { tab: "videos" });
+  }, [activeVideo?.publicId, activeVideo?.authorUsername]);
 
   useEffect(() => {
     const id =

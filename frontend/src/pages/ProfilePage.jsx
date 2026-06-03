@@ -7,7 +7,14 @@ import {
   markFeedAuthorUnfollowed,
 } from '../utils/feedFollowState.js'
 import { useAuth } from '../state/useAuth'
-import { buildProfileVideoUrl, videoPublicIdOf } from '../utils/videoPublicId.js'
+import {
+  buildProfileVideoUrl,
+  videoPublicIdOf,
+} from '../utils/videoPublicId.js'
+import {
+  loadProfileLastWatched,
+  recordProfileLastWatchedFromVideo,
+} from '../utils/profileLastWatched.js'
 import { Sidebar } from '../components/Sidebar'
 import { handleSidebarMenuSelect } from '../utils/sidebarNavigation.js'
 import { TooltipHoverWrap } from '../components/TooltipControls'
@@ -30,7 +37,9 @@ import {
   IoPaperPlane,
   IoPeople,
   IoPerson,
+  IoPlay,
   IoPlayOutline,
+  IoChevronUp,
   IoSettingsOutline,
   IoVideocam,
 } from 'react-icons/io5'
@@ -174,6 +183,50 @@ function ProfileGridMedia({ item: v, playing = false }) {
   return thumbNode
 }
 
+function ProfileGridVideoTile({
+  video,
+  profileUsername,
+  playing,
+  onHover,
+  isLastWatched,
+  tileRef,
+  onOpen,
+}) {
+  return (
+    <li
+      ref={isLastWatched ? tileRef : undefined}
+      data-profile-video-id={String(video?.publicId ?? '')}
+    >
+      <Link
+        to={profileVideoPermalinkForGrid(video, profileUsername)}
+        className="block"
+        onClick={() => onOpen(video)}
+      >
+        <div
+          className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
+          onMouseEnter={() => onHover(video.publicId)}
+        >
+          <ProfileGridMedia item={video} playing={playing} />
+          {isLastWatched ? (
+            <div className="pointer-events-none absolute inset-0 z-[3] flex items-center justify-center bg-black/50">
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white drop-shadow-md">
+                <IoPlay className="text-base" aria-hidden />
+                Vừa xem
+              </span>
+            </div>
+          ) : null}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
+            <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
+              <IoPlayOutline className="text-[13px]" aria-hidden />
+              <span>{formatCompactCount(video.viewCount ?? 0)}</span>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </li>
+  )
+}
+
 export function ProfilePage() {
   const { username } = useParams()
   const { token, user, refreshProfile, updateProfile, logout } = useAuth()
@@ -222,6 +275,9 @@ export function ProfilePage() {
   const [profileVideosLoading, setProfileVideosLoading] = useState(false)
   /** Video đang preview trong lưới hồ sơ; đổi khi hover ô khác, không reset khi rời chuột. */
   const [profileGridPlayingId, setProfileGridPlayingId] = useState(null)
+  const [lastWatchedPublicId, setLastWatchedPublicId] = useState(null)
+  const [lastWatchedOffscreen, setLastWatchedOffscreen] = useState(false)
+  const lastWatchedTileRef = useRef(null)
   const [profileActionNotice, setProfileActionNotice] = useState('')
   const [followBusy, setFollowBusy] = useState(false)
   const [followListOpen, setFollowListOpen] = useState(false)
@@ -570,6 +626,85 @@ export function ProfilePage() {
     if (publicId == null) return
     setProfileGridPlayingId(publicId)
   }, [])
+
+  const profileSlug = profile?.username ?? username
+
+  const handleProfileVideoOpen = useCallback(
+    (video) => {
+      const id = videoPublicIdOf(video)
+      if (!id) return
+      recordProfileLastWatchedFromVideo(
+        { ...video, authorUsername: profileSlug },
+        { tab: profileMainTab, favoritesSubTab },
+      )
+      setLastWatchedPublicId(id)
+    },
+    [profileSlug, profileMainTab, favoritesSubTab],
+  )
+
+  useEffect(() => {
+    const stored = loadProfileLastWatched(profileSlug)
+    setLastWatchedPublicId(stored?.publicId ?? null)
+    if (!stored?.publicId) return
+    if (stored.tab === 'favorites' && isOwnProfile) {
+      setProfileMainTab('favorites')
+      if (stored.favoritesSubTab === 'collections') {
+        setFavoritesSubTab('collections')
+      } else {
+        setFavoritesSubTab('posts')
+      }
+    } else if (stored.tab === 'liked' && isOwnProfile) {
+      setProfileMainTab('liked')
+    } else {
+      setProfileMainTab('videos')
+    }
+  }, [profileSlug, isOwnProfile])
+
+  const lastWatchedInGrid =
+    lastWatchedPublicId != null &&
+    profileGridVideoList.some(
+      (v) => videoPublicIdOf(v) === lastWatchedPublicId,
+    )
+
+  const scrollToLastWatched = useCallback(() => {
+    const el = lastWatchedTileRef.current
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [])
+
+  useEffect(() => {
+    if (!lastWatchedInGrid) {
+      setLastWatchedOffscreen(false)
+      return
+    }
+    const el = lastWatchedTileRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setLastWatchedOffscreen(!entry.isIntersecting)
+      },
+      { root: null, threshold: 0.35 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [lastWatchedInGrid, lastWatchedPublicId, profileGridVideoList])
+
+  const renderProfileVideoGrid = (videos) => (
+    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      {videos.map((v) => (
+        <ProfileGridVideoTile
+          key={v.publicId}
+          video={v}
+          profileUsername={profileSlug}
+          playing={v.publicId === profileGridPlayingId}
+          onHover={focusProfileGridVideo}
+          isLastWatched={videoPublicIdOf(v) === lastWatchedPublicId}
+          tileRef={lastWatchedTileRef}
+          onOpen={handleProfileVideoOpen}
+        />
+      ))}
+    </ul>
+  )
 
   const bioDraftLength = editForm.bio.length
   const normalizeEditForm = (value) => ({
@@ -1089,32 +1224,7 @@ export function ProfilePage() {
                 {profileVideosLoading && profileVideos.length === 0 ? (
                   <p className="py-10 text-center text-sm text-zinc-500">Đang tải video…</p>
                 ) : profileVideos.length > 0 ? (
-                  <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                    {profileVideos.map((v) => (
-                      <li key={v.publicId}>
-                        <Link
-                          to={profileVideoPermalinkForGrid(v, profile?.username ?? username)}
-                          className="block"
-                        >
-                          <div
-                            className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
-                            onMouseEnter={() => focusProfileGridVideo(v.publicId)}
-                          >
-                            <ProfileGridMedia
-                              item={v}
-                              playing={v.publicId === profileGridPlayingId}
-                            />
-                            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
-                              <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
-                                <IoPlayOutline className="text-[13px]" aria-hidden />
-                                <span>{formatCompactCount(v.viewCount ?? 0)}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+                  renderProfileVideoGrid(profileVideos)
                 ) : (
                   <div className="flex flex-col items-center justify-center py-14 text-center">
                     <div className="mb-4 rounded-full bg-zinc-800 p-6 text-zinc-200">
@@ -1155,32 +1265,7 @@ export function ProfilePage() {
                       <p className="py-8 text-center text-sm text-zinc-500">Đang tải…</p>
                     ) : null}
                     {!bookmarkLoading && bookmarkItems.length > 0 ? (
-                      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                        {bookmarkItems.map((v) => (
-                          <li key={v.publicId}>
-                            <Link
-                              to={profileVideoPermalinkForGrid(v, profile?.username ?? username)}
-                              className="block"
-                            >
-                              <div
-                                className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
-                                onMouseEnter={() => focusProfileGridVideo(v.publicId)}
-                              >
-                                <ProfileGridMedia
-                                  item={v}
-                                  playing={v.publicId === profileGridPlayingId}
-                                />
-                                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
-                                  <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
-                                    <IoPlayOutline className="text-[13px]" aria-hidden />
-                                    <span>{formatCompactCount(v.viewCount ?? 0)}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
+                      renderProfileVideoGrid(bookmarkItems)
                     ) : !bookmarkLoading && bookmarkItems.length === 0 ? (
                       <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
                         <IoBookmarkOutline
@@ -1228,32 +1313,7 @@ export function ProfilePage() {
                       <p className="py-8 text-center text-sm text-zinc-500">Đang tải…</p>
                     ) : null}
                     {!likedLoading && likedItems.length > 0 ? (
-                      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                        {likedItems.map((v) => (
-                          <li key={v.publicId}>
-                            <Link
-                              to={profileVideoPermalinkForGrid(v, profile?.username ?? username)}
-                              className="block"
-                            >
-                              <div
-                                className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
-                                onMouseEnter={() => focusProfileGridVideo(v.publicId)}
-                              >
-                                <ProfileGridMedia
-                                  item={v}
-                                  playing={v.publicId === profileGridPlayingId}
-                                />
-                                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
-                                  <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
-                                    <IoPlayOutline className="text-[13px]" aria-hidden />
-                                    <span>{formatCompactCount(v.viewCount ?? 0)}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
+                      renderProfileVideoGrid(likedItems)
                     ) : !likedLoading && likedItems.length === 0 ? (
                       <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
                         <IoHeartOutline className="mb-4 h-28 w-28 shrink-0 text-zinc-100" aria-hidden />
@@ -1266,6 +1326,18 @@ export function ProfilePage() {
                   </>
                 )}
               </div>
+            ) : null}
+
+            {lastWatchedInGrid && lastWatchedOffscreen ? (
+              <button
+                type="button"
+                onClick={scrollToLastWatched}
+                className="fixed bottom-6 right-6 z-40 inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#fe2c55] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/40 transition hover:bg-[#e0264b] active:scale-[0.98] sm:bottom-8 sm:right-8"
+                aria-label="Cuộn đến video vừa xem"
+              >
+                Vừa xem
+                <IoChevronUp className="text-base" aria-hidden />
+              </button>
             ) : null}
 
           </section>
