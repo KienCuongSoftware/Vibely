@@ -51,4 +51,20 @@ describe('useSearchHistory', () => {
       expect(result.current.items[0].query).toBe('vibely')
     })
   })
+
+  it('dedupes same query from backend history', async () => {
+    apiClient.getSearchHistory.mockResolvedValue([
+      { id: 10, query: 'admin.vibely', createdAt: '2026-01-03T00:00:00' },
+      { id: 11, query: 'Admin.Vibely', createdAt: '2026-01-02T00:00:00' },
+    ])
+
+    const { result } = renderHook(() =>
+      useSearchHistory({ token: 'jwt', enabled: true }),
+    )
+
+    await waitFor(() => {
+      expect(result.current.items).toHaveLength(1)
+      expect(result.current.items[0].query).toBe('admin.vibely')
+    })
+  })
 })

@@ -2,6 +2,18 @@ import { useCallback, useEffect, useState } from 'react'
 import { apiClient } from '../api/client'
 import { normalizeSearchQuery } from '../components/search/searchUtils'
 
+function dedupeHistoryItems(rows) {
+  const seen = new Set()
+  const out = []
+  for (const row of rows) {
+    const key = String(row?.query ?? '').trim().toLowerCase()
+    if (!key || seen.has(key)) continue
+    seen.add(key)
+    out.push(row)
+  }
+  return out
+}
+
 export function useSearchHistory({ token, enabled = true, limit = 30 } = {}) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(false)
@@ -19,7 +31,7 @@ export function useSearchHistory({ token, enabled = true, limit = 30 } = {}) {
     setError('')
     try {
       const rows = await apiClient.getSearchHistory(token, { limit })
-      setItems(Array.isArray(rows) ? rows : [])
+      setItems(dedupeHistoryItems(Array.isArray(rows) ? rows : []))
     } catch (err) {
       setItems([])
       setError(err?.message ?? 'Không tải được lịch sử tìm kiếm.')

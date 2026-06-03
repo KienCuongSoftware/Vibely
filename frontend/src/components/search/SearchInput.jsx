@@ -22,7 +22,7 @@ export const SearchInput = forwardRef(function SearchInput(
       <input
         ref={ref}
         id={id}
-        type="search"
+        type="text"
         value={value}
         onChange={(event) => onChange?.(event.target.value)}
         onKeyDown={onKeyDown}
