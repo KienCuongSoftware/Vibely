@@ -222,6 +222,12 @@ function deriveAudioUrlFromVideoUrl(videoUrl) {
   return converted === raw ? '' : converted
 }
 
+function isInvalidApiVideoPlaybackUrl(url) {
+  const raw = String(url ?? '').trim()
+  if (!raw) return true
+  return /(?:^|\/\/[^/]+)\/api\/videos\/\d+(?:$|[/?#])/i.test(raw)
+}
+
 export function UploadPage() {
   const { token, user } = useAuth()
   const navigate = useNavigate()
@@ -234,8 +240,16 @@ export function UploadPage() {
   const [uploadedVideo, setUploadedVideo] = useState(null)
   const [description, setDescription] = useState('')
   const [previewTab, setPreviewTab] = useState('feed')
+  const descriptionWrapRef = useRef(null)
+  const descriptionTextareaRef = useRef(null)
+  const mentionDropdownRef = useRef(null)
   const [mentionableFriends, setMentionableFriends] = useState([])
   const [loadingFriends, setLoadingFriends] = useState(false)
+  const [mentionSuggestions, setMentionSuggestions] = useState([])
+  const [loadingMentionSuggestions, setLoadingMentionSuggestions] = useState(false)
+  const [mentionAtCaret, setMentionAtCaret] = useState(null) // { query, replaceStart, replaceEnd }
+  const [mentionDropdownPos, setMentionDropdownPos] = useState({ top: 0, left: 0 })
+  const [activeMentionIndex, setActiveMentionIndex] = useState(0)
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
   const [showMoreSettings, setShowMoreSettings] = useState(false)
@@ -427,12 +441,238 @@ export function UploadPage() {
     )
   }, [mentionableFriends])
 
-  const invalidMentions = useMemo(() => {
-    const tags = [...description.matchAll(/@([a-zA-Z0-9._]+)/g)]
-      .map((m) => String(m[1] ?? '').toLowerCase())
-      .filter(Boolean)
-    return [...new Set(tags)].filter((name) => !mentionableSet.has(name))
-  }, [description, mentionableSet])
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;')
+  }
+
+  function getCaretClientRect(textareaEl, position) {
+    const value = String(textareaEl?.value ?? '')
+    const pos = Math.max(0, Math.min(position, value.length))
+
+    const rect = textareaEl.getBoundingClientRect()
+    const style = window.getComputedStyle(textareaEl)
+
+    const div = document.createElement('div')
+    div.style.position = 'absolute'
+    div.style.visibility = 'hidden'
+    div.style.whiteSpace = 'pre-wrap'
+    div.style.wordWrap = 'break-word'
+    div.style.top = `${rect.top + window.scrollY}px`
+    div.style.left = `${rect.left + window.scrollX}px`
+    div.style.width = `${rect.width}px`
+
+    // Copy key font/layout styles so caret measurement matches textarea.
+    div.style.fontFamily = style.fontFamily
+    div.style.fontSize = style.fontSize
+    div.style.fontWeight = style.fontWeight
+    div.style.fontStyle = style.fontStyle
+    div.style.letterSpacing = style.letterSpacing
+    div.style.lineHeight = style.lineHeight
+    div.style.paddingTop = style.paddingTop
+    div.style.paddingRight = style.paddingRight
+    div.style.paddingBottom = style.paddingBottom
+    div.style.paddingLeft = style.paddingLeft
+    div.style.borderTopWidth = style.borderTopWidth
+    div.style.borderRightWidth = style.borderRightWidth
+    div.style.borderBottomWidth = style.borderBottomWidth
+    div.style.borderLeftWidth = style.borderLeftWidth
+    div.style.boxSizing = style.boxSizing
+
+    div.style.overflow = 'auto'
+    div.scrollTop = textareaEl.scrollTop
+    div.scrollLeft = textareaEl.scrollLeft
+
+    const before = escapeHtml(value.substring(0, pos))
+    const after = escapeHtml(value.substring(pos))
+    div.innerHTML = `${before}<span id="caret-marker" style="display:inline-block;width:1px;background:transparent;">|</span>${after}`
+
+    document.body.appendChild(div)
+    const marker = div.querySelector('#caret-marker')
+    const markerRect = marker?.getBoundingClientRect()
+    document.body.removeChild(div)
+
+    // Convert to viewport-absolute coordinates by relying on markerRect.
+    if (!markerRect) return { top: rect.bottom, left: rect.left }
+    return { top: markerRect.bottom, left: markerRect.left }
+  }
+
+  const updateMentionAtCaret = useCallback(
+    (textareaEl, nextValue) => {
+      if (!textareaEl) return
+      const value = String(nextValue ?? '')
+      const caretPos = Number(textareaEl.selectionStart ?? value.length)
+      const before = value.slice(0, caretPos)
+      const match = before.match(/(?:^|\s)@([a-zA-Z0-9._]*)$/)
+
+      if (!match) {
+        setMentionAtCaret(null)
+        setMentionSuggestions([])
+        setLoadingMentionSuggestions(false)
+        return
+      }
+
+      const query = String(match[1] ?? '')
+      const replaceStart = caretPos - query.length - 1 // the '@'
+      const replaceEnd = caretPos
+
+      // Update dropdown coordinates.
+      try {
+        const wrapEl = descriptionWrapRef.current
+        const wrapRect = wrapEl?.getBoundingClientRect?.()
+        const caretRect = getCaretClientRect(textareaEl, caretPos)
+        if (wrapRect) {
+          setMentionDropdownPos({
+            top: caretRect.top - wrapRect.top + 6,
+            left: caretRect.left - wrapRect.left,
+          })
+        }
+      } catch {
+        // ignore caret coordinate errors
+      }
+
+      setActiveMentionIndex(0)
+      setMentionAtCaret({ query, replaceStart, replaceEnd })
+    },
+    [setActiveMentionIndex],
+  )
+
+  const updateMentionDropdownPosition = useCallback(() => {
+    if (!mentionAtCaret) return
+    const ta = descriptionTextareaRef.current
+    const wrapEl = descriptionWrapRef.current
+    if (!ta || !wrapEl) return
+    const wrapRect = wrapEl.getBoundingClientRect()
+    const caretPos = Number(ta.selectionStart ?? 0)
+    const caretRect = getCaretClientRect(ta, caretPos)
+    setMentionDropdownPos({
+      top: caretRect.top - wrapRect.top + 6,
+      left: caretRect.left - wrapRect.left,
+    })
+  }, [mentionAtCaret])
+
+  useEffect(() => {
+    const ta = descriptionTextareaRef.current
+    if (!ta) return undefined
+
+    const onMove = () => updateMentionDropdownPosition()
+    ta.addEventListener('scroll', onMove)
+    window.addEventListener('resize', onMove)
+    window.addEventListener('scroll', onMove, { passive: true })
+    return () => {
+      ta.removeEventListener('scroll', onMove)
+      window.removeEventListener('resize', onMove)
+      window.removeEventListener('scroll', onMove)
+    }
+  }, [updateMentionDropdownPosition])
+
+  useEffect(() => {
+    if (mentionAtCaret == null) return
+    const onDocMouseDown = (e) => {
+      const ta = descriptionTextareaRef.current
+      const dd = mentionDropdownRef.current
+      const target = e.target
+      if (ta?.contains?.(target)) return
+      if (dd?.contains?.(target)) return
+      setMentionAtCaret(null)
+      setMentionSuggestions([])
+      setLoadingMentionSuggestions(false)
+    }
+    document.addEventListener('mousedown', onDocMouseDown)
+    return () => document.removeEventListener('mousedown', onDocMouseDown)
+  }, [mentionAtCaret])
+
+  useEffect(() => {
+    if (!token || mentionAtCaret == null) {
+      setMentionSuggestions([])
+      setLoadingMentionSuggestions(false)
+      return
+    }
+
+    const q = String(mentionAtCaret.query ?? '')
+    if (q.length === 0) {
+      setMentionSuggestions(mentionableFriends)
+      setLoadingMentionSuggestions(false)
+      return
+    }
+
+    let cancelled = false
+    setLoadingMentionSuggestions(true)
+    apiClient
+      .getSearchUsers(q, { limit: 8 })
+      .then((rows) => {
+        if (cancelled) return
+        const followedSorted = (Array.isArray(rows) ? rows : []).slice().sort((a, b) => {
+          const aKey = String(a?.username ?? '').trim().toLowerCase()
+          const bKey = String(b?.username ?? '').trim().toLowerCase()
+          const aFollowed = mentionableSet.has(aKey)
+          const bFollowed = mentionableSet.has(bKey)
+          if (aFollowed !== bFollowed) return aFollowed ? -1 : 1
+          return 0
+        })
+        setMentionSuggestions(followedSorted)
+      })
+      .catch(() => {
+        if (!cancelled) setMentionSuggestions([])
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingMentionSuggestions(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [mentionAtCaret, mentionableFriends, mentionableSet, token])
+
+  const replaceMentionAtCaret = useCallback(
+    (username) => {
+      if (!mentionAtCaret) return
+      const clean = String(username ?? '').trim().replace(/^@/, '')
+      if (!clean) return
+
+      setDescription((prev) => {
+        const source = String(prev ?? '')
+        const start = mentionAtCaret.replaceStart
+        const end = mentionAtCaret.replaceEnd
+        return `${source.slice(0, start)}@${clean} ${source.slice(end)}`
+      })
+
+      setMentionAtCaret(null)
+      setMentionSuggestions([])
+      setLoadingMentionSuggestions(false)
+
+      requestAnimationFrame(() => {
+        const ta = descriptionTextareaRef.current
+        if (!ta) return
+        const caretPos = mentionAtCaret.replaceStart + clean.length + 2 // '@' + username + ' '
+        ta.focus()
+        ta.setSelectionRange(caretPos, caretPos)
+      })
+    },
+    [mentionAtCaret],
+  )
+
+  const insertAtCaret = useCallback(
+    (text) => {
+      const ta = descriptionTextareaRef.current
+      if (!ta) return
+      const pos = Number(ta.selectionStart ?? description.length)
+      const source = String(description ?? '')
+      const next = `${source.slice(0, pos)}${text}${source.slice(pos)}`
+      setDescription(next)
+      requestAnimationFrame(() => {
+        ta.focus()
+        const caretPos = pos + String(text ?? '').length
+        ta.setSelectionRange(caretPos, caretPos)
+        updateMentionAtCaret(ta, next)
+      })
+    },
+    [description, updateMentionAtCaret],
+  )
 
   const highlightTags = (text) => {
     const source = String(text ?? '')
@@ -558,8 +798,8 @@ export function UploadPage() {
 
   const saveVideo = async () => {
     if (!token || !uploadedVideo) return
-    if (invalidMentions.length > 0) {
-      setStatus('Chỉ được tag bạn bè đã follow lẫn nhau.')
+    if (isInvalidApiVideoPlaybackUrl(uploadedVideo.playbackUrl)) {
+      setStatus('URL video không hợp lệ. Vui lòng tải lại video rồi thử đăng lại.')
       return
     }
     if (description.length > DESC_MAX) {
@@ -725,14 +965,102 @@ export function UploadPage() {
 
                   <div className="mt-4">
                     <label className="mb-2 block text-sm font-medium text-zinc-300">Mô tả</label>
-                    <div className="overflow-hidden rounded-xl border border-zinc-700/80 bg-black">
+                    <div
+                      ref={descriptionWrapRef}
+                      className="relative overflow-visible rounded-xl border border-zinc-700/80 bg-black"
+                    >
                       <textarea
+                        ref={descriptionTextareaRef}
                         className="min-h-[140px] w-full resize-y border-0 bg-transparent px-3 py-3 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-0"
                         value={description}
                         maxLength={DESC_MAX}
-                        onChange={(e) => setDescription(e.target.value)}
+                        onChange={(e) => {
+                          const next = e.target.value
+                          setDescription(next)
+                          updateMentionAtCaret(e.target, next)
+                        }}
+                        onKeyUp={(e) => updateMentionAtCaret(e.currentTarget, e.currentTarget.value)}
+                        onClick={(e) => updateMentionAtCaret(e.currentTarget, e.currentTarget.value)}
+                        onSelect={(e) => updateMentionAtCaret(e.currentTarget, e.currentTarget.value)}
+                        onKeyDown={(e) => {
+                          if (!mentionAtCaret) return
+                          if (e.key === 'Escape') {
+                            e.preventDefault()
+                            setMentionAtCaret(null)
+                            setMentionSuggestions([])
+                            setLoadingMentionSuggestions(false)
+                            return
+                          }
+                          if (e.key === 'ArrowDown') {
+                            e.preventDefault()
+                            if (!mentionSuggestions.length) return
+                            setActiveMentionIndex((idx) => (idx + 1) % mentionSuggestions.length)
+                            return
+                          }
+                          if (e.key === 'ArrowUp') {
+                            e.preventDefault()
+                            if (!mentionSuggestions.length) return
+                            setActiveMentionIndex((idx) => (idx - 1 + mentionSuggestions.length) % mentionSuggestions.length)
+                            return
+                          }
+                          if (e.key === 'Enter') {
+                            if (!mentionSuggestions.length) return
+                            e.preventDefault()
+                            const picked = mentionSuggestions[activeMentionIndex]
+                            if (picked?.username) replaceMentionAtCaret(picked.username)
+                          }
+                        }}
                         placeholder="Thêm mô tả cho video của bạn…"
                       />
+
+                      {mentionAtCaret != null ? (
+                        <div
+                          ref={mentionDropdownRef}
+                          className="absolute z-50 w-[280px] rounded-xl border border-zinc-700 bg-zinc-950/95 p-1 shadow-lg"
+                          style={{
+                            top: mentionDropdownPos.top,
+                            left: mentionDropdownPos.left,
+                          }}
+                        >
+                          {mentionAtCaret.query.length === 0 && loadingFriends ? (
+                            <div className="px-3 py-2 text-xs text-zinc-400">Đang tải danh sách bạn bè…</div>
+                          ) : loadingMentionSuggestions ? (
+                            <div className="px-3 py-2 text-xs text-zinc-400">Đang tìm người dùng…</div>
+                          ) : mentionSuggestions.length > 0 ? (
+                            <div className="max-h-[240px] overflow-auto">
+                              {mentionSuggestions.map((friend, idx) => {
+                                const username = String(friend?.username ?? '').trim()
+                                if (!username) return null
+                                const active = idx === activeMentionIndex
+                                return (
+                                  <button
+                                    key={friend.id ?? username}
+                                    type="button"
+                                    className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs ${
+                                      active ? 'bg-zinc-800 text-white' : 'text-zinc-300 hover:bg-zinc-900'
+                                    }`}
+                                    onMouseDown={(e) => {
+                                      // Prevent textarea from losing focus/caret before we replace.
+                                      e.preventDefault()
+                                      replaceMentionAtCaret(username)
+                                    }}
+                                  >
+                                    <span className="truncate">@{username}</span>
+                                    {mentionableSet.has(username.toLowerCase()) ? (
+                                      <span className="shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-400">
+                                        Follow
+                                      </span>
+                                    ) : null}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          ) : (
+                            <div className="px-3 py-2 text-xs text-zinc-400">Không có kết quả</div>
+                          )}
+                        </div>
+                      ) : null}
+
                       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-zinc-800 px-3 py-2">
                         <div className="flex flex-wrap gap-3 text-xs">
                           <button
@@ -745,7 +1073,7 @@ export function UploadPage() {
                           <button
                             type="button"
                             className="font-medium text-[#fe2c55] hover:underline"
-                            onClick={() => setDescription((p) => `${p}@`.trim())}
+                            onClick={() => insertAtCaret('@')}
                           >
                             @ Nhắc đến
                           </button>
@@ -758,25 +1086,10 @@ export function UploadPage() {
                     {loadingFriends ? (
                       <p className="mt-2 text-xs text-zinc-500">Đang tải danh sách bạn bè có thể tag…</p>
                     ) : null}
-                    {invalidMentions.length > 0 ? (
-                      <p className="mt-2 text-xs font-medium text-amber-400">
-                        Mention không hợp lệ: {invalidMentions.map((m) => `@${m}`).join(', ')}. Chỉ tag bạn bè đã
-                        follow lẫn nhau.
+                    {mentionAtCaret == null ? (
+                      <p className="mt-2 text-xs text-zinc-500">
+                        Gõ <span className="font-semibold text-zinc-300">@</span> để nhắc đến bất kỳ người dùng nào.
                       </p>
-                    ) : null}
-                    {mentionableFriends.length > 0 ? (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {mentionableFriends.map((friend) => (
-                          <button
-                            key={friend.id}
-                            type="button"
-                            className="rounded-full border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-[11px] text-zinc-400 hover:bg-zinc-800"
-                            onClick={() => setDescription((prev) => `${prev} @${friend.username}`.trim())}
-                          >
-                            @{friend.username}
-                          </button>
-                        ))}
-                      </div>
                     ) : null}
                   </div>
 
@@ -1022,7 +1335,7 @@ export function UploadPage() {
                       type="button"
                       className="rounded-lg bg-[#fe2c55] px-8 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#e62a4d] disabled:opacity-50"
                       onClick={() => void saveVideo()}
-                      disabled={busy || invalidMentions.length > 0}
+                      disabled={busy}
                     >
                       {busy ? 'Đang đăng…' : 'Đăng'}
                     </button>
@@ -1085,7 +1398,11 @@ export function UploadPage() {
                         >
                           <video
                             ref={previewVideoRef}
-                            src={uploadedVideo.playbackUrl}
+                            src={
+                              isInvalidApiVideoPlaybackUrl(uploadedVideo.playbackUrl)
+                                ? undefined
+                                : uploadedVideo.playbackUrl
+                            }
                             poster={thumbnailUrl || undefined}
                             muted={isPreviewMuted}
                             playsInline
