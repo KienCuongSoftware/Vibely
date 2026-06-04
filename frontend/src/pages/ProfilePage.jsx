@@ -39,6 +39,7 @@ import {
   IoPerson,
   IoPlay,
   IoPlayOutline,
+  IoChevronDown,
   IoChevronUp,
   IoSettingsOutline,
   IoVideocam,
@@ -277,7 +278,10 @@ export function ProfilePage() {
   const [profileGridPlayingId, setProfileGridPlayingId] = useState(null)
   const [lastWatchedPublicId, setLastWatchedPublicId] = useState(null)
   const [lastWatchedOffscreen, setLastWatchedOffscreen] = useState(false)
+  /** Hướng cuộn tới ô vừa xem: xuống nếu ô ở dưới, lên nếu ô ở trên. */
+  const [lastWatchedScrollDir, setLastWatchedScrollDir] = useState('down')
   const lastWatchedTileRef = useRef(null)
+  const profileScrollRef = useRef(null)
   const [profileActionNotice, setProfileActionNotice] = useState('')
   const [followBusy, setFollowBusy] = useState(false)
   const [followListOpen, setFollowListOpen] = useState(false)
@@ -666,6 +670,39 @@ export function ProfilePage() {
       (v) => videoPublicIdOf(v) === lastWatchedPublicId,
     )
 
+  const updateLastWatchedVisibility = useCallback(() => {
+    const el = lastWatchedTileRef.current
+    if (!el) {
+      setLastWatchedOffscreen(false)
+      return
+    }
+    const rect = el.getBoundingClientRect()
+    const viewH = window.innerHeight || document.documentElement.clientHeight
+    const visibleTop = Math.max(rect.top, 0)
+    const visibleBottom = Math.min(rect.bottom, viewH)
+    const visibleHeight = Math.max(0, visibleBottom - visibleTop)
+    const ratio = rect.height > 0 ? visibleHeight / rect.height : 0
+    const mostlyVisible = ratio >= 0.42 && rect.bottom > 48 && rect.top < viewH - 48
+    setLastWatchedOffscreen(!mostlyVisible)
+    if (rect.top > viewH * 0.55) {
+      setLastWatchedScrollDir('down')
+    } else if (rect.bottom < viewH * 0.35) {
+      setLastWatchedScrollDir('up')
+    } else {
+      setLastWatchedScrollDir(rect.top > viewH / 2 ? 'down' : 'up')
+    }
+  }, [])
+
+  const attachLastWatchedTileRef = useCallback(
+    (node) => {
+      lastWatchedTileRef.current = node
+      if (node) {
+        queueMicrotask(() => updateLastWatchedVisibility())
+      }
+    },
+    [updateLastWatchedVisibility],
+  )
+
   const scrollToLastWatched = useCallback(() => {
     const el = lastWatchedTileRef.current
     if (!el) return
@@ -675,19 +712,47 @@ export function ProfilePage() {
   useEffect(() => {
     if (!lastWatchedInGrid) {
       setLastWatchedOffscreen(false)
-      return
+      return undefined
     }
+
+    let raf = 0
+    const schedule = () => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(updateLastWatchedVisibility)
+    }
+
+    schedule()
+    const t1 = window.setTimeout(schedule, 0)
+    const t2 = window.setTimeout(schedule, 400)
+
     const el = lastWatchedTileRef.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setLastWatchedOffscreen(!entry.isIntersecting)
-      },
-      { root: null, threshold: 0.35 },
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [lastWatchedInGrid, lastWatchedPublicId, profileGridVideoList])
+    let observer
+    if (el) {
+      observer = new IntersectionObserver(schedule, {
+        root: null,
+        threshold: [0, 0.2, 0.4, 0.6, 0.8, 1],
+      })
+      observer.observe(el)
+    }
+
+    const scrollEl = profileScrollRef.current
+    scrollEl?.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+
+    return () => {
+      cancelAnimationFrame(raf)
+      window.clearTimeout(t1)
+      window.clearTimeout(t2)
+      observer?.disconnect()
+      scrollEl?.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+    }
+  }, [
+    lastWatchedInGrid,
+    lastWatchedPublicId,
+    profileGridVideoList,
+    updateLastWatchedVisibility,
+  ])
 
   const renderProfileVideoGrid = (videos) => (
     <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
@@ -699,7 +764,7 @@ export function ProfilePage() {
           playing={v.publicId === profileGridPlayingId}
           onHover={focusProfileGridVideo}
           isLastWatched={videoPublicIdOf(v) === lastWatchedPublicId}
-          tileRef={lastWatchedTileRef}
+          tileRef={attachLastWatchedTileRef}
           onOpen={handleProfileVideoOpen}
         />
       ))}
@@ -873,7 +938,7 @@ export function ProfilePage() {
   }
 
   return (
-    <section className="flex min-h-screen bg-black text-zinc-100">
+    <section className="flex h-dvh max-h-dvh min-h-0 bg-black text-zinc-100">
       <Sidebar
         menuItems={menuItems}
         activeMenu={activeMenu}
@@ -883,7 +948,10 @@ export function ProfilePage() {
         onLogout={token ? logout : undefined}
       />
 
-      <div className="relative flex flex-1 flex-col overflow-visible px-6 py-5">
+      <div
+        ref={profileScrollRef}
+        className="scrollbar-none relative flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain px-6 py-5"
+      >
         {token ? (
           <AccountActionsPill className="absolute right-8 top-5 z-10" tone="profile">
             <div className="relative" ref={accountMenuRef}>
@@ -1328,21 +1396,25 @@ export function ProfilePage() {
               </div>
             ) : null}
 
-            {lastWatchedInGrid && lastWatchedOffscreen ? (
-              <button
-                type="button"
-                onClick={scrollToLastWatched}
-                className="fixed bottom-6 right-6 z-40 inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#fe2c55] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/40 transition hover:bg-[#e0264b] active:scale-[0.98] sm:bottom-8 sm:right-8"
-                aria-label="Cuộn đến video vừa xem"
-              >
-                Vừa xem
-                <IoChevronUp className="text-base" aria-hidden />
-              </button>
-            ) : null}
-
           </section>
         )}
         </div>
+
+        {lastWatchedInGrid && lastWatchedOffscreen ? (
+          <button
+            type="button"
+            onClick={scrollToLastWatched}
+            className="fixed bottom-6 right-6 z-[100] inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#fe2c55] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/40 transition hover:bg-[#e0264b] active:scale-[0.98] sm:bottom-8 sm:right-8"
+            aria-label="Cuộn đến video vừa xem"
+          >
+            Vừa xem
+            {lastWatchedScrollDir === 'down' ? (
+              <IoChevronDown className="text-base" aria-hidden />
+            ) : (
+              <IoChevronUp className="text-base" aria-hidden />
+            )}
+          </button>
+        ) : null}
         <ProfileFollowListModal
           open={followListOpen}
           onClose={closeFollowListModal}
