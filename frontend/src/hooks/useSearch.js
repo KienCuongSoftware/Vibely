@@ -7,7 +7,7 @@ import {
 } from '../components/search/searchUtils'
 import { useDebouncedValue } from './useDebouncedValue'
 
-export function useSearch({ enabled = true, token } = {}) {
+export function useSearch({ enabled = true, token, skipFetchWhenEmpty = false } = {}) {
   const [query, setQuery] = useState('')
   const debouncedQuery = useDebouncedValue(query, SEARCH_DEBOUNCE_MS)
   const [suggest, setSuggest] = useState(emptySuggestPayload)
@@ -22,6 +22,12 @@ export function useSearch({ enabled = true, token } = {}) {
 
   const refresh = useCallback(async () => {
     if (!enabled) return
+    if (skipFetchWhenEmpty && !normalizedDebounced) {
+      setSuggest(emptySuggestPayload())
+      setLoading(false)
+      setError('')
+      return
+    }
     const requestId = ++requestIdRef.current
     setLoading(true)
     setError('')
@@ -43,7 +49,7 @@ export function useSearch({ enabled = true, token } = {}) {
         setLoading(false)
       }
     }
-  }, [enabled, normalizedDebounced, token])
+  }, [enabled, normalizedDebounced, skipFetchWhenEmpty, token])
 
   useEffect(() => {
     if (!enabled) return undefined
