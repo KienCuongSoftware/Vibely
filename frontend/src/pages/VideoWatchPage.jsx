@@ -20,6 +20,7 @@ import {
   videoPublicIdOf,
 } from '../utils/videoPublicId.js'
 import { recordProfileLastWatchedFromVideo } from '../utils/profileLastWatched.js'
+import { WatchSearchDropdown } from '../components/search/WatchSearchDropdown.jsx'
 import {
   IoArrowUp,
   IoBookmark,
@@ -35,7 +36,7 @@ import {
   IoLogOutOutline,
   IoMusicalNotes,
   IoPerson,
-  IoSearchOutline,
+  IoPlayOutline,
   IoShareOutline,
   IoVolumeHighOutline,
   IoVolumeLowOutline,
@@ -290,6 +291,123 @@ function mergeExploreItems(existing, incoming) {
   return Array.from(map.values())
 }
 
+const WATCH_NOW_PLAYING_BAR_HEIGHTS = [8, 14, 6, 12, 9]
+
+function WatchNowPlayingWave() {
+  return (
+    <span className="mb-1.5 flex h-4 items-end justify-center gap-[3px]" aria-hidden>
+      {WATCH_NOW_PLAYING_BAR_HEIGHTS.map((heightPx, i) => (
+        <span
+          key={i}
+          className="watch-now-playing-bar"
+          style={{
+            height: `${heightPx}px`,
+            animationDelay: `${i * 0.11}s`,
+          }}
+        />
+      ))}
+    </span>
+  )
+}
+
+/** Preview lưới creator: phát khi hover, tắt khi rời chuột. */
+function WatchCreatorGridMedia({ item, playing = false }) {
+  const videoRef = useRef(null)
+  const playbackUrl = resolveWatchPlaybackUrl(item)
+  const thumb =
+    typeof item?.thumbnailUrl === 'string' ? item.thumbnailUrl.trim() : ''
+  const [videoReady, setVideoReady] = useState(false)
+
+  useEffect(() => {
+    if (!playing) setVideoReady(false)
+  }, [playing, playbackUrl])
+
+  useEffect(() => {
+    const el = videoRef.current
+    if (!el || !playbackUrl || !playing) return undefined
+    const p = el.play()
+    if (p?.catch) p.catch(() => {})
+    return () => {
+      try {
+        el.pause()
+      } catch {
+        /* noop */
+      }
+      try {
+        el.currentTime = 0
+      } catch {
+        /* noop */
+      }
+    }
+  }, [playing, playbackUrl])
+
+  const thumbNode = thumb ? (
+    <img src={thumb} alt="" loading="lazy" className="h-full w-full object-cover" />
+  ) : (
+    <div className="h-full w-full bg-zinc-800" />
+  )
+
+  if (playbackUrl && playing) {
+    return (
+      <>
+        {!videoReady ? <div className="absolute inset-0">{thumbNode}</div> : null}
+        <video
+          ref={videoRef}
+          src={playbackUrl}
+          poster={thumb || undefined}
+          muted
+          loop
+          playsInline
+          className="h-full w-full object-cover"
+          preload="metadata"
+          onLoadedData={() => setVideoReady(true)}
+          onCanPlay={() => setVideoReady(true)}
+        />
+      </>
+    )
+  }
+  return thumbNode
+}
+
+function WatchCreatorVideoTile({ video, isPlaying, onSelect }) {
+  const [hovering, setHovering] = useState(false)
+  const previewPlaying = !isPlaying && hovering
+  const id = videoPublicIdOf(video)
+
+  return (
+    <button
+      type="button"
+      disabled={!id}
+      onClick={() => onSelect(video)}
+      onMouseEnter={() => {
+        if (!isPlaying) setHovering(true)
+      }}
+      onMouseLeave={() => setHovering(false)}
+      className="group relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600 disabled:cursor-not-allowed"
+      aria-label={isPlaying ? 'Hiện đang phát' : 'Xem video'}
+      aria-current={isPlaying ? 'true' : undefined}
+    >
+      <div className="absolute inset-0">
+        <WatchCreatorGridMedia item={video} playing={previewPlaying} />
+      </div>
+      {isPlaying ? (
+        <div className="absolute inset-0 z-[2] flex flex-col items-center justify-center bg-black/55 px-2 text-center">
+          <WatchNowPlayingWave />
+          <span className="text-[11px] font-semibold leading-tight text-white">
+            Hiện đang phát
+          </span>
+        </div>
+      ) : null}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] bg-linear-to-t from-black/85 via-black/25 to-transparent px-1.5 pb-1 pt-8">
+        <div className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-white drop-shadow-md">
+          <IoPlayOutline className="text-[11px]" aria-hidden />
+          <span>{formatCompactCount(video?.viewCount ?? 0)}</span>
+        </div>
+      </div>
+    </button>
+  )
+}
+
 /** Hàng đợi video trên hồ sơ: mới đăng trước (khớp tab Video → Mới nhất). */
 function sortVideosNewestFirst(items) {
   const list = Array.isArray(items) ? [...items] : []
@@ -299,6 +417,18 @@ function sortVideosNewestFirst(items) {
     if (tb !== ta) return tb - ta
     return Number(b?.id ?? 0) - Number(a?.id ?? 0)
   })
+}
+
+/** Tab creator: video đang phát luôn ở ô đầu tiên (trên-trái). */
+function orderCreatorGridWithPlayingFirst(queue, playingPublicId) {
+  if (!playingPublicId) return queue
+  const playing = []
+  const rest = []
+  for (const row of queue) {
+    if (videoPublicIdOf(row) === playingPublicId) playing.push(row)
+    else rest.push(row)
+  }
+  return playing.length > 0 ? [...playing, ...rest] : queue
 }
 
 export function VideoWatchPage() {
@@ -311,6 +441,7 @@ export function VideoWatchPage() {
   const watchQualifySentRef = useRef(false)
   const watchPlaythroughSentRef = useRef(false)
   const commentInputRef = useRef(null)
+  const watchSidebarScrollRef = useRef(null)
 
   const [video, setVideo] = useState(null)
   const [loadError, setLoadError] = useState('')
@@ -326,10 +457,11 @@ export function VideoWatchPage() {
   const [shareCopied, setShareCopied] = useState(false)
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const [intrinsicSize, setIntrinsicSize] = useState(null)
   const [exploreQueue, setExploreQueue] = useState([])
   const [creatorQueue, setCreatorQueue] = useState([])
+  const [creatorQueueLoading, setCreatorQueueLoading] = useState(false)
+  const [watchSidebarTab, setWatchSidebarTab] = useState('comments')
   const [exploreCursor, setExploreCursor] = useState(null)
   const [exploreHasNext, setExploreHasNext] = useState(false)
   const [exploreLoadingMore, setExploreLoadingMore] = useState(false)
@@ -534,18 +666,6 @@ export function VideoWatchPage() {
     }
   }, [exploreCursor, exploreHasNext, exploreLoadingMore, exploreQueue, loadExploreChunk])
 
-  const handleWatchSearch = (e) => {
-    e.preventDefault()
-    const q = searchQuery.trim()
-    if (!q) return
-    const tag = q.replace(/^#+/, '').trim()
-    if (tag) {
-      navigate(`/tag/${encodeURIComponent(tag)}`)
-      return
-    }
-    navigate('/explore')
-  }
-
   const authorProfilePath = useMemo(() => {
     const a = activeVideo?.authorUsername
     const slug = normalizeUsernameKey(a)
@@ -589,13 +709,19 @@ export function VideoWatchPage() {
   }, [exploreLoadingMore, exploreQueue.length, isFromExplore, loadExploreChunk])
 
   useEffect(() => {
+    setWatchSidebarTab('comments')
+  }, [publicIdFromRoute])
+
+  useEffect(() => {
     if (!isCreatorWatch || !routeSlug) {
       setCreatorQueue([])
+      setCreatorQueueLoading(false)
       return undefined
     }
     let cancelled = false
     const slug = routeSlug
     setCreatorQueue([])
+    setCreatorQueueLoading(true)
     ;(async () => {
       try {
         const data =
@@ -606,6 +732,8 @@ export function VideoWatchPage() {
         setCreatorQueue(sortVideosNewestFirst(data?.items))
       } catch {
         if (!cancelled) setCreatorQueue([])
+      } finally {
+        if (!cancelled) setCreatorQueueLoading(false)
       }
     })()
     return () => {
@@ -826,6 +954,17 @@ export function VideoWatchPage() {
   }, [creatorQueue, isCreatorWatch, publicIdFromRoute])
   currentCreatorIndexRef.current = currentCreatorIndex
 
+  const creatorGridVideos = useMemo(
+    () => orderCreatorGridWithPlayingFirst(creatorQueue, publicIdFromRoute),
+    [creatorQueue, publicIdFromRoute],
+  )
+
+  useEffect(() => {
+    if (watchSidebarTab !== 'creator') return
+    const el = watchSidebarScrollRef.current
+    if (el) el.scrollTop = 0
+  }, [watchSidebarTab, publicIdFromRoute])
+
   const hasPrevExplore = isFromExplore && currentExploreIndex > 0
   const hasNextExplore = isFromExplore && (
     currentExploreIndex >= 0
@@ -1011,6 +1150,21 @@ export function VideoWatchPage() {
       else if (isCreatorWatch) moveToCreatorVideo(direction)
     },
     [isCreatorWatch, isFromExplore, moveToCreatorVideo, moveToExploreVideo],
+  )
+
+  const goToCreatorVideo = useCallback(
+    (target) => {
+      const id = videoPublicIdOf(target)
+      const slug =
+        routeSlug || normalizeUsernameKey(target?.authorUsername ?? panelVideo?.authorUsername)
+      if (!id || !slug) return
+      const path = buildProfileVideoUrl(slug, id)
+      if (!path) return
+      if (id === publicIdFromRoute) return
+      recordProfileLastWatchedFromVideo(target, { tab: 'videos' })
+      navigate(path, { replace: true })
+    },
+    [navigate, panelVideo?.authorUsername, publicIdFromRoute, routeSlug],
   )
 
   useEffect(() => {
@@ -1257,27 +1411,7 @@ export function VideoWatchPage() {
               </div>
 
               <div className="pointer-events-auto flex min-w-0 flex-1 justify-center px-2 sm:px-4">
-                <form
-                  onSubmit={handleWatchSearch}
-                  className="flex h-11 w-full max-w-[360px] items-center rounded-full border border-white/10 bg-zinc-900/55 px-4 shadow-lg backdrop-blur-md"
-                >
-                  <input
-                    type="search"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Tìm nội dung liên quan"
-                    className="min-w-0 flex-1 bg-transparent text-[15px] text-zinc-100 placeholder:text-zinc-400 focus:outline-none"
-                    aria-label="Tìm nội dung liên quan"
-                  />
-                  <span className="mx-3 h-5 w-px shrink-0 bg-zinc-500/80" aria-hidden />
-                  <button
-                    type="submit"
-                    className="flex shrink-0 cursor-pointer items-center justify-center rounded-full p-1 text-xl text-zinc-300 transition hover:text-zinc-100"
-                    aria-label="Tìm kiếm"
-                  >
-                    <IoSearchOutline />
-                  </button>
-                </form>
+                <WatchSearchDropdown />
               </div>
 
               <div className="pointer-events-auto flex w-11 shrink-0 justify-end sm:w-12">
@@ -1494,25 +1628,76 @@ export function VideoWatchPage() {
                   <button
                     type="button"
                     role="tab"
-                    aria-selected
-                    className="min-w-0 flex-1 border-b-2 border-white px-2 py-3 text-left text-[15px] font-semibold text-zinc-100"
+                    aria-selected={watchSidebarTab === 'comments'}
+                    className={`min-w-0 flex-1 border-b-2 px-2 py-3 text-left text-[15px] font-semibold ${
+                      watchSidebarTab === 'comments'
+                        ? 'border-white text-zinc-100'
+                        : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                    }`}
+                    onClick={() => setWatchSidebarTab('comments')}
                   >
                     Bình luận{' '}
                     <span className="font-normal text-zinc-400">
                       ({formatCompactCount(panelVideo.commentCount ?? 0)})
                     </span>
                   </button>
-                  <Link
-                    to={authorProfilePath}
+                  <button
+                    type="button"
                     role="tab"
-                    className="min-w-0 flex-1 border-b-2 border-transparent px-2 py-3 text-left text-[15px] font-semibold text-zinc-500 hover:text-zinc-300"
+                    aria-selected={watchSidebarTab === 'creator'}
+                    disabled={!isCreatorWatch}
+                    className={`min-w-0 flex-1 border-b-2 px-2 py-3 text-left text-[15px] font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${
+                      watchSidebarTab === 'creator'
+                        ? 'border-white text-zinc-100'
+                        : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                    }`}
+                    onClick={() => setWatchSidebarTab('creator')}
                   >
                     Video của nhà sáng tạo
-                  </Link>
+                  </button>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3">
-                  {commentsLoading ? (
+                <div
+                  ref={watchSidebarScrollRef}
+                  className={`min-h-0 flex-1 overscroll-contain px-3 py-3 ${
+                    watchSidebarTab === 'creator'
+                      ? 'scrollbar-none overflow-y-auto'
+                      : 'overflow-y-auto'
+                  }`}
+                >
+                  {watchSidebarTab === 'creator' ? (
+                    creatorQueueLoading ? (
+                      <p className="py-10 text-center text-sm text-zinc-500">
+                        Đang tải video…
+                      </p>
+                    ) : creatorQueue.length === 0 ? (
+                      <div className="flex flex-col items-center py-10 text-center text-sm text-zinc-500">
+                        <p>Chưa có video công khai.</p>
+                        <Link
+                          to={authorProfilePath}
+                          className="mt-3 text-xs font-semibold text-zinc-300 hover:text-white hover:underline"
+                        >
+                          Xem hồ sơ
+                        </Link>
+                      </div>
+                    ) : (
+                      <ul className="grid grid-cols-2 gap-2">
+                        {creatorGridVideos.map((v) => {
+                          const vid = videoPublicIdOf(v)
+                          const playing = vid != null && vid === publicIdFromRoute
+                          return (
+                            <li key={vid ?? v.id}>
+                              <WatchCreatorVideoTile
+                                video={v}
+                                isPlaying={playing}
+                                onSelect={goToCreatorVideo}
+                              />
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    )
+                  ) : commentsLoading ? (
                     <p className="py-6 text-center text-sm text-zinc-500">Đang tải bình luận…</p>
                   ) : commentsError ? (
                     <p className="py-6 text-center text-sm text-red-400">{commentsError}</p>
@@ -1552,6 +1737,7 @@ export function VideoWatchPage() {
                   )}
                 </div>
 
+                {watchSidebarTab === 'comments' ? (
                 <div className="shrink-0 border-t border-zinc-800 px-3 pt-2 pb-3">
                   {commentPostError ? (
                     <p className="mb-1 text-xs text-red-400">{commentPostError}</p>
@@ -1625,6 +1811,7 @@ export function VideoWatchPage() {
                     </button>
                   </div>
                 </div>
+                ) : null}
               </>
             )}
           </aside>

@@ -65,6 +65,29 @@ html {
   animation: feed-playback-flash 0.62s ease-out forwards;
 }
 
+/* Equalizer "Hiện đang phát" trên lưới video creator (watch page). */
+@keyframes watch-now-playing-bar {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  40% {
+    transform: scaleY(1);
+  }
+  70% {
+    transform: scaleY(0.5);
+  }
+}
+
+.watch-now-playing-bar {
+  display: block;
+  width: 2px;
+  border-radius: 9999px;
+  background: #fff;
+  transform-origin: bottom center;
+  animation: watch-now-playing-bar 0.72s ease-in-out infinite;
+}
+
 @keyframes feed-playback-flash {
   0% {
     opacity: 0;
