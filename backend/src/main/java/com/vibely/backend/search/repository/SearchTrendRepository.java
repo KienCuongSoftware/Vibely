@@ -11,4 +11,9 @@ public interface SearchTrendRepository extends JpaRepository<SearchTrend, Long> 
     Optional<SearchTrend> findByKeyword(String keyword);
 
     List<SearchTrend> findAllByOrderBySearchCountDescLastSearchedAtDesc(Pageable pageable);
+
+    List<SearchTrend> findByKeywordContainingIgnoreCaseOrderBySearchCountDescLastSearchedAtDesc(
+        String keyword,
+        Pageable pageable
+    );
 }

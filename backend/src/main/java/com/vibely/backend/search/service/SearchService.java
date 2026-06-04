@@ -83,7 +83,7 @@ public class SearchService {
         String query = normalizeSearchTerm(rawQuery);
         if (query.isEmpty()) {
             return new SearchSuggestResponseDto(
-                trending(suggestGroupLimit).items(),
+                trendingItems(suggestGroupLimit),
                 List.of(),
                 List.of(),
                 List.of()
@@ -93,7 +93,7 @@ public class SearchService {
         String cacheKey = SearchTextNormalizer.normalizeTrendKeyword(query);
         return suggestionCacheService.get(cacheKey).orElseGet(() -> {
             SearchSuggestResponseDto response = new SearchSuggestResponseDto(
-                trending(suggestGroupLimit).items(),
+                trendingMatching(query, suggestGroupLimit),
                 searchUsers(query, suggestGroupLimit),
                 searchHashtags(query, suggestGroupLimit),
                 searchVideos(query, suggestGroupLimit)
@@ -140,13 +140,33 @@ public class SearchService {
 
     @Transactional(readOnly = true)
     public SearchTrendingResponseDto trending(int limit) {
+        return new SearchTrendingResponseDto(trendingItems(limit));
+    }
+
+    private List<SearchTrendItemDto> trendingItems(int limit) {
         int capped = capLimit(limit, DEFAULT_TRENDING_LIMIT, MAX_TRENDING_LIMIT);
-        List<SearchTrendItemDto> items = searchTrendRepository
+        return searchTrendRepository
             .findAllByOrderBySearchCountDescLastSearchedAtDesc(PageRequest.of(0, capped))
             .stream()
             .map(row -> new SearchTrendItemDto(row.getKeyword(), row.getSearchCount(), row.getLastSearchedAt()))
             .toList();
-        return new SearchTrendingResponseDto(items);
+    }
+
+    /** Gợi ý từ khóa khớp chuỗi đang gõ (không trả toàn bộ trending toàn site). */
+    private List<SearchTrendItemDto> trendingMatching(String rawQuery, int limit) {
+        String query = normalizeSearchTerm(rawQuery);
+        if (query.isEmpty()) {
+            return trendingItems(limit);
+        }
+        int capped = capLimit(limit, DEFAULT_TRENDING_LIMIT, MAX_TRENDING_LIMIT);
+        return searchTrendRepository
+            .findByKeywordContainingIgnoreCaseOrderBySearchCountDescLastSearchedAtDesc(
+                query,
+                PageRequest.of(0, capped)
+            )
+            .stream()
+            .map(row -> new SearchTrendItemDto(row.getKeyword(), row.getSearchCount(), row.getLastSearchedAt()))
+            .toList();
     }
 
     @Transactional(readOnly = true)
