@@ -16,6 +16,7 @@ Clear ownership and extraction seams.
 | `video` | VideoService, VideoController | videos, views |
 | `feed` | FeedController, FeedCursorCodec | (queries videos) |
 | `explore` | ExploreService, ranking | explore_* |
+| `search` | SearchService, SearchController | search_trends, search_history |
 | `chat` | ChatService, ChatRealtimePublisher | chat_* |
 | `interaction` | InteractionService | likes, comments, follows |
 | `processing` | FfmpegHlsPipelineRunner | processing jobs |

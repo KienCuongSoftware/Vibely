@@ -39,6 +39,24 @@
 | GET | `/api/explore/categories` |
 | GET | `/api/explore/trending` |
 | GET | `/api/explore/search` |
+| GET | `/api/explore/category/{slug}` |
+| GET | `/api/explore/topic/{slug}` |
+| GET | `/api/explore/video/{publicId}/related` |
+
+## Search (global)
+
+| Method | Path | Auth |
+|--------|------|------|
+| GET | `/api/search/suggest?q=` | No |
+| GET | `/api/search/users?q=&limit=` | No |
+| GET | `/api/search/videos?q=&limit=` | No |
+| GET | `/api/search/hashtags?q=&limit=` | No |
+| GET | `/api/search/trending?limit=` | No |
+| GET | `/api/search/history?limit=` | Bearer |
+| POST | `/api/search/history` | Bearer — body `{ "query": "..." }` |
+| DELETE | `/api/search/history` | Bearer |
+
+Suggest response shape: `{ trending[], users[], hashtags[], videos[] }`.
 
 ## Chat
 

@@ -37,7 +37,7 @@ Page → `apiClient.*` → JSON → local state / context → UI.
 ## 7. Scaling (client)
 
 - Virtualized lists (`@tanstack/react-virtual` pattern in feed components)
-- Debounced search on explore
+- Debounced global search (`useSearch`, `GET /api/search/suggest`); explore uses separate `searchExplore` API when enabled
 - Service worker for offline (roadmap)
 
 ## 8. Performance

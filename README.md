@@ -27,6 +27,7 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 | **Messaging**   | Direct chat with message requests, STOMP/WebSocket realtime, share-to-chat from videos                |
 | **Performance** | Keyset pagination, batched feed queries, Redis share/redirect cache, aggressive client memory cleanup |
 | **Studio**      | Upload, post editing, per-video analytics, comment moderation UI                                      |
+| **Search**      | Global suggest + users/videos/hashtags, `/search` results page, watch-page suggest dropdown           |
 
 ---
 
@@ -79,6 +80,20 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 - Upload flow with cover picker and preview
 - Post editor, analytics dashboard, comment management
 - View/playthrough tracking for retention insights
+
+### Search & discovery
+
+- **Global search API** — `GET /api/search/suggest`, `/users`, `/videos`, `/hashtags`, `/trending`; authenticated **search history** (GET/POST/DELETE `/api/search/history`)
+- **Suggest while typing** — trending keywords filtered to match the query (not the full-site trending list)
+- **Results page** — `/search?q=…` with Top / Users / Videos tabs (`SearchResultsPage`)
+- **Watch page** — inline suggest dropdown (`WatchSearchDropdown`); no history rows on watch
+- **Explore search** — separate cursor-paginated `GET /api/explore/search` for discovery grids
+
+### Profile & watch UX
+
+- Profile video grid with hover preview; **Vừa xem** marker and scroll-to-tile control (sessionStorage per username)
+- Profile and explore-style pages use **hidden scrollbars** (`scrollbar-none`) inside a `h-dvh` shell
+- Watch page: volume/PiP, creator queue navigation, **Video của nhà sáng tạo** sidebar tab with hover preview and “Hiện đang phát” indicator
 
 ---
 
@@ -383,6 +398,21 @@ POST /api/fingerprint/register
 POST /api/behavior/track
 ```
 
+### Search
+
+```http
+GET    /api/search/suggest?q=
+GET    /api/search/users?q=
+GET    /api/search/videos?q=
+GET    /api/search/hashtags?q=
+GET    /api/search/trending
+GET    /api/search/history          # Bearer
+POST   /api/search/history          # Bearer — { "query": "..." }
+DELETE /api/search/history          # Bearer
+```
+
+Explore also exposes paginated video search: `GET /api/explore/search?q=&cursor=`. See [docs/search/](docs/search/).
+
 ### Chat
 
 ```http
@@ -412,6 +442,7 @@ Vibely/
 │       ├── auth/               # JWT, OAuth, OTP, mail
 │       ├── chat/               # Conversations, WebSocket publisher
 │       ├── feed/               # FeedCursorCodec, feed controllers
+│       ├── search/             # Suggest, entity search, trends, history
 │       ├── interaction/        # Likes, comments, bookmarks, views
 │       ├── processing/         # FFmpeg HLS pipeline, job workers
 │       ├── share/              # Short links, analytics, Redis cache
@@ -422,7 +453,8 @@ Vibely/
 │   └── src/
 │       ├── components/feed/    # VirtualizedFeed, FeedVideoPlayer
 │       ├── feed/               # feedConfig, prefetch, trim helpers
-│       ├── pages/              # Feed, Watch, Studio, Profile, Messages
+│       ├── pages/              # Feed, Watch, Studio, Profile, Messages, Search
+│       ├── components/search/  # SearchInput, WatchSearchDropdown, searchUtils
 │       ├── security/           # Anti-bot SDK, captcha UI, fingerprint
 │       └── api/                # API client
 ├── docs/                       # Engineering docs (auth, anti-bot, API, …)

@@ -11,7 +11,7 @@ Documentation drifts when the codebase changes. After **meaningful** changes (ne
 | REST routes / envelopes | [api/](api/) |
 | Flyway migrations | [database/](database/) |
 | Auth, OAuth, captcha headers | [auth/](auth/), [anti-bot/](anti-bot/) |
-| Feed / explore / video | [feed/](feed/), [explore/](explore/) |
+| Feed / explore / video / search | [feed/](feed/), [explore/](explore/), [search/](search/) |
 | Chat / WebSocket | [chat/](chat/), [architecture/WEBSOCKET_REALTIME.md](architecture/WEBSOCKET_REALTIME.md) |
 | FFmpeg / S3 / CDN | [media/](media/) |
 | Redis keys / Kafka topics | [backend/REDIS_KAFKA_INTEGRATION.md](backend/REDIS_KAFKA_INTEGRATION.md), [infra/](infra/) |
@@ -45,7 +45,7 @@ Each major document follows:
 | Anti-bot | [anti-bot/README.md](anti-bot/README.md) | Risk engine, captcha, telemetry |
 | Explore | [explore/README.md](explore/README.md) | Discovery, trending, cache |
 | Recommendation | [recommendation/README.md](recommendation/README.md) | Candidate/rank pipeline (roadmap) |
-| Search | [search/README.md](search/README.md) | Explore search, indexing path |
+| Search | [search/README.md](search/README.md) | `/api/search/*`, `/search` UI, suggest cache |
 | Notification | [notification/README.md](notification/README.md) | WebSocket fanout (roadmap) |
 | Chat | [chat/README.md](chat/README.md) | STOMP, message requests |
 | Moderation | [moderation/README.md](moderation/README.md) | Reports, takedown |

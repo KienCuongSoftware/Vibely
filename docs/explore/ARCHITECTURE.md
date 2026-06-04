@@ -28,7 +28,7 @@ Schema: V23 `explore_schema`, V24 backfill. Classifier assigns videos to categor
 
 ## 5–7.
 
-Search: PostgreSQL full-text / ILIKE (verify implementation in ExploreService). Scale: Elasticsearch migration path documented as future.
+**Explore search** (`GET /api/explore/search`): cursor-paginated video grid inside ExploreService (PostgreSQL). **Global search** (users/hashtags/suggest/history) is a separate module — see [search/ARCHITECTURE.md](../search/ARCHITECTURE.md). Scale: Elasticsearch migration path documented as future.
 
 ## 8–15.
 

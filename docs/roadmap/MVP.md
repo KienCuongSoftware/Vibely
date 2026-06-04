@@ -6,6 +6,7 @@
 - [x] Upload + FFmpeg HLS pipeline
 - [x] Auth JWT + OAuth (Google, Facebook, LINE)
 - [x] Explore categories & search
+- [x] Global search API + `/search` results page + watch-page suggest dropdown
 - [x] Chat + message requests
 - [x] Share short links
 - [x] Studio analytics (basic)
