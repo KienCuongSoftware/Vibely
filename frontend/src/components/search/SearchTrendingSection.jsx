@@ -35,11 +35,6 @@ export function SearchTrendingSection({
                   <IoTrendingUp className="text-base" aria-hidden />
                 </span>
                 <span className="min-w-0 flex-1 truncate font-medium">{item.keyword}</span>
-                {item.searchCount != null ? (
-                  <span className="shrink-0 text-xs text-zinc-500">
-                    {Number(item.searchCount).toLocaleString('vi-VN')}
-                  </span>
-                ) : null}
               </button>
             </li>
           )
