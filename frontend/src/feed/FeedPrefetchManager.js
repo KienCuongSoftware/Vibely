@@ -1,21 +1,38 @@
 import { FEED_CONFIG } from "./feedConfig.js";
 import { isHlsPlaybackUrl } from "./feedPlayback.js";
+import { pickVariantPlaylistUrl } from "./hlsPrefetchUtils.js";
+
+const WARM_CACHE_MAX = 64;
 
 /**
- * Limits concurrent media work and prefetches HLS manifests (not full segments).
+ * Warm CDN cache cho HLS manifest — không abort khi lướt feed (tránh request đỏ).
+ * Segment do player kế bên buffer qua hls.js.
  */
 export class FeedPrefetchManager {
   constructor({ maxConcurrent = 2 } = {}) {
     this.maxConcurrent = maxConcurrent;
     this.active = 0;
     this.queue = [];
-    this.manifestDone = new Set();
-    this.abort = null;
+    /** @type {Set<string>} */
+    this.warmDone = new Set();
+    /** @type {string[]} */
+    this.warmOrder = [];
+    this.runId = 0;
   }
 
+  /** Chỉ gọi khi unmount trang — không gọi mỗi lần đổi activeIndex. */
   cancelPending() {
-    this.abort?.abort();
-    this.abort = null;
+    this.runId += 1;
+  }
+
+  rememberWarm(url) {
+    if (!url || this.warmDone.has(url)) return;
+    this.warmDone.add(url);
+    this.warmOrder.push(url);
+    while (this.warmOrder.length > WARM_CACHE_MAX) {
+      const old = this.warmOrder.shift();
+      if (old) this.warmDone.delete(old);
+    }
   }
 
   acquireSlot() {
@@ -43,17 +60,32 @@ export class FeedPrefetchManager {
     });
   }
 
+  async fetchText(url) {
+    const res = await fetch(url, {
+      method: "GET",
+      credentials: "omit",
+      cache: "default",
+      headers: { Accept: "application/vnd.apple.mpegurl,*/*" },
+    });
+    if (!res.ok) throw new Error(`prefetch ${res.status}`);
+    return res.text();
+  }
+
+  /** Master + variant playlist — không prefetch .ts (tránh 404 / xung đột hls.js). */
+  async warmHlsManifests(url) {
+    const masterText = await this.fetchText(url);
+    const variantUrl = pickVariantPlaylistUrl(masterText, url);
+    if (variantUrl && variantUrl !== url) {
+      await this.fetchText(variantUrl);
+    }
+  }
+
   /**
-   * Warm CDN cache for upcoming HLS master playlists only.
-   * @param {Array<{ publicId?: string }>} videos
-   * @param {number} activeIndex
-   * @param {(video: unknown) => string | null} resolveUrl
+   * Warm CDN cho video kế tiếp — chạy nền, không hủy batch cũ khi lướt nhanh.
    */
   prefetchAround(videos, activeIndex, resolveUrl) {
-    this.cancelPending();
     if (!Array.isArray(videos) || videos.length === 0) return;
-    const controller = new AbortController();
-    this.abort = controller;
+    const runId = this.runId;
 
     const start = Math.max(0, activeIndex + 1);
     const end = Math.min(
@@ -63,27 +95,21 @@ export class FeedPrefetchManager {
 
     void (async () => {
       for (let i = start; i < end; i += 1) {
-        if (controller.signal.aborted) return;
+        if (runId !== this.runId) return;
         const url = resolveUrl(videos[i]);
-        if (!url || !isHlsPlaybackUrl(url) || this.manifestDone.has(url)) {
+        if (!url || !isHlsPlaybackUrl(url) || this.warmDone.has(url)) {
           continue;
         }
         const release = await this.acquireSlot();
-        if (controller.signal.aborted) {
+        if (runId !== this.runId) {
           release();
           return;
         }
         try {
-          await fetch(url, {
-            method: "GET",
-            signal: controller.signal,
-            credentials: "omit",
-            cache: "default",
-            headers: { Accept: "application/vnd.apple.mpegurl,*/*" },
-          });
-          this.manifestDone.add(url);
+          await this.warmHlsManifests(url);
+          this.rememberWarm(url);
         } catch {
-          /* offline / CORS — player will retry */
+          /* CDN / offline — player sẽ tải lại */
         } finally {
           release();
         }
@@ -91,7 +117,6 @@ export class FeedPrefetchManager {
     })();
   }
 
-  /** Poster-only warm (cheap); skips if already prefetched manifest for same thumb. */
   prefetchPoster(url) {
     if (!url || typeof url !== "string") return;
     const img = new Image();

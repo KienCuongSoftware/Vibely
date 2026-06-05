@@ -2,15 +2,28 @@ import { useEffect } from "react";
 import { feedPrefetchManager } from "./FeedPrefetchManager.js";
 import { resolveFeedPlaybackUrl } from "./feedPlayback.js";
 
+/** Debounce — tránh spam prefetch khi lướt nhanh qua nhiều video. */
+const PREFETCH_DEBOUNCE_MS = 220;
+
 /**
- * Prefetch HLS manifests for videos after the active index.
+ * Prefetch HLS manifest cho video kế tiếp; poster cho +1/+2.
+ * Không abort request đang chạy khi đổi slide (tránh lỗi đỏ trên Network).
  */
 export function useFeedPrefetch(videos, activeIndex) {
   useEffect(() => {
-    feedPrefetchManager.prefetchAround(videos, activeIndex, resolveFeedPlaybackUrl);
-    const next = videos[activeIndex + 1];
-    const poster = next?.thumbnailUrl?.trim();
-    if (poster) feedPrefetchManager.prefetchPoster(poster);
-    return () => feedPrefetchManager.cancelPending();
+    const timer = window.setTimeout(() => {
+      feedPrefetchManager.prefetchAround(
+        videos,
+        activeIndex,
+        resolveFeedPlaybackUrl,
+      );
+      for (const offset of [1, 2]) {
+        const item = videos[activeIndex + offset];
+        const poster = item?.thumbnailUrl?.trim();
+        if (poster) feedPrefetchManager.prefetchPoster(poster);
+      }
+    }, PREFETCH_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timer);
   }, [videos, activeIndex]);
 }
