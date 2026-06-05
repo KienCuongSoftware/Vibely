@@ -4,16 +4,16 @@ import { FEED_CONFIG } from '../../feed/feedConfig.js'
 import { isHlsPlaybackUrl } from '../../feed/feedPlayback.js'
 import { detectLetterboxedLandscapeLayout } from './feedLetterboxLayout'
 
-function buildHlsInstance() {
+function buildHlsInstance({ prefetch = false } = {}) {
   return new Hls({
     enableWorker: true,
     lowLatencyMode: false,
     startFragPrefetch: true,
-    /** Keep buffers small — mobile memory budget */
-    maxBufferLength: 12,
-    maxMaxBufferLength: 24,
+    /** Buffer nhỏ hơn khi prefetch slide kế — tiết kiệm RAM */
+    maxBufferLength: prefetch ? 8 : 12,
+    maxMaxBufferLength: prefetch ? 12 : 24,
     backBufferLength: 0,
-    maxBufferSize: 18 * 1000 * 1000,
+    maxBufferSize: prefetch ? 12 * 1000 * 1000 : 18 * 1000 * 1000,
   })
 }
 
@@ -231,18 +231,26 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
     }
 
     if (Hls.isSupported()) {
-      const hls = buildHlsInstance()
+      const hls = buildHlsInstance({ prefetch: loadMedia && !isActiveRef.current })
       hlsRef.current = hls
       hls.loadSource(videoUrl)
       hls.attachMedia(el)
       const onParsed = () => {
         if (cancelled) return
         applyStreamQuality(hls, streamQualityRef.current)
-        requestAnimationFrame(() => reportIntrinsicLayout(el))
-        tryPlayActiveRef.current()
+        if (loadMedia && !isActiveRef.current) {
+          try {
+            hls.startLoad(0)
+          } catch {
+            /* noop */
+          }
+        } else {
+          requestAnimationFrame(() => reportIntrinsicLayout(el))
+          tryPlayActiveRef.current()
+        }
       }
       const onLevelSwitch = () => {
-        if (cancelled) return
+        if (cancelled || !isActiveRef.current) return
         requestAnimationFrame(() => reportIntrinsicLayout(el))
       }
       hls.on(Hls.Events.MANIFEST_PARSED, onParsed)
@@ -307,6 +315,7 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
       visibilityRatio < FEED_CONFIG.PAUSE_VISIBILITY_RATIO
     if (shouldPlay && !shouldPause) {
       void playWithAutoplayPolicy(el, !muted)
+      requestAnimationFrame(() => reportIntrinsicLayout(el))
     } else {
       try {
         el.pause()
@@ -404,7 +413,7 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
       playsInline={playsInline}
       muted={muted}
       loop={loop}
-      preload={isActive ? 'metadata' : 'none'}
+      preload={isActive ? 'auto' : loadMedia ? 'metadata' : 'none'}
       data-feed-video-id={feedVideoId != null ? String(feedVideoId) : undefined}
       onLoadedMetadata={handleLoadedMetadata}
       onLoadedData={handleLoadedData}

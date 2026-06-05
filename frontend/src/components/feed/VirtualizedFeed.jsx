@@ -253,7 +253,9 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
           const video = videos[vi.index]
           if (!video) return null
           const distance = Math.abs(vi.index - activeIndex)
-          const loadMedia = distance <= mediaWindowRadius
+          /** Luôn buffer video kế tiếp — tránh giật khi vuốt như TikTok */
+          const loadMedia =
+            distance <= mediaWindowRadius || vi.index === activeIndex + 1
           const visibilityRatio = ratiosRef.current.get(vi.index) ?? 0
           const isActive = vi.index === activeIndex
           const slotTopPx = vi.index * itemHeightPx
