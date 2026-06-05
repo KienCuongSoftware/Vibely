@@ -28,6 +28,10 @@ import {
 } from "react-icons/lu";
 import { resolveFeedPlaybackUrl } from "../../feed/feedPlayback.js";
 import { useFeedPrefetch } from "../../feed/useFeedPrefetch.js";
+import {
+  FEED_COMMENTS_PANEL_WIDTH_PX,
+  computeFeedLandscapeStageWidthPx,
+} from "../../feed/feedLayout.js";
 
 function feedAuthorProfilePath(video) {
   const raw = String(video?.authorUsername ?? "vibely")
@@ -208,40 +212,36 @@ function formatPlaybackTime(seconds) {
   )}`;
 }
 
-/** Vibely ID + caption dưới video (stacked) hoặc overlay đáy (mặc định). */
+/** Vibely ID + caption overlay đáy video (dọc & ngang). */
 function FeedSlideAuthorMeta({
   rawVibelyUser,
   authorProfilePath,
   captionText,
-  stacked = false,
+  compact = false,
 }) {
   const nameClass =
     "inline-block max-w-full truncate text-[15px] font-bold leading-snug text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.95),0_0_1px_rgba(0,0,0,0.85)]";
+  const displayVibelyId = rawVibelyUser ? `@${rawVibelyUser}` : "@vibely";
   const nameEl = authorProfilePath ? (
     <Link
       to={authorProfilePath}
       onClick={(e) => e.stopPropagation()}
       className={`${nameClass} hover:underline`}
     >
-      {rawVibelyUser}
+      {displayVibelyId}
     </Link>
   ) : (
-    <p className={nameClass}>{rawVibelyUser}</p>
+    <p className={nameClass}>{displayVibelyId}</p>
   );
 
-  if (stacked) {
-    return (
-      <div className="pointer-events-auto shrink-0 border-t border-white/10 bg-black px-3 py-2.5 sm:px-4">
-        <div className="inline-flex max-w-full">{nameEl}</div>
-        <div className="mt-0.5">
-          <FeedVideoCaption caption={captionText} />
-        </div>
-      </div>
-    );
-  }
+  const padClass = compact
+    ? "px-3 pb-2.5 pt-3 sm:px-4"
+    : "px-3 pb-2.5 pt-6 sm:px-4 sm:pt-8";
 
   return (
-    <div className="pointer-events-auto bg-linear-to-t from-black/85 via-black/25 to-transparent px-3 pb-8 pt-7 sm:px-4 sm:pb-9 sm:pt-9">
+    <div
+      className={`pointer-events-auto shrink-0 bg-linear-to-t from-black/90 via-black/45 to-transparent ${padClass}`}
+    >
       <div className="inline-flex max-w-full">{nameEl}</div>
       <div className="mt-1">
         <FeedVideoCaption caption={captionText} />
@@ -250,17 +250,19 @@ function FeedSlideAuthorMeta({
   );
 }
 
+/** Re-export — dùng feedLayout.js làm nguồn duy nhất. */
+export { FEED_COMMENTS_PANEL_WIDTH_PX } from "../../feed/feedLayout.js";
+
 /** Cột feed hẹp — video dọc (mặc định, gần TikTok web). */
 export const FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT =
   "w-[min(300px,88vw)] shrink-0 md:w-[min(380px,90vw)] lg:w-[min(440px,min(86vw,560px))]";
 
-/** Cột feed rộng — video ~16:9+ (desktop rộng hơn TikTok-web). */
+/** @deprecated — landscape dùng computeFeedLandscapeStageWidthPx. */
 export const FEED_STAGE_OUTER_WIDTH_CLASS_WIDE =
   "w-[min(390px,92vw)] shrink-0 md:w-[min(560px,94vw)] lg:w-[min(760px,min(94vw,1040px))] xl:w-[min(880px,min(95vw,1180px))]";
 
-/** Video ngang khi panel bình luận mở — thu hẹp để không đè cột action + sidebar. */
 export const FEED_STAGE_OUTER_WIDTH_CLASS_WIDE_DOCKED =
-  "w-[min(280px,68vw)] shrink-0 md:w-[min(340px,42vw)] lg:w-[min(400px,min(38vw,480px))] xl:w-[min(440px,min(36vw,520px))]";
+  FEED_STAGE_OUTER_WIDTH_CLASS_WIDE;
 
 /** Skeleton / chỗ chưa biết tỉ lệ: dùng khung dọc. */
 export const FEED_STAGE_OUTER_WIDTH_CLASS =
@@ -370,6 +372,8 @@ export function FeedPhoneStage({
   onActiveFeedPlaybackTick,
   /** Panel bình luận bên phải đang mở — video ngang thu nhỏ khung. */
   commentsDockOpen = false,
+  /** Báo parent biết khung đang ở chế độ ngang (16:9). */
+  onStageWideChange,
 }) {
   /** Khung rộng từ trình duyệt (videoWidth/Height sau decode). */
   const [clientWideForLandscape, setClientWideForLandscape] = useState(false);
@@ -564,25 +568,134 @@ export function FeedPhoneStage({
   const stageWideForLandscape =
     apiWideForLandscape || clientWideForLandscape || thumbWideForLandscape;
 
-  const stageWidthClass = stageWideForLandscape
-    ? commentsDockOpen
-      ? FEED_STAGE_OUTER_WIDTH_CLASS_WIDE_DOCKED
-      : FEED_STAGE_OUTER_WIDTH_CLASS_WIDE
+  /** Giữ khung ngang khi mở bình luận — gắn với video hiện tại. */
+  const landscapeLatchRef = useRef(false);
+  const landscapeLatchVideoIdRef = useRef(null);
+  if (stageWideForLandscape) {
+    landscapeLatchRef.current = true;
+    landscapeLatchVideoIdRef.current = activeVideoPublicId;
+  }
+  useLayoutEffect(() => {
+    if (commentsDockOpen) {
+      if (stageWideForLandscape) {
+        landscapeLatchRef.current = true;
+        landscapeLatchVideoIdRef.current = activeVideoPublicId;
+      }
+      return;
+    }
+    landscapeLatchRef.current = stageWideForLandscape;
+    landscapeLatchVideoIdRef.current = stageWideForLandscape
+      ? activeVideoPublicId
+      : null;
+  }, [commentsDockOpen, activeVideoPublicId, stageWideForLandscape]);
+
+  const landscapeLatchedForActive =
+    landscapeLatchRef.current &&
+    landscapeLatchVideoIdRef.current === activeVideoPublicId;
+
+  const effectiveStageWide =
+    stageWideForLandscape ||
+    (commentsDockOpen &&
+      (landscapeLatchedForActive ||
+        apiWideForLandscape ||
+        thumbWideForLandscape));
+
+  useEffect(() => {
+    onStageWideChange?.(effectiveStageWide);
+  }, [effectiveStageWide, onStageWideChange]);
+
+  const stageOuterRef = useRef(null);
+  const [viewportWidthTick, setViewportWidthTick] = useState(0);
+  useEffect(() => {
+    const onResize = () => setViewportWidthTick((t) => t + 1);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  void viewportWidthTick;
+
+  /** Tính đồng bộ — tránh khung cao feedSlotHeightPx khiến overlay nằm dưới vùng letterbox. */
+  const landscapeStageWidthPx = effectiveStageWide
+    ? computeFeedLandscapeStageWidthPx({
+        commentsOpen: commentsDockOpen,
+        slotHeightPx: feedSlotHeightPx,
+      })
+    : null;
+
+  const landscapeVideoHeightPx =
+    landscapeStageWidthPx != null
+      ? Math.round((landscapeStageWidthPx * 9) / 16)
+      : null;
+
+  const stageOuterHeightPx =
+    effectiveStageWide && landscapeVideoHeightPx != null
+      ? landscapeVideoHeightPx
+      : feedSlotHeightPx;
+
+  const virtualSlotHeightPx = stageOuterHeightPx;
+
+  const stageWidthClass = effectiveStageWide
+    ? "relative shrink-0"
     : FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT;
 
-  const stackedLandscapeMeta = stageWideForLandscape && commentsDockOpen;
+  /** Giữ activeIndex ổn định khi chiều cao khung đổi (phát hiện 16:9). */
+  const [stageHeightSettle, setStageHeightSettle] = useState(false);
+  const prevVirtualSlotHeightRef = useRef(virtualSlotHeightPx);
+  useLayoutEffect(() => {
+    if (prevVirtualSlotHeightRef.current === virtualSlotHeightPx) return undefined;
+    prevVirtualSlotHeightRef.current = virtualSlotHeightPx;
+    setStageHeightSettle(true);
+    const t = window.setTimeout(() => setStageHeightSettle(false), 520);
+    return () => window.clearTimeout(t);
+  }, [virtualSlotHeightPx]);
+
+  /** Giữ activeIndex ổn định ngay sau khi đóng panel bình luận. */
+  const [dockScrollSettle, setDockScrollSettle] = useState(false);
+  useLayoutEffect(() => {
+    if (commentsDockOpen) {
+      setDockScrollSettle(true);
+      return undefined;
+    }
+    setDockScrollSettle(true);
+    const t = window.setTimeout(() => setDockScrollSettle(false), 520);
+    return () => window.clearTimeout(t);
+  }, [commentsDockOpen]);
+
+  /** Khóa scroll + đồng bộ vị trí khi mở/đóng bình luận hoặc đổi kích thước khung. */
+  useLayoutEffect(() => {
+    const top = Math.max(0, activeIndex) * virtualSlotHeightPx;
+    const sync = () => {
+      const root = virtualFeedRef.current?.getScrollElement?.();
+      if (root && !commentsDockOpen) root.scrollTop = top;
+      virtualFeedRef.current?.scrollToIndex(activeIndex, { align: "start" });
+    };
+    sync();
+    queueMicrotask(sync);
+    const raf = requestAnimationFrame(sync);
+    return () => cancelAnimationFrame(raf);
+  }, [
+    commentsDockOpen,
+    activeIndex,
+    virtualSlotHeightPx,
+    landscapeStageWidthPx,
+  ]);
 
   useFeedPrefetch(videos, activeIndex);
 
   return (
     <div
-      className={`relative ${stageWidthClass} overflow-visible rounded-xl border border-white/10 bg-black shadow-[0_0_48px_rgba(0,0,0,0.72)] transition-[width,height] duration-200 ease-out sm:rounded-2xl`}
-      style={{ height: feedSlotHeightPx }}
+      ref={stageOuterRef}
+      className={`${stageWidthClass} overflow-hidden rounded-xl border border-white/10 bg-black shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl`}
+      style={{
+        width: landscapeStageWidthPx ?? undefined,
+        height: stageOuterHeightPx,
+      }}
     >
       <VirtualizedFeed
         ref={virtualFeedRef}
         videos={videos}
-        itemHeightPx={feedSlotHeightPx}
+        itemHeightPx={virtualSlotHeightPx}
+        scrollLocked={commentsDockOpen}
+        freezeActiveIndex={commentsDockOpen || dockScrollSettle || stageHeightSettle}
         activeIndex={activeIndex}
         onActiveIndexChange={setActiveIndex}
         onNearEnd={loadMoreFeed}
@@ -603,24 +716,14 @@ export function FeedPhoneStage({
             "";
           const playbackUrl = resolveFeedPlaybackUrl(video);
           const hasPlayback = Boolean(playbackUrl);
-          const useStackedMeta =
-            stackedLandscapeMeta && isActive && hasPlayback;
           return (
             <div
-              className={`relative h-full w-full ${
-                useStackedMeta
-                  ? "flex flex-col overflow-hidden rounded-xl sm:rounded-2xl"
-                  : "overflow-visible"
-              } ${isActive ? "group" : ""}`}
+              className={`relative h-full w-full overflow-hidden ${
+                isActive ? "group" : ""
+              }`}
             >
               {hasPlayback ? (
-                <div
-                  className={
-                    useStackedMeta
-                      ? "relative min-h-0 flex-1 overflow-hidden rounded-xl sm:rounded-2xl"
-                      : "absolute inset-x-0 top-0 bottom-0 overflow-hidden rounded-xl sm:rounded-2xl"
-                  }
-                >
+                <div className="absolute inset-0 isolate overflow-hidden rounded-xl sm:rounded-2xl">
                   <FeedVideoPlayer
                     key={String(video.publicId)}
                     ref={isActive ? feedVideoRef : undefined}
@@ -630,14 +733,15 @@ export function FeedPhoneStage({
                     loop
                     loadMedia={loadMedia && hasPlayback}
                     isActive={isActive}
-                    visibilityRatio={visibilityRatio}
+                    visibilityRatio={
+                      commentsDockOpen && isActive ? 1 : visibilityRatio
+                    }
                     feedVideoId={video.publicId}
                     streamQuality={feedVideoQuality}
                     onPlaybackTick={
                       isActive ? handleActivePlaybackTick : undefined
                     }
                     className="relative z-0 h-full w-full cursor-pointer"
-                    containLandscape
                     onClick={toggleFeedPlayback}
                     onIntrinsicLandscape={
                       isActive
@@ -650,111 +754,74 @@ export function FeedPhoneStage({
                     className="pointer-events-none absolute inset-x-0 top-0 z-[9] h-[42%] max-h-56 bg-linear-to-b from-black/60 via-black/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                     aria-hidden
                   />
-                </div>
-              ) : (
-                <FeedVideoPlayer
-                  key={String(video.publicId)}
-                  ref={isActive ? feedVideoRef : undefined}
-                  videoUrl={playbackUrl}
-                  poster={poster}
-                  muted={!isActive || playbackMuted}
-                  loop
-                  loadMedia={loadMedia && hasPlayback}
-                  isActive={isActive}
-                  visibilityRatio={visibilityRatio}
-                  feedVideoId={video.publicId}
-                  streamQuality={feedVideoQuality}
-                  onPlaybackTick={
-                    isActive ? handleActivePlaybackTick : undefined
-                  }
-                  className="relative z-0 h-full w-full cursor-pointer"
-                  containLandscape
-                  onClick={toggleFeedPlayback}
-                  onIntrinsicLandscape={
-                    isActive
-                      ? (wide) =>
-                          onActiveIntrinsicLandscape(wide, video.publicId)
-                      : undefined
-                  }
-                />
-              )}
 
-              {isActive && hasPlayback && playbackFlash && !feedMoreMenuOpen ? (
-                <div
-                  className={`pointer-events-none absolute inset-x-0 z-[30] flex items-center justify-center ${
-                    useStackedMeta ? "inset-y-0" : "top-0 bottom-0"
-                  }`}
-                  aria-hidden
-                >
-                  <div className="feed-playback-flash flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-full border border-white/30 bg-black/45 text-white shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-[2px] sm:h-24 sm:w-24">
-                    {playbackFlash === "play" ? (
-                      <IoPlay
-                        className="ml-1 h-11 w-11 sm:h-14 sm:w-14"
-                        aria-hidden
-                      />
-                    ) : (
-                      <IoPause
-                        className="h-11 w-11 sm:h-14 sm:w-14"
-                        aria-hidden
-                      />
-                    )}
-                  </div>
-                </div>
-              ) : null}
-
-              {isActive && hasPlayback && feedMoreMenuOpen ? (
-                <button
-                  type="button"
-                  aria-label="Đóng menu"
-                  className="absolute inset-0 z-[10] cursor-default rounded-xl bg-black/45 transition-colors sm:rounded-2xl"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    setFeedMoreMenuOpen(false);
-                  }}
-                />
-              ) : null}
-
-              {isActive && hasPlayback ? (
-                <>
-                  <div
-                    className={
-                      useStackedMeta
-                        ? "pointer-events-none absolute inset-0 z-[11]"
-                        : "pointer-events-none absolute inset-x-0 top-0 bottom-0 z-[11] flex flex-col justify-end"
-                    }
-                  >
-                    <div className="pointer-events-none absolute inset-x-0 top-0 z-[50] flex items-center justify-between px-3 pt-3">
-                      <FeedVolumeControl
-                        volume={feedVolume}
-                        onVolumeChange={setFeedVolume}
-                        soundOn={feedSoundOn}
-                        onSoundOnChange={setFeedSoundOn}
-                      />
-                      <button
-                        type="button"
-                        aria-label="Menu video"
-                        aria-expanded={feedMoreMenuOpen}
-                        aria-haspopup="dialog"
-                        className={`cursor-pointer rounded-full bg-black/45 p-2.5 text-xl text-white backdrop-blur-sm transition-opacity duration-200 hover:bg-black/60 focus-visible:pointer-events-auto focus-visible:opacity-100 ${
-                          feedMoreMenuOpen
-                            ? "pointer-events-auto opacity-100"
-                            : "pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100"
-                        }`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setFeedMoreMenuOpen((open) => !open);
-                        }}
-                      >
-                        <IoEllipsisHorizontal aria-hidden />
-                      </button>
+                  {isActive && playbackFlash && !feedMoreMenuOpen ? (
+                    <div
+                      className="pointer-events-none absolute inset-0 z-[30] flex items-center justify-center"
+                      aria-hidden
+                    >
+                      <div className="feed-playback-flash flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-full border border-white/30 bg-black/45 text-white shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-[2px] sm:h-24 sm:w-24">
+                        {playbackFlash === "play" ? (
+                          <IoPlay
+                            className="ml-1 h-11 w-11 sm:h-14 sm:w-14"
+                            aria-hidden
+                          />
+                        ) : (
+                          <IoPause
+                            className="h-11 w-11 sm:h-14 sm:w-14"
+                            aria-hidden
+                          />
+                        )}
+                      </div>
                     </div>
+                  ) : null}
 
-                    {feedMoreMenuOpen ? (
+                  {feedMoreMenuOpen ? (
+                    <button
+                      type="button"
+                      aria-label="Đóng menu"
+                      className="absolute inset-0 z-[35] cursor-default rounded-xl bg-black/45 transition-colors sm:rounded-2xl"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setFeedMoreMenuOpen(false);
+                      }}
+                    />
+                  ) : null}
+
+                  {isActive ? (
+                    <>
+                      <div className="pointer-events-none absolute inset-x-0 top-0 z-[50] flex items-center justify-between px-3 pt-3">
+                        <FeedVolumeControl
+                          volume={feedVolume}
+                          onVolumeChange={setFeedVolume}
+                          soundOn={feedSoundOn}
+                          onSoundOnChange={setFeedSoundOn}
+                        />
+                        <button
+                          type="button"
+                          aria-label="Menu video"
+                          aria-expanded={feedMoreMenuOpen}
+                          aria-haspopup="dialog"
+                          className={`cursor-pointer rounded-full bg-black/45 p-2.5 text-xl text-white backdrop-blur-sm transition-opacity duration-200 hover:bg-black/60 focus-visible:pointer-events-auto focus-visible:opacity-100 ${
+                            feedMoreMenuOpen
+                              ? "pointer-events-auto opacity-100"
+                              : "pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100"
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFeedMoreMenuOpen((open) => !open);
+                          }}
+                        >
+                          <IoEllipsisHorizontal aria-hidden />
+                        </button>
+                      </div>
+
+                      {feedMoreMenuOpen ? (
                       <div
                         role="dialog"
                         aria-modal="true"
                         aria-label="Menu video"
-                        className="feed-video-more-panel pointer-events-auto absolute top-[64px] right-[6px] z-40 w-[min(232px,calc(100%-12px))] overflow-visible"
+                        className="feed-video-more-panel pointer-events-auto absolute top-[64px] right-[6px] z-[55] w-[min(232px,calc(100%-12px))] overflow-visible"
                         onMouseDown={(e) => e.stopPropagation()}
                       >
                         <div
@@ -913,31 +980,16 @@ export function FeedPhoneStage({
                       </div>
                     ) : null}
 
-                    {!useStackedMeta ? (
-                      <FeedSlideAuthorMeta
-                        rawVibelyUser={rawVibelyUser}
-                        authorProfilePath={authorProfilePath}
-                        captionText={captionText}
-                      />
-                    ) : null}
-                  </div>
-
-                  {useStackedMeta ? (
+                  <div className="absolute inset-x-0 bottom-0 z-[50] flex flex-col pointer-events-none [&_*]:pointer-events-auto">
                     <FeedSlideAuthorMeta
                       rawVibelyUser={rawVibelyUser}
                       authorProfilePath={authorProfilePath}
                       captionText={captionText}
-                      stacked
+                      compact={effectiveStageWide}
                     />
-                  ) : null}
-
-                  <div
-                    ref={progressTrackRef}
-                    className={`group/progress pointer-events-auto flex w-full cursor-pointer flex-col justify-end overflow-visible ${
-                      useStackedMeta
-                        ? "relative z-40 shrink-0"
-                        : "absolute inset-x-0 bottom-0 z-40"
-                    }`}
+                    <div
+                      ref={progressTrackRef}
+                      className="group/progress pointer-events-auto flex w-full cursor-pointer flex-col justify-end overflow-visible"
                     role="slider"
                     tabIndex={0}
                     aria-valuemin={0}
@@ -1003,8 +1055,40 @@ export function FeedPhoneStage({
                       </div>
                     </div>
                   </div>
-                </>
-              ) : !hasPlayback ? (
+                  </div>
+                    </>
+                  ) : null}
+                </div>
+              ) : (
+                <FeedVideoPlayer
+                  key={String(video.publicId)}
+                  ref={isActive ? feedVideoRef : undefined}
+                  videoUrl={playbackUrl}
+                  poster={poster}
+                  muted={!isActive || playbackMuted}
+                  loop
+                  loadMedia={loadMedia && hasPlayback}
+                  isActive={isActive}
+                  visibilityRatio={
+                    commentsDockOpen && isActive ? 1 : visibilityRatio
+                  }
+                  feedVideoId={video.publicId}
+                  streamQuality={feedVideoQuality}
+                  onPlaybackTick={
+                    isActive ? handleActivePlaybackTick : undefined
+                  }
+                  className="relative z-0 h-full w-full cursor-pointer"
+                  onClick={toggleFeedPlayback}
+                  onIntrinsicLandscape={
+                    isActive
+                      ? (wide) =>
+                          onActiveIntrinsicLandscape(wide, video.publicId)
+                      : undefined
+                  }
+                />
+              )}
+
+              {!hasPlayback ? (
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/40 to-transparent p-4 pb-5">
                   <p className="truncate text-sm font-semibold text-white">
                     @{rawVibelyUser}

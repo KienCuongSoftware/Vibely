@@ -6,6 +6,7 @@ import {
   FeedPhoneStage,
   FEED_STAGE_OUTER_WIDTH_CLASS,
 } from "./FeedPhoneStage";
+import { FEED_COMMENTS_PANEL_WIDTH_PX } from "../../feed/feedLayout.js";
 import { Sidebar } from "../Sidebar";
 import { TooltipHoverWrap } from "../TooltipControls";
 import { AccountActionsPill } from "../AccountActionsPill";
@@ -151,13 +152,9 @@ function normalizeVideoItem(item) {
   };
 }
 
-function FeedChevronNav({ variant, activeIndex, videoCount, onStep, busy }) {
-  const shell =
-    variant === "dock"
-      ? "flex shrink-0 flex-col justify-center gap-2.5 bg-zinc-950/60 px-1.5"
-      : "absolute right-4 top-1/2 z-20 flex -translate-y-1/2 flex-col gap-2.5";
+function FeedChevronNav({ activeIndex, videoCount, onStep, busy }) {
   return (
-    <div className={shell}>
+    <div className="ml-2 flex shrink-0 flex-col justify-center gap-2.5 self-center sm:ml-3">
       <button
         type="button"
         aria-label="Video trước"
@@ -226,11 +223,11 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   useEffect(() => {
     resetFeedStepPending();
   }, [activeIndex, resetFeedStepPending]);
+  /** Chừa ít px trên/dưới — video gần full viewport như TikTok web. */
   const computeFeedSlotHeight = useCallback(() => {
     if (typeof window === "undefined") return 760;
-    const w = window.innerWidth;
-    const maxH = w >= 1024 ? 920 : 860;
-    return Math.min(Math.round(window.innerHeight * 0.88), maxH);
+    const insetPx = 12;
+    return Math.max(320, Math.round(window.innerHeight - insetPx * 2));
   }, []);
   const [feedSlotHeightPx, setFeedSlotHeightPx] = useState(() =>
     typeof window === "undefined" ? 760 : computeFeedSlotHeight(),
@@ -274,7 +271,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const [feedAutoScrollEnabled, setFeedAutoScrollEnabled] = useState(false);
   const [feedPaused, setFeedPaused] = useState(true);
   const [feedCommentsOpen, setFeedCommentsOpen] = useState(false);
-  const [feedSidePanelTab, setFeedSidePanelTab] = useState("comments");
   const [commentDraft, setCommentDraft] = useState("");
   const [feedComments, setFeedComments] = useState([]);
   const [feedCommentsLoading, setFeedCommentsLoading] = useState(false);
@@ -335,6 +331,10 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const [feedHydrated, setFeedHydrated] = useState(false);
 
   const activeVideo = videos[activeIndex] ?? null;
+  const [stageWide, setStageWide] = useState(false);
+  /** Chỉ video ngang căn trái; video dọc luôn giữa (kể cả khi mở bình luận). */
+  const feedAlignStart = stageWide && !feedCommentsOpen;
+  const feedDockLandscape = feedCommentsOpen && stageWide;
   const activeAuthorProfilePath = useMemo(
     () => feedAuthorProfilePath(activeVideo),
     [activeVideo],
@@ -849,7 +849,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
 
   useEffect(() => {
     setCommentDraft("");
-    setFeedSidePanelTab("comments");
     setFeedComments([]);
     setFeedCommentsError("");
     setCommentPostError("");
@@ -883,10 +882,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
       cancelled = true;
     };
   }, [feedCommentsOpen, activeVideo?.publicId, token]);
-
-  useEffect(() => {
-    if (!feedCommentsOpen) setFeedSidePanelTab("comments");
-  }, [feedCommentsOpen]);
 
   useEffect(() => {
     if (!feedCommentsOpen) return undefined;
@@ -1089,14 +1084,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     }
   };
 
-  const suggestedFeedSlots = React.useMemo(
-    () =>
-      videos
-        .map((video, idx) => ({ video, idx }))
-        .filter(({ idx }) => idx !== activeIndex),
-    [videos, activeIndex],
-  );
-
   return (
     <section className="flex h-dvh max-h-dvh min-h-0 w-full overflow-hidden bg-black text-zinc-100">
       <Sidebar
@@ -1112,7 +1099,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
         className={`relative flex min-h-0 flex-1 overflow-hidden ${
           feedCommentsOpen
             ? "flex-row items-stretch"
-            : "items-center justify-center px-6 py-5"
+            : feedAlignStart
+              ? "items-center justify-start pl-1 py-1"
+              : "items-center justify-center px-4 py-1"
         }`}
       >
         <AccountActionsPill
@@ -1177,8 +1166,14 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
         </AccountActionsPill>
 
         <div
-          className={`flex min-h-0 flex-1 items-center ${
-            feedCommentsOpen ? "min-w-0 justify-end pr-1" : "justify-center"
+          className={`flex min-h-0 flex-1 ${
+            feedCommentsOpen
+              ? feedDockLandscape
+                ? "min-w-0 items-center justify-start px-1 py-0"
+                : "min-w-0 items-center justify-center px-1 py-0"
+              : feedAlignStart
+                ? "items-center justify-start"
+                : "items-center justify-center"
           }`}
         >
           {!feedHydrated && videos.length === 0 ? (
@@ -1251,11 +1246,25 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
             </div>
           ) : (
             <div
-              className={`flex max-w-full flex-row justify-center gap-0 ${
-                feedCommentsOpen ? "min-w-0 shrink items-center" : "items-end"
+              className={`flex max-w-full flex-row ${
+                feedCommentsOpen
+                  ? feedDockLandscape
+                    ? "h-full min-w-0 max-w-full items-center justify-start"
+                    : "h-full min-w-0 max-w-full items-center justify-center"
+                  : feedAlignStart
+                    ? "items-center justify-start gap-0 pr-2 sm:pr-3"
+                    : "items-center justify-center gap-0"
               }`}
             >
-              <div className="relative">
+              <div
+                className={
+                  feedCommentsOpen
+                    ? feedDockLandscape
+                      ? "relative flex h-full min-h-0 flex-col items-start justify-center"
+                      : "relative flex h-full min-h-0 flex-col items-center justify-center"
+                    : "relative shrink-0"
+                }
+              >
                 <FeedPhoneStage
                   videos={videos}
                   activeIndex={activeIndex}
@@ -1285,6 +1294,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   playbackFlash={playbackFlash}
                   onActiveFeedPlaybackTick={onActiveFeedPlaybackTick}
                   commentsDockOpen={feedCommentsOpen}
+                  onStageWideChange={setStageWide}
                 />
                 <BookmarkSaveToast
                   open={bookmarkToastOpen}
@@ -1292,7 +1302,13 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   onDismiss={() => setBookmarkToastOpen(false)}
                 />
               </div>
-              <div className="ml-4 flex flex-col items-center gap-3 pb-12 sm:pb-14">
+              <div
+                className={`ml-2 flex shrink-0 flex-col items-center gap-3 sm:ml-3 ${
+                  feedCommentsOpen
+                    ? "justify-center self-center"
+                    : "pb-12 sm:pb-14"
+                }`}
+              >
                 <div className="relative mb-3 h-12 w-12">
                   <Link
                     to={activeAuthorProfilePath || "#"}
@@ -1443,62 +1459,32 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   />
                 </button>
               </div>
+              <FeedChevronNav
+                activeIndex={activeIndex}
+                videoCount={videos.length}
+                onStep={requestFeedStep}
+                busy={feedStepBusy}
+              />
             </div>
           )}
         </div>
 
-        {videos.length > 0 ? (
-          <FeedChevronNav
-            variant={feedCommentsOpen ? "dock" : "float"}
-            activeIndex={activeIndex}
-            videoCount={videos.length}
-            onStep={requestFeedStep}
-            busy={feedStepBusy}
-          />
-        ) : null}
-
         {feedCommentsOpen && videos.length > 0 ? (
           <aside
-            className="relative z-0 flex h-full min-h-0 w-[min(380px,42vw)] shrink-0 flex-col border-l border-zinc-800 bg-black pt-[4.5rem] text-zinc-100 shadow-[inset_1px_0_0_rgba(255,255,255,0.05)]"
-            aria-label="Bình luận và đề xuất"
+            className="relative z-0 flex h-full min-h-0 shrink-0 flex-col border-l border-zinc-800 bg-black pt-[4.5rem] text-zinc-100 shadow-[inset_1px_0_0_rgba(255,255,255,0.05)]"
+            style={{ width: `min(${FEED_COMMENTS_PANEL_WIDTH_PX}px, 36vw)` }}
+            aria-label="Bình luận"
           >
-            <div className="relative z-10 flex shrink-0 items-stretch border-b border-zinc-800 bg-black">
-              <div className="flex min-w-0 flex-1" role="tablist">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={feedSidePanelTab === "comments"}
-                  className={`min-w-0 flex-1 border-b-2 px-2 py-3 text-left text-[15px] font-semibold transition-colors sm:px-3 ${
-                    feedSidePanelTab === "comments"
-                      ? "border-white text-zinc-100"
-                      : "border-transparent text-zinc-500 hover:text-zinc-300"
-                  }`}
-                  onClick={() => setFeedSidePanelTab("comments")}
-                >
-                  Bình luận{" "}
-                  <span className="font-normal text-zinc-400">
-                    {formatCompactCount(activeVideo?.commentCount)}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={feedSidePanelTab === "suggested"}
-                  className={`min-w-0 flex-1 border-b-2 px-2 py-3 text-left text-[15px] font-semibold transition-colors sm:px-3 ${
-                    feedSidePanelTab === "suggested"
-                      ? "border-white text-zinc-100"
-                      : "border-transparent text-zinc-500 hover:text-zinc-300"
-                  }`}
-                  onClick={() => setFeedSidePanelTab("suggested")}
-                >
-                  Bạn có thể thích
-                </button>
-              </div>
+            <div className="relative z-10 flex shrink-0 items-center border-b border-zinc-800 bg-black px-3 py-3 sm:px-4">
+              <h2 className="min-w-0 text-[15px] font-semibold text-zinc-100">
+                Bình luận{" "}
+                <span className="font-normal text-zinc-400">
+                  {formatCompactCount(activeVideo?.commentCount)}
+                </span>
+              </h2>
             </div>
 
-            {feedSidePanelTab === "comments" ? (
-              <>
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1">
                   {!isVideoPublicId(activeVideo?.publicId) ? (
                     <p className="px-3 py-8 text-center text-sm text-zinc-500">
                       Bình luận chỉ khả dụng cho video trên Vibely (đã đăng nhập).
@@ -1551,7 +1537,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   )}
                 </div>
 
-                <div className="flex shrink-0 flex-col gap-1 border-t border-zinc-800 px-3 pt-2 pb-3">
+            <div className="flex shrink-0 flex-col gap-1 border-t border-zinc-800 px-3 pt-2 pb-3">
                   {commentPostError ? (
                     <p className="text-xs text-red-400">{commentPostError}</p>
                   ) : null}
@@ -1645,50 +1631,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     </button>
                   </div>
                 </div>
-              </>
-            ) : (
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 py-3">
-                {suggestedFeedSlots.length === 0 ? (
-                  <p className="px-2 py-6 text-center text-sm text-zinc-500">
-                    Chưa có video gợi ý khác.
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {suggestedFeedSlots.map(({ video, idx }) => (
-                      <button
-                        key={String(video.publicId ?? idx)}
-                        type="button"
-                        className="group text-left"
-                        onClick={() => setActiveIndex(idx)}
-                      >
-                        <div className="relative aspect-[9/16] w-full overflow-hidden rounded-lg bg-zinc-900 ring-1 ring-zinc-800 transition group-hover:ring-zinc-600">
-                          <img
-                            src={
-                              video.thumbnailUrl ?? FEED_DEFAULT_AUTHOR_AVATAR
-                            }
-                            alt=""
-                            className="h-full w-full object-cover"
-                          />
-                          <span className="absolute bottom-1 left-1 flex items-center gap-0.5 text-[11px] font-semibold text-white drop-shadow-md">
-                            <IoVideocam className="text-xs opacity-90" aria-hidden />
-                            {formatCompactCount(video.likeCount ?? 0)}
-                          </span>
-                        </div>
-                        <p className="mt-1.5 line-clamp-2 text-xs leading-snug text-zinc-200">
-                          {video.title ?? "Video"}
-                        </p>
-                        <p className="mt-0.5 truncate text-[11px] text-zinc-500">
-                          @
-                          {String(
-                            video.authorUsername ?? "vibely",
-                          ).replace(/^@/, "")}
-                        </p>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
           </aside>
         ) : null}
       </div>

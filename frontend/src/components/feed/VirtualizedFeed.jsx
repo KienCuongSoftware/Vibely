@@ -1,5 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
-import React, { useCallback, useEffect, useImperativeHandle, useRef, useState, forwardRef, memo } from 'react'
+import React, { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, forwardRef, memo } from 'react'
 import { FEED_CONFIG } from '../../feed/feedConfig.js'
 
 /** Coarse buckets — avoid re-rendering the whole feed on every IO micro-update. */
@@ -24,6 +24,10 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
     onActiveIndexChange,
     onNearEnd,
     mediaWindowRadius = FEED_CONFIG.MEDIA_WINDOW_RADIUS,
+    /** Giữ slide hiện tại — IO chỉ cập nhật visibility, không đổi active index. */
+    freezeActiveIndex = false,
+    /** Khóa cuộn feed (dock bình luận) — giữ player mounted. */
+    scrollLocked = false,
     children,
   },
   forwardedRef,
@@ -35,25 +39,68 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
   const visibilitySnapshotRef = useRef('')
   const activeIndexRef = useRef(activeIndex)
   activeIndexRef.current = activeIndex
+  const freezeActiveIndexRef = useRef(freezeActiveIndex)
+  freezeActiveIndexRef.current = freezeActiveIndex
+  const scrollLockedRef = useRef(scrollLocked)
+  scrollLockedRef.current = scrollLocked
+  const itemHeightPxRef = useRef(itemHeightPx)
+  itemHeightPxRef.current = itemHeightPx
+  /** Chặn IO đổi activeIndex ngay sau khi đóng bình luận / đổi chiều cao slot. */
+  const suppressActiveChangeUntilRef = useRef(0)
   /** Bumps on IO updates so slide visibility ratios reach players without mounting all rows. */
   const [visibilityTick, setVisibilityTick] = useState(0)
 
   const rowVirtualizer = useVirtualizer({
     count: videos.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => itemHeightPx,
+    estimateSize: () => itemHeightPxRef.current,
     overscan: FEED_CONFIG.VIRTUAL_OVERSCAN,
   })
+
+  const syncScrollToActive = useCallback(() => {
+    const root = scrollRef.current
+    if (!root) return
+    if (scrollLockedRef.current) {
+      root.scrollTop = 0
+      return
+    }
+    const h = itemHeightPxRef.current
+    const top = Math.max(0, activeIndexRef.current) * h
+    root.scrollTop = top
+    try {
+      rowVirtualizer.scrollToOffset(top, { align: 'start' })
+    } catch {
+      /* virtualizer chưa sẵn sàng */
+    }
+    ratiosRef.current.clear()
+    ratiosRef.current.set(activeIndexRef.current, 1)
+    suppressActiveChangeUntilRef.current = performance.now() + 480
+  }, [rowVirtualizer])
+
+  /** Khi chiều cao slot đổi (16:9 / bình luận), ép scroll khớp activeIndex — tránh lộ slide khác. */
+  useLayoutEffect(() => {
+    rowVirtualizer.measure()
+    syncScrollToActive()
+    const raf = requestAnimationFrame(() => {
+      rowVirtualizer.measure()
+      syncScrollToActive()
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [itemHeightPx, activeIndex, scrollLocked, syncScrollToActive, videos.length, rowVirtualizer])
 
   useImperativeHandle(
     forwardedRef,
     () => ({
       scrollToIndex: (index, opts = {}) => {
         rowVirtualizer.scrollToIndex(index, { align: 'start', ...opts })
+        const root = scrollRef.current
+        if (root) {
+          root.scrollTop = Math.max(0, index) * itemHeightPx
+        }
       },
       getScrollElement: () => scrollRef.current,
     }),
-    [rowVirtualizer],
+    [rowVirtualizer, itemHeightPx],
   )
 
   const flushActive = useCallback(() => {
@@ -65,7 +112,12 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
         bestIdx = idx
       }
     })
-    if (bestIdx >= 0 && best >= FEED_CONFIG.ACTIVE_INDEX_MIN_RATIO) {
+    if (
+      bestIdx >= 0 &&
+      best >= FEED_CONFIG.ACTIVE_INDEX_MIN_RATIO &&
+      !freezeActiveIndexRef.current &&
+      performance.now() >= suppressActiveChangeUntilRef.current
+    ) {
       onActiveIndexChange(bestIdx)
     }
 
@@ -130,6 +182,7 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
     const root = scrollRef.current
     if (!root || !onNearEnd) return undefined
     const onScroll = () => {
+      if (scrollLockedRef.current) return
       const max = videos.length
       if (max === 0) return
       const { scrollTop, clientHeight, scrollHeight } = root
@@ -145,23 +198,56 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
     return () => root.removeEventListener('scroll', onScroll)
   }, [videos.length, itemHeightPx, onNearEnd])
 
+  useEffect(() => {
+    const root = scrollRef.current
+    if (!root || !scrollLocked) return undefined
+    const blockWheel = (e) => {
+      e.preventDefault()
+    }
+    root.addEventListener('wheel', blockWheel, { passive: false })
+    return () => root.removeEventListener('wheel', blockWheel)
+  }, [scrollLocked])
+
   void visibilityTick
 
+  /** Dock bình luận: chỉ mount slide active — giữ HLS, tránh lệch virtual scroll. */
+  if (scrollLocked) {
+    const video = videos[activeIndex]
+    if (!video) return null
+    return (
+      <div
+        ref={scrollRef}
+        className={`overflow-hidden touch-none overflow-x-hidden overscroll-y-contain scrollbar-none ${scrollClassName}`}
+        style={{ height: itemHeightPx }}
+      >
+        {children({
+          video,
+          index: activeIndex,
+          loadMedia: true,
+          isActive: true,
+          visibilityRatio: 1,
+        })}
+      </div>
+    )
+  }
+
   const virtualItems = rowVirtualizer.getVirtualItems()
+  const snapClass =
+    scrollLocked || freezeActiveIndex ? '' : 'snap-y snap-mandatory'
+  const overflowClass = scrollLocked ? 'overflow-hidden touch-none' : 'overflow-y-auto'
 
   return (
     <div
       ref={scrollRef}
-      className={`snap-y snap-mandatory overflow-y-auto overflow-x-hidden overscroll-y-contain scrollbar-none ${scrollClassName}`}
+      className={`${snapClass} ${overflowClass} overflow-x-hidden overscroll-y-contain scrollbar-none ${scrollClassName}`}
       style={{
         height: itemHeightPx,
         WebkitOverflowScrolling: 'touch',
-        clipPath: 'inset(0 0 -14px 0)',
       }}
     >
       <div
         className="relative w-full"
-        style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+        style={{ height: `${videos.length * itemHeightPx}px` }}
       >
         {virtualItems.map((vi) => {
           const video = videos[vi.index]
@@ -170,18 +256,18 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
           const loadMedia = distance <= mediaWindowRadius
           const visibilityRatio = ratiosRef.current.get(vi.index) ?? 0
           const isActive = vi.index === activeIndex
+          const slotTopPx = vi.index * itemHeightPx
           return (
             <div
               key={vi.key}
               data-feed-index={vi.index}
               ref={(el) => {
-                rowVirtualizer.measureElement(el)
                 if (el) observeEl(el)
               }}
               className="absolute left-0 top-0 w-full snap-start snap-always"
               style={{
-                height: `${vi.size}px`,
-                transform: `translateY(${vi.start}px)`,
+                height: `${itemHeightPx}px`,
+                transform: `translateY(${slotTopPx}px)`,
               }}
             >
               {children({
