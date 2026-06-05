@@ -107,9 +107,6 @@ function App() {
         <Route path="/vibelystudio/upload/post/:publicId" element={<StudioEditPostPage />} />
         <Route path="/vibelystudio/analytics/:publicId" element={<StudioVideoAnalyticsPage />} />
         <Route path="/vibelystudio/comment/:publicId" element={<StudioPostCommentsPage />} />
-        <Route path="/:username/video/:publicId" element={<VideoWatchPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/:username" element={<ProfilePage />} />
         <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
         <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/sound" element={<SoundPage />} />
@@ -117,6 +114,9 @@ function App() {
         <Route path="/explore/view/:publicId" element={<ExploreViewerPage />} />
         <Route path="/search" element={<SearchResultsPage />} />
         <Route path="/tag/:tag" element={<HashtagPage />} />
+        <Route path="/:username/video/:publicId" element={<VideoWatchPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/:username" element={<ProfilePage />} />
         <Route path="/watch/:publicId" element={<WatchRedirect />} />
         <Route path="*" element={<Navigate to="/foryou" replace />} />
       </Routes>

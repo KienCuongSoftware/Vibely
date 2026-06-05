@@ -54,7 +54,8 @@
 | GET | `/api/search/trending?limit=` | No |
 | GET | `/api/search/history?limit=` | Bearer |
 | POST | `/api/search/history` | Bearer — body `{ "query": "..." }` |
-| DELETE | `/api/search/history` | Bearer |
+| DELETE | `/api/search/history` | Bearer — clear all |
+| DELETE | `/api/search/history/{id}` | Bearer — remove one entry |
 
 Suggest response shape: `{ trending[], users[], hashtags[], videos[] }`.
 

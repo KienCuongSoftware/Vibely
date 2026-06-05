@@ -18,5 +18,9 @@ public interface SearchHistoryRepository extends JpaRepository<SearchHistory, Lo
     @Query("DELETE FROM SearchHistory h WHERE h.user.id = :userId")
     void deleteAllByUserId(@Param("userId") Long userId);
 
+    @Modifying
+    @Query("DELETE FROM SearchHistory h WHERE h.id = :id AND h.user.id = :userId")
+    int deleteByIdAndUser_Id(@Param("id") Long id, @Param("userId") Long userId);
+
     List<SearchHistory> findByUser_IdOrderByCreatedAtAsc(Long userId, Pageable pageable);
 }

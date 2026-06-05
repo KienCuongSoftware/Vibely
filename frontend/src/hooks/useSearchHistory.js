@@ -18,7 +18,7 @@ export function useSearchHistory({ token, enabled = true, limit = 30 } = {}) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [clearing, setClearing] = useState(false)
+  const [removingId, setRemovingId] = useState(null)
 
   const refresh = useCallback(async () => {
     if (!enabled || !token) {
@@ -64,28 +64,37 @@ export function useSearchHistory({ token, enabled = true, limit = 30 } = {}) {
     [token],
   )
 
-  const clearAll = useCallback(async () => {
-    if (!token) return
-    setClearing(true)
-    try {
-      await apiClient.clearSearchHistory(token)
-      setItems([])
+  const remove = useCallback(
+    async (item) => {
+      const id = item?.id
+      if (!token || id == null) return
+      setRemovingId(id)
+      let rollback = null
+      setItems((prev) => {
+        rollback = prev
+        return prev.filter((row) => row.id !== id)
+      })
       setError('')
-    } catch (err) {
-      setError(err?.message ?? 'Không xóa được lịch sử.')
-    } finally {
-      setClearing(false)
-    }
-  }, [token])
+      try {
+        await apiClient.deleteSearchHistoryItem(token, id)
+      } catch (err) {
+        if (rollback) setItems(rollback)
+        setError(err?.message ?? 'Không xóa được mục lịch sử.')
+      } finally {
+        setRemovingId(null)
+      }
+    },
+    [token],
+  )
 
   return {
     items,
     loading,
     error,
-    clearing,
+    removingId,
     refresh,
     record,
-    clearAll,
+    remove,
     canUseHistory: Boolean(token),
   }
 }

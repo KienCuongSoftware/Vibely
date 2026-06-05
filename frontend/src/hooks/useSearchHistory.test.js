@@ -7,6 +7,7 @@ vi.mock('../api/client', () => ({
     getSearchHistory: vi.fn(),
     recordSearchHistory: vi.fn(),
     clearSearchHistory: vi.fn(),
+    deleteSearchHistoryItem: vi.fn(),
   },
 }))
 
@@ -24,6 +25,7 @@ describe('useSearchHistory', () => {
       createdAt: '2026-01-02T00:00:00',
     })
     apiClient.clearSearchHistory.mockResolvedValue(null)
+    apiClient.deleteSearchHistoryItem.mockResolvedValue(null)
   })
 
   it('loads history when token is present', async () => {
@@ -49,6 +51,21 @@ describe('useSearchHistory', () => {
     await waitFor(() => {
       expect(apiClient.recordSearchHistory).toHaveBeenCalledWith('jwt', 'vibely')
       expect(result.current.items[0].query).toBe('vibely')
+    })
+  })
+
+  it('removes a single history item', async () => {
+    const { result } = renderHook(() =>
+      useSearchHistory({ token: 'jwt', enabled: true }),
+    )
+
+    await waitFor(() => expect(result.current.items).toHaveLength(1))
+
+    await result.current.remove({ id: 1, query: 'dance' })
+
+    await waitFor(() => {
+      expect(apiClient.deleteSearchHistoryItem).toHaveBeenCalledWith('jwt', 1)
+      expect(result.current.items).toHaveLength(0)
     })
   })
 

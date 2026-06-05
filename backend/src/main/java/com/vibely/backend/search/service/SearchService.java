@@ -203,6 +203,18 @@ public class SearchService {
         searchHistoryRepository.deleteAllByUserId(user.getId());
     }
 
+    @Transactional
+    public void deleteHistoryItem(String viewerEmail, Long historyId) {
+        if (historyId == null || historyId <= 0) {
+            throw new BadRequestException("Mã lịch sử không hợp lệ.");
+        }
+        User user = requireUser(viewerEmail);
+        int removed = searchHistoryRepository.deleteByIdAndUser_Id(historyId, user.getId());
+        if (removed == 0) {
+            throw new NotFoundException("Không tìm thấy mục lịch sử tìm kiếm.");
+        }
+    }
+
     private SearchUserResultDto toUserResult(SearchUserProjection row, String query) {
         String avatar = resolveAvatarFromProjection(row.getGoogleAvatarUrl(), row.getAvatarUrl());
         return new SearchUserResultDto(

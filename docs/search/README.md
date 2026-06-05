@@ -17,7 +17,8 @@ Global search (users, videos, hashtags, trending, history) lives in the **`searc
 | GET | `/api/search/trending` | Public |
 | GET | `/api/search/history` | Bearer |
 | POST | `/api/search/history` | Bearer |
-| DELETE | `/api/search/history` | Bearer |
+| DELETE | `/api/search/history` | Bearer — clear all |
+| DELETE | `/api/search/history/{id}` | Bearer — remove one entry |
 
 ## Related (not this module)
 

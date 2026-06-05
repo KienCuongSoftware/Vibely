@@ -214,6 +214,11 @@ export const apiClient = {
     }),
   clearSearchHistory: (token) =>
     request("/api/search/history", { method: "DELETE", token }),
+  deleteSearchHistoryItem: (token, id) =>
+    request(`/api/search/history/${encodeURIComponent(String(id))}`, {
+      method: "DELETE",
+      token,
+    }),
   getExploreRelated: (publicId, { size = 18 } = {}) =>
     request(`/api/explore/video/${encodeURIComponent(publicId)}/related${toQuery({ size })}`),
   updateVideo: (publicId, payload, token) =>

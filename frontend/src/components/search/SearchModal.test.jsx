@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
@@ -17,8 +17,13 @@ vi.mock('../../state/useAuth', () => ({
   useAuth: () => ({ token: null }),
 }))
 
+vi.mock('../../hooks/useSearchNavigation', () => ({
+  useSearchNavigation: vi.fn(),
+}))
+
 import { useSearch } from '../../hooks/useSearch'
 import { useSearchHistory } from '../../hooks/useSearchHistory'
+import { useSearchNavigation } from '../../hooks/useSearchNavigation'
 
 function renderModal(props = {}) {
   return render(
@@ -31,6 +36,10 @@ function renderModal(props = {}) {
 describe('SearchModal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    useSearchNavigation.mockReturnValue({
+      goToSearchResults: vi.fn(),
+      navigateTo: vi.fn(),
+    })
     useSearch.mockReturnValue({
       query: '',
       setQuery: vi.fn(),
@@ -50,9 +59,9 @@ describe('SearchModal', () => {
     useSearchHistory.mockReturnValue({
       items: [],
       loading: false,
-      clearing: false,
+      removingId: null,
       record: vi.fn(),
-      clearAll: vi.fn(),
+      remove: vi.fn(),
       canUseHistory: false,
     })
   })
@@ -77,7 +86,7 @@ describe('SearchModal', () => {
     expect(onClose).toHaveBeenCalled()
   })
 
-  it('shows empty state when search returns nothing', () => {
+  it('shows view-all CTA when suggest is empty but query is set', () => {
     useSearch.mockReturnValue({
       query: 'zzz',
       setQuery: vi.fn(),
@@ -90,6 +99,28 @@ describe('SearchModal', () => {
       refresh: vi.fn(),
     })
     renderModal()
-    expect(screen.getByText('Không có kết quả')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Xem tất cả kết quả' })).toBeInTheDocument()
+  })
+
+  it('navigates to search results on Enter', async () => {
+    const goToSearchResults = vi.fn()
+    useSearchNavigation.mockReturnValue({
+      goToSearchResults,
+      navigateTo: vi.fn(),
+    })
+    useSearch.mockReturnValue({
+      query: 'kiencuong',
+      setQuery: vi.fn(),
+      debouncedQuery: 'kiencuong',
+      suggest: { trending: [], users: [], hashtags: [], videos: [] },
+      loading: false,
+      error: '',
+      isEmpty: true,
+      showHistory: false,
+      refresh: vi.fn(),
+    })
+    renderModal()
+    await userEvent.keyboard('{Enter}')
+    expect(goToSearchResults).toHaveBeenCalledWith('kiencuong')
   })
 })

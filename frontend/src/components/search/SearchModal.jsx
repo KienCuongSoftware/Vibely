@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { IoClose } from 'react-icons/io5'
 import { useSearch } from '../../hooks/useSearch'
 import { useSearchHistory } from '../../hooks/useSearchHistory'
+import { useSearchNavigation } from '../../hooks/useSearchNavigation'
 import { useAuth } from '../../state/useAuth'
 import { SearchInput } from './SearchInput'
 import {
@@ -17,10 +17,14 @@ import {
 } from './searchUtils'
 
 export function SearchModal({ open, onClose }) {
-  const navigate = useNavigate()
   const { token } = useAuth()
   const inputRef = useRef(null)
   const [activeKey, setActiveKey] = useState(null)
+
+  const { goToSearchResults, navigateTo } = useSearchNavigation({
+    token,
+    onBeforeNavigate: onClose,
+  })
 
   const {
     query,
@@ -37,21 +41,27 @@ export function SearchModal({ open, onClose }) {
   const {
     items: historyItems,
     loading: historyLoading,
-    clearing: historyClearing,
+    removingId: historyRemovingId,
     record: recordHistory,
-    clearAll: clearHistory,
+    remove: removeHistoryItem,
     canUseHistory,
   } = useSearchHistory({ token, enabled: open && Boolean(token) })
 
-  const navItems = useMemo(
-    () =>
-      buildSearchNavItems({
-        showHistory: showHistory && canUseHistory,
-        historyItems,
-        suggest,
-      }),
-    [canUseHistory, historyItems, showHistory, suggest],
-  )
+  const navItems = useMemo(() => {
+    const base = buildSearchNavItems({
+      showHistory: showHistory && canUseHistory,
+      historyItems,
+      suggest,
+    })
+    const q = normalizeSearchQuery(debouncedQuery)
+    if (!showHistory && q) {
+      return [
+        { key: `search-all-${q}`, type: 'search', payload: { query: q } },
+        ...base,
+      ]
+    }
+    return base
+  }, [canUseHistory, debouncedQuery, historyItems, showHistory, suggest])
 
   useEffect(() => {
     if (!open) return undefined
@@ -77,61 +87,43 @@ export function SearchModal({ open, onClose }) {
 
   const commitSearch = useCallback(
     async (rawQuery) => {
-      const normalized = normalizeSearchQuery(rawQuery)
-      if (!normalized) return
-      if (token) {
-        await recordHistory(normalized)
-      }
-      setQuery(normalized)
+      await goToSearchResults(rawQuery)
     },
-    [recordHistory, setQuery, token],
-  )
-
-  const navigateWithHistory = useCallback(
-    async (rawQuery, to) => {
-      const normalized = normalizeSearchQuery(rawQuery)
-      if (normalized && token) {
-        await recordHistory(normalized)
-      }
-      onClose?.()
-      navigate(to)
-    },
-    [navigate, onClose, recordHistory, token],
+    [goToSearchResults],
   )
 
   const activateItem = useCallback(
     (item) => {
       if (!item) return
       if (item.type === 'history') {
-        setQuery(item.payload?.query ?? '')
+        void goToSearchResults(item.payload?.query ?? '')
         return
       }
-      if (item.type === 'trending') {
-        void commitSearch(item.payload?.keyword ?? '')
+      if (item.type === 'search' || item.type === 'trending') {
+        void goToSearchResults(
+          item.payload?.query ?? item.payload?.keyword ?? '',
+        )
         return
       }
       if (item.type === 'user') {
-        void navigateWithHistory(
+        void navigateTo(
           item.payload?.username,
           buildProfileHref(item.payload?.username),
         )
         return
       }
       if (item.type === 'hashtag') {
-        void navigateWithHistory(
-          item.payload?.tag,
-          buildHashtagHref(item.payload?.tag),
-        )
+        void navigateTo(item.payload?.tag, buildHashtagHref(item.payload?.tag))
         return
       }
       if (item.type === 'video') {
-        void navigateWithHistory(
+        void navigateTo(
           item.payload?.title || item.payload?.description || query,
           buildVideoHref(item.payload?.publicId),
         )
       }
     },
-    [commitSearch, navigateWithHistory, query, setQuery],
+    [goToSearchResults, navigateTo, query],
   )
 
   const moveActive = useCallback(
@@ -190,6 +182,8 @@ export function SearchModal({ open, onClose }) {
 
   if (!open) return null
 
+  const normalizedQuery = normalizeSearchQuery(debouncedQuery)
+
   return (
     <div className="fixed inset-0 z-[120] flex" role="presentation">
       <button
@@ -219,44 +213,65 @@ export function SearchModal({ open, onClose }) {
               <IoClose className="text-2xl" aria-hidden />
             </button>
           </div>
-          <SearchInput
-            ref={inputRef}
-            value={query}
-            onChange={setQuery}
-            onClear={() => setQuery('')}
-            onKeyDown={handleInputKeyDown}
-          />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              void commitSearch(query)
+            }}
+          >
+            <SearchInput
+              ref={inputRef}
+              value={query}
+              onChange={setQuery}
+              onClear={() => setQuery('')}
+              onKeyDown={handleInputKeyDown}
+            />
+          </form>
         </header>
 
-        <SearchSuggestionList
-          showHistory={showHistory && canUseHistory}
-          historyItems={historyItems}
-          historyLoading={historyLoading}
-          historyClearing={historyClearing}
-          onHistorySelect={(row) => setQuery(row?.query ?? '')}
-          onClearHistory={() => void clearHistory()}
-          suggest={suggest}
-          loading={loading}
-          error={error}
-          isEmpty={isEmpty}
-          activeKey={activeKey}
-          onTrendingSelect={(row) => void commitSearch(row?.keyword ?? '')}
-          onUserSelect={(row) =>
-            void navigateWithHistory(
-              row?.username,
-              buildProfileHref(row?.username),
-            )}
-          onHashtagSelect={(row) =>
-            void navigateWithHistory(
-              row?.tag,
-              buildHashtagHref(row?.tag),
-            )}
-          onVideoSelect={(row) =>
-            void navigateWithHistory(
-              row?.title || row?.description || query,
-              buildVideoHref(row?.publicId),
-            )}
-        />
+        {isEmpty && normalizedQuery ? (
+          <div className="flex flex-1 flex-col px-4 py-6">
+            <p className="text-center text-sm text-zinc-500">
+              Không có gợi ý nhanh cho &quot;{normalizedQuery}&quot;
+            </p>
+            <button
+              type="button"
+              onClick={() => void commitSearch(normalizedQuery)}
+              className="mt-4 w-full cursor-pointer rounded-lg bg-zinc-900 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
+            >
+              Xem tất cả kết quả
+            </button>
+          </div>
+        ) : (
+          <SearchSuggestionList
+            showHistory={showHistory && canUseHistory}
+            historyItems={historyItems}
+            historyLoading={historyLoading}
+            onHistorySelect={(row) => void goToSearchResults(row?.query ?? '')}
+            onRemoveHistory={(row) => void removeHistoryItem(row)}
+            removingHistoryId={historyRemovingId}
+            suggest={suggest}
+            loading={loading}
+            error={error}
+            isEmpty={isEmpty}
+            activeKey={activeKey}
+            onSearchAllSelect={(q) => void goToSearchResults(q)}
+            searchAllQuery={!showHistory ? normalizedQuery : ''}
+            onTrendingSelect={(row) => void goToSearchResults(row?.keyword ?? '')}
+            onUserSelect={(row) =>
+              void navigateTo(
+                row?.username,
+                buildProfileHref(row?.username),
+              )}
+            onHashtagSelect={(row) =>
+              void navigateTo(row?.tag, buildHashtagHref(row?.tag))}
+            onVideoSelect={(row) =>
+              void navigateTo(
+                row?.title || row?.description || query,
+                buildVideoHref(row?.publicId),
+              )}
+          />
+        )}
 
         {showHistory && !canUseHistory ? (
           <p className="px-5 pb-6 text-center text-xs text-zinc-500">

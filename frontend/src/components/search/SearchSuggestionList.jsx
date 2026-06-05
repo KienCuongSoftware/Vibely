@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react'
+import { IoSearchOutline } from 'react-icons/io5'
 import { SearchHashtagSection } from './SearchHashtagSection'
 import { SearchHistorySection } from './SearchHistorySection'
 import { SearchTrendingSection } from './SearchTrendingSection'
@@ -57,9 +58,9 @@ export function SearchSuggestionList({
   showHistory,
   historyItems,
   historyLoading,
-  historyClearing,
   onHistorySelect,
-  onClearHistory,
+  onRemoveHistory,
+  removingHistoryId,
   suggest,
   loading,
   error,
@@ -69,6 +70,8 @@ export function SearchSuggestionList({
   onUserSelect,
   onHashtagSelect,
   onVideoSelect,
+  searchAllQuery = '',
+  onSearchAllSelect,
 }) {
   const listRef = useRef(null)
 
@@ -123,15 +126,36 @@ export function SearchSuggestionList({
         <SearchHistorySection
           items={historyItems}
           loading={historyLoading}
-          clearing={historyClearing}
           onSelect={onHistorySelect}
-          onClearAll={onClearHistory}
+          onRemove={onRemoveHistory}
+          removingId={removingHistoryId}
           activeKey={activeKey}
         />
       ) : null}
 
       {!showHistory ? (
         <>
+          {searchAllQuery ? (
+            <div className="px-2 pb-1 pt-2">
+              <button
+                type="button"
+                data-search-nav-key={`search-all-${searchAllQuery}`}
+                onClick={() => onSearchAllSelect?.(searchAllQuery)}
+                className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left transition ${
+                  activeKey === `search-all-${searchAllQuery}`
+                    ? 'bg-zinc-800'
+                    : 'hover:bg-zinc-900'
+                }`}
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-zinc-300">
+                  <IoSearchOutline className="text-lg" aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-white">
+                  Tìm kiếm &quot;{searchAllQuery}&quot;
+                </span>
+              </button>
+            </div>
+          ) : null}
           <SearchTrendingSection
             items={suggest?.trending ?? []}
             activeKey={activeKey}

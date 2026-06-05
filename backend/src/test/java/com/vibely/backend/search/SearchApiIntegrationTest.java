@@ -1,5 +1,6 @@
 package com.vibely.backend.search;
 
+import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -7,10 +8,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.vibely.backend.search.repository.SearchHistoryRepository;
 import com.vibely.backend.user.Role;
 import com.vibely.backend.user.User;
 import com.vibely.backend.user.UserRepository;
 import java.util.UUID;
+import org.springframework.data.domain.PageRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +38,9 @@ class SearchApiIntegrationTest {
 
   @Autowired
   private UserRepository userRepository;
+
+  @Autowired
+  private SearchHistoryRepository searchHistoryRepository;
 
   @Autowired
   private PasswordEncoder passwordEncoder;
@@ -82,10 +88,39 @@ class SearchApiIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data[0].query").value("Vibely Dance"));
 
+    long historyId =
+        searchHistoryRepository
+            .findByUser_IdOrderByCreatedAtDesc(
+                userRepository.findByEmail(VIEWER_EMAIL).orElseThrow().getId(),
+                PageRequest.of(0, 1))
+            .get(0)
+            .getId();
+
+    mockMvc
+        .perform(
+            post("/api/search/history")
+                .with(user(VIEWER_EMAIL))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"query\":\"other search\"}"))
+        .andExpect(status().isCreated());
+
+    mockMvc
+        .perform(delete("/api/search/history/" + historyId).with(user(VIEWER_EMAIL)))
+        .andExpect(status().isNoContent());
+
+    mockMvc
+        .perform(get("/api/search/history").with(user(VIEWER_EMAIL)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.length()").value(1))
+        .andExpect(jsonPath("$.data[0].query").value("other search"));
+
     mockMvc
         .perform(get("/api/search/trending?limit=50"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.data.items[0].keyword").value("vibely dance"));
+        .andExpect(
+            jsonPath(
+                "$.data.items[*].keyword",
+                hasItems("vibely dance", "other search")));
 
     mockMvc
         .perform(delete("/api/search/history").with(user(VIEWER_EMAIL)))
