@@ -74,6 +74,10 @@ management:
       exposure:
         include: health,info,prometheus,metrics
 app:
+  jwt:
+    secret: ${JWT_SECRET:change-this-in-real-environments}
+    expiration-seconds: 900
+    refresh-expiration-seconds: 1209600
   auth:
     otp-resend-seconds: 60
     otp-expiry-seconds: 600
