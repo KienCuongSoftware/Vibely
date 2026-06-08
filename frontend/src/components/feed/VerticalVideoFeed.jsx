@@ -7,6 +7,7 @@ import {
   FEED_STAGE_OUTER_WIDTH_CLASS,
 } from "./FeedPhoneStage";
 import { feedCommentsPanelWidthCss } from "../../feed/feedLayout.js";
+import { FeedCommentsEmptyState } from "./FeedCommentsEmptyState.jsx";
 import { Sidebar } from "../Sidebar";
 import { TooltipHoverWrap } from "../TooltipControls";
 import { AccountActionsPill } from "../AccountActionsPill";
@@ -1507,14 +1508,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   {feedCommentsError}
                 </p>
               ) : feedComments.length === 0 ? (
-                <div className="flex flex-col items-center px-5 py-16 text-center">
-                  <p className="text-sm font-medium text-zinc-300">
-                    Chưa có bình luận
-                  </p>
-                  <p className="mt-1 text-xs text-zinc-500">
-                    Hãy là người đầu tiên bình luận.
-                  </p>
-                </div>
+                <FeedCommentsEmptyState />
               ) : (
                 <ul className="space-y-0.5">
                   {feedComments.map((c) => {
