@@ -267,6 +267,16 @@ export const apiClient = {
       method: "DELETE",
       token,
     }),
+  likeComment: (publicId, commentId, token) =>
+    request(`/api/videos/${publicId}/comments/${commentId}/likes`, {
+      method: "POST",
+      token,
+    }),
+  unlikeComment: (publicId, commentId, token) =>
+    request(`/api/videos/${publicId}/comments/${commentId}/likes`, {
+      method: "DELETE",
+      token,
+    }),
   reportVideo: (publicId, reason, token) =>
     request(`/api/videos/${publicId}/report`, {
       method: "POST",
