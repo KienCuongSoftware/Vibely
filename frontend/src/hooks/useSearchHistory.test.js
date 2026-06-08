@@ -84,4 +84,32 @@ describe('useSearchHistory', () => {
       expect(result.current.items[0].query).toBe('admin.vibely')
     })
   })
+
+  it('does not fetch when disabled or auth is not ready', async () => {
+    renderHook(() =>
+      useSearchHistory({ token: 'jwt', enabled: false, authReady: true }),
+    )
+    renderHook(() =>
+      useSearchHistory({ token: 'jwt', enabled: true, authReady: false }),
+    )
+
+    await waitFor(() => {
+      expect(apiClient.getSearchHistory).not.toHaveBeenCalled()
+    })
+  })
+
+  it('ignores 401 without surfacing an error', async () => {
+    const err = new Error('Unauthorized')
+    err.status = 401
+    apiClient.getSearchHistory.mockRejectedValue(err)
+
+    const { result } = renderHook(() =>
+      useSearchHistory({ token: 'jwt', enabled: true }),
+    )
+
+    await waitFor(() => {
+      expect(result.current.items).toHaveLength(0)
+      expect(result.current.error).toBe('')
+    })
+  })
 })

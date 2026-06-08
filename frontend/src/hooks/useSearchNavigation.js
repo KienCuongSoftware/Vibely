@@ -16,7 +16,7 @@ export function useSearchNavigation({ token, onBeforeNavigate } = {}) {
   const navigate = useNavigate()
   const { record: recordHistory } = useSearchHistory({
     token,
-    enabled: Boolean(token),
+    enabled: false,
   })
 
   const navigateTo = useCallback(

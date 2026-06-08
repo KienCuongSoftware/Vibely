@@ -17,7 +17,7 @@ import {
 } from './searchUtils'
 
 export function SearchModal({ open, onClose }) {
-  const { token } = useAuth()
+  const { token, authReady } = useAuth()
   const inputRef = useRef(null)
   const [activeKey, setActiveKey] = useState(null)
 
@@ -45,7 +45,10 @@ export function SearchModal({ open, onClose }) {
     record: recordHistory,
     remove: removeHistoryItem,
     canUseHistory,
-  } = useSearchHistory({ token, enabled: open && Boolean(token) })
+  } = useSearchHistory({
+    token,
+    enabled: open && Boolean(token) && authReady,
+  })
 
   const navItems = useMemo(() => {
     const base = buildSearchNavItems({

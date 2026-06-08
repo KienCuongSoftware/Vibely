@@ -14,14 +14,14 @@ function dedupeHistoryItems(rows) {
   return out
 }
 
-export function useSearchHistory({ token, enabled = true, limit = 30 } = {}) {
+export function useSearchHistory({ token, enabled = true, authReady = true, limit = 30 } = {}) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [removingId, setRemovingId] = useState(null)
 
   const refresh = useCallback(async () => {
-    if (!enabled || !token) {
+    if (!enabled || !token || !authReady) {
       setItems([])
       setLoading(false)
       setError('')
@@ -34,11 +34,15 @@ export function useSearchHistory({ token, enabled = true, limit = 30 } = {}) {
       setItems(dedupeHistoryItems(Array.isArray(rows) ? rows : []))
     } catch (err) {
       setItems([])
+      if (err?.status === 401) {
+        setError('')
+        return
+      }
       setError(err?.message ?? 'Không tải được lịch sử tìm kiếm.')
     } finally {
       setLoading(false)
     }
-  }, [enabled, limit, token])
+  }, [authReady, enabled, limit, token])
 
   useEffect(() => {
     void refresh()
