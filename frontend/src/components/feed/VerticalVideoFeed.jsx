@@ -6,7 +6,7 @@ import {
   FeedPhoneStage,
   FEED_STAGE_OUTER_WIDTH_CLASS,
 } from "./FeedPhoneStage";
-import { FEED_COMMENTS_PANEL_WIDTH_PX } from "../../feed/feedLayout.js";
+import { feedCommentsPanelWidthCss } from "../../feed/feedLayout.js";
 import { Sidebar } from "../Sidebar";
 import { TooltipHoverWrap } from "../TooltipControls";
 import { AccountActionsPill } from "../AccountActionsPill";
@@ -28,6 +28,7 @@ import {
   IoChevronDown,
   IoChevronUp,
   IoCheckmark,
+  IoClose,
   IoHappyOutline,
   IoHeart,
   IoHeartOutline,
@@ -1471,41 +1472,60 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
 
         {feedCommentsOpen && videos.length > 0 ? (
           <aside
-            className="relative z-0 flex h-full min-h-0 shrink-0 flex-col border-l border-zinc-800 bg-black pt-[4.5rem] text-zinc-100 shadow-[inset_1px_0_0_rgba(255,255,255,0.05)]"
-            style={{ width: `min(${FEED_COMMENTS_PANEL_WIDTH_PX}px, 36vw)` }}
+            className="relative z-0 flex h-full min-h-0 shrink-0 flex-col border-l border-white/[0.08] bg-[#121212] pt-[4.5rem] text-zinc-100"
+            style={{ width: feedCommentsPanelWidthCss() }}
             aria-label="Bình luận"
           >
-            <div className="relative z-10 flex shrink-0 items-center border-b border-zinc-800 bg-black px-3 py-3 sm:px-4">
-              <h2 className="min-w-0 text-[15px] font-semibold text-zinc-100">
-                Bình luận{" "}
-                <span className="font-normal text-zinc-400">
+            <div className="relative z-10 flex shrink-0 items-center justify-between border-b border-white/[0.08] px-4 py-3.5">
+              <h2 className="min-w-0 text-[16px] font-bold tracking-tight text-white">
+                Bình luận
+                <span className="ml-1.5 font-semibold text-zinc-400">
                   {formatCompactCount(activeVideo?.commentCount)}
                 </span>
               </h2>
+              <button
+                type="button"
+                className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white"
+                aria-label="Đóng bình luận"
+                onClick={() => setFeedCommentsOpen(false)}
+              >
+                <IoClose className="text-2xl" aria-hidden />
+              </button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1">
-                  {!isVideoPublicId(activeVideo?.publicId) ? (
-                    <p className="px-3 py-8 text-center text-sm text-zinc-500">
-                      Bình luận chỉ khả dụng cho video trên Vibely (đã đăng nhập).
-                    </p>
-                  ) : feedCommentsLoading ? (
-                    <p className="px-3 py-8 text-center text-sm text-zinc-500">
-                      Đang tải bình luận…
-                    </p>
-                  ) : feedCommentsError ? (
-                    <p className="px-3 py-8 text-center text-sm text-red-400">
-                      {feedCommentsError}
-                    </p>
-                  ) : feedComments.length === 0 ? (
-                    <p className="px-3 py-8 text-center text-sm text-zinc-500">
-                      Chưa có bình luận — hãy là người đầu tiên.
-                    </p>
-                  ) : (
-                    feedComments.map((c) => (
-                      <div
+            <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-contain py-1">
+              {!isVideoPublicId(activeVideo?.publicId) ? (
+                <p className="px-5 py-12 text-center text-sm leading-relaxed text-zinc-500">
+                  Bình luận chỉ khả dụng cho video trên Vibely (đã đăng nhập).
+                </p>
+              ) : feedCommentsLoading ? (
+                <p className="px-5 py-12 text-center text-sm text-zinc-500">
+                  Đang tải bình luận…
+                </p>
+              ) : feedCommentsError ? (
+                <p className="px-5 py-12 text-center text-sm text-red-400">
+                  {feedCommentsError}
+                </p>
+              ) : feedComments.length === 0 ? (
+                <div className="flex flex-col items-center px-5 py-16 text-center">
+                  <p className="text-sm font-medium text-zinc-300">
+                    Chưa có bình luận
+                  </p>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    Hãy là người đầu tiên bình luận.
+                  </p>
+                </div>
+              ) : (
+                <ul className="space-y-0.5">
+                  {feedComments.map((c) => {
+                    const isCreator =
+                      c.userId != null &&
+                      activeVideo?.authorId != null &&
+                      Number(c.userId) === Number(activeVideo.authorId);
+                    return (
+                      <li
                         key={String(c.id)}
-                        className="flex gap-2.5 border-b border-zinc-800/70 px-3 py-3 last:border-b-0"
+                        className="group flex gap-3 px-4 py-3 transition hover:bg-white/[0.03]"
                       >
                         <img
                           src={
@@ -1515,122 +1535,151 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                               : FEED_DEFAULT_AUTHOR_AVATAR
                           }
                           alt=""
-                          className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-zinc-700"
+                          className="h-10 w-10 shrink-0 rounded-full object-cover bg-zinc-800"
                           referrerPolicy="no-referrer"
                           onError={(e) => {
                             e.currentTarget.src = FEED_DEFAULT_AUTHOR_AVATAR;
                           }}
                         />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-zinc-100">
-                            {c.username ?? "Người dùng"}
-                          </p>
-                          <p className="mt-0.5 text-[15px] leading-snug text-zinc-200">
+                        <div className="min-w-0 flex-1 pt-0.5">
+                          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                            <span className="text-[13px] font-semibold text-zinc-100">
+                              {c.username ?? "Người dùng"}
+                            </span>
+                            {isCreator ? (
+                              <span className="rounded-sm bg-white/10 px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-zinc-300">
+                                Nhà sáng tạo
+                              </span>
+                            ) : null}
+                          </div>
+                          <p className="mt-1 text-[15px] leading-snug text-zinc-50">
                             {c.content}
                           </p>
-                          <div className="mt-1 text-xs text-zinc-500">
-                            {formatRelativeTimeVi(c.createdAt)}
+                          <div className="mt-2 flex items-center gap-4 text-xs text-zinc-500">
+                            <time dateTime={c.createdAt}>
+                              {formatRelativeTimeVi(c.createdAt)}
+                            </time>
+                            <button
+                              type="button"
+                              className="cursor-pointer font-semibold text-zinc-500 transition hover:text-zinc-300"
+                            >
+                              Trả lời
+                            </button>
                           </div>
                         </div>
-                      </div>
-                    ))
-                  )}
-                </div>
+                        <button
+                          type="button"
+                          className="flex shrink-0 flex-col items-center gap-0.5 self-start pt-1 text-zinc-500 opacity-0 transition group-hover:opacity-100 hover:text-zinc-300"
+                          aria-label="Thích bình luận"
+                        >
+                          <IoHeartOutline className="text-[18px]" aria-hidden />
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
 
-            <div className="flex shrink-0 flex-col gap-1 border-t border-zinc-800 px-3 pt-2 pb-3">
-                  {commentPostError ? (
-                    <p className="text-xs text-red-400">{commentPostError}</p>
-                  ) : null}
-                  <div className="flex items-end gap-2">
-                    <img
-                      className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-zinc-700"
-                      src={
-                        user?.avatarUrl && String(user.avatarUrl).trim()
-                          ? user.avatarUrl
-                          : DEFAULT_USER_AVATAR_URL
-                      }
-                      alt=""
-                      referrerPolicy="no-referrer"
-                      onError={(e) => {
-                        e.currentTarget.src = DEFAULT_USER_AVATAR_URL;
-                      }}
-                    />
-                    <div className="relative min-w-0 flex-1">
-                      <input
-                        type="text"
-                        value={commentDraft}
-                        onChange={(e) => setCommentDraft(e.target.value)}
-                        placeholder={
-                          token
-                            ? "Thêm bình luận..."
-                            : "Đăng nhập để bình luận..."
-                        }
-                        disabled={
-                          !token || !isVideoPublicId(activeVideo?.publicId)
-                        }
-                        className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-[5.25rem] text-sm text-zinc-100 placeholder:text-zinc-500 outline-none ring-red-500/20 focus:border-zinc-600 focus:ring-2 disabled:opacity-50"
-                      />
-                      <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
-                        <button
-                          type="button"
-                          className="rounded-full px-2 py-1 text-sm font-semibold text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-200"
-                          aria-label="Nhắc tên"
-                        >
-                          @
-                        </button>
-                        <button
-                          type="button"
-                          className="rounded-full p-1.5 text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-200"
-                          aria-label="Chèn biểu tượng cảm xúc"
-                        >
-                          <IoHappyOutline className="text-lg" aria-hidden />
-                        </button>
-                      </div>
-                    </div>
+            <div className="flex shrink-0 flex-col gap-1.5 border-t border-white/[0.08] bg-[#121212] px-4 pt-3 pb-4">
+              {commentPostError ? (
+                <p className="text-xs text-red-400">{commentPostError}</p>
+              ) : null}
+              <div className="flex items-center gap-3">
+                <img
+                  className="h-9 w-9 shrink-0 rounded-full object-cover bg-zinc-800 ring-1 ring-white/10"
+                  src={
+                    user?.avatarUrl && String(user.avatarUrl).trim()
+                      ? user.avatarUrl
+                      : DEFAULT_USER_AVATAR_URL
+                  }
+                  alt=""
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.src = DEFAULT_USER_AVATAR_URL;
+                  }}
+                />
+                <div className="relative min-w-0 flex-1">
+                  <input
+                    type="text"
+                    value={commentDraft}
+                    onChange={(e) => setCommentDraft(e.target.value)}
+                    placeholder={
+                      token
+                        ? "Thêm bình luận..."
+                        : "Đăng nhập để bình luận..."
+                    }
+                    disabled={
+                      !token || !isVideoPublicId(activeVideo?.publicId)
+                    }
+                    className="w-full rounded-lg border border-transparent bg-[#252525] py-2.5 pl-3.5 pr-[4.75rem] text-[15px] text-zinc-100 placeholder:text-zinc-500 outline-none transition focus:border-zinc-600 disabled:opacity-50"
+                    onKeyDown={(e) => {
+                      if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
+                      e.preventDefault();
+                      e.currentTarget.form?.requestSubmit?.();
+                    }}
+                  />
+                  <div className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center">
                     <button
                       type="button"
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600 text-white shadow-md transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
-                      aria-label="Gửi bình luận"
-                      disabled={
-                        !commentDraft.trim() ||
-                        !token ||
-                        !isVideoPublicId(activeVideo?.publicId)
-                      }
-                      onClick={async () => {
-                        const text = commentDraft.trim();
-                        if (
-                          !text ||
-                          !token ||
-                          !isVideoPublicId(activeVideo?.publicId)
-                        ) {
-                          return;
-                        }
-                        setCommentPostError("");
-                        try {
-                          const created = await apiClient.addComment(
-                            activeVideo.publicId,
-                            text,
-                            token,
-                          );
-                          setCommentDraft("");
-                          setFeedComments((prev) => [created, ...prev]);
-                          const prevCc = Number(activeVideo.commentCount ?? 0);
-                          patchVideoByPublicId(activeVideo.publicId, {
-                            commentCount: prevCc + 1,
-                          });
-                        } catch (e) {
-                          setCommentPostError(
-                            e instanceof Error
-                              ? e.message
-                              : "Không gửi được bình luận.",
-                          );
-                        }
-                      }}
+                      className="cursor-pointer rounded-md px-2 py-1 text-sm font-bold text-zinc-500 transition hover:text-zinc-200"
+                      aria-label="Nhắc tên"
                     >
-                      <IoArrowUp className="text-xl" aria-hidden />
+                      @
+                    </button>
+                    <button
+                      type="button"
+                      className="cursor-pointer rounded-md p-1.5 text-zinc-500 transition hover:text-zinc-200"
+                      aria-label="Chèn biểu tượng cảm xúc"
+                    >
+                      <IoHappyOutline className="text-xl" aria-hidden />
                     </button>
                   </div>
                 </div>
+                <button
+                  type="button"
+                  className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#fe2c55] text-white transition hover:bg-[#ff4d6d] disabled:cursor-not-allowed disabled:opacity-35"
+                  aria-label="Gửi bình luận"
+                  disabled={
+                    !commentDraft.trim() ||
+                    !token ||
+                    !isVideoPublicId(activeVideo?.publicId)
+                  }
+                  onClick={async () => {
+                    const text = commentDraft.trim();
+                    if (
+                      !text ||
+                      !token ||
+                      !isVideoPublicId(activeVideo?.publicId)
+                    ) {
+                      return;
+                    }
+                    setCommentPostError("");
+                    try {
+                      const created = await apiClient.addComment(
+                        activeVideo.publicId,
+                        text,
+                        token,
+                      );
+                      setCommentDraft("");
+                      setFeedComments((prev) => [created, ...prev]);
+                      const prevCc = Number(activeVideo.commentCount ?? 0);
+                      patchVideoByPublicId(activeVideo.publicId, {
+                        commentCount: prevCc + 1,
+                      });
+                    } catch (e) {
+                      setCommentPostError(
+                        e instanceof Error
+                          ? e.message
+                          : "Không gửi được bình luận.",
+                      );
+                    }
+                  }}
+                >
+                  <IoArrowUp className="text-lg" aria-hidden />
+                </button>
+              </div>
+            </div>
           </aside>
         ) : null}
       </div>

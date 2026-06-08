@@ -136,7 +136,7 @@ describe('FeedPage', () => {
 
     expect(screen.getByRole('navigation')).toBeInTheDocument()
     expect(
-      screen.getByRole('complementary', { name: /bình luận và đề xuất/i }),
+      screen.getByRole('complementary', { name: /bình luận/i }),
     ).toBeInTheDocument()
   })
 
