@@ -99,7 +99,7 @@ export function SearchResultsPage() {
 
   const { record: recordSearchHistory } = useSearchHistory({
     token,
-    enabled: Boolean(token),
+    enabled: false,
   })
 
   const menuItems = useMemo(() => buildMainSidebarMenuItems(token), [token])
