@@ -20,8 +20,14 @@ export const FEED_ACTION_RAIL_PX =
   FEED_STAGE_EDGE_GAP_PX * 2 +
   FEED_RIGHT_OUTER_GAP_PX;
 
-/** Panel bình luận dock bên phải. */
-export const FEED_COMMENTS_PANEL_WIDTH_PX = 300;
+/** Panel bình luận dock bên phải — rộng hơn, gần TikTok web (~420px). */
+export const FEED_COMMENTS_PANEL_MIN_PX = 380;
+export const FEED_COMMENTS_PANEL_WIDTH_PX = 420;
+
+/** CSS width cho panel bình luận (responsive nhưng không hẹp quá 300px). */
+export function feedCommentsPanelWidthCss() {
+  return `clamp(${FEED_COMMENTS_PANEL_MIN_PX}px, 34vw, ${FEED_COMMENTS_PANEL_WIDTH_PX}px)`;
+}
 
 /** Chiều cao slot feed (px dưới viewport). */
 export const FEED_VIEWPORT_INSET_PX = 24;
