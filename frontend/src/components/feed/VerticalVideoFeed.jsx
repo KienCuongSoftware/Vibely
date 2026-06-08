@@ -1536,14 +1536,22 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                           }}
                         />
                         <div className="min-w-0 flex-1 pt-0.5">
-                          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                          <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
                             <span className="text-[13px] font-semibold text-zinc-100">
                               {c.username ?? "Người dùng"}
                             </span>
                             {isCreator ? (
-                              <span className="rounded-sm bg-white/10 px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-zinc-300">
-                                Nhà sáng tạo
-                              </span>
+                              <>
+                                <span
+                                  className="text-[13px] font-semibold text-zinc-500"
+                                  aria-hidden
+                                >
+                                  ·
+                                </span>
+                                <span className="text-[13px] font-semibold text-[#69C9D0]">
+                                  Nhà sáng tạo
+                                </span>
+                              </>
                             ) : null}
                           </div>
                           <p className="mt-1 text-[15px] leading-snug text-zinc-50">
