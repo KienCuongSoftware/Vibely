@@ -13,10 +13,12 @@ import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoService;
 import com.vibely.backend.video.VideoStatus;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +34,7 @@ public class InteractionService {
     private final LikeRepository likeRepository;
     private final VideoBookmarkRepository videoBookmarkRepository;
     private final CommentRepository commentRepository;
+    private final CommentLikeRepository commentLikeRepository;
     private final FollowRepository followRepository;
     private final UserAvatarResolver userAvatarResolver;
     private final ExploreCacheService exploreCacheService;
@@ -45,6 +48,7 @@ public class InteractionService {
         LikeRepository likeRepository,
         VideoBookmarkRepository videoBookmarkRepository,
         CommentRepository commentRepository,
+        CommentLikeRepository commentLikeRepository,
         FollowRepository followRepository,
         UserAvatarResolver userAvatarResolver,
         ExploreCacheService exploreCacheService,
@@ -57,6 +61,7 @@ public class InteractionService {
         this.likeRepository = likeRepository;
         this.videoBookmarkRepository = videoBookmarkRepository;
         this.commentRepository = commentRepository;
+        this.commentLikeRepository = commentLikeRepository;
         this.followRepository = followRepository;
         this.userAvatarResolver = userAvatarResolver;
         this.exploreCacheService = exploreCacheService;
@@ -139,7 +144,39 @@ public class InteractionService {
         CommentEntity saved = commentRepository.save(comment);
         userInterestSignalProcessor.ifAvailable(p -> p.onComment(user.getId(), video));
         refreshExploreFor(video);
-        return toCommentResponse(saved);
+        return toCommentResponse(saved, 0L, false);
+    }
+
+    public void likeComment(String email, UUID videoPublicId, Long commentId) {
+        User user = getUser(email);
+        Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
+        requireEngagementAllowed(video, user);
+        CommentEntity comment = commentRepository
+            .findById(commentId)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy bình luận"));
+        if (!comment.getVideo().getId().equals(video.getId())) {
+            throw new BadRequestException("Bình luận không thuộc video này.");
+        }
+        if (commentLikeRepository.existsByUserAndComment(user, comment)) {
+            return;
+        }
+        CommentLikeEntity like = new CommentLikeEntity();
+        like.setUser(user);
+        like.setComment(comment);
+        commentLikeRepository.save(like);
+    }
+
+    public void unlikeComment(String email, UUID videoPublicId, Long commentId) {
+        User user = getUser(email);
+        Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
+        requireEngagementAllowed(video, user);
+        CommentEntity comment = commentRepository
+            .findById(commentId)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy bình luận"));
+        if (!comment.getVideo().getId().equals(video.getId())) {
+            throw new BadRequestException("Bình luận không thuộc video này.");
+        }
+        commentLikeRepository.deleteByUserAndComment(user, comment);
     }
 
     /**
@@ -180,8 +217,25 @@ public class InteractionService {
         if (!canViewComments(video, viewer)) {
             return List.of();
         }
-        return commentRepository.findByVideoOrderByCreatedAtDesc(video).stream()
-            .map(this::toCommentResponse)
+        List<CommentEntity> entities = commentRepository.findByVideoOrderByCreatedAtDesc(video);
+        if (entities.isEmpty()) {
+            return List.of();
+        }
+        List<Long> ids = entities.stream().map(CommentEntity::getId).toList();
+        Map<Long, Long> likeCounts = new LinkedHashMap<>();
+        for (Object[] row : commentLikeRepository.countGroupedByCommentIds(ids)) {
+            likeCounts.put((Long) row[0], (Long) row[1]);
+        }
+        Set<Long> likedIds = new HashSet<>();
+        if (viewer != null) {
+            likedIds.addAll(commentLikeRepository.findLikedCommentIds(viewer, ids));
+        }
+        return entities.stream()
+            .map(entity -> toCommentResponse(
+                entity,
+                likeCounts.getOrDefault(entity.getId(), 0L),
+                likedIds.contains(entity.getId())
+            ))
             .toList();
     }
 
@@ -295,7 +349,11 @@ public class InteractionService {
         return authorId != null && Objects.equals(authorId, viewer.getId());
     }
 
-    private CommentResponse toCommentResponse(CommentEntity entity) {
+    private CommentResponse toCommentResponse(
+        CommentEntity entity,
+        long likeCount,
+        boolean likedByViewer
+    ) {
         CommentEntity parent = entity.getParentComment();
         Long parentId = parent != null ? parent.getId() : null;
         return new CommentResponse(
@@ -305,7 +363,9 @@ public class InteractionService {
             entity.getContent(),
             entity.getCreatedAt(),
             userAvatarResolver.resolve(entity.getUser()),
-            parentId
+            parentId,
+            likeCount,
+            likedByViewer
         );
     }
 

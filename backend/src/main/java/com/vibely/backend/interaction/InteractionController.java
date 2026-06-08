@@ -109,6 +109,36 @@ public class InteractionController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @PostMapping("/videos/{publicId}/comments/{commentId}/likes")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ApiResponse<Void>> likeComment(
+        Authentication authentication,
+        @PathVariable String publicId,
+        @PathVariable Long commentId
+    ) {
+        interactionService.likeComment(
+            authentication.getName(),
+            VideoPublicIds.parse(publicId),
+            commentId
+        );
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/videos/{publicId}/comments/{commentId}/likes")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ApiResponse<Void>> unlikeComment(
+        Authentication authentication,
+        @PathVariable String publicId,
+        @PathVariable Long commentId
+    ) {
+        interactionService.unlikeComment(
+            authentication.getName(),
+            VideoPublicIds.parse(publicId),
+            commentId
+        );
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
     @GetMapping("/videos/{publicId}/comments")
     public ApiResponse<List<CommentResponse>> getComments(
         @PathVariable String publicId,
