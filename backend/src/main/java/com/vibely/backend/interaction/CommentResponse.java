@@ -9,6 +9,8 @@ public record CommentResponse(
     String content,
     LocalDateTime createdAt,
     String authorAvatarUrl,
-    Long parentCommentId
+    Long parentCommentId,
+    long likeCount,
+    boolean likedByViewer
 ) {
 }
