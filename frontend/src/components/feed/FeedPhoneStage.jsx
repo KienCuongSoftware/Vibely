@@ -33,6 +33,11 @@ import {
   computeFeedLandscapeStageWidthPx,
 } from "../../feed/feedLayout.js";
 
+/** Track cách đáy card — knob 14px căn giữa track, mép dưới trùng đáy card (không clip). */
+const FEED_PROGRESS_TRACK_BOTTOM_PX = 5;
+/** Khoảng cách overlay caption / Vibely ID so với đáy card (trên vùng progress). */
+const FEED_CAPTION_BOTTOM_PX = 22;
+
 function feedAuthorProfilePath(video) {
   const raw = String(video?.authorUsername ?? "vibely")
     .trim()
@@ -86,7 +91,7 @@ const CAPTION_TEXT_CLASS =
   "min-w-0 text-sm leading-snug text-white/90 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]";
 
 /** Mô tả dài: 1 dòng + …; «Thêm» mở rộng; «Ẩn bớt» thu lại. */
-function FeedVideoCaption({ caption }) {
+function FeedVideoCaption({ caption, onNeedsGradientChange }) {
   const text = String(caption ?? "").trim();
   const [expanded, setExpanded] = useState(false);
   const [overflowsOneLine, setOverflowsOneLine] = useState(false);
@@ -126,6 +131,10 @@ function FeedVideoCaption({ caption }) {
     ro.observe(el);
     return () => ro.disconnect();
   }, [measureCaption]);
+
+  useLayoutEffect(() => {
+    onNeedsGradientChange?.(Boolean(text) && overflowsOneLine && !expanded);
+  }, [expanded, onNeedsGradientChange, overflowsOneLine, text]);
 
   if (!text) {
     return (
@@ -219,6 +228,7 @@ function FeedSlideAuthorMeta({
   captionText,
   compact = false,
 }) {
+  const [needsGradient, setNeedsGradient] = useState(false);
   const nameClass =
     "inline-block max-w-full truncate text-[15px] font-bold leading-snug text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.95),0_0_1px_rgba(0,0,0,0.85)]";
   const displayVibelyId = rawVibelyUser ? `@${rawVibelyUser}` : "@vibely";
@@ -235,16 +245,25 @@ function FeedSlideAuthorMeta({
   );
 
   const padClass = compact
-    ? "px-3 pb-2.5 pt-3 sm:px-4"
-    : "px-3 pb-2.5 pt-6 sm:px-4 sm:pt-8";
+    ? `px-3 pb-0 sm:px-4 ${needsGradient ? "pt-3" : "pt-1.5"}`
+    : `px-3 pb-0 sm:px-4 ${needsGradient ? "pt-6 sm:pt-8" : "pt-2 sm:pt-3"}`;
 
   return (
-    <div
-      className={`pointer-events-auto shrink-0 bg-linear-to-t from-black/90 via-black/45 to-transparent ${padClass}`}
-    >
-      <div className="inline-flex max-w-full">{nameEl}</div>
-      <div className="mt-1">
-        <FeedVideoCaption caption={captionText} />
+    <div className={`pointer-events-auto relative shrink-0 ${padClass}`}>
+      {needsGradient ? (
+        <div
+          className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/50 via-black/18 to-transparent"
+          aria-hidden
+        />
+      ) : null}
+      <div className="relative z-10">
+        <div className="inline-flex max-w-full">{nameEl}</div>
+        <div className="mt-1">
+          <FeedVideoCaption
+            caption={captionText}
+            onNeedsGradientChange={setNeedsGradient}
+          />
+        </div>
       </div>
     </div>
   );
@@ -283,13 +302,35 @@ function FeedVolumeIcon({ soundOn, volume }) {
   return <IoVolumeHighOutline aria-hidden />;
 }
 
-/** Điều khiển âm lượng góc trên trái (icon + slider ngang), hiện khi hover slide. */
+/** Điều khiển âm lượng góc trên trái — capsule TikTok (icon tròn + track + thumb squircle). */
 function FeedVolumeControl({
   volume,
   onVolumeChange,
   soundOn,
   onSoundOnChange,
 }) {
+  const [pinned, setPinned] = useState(false);
+
+  useEffect(() => {
+    if (!pinned) return undefined;
+    const release = () => setPinned(false);
+    window.addEventListener("pointerup", release, { capture: true });
+    window.addEventListener("pointercancel", release, { capture: true });
+    return () => {
+      window.removeEventListener("pointerup", release, { capture: true });
+      window.removeEventListener("pointercancel", release, { capture: true });
+    };
+  }, [pinned]);
+
+  const stopFeedPointer = (e) => {
+    e.stopPropagation();
+  };
+
+  const pinInteraction = (e) => {
+    e.stopPropagation();
+    setPinned(true);
+  };
+
   const toggleSound = (e) => {
     e.stopPropagation();
     if (soundOn && volume > 0) {
@@ -309,35 +350,65 @@ function FeedVolumeControl({
     onSoundOnChange(v > 0);
   };
 
+  const sliderTrackPad = "pl-0.5 pr-3.5";
+  const sliderTrackWidth =
+    "w-[4.75rem] group-hover:w-[4.75rem] focus-within:w-[4.75rem]";
+  const expanded = "pointer-events-auto max-w-[9.25rem] opacity-100";
+  const collapsed = `pointer-events-none max-w-9 opacity-0 group-hover:pointer-events-auto group-hover:max-w-[9.25rem] group-hover:opacity-100 group-has-[.feed-video-more-panel:hover]:pointer-events-none group-has-[.feed-video-more-panel:hover]:max-w-9 group-has-[.feed-video-more-panel:hover]:opacity-0 focus-within:pointer-events-auto focus-within:max-w-[9.25rem] focus-within:opacity-100`;
+
   return (
     <div
-      className="feed-volume-control pointer-events-none flex max-w-[2.75rem] items-center gap-0 overflow-hidden rounded-full bg-black/45 py-2 pl-2.5 pr-2.5 text-xl text-white opacity-0 backdrop-blur-sm transition-[max-width,opacity,gap,padding] duration-200 group-hover:pointer-events-auto group-hover:max-w-[9.5rem] group-hover:gap-2 group-hover:pr-3 group-hover:opacity-100 group-has-[.feed-video-more-panel:hover]:pointer-events-none group-has-[.feed-video-more-panel:hover]:max-w-[2.75rem] group-has-[.feed-video-more-panel:hover]:opacity-0 focus-within:pointer-events-auto focus-within:max-w-[9.5rem] focus-within:gap-2 focus-within:pr-3 focus-within:opacity-100"
-      onMouseDown={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
+      className={`feed-volume-control flex h-9 items-center overflow-hidden rounded-full bg-black/50 text-white shadow-[0_2px_12px_rgba(0,0,0,0.35)] backdrop-blur-md transition-[max-width,opacity] duration-200 ease-out ${pinned ? expanded : collapsed}`}
+      onPointerDown={pinInteraction}
+      onMouseDown={stopFeedPointer}
+      onClick={stopFeedPointer}
     >
       <button
         type="button"
         aria-label={soundOn && volume > 0 ? "Tắt âm thanh" : "Bật âm thanh"}
-        className="shrink-0 cursor-pointer rounded-full p-0.5 hover:bg-white/10"
+        className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white/14 text-[1.2rem] leading-none transition-colors hover:bg-white/22"
+        onPointerDown={stopFeedPointer}
         onClick={toggleSound}
       >
         <FeedVolumeIcon soundOn={soundOn} volume={volume} />
       </button>
-      <input
-        type="range"
-        min={0}
-        max={1}
-        step={0.01}
-        value={volume}
-        aria-label="Âm lượng"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(volume * 100)}
-        className="feed-volume-slider pointer-events-none w-0 shrink opacity-0 transition-[width,opacity] duration-200 group-hover:pointer-events-auto group-hover:w-[5.5rem] group-hover:opacity-100 focus-within:pointer-events-auto focus-within:w-[5.5rem] focus-within:opacity-100"
-        onChange={onSlider}
-        onInput={onSlider}
-        onClick={(e) => e.stopPropagation()}
-      />
+      <div
+        className={`relative flex h-9 shrink-0 items-center overflow-hidden transition-[width,opacity,padding] duration-200 ease-out ${sliderTrackPad} ${
+          pinned
+            ? "w-[4.75rem] opacity-100"
+            : `w-0 opacity-0 ${sliderTrackWidth} group-hover:opacity-100 focus-within:opacity-100`
+        }`}
+      >
+        <div
+          className="pointer-events-none absolute top-1/2 right-3.5 left-0.5 h-[2px] -translate-y-1/2 rounded-full bg-white/40"
+          aria-hidden
+        >
+          <div
+            className="absolute top-1/2 left-1/2 h-1.5 w-px -translate-x-1/2 -translate-y-1/2 bg-white/55"
+            aria-hidden
+          />
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.01}
+          value={volume}
+          aria-label="Âm lượng"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(volume * 100)}
+          className={`feed-volume-slider relative z-10 w-full cursor-pointer ${
+            pinned
+              ? "pointer-events-auto"
+              : "pointer-events-none group-hover:pointer-events-auto focus-within:pointer-events-auto"
+          }`}
+          onPointerDown={pinInteraction}
+          onChange={onSlider}
+          onInput={onSlider}
+          onClick={stopFeedPointer}
+        />
+      </div>
     </div>
   );
 }
@@ -364,6 +435,7 @@ export function FeedPhoneStage({
   feedAutoScrollEnabled,
   setFeedAutoScrollEnabled,
   toggleFeedPlayback,
+  userPaused = false,
   toggleFeedPictureInPicture,
   resolveFeedAuthorDisplayName,
   feedDefaultAuthorAvatar,
@@ -380,6 +452,7 @@ export function FeedPhoneStage({
   /** Fallback: suy luận ngang từ thumbnail natural size. */
   const [thumbWideForLandscape, setThumbWideForLandscape] = useState(false);
   const progressTrackRef = useRef(null);
+  const progressInnerRef = useRef(null);
   const progressFillRef = useRef(null);
   const progressKnobRef = useRef(null);
   const progressScrubbingRef = useRef(false);
@@ -393,8 +466,9 @@ export function FeedPhoneStage({
 
   const setProgressPct = useCallback((pct) => {
     const p = Math.min(100, Math.max(0, pct));
+    const scale = p / 100;
     if (progressFillRef.current) {
-      progressFillRef.current.style.width = `${p}%`;
+      progressFillRef.current.style.transform = `scaleX(${scale})`;
     }
     if (progressKnobRef.current) {
       progressKnobRef.current.style.left = `${p}%`;
@@ -429,8 +503,9 @@ export function FeedPhoneStage({
 
   const seekFeedVideo = useCallback(
     (clientX, trackEl) => {
-      if (!trackEl) return;
-      const rect = trackEl.getBoundingClientRect();
+      const track = trackEl ?? progressInnerRef.current ?? progressTrackRef.current;
+      if (!track) return;
+      const rect = track.getBoundingClientRect();
       const el = feedVideoRef.current;
       if (!el) return;
       const w = rect.width;
@@ -485,7 +560,8 @@ export function FeedPhoneStage({
   useEffect(() => {
     const onMove = (e) => {
       if (!progressScrubbingRef.current) return;
-      const track = progressTrackRef.current;
+      const track =
+        progressInnerRef.current ?? progressTrackRef.current;
       if (!track) return;
       if (e.cancelable && e.type === "touchmove") e.preventDefault();
       const cx = e.type === "touchmove" ? e.touches[0]?.clientX : e.clientX;
@@ -684,7 +760,7 @@ export function FeedPhoneStage({
   return (
     <div
       ref={stageOuterRef}
-      className={`${stageWidthClass} overflow-hidden rounded-xl border border-white/10 bg-black shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl`}
+      className={`${stageWidthClass} relative overflow-hidden rounded-xl border border-white/10 bg-black shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl`}
       style={{
         width: landscapeStageWidthPx ?? undefined,
         height: stageOuterHeightPx,
@@ -699,7 +775,7 @@ export function FeedPhoneStage({
         activeIndex={activeIndex}
         onActiveIndexChange={setActiveIndex}
         onNearEnd={loadMoreFeed}
-        scrollClassName="rounded-xl sm:rounded-2xl"
+        scrollClassName="scrollbar-none rounded-xl sm:rounded-2xl"
       >
         {({ video, loadMedia, isActive, visibilityRatio }) => {
           const poster =
@@ -723,7 +799,10 @@ export function FeedPhoneStage({
               }`}
             >
               {hasPlayback ? (
-                <div className="absolute inset-0 isolate overflow-hidden rounded-xl sm:rounded-2xl">
+                <div
+                  className="absolute inset-x-0 top-0 isolate overflow-hidden rounded-xl sm:rounded-2xl"
+                  style={{ bottom: FEED_PROGRESS_TRACK_BOTTOM_PX }}
+                >
                   <FeedVideoPlayer
                     key={String(video.publicId)}
                     ref={isActive ? feedVideoRef : undefined}
@@ -733,6 +812,7 @@ export function FeedPhoneStage({
                     loop
                     loadMedia={loadMedia && hasPlayback}
                     isActive={isActive}
+                    userPaused={isActive && userPaused}
                     visibilityRatio={
                       commentsDockOpen && isActive ? 1 : visibilityRatio
                     }
@@ -802,10 +882,10 @@ export function FeedPhoneStage({
                           aria-label="Menu video"
                           aria-expanded={feedMoreMenuOpen}
                           aria-haspopup="dialog"
-                          className={`cursor-pointer rounded-full bg-black/45 p-2.5 text-xl text-white backdrop-blur-sm transition-opacity duration-200 hover:bg-black/60 focus-visible:pointer-events-auto focus-visible:opacity-100 ${
+                          className={`pointer-events-auto cursor-pointer rounded-full bg-black/45 p-2.5 text-xl text-white backdrop-blur-sm transition-opacity duration-200 hover:bg-red-500/60 focus-visible:opacity-100 ${
                             feedMoreMenuOpen
-                              ? "pointer-events-auto opacity-100"
-                              : "pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100"
+                              ? "opacity-100"
+                              : "opacity-0 group-hover:opacity-100"
                           }`}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -815,8 +895,11 @@ export function FeedPhoneStage({
                           <IoEllipsisHorizontal aria-hidden />
                         </button>
                       </div>
+                    </>
+                  ) : null}
 
-                      {feedMoreMenuOpen ? (
+                  {isActive && feedMoreMenuOpen ? (
+                    <>
                       <div
                         role="dialog"
                         aria-modal="true"
@@ -978,84 +1061,6 @@ export function FeedPhoneStage({
                           )}
                         </div>
                       </div>
-                    ) : null}
-
-                  <div className="absolute inset-x-0 bottom-0 z-[50] flex flex-col pointer-events-none [&_*]:pointer-events-auto">
-                    <FeedSlideAuthorMeta
-                      rawVibelyUser={rawVibelyUser}
-                      authorProfilePath={authorProfilePath}
-                      captionText={captionText}
-                      compact={effectiveStageWide}
-                    />
-                    <div
-                      ref={progressTrackRef}
-                      className="group/progress pointer-events-auto flex w-full cursor-pointer flex-col justify-end overflow-visible"
-                    role="slider"
-                    tabIndex={0}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={0}
-                    aria-label="Tiến độ phát"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      progressScrubbingRef.current = true;
-                      setProgressScrubbing(true);
-                      seekFeedVideo(e.clientX, progressTrackRef.current);
-                    }}
-                    onTouchStart={(e) => {
-                      e.stopPropagation();
-                      progressScrubbingRef.current = true;
-                      setProgressScrubbing(true);
-                      const cx = e.touches[0]?.clientX;
-                      if (cx != null)
-                        seekFeedVideo(cx, progressTrackRef.current);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    onKeyDown={(e) => {
-                      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight")
-                        return;
-                      e.preventDefault();
-                      const el = feedVideoRef.current;
-                      if (!el?.duration || !Number.isFinite(el.duration))
-                        return;
-                      const delta = e.key === "ArrowLeft" ? -5 : 5;
-                      el.currentTime = Math.min(
-                        el.duration,
-                        Math.max(0, el.currentTime + delta),
-                      );
-                      setProgressPct((el.currentTime / el.duration) * 100);
-                    }}
-                  >
-                    <div className="relative w-full">
-                      <div
-                        className={`pointer-events-none absolute bottom-[calc(100%+26px)] left-1/2 z-30 -translate-x-1/2 text-[2rem] leading-none font-semibold text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.85)] transition-opacity duration-150 ${
-                          progressScrubbing ? "opacity-100" : "opacity-0"
-                        }`}
-                        aria-hidden
-                      >
-                        {formatPlaybackTime(progressPreview.current)} /{" "}
-                        {formatPlaybackTime(progressPreview.duration)}
-                      </div>
-                      <div className="relative h-[3px] w-full transition-[height] duration-150 ease-out group-hover/progress:h-[5px]">
-                        <div className="absolute inset-0 rounded-none bg-white/30" />
-                        <div
-                          ref={progressFillRef}
-                          className={`absolute inset-y-0 left-0 rounded-none bg-red-600 ${progressScrubbing ? "" : "transition-[width] duration-150 ease-out"}`}
-                          style={{ width: "0%", maxWidth: "100%" }}
-                        />
-                        <div
-                          ref={progressKnobRef}
-                          className={`pointer-events-none absolute top-1/2 left-0 z-20 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-200 ease-out ${progressScrubbing ? "opacity-100" : "opacity-0 group-hover/progress:opacity-100"}`}
-                          style={{ left: "0%" }}
-                          aria-hidden
-                        >
-                          <div className="h-full w-full rounded-full bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.45)] ring-2 ring-black/25 transition-transform duration-200 ease-out group-hover/progress:scale-125" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  </div>
                     </>
                   ) : null}
                 </div>
@@ -1069,6 +1074,7 @@ export function FeedPhoneStage({
                   loop
                   loadMedia={loadMedia && hasPlayback}
                   isActive={isActive}
+                  userPaused={isActive && userPaused}
                   visibilityRatio={
                     commentsDockOpen && isActive ? 1 : visibilityRatio
                   }
@@ -1088,9 +1094,23 @@ export function FeedPhoneStage({
                 />
               )}
 
+              {isActive && hasPlayback ? (
+                <div
+                  className="pointer-events-none absolute inset-x-0 z-[50] max-h-[42%] overflow-hidden [&_*]:pointer-events-auto"
+                  style={{ bottom: FEED_CAPTION_BOTTOM_PX }}
+                >
+                  <FeedSlideAuthorMeta
+                    rawVibelyUser={rawVibelyUser}
+                    authorProfilePath={authorProfilePath}
+                    captionText={captionText}
+                    compact={effectiveStageWide}
+                  />
+                </div>
+              ) : null}
+
               {!hasPlayback ? (
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/40 to-transparent p-4 pb-5">
-                  <p className="truncate text-sm font-semibold text-white">
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 pb-5">
+                  <p className="truncate text-sm font-semibold text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]">
                     @{rawVibelyUser}
                   </p>
                   <div className="mt-1 text-xs text-zinc-300">
@@ -1102,6 +1122,81 @@ export function FeedPhoneStage({
           );
         }}
       </VirtualizedFeed>
+
+      {Boolean(resolveFeedPlaybackUrl(activeVideo)) ? (
+        <div
+          ref={progressTrackRef}
+          className="group/progress pointer-events-auto absolute inset-x-0 bottom-0 z-[70] h-4 w-full cursor-pointer"
+          role="slider"
+          tabIndex={0}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={0}
+          aria-label="Tiến độ phát"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            progressScrubbingRef.current = true;
+            setProgressScrubbing(true);
+            seekFeedVideo(e.clientX, progressInnerRef.current);
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            progressScrubbingRef.current = true;
+            setProgressScrubbing(true);
+            const cx = e.touches[0]?.clientX;
+            if (cx != null) seekFeedVideo(cx, progressInnerRef.current);
+          }}
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => {
+            if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+            e.preventDefault();
+            const el = feedVideoRef.current;
+            if (!el?.duration || !Number.isFinite(el.duration)) return;
+            const delta = e.key === "ArrowLeft" ? -5 : 5;
+            el.currentTime = Math.min(
+              el.duration,
+              Math.max(0, el.currentTime + delta),
+            );
+            setProgressPct((el.currentTime / el.duration) * 100);
+          }}
+        >
+          <div
+            className={`pointer-events-none absolute bottom-[calc(100%+26px)] left-1/2 z-30 -translate-x-1/2 text-[2rem] leading-none font-semibold text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.85)] transition-opacity duration-150 ${
+              progressScrubbing ? "opacity-100" : "opacity-0"
+            }`}
+            aria-hidden
+          >
+            {formatPlaybackTime(progressPreview.current)} /{" "}
+            {formatPlaybackTime(progressPreview.duration)}
+          </div>
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 bg-black"
+            style={{ height: FEED_PROGRESS_TRACK_BOTTOM_PX }}
+            aria-hidden
+          />
+          <div
+            ref={progressInnerRef}
+            className="absolute inset-x-0 h-1 transition-[height] duration-150 ease-out group-hover/progress:h-[5px]"
+            style={{ bottom: FEED_PROGRESS_TRACK_BOTTOM_PX }}
+          >
+            <div className="absolute inset-0 bg-white/40" aria-hidden />
+            <div
+              ref={progressFillRef}
+              className={`absolute inset-0 origin-left bg-[#fe2c55] will-change-transform ${progressScrubbing ? "" : "transition-transform duration-150 ease-out"}`}
+              style={{ transform: "scaleX(0)" }}
+            />
+            <div
+              ref={progressKnobRef}
+              className={`pointer-events-none absolute top-1/2 left-0 z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-200 ease-out ${progressScrubbing ? "opacity-100" : "opacity-0 group-hover/progress:opacity-100"}`}
+              style={{ left: "0%" }}
+              aria-hidden
+            >
+              <div className="h-full w-full rounded-full bg-white shadow-[0_0_0_1.5px_rgba(0,0,0,0.5),0_1px_4px_rgba(0,0,0,0.35)] transition-transform duration-200 ease-out group-hover/progress:scale-110" />
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
