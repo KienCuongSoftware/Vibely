@@ -267,6 +267,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const [feedVideoQuality, setFeedVideoQuality] = useState("auto");
   const [feedAutoScrollEnabled, setFeedAutoScrollEnabled] = useState(false);
   const [feedPaused, setFeedPaused] = useState(true);
+  const [userPaused, setUserPaused] = useState(false);
   const [feedCommentsOpen, setFeedCommentsOpen] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
   const [feedComments, setFeedComments] = useState([]);
@@ -984,9 +985,15 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     if (!el) return undefined;
     el.muted = playbackMuted;
     el.volume = Math.min(1, Math.max(0, feedVolume));
-    void el.play().catch(() => {});
+    if (!userPaused) {
+      void el.play().catch(() => {});
+    }
     return undefined;
-  }, [soundUnlocked, playbackMuted, feedVolume, activeVideo?.publicId]);
+  }, [soundUnlocked, playbackMuted, feedVolume, activeVideo?.publicId, userPaused]);
+
+  useEffect(() => {
+    setUserPaused(false);
+  }, [activeIndex, activeVideo?.publicId]);
 
   useEffect(() => {
     const el = feedVideoRef.current;
@@ -1059,9 +1066,11 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     if (!el) return;
     const wasPaused = el.paused;
     if (wasPaused) {
+      setUserPaused(false);
       void el.play().catch(() => {});
       setPlaybackFlash("play");
     } else {
+      setUserPaused(true);
       el.pause();
       setPlaybackFlash("pause");
     }
@@ -1292,6 +1301,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   feedAutoScrollEnabled={feedAutoScrollEnabled}
                   setFeedAutoScrollEnabled={setFeedAutoScrollEnabled}
                   toggleFeedPlayback={toggleFeedPlayback}
+                  userPaused={userPaused}
                   toggleFeedPictureInPicture={toggleFeedPictureInPicture}
                   resolveFeedAuthorDisplayName={resolveFeedAuthorDisplayName}
                   feedDefaultAuthorAvatar={FEED_DEFAULT_AUTHOR_AVATAR}
