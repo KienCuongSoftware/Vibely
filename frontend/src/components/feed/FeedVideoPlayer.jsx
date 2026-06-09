@@ -93,6 +93,7 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
     loop = true,
     loadMedia,
     isActive,
+    userPaused = false,
     visibilityRatio = 0,
     playsInline = true,
     className = '',
@@ -119,6 +120,8 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
   feedVideoIdRef.current = feedVideoId
   const isActiveRef = useRef(isActive)
   isActiveRef.current = isActive
+  const userPausedRef = useRef(userPaused)
+  userPausedRef.current = userPaused
   const mutedRef = useRef(muted)
   mutedRef.current = muted
   const [isWideAspect, setIsWideAspect] = useState(false)
@@ -141,7 +144,7 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
     const shouldPause =
       visibilityRatio > 0 &&
       visibilityRatio < FEED_CONFIG.PAUSE_VISIBILITY_RATIO
-    if (!visibleEnough || shouldPause) return
+    if (!visibleEnough || shouldPause || userPausedRef.current) return
     void playWithAutoplayPolicy(el, !mutedRef.current)
   }, [loadMedia, videoUrl, visibilityRatio])
 
@@ -313,6 +316,9 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
     const shouldPause =
       visibilityRatio > 0 &&
       visibilityRatio < FEED_CONFIG.PAUSE_VISIBILITY_RATIO
+    if (userPaused) {
+      return undefined
+    }
     if (shouldPlay && !shouldPause) {
       void playWithAutoplayPolicy(el, !muted)
       requestAnimationFrame(() => reportIntrinsicLayout(el))
@@ -324,7 +330,7 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
       }
     }
     return undefined
-  }, [isActive, loadMedia, videoUrl, visibilityRatio, muted])
+  }, [isActive, loadMedia, videoUrl, visibilityRatio, muted, userPaused])
 
   useEffect(() => {
     if (!loadMedia || !videoUrl || !isActive) return undefined
