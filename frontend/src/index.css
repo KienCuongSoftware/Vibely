@@ -107,34 +107,50 @@ html {
   }
 }
 
-/* Thanh âm lượng feed (TikTok-style, hiện khi hover video). */
+/* Thanh âm lượng feed (TikTok-style capsule + thumb squircle). */
 .feed-volume-slider {
   -webkit-appearance: none;
   appearance: none;
-  height: 3px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.35);
+  height: 2.25rem;
+  margin: 0;
+  background: transparent;
   cursor: pointer;
+}
+.feed-volume-slider::-webkit-slider-runnable-track {
+  height: 2px;
+  background: transparent;
+  border: none;
 }
 .feed-volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+  width: 7px;
+  height: 14px;
+  margin-top: -6px;
+  border: none;
+  border-radius: 2.5px;
   background: #fff;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+.feed-volume-slider::-moz-range-track {
+  height: 2px;
+  background: transparent;
+  border: none;
 }
 .feed-volume-slider::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
+  width: 7px;
+  height: 14px;
   border: none;
-  border-radius: 50%;
+  border-radius: 2.5px;
   background: #fff;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 .feed-volume-slider:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
-  outline-offset: 2px;
+  outline: none;
+}
+.feed-volume-slider:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.35),
+    0 0 0 2px rgba(255, 255, 255, 0.45);
 }
 
 /* Thanh âm lượng dọc trang xem video (TikTok-style). */
