@@ -458,6 +458,8 @@ Vibely/
 │       ├── security/           # Anti-bot SDK, captcha UI, fingerprint
 │       └── api/                # API client
 ├── docs/                       # Engineering docs (auth, anti-bot, API, …)
+│   ├── erd/                    # Full database ERD (vibely-erd-full.png)
+│   └── database/               # Schema, migrations, indexing
 ├── infra/                      # Lambda audio extract (optional)
 ├── docker-compose.yml          # Redis (+ optional Kafka profile)
 ├── CONTRIBUTING.md
@@ -491,6 +493,8 @@ docker compose up -d redis
 ### 2. Database
 
 Create a PostgreSQL database named `vibely` (or configure `DB_URL`).
+
+**Schema:** ~42 tables, Flyway migrations `backend/src/main/resources/db/migration/`. Full ERD: [docs/erd/vibely-erd-full.png](docs/erd/vibely-erd-full.png) · [docs/database/](docs/database/)
 
 ### 3. Backend environment
 
