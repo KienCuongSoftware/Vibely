@@ -8,7 +8,7 @@
     "zip": "powershell -Command \"if (Test-Path dist.zip) { Remove-Item dist.zip }; Compress-Archive -Path index.mjs,README.md,event.sample.json,iam-policy.sample.json -DestinationPath dist.zip\""
   },
   "dependencies": {
-    "@aws-sdk/client-mediaconvert": "^3.1065.0"
+    "@aws-sdk/client-mediaconvert": "^3.1066.0"
   }
 }
 
