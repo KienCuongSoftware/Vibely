@@ -18,6 +18,10 @@ app:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
   jwt:
     secret: ${JWT_SECRET}
+  auth:
+    cookie:
+      secure: true
+      same-site: Lax
   mail:
     expose-code-in-api: false
   discovery:

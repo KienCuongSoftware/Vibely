@@ -1,11 +1,15 @@
 package com.vibely.backend.auth;
 
 import com.vibely.backend.common.ApiResponse;
+import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.security.AuthCookieService;
 import com.vibely.backend.user.User;
 import com.vibely.backend.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,42 +27,82 @@ public class AuthController {
     private final OtpVerificationService otpVerificationService;
     private final UserRepository userRepository;
     private final UserAvatarResolver userAvatarResolver;
+    private final AuthCookieService authCookieService;
+    private final boolean exposeTokensInApi;
+
     public AuthController(
         AuthService authService,
         OtpVerificationService otpVerificationService,
         UserRepository userRepository,
-        UserAvatarResolver userAvatarResolver
+        UserAvatarResolver userAvatarResolver,
+        AuthCookieService authCookieService,
+        @Value("${app.auth.expose-tokens-in-api:false}") boolean exposeTokensInApi
     ) {
         this.authService = authService;
         this.otpVerificationService = otpVerificationService;
         this.userRepository = userRepository;
         this.userAvatarResolver = userAvatarResolver;
+        this.authCookieService = authCookieService;
+        this.exposeTokensInApi = exposeTokensInApi;
     }
 
     @PostMapping("/register")
-    public ApiResponse<AuthResponse> register(
+    public ResponseEntity<ApiResponse<AuthSessionResponse>> register(
         @Valid @RequestBody RegisterRequest request,
-        HttpServletRequest httpRequest
+        HttpServletRequest httpRequest,
+        HttpServletResponse httpResponse
     ) {
-        return ApiResponse.success(authService.register(request, httpRequest));
+        return AuthSessionSupport.ok(
+            authService.register(request, httpRequest),
+            httpResponse,
+            authCookieService,
+            exposeTokensInApi
+        );
     }
 
     @PostMapping("/login")
-    public ApiResponse<AuthResponse> login(
+    public ResponseEntity<ApiResponse<AuthSessionResponse>> login(
         @Valid @RequestBody AuthRequest request,
-        HttpServletRequest httpRequest
+        HttpServletRequest httpRequest,
+        HttpServletResponse httpResponse
     ) {
-        return ApiResponse.success(authService.login(request, httpRequest));
+        return AuthSessionSupport.ok(
+            authService.login(request, httpRequest),
+            httpResponse,
+            authCookieService,
+            exposeTokensInApi
+        );
     }
 
     @PostMapping("/refresh")
-    public ApiResponse<AuthResponse> refresh(@Valid @RequestBody RefreshRequest request) {
-        return ApiResponse.success(authService.refresh(request.getRefreshToken()));
+    public ResponseEntity<ApiResponse<AuthSessionResponse>> refresh(
+        @RequestBody(required = false) RefreshRequest request,
+        HttpServletRequest httpRequest,
+        HttpServletResponse httpResponse
+    ) {
+        String refreshToken = resolveRefreshToken(request, httpRequest);
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new BadRequestException("Refresh token là bắt buộc");
+        }
+        return AuthSessionSupport.ok(
+            authService.refresh(refreshToken),
+            httpResponse,
+            authCookieService,
+            exposeTokensInApi
+        );
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody LogoutRequest request) {
-        authService.logout(request.getRefreshToken());
+    public ResponseEntity<ApiResponse<Void>> logout(
+        @RequestBody(required = false) LogoutRequest request,
+        HttpServletRequest httpRequest,
+        HttpServletResponse httpResponse
+    ) {
+        String refreshToken = resolveRefreshToken(request, httpRequest);
+        if (refreshToken != null) {
+            authService.logout(refreshToken);
+        }
+        authCookieService.clearSessionCookies(httpResponse);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
@@ -85,16 +129,30 @@ public class AuthController {
     }
 
     @PostMapping("/oauth/exchange")
-    public ApiResponse<AuthResponse> exchangeOauthCode(@Valid @RequestBody OAuthExchangeRequest request) {
-        return ApiResponse.success(authService.exchangeOauthCode(request.getCode()));
+    public ResponseEntity<ApiResponse<AuthSessionResponse>> exchangeOauthCode(
+        @Valid @RequestBody OAuthExchangeRequest request,
+        HttpServletResponse httpResponse
+    ) {
+        return AuthSessionSupport.ok(
+            authService.exchangeOauthCode(request.getCode()),
+            httpResponse,
+            authCookieService,
+            exposeTokensInApi
+        );
     }
 
     @PostMapping("/complete-onboarding")
-    public ApiResponse<AuthResponse> completeOnboarding(
+    public ResponseEntity<ApiResponse<AuthSessionResponse>> completeOnboarding(
         Authentication authentication,
-        @Valid @RequestBody CompleteOnboardingRequest request
+        @Valid @RequestBody CompleteOnboardingRequest request,
+        HttpServletResponse httpResponse
     ) {
-        return ApiResponse.success(authService.completeOnboarding(authentication.getName(), request));
+        return AuthSessionSupport.ok(
+            authService.completeOnboarding(authentication.getName(), request),
+            httpResponse,
+            authCookieService,
+            exposeTokensInApi
+        );
     }
 
     @GetMapping("/me")
@@ -112,5 +170,15 @@ public class AuthController {
                 authService.userRequiresOnboarding(user)
             )
         );
+    }
+
+    private String resolveRefreshToken(RefreshRequest request, HttpServletRequest httpRequest) {
+        return authCookieService.readRefreshToken(httpRequest)
+            .orElseGet(() -> request == null ? null : request.getRefreshToken());
+    }
+
+    private String resolveRefreshToken(LogoutRequest request, HttpServletRequest httpRequest) {
+        return authCookieService.readRefreshToken(httpRequest)
+            .orElseGet(() -> request == null ? null : request.getRefreshToken());
     }
 }

@@ -1,10 +1,7 @@
 package com.vibely.backend.auth;
 
-import jakarta.validation.constraints.NotBlank;
-
 public class RefreshRequest {
 
-    @NotBlank(message = "Refresh token là bắt buộc")
     private String refreshToken;
 
     public String getRefreshToken() {

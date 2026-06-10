@@ -19,10 +19,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final AppUserDetailsService userDetailsService;
+    private final AuthCookieService authCookieService;
 
-    public JwtAuthenticationFilter(JwtService jwtService, AppUserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(
+        JwtService jwtService,
+        AppUserDetailsService userDetailsService,
+        AuthCookieService authCookieService
+    ) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.authCookieService = authCookieService;
     }
 
     @Override
@@ -31,13 +37,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         HttpServletResponse response,
         FilterChain filterChain
     ) throws ServletException, IOException {
-        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        String token = resolveToken(request);
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        String token = authHeader.substring(7);
         String email;
         try {
             email = jwtService.extractSubject(token);
@@ -63,5 +67,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    private String resolveToken(HttpServletRequest request) {
+        return authCookieService.readAccessToken(request)
+            .orElseGet(() -> {
+                String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+                if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                    return authHeader.substring(7);
+                }
+                return null;
+            });
     }
 }
