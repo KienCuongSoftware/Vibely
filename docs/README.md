@@ -9,7 +9,7 @@ Documentation drifts when the codebase changes. After **meaningful** changes (ne
 | If you change… | Review |
 |----------------|--------|
 | REST routes / envelopes | [api/](api/) |
-| Flyway migrations | [database/](database/) |
+| Flyway migrations | [database/](database/), [full ERD](erd/vibely-erd-full.png) |
 | Auth, OAuth, captcha headers | [auth/](auth/), [anti-bot/](anti-bot/) |
 | Feed / explore / video / search | [feed/](feed/), [explore/](explore/), [search/](search/) |
 | Chat / WebSocket | [chat/](chat/), [architecture/WEBSOCKET_REALTIME.md](architecture/WEBSOCKET_REALTIME.md) |
@@ -55,7 +55,7 @@ Each major document follows:
 | Observability | [observability/README.md](observability/README.md) | Metrics, Grafana, tracing |
 | Security | [security/README.md](security/README.md) | Platform security model |
 | Performance | [performance/README.md](performance/README.md) | Caching, HLS, DB |
-| Database | [database/README.md](database/README.md) | Schema, migrations, indexing |
+| Database | [database/README.md](database/README.md) | [Full ERD (42 tables)](erd/vibely-erd-full.png), schema, migrations |
 | API | [api/README.md](api/README.md) | REST contracts, errors |
 | Testing | [testing/README.md](testing/README.md) | Test pyramid, load/security |
 | Roadmap | [roadmap/README.md](roadmap/README.md) | MVP → scale milestones |

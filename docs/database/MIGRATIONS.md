@@ -24,6 +24,15 @@
 | V25–V27 | Chat + requests + hide |
 | V28 | Anti-bot platform |
 | V29 | `otp_verification_codes.purpose` (REGISTER / PASSWORD_RESET) |
+| V30 | Explore music / hashtag backfill |
+| V31 | Discovery content graph |
+| V32 | Discovery topic seed data |
+| V33 | Explore topic ↔ category alignment |
+| V34 | Topic canonical registry |
+| V35 | Search foundation |
+| V36 | Comment likes |
+
+After schema changes, update [SCHEMA.md](SCHEMA.md) and the [full ERD](../erd/vibely-erd-full.png) when table count or major relationships change.
 
 ## 4. Dev repair
 
