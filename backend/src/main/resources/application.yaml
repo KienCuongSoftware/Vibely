@@ -2,7 +2,7 @@ spring:
   application:
     name: vibely-backend
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -51,6 +51,8 @@ app:
     secret: ${JWT_SECRET:change-this-in-real-environments}
     expiration-seconds: 900
     refresh-expiration-seconds: 1209600
+  mail:
+    expose-code-in-api: ${APP_MAIL_EXPOSE_CODE:false}
   s3:
     enabled: ${APP_S3_ENABLED:false}
     bucket: ${AWS_S3_BUCKET:}
