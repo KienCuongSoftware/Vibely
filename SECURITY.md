@@ -31,6 +31,9 @@ When reporting, include:
 - Never commit real secrets to source control.
 - Use environment variables for `DB_PASSWORD`, `JWT_SECRET`, and production DB credentials.
 - Rotate JWT secret and database credentials after any suspected exposure.
+- Production **must** set `SPRING_PROFILES_ACTIVE=prod` and a strong `JWT_SECRET` (>= 32 bytes).
+- Keep `APP_MAIL_EXPOSE_CODE=false` in production so OTP codes are never returned in API responses.
+- Restrict `/actuator/prometheus` to non-production environments; production exposes only `health` and `info`.
 
 ## Operational Hardening
 
