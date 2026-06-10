@@ -103,7 +103,7 @@ export function SignupPage() {
     }
     try {
       const parsed = JSON.parse(raw);
-      if (!parsed?.accessToken) {
+      if (!parsed?.userId && !parsed?.email) {
         navigate("/login", { replace: true });
         return;
       }
@@ -138,7 +138,7 @@ export function SignupPage() {
     usernameAvailable &&
     !usernameChecking &&
     !loading &&
-    Boolean(oauthPending?.accessToken);
+    Boolean(oauthPending?.userId || oauthPending?.email);
   const passwordHasValidLength = password.length >= 8 && password.length <= 20;
   const passwordHasRequiredCharacters =
     /[A-Za-z]/.test(password) &&
@@ -236,7 +236,7 @@ export function SignupPage() {
 
   const submitOAuthOnboarding = async (event) => {
     event.preventDefault();
-    if (!oauthPending?.accessToken) {
+    if (!oauthPending?.userId && !oauthPending?.email) {
       setStatus("Phiên đăng ký đã hết hạn, vui lòng đăng nhập lại");
       navigate("/login", { replace: true });
       return;
@@ -263,21 +263,16 @@ export function SignupPage() {
     setLoading(true);
     setStatus("Đang hoàn tất đăng ký...");
     try {
-      const result = await apiClient.completeOnboarding(
-        oauthPending.accessToken,
-        {
-          username: normalizedVibelyId,
-          birthDate,
-        },
-      );
+      const result = await apiClient.completeOnboarding({
+        username: normalizedVibelyId,
+        birthDate,
+      });
       sessionStorage.removeItem(OAUTH_ONBOARDING_KEY);
       const provider = oauthPending?.provider;
       if (provider) {
         persistLastLoginMethod(provider);
       }
       completeOAuthLogin({
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
         userId: Number(result.userId),
         username: result.username,
         displayName: result.displayName,

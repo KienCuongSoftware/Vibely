@@ -1,3 +1,4 @@
+import { isCookieSession } from "../auth/session.js";
 import { resolveApiBaseUrl } from "../config/apiBase.js";
 
 const API_BASE_URL = resolveApiBaseUrl();
@@ -25,13 +26,14 @@ function localizeError(code, fallbackMessage) {
 
 async function request(path, { method = "GET", body, token, headers: extraHeaders } = {}) {
   const headers = { "Content-Type": "application/json", ...(extraHeaders || {}) };
-  if (token) {
+  if (token && !isCookieSession(token)) {
     headers.Authorization = `Bearer ${token}`;
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers,
+    credentials: "include",
     body: body ? JSON.stringify(body) : undefined,
   });
 
@@ -107,10 +109,8 @@ export const apiClient = {
     request("/api/auth/login", { method: "POST", body: payload, headers }),
   register: (payload, headers) =>
     request("/api/auth/register", { method: "POST", body: payload, headers }),
-  refresh: (refreshToken) =>
-    request("/api/auth/refresh", { method: "POST", body: { refreshToken } }),
-  logout: (refreshToken) =>
-    request("/api/auth/logout", { method: "POST", body: { refreshToken } }),
+  refresh: () => request("/api/auth/refresh", { method: "POST" }),
+  logout: () => request("/api/auth/logout", { method: "POST" }),
   sendCode: (payload, headers) =>
     request("/api/auth/send-code", { method: "POST", body: payload, headers }),
   verifyCode: (payload) =>
@@ -119,13 +119,14 @@ export const apiClient = {
     request("/api/auth/reset-password", { method: "POST", body: payload }),
   exchangeOAuthCode: (code) =>
     request("/api/auth/oauth/exchange", { method: "POST", body: { code } }),
-  completeOnboarding: (token, payload) =>
+  completeOnboarding: (payload, token) =>
     request("/api/auth/complete-onboarding", {
       method: "POST",
       token,
       body: payload,
     }),
-  me: (token) => request("/api/auth/me", { token }),
+  me: (token) =>
+    request("/api/auth/me", token ? { token } : {}),
   updateMyProfile: (token, payload) =>
     request("/api/users/me", { method: "PUT", token, body: payload }),
   checkUsername: (username) =>

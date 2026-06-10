@@ -1,10 +1,16 @@
 import { Client } from "@stomp/stompjs";
-import { resolveBackendOrigin } from "../config/apiBase.js";
+import { isCookieSession } from "../auth/session.js";
 
 function resolveChatWsUrl(token) {
-  const backendOrigin = resolveBackendOrigin();
-  const wsBase = backendOrigin.replace(/^http/i, "ws");
-  return `${wsBase}/ws?token=${encodeURIComponent(token)}`;
+  if (typeof window !== "undefined") {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const base = `${protocol}//${window.location.host}`;
+    if (token && !isCookieSession(token)) {
+      return `${base}/ws?token=${encodeURIComponent(token)}`;
+    }
+    return `${base}/ws`;
+  }
+  return "/ws";
 }
 
 export function createChatSocketClient(token, onMessageEvent) {
