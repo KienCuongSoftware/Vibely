@@ -152,7 +152,7 @@ export function LoginPage() {
         let profile = oauthData;
         let me = null;
         try {
-          me = await apiClient.me(oauthData.accessToken);
+          me = await apiClient.me();
           profile = { ...oauthData, ...me };
         } catch {
           // Giữ payload exchange nếu `/me` không thành công.
@@ -164,9 +164,7 @@ export function LoginPage() {
           sessionStorage.setItem(
             OAUTH_ONBOARDING_KEY,
             JSON.stringify({
-              accessToken: oauthData.accessToken,
-              refreshToken: oauthData.refreshToken,
-              userId: Number(profile.userId ?? profile.id),
+              userId: Number(profile.userId ?? profile.id ?? oauthData.userId),
               email: profile.email ?? oauthData.email,
               displayName: profile.displayName ?? oauthData.displayName,
               avatarUrl: profile.avatarUrl ?? oauthData.avatarUrl,
@@ -181,8 +179,6 @@ export function LoginPage() {
           persistLastLoginMethod(oauthProvider);
         }
         completeOAuthLogin({
-          accessToken: oauthData.accessToken,
-          refreshToken: oauthData.refreshToken,
           userId: Number(profile.userId ?? profile.id ?? oauthData.userId),
           username: profile.username ?? oauthData.username,
           displayName: profile.displayName ?? oauthData.displayName,
