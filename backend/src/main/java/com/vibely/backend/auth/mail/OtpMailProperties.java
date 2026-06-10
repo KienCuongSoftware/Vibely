@@ -8,7 +8,7 @@ public class OtpMailProperties {
     private boolean enabled;
     private String from = "noreply@vibely.app";
     private String fromName = "Vibely";
-    private boolean exposeCodeInApi = true;
+    private boolean exposeCodeInApi = false;
 
     public boolean isEnabled() {
         return enabled;

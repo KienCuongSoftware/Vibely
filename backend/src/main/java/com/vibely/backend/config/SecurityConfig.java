@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -40,6 +41,7 @@ public class SecurityConfig {
     private final RateLimitFilter rateLimitFilter;
     private final RequestCorrelationFilter requestCorrelationFilter;
     private final ObjectMapper objectMapper;
+    private final Environment environment;
 
     @Value("${app.cors.allowed-origins:}")
     private String allowedOrigins;
@@ -52,13 +54,15 @@ public class SecurityConfig {
         JwtAuthenticationFilter jwtAuthenticationFilter,
         RateLimitFilter rateLimitFilter,
         RequestCorrelationFilter requestCorrelationFilter,
-        ObjectMapper objectMapper
+        ObjectMapper objectMapper,
+        Environment environment
     ) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.rateLimitFilter = rateLimitFilter;
         this.requestCorrelationFilter = requestCorrelationFilter;
         this.objectMapper = objectMapper;
+        this.environment = environment;
     }
 
     @Bean
@@ -88,11 +92,23 @@ public class SecurityConfig {
                     )
                 )
             )
-            .authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests(auth -> {
+                var chain = auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
-                .requestMatchers("/api/health/**").permitAll()
-                .requestMatchers("/actuator/health", "/actuator/info", "/actuator/prometheus").permitAll()
+                .requestMatchers("/api/health/**").permitAll();
+                if (isProdProfile()) {
+                    chain = chain
+                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        .requestMatchers("/actuator/**").denyAll();
+                } else {
+                    chain = chain.requestMatchers(
+                        "/actuator/health",
+                        "/actuator/info",
+                        "/actuator/prometheus"
+                    ).permitAll();
+                }
+                chain
                 .requestMatchers("/oauth2/**", "/login/**").permitAll()
                 // Không dùng /api/auth/** permitAll — có thể khiến GET /api/auth/me không bắt buộc JWT.
                 .requestMatchers(
@@ -131,8 +147,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/videos/*/share").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/videos/*/share/analytics").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*").permitAll()
-                .anyRequest().authenticated()
-            )
+                .anyRequest().authenticated();
+            })
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(requestCorrelationFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
@@ -175,6 +191,10 @@ public class SecurityConfig {
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    private boolean isProdProfile() {
+        return Arrays.asList(environment.getActiveProfiles()).contains("prod");
     }
 
     @Bean
