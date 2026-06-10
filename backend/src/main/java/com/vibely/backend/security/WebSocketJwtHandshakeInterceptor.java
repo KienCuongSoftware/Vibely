@@ -19,9 +19,14 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 public class WebSocketJwtHandshakeInterceptor implements HandshakeInterceptor {
 
     private final JwtService jwtService;
+    private final AuthCookieService authCookieService;
 
-    public WebSocketJwtHandshakeInterceptor(JwtService jwtService) {
+    public WebSocketJwtHandshakeInterceptor(
+        JwtService jwtService,
+        AuthCookieService authCookieService
+    ) {
         this.jwtService = jwtService;
+        this.authCookieService = authCookieService;
     }
 
     @Override
@@ -66,18 +71,22 @@ public class WebSocketJwtHandshakeInterceptor implements HandshakeInterceptor {
     ) {}
 
     private String extractToken(ServerHttpRequest request) {
+        if (request instanceof ServletServerHttpRequest servletRequest) {
+            HttpServletRequest raw = servletRequest.getServletRequest();
+            var cookieToken = authCookieService.readAccessToken(raw);
+            if (cookieToken.isPresent()) {
+                return cookieToken.get();
+            }
+            String token = raw.getParameter("token");
+            if (token != null && !token.isBlank()) return token;
+        }
+
         List<String> authHeaders = request.getHeaders().get("Authorization");
         if (authHeaders != null && !authHeaders.isEmpty()) {
             String bearer = authHeaders.get(0);
             if (bearer.startsWith("Bearer ")) {
                 return bearer.substring(7);
             }
-        }
-
-        if (request instanceof ServletServerHttpRequest servletRequest) {
-            HttpServletRequest raw = servletRequest.getServletRequest();
-            String token = raw.getParameter("token");
-            if (token != null && !token.isBlank()) return token;
         }
 
         String query = request.getURI().getRawQuery();

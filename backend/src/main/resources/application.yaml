@@ -51,6 +51,12 @@ app:
     secret: ${JWT_SECRET:change-this-in-real-environments}
     expiration-seconds: 900
     refresh-expiration-seconds: 1209600
+  auth:
+    expose-tokens-in-api: ${APP_AUTH_EXPOSE_TOKENS_IN_API:false}
+    cookie:
+      secure: ${APP_AUTH_COOKIE_SECURE:false}
+      same-site: ${APP_AUTH_COOKIE_SAME_SITE:Lax}
+      domain: ${APP_AUTH_COOKIE_DOMAIN:}
   mail:
     expose-code-in-api: ${APP_MAIL_EXPOSE_CODE:false}
   s3:
