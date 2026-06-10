@@ -34,6 +34,7 @@ When reporting, include:
 - Production **must** set `SPRING_PROFILES_ACTIVE=prod` and a strong `JWT_SECRET` (>= 32 bytes).
 - Keep `APP_MAIL_EXPOSE_CODE=false` in production so OTP codes are never returned in API responses.
 - Restrict `/actuator/prometheus` to non-production environments; production exposes only `health` and `info`.
+- JWT access and refresh tokens are stored in **httpOnly** cookies (`vibely_at`, `vibely_rt`); never enable `APP_AUTH_EXPOSE_TOKENS_IN_API` in production.
 
 ## Operational Hardening
 
