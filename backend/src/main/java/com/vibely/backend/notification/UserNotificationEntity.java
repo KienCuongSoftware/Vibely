@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 
@@ -51,13 +52,33 @@ public class UserNotificationEntity {
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
+    @Column(name = "actor_count", nullable = false)
+    private int actorCount = 1;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
     @PrePersist
     void prePersist() {
+        LocalDateTime now = LocalDateTime.now();
         if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+            createdAt = now;
+        }
+        if (updatedAt == null) {
+            updatedAt = createdAt;
+        }
+        if (actorCount < 1) {
+            actorCount = 1;
+        }
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
         }
     }
 
@@ -123,5 +144,28 @@ public class UserNotificationEntity {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public int getActorCount() {
+        return actorCount;
+    }
+
+    public void setActorCount(int actorCount) {
+        this.actorCount = Math.max(1, actorCount);
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public void bumpActivity(User latestActor) {
+        LocalDateTime now = LocalDateTime.now();
+        setActor(latestActor);
+        setUpdatedAt(now);
+        setReadAt(null);
     }
 }

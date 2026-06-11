@@ -9,9 +9,13 @@ public record NotificationItemResponse(
     NotificationActorResponse actor,
     String preview,
     UUID videoPublicId,
+    String videoAuthorUsername,
+    String videoThumbnailUrl,
     Long commentId,
     boolean viewerFollowsActor,
     boolean read,
-    LocalDateTime createdAt
+    int actorCount,
+    LocalDateTime createdAt,
+    LocalDateTime updatedAt
 ) {
 }

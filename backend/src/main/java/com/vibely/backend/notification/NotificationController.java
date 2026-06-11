@@ -5,16 +5,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/notifications")
-@PreAuthorize("hasRole('USER')")
+@PreAuthorize("isAuthenticated()")
 public class NotificationController {
 
     private final NotificationService notificationService;
@@ -60,7 +60,7 @@ public class NotificationController {
         return ApiResponse.success(notificationService.getUnreadCount(authentication.getName()));
     }
 
-    @PatchMapping("/{id}/read")
+    @RequestMapping(value = "/{id}/read", method = { RequestMethod.POST, RequestMethod.PATCH })
     public ResponseEntity<ApiResponse<Void>> markRead(
         Authentication authentication,
         @PathVariable Long id
@@ -69,7 +69,7 @@ public class NotificationController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @PatchMapping("/read")
+    @RequestMapping(value = "/read", method = { RequestMethod.POST, RequestMethod.PATCH })
     public ResponseEntity<ApiResponse<Void>> markReadBatch(
         Authentication authentication,
         @RequestBody NotificationReadBatchRequest body

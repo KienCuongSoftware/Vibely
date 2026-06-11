@@ -4,4 +4,4 @@
 |------|-------------|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | WebSocket fanout roadmap |
 
-**Current:** Chat realtime only. Push notifications **roadmap**.
+**Current:** Activity inbox + unread badge via STOMP `/user/queue/notifications` (`notification.updated` / `notification.removed`). Mobile push **roadmap**.

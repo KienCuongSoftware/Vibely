@@ -1,5 +1,7 @@
 package com.vibely.backend.notification;
 
+import com.vibely.backend.interaction.CommentEntity;
+import com.vibely.backend.interaction.CommentRepository;
 import com.vibely.backend.user.User;
 import com.vibely.backend.user.UserRepository;
 import com.vibely.backend.video.Video;
@@ -32,6 +34,9 @@ class NotificationServiceTest {
     private UserNotificationRepository userNotificationRepository;
 
     @Autowired
+    private CommentRepository commentRepository;
+
+    @Autowired
     private SystemNotificationRepository systemNotificationRepository;
 
     @Test
@@ -40,14 +45,6 @@ class NotificationServiceTest {
         User following = saveUser("following_notif", "following-notif@vibely.dev");
 
         notificationService.onFollow(follower, following);
-
-        assertThat(
-            userNotificationRepository.existsByRecipient_IdAndActor_IdAndType(
-                following.getId(),
-                follower.getId(),
-                NotificationType.FOLLOW
-            )
-        ).isTrue();
 
         NotificationPageResponse page = notificationService.getInbox(
             following.getEmail(),
@@ -80,6 +77,181 @@ class NotificationServiceTest {
         assertThat(page.items()).hasSize(1);
         assertThat(page.items().get(0).type()).isEqualTo(NotificationType.VIDEO_LIKE);
         assertThat(page.items().get(0).videoPublicId()).isEqualTo(video.getPublicId());
+        assertThat(page.items().get(0).actorCount()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldAggregateMultipleVideoLikesIntoSingleBucket() {
+        User author = saveUser("author_agg", "author-agg@vibely.dev");
+        User likerA = saveUser("liker_a", "liker-a@vibely.dev");
+        User likerB = saveUser("liker_b", "liker-b@vibely.dev");
+        User likerC = saveUser("liker_c", "liker-c@vibely.dev");
+        Video video = saveVideo(author, "Viral clip");
+
+        notificationService.onVideoLike(likerA, video);
+        notificationService.onVideoLike(likerB, video);
+        notificationService.onVideoLike(likerC, video);
+        notificationService.onVideoLike(likerB, video);
+
+        assertThat(userNotificationRepository.count()).isEqualTo(1);
+
+        NotificationPageResponse page = notificationService.getInbox(
+            author.getEmail(),
+            NotificationFilter.likes,
+            null,
+            20
+        );
+
+        assertThat(page.items()).hasSize(1);
+        assertThat(page.items().get(0).actorCount()).isEqualTo(3);
+        assertThat(page.items().get(0).actor().username()).isEqualTo("liker_c");
+        assertThat(notificationService.getUnreadCount(author.getEmail()).count()).isEqualTo(1);
+
+        notificationService.onVideoUnlike(likerC, video);
+
+        NotificationItemResponse afterUnlike = notificationService.getInbox(
+            author.getEmail(),
+            NotificationFilter.likes,
+            null,
+            20
+        ).items().get(0);
+        assertThat(afterUnlike.actorCount()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldAggregateMultipleCommentRepliesIntoSingleBucket() {
+        User author = saveUser("parent_author", "parent-author@vibely.dev");
+        User replierA = saveUser("replier_a", "replier-a@vibely.dev");
+        User replierB = saveUser("replier_b", "replier-b@vibely.dev");
+        Video video = saveVideo(author, "Reply storm");
+        CommentEntity parent = saveComment(author, video, "Bình luận gốc");
+        CommentEntity replyA = saveReply(replierA, video, parent, "Reply A");
+        CommentEntity replyB = saveReply(replierB, video, parent, "Reply B");
+
+        notificationService.onCommentReply(replierA, replyA, parent, video);
+        notificationService.onCommentReply(replierB, replyB, parent, video);
+
+        assertThat(userNotificationRepository.count()).isEqualTo(1);
+
+        NotificationItemResponse item = notificationService.getInbox(
+            author.getEmail(),
+            NotificationFilter.comments,
+            null,
+            20
+        ).items().get(0);
+
+        assertThat(item.type()).isEqualTo(NotificationType.COMMENT_REPLY);
+        assertThat(item.actorCount()).isEqualTo(2);
+        assertThat(item.commentId()).isEqualTo(parent.getId());
+        assertThat(item.preview()).isEqualTo("Reply B");
+    }
+
+    @Test
+    void shouldAggregateMultipleCommentLikesIntoSingleBucket() {
+        User author = saveUser("comment_author", "comment-author@vibely.dev");
+        User likerA = saveUser("comment_liker_a", "comment-liker-a@vibely.dev");
+        User likerB = saveUser("comment_liker_b", "comment-liker-b@vibely.dev");
+        Video video = saveVideo(author, "Comment likes");
+        CommentEntity comment = saveComment(author, video, "Hay quá");
+
+        notificationService.onCommentLike(likerA, comment, video);
+        notificationService.onCommentLike(likerB, comment, video);
+        notificationService.onCommentLike(likerA, comment, video);
+
+        assertThat(userNotificationRepository.count()).isEqualTo(1);
+
+        NotificationItemResponse item = notificationService.getInbox(
+            author.getEmail(),
+            NotificationFilter.likes,
+            null,
+            20
+        ).items().get(0);
+
+        assertThat(item.type()).isEqualTo(NotificationType.COMMENT_LIKE);
+        assertThat(item.actorCount()).isEqualTo(2);
+
+        notificationService.onCommentUnlike(likerB, comment);
+        assertThat(notificationService.getInbox(
+            author.getEmail(),
+            NotificationFilter.likes,
+            null,
+            20
+        ).items().get(0).actorCount()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldAggregateMultipleFollowsIntoSingleBucket() {
+        User following = saveUser("followed_user", "followed-user@vibely.dev");
+        User followerA = saveUser("follower_a", "follower-a@vibely.dev");
+        User followerB = saveUser("follower_b", "follower-b@vibely.dev");
+        User followerC = saveUser("follower_c", "follower-c@vibely.dev");
+
+        notificationService.onFollow(followerA, following);
+        notificationService.onFollow(followerB, following);
+        notificationService.onFollow(followerC, following);
+        notificationService.onFollow(followerB, following);
+
+        assertThat(userNotificationRepository.count()).isEqualTo(1);
+
+        NotificationItemResponse item = notificationService.getInbox(
+            following.getEmail(),
+            NotificationFilter.followers,
+            null,
+            20
+        ).items().get(0);
+
+        assertThat(item.type()).isEqualTo(NotificationType.FOLLOW);
+        assertThat(item.actorCount()).isEqualTo(3);
+        assertThat(notificationService.getUnreadCount(following.getEmail()).count()).isEqualTo(1);
+
+        notificationService.onUnfollow(followerC, following);
+
+        assertThat(notificationService.getInbox(
+            following.getEmail(),
+            NotificationFilter.followers,
+            null,
+            20
+        ).items().get(0).actorCount()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldAggregateMultipleMentionsOnSameVideoIntoSingleBucket() {
+        User mentioned = saveUser("mentioned_user", "mentioned-user@vibely.dev");
+        User author = saveUser("mention_author", "mention-author@vibely.dev");
+        User mentionerA = saveUser("mentioner_a", "mentioner-a@vibely.dev");
+        User mentionerB = saveUser("mentioner_b", "mentioner-b@vibely.dev");
+        Video video = saveVideo(author, "Mention video");
+        CommentEntity commentA = saveComment(mentionerA, video, "Hey @mentioned_user");
+        CommentEntity commentB = saveComment(mentionerB, video, "Also @mentioned_user here");
+
+        notificationService.onMentions(mentionerA, commentA, video, commentA.getContent());
+        notificationService.onMentions(mentionerB, commentB, video, commentB.getContent());
+
+        assertThat(userNotificationRepository.count()).isEqualTo(1);
+
+        NotificationItemResponse item = notificationService.getInbox(
+            mentioned.getEmail(),
+            NotificationFilter.mentions,
+            null,
+            20
+        ).items().get(0);
+
+        assertThat(item.type()).isEqualTo(NotificationType.MENTION);
+        assertThat(item.actorCount()).isEqualTo(2);
+        assertThat(item.videoPublicId()).isEqualTo(video.getPublicId());
+        assertThat(item.preview()).isEqualTo("Also @mentioned_user here");
+        assertThat(item.commentId()).isEqualTo(commentB.getId());
+
+        notificationService.onMentions(mentionerA, commentA, video, commentA.getContent());
+        NotificationItemResponse bumped = notificationService.getInbox(
+            mentioned.getEmail(),
+            NotificationFilter.mentions,
+            null,
+            20
+        ).items().get(0);
+        assertThat(bumped.actorCount()).isEqualTo(2);
+        assertThat(bumped.preview()).isEqualTo("Hey @mentioned_user");
+        assertThat(bumped.commentId()).isEqualTo(commentA.getId());
     }
 
     @Test
@@ -120,5 +292,22 @@ class NotificationServiceTest {
         video.setThumbnailUrl("https://cdn.example.com/thumb.jpg");
         video.setStatus(VideoStatus.READY);
         return videoRepository.save(video);
+    }
+
+    private CommentEntity saveComment(User user, Video video, String content) {
+        CommentEntity comment = new CommentEntity();
+        comment.setUser(user);
+        comment.setVideo(video);
+        comment.setContent(content);
+        return commentRepository.save(comment);
+    }
+
+    private CommentEntity saveReply(User user, Video video, CommentEntity parent, String content) {
+        CommentEntity reply = new CommentEntity();
+        reply.setUser(user);
+        reply.setVideo(video);
+        reply.setParentComment(parent);
+        reply.setContent(content);
+        return commentRepository.save(reply);
     }
 }

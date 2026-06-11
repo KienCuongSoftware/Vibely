@@ -15,24 +15,79 @@ public interface UserNotificationRepository extends JpaRepository<UserNotificati
     @Query(
         """
         select n from UserNotificationEntity n
-        join fetch n.actor
-        left join fetch n.video
+        left join fetch n.actor
+        left join fetch n.video v
+        left join fetch v.author
         left join fetch n.comment
         where n.recipient.id = :recipientId
-        and (:filterAll = true or n.type in :types)
-        and (
-            :cursorCreatedAt is null
-            or n.createdAt < :cursorCreatedAt
-            or (n.createdAt = :cursorCreatedAt and n.id < :cursorId)
-        )
-        order by n.createdAt desc, n.id desc
+        order by n.updatedAt desc, n.id desc
         """
     )
-    List<UserNotificationEntity> findInboxPage(
+    List<UserNotificationEntity> findInboxFirstPageAll(
         @Param("recipientId") Long recipientId,
-        @Param("filterAll") boolean filterAll,
+        Pageable pageable
+    );
+
+    @Query(
+        """
+        select n from UserNotificationEntity n
+        left join fetch n.actor
+        left join fetch n.video v
+        left join fetch v.author
+        left join fetch n.comment
+        where n.recipient.id = :recipientId
+        and n.type in :types
+        order by n.updatedAt desc, n.id desc
+        """
+    )
+    List<UserNotificationEntity> findInboxFirstPageFiltered(
+        @Param("recipientId") Long recipientId,
         @Param("types") List<NotificationType> types,
-        @Param("cursorCreatedAt") LocalDateTime cursorCreatedAt,
+        Pageable pageable
+    );
+
+    @Query(
+        """
+        select n from UserNotificationEntity n
+        left join fetch n.actor
+        left join fetch n.video v
+        left join fetch v.author
+        left join fetch n.comment
+        where n.recipient.id = :recipientId
+        and (
+            n.updatedAt < :cursorUpdatedAt
+            or (n.updatedAt = :cursorUpdatedAt and n.id < :cursorId)
+        )
+        order by n.updatedAt desc, n.id desc
+        """
+    )
+    List<UserNotificationEntity> findInboxAfterCursorAll(
+        @Param("recipientId") Long recipientId,
+        @Param("cursorUpdatedAt") LocalDateTime cursorUpdatedAt,
+        @Param("cursorId") Long cursorId,
+        Pageable pageable
+    );
+
+    @Query(
+        """
+        select n from UserNotificationEntity n
+        left join fetch n.actor
+        left join fetch n.video v
+        left join fetch v.author
+        left join fetch n.comment
+        where n.recipient.id = :recipientId
+        and n.type in :types
+        and (
+            n.updatedAt < :cursorUpdatedAt
+            or (n.updatedAt = :cursorUpdatedAt and n.id < :cursorId)
+        )
+        order by n.updatedAt desc, n.id desc
+        """
+    )
+    List<UserNotificationEntity> findInboxAfterCursorFiltered(
+        @Param("recipientId") Long recipientId,
+        @Param("types") List<NotificationType> types,
+        @Param("cursorUpdatedAt") LocalDateTime cursorUpdatedAt,
         @Param("cursorId") Long cursorId,
         Pageable pageable
     );
@@ -41,18 +96,60 @@ public interface UserNotificationRepository extends JpaRepository<UserNotificati
 
     long countByRecipient_IdAndReadAtIsNull(Long recipientId);
 
-    boolean existsByRecipient_IdAndActor_IdAndTypeAndVideo_Id(
-        Long recipientId,
-        Long actorId,
-        NotificationType type,
-        Long videoId
+    @Query(
+        """
+        select n from UserNotificationEntity n
+        where n.recipient.id = :recipientId
+        and n.type = :type
+        and n.video.id = :videoId
+        """
+    )
+    Optional<UserNotificationEntity> findVideoLikeBucket(
+        @Param("recipientId") Long recipientId,
+        @Param("videoId") Long videoId,
+        @Param("type") NotificationType type
     );
 
-    boolean existsByRecipient_IdAndActor_IdAndTypeAndComment_Id(
-        Long recipientId,
-        Long actorId,
-        NotificationType type,
-        Long commentId
+    @Query(
+        """
+        select n from UserNotificationEntity n
+        where n.recipient.id = :recipientId
+        and n.type = :type
+        and n.comment.id = :commentId
+        """
+    )
+    Optional<UserNotificationEntity> findCommentBucket(
+        @Param("recipientId") Long recipientId,
+        @Param("commentId") Long commentId,
+        @Param("type") NotificationType type
+    );
+
+    @Query(
+        """
+        select n from UserNotificationEntity n
+        where n.recipient.id = :recipientId
+        and n.type = :type
+        and n.video is null
+        and n.comment is null
+        """
+    )
+    Optional<UserNotificationEntity> findFollowBucket(
+        @Param("recipientId") Long recipientId,
+        @Param("type") NotificationType type
+    );
+
+    @Query(
+        """
+        select n from UserNotificationEntity n
+        where n.recipient.id = :recipientId
+        and n.type = :type
+        and n.video.id = :videoId
+        """
+    )
+    Optional<UserNotificationEntity> findMentionBucket(
+        @Param("recipientId") Long recipientId,
+        @Param("videoId") Long videoId,
+        @Param("type") NotificationType type
     );
 
     boolean existsByRecipient_IdAndActor_IdAndType(

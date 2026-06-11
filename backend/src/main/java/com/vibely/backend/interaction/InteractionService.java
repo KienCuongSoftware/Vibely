@@ -95,6 +95,7 @@ public class InteractionService {
         Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
         requireEngagementAllowed(video, user);
         likeRepository.deleteByUserAndVideo(user, video);
+        notificationService.onVideoUnlike(user, video);
         refreshExploreFor(video);
     }
 
@@ -187,6 +188,7 @@ public class InteractionService {
             throw new BadRequestException("Bình luận không thuộc video này.");
         }
         commentLikeRepository.deleteByUserAndComment(user, comment);
+        notificationService.onCommentUnlike(user, comment);
     }
 
     /**
@@ -277,6 +279,7 @@ public class InteractionService {
         User following = userRepository.findById(followingUserId)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng cần bỏ theo dõi"));
         followRepository.deleteByFollowerAndFollowing(follower, following);
+        notificationService.onUnfollow(follower, following);
     }
 
     @Transactional(readOnly = true)

@@ -14,17 +14,54 @@ public interface SystemNotificationRepository extends JpaRepository<SystemNotifi
         """
         select s from SystemNotificationEntity s
         where s.active = true
-        and (:filterAll = true or s.category = :category)
+        order by s.createdAt desc, s.id desc
+        """
+    )
+    List<SystemNotificationEntity> findActiveFirstPage(Pageable pageable);
+
+    @Query(
+        """
+        select s from SystemNotificationEntity s
+        where s.active = true
+        and s.category = :category
+        order by s.createdAt desc, s.id desc
+        """
+    )
+    List<SystemNotificationEntity> findActiveFirstPageByCategory(
+        @Param("category") SystemNotificationCategory category,
+        Pageable pageable
+    );
+
+    @Query(
+        """
+        select s from SystemNotificationEntity s
+        where s.active = true
         and (
-            :cursorCreatedAt is null
-            or s.createdAt < :cursorCreatedAt
+            s.createdAt < :cursorCreatedAt
             or (s.createdAt = :cursorCreatedAt and s.id < :cursorId)
         )
         order by s.createdAt desc, s.id desc
         """
     )
-    List<SystemNotificationEntity> findActivePage(
-        @Param("filterAll") boolean filterAll,
+    List<SystemNotificationEntity> findActiveAfterCursor(
+        @Param("cursorCreatedAt") LocalDateTime cursorCreatedAt,
+        @Param("cursorId") Long cursorId,
+        Pageable pageable
+    );
+
+    @Query(
+        """
+        select s from SystemNotificationEntity s
+        where s.active = true
+        and s.category = :category
+        and (
+            s.createdAt < :cursorCreatedAt
+            or (s.createdAt = :cursorCreatedAt and s.id < :cursorId)
+        )
+        order by s.createdAt desc, s.id desc
+        """
+    )
+    List<SystemNotificationEntity> findActiveAfterCursorByCategory(
         @Param("category") SystemNotificationCategory category,
         @Param("cursorCreatedAt") LocalDateTime cursorCreatedAt,
         @Param("cursorId") Long cursorId,
