@@ -31,6 +31,10 @@
 | V34 | Topic canonical registry |
 | V35 | Search foundation |
 | V36 | Comment likes |
+| V37 | User + system notifications |
+| V38 | Aggregate video-like notifications (`actor_count`, `updated_at`, `user_notification_actors`) |
+| V39 | Aggregate comment reply + comment like notifications per comment anchor |
+| V40 | Aggregate follow notifications per recipient + mention notifications per video |
 
 After schema changes, update [SCHEMA.md](SCHEMA.md) and the [full ERD](../erd/vibely-erd-full.png) when table count or major relationships change.
 
