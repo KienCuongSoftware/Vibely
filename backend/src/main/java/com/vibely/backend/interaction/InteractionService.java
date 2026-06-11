@@ -11,6 +11,7 @@ import com.vibely.backend.user.UserRepository;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoService;
+import com.vibely.backend.notification.NotificationService;
 import com.vibely.backend.video.VideoStatus;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -41,6 +42,7 @@ public class InteractionService {
     private final ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor;
     private final ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService;
     private final VideoRepository videoRepository;
+    private final NotificationService notificationService;
 
     public InteractionService(
         UserRepository userRepository,
@@ -54,7 +56,8 @@ public class InteractionService {
         ExploreCacheService exploreCacheService,
         ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor,
         ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService,
-        VideoRepository videoRepository
+        VideoRepository videoRepository,
+        NotificationService notificationService
     ) {
         this.userRepository = userRepository;
         this.videoService = videoService;
@@ -68,6 +71,7 @@ public class InteractionService {
         this.userInterestSignalProcessor = userInterestSignalProcessor;
         this.videoEngagementStatsService = videoEngagementStatsService;
         this.videoRepository = videoRepository;
+        this.notificationService = notificationService;
     }
 
     public void likeVideo(String email, UUID videoPublicId) {
@@ -81,6 +85,7 @@ public class InteractionService {
         like.setUser(user);
         like.setVideo(video);
         likeRepository.save(like);
+        notificationService.onVideoLike(user, video);
         userInterestSignalProcessor.ifAvailable(p -> p.onLike(user.getId(), video));
         refreshExploreFor(video);
     }
@@ -142,6 +147,10 @@ public class InteractionService {
             comment.setParentComment(parent);
         }
         CommentEntity saved = commentRepository.save(comment);
+        if (parentCommentId != null && comment.getParentComment() != null) {
+            notificationService.onCommentReply(user, saved, comment.getParentComment(), video);
+        }
+        notificationService.onMentions(user, saved, video, content);
         userInterestSignalProcessor.ifAvailable(p -> p.onComment(user.getId(), video));
         refreshExploreFor(video);
         return toCommentResponse(saved, 0L, false);
@@ -164,6 +173,7 @@ public class InteractionService {
         like.setUser(user);
         like.setComment(comment);
         commentLikeRepository.save(like);
+        notificationService.onCommentLike(user, comment, video);
     }
 
     public void unlikeComment(String email, UUID videoPublicId, Long commentId) {
@@ -253,6 +263,7 @@ public class InteractionService {
         follow.setFollower(follower);
         follow.setFollowing(following);
         followRepository.save(follow);
+        notificationService.onFollow(follower, following);
         List<Video> recentVideos = videoRepository.findByAuthorIdAndStatusEquals(
             following.getId(),
             VideoStatus.READY,
