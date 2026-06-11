@@ -38,12 +38,27 @@ public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
             exception
         );
 
-        // Chi truyen oauth=error; LoginPage hien thi message tieng Viet mac dinh (tranh loi encode query).
-        String redirectUrl = UriComponentsBuilder.fromUriString(frontendFailureUrl)
-            .queryParam("oauth", "error")
-            .encode(StandardCharsets.UTF_8)
-            .build()
-            .toUriString();
+        UriComponentsBuilder redirect = UriComponentsBuilder.fromUriString(frontendFailureUrl)
+            .queryParam("oauth", "error");
+        String reason = resolveFailureReason(exception);
+        if (reason != null) {
+            redirect.queryParam("reason", reason);
+        }
+        String redirectUrl = redirect.encode(StandardCharsets.UTF_8).build().toUriString();
         response.sendRedirect(redirectUrl);
+    }
+
+    /**
+     * Short machine-readable codes only — LoginPage maps these to Vietnamese copy.
+     */
+    private static String resolveFailureReason(AuthenticationException exception) {
+        String message = exception.getMessage();
+        if (message == null) {
+            return null;
+        }
+        if (message.contains("invalid_id_token") && message.contains("iat=")) {
+            return "clock_skew";
+        }
+        return null;
     }
 }

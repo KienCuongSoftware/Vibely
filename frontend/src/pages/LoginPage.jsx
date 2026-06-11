@@ -91,11 +91,17 @@ export function LoginPage() {
     pendingCaptchaActionRef.current === "sendResetCode"
       ? "PASSWORD_RESET"
       : "LOGIN";
-  const oauthErrorMessage =
-    searchParams.get("oauth") === "error"
-      ? (searchParams.get("message") ??
-        "Đăng nhập bằng tài khoản liên kết thất bại, vui lòng thử lại")
-      : "";
+  const oauthErrorMessage = (() => {
+    if (searchParams.get("oauth") !== "error") return "";
+    const reason = searchParams.get("reason");
+    if (reason === "clock_skew") {
+      return "Đồng hồ máy tính lệch so với Google. Vào Cài đặt → Thời gian và ngôn ngữ → bật Đặt giờ tự động, rồi thử đăng nhập lại.";
+    }
+    return (
+      searchParams.get("message") ??
+      "Đăng nhập bằng tài khoản liên kết thất bại, vui lòng thử lại"
+    );
+  })();
 
   useEffect(() => {
     document.title =
