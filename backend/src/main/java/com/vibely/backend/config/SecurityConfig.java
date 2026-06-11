@@ -122,6 +122,7 @@ public class SecurityConfig {
                     "/api/auth/reset-password",
                     "/api/auth/oauth/exchange"
                 ).permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/auth/me").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/risk/evaluate").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/captcha/challenge").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/captcha/verify").permitAll()
@@ -205,7 +206,7 @@ public class SecurityConfig {
             .filter(value -> !value.isEmpty())
             .toList();
         configuration.setAllowedOrigins(origins);
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

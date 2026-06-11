@@ -140,25 +140,35 @@ export function AuthProvider({ children }) {
     return establishSession(result);
   };
 
+  const resolveSessionProfile = async () => {
+    let me = await apiClient.me(COOKIE_SESSION_MARKER);
+    if (!me) {
+      try {
+        await apiClient.refresh();
+        me = await apiClient.me(COOKIE_SESSION_MARKER);
+      } catch {
+        return null;
+      }
+    }
+    return me ?? null;
+  };
+
   const refreshProfile = async () => {
     if (!token) return null;
     try {
-      const me = await apiClient.me(COOKIE_SESSION_MARKER);
+      const me = await resolveSessionProfile();
+      if (!me) {
+        clearSession();
+        return null;
+      }
       persistUserCache(me);
       setUser(mapUserWithDefaultAvatar(me));
+      setToken(COOKIE_SESSION_MARKER);
       return me;
     } catch (e) {
       if (isUnauthorizedError(e)) {
-        try {
-          await apiClient.refresh();
-          const me = await apiClient.me(COOKIE_SESSION_MARKER);
-          persistUserCache(me);
-          setUser(mapUserWithDefaultAvatar(me));
-          setToken(COOKIE_SESSION_MARKER);
-          return me;
-        } catch {
-          clearSession();
-        }
+        clearSession();
+        return null;
       }
       throw e;
     }
@@ -207,26 +217,26 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const me = await apiClient.me();
-        if (cancelled) return;
-        persistUserCache(me);
-        setUser(mapUserWithDefaultAvatar(me));
-        setToken(COOKIE_SESSION_MARKER);
-      } catch (e) {
-        if (cancelled) return;
-        if (isUnauthorizedError(e)) {
+        let me = await apiClient.me();
+        if (!me && cachedBootstrap) {
           try {
             await apiClient.refresh();
-            if (cancelled) return;
-            const me = await apiClient.me();
-            if (cancelled) return;
-            persistUserCache(me);
-            setUser(mapUserWithDefaultAvatar(me));
-            setToken(COOKIE_SESSION_MARKER);
+            me = await apiClient.me();
           } catch {
-            clearSession();
+            /* stale refresh cookie */
           }
-        } else if (cachedBootstrap) {
+        }
+        if (cancelled) return;
+        if (!me) {
+          clearSession();
+        } else {
+          persistUserCache(me);
+          setUser(mapUserWithDefaultAvatar(me));
+          setToken(COOKIE_SESSION_MARKER);
+        }
+      } catch (e) {
+        if (cancelled) return;
+        if (cachedBootstrap) {
           setUser(mapUserWithDefaultAvatar(cachedBootstrap));
         } else {
           clearSession();

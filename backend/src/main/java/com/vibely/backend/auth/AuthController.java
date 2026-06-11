@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -157,6 +158,11 @@ public class AuthController {
 
     @GetMapping("/me")
     public ApiResponse<MeResponse> me(Authentication authentication) {
+        if (authentication == null
+            || !authentication.isAuthenticated()
+            || authentication instanceof AnonymousAuthenticationToken) {
+            return ApiResponse.success(null);
+        }
         User user = userRepository.findByEmail(authentication.getName())
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
         return ApiResponse.success(
