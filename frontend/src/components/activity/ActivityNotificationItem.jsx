@@ -1,25 +1,31 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { IoChevronForward, IoShieldCheckmark } from 'react-icons/io5'
 import { apiClient } from '../../api/client.js'
 import { useAuth } from '../../state/useAuth.js'
-import { DEFAULT_AVATAR_URL, buildProfileHref, buildVideoHref } from '../search/searchUtils.js'
+import { DEFAULT_AVATAR_URL, buildProfileHref } from '../search/searchUtils.js'
+import { buildActivityVideoUrl } from '../../utils/videoPublicId.js'
 import {
   buildActivityActionText,
   buildActivityActorName,
   formatActivityTimestamp,
 } from './activityUtils.js'
 
-function VideoThumb({ publicId }) {
+function VideoThumb({ thumbnailUrl }) {
+  const src = String(thumbnailUrl ?? '').trim()
   return (
     <div
       className="h-12 w-9 shrink-0 overflow-hidden rounded-md bg-gradient-to-br from-zinc-700 via-zinc-800 to-zinc-900 ring-1 ring-white/10"
       aria-hidden
     >
-      {publicId ? (
-        <div className="flex h-full w-full items-center justify-center text-[8px] font-semibold uppercase tracking-wide text-zinc-500">
-          Video
-        </div>
+      {src ? (
+        <img
+          src={src}
+          alt=""
+          className="h-full w-full object-cover"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+        />
       ) : null}
     </div>
   )
@@ -114,23 +120,41 @@ function ActivityText({ item, isSystem, actorName, actionText, timeLabel }) {
   )
 }
 
-export function ActivityNotificationItem({ item, onNavigate }) {
+function unreadRowClass(read) {
+  return read ? '' : 'bg-zinc-900/50'
+}
+
+export function ActivityNotificationItem({ item, onNavigate, onMarkRead }) {
+  const navigate = useNavigate()
   const isSystem = item.type === 'system'
   const isFollow = item.type === 'follow'
   const profileHref = !isSystem ? buildProfileHref(item.actor?.username) : null
-  const videoHref = item.videoPublicId ? buildVideoHref(item.videoPublicId) : null
+  const videoHref =
+    buildActivityVideoUrl(item.videoAuthorUsername, item.videoPublicId) || null
   const primaryHref = videoHref || profileHref || '/foryou'
   const actorName = buildActivityActorName(item)
   const actionText = buildActivityActionText(item)
-  const timeLabel = formatActivityTimestamp(item.createdAt)
+  const timeLabel = formatActivityTimestamp(item.updatedAt, item.createdAt)
   const actorId = item.actor?.id ?? item.actorId ?? null
+
+  const handleActivate = async (event) => {
+    event.preventDefault()
+    try {
+      await onMarkRead?.(item)
+    } finally {
+      onNavigate?.()
+      navigate(primaryHref, { state: { notificationId: item.id } })
+    }
+  }
 
   if (isFollow) {
     return (
-      <div className="flex items-center gap-2.5 rounded-lg px-2 py-2 transition hover:bg-zinc-900/80">
+      <div
+        className={`flex items-center gap-2.5 rounded-lg px-2 py-2 transition hover:bg-zinc-900/80 ${unreadRowClass(item.read)}`}
+      >
         <Link
           to={profileHref || '/foryou'}
-          onClick={() => onNavigate?.()}
+          onClick={handleActivate}
           className="flex min-w-0 flex-1 items-center gap-3"
         >
           <ActivityAvatar item={item} isSystem={false} />
@@ -161,7 +185,7 @@ export function ActivityNotificationItem({ item, onNavigate }) {
         timeLabel={timeLabel}
       />
       {videoHref ? (
-        <VideoThumb publicId={item.videoPublicId} />
+        <VideoThumb thumbnailUrl={item.videoThumbnailUrl} />
       ) : isSystem ? (
         <IoChevronForward className="mt-1 shrink-0 text-lg text-zinc-600" aria-hidden />
       ) : null}
@@ -171,8 +195,8 @@ export function ActivityNotificationItem({ item, onNavigate }) {
   return (
     <Link
       to={primaryHref}
-      onClick={() => onNavigate?.()}
-      className="flex w-full gap-2.5 rounded-lg px-2 py-2 text-left transition hover:bg-zinc-900/80"
+      onClick={handleActivate}
+      className={`flex w-full gap-2.5 rounded-lg px-2 py-2 text-left transition hover:bg-zinc-900/80 ${unreadRowClass(item.read)}`}
     >
       {content}
     </Link>

@@ -4,8 +4,20 @@ import {
   mapNotificationItem,
   mapSystemNotificationItem,
 } from '../components/activity/activityApiMappers.js'
+import { useNotificationUnread } from '../state/NotificationUnreadContext.jsx'
+
+function matchesActivityFilter(item, filter) {
+  if (!filter || filter === 'all') return true
+  return item.filter === filter
+}
+
+function mergeRealtimeNotification(prev, incoming) {
+  const next = prev.filter((item) => item.id !== incoming.id)
+  return [incoming, ...next]
+}
 
 export function useActivityNotifications({ token, enabled, filter = 'all' }) {
+  const { subscribeRealtime } = useNotificationUnread()
   const [items, setItems] = useState([])
   const [systemInboxPreview, setSystemInboxPreview] = useState('')
   const [loading, setLoading] = useState(false)
@@ -39,12 +51,37 @@ export function useActivityNotifications({ token, enabled, filter = 'all' }) {
     return undefined
   }, [enabled, refresh, token])
 
+  useEffect(() => {
+    if (!token) return undefined
+    return subscribeRealtime((event) => {
+      if (event?.type === 'notification.updated' && event.payload) {
+        const incoming = mapNotificationItem(event.payload)
+        if (!matchesActivityFilter(incoming, filter)) return
+        setItems((prev) => mergeRealtimeNotification(prev, incoming))
+        return
+      }
+      if (event?.type === 'notification.removed' && event.payload?.id != null) {
+        const removedId = String(event.payload.id)
+        setItems((prev) => prev.filter((item) => item.id !== removedId))
+      }
+    })
+  }, [filter, subscribeRealtime, token])
+
+  const markItemRead = useCallback((notificationId) => {
+    const id = String(notificationId ?? '')
+    if (!id) return
+    setItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, read: true } : item)),
+    )
+  }, [])
+
   return {
     items,
     systemInboxPreview,
     loading,
     error,
     refresh,
+    markItemRead,
   }
 }
 

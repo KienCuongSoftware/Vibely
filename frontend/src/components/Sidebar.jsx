@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ActivityPanel } from "./activity/ActivityPanel.jsx";
 import { useActivityModal } from "../state/ActivityModalContext.jsx";
+import { useNotificationUnread } from "../state/NotificationUnreadContext.jsx";
+import { formatNotificationBadgeCount } from "../utils/notificationBadge.js";
 import { useSearchModal } from "../state/SearchModalContext.jsx";
 import {
   IoBagHandleOutline,
@@ -29,10 +31,12 @@ export function Sidebar({
   user,
   onLogout,
   forceCollapsed = false,
+  hideSearch = false,
   onOpenSearch,
 }) {
   const searchModal = useSearchModal();
   const activityModal = useActivityModal();
+  const { unreadCount } = useNotificationUnread();
   const openSearch = onOpenSearch ?? searchModal?.openSearch;
   const [moreOpen, setMoreOpen] = useState(false);
   const [darkModeOn, setDarkModeOn] = useState(true);
@@ -109,34 +113,36 @@ export function Sidebar({
           )}
         </Link>
 
-        {collapsed ? (
-          <button
-            type="button"
-            onClick={() => {
-              activityModal?.closeActivity?.();
-              openSearch?.();
-            }}
-            className="mb-4 flex h-10 w-full cursor-pointer items-center justify-center rounded-full bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-            aria-label="Tìm kiếm"
-          >
-            <IoSearchOutline className="text-lg" />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              activityModal?.closeActivity?.();
-              openSearch?.();
-            }}
-            className="mb-4 flex h-10 w-full cursor-pointer items-center gap-2 rounded-full bg-zinc-900 px-4 text-left text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-          >
-            <IoSearchOutline
-              className="shrink-0 text-lg opacity-70"
-              aria-hidden
-            />
-            Tìm kiếm
-          </button>
-        )}
+        {!hideSearch ? (
+          collapsed ? (
+            <button
+              type="button"
+              onClick={() => {
+                activityModal?.closeActivity?.();
+                openSearch?.();
+              }}
+              className="mb-4 flex h-10 w-full cursor-pointer items-center justify-center rounded-full bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+              aria-label="Tìm kiếm"
+            >
+              <IoSearchOutline className="text-lg" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                activityModal?.closeActivity?.();
+                openSearch?.();
+              }}
+              className="mb-4 flex h-10 w-full cursor-pointer items-center gap-2 rounded-full bg-zinc-900 px-4 text-left text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+            >
+              <IoSearchOutline
+                className="shrink-0 text-lg opacity-70"
+                aria-hidden
+              />
+              Tìm kiếm
+            </button>
+          )
+        ) : null}
 
         <nav className="space-y-1">
           {menuItems.map((item) => {
@@ -146,6 +152,9 @@ export function Sidebar({
               (moreOpen && item.id === "more");
             const Icon = item.icon;
             const useProfileAvatarIcon = token && item.id === "profile";
+            const showActivityBadge =
+              token && item.id === "activity" && unreadCount > 0;
+            const activityBadgeLabel = formatNotificationBadgeCount(unreadCount);
             return (
               <button
                 key={item.id}
@@ -175,9 +184,28 @@ export function Sidebar({
                     }}
                   />
                 ) : (
-                  <Icon className="shrink-0 text-base" />
+                  <span className="relative inline-flex shrink-0">
+                    <Icon className="text-base" />
+                    {showActivityBadge && collapsed ? (
+                      <span
+                        className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FE2C55] px-0.5 text-[9px] font-bold leading-none text-white"
+                        aria-hidden
+                      >
+                        {activityBadgeLabel}
+                      </span>
+                    ) : null}
+                  </span>
                 )}
-                {!collapsed ? <span>{item.label}</span> : null}
+                {!collapsed ? (
+                  <>
+                    <span className="min-w-0 flex-1">{item.label}</span>
+                    {showActivityBadge ? (
+                      <span className="inline-flex min-w-5 shrink-0 items-center justify-center rounded-full bg-[#FE2C55] px-1.5 text-[10px] font-bold text-white">
+                        {activityBadgeLabel}
+                      </span>
+                    ) : null}
+                  </>
+                ) : null}
               </button>
             );
           })}

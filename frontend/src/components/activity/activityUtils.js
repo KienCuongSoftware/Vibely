@@ -20,18 +20,24 @@ export function groupActivityBySection(items) {
   })).filter((section) => section.items.length > 0)
 }
 
+function aggregatedOthersAction(singularAction, count) {
+  const total = Math.max(1, Number(count ?? 1))
+  if (total <= 1) return singularAction
+  return `và ${total - 1} người khác ${singularAction}`
+}
+
 export function buildActivityActionText(item) {
   switch (item.type) {
     case 'comment_reply':
-      return 'đã trả lời bình luận của bạn'
+      return aggregatedOthersAction('đã trả lời bình luận của bạn', item.actorCount)
     case 'comment_like':
-      return 'đã thích bình luận của bạn'
+      return aggregatedOthersAction('đã thích bình luận của bạn', item.actorCount)
     case 'video_like':
-      return 'đã thích video của bạn'
+      return aggregatedOthersAction('đã thích video của bạn', item.actorCount)
     case 'mention':
-      return 'đã nhắc đến bạn trong bình luận'
+      return aggregatedOthersAction('đã nhắc đến bạn trong bình luận', item.actorCount)
     case 'follow':
-      return 'đã bắt đầu follow bạn'
+      return aggregatedOthersAction('đã bắt đầu follow bạn', item.actorCount)
     default:
       return 'đã tương tác với bạn'
   }
@@ -42,9 +48,10 @@ export function buildActivityActorName(item) {
   return item.actor?.displayName || item.actor?.username || 'Ai đó'
 }
 
-export function formatActivityTimestamp(iso) {
-  if (!iso) return ''
-  const date = new Date(iso)
+export function formatActivityTimestamp(iso, fallbackIso) {
+  const source = iso ?? fallbackIso
+  if (!source) return ''
+  const date = new Date(source)
   if (Number.isNaN(date.getTime())) return ''
 
   const now = new Date()

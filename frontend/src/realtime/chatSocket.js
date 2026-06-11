@@ -1,21 +1,9 @@
 import { Client } from "@stomp/stompjs";
-import { isCookieSession } from "../auth/session.js";
-
-function resolveChatWsUrl(token) {
-  if (typeof window !== "undefined") {
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const base = `${protocol}//${window.location.host}`;
-    if (token && !isCookieSession(token)) {
-      return `${base}/ws?token=${encodeURIComponent(token)}`;
-    }
-    return `${base}/ws`;
-  }
-  return "/ws";
-}
+import { resolveWsUrl } from "./wsUrl.js";
 
 export function createChatSocketClient(token, onMessageEvent) {
   const client = new Client({
-    brokerURL: resolveChatWsUrl(token),
+    brokerURL: resolveWsUrl(token),
     reconnectDelay: 2500,
     heartbeatIncoming: 10000,
     heartbeatOutgoing: 10000,

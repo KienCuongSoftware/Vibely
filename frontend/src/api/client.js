@@ -355,12 +355,12 @@ export const apiClient = {
     request("/api/notifications/unread-count", { token }),
   markNotificationRead: (notificationId, token) =>
     request(`/api/notifications/${notificationId}/read`, {
-      method: "PATCH",
+      method: "POST",
       token,
     }),
   markNotificationsRead: (ids, token) =>
     request("/api/notifications/read", {
-      method: "PATCH",
+      method: "POST",
       body: { ids },
       token,
     }),

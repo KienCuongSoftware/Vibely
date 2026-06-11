@@ -28,11 +28,12 @@ function isToday(iso) {
 
 export function mapNotificationItem(row) {
   const type = TYPE_TO_FRONT[row?.type] ?? 'video_like'
+  const activityAt = row.updatedAt ?? row.createdAt
   return {
     id: String(row.id),
     type,
     filter: TYPE_TO_FILTER[row?.type] ?? 'all',
-    section: isToday(row.createdAt) ? 'today' : 'earlier',
+    section: isToday(activityAt) ? 'today' : 'earlier',
     actor: row.actor
       ? {
           id: row.actor.id,
@@ -43,8 +44,14 @@ export function mapNotificationItem(row) {
       : null,
     preview: row.preview ?? '',
     videoPublicId: row.videoPublicId ? String(row.videoPublicId) : null,
+    videoAuthorUsername: row.videoAuthorUsername
+      ? String(row.videoAuthorUsername).trim()
+      : null,
+    videoThumbnailUrl: row.videoThumbnailUrl ? String(row.videoThumbnailUrl) : null,
     viewerFollowsActor: Boolean(row.viewerFollowsActor),
+    actorCount: Math.max(1, Number(row.actorCount ?? 1)),
     createdAt: row.createdAt,
+    updatedAt: row.updatedAt ?? row.createdAt,
     read: Boolean(row.read),
   }
 }

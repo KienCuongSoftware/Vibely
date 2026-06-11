@@ -1,6 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { IoClose } from 'react-icons/io5'
+import { apiClient } from '../../api/client.js'
 import { useActivityNotifications } from '../../hooks/useActivityNotifications.js'
+import { useNotificationUnread } from '../../state/NotificationUnreadContext.jsx'
 import { useAuth } from '../../state/useAuth.js'
 import { ACTIVITY_FILTERS } from './activityConstants.js'
 import { ACTIVITY_PANEL_SHELL_CLASS } from './activityPanelShell.js'
@@ -11,14 +13,36 @@ import { ActivitySystemPanel } from './ActivitySystemPanel.jsx'
 
 export function ActivityPanel({ onClose }) {
   const { token } = useAuth()
+  const { refreshUnreadCount, decrementUnreadCount } = useNotificationUnread()
   const [view, setView] = useState('inbox')
   const [activeFilter, setActiveFilter] = useState('all')
 
-  const { items, systemInboxPreview, loading, error, refresh } = useActivityNotifications({
+  const { items, systemInboxPreview, loading, error, refresh, markItemRead } = useActivityNotifications({
     token,
     enabled: view === 'inbox' && Boolean(token),
     filter: activeFilter,
   })
+
+  useEffect(() => {
+    if (!token) return undefined
+    void refreshUnreadCount()
+    return undefined
+  }, [refreshUnreadCount, token])
+
+  const handleMarkRead = useCallback(
+    async (item) => {
+      if (!token || !item || item.read) return
+      try {
+        await apiClient.markNotificationRead(item.id, token)
+        markItemRead(item.id)
+        decrementUnreadCount(1)
+      } catch {
+        void refresh()
+        void refreshUnreadCount()
+      }
+    },
+    [decrementUnreadCount, markItemRead, refresh, refreshUnreadCount, token],
+  )
 
   useEffect(() => {
     const onDocKeyDown = (event) => {
@@ -149,6 +173,7 @@ export function ActivityPanel({ onClose }) {
                       key={item.id}
                       item={item}
                       onNavigate={onClose}
+                      onMarkRead={handleMarkRead}
                     />
                   ))}
                 </div>
@@ -166,6 +191,7 @@ export function ActivityPanel({ onClose }) {
                       key={item.id}
                       item={item}
                       onNavigate={onClose}
+                      onMarkRead={handleMarkRead}
                     />
                   ))}
                 </div>
