@@ -69,6 +69,14 @@ export function buildProfileVideoUrl(username, publicId) {
   return `/${encodeURIComponent(handle)}/video/${id}`;
 }
 
+/** Permalink when opening a video from the activity / notifications inbox (TikTok-style shell). */
+export function buildActivityVideoUrl(username, publicId) {
+  const id = normalizeVideoPublicId(publicId);
+  const handle = String(username ?? "").trim().replace(/^@+/, "");
+  if (!id || !handle) return "";
+  return `/activity/${encodeURIComponent(handle)}/video/${id}`;
+}
+
 /**
  * @param {unknown} channel
  * @param {unknown} publicId

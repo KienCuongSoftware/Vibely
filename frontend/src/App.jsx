@@ -13,6 +13,7 @@ import { StudioEditPostPage } from './pages/StudioEditPostPage.jsx'
 import { StudioVideoAnalyticsPage } from './pages/StudioVideoAnalyticsPage.jsx'
 import { StudioPostCommentsPage } from './pages/StudioPostCommentsPage.jsx'
 import { ProfilePage } from './pages/ProfilePage.jsx'
+import { ActivityVideoWatchPage } from './pages/ActivityVideoWatchPage.jsx'
 import { VideoWatchPage } from './pages/VideoWatchPage.jsx'
 import { TermsOfServicePage } from './pages/TermsOfServicePage.jsx'
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage.jsx'
@@ -77,6 +78,7 @@ function App() {
           <Route path="/vibelystudio/upload" element={<Navigate to="/login" replace />} />
           <Route path="/vibelystudio/upload/post/:publicId" element={<Navigate to="/login" replace />} />
           <Route path="/vibelystudio/comment/:publicId" element={<Navigate to="/login" replace />} />
+          <Route path="/activity/:username/video/:publicId" element={<ActivityVideoWatchPage />} />
           <Route path="/:username/video/:publicId" element={<VideoWatchPage />} />
           <Route path="/profile" element={<Navigate to="/login" replace />} />
           <Route path="/:username" element={<ProfilePage />} />
@@ -114,6 +116,7 @@ function App() {
         <Route path="/explore/view/:publicId" element={<ExploreViewerPage />} />
         <Route path="/search" element={<SearchResultsPage />} />
         <Route path="/tag/:tag" element={<HashtagPage />} />
+        <Route path="/activity/:username/video/:publicId" element={<ActivityVideoWatchPage />} />
         <Route path="/:username/video/:publicId" element={<VideoWatchPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/:username" element={<ProfilePage />} />

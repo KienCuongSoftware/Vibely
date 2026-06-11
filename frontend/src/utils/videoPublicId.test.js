@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildActivityVideoUrl,
   buildProfileVideoUrl,
   buildVideoWatchUrl,
   isVideoPublicId,
@@ -23,6 +24,9 @@ describe("videoPublicId", () => {
     expect(buildVideoWatchUrl(SAMPLE)).toContain(`/watch/${SAMPLE}`);
     expect(buildProfileVideoUrl("creator", SAMPLE)).toBe(
       "/creator/video/" + SAMPLE,
+    );
+    expect(buildActivityVideoUrl("creator", SAMPLE)).toBe(
+      "/activity/creator/video/" + SAMPLE,
     );
   });
 
