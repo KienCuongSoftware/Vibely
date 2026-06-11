@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { ActivityPanel } from "./activity/ActivityPanel.jsx";
+import { useActivityModal } from "../state/ActivityModalContext.jsx";
 import { useSearchModal } from "../state/SearchModalContext.jsx";
 import {
   IoBagHandleOutline,
@@ -30,6 +32,7 @@ export function Sidebar({
   onOpenSearch,
 }) {
   const searchModal = useSearchModal();
+  const activityModal = useActivityModal();
   const openSearch = onOpenSearch ?? searchModal?.openSearch;
   const [moreOpen, setMoreOpen] = useState(false);
   const [darkModeOn, setDarkModeOn] = useState(true);
@@ -39,14 +42,23 @@ export function Sidebar({
       ? user.avatarUrl
       : "/images/users/default-avatar.jpeg";
 
-  const collapsed = forceCollapsed || moreOpen;
+  const activityOpen = Boolean(activityModal?.open);
+  const collapsed = forceCollapsed || moreOpen || activityOpen;
 
   const handleNavClick = (item) => {
     if (item.id === "more") {
+      activityModal?.closeActivity?.();
       setMoreOpen((prev) => !prev);
       return;
     }
+    if (item.id === "activity") {
+      if (moreOpen) setMoreOpen(false);
+      searchModal?.closeSearch?.();
+      activityModal?.toggleActivity?.();
+      return;
+    }
     if (moreOpen) setMoreOpen(false);
+    if (activityModal?.open) activityModal.closeActivity?.();
     onSelectMenu?.(item.id);
   };
 
@@ -100,7 +112,10 @@ export function Sidebar({
         {collapsed ? (
           <button
             type="button"
-            onClick={() => openSearch?.()}
+            onClick={() => {
+              activityModal?.closeActivity?.();
+              openSearch?.();
+            }}
             className="mb-4 flex h-10 w-full cursor-pointer items-center justify-center rounded-full bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
             aria-label="Tìm kiếm"
           >
@@ -109,7 +124,10 @@ export function Sidebar({
         ) : (
           <button
             type="button"
-            onClick={() => openSearch?.()}
+            onClick={() => {
+              activityModal?.closeActivity?.();
+              openSearch?.();
+            }}
             className="mb-4 flex h-10 w-full cursor-pointer items-center gap-2 rounded-full bg-zinc-900 px-4 text-left text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
           >
             <IoSearchOutline
@@ -123,7 +141,9 @@ export function Sidebar({
         <nav className="space-y-1">
           {menuItems.map((item) => {
             const isActive =
-              activeMenu === item.id || (moreOpen && item.id === "more");
+              activeMenu === item.id ||
+              (item.id === "activity" && activityOpen) ||
+              (moreOpen && item.id === "more");
             const Icon = item.icon;
             const useProfileAvatarIcon = token && item.id === "profile";
             return (
@@ -186,6 +206,10 @@ export function Sidebar({
           </div>
         ) : null}
       </aside>
+
+      {activityOpen ? (
+        <ActivityPanel onClose={() => activityModal?.closeActivity?.()} />
+      ) : null}
 
       {moreOpen ? (
         <div className="flex h-full min-h-0 w-[min(calc(100vw-72px),340px)] shrink-0 flex-col overflow-hidden border-r border-zinc-900 bg-zinc-950 text-zinc-100">

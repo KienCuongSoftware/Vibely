@@ -3,7 +3,11 @@ import { markFollowingPreferFeedFromSidebar } from './followingPageView.js'
 /**
  * Central sidebar menu routing — keep "Đã follow" and other items consistent across pages.
  */
-export function handleSidebarMenuSelect(navigate, id, { token, profilePath, onUnhandled } = {}) {
+export function handleSidebarMenuSelect(
+  navigate,
+  id,
+  { token, profilePath, onUnhandled, onActivity } = {},
+) {
   if (id === 'more') return
 
   if (id === 'profile') {
@@ -51,6 +55,17 @@ export function handleSidebarMenuSelect(navigate, id, { token, profilePath, onUn
     }
     navigate('/messages')
     return
+  }
+
+  if (id === 'activity') {
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    if (typeof onActivity === 'function') {
+      onActivity()
+      return
+    }
   }
 
   if (id === 'latest') {
