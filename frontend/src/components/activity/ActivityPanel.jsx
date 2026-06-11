@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { IoClose } from 'react-icons/io5'
+import { useActivityNotifications } from '../../hooks/useActivityNotifications.js'
+import { useAuth } from '../../state/useAuth.js'
 import { ACTIVITY_FILTERS } from './activityConstants.js'
-import { MOCK_ACTIVITY_ITEMS, MOCK_SYSTEM_INBOX } from './activityMockData.js'
 import { ACTIVITY_PANEL_SHELL_CLASS } from './activityPanelShell.js'
 import { filterActivityItems, groupActivityBySection } from './activityUtils.js'
 import { ActivityNotificationItem } from './ActivityNotificationItem.jsx'
@@ -9,8 +10,15 @@ import { ActivitySystemInboxRow } from './ActivitySystemInboxRow.jsx'
 import { ActivitySystemPanel } from './ActivitySystemPanel.jsx'
 
 export function ActivityPanel({ onClose }) {
+  const { token } = useAuth()
   const [view, setView] = useState('inbox')
   const [activeFilter, setActiveFilter] = useState('all')
+
+  const { items, systemInboxPreview, loading, error, refresh } = useActivityNotifications({
+    token,
+    enabled: view === 'inbox' && Boolean(token),
+    filter: activeFilter,
+  })
 
   useEffect(() => {
     const onDocKeyDown = (event) => {
@@ -30,14 +38,14 @@ export function ActivityPanel({ onClose }) {
   const showSystemHub = activeFilter === 'all'
 
   const sections = useMemo(() => {
-    const socialItems = MOCK_ACTIVITY_ITEMS.filter((item) => item.type !== 'system')
-    const filtered = filterActivityItems(socialItems, activeFilter)
+    const filtered = filterActivityItems(items, activeFilter)
     return groupActivityBySection(filtered)
-  }, [activeFilter])
+  }, [activeFilter, items])
 
   if (view === 'system') {
     return (
       <ActivitySystemPanel
+        token={token}
         onBack={() => setView('inbox')}
         onClose={onClose}
       />
@@ -46,7 +54,7 @@ export function ActivityPanel({ onClose }) {
 
   const todaySection = sections.find((section) => section.id === 'today')
   const otherSections = sections.filter((section) => section.id !== 'today')
-  const isEmpty = !showSystemHub && sections.length === 0
+  const isEmpty = !loading && !showSystemHub && sections.length === 0
 
   return (
     <div
@@ -92,7 +100,30 @@ export function ActivityPanel({ onClose }) {
       </header>
 
       <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-1.5 py-1.5">
-        {isEmpty ? (
+        {!token ? (
+          <div className="flex flex-col items-center justify-center px-3 py-12 text-center">
+            <p className="text-xs font-medium text-zinc-400">Đăng nhập để xem hoạt động</p>
+          </div>
+        ) : loading ? (
+          <div className="flex flex-col items-center justify-center px-3 py-12 text-center">
+            <div
+              className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-rose-500"
+              aria-hidden
+            />
+            <p className="mt-3 text-xs text-zinc-500">Đang tải…</p>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center px-3 py-12 text-center">
+            <p className="text-xs font-medium text-zinc-400">Không tải được thông báo</p>
+            <button
+              type="button"
+              onClick={() => void refresh()}
+              className="mt-3 cursor-pointer rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800"
+            >
+              Thử lại
+            </button>
+          </div>
+        ) : isEmpty ? (
           <div className="flex flex-col items-center justify-center px-3 py-12 text-center">
             <p className="text-xs font-medium text-zinc-400">Chưa có hoạt động nào</p>
             <p className="mt-1 max-w-[220px] text-[11px] text-zinc-600">
@@ -108,7 +139,7 @@ export function ActivityPanel({ onClose }) {
                 </h3>
                 {showSystemHub ? (
                   <ActivitySystemInboxRow
-                    preview={MOCK_SYSTEM_INBOX.preview}
+                    preview={systemInboxPreview}
                     onOpen={() => setView('system')}
                   />
                 ) : null}

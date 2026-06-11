@@ -333,6 +333,37 @@ export const apiClient = {
       method: "POST",
       token,
     }),
+  getNotifications: (token, { filter = "all", cursor, size = 20 } = {}) =>
+    request(
+      `/api/notifications${toQuery({
+        filter: filter && filter !== "all" ? filter : undefined,
+        cursor,
+        size,
+      })}`,
+      { token },
+    ),
+  getSystemNotifications: (token, { filter = "all", cursor, size = 20 } = {}) =>
+    request(
+      `/api/notifications/system${toQuery({
+        filter: filter && filter !== "all" ? filter : undefined,
+        cursor,
+        size,
+      })}`,
+      { token },
+    ),
+  getNotificationUnreadCount: (token) =>
+    request("/api/notifications/unread-count", { token }),
+  markNotificationRead: (notificationId, token) =>
+    request(`/api/notifications/${notificationId}/read`, {
+      method: "PATCH",
+      token,
+    }),
+  markNotificationsRead: (ids, token) =>
+    request("/api/notifications/read", {
+      method: "PATCH",
+      body: { ids },
+      token,
+    }),
 };
 
 /** Tải blob ảnh bìa lên S3 qua presign, trả về URL công khai. */
