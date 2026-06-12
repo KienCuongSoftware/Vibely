@@ -3,6 +3,10 @@ import { IoChevronBack, IoChevronForward, IoClose, IoCloudUploadOutline } from '
 import { uploadThumbnailToStorage } from '../api/client'
 
 const FRAME_COUNT = 10
+/** Khung nhỏ cho dải cuộn ngang — không dùng làm preview lớn. */
+const FILMSTRIP_CAPTURE_WIDTH = 192
+/** Preview lớn: tối đa bề ngang này (giữ tỉ lệ gốc, không upscale vượt video). */
+const PREVIEW_MAX_WIDTH = 1080
 
 function waitSeeked(video) {
   return new Promise((resolve) => {
@@ -27,13 +31,11 @@ async function extractVideoFilmstrip(videoFile, frameCount = FRAME_COUNT) {
   })
   const duration = Math.max(0.08, Number(video.duration) || 1)
   const canvas = document.createElement('canvas')
-  // Tăng kích thước frame để tránh thumbnail bị mờ khi dùng làm ảnh bìa/poster.
-  const targetW = 320
   const vw = video.videoWidth || 360
   const vh = video.videoHeight || 640
   const aspect = vh / Math.max(1, vw)
-  canvas.width = targetW
-  canvas.height = Math.max(1, Math.round(targetW * aspect))
+  canvas.width = FILMSTRIP_CAPTURE_WIDTH
+  canvas.height = Math.max(1, Math.round(FILMSTRIP_CAPTURE_WIDTH * aspect))
   const ctx = canvas.getContext('2d')
   const frames = []
   const n = Math.max(1, frameCount)
@@ -45,7 +47,7 @@ async function extractVideoFilmstrip(videoFile, frameCount = FRAME_COUNT) {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
     frames.push({
       time: t,
-      dataUrl: canvas.toDataURL('image/jpeg', 0.96),
+      dataUrl: canvas.toDataURL('image/jpeg', 0.9),
     })
   }
   URL.revokeObjectURL(url)
@@ -55,6 +57,51 @@ async function extractVideoFilmstrip(videoFile, frameCount = FRAME_COUNT) {
 async function dataUrlToBlob(dataUrl) {
   const res = await fetch(dataUrl)
   return res.blob()
+}
+
+/** Preview lớn trong modal — trích theo thời điểm, trả về object URL. */
+async function extractPreviewFrame(videoFile, timeSeconds, maxWidth = PREVIEW_MAX_WIDTH) {
+  const url = URL.createObjectURL(videoFile)
+  const video = document.createElement('video')
+  video.src = url
+  video.muted = true
+  video.playsInline = true
+  video.preload = 'auto'
+
+  await new Promise((resolve, reject) => {
+    video.onloadedmetadata = () => resolve()
+    video.onerror = () => reject(new Error('Không tải được video để xem trước ảnh bìa.'))
+  })
+
+  const duration = Math.max(0.08, Number(video.duration) || 1)
+  const t = Math.max(0, Math.min(Number(timeSeconds || 0), duration - 0.04))
+  video.currentTime = t
+  await waitSeeked(video)
+
+  const vw = Math.max(1, video.videoWidth || 1080)
+  const vh = Math.max(1, video.videoHeight || 1920)
+  const targetW = Math.min(maxWidth, vw)
+  const targetH = Math.max(1, Math.round(targetW * (vh / vw)))
+
+  const canvas = document.createElement('canvas')
+  canvas.width = targetW
+  canvas.height = targetH
+  const ctx = canvas.getContext('2d')
+  ctx.drawImage(video, 0, 0, targetW, targetH)
+
+  const blob = await new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (value) => {
+        if (value) resolve(value)
+        else reject(new Error('Không tạo được ảnh xem trước.'))
+      },
+      'image/jpeg',
+      0.94,
+    )
+  })
+
+  URL.revokeObjectURL(url)
+  return URL.createObjectURL(blob)
 }
 
 async function extractOriginalResolutionFrame(videoFile, timeSeconds) {
@@ -121,6 +168,9 @@ export function CoverPickerModal({
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [previewUrl, setPreviewUrl] = useState('')
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const previewCacheRef = useRef(new Map())
   const coverImageInputRef = useRef(null)
   const filmstripRef = useRef(null)
   const filmstripTrackRef = useRef(null)
@@ -168,11 +218,56 @@ export function CoverPickerModal({
     setStripError('')
     setUploadFile(null)
     setError('')
+    setPreviewUrl('')
+    setPreviewLoading(false)
+    previewCacheRef.current.forEach((cachedUrl) => URL.revokeObjectURL(cachedUrl))
+    previewCacheRef.current.clear()
     setUploadPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev)
       return ''
     })
   }, [open])
+
+  useEffect(() => {
+    if (!open || tab !== 'video' || !videoFile || !frames.length) {
+      setPreviewUrl('')
+      setPreviewLoading(false)
+      return undefined
+    }
+
+    const frame = frames[selectedIdx]
+    if (!frame) return undefined
+
+    const cacheKey = String(frame.time)
+    const cached = previewCacheRef.current.get(cacheKey)
+    if (cached) {
+      setPreviewUrl(cached)
+      setPreviewLoading(false)
+      return undefined
+    }
+
+    let cancelled = false
+    setPreviewLoading(true)
+    extractPreviewFrame(videoFile, frame.time)
+      .then((objectUrl) => {
+        if (cancelled) {
+          URL.revokeObjectURL(objectUrl)
+          return
+        }
+        previewCacheRef.current.set(cacheKey, objectUrl)
+        setPreviewUrl(objectUrl)
+      })
+      .catch(() => {
+        if (!cancelled) setPreviewUrl('')
+      })
+      .finally(() => {
+        if (!cancelled) setPreviewLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [open, tab, videoFile, frames, selectedIdx])
 
   useEffect(() => {
     if (!open || !videoFile) {
@@ -214,6 +309,13 @@ export function CoverPickerModal({
     if (outer) ro.observe(outer)
     return () => ro.disconnect()
   }, [frames.length, syncFilmstripScrollState, open])
+
+  useEffect(() => {
+    return () => {
+      previewCacheRef.current.forEach((cachedUrl) => URL.revokeObjectURL(cachedUrl))
+      previewCacheRef.current.clear()
+    }
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -291,7 +393,7 @@ export function CoverPickerModal({
 
   const previewSrc =
     tab === 'video'
-      ? frames[selectedIdx]?.dataUrl
+      ? previewUrl || frames[selectedIdx]?.dataUrl
       : uploadPreviewUrl || undefined
 
   const canUseVideoTab = Boolean(videoFile)
@@ -345,7 +447,7 @@ export function CoverPickerModal({
           </button>
         </div>
 
-        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-4">
+        <div className="scrollbar-none min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain p-4">
           {tab === 'video' ? (
             <>
               {!canUseVideoTab ? (
@@ -361,9 +463,19 @@ export function CoverPickerModal({
                 </p>
               ) : (
                 <>
-                  <div className="mx-auto flex max-w-[220px] justify-center overflow-hidden rounded-xl border-2 border-sky-500/80 bg-black ring-2 ring-sky-500/30">
+                  <div className="relative mx-auto flex max-w-[280px] justify-center overflow-hidden rounded-xl border-2 border-sky-500/80 bg-black ring-2 ring-sky-500/30">
                     {previewSrc ? (
-                      <img src={previewSrc} alt="" className="aspect-9/16 w-full object-cover" />
+                      <img
+                        src={previewSrc}
+                        alt=""
+                        className="aspect-9/16 w-full object-cover"
+                        decoding="async"
+                      />
+                    ) : null}
+                    {previewLoading ? (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/35 text-xs font-medium text-zinc-200">
+                        Đang tải khung HD…
+                      </div>
                     ) : null}
                   </div>
                   <p className="mt-3 text-center text-xs text-zinc-500">

@@ -18,16 +18,16 @@ export function StudioLayout({
     <section
       className={
         isLight
-          ? "flex min-h-dvh bg-[#f1f1f2] text-slate-900"
-          : "flex min-h-dvh bg-black text-zinc-100"
+          ? "flex h-dvh overflow-hidden bg-[#f1f1f2] text-slate-900"
+          : "flex h-dvh overflow-hidden bg-black text-zinc-100"
       }
     >
       <StudioSidebar active={active} theme={theme} />
       <main
         className={
           isLight
-            ? "flex min-h-dvh min-w-0 flex-1 flex-col bg-[#f1f1f2] p-4 sm:p-6 lg:p-8"
-            : "flex min-h-dvh min-w-0 flex-1 flex-col bg-black p-4 sm:p-6 lg:p-8"
+            ? "flex h-dvh min-w-0 flex-1 flex-col overflow-hidden bg-[#f1f1f2] p-4 sm:p-6 lg:p-8"
+            : "flex h-dvh min-w-0 flex-1 flex-col overflow-hidden bg-black p-4 sm:p-6 lg:p-8"
         }
       >
         <div
@@ -70,7 +70,9 @@ export function StudioLayout({
             ) : null}
           </header>
         ) : null}
-        <div className="min-h-0 flex-1">{children}</div>
+        <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain">
+          {children}
+        </div>
       </main>
     </section>
   );
