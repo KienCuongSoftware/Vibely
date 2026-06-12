@@ -17,6 +17,8 @@ import { Sidebar } from '../components/Sidebar.jsx'
 import { TooltipHoverWrap } from '../components/TooltipControls.jsx'
 import { VideoShareModal } from '../components/VideoShareModal.jsx'
 import { feedCommentsPanelWidthCss } from '../feed/feedLayout.js'
+import { usePersistedFeedPlaybackSpeed } from '../feed/usePersistedFeedPlaybackSpeed.js'
+import { usePersistedFeedVideoQuality } from '../feed/usePersistedFeedVideoQuality.js'
 import { useAuth } from '../state/useAuth.js'
 import { useActivityModal } from '../state/ActivityModalContext.jsx'
 import { useNotificationUnread } from '../state/NotificationUnreadContext.jsx'
@@ -182,7 +184,8 @@ export function ActivityVideoWatchPage() {
   const playbackMuted = feedMuted || (feedSoundOn && !soundUnlocked)
   const [feedMoreMenuOpen, setFeedMoreMenuOpen] = useState(false)
   const [feedMoreMenuSubpage, setFeedMoreMenuSubpage] = useState('main')
-  const [feedVideoQuality, setFeedVideoQuality] = useState('auto')
+  const [feedVideoQuality, setFeedVideoQuality] = usePersistedFeedVideoQuality()
+  const [feedPlaybackSpeed, setFeedPlaybackSpeed] = usePersistedFeedPlaybackSpeed()
   const [feedAutoScrollEnabled, setFeedAutoScrollEnabled] = useState(false)
   const [userPaused, setUserPaused] = useState(false)
   const [playbackFlash, setPlaybackFlash] = useState(null)
@@ -389,6 +392,13 @@ export function ActivityVideoWatchPage() {
     [],
   )
 
+  useEffect(() => {
+    const el = feedVideoRef.current
+    if (!el) return
+    const rate = Number(feedPlaybackSpeed)
+    el.playbackRate = Number.isFinite(rate) && rate > 0 ? rate : 1
+  }, [feedPlaybackSpeed, feedVideo?.publicId])
+
   const toggleFeedPlayback = useCallback(() => {
     const el = feedVideoRef.current
     if (!el) return
@@ -585,6 +595,8 @@ export function ActivityVideoWatchPage() {
                   setFeedMoreMenuSubpage={setFeedMoreMenuSubpage}
                   feedVideoQuality={feedVideoQuality}
                   setFeedVideoQuality={setFeedVideoQuality}
+                  feedPlaybackSpeed={feedPlaybackSpeed}
+                  setFeedPlaybackSpeed={setFeedPlaybackSpeed}
                   feedAutoScrollEnabled={feedAutoScrollEnabled}
                   setFeedAutoScrollEnabled={setFeedAutoScrollEnabled}
                   toggleFeedPlayback={toggleFeedPlayback}

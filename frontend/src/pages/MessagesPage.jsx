@@ -16,6 +16,7 @@ import { apiClient, uploadThumbnailToStorage, uploadToPresignedPutUrl } from "..
 import { CreatorGridShell, GridLoadingState, GridLoginPrompt } from "../components/feed/CreatorGridShell.jsx";
 import { useAuth } from "../state/useAuth";
 import { createChatSocketClient } from "../realtime/chatSocket.js";
+import { resolveRealtimeWsToken } from "../realtime/wsAuth.js";
 
 const PAGE_TITLE = "Tin nhắn | Vibely";
 const DEFAULT_AVATAR = "/images/users/default-avatar.jpeg";
@@ -294,8 +295,16 @@ export function MessagesPage() {
   }, [activeConversationId, loadMessages]);
 
   useEffect(() => {
-    if (!token) return undefined;
-    const socket = createChatSocketClient(token, async (event) => {
+    if (!authReady || !token) return undefined;
+
+    let cancelled = false;
+    let socket;
+
+    async function connect() {
+      const wsToken = await resolveRealtimeWsToken(token);
+      if (cancelled || !wsToken) return;
+
+      socket = createChatSocketClient(wsToken, async (event) => {
       if (event?.type !== "message.created") return;
       const incoming = event.payload;
       const conversationId = Number(incoming?.conversationId);
@@ -345,14 +354,18 @@ export function MessagesPage() {
           /* noop */
         }
       }
-    });
+      });
 
-    socket.activate();
+      socket.activate();
+    }
+
+    void connect();
 
     return () => {
-      socket.deactivate();
+      cancelled = true;
+      socket?.deactivate();
     };
-  }, [token, user?.id]);
+  }, [authReady, token, user?.id]);
 
   const activeConversation = useMemo(
     () => conversations.find((row) => Number(row.id) === Number(activeConversationId)) ?? null,

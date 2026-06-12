@@ -46,6 +46,7 @@ import {
 } from 'react-icons/io5'
 import { MdOutlineFileUpload } from 'react-icons/md'
 import { LuGrid2X2 } from 'react-icons/lu'
+import { AvatarImage } from '../components/AvatarImage.jsx'
 
 const DEFAULT_USER_AVATAR_URL = '/images/users/default-avatar.jpeg'
 
@@ -1025,13 +1026,10 @@ export function ProfilePage() {
           <section className="flex min-h-0 w-full max-w-5xl flex-1 flex-col bg-black px-4 py-6 md:px-8">
             <div className="flex items-start gap-4">
               <div className="flex min-w-0 flex-1 items-start gap-5">
-                <img
+                <AvatarImage
                   className="h-28 w-28 rounded-full border border-zinc-800 object-cover md:h-32 md:w-32"
-                  src={
-                    profile?.avatarUrl && profile.avatarUrl.trim()
-                      ? profile.avatarUrl
-                      : DEFAULT_USER_AVATAR_URL
-                  }
+                  src={profile?.avatarUrl}
+                  fallbackSrc={DEFAULT_USER_AVATAR_URL}
                   alt="avatar hồ sơ"
                 />
                 <div className="min-w-0 flex-1 space-y-3">
@@ -1071,12 +1069,6 @@ export function ProfilePage() {
                         {formatCompactCount(profile?.totalLikeCount ?? 0)}
                       </span>{' '}
                       Lượt thích
-                    </span>
-                    <span>
-                      <span className="font-semibold text-zinc-100">
-                        {formatCompactCount(profile?.totalViewCount ?? 0)}
-                      </span>{' '}
-                      Lượt xem
                     </span>
                   </div>
 
