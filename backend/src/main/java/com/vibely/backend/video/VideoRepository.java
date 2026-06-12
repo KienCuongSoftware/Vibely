@@ -16,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 public interface VideoRepository extends JpaRepository<Video, Long> {
     Optional<Video> findByPublicId(UUID publicId);
 
+    @Query("SELECT v FROM Video v JOIN FETCH v.author WHERE v.publicId = :publicId")
+    Optional<Video> findWithAuthorByPublicId(@Param("publicId") UUID publicId);
+
     @Query("SELECT v.author.id FROM Video v WHERE v.publicId = :publicId")
     Optional<Long> findAuthorIdByPublicId(@Param("publicId") UUID publicId);
 

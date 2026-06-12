@@ -1,14 +1,23 @@
 package com.vibely.backend.video;
 
 import com.vibely.backend.common.ApiResponse;
+import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.feed.FeedPageResponse;
 import com.vibely.backend.storage.PresignedUploadResponse;
 import com.vibely.backend.storage.S3PresignedUploadService;
 import com.vibely.backend.storage.VideoPresignRequest;
+import com.vibely.backend.video.download.VideoWatermarkDownloadService;
 import jakarta.validation.Valid;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.UUID;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -29,13 +38,16 @@ public class VideoController {
 
     private final VideoService videoService;
     private final ObjectProvider<S3PresignedUploadService> presignedUploadService;
+    private final ObjectProvider<VideoWatermarkDownloadService> watermarkDownloadService;
 
     public VideoController(
         VideoService videoService,
-        ObjectProvider<S3PresignedUploadService> presignedUploadService
+        ObjectProvider<S3PresignedUploadService> presignedUploadService,
+        ObjectProvider<VideoWatermarkDownloadService> watermarkDownloadService
     ) {
         this.videoService = videoService;
         this.presignedUploadService = presignedUploadService;
+        this.watermarkDownloadService = watermarkDownloadService;
     }
 
     @PostMapping
@@ -157,5 +169,56 @@ public class VideoController {
             : null;
         videoService.recordShare(VideoPublicIds.parse(publicId), viewerEmail);
         return ApiResponse.success(null);
+    }
+
+    /**
+     * MP4 tải về có watermark logo Vibely + @username (TikTok-style).
+     */
+    @GetMapping("/{publicId}/download")
+    public ResponseEntity<StreamingResponseBody> downloadWatermarkedVideo(
+        Authentication authentication,
+        @PathVariable String publicId
+    ) {
+        VideoWatermarkDownloadService svc = watermarkDownloadService.getIfAvailable();
+        if (svc == null) {
+            throw new ResponseStatusException(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "Tải video chưa được bật trên môi trường này."
+            );
+        }
+        UUID videoPublicId = VideoPublicIds.parse(publicId);
+        String viewerEmail = null;
+        if (authentication != null
+            && authentication.isAuthenticated()
+            && !(authentication instanceof AnonymousAuthenticationToken)) {
+            viewerEmail = authentication.getName();
+        }
+        final Path output;
+        try {
+            output = svc.renderWatermarkedMp4(videoPublicId, viewerEmail);
+        } catch (NotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                e.getMessage() != null ? e.getMessage() : "Không tạo được video tải về."
+            );
+        }
+        Path workRoot = output.getParent();
+        StreamingResponseBody body = out -> {
+            try {
+                Files.copy(output, out);
+            } finally {
+                VideoWatermarkDownloadService.deleteRecursively(workRoot);
+            }
+        };
+        String filename = "vibely-" + publicId + ".mp4";
+        return ResponseEntity.ok()
+            .header(
+                HttpHeaders.CONTENT_DISPOSITION,
+                ContentDisposition.attachment().filename(filename).build().toString()
+            )
+            .contentType(MediaType.parseMediaType("video/mp4"))
+            .body(body);
     }
 }
