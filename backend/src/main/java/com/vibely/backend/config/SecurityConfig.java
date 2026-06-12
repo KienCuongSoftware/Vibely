@@ -122,7 +122,7 @@ public class SecurityConfig {
                     "/api/auth/reset-password",
                     "/api/auth/oauth/exchange"
                 ).permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/auth/me").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/auth/me", "/api/auth/ws-ticket").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/risk/evaluate").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/captcha/challenge").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/captcha/verify").permitAll()
@@ -147,6 +147,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/videos/*/shares").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/videos/*/share").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/videos/*/share/analytics").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/videos/*/download").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*").permitAll()
                 .anyRequest().authenticated();
             })

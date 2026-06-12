@@ -9,6 +9,7 @@ import React, {
 } from 'react'
 import { apiClient } from '../api/client.js'
 import { createNotificationSocketClient } from '../realtime/notificationSocket.js'
+import { resolveRealtimeWsToken } from '../realtime/wsAuth.js'
 import { useAuth } from './useAuth.js'
 
 const NotificationUnreadContext = createContext(null)
@@ -19,7 +20,7 @@ function normalizeUnreadCount(value) {
 }
 
 export function NotificationUnreadProvider({ children }) {
-  const { token } = useAuth()
+  const { token, authReady } = useAuth()
   const [unreadCount, setUnreadCount] = useState(0)
   const listenersRef = useRef(new Set())
 
@@ -72,22 +73,33 @@ export function NotificationUnreadProvider({ children }) {
   }, [refreshUnreadCount, token])
 
   useEffect(() => {
-    if (!token) return undefined
+    if (!authReady || !token) return undefined
 
-    const socket = createNotificationSocketClient(token, (event) => {
-      if (event?.unreadCount != null) {
-        setUnreadCount(normalizeUnreadCount(event.unreadCount))
-      }
-      if (event?.type === 'notification.updated' || event?.type === 'notification.removed') {
-        emitRealtime(event)
-      }
-    })
+    let cancelled = false
+    let socket
 
-    socket.activate()
-    return () => {
-      socket.deactivate()
+    async function connect() {
+      const wsToken = await resolveRealtimeWsToken(token)
+      if (cancelled || !wsToken) return
+
+      socket = createNotificationSocketClient(wsToken, (event) => {
+        if (event?.unreadCount != null) {
+          setUnreadCount(normalizeUnreadCount(event.unreadCount))
+        }
+        if (event?.type === 'notification.updated' || event?.type === 'notification.removed') {
+          emitRealtime(event)
+        }
+      })
+
+      socket.activate()
     }
-  }, [emitRealtime, token])
+
+    void connect()
+    return () => {
+      cancelled = true
+      socket?.deactivate()
+    }
+  }, [authReady, emitRealtime, token])
 
   const value = useMemo(
     () => ({

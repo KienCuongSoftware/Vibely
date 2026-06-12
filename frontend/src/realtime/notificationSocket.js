@@ -1,17 +1,8 @@
-import { Client } from '@stomp/stompjs'
-import { resolveWsUrl } from './wsUrl.js'
+import { createStompClient } from './createStompClient.js'
 
 export function createNotificationSocketClient(token, onEvent) {
-  const client = new Client({
-    brokerURL: resolveWsUrl(token),
-    reconnectDelay: 2500,
-    heartbeatIncoming: 10000,
-    heartbeatOutgoing: 10000,
-    debug: () => {},
-  })
-
-  client.onConnect = () => {
-    client.subscribe('/user/queue/notifications', (frame) => {
+  const client = createStompClient(token, (connected) => {
+    connected.subscribe('/user/queue/notifications', (frame) => {
       try {
         const payload = JSON.parse(frame.body)
         onEvent?.(payload)
@@ -19,10 +10,7 @@ export function createNotificationSocketClient(token, onEvent) {
         /* ignore invalid payload */
       }
     })
-  }
-
-  client.onStompError = () => {}
-  client.onWebSocketError = () => {}
+  })
 
   return client
 }

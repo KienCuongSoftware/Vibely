@@ -4,6 +4,7 @@ import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.security.AuthCookieService;
+import com.vibely.backend.security.JwtService;
 import com.vibely.backend.user.User;
 import com.vibely.backend.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +30,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final UserAvatarResolver userAvatarResolver;
     private final AuthCookieService authCookieService;
+    private final JwtService jwtService;
     private final boolean exposeTokensInApi;
 
     public AuthController(
@@ -37,6 +39,7 @@ public class AuthController {
         UserRepository userRepository,
         UserAvatarResolver userAvatarResolver,
         AuthCookieService authCookieService,
+        JwtService jwtService,
         @Value("${app.auth.expose-tokens-in-api:false}") boolean exposeTokensInApi
     ) {
         this.authService = authService;
@@ -44,6 +47,7 @@ public class AuthController {
         this.userRepository = userRepository;
         this.userAvatarResolver = userAvatarResolver;
         this.authCookieService = authCookieService;
+        this.jwtService = jwtService;
         this.exposeTokensInApi = exposeTokensInApi;
     }
 
@@ -154,6 +158,35 @@ public class AuthController {
             authCookieService,
             exposeTokensInApi
         );
+    }
+
+    @GetMapping("/ws-ticket")
+    public ResponseEntity<ApiResponse<WsTicketResponse>> wsTicket(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        @RequestHeader(value = "Authorization", required = false) String authorization
+    ) {
+        String token = authCookieService.readAccessToken(request).orElse(null);
+        if ((token == null || token.isBlank())
+            && authorization != null
+            && authorization.startsWith("Bearer ")) {
+            token = authorization.substring(7);
+        }
+        if (token != null && !token.isBlank() && jwtService.isTokenValid(token)) {
+            return ResponseEntity.ok(ApiResponse.success(new WsTicketResponse(token)));
+        }
+
+        String refreshToken = authCookieService.readRefreshToken(request).orElse(null);
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new BadRequestException("Phiên đăng nhập đã hết hạn");
+        }
+        AuthResponse refreshed = authService.refresh(refreshToken);
+        authCookieService.writeSessionCookies(
+            response,
+            refreshed.accessToken(),
+            refreshed.refreshToken()
+        );
+        return ResponseEntity.ok(ApiResponse.success(new WsTicketResponse(refreshed.accessToken())));
     }
 
     @GetMapping("/me")

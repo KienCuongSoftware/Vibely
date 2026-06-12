@@ -42,12 +42,12 @@ public class AuthCookieService {
         String refreshToken
     ) {
         addCookie(response, ACCESS_COOKIE, accessToken, "/", (int) accessExpirationSeconds);
-        addCookie(response, REFRESH_COOKIE, refreshToken, "/api/auth", (int) refreshExpirationSeconds);
+        addCookie(response, REFRESH_COOKIE, refreshToken, "/", (int) refreshExpirationSeconds);
     }
 
     public void clearSessionCookies(HttpServletResponse response) {
         addCookie(response, ACCESS_COOKIE, "", "/", 0);
-        addCookie(response, REFRESH_COOKIE, "", "/api/auth", 0);
+        addCookie(response, REFRESH_COOKIE, "", "/", 0);
     }
 
     public Optional<String> readAccessToken(HttpServletRequest request) {

@@ -2,12 +2,12 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { apiClient } from "../api/client";
 import { COOKIE_SESSION_MARKER } from "../auth/session.js";
+import { DEFAULT_AVATAR_URL, sanitizeAvatarUrl } from "../utils/avatarUrl.js";
 import { AuthContext } from "./auth-context";
 
 const USER_CACHE_KEY = "vibely_user_cache";
 const LEGACY_TOKEN_KEY = "vibely_token";
 const LEGACY_REFRESH_TOKEN_KEY = "vibely_refresh_token";
-const DEFAULT_AVATAR_URL = "/images/users/default-avatar.jpeg";
 
 function persistUserCache(meLike) {
   try {
@@ -66,9 +66,7 @@ function mapUserWithDefaultAvatar(userLike) {
     normalizedUsername ||
     (userLike?.email ? deriveVibelyIdFromEmail(userLike.email) : "");
 
-  const avatarUrl = isBlank(userLike?.avatarUrl)
-    ? DEFAULT_AVATAR_URL
-    : userLike.avatarUrl;
+  const avatarUrl = sanitizeAvatarUrl(userLike?.avatarUrl, DEFAULT_AVATAR_URL);
 
   return {
     ...userLike,
@@ -234,13 +232,9 @@ export function AuthProvider({ children }) {
           setUser(mapUserWithDefaultAvatar(me));
           setToken(COOKIE_SESSION_MARKER);
         }
-      } catch (e) {
+      } catch {
         if (cancelled) return;
-        if (cachedBootstrap) {
-          setUser(mapUserWithDefaultAvatar(cachedBootstrap));
-        } else {
-          clearSession();
-        }
+        clearSession();
       } finally {
         if (!cancelled) {
           setAuthReady(true);

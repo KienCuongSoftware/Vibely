@@ -2,6 +2,7 @@ package com.vibely.backend;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vibely.backend.security.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -31,12 +32,28 @@ class ApiFlowIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private JwtService jwtService;
+
     @Test
     void shouldReturnNullMeWhenUnauthenticated() throws Exception {
         mockMvc.perform(get("/api/auth/me"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.data").value(nullValue()));
+    }
+
+    @Test
+    void shouldReturnWsTicketForAuthenticatedUser() throws Exception {
+        String token = jwtService.generateToken("ws-ticket@vibely.dev");
+
+        mockMvc.perform(
+                get("/api/auth/ws-ticket")
+                    .header("Authorization", "Bearer " + token)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.data.token").value(token));
     }
 
     @Test

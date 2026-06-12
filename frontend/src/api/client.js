@@ -127,6 +127,8 @@ export const apiClient = {
     }),
   me: (token) =>
     request("/api/auth/me", token ? { token } : {}),
+  wsTicket: (token) =>
+    request("/api/auth/ws-ticket", token ? { token } : {}),
   updateMyProfile: (token, payload) =>
     request("/api/users/me", { method: "PUT", token, body: payload }),
   checkUsername: (username) =>
