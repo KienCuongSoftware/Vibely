@@ -104,6 +104,8 @@ app:
     enabled: true
     playback-presign-expiry-hours: ${APP_S3_PLAYBACK_PRESIGN_EXPIRY_HOURS:24}
   processing:
+    ffmpeg-path: ${FFMPEG_PATH:C:/FFmpeg/ffmpeg-8.1.1-essentials_build/bin/ffmpeg.exe}
+    ffprobe-path: ${FFPROBE_PATH:C:/FFmpeg/ffmpeg-8.1.1-essentials_build/bin/ffprobe.exe}
     worker:
       enabled: true
     dry-run-promote-when-worker-disabled: false

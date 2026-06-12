@@ -68,11 +68,22 @@ public final class WindowsFfmpegPathResolver {
         if (fromWhere != null) {
             return fromWhere;
         }
+        String fromCFfmpeg = findUnderCFfmpeg(exe);
+        if (fromCFfmpeg != null) {
+            return fromCFfmpeg;
+        }
         String fromDownloads = findUnderUserDownloads(exe);
         if (fromDownloads != null) {
             return fromDownloads;
         }
         return firstExisting(fixedWindowsCandidates(exe));
+    }
+
+    /**
+     * Team default on Windows: {@code C:\FFmpeg\ffmpeg-*-essentials_build\bin\*.exe}.
+     */
+    private static String findUnderCFfmpeg(String exeFile) {
+        return findFfmpegEssentialsBin(Paths.get("C:\\FFmpeg"), exeFile);
     }
 
     /**
@@ -84,11 +95,14 @@ public final class WindowsFfmpegPathResolver {
         if (profile == null || profile.isBlank()) {
             return null;
         }
-        Path downloads = Paths.get(profile, "Downloads");
-        if (!Files.isDirectory(downloads)) {
+        return findFfmpegEssentialsBin(Paths.get(profile, "Downloads"), exeFile);
+    }
+
+    private static String findFfmpegEssentialsBin(Path root, String exeFile) {
+        if (root == null || !Files.isDirectory(root)) {
             return null;
         }
-        try (DirectoryStream<Path> tops = Files.newDirectoryStream(downloads)) {
+        try (DirectoryStream<Path> tops = Files.newDirectoryStream(root)) {
             for (Path top : tops) {
                 if (!Files.isDirectory(top)) {
                     continue;
@@ -166,6 +180,7 @@ public final class WindowsFfmpegPathResolver {
 
     private static List<Path> fixedWindowsCandidates(String exeFile) {
         List<Path> out = new ArrayList<>();
+        out.add(Paths.get("C:\\FFmpeg\\ffmpeg-8.1.1-essentials_build\\bin", exeFile));
         out.add(Paths.get("C:\\ffmpeg\\bin", exeFile));
         String pf = System.getenv("ProgramFiles");
         if (pf != null && !pf.isBlank()) {

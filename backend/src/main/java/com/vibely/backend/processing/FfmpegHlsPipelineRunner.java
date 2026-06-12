@@ -144,7 +144,7 @@ public class FfmpegHlsPipelineRunner {
             );
             log.info("HLS pipeline ffmpeg transcode starting videoId={}", item.videoId());
             long transcodeStarted = System.nanoTime();
-            transcodeToHls(sourceFile, transcodeDir, audioPlan);
+            transcodeToHls(sourceFile, transcodeDir, audioPlan, dims);
             long transcodeMs = (System.nanoTime() - transcodeStarted) / 1_000_000;
             log.info(
                 "HLS pipeline ffmpeg transcode finished videoId={} durationMs={} audioBitrate={}",
@@ -376,12 +376,83 @@ public class FfmpegHlsPipelineRunner {
         runProcess(cmd, input.getParent());
     }
 
-    private void transcodeToHls(Path input, Path outDir, AudioProcessingResult audioPlan) throws Exception {
+    private record HlsRendition(String subdir, int targetHeightPx, int bandwidthBps) {}
+
+    /**
+     * At least two renditions when source allows — hls.js needs multiple levels for manual quality UI.
+     */
+    private static List<HlsRendition> planHlsRenditions(int sourceHeightPx) {
+        int evenSourceH = Math.max(2, sourceHeightPx - (sourceHeightPx % 2));
+        List<HlsRendition> renditions = new ArrayList<>();
+        if (evenSourceH >= 720) {
+            renditions.add(new HlsRendition("720p", 720, 2_800_000));
+            renditions.add(new HlsRendition("540p", 540, 1_400_000));
+        } else if (evenSourceH > 540) {
+            renditions.add(new HlsRendition("high", evenSourceH, 2_000_000));
+            renditions.add(new HlsRendition("540p", 540, 1_200_000));
+        } else if (evenSourceH > 360) {
+            renditions.add(new HlsRendition("high", evenSourceH, 1_400_000));
+            renditions.add(new HlsRendition("360p", 360, 800_000));
+        } else if (evenSourceH > 240) {
+            renditions.add(new HlsRendition("high", evenSourceH, 900_000));
+            renditions.add(new HlsRendition("240p", 240, 500_000));
+        } else {
+            renditions.add(new HlsRendition("high", evenSourceH, 600_000));
+        }
+        return renditions;
+    }
+
+    private void transcodeToHls(
+        Path input,
+        Path outDir,
+        AudioProcessingResult audioPlan,
+        SourceDimensions dims
+    ) throws Exception {
+        int sourceH = dims.heightPx() != null && dims.heightPx() > 0 ? dims.heightPx() : 720;
+        List<HlsRendition> renditions = planHlsRenditions(sourceH);
+        log.info(
+            "HLS pipeline renditions sourceHeightPx={} count={} targets={}",
+            sourceH,
+            renditions.size(),
+            renditions.stream().map(HlsRendition::targetHeightPx).toList()
+        );
+        if (renditions.size() == 1) {
+            transcodeSingleVariantHls(input, outDir, audioPlan, renditions.get(0), false);
+            return;
+        }
+        for (HlsRendition rendition : renditions) {
+            Path variantDir = outDir.resolve(rendition.subdir());
+            transcodeSingleVariantHls(input, variantDir, audioPlan, rendition, true);
+        }
+        writeMasterPlaylist(outDir, renditions, dims);
+    }
+
+    private void transcodeSingleVariantHls(
+        Path input,
+        Path variantDir,
+        AudioProcessingResult audioPlan,
+        HlsRendition rendition,
+        boolean nestedInMaster
+    ) throws Exception {
+        if (nestedInMaster) {
+            Files.createDirectories(variantDir);
+        }
+        String scale =
+            "scale=-2:" + rendition.targetHeightPx() + ":force_original_aspect_ratio=decrease";
+        Path segmentPattern = nestedInMaster
+            ? variantDir.resolve("segment_%03d.ts")
+            : variantDir.resolve("segment_%03d.ts");
+        Path playlistFile = nestedInMaster
+            ? variantDir.resolve("playlist.m3u8")
+            : variantDir.resolve("playlist.m3u8");
+
         List<String> cmd = new ArrayList<>();
         cmd.add(processingProperties.getFfmpegPath());
         cmd.add("-y");
         cmd.add("-i");
         cmd.add(input.toAbsolutePath().toString());
+        cmd.add("-vf");
+        cmd.add(scale);
         cmd.add("-c:v");
         cmd.add("libx264");
         cmd.add("-preset");
@@ -407,11 +478,38 @@ public class FfmpegHlsPipelineRunner {
         cmd.add("-hls_playlist_type");
         cmd.add("vod");
         cmd.add("-hls_segment_filename");
-        cmd.add("segment_%03d.ts");
+        cmd.add(segmentPattern.toAbsolutePath().toString());
         cmd.add("-f");
         cmd.add("hls");
-        cmd.add("playlist.m3u8");
-        runProcess(cmd, outDir);
+        cmd.add(playlistFile.toAbsolutePath().toString());
+        runProcess(cmd, variantDir);
+    }
+
+    private void writeMasterPlaylist(Path outDir, List<HlsRendition> renditions, SourceDimensions dims)
+        throws IOException {
+        int sourceW = dims.widthPx() != null && dims.widthPx() > 0 ? dims.widthPx() : 720;
+        int sourceH = dims.heightPx() != null && dims.heightPx() > 0 ? dims.heightPx() : 1280;
+        double aspect = (double) sourceW / Math.max(1, sourceH);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("#EXTM3U\n");
+        sb.append("#EXT-X-VERSION:3\n");
+        for (HlsRendition rendition : renditions) {
+            int height = rendition.targetHeightPx();
+            int width = (int) Math.round(height * aspect);
+            if (width % 2 != 0) {
+                width += 1;
+            }
+            sb.append("#EXT-X-STREAM-INF:BANDWIDTH=")
+                .append(rendition.bandwidthBps())
+                .append(",RESOLUTION=")
+                .append(width)
+                .append("x")
+                .append(height)
+                .append("\n");
+            sb.append(rendition.subdir()).append("/playlist.m3u8\n");
+        }
+        Files.writeString(outDir.resolve("playlist.m3u8"), sb.toString(), StandardCharsets.UTF_8);
     }
 
     /**
@@ -462,7 +560,7 @@ public class FfmpegHlsPipelineRunner {
         if (windows) {
             sb.append(
                 "Tren Windows hay dat bien FFMPEG_PATH / FFPROBE_PATH tro toi file .exe day du "
-                    + "(vd C:/ffmpeg/bin/ffprobe.exe) hoac them thu muc bin cua FFmpeg vao PATH cua tien trinh Java (IDE/terminal chay mvn spring-boot:run). "
+                    + "(vd C:/FFmpeg/ffmpeg-8.1.1-essentials_build/bin/ffprobe.exe) hoac them thu muc bin cua FFmpeg vao PATH cua tien trinh Java (IDE/terminal chay mvn spring-boot:run). "
             );
         } else {
             sb.append("Cai FFmpeg hoac dat FFMPEG_PATH / FFPROBE_PATH tro toi ffmpeg/ffprobe. ");
