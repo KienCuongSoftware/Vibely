@@ -81,6 +81,21 @@ class NotificationServiceTest {
     }
 
     @Test
+    void shouldPurgeVideoLikeNotificationsWhenVideoRemoved() {
+        User liker = saveUser("liker_purge", "liker-purge@vibely.dev");
+        User author = saveUser("author_purge", "author-purge@vibely.dev");
+        Video video = saveVideo(author, "Gone soon");
+
+        notificationService.onVideoLike(liker, video);
+        assertThat(userNotificationRepository.count()).isEqualTo(1);
+
+        notificationService.purgeForRemovedVideo(video.getId());
+
+        assertThat(userNotificationRepository.count()).isZero();
+        assertThat(notificationService.getUnreadCount(author.getEmail()).count()).isZero();
+    }
+
+    @Test
     void shouldAggregateMultipleVideoLikesIntoSingleBucket() {
         User author = saveUser("author_agg", "author-agg@vibely.dev");
         User likerA = saveUser("liker_a", "liker-a@vibely.dev");

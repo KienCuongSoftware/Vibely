@@ -173,4 +173,15 @@ public interface UserNotificationRepository extends JpaRepository<UserNotificati
         @Param("ids") Collection<Long> ids,
         @Param("readAt") LocalDateTime readAt
     );
+
+    @Query(
+        """
+        select distinct n from UserNotificationEntity n
+        join fetch n.recipient
+        left join fetch n.comment c
+        where n.video.id = :videoId
+        or c.video.id = :videoId
+        """
+    )
+    List<UserNotificationEntity> findAllLinkedToVideo(@Param("videoId") Long videoId);
 }

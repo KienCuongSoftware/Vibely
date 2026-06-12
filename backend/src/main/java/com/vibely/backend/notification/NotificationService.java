@@ -257,6 +257,21 @@ public class NotificationService {
         userNotificationRepository.markReadBatch(recipient.getId(), ids, LocalDateTime.now());
     }
 
+    /** Xóa thông báo gắn video đã gỡ (soft delete — DB vẫn giữ row videos). */
+    public void purgeForRemovedVideo(Long videoId) {
+        if (videoId == null) {
+            return;
+        }
+        List<UserNotificationEntity> rows = userNotificationRepository.findAllLinkedToVideo(videoId);
+        for (UserNotificationEntity row : rows) {
+            User recipient = row.getRecipient();
+            long notificationId = row.getId();
+            userNotificationActorRepository.deleteByNotificationId(notificationId);
+            userNotificationRepository.delete(row);
+            publishBucketRemoved(recipient, notificationId);
+        }
+    }
+
     private List<SystemNotificationEntity> loadSystemInboxPage(
         SystemNotificationFilter filter,
         SystemNotificationCategory category,

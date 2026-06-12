@@ -9,6 +9,8 @@ public interface UserNotificationActorRepository extends JpaRepository<UserNotif
 
     void deleteByNotificationIdAndActorId(Long notificationId, Long actorId);
 
+    void deleteByNotificationId(Long notificationId);
+
     long countByNotificationId(Long notificationId);
 
     Optional<UserNotificationActorEntity> findFirstByNotificationIdOrderByCreatedAtDescActorIdDesc(

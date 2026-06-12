@@ -23,6 +23,7 @@ import com.vibely.backend.interaction.FollowRepository;
 import com.vibely.backend.interaction.LikeRepository;
 import com.vibely.backend.interaction.VideoViewEntity;
 import com.vibely.backend.interaction.VideoViewRepository;
+import com.vibely.backend.notification.NotificationService;
 import com.vibely.backend.processing.VideoProcessingEnqueueService;
 import com.vibely.backend.auth.UserAvatarResolver;
 import com.vibely.backend.interaction.VideoBookmarkRepository;
@@ -85,6 +86,7 @@ public class VideoService {
     private final ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService;
     private final ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor;
     private final ObjectProvider<RecommendationService> recommendationService;
+    private final NotificationService notificationService;
 
     public VideoService(
         VideoRepository videoRepository,
@@ -108,7 +110,8 @@ public class VideoService {
         ObjectProvider<VideoDiscoveryIndexer> videoDiscoveryIndexer,
         ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService,
         ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor,
-        ObjectProvider<RecommendationService> recommendationService
+        ObjectProvider<RecommendationService> recommendationService,
+        NotificationService notificationService
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
@@ -132,6 +135,7 @@ public class VideoService {
         this.videoEngagementStatsService = videoEngagementStatsService;
         this.userInterestSignalProcessor = userInterestSignalProcessor;
         this.recommendationService = recommendationService;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -473,6 +477,7 @@ public class VideoService {
         }
         video.setStatus(VideoStatus.REMOVED);
         videoRepository.save(video);
+        notificationService.purgeForRemovedVideo(video.getId());
     }
 
     public Video getVideoByPublicIdOrThrow(UUID publicId) {
