@@ -1,3 +1,32 @@
+/** Nút overlay trên video (⋯, âm lượng) — xám mờ kiểu TikTok, hover không đỏ. */
+export const FEED_VIDEO_OVERLAY_BTN_CLASS =
+  "rounded-full bg-black/30 p-2.5 text-xl text-white backdrop-blur-md transition-colors hover:bg-white/20 active:bg-white/25";
+
+/** Nút tròn cột tương tác (thích / bình luận / …). */
+export const FEED_ROUND_ICON_BUTTON_CLASS =
+  "flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/25 bg-black/30 text-xl text-white shadow-[0_2px_12px_rgba(0,0,0,0.22)] backdrop-blur-md transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-35";
+
+/** Panel menu ⋯ — nền đen/xám đậm kiểu TikTok web. */
+export const FEED_MORE_PANEL_SURFACE_CLASS =
+  "overflow-hidden rounded-xl border border-white/10 bg-[rgba(37,37,37,0.97)] py-0.5 shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-xl";
+
+export const FEED_MORE_PANEL_CARET_CLASS =
+  "border-l border-t border-white/10 bg-[rgba(37,37,37,0.97)]";
+
+/** Hàng menu trong panel ⋯ — chữ nhỏ (~13px) như TikTok. */
+export const FEED_MORE_MENU_ROW_CLASS =
+  "flex w-full items-center gap-2.5 border-b border-white/[0.06] px-3 py-2.5 text-left text-[13px] leading-tight text-white transition-colors hover:bg-white/[0.06] active:bg-white/10";
+
+export const FEED_MORE_MENU_BADGE_ICON_CLASS =
+  "flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/15 bg-white/[0.06] text-[9px] font-semibold tracking-wide text-white/90";
+
+export const FEED_MORE_MENU_INLINE_ICON_CLASS =
+  "h-[18px] w-[18px] shrink-0 text-white/95";
+
+export const FEED_MORE_MENU_CHEVRON_CLASS = "h-4 w-4 shrink-0 text-white/40";
+
+export const FEED_MORE_MENU_VALUE_CLASS = "shrink-0 text-[13px] text-white/50";
+
 /** Chiều ngang sidebar (đồng bộ Sidebar.jsx). */
 export const FEED_SIDEBAR_WIDTH_PX = 220;
 

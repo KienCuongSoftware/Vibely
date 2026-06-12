@@ -16,6 +16,8 @@ import {
   BookmarkSaveToast,
   NewCollectionModal,
 } from "../BookmarkSaveFeedback";
+import { usePersistedFeedPlaybackSpeed } from "../../feed/usePersistedFeedPlaybackSpeed.js";
+import { usePersistedFeedVideoQuality } from "../../feed/usePersistedFeedVideoQuality.js";
 import {
   watchTimeNearPlaythroughEnd,
   watchTimeQualifiesForViewRecord,
@@ -35,11 +37,14 @@ import {
 import { FaComment } from "react-icons/fa6";
 import { MdOutlineFileUpload } from "react-icons/md";
 import {
+  buildProfileVideoUrl,
+  buildVideoWatchUrl,
   isVideoPublicId,
   normalizeVideoPublicId,
   videoPublicIdOf,
 } from "../../utils/videoPublicId.js";
 import { FEED_CONFIG } from "../../feed/feedConfig.js";
+import { FEED_ROUND_ICON_BUTTON_CLASS } from "../../feed/feedLayout.js";
 import { trimFeedItemsIfNeeded } from "../../feed/trimFeedItems.js";
 import {
   readFeedFollowedAuthorIds,
@@ -50,8 +55,10 @@ import { handleSidebarMenuSelect } from "../../utils/sidebarNavigation.js";
 import { buildProfilePath } from "../../utils/buildProfilePath.js";
 import { buildMainSidebarMenuItems } from "../../utils/mainSidebarMenuItems.js";
 import { recordProfileLastWatchedFromVideo } from "../../utils/profileLastWatched.js";
+import { AvatarImage, DEFAULT_AVATAR_URL } from "../AvatarImage.jsx";
+import { sanitizeAvatarUrl } from "../../utils/avatarUrl.js";
 
-const DEFAULT_USER_AVATAR_URL = "/images/users/default-avatar.jpeg";
+const DEFAULT_USER_AVATAR_URL = DEFAULT_AVATAR_URL;
 
 function formatCompactCount(value) {
   const count = Number(value ?? 0);
@@ -103,9 +110,7 @@ function mergeVideosByPublicId(prev, incoming) {
 const FEED_DEFAULT_AUTHOR_AVATAR = "/images/users/default-avatar.jpeg";
 
 function resolveVideoAuthorAvatar(item) {
-  const raw = item?.authorAvatarUrl;
-  if (raw != null && String(raw).trim()) return String(raw).trim();
-  return FEED_DEFAULT_AUTHOR_AVATAR;
+  return sanitizeAvatarUrl(item?.authorAvatarUrl, FEED_DEFAULT_AUTHOR_AVATAR);
 }
 
 function formatRelativeTimeVi(isoOrMs) {
@@ -126,9 +131,7 @@ function formatRelativeTimeVi(isoOrMs) {
   return d.toLocaleDateString("vi-VN");
 }
 
-/** Nút tròn viền xám — đồng bộ mũi tên chuyển video & thích / bình luận / lưu / chia sẻ. */
-const FEED_ROUND_ICON_BUTTON =
-  "flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-zinc-600/90 bg-zinc-900/95 text-xl text-zinc-100 shadow-lg transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-35";
+const FEED_ROUND_ICON_BUTTON = FEED_ROUND_ICON_BUTTON_CLASS;
 
 function normalizeVideoItem(item) {
   return {
@@ -189,22 +192,37 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
 
   const [feedStepBusy, setFeedStepBusy] = useState(false);
   const feedStepBusyRef = useRef(false);
+  const activeIndexRef = useRef(activeIndex);
+  activeIndexRef.current = activeIndex;
 
   const moveFeedBySteps = useCallback(
     (steps) => {
       if (!steps || feedStepBusyRef.current) return;
+      const max = Math.max(0, videos.length - 1);
+      const target = Math.min(
+        Math.max(0, activeIndexRef.current + steps),
+        max,
+      );
+      if (target === activeIndexRef.current) return;
+
       feedStepBusyRef.current = true;
       setFeedStepBusy(true);
-      setActiveIndex((prev) => {
-        const max = Math.max(0, videos.length - 1);
-        const n = Math.min(Math.max(0, prev + steps), max);
-        queueMicrotask(() => virtualFeedRef.current?.scrollToIndex(n));
-        return n;
-      });
-      window.setTimeout(() => {
+
+      const finish = () => {
         feedStepBusyRef.current = false;
         setFeedStepBusy(false);
-      }, 320);
+      };
+
+      if (virtualFeedRef.current?.smoothScrollToIndex) {
+        virtualFeedRef.current.smoothScrollToIndex(target, {
+          onComplete: finish,
+        });
+        return;
+      }
+
+      setActiveIndex(target);
+      queueMicrotask(() => virtualFeedRef.current?.scrollToIndex(target));
+      window.setTimeout(finish, 320);
     },
     [videos.length],
   );
@@ -264,7 +282,8 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   /** 'main' | 'quality' — màn phụ chọn chất lượng trong menu ⋯ */
   const [feedMoreMenuSubpage, setFeedMoreMenuSubpage] = useState("main");
   /** HLS: 'auto' | '540' | '720' (hls.js); Safari native HLS không đổi rendition qua UI này */
-  const [feedVideoQuality, setFeedVideoQuality] = useState("auto");
+  const [feedVideoQuality, setFeedVideoQuality] = usePersistedFeedVideoQuality();
+  const [feedPlaybackSpeed, setFeedPlaybackSpeed] = usePersistedFeedPlaybackSpeed();
   const [feedAutoScrollEnabled, setFeedAutoScrollEnabled] = useState(false);
   const [feedPaused, setFeedPaused] = useState(true);
   const [userPaused, setUserPaused] = useState(false);
@@ -821,6 +840,46 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     setFeedMoreMenuOpen(false);
   }, [activeIndex]);
 
+  const handleVideoContextShare = useCallback(
+    (video) => {
+      const targetId = videoPublicIdOf(video);
+      if (!targetId) return;
+      const idx = videos.findIndex((item) => videoPublicIdOf(item) === targetId);
+      if (idx >= 0 && idx !== activeIndexRef.current) {
+        setActiveIndex(idx);
+      }
+      setShareModalOpen(true);
+    },
+    [videos],
+  );
+
+  const handleVideoContextCopyLink = useCallback(async (video) => {
+    const path =
+      buildProfileVideoUrl(video?.authorUsername, video?.publicId) ||
+      buildVideoWatchUrl(video?.publicId);
+    if (!path) return;
+    const url =
+      path.startsWith("http") || typeof window === "undefined"
+        ? path
+        : `${window.location.origin}${path}`;
+    await navigator.clipboard.writeText(url);
+  }, []);
+
+  const handleVideoContextViewDetails = useCallback(
+    (video) => {
+      const path =
+        buildProfileVideoUrl(video?.authorUsername, video?.publicId) ||
+        buildVideoWatchUrl(video?.publicId);
+      if (!path) return;
+      if (path.startsWith("http")) {
+        window.location.assign(path);
+        return;
+      }
+      navigate(path);
+    },
+    [navigate],
+  );
+
   useEffect(() => {
     if (!authReady || !token || !isVideoPublicId(activeVideo?.publicId)) {
       return;
@@ -908,7 +967,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     if (!feedMoreMenuOpen) return undefined;
     const onKey = (e) => {
       if (e.key !== "Escape") return;
-      if (feedMoreMenuSubpage === "quality") {
+      if (feedMoreMenuSubpage === "quality" || feedMoreMenuSubpage === "speed") {
         setFeedMoreMenuSubpage("main");
       } else {
         setFeedMoreMenuOpen(false);
@@ -971,6 +1030,47 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
       });
   }, [token]);
 
+  const autoAdvanceAfterLoadRef = useRef(false);
+
+  const onActiveFeedPlaybackEnded = useCallback(() => {
+    if (!feedAutoScrollEnabled || userPaused || feedCommentsOpen) return;
+    if (activeIndex < videos.length - 1) {
+      moveFeedBySteps(1);
+      return;
+    }
+    if (!hasMoreFeed) return;
+    autoAdvanceAfterLoadRef.current = true;
+    void loadMoreFeed();
+  }, [
+    feedAutoScrollEnabled,
+    userPaused,
+    feedCommentsOpen,
+    activeIndex,
+    videos.length,
+    hasMoreFeed,
+    loadMoreFeed,
+    moveFeedBySteps,
+  ]);
+
+  useEffect(() => {
+    if (!autoAdvanceAfterLoadRef.current) return;
+    if (!feedAutoScrollEnabled || userPaused || feedCommentsOpen) {
+      autoAdvanceAfterLoadRef.current = false;
+      return;
+    }
+    if (activeIndex < videos.length - 1) {
+      autoAdvanceAfterLoadRef.current = false;
+      moveFeedBySteps(1);
+    }
+  }, [
+    videos.length,
+    activeIndex,
+    feedAutoScrollEnabled,
+    userPaused,
+    feedCommentsOpen,
+    moveFeedBySteps,
+  ]);
+
   useEffect(() => {
     const el = feedVideoRef.current;
     if (!el) return;
@@ -978,6 +1078,13 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     el.volume = v;
     el.muted = playbackMuted;
   }, [feedVolume, playbackMuted, activeIndex, activeVideo?.publicId]);
+
+  useEffect(() => {
+    const el = feedVideoRef.current;
+    if (!el) return;
+    const rate = Number(feedPlaybackSpeed);
+    el.playbackRate = Number.isFinite(rate) && rate > 0 ? rate : 1;
+  }, [feedPlaybackSpeed, activeIndex, activeVideo?.publicId]);
 
   useEffect(() => {
     if (!soundUnlocked) return undefined;
@@ -1138,7 +1245,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   aria-label="Menu tài khoản"
                   onClick={() => setShowAccountMenu((prev) => !prev)}
                 >
-                  <img
+                  <AvatarImage
                     className="h-7 w-7 rounded-full object-cover"
                     src={
                       user?.avatarUrl && user.avatarUrl.trim()
@@ -1146,10 +1253,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                         : DEFAULT_USER_AVATAR_URL
                     }
                     alt="avatar người dùng"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      e.currentTarget.src = DEFAULT_USER_AVATAR_URL;
-                    }}
+                    fallbackSrc={DEFAULT_USER_AVATAR_URL}
                   />
                 </button>
               </TooltipHoverWrap>
@@ -1298,6 +1402,8 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   setFeedMoreMenuSubpage={setFeedMoreMenuSubpage}
                   feedVideoQuality={feedVideoQuality}
                   setFeedVideoQuality={setFeedVideoQuality}
+                  feedPlaybackSpeed={feedPlaybackSpeed}
+                  setFeedPlaybackSpeed={setFeedPlaybackSpeed}
                   feedAutoScrollEnabled={feedAutoScrollEnabled}
                   setFeedAutoScrollEnabled={setFeedAutoScrollEnabled}
                   toggleFeedPlayback={toggleFeedPlayback}
@@ -1308,8 +1414,13 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   thumbnailFallbackUrl={undefined}
                   playbackFlash={playbackFlash}
                   onActiveFeedPlaybackTick={onActiveFeedPlaybackTick}
+                  onActiveFeedPlaybackEnded={onActiveFeedPlaybackEnded}
                   commentsDockOpen={feedCommentsOpen}
                   onStageWideChange={setStageWide}
+                  contextMenuToken={token}
+                  onVideoContextShare={handleVideoContextShare}
+                  onVideoContextCopyLink={handleVideoContextCopyLink}
+                  onVideoContextViewDetails={handleVideoContextViewDetails}
                 />
                 <BookmarkSaveToast
                   open={bookmarkToastOpen}
@@ -1332,12 +1443,11 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                       activeAuthorProfilePath ? "cursor-pointer" : "pointer-events-none"
                     }`}
                   >
-                    <img
+                    <AvatarImage
                       className="h-full w-full rounded-full object-cover"
-                      src={
-                        activeVideo?.avatarUrl ?? FEED_DEFAULT_AUTHOR_AVATAR
-                      }
+                      src={activeVideo?.avatarUrl ?? FEED_DEFAULT_AUTHOR_AVATAR}
                       alt={`avatar-${activeVideo?.authorUsername ?? "user"}`}
+                      fallbackSrc={FEED_DEFAULT_AUTHOR_AVATAR}
                     />
                   </Link>
                   {showActiveAuthorFollowSuccess ? (
@@ -1465,11 +1575,10 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     navigate(`/sound?${q.toString()}`);
                   }}
                 >
-                  <img
-                    src={
-                      activeVideo?.avatarUrl ?? FEED_DEFAULT_AUTHOR_AVATAR
-                    }
+                  <AvatarImage
+                    src={activeVideo?.avatarUrl ?? FEED_DEFAULT_AUTHOR_AVATAR}
                     alt=""
+                    fallbackSrc={FEED_DEFAULT_AUTHOR_AVATAR}
                     className="h-full w-full scale-110 object-cover animate-[spin_12s_linear_infinite]"
                   />
                 </button>

@@ -6,7 +6,7 @@ export function FeedPage() {
   const { token, user, logout, authReady } = useAuth();
 
   useEffect(() => {
-    document.title = "Xem các video thịnh hành dành cho bạn | Vibely";
+      document.title = "Xem các video thịnh hành dành cho bạn | Vibely";
   }, []);
 
   return (

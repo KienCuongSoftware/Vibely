@@ -2,6 +2,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Hls from 'hls.js'
 import { FEED_CONFIG } from '../../feed/feedConfig.js'
 import { isHlsPlaybackUrl } from '../../feed/feedPlayback.js'
+import {
+  applyStreamQuality,
+  getAvailableQualitiesFromLevels,
+} from '../../feed/hlsQualityUtils.js'
 import { detectLetterboxedLandscapeLayout } from './feedLetterboxLayout'
 
 function buildHlsInstance({ prefetch = false } = {}) {
@@ -15,40 +19,6 @@ function buildHlsInstance({ prefetch = false } = {}) {
     backBufferLength: 0,
     maxBufferSize: prefetch ? 12 * 1000 * 1000 : 18 * 1000 * 1000,
   })
-}
-
-/**
- * @param {import('hls.js').default} hls
- * @param {'auto' | '540' | '720'} mode
- */
-function applyStreamQuality(hls, mode) {
-  if (!hls?.levels?.length) return
-  if (mode === 'auto') {
-    hls.currentLevel = -1
-    return
-  }
-  const cap = mode === '720' ? 720 : 540
-  let picked = -1
-  let bestH = -1
-  for (let i = 0; i < hls.levels.length; i++) {
-    const h = hls.levels[i]?.height ?? 0
-    if (h > 0 && h <= cap && h > bestH) {
-      bestH = h
-      picked = i
-    }
-  }
-  if (picked < 0) {
-    let minH = Infinity
-    for (let i = 0; i < hls.levels.length; i++) {
-      const h = hls.levels[i]?.height ?? 99999
-      if (h < minH) {
-        minH = h
-        picked = i
-      }
-    }
-    if (picked < 0) picked = 0
-  }
-  hls.currentLevel = picked
 }
 
 function isHlsUrl(url) {
@@ -100,7 +70,10 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
     onClick,
     feedVideoId,
     onPlaybackTick,
+    onPlaybackEnded,
     streamQuality = 'auto',
+    /** Gọi khi manifest HLS đã parse — danh sách mode khả dụng từ rendition. */
+    onHlsQualitiesAvailable,
     /** Phóng nhẹ video ngang khi đang dùng object-cover (overflow ẩn) */
     landscapeBoost = false,
     /** Video ngang: hiển thị đủ khung (letterbox) thay vì cắt mép (cover) */
@@ -116,6 +89,8 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
   streamQualityRef.current = streamQuality
   const onIntrinsicLandscapeRef = useRef(onIntrinsicLandscape)
   onIntrinsicLandscapeRef.current = onIntrinsicLandscape
+  const onHlsQualitiesAvailableRef = useRef(onHlsQualitiesAvailable)
+  onHlsQualitiesAvailableRef.current = onHlsQualitiesAvailable
   const feedVideoIdRef = useRef(feedVideoId)
   feedVideoIdRef.current = feedVideoId
   const isActiveRef = useRef(isActive)
@@ -240,6 +215,9 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
       hls.attachMedia(el)
       const onParsed = () => {
         if (cancelled) return
+        onHlsQualitiesAvailableRef.current?.(
+          getAvailableQualitiesFromLevels(hls.levels),
+        )
         applyStreamQuality(hls, streamQualityRef.current)
         if (loadMedia && !isActiveRef.current) {
           try {
@@ -256,12 +234,23 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
         if (cancelled || !isActiveRef.current) return
         requestAnimationFrame(() => reportIntrinsicLayout(el))
       }
+      const onError = (_event, data) => {
+        if (cancelled || !data?.fatal) return
+        try {
+          hls.destroy()
+        } catch {
+          /* noop */
+        }
+        if (hlsRef.current === hls) hlsRef.current = null
+      }
       hls.on(Hls.Events.MANIFEST_PARSED, onParsed)
       hls.on(Hls.Events.LEVEL_SWITCHED, onLevelSwitch)
+      hls.on(Hls.Events.ERROR, onError)
       return () => {
         cancelled = true
         hls.off(Hls.Events.MANIFEST_PARSED, onParsed)
         hls.off(Hls.Events.LEVEL_SWITCHED, onLevelSwitch)
+        hls.off(Hls.Events.ERROR, onError)
         destroyHls()
         try {
           el.pause()
@@ -303,7 +292,11 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
 
   useEffect(() => {
     const hls = hlsRef.current
-    if (hls) applyStreamQuality(hls, streamQuality)
+    if (!hls) return
+    const applied = applyStreamQuality(hls, streamQuality)
+    if (!applied && streamQuality !== 'auto') {
+      applyStreamQuality(hls, 'auto')
+    }
   }, [streamQuality])
 
   useEffect(() => {
@@ -425,7 +418,10 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
       onLoadedData={handleLoadedData}
       onTimeUpdate={onPlaybackTick}
       onSeeked={onPlaybackTick}
-      onEnded={onPlaybackTick}
+      onEnded={(e) => {
+        onPlaybackTick?.(e)
+        onPlaybackEnded?.(e)
+      }}
       onClick={onClick}
     />
   )

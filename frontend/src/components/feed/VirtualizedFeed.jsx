@@ -2,6 +2,14 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import React, { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, forwardRef, memo } from 'react'
 import { FEED_CONFIG } from '../../feed/feedConfig.js'
 
+/** Thời gian lướt programmatic — khớp cảm giác vuốt TikTok web. */
+const FEED_SMOOTH_SCROLL_MS = 380
+
+/** easeOutCubic */
+function smoothScrollEase(t) {
+  return 1 - (1 - t) ** 3
+}
+
 /** Coarse buckets — avoid re-rendering the whole feed on every IO micro-update. */
 function visibilityBucket(ratio) {
   if (ratio >= FEED_CONFIG.PLAY_VISIBILITY_RATIO) return 'play'
@@ -47,6 +55,8 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
   itemHeightPxRef.current = itemHeightPx
   /** Chặn IO đổi activeIndex ngay sau khi đóng bình luận / đổi chiều cao slot. */
   const suppressActiveChangeUntilRef = useRef(0)
+  const smoothScrollInFlightRef = useRef(null)
+  const smoothScrollCleanupRef = useRef(null)
   /** Bumps on IO updates so slide visibility ratios reach players without mounting all rows. */
   const [visibilityTick, setVisibilityTick] = useState(0)
 
@@ -57,9 +67,89 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
     overscan: FEED_CONFIG.VIRTUAL_OVERSCAN,
   })
 
+  const finishSmoothScroll = useCallback(
+    (target, onComplete) => {
+      if (smoothScrollInFlightRef.current?.target !== target) return
+      smoothScrollCleanupRef.current?.()
+      smoothScrollCleanupRef.current = null
+      smoothScrollInFlightRef.current = null
+      if (activeIndexRef.current !== target) {
+        onActiveIndexChange(target)
+      }
+      ratiosRef.current.clear()
+      ratiosRef.current.set(target, 1)
+      onComplete?.()
+    },
+    [onActiveIndexChange],
+  )
+
+  const smoothScrollToIndex = useCallback(
+    (index, { onComplete } = {}) => {
+      const root = scrollRef.current
+      if (!root) {
+        onComplete?.()
+        return
+      }
+      smoothScrollCleanupRef.current?.()
+
+      const max = Math.max(0, videos.length - 1)
+      const target = Math.min(Math.max(0, index), max)
+      const targetTop = target * itemHeightPxRef.current
+      const startTop = root.scrollTop
+
+      if (Math.abs(targetTop - startTop) < 1) {
+        finishSmoothScroll(target, onComplete)
+        return
+      }
+
+      smoothScrollInFlightRef.current = { target }
+      suppressActiveChangeUntilRef.current = Number.POSITIVE_INFINITY
+
+      const prevSnap = root.style.scrollSnapType
+      root.style.scrollSnapType = 'none'
+
+      const startTime = performance.now()
+      let rafId = 0
+
+      const step = (now) => {
+        if (smoothScrollInFlightRef.current?.target !== target) return
+
+        const elapsed = now - startTime
+        const t = Math.min(1, elapsed / FEED_SMOOTH_SCROLL_MS)
+        const top = startTop + (targetTop - startTop) * smoothScrollEase(t)
+        root.scrollTop = top
+        try {
+          rowVirtualizer.scrollToOffset(top, { align: 'start' })
+        } catch {
+          /* virtualizer chưa sẵn sàng */
+        }
+        root.dispatchEvent(new Event('scroll', { bubbles: true }))
+        setVisibilityTick((v) => v + 1)
+
+        if (t < 1) {
+          rafId = requestAnimationFrame(step)
+          return
+        }
+
+        root.scrollTop = targetTop
+        root.style.scrollSnapType = prevSnap
+        suppressActiveChangeUntilRef.current = performance.now() + 480
+        finishSmoothScroll(target, onComplete)
+      }
+
+      rafId = requestAnimationFrame(step)
+      smoothScrollCleanupRef.current = () => {
+        cancelAnimationFrame(rafId)
+        root.style.scrollSnapType = prevSnap
+      }
+    },
+    [videos.length, finishSmoothScroll, rowVirtualizer],
+  )
+
   const syncScrollToActive = useCallback(() => {
     const root = scrollRef.current
     if (!root) return
+    if (smoothScrollInFlightRef.current) return
     if (scrollLockedRef.current) {
       root.scrollTop = 0
       return
@@ -98,9 +188,11 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
           root.scrollTop = Math.max(0, index) * itemHeightPx
         }
       },
+      smoothScrollToIndex,
+      isSmoothScrolling: () => Boolean(smoothScrollInFlightRef.current),
       getScrollElement: () => scrollRef.current,
     }),
-    [rowVirtualizer, itemHeightPx],
+    [rowVirtualizer, itemHeightPx, smoothScrollToIndex],
   )
 
   const flushActive = useCallback(() => {
@@ -116,13 +208,15 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
       bestIdx >= 0 &&
       best >= FEED_CONFIG.ACTIVE_INDEX_MIN_RATIO &&
       !freezeActiveIndexRef.current &&
+      !smoothScrollInFlightRef.current &&
       performance.now() >= suppressActiveChangeUntilRef.current
     ) {
       onActiveIndexChange(bestIdx)
     }
 
-    const center =
-      bestIdx >= 0 && best >= FEED_CONFIG.ACTIVE_INDEX_MIN_RATIO
+    const center = smoothScrollInFlightRef.current
+      ? activeIndexRef.current
+      : bestIdx >= 0 && best >= FEED_CONFIG.ACTIVE_INDEX_MIN_RATIO
         ? bestIdx
         : activeIndexRef.current
     const lo = Math.max(0, center - mediaWindowRadius - 1)
@@ -253,9 +347,12 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
           const video = videos[vi.index]
           if (!video) return null
           const distance = Math.abs(vi.index - activeIndex)
+          const smoothTarget = smoothScrollInFlightRef.current?.target
           /** Luôn buffer video kế tiếp — tránh giật khi vuốt như TikTok */
           const loadMedia =
-            distance <= mediaWindowRadius || vi.index === activeIndex + 1
+            distance <= mediaWindowRadius ||
+            vi.index === activeIndex + 1 ||
+            (typeof smoothTarget === 'number' && vi.index === smoothTarget)
           const visibilityRatio = ratiosRef.current.get(vi.index) ?? 0
           const isActive = vi.index === activeIndex
           const slotTopPx = vi.index * itemHeightPx

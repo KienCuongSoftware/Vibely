@@ -23,20 +23,37 @@ import {
 import {
   LuArrowDownFromLine,
   LuFlag,
+  LuGauge,
   LuHeartOff,
   LuPictureInPicture2,
 } from "react-icons/lu";
+import {
+  FEED_PLAYBACK_SPEEDS,
+  formatPlaybackSpeedBadge,
+  formatPlaybackSpeedOption,
+} from "../../feed/feedPlaybackSpeedStorage.js";
 import { resolveFeedPlaybackUrl } from "../../feed/feedPlayback.js";
+import { sortQualityOptions } from "../../feed/hlsQualityUtils.js";
+import { downloadWatermarkedVideo } from "../../feed/videoDownload.js";
 import { useFeedPrefetch } from "../../feed/useFeedPrefetch.js";
+import { VideoContextMenu } from "./VideoContextMenu.jsx";
 import {
   FEED_COMMENTS_PANEL_WIDTH_PX,
+  FEED_MORE_MENU_BADGE_ICON_CLASS,
+  FEED_MORE_MENU_CHEVRON_CLASS,
+  FEED_MORE_MENU_INLINE_ICON_CLASS,
+  FEED_MORE_MENU_ROW_CLASS,
+  FEED_MORE_MENU_VALUE_CLASS,
+  FEED_MORE_PANEL_CARET_CLASS,
+  FEED_MORE_PANEL_SURFACE_CLASS,
+  FEED_VIDEO_OVERLAY_BTN_CLASS,
   computeFeedLandscapeStageWidthPx,
 } from "../../feed/feedLayout.js";
 
 /** Track cách đáy card — knob 14px căn giữa track, mép dưới trùng đáy card (không clip). */
 const FEED_PROGRESS_TRACK_BOTTOM_PX = 5;
-/** Khoảng cách overlay caption / Vibely ID so với đáy card (trên vùng progress). */
-const FEED_CAPTION_BOTTOM_PX = 22;
+/** Padding đáy overlay caption — trên thanh progress, không dính sát mép. */
+const FEED_CAPTION_PROGRESS_PAD_PX = 18;
 
 function feedAuthorProfilePath(video) {
   const raw = String(video?.authorUsername ?? "vibely")
@@ -190,6 +207,24 @@ function feedQualityLabel(mode) {
   return "Tự động";
 }
 
+function FeedMoreSubpageHeader({ title, onBack }) {
+  return (
+    <div className="relative flex items-center border-b border-white/[0.06] px-2 py-2">
+      <button
+        type="button"
+        className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-white transition-colors hover:bg-white/[0.06]"
+        onClick={onBack}
+        aria-label="Quay lại"
+      >
+        <IoChevronBack className="h-4 w-4" aria-hidden />
+      </button>
+      <span className="pointer-events-none absolute inset-x-0 text-center text-[13px] font-semibold text-white">
+        {title}
+      </span>
+    </div>
+  );
+}
+
 function resolveVideoDurationSeconds(el) {
   if (!el || el.tagName !== "VIDEO") return 0;
   if (Number.isFinite(el.duration) && el.duration > 0) return el.duration;
@@ -252,7 +287,7 @@ function FeedSlideAuthorMeta({
     <div className={`pointer-events-auto relative shrink-0 ${padClass}`}>
       {needsGradient ? (
         <div
-          className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/50 via-black/18 to-transparent"
+          className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/28 via-black/10 to-transparent"
           aria-hidden
         />
       ) : null}
@@ -358,7 +393,7 @@ function FeedVolumeControl({
 
   return (
     <div
-      className={`feed-volume-control flex h-9 items-center overflow-hidden rounded-full bg-black/50 text-white shadow-[0_2px_12px_rgba(0,0,0,0.35)] backdrop-blur-md transition-[max-width,opacity] duration-200 ease-out ${pinned ? expanded : collapsed}`}
+      className={`feed-volume-control flex h-9 items-center overflow-hidden rounded-full bg-black/30 text-white shadow-[0_2px_12px_rgba(0,0,0,0.22)] backdrop-blur-md transition-[max-width,opacity] duration-200 ease-out ${pinned ? expanded : collapsed}`}
       onPointerDown={pinInteraction}
       onMouseDown={stopFeedPointer}
       onClick={stopFeedPointer}
@@ -432,6 +467,8 @@ export function FeedPhoneStage({
   setFeedMoreMenuSubpage,
   feedVideoQuality,
   setFeedVideoQuality,
+  feedPlaybackSpeed,
+  setFeedPlaybackSpeed,
   feedAutoScrollEnabled,
   setFeedAutoScrollEnabled,
   toggleFeedPlayback,
@@ -442,10 +479,16 @@ export function FeedPhoneStage({
   thumbnailFallbackUrl,
   playbackFlash,
   onActiveFeedPlaybackTick,
+  onActiveFeedPlaybackEnded,
   /** Panel bình luận bên phải đang mở — video ngang thu nhỏ khung. */
   commentsDockOpen = false,
   /** Báo parent biết khung đang ở chế độ ngang (16:9). */
   onStageWideChange,
+  /** Menu chuột phải video (TikTok-style). */
+  contextMenuToken,
+  onVideoContextShare,
+  onVideoContextCopyLink,
+  onVideoContextViewDetails,
 }) {
   /** Khung rộng từ trình duyệt (videoWidth/Height sau decode). */
   const [clientWideForLandscape, setClientWideForLandscape] = useState(false);
@@ -463,6 +506,56 @@ export function FeedPhoneStage({
     current: 0,
     duration: 0,
   });
+  const [hlsQualityOptions, setHlsQualityOptions] = useState(["auto"]);
+  const [videoContextMenu, setVideoContextMenu] = useState(null);
+  const [videoDownloadBusy, setVideoDownloadBusy] = useState(false);
+
+  const closeVideoContextMenu = useCallback(() => {
+    setVideoContextMenu(null);
+  }, []);
+
+  const handleVideoContextMenu = useCallback((event, video) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setVideoContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      video,
+    });
+  }, []);
+
+  const handleContextMenuDownload = useCallback(async () => {
+    const video = videoContextMenu?.video;
+    const publicId = video?.publicId;
+    if (!publicId || videoDownloadBusy) return;
+    setVideoDownloadBusy(true);
+    try {
+      const username = String(video?.authorUsername ?? "vibely")
+        .trim()
+        .replace(/^@+/, "");
+      await downloadWatermarkedVideo(publicId, username, {
+        token: contextMenuToken,
+      });
+      closeVideoContextMenu();
+    } catch (error) {
+      window.alert(
+        error instanceof Error ? error.message : "Không tải được video.",
+      );
+    } finally {
+      setVideoDownloadBusy(false);
+    }
+  }, [
+    closeVideoContextMenu,
+    contextMenuToken,
+    videoContextMenu?.video,
+    videoDownloadBusy,
+  ]);
+
+  const handleHlsQualitiesAvailable = useCallback((options) => {
+    setHlsQualityOptions(sortQualityOptions(options?.length ? options : ["auto"]));
+  }, []);
+
+  const qualityMenuOptions = sortQualityOptions(hlsQualityOptions);
 
   const setProgressPct = useCallback((pct) => {
     const p = Math.min(100, Math.max(0, pct));
@@ -613,6 +706,7 @@ export function FeedPhoneStage({
   useLayoutEffect(() => {
     setClientWideForLandscape(false);
     setThumbWideForLandscape(false);
+    setHlsQualityOptions(["auto"]);
   }, [activeIndex, activeVideoPublicId]);
 
   useEffect(() => {
@@ -738,8 +832,10 @@ export function FeedPhoneStage({
 
   /** Khóa scroll + đồng bộ vị trí khi mở/đóng bình luận hoặc đổi kích thước khung. */
   useLayoutEffect(() => {
+    if (virtualFeedRef.current?.isSmoothScrolling?.()) return undefined;
     const top = Math.max(0, activeIndex) * virtualSlotHeightPx;
     const sync = () => {
+      if (virtualFeedRef.current?.isSmoothScrolling?.()) return;
       const root = virtualFeedRef.current?.getScrollElement?.();
       if (root && !commentsDockOpen) root.scrollTop = top;
       virtualFeedRef.current?.scrollToIndex(activeIndex, { align: "start" });
@@ -797,6 +893,7 @@ export function FeedPhoneStage({
               className={`relative h-full w-full overflow-hidden ${
                 isActive ? "group" : ""
               }`}
+              onContextMenu={(event) => handleVideoContextMenu(event, video)}
             >
               {hasPlayback ? (
                 <div
@@ -809,7 +906,7 @@ export function FeedPhoneStage({
                     videoUrl={playbackUrl}
                     poster={poster}
                     muted={!isActive || playbackMuted}
-                    loop
+                    loop={!feedAutoScrollEnabled}
                     loadMedia={loadMedia && hasPlayback}
                     isActive={isActive}
                     userPaused={isActive && userPaused}
@@ -818,8 +915,14 @@ export function FeedPhoneStage({
                     }
                     feedVideoId={video.publicId}
                     streamQuality={feedVideoQuality}
+                    onHlsQualitiesAvailable={
+                      isActive ? handleHlsQualitiesAvailable : undefined
+                    }
                     onPlaybackTick={
                       isActive ? handleActivePlaybackTick : undefined
+                    }
+                    onPlaybackEnded={
+                      isActive ? onActiveFeedPlaybackEnded : undefined
                     }
                     className="relative z-0 h-full w-full cursor-pointer"
                     onClick={toggleFeedPlayback}
@@ -882,9 +985,9 @@ export function FeedPhoneStage({
                           aria-label="Menu video"
                           aria-expanded={feedMoreMenuOpen}
                           aria-haspopup="dialog"
-                          className={`pointer-events-auto cursor-pointer rounded-full bg-black/45 p-2.5 text-xl text-white backdrop-blur-sm transition-opacity duration-200 hover:bg-red-500/60 focus-visible:opacity-100 ${
+                          className={`pointer-events-auto cursor-pointer transition-opacity duration-200 focus-visible:opacity-100 ${FEED_VIDEO_OVERLAY_BTN_CLASS} ${
                             feedMoreMenuOpen
-                              ? "opacity-100"
+                              ? "bg-white/25 opacity-100"
                               : "opacity-0 group-hover:opacity-100"
                           }`}
                           onClick={(e) => {
@@ -904,155 +1007,187 @@ export function FeedPhoneStage({
                         role="dialog"
                         aria-modal="true"
                         aria-label="Menu video"
-                        className="feed-video-more-panel pointer-events-auto absolute top-[64px] right-[6px] z-[55] w-[min(232px,calc(100%-12px))] overflow-visible"
+                        className="feed-video-more-panel pointer-events-auto absolute top-[52px] right-2.5 z-[55] w-[min(220px,calc(100%-16px))] overflow-visible"
                         onMouseDown={(e) => e.stopPropagation()}
                       >
                         <div
                           aria-hidden
-                          className="pointer-events-none absolute top-[-5px] right-[21px] z-10 h-2.5 w-2.5 rotate-45 rounded-[1px] border-l border-t border-white/18 bg-[rgba(72,72,74,0.92)] shadow-sm"
+                          className={`pointer-events-none absolute top-[-5px] right-[18px] z-10 h-2.5 w-2.5 rotate-45 rounded-[1px] shadow-sm ${FEED_MORE_PANEL_CARET_CLASS}`}
                         />
-                        <div className="overflow-hidden rounded-xl border border-white/18 bg-[rgba(72,72,74,0.92)] py-1 shadow-[0_12px_36px_rgba(0,0,0,0.28)] backdrop-blur-xl">
+                        <div className={FEED_MORE_PANEL_SURFACE_CLASS}>
                           {feedMoreMenuSubpage === "main" ? (
                             <>
                               <button
                                 type="button"
-                                className="flex w-full items-center gap-3 border-b border-white/10 px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14"
-                                onClick={() =>
-                                  setFeedMoreMenuSubpage("quality")
-                                }
+                                className={FEED_MORE_MENU_ROW_CLASS}
+                                onClick={() => setFeedMoreMenuSubpage("speed")}
                               >
-                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/28 text-[10px] font-semibold tracking-wide text-white/95">
-                                  HD
-                                </span>
-                                <span className="min-w-0 flex-1 font-medium">
-                                  Chất lượng
-                                </span>
-                                <span className="shrink-0 text-[15px] text-white/55">
-                                  {feedQualityLabel(feedVideoQuality)}
+                                <LuGauge
+                                  strokeWidth={1.75}
+                                  className={FEED_MORE_MENU_INLINE_ICON_CLASS}
+                                  aria-hidden
+                                />
+                                <span className="min-w-0 flex-1">Tốc độ</span>
+                                <span className={FEED_MORE_MENU_VALUE_CLASS}>
+                                  {formatPlaybackSpeedBadge(feedPlaybackSpeed)}
                                 </span>
                                 <IoChevronForward
-                                  className="h-5 w-5 shrink-0 text-white/45"
+                                  className={FEED_MORE_MENU_CHEVRON_CLASS}
                                   aria-hidden
                                 />
                               </button>
 
                               <button
                                 type="button"
-                                className="flex w-full items-center gap-3 border-b border-white/10 px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14"
+                                className={FEED_MORE_MENU_ROW_CLASS}
+                                onClick={() =>
+                                  setFeedMoreMenuSubpage("quality")
+                                }
                               >
-                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/28 text-[10px] font-semibold tracking-wide text-white/95">
-                                  CC
+                                <span className={FEED_MORE_MENU_BADGE_ICON_CLASS}>
+                                  HD
                                 </span>
-                                <span className="font-medium">Phụ đề</span>
-                              </button>
-
-                              <div className="flex w-full items-center gap-3 border-b border-white/10 px-3.5 py-[13px] text-[15px] leading-snug text-white">
-                                <LuArrowDownFromLine
-                                  strokeWidth={1.5}
-                                  className="h-[22px] w-[22px] shrink-0 text-white"
+                                <span className="min-w-0 flex-1">Chất lượng</span>
+                                <span className={FEED_MORE_MENU_VALUE_CLASS}>
+                                  {feedQualityLabel(feedVideoQuality)}
+                                </span>
+                                <IoChevronForward
+                                  className={FEED_MORE_MENU_CHEVRON_CLASS}
                                   aria-hidden
                                 />
-                                <span className="min-w-0 flex-1 font-medium">
-                                  Cuộn tự động
-                                </span>
+                              </button>
+
+                              <div className={FEED_MORE_MENU_ROW_CLASS}>
+                                <LuArrowDownFromLine
+                                  strokeWidth={1.75}
+                                  className={FEED_MORE_MENU_INLINE_ICON_CLASS}
+                                  aria-hidden
+                                />
+                                <span className="min-w-0 flex-1">Cuộn tự động</span>
                                 <button
                                   type="button"
                                   role="switch"
                                   aria-checked={feedAutoScrollEnabled}
-                                  className={`relative h-7 w-[52px] shrink-0 rounded-full transition-colors ${feedAutoScrollEnabled ? "bg-red-600" : "bg-white/30"}`}
+                                  className={`relative h-6 w-[46px] shrink-0 rounded-full transition-colors ${feedAutoScrollEnabled ? "bg-red-600" : "bg-white/25"}`}
                                   onClick={() =>
                                     setFeedAutoScrollEnabled((prev) => !prev)
                                   }
                                 >
                                   <span
-                                    className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200 ${feedAutoScrollEnabled ? "translate-x-[26px]" : "translate-x-0"}`}
+                                    className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ${feedAutoScrollEnabled ? "translate-x-5" : "translate-x-0"}`}
                                   />
                                 </button>
                               </div>
 
                               <button
                                 type="button"
-                                className="flex w-full items-center gap-3 border-b border-white/10 px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14"
+                                className={FEED_MORE_MENU_ROW_CLASS}
                                 onClick={() =>
                                   void toggleFeedPictureInPicture()
                                 }
                               >
                                 <LuPictureInPicture2
-                                  strokeWidth={1.5}
-                                  className="h-[22px] w-[22px] shrink-0 text-white"
+                                  strokeWidth={1.75}
+                                  className={FEED_MORE_MENU_INLINE_ICON_CLASS}
                                   aria-hidden
                                 />
-                                <span className="font-medium">
-                                  Trình phát nổi
-                                </span>
+                                <span className="flex-1">Trình phát nổi</span>
                               </button>
+
+                              <button type="button" className={`${FEED_MORE_MENU_ROW_CLASS} border-b-0`}>
+                                <span className={FEED_MORE_MENU_BADGE_ICON_CLASS}>
+                                  CC
+                                </span>
+                                <span className="flex-1">Phụ đề</span>
+                              </button>
+
+                              <div className="my-0.5 border-t border-white/[0.08]" aria-hidden />
 
                               <button
                                 type="button"
-                                className="flex w-full items-center gap-3 border-b border-white/10 px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14"
+                                className={FEED_MORE_MENU_ROW_CLASS}
                                 onClick={() => setFeedMoreMenuOpen(false)}
                               >
                                 <LuHeartOff
-                                  strokeWidth={1.5}
-                                  className="h-[22px] w-[22px] shrink-0 text-white"
+                                  strokeWidth={1.75}
+                                  className={FEED_MORE_MENU_INLINE_ICON_CLASS}
                                   aria-hidden
                                 />
-                                <span className="font-medium">
-                                  Không quan tâm
-                                </span>
+                                <span className="flex-1">Không quan tâm</span>
                               </button>
 
                               <button
                                 type="button"
-                                className="flex w-full items-center gap-3 px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14"
+                                className={`${FEED_MORE_MENU_ROW_CLASS} border-b-0`}
                                 onClick={() => setFeedMoreMenuOpen(false)}
                               >
                                 <LuFlag
-                                  strokeWidth={1.5}
-                                  className="h-[22px] w-[22px] shrink-0 text-white"
+                                  strokeWidth={1.75}
+                                  className={FEED_MORE_MENU_INLINE_ICON_CLASS}
                                   aria-hidden
                                 />
-                                <span className="font-medium">Báo cáo</span>
+                                <span className="flex-1">Báo cáo</span>
                               </button>
+                            </>
+                          ) : feedMoreMenuSubpage === "speed" ? (
+                            <>
+                              <FeedMoreSubpageHeader
+                                title="Tốc độ"
+                                onBack={() => setFeedMoreMenuSubpage("main")}
+                              />
+                              {FEED_PLAYBACK_SPEEDS.map((rate) => {
+                                const selected = feedPlaybackSpeed === rate;
+                                return (
+                                  <button
+                                    key={rate}
+                                    type="button"
+                                    className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-[13px] text-white transition-colors hover:bg-white/[0.06] active:bg-white/10 ${selected ? "bg-white/[0.08]" : ""}`}
+                                    onClick={() => {
+                                      setFeedPlaybackSpeed(rate);
+                                      setFeedMoreMenuSubpage("main");
+                                      setFeedMoreMenuOpen(false);
+                                    }}
+                                  >
+                                    <span>{formatPlaybackSpeedOption(rate)}</span>
+                                    {selected ? (
+                                      <IoCheckmark
+                                        className="h-4 w-4 shrink-0 text-white"
+                                        aria-hidden
+                                      />
+                                    ) : (
+                                      <span className="h-4 w-4 shrink-0" aria-hidden />
+                                    )}
+                                  </button>
+                                );
+                              })}
                             </>
                           ) : (
                             <>
-                              <button
-                                type="button"
-                                className="flex w-full items-center gap-2 border-b border-white/10 px-3 py-2.5 text-left text-[15px] font-semibold text-white transition-colors hover:bg-white/10 active:bg-white/14"
-                                onClick={() => setFeedMoreMenuSubpage("main")}
-                              >
-                                <IoChevronBack
-                                  className="h-5 w-5 shrink-0 text-white"
-                                  aria-hidden
-                                />
-                                <span>Chất lượng</span>
-                              </button>
-                              {["auto", "540", "720"].map((q) => {
+                              <FeedMoreSubpageHeader
+                                title="Chất lượng"
+                                onBack={() => setFeedMoreMenuSubpage("main")}
+                              />
+                              {qualityMenuOptions.map((q) => {
                                 const selected = feedVideoQuality === q;
                                 return (
                                   <button
                                     key={q}
                                     type="button"
-                                    className={`flex w-full items-center justify-between px-3.5 py-[13px] text-left text-[15px] leading-snug text-white transition-colors hover:bg-white/10 active:bg-white/14 ${selected ? "bg-white/12" : ""}`}
+                                    className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-[13px] text-white transition-colors hover:bg-white/[0.06] active:bg-white/10 ${selected ? "bg-white/[0.08]" : ""}`}
                                     onClick={() => {
                                       setFeedVideoQuality(q);
                                       setFeedMoreMenuSubpage("main");
+                                      setFeedMoreMenuOpen(false);
                                     }}
                                   >
-                                    <span className="font-medium">
-                                      {feedQualityLabel(q)}
-                                    </span>
+                                    <span>{feedQualityLabel(q)}</span>
                                     {selected ? (
                                       <IoCheckmark
-                                        className="h-5 w-5 shrink-0 text-white"
+                                        className="h-4 w-4 shrink-0 text-white"
                                         aria-hidden
                                       />
                                     ) : (
-                                      <span
-                                        className="h-5 w-5 shrink-0"
-                                        aria-hidden
-                                      />
+                                      <span className="h-4 w-4 shrink-0" aria-hidden />
                                     )}
                                   </button>
                                 );
@@ -1071,7 +1206,7 @@ export function FeedPhoneStage({
                   videoUrl={playbackUrl}
                   poster={poster}
                   muted={!isActive || playbackMuted}
-                  loop
+                  loop={!feedAutoScrollEnabled}
                   loadMedia={loadMedia && hasPlayback}
                   isActive={isActive}
                   userPaused={isActive && userPaused}
@@ -1080,8 +1215,14 @@ export function FeedPhoneStage({
                   }
                   feedVideoId={video.publicId}
                   streamQuality={feedVideoQuality}
+                  onHlsQualitiesAvailable={
+                    isActive ? handleHlsQualitiesAvailable : undefined
+                  }
                   onPlaybackTick={
                     isActive ? handleActivePlaybackTick : undefined
+                  }
+                  onPlaybackEnded={
+                    isActive ? onActiveFeedPlaybackEnded : undefined
                   }
                   className="relative z-0 h-full w-full cursor-pointer"
                   onClick={toggleFeedPlayback}
@@ -1096,8 +1237,8 @@ export function FeedPhoneStage({
 
               {isActive && hasPlayback ? (
                 <div
-                  className="pointer-events-none absolute inset-x-0 z-[50] max-h-[42%] overflow-hidden [&_*]:pointer-events-auto"
-                  style={{ bottom: FEED_CAPTION_BOTTOM_PX }}
+                  className="pointer-events-none absolute inset-x-0 bottom-0 z-[50] max-h-[42%] overflow-hidden [&_*]:pointer-events-auto"
+                  style={{ paddingBottom: FEED_CAPTION_PROGRESS_PAD_PX }}
                 >
                   <FeedSlideAuthorMeta
                     rawVibelyUser={rawVibelyUser}
@@ -1197,6 +1338,30 @@ export function FeedPhoneStage({
           </div>
         </div>
       ) : null}
+      <VideoContextMenu
+        open={Boolean(videoContextMenu)}
+        x={videoContextMenu?.x ?? 0}
+        y={videoContextMenu?.y ?? 0}
+        downloading={videoDownloadBusy}
+        onClose={closeVideoContextMenu}
+        onDownload={handleContextMenuDownload}
+        onShare={() => {
+          if (videoContextMenu?.video) {
+            onVideoContextShare?.(videoContextMenu.video);
+          }
+        }}
+        onCopyLink={() => {
+          if (videoContextMenu?.video) {
+            return onVideoContextCopyLink?.(videoContextMenu.video);
+          }
+          return undefined;
+        }}
+        onViewDetails={() => {
+          if (videoContextMenu?.video) {
+            onVideoContextViewDetails?.(videoContextMenu.video);
+          }
+        }}
+      />
     </div>
   );
 }
