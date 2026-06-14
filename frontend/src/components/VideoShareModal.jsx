@@ -18,11 +18,11 @@ import {
 import { SiX } from "react-icons/si";
 import { apiClient } from "../api/client";
 import {
-  buildEmbedUrl,
-  buildPlatformShareUrl,
-  buildWatchUrl,
-  shareIdempotencyKey,
-} from "../utils/shareLinks";
+  buildShareableEmbedUrl,
+  buildShareableVideoUrl,
+  buildCurrentPageShareUrl,
+} from "../utils/shareUrl.js";
+import { buildPlatformShareUrl, shareIdempotencyKey } from "../utils/shareLinks.js";
 
 const DEFAULT_AVATAR = "/images/users/default-avatar.jpeg";
 const SHARED_VIDEO_ID_PREFIX = "__vshare__:";
@@ -171,6 +171,7 @@ export function VideoShareModal({
   onClose,
   videoPublicId,
   videoId: legacyVideoId,
+  authorUsername,
   videoTitle = "",
   token,
   onShareCountChange,
@@ -184,11 +185,11 @@ export function VideoShareModal({
   const [toast, setToast] = useState("");
 
   const watchUrl = useMemo(
-    () => (open && videoId ? buildWatchUrl(videoId) : ""),
-    [open, videoId],
+    () => (open && videoId ? buildShareableVideoUrl(videoId, authorUsername) : ""),
+    [open, videoId, authorUsername],
   );
   const embedUrl = useMemo(
-    () => (open && videoId ? buildEmbedUrl(videoId) : ""),
+    () => (open && videoId ? buildShareableEmbedUrl(videoId) : ""),
     [open, videoId],
   );
 
@@ -265,8 +266,7 @@ export function VideoShareModal({
         if (token) {
           const data = await apiClient.createVideoShare(String(videoId), token, {
             channel,
-            referrer:
-              typeof window !== "undefined" ? window.location.href : null,
+            referrer: buildCurrentPageShareUrl() || null,
             idempotencyKey: shareIdempotencyKey(channel, videoId),
           });
           if (data?.shareCount != null) {

@@ -1,3 +1,5 @@
+import { getAppOrigin } from '../config/appOrigin.js'
+
 /** UUID v4/v7 string validation for public video identifiers. */
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -38,10 +40,10 @@ export function videoPublicIdOf(video) {
 export function buildVideoWatchUrl(publicId) {
   const id = normalizeVideoPublicId(publicId);
   if (!id) return "";
-  if (typeof window !== "undefined" && window.location?.origin) {
-    return `${window.location.origin}/watch/${id}`;
-  }
-  return `/watch/${id}`;
+  const path = `/watch/${id}`;
+  const origin = getAppOrigin();
+  if (origin) return `${origin}${path}`;
+  return path;
 }
 
 /**
@@ -51,10 +53,10 @@ export function buildVideoWatchUrl(publicId) {
 export function buildVideoEmbedUrl(publicId) {
   const id = normalizeVideoPublicId(publicId);
   if (!id) return "";
-  if (typeof window !== "undefined" && window.location?.origin) {
-    return `${window.location.origin}/embed/${id}`;
-  }
-  return `/embed/${id}`;
+  const path = `/embed/${id}`;
+  const origin = getAppOrigin();
+  if (origin) return `${origin}${path}`;
+  return path;
 }
 
 /**

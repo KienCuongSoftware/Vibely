@@ -18,6 +18,12 @@ export function buildPlatformShareUrl(channel, { url, title = "" }) {
       return `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`;
     case "linkedin":
       return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+    case "reddit":
+      return `https://www.reddit.com/submit?url=${encodedUrl}&title=${encodedTitle}`;
+    case "pinterest":
+      return `https://pinterest.com/pin/create/button/?url=${encodedUrl}&description=${encodedTitle}`;
+    case "line":
+      return `https://social-plugins.line.me/lineit/share?url=${encodedUrl}`;
     case "email":
       return `mailto:?subject=${encodedTitle}&body=${text}`;
     default:
