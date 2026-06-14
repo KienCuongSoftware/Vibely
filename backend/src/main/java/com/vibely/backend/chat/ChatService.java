@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.vibely.backend.storage.S3OwnedMediaValidator;
 
 @Service
 public class ChatService {
@@ -27,6 +28,7 @@ public class ChatService {
     private final ChatMessageRepository messageRepository;
     private final ChatRealtimePublisher realtimePublisher;
     private final FollowRepository followRepository;
+    private final S3OwnedMediaValidator ownedMediaValidator;
 
     public ChatService(
         UserRepository userRepository,
@@ -34,7 +36,8 @@ public class ChatService {
         ConversationParticipantRepository participantRepository,
         ChatMessageRepository messageRepository,
         ChatRealtimePublisher realtimePublisher,
-        FollowRepository followRepository
+        FollowRepository followRepository,
+        S3OwnedMediaValidator ownedMediaValidator
     ) {
         this.userRepository = userRepository;
         this.conversationRepository = conversationRepository;
@@ -42,6 +45,7 @@ public class ChatService {
         this.messageRepository = messageRepository;
         this.realtimePublisher = realtimePublisher;
         this.followRepository = followRepository;
+        this.ownedMediaValidator = ownedMediaValidator;
     }
 
     @Transactional
@@ -128,10 +132,13 @@ public class ChatService {
             throw new BadRequestException("Bạn chỉ có thể gửi 1 tin nhắn khi yêu cầu chưa được chấp nhận");
         }
 
+        ChatMessageMedia.Parsed parsed = ChatMessageMedia.validateOutgoing(normalized, me.getId(), ownedMediaValidator);
+        String storedContent = parsed.content();
+
         ChatMessageEntity message = new ChatMessageEntity();
         message.setConversation(conversation);
         message.setSender(me);
-        message.setContent(normalized);
+        message.setContent(storedContent);
         ChatMessageEntity saved = messageRepository.save(message);
 
         LocalDateTime now = saved.getCreatedAt();
@@ -378,6 +385,8 @@ public class ChatService {
 
     private ChatMessageResponse toMessageResponse(ChatMessageEntity message, User viewer) {
         User sender = message.getSender();
+        ChatMessageMedia.Parsed parsed = ChatMessageMedia.parse(message.getContent());
+        String mediaCaption = parsed.type() == ChatMessageMedia.Type.VIDEO ? parsed.caption() : null;
         return new ChatMessageResponse(
             message.getId(),
             message.getConversation().getId(),
@@ -387,7 +396,10 @@ public class ChatService {
             sender.resolveAvatarUrl(DEFAULT_AVATAR),
             message.getContent(),
             message.getCreatedAt(),
-            sender.getId().equals(viewer.getId())
+            sender.getId().equals(viewer.getId()),
+            parsed.type().name(),
+            parsed.mediaUrl(),
+            mediaCaption
         );
     }
 

@@ -11,5 +11,8 @@ public record ChatMessageResponse(
     String senderAvatarUrl,
     String content,
     LocalDateTime createdAt,
-    boolean mine
+    boolean mine,
+    String mediaType,
+    String mediaUrl,
+    String mediaCaption
 ) {}
