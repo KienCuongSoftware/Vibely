@@ -845,6 +845,7 @@ export function ActivityVideoWatchPage() {
         open={shareOpen}
         onClose={() => setShareOpen(false)}
         videoId={video?.publicId}
+        authorUsername={video?.authorUsername}
         videoTitle={video?.title ?? ''}
         token={token}
         onShareCountChange={(shareCount) => {

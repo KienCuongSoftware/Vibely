@@ -36,6 +36,7 @@ import {
 } from "react-icons/io5";
 import { FaComment } from "react-icons/fa6";
 import { MdOutlineFileUpload } from "react-icons/md";
+import { buildShareableVideoUrl } from "../../utils/shareUrl.js";
 import {
   buildProfileVideoUrl,
   buildVideoWatchUrl,
@@ -854,14 +855,8 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   );
 
   const handleVideoContextCopyLink = useCallback(async (video) => {
-    const path =
-      buildProfileVideoUrl(video?.authorUsername, video?.publicId) ||
-      buildVideoWatchUrl(video?.publicId);
-    if (!path) return;
-    const url =
-      path.startsWith("http") || typeof window === "undefined"
-        ? path
-        : `${window.location.origin}${path}`;
+    const url = buildShareableVideoUrl(video?.publicId, video?.authorUsername);
+    if (!url) return;
     await navigator.clipboard.writeText(url);
   }, []);
 
@@ -1665,6 +1660,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
         open={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
         videoId={activeVideo?.publicId}
+        authorUsername={activeVideo?.authorUsername}
         videoTitle={activeVideo?.title ?? ""}
         token={token}
         onShareCountChange={(shareCount) => {

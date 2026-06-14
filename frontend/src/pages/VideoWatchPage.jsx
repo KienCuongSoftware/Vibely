@@ -7,8 +7,6 @@ import {
   watchTimeQualifiesForViewRecord,
 } from '../utils/watchQualifiesForViewRecord'
 import { TooltipHoverWrap } from '../components/TooltipControls'
-import { AccountActionsPill } from '../components/AccountActionsPill'
-import { VideoShareModal } from '../components/VideoShareModal'
 import { feedPrefetchManager } from '../feed/FeedPrefetchManager.js'
 import { resolveFeedPlaybackUrl, isHlsPlaybackUrl } from '../feed/feedPlayback.js'
 import { useAuth } from '../state/useAuth'
@@ -19,31 +17,41 @@ import {
   normalizeVideoPublicId,
   videoPublicIdOf,
 } from '../utils/videoPublicId.js'
+import { buildShareableVideoUrl } from '../utils/shareUrl.js'
+import { pickShareCaption } from '../utils/shareCaption.js'
 import { recordProfileLastWatchedFromVideo } from '../utils/profileLastWatched.js'
 import { WatchSearchDropdown } from '../components/search/WatchSearchDropdown.jsx'
 import {
   IoArrowUp,
   IoBookmark,
-  IoBookmarkOutline,
-  IoChatbubbleEllipsesOutline,
+  IoChatbubbleEllipses,
   IoChevronDown,
   IoChevronUp,
   IoClose,
   IoEllipsisHorizontal,
   IoHappyOutline,
   IoHeart,
-  IoHeartOutline,
-  IoLogOutOutline,
   IoMusicalNotes,
-  IoPerson,
   IoPlayOutline,
-  IoShareOutline,
   IoVolumeHighOutline,
   IoVolumeLowOutline,
   IoVolumeMediumOutline,
   IoVolumeMuteOutline,
 } from 'react-icons/io5'
 import { LuPictureInPicture2 } from 'react-icons/lu'
+import { FeedVideoPlayer } from '../components/feed/FeedVideoPlayer.jsx'
+import {
+  WatchVideoMoreMenu,
+  WATCH_MORE_TRIGGER_BTN_CLASS,
+} from '../components/watch/WatchVideoMoreMenu.jsx'
+import { WatchShareStrip } from '../components/watch/WatchShareStrip.jsx'
+import { sortQualityOptions } from '../feed/hlsQualityUtils.js'
+import { usePersistedFeedVideoQuality } from '../feed/usePersistedFeedVideoQuality.js'
+import { usePersistedFeedPlaybackSpeed } from '../feed/usePersistedFeedPlaybackSpeed.js'
+import {
+  markFeedAuthorFollowed,
+  markFeedAuthorUnfollowed,
+} from '../utils/feedFollowState.js'
 
 const DEFAULT_USER_AVATAR_URL = '/images/users/default-avatar.jpeg'
 const EXPLORE_PAGE_TITLE = 'Khám phá - Tìm video bạn thích trên Vibely'
@@ -65,25 +73,11 @@ function formatCompactCount(value) {
   return String(count)
 }
 
-function isJunkCaption(raw) {
-  const s = String(raw ?? '').trim()
-  if (!s) return true
-  if (/https?:\/\//i.test(s)) return true
-  if (/\.(mp4|webm|mov)(\?|$)/i.test(s)) return true
-  if (
-    /snaptik|snaplik|ssstik|tikmate|savetik|tiktokcdn|instagram|fbcdn|facebook\.com\//i.test(
-      s,
-    )
-  )
-    return true
-  if (/^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}[_-]\d{8,}$/i.test(s)) return true
-  return false
-}
-
 function watchPageCaption(v) {
-  const title = String(v?.title ?? '').trim()
-  const desc = String(v?.description ?? '').trim()
-  const pick = !isJunkCaption(title) ? title : !isJunkCaption(desc) ? desc : ''
+  const pick = pickShareCaption({
+    title: v?.title,
+    description: v?.description,
+  })
   if (!pick) return ''
   if (pick.length > 220) return `${pick.slice(0, 217)}…`
   return pick
@@ -153,10 +147,203 @@ function formatRelativeTime(iso) {
 const ACTION_ROW =
   'flex items-center gap-1.5 rounded-md px-0.5 py-1 text-zinc-100 transition hover:bg-zinc-900/80'
 
+function WatchActionTip({ tip, children }) {
+  return (
+    <div className="group/watch-tip relative flex shrink-0">
+      {children}
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-1/2 z-[70] mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#545454] px-2.5 py-1 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover/watch-tip:opacity-100"
+      >
+        {tip}
+        <span
+          aria-hidden
+          className="absolute left-1/2 top-full -translate-x-1/2 border-[5px] border-transparent border-t-[#545454]"
+        />
+      </span>
+    </div>
+  )
+}
+
 const WATCH_CHROME_BTN =
   'flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-zinc-600/45 text-xl text-zinc-100 transition hover:bg-zinc-600/75'
 
+const WATCH_BAR_ICON_BTN =
+  'inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center text-[1.2rem] text-white/90 transition hover:text-white'
+
 const WATCH_VOLUME_DEFAULT = 1
+
+function formatWatchClock(seconds) {
+  const total = Math.max(0, Math.floor(Number(seconds) || 0))
+  const m = Math.floor(total / 60)
+  const s = total % 60
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+}
+
+/** Thanh tiến trình ngắn + thời gian + âm lượng/PiP (TikTok desktop). */
+function WatchPlaybackBar({
+  videoRef,
+  current,
+  duration,
+  onSeekFraction,
+  onScrubbingChange,
+  volume,
+  onVolumeChange,
+  muted,
+  onMutedChange,
+  onTogglePip,
+}) {
+  const trackRef = useRef(null)
+  const scrubbingRef = useRef(false)
+  const [videoFrame, setVideoFrame] = useState(null)
+  const [isScrubbing, setIsScrubbing] = useState(false)
+  const pct = duration > 0 ? Math.min(100, (current / duration) * 100) : 0
+
+  useEffect(() => {
+    const video = videoRef?.current
+    if (!video) return undefined
+
+    const sync = () => {
+      const host = video.offsetParent
+      if (!host) return
+      const vRect = video.getBoundingClientRect()
+      const hRect = host.getBoundingClientRect()
+      setVideoFrame({
+        left: vRect.left - hRect.left,
+        width: vRect.width,
+      })
+    }
+
+    sync()
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(sync) : null
+    ro?.observe(video)
+    ro?.observe(video.offsetParent)
+    window.addEventListener('resize', sync)
+    video.addEventListener('loadedmetadata', sync)
+    return () => {
+      ro?.disconnect()
+      window.removeEventListener('resize', sync)
+      video.removeEventListener('loadedmetadata', sync)
+    }
+  }, [videoRef])
+
+  const seekFromClientX = useCallback(
+    (clientX) => {
+      const track = trackRef.current
+      if (!track || !duration) return
+      const rect = track.getBoundingClientRect()
+      const width = rect.width
+      if (width <= 0) return
+      const fraction = Math.min(1, Math.max(0, (clientX - rect.left) / width))
+      onSeekFraction(fraction)
+    },
+    [duration, onSeekFraction],
+  )
+
+  const onTrackPointerDown = (e) => {
+    e.stopPropagation()
+    scrubbingRef.current = true
+    setIsScrubbing(true)
+    onScrubbingChange(true)
+    seekFromClientX(e.clientX)
+  }
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!scrubbingRef.current) return
+      seekFromClientX(e.clientX)
+    }
+    const onUp = () => {
+      if (!scrubbingRef.current) return
+      scrubbingRef.current = false
+      setIsScrubbing(false)
+      onScrubbingChange(false)
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
+    }
+  }, [onScrubbingChange, seekFromClientX])
+
+  return (
+    <div
+      className="pointer-events-none absolute bottom-6 z-40 sm:bottom-7"
+      style={
+        videoFrame
+          ? { left: videoFrame.left, width: videoFrame.width }
+          : { left: 0, right: 0 }
+      }
+    >
+      <div className="pointer-events-auto relative flex w-full min-h-7 items-center px-3 sm:px-4">
+        <div className="absolute left-0 right-[4.25rem] top-1/2 flex -translate-y-1/2 items-center justify-center gap-2.5 sm:right-[4.5rem] sm:gap-3">
+          <div
+            ref={trackRef}
+            role="slider"
+            aria-label="Tiến độ phát"
+            aria-valuemin={0}
+            aria-valuemax={Math.floor(duration) || 0}
+            aria-valuenow={Math.floor(current)}
+            tabIndex={0}
+            className="group/watch-progress relative flex min-w-[10rem] max-w-[360px] flex-1 cursor-pointer items-center py-1.5"
+            onPointerDown={onTrackPointerDown}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+              e.preventDefault()
+              const delta = e.key === 'ArrowLeft' ? -5 : 5
+              onSeekFraction(Math.min(1, Math.max(0, (current + delta) / Math.max(duration, 1))))
+            }}
+          >
+            <div className="relative h-1 w-full rounded-full bg-white/30 transition-[height] duration-150 ease-out group-hover/watch-progress:h-1.5">
+              <div
+                className="absolute inset-y-0 left-0 rounded-full bg-white"
+                style={{ width: `${pct}%` }}
+              />
+              <div
+                className={`pointer-events-none absolute top-1/2 z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-200 ease-out ${
+                  isScrubbing ? 'opacity-100' : 'opacity-0 group-hover/watch-progress:opacity-100'
+                }`}
+                style={{ left: `${pct}%` }}
+                aria-hidden
+              >
+                <div className="h-full w-full rounded-full bg-white shadow-[0_0_0_1.5px_rgba(0,0,0,0.45),0_1px_4px_rgba(0,0,0,0.35)] transition-transform duration-200 ease-out group-hover/watch-progress:scale-110" />
+              </div>
+            </div>
+          </div>
+          <span className="shrink-0 text-[11px] font-medium tabular-nums text-white/95 sm:text-xs">
+            {formatWatchClock(current)}/{formatWatchClock(duration)}
+          </span>
+        </div>
+        <div className="relative z-10 ml-auto flex shrink-0 items-center gap-0.5">
+          <TooltipHoverWrap tip="Trình phát nổi" hoverOnly>
+            <button
+              type="button"
+              className={WATCH_BAR_ICON_BTN}
+              aria-label="Trình phát nổi"
+              onClick={(e) => {
+                e.stopPropagation()
+                onTogglePip()
+              }}
+            >
+              <LuPictureInPicture2 className="text-[1.05rem]" strokeWidth={1.75} aria-hidden />
+            </button>
+          </TooltipHoverWrap>
+          <WatchVolumeControl
+            compact
+            volume={volume}
+            onVolumeChange={onVolumeChange}
+            muted={muted}
+            onMutedChange={onMutedChange}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function WatchVolumeIcon({ muted, volume }) {
   if (muted || volume === 0) {
@@ -172,7 +359,7 @@ function WatchVolumeIcon({ muted, volume }) {
 }
 
 /** Âm lượng dọc + nút loa (TikTok-style). */
-function WatchVolumeControl({ volume, onVolumeChange, muted, onMutedChange }) {
+function WatchVolumeControl({ volume, onVolumeChange, muted, onMutedChange, compact = false }) {
   const onSlider = (e) => {
     e.stopPropagation()
     const v = Number(e.target.value)
@@ -194,11 +381,21 @@ function WatchVolumeControl({ volume, onVolumeChange, muted, onMutedChange }) {
 
   return (
     <div
-      className="group/vol flex flex-col items-center"
+      className={
+        compact
+          ? 'group/vol relative shrink-0'
+          : 'group/vol flex flex-col items-center'
+      }
       onMouseDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="pointer-events-none mb-2 flex h-[6.5rem] w-10 items-center justify-center rounded-full bg-zinc-800/92 px-1 py-3 opacity-0 shadow-lg transition-opacity duration-200 group-hover/vol:pointer-events-auto group-hover/vol:opacity-100 group-focus-within/vol:pointer-events-auto group-focus-within/vol:opacity-100">
+      <div
+        className={
+          compact
+            ? 'pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 flex h-[6.5rem] w-10 -translate-x-1/2 items-center justify-center rounded-full bg-zinc-800/92 px-1 py-3 opacity-0 shadow-lg transition-opacity duration-200 group-hover/vol:pointer-events-auto group-hover/vol:opacity-100 group-focus-within/vol:pointer-events-auto group-focus-within/vol:opacity-100'
+            : 'pointer-events-none mb-2 flex h-[6.5rem] w-10 items-center justify-center rounded-full bg-zinc-800/92 px-1 py-3 opacity-0 shadow-lg transition-opacity duration-200 group-hover/vol:pointer-events-auto group-hover/vol:opacity-100 group-focus-within/vol:pointer-events-auto group-focus-within/vol:opacity-100'
+        }
+      >
         <input
           type="range"
           min={0}
@@ -217,7 +414,11 @@ function WatchVolumeControl({ volume, onVolumeChange, muted, onMutedChange }) {
       </div>
       <button
         type="button"
-        className={`${WATCH_CHROME_BTN} bg-black/55 hover:bg-black/75`}
+        className={
+          compact
+            ? WATCH_BAR_ICON_BTN
+            : `${WATCH_CHROME_BTN} bg-black/55 hover:bg-black/75`
+        }
         aria-label={muted ? 'Bật âm thanh' : 'Tắt âm thanh'}
         aria-pressed={!muted}
         onClick={toggleMute}
@@ -435,7 +636,7 @@ export function VideoWatchPage() {
   const { username: usernameParam, publicId: publicIdParam } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const { token, user, logout } = useAuth()
+  const { token, user } = useAuth()
   const videoRef = useRef(null)
   /** Một lần / clip: qualify (~2s) và một lần gần xem hết (Studio % xem hết). */
   const watchQualifySentRef = useRef(false)
@@ -455,8 +656,8 @@ export function VideoWatchPage() {
   const [commentDraft, setCommentDraft] = useState('')
   const [commentPostError, setCommentPostError] = useState('')
   const [shareCopied, setShareCopied] = useState(false)
-  const [shareModalOpen, setShareModalOpen] = useState(false)
-  const [showAccountMenu, setShowAccountMenu] = useState(false)
+  const [authorFollowed, setAuthorFollowed] = useState(false)
+  const [followBusy, setFollowBusy] = useState(false)
   const [intrinsicSize, setIntrinsicSize] = useState(null)
   const [exploreQueue, setExploreQueue] = useState([])
   const [creatorQueue, setCreatorQueue] = useState([])
@@ -465,7 +666,6 @@ export function VideoWatchPage() {
   const [exploreCursor, setExploreCursor] = useState(null)
   const [exploreHasNext, setExploreHasNext] = useState(false)
   const [exploreLoadingMore, setExploreLoadingMore] = useState(false)
-  const accountMenuRef = useRef(null)
   const exploreInitRef = useRef(false)
   const videoDetailCacheRef = useRef(new Map())
   const displayPosterRef = useRef('')
@@ -486,6 +686,15 @@ export function VideoWatchPage() {
   const [watchMuted, setWatchMuted] = useState(true)
   const [watchVolume, setWatchVolume] = useState(WATCH_VOLUME_DEFAULT)
   const [pipActive, setPipActive] = useState(false)
+  const [watchPlayback, setWatchPlayback] = useState({ current: 0, duration: 0 })
+  const watchScrubbingRef = useRef(false)
+  const [watchUserPaused, setWatchUserPaused] = useState(false)
+  const [watchMoreMenuOpen, setWatchMoreMenuOpen] = useState(false)
+  const [watchMoreMenuSubpage, setWatchMoreMenuSubpage] = useState('main')
+  const [watchVideoQuality, setWatchVideoQuality] = usePersistedFeedVideoQuality()
+  const [watchPlaybackSpeed, setWatchPlaybackSpeed] = usePersistedFeedPlaybackSpeed()
+  const [watchQualityOptions, setWatchQualityOptions] = useState(['auto'])
+  const [watchAutoScroll, setWatchAutoScroll] = useState(false)
 
   const routeSlug = useMemo(() => normalizeUsernameKey(usernameParam), [usernameParam])
   const publicIdFromRoute = useMemo(
@@ -543,6 +752,11 @@ export function VideoWatchPage() {
   }
   const displayPosterUrl = activePosterUrl || displayPosterRef.current
 
+  const watchQualityMenuOptions = useMemo(
+    () => sortQualityOptions(watchQualityOptions.length ? watchQualityOptions : ['auto']),
+    [watchQualityOptions],
+  )
+
   useEffect(() => {
     recordProfileLastWatchedFromVideo(activeVideo, { tab: 'videos' })
   }, [activeVideo?.publicId, activeVideo?.authorUsername])
@@ -554,6 +768,12 @@ export function VideoWatchPage() {
     setExploreNavBusy(false)
     setWatchMuted(true)
     setPipActive(false)
+    setWatchPlayback({ current: 0, duration: 0 })
+    watchScrubbingRef.current = false
+    setWatchUserPaused(false)
+    setWatchMoreMenuOpen(false)
+    setWatchMoreMenuSubpage('main')
+    setWatchQualityOptions(['auto'])
     exploreNavLockRef.current = false
     creatorNavLockRef.current = false
     const el = videoRef.current
@@ -588,6 +808,69 @@ export function VideoWatchPage() {
       el.removeEventListener('leavepictureinpicture', onLeavePip)
     }
   }, [watchMuted, watchVolume, isVideoFrameReady, activePlaybackUrl, publicIdFromRoute])
+
+  useEffect(() => {
+    const el = videoRef.current
+    if (!el) return
+    const rate = Number(watchPlaybackSpeed)
+    el.playbackRate = Number.isFinite(rate) && rate > 0 ? rate : 1
+  }, [watchPlaybackSpeed, activePlaybackUrl, publicIdFromRoute])
+
+  const handleWatchPlaybackTick = useCallback((e) => {
+    if (watchScrubbingRef.current) return
+    const el = e?.currentTarget ?? videoRef.current
+    if (!el || el.tagName !== 'VIDEO') return
+    setWatchPlayback({
+      current: el.currentTime || 0,
+      duration: Number.isFinite(el.duration) ? el.duration : 0,
+    })
+    if (e?.type === 'loadedmetadata') {
+      setVideoReady(true)
+      if (el.videoWidth > 0 && el.videoHeight > 0) {
+        setIntrinsicSize({
+          width: el.videoWidth,
+          height: el.videoHeight,
+        })
+      }
+    }
+  }, [])
+
+  const toggleWatchPlayback = useCallback(
+    (e) => {
+      e?.stopPropagation?.()
+      if (watchScrubbingRef.current || watchMoreMenuOpen) return
+      const el = videoRef.current
+      if (!el) return
+      if (el.paused) {
+        setWatchUserPaused(false)
+        void el.play().catch(() => {})
+      } else {
+        setWatchUserPaused(true)
+        el.pause()
+      }
+    },
+    [watchMoreMenuOpen],
+  )
+
+  useEffect(() => {
+    if (!watchMoreMenuOpen) setWatchMoreMenuSubpage('main')
+  }, [watchMoreMenuOpen])
+
+  const handleWatchHlsQualitiesAvailable = useCallback((options) => {
+    setWatchQualityOptions(sortQualityOptions(options?.length ? options : ['auto']))
+  }, [])
+
+  const handleWatchSeekFraction = useCallback((fraction) => {
+    const el = videoRef.current
+    if (!el || !Number.isFinite(el.duration) || el.duration <= 0) return
+    const next = fraction * el.duration
+    el.currentTime = next
+    setWatchPlayback((prev) => ({ ...prev, current: next }))
+  }, [])
+
+  const handleWatchScrubbingChange = useCallback((scrubbing) => {
+    watchScrubbingRef.current = scrubbing
+  }, [])
 
   const toggleWatchPictureInPicture = useCallback(async () => {
     const el = videoRef.current
@@ -922,22 +1205,49 @@ export function VideoWatchPage() {
     document.title = `${display} (@${id}) | Vibely`
   }, [isFromExplore, video?.authorDisplayName, video?.authorUsername, routeSlug])
 
-  useEffect(() => {
-    if (!showAccountMenu) return undefined
-    const onDown = (e) => {
-      const el = accountMenuRef.current
-      if (el && e.target instanceof Node && !el.contains(e.target)) setShowAccountMenu(false)
-    }
-    document.addEventListener('pointerdown', onDown, true)
-    return () => document.removeEventListener('pointerdown', onDown, true)
-  }, [showAccountMenu])
-
   const patchVideo = useCallback((patch) => {
     setVideo((prev) => (prev ? { ...prev, ...patch } : prev))
   }, [])
 
   const caption = watchPageCaption(activeVideo ?? {})
   const panelVideo = activeVideo ?? video
+  const authorVibelyId = normalizeUsernameKey(panelVideo?.authorUsername) || 'user'
+  const authorId = Number(panelVideo?.authorId)
+  const isOwnAuthorWatch = Boolean(
+    user?.id && Number.isFinite(authorId) && authorId > 0 && Number(user.id) === authorId,
+  )
+
+  useEffect(() => {
+    setAuthorFollowed(Boolean(panelVideo?.followedByViewer))
+  }, [panelVideo?.followedByViewer, publicIdFromRoute])
+
+  const handleAuthorFollowToggle = useCallback(async () => {
+    if (!Number.isFinite(authorId) || authorId <= 0 || isOwnAuthorWatch) return
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    if (followBusy) return
+    const next = !authorFollowed
+    setFollowBusy(true)
+    setAuthorFollowed(next)
+    patchVideo({ followedByViewer: next })
+    try {
+      if (next) {
+        await apiClient.follow(authorId, token)
+        markFeedAuthorFollowed(token, authorId)
+      } else {
+        await apiClient.unfollow(authorId, token)
+        markFeedAuthorUnfollowed(token, authorId)
+      }
+    } catch {
+      setAuthorFollowed(!next)
+      patchVideo({ followedByViewer: !next })
+    } finally {
+      setFollowBusy(false)
+    }
+  }, [authorFollowed, authorId, followBusy, isOwnAuthorWatch, navigate, patchVideo, token])
+
   const currentExploreIndex = useMemo(() => {
     const currentId = publicIdFromRoute
     if (!currentId) return -1
@@ -1152,6 +1462,12 @@ export function VideoWatchPage() {
     [isCreatorWatch, isFromExplore, moveToCreatorVideo, moveToExploreVideo],
   )
 
+  const handleWatchPlaybackEnded = useCallback(() => {
+    if (!watchAutoScroll || exploreNavBusy) return
+    if (!hasNextWatch) return
+    moveWatchVideo('next')
+  }, [watchAutoScroll, exploreNavBusy, hasNextWatch, moveWatchVideo])
+
   const goToCreatorVideo = useCallback(
     (target) => {
       const id = videoPublicIdOf(target)
@@ -1182,8 +1498,16 @@ export function VideoWatchPage() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [isCreatorWatch, isFromExplore, moveWatchVideo])
 
+  const shareLinkDisplay = buildShareableVideoUrl(
+    panelVideo?.publicId,
+    panelVideo?.authorUsername,
+  )
+
   const copyShareLink = async () => {
-    const url = typeof window !== 'undefined' ? window.location.href : ''
+    const url = buildShareableVideoUrl(
+      panelVideo?.publicId,
+      panelVideo?.authorUsername,
+    )
     if (!url) return
     try {
       await navigator.clipboard.writeText(url)
@@ -1192,11 +1516,6 @@ export function VideoWatchPage() {
     } catch {
       setShareCopied(false)
     }
-  }
-
-  const handleShareTap = () => {
-    if (!isWatchableVideo(panelVideo)) return
-    setShareModalOpen(true)
   }
 
   const handleShareCountChange = useCallback(
@@ -1223,65 +1542,6 @@ export function VideoWatchPage() {
   return (
     <section className="flex h-dvh min-h-0 bg-black text-zinc-100">
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-        {token ? (
-          <AccountActionsPill className="absolute right-6 top-4 z-20" tone="profile" showCoinAndApp={false}>
-            <div className="relative" ref={accountMenuRef}>
-              <TooltipHoverWrap tip="Tài khoản" tipHidden={showAccountMenu} hoverOnly>
-                <button
-                  type="button"
-                  className="flex cursor-pointer rounded-full p-0.5 ring-1 ring-zinc-700 transition hover:ring-zinc-500"
-                  aria-label="Menu tài khoản"
-                  aria-expanded={showAccountMenu}
-                  aria-haspopup="menu"
-                  onClick={() => setShowAccountMenu((p) => !p)}
-                >
-                  <img
-                    className="h-7 w-7 rounded-full object-cover"
-                    src={
-                      user?.avatarUrl && user.avatarUrl.trim()
-                        ? user.avatarUrl
-                        : DEFAULT_USER_AVATAR_URL
-                    }
-                    alt=""
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      e.currentTarget.src = DEFAULT_USER_AVATAR_URL
-                    }}
-                  />
-                </button>
-              </TooltipHoverWrap>
-              {showAccountMenu ? (
-                <div
-                  className="absolute right-0 mt-2 w-44 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-800 py-1 shadow-2xl"
-                  role="menu"
-                >
-                  <Link
-                    to="/profile"
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-100 hover:bg-zinc-700"
-                    role="menuitem"
-                    onClick={() => setShowAccountMenu(false)}
-                  >
-                    <IoPerson className="text-base" />
-                    Xem hồ sơ
-                  </Link>
-                  <button
-                    type="button"
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-100 hover:bg-zinc-700"
-                    role="menuitem"
-                    onClick={() => {
-                      setShowAccountMenu(false)
-                      logout?.()
-                    }}
-                  >
-                    <IoLogOutOutline className="text-base" />
-                    Đăng xuất
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          </AccountActionsPill>
-        ) : null}
-
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-stretch">
           <div className="relative min-h-0 flex-1 overflow-hidden bg-black">
             <div className="absolute inset-0">
@@ -1314,33 +1574,61 @@ export function VideoWatchPage() {
                     />
                   ) : null}
                   {activePlaybackUrl ? (
-                    <video
+                    <FeedVideoPlayer
                       key={String(activeVideo?.publicId ?? publicIdFromRoute)}
                       ref={videoRef}
-                      src={activePlaybackUrl}
-                      className={`watch-video-el absolute bg-black transition-opacity duration-200 ${watchVideoSizing} ${isVideoFrameReady ? 'opacity-100' : 'opacity-0'}`}
-                      controls={isVideoFrameReady}
-                      controlsList="nofullscreen nodownload noremoteplayback noplaybackrate"
-                      disableRemotePlayback
-                      playsInline
-                      muted={watchMuted}
-                      autoPlay
-                      preload="auto"
+                      videoUrl={activePlaybackUrl}
                       poster={displayPosterUrl || undefined}
-                      onDoubleClick={(e) => e.preventDefault()}
-                      onLoadedData={() => setVideoReady(true)}
-                      onCanPlay={() => setVideoReady(true)}
-                      onPlaying={() => setVideoReady(true)}
-                      onLoadedMetadata={(e) => {
-                        const el = e.currentTarget
-                        if (el.videoWidth > 0 && el.videoHeight > 0) {
-                          setIntrinsicSize({
-                            width: el.videoWidth,
-                            height: el.videoHeight,
-                          })
-                        }
-                      }}
+                      muted={watchMuted}
+                      loop={false}
+                      loadMedia={Boolean(activePlaybackUrl)}
+                      isActive={Boolean(activePlaybackUrl) && !watchUserPaused}
+                      userPaused={watchUserPaused}
+                      visibilityRatio={0}
+                      streamQuality={watchVideoQuality}
+                      containLandscape={watchOrientation === 'landscape'}
+                      feedVideoId={activeVideo?.publicId ?? publicIdFromRoute}
+                      onHlsQualitiesAvailable={handleWatchHlsQualitiesAvailable}
+                      onPlaybackTick={handleWatchPlaybackTick}
+                      onPlaybackEnded={handleWatchPlaybackEnded}
+                      className={`watch-video-el absolute cursor-pointer bg-black transition-opacity duration-200 ${watchMediaPlacementClass(watchOrientation)} z-[2] ${isVideoFrameReady ? 'opacity-100' : 'opacity-0'}`}
+                      onClick={toggleWatchPlayback}
                     />
+                  ) : null}
+
+                  {isVideoFrameReady && activePlaybackUrl && !pipActive ? (
+                    <>
+                      <button
+                        type="button"
+                        aria-label="Menu video"
+                        aria-expanded={watchMoreMenuOpen}
+                        aria-haspopup="dialog"
+                        className={`pointer-events-auto absolute right-3 top-3 z-[45] opacity-100 sm:right-4 sm:top-3.5 ${WATCH_MORE_TRIGGER_BTN_CLASS} ${
+                          watchMoreMenuOpen ? 'bg-white/25' : ''
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setWatchMoreMenuOpen((open) => !open)
+                        }}
+                      >
+                        <IoEllipsisHorizontal aria-hidden />
+                      </button>
+                      <WatchVideoMoreMenu
+                        open={watchMoreMenuOpen}
+                        onOpenChange={setWatchMoreMenuOpen}
+                        subpage={watchMoreMenuSubpage}
+                        onSubpageChange={setWatchMoreMenuSubpage}
+                        playbackSpeed={watchPlaybackSpeed}
+                        onPlaybackSpeedChange={setWatchPlaybackSpeed}
+                        videoQuality={watchVideoQuality}
+                        onVideoQualityChange={setWatchVideoQuality}
+                        qualityOptions={watchQualityMenuOptions}
+                        autoScrollEnabled={watchAutoScroll}
+                        onAutoScrollChange={setWatchAutoScroll}
+                        showAutoScroll={showWatchNavArrows}
+                        onTogglePip={toggleWatchPictureInPicture}
+                      />
+                    </>
                   ) : null}
 
                   {pipActive ? (
@@ -1357,26 +1645,18 @@ export function VideoWatchPage() {
                   ) : null}
 
                   {isVideoFrameReady && activePlaybackUrl && !pipActive ? (
-                    <div className="pointer-events-none absolute inset-x-0 bottom-12 z-40 flex justify-end px-4 sm:bottom-14 sm:px-6">
-                      <div className="pointer-events-auto flex items-end gap-2">
-                        <WatchVolumeControl
-                          volume={watchVolume}
-                          onVolumeChange={setWatchVolume}
-                          muted={watchMuted}
-                          onMutedChange={setWatchMuted}
-                        />
-                        <TooltipHoverWrap tip="Trình phát nổi" hoverOnly>
-                          <button
-                            type="button"
-                            className={`${WATCH_CHROME_BTN} bg-black/55 hover:bg-black/75`}
-                            aria-label="Trình phát nổi"
-                            onClick={() => void toggleWatchPictureInPicture()}
-                          >
-                            <LuPictureInPicture2 className="text-[1.15rem]" strokeWidth={1.75} aria-hidden />
-                          </button>
-                        </TooltipHoverWrap>
-                      </div>
-                    </div>
+                    <WatchPlaybackBar
+                      videoRef={videoRef}
+                      current={watchPlayback.current}
+                      duration={watchPlayback.duration}
+                      onSeekFraction={handleWatchSeekFraction}
+                      onScrubbingChange={handleWatchScrubbingChange}
+                      volume={watchVolume}
+                      onVolumeChange={setWatchVolume}
+                      muted={watchMuted}
+                      onMutedChange={setWatchMuted}
+                      onTogglePip={() => void toggleWatchPictureInPicture()}
+                    />
                   ) : null}
                 </div>
               ) : !loading ? (
@@ -1414,17 +1694,7 @@ export function VideoWatchPage() {
                 <WatchSearchDropdown />
               </div>
 
-              <div className="pointer-events-auto flex w-11 shrink-0 justify-end sm:w-12">
-                <TooltipHoverWrap tip="Thêm" hoverOnly>
-                  <button
-                    type="button"
-                    className={`${WATCH_CHROME_BTN} ${token ? 'invisible' : ''}`}
-                    aria-label="Thêm"
-                  >
-                    <IoEllipsisHorizontal />
-                  </button>
-                </TooltipHoverWrap>
-              </div>
+              <div className="pointer-events-none w-11 shrink-0 sm:w-12" aria-hidden />
             </div>
 
             {showWatchNavArrows ? (
@@ -1458,7 +1728,7 @@ export function VideoWatchPage() {
               </div>
             ) : (
               <>
-                <div className="flex shrink-0 items-start gap-3 border-b border-zinc-800 p-4 pr-12">
+                <div className="flex shrink-0 items-start gap-3 border-b border-zinc-800 p-4">
                   <Link to={authorProfilePath} className="shrink-0">
                     <img
                       src={
@@ -1475,20 +1745,40 @@ export function VideoWatchPage() {
                     />
                   </Link>
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                      <Link
-                        to={authorProfilePath}
-                        className="truncate text-sm font-semibold text-zinc-100 hover:underline"
-                      >
-                        {String(panelVideo.authorDisplayName ?? '').trim() || 'Nhà sáng tạo'}
-                      </Link>
-                      <span className="shrink-0 text-xs text-zinc-500">
-                        {formatRelativeTime(panelVideo.createdAt)}
-                      </span>
+                    <div className="flex items-start gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                          <Link
+                            to={authorProfilePath}
+                            className="truncate text-sm font-semibold text-zinc-100 hover:underline"
+                          >
+                            {String(panelVideo.authorDisplayName ?? '').trim() || 'Nhà sáng tạo'}
+                          </Link>
+                          <span className="shrink-0 text-xs text-zinc-500">
+                            {formatRelativeTime(panelVideo.createdAt)}
+                          </span>
+                        </div>
+                        <p className="truncate text-xs text-zinc-400">@{authorVibelyId}</p>
+                      </div>
+                      {!isOwnAuthorWatch ? (
+                        <button
+                          type="button"
+                          className={`shrink-0 rounded-sm px-3 py-1.5 text-sm font-semibold transition ${
+                            authorFollowed
+                              ? 'border border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800'
+                              : 'bg-[#FE2C55] text-white hover:bg-[#ea284f]'
+                          } ${followBusy ? 'cursor-wait opacity-80' : 'cursor-pointer'}`}
+                          onClick={() => void handleAuthorFollowToggle()}
+                          disabled={followBusy}
+                        >
+                          {followBusy
+                            ? '…'
+                            : authorFollowed
+                              ? 'Đã follow'
+                              : 'Follow'}
+                        </button>
+                      ) : null}
                     </div>
-                    <p className="truncate text-xs text-zinc-400">
-                      @{normalizeUsernameKey(panelVideo.authorUsername) || 'user'}
-                    </p>
                     {caption ? (
                       <p className="mt-2 whitespace-pre-wrap text-sm leading-snug text-zinc-200">
                         {renderInteractiveText(caption)}
@@ -1496,29 +1786,19 @@ export function VideoWatchPage() {
                     ) : null}
                     <div className="mt-2 flex items-center gap-1.5 text-xs text-zinc-400">
                       <IoMusicalNotes className="shrink-0 text-base text-zinc-500" aria-hidden />
-                      <span className="truncate">
-                        {panelVideo.audioTitle?.trim()
-                          ? panelVideo.audioTitle
-                          : `Âm thanh gốc — ${String(panelVideo.authorDisplayName ?? '').trim() || 'Nhà sáng tạo'}`}
-                      </span>
+                      <span className="truncate">nhạc nền - @{authorVibelyId}</span>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    className="absolute right-4 top-4 rounded-full p-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
-                    aria-label="Thêm"
-                  >
-                    <IoEllipsisHorizontal />
-                  </button>
                 </div>
 
-                <div className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1 border-b border-zinc-800 px-4 py-3">
-                  <button
-                    type="button"
-                    className={ACTION_ROW}
-                    aria-pressed={liked}
-                    aria-label={liked ? 'Bỏ thích' : 'Thích'}
-                    onClick={() => {
+                <div className="flex shrink-0 flex-nowrap items-center gap-x-4 overflow-visible border-b border-zinc-800 px-4 py-3">
+                  <WatchActionTip tip="Thích">
+                    <button
+                      type="button"
+                      className={`${ACTION_ROW} shrink-0`}
+                      aria-pressed={liked}
+                      aria-label={liked ? 'Bỏ thích' : 'Thích'}
+                      onClick={() => {
                       if (!token || !isWatchableVideo(panelVideo)) {
                         if (!token) navigate('/login')
                         return
@@ -1536,30 +1816,33 @@ export function VideoWatchPage() {
                       })
                     }}
                   >
-                    {liked ? (
-                      <IoHeart className="text-2xl text-[#FE2C55]" aria-hidden />
-                    ) : (
-                      <IoHeartOutline className="text-2xl text-white" aria-hidden />
-                    )}
+                    <IoHeart
+                      className={`text-2xl ${liked ? 'text-[#FE2C55]' : 'text-white'}`}
+                      aria-hidden
+                    />
                     <span className="text-sm font-semibold tabular-nums text-white">
                       {formatCompactCount(panelVideo.likeCount ?? 0)}
                     </span>
-                  </button>
-                  <button
-                    type="button"
-                    className={ACTION_ROW}
-                    aria-label="Bình luận"
-                    onClick={focusCommentField}
-                  >
-                    <IoChatbubbleEllipsesOutline className="text-2xl text-white" aria-hidden />
+                    </button>
+                  </WatchActionTip>
+                  <WatchActionTip tip="Bình luận">
+                    <button
+                      type="button"
+                      className={`${ACTION_ROW} shrink-0`}
+                      aria-label="Bình luận"
+                      onClick={focusCommentField}
+                    >
+                    <IoChatbubbleEllipses className="text-2xl text-white" aria-hidden />
                     <span className="text-sm font-semibold tabular-nums text-white">
                       {formatCompactCount(panelVideo.commentCount ?? 0)}
                     </span>
-                  </button>
-                  <button
-                    type="button"
-                    className={ACTION_ROW}
-                    aria-pressed={bookmarked}
+                    </button>
+                  </WatchActionTip>
+                  <WatchActionTip tip="Lưu">
+                    <button
+                      type="button"
+                      className={`${ACTION_ROW} shrink-0`}
+                      aria-pressed={bookmarked}
                     title={
                       bookmarked
                         ? 'Đã lưu. Xem tại Hồ sơ → Yêu thích → Bài đăng.'
@@ -1584,32 +1867,30 @@ export function VideoWatchPage() {
                       })
                     }}
                   >
-                    {bookmarked ? (
-                      <IoBookmark className="text-2xl text-[#FACE15]" aria-hidden />
-                    ) : (
-                      <IoBookmarkOutline className="text-2xl text-white" aria-hidden />
-                    )}
+                    <IoBookmark
+                      className={`text-2xl ${bookmarked ? 'text-[#FACE15]' : 'text-white'}`}
+                      aria-hidden
+                    />
                     <span className="text-sm font-semibold tabular-nums text-white">
                       {formatCompactCount(panelVideo.bookmarkCount ?? 0)}
                     </span>
-                  </button>
-                  <button
-                    type="button"
-                    className={ACTION_ROW}
-                    aria-label="Chia sẻ"
-                    onClick={() => void handleShareTap()}
-                  >
-                    <IoShareOutline className="text-2xl text-white" aria-hidden />
-                    <span className="text-sm font-semibold tabular-nums text-white">
-                      {formatCompactCount(panelVideo.shareCount ?? 0)}
-                    </span>
-                  </button>
+                    </button>
+                  </WatchActionTip>
+                  <WatchShareStrip
+                    videoPublicId={panelVideo.publicId}
+                    authorUsername={panelVideo.authorUsername}
+                    videoTitle={panelVideo.title ?? ''}
+                    videoDescription={panelVideo.description ?? ''}
+                    token={token}
+                    disabled={!isWatchableVideo(panelVideo)}
+                    onShareCountChange={handleShareCountChange}
+                  />
                 </div>
 
                 <div className="shrink-0 border-b border-zinc-800 px-4 py-2">
                   <div className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/80 px-3 py-2">
                     <span className="min-w-0 flex-1 truncate text-xs text-zinc-400">
-                      {typeof window !== 'undefined' ? window.location.href : ''}
+                      {shareLinkDisplay}
                     </span>
                     <button
                       type="button"
@@ -1817,15 +2098,6 @@ export function VideoWatchPage() {
           </aside>
         </div>
       </div>
-
-      <VideoShareModal
-        open={shareModalOpen}
-        onClose={() => setShareModalOpen(false)}
-        videoId={panelVideo?.publicId}
-        videoTitle={panelVideo?.title ?? ''}
-        token={token}
-        onShareCountChange={handleShareCountChange}
-      />
     </section>
   )
 }
