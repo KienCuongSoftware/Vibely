@@ -8,6 +8,46 @@ export default defineConfig({
     react(),
     tailwindcss(),
     {
+      name: 'vibely-share-crawler-preview',
+      configureServer(server) {
+        const UUID =
+          /^\/(?:watch|share\/video)\/([0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\/?$/i
+        const PROFILE =
+          /^\/([^/]+)\/video\/([0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\/?$/i
+        const CRAWLER =
+          /facebookexternalhit|facebot|twitterbot|linkedinbot|whatsapp|telegrambot|slackbot|discordbot|pinterest|googlebot|bot|crawl|spider/i
+
+        server.middlewares.use((req, res, next) => {
+          const pathOnly = (req.url ?? '').split('?')[0]
+          const ua = String(req.headers['user-agent'] ?? '')
+          if (!CRAWLER.test(ua)) {
+            next()
+            return
+          }
+
+          let publicId = null
+          const watchMatch = pathOnly.match(UUID)
+          const profileMatch = pathOnly.match(PROFILE)
+          if (watchMatch) publicId = watchMatch[1]
+          else if (profileMatch) publicId = profileMatch[2]
+          else {
+            next()
+            return
+          }
+
+          const target = `http://127.0.0.1:8080/share/video/${publicId}`
+          fetch(target, { headers: { 'User-Agent': ua, Host: req.headers.host ?? 'localhost:5173', 'X-Forwarded-Host': req.headers.host ?? '', 'X-Forwarded-Proto': String(req.headers.host ?? '').includes('ngrok') ? 'https' : 'http' } })
+            .then(async (upstream) => {
+              const body = await upstream.text()
+              res.statusCode = upstream.status
+              res.setHeader('Content-Type', 'text/html; charset=utf-8')
+              res.end(body)
+            })
+            .catch(() => next())
+        })
+      },
+    },
+    {
       name: 'vibely-no-store-public-videos',
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
@@ -26,7 +66,24 @@ export default defineConfig({
     },
   ],
   server: {
+    allowedHosts: true,
     proxy: {
+      '/share': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
+            if (req.headers.host) {
+              proxyReq.setHeader('X-Forwarded-Host', req.headers.host)
+            }
+            const host = String(req.headers.host ?? '')
+            const secure =
+              req.headers['x-forwarded-proto'] === 'https' ||
+              host.includes('ngrok')
+            proxyReq.setHeader('X-Forwarded-Proto', secure ? 'https' : 'http')
+          })
+        },
+      },
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,

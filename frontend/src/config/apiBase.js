@@ -1,38 +1,47 @@
 /**
  * Dev: mặc định gọi API qua proxy Vite (same-origin /api → localhost:8080).
- * Nếu VITE_API_BASE_URL trỏ nhầm :8000 trong khi backend là :8080, tự dùng proxy.
+ * Production + nginx/cloudflared: để trống → gọi /api cùng origin (điện thoại khác mạng vẫn được).
  */
 export function resolveApiBaseUrl() {
   const raw = import.meta.env.VITE_API_BASE_URL
+  const trimmed =
+    raw == null || String(raw).trim() === ""
+      ? ""
+      : String(raw).trim().replace(/\/$/, "")
+
   if (import.meta.env.DEV) {
-    if (raw == null || String(raw).trim() === "") {
+    if (!trimmed || trimmed.includes(":8000")) {
       return ""
     }
-    const s = String(raw).trim().replace(/\/$/, "")
-    if (s.includes(":8000")) {
-      console.warn(
-        "[Vibely] VITE_API_BASE_URL đang dùng cổng 8000; backend Spring thường là 8080 — dùng proxy dev (cùng origin).",
-      )
-      return ""
-    }
-    return s
+    return trimmed
   }
-  return String(raw ?? "http://localhost:8080").replace(/\/$/, "")
+
+  return trimmed
 }
 
-/** Origin backend cho OAuth (luôn cần URL tuyệt đối tới cổng Spring Boot). */
+/** Origin backend cho OAuth — production qua nginx dùng cùng origin trình duyệt. */
 export function resolveBackendOrigin() {
   const fromEnv =
     import.meta.env.VITE_BACKEND_ORIGIN ?? import.meta.env.VITE_API_BASE_URL
+  const trimmed =
+    fromEnv == null || String(fromEnv).trim() === ""
+      ? ""
+      : String(fromEnv).trim().replace(/\/$/, "")
+
   if (import.meta.env.DEV) {
-    if (
-      fromEnv == null ||
-      String(fromEnv).trim() === "" ||
-      String(fromEnv).includes(":8000")
-    ) {
+    if (!trimmed || trimmed.includes(":8000")) {
       return "http://localhost:8080"
     }
-    return String(fromEnv).trim().replace(/\/$/, "")
+    return trimmed
   }
-  return String(fromEnv ?? "http://localhost:8080").replace(/\/$/, "")
+
+  if (trimmed) {
+    return trimmed
+  }
+
+  if (typeof window !== "undefined" && window.location?.origin) {
+    return window.location.origin
+  }
+
+  return "http://localhost:8080"
 }
