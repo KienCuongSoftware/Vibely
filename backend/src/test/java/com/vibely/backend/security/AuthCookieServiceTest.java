@@ -40,6 +40,6 @@ class AuthCookieServiceTest {
             }
         }
         assertThat(refresh).isNotNull();
-        assertThat(refresh.getPath()).isEqualTo("/api/auth");
+        assertThat(refresh.getPath()).isEqualTo("/");
     }
 }

@@ -1,8 +1,6 @@
 package com.vibely.backend.security;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.server.ServerHttpRequest;
@@ -70,6 +68,7 @@ public class WebSocketJwtHandshakeInterceptor implements HandshakeInterceptor {
         @Nullable Exception exception
     ) {}
 
+    /** Auth via httpOnly access cookie or Authorization header only (never query string). */
     private String extractToken(ServerHttpRequest request) {
         if (request instanceof ServletServerHttpRequest servletRequest) {
             HttpServletRequest raw = servletRequest.getServletRequest();
@@ -77,8 +76,6 @@ public class WebSocketJwtHandshakeInterceptor implements HandshakeInterceptor {
             if (cookieToken.isPresent()) {
                 return cookieToken.get();
             }
-            String token = raw.getParameter("token");
-            if (token != null && !token.isBlank()) return token;
         }
 
         List<String> authHeaders = request.getHeaders().get("Authorization");
@@ -87,17 +84,6 @@ public class WebSocketJwtHandshakeInterceptor implements HandshakeInterceptor {
             if (bearer.startsWith("Bearer ")) {
                 return bearer.substring(7);
             }
-        }
-
-        String query = request.getURI().getRawQuery();
-        if (query == null || query.isBlank()) return null;
-        String[] pairs = query.split("&");
-        for (String pair : pairs) {
-            int idx = pair.indexOf('=');
-            if (idx < 0) continue;
-            String key = URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8);
-            if (!"token".equals(key)) continue;
-            return URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8);
         }
         return null;
     }

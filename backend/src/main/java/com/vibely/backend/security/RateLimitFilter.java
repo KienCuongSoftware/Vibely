@@ -41,13 +41,24 @@ public class RateLimitFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         String uri = request.getRequestURI();
         String method = request.getMethod();
-        boolean authRoute = uri.startsWith("/api/auth/");
+        String clientIp = ShareClientHints.clientIp(request);
+        boolean authWriteRoute = uri.startsWith("/api/auth/") && "POST".equals(method);
         boolean commentWriteRoute = uri.matches("^/api/videos/\\d+/comments$") && "POST".equals(method);
         boolean redirectRoute = uri.matches("^/v/[0-9A-Za-z]+$") && "GET".equals(method);
         boolean shareWriteRoute = uri.matches("^/api/v1/videos/\\d+/share$") && "POST".equals(method);
+        boolean sharePreviewRoute = uri.startsWith("/share/") && "GET".equals(method);
+        boolean viewRoute = uri.matches("^/api/videos/[^/]+/views$") && "POST".equals(method);
+        boolean publicShareRoute = uri.matches("^/api/videos/[^/]+/shares$") && "POST".equals(method);
+        boolean downloadRoute = uri.matches("^/api/videos/[^/]+/download$") && "GET".equals(method);
+        boolean antibotRoute = isAntiBotRoute(uri, method);
 
         if (redirectRoute) {
-            if (!shareRateLimiter.allowRedirect(ShareClientHints.clientIp(request))) {
+            if (!shareRateLimiter.allowRedirect(clientIp)) {
+                writeRateLimited(response);
+                return;
+            }
+        } else if (sharePreviewRoute) {
+            if (!shareRateLimiter.allowSharePreview(clientIp)) {
                 writeRateLimited(response);
                 return;
             }
@@ -59,8 +70,31 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 writeRateLimited(response);
                 return;
             }
-        } else if (authRoute || commentWriteRoute) {
-            int limit = authRoute ? AUTH_LIMIT : COMMENT_LIMIT;
+        } else if (viewRoute) {
+            if (!shareRateLimiter.allowViewRecord(clientIp)) {
+                writeRateLimited(response);
+                return;
+            }
+        } else if (publicShareRoute) {
+            if (!shareRateLimiter.allowPublicShare(clientIp)) {
+                writeRateLimited(response);
+                return;
+            }
+        } else if (downloadRoute) {
+            String subject = request.getHeader("Authorization") != null
+                ? "auth:" + request.getRemoteAddr()
+                : "guest:" + request.getRemoteAddr();
+            if (!shareRateLimiter.allowDownload(subject)) {
+                writeRateLimited(response);
+                return;
+            }
+        } else if (antibotRoute) {
+            if (!shareRateLimiter.allowAntiBot(clientIp)) {
+                writeRateLimited(response);
+                return;
+            }
+        } else if (authWriteRoute || commentWriteRoute) {
+            int limit = authWriteRoute ? AUTH_LIMIT : COMMENT_LIMIT;
             String userKey = request.getHeader("Authorization") != null ? "auth-user" : "guest";
             String key = request.getRemoteAddr() + ":" + userKey + ":" + uri;
             if (!allowRequest(key, limit)) {
@@ -69,6 +103,17 @@ public class RateLimitFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    private static boolean isAntiBotRoute(String uri, String method) {
+        if (!"POST".equals(method)) {
+            return false;
+        }
+        return uri.equals("/api/risk/evaluate")
+            || uri.equals("/api/captcha/verify")
+            || uri.equals("/api/fingerprint/register")
+            || uri.equals("/api/behavior/track")
+            || uri.equals("/api/trust/evaluate");
     }
 
     private void writeRateLimited(HttpServletResponse response) throws IOException {

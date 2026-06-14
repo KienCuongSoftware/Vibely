@@ -6,6 +6,8 @@ import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.observability.RequestCorrelationFilter;
 import com.vibely.backend.security.JwtAuthenticationFilter;
 import com.vibely.backend.security.RateLimitFilter;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
@@ -27,10 +29,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.vibely.backend.security.AppUserDetailsService;
+import com.vibely.backend.security.AuthCookieService;
 
 @Configuration
 @EnableMethodSecurity
@@ -45,6 +51,9 @@ public class SecurityConfig {
 
     @Value("${app.cors.allowed-origins:}")
     private String allowedOrigins;
+
+    @Value("${app.cors.allowed-origin-patterns:}")
+    private String allowedOriginPatterns;
 
     @Value("${app.oauth2.enabled:false}")
     private boolean oauth2Enabled;
@@ -68,8 +77,18 @@ public class SecurityConfig {
     @Bean
     @Order(2)
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        csrfTokenRepository.setCookiePath("/");
+        CsrfTokenRequestAttributeHandler csrfHandler = new CsrfTokenRequestAttributeHandler();
+        csrfHandler.setCsrfRequestAttributeName(null);
+
         HttpSecurity security = http
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(csrfTokenRepository)
+                .csrfTokenRequestHandler(csrfHandler)
+                .requireCsrfProtectionMatcher(cookieSessionCsrfMatcher())
+                .ignoringRequestMatchers(this::shouldIgnoreCsrf)
+            )
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(sm -> sm.sessionCreationPolicy(
                 oauth2Enabled ? SessionCreationPolicy.IF_REQUIRED : SessionCreationPolicy.STATELESS
@@ -148,7 +167,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/videos/*/shares").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/videos/*/share").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/videos/*/share/analytics").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/videos/*/download").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/videos/*/download").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*").permitAll()
                 .anyRequest().authenticated();
             })
@@ -200,6 +219,55 @@ public class SecurityConfig {
         return Arrays.asList(environment.getActiveProfiles()).contains("prod");
     }
 
+    private boolean shouldIgnoreCsrf(HttpServletRequest request) {
+        String authorization = request.getHeader("Authorization");
+        if (authorization != null && authorization.startsWith("Bearer ")) {
+            return true;
+        }
+        String uri = request.getRequestURI();
+        if (uri.startsWith("/ws")) {
+            return true;
+        }
+        if (!"POST".equals(request.getMethod())) {
+            return false;
+        }
+        return uri.equals("/api/auth/register")
+            || uri.equals("/api/auth/login")
+            || uri.equals("/api/auth/refresh")
+            || uri.equals("/api/auth/logout")
+            || uri.equals("/api/auth/send-code")
+            || uri.equals("/api/auth/verify-code")
+            || uri.equals("/api/auth/reset-password")
+            || uri.equals("/api/auth/oauth/exchange")
+            || uri.equals("/api/risk/evaluate")
+            || uri.equals("/api/captcha/verify")
+            || uri.equals("/api/fingerprint/register")
+            || uri.equals("/api/behavior/track")
+            || uri.equals("/api/trust/evaluate");
+    }
+
+    /** CSRF for POST/PUT/PATCH/DELETE when the browser sent Vibely session cookies. */
+    private RequestMatcher cookieSessionCsrfMatcher() {
+        return request -> {
+            String method = request.getMethod();
+            if (method == null
+                || HttpMethod.GET.matches(method)
+                || HttpMethod.HEAD.matches(method)
+                || HttpMethod.OPTIONS.matches(method)
+                || HttpMethod.TRACE.matches(method)) {
+                return false;
+            }
+            Cookie[] cookies = request.getCookies();
+            if (cookies == null) {
+                return false;
+            }
+            return Arrays.stream(cookies).anyMatch(cookie ->
+                AuthCookieService.ACCESS_COOKIE.equals(cookie.getName())
+                    || AuthCookieService.REFRESH_COOKIE.equals(cookie.getName())
+            );
+        };
+    }
+
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -208,6 +276,13 @@ public class SecurityConfig {
             .filter(value -> !value.isEmpty())
             .toList();
         configuration.setAllowedOrigins(origins);
+        List<String> originPatterns = Arrays.stream(allowedOriginPatterns.split(","))
+            .map(String::trim)
+            .filter(value -> !value.isEmpty())
+            .toList();
+        if (!originPatterns.isEmpty()) {
+            configuration.setAllowedOriginPatterns(originPatterns);
+        }
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

@@ -30,6 +30,19 @@ public class GlobalExceptionHandler {
             .body(ApiResponse.failure(ApiError.of(HttpStatus.BAD_REQUEST.value(), "BAD_REQUEST", ex.getMessage())));
     }
 
+    @ExceptionHandler(StorageDeletionException.class)
+    public ResponseEntity<ApiResponse<Void>> handleStorageDeletion(StorageDeletionException ex) {
+        log.warn("S3 deletion failed: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+            .body(ApiResponse.failure(ApiError.of(
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                "STORAGE_DELETION_FAILED",
+                ex.getMessage() != null && !ex.getMessage().isBlank()
+                    ? ex.getMessage()
+                    : "Không thể xóa file trên kho lưu trữ. Vui lòng thử lại sau."
+            )));
+    }
+
     @ExceptionHandler(CaptchaRequiredException.class)
     public ResponseEntity<ApiResponse<CaptchaRequiredPayload>> handleCaptchaRequired(CaptchaRequiredException ex) {
         CaptchaRequiredPayload payload = new CaptchaRequiredPayload(ex.getChallengeLevel(), ex.getRiskScore());

@@ -43,6 +43,11 @@ app:
     idempotency-window-hours: ${APP_SHARE_IDEMPOTENCY_WINDOW_HOURS:24}
     redirect-rate-limit-per-minute: ${APP_SHARE_REDIRECT_RATE_LIMIT:120}
     share-write-rate-limit-per-minute: ${APP_SHARE_SHARE_WRITE_RATE_LIMIT:40}
+    share-preview-rate-limit-per-minute: ${APP_SHARE_PREVIEW_RATE_LIMIT:180}
+    view-record-rate-limit-per-minute: ${APP_SHARE_VIEW_RATE_LIMIT:120}
+    public-share-rate-limit-per-minute: ${APP_SHARE_PUBLIC_SHARE_RATE_LIMIT:60}
+    download-rate-limit-per-minute: ${APP_SHARE_DOWNLOAD_RATE_LIMIT:12}
+    antibot-rate-limit-per-minute: ${APP_SHARE_ANTIBOT_RATE_LIMIT:40}
     negative-cache-ttl-seconds: ${APP_SHARE_NEGATIVE_CACHE_TTL_SECONDS:60}
   redis:
     enabled: ${APP_REDIS_ENABLED:false}
@@ -74,6 +79,7 @@ app:
     ffmpeg-path: ${FFMPEG_PATH:ffmpeg}
     ffprobe-path: ${FFPROBE_PATH:ffprobe}
     max-job-attempts: ${APP_PROCESSING_MAX_JOB_ATTEMPTS:3}
+    recovery-stale-processing-minutes: ${APP_PROCESSING_RECOVERY_STALE_MINUTES:30}
     audio:
       enabled: ${APP_PROCESSING_AUDIO_ENABLED:true}
       volume-detect-enabled: ${APP_PROCESSING_AUDIO_VOLUME_DETECT:true}
