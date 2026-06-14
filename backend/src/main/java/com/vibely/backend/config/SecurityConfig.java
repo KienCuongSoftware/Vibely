@@ -130,6 +130,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/behavior/track").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/trust/evaluate").permitAll()
                 .requestMatchers(HttpMethod.GET, "/v/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/share/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/feed/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/explore/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/search/history").authenticated()
