@@ -30,6 +30,7 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8001/login/oauth2/code/google}
             scope:
               - openid
               - profile
@@ -37,7 +38,7 @@ spring:
           facebook:
             client-id: ${FACEBOOK_CLIENT_ID:${FACEBOOK_APP_ID}}
             client-secret: ${FACEBOOK_CLIENT_SECRET:${FACEBOOK_APP_SECRET}}
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: ${FACEBOOK_REDIRECT_URI:http://localhost:8001/login/oauth2/code/facebook}
             scope:
               - public_profile
               - email
@@ -111,12 +112,18 @@ app:
     dry-run-promote-when-worker-disabled: false
   redis:
     enabled: true
+  urls:
+    frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:8001}
   cors:
-    allowed-origins: http://localhost:5173,http://127.0.0.1:5173
+    allowed-origins: http://localhost:8001,http://127.0.0.1:8001,http://localhost:5173,http://127.0.0.1:5173
   oauth2:
     enabled: true
-    frontend-success-url: http://localhost:5173/login
-    frontend-failure-url: http://localhost:5173/login
+    frontend-success-url: ${FRONTEND_BASE_URL:http://localhost:8001}/login
+    frontend-failure-url: ${FRONTEND_BASE_URL:http://localhost:8001}/login
   discovery:
     open-ai-enabled: ${DISCOVERY_OPENAI_ENABLED:true}
     open-ai-api-key: ${OPENAI_API_KEY:sk-...}
+
+# Tin X-Forwarded-* từ nginx/cloudflared để OAuth redirect-uri dùng đúng :8001 / domain công khai
+server:
+  forward-headers-strategy: framework
