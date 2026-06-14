@@ -25,9 +25,14 @@ import com.vibely.backend.interaction.VideoViewEntity;
 import com.vibely.backend.interaction.VideoViewRepository;
 import com.vibely.backend.notification.NotificationService;
 import com.vibely.backend.processing.VideoProcessingEnqueueService;
+import com.vibely.backend.processing.VideoProcessingJobRepository;
+import com.vibely.backend.processing.VideoProcessingJobState;
 import com.vibely.backend.auth.UserAvatarResolver;
 import com.vibely.backend.interaction.VideoBookmarkRepository;
+import com.vibely.backend.interaction.VideoRepostRepository;
+import com.vibely.backend.storage.S3MediaDeletionService;
 import com.vibely.backend.storage.S3ObjectUrlBuilder;
+import com.vibely.backend.storage.S3OwnedMediaValidator;
 import com.vibely.backend.storage.S3PresignedUploadService;
 import com.vibely.backend.user.User;
 import com.vibely.backend.user.UserRepository;
@@ -68,6 +73,7 @@ public class VideoService {
     private final UserRepository userRepository;
     private final LikeRepository likeRepository;
     private final VideoBookmarkRepository videoBookmarkRepository;
+    private final VideoRepostRepository videoRepostRepository;
     private final CommentRepository commentRepository;
     private final FollowRepository followRepository;
     private final VideoViewRepository videoViewRepository;
@@ -76,6 +82,7 @@ public class VideoService {
     private final VideoProcessingEnqueueService videoProcessingEnqueueService;
     private final ObjectProvider<S3PresignedUploadService> presignedUploadService;
     private final S3ObjectUrlBuilder objectUrlBuilder;
+    private final S3OwnedMediaValidator ownedMediaValidator;
     private final CategoryClassifierService categoryClassifierService;
     private final VideoCategoryRepository videoCategoryRepository;
     private final VideoHashtagRepository videoHashtagRepository;
@@ -87,12 +94,15 @@ public class VideoService {
     private final ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor;
     private final ObjectProvider<RecommendationService> recommendationService;
     private final NotificationService notificationService;
+    private final VideoProcessingJobRepository videoProcessingJobRepository;
+    private final ObjectProvider<S3MediaDeletionService> s3MediaDeletionService;
 
     public VideoService(
         VideoRepository videoRepository,
         UserRepository userRepository,
         LikeRepository likeRepository,
         VideoBookmarkRepository videoBookmarkRepository,
+        VideoRepostRepository videoRepostRepository,
         CommentRepository commentRepository,
         FollowRepository followRepository,
         VideoViewRepository videoViewRepository,
@@ -101,6 +111,7 @@ public class VideoService {
         VideoProcessingEnqueueService videoProcessingEnqueueService,
         ObjectProvider<S3PresignedUploadService> presignedUploadService,
         S3ObjectUrlBuilder objectUrlBuilder,
+        S3OwnedMediaValidator ownedMediaValidator,
         CategoryClassifierService categoryClassifierService,
         VideoCategoryRepository videoCategoryRepository,
         VideoHashtagRepository videoHashtagRepository,
@@ -111,12 +122,15 @@ public class VideoService {
         ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService,
         ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor,
         ObjectProvider<RecommendationService> recommendationService,
-        NotificationService notificationService
+        NotificationService notificationService,
+        VideoProcessingJobRepository videoProcessingJobRepository,
+        ObjectProvider<S3MediaDeletionService> s3MediaDeletionService
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
         this.likeRepository = likeRepository;
         this.videoBookmarkRepository = videoBookmarkRepository;
+        this.videoRepostRepository = videoRepostRepository;
         this.commentRepository = commentRepository;
         this.followRepository = followRepository;
         this.videoViewRepository = videoViewRepository;
@@ -125,6 +139,7 @@ public class VideoService {
         this.videoProcessingEnqueueService = videoProcessingEnqueueService;
         this.presignedUploadService = presignedUploadService;
         this.objectUrlBuilder = objectUrlBuilder;
+        this.ownedMediaValidator = ownedMediaValidator;
         this.categoryClassifierService = categoryClassifierService;
         this.videoCategoryRepository = videoCategoryRepository;
         this.videoHashtagRepository = videoHashtagRepository;
@@ -136,12 +151,24 @@ public class VideoService {
         this.userInterestSignalProcessor = userInterestSignalProcessor;
         this.recommendationService = recommendationService;
         this.notificationService = notificationService;
+        this.videoProcessingJobRepository = videoProcessingJobRepository;
+        this.s3MediaDeletionService = s3MediaDeletionService;
     }
 
     @Transactional
     public VideoResponse createVideo(String email, VideoCreateRequest request) {
         User author = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        long authorId = author.getId();
+        ownedMediaValidator.requireOwnedUpload(request.getVideoUrl(), authorId);
+        String thumb = normalizeText(request.getThumbnailUrl());
+        if (thumb != null) {
+            ownedMediaValidator.requireOwnedThumbnail(thumb, authorId);
+        }
+        String explicitAudio = normalizeText(request.getAudioUrl());
+        if (explicitAudio != null) {
+            ownedMediaValidator.requireOwnedAudio(explicitAudio, authorId);
+        }
         Video video = new Video();
         video.setAuthor(author);
         video.setTitle(request.getTitle());
@@ -220,28 +247,20 @@ public class VideoService {
     }
 
     @Transactional(readOnly = true)
-    public FeedPageResponse getForYouFeed(String viewerEmail, int size) {
-        RecommendationService rec = recommendationService.getIfAvailable();
-        Long viewerId = resolveViewerId(viewerEmail);
-        int req = Math.max(1, Math.min(size, 50));
-        if (rec == null) {
-            return getLatestFeedKeyset(null, req, viewerEmail);
-        }
-        List<Long> ids = rec.forYouVideoIds(viewerId, req);
-        if (ids.isEmpty()) {
-            return getLatestFeedKeyset(null, req, viewerEmail);
-        }
-        Map<Long, Video> byId = videoRepository.findWithAuthorByIdIn(ids).stream()
-            .collect(java.util.stream.Collectors.toMap(Video::getId, v -> v, (a, b) -> a));
-        List<Video> ordered = ids.stream().map(byId::get).filter(Objects::nonNull).toList();
+    public FeedPageResponse getForYouFeed(String viewerEmail, int size, String cursor) {
+        FeedPageResponse latest = getLatestFeedKeyset(cursor, size, viewerEmail);
+        return withFeedSort(latest, "for-you");
+    }
+
+    private FeedPageResponse withFeedSort(FeedPageResponse page, String sort) {
         return new FeedPageResponse(
-            toFeedResponses(ordered, viewerId),
-            0,
-            req,
-            ordered.size(),
-            false,
-            "for-you",
-            null
+            page.items(),
+            page.page(),
+            page.size(),
+            page.total(),
+            page.hasNext(),
+            sort,
+            page.nextCursor()
         );
     }
 
@@ -252,19 +271,18 @@ public class VideoService {
         if (followRepository.countByFollower_Id(follower.getId()) == 0) {
             return new FeedPageResponse(Collections.emptyList(), page, size, 0, false, "following", null);
         }
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Video> resultPage = videoRepository.findReadyVideosFromFollowedCreators(
+        Pageable pageable = PageRequest.of(page, Math.min(size, 50));
+        Page<FollowingFeedRowView> slice = videoRepository.findFollowingFeedCombined(
             follower.getId(),
-            VideoStatus.READY,
             pageable
         );
-        List<Video> shuffled = shuffleFeedRows(new ArrayList<>(resultPage.getContent()));
+        List<VideoResponse> items = toFollowingFeedResponses(slice.getContent(), follower.getId());
         return new FeedPageResponse(
-            toFeedResponses(shuffled, follower.getId()),
-            resultPage.getNumber(),
-            resultPage.getSize(),
-            resultPage.getTotalElements(),
-            resultPage.hasNext(),
+            items,
+            slice.getNumber(),
+            slice.getSize(),
+            slice.getTotalElements(),
+            slice.hasNext(),
             "following",
             null
         );
@@ -348,6 +366,25 @@ public class VideoService {
     }
 
     @Transactional(readOnly = true)
+    public FeedPageResponse getMyRepostedVideos(String email, int page, int size) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        Pageable pageable = PageRequest.of(page, Math.min(size, 50));
+        VideoStatus ready = VideoStatus.READY;
+        VideoStatus removed = VideoStatus.REMOVED;
+        VideoStatus failed = VideoStatus.FAILED;
+        Page<Video> resultPage = videoRepostRepository.findRepostedVideosForUser(
+            user,
+            ready,
+            user.getId(),
+            removed,
+            failed,
+            pageable
+        );
+        return toFeedPageResponse(resultPage, "reposts");
+    }
+
+    @Transactional(readOnly = true)
     public FeedPageResponse getMyUploadedVideos(String email, int page, int size) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
@@ -422,7 +459,11 @@ public class VideoService {
         String desc = request.getDescription();
         video.setDescription(desc == null || desc.isBlank() ? null : desc.trim());
         if (request.getThumbnailUrl() != null) {
-            video.setThumbnailUrl(normalizeText(request.getThumbnailUrl()));
+            String thumbUrl = normalizeText(request.getThumbnailUrl());
+            if (thumbUrl != null) {
+                ownedMediaValidator.requireOwnedThumbnail(thumbUrl, user.getId());
+            }
+            video.setThumbnailUrl(thumbUrl);
         }
         Video saved = videoRepository.save(video);
         syncExploreSignals(saved);
@@ -468,16 +509,52 @@ public class VideoService {
     public void deleteVideo(String email, Long videoId) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
-        Video video = getVideoOrThrow(videoId);
+        Video video = videoRepository.findWithAuthorById(videoId)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
         if (!Objects.equals(video.getAuthor().getId(), user.getId())) {
             throw new BadRequestException("Bạn không có quyền xóa video này.");
         }
         if (video.getStatus() == VideoStatus.REMOVED) {
             return;
         }
+        cancelProcessingJob(video.getId());
+        S3MediaDeletionService deletionService = s3MediaDeletionService.getIfAvailable();
+        if (deletionService != null) {
+            deletionService.deleteVideoArtifacts(video);
+        }
         video.setStatus(VideoStatus.REMOVED);
         videoRepository.save(video);
         notificationService.purgeForRemovedVideo(video.getId());
+    }
+
+    private void cancelProcessingJob(Long videoId) {
+        videoProcessingJobRepository.findByVideo_Id(videoId).ifPresent(job -> {
+            if (job.getJobState() != VideoProcessingJobState.COMPLETED) {
+                job.setJobState(VideoProcessingJobState.COMPLETED);
+                videoProcessingJobRepository.save(job);
+            }
+        });
+    }
+
+    @Transactional
+    public VideoResponse retryVideoProcessing(String email, UUID publicId) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        Video video = getVideoByPublicIdOrThrow(publicId);
+        if (!Objects.equals(video.getAuthor().getId(), user.getId())) {
+            throw new BadRequestException("Bạn không có quyền xử lý lại video này.");
+        }
+        if (video.getStatus() == VideoStatus.REMOVED) {
+            throw new BadRequestException("Video đã bị gỡ.");
+        }
+        if (video.getStatus() == VideoStatus.READY) {
+            throw new BadRequestException("Video đã sẵn sàng phát.");
+        }
+        video.setStatus(VideoStatus.RAW);
+        video.setProcessingError(null);
+        videoRepository.save(video);
+        videoProcessingEnqueueService.enqueueAfterVideoPersisted(video);
+        return toResponse(video, resolveFollowedByViewer(video, email));
     }
 
     public Video getVideoByPublicIdOrThrow(UUID publicId) {
@@ -687,8 +764,48 @@ public class VideoService {
         );
         Set<Long> followedAuthorIds = resolveFollowedAuthorIds(viewerId, videos);
         return videos.stream()
-            .map(v -> toResponse(v, counts, followedAuthorIds.contains(v.getAuthor().getId())))
+            .map(v -> toResponse(v, counts, followedAuthorIds.contains(v.getAuthor().getId()), null, null))
             .toList();
+    }
+
+    private List<VideoResponse> toFollowingFeedResponses(List<FollowingFeedRowView> rows, Long viewerId) {
+        if (rows.isEmpty()) {
+            return List.of();
+        }
+        List<Long> videoIds = rows.stream().map(FollowingFeedRowView::getVideoId).distinct().toList();
+        Map<Long, Video> videosById = videoRepository.findWithAuthorByIdIn(videoIds).stream()
+            .collect(java.util.stream.Collectors.toMap(Video::getId, v -> v, (a, b) -> a));
+        List<Long> reposterIds = rows.stream()
+            .map(FollowingFeedRowView::getReposterUserId)
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .toList();
+        Map<Long, User> repostersById = reposterIds.isEmpty()
+            ? Map.of()
+            : userRepository.findAllById(reposterIds).stream()
+                .collect(java.util.stream.Collectors.toMap(User::getId, u -> u, (a, b) -> a));
+        FeedInteractionCounts counts = new FeedInteractionCounts(
+            countMap(likeRepository.countGroupedByVideoIds(videoIds)),
+            countMap(commentRepository.countGroupedByVideoIds(videoIds)),
+            countMap(videoBookmarkRepository.countGroupedByVideoIds(videoIds)),
+            countMap(videoViewRepository.countGroupedByVideoIds(videoIds))
+        );
+        List<Video> videosForFollow = videosById.values().stream().toList();
+        Set<Long> followedAuthorIds = resolveFollowedAuthorIds(viewerId, videosForFollow);
+        List<VideoResponse> out = new ArrayList<>(rows.size());
+        for (FollowingFeedRowView row : rows) {
+            Video video = videosById.get(row.getVideoId());
+            if (video == null) {
+                continue;
+            }
+            User reposter = row.getReposterUserId() != null
+                ? repostersById.get(row.getReposterUserId())
+                : null;
+            boolean followed = followedAuthorIds.contains(video.getAuthor().getId())
+                || (reposter != null && followedAuthorIds.contains(reposter.getId()));
+            out.add(toResponse(video, counts, followed, reposter, row.getFeedAt()));
+        }
+        return out;
     }
 
     private static Map<Long, Long> countMap(List<Object[]> rows) {
@@ -703,6 +820,16 @@ public class VideoService {
     }
 
     private VideoResponse toResponse(Video video, FeedInteractionCounts batch, boolean followedByViewer) {
+        return toResponse(video, batch, followedByViewer, null, null);
+    }
+
+    private VideoResponse toResponse(
+        Video video,
+        FeedInteractionCounts batch,
+        boolean followedByViewer,
+        User repostedBy,
+        LocalDateTime repostedAt
+    ) {
         Long videoId = video.getId();
         long likeCount = batch != null
             ? batch.likes().getOrDefault(videoId, 0L)
@@ -721,6 +848,19 @@ public class VideoService {
         String videoUrl = presignPlaybackUrlIfConfigured(video.getVideoUrl());
         String thumbUrl = presignPlaybackUrlIfConfigured(video.getThumbnailUrl());
         String audioUrl = presignPlaybackUrlIfConfigured(video.getAudioUrl());
+        String masterPlaylistUrl = presignPlaybackUrlIfConfigured(video.getMasterPlaylistUrl());
+        Long repostedByUserId = null;
+        String repostedByUsername = null;
+        String repostedByDisplayName = null;
+        String repostedByAvatarUrl = null;
+        LocalDateTime repostedAtValue = null;
+        if (repostedBy != null) {
+            repostedByUserId = repostedBy.getId();
+            repostedByUsername = repostedBy.getUsername();
+            repostedByDisplayName = resolveAuthorDisplayName(repostedBy);
+            repostedByAvatarUrl = userAvatarResolver.resolve(repostedBy);
+            repostedAtValue = repostedAt;
+        }
         return new VideoResponse(
             video.getPublicId(),
             author.getId(),
@@ -740,12 +880,17 @@ public class VideoService {
             viewCount,
             video.getCreatedAt(),
             video.getStatus(),
-            video.getMasterPlaylistUrl(),
+            masterPlaylistUrl,
             video.getDurationSeconds(),
             video.getSourceWidthPx(),
             video.getSourceHeightPx(),
             video.getProcessingError(),
-            followedByViewer
+            followedByViewer,
+            repostedByUserId,
+            repostedByUsername,
+            repostedByDisplayName,
+            repostedByAvatarUrl,
+            repostedAtValue
         );
     }
 

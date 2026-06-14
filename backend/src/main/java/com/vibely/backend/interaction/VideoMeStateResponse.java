@@ -1,4 +1,4 @@
 package com.vibely.backend.interaction;
 
-public record VideoMeStateResponse(boolean liked, boolean bookmarked) {
+public record VideoMeStateResponse(boolean liked, boolean bookmarked, boolean reposted) {
 }

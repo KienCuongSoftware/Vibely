@@ -16,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 public interface VideoRepository extends JpaRepository<Video, Long> {
     Optional<Video> findByPublicId(UUID publicId);
 
+    @Query("SELECT v FROM Video v JOIN FETCH v.author WHERE v.id = :id")
+    Optional<Video> findWithAuthorById(@Param("id") Long id);
+
     @Query("SELECT v FROM Video v JOIN FETCH v.author WHERE v.publicId = :publicId")
     Optional<Video> findWithAuthorByPublicId(@Param("publicId") UUID publicId);
 
@@ -39,6 +42,60 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         @Param("status") VideoStatus status,
         Pageable pageable
     );
+
+    @Query(
+        value = """
+            SELECT combined.video_id AS videoId,
+                   combined.feed_at AS feedAt,
+                   combined.reposter_id AS reposterUserId
+            FROM (
+                SELECT v.id AS video_id,
+                       v.created_at AS feed_at,
+                       CAST(NULL AS BIGINT) AS reposter_id
+                FROM videos v
+                WHERE v.status = 'READY'
+                  AND v.author_id IN (
+                      SELECT f.following_id FROM follows f WHERE f.follower_id = :followerId
+                  )
+                UNION ALL
+                SELECT v.id AS video_id,
+                       r.created_at AS feed_at,
+                       r.user_id AS reposter_id
+                FROM video_reposts r
+                INNER JOIN videos v ON v.id = r.video_id
+                WHERE v.status = 'READY'
+                  AND r.user_id IN (
+                      SELECT f.following_id FROM follows f WHERE f.follower_id = :followerId
+                  )
+            ) combined
+            ORDER BY combined.feed_at DESC
+            """,
+        countQuery = """
+            SELECT COUNT(*)
+            FROM (
+                SELECT v.id AS video_id
+                FROM videos v
+                WHERE v.status = 'READY'
+                  AND v.author_id IN (
+                      SELECT f.following_id FROM follows f WHERE f.follower_id = :followerId
+                  )
+                UNION ALL
+                SELECT v.id AS video_id
+                FROM video_reposts r
+                INNER JOIN videos v ON v.id = r.video_id
+                WHERE v.status = 'READY'
+                  AND r.user_id IN (
+                      SELECT f.following_id FROM follows f WHERE f.follower_id = :followerId
+                  )
+            ) combined
+            """,
+        nativeQuery = true
+    )
+    Page<FollowingFeedRowView> findFollowingFeedCombined(
+        @Param("followerId") Long followerId,
+        Pageable pageable
+    );
+
     Page<Video> findByAudioUrlAndStatusOrderByCreatedAtDesc(String audioUrl, VideoStatus status, Pageable pageable);
 
     /** Khớp URL âm thanh canonical hoặc cùng S3 object key (presigned GET có query khác). */
@@ -168,5 +225,9 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         select v from Video v join fetch v.author where v.id in :ids
         """)
     List<Video> findWithAuthorByIdIn(@Param("ids") Collection<Long> ids);
+
+    long countByIdNotAndStatusNotAndAudioUrl(Long id, VideoStatus status, String audioUrl);
+
+    long countByAuthor_IdAndStatusNotAndIdNot(Long authorId, VideoStatus status, Long id);
 }
 

@@ -66,6 +66,26 @@ public class InteractionController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @PostMapping("/videos/{publicId}/reposts")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ApiResponse<Void>> repostVideo(
+        Authentication authentication,
+        @PathVariable String publicId
+    ) {
+        interactionService.repostVideo(authentication.getName(), VideoPublicIds.parse(publicId));
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/videos/{publicId}/reposts")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ApiResponse<Void>> unrepostVideo(
+        Authentication authentication,
+        @PathVariable String publicId
+    ) {
+        interactionService.unrepostVideo(authentication.getName(), VideoPublicIds.parse(publicId));
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
     @GetMapping("/videos/{publicId}/me")
     @PreAuthorize("hasRole('USER')")
     public ApiResponse<VideoMeStateResponse> videoMeState(

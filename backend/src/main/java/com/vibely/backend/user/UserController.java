@@ -9,6 +9,7 @@ import com.vibely.backend.feed.FeedPageResponse;
 import com.vibely.backend.interaction.FollowRepository;
 import com.vibely.backend.interaction.LikeRepository;
 import com.vibely.backend.interaction.VideoViewRepository;
+import com.vibely.backend.storage.S3OwnedMediaValidator;
 import com.vibely.backend.video.VideoService;
 import com.vibely.backend.video.VideoStatus;
 import jakarta.validation.Valid;
@@ -42,6 +43,7 @@ public class UserController {
     private final LikeRepository likeRepository;
     private final VideoViewRepository videoViewRepository;
     private final UserDiscoveryService userDiscoveryService;
+    private final S3OwnedMediaValidator ownedMediaValidator;
 
     public UserController(
         UserRepository userRepository,
@@ -51,7 +53,8 @@ public class UserController {
         FollowRepository followRepository,
         LikeRepository likeRepository,
         VideoViewRepository videoViewRepository,
-        UserDiscoveryService userDiscoveryService
+        UserDiscoveryService userDiscoveryService,
+        S3OwnedMediaValidator ownedMediaValidator
     ) {
         this.userRepository = userRepository;
         this.usernameService = usernameService;
@@ -61,6 +64,7 @@ public class UserController {
         this.likeRepository = likeRepository;
         this.videoViewRepository = videoViewRepository;
         this.userDiscoveryService = userDiscoveryService;
+        this.ownedMediaValidator = ownedMediaValidator;
     }
 
     private User getViewer(Authentication authentication) {
@@ -159,6 +163,16 @@ public class UserController {
         return ApiResponse.success(videoService.getMyBookmarkedVideos(authentication.getName(), page, size));
     }
 
+    @GetMapping("/me/reposted-videos")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<FeedPageResponse> myRepostedVideos(
+        Authentication authentication,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "12") int size
+    ) {
+        return ApiResponse.success(videoService.getMyRepostedVideos(authentication.getName(), page, size));
+    }
+
     @GetMapping("/me/videos")
     @PreAuthorize("hasRole('USER')")
     public ApiResponse<FeedPageResponse> myUploadedVideos(
@@ -233,9 +247,13 @@ public class UserController {
         user.setUsername(normalizedUsername);
         user.setDisplayName(request.displayName().trim());
         user.setBio(request.bio() == null || request.bio().isBlank() ? "" : request.bio().trim());
-        user.setAvatarUrl(request.avatarUrl() == null || request.avatarUrl().isBlank()
+        String avatarUrl = request.avatarUrl() == null || request.avatarUrl().isBlank()
             ? null
-            : request.avatarUrl().trim());
+            : request.avatarUrl().trim();
+        if (avatarUrl != null) {
+            ownedMediaValidator.requireAllowedAvatarUrl(avatarUrl, user.getId());
+        }
+        user.setAvatarUrl(avatarUrl);
         User saved = userRepository.save(user);
 
         return ApiResponse.success(toPublicProfile(saved, authentication));

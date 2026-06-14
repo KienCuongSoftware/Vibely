@@ -111,6 +111,17 @@ public class VideoController {
         return ApiResponse.success(null);
     }
 
+    @PostMapping("/{publicId}/retry-processing")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<VideoResponse> retryVideoProcessing(
+        Authentication authentication,
+        @PathVariable String publicId
+    ) {
+        return ApiResponse.success(
+            videoService.retryVideoProcessing(authentication.getName(), VideoPublicIds.parse(publicId))
+        );
+    }
+
     /**
      * Trả về URL ký sẵn để client PUT file trực tiếp lên S3, sau đó gọi POST /api/videos với playbackUrl.
      */

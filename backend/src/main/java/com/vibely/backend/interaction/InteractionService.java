@@ -34,6 +34,7 @@ public class InteractionService {
     private final VideoService videoService;
     private final LikeRepository likeRepository;
     private final VideoBookmarkRepository videoBookmarkRepository;
+    private final VideoRepostRepository videoRepostRepository;
     private final CommentRepository commentRepository;
     private final CommentLikeRepository commentLikeRepository;
     private final FollowRepository followRepository;
@@ -49,6 +50,7 @@ public class InteractionService {
         VideoService videoService,
         LikeRepository likeRepository,
         VideoBookmarkRepository videoBookmarkRepository,
+        VideoRepostRepository videoRepostRepository,
         CommentRepository commentRepository,
         CommentLikeRepository commentLikeRepository,
         FollowRepository followRepository,
@@ -63,6 +65,7 @@ public class InteractionService {
         this.videoService = videoService;
         this.likeRepository = likeRepository;
         this.videoBookmarkRepository = videoBookmarkRepository;
+        this.videoRepostRepository = videoRepostRepository;
         this.commentRepository = commentRepository;
         this.commentLikeRepository = commentLikeRepository;
         this.followRepository = followRepository;
@@ -120,13 +123,34 @@ public class InteractionService {
         videoBookmarkRepository.deleteByUserAndVideo(user, video);
     }
 
+    public void repostVideo(String email, UUID videoPublicId) {
+        User user = getUser(email);
+        Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
+        requireEngagementAllowed(video, user);
+        if (videoRepostRepository.existsByUserAndVideo(user, video)) {
+            return;
+        }
+        VideoRepostEntity row = new VideoRepostEntity();
+        row.setUser(user);
+        row.setVideo(video);
+        videoRepostRepository.save(row);
+    }
+
+    public void unrepostVideo(String email, UUID videoPublicId) {
+        User user = getUser(email);
+        Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
+        requireEngagementAllowed(video, user);
+        videoRepostRepository.deleteByUserAndVideo(user, video);
+    }
+
     @Transactional(readOnly = true)
     public VideoMeStateResponse getVideoMeState(String email, UUID videoPublicId) {
         User user = getUser(email);
         Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
         return new VideoMeStateResponse(
             likeRepository.existsByUserAndVideo(user, video),
-            videoBookmarkRepository.existsByUserAndVideo(user, video)
+            videoBookmarkRepository.existsByUserAndVideo(user, video),
+            videoRepostRepository.existsByUserAndVideo(user, video)
         );
     }
 

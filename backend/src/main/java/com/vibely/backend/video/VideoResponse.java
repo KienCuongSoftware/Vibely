@@ -27,6 +27,12 @@ public record VideoResponse(
     Integer sourceWidthPx,
     Integer sourceHeightPx,
     String processingError,
-    boolean followedByViewer
+    boolean followedByViewer,
+    /** Set when this Following-feed item is a repost by someone the viewer follows. */
+    Long repostedByUserId,
+    String repostedByUsername,
+    String repostedByDisplayName,
+    String repostedByAvatarUrl,
+    LocalDateTime repostedAt
 ) {
 }

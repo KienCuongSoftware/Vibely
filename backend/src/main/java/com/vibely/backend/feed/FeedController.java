@@ -43,10 +43,13 @@ public class FeedController {
     @GetMapping("/for-you")
     public ApiResponse<FeedPageResponse> forYou(
         Authentication authentication,
+        @RequestParam(required = false) String cursor,
         @RequestParam(defaultValue = "20") int size
     ) {
         String viewerEmail = authentication != null ? authentication.getName() : null;
-        return ApiResponse.success(videoService.getForYouFeed(viewerEmail, Math.min(size, 50)));
+        return ApiResponse.success(
+            videoService.getForYouFeed(viewerEmail, Math.min(size, 50), cursor)
+        );
     }
 
     @GetMapping("/following")
