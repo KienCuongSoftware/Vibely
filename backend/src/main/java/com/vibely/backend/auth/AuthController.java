@@ -87,14 +87,20 @@ public class AuthController {
     ) {
         String refreshToken = resolveRefreshToken(request, httpRequest);
         if (refreshToken == null || refreshToken.isBlank()) {
-            throw new BadRequestException("Refresh token là bắt buộc");
+            authCookieService.clearSessionCookies(httpResponse);
+            return ResponseEntity.ok(ApiResponse.success(null));
         }
-        return AuthSessionSupport.ok(
-            authService.refresh(refreshToken),
-            httpResponse,
-            authCookieService,
-            exposeTokensInApi
-        );
+        try {
+            return AuthSessionSupport.ok(
+                authService.refresh(refreshToken),
+                httpResponse,
+                authCookieService,
+                exposeTokensInApi
+            );
+        } catch (BadRequestException ex) {
+            authCookieService.clearSessionCookies(httpResponse);
+            return ResponseEntity.ok(ApiResponse.success(null));
+        }
     }
 
     @PostMapping("/logout")
@@ -178,15 +184,21 @@ public class AuthController {
 
         String refreshToken = authCookieService.readRefreshToken(request).orElse(null);
         if (refreshToken == null || refreshToken.isBlank()) {
-            throw new BadRequestException("Phiên đăng nhập đã hết hạn");
+            authCookieService.clearSessionCookies(response);
+            return ResponseEntity.ok(ApiResponse.success(null));
         }
-        AuthResponse refreshed = authService.refresh(refreshToken);
-        authCookieService.writeSessionCookies(
-            response,
-            refreshed.accessToken(),
-            refreshed.refreshToken()
-        );
-        return ResponseEntity.ok(ApiResponse.success(new WsTicketResponse(refreshed.accessToken())));
+        try {
+            AuthResponse refreshed = authService.refresh(refreshToken);
+            authCookieService.writeSessionCookies(
+                response,
+                refreshed.accessToken(),
+                refreshed.refreshToken()
+            );
+            return ResponseEntity.ok(ApiResponse.success(new WsTicketResponse(refreshed.accessToken())));
+        } catch (BadRequestException ex) {
+            authCookieService.clearSessionCookies(response);
+            return ResponseEntity.ok(ApiResponse.success(null));
+        }
     }
 
     @GetMapping("/me")

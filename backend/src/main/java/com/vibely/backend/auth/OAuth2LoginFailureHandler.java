@@ -18,11 +18,14 @@ public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
 
     private static final Logger log = LoggerFactory.getLogger(OAuth2LoginFailureHandler.class);
     private final String frontendFailureUrl;
+    private final String oauthPublicBaseUrl;
 
     public OAuth2LoginFailureHandler(
-        @Value("${app.oauth2.frontend-failure-url:http://localhost:5173/login}") String frontendFailureUrl
+        @Value("${app.oauth2.frontend-failure-url:http://localhost:5173/login}") String frontendFailureUrl,
+        @Value("${app.oauth2.public-base-url:}") String oauthPublicBaseUrl
     ) {
         this.frontendFailureUrl = frontendFailureUrl;
+        this.oauthPublicBaseUrl = oauthPublicBaseUrl == null ? "" : oauthPublicBaseUrl.trim();
     }
 
     @Override
@@ -38,7 +41,13 @@ public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
             exception
         );
 
-        UriComponentsBuilder redirect = UriComponentsBuilder.fromUriString(frontendFailureUrl)
+        UriComponentsBuilder redirect = UriComponentsBuilder.fromUriString(
+            OAuthRedirectUrlSupport.resolveFrontendLoginUrl(
+                request,
+                frontendFailureUrl,
+                oauthPublicBaseUrl
+            )
+        )
             .queryParam("oauth", "error");
         String reason = resolveFailureReason(exception);
         if (reason != null) {

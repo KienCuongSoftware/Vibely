@@ -21,15 +21,18 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final AuthService authService;
     private final OAuthLoginCodeStore oAuthLoginCodeStore;
     private final String frontendSuccessUrl;
+    private final String oauthPublicBaseUrl;
 
     public OAuth2LoginSuccessHandler(
         @Lazy AuthService authService,
         OAuthLoginCodeStore oAuthLoginCodeStore,
-        @Value("${app.oauth2.frontend-success-url:http://localhost:5173/login}") String frontendSuccessUrl
+        @Value("${app.oauth2.frontend-success-url:http://localhost:5173/login}") String frontendSuccessUrl,
+        @Value("${app.oauth2.public-base-url:}") String oauthPublicBaseUrl
     ) {
         this.authService = authService;
         this.oAuthLoginCodeStore = oAuthLoginCodeStore;
         this.frontendSuccessUrl = frontendSuccessUrl;
+        this.oauthPublicBaseUrl = oauthPublicBaseUrl == null ? "" : oauthPublicBaseUrl.trim();
     }
 
     @Override
@@ -52,7 +55,12 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         AuthResponse authResponse =
             authService.authenticateWithOAuthProvider(email, name, picture, registrationId);
         String oneTimeCode = oAuthLoginCodeStore.createCode(authResponse);
-        String redirectUrl = UriComponentsBuilder.fromUriString(frontendSuccessUrl)
+        String loginBase = OAuthRedirectUrlSupport.resolveFrontendLoginUrl(
+            request,
+            frontendSuccessUrl,
+            oauthPublicBaseUrl
+        );
+        String redirectUrl = UriComponentsBuilder.fromUriString(loginBase)
             .queryParam("oauth", "success")
             .queryParam("code", oneTimeCode)
             .queryParam("provider", registrationId)

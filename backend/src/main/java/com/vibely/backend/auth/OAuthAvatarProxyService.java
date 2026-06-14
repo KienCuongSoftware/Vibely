@@ -74,6 +74,4 @@ public class OAuthAvatarProxyService {
             return Optional.empty();
         }
     }
-
-    public record ProxiedAvatarImage(byte[] body, String contentType) {}
 }

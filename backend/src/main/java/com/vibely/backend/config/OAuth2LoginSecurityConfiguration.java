@@ -2,9 +2,12 @@ package com.vibely.backend.config;
 
 import com.vibely.backend.auth.OAuth2LoginFailureHandler;
 import com.vibely.backend.auth.OAuth2LoginSuccessHandler;
+import com.vibely.backend.auth.PublicBaseUrlOAuth2AuthorizationRequestResolver;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,8 +22,8 @@ import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.web.SecurityFilterChain;
@@ -36,7 +39,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class OAuth2LoginSecurityConfiguration {
 
     @Bean
-    @Order(1)
+    @Order(Ordered.HIGHEST_PRECEDENCE)
     SecurityFilterChain oauth2SecurityFilterChain(
         HttpSecurity http,
         ClientRegistrationRepository clientRegistrationRepository,
@@ -44,7 +47,8 @@ public class OAuth2LoginSecurityConfiguration {
         JwtDecoderFactory<ClientRegistration> idTokenDecoderFactory,
         OAuth2LoginSuccessHandler successHandler,
         OAuth2LoginFailureHandler failureHandler,
-        CorsConfigurationSource corsConfigurationSource
+        CorsConfigurationSource corsConfigurationSource,
+        @Value("${app.oauth2.public-base-url:}") String oauthPublicBaseUrl
     ) throws Exception {
         OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> tokenClient =
             new DefaultAuthorizationCodeTokenResponseClient();
@@ -60,13 +64,15 @@ public class OAuth2LoginSecurityConfiguration {
         ProviderManager oauthAuthenticationManager =
             new ProviderManager(oidcProvider, oauth2LoginProvider);
 
-        OAuth2AuthorizationRequestRedirectFilter authorizationRedirectFilter =
-            new OAuth2AuthorizationRequestRedirectFilter(
-                new DefaultOAuth2AuthorizationRequestResolver(
-                    clientRegistrationRepository,
-                    OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI
-                )
+        OAuth2AuthorizationRequestResolver authorizationRequestResolver =
+            new PublicBaseUrlOAuth2AuthorizationRequestResolver(
+                clientRegistrationRepository,
+                OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI,
+                oauthPublicBaseUrl
             );
+
+        OAuth2AuthorizationRequestRedirectFilter authorizationRedirectFilter =
+            new OAuth2AuthorizationRequestRedirectFilter(authorizationRequestResolver);
 
         OAuth2LoginAuthenticationFilter loginFilter =
             new OAuth2LoginAuthenticationFilter(clientRegistrationRepository, authorizedClientService);
