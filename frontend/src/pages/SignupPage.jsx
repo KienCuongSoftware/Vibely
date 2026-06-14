@@ -34,7 +34,6 @@ import {
 import { useAntiBot } from "../security/hooks/useAntiBot.js";
 import { clearVerificationToken } from "../security/sdk/antiBotClient.js";
 
-const OAUTH_BACKEND_ORIGIN = resolveBackendOrigin();
 const OAUTH_ONBOARDING_KEY = "vibely_oauth_pending";
 
 function normalizeVibelyId(value) {
@@ -342,7 +341,7 @@ export function SignupPage() {
   };
 
   const startOAuth = (provider) => {
-    window.location.href = `${OAUTH_BACKEND_ORIGIN}/oauth2/authorization/${provider}`;
+    window.location.href = `${resolveBackendOrigin()}/oauth2/authorization/${provider}`;
   };
 
   const continueToUsernameStep = async (event) => {

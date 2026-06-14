@@ -135,17 +135,19 @@ export function AuthProvider({ children }) {
 
   const refreshSession = async () => {
     const result = await apiClient.refresh();
+    if (!result) {
+      clearSession();
+      return null;
+    }
     return establishSession(result);
   };
 
   const resolveSessionProfile = async () => {
     let me = await apiClient.me(COOKIE_SESSION_MARKER);
     if (!me) {
-      try {
-        await apiClient.refresh();
+      const refreshed = await apiClient.refresh();
+      if (refreshed) {
         me = await apiClient.me(COOKIE_SESSION_MARKER);
-      } catch {
-        return null;
       }
     }
     return me ?? null;
@@ -217,11 +219,9 @@ export function AuthProvider({ children }) {
       try {
         let me = await apiClient.me();
         if (!me && cachedBootstrap) {
-          try {
-            await apiClient.refresh();
+          const refreshed = await apiClient.refresh();
+          if (refreshed) {
             me = await apiClient.me();
-          } catch {
-            /* stale refresh cookie */
           }
         }
         if (cancelled) return;

@@ -19,8 +19,27 @@ export function resolveApiBaseUrl() {
   return trimmed
 }
 
-/** Origin backend cho OAuth — production qua nginx dùng cùng origin trình duyệt. */
+function isLoopbackHostname(hostname) {
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "[::1]"
+  )
+}
+
+/**
+ * Origin backend cho OAuth.
+ * Trên điện thoại/LAN/tunnel: luôn dùng cùng origin trình duyệt (nginx :8001, cloudflared…).
+ * Desktop dev localhost: mặc định :8080 hoặc env.
+ */
 export function resolveBackendOrigin() {
+  if (typeof window !== "undefined" && window.location?.origin) {
+    const hostname = window.location.hostname
+    if (!isLoopbackHostname(hostname)) {
+      return window.location.origin
+    }
+  }
+
   const fromEnv =
     import.meta.env.VITE_BACKEND_ORIGIN ?? import.meta.env.VITE_API_BASE_URL
   const trimmed =
@@ -29,6 +48,9 @@ export function resolveBackendOrigin() {
       : String(fromEnv).trim().replace(/\/$/, "")
 
   if (import.meta.env.DEV) {
+    if (typeof window !== "undefined" && window.location?.origin) {
+      return window.location.origin
+    }
     if (!trimmed || trimmed.includes(":8000")) {
       return "http://localhost:8080"
     }

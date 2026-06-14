@@ -24,10 +24,33 @@ function localizeError(code, fallbackMessage) {
   return "Đã có lỗi xảy ra.";
 }
 
+function readCsrfToken() {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+async function ensureCsrfCookie() {
+  if (typeof document === "undefined" || readCsrfToken()) return;
+  try {
+    await fetch(`${API_BASE_URL}/api/health`, { credentials: "include" });
+  } catch {
+    /* health probe is best-effort */
+  }
+}
+
 async function request(path, { method = "GET", body, token, headers: extraHeaders } = {}) {
   const headers = { "Content-Type": "application/json", ...(extraHeaders || {}) };
   if (token && !isCookieSession(token)) {
     headers.Authorization = `Bearer ${token}`;
+  }
+  const upperMethod = String(method).toUpperCase();
+  if (upperMethod !== "GET" && upperMethod !== "HEAD" && upperMethod !== "OPTIONS") {
+    await ensureCsrfCookie();
+    const csrf = readCsrfToken();
+    if (csrf) {
+      headers["X-XSRF-TOKEN"] = csrf;
+    }
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -168,6 +191,8 @@ export const apiClient = {
     request(`/api/users/me/suggested-creators${toQuery({ page, size })}`, { token }),
   getFeed: ({ size = 10, sort = "latest", cursor, token } = {}) =>
     request(`/api/feed${toQuery({ size, sort, cursor })}`, token ? { token } : {}),
+  getForYouFeed: ({ size = 10, cursor, token } = {}) =>
+    request(`/api/feed/for-you${toQuery({ size, cursor })}`, token ? { token } : {}),
   getStudioAnalyticsOverview: (token, { days = 7 } = {}) =>
     request(`/api/studio/analytics/overview${toQuery({ days })}`, { token }),
   getStudioVideoAnalytics: (token, publicId, { days = 7 } = {}) =>
@@ -244,12 +269,20 @@ export const apiClient = {
     request(`/api/videos/${publicId}/bookmarks`, { method: "POST", token }),
   unbookmarkVideo: (publicId, token) =>
     request(`/api/videos/${publicId}/bookmarks`, { method: "DELETE", token }),
+  repostVideo: (publicId, token) =>
+    request(`/api/videos/${publicId}/reposts`, { method: "POST", token }),
+  unrepostVideo: (publicId, token) =>
+    request(`/api/videos/${publicId}/reposts`, { method: "DELETE", token }),
   getVideoMeState: (publicId, token) =>
     request(`/api/videos/${publicId}/me`, { token }),
   getMyLikedVideos: (token, { page = 0, size = 24 } = {}) =>
     request(`/api/users/me/liked-videos${toQuery({ page, size })}`, { token }),
   getMyBookmarkedVideos: (token, { page = 0, size = 24 } = {}) =>
     request(`/api/users/me/bookmarked-videos${toQuery({ page, size })}`, {
+      token,
+    }),
+  getMyRepostedVideos: (token, { page = 0, size = 24 } = {}) =>
+    request(`/api/users/me/reposted-videos${toQuery({ page, size })}`, {
       token,
     }),
   getMyUploadedVideos: (token, { page = 0, size = 24 } = {}) =>

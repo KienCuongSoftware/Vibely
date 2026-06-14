@@ -1,6 +1,6 @@
 /**
- * Origin công khai của app (production, ngrok, preview deploy).
- * Dev: đặt VITE_PUBLIC_APP_URL=https://xxx.ngrok-free.app khi tunnel cổng 5173.
+ * Origin công khai của app (production, ngrok, Cloudflare Tunnel, preview deploy).
+ * Dev: đặt VITE_PUBLIC_APP_URL=https://xxx.trycloudflare.com khi tunnel cổng 8001/5173.
  */
 export function getConfiguredPublicAppOrigin() {
   const raw = import.meta.env.VITE_PUBLIC_APP_URL

@@ -10,24 +10,27 @@ export class SessionExpiredError extends Error {
 }
 
 /**
- * Cookie session: ws-ticket trả JWT (tự refresh nếu access hết hạn).
- * Không gọi /refresh riêng — tránh 400 khi refresh cookie đã chết.
+ * Cookie session: refresh access cookie via ws-ticket, then connect with cookies only.
  */
 export async function resolveRealtimeWsToken(sessionToken) {
   if (!sessionToken) return null
   if (!isCookieSession(sessionToken)) return sessionToken
 
   try {
-    const data = await apiClient.wsTicket()
-    if (data?.token) return data.token
+    const ticket = await apiClient.wsTicket()
+    if (!ticket?.token) {
+      throw new SessionExpiredError()
+    }
+    return sessionToken
   } catch (err) {
+    if (err instanceof SessionExpiredError) {
+      throw err
+    }
     if (err?.status === 400 || err?.status === 401) {
       throw new SessionExpiredError()
     }
-    return null
+    return sessionToken
   }
-
-  return sessionToken
 }
 
 export function usesCookieWebSocketAuth(sessionToken) {
