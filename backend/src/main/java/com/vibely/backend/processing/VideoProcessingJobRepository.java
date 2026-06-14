@@ -8,4 +8,9 @@ public interface VideoProcessingJobRepository extends JpaRepository<VideoProcess
     Optional<VideoProcessingJobEntity> findByVideo_Id(Long videoId);
 
     Optional<VideoProcessingJobEntity> findFirstByJobStateOrderByCreatedAtAsc(VideoProcessingJobState jobState);
+
+    Optional<VideoProcessingJobEntity> findFirstByJobStateAndUpdatedAtBeforeOrderByUpdatedAtAsc(
+        VideoProcessingJobState jobState,
+        java.time.LocalDateTime updatedBefore
+    );
 }

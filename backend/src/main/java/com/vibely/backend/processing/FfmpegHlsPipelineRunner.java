@@ -144,7 +144,7 @@ public class FfmpegHlsPipelineRunner {
             );
             log.info("HLS pipeline ffmpeg transcode starting videoId={}", item.videoId());
             long transcodeStarted = System.nanoTime();
-            transcodeToHls(sourceFile, transcodeDir, audioPlan, dims);
+            transcodeToHls(sourceFile, transcodeDir, audioPlan, dims, item.jobId());
             long transcodeMs = (System.nanoTime() - transcodeStarted) / 1_000_000;
             log.info(
                 "HLS pipeline ffmpeg transcode finished videoId={} durationMs={} audioBitrate={}",
@@ -278,10 +278,7 @@ public class FfmpegHlsPipelineRunner {
                 "error",
                 "-select_streams",
                 "v:0",
-                "-show_entries",
-                "stream=width,height",
-                "-show_entries",
-                "stream_tags=rotate",
+                "-show_streams",
                 "-of",
                 "json",
                 input.toAbsolutePath().toString()
@@ -320,7 +317,7 @@ public class FfmpegHlsPipelineRunner {
             if (w <= 0 || h <= 0) {
                 return new SourceDimensions(null, null);
             }
-            Integer rot = parseRotateTag(s0.get("tags"));
+            Integer rot = parseStreamRotation(s0);
             boolean swap = rot != null && (rot == 90 || rot == 270 || rot == -90);
             int outW = swap ? h : w;
             int outH = swap ? w : h;
@@ -337,6 +334,27 @@ public class FfmpegHlsPipelineRunner {
                 }
             }
         }
+    }
+
+    private static Integer parseStreamRotation(JsonNode stream) {
+        Integer fromTag = parseRotateTag(stream.get("tags"));
+        if (fromTag != null) {
+            return fromTag;
+        }
+        JsonNode sideList = stream.get("side_data_list");
+        if (sideList == null || !sideList.isArray()) {
+            return null;
+        }
+        for (JsonNode side : sideList) {
+            if (!side.has("rotation")) {
+                continue;
+            }
+            int rot = side.path("rotation").asInt(0);
+            if (rot != 0) {
+                return rot;
+            }
+        }
+        return null;
     }
 
     private static Integer parseRotateTag(JsonNode tags) {
@@ -369,8 +387,12 @@ public class FfmpegHlsPipelineRunner {
             input.toAbsolutePath().toString(),
             "-frames:v",
             "1",
+            "-vf",
+            "scale='min(1280,iw)':-2:flags=lanczos",
             "-q:v",
             "2",
+            "-pix_fmt",
+            "yuvj420p",
             output.toAbsolutePath().toString()
         );
         runProcess(cmd, input.getParent());
@@ -379,16 +401,29 @@ public class FfmpegHlsPipelineRunner {
     private record HlsRendition(String subdir, int targetHeightPx, int bandwidthBps) {}
 
     /**
-     * At least two renditions when source allows — hls.js needs multiple levels for manual quality UI.
+     * Ladder ABR: giữ độ phân giải gốc tối đa (4K/1080p) + các bậc thấp hơn cho UI chọn chất lượng.
      */
     private static List<HlsRendition> planHlsRenditions(int sourceHeightPx) {
         int evenSourceH = Math.max(2, sourceHeightPx - (sourceHeightPx % 2));
         List<HlsRendition> renditions = new ArrayList<>();
-        if (evenSourceH >= 720) {
+        if (evenSourceH >= 2160) {
+            renditions.add(new HlsRendition("2160p", 2160, 16_000_000));
+            renditions.add(new HlsRendition("1080p", 1080, 6_000_000));
+            renditions.add(new HlsRendition("720p", 720, 2_800_000));
+            renditions.add(new HlsRendition("540p", 540, 1_400_000));
+        } else if (evenSourceH >= 1080) {
+            if (evenSourceH > 1080) {
+                renditions.add(new HlsRendition("high", evenSourceH, 8_000_000));
+            }
+            renditions.add(new HlsRendition("1080p", 1080, 5_000_000));
+            renditions.add(new HlsRendition("720p", 720, 2_800_000));
+            renditions.add(new HlsRendition("540p", 540, 1_400_000));
+        } else if (evenSourceH >= 720) {
             renditions.add(new HlsRendition("720p", 720, 2_800_000));
             renditions.add(new HlsRendition("540p", 540, 1_400_000));
         } else if (evenSourceH > 540) {
-            renditions.add(new HlsRendition("high", evenSourceH, 2_000_000));
+            // TikTok-style: 720p + 540p (không giữ bậc lẻ như 576p).
+            renditions.add(new HlsRendition("720p", 720, 2_800_000));
             renditions.add(new HlsRendition("540p", 540, 1_200_000));
         } else if (evenSourceH > 360) {
             renditions.add(new HlsRendition("high", evenSourceH, 1_400_000));
@@ -406,7 +441,8 @@ public class FfmpegHlsPipelineRunner {
         Path input,
         Path outDir,
         AudioProcessingResult audioPlan,
-        SourceDimensions dims
+        SourceDimensions dims,
+        long jobId
     ) throws Exception {
         int sourceH = dims.heightPx() != null && dims.heightPx() > 0 ? dims.heightPx() : 720;
         List<HlsRendition> renditions = planHlsRenditions(sourceH);
@@ -417,14 +453,39 @@ public class FfmpegHlsPipelineRunner {
             renditions.stream().map(HlsRendition::targetHeightPx).toList()
         );
         if (renditions.size() == 1) {
-            transcodeSingleVariantHls(input, outDir, audioPlan, renditions.get(0), false);
+            transcodeSingleVariantHls(input, outDir, audioPlan, renditions.get(0), dims, false);
+            stateService.touchProcessingHeartbeat(jobId);
             return;
         }
         for (HlsRendition rendition : renditions) {
             Path variantDir = outDir.resolve(rendition.subdir());
-            transcodeSingleVariantHls(input, variantDir, audioPlan, rendition, true);
+            transcodeSingleVariantHls(input, variantDir, audioPlan, rendition, dims, true);
+            stateService.touchProcessingHeartbeat(jobId);
         }
         writeMasterPlaylist(outDir, renditions, dims);
+    }
+
+    /**
+     * Downscale to {@code targetHeightPx} preserving aspect ratio; both output dimensions are even (libx264).
+     */
+    static int[] evenScaleDimensions(int sourceW, int sourceH, int targetHeightPx) {
+        if (sourceW <= 0 || sourceH <= 0 || targetHeightPx <= 0) {
+            int even = Math.max(2, targetHeightPx - (targetHeightPx % 2));
+            return new int[] { even, even };
+        }
+        int w = sourceW;
+        int h = sourceH;
+        if (h > targetHeightPx) {
+            w = (int) Math.round((double) sourceW * targetHeightPx / sourceH);
+            h = targetHeightPx;
+        }
+        if (w % 2 != 0) {
+            w -= 1;
+        }
+        if (h % 2 != 0) {
+            h -= 1;
+        }
+        return new int[] { Math.max(2, w), Math.max(2, h) };
     }
 
     private void transcodeSingleVariantHls(
@@ -432,13 +493,25 @@ public class FfmpegHlsPipelineRunner {
         Path variantDir,
         AudioProcessingResult audioPlan,
         HlsRendition rendition,
+        SourceDimensions dims,
         boolean nestedInMaster
     ) throws Exception {
         if (nestedInMaster) {
             Files.createDirectories(variantDir);
         }
-        String scale =
-            "scale=-2:" + rendition.targetHeightPx() + ":force_original_aspect_ratio=decrease";
+        int sourceW = dims.widthPx() != null && dims.widthPx() > 0 ? dims.widthPx() : 720;
+        int sourceH = dims.heightPx() != null && dims.heightPx() > 0 ? dims.heightPx() : 1280;
+        int[] scaled = evenScaleDimensions(sourceW, sourceH, rendition.targetHeightPx());
+        String scaleLabel = scaled[0] + "x" + scaled[1];
+        String sourceLabel = sourceW + "x" + sourceH;
+        log.info(
+            "HLS pipeline variant {} scale {} (source {}, targetH={})",
+            rendition.subdir(),
+            scaleLabel,
+            sourceLabel,
+            rendition.targetHeightPx()
+        );
+        String scale = "scale=" + scaled[0] + ":" + scaled[1];
         Path segmentPattern = nestedInMaster
             ? variantDir.resolve("segment_%03d.ts")
             : variantDir.resolve("segment_%03d.ts");
@@ -489,27 +562,30 @@ public class FfmpegHlsPipelineRunner {
         throws IOException {
         int sourceW = dims.widthPx() != null && dims.widthPx() > 0 ? dims.widthPx() : 720;
         int sourceH = dims.heightPx() != null && dims.heightPx() > 0 ? dims.heightPx() : 1280;
-        double aspect = (double) sourceW / Math.max(1, sourceH);
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("#EXTM3U\n");
-        sb.append("#EXT-X-VERSION:3\n");
+        StringBuilder sb = new StringBuilder(256);
+        sb.append("#EXTM3U").append(System.lineSeparator());
+        sb.append("#EXT-X-VERSION:3").append(System.lineSeparator());
         for (HlsRendition rendition : renditions) {
-            int height = rendition.targetHeightPx();
-            int width = (int) Math.round(height * aspect);
-            if (width % 2 != 0) {
-                width += 1;
-            }
-            sb.append("#EXT-X-STREAM-INF:BANDWIDTH=")
-                .append(rendition.bandwidthBps())
-                .append(",RESOLUTION=")
-                .append(width)
-                .append("x")
-                .append(height)
-                .append("\n");
-            sb.append(rendition.subdir()).append("/playlist.m3u8\n");
+            int[] scaled = evenScaleDimensions(sourceW, sourceH, rendition.targetHeightPx());
+            sb.append(formatMasterPlaylistEntry(rendition, scaled[0], scaled[1]));
         }
         Files.writeString(outDir.resolve("playlist.m3u8"), sb.toString(), StandardCharsets.UTF_8);
+    }
+
+    private static String formatMasterPlaylistEntry(HlsRendition rendition, int widthPx, int heightPx) {
+        String resolution = widthPx + "x" + heightPx;
+        String lineSep = System.lineSeparator();
+        StringBuilder entry = new StringBuilder(128);
+        entry.append("#EXT-X-STREAM-INF:BANDWIDTH=");
+        entry.append(rendition.bandwidthBps());
+        entry.append(",RESOLUTION=");
+        entry.append(resolution);
+        entry.append(lineSep);
+        entry.append(rendition.subdir());
+        entry.append("/playlist.m3u8");
+        entry.append(lineSep);
+        return entry.toString();
     }
 
     /**

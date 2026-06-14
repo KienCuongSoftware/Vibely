@@ -19,6 +19,15 @@ public class VideoProcessingStateService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void touchProcessingHeartbeat(long jobId) {
+        VideoProcessingJobEntity job = jobRepository.findById(jobId).orElse(null);
+        if (job == null || job.getJobState() != VideoProcessingJobState.PROCESSING) {
+            return;
+        }
+        jobRepository.save(job);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void markReadyWithArtifacts(
         long jobId,
         long videoId,

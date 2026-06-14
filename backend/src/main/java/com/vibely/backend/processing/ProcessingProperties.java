@@ -30,6 +30,12 @@ public class ProcessingProperties {
 
     private int maxJobAttempts = 3;
 
+    /** Jobs stuck in PROCESSING longer than this are reset to PENDING. 4K transcode can exceed 5 minutes. */
+    private int recoveryStaleProcessingMinutes = 30;
+
+    /** FAILED jobs at max attempts are re-queued after this cooldown. */
+    private int recoveryExhaustedCooldownMinutes = 2;
+
     @NestedConfigurationProperty
     private Audio audio = new Audio();
 
@@ -79,6 +85,22 @@ public class ProcessingProperties {
 
     public void setMaxJobAttempts(int maxJobAttempts) {
         this.maxJobAttempts = maxJobAttempts;
+    }
+
+    public int getRecoveryStaleProcessingMinutes() {
+        return recoveryStaleProcessingMinutes;
+    }
+
+    public void setRecoveryStaleProcessingMinutes(int recoveryStaleProcessingMinutes) {
+        this.recoveryStaleProcessingMinutes = recoveryStaleProcessingMinutes;
+    }
+
+    public int getRecoveryExhaustedCooldownMinutes() {
+        return recoveryExhaustedCooldownMinutes;
+    }
+
+    public void setRecoveryExhaustedCooldownMinutes(int recoveryExhaustedCooldownMinutes) {
+        this.recoveryExhaustedCooldownMinutes = recoveryExhaustedCooldownMinutes;
     }
 
     public Audio getAudio() {

@@ -1,6 +1,7 @@
 package com.vibely.backend.processing;
 
 import com.vibely.backend.video.Video;
+import java.util.Optional;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,10 +25,27 @@ public class VideoProcessingEnqueueService {
      */
     @Transactional
     public void enqueueAfterVideoPersisted(Video video) {
+        Optional<VideoProcessingJobEntity> existing = jobRepository.findByVideo_Id(video.getId());
+        if (existing.isPresent()) {
+            requeueExistingJob(existing.get());
+            eventPublisher.publishEvent(new VideoQueuedAfterPersistEvent(this, video.getId()));
+            return;
+        }
         VideoProcessingJobEntity job = new VideoProcessingJobEntity();
         job.setVideo(video);
         job.setJobState(VideoProcessingJobState.PENDING);
         jobRepository.save(job);
         eventPublisher.publishEvent(new VideoQueuedAfterPersistEvent(this, video.getId()));
+    }
+
+    /**
+     * Resets an existing job row so the worker can pick the video up again.
+     */
+    @Transactional
+    public void requeueExistingJob(VideoProcessingJobEntity job) {
+        job.setJobState(VideoProcessingJobState.PENDING);
+        job.setLastError(null);
+        job.setAttempts(0);
+        jobRepository.save(job);
     }
 }
