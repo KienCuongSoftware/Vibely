@@ -9,7 +9,7 @@ import React, {
 } from 'react'
 import { apiClient } from '../api/client.js'
 import { createNotificationSocketClient } from '../realtime/notificationSocket.js'
-import { resolveRealtimeWsToken } from '../realtime/wsAuth.js'
+import { resolveRealtimeWsToken, SessionExpiredError } from '../realtime/wsAuth.js'
 import { useAuth } from './useAuth.js'
 
 const NotificationUnreadContext = createContext(null)
@@ -20,7 +20,7 @@ function normalizeUnreadCount(value) {
 }
 
 export function NotificationUnreadProvider({ children }) {
-  const { token, authReady } = useAuth()
+  const { token, authReady, logout } = useAuth()
   const [unreadCount, setUnreadCount] = useState(0)
   const listenersRef = useRef(new Set())
 
@@ -79,19 +79,25 @@ export function NotificationUnreadProvider({ children }) {
     let socket
 
     async function connect() {
-      const wsToken = await resolveRealtimeWsToken(token)
-      if (cancelled || !wsToken) return
+      try {
+        const wsToken = await resolveRealtimeWsToken(token)
+        if (cancelled || !wsToken) return
 
-      socket = createNotificationSocketClient(wsToken, (event) => {
-        if (event?.unreadCount != null) {
-          setUnreadCount(normalizeUnreadCount(event.unreadCount))
-        }
-        if (event?.type === 'notification.updated' || event?.type === 'notification.removed') {
-          emitRealtime(event)
-        }
-      })
+        socket = createNotificationSocketClient(wsToken, (event) => {
+          if (event?.unreadCount != null) {
+            setUnreadCount(normalizeUnreadCount(event.unreadCount))
+          }
+          if (event?.type === 'notification.updated' || event?.type === 'notification.removed') {
+            emitRealtime(event)
+          }
+        })
 
-      socket.activate()
+        socket.activate()
+      } catch (err) {
+        if (err instanceof SessionExpiredError) {
+          logout()
+        }
+      }
     }
 
     void connect()
@@ -99,7 +105,7 @@ export function NotificationUnreadProvider({ children }) {
       cancelled = true
       socket?.deactivate()
     }
-  }, [authReady, emitRealtime, token])
+  }, [authReady, emitRealtime, logout, token])
 
   const value = useMemo(
     () => ({

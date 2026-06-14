@@ -7,6 +7,8 @@ import { resolveWsUrl } from './wsUrl.js'
  */
 export function createStompClient(token, onConnect) {
   const wsUrl = resolveWsUrl(token)
+  let authFailed = false
+
   const client = new Client({
     webSocketFactory: () => new WebSocket(wsUrl),
     reconnectDelay: 2500,
@@ -16,10 +18,20 @@ export function createStompClient(token, onConnect) {
   })
 
   client.onConnect = (frame) => {
+    authFailed = false
     onConnect?.(client, frame)
   }
-  client.onStompError = () => {}
-  client.onWebSocketError = () => {}
+  client.onStompError = () => {
+    authFailed = true
+    client.reconnectDelay = 0
+    client.deactivate()
+  }
+  client.onWebSocketError = () => {
+    if (authFailed) return
+    authFailed = true
+    client.reconnectDelay = 0
+    client.deactivate()
+  }
 
   return client
 }

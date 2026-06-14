@@ -16,7 +16,7 @@ import { apiClient, uploadThumbnailToStorage, uploadToPresignedPutUrl } from "..
 import { CreatorGridShell, GridLoadingState, GridLoginPrompt } from "../components/feed/CreatorGridShell.jsx";
 import { useAuth } from "../state/useAuth";
 import { createChatSocketClient } from "../realtime/chatSocket.js";
-import { resolveRealtimeWsToken } from "../realtime/wsAuth.js";
+import { resolveRealtimeWsToken, SessionExpiredError } from "../realtime/wsAuth.js";
 
 const PAGE_TITLE = "Tin nhắn | Vibely";
 const DEFAULT_AVATAR = "/images/users/default-avatar.jpeg";
@@ -301,6 +301,7 @@ export function MessagesPage() {
     let socket;
 
     async function connect() {
+      try {
       const wsToken = await resolveRealtimeWsToken(token);
       if (cancelled || !wsToken) return;
 
@@ -357,6 +358,11 @@ export function MessagesPage() {
       });
 
       socket.activate();
+      } catch (err) {
+        if (err instanceof SessionExpiredError) {
+          logout();
+        }
+      }
     }
 
     void connect();
@@ -365,7 +371,7 @@ export function MessagesPage() {
       cancelled = true;
       socket?.deactivate();
     };
-  }, [authReady, token, user?.id]);
+  }, [authReady, logout, token, user?.id]);
 
   const activeConversation = useMemo(
     () => conversations.find((row) => Number(row.id) === Number(activeConversationId)) ?? null,

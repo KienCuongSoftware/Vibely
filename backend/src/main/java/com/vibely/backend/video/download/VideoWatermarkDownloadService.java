@@ -166,6 +166,10 @@ public class VideoWatermarkDownloadService {
         cmd.add(filter);
         cmd.add("-c:v");
         cmd.add("libx264");
+        cmd.add("-pix_fmt");
+        cmd.add("yuv420p");
+        cmd.add("-profile:v");
+        cmd.add("main");
         cmd.add("-preset");
         cmd.add("veryfast");
         cmd.add("-crf");
