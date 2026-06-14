@@ -108,6 +108,46 @@ public class S3ObjectUrlBuilder {
         return resolveObjectFromUrl(url).map(ResolvedS3Object::key);
     }
 
+    /**
+     * Like {@link #resolveKeyFromUrl(String)} but also accepts presigned URLs and raw object keys
+     * by scanning for known media roots ({@code uploads/}, {@code thumbnails/}, …) in the path.
+     */
+    public Optional<String> resolveKeyLenient(String url) {
+        Optional<String> strict = resolveKeyFromUrl(url);
+        if (strict.isPresent()) {
+            return strict;
+        }
+        if (url == null || url.isBlank()) {
+            return Optional.empty();
+        }
+        String trimmed = stripQueryAndFragment(url.trim());
+        String path = trimmed;
+        int schemeIdx = path.indexOf("://");
+        if (schemeIdx >= 0) {
+            path = path.substring(schemeIdx + 3);
+            int firstSlash = path.indexOf('/');
+            path = firstSlash >= 0 ? path.substring(firstSlash + 1) : "";
+        }
+        path = path.replaceFirst("^/+", "");
+        if (path.isBlank()) {
+            return Optional.empty();
+        }
+        String lower = path.toLowerCase(Locale.ROOT);
+        for (String root : new String[] { "uploads/", "thumbnails/", "audios/", "hls/" }) {
+            int idx = lower.indexOf(root);
+            if (idx >= 0) {
+                return Optional.of(decodeKeyPath(path.substring(idx)));
+            }
+        }
+        if (lower.startsWith("uploads/")
+            || lower.startsWith("thumbnails/")
+            || lower.startsWith("audios/")
+            || lower.startsWith("hls/")) {
+            return Optional.of(decodeKeyPath(path));
+        }
+        return Optional.empty();
+    }
+
     private static String stripQueryAndFragment(String raw) {
         int end = raw.length();
         int q = raw.indexOf('?');
