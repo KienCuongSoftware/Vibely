@@ -24,7 +24,10 @@ public class SharePreviewService {
 
     public SharePreviewModel buildModel(UUID publicId, HttpServletRequest request) {
         VideoResponse video = videoService.getVideoByPublicIdForViewer(publicId, null);
-        String origin = resolveOrigin(request);
+        String origin = SharePreviewOriginResolver.resolve(
+            appUrlProperties.normalizedFrontendBaseUrl(),
+            request
+        );
         String sharePath = "/share/video/" + publicId;
         String pageUrl = origin + sharePath;
         String redirectUrl = buildWatchUrl(origin, video);
@@ -81,20 +84,12 @@ public class SharePreviewService {
         UUID publicId = video.publicId();
         if (handle != null && !handle.isBlank() && publicId != null) {
             return origin
-                + "/"
+                + "/@"
                 + SharePreviewHtmlRenderer.encodePathSegment(handle)
                 + "/video/"
                 + publicId;
         }
         return origin + "/watch/" + publicId;
-    }
-
-    private String resolveOrigin(HttpServletRequest request) {
-        String fromRequest = SharePreviewHtmlRenderer.requestOrigin(request);
-        if (!fromRequest.isBlank()) {
-            return fromRequest;
-        }
-        return appUrlProperties.normalizedFrontendBaseUrl();
     }
 
     private static String firstNonBlank(String... values) {

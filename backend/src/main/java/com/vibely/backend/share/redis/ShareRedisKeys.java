@@ -17,6 +17,11 @@ public final class ShareRedisKeys {
     public static final String SHORT_LINK_MISS = "sl:miss:";
     public static final String RATE_REDIRECT = "ratelimit:redirect:";
     public static final String RATE_SHARE = "ratelimit:share:";
+    public static final String RATE_SHARE_PREVIEW = "ratelimit:share-preview:";
+    public static final String RATE_VIEW = "ratelimit:view:";
+    public static final String RATE_PUBLIC_SHARE = "ratelimit:public-share:";
+    public static final String RATE_DOWNLOAD = "ratelimit:download:";
+    public static final String RATE_ANTIBOT = "ratelimit:antibot:";
     public static final String VIDEO_SHARE_COUNT = "video:share_count:";
 
     private ShareRedisKeys() {}

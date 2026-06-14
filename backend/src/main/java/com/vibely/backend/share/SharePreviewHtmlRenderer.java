@@ -195,7 +195,11 @@ final class SharePreviewHtmlRenderer {
             return "";
         }
         String scheme = proto == null ? "http" : proto.toLowerCase(Locale.ROOT);
-        if (host.contains("ngrok") && "http".equals(scheme)) {
+        String hostLower = host.toLowerCase(Locale.ROOT);
+        if (hostLower.contains("ngrok") && "http".equals(scheme)) {
+            scheme = "https";
+        }
+        if (hostLower.contains("trycloudflare.com") && "http".equals(scheme)) {
             scheme = "https";
         }
         return scheme + "://" + host.split(",")[0].trim();

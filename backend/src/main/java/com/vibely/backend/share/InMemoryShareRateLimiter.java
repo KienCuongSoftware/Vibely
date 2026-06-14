@@ -29,6 +29,31 @@ public class InMemoryShareRateLimiter implements ShareRateLimiter {
         return allow(bucket("share", subjectKey), shareProperties.getShareWriteRateLimitPerMinute());
     }
 
+    @Override
+    public boolean allowSharePreview(String clientIp) {
+        return allow(bucket("share-preview", clientIp), shareProperties.getSharePreviewRateLimitPerMinute());
+    }
+
+    @Override
+    public boolean allowViewRecord(String clientIp) {
+        return allow(bucket("view", clientIp), shareProperties.getViewRecordRateLimitPerMinute());
+    }
+
+    @Override
+    public boolean allowPublicShare(String clientIp) {
+        return allow(bucket("public-share", clientIp), shareProperties.getPublicShareRateLimitPerMinute());
+    }
+
+    @Override
+    public boolean allowDownload(String subjectKey) {
+        return allow(bucket("download", subjectKey), shareProperties.getDownloadRateLimitPerMinute());
+    }
+
+    @Override
+    public boolean allowAntiBot(String clientIp) {
+        return allow(bucket("antibot", clientIp), shareProperties.getAntibotRateLimitPerMinute());
+    }
+
     private boolean allow(String bucket, int limit) {
         long now = Instant.now().getEpochSecond();
         Counter counter = counters.computeIfAbsent(bucket, ignored -> new Counter(now, 0));

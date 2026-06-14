@@ -11,4 +11,14 @@ public interface ShareRateLimiter {
     boolean allowRedirect(String clientIp);
 
     boolean allowShareWrite(String subjectKey);
+
+    boolean allowSharePreview(String clientIp);
+
+    boolean allowViewRecord(String clientIp);
+
+    boolean allowPublicShare(String clientIp);
+
+    boolean allowDownload(String subjectKey);
+
+    boolean allowAntiBot(String clientIp);
 }
