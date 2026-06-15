@@ -100,7 +100,8 @@ export default defineConfig({
             const secure =
               req.headers['x-forwarded-proto'] === 'https' ||
               host.includes('ngrok') ||
-              host.includes('trycloudflare.com')
+              host.includes('trycloudflare.com') ||
+              host.includes('vibely.sbs')
             proxyReq.setHeader('X-Forwarded-Proto', secure ? 'https' : 'http')
           })
         },
@@ -117,7 +118,8 @@ export default defineConfig({
             const secure =
               req.headers['x-forwarded-proto'] === 'https' ||
               host.includes('ngrok') ||
-              host.includes('trycloudflare.com')
+              host.includes('trycloudflare.com') ||
+              host.includes('vibely.sbs')
             proxyReq.setHeader('X-Forwarded-Proto', secure ? 'https' : 'http')
           })
         },
