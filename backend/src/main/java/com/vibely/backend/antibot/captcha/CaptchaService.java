@@ -159,7 +159,7 @@ public class CaptchaService {
 
         validateSolveDuration(request);
 
-        double behaviorConfidence = analyzeBehavior(request);
+        double behaviorConfidence = analyzeBehavior(request, session.type());
 
         boolean verified = switch (session.type()) {
             case CHECKBOX -> Boolean.TRUE.equals(request.checkboxAttested());
@@ -232,9 +232,13 @@ public class CaptchaService {
         }
     }
 
-    private double analyzeBehavior(CaptchaVerifyRequest request) {
+    private double analyzeBehavior(CaptchaVerifyRequest request, CaptchaType captchaType) {
         if (request.behaviorSamples() == null || request.behaviorSamples().isEmpty()) {
             return 1.0;
+        }
+        // Slider/rotate puzzles use a 1-D range control — linear pointer paths are expected.
+        if (captchaType == CaptchaType.SLIDER || captchaType == CaptchaType.ROTATE) {
+            return 0.8;
         }
         var behavior = behaviorAnalysisService.analyze(request.behaviorSamples());
         if (behavior.suspicious()) {
