@@ -26,6 +26,7 @@ import {
 } from "../../feed/feedCommentThreads.js";
 import { FeedCommentsEmptyState } from "./FeedCommentsEmptyState.jsx";
 import { feedCommentsPanelWidthCss } from "../../feed/feedLayout.js";
+import { MOBILE_FEED_TOP_BAR_PX } from "./MobileFeedShell.jsx";
 
 const DEFAULT_USER_AVATAR = "/images/users/default-avatar.jpeg";
 const FEED_DEFAULT_AUTHOR_AVATAR = "/images/users/default-avatar.jpeg";
@@ -737,6 +738,9 @@ export function FeedCommentsPanel({
   onCommentCountChange,
   formatCompactCount,
   formatRelativeTimeVi,
+  /** Mobile: bottom sheet (TikTok) thay vì full-screen. */
+  mobileSheet = false,
+  mobileSheetHeightPx,
 }) {
   const inputRef = useRef(null);
   const commentAccessoryRef = useRef(null);
@@ -927,13 +931,49 @@ export function FeedCommentsPanel({
     token,
   };
 
-  return (
-    <aside
-      className="relative z-0 flex h-full min-h-0 shrink-0 flex-col border-l border-white/[0.08] bg-[#121212] pt-[4.5rem] text-zinc-100"
-      style={{ width: feedCommentsPanelWidthCss() }}
-      aria-label="Bình luận"
-    >
-      <div className="relative z-10 flex shrink-0 items-center justify-between border-b border-white/[0.08] px-4 py-3.5">
+  const panel = (
+    <>
+      {mobileSheet ? (
+        <button
+          type="button"
+          className="fixed inset-x-0 z-[85] cursor-default bg-black/15"
+          style={{
+            top: MOBILE_FEED_TOP_BAR_PX,
+            bottom: mobileSheetHeightPx ?? "58vh",
+          }}
+          aria-label="Đóng bình luận"
+          onClick={onClose}
+        />
+      ) : null}
+      <aside
+        className={`flex min-h-0 flex-col bg-[#121212] text-zinc-100 ${
+          mobileSheet
+            ? 'fixed inset-x-0 bottom-0 z-[90] w-full rounded-t-2xl border-t border-white/[0.08] shadow-[0_-12px_40px_rgba(0,0,0,0.45)]'
+            : `relative z-0 h-full shrink-0 border-l border-white/[0.08] pt-[4.5rem]`
+        }`}
+        style={
+          mobileSheet
+            ? {
+                height: mobileSheetHeightPx
+                  ? `${mobileSheetHeightPx}px`
+                  : undefined,
+              }
+            : { width: feedCommentsPanelWidthCss() }
+        }
+        aria-label="Bình luận"
+      >
+      <div
+        className={`relative z-10 flex shrink-0 flex-col border-b border-white/[0.08] ${
+          mobileSheet ? 'px-4 pb-3 pt-2' : 'px-4 py-3.5'
+        }`}
+      >
+        {mobileSheet ? (
+          <div
+            className="mx-auto mb-2 h-1 w-10 shrink-0 rounded-full bg-white/25"
+            aria-hidden
+          />
+        ) : null}
+        <div className="flex items-center justify-between">
         <h2 className="min-w-0 text-[16px] font-bold tracking-tight text-white">
           Bình luận
           <span className="ml-1.5 font-semibold text-zinc-400">
@@ -948,9 +988,16 @@ export function FeedCommentsPanel({
         >
           <IoClose className="text-2xl" aria-hidden />
         </button>
+        </div>
       </div>
 
-      <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 py-1">
+      <div
+        className={`scrollbar-none min-h-0 flex-1 overscroll-contain px-1 py-1 ${
+          mobileSheet && rootComments.length === 0 && !loading && !error
+            ? 'flex flex-col overflow-hidden'
+            : 'overflow-y-auto'
+        }`}
+      >
         {!isVideoPublicId(activeVideo?.publicId) ? (
           <p className="px-5 py-12 text-center text-sm leading-relaxed text-zinc-500">
             Bình luận chỉ khả dụng cho video trên Vibely (đã đăng nhập).
@@ -962,7 +1009,7 @@ export function FeedCommentsPanel({
         ) : error ? (
           <p className="px-5 py-12 text-center text-sm text-red-400">{error}</p>
         ) : rootComments.length === 0 ? (
-          <FeedCommentsEmptyState />
+          <FeedCommentsEmptyState compact={mobileSheet} />
         ) : (
           <ul className="space-y-0.5">
             {rootComments.map((root) => {
@@ -1125,5 +1172,11 @@ export function FeedCommentsPanel({
         </div>
       </div>
     </aside>
+    </>
   );
+
+  if (mobileSheet && typeof document !== "undefined") {
+    return createPortal(panel, document.body);
+  }
+  return panel;
 }

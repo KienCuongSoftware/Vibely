@@ -15,7 +15,7 @@ export function FeedPage() {
       user={user}
       onLogout={logout}
       authReady={authReady}
-      feedMode="latest"
+      feedMode="for-you"
       activeMenuId="latest"
     />
   );

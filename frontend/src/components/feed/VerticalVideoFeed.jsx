@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { apiClient } from "../../api/client";
 import {
@@ -7,6 +7,16 @@ import {
   FEED_STAGE_OUTER_WIDTH_CLASS,
 } from "./FeedPhoneStage";
 import { FeedCommentsPanel } from "./FeedCommentsPanel.jsx";
+import {
+  computeMobileFeedCommentsLayout,
+  isMobileFeedLayout,
+  MOBILE_FEED_BOTTOM_NAV_PX,
+  MOBILE_FEED_TOP_BAR_PX,
+  MobileFeedBottomNav,
+  MobileFeedMenuDrawer,
+  MobileFeedTopBar,
+} from "./MobileFeedShell.jsx";
+import { MobileFollowingEmptyState } from "./MobileFollowingEmptyState.jsx";
 import { Sidebar } from "../Sidebar";
 import { TooltipHoverWrap } from "../TooltipControls";
 import { AccountActionsPill } from "../AccountActionsPill";
@@ -35,17 +45,21 @@ import {
   IoVideocam,
 } from "react-icons/io5";
 import { FaComment } from "react-icons/fa6";
+import { LuRepeat2 } from "react-icons/lu";
 import { MdOutlineFileUpload } from "react-icons/md";
 import { buildShareableVideoUrl } from "../../utils/shareUrl.js";
 import {
   buildProfileVideoUrl,
-  buildVideoWatchUrl,
   isVideoPublicId,
   normalizeVideoPublicId,
   videoPublicIdOf,
 } from "../../utils/videoPublicId.js";
 import { FEED_CONFIG } from "../../feed/feedConfig.js";
-import { FEED_ROUND_ICON_BUTTON_CLASS } from "../../feed/feedLayout.js";
+import { isHlsPlaybackUrl, resolveFeedPlaybackUrl } from "../../feed/feedPlayback.js";
+import {
+  FEED_ACTION_ITEM_CLASS,
+  FEED_ROUND_ICON_BUTTON_CLASS,
+} from "../../feed/feedLayout.js";
 import { trimFeedItemsIfNeeded } from "../../feed/trimFeedItems.js";
 import {
   readFeedFollowedAuthorIds,
@@ -53,6 +67,7 @@ import {
   filterVideosFromFollowedCreators,
 } from "../../utils/feedFollowState.js";
 import { handleSidebarMenuSelect } from "../../utils/sidebarNavigation.js";
+import { markFollowingPreferFeedFromSidebar } from "../../utils/followingPageView.js";
 import { buildProfilePath } from "../../utils/buildProfilePath.js";
 import { buildMainSidebarMenuItems } from "../../utils/mainSidebarMenuItems.js";
 import { recordProfileLastWatchedFromVideo } from "../../utils/profileLastWatched.js";
@@ -182,6 +197,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const navigate = useNavigate();
   const location = useLocation();
   const isFollowingFeed = feedMode === "following";
+  const isForYouFeed = feedMode === "for-you";
   const studioNavRef = useRef(null);
   const [videos, setVideos] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -242,18 +258,67 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   /** Chừa ít px trên/dưới — video gần full viewport như TikTok web. */
   const computeFeedSlotHeight = useCallback(() => {
     if (typeof window === "undefined") return 760;
+    const mobile = isMobileFeedLayout();
+    if (mobile) {
+      const viewportH =
+        window.visualViewport?.height ?? window.innerHeight;
+      return Math.max(
+        320,
+        Math.round(
+          viewportH - MOBILE_FEED_TOP_BAR_PX - MOBILE_FEED_BOTTOM_NAV_PX,
+        ),
+      );
+    }
     const insetPx = 12;
     return Math.max(320, Math.round(window.innerHeight - insetPx * 2));
   }, []);
   const [feedSlotHeightPx, setFeedSlotHeightPx] = useState(() =>
     typeof window === "undefined" ? 760 : computeFeedSlotHeight(),
   );
+  const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout());
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   useEffect(() => {
-    setFeedSlotHeightPx(computeFeedSlotHeight());
-    const onResize = () => setFeedSlotHeightPx(computeFeedSlotHeight());
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const sync = () => setMobileLayout(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  useEffect(() => {
+    const syncHeight = () => setFeedSlotHeightPx(computeFeedSlotHeight());
+    syncHeight();
+    window.addEventListener("resize", syncHeight);
+    window.visualViewport?.addEventListener("resize", syncHeight);
+    window.visualViewport?.addEventListener("scroll", syncHeight);
+    return () => {
+      window.removeEventListener("resize", syncHeight);
+      window.visualViewport?.removeEventListener("resize", syncHeight);
+      window.visualViewport?.removeEventListener("scroll", syncHeight);
+    };
   }, [computeFeedSlotHeight]);
+  const mobileFeedSlotRef = useRef(null);
+  const [measuredMobileSlotPx, setMeasuredMobileSlotPx] = useState(
+    feedSlotHeightPx,
+  );
+  useLayoutEffect(() => {
+    if (!mobileLayout) return undefined;
+    const el = mobileFeedSlotRef.current;
+    if (!el) return undefined;
+    const sync = () => {
+      const next = el.clientHeight;
+      if (next > 0) setMeasuredMobileSlotPx(next);
+    };
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    window.addEventListener("resize", sync);
+    window.visualViewport?.addEventListener("resize", sync);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", sync);
+      window.visualViewport?.removeEventListener("resize", sync);
+    };
+  }, [mobileLayout, feedSlotHeightPx, videos.length]);
   const [activeMenu, setActiveMenu] = useState(activeMenuId);
 
   useEffect(() => {
@@ -262,6 +327,10 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
 
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
+  const [reposted, setReposted] = useState(false);
+  const [repostBusy, setRepostBusy] = useState(false);
+  const [repostToastOpen, setRepostToastOpen] = useState(false);
+  const repostToastTimerRef = useRef(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [bookmarkToastOpen, setBookmarkToastOpen] = useState(false);
   const [bookmarkManageOpen, setBookmarkManageOpen] = useState(false);
@@ -289,6 +358,34 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const [feedPaused, setFeedPaused] = useState(true);
   const [userPaused, setUserPaused] = useState(false);
   const [feedCommentsOpen, setFeedCommentsOpen] = useState(false);
+  const mobileCommentsOpen =
+    mobileLayout && feedCommentsOpen && videos.length > 0;
+  const [mobileCommentsLayout, setMobileCommentsLayout] = useState(() =>
+    computeMobileFeedCommentsLayout({ includeBottomNav: true }),
+  );
+  useEffect(() => {
+    if (!mobileLayout) return undefined;
+    const sync = () => {
+      setMobileCommentsLayout(
+        computeMobileFeedCommentsLayout({
+          includeBottomNav: !feedCommentsOpen,
+        }),
+      );
+    };
+    sync();
+    window.addEventListener("resize", sync);
+    window.visualViewport?.addEventListener("resize", sync);
+    window.visualViewport?.addEventListener("scroll", sync);
+    return () => {
+      window.removeEventListener("resize", sync);
+      window.visualViewport?.removeEventListener("resize", sync);
+      window.visualViewport?.removeEventListener("scroll", sync);
+    };
+  }, [mobileLayout, feedCommentsOpen]);
+  const activeFeedSlotHeightPx =
+    mobileLayout && videos.length > 0
+      ? measuredMobileSlotPx
+      : feedSlotHeightPx;
   const [commentDraft, setCommentDraft] = useState("");
   const [feedComments, setFeedComments] = useState([]);
   const [feedCommentsLoading, setFeedCommentsLoading] = useState(false);
@@ -401,6 +498,49 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
       ),
     );
   }, []);
+
+  /** Feed có thể cache video trước khi HLS xong — đồng bộ masterPlaylistUrl để bật 540p/720p. */
+  useEffect(() => {
+    const publicId = activeVideo?.publicId;
+    if (!publicId || !isVideoPublicId(publicId)) return undefined;
+    if (isHlsPlaybackUrl(resolveFeedPlaybackUrl(activeVideo))) return undefined;
+
+    let cancelled = false;
+    let attempts = 0;
+
+    const syncPlaybackArtifacts = async () => {
+      if (cancelled || attempts >= 12) return;
+      attempts += 1;
+      try {
+        const fresh = await apiClient.getVideo(publicId, { token });
+        if (cancelled || !fresh?.masterPlaylistUrl?.trim()) return;
+        patchVideoByPublicId(publicId, {
+          masterPlaylistUrl: fresh.masterPlaylistUrl,
+          sourceHeightPx: fresh.sourceHeightPx,
+          sourceWidthPx: fresh.sourceWidthPx,
+          durationSeconds: fresh.durationSeconds,
+          status: fresh.status,
+        });
+      } catch {
+        /* noop */
+      }
+    };
+
+    void syncPlaybackArtifacts();
+    const timer = window.setInterval(() => {
+      void syncPlaybackArtifacts();
+    }, 5000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [
+    activeVideo?.publicId,
+    activeVideo?.masterPlaylistUrl,
+    patchVideoByPublicId,
+    token,
+  ]);
 
   const patchVideosByAuthorId = useCallback((authorId, patch) => {
     const key = Number(authorId);
@@ -565,9 +705,53 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     });
   }, [token, activeVideo, bookmarked, patchVideoByPublicId]);
 
+  const handleRepostToggle = useCallback(() => {
+    if (!isVideoPublicId(activeVideo?.publicId)) return;
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    if (repostBusy) return;
+    const next = !reposted;
+    setRepostBusy(true);
+    setReposted(next);
+    if (next) {
+      setRepostToastOpen(true);
+      if (repostToastTimerRef.current) {
+        window.clearTimeout(repostToastTimerRef.current);
+      }
+      repostToastTimerRef.current = window.setTimeout(() => {
+        setRepostToastOpen(false);
+      }, 2500);
+    } else {
+      setRepostToastOpen(false);
+    }
+    const req = next
+      ? apiClient.repostVideo(activeVideo.publicId, token)
+      : apiClient.unrepostVideo(activeVideo.publicId, token);
+    req
+      .catch(() => {
+        setReposted(!next);
+        if (next) setRepostToastOpen(false);
+      })
+      .finally(() => {
+        setRepostBusy(false);
+      });
+  }, [token, activeVideo, repostBusy, reposted, navigate]);
+
+  useEffect(
+    () => () => {
+      if (repostToastTimerRef.current) {
+        window.clearTimeout(repostToastTimerRef.current);
+      }
+    },
+    [],
+  );
+
   const loadMoreFeed = useCallback(async () => {
     if (!hasMoreFeed || loadMoreLockRef.current) return;
-    if (!isFollowingFeed && !nextCursor) return;
+    if (!isFollowingFeed && !isForYouFeed && !nextCursor) return;
+    if (isForYouFeed && !nextCursor) return;
     loadMoreLockRef.current = true;
     try {
       if (isFollowingFeed) {
@@ -591,12 +775,18 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
         return;
       }
 
-      const response = await apiClient.getFeed({
-        size: FEED_CONFIG.PAGE_SIZE,
-        sort: "latest",
-        cursor: nextCursor,
-        token,
-      });
+      const response = isForYouFeed
+        ? await apiClient.getForYouFeed({
+            size: FEED_CONFIG.PAGE_SIZE,
+            cursor: nextCursor,
+            token,
+          })
+        : await apiClient.getFeed({
+            size: FEED_CONFIG.PAGE_SIZE,
+            sort: "latest",
+            cursor: nextCursor,
+            token,
+          });
       const items = response?.items ?? [];
       const chunk = hydrateFeedFollowState(items);
       setVideos((prev) => {
@@ -616,6 +806,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     }
   }, [
     isFollowingFeed,
+    isForYouFeed,
     hasMoreFeed,
     nextCursor,
     followingPage,
@@ -695,11 +886,16 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
           return;
         }
 
-        const request = apiClient.getFeed({
-          size: FEED_CONFIG.PAGE_SIZE,
-          sort: "latest",
-          token,
-        });
+        const request = isForYouFeed
+          ? apiClient.getForYouFeed({
+              size: FEED_CONFIG.PAGE_SIZE,
+              token,
+            })
+          : apiClient.getFeed({
+              size: FEED_CONFIG.PAGE_SIZE,
+              sort: "latest",
+              token,
+            });
 
         try {
           const response = await request;
@@ -816,7 +1012,51 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     return () => {
       isMounted = false;
     };
-  }, [authReady, token, location.pathname, location.key, navigate, hydrateFeedFollowState, prepareFollowingFeedChunk, feedMode, isFollowingFeed]);
+  }, [authReady, token, location.pathname, location.key, navigate, hydrateFeedFollowState, prepareFollowingFeedChunk, feedMode, isFollowingFeed, isForYouFeed]);
+
+  /** Khi video mới READY sau upload, feed ban đầu có thể chỉ 1 item — poll nhẹ để bổ sung. */
+  useEffect(() => {
+    if (!authReady || isFollowingFeed || !isForYouFeed) return undefined;
+    if (videos.length >= FEED_CONFIG.PAGE_SIZE) return undefined;
+
+    let cancelled = false;
+
+    const syncFeed = async () => {
+      try {
+        const response = await apiClient.getForYouFeed({
+          size: FEED_CONFIG.PAGE_SIZE,
+          token,
+        });
+        const items = hydrateFeedFollowState(response?.items ?? []);
+        if (cancelled || items.length === 0) return;
+        setVideos((prev) => {
+          const merged = mergeVideosByPublicId(prev, items);
+          return merged.length > prev.length ? merged : prev;
+        });
+        setHasMoreFeed(Boolean(response?.hasNext));
+        setNextCursor(response?.nextCursor ?? null);
+      } catch {
+        /* noop */
+      }
+    };
+
+    void syncFeed();
+    const timer = window.setInterval(() => {
+      void syncFeed();
+    }, 12000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [
+    authReady,
+    hydrateFeedFollowState,
+    isFollowingFeed,
+    isForYouFeed,
+    token,
+    videos.length,
+  ]);
 
   useEffect(() => {
     setActiveIndex((idx) => {
@@ -862,18 +1102,12 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
 
   const handleVideoContextViewDetails = useCallback(
     (video) => {
-      const path =
-        buildProfileVideoUrl(video?.authorUsername, video?.publicId) ||
-        buildVideoWatchUrl(video?.publicId);
-      if (!path) return;
-      if (path.startsWith("http")) {
-        window.location.assign(path);
-        return;
-      }
-      navigate(path);
+      const path = buildProfileVideoUrl(video?.authorUsername, video?.publicId)
+      if (!path) return
+      navigate(path)
     },
     [navigate],
-  );
+  )
 
   useEffect(() => {
     if (!authReady || !token || !isVideoPublicId(activeVideo?.publicId)) {
@@ -886,12 +1120,14 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
         if (!cancelled) {
           setLiked(Boolean(s?.liked));
           setBookmarked(Boolean(s?.bookmarked));
+          setReposted(Boolean(s?.reposted));
         }
       })
       .catch(() => {
         if (!cancelled) {
           setLiked(false);
           setBookmarked(false);
+          setReposted(false);
         }
       });
     return () => {
@@ -1093,6 +1329,49 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     return undefined;
   }, [soundUnlocked, playbackMuted, feedVolume, activeVideo?.publicId, userPaused]);
 
+  /** Mobile: ép play sau khi metadata sẵn sàng — tránh video đứng hình khi thanh tiến trình vẫn chạy. */
+  useEffect(() => {
+    if (!mobileLayout || userPaused) return undefined;
+    let cancelled = false;
+    const cleanups = [];
+
+    const bind = () => {
+      if (cancelled) return;
+      const el = feedVideoRef.current;
+      if (!el) return;
+      el.muted = playbackMuted;
+      const attemptPlay = () => {
+        const current = feedVideoRef.current;
+        if (!current || userPaused) return;
+        void current.play().catch(() => {});
+      };
+      attemptPlay();
+      el.addEventListener("canplay", attemptPlay);
+      el.addEventListener("loadeddata", attemptPlay);
+      cleanups.push(() => {
+        el.removeEventListener("canplay", attemptPlay);
+        el.removeEventListener("loadeddata", attemptPlay);
+      });
+    };
+
+    bind();
+    const t1 = window.setTimeout(bind, 80);
+    const t2 = window.setTimeout(bind, 280);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      cleanups.forEach((fn) => fn());
+    };
+  }, [
+    mobileLayout,
+    activeIndex,
+    activeVideo?.publicId,
+    userPaused,
+    playbackMuted,
+  ]);
+
   useEffect(() => {
     setUserPaused(false);
   }, [activeIndex, activeVideo?.publicId]);
@@ -1201,27 +1480,51 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   };
 
   return (
-    <section className="flex h-dvh max-h-dvh min-h-0 w-full overflow-hidden bg-black text-zinc-100">
-      <Sidebar
-        menuItems={mainMenuItems}
-        activeMenu={activeMenu}
-        onSelectMenu={handleSidebarSelect}
+    <section className="flex h-dvh max-h-dvh min-h-0 w-full flex-col overflow-hidden bg-black text-zinc-100 lg:flex-row">
+      <div className="shrink-0 lg:hidden">
+        <MobileFeedTopBar
+          onMenuOpen={() => setMobileMenuOpen(true)}
+          feedTabs={isForYouFeed || isFollowingFeed}
+          activeFeedTab={isFollowingFeed ? "following" : "for-you"}
+          onFeedTabChange={(tab) => {
+            if (tab === "following") {
+              markFollowingPreferFeedFromSidebar();
+              navigate("/following");
+            } else {
+              navigate("/foryou");
+            }
+          }}
+        />
+      </div>
+
+      <MobileFeedMenuDrawer
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
         token={token}
         user={user}
-        onLogout={token ? onLogout : undefined}
+        activeFeedTab={isFollowingFeed ? 'following' : 'for-you'}
       />
 
+      <div className="hidden shrink-0 lg:block">
+        <Sidebar
+          menuItems={mainMenuItems}
+          activeMenu={activeMenu}
+          onSelectMenu={handleSidebarSelect}
+          token={token}
+          user={user}
+          onLogout={token ? onLogout : undefined}
+        />
+      </div>
+
       <div
-        className={`relative flex min-h-0 flex-1 overflow-hidden ${
-          feedCommentsOpen
-            ? "flex-row items-stretch"
-            : feedAlignStart
-              ? "items-center justify-start pl-1 py-1"
-              : "items-center justify-center px-4 py-1"
+        className={`relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden lg:flex-row ${
+          feedCommentsOpen && !mobileLayout
+            ? "lg:items-stretch"
+            : "lg:items-center lg:justify-center"
         }`}
       >
         <AccountActionsPill
-          className="absolute right-8 top-5 z-[100]"
+          className="absolute right-8 top-5 z-[100] max-lg:hidden"
           tone="profile"
         >
           {!token ? (
@@ -1279,20 +1582,30 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
         </AccountActionsPill>
 
         <div
-          className={`flex min-h-0 flex-1 ${
-            feedCommentsOpen
+          className={`relative flex min-h-0 min-w-0 flex-1 ${
+            mobileLayout && videos.length === 0
+              ? "flex-col items-center justify-center"
+              : mobileLayout && videos.length > 0
+                ? "flex-col items-stretch justify-stretch"
+                : "items-stretch justify-stretch lg:items-center lg:justify-center"
+          } ${
+            feedCommentsOpen && !mobileLayout
               ? feedDockLandscape
-                ? "min-w-0 items-center justify-start px-1 py-0"
-                : "min-w-0 items-center justify-center px-1 py-0"
+                ? "min-w-0 px-1 py-0"
+                : "min-w-0 px-1 py-0"
               : feedAlignStart
-                ? "items-center justify-start"
-                : "items-center justify-center"
+                ? "lg:justify-start"
+                : ""
           }`}
         >
           {!feedHydrated && videos.length === 0 ? (
             <div
-              className={`relative flex ${FEED_STAGE_OUTER_WIDTH_CLASS} flex-col items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-zinc-950 px-6 text-center shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl`}
-              style={{ height: feedSlotHeightPx }}
+              className={
+                mobileLayout
+                  ? "relative flex h-full w-full flex-1 flex-col items-center justify-center bg-black px-6 text-center"
+                  : `relative flex ${FEED_STAGE_OUTER_WIDTH_CLASS} flex-col items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-zinc-950 px-6 text-center shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl`
+              }
+              style={mobileLayout ? undefined : { height: feedSlotHeightPx }}
               aria-busy="true"
               aria-label="Đang tải feed"
             >
@@ -1303,9 +1616,16 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               <p className="mt-4 text-sm text-zinc-500">Đang tải…</p>
             </div>
           ) : videos.length === 0 ? (
+            isFollowingFeed && mobileLayout ? (
+              <MobileFollowingEmptyState token={token} />
+            ) : (
             <div
-              className={`relative flex ${FEED_STAGE_OUTER_WIDTH_CLASS} flex-col items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-zinc-950 px-6 text-center shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl`}
-              style={{ height: feedSlotHeightPx }}
+              className={
+                mobileLayout
+                  ? "relative flex h-full w-full flex-1 flex-col items-center justify-center bg-black px-6 text-center"
+                  : `relative flex ${FEED_STAGE_OUTER_WIDTH_CLASS} flex-col items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-zinc-950 px-6 text-center shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl`
+              }
+              style={mobileLayout ? undefined : { height: feedSlotHeightPx }}
               aria-live="polite"
             >
               <IoVideocam
@@ -1357,32 +1677,41 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 </>
               )}
             </div>
+            )
           ) : (
             <div
-              className={`flex max-w-full flex-row ${
-                feedCommentsOpen
-                  ? feedDockLandscape
-                    ? "h-full min-w-0 max-w-full items-center justify-start"
-                    : "h-full min-w-0 max-w-full items-center justify-center"
-                  : feedAlignStart
-                    ? "items-center justify-start gap-0 pr-2 sm:pr-3"
-                    : "items-center justify-center gap-0"
-              }`}
+              ref={mobileLayout ? mobileFeedSlotRef : undefined}
+              className={
+                mobileLayout
+                  ? "relative min-h-0 w-full flex-1"
+                  : `relative min-h-0 w-full max-lg:flex-1 max-lg:overflow-hidden h-full ${
+                      feedCommentsOpen && !mobileLayout
+                        ? feedDockLandscape
+                          ? "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-start"
+                          : "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-center"
+                        : feedAlignStart
+                          ? "lg:flex lg:items-center lg:justify-start lg:gap-0 lg:pr-3"
+                          : "lg:flex lg:items-center lg:justify-center lg:gap-0"
+                    }`
+              }
             >
               <div
                 className={
-                  feedCommentsOpen
-                    ? feedDockLandscape
-                      ? "relative flex h-full min-h-0 flex-col items-start justify-center"
-                      : "relative flex h-full min-h-0 flex-col items-center justify-center"
-                    : "relative shrink-0"
+                  mobileLayout
+                    ? "absolute inset-0 overflow-hidden"
+                    : feedCommentsOpen && !mobileLayout
+                      ? feedDockLandscape
+                        ? "relative flex h-full min-h-0 w-full flex-col items-start justify-center max-lg:flex-1"
+                        : "relative flex h-full min-h-0 w-full flex-col items-center justify-center max-lg:flex-1"
+                      : "relative h-full max-lg:w-full max-lg:flex-1 lg:w-auto lg:shrink-0"
                 }
               >
                 <FeedPhoneStage
+                  mobileFullBleed={mobileLayout}
                   videos={videos}
                   activeIndex={activeIndex}
                   setActiveIndex={setActiveIndex}
-                  feedSlotHeightPx={feedSlotHeightPx}
+                  feedSlotHeightPx={activeFeedSlotHeightPx}
                   virtualFeedRef={virtualFeedRef}
                   loadMoreFeed={loadMoreFeed}
                   feedVideoRef={feedVideoRef}
@@ -1415,22 +1744,58 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   contextMenuToken={token}
                   onVideoContextShare={handleVideoContextShare}
                   onVideoContextCopyLink={handleVideoContextCopyLink}
+                  onVideoContextRepost={() => handleRepostToggle()}
+                  videoContextReposted={reposted}
+                  videoContextRepostBusy={repostBusy}
                   onVideoContextViewDetails={handleVideoContextViewDetails}
+                  selfReposted={reposted}
+                  selfRepostAvatarUrl={user?.avatarUrl}
+                  selfRepostDisplayName={user?.displayName}
+                  selfRepostUsername={user?.username}
+                  selfRepostProfilePath={
+                    user?.username ? buildProfilePath(token, user) : undefined
+                  }
+                  onSelfUnrepost={handleRepostToggle}
+                  selfRepostBusy={repostBusy}
                 />
                 <BookmarkSaveToast
                   open={bookmarkToastOpen}
                   onManage={openBookmarkManagePopover}
                   onDismiss={() => setBookmarkToastOpen(false)}
                 />
+                {repostToastOpen ? (
+                  <div
+                    className="pointer-events-none absolute inset-x-0 top-4 z-[60] flex justify-center px-4"
+                    role="status"
+                  >
+                    <span className="rounded-md bg-black/80 px-4 py-2 text-sm font-semibold text-white shadow-lg backdrop-blur-sm">
+                      Đã đăng lại
+                    </span>
+                  </div>
+                ) : null}
               </div>
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[15] h-28 bg-linear-to-t from-black/80 via-black/35 to-transparent max-lg:block lg:hidden" />
               <div
-                className={`ml-2 flex shrink-0 flex-col items-center gap-3 sm:ml-3 ${
-                  feedCommentsOpen
-                    ? "justify-center self-center"
-                    : "pb-12 sm:pb-14"
-                }`}
+                className={
+                  mobileLayout
+                    ? `pointer-events-none absolute right-0 bottom-[5.5rem] z-30 pe-2${
+                        feedCommentsOpen ? " hidden" : ""
+                      }`
+                    : `pointer-events-auto z-30 flex flex-col items-center lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-3 lg:pb-12 lg:pb-14 ${
+                        feedCommentsOpen
+                          ? "lg:justify-center lg:self-center lg:pb-0"
+                          : ""
+                      }`
+                }
               >
-                <div className="relative mb-3 h-12 w-12">
+                <div
+                  className={
+                    mobileLayout
+                      ? "pointer-events-auto flex flex-col items-center gap-2"
+                      : "contents"
+                  }
+                >
+                <div className={`relative h-12 w-12 ${mobileLayout ? "mb-1" : "mb-3"}`}>
                   <Link
                     to={activeAuthorProfilePath || "#"}
                     aria-label={`Xem hồ sơ ${activeVideo?.authorUsername ?? "user"}`}
@@ -1465,6 +1830,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     </button>
                   ) : null}
                 </div>
+                <div className={FEED_ACTION_ITEM_CLASS}>
                 <button
                   type="button"
                   className={FEED_ROUND_ICON_BUTTON}
@@ -1495,9 +1861,11 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     aria-hidden
                   />
                 </button>
-                <span className="text-xs text-zinc-300">
+                <span className="text-xs leading-none text-zinc-300">
                   {formatCompactCount(activeVideo?.likeCount)}
                 </span>
+                </div>
+                <div className={FEED_ACTION_ITEM_CLASS}>
                 <button
                   type="button"
                   className={`${FEED_ROUND_ICON_BUTTON} ${feedCommentsOpen ? "ring-2 ring-white/35 ring-offset-2 ring-offset-black" : ""}`}
@@ -1507,9 +1875,11 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 >
                   <FaComment className="text-lg text-zinc-100" aria-hidden />
                 </button>
-                <span className="text-xs text-zinc-300">
+                <span className="text-xs leading-none text-zinc-300">
                   {formatCompactCount(activeVideo?.commentCount)}
                 </span>
+                </div>
+                <div className={FEED_ACTION_ITEM_CLASS}>
                 <button
                   ref={bookmarkButtonRef}
                   type="button"
@@ -1527,9 +1897,31 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     aria-hidden
                   />
                 </button>
-                <span className="text-xs text-zinc-300">
+                <span className="text-xs leading-none text-zinc-300">
                   {formatCompactCount(activeVideo?.bookmarkCount)}
                 </span>
+                </div>
+                {!isForYouFeed ? (
+                  <button
+                    type="button"
+                    className={FEED_ROUND_ICON_BUTTON}
+                    aria-pressed={reposted}
+                    aria-label={reposted ? "Xóa video đăng lại" : "Đăng lại"}
+                    disabled={repostBusy}
+                    onClick={handleRepostToggle}
+                  >
+                    <LuRepeat2
+                      className={
+                        reposted
+                          ? "text-xl text-[#FACE15]"
+                          : "text-xl text-white"
+                      }
+                      strokeWidth={2.25}
+                      aria-hidden
+                    />
+                  </button>
+                ) : null}
+                <div className={FEED_ACTION_ITEM_CLASS}>
                 <button
                   type="button"
                   className={FEED_ROUND_ICON_BUTTON}
@@ -1542,9 +1934,10 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 >
                   <IoArrowRedo aria-hidden />
                 </button>
-                <span className="text-xs text-zinc-300">
+                <span className="text-xs leading-none text-zinc-300">
                   {formatCompactCount(activeVideo?.shareCount)}
                 </span>
+                </div>
                 <button
                   type="button"
                   aria-label="Âm thanh đang phát"
@@ -1577,19 +1970,24 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     className="h-full w-full scale-110 object-cover animate-[spin_12s_linear_infinite]"
                   />
                 </button>
+                </div>
               </div>
-              <FeedChevronNav
-                activeIndex={activeIndex}
-                videoCount={videos.length}
-                onStep={requestFeedStep}
-                busy={feedStepBusy}
-              />
+              <div className="hidden lg:contents">
+                <FeedChevronNav
+                  activeIndex={activeIndex}
+                  videoCount={videos.length}
+                  onStep={requestFeedStep}
+                  busy={feedStepBusy}
+                />
+              </div>
             </div>
           )}
         </div>
 
         <FeedCommentsPanel
           open={feedCommentsOpen && videos.length > 0}
+          mobileSheet={mobileLayout}
+          mobileSheetHeightPx={mobileCommentsLayout.sheetH}
           activeVideo={activeVideo}
           comments={feedComments}
           setComments={setFeedComments}
@@ -1613,6 +2011,17 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
           formatCompactCount={formatCompactCount}
           formatRelativeTimeVi={formatRelativeTimeVi}
         />
+
+        {!(feedCommentsOpen && mobileLayout) ? (
+        <div className="shrink-0 lg:hidden">
+          <MobileFeedBottomNav
+            token={token}
+            user={user}
+            activeId="latest"
+            onSelectMenu={handleSidebarSelect}
+          />
+        </div>
+        ) : null}
       </div>
 
       {showLogoutConfirm ? (

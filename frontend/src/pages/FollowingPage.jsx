@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { useAuth } from '../state/useAuth'
 import { SuggestedCreatorsPanel } from '../components/SuggestedCreatorsPanel.jsx'
 import { VerticalVideoFeed } from '../components/feed/VerticalVideoFeed.jsx'
+import { isMobileFeedLayout } from '../components/feed/MobileFeedShell.jsx'
 import {
   CreatorGridShell,
   GridLoadingState,
@@ -21,6 +22,7 @@ const PAGE_TITLE = 'Đang follow | Vibely'
 export function FollowingPage() {
   const { token, user, logout, authReady } = useAuth()
   const location = useLocation()
+  const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout())
   const [viewMode, setViewMode] = useState(null)
   const {
     handleCreatorFollowed,
@@ -33,6 +35,15 @@ export function FollowingPage() {
   }, [])
 
   useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)')
+    const sync = () => setMobileLayout(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  useEffect(() => {
+    if (mobileLayout) return undefined
     if (!authReady) return undefined
     if (!token) {
       setViewMode(null)
@@ -53,7 +64,7 @@ export function FollowingPage() {
     return () => {
       cancelled = true
     }
-  }, [authReady, token, location.key])
+  }, [authReady, mobileLayout, token, location.key])
 
   const onCreatorFollowed = useCallback(
     (userId) => {
@@ -68,6 +79,21 @@ export function FollowingPage() {
     },
     [handleCreatorUnfollowed],
   )
+
+  const followingFeed = (
+    <VerticalVideoFeed
+      token={token}
+      user={user}
+      onLogout={logout}
+      authReady={authReady}
+      feedMode="following"
+      activeMenuId="following"
+    />
+  )
+
+  if (mobileLayout) {
+    return followingFeed
+  }
 
   if (!token) {
     return (
@@ -99,16 +125,7 @@ export function FollowingPage() {
   }
 
   if (viewMode === 'feed') {
-    return (
-      <VerticalVideoFeed
-        token={token}
-        user={user}
-        onLogout={logout}
-        authReady={authReady}
-        feedMode="following"
-        activeMenuId="following"
-      />
-    )
+    return followingFeed
   }
 
   return (

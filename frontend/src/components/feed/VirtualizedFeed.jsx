@@ -36,6 +36,8 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
     freezeActiveIndex = false,
     /** Khóa cuộn feed (dock bình luận) — giữ player mounted. */
     scrollLocked = false,
+    /** Scroll viewport fill parent (mobile full-bleed). */
+    fillContainer = false,
     children,
   },
   forwardedRef,
@@ -304,6 +306,11 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
 
   void visibilityTick
 
+  const scrollViewportStyle = fillContainer
+    ? { height: '100%', WebkitOverflowScrolling: 'touch' }
+    : { height: itemHeightPx, WebkitOverflowScrolling: 'touch' }
+  const scrollViewportClass = fillContainer ? 'h-full ' : ''
+
   /** Dock bình luận: chỉ mount slide active — giữ HLS, tránh lệch virtual scroll. */
   if (scrollLocked) {
     const video = videos[activeIndex]
@@ -311,8 +318,8 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
     return (
       <div
         ref={scrollRef}
-        className={`overflow-hidden touch-none overflow-x-hidden overscroll-y-contain scrollbar-none ${scrollClassName}`}
-        style={{ height: itemHeightPx }}
+        className={`${scrollViewportClass}overflow-hidden touch-none overflow-x-hidden overscroll-y-contain scrollbar-none ${scrollClassName}`}
+        style={fillContainer ? undefined : { height: itemHeightPx }}
       >
         {children({
           video,
@@ -333,11 +340,8 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
   return (
     <div
       ref={scrollRef}
-      className={`${snapClass} ${overflowClass} overflow-x-hidden overscroll-y-contain scrollbar-none ${scrollClassName}`}
-      style={{
-        height: itemHeightPx,
-        WebkitOverflowScrolling: 'touch',
-      }}
+      className={`${scrollViewportClass}${snapClass} ${overflowClass} overflow-x-hidden overscroll-y-contain scrollbar-none ${scrollClassName}`}
+      style={scrollViewportStyle}
     >
       <div
         className="relative w-full"
@@ -363,10 +367,10 @@ const VirtualizedFeedInner = forwardRef(function VirtualizedFeed(
               ref={(el) => {
                 if (el) observeEl(el)
               }}
-              className="absolute left-0 top-0 w-full snap-start snap-always"
+              className="absolute left-0 w-full snap-start snap-always"
               style={{
                 height: `${itemHeightPx}px`,
-                transform: `translateY(${slotTopPx}px)`,
+                top: `${slotTopPx}px`,
               }}
             >
               {children({

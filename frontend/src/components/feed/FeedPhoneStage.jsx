@@ -26,6 +26,7 @@ import {
   LuGauge,
   LuHeartOff,
   LuPictureInPicture2,
+  LuRepeat2,
 } from "react-icons/lu";
 import {
   FEED_PLAYBACK_SPEEDS,
@@ -33,10 +34,14 @@ import {
   formatPlaybackSpeedOption,
 } from "../../feed/feedPlaybackSpeedStorage.js";
 import { resolveFeedPlaybackUrl } from "../../feed/feedPlayback.js";
-import { sortQualityOptions } from "../../feed/hlsQualityUtils.js";
+import {
+  sortQualityOptions,
+  formatQualityLabel,
+} from "../../feed/hlsQualityUtils.js";
 import { downloadWatermarkedVideo } from "../../feed/videoDownload.js";
 import { useFeedPrefetch } from "../../feed/useFeedPrefetch.js";
 import { VideoContextMenu } from "./VideoContextMenu.jsx";
+import { SelfRepostIndicator } from "../repost/SelfRepostIndicator.jsx";
 import {
   FEED_COMMENTS_PANEL_WIDTH_PX,
   FEED_MORE_MENU_BADGE_ICON_CLASS,
@@ -202,9 +207,7 @@ function FeedVideoCaption({ caption, onNeedsGradientChange }) {
 }
 
 function feedQualityLabel(mode) {
-  if (mode === "720") return "720P";
-  if (mode === "540") return "540P";
-  return "Tự động";
+  return formatQualityLabel(mode);
 }
 
 function FeedMoreSubpageHeader({ title, onBack }) {
@@ -262,11 +265,24 @@ function FeedSlideAuthorMeta({
   authorProfilePath,
   captionText,
   compact = false,
+  repostedByDisplayName,
+  repostedByUsername,
+  selfReposted = false,
+  selfRepostAvatarUrl,
+  selfRepostDisplayName,
+  selfRepostUsername,
+  selfRepostProfilePath,
+  onSelfUnrepost,
+  selfRepostBusy = false,
 }) {
   const [needsGradient, setNeedsGradient] = useState(false);
   const nameClass =
     "inline-block max-w-full truncate text-[15px] font-bold leading-snug text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.95),0_0_1px_rgba(0,0,0,0.85)]";
   const displayVibelyId = rawVibelyUser ? `@${rawVibelyUser}` : "@vibely";
+  const repostLabel = repostedByUsername
+    ? String(repostedByDisplayName ?? repostedByUsername).trim() ||
+      repostedByUsername
+    : "";
   const nameEl = authorProfilePath ? (
     <Link
       to={authorProfilePath}
@@ -292,6 +308,25 @@ function FeedSlideAuthorMeta({
         />
       ) : null}
       <div className="relative z-10">
+        {selfReposted ? (
+          <SelfRepostIndicator
+            avatarUrl={selfRepostAvatarUrl}
+            displayName={selfRepostDisplayName}
+            username={selfRepostUsername}
+            profilePath={selfRepostProfilePath}
+            onUnrepost={onSelfUnrepost}
+            busy={selfRepostBusy}
+            theme="overlay"
+          />
+        ) : repostLabel ? (
+          <p className="mb-1 flex items-center gap-1 text-xs font-semibold text-white/90 [text-shadow:0_1px_3px_rgba(0,0,0,0.85)]">
+            <LuRepeat2
+              className="shrink-0 text-sm text-[#FACE15]"
+              aria-hidden
+            />
+            <span className="truncate">{repostLabel} đã đăng lại</span>
+          </p>
+        ) : null}
         <div className="inline-flex max-w-full">{nameEl}</div>
         <div className="mt-1">
           <FeedVideoCaption
@@ -482,13 +517,25 @@ export function FeedPhoneStage({
   onActiveFeedPlaybackEnded,
   /** Panel bình luận bên phải đang mở — video ngang thu nhỏ khung. */
   commentsDockOpen = false,
+  /** Mobile web: video full bleed (TikTok phone layout). */
+  mobileFullBleed = false,
   /** Báo parent biết khung đang ở chế độ ngang (16:9). */
   onStageWideChange,
   /** Menu chuột phải video (TikTok-style). */
   contextMenuToken,
   onVideoContextShare,
   onVideoContextCopyLink,
+  onVideoContextRepost,
+  videoContextReposted = false,
+  videoContextRepostBusy = false,
   onVideoContextViewDetails,
+  selfReposted = false,
+  selfRepostAvatarUrl,
+  selfRepostDisplayName,
+  selfRepostUsername,
+  selfRepostProfilePath,
+  onSelfUnrepost,
+  selfRepostBusy = false,
 }) {
   /** Khung rộng từ trình duyệt (videoWidth/Height sau decode). */
   const [clientWideForLandscape, setClientWideForLandscape] = useState(false);
@@ -552,7 +599,9 @@ export function FeedPhoneStage({
   ]);
 
   const handleHlsQualitiesAvailable = useCallback((options) => {
-    setHlsQualityOptions(sortQualityOptions(options?.length ? options : ["auto"]));
+    setHlsQualityOptions(
+      sortQualityOptions(options?.length ? options : ["auto"]),
+    );
   }, []);
 
   const qualityMenuOptions = sortQualityOptions(hlsQualityOptions);
@@ -596,7 +645,8 @@ export function FeedPhoneStage({
 
   const seekFeedVideo = useCallback(
     (clientX, trackEl) => {
-      const track = trackEl ?? progressInnerRef.current ?? progressTrackRef.current;
+      const track =
+        trackEl ?? progressInnerRef.current ?? progressTrackRef.current;
       if (!track) return;
       const rect = track.getBoundingClientRect();
       const el = feedVideoRef.current;
@@ -621,7 +671,6 @@ export function FeedPhoneStage({
     },
     [feedVideoRef, setProgressPct],
   );
-
 
   const handleActivePlaybackTick = useCallback(
     (e) => {
@@ -653,8 +702,7 @@ export function FeedPhoneStage({
   useEffect(() => {
     const onMove = (e) => {
       if (!progressScrubbingRef.current) return;
-      const track =
-        progressInnerRef.current ?? progressTrackRef.current;
+      const track = progressInnerRef.current ?? progressTrackRef.current;
       if (!track) return;
       if (e.cancelable && e.type === "touchmove") e.preventDefault();
       const cx = e.type === "touchmove" ? e.touches[0]?.clientX : e.clientX;
@@ -775,6 +823,27 @@ export function FeedPhoneStage({
   }, [effectiveStageWide, onStageWideChange]);
 
   const stageOuterRef = useRef(null);
+  const [mobileMeasuredSlotPx, setMobileMeasuredSlotPx] =
+    useState(feedSlotHeightPx);
+  useLayoutEffect(() => {
+    if (!mobileFullBleed) return undefined;
+    const el = stageOuterRef.current;
+    if (!el) return undefined;
+    const sync = () => {
+      const next = el.clientHeight;
+      if (next > 0) setMobileMeasuredSlotPx(next);
+    };
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    window.addEventListener("resize", sync);
+    window.visualViewport?.addEventListener("resize", sync);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", sync);
+      window.visualViewport?.removeEventListener("resize", sync);
+    };
+  }, [mobileFullBleed, feedSlotHeightPx, videos.length]);
   const [viewportWidthTick, setViewportWidthTick] = useState(0);
   useEffect(() => {
     const onResize = () => setViewportWidthTick((t) => t + 1);
@@ -783,35 +852,49 @@ export function FeedPhoneStage({
   }, []);
   void viewportWidthTick;
 
-  /** Tính đồng bộ — tránh khung cao feedSlotHeightPx khiến overlay nằm dưới vùng letterbox. */
-  const landscapeStageWidthPx = effectiveStageWide
-    ? computeFeedLandscapeStageWidthPx({
-        commentsOpen: commentsDockOpen,
-        slotHeightPx: feedSlotHeightPx,
-      })
-    : null;
+  /**
+   * Mobile full-bleed: luôn full viewport — không thu khung 16:9 kiểu desktop
+   * (tránh video ~280px góc trái + vuốt feed hỏng trên điện thoại).
+   */
+  const landscapeStageWidthPx =
+    mobileFullBleed || !effectiveStageWide
+      ? null
+      : computeFeedLandscapeStageWidthPx({
+          commentsOpen: commentsDockOpen,
+          slotHeightPx: feedSlotHeightPx,
+        });
 
   const landscapeVideoHeightPx =
     landscapeStageWidthPx != null
       ? Math.round((landscapeStageWidthPx * 9) / 16)
       : null;
 
-  const stageOuterHeightPx =
-    effectiveStageWide && landscapeVideoHeightPx != null
+  const stageOuterHeightPx = mobileFullBleed
+    ? mobileMeasuredSlotPx
+    : effectiveStageWide && landscapeVideoHeightPx != null
       ? landscapeVideoHeightPx
       : feedSlotHeightPx;
 
-  const virtualSlotHeightPx = stageOuterHeightPx;
+  const virtualSlotHeightPx = mobileFullBleed
+    ? mobileMeasuredSlotPx
+    : stageOuterHeightPx;
 
-  const stageWidthClass = effectiveStageWide
-    ? "relative shrink-0"
-    : FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT;
+  const stageWidthClass = mobileFullBleed
+    ? "relative h-full w-full shrink-0"
+    : effectiveStageWide
+      ? "relative shrink-0"
+      : FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT;
+
+  const stageOuterSurfaceClass = mobileFullBleed
+    ? "relative h-full w-full overflow-hidden bg-black"
+    : `${stageWidthClass} relative overflow-hidden rounded-xl border border-white/10 bg-black shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl`;
 
   /** Giữ activeIndex ổn định khi chiều cao khung đổi (phát hiện 16:9). */
   const [stageHeightSettle, setStageHeightSettle] = useState(false);
   const prevVirtualSlotHeightRef = useRef(virtualSlotHeightPx);
   useLayoutEffect(() => {
-    if (prevVirtualSlotHeightRef.current === virtualSlotHeightPx) return undefined;
+    if (prevVirtualSlotHeightRef.current === virtualSlotHeightPx)
+      return undefined;
     prevVirtualSlotHeightRef.current = virtualSlotHeightPx;
     setStageHeightSettle(true);
     const t = window.setTimeout(() => setStageHeightSettle(false), 520);
@@ -856,22 +939,37 @@ export function FeedPhoneStage({
   return (
     <div
       ref={stageOuterRef}
-      className={`${stageWidthClass} relative overflow-hidden rounded-xl border border-white/10 bg-black shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl`}
-      style={{
-        width: landscapeStageWidthPx ?? undefined,
-        height: stageOuterHeightPx,
-      }}
+      className={
+        mobileFullBleed
+          ? "relative h-full w-full overflow-hidden bg-black"
+          : stageOuterSurfaceClass
+      }
+      style={
+        mobileFullBleed
+          ? undefined
+          : {
+              width: landscapeStageWidthPx ?? undefined,
+              height: stageOuterHeightPx,
+            }
+      }
     >
       <VirtualizedFeed
         ref={virtualFeedRef}
         videos={videos}
         itemHeightPx={virtualSlotHeightPx}
+        fillContainer={mobileFullBleed}
         scrollLocked={commentsDockOpen}
-        freezeActiveIndex={commentsDockOpen || dockScrollSettle || stageHeightSettle}
+        freezeActiveIndex={
+          commentsDockOpen || dockScrollSettle || stageHeightSettle
+        }
         activeIndex={activeIndex}
         onActiveIndexChange={setActiveIndex}
         onNearEnd={loadMoreFeed}
-        scrollClassName="scrollbar-none rounded-xl sm:rounded-2xl"
+        scrollClassName={
+          mobileFullBleed
+            ? "scrollbar-none"
+            : "scrollbar-none rounded-xl sm:rounded-2xl"
+        }
       >
         {({ video, loadMedia, isActive, visibilityRatio }) => {
           const poster =
@@ -897,7 +995,9 @@ export function FeedPhoneStage({
             >
               {hasPlayback ? (
                 <div
-                  className="absolute inset-x-0 top-0 isolate overflow-hidden rounded-xl sm:rounded-2xl"
+                  className={`absolute inset-x-0 top-0 isolate overflow-hidden ${
+                    mobileFullBleed ? "" : "rounded-xl sm:rounded-2xl"
+                  }`}
                   style={{ bottom: FEED_PROGRESS_TRACK_BOTTOM_PX }}
                 >
                   <FeedVideoPlayer
@@ -911,13 +1011,14 @@ export function FeedPhoneStage({
                     isActive={isActive}
                     userPaused={isActive && userPaused}
                     visibilityRatio={
-                      commentsDockOpen && isActive ? 1 : visibilityRatio
+                      (mobileFullBleed || commentsDockOpen) && isActive
+                        ? 1
+                        : visibilityRatio
                     }
                     feedVideoId={video.publicId}
                     streamQuality={feedVideoQuality}
-                    onHlsQualitiesAvailable={
-                      isActive ? handleHlsQualitiesAvailable : undefined
-                    }
+                    sourceHeightPx={video?.sourceHeightPx}
+                    onHlsQualitiesAvailable={handleHlsQualitiesAvailable}
                     onPlaybackTick={
                       isActive ? handleActivePlaybackTick : undefined
                     }
@@ -1044,10 +1145,14 @@ export function FeedPhoneStage({
                                   setFeedMoreMenuSubpage("quality")
                                 }
                               >
-                                <span className={FEED_MORE_MENU_BADGE_ICON_CLASS}>
+                                <span
+                                  className={FEED_MORE_MENU_BADGE_ICON_CLASS}
+                                >
                                   HD
                                 </span>
-                                <span className="min-w-0 flex-1">Chất lượng</span>
+                                <span className="min-w-0 flex-1">
+                                  Chất lượng
+                                </span>
                                 <span className={FEED_MORE_MENU_VALUE_CLASS}>
                                   {feedQualityLabel(feedVideoQuality)}
                                 </span>
@@ -1063,7 +1168,9 @@ export function FeedPhoneStage({
                                   className={FEED_MORE_MENU_INLINE_ICON_CLASS}
                                   aria-hidden
                                 />
-                                <span className="min-w-0 flex-1">Cuộn tự động</span>
+                                <span className="min-w-0 flex-1">
+                                  Cuộn tự động
+                                </span>
                                 <button
                                   type="button"
                                   role="switch"
@@ -1094,14 +1201,22 @@ export function FeedPhoneStage({
                                 <span className="flex-1">Trình phát nổi</span>
                               </button>
 
-                              <button type="button" className={`${FEED_MORE_MENU_ROW_CLASS} border-b-0`}>
-                                <span className={FEED_MORE_MENU_BADGE_ICON_CLASS}>
+                              <button
+                                type="button"
+                                className={`${FEED_MORE_MENU_ROW_CLASS} border-b-0`}
+                              >
+                                <span
+                                  className={FEED_MORE_MENU_BADGE_ICON_CLASS}
+                                >
                                   CC
                                 </span>
                                 <span className="flex-1">Phụ đề</span>
                               </button>
 
-                              <div className="my-0.5 border-t border-white/[0.08]" aria-hidden />
+                              <div
+                                className="my-0.5 border-t border-white/[0.08]"
+                                aria-hidden
+                              />
 
                               <button
                                 type="button"
@@ -1148,14 +1263,19 @@ export function FeedPhoneStage({
                                       setFeedMoreMenuOpen(false);
                                     }}
                                   >
-                                    <span>{formatPlaybackSpeedOption(rate)}</span>
+                                    <span>
+                                      {formatPlaybackSpeedOption(rate)}
+                                    </span>
                                     {selected ? (
                                       <IoCheckmark
                                         className="h-4 w-4 shrink-0 text-white"
                                         aria-hidden
                                       />
                                     ) : (
-                                      <span className="h-4 w-4 shrink-0" aria-hidden />
+                                      <span
+                                        className="h-4 w-4 shrink-0"
+                                        aria-hidden
+                                      />
                                     )}
                                   </button>
                                 );
@@ -1187,7 +1307,10 @@ export function FeedPhoneStage({
                                         aria-hidden
                                       />
                                     ) : (
-                                      <span className="h-4 w-4 shrink-0" aria-hidden />
+                                      <span
+                                        className="h-4 w-4 shrink-0"
+                                        aria-hidden
+                                      />
                                     )}
                                   </button>
                                 );
@@ -1211,13 +1334,14 @@ export function FeedPhoneStage({
                   isActive={isActive}
                   userPaused={isActive && userPaused}
                   visibilityRatio={
-                    commentsDockOpen && isActive ? 1 : visibilityRatio
+                    (mobileFullBleed || commentsDockOpen) && isActive
+                      ? 1
+                      : visibilityRatio
                   }
                   feedVideoId={video.publicId}
                   streamQuality={feedVideoQuality}
-                  onHlsQualitiesAvailable={
-                    isActive ? handleHlsQualitiesAvailable : undefined
-                  }
+                  sourceHeightPx={video?.sourceHeightPx}
+                  onHlsQualitiesAvailable={handleHlsQualitiesAvailable}
                   onPlaybackTick={
                     isActive ? handleActivePlaybackTick : undefined
                   }
@@ -1245,6 +1369,15 @@ export function FeedPhoneStage({
                     authorProfilePath={authorProfilePath}
                     captionText={captionText}
                     compact={effectiveStageWide}
+                    repostedByDisplayName={video?.repostedByDisplayName}
+                    repostedByUsername={video?.repostedByUsername}
+                    selfReposted={selfReposted}
+                    selfRepostAvatarUrl={selfRepostAvatarUrl}
+                    selfRepostDisplayName={selfRepostDisplayName}
+                    selfRepostUsername={selfRepostUsername}
+                    selfRepostProfilePath={selfRepostProfilePath}
+                    onSelfUnrepost={onSelfUnrepost}
+                    selfRepostBusy={selfRepostBusy}
                   />
                 </div>
               ) : null}
@@ -1356,6 +1489,17 @@ export function FeedPhoneStage({
           }
           return undefined;
         }}
+        onRepost={
+          onVideoContextRepost
+            ? () => {
+                if (videoContextMenu?.video) {
+                  onVideoContextRepost(videoContextMenu.video);
+                }
+              }
+            : undefined
+        }
+        reposted={videoContextReposted}
+        repostBusy={videoContextRepostBusy}
         onViewDetails={() => {
           if (videoContextMenu?.video) {
             onVideoContextViewDetails?.(videoContextMenu.video);

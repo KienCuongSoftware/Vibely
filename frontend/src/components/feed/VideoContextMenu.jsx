@@ -6,6 +6,7 @@ import {
   IoLinkOutline,
   IoShareSocialOutline,
 } from 'react-icons/io5'
+import { LuRepeat2 } from 'react-icons/lu'
 import { FEED_MORE_PANEL_SURFACE_CLASS } from '../../feed/feedLayout.js'
 
 const MENU_WIDTH_PX = 220
@@ -21,6 +22,9 @@ const MENU_ITEM_CLASS =
  *   onDownload?: () => void | Promise<void>
  *   onShare?: () => void
  *   onCopyLink?: () => void | Promise<void>
+ *   onRepost?: () => void
+ *   reposted?: boolean
+ *   repostBusy?: boolean
  *   onViewDetails?: () => void
  *   downloading?: boolean
  * }} props
@@ -33,6 +37,9 @@ export function VideoContextMenu({
   onDownload,
   onShare,
   onCopyLink,
+  onRepost,
+  reposted = false,
+  repostBusy = false,
   onViewDetails,
   downloading = false,
 }) {
@@ -117,6 +124,21 @@ export function VideoContextMenu({
         <IoLinkOutline className="h-[18px] w-[18px] shrink-0 opacity-90" aria-hidden />
         <span>Sao chép liên kết</span>
       </button>
+      {onRepost ? (
+        <button
+          type="button"
+          role="menuitem"
+          className={MENU_ITEM_CLASS}
+          disabled={repostBusy}
+          onClick={() => {
+            onRepost()
+            onClose()
+          }}
+        >
+          <LuRepeat2 className="h-[18px] w-[18px] shrink-0 opacity-90" aria-hidden />
+          <span>{reposted ? 'Xóa video đăng lại' : 'Đăng lại'}</span>
+        </button>
+      ) : null}
       <button
         type="button"
         role="menuitem"

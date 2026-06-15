@@ -1,6 +1,12 @@
 import { resolveApiBaseUrl } from '../config/apiBase.js'
 import { isCookieSession } from '../auth/session.js'
 
+function readCsrfToken() {
+  if (typeof document === 'undefined') return null
+  const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/)
+  return match ? decodeURIComponent(match[1]) : null
+}
+
 /**
  * @param {string} publicId
  * @param {string} username
@@ -14,6 +20,10 @@ export async function downloadWatermarkedVideo(publicId, username, { token } = {
   const headers = {}
   if (token && !isCookieSession(token)) {
     headers.Authorization = `Bearer ${token}`
+  }
+  const csrf = readCsrfToken()
+  if (csrf) {
+    headers['X-XSRF-TOKEN'] = csrf
   }
   const response = await fetch(`${resolveApiBaseUrl()}/api/videos/${encodeURIComponent(id)}/download`, {
     method: 'GET',

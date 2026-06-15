@@ -103,21 +103,23 @@ export function CreatorGridShell({
   }, [showLogoutConfirm])
 
   return (
-    <section className="flex h-dvh max-h-dvh min-h-0 w-full overflow-hidden bg-black text-zinc-100">
-      <Sidebar
-        menuItems={menuItems}
-        activeMenu={activeMenu}
-        onSelectMenu={handleSidebarSelect}
-        token={token}
-        user={user}
-        onLogout={token ? onLogout : undefined}
-        forceCollapsed={sidebarCollapsed}
-      />
+    <section className="flex h-dvh max-h-dvh min-h-0 w-full flex-col overflow-hidden bg-black text-zinc-100 lg:flex-row">
+      <div className="hidden shrink-0 lg:block">
+        <Sidebar
+          menuItems={menuItems}
+          activeMenu={activeMenu}
+          onSelectMenu={handleSidebarSelect}
+          token={token}
+          user={user}
+          onLogout={token ? onLogout : undefined}
+          forceCollapsed={sidebarCollapsed}
+        />
+      </div>
 
-      <div className={`relative flex min-h-0 flex-1 flex-col items-stretch overflow-hidden ${
+      <div className={`relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden ${
         contentFullBleed
           ? 'px-0 pt-0'
-          : 'px-6 pt-1 sm:px-10 sm:pt-2 lg:px-16 xl:px-24'
+          : 'px-3 pt-1 sm:px-10 sm:pt-2 lg:px-16 xl:px-24'
       }`}>
         <AccountActionsPill
           className="absolute right-8 top-5 z-[100]"

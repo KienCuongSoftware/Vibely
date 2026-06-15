@@ -3,14 +3,20 @@ import React from 'react'
 /** Empty state panel bình luận — giống TikTok web. */
 export function FeedCommentsEmptyState({
   message = 'Bắt đầu cuộc trò chuyện',
+  /** Mobile bottom sheet: căn cao hơn, không chiếm min-height lớn. */
+  compact = false,
 }) {
   return (
     <div
-      className="flex min-h-[min(420px,50vh)] flex-col items-center justify-center px-6 py-16 text-center"
+      className={
+        compact
+          ? 'flex flex-col items-center justify-start px-6 pb-4 pt-10 text-center'
+          : 'flex min-h-[min(420px,50vh)] flex-col items-center justify-center px-6 py-16 text-center'
+      }
       role="status"
     >
       <svg
-        className="mb-5 h-[72px] w-[72px] text-zinc-500"
+        className={`text-zinc-500 ${compact ? 'mb-4 h-14 w-14' : 'mb-5 h-[72px] w-[72px]'}`}
         viewBox="0 0 96 96"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

@@ -9,6 +9,7 @@ import { MemoryRouter } from 'react-router-dom'
 vi.mock('../api/client', () => ({
   apiClient: {
     getFeed: vi.fn(),
+    getForYouFeed: vi.fn(),
     getFollowingFeed: vi.fn(),
     getMyUploadedVideos: vi.fn(),
     getVideoMeState: vi.fn(),
@@ -28,18 +29,19 @@ describe('FeedPage', () => {
     vi.clearAllMocks()
     window.sessionStorage.clear()
     apiClient.getComments.mockResolvedValue([])
+    apiClient.getForYouFeed.mockResolvedValue({ items: [], hasNext: false, nextCursor: null })
     apiClient.getMyUploadedVideos.mockResolvedValue({ items: [], hasNext: false })
     apiClient.getVideoMeState.mockResolvedValue({ liked: false, bookmarked: false })
   })
 
-  it('loads the latest feed on mount', async () => {
-    apiClient.getFeed.mockResolvedValue({
+  it('loads the for-you feed on mount', async () => {
+    apiClient.getForYouFeed.mockResolvedValue({
       items: [],
       page: 0,
       size: 5,
       total: 0,
       hasNext: false,
-      sort: 'latest',
+      sort: 'for-you',
     })
     apiClient.getFollowingFeed.mockResolvedValue({
       items: [],
@@ -71,12 +73,12 @@ describe('FeedPage', () => {
     )
 
     await waitFor(() => {
-      expect(apiClient.getFeed).toHaveBeenCalled()
+      expect(apiClient.getForYouFeed).toHaveBeenCalled()
     })
   })
 
   it('keeps the left sidebar visible when the comments panel is open', async () => {
-    apiClient.getFeed.mockResolvedValue({
+    apiClient.getForYouFeed.mockResolvedValue({
       items: [
         {
           publicId: '018fc2c7-f2e9-7a41-b9d7-0123456789ab',
@@ -141,7 +143,7 @@ describe('FeedPage', () => {
   })
 
   it('links the author avatar to the author profile', async () => {
-    apiClient.getFeed.mockResolvedValue({
+    apiClient.getForYouFeed.mockResolvedValue({
       items: [
         {
           publicId: '018fc2c7-f2e9-7a41-b9d7-0123456789ab',
@@ -201,7 +203,7 @@ describe('FeedPage', () => {
   })
 
   it('shows a follow success tick for one second after clicking the plus badge', async () => {
-    apiClient.getFeed.mockResolvedValue({
+    apiClient.getForYouFeed.mockResolvedValue({
       items: [
         {
           publicId: '018fc2c7-f2e9-7a41-b9d7-0123456789ab',
@@ -306,7 +308,7 @@ describe('FeedPage', () => {
       hasNext: false,
       sort: 'latest',
     }
-    apiClient.getFeed.mockResolvedValue(feedPayload)
+    apiClient.getForYouFeed.mockResolvedValue(feedPayload)
     apiClient.follow.mockResolvedValue(null)
 
     const authValue = {
@@ -347,7 +349,7 @@ describe('FeedPage', () => {
     )
 
     await waitFor(() => {
-      expect(apiClient.getFeed.mock.calls.length).toBeGreaterThanOrEqual(2)
+      expect(apiClient.getForYouFeed.mock.calls.length).toBeGreaterThanOrEqual(2)
     })
     expect(
       screen.queryByRole('button', { name: /theo dõi demo_creator/i }),

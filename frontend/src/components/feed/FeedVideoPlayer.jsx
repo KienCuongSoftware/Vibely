@@ -5,6 +5,8 @@ import { isHlsPlaybackUrl } from '../../feed/feedPlayback.js'
 import {
   applyStreamQuality,
   getAvailableQualitiesFromLevels,
+  getAvailableQualitiesFromMasterPlaylist,
+  getAvailableQualitiesFromSourceHeight,
 } from '../../feed/hlsQualityUtils.js'
 import { detectLetterboxedLandscapeLayout } from './feedLetterboxLayout'
 
@@ -12,12 +14,13 @@ function buildHlsInstance({ prefetch = false } = {}) {
   return new Hls({
     enableWorker: true,
     lowLatencyMode: false,
-    startFragPrefetch: true,
-    /** Buffer nhỏ hơn khi prefetch slide kế — tiết kiệm RAM */
-    maxBufferLength: prefetch ? 8 : 12,
-    maxMaxBufferLength: prefetch ? 12 : 24,
-    backBufferLength: 0,
-    maxBufferSize: prefetch ? 12 * 1000 * 1000 : 18 * 1000 * 1000,
+    /** Chỉ prefetch fragment khi slide đang phát — tránh ăn băng thông CDN. */
+    startFragPrefetch: !prefetch,
+    capLevelToPlayerSize: true,
+    maxBufferLength: prefetch ? 6 : 24,
+    maxMaxBufferLength: prefetch ? 10 : 48,
+    backBufferLength: prefetch ? 0 : 20,
+    maxBufferSize: prefetch ? 8 * 1000 * 1000 : 35 * 1000 * 1000,
   })
 }
 
@@ -72,6 +75,7 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
     onPlaybackTick,
     onPlaybackEnded,
     streamQuality = 'auto',
+    sourceHeightPx,
     /** Gọi khi manifest HLS đã parse — danh sách mode khả dụng từ rendition. */
     onHlsQualitiesAvailable,
     /** Phóng nhẹ video ngang khi đang dùng object-cover (overflow ẩn) */
@@ -136,6 +140,42 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
     else if (forwardedRef) forwardedRef.current = node
   }
 
+  const emitAvailableQualities = useCallback(() => {
+    if (!isActiveRef.current) return
+    const hls = hlsRef.current
+    if (hls?.levels?.length) {
+      onHlsQualitiesAvailableRef.current?.(
+        getAvailableQualitiesFromLevels(hls.levels),
+      )
+      return
+    }
+    const el = innerRef.current
+    if (!el || el.tagName !== 'VIDEO' || isHlsUrl(videoUrl)) return
+    const fromMeta = el.videoHeight
+    const fromApi = Number(sourceHeightPx ?? 0)
+    const height =
+      Number.isFinite(fromMeta) && fromMeta > 0
+        ? fromMeta
+        : Number.isFinite(fromApi) && fromApi > 0
+          ? fromApi
+          : 0
+    onHlsQualitiesAvailableRef.current?.(
+      getAvailableQualitiesFromSourceHeight(height),
+    )
+  }, [videoUrl, sourceHeightPx])
+
+  const emitAvailableQualitiesRef = useRef(emitAvailableQualities)
+  emitAvailableQualitiesRef.current = emitAvailableQualities
+
+  useEffect(() => {
+    if (!isActive || !loadMedia || !videoUrl) return
+    emitAvailableQualitiesRef.current()
+    const hls = hlsRef.current
+    if (hls?.levels?.length) {
+      applyStreamQuality(hls, streamQualityRef.current)
+    }
+  }, [isActive, loadMedia, videoUrl, sourceHeightPx])
+
   const reportIntrinsicLayout = useCallback((el) => {
     if (!el || el.tagName !== 'VIDEO') return
     const vid = feedVideoIdRef.current
@@ -191,12 +231,18 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
     if (!isHlsUrl(videoUrl)) {
       destroyHls()
       el.src = videoUrl
+      const reportProgressiveQualities = () => {
+        if (cancelled) return
+        emitAvailableQualitiesRef.current()
+      }
       const onCanPlay = () => {
         if (!cancelled) tryPlayActiveRef.current()
       }
+      el.addEventListener('loadedmetadata', reportProgressiveQualities)
       el.addEventListener('canplay', onCanPlay)
       return () => {
         if (cancelled) return
+        el.removeEventListener('loadedmetadata', reportProgressiveQualities)
         el.removeEventListener('canplay', onCanPlay)
         try {
           el.pause()
@@ -209,25 +255,33 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
     }
 
     if (Hls.isSupported()) {
-      const hls = buildHlsInstance({ prefetch: loadMedia && !isActiveRef.current })
+      const prefetch = loadMedia && !isActiveRef.current
+      const hls = buildHlsInstance({ prefetch })
       hlsRef.current = hls
       hls.loadSource(videoUrl)
       hls.attachMedia(el)
       const onParsed = () => {
         if (cancelled) return
-        onHlsQualitiesAvailableRef.current?.(
-          getAvailableQualitiesFromLevels(hls.levels),
-        )
+        if (isActiveRef.current) {
+          onHlsQualitiesAvailableRef.current?.(
+            getAvailableQualitiesFromLevels(hls.levels),
+          )
+        }
         applyStreamQuality(hls, streamQualityRef.current)
-        if (loadMedia && !isActiveRef.current) {
+        if (isActiveRef.current) {
           try {
-            hls.startLoad(0)
+            hls.startLoad(-1)
           } catch {
             /* noop */
           }
-        } else {
           requestAnimationFrame(() => reportIntrinsicLayout(el))
           tryPlayActiveRef.current()
+        } else {
+          try {
+            hls.stopLoad()
+          } catch {
+            /* noop */
+          }
         }
       }
       const onLevelSwitch = () => {
@@ -236,6 +290,22 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
       }
       const onError = (_event, data) => {
         if (cancelled || !data?.fatal) return
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+          try {
+            hls.startLoad(-1)
+            return
+          } catch {
+            /* fall through */
+          }
+        }
+        if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+          try {
+            hls.recoverMediaError()
+            return
+          } catch {
+            /* fall through */
+          }
+        }
         try {
           hls.destroy()
         } catch {
@@ -264,6 +334,20 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
 
     if (el.canPlayType('application/vnd.apple.mpegurl')) {
       el.src = videoUrl
+      const loadNativeQualities = async () => {
+        if (cancelled || !isActiveRef.current) return
+        try {
+          const res = await fetch(videoUrl)
+          const text = await res.text()
+          if (cancelled || !isActiveRef.current) return
+          onHlsQualitiesAvailableRef.current?.(
+            getAvailableQualitiesFromMasterPlaylist(text),
+          )
+        } catch {
+          /* noop */
+        }
+      }
+      void loadNativeQualities()
       return () => {
         cancelled = true
         try {
@@ -288,7 +372,7 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
         /* noop */
       }
     }
-  }, [loadMedia, videoUrl])
+  }, [loadMedia, videoUrl, isActive])
 
   useEffect(() => {
     const hls = hlsRef.current
@@ -387,6 +471,15 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
     reportIntrinsicLayout(e.currentTarget)
   }
 
+  const handlePlaying = (e) => {
+    const el = e.currentTarget
+    try {
+      el.removeAttribute('poster')
+    } catch {
+      /* noop */
+    }
+  }
+
   if (!loadMedia || !videoUrl) {
     return (
       <div
@@ -416,6 +509,7 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
       data-feed-video-id={feedVideoId != null ? String(feedVideoId) : undefined}
       onLoadedMetadata={handleLoadedMetadata}
       onLoadedData={handleLoadedData}
+      onPlaying={handlePlaying}
       onTimeUpdate={onPlaybackTick}
       onSeeked={onPlaybackTick}
       onEnded={(e) => {

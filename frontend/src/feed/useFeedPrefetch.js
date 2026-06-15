@@ -17,7 +17,7 @@ export function useFeedPrefetch(videos, activeIndex) {
         activeIndex,
         resolveFeedPlaybackUrl,
       );
-      for (const offset of [1, 2]) {
+      for (const offset of [1]) {
         const item = videos[activeIndex + offset];
         const poster = item?.thumbnailUrl?.trim();
         if (poster) feedPrefetchManager.prefetchPoster(poster);

@@ -6,6 +6,10 @@ export const FEED_VIDEO_OVERLAY_BTN_CLASS =
 export const FEED_ROUND_ICON_BUTTON_CLASS =
   "flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/25 bg-black/30 text-xl text-white shadow-[0_2px_12px_rgba(0,0,0,0.22)] backdrop-blur-md transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-35";
 
+/** Icon tương tác + số đếm xếp dọc, căn giữa (mobile rail). */
+export const FEED_ACTION_ITEM_CLASS =
+  "flex min-w-10 flex-col items-center gap-0.5";
+
 /** Panel menu ⋯ — nền đen/xám đậm kiểu TikTok web. */
 export const FEED_MORE_PANEL_SURFACE_CLASS =
   "overflow-hidden rounded-xl border border-white/10 bg-[rgba(37,37,37,0.97)] py-0.5 shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-xl";
@@ -68,8 +72,7 @@ export function computeFeedLandscapeStageWidthPx({
   slotHeightPx,
 }) {
   const vw =
-    viewportWidth ??
-    (typeof window !== "undefined" ? window.innerWidth : 1280);
+    viewportWidth ?? (typeof window !== "undefined" ? window.innerWidth : 1280);
   const slotH =
     slotHeightPx ??
     (typeof window !== "undefined"
