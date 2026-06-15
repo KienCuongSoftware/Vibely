@@ -132,6 +132,10 @@ public class ChatService {
             throw new BadRequestException("Bạn chỉ có thể gửi 1 tin nhắn khi yêu cầu chưa được chấp nhận");
         }
 
+        if (requestState.canAcceptMessageRequest()) {
+            conversation.setRequestAcceptedAt(LocalDateTime.now());
+        }
+
         ChatMessageMedia.Parsed parsed = ChatMessageMedia.validateOutgoing(normalized, me.getId(), ownedMediaValidator);
         String storedContent = parsed.content();
 
