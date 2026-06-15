@@ -11,6 +11,7 @@ export function SliderCaptcha({
   puzzleY = 30,
   onOffsetChange,
   onRelease,
+  onBehaviorSample,
 }) {
   const [offset, setOffset] = useState(0);
 
@@ -61,6 +62,12 @@ export function SliderCaptcha({
           const value = Number(e.target.value);
           setOffset(value);
           onOffsetChange?.(value);
+          onBehaviorSample?.({
+            timestampMs: Date.now(),
+            x: value,
+            y: puzzleY,
+            eventType: "slider",
+          });
         }}
         onPointerUp={() => onRelease?.()}
         onTouchEnd={() => onRelease?.()}

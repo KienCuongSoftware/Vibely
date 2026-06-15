@@ -137,6 +137,10 @@ export function ChallengeModal({
     hasInteractedRef.current = true;
   }, []);
 
+  const recordBehaviorSample = useCallback((sample) => {
+    trackerRef.current?.push(sample);
+  }, []);
+
   if (!open) return null;
 
   const title =
@@ -174,6 +178,7 @@ export function ChallengeModal({
                 setRotation(value);
               }}
               onRelease={handlePuzzleRelease}
+              onBehaviorSample={recordBehaviorSample}
             />
           ) : null}
 
@@ -189,6 +194,7 @@ export function ChallengeModal({
                 setSliderOffset(value);
               }}
               onRelease={handlePuzzleRelease}
+              onBehaviorSample={recordBehaviorSample}
             />
           ) : null}
 

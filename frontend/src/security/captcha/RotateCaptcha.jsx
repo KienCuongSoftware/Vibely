@@ -8,6 +8,7 @@ export function RotateCaptcha({
   imageBase64,
   onRotationChange,
   onRelease,
+  onBehaviorSample,
 }) {
   const canvasRef = useRef(null);
   const outerRef = useRef(null);
@@ -128,7 +129,16 @@ export function RotateCaptcha({
         min={0}
         max={360}
         value={rotation}
-        onChange={(e) => setRotation(Number(e.target.value))}
+        onChange={(e) => {
+          const value = Number(e.target.value);
+          setRotation(value);
+          onBehaviorSample?.({
+            timestampMs: Date.now(),
+            x: value,
+            y: 0,
+            eventType: "rotate",
+          });
+        }}
         onPointerUp={() => onRelease?.()}
         onTouchEnd={() => onRelease?.()}
         className="w-full accent-red-500"
