@@ -46,8 +46,8 @@ spring:
             client-secret: ${LINE_CHANNEL_SECRET}
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
-            # Chỉ dùng http://localhost:8080/... trên LINE Developers (bỏ 127.0.0.1 để tránh lệch redirect_uri).
-            redirect-uri: ${LINE_REDIRECT_URI:http://localhost:8080/login/oauth2/code/line}
+            # Callback URL trên LINE Developers phải khớp (có thể thêm localhost khi dev local).
+            redirect-uri: "${OAUTH_PUBLIC_BASE_URL:https://vibely.sbs}/login/oauth2/code/line"
             scope:
               - openid
               - profile
@@ -80,6 +80,8 @@ app:
   auth:
     otp-resend-seconds: 60
     otp-expiry-seconds: 600
+    cookie:
+      secure: ${APP_AUTH_COOKIE_SECURE:true}
   mail:
     enabled: ${APP_MAIL_ENABLED:false}
     from: ${APP_MAIL_FROM:${SMTP_USERNAME:}}
@@ -111,16 +113,16 @@ app:
   redis:
     enabled: ${APP_REDIS_ENABLED:false}
   urls:
-    frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:8001}
+    frontend-base-url: ${FRONTEND_BASE_URL:https://vibely.sbs}
   cors:
-    allowed-origins: http://localhost:8001,http://127.0.0.1:8001,http://localhost:5173,http://127.0.0.1:5173,http://localhost:3001,http://127.0.0.1:3001
+    allowed-origins: http://localhost:8001,http://127.0.0.1:8001,http://localhost:5173,http://127.0.0.1:5173,http://localhost:3001,http://127.0.0.1:3001,https://vibely.sbs,https://www.vibely.sbs
     # LAN / tunnel dev trên điện thoại — thêm pattern; vẫn cần đăng ký redirect URI trên Google/Facebook console
-    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://192.168.*:*,http://10.*:*,http://172.*:*,https://*.trycloudflare.com,https://*.ngrok-free.app,https://*.ngrok.app}
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://192.168.*:*,http://10.*:*,http://172.*:*,https://vibely.sbs,https://*.vibely.sbs,https://*.trycloudflare.com,https://*.ngrok-free.app,https://*.ngrok.app}
   oauth2:
     enabled: true
-    # public-base-url: đặt trong application-local.yaml hoặc env OAUTH_PUBLIC_BASE_URL
-    frontend-success-url: ${FRONTEND_BASE_URL:http://localhost:8001}/login
-    frontend-failure-url: ${FRONTEND_BASE_URL:http://localhost:8001}/login
+    public-base-url: ${OAUTH_PUBLIC_BASE_URL:https://vibely.sbs}
+    frontend-success-url: ${FRONTEND_BASE_URL:https://vibely.sbs}/login
+    frontend-failure-url: ${FRONTEND_BASE_URL:https://vibely.sbs}/login
   discovery:
     open-ai-enabled: ${DISCOVERY_OPENAI_ENABLED:true}
     open-ai-api-key: ${OPENAI_API_KEY:sk-...}
@@ -128,3 +130,8 @@ app:
 # Tin X-Forwarded-* từ nginx/cloudflared để OAuth redirect-uri dùng đúng :8001 / domain công khai
 server:
   forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        secure: ${APP_SESSION_COOKIE_SECURE:true}
+        same-site: lax

@@ -114,7 +114,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> {
                 var chain = auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/ws/**").permitAll()
+                .requestMatchers("/ws", "/ws/**").permitAll()
                 .requestMatchers("/api/health/**").permitAll();
                 if (isProdProfile()) {
                     chain = chain
