@@ -65,8 +65,18 @@ public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
         if (message == null) {
             return null;
         }
+        String lower = message.toLowerCase();
         if (message.contains("invalid_id_token") && message.contains("iat=")) {
             return "clock_skew";
+        }
+        if (lower.contains("redirect_uri") || lower.contains("redirect uri")) {
+            return "redirect_mismatch";
+        }
+        if (lower.contains("authorization_request_not_found")) {
+            return "session_lost";
+        }
+        if (lower.contains("invalid_grant")) {
+            return "invalid_grant";
         }
         return null;
     }

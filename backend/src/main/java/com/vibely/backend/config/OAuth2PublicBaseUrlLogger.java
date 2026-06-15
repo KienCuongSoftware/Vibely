@@ -26,13 +26,16 @@ public class OAuth2PublicBaseUrlLogger implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         ClientRegistration google = clientRegistrationRepository.findByRegistrationId("google");
+        ClientRegistration line = clientRegistrationRepository.findByRegistrationId("line");
         String googleRedirect = google != null ? google.getRedirectUri() : "(missing)";
+        String lineRedirect = line != null ? line.getRedirectUri() : "(missing)";
         if (!publicBaseUrl.isBlank()) {
             org.slf4j.LoggerFactory.getLogger(OAuth2PublicBaseUrlLogger.class)
                 .info(
-                    "OAuth2 public-base-url={} | google redirect-uri={}",
+                    "OAuth2 public-base-url={} | google redirect-uri={} | line redirect-uri={}",
                     publicBaseUrl,
-                    googleRedirect
+                    googleRedirect,
+                    lineRedirect
                 );
             return;
         }
