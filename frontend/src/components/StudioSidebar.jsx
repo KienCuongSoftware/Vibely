@@ -30,10 +30,11 @@ function NavSection({ title, children, light }) {
   )
 }
 
-function NavLink({ to, icon: Icon, label, active, light }) {
+function NavLink({ to, icon: Icon, label, active, light, onNavigate }) {
   return (
     <Link
       to={to}
+      onClick={() => onNavigate?.()}
       className={
         light
           ? `flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition ${
@@ -74,7 +75,7 @@ function ToolRow({ icon: Icon, label, dot, light }) {
 const OPEN_UPLOAD_PICKER_KEY = 'vibely-studio-open-upload-picker'
 
 /** @param {'dark' | 'light'} [theme='dark'] */
-export function StudioSidebar({ active = 'home', theme = 'dark' }) {
+export function StudioSidebar({ active = 'home', theme = 'dark', className = '', onNavigate }) {
   const light = theme === 'light'
   const location = useLocation()
   const navigate = useNavigate()
@@ -95,18 +96,18 @@ export function StudioSidebar({ active = 'home', theme = 'dark' }) {
       /* ignore */
     }
     navigate('/vibelystudio/upload')
+    onNavigate?.()
   }
 
+  const asideClass = light
+    ? 'relative z-20 flex h-dvh w-[240px] shrink-0 flex-col overflow-y-auto overflow-x-hidden border-r border-slate-200 bg-white px-2.5 py-4 scrollbar-none'
+    : 'relative z-20 flex h-dvh w-[240px] shrink-0 flex-col overflow-y-auto overflow-x-hidden border-r border-zinc-900 bg-black px-2.5 py-4 scrollbar-none'
+
   return (
-    <aside
-      className={
-        light
-          ? 'relative z-20 flex h-dvh w-[240px] shrink-0 flex-col overflow-y-auto overflow-x-hidden border-r border-slate-200 bg-white px-2.5 py-4 scrollbar-none'
-          : 'relative z-20 flex h-dvh w-[240px] shrink-0 flex-col overflow-y-auto overflow-x-hidden border-r border-zinc-900 bg-black px-2.5 py-4 scrollbar-none'
-      }
-    >
+    <aside className={className ? `${asideClass} ${className}` : asideClass}>
       <Link
         to="/vibelystudio/home"
+        onClick={() => onNavigate?.()}
         className={
           light
             ? 'px-2 text-lg font-black tracking-tight text-slate-900 sm:text-xl'
@@ -133,13 +134,14 @@ export function StudioSidebar({ active = 'home', theme = 'dark' }) {
       </button>
 
       <NavSection title="Quản lý" light={light}>
-        <NavLink to="/vibelystudio/home" icon={IoHome} label="Trang chủ" active={active === 'home'} light={light} />
+        <NavLink to="/vibelystudio/home" icon={IoHome} label="Trang chủ" active={active === 'home'} light={light} onNavigate={onNavigate} />
         <NavLink
           to="/vibelystudio/posts"
           icon={IoVideocamOutline}
           label="Bài đăng"
           active={postsNavActive}
           light={light}
+          onNavigate={onNavigate}
         />
         <NavLink
           to="/vibelystudio/home"
@@ -147,6 +149,7 @@ export function StudioSidebar({ active = 'home', theme = 'dark' }) {
           label="Phân tích"
           active={active === 'analytics'}
           light={light}
+          onNavigate={onNavigate}
         />
         <NavLink
           to="/vibelystudio/posts"
@@ -154,6 +157,7 @@ export function StudioSidebar({ active = 'home', theme = 'dark' }) {
           label="Bình luận"
           active={commentsNavActive}
           light={light}
+          onNavigate={onNavigate}
         />
       </NavSection>
 

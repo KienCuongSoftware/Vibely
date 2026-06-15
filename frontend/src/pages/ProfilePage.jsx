@@ -1,4 +1,4 @@
-import React from 'react'
+import { VideoThumbnailImg } from '../components/VideoThumbnailImg.jsx'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { apiClient } from '../api/client'
@@ -9,6 +9,7 @@ import {
 import { useAuth } from '../state/useAuth'
 import {
   buildProfileVideoUrl,
+  buildProfileWatchUrl,
   videoPublicIdOf,
 } from '../utils/videoPublicId.js'
 import {
@@ -16,6 +17,8 @@ import {
   recordProfileLastWatchedFromVideo,
 } from '../utils/profileLastWatched.js'
 import { Sidebar } from '../components/Sidebar'
+import { isMobileFeedLayout, MobileFeedBottomNav } from '../components/feed/MobileFeedShell.jsx'
+import { MobileLoginPrompt } from '../components/feed/MobilePageShell.jsx'
 import { handleSidebarMenuSelect } from '../utils/sidebarNavigation.js'
 import { TooltipHoverWrap } from '../components/TooltipControls'
 import { AccountActionsPill } from '../components/AccountActionsPill'
@@ -45,7 +48,7 @@ import {
   IoVideocam,
 } from 'react-icons/io5'
 import { MdOutlineFileUpload } from 'react-icons/md'
-import { LuGrid2X2 } from 'react-icons/lu'
+import { LuGrid2X2, LuRepeat2 } from 'react-icons/lu'
 import { AvatarImage } from '../components/AvatarImage.jsx'
 
 const DEFAULT_USER_AVATAR_URL = '/images/users/default-avatar.jpeg'
@@ -105,7 +108,7 @@ function profileVideoPermalinkForGrid(video, fallbackUsernameRaw) {
   const slug =
     normalizeProfileUsernameKey(video?.authorUsername) ||
     normalizeProfileUsernameKey(fallbackUsernameRaw)
-  const link = buildProfileVideoUrl(slug, videoPublicIdOf(video))
+  const link = buildProfileWatchUrl(slug, videoPublicIdOf(video))
   return link || '/foryou'
 }
 
@@ -144,19 +147,9 @@ function ProfileGridMedia({ item: v, playing = false }) {
   }, [playing, url])
 
   const thumbNode = thumb ? (
-    <img
-      src={thumb}
-      alt=""
-      loading="lazy"
-      className="h-full w-full object-cover"
-    />
+    <VideoThumbnailImg src={thumb} />
   ) : (
-    <img
-      src="https://picsum.photos/seed/vibely-thumb/360/640"
-      alt=""
-      loading="lazy"
-      className="h-full w-full object-cover"
-    />
+    <VideoThumbnailImg src="https://picsum.photos/seed/vibely-thumb/720/1280" />
   )
 
   if (url && playing) {
@@ -233,6 +226,7 @@ export function ProfilePage() {
   const { username } = useParams()
   const { token, user, refreshProfile, updateProfile, logout } = useAuth()
   const navigate = useNavigate()
+  const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout())
   const [searchParams, setSearchParams] = useSearchParams()
   const [favoritesSubTab, setFavoritesSubTab] = useState('posts')
   const [status, setStatus] = useState('')
@@ -265,8 +259,11 @@ export function ProfilePage() {
   const [bookmarkTotal, setBookmarkTotal] = useState(0)
   const [likedItems, setLikedItems] = useState([])
   const [likedTotal, setLikedTotal] = useState(0)
+  const [repostItems, setRepostItems] = useState([])
+  const [repostTotal, setRepostTotal] = useState(0)
   const [bookmarkLoading, setBookmarkLoading] = useState(false)
   const [likedLoading, setLikedLoading] = useState(false)
+  const [repostLoading, setRepostLoading] = useState(false)
   const [libraryError, setLibraryError] = useState('')
   const [newCollectionOpen, setNewCollectionOpen] = useState(false)
   const [newCollectionStep, setNewCollectionStep] = useState('form')
@@ -505,9 +502,11 @@ export function ProfilePage() {
   const profileMainTab =
     searchParams.get('tab') === 'favorites'
       ? 'favorites'
-      : searchParams.get('tab') === 'liked'
-        ? 'liked'
-        : 'videos'
+      : searchParams.get('tab') === 'reposted'
+        ? 'reposted'
+        : searchParams.get('tab') === 'liked'
+          ? 'liked'
+          : 'videos'
 
   const setProfileMainTab = (next) => {
     if (next === 'videos') {
@@ -605,14 +604,45 @@ export function ProfilePage() {
     }
   }, [token, isOwnProfile, profileMainTab])
 
+  useEffect(() => {
+    if (!token || !isOwnProfile) {
+      setRepostItems([])
+      setRepostTotal(0)
+      return
+    }
+    if (profileMainTab !== 'reposted') {
+      return
+    }
+    let live = true
+    setRepostLoading(true)
+    setLibraryError('')
+    apiClient
+      .getMyRepostedVideos(token, { page: 0, size: 48 })
+      .then((data) => {
+        if (!live) return
+        setRepostItems(data?.items ?? [])
+        setRepostTotal(Number(data?.total ?? 0))
+      })
+      .catch((e) => {
+        if (live) setLibraryError(e.message)
+      })
+      .finally(() => {
+        if (live) setRepostLoading(false)
+      })
+    return () => {
+      live = false
+    }
+  }, [token, isOwnProfile, profileMainTab])
+
   const collectionTotal = 0
 
   const profileGridVideoList = useMemo(() => {
     if (profileMainTab === 'videos') return profileVideos
     if (profileMainTab === 'favorites' && favoritesSubTab === 'posts') return bookmarkItems
+    if (profileMainTab === 'reposted') return repostItems
     if (profileMainTab === 'liked') return likedItems
     return []
-  }, [profileMainTab, favoritesSubTab, profileVideos, bookmarkItems, likedItems])
+  }, [profileMainTab, favoritesSubTab, profileVideos, bookmarkItems, repostItems, likedItems])
 
   useEffect(() => {
     if (profileGridVideoList.length === 0) {
@@ -660,6 +690,8 @@ export function ProfilePage() {
       }
     } else if (stored.tab === 'liked' && isOwnProfile) {
       setProfileMainTab('liked')
+    } else if (stored.tab === 'reposted' && isOwnProfile) {
+      setProfileMainTab('reposted')
     } else {
       setProfileMainTab('videos')
     }
@@ -835,6 +867,14 @@ export function ProfilePage() {
     })
   }
 
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)')
+    const sync = () => setMobileLayout(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
   const openEditProfileModal = () => {
     if (!profile) return
     const formSnapshot = {
@@ -938,23 +978,37 @@ export function ProfilePage() {
     image.src = avatarEditorSrc
   }
 
+  if (mobileLayout && !username && !token) {
+    return (
+      <section className="flex h-dvh max-h-dvh min-h-0 flex-col bg-black text-zinc-100 lg:hidden">
+        <MobileLoginPrompt
+          title="Đăng nhập để xem hồ sơ"
+          description="Tạo tài khoản hoặc đăng nhập để quản lý video và hồ sơ của bạn."
+        />
+        <MobileFeedBottomNav token={token} user={user} activeId="profile" onSelectMenu={handleSelectMenu} />
+      </section>
+    )
+  }
+
   return (
-    <section className="flex h-dvh max-h-dvh min-h-0 bg-black text-zinc-100">
-      <Sidebar
-        menuItems={menuItems}
-        activeMenu={activeMenu}
-        onSelectMenu={handleSelectMenu}
-        token={token}
-        user={user}
-        onLogout={token ? logout : undefined}
-      />
+    <section className="flex h-dvh max-h-dvh min-h-0 flex-col bg-black text-zinc-100 lg:flex-row">
+      <div className="hidden shrink-0 lg:block">
+        <Sidebar
+          menuItems={menuItems}
+          activeMenu={activeMenu}
+          onSelectMenu={handleSelectMenu}
+          token={token}
+          user={user}
+          onLogout={token ? logout : undefined}
+        />
+      </div>
 
       <div
         ref={profileScrollRef}
-        className="scrollbar-none relative flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain px-6 py-5"
+        className="scrollbar-none relative flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain px-3 py-3 lg:px-6 lg:py-5"
       >
         {token ? (
-          <AccountActionsPill className="absolute right-8 top-5 z-10" tone="profile">
+          <AccountActionsPill className="absolute right-3 top-3 z-10 lg:right-8 lg:top-5" tone="profile">
             <div className="relative" ref={accountMenuRef}>
               <TooltipHoverWrap tip="Tài khoản" tipHidden={showAccountMenu} hoverOnly>
                 <button
@@ -1023,8 +1077,83 @@ export function ProfilePage() {
             <p className="text-sm text-zinc-300">Đang tải hồ sơ...</p>
           </section>
         ) : (
-          <section className="flex min-h-0 w-full max-w-5xl flex-1 flex-col bg-black px-4 py-6 md:px-8">
-            <div className="flex items-start gap-4">
+          <section className="flex min-h-0 w-full max-w-5xl flex-1 flex-col bg-black px-1 py-4 md:px-8 lg:py-6">
+            {mobileLayout ? (
+              <div className="mb-6 flex flex-col items-center text-center lg:hidden">
+                <h2 className="mb-4 max-w-full truncate text-[17px] font-bold text-white">
+                  {profile?.displayName ?? 'Người dùng Vibely'}
+                </h2>
+                <AvatarImage
+                  className="h-24 w-24 rounded-full border border-zinc-800 object-cover"
+                  src={profile?.avatarUrl}
+                  fallbackSrc={DEFAULT_USER_AVATAR_URL}
+                  alt="avatar hồ sơ"
+                />
+                <p className="mt-3 text-[17px] font-bold text-white">
+                  @{profile?.username ?? '-'}
+                </p>
+                <div className="mt-4 flex items-center gap-5 text-[13px] text-zinc-300">
+                  <button type="button" className="cursor-pointer" onClick={() => openFollowListModal('following')}>
+                    <span className="block font-bold text-white">{formatCompactCount(profile?.followingCount ?? 0)}</span>
+                    <span>Đã follow</span>
+                  </button>
+                  <button type="button" className="cursor-pointer" onClick={() => openFollowListModal('followers')}>
+                    <span className="block font-bold text-white">{formatCompactCount(profile?.followerCount ?? 0)}</span>
+                    <span>Follower</span>
+                  </button>
+                  <span>
+                    <span className="block font-bold text-white">{formatCompactCount(profile?.totalLikeCount ?? 0)}</span>
+                    <span>Lượt thích</span>
+                  </span>
+                </div>
+                {isOwnProfile ? (
+                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      className="cursor-pointer rounded-md border border-zinc-700 px-4 py-1.5 text-sm font-semibold text-zinc-100"
+                      onClick={openEditProfileModal}
+                    >
+                      Sửa hồ sơ
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Chia sẻ hồ sơ"
+                      className="cursor-pointer rounded-md border border-zinc-700 p-2 text-zinc-100"
+                      onClick={() => void handleProfileShareClick()}
+                    >
+                      <IoArrowRedo />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      className={`min-w-[112px] rounded-md px-5 py-2 text-sm font-semibold ${
+                        isFollowingProfile
+                          ? 'border border-zinc-700 bg-zinc-900 text-zinc-100'
+                          : 'bg-[#FE2C55] text-white'
+                      } ${followBusy ? 'cursor-wait opacity-80' : 'cursor-pointer'}`}
+                      onClick={() => void handleProfileFollowToggle()}
+                      disabled={followBusy}
+                    >
+                      {followBusy ? 'Đang lưu...' : isFollowingProfile ? 'Đã follow' : 'Follow'}
+                    </button>
+                    <button
+                      type="button"
+                      className="cursor-pointer rounded-md border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-100"
+                      onClick={handleProfileMessageClick}
+                    >
+                      Tin nhắn
+                    </button>
+                  </div>
+                )}
+                <p className="mt-3 max-w-sm text-sm text-zinc-400">
+                  {resolveProfileBio(profile?.bio) ?? 'Chưa có tiểu sử.'}
+                </p>
+              </div>
+            ) : null}
+
+            <div className="hidden items-start gap-4 lg:flex">
               <div className="flex min-w-0 flex-1 items-start gap-5">
                 <AvatarImage
                   className="h-28 w-28 rounded-full border border-zinc-800 object-cover md:h-32 md:w-32"
@@ -1165,9 +1294,12 @@ export function ProfilePage() {
               </div>
             </div>
 
-            <div className="mt-6 border-b border-zinc-900">
+            <div className={`border-b border-zinc-900 ${mobileLayout ? 'mt-2' : 'mt-6'}`}>
               <div className="flex flex-wrap items-end justify-between gap-4">
-                <div className="flex gap-1 text-sm sm:gap-6" role="tablist">
+                <div
+                  className={`flex text-sm ${mobileLayout ? 'w-full justify-center gap-10' : 'gap-1 sm:gap-6'}`}
+                  role="tablist"
+                >
                   <button
                     type="button"
                     role="tab"
@@ -1180,15 +1312,31 @@ export function ProfilePage() {
                     onClick={() => setProfileMainTab('videos')}
                   >
                     <span className="inline-flex items-center gap-2">
-                      <LuGrid2X2 className="text-base" aria-hidden />
-                      Video
+                      <LuGrid2X2 className="text-lg" aria-hidden />
+                      <span className="hidden lg:inline">Video</span>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={profileMainTab === 'reposted'}
+                    className={`hidden cursor-pointer px-2 py-3 sm:px-1 lg:inline-flex ${
+                      profileMainTab === 'reposted'
+                        ? 'border-b-2 border-white font-semibold text-zinc-100'
+                        : 'border-b-2 border-transparent text-zinc-400 hover:text-zinc-200'
+                    }`}
+                    onClick={() => setProfileMainTab('reposted')}
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <LuRepeat2 className="text-base" aria-hidden />
+                      Bài đăng lại
                     </span>
                   </button>
                   <button
                     type="button"
                     role="tab"
                     aria-selected={profileMainTab === 'favorites'}
-                    className={`cursor-pointer px-2 py-3 sm:px-1 ${
+                    className={`hidden cursor-pointer px-2 py-3 sm:px-1 lg:inline-flex ${
                       profileMainTab === 'favorites'
                         ? 'border-b-2 border-white font-semibold text-zinc-100'
                         : 'border-b-2 border-transparent text-zinc-400 hover:text-zinc-200'
@@ -1213,7 +1361,7 @@ export function ProfilePage() {
                   >
                     <span className="inline-flex items-center gap-2">
                       <IoHeartOutline className="text-lg" aria-hidden />
-                      Đã thích
+                      <span className="hidden lg:inline">Đã thích</span>
                     </span>
                   </button>
                 </div>
@@ -1388,6 +1536,40 @@ export function ProfilePage() {
               </div>
             ) : null}
 
+            {profileMainTab === 'reposted' ? (
+              <div className="min-h-0 flex-1 px-2 py-4 sm:px-4 sm:py-5">
+                {!isOwnProfile ? (
+                  <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
+                    <LuRepeat2 className="mb-4 h-28 w-28 shrink-0 text-zinc-100" aria-hidden />
+                    <p className="text-lg font-semibold text-zinc-100">Bài đăng lại</p>
+                    <p className="mt-2 max-w-sm text-sm text-zinc-400">
+                      Bài đăng lại của người này ở chế độ riêng tư.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {libraryError ? (
+                      <p className="py-8 text-center text-sm text-red-400">{libraryError}</p>
+                    ) : null}
+                    {repostLoading && repostItems.length === 0 ? (
+                      <p className="py-8 text-center text-sm text-zinc-500">Đang tải…</p>
+                    ) : null}
+                    {!repostLoading && repostItems.length > 0 ? (
+                      renderProfileVideoGrid(repostItems)
+                    ) : !repostLoading && repostItems.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
+                        <LuRepeat2 className="mb-4 h-28 w-28 shrink-0 text-zinc-100" aria-hidden />
+                        <p className="text-lg font-semibold text-zinc-100">Bài đăng lại</p>
+                        <p className="mt-2 max-w-sm text-sm text-zinc-400">
+                          Video bạn đăng lại sẽ xuất hiện tại đây.
+                        </p>
+                      </div>
+                    ) : null}
+                  </>
+                )}
+              </div>
+            ) : null}
+
           </section>
         )}
         </div>
@@ -1396,7 +1578,7 @@ export function ProfilePage() {
           <button
             type="button"
             onClick={scrollToLastWatched}
-            className="fixed bottom-6 right-6 z-[100] inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#fe2c55] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/40 transition hover:bg-[#e0264b] active:scale-[0.98] sm:bottom-8 sm:right-8"
+            className="fixed bottom-[4.75rem] right-4 z-[100] inline-flex cursor-pointer items-center gap-1 rounded-full bg-[#fe2c55] px-3 py-3.5 text-[13px] font-semibold leading-none text-white shadow-lg shadow-black/40 transition hover:bg-[#e0264b] active:scale-[0.98] lg:bottom-8 lg:right-8 lg:gap-1.5 lg:px-4 lg:py-2.5 lg:text-sm"
             aria-label="Cuộn đến video vừa xem"
           >
             Vừa xem
@@ -1829,6 +2011,17 @@ export function ProfilePage() {
           </div>
         ) : null}
       </div>
+
+      {mobileLayout ? (
+        <div className="shrink-0 lg:hidden">
+          <MobileFeedBottomNav
+            token={token}
+            user={user}
+            activeId="profile"
+            onSelectMenu={handleSelectMenu}
+          />
+        </div>
+      ) : null}
     </section>
   )
 }

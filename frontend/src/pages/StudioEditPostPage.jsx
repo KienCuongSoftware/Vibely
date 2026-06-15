@@ -50,8 +50,6 @@ export function StudioEditPostPage() {
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
   const [coverModalOpen, setCoverModalOpen] = useState(false)
-  const [coverSourceFile, setCoverSourceFile] = useState(null)
-  const [coverFetchHint, setCoverFetchHint] = useState('')
 
   const [previewTab, setPreviewTab] = useState('feed')
   const [mentionableFriends, setMentionableFriends] = useState([])
@@ -470,27 +468,12 @@ export function StudioEditPostPage() {
       ? user.avatarUrl
       : '/images/users/default-avatar.jpeg'
 
-  const openCoverModal = async () => {
-    setCoverFetchHint('')
-    setCoverSourceFile(null)
-    if (video?.videoUrl) {
-      try {
-        const res = await fetch(video.videoUrl, { mode: 'cors' })
-        if (!res.ok) throw new Error('HTTP')
-        const blob = await res.blob()
-        setCoverSourceFile(new File([blob], 'video-source.mp4', { type: blob.type || 'video/mp4' }))
-      } catch {
-        setCoverFetchHint(
-          'Không tải video để chọn khung hình (CORS hoặc mạng). Bạn vẫn có thể tải ảnh bìa từ tab trong hộp thoại.',
-        )
-      }
-    }
+  const openCoverModal = () => {
     setCoverModalOpen(true)
   }
 
   const closeCoverModal = () => {
     setCoverModalOpen(false)
-    setCoverSourceFile(null)
   }
 
   const save = async () => {
@@ -556,9 +539,9 @@ export function StudioEditPostPage() {
   return (
     <StudioLayout active="posts" hidePageHeader>
       <CoverPickerModal
-        open={coverModalOpen && Boolean(token)}
+        open={coverModalOpen}
         onClose={closeCoverModal}
-        videoFile={coverSourceFile}
+        videoUrl={video?.videoUrl}
         token={token}
         onConfirm={(url) => setThumbnailUrl(url)}
       />
@@ -757,7 +740,6 @@ export function StudioEditPostPage() {
                       <span className="text-sm font-medium text-zinc-300">Ảnh bìa</span>
                       <IoInformationCircleOutline className="text-zinc-500" aria-hidden />
                     </div>
-                    {coverFetchHint ? <p className="mb-2 text-xs text-amber-400/90">{coverFetchHint}</p> : null}
                     <div className="relative inline-block max-w-[200px] overflow-hidden rounded-lg border border-zinc-700 bg-black">
                       {thumbnailUrl ? (
                         <img
@@ -778,7 +760,7 @@ export function StudioEditPostPage() {
                       <button
                         type="button"
                         className="absolute inset-x-0 bottom-0 bg-black/70 py-2 text-center text-xs font-medium text-white backdrop-blur-sm hover:bg-black/80"
-                        onClick={() => void openCoverModal()}
+                        onClick={openCoverModal}
                       >
                         Chỉnh sửa ảnh bìa
                       </button>

@@ -12,7 +12,7 @@ const CARD_CLASS =
 const SKELETON_CLASS = `${CARD_CLASS} animate-pulse bg-zinc-900`
 const DEFAULT_AVATAR = '/images/users/default-avatar.jpeg'
 
-function SuggestedCreatorCard({ creator, token, playing, onHover, onFollowed, onUnfollowed }) {
+export function SuggestedCreatorCard({ creator, token, playing, onHover, onFollowed, onUnfollowed }) {
   const [followed, setFollowed] = useState(Boolean(creator?.followedByViewer))
   const [busy, setBusy] = useState(false)
   const username = String(creator?.username ?? '').trim()

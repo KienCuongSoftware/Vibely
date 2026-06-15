@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { apiClient, uploadThumbnailToStorage, uploadToPresignedPutUrl } from '../api/client'
 import { CoverPickerModal } from '../components/CoverPickerModal'
 import { StudioLayout } from '../components/StudioLayout'
+import { extractThumbnailBlobFromFile } from '../utils/videoThumbnail.js'
 import { useAuth } from '../state/useAuth'
 import { LuHeart, LuLayoutGrid, LuMinimize2, LuRepeat2, LuSmartphone, LuWifi } from 'react-icons/lu'
 import {
@@ -88,120 +89,7 @@ function readVideoMetadata(file, timeoutMs = 25000) {
 }
 
 function extractThumbnailBlob(file, atSecond = 1, timeoutMs = 20000) {
-  return new Promise((resolve, reject) => {
-    const video = document.createElement('video')
-    const url = URL.createObjectURL(file)
-    let settled = false
-    let watchdog = null
-
-    const cleanup = () => {
-      if (watchdog != null) {
-        clearTimeout(watchdog)
-        watchdog = null
-      }
-      URL.revokeObjectURL(url)
-      video.removeAttribute('src')
-      video.load()
-    }
-
-    const done = (cb, value) => {
-      if (settled) return
-      settled = true
-      cleanup()
-      cb(value)
-    }
-
-    const drawAndResolve = () => {
-      if (settled) return
-      try {
-        const w = video.videoWidth || 0
-        const h = video.videoHeight || 0
-        if (w < 2 || h < 2) {
-          done(reject, new Error('Không thể đọc khung hình video (kích thước 0).'))
-          return
-        }
-        const canvas = document.createElement('canvas')
-        canvas.width = w
-        canvas.height = h
-        const ctx = canvas.getContext('2d')
-        if (!ctx) {
-          done(reject, new Error('Không thể tạo canvas thumbnail.'))
-          return
-        }
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              done(reject, new Error('Không thể tạo ảnh thumbnail.'))
-              return
-            }
-            done(resolve, blob)
-          },
-          'image/jpeg',
-          0.86,
-        )
-      } catch (err) {
-        done(reject, err instanceof Error ? err : new Error('Không thể cắt thumbnail.'))
-      }
-    }
-
-    const scheduleWatchdog = () => {
-      if (watchdog != null) clearTimeout(watchdog)
-      watchdog = setTimeout(() => {
-        if (settled) return
-        if (video.readyState >= 2 && (video.videoWidth || 0) >= 2 && (video.videoHeight || 0) >= 2) {
-          drawAndResolve()
-          return
-        }
-        done(reject, new Error('Hết thời gian khi tạo ảnh bìa tự động.'))
-      }, timeoutMs)
-    }
-
-    video.preload = 'auto'
-    video.muted = true
-    video.playsInline = true
-    video.setAttribute('playsinline', '')
-    video.setAttribute('webkit-playsinline', '')
-
-    video.onloadedmetadata = () => {
-      const duration = Number(video.duration || 0)
-      const finite = Number.isFinite(duration) && duration > 0
-      let seekTo
-      if (finite) {
-        const cap = Math.min(duration * 0.999, Math.max(duration - 0.04, 0.02))
-        const fromDuration = Math.min(duration * 0.25, cap)
-        const fromAt = Math.min(Math.max(atSecond, 0.1), cap)
-        seekTo = Math.min(fromDuration, fromAt)
-        seekTo = Math.max(seekTo, Math.min(0.1, cap))
-        if (Math.abs(seekTo - video.currentTime) < 0.001) {
-          seekTo = Math.min(seekTo + 0.05, cap)
-        }
-        if (!Number.isFinite(seekTo) || seekTo < 0) {
-          seekTo = Math.min(0.05, cap)
-        }
-      } else {
-        seekTo = Math.min(Math.max(atSecond, 0.05), 1)
-      }
-      scheduleWatchdog()
-      try {
-        video.currentTime = seekTo
-      } catch {
-        drawAndResolve()
-      }
-    }
-
-    video.onseeked = () => {
-      drawAndResolve()
-    }
-
-    video.onerror = () => {
-      done(reject, new Error('Không thể đọc video để tạo thumbnail.'))
-    }
-
-    video.src = url
-    video.load()
-    scheduleWatchdog()
-  })
+  return extractThumbnailBlobFromFile(file, atSecond, timeoutMs)
 }
 
 /** Preview studio (Bảng tin): hiển thị hh:mm:ss giống TikTok */
@@ -895,18 +783,22 @@ export function UploadPage() {
           onChange={onFileChange}
         />
 
-        <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4 sm:p-6">
+        <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-3 sm:p-4 lg:p-6">
           {!uploadedVideo ? (
             <>
-              <div className="rounded-xl border border-dashed border-zinc-600/80 bg-zinc-950/80 px-4 py-14 text-center sm:px-8">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-zinc-900 text-zinc-400">
-                  <IoCloudUploadOutline className="text-3xl" aria-hidden />
+              <div className="rounded-xl border border-dashed border-zinc-600/80 bg-zinc-950/80 px-4 py-10 text-center sm:px-8 sm:py-14">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-zinc-900 text-zinc-400 sm:h-16 sm:w-16">
+                  <IoCloudUploadOutline className="text-2xl sm:text-3xl" aria-hidden />
                 </div>
-                <p className="mt-4 text-lg font-semibold text-zinc-100">Chọn video để tải lên</p>
-                <p className="mt-1 text-sm text-zinc-500">Hoặc kéo thả video vào khu vực này</p>
+                <p className="mt-4 text-base font-semibold text-pretty text-zinc-100 sm:text-lg">
+                  Chọn video để tải lên
+                </p>
+                <p className="mt-1 text-sm text-pretty text-zinc-500">
+                  Hoặc kéo thả video vào khu vực này
+                </p>
                 <button
                   type="button"
-                  className="mt-6 rounded-lg bg-[#fe2c55] px-6 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#e62a4d] disabled:opacity-40"
+                  className="mt-6 rounded-lg bg-[#fe2c55] px-6 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow hover:bg-[#e62a4d] disabled:opacity-40"
                   onClick={onPickFile}
                   disabled={busy}
                 >

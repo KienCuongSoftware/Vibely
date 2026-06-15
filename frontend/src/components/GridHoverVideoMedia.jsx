@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { VideoThumbnailImg } from './VideoThumbnailImg.jsx'
 
 const DEFAULT_COVER = '/images/users/default-avatar.jpeg'
 
@@ -42,18 +43,7 @@ export function GridHoverVideoMedia({
     }
   }, [playing, url])
 
-  const thumbNode = (
-    <img
-      src={poster}
-      alt=""
-      loading="lazy"
-      className="h-full w-full object-cover"
-      referrerPolicy="no-referrer"
-      onError={(e) => {
-        e.currentTarget.src = coverFallback
-      }}
-    />
-  )
+  const thumbNode = <VideoThumbnailImg src={poster} fallback={coverFallback} />
 
   if (url && playing) {
     return (

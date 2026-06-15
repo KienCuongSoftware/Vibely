@@ -1,7 +1,12 @@
 import React from "react";
 
-const tipClasses =
-  "pointer-events-none absolute left-1/2 top-full z-[60] mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-700 px-2.5 py-1.5 text-xs font-medium text-zinc-100 opacity-0 shadow-xl ring-1 ring-zinc-600 transition-opacity duration-150";
+const tipBaseClasses =
+  "pointer-events-none absolute left-1/2 z-[60] -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-700 px-2.5 py-1.5 text-xs font-medium text-zinc-100 opacity-0 shadow-xl ring-1 ring-zinc-600 transition-opacity duration-150";
+
+const tipPlacementClasses = {
+  bottom: "top-full mt-2",
+  top: "bottom-full mb-2",
+};
 
 const iconBtnSizeClasses = {
   md: "h-8 w-8",
@@ -30,7 +35,7 @@ export function TooltipIconButton({
       </button>
       <span
         role="tooltip"
-        className={`${tipClasses} group-hover/iconbtn:opacity-100 group-focus-visible/iconbtn:opacity-100`}
+        className={`${tipBaseClasses} ${tipPlacementClasses.bottom} group-hover/iconbtn:opacity-100 group-focus-visible/iconbtn:opacity-100`}
       >
         {tip}
       </span>
@@ -43,6 +48,8 @@ export function TooltipHoverWrap({
   tip,
   className = "",
   tipHidden = false,
+  /** "top" | "bottom" — mặc định hiện dưới icon. */
+  placement = "bottom",
   /** true: chỉ hover — không dùng focus-within (tránh click avatar vẫn dính tooltip). */
   hoverOnly = false,
   children,
@@ -50,11 +57,12 @@ export function TooltipHoverWrap({
   const showTipClasses = hoverOnly
     ? "group-hover/hovertip:opacity-100"
     : "group-hover/hovertip:opacity-100 group-focus-within/hovertip:opacity-100";
+  const tipPlacement = tipPlacementClasses[placement] ?? tipPlacementClasses.bottom;
   return (
     <div className={`group/hovertip relative inline-flex ${className}`}>
       {children}
       {!tipHidden ? (
-        <span role="tooltip" className={`${tipClasses} ${showTipClasses}`}>
+        <span role="tooltip" className={`${tipBaseClasses} ${tipPlacement} ${showTipClasses}`}>
           {tip}
         </span>
       ) : null}

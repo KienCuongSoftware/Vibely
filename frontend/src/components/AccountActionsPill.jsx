@@ -24,7 +24,8 @@ const densityClasses = {
 };
 
 /**
- * Thanh pill góc phải: nút xu, tải app, vạch chia, và vùng tuỳ chỉnh (đăng nhập / avatar).
+ * Thanh pill góc phải (desktop ≥1024px): nút xu, tải app, vạch chia, avatar / đăng nhập.
+ * Ẩn hoàn toàn trên mobile — dùng bottom nav / top bar thay thế.
  */
 export function AccountActionsPill({
   children,
@@ -36,7 +37,7 @@ export function AccountActionsPill({
   const d = densityClasses[density] ?? densityClasses.compact;
   return (
     <div
-      className={`flex items-center rounded-full border shadow-lg ${d.shell} leading-none ${toneClasses[tone] ?? toneClasses.feed} ${className}`}
+      className={`hidden lg:inline-flex flex-row flex-nowrap items-center rounded-full border shadow-lg ${d.shell} leading-none ${toneClasses[tone] ?? toneClasses.feed} ${className}`}
     >
       {showCoinAndApp ? (
         <>

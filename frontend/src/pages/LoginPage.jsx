@@ -96,6 +96,15 @@ export function LoginPage() {
     if (reason === "clock_skew") {
       return "Đồng hồ máy tính lệch so với Google. Vào Cài đặt → Thời gian và ngôn ngữ → bật Đặt giờ tự động, rồi thử đăng nhập lại.";
     }
+    if (reason === "redirect_mismatch") {
+      return "Redirect URI OAuth không khớp. Kiểm tra Callback URL trên LINE/Google console và restart backend.";
+    }
+    if (reason === "session_lost") {
+      return "Phiên OAuth bị mất (thường do cookie). Thử lại trên cùng trình duyệt, không mở tab ẩn danh.";
+    }
+    if (reason === "invalid_grant") {
+      return "Mã xác thực OAuth hết hạn hoặc đã dùng. Vui lòng thử đăng nhập lại.";
+    }
     return (
       searchParams.get("message") ??
       "Đăng nhập bằng tài khoản liên kết thất bại, vui lòng thử lại"

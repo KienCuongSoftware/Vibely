@@ -11,7 +11,7 @@ import { ActivityNotificationItem } from './ActivityNotificationItem.jsx'
 import { ActivitySystemInboxRow } from './ActivitySystemInboxRow.jsx'
 import { ActivitySystemPanel } from './ActivitySystemPanel.jsx'
 
-export function ActivityPanel({ onClose }) {
+export function ActivityPanel({ onClose, fullPage = false }) {
   const { token } = useAuth()
   const { refreshUnreadCount, decrementUnreadCount } = useNotificationUnread()
   const [view, setView] = useState('inbox')
@@ -82,27 +82,33 @@ export function ActivityPanel({ onClose }) {
 
   return (
     <div
-      role="dialog"
-      aria-modal="false"
+      role={fullPage ? undefined : 'dialog'}
+      aria-modal={fullPage ? undefined : 'false'}
       aria-labelledby="vibely-activity-title"
-      className={ACTIVITY_PANEL_SHELL_CLASS}
+      className={
+        fullPage
+          ? 'flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-black text-zinc-100'
+          : ACTIVITY_PANEL_SHELL_CLASS
+      }
     >
-      <header className="shrink-0 border-b border-zinc-800/80 px-3 pb-2.5 pt-3">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 id="vibely-activity-title" className="text-base font-bold text-white">
+      <header className={`shrink-0 border-b border-zinc-800/80 px-3 pb-2.5 ${fullPage ? 'pt-3' : 'pt-3'}`}>
+        <div className={`mb-3 flex items-center ${fullPage ? 'justify-center' : 'justify-between'} gap-2`}>
+          <h2 id="vibely-activity-title" className={`font-bold text-white ${fullPage ? 'text-[17px]' : 'text-base'}`}>
             Thông báo
           </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Đóng"
-            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
-          >
-            <IoClose className="text-xl" aria-hidden />
-          </button>
+          {!fullPage ? (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Đóng"
+              className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+            >
+              <IoClose className="text-xl" aria-hidden />
+            </button>
+          ) : null}
         </div>
 
-        <div className="flex flex-wrap gap-1.5">
+        <div className={`flex gap-2 overflow-x-auto ${fullPage ? 'scrollbar-none pb-0.5' : 'flex-wrap gap-1.5'}`}>
           {ACTIVITY_FILTERS.map((filter) => {
             const selected = activeFilter === filter.id
             return (
@@ -110,10 +116,12 @@ export function ActivityPanel({ onClose }) {
                 key={filter.id}
                 type="button"
                 onClick={() => setActiveFilter(filter.id)}
-                className={`cursor-pointer rounded-full px-2.5 py-1 text-xs font-semibold leading-tight transition ${
+                className={`cursor-pointer whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold leading-tight transition ${
                   selected
                     ? 'bg-white text-black'
-                    : 'bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white'
+                    : fullPage
+                      ? 'bg-zinc-800 text-zinc-300'
+                      : 'bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white'
                 }`}
               >
                 {filter.label}
@@ -172,7 +180,7 @@ export function ActivityPanel({ onClose }) {
                     <ActivityNotificationItem
                       key={item.id}
                       item={item}
-                      onNavigate={onClose}
+                      onNavigate={fullPage ? undefined : onClose}
                       onMarkRead={handleMarkRead}
                     />
                   ))}
@@ -190,7 +198,7 @@ export function ActivityPanel({ onClose }) {
                     <ActivityNotificationItem
                       key={item.id}
                       item={item}
-                      onNavigate={onClose}
+                      onNavigate={fullPage ? undefined : onClose}
                       onMarkRead={handleMarkRead}
                     />
                   ))}
