@@ -8,11 +8,12 @@ import {
 } from '../utils/watchQualifiesForViewRecord'
 import { TooltipHoverWrap } from '../components/TooltipControls'
 import { feedPrefetchManager } from '../feed/FeedPrefetchManager.js'
-import { resolveFeedPlaybackUrl, isHlsPlaybackUrl } from '../feed/feedPlayback.js'
+import { resolveFeedPlaybackUrl } from '../feed/feedPlayback.js'
 import { useAuth } from '../state/useAuth'
 import { useRapidStepNavigation } from '../hooks/useRapidStepNavigation.js'
 import {
   buildProfileVideoUrl,
+  buildProfileWatchUrl,
   isVideoPublicId,
   normalizeVideoPublicId,
   videoPublicIdOf,
@@ -20,6 +21,7 @@ import {
 import { buildShareableVideoUrl } from '../utils/shareUrl.js'
 import { pickShareCaption } from '../utils/shareCaption.js'
 import { recordProfileLastWatchedFromVideo } from '../utils/profileLastWatched.js'
+import { isMobileFeedLayout } from '../components/feed/MobileFeedShell.jsx'
 import { WatchSearchDropdown } from '../components/search/WatchSearchDropdown.jsx'
 import {
   IoArrowUp,
@@ -40,11 +42,16 @@ import {
 } from 'react-icons/io5'
 import { LuPictureInPicture2 } from 'react-icons/lu'
 import { FeedVideoPlayer } from '../components/feed/FeedVideoPlayer.jsx'
+import { VideoContextMenu } from '../components/feed/VideoContextMenu.jsx'
+import { VideoShareModal } from '../components/VideoShareModal.jsx'
+import { downloadWatermarkedVideo } from '../feed/videoDownload.js'
 import {
   WatchVideoMoreMenu,
   WATCH_MORE_TRIGGER_BTN_CLASS,
 } from '../components/watch/WatchVideoMoreMenu.jsx'
 import { WatchShareStrip } from '../components/watch/WatchShareStrip.jsx'
+import { SelfRepostIndicator } from '../components/repost/SelfRepostIndicator.jsx'
+import { buildProfilePath } from '../utils/buildProfilePath.js'
 import { sortQualityOptions } from '../feed/hlsQualityUtils.js'
 import { usePersistedFeedVideoQuality } from '../feed/usePersistedFeedVideoQuality.js'
 import { usePersistedFeedPlaybackSpeed } from '../feed/usePersistedFeedPlaybackSpeed.js'
@@ -180,7 +187,7 @@ function formatWatchClock(seconds) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
-/** Thanh tiến trình ngắn + thời gian + âm lượng/PiP (TikTok desktop). */
+/** Thanh tiến trình + thời gian + PiP/âm lượng (một hàng, căn theo khung video). */
 function WatchPlaybackBar({
   videoRef,
   current,
@@ -208,6 +215,7 @@ function WatchPlaybackBar({
       if (!host) return
       const vRect = video.getBoundingClientRect()
       const hRect = host.getBoundingClientRect()
+      if (vRect.width <= 0 || vRect.height <= 0) return
       setVideoFrame({
         left: vRect.left - hRect.left,
         width: vRect.width,
@@ -220,10 +228,14 @@ function WatchPlaybackBar({
     ro?.observe(video.offsetParent)
     window.addEventListener('resize', sync)
     video.addEventListener('loadedmetadata', sync)
+    video.addEventListener('loadeddata', sync)
+    video.addEventListener('resize', sync)
     return () => {
       ro?.disconnect()
       window.removeEventListener('resize', sync)
       video.removeEventListener('loadedmetadata', sync)
+      video.removeEventListener('loadeddata', sync)
+      video.removeEventListener('resize', sync)
     }
   }, [videoRef])
 
@@ -269,57 +281,53 @@ function WatchPlaybackBar({
     }
   }, [onScrubbingChange, seekFromClientX])
 
+  if (!videoFrame) return null
+
   return (
     <div
       className="pointer-events-none absolute bottom-6 z-40 sm:bottom-7"
-      style={
-        videoFrame
-          ? { left: videoFrame.left, width: videoFrame.width }
-          : { left: 0, right: 0 }
-      }
+      style={{ left: videoFrame.left, width: videoFrame.width }}
     >
-      <div className="pointer-events-auto relative flex w-full min-h-7 items-center px-3 sm:px-4">
-        <div className="absolute left-0 right-[4.25rem] top-1/2 flex -translate-y-1/2 items-center justify-center gap-2.5 sm:right-[4.5rem] sm:gap-3">
-          <div
-            ref={trackRef}
-            role="slider"
-            aria-label="Tiến độ phát"
-            aria-valuemin={0}
-            aria-valuemax={Math.floor(duration) || 0}
-            aria-valuenow={Math.floor(current)}
-            tabIndex={0}
-            className="group/watch-progress relative flex min-w-[10rem] max-w-[360px] flex-1 cursor-pointer items-center py-1.5"
-            onPointerDown={onTrackPointerDown}
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => {
-              if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
-              e.preventDefault()
-              const delta = e.key === 'ArrowLeft' ? -5 : 5
-              onSeekFraction(Math.min(1, Math.max(0, (current + delta) / Math.max(duration, 1))))
-            }}
-          >
-            <div className="relative h-1 w-full rounded-full bg-white/30 transition-[height] duration-150 ease-out group-hover/watch-progress:h-1.5">
-              <div
-                className="absolute inset-y-0 left-0 rounded-full bg-white"
-                style={{ width: `${pct}%` }}
-              />
-              <div
-                className={`pointer-events-none absolute top-1/2 z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-200 ease-out ${
-                  isScrubbing ? 'opacity-100' : 'opacity-0 group-hover/watch-progress:opacity-100'
-                }`}
-                style={{ left: `${pct}%` }}
-                aria-hidden
-              >
-                <div className="h-full w-full rounded-full bg-white shadow-[0_0_0_1.5px_rgba(0,0,0,0.45),0_1px_4px_rgba(0,0,0,0.35)] transition-transform duration-200 ease-out group-hover/watch-progress:scale-110" />
-              </div>
+      <div className="pointer-events-auto flex min-h-7 w-full items-center gap-1 px-3 sm:gap-1.5 sm:px-4">
+        <div
+          ref={trackRef}
+          role="slider"
+          aria-label="Tiến độ phát"
+          aria-valuemin={0}
+          aria-valuemax={Math.floor(duration) || 0}
+          aria-valuenow={Math.floor(current)}
+          tabIndex={0}
+          className="group/watch-progress relative flex min-w-0 flex-1 cursor-pointer items-center py-1.5"
+          onPointerDown={onTrackPointerDown}
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+            e.preventDefault()
+            const delta = e.key === 'ArrowLeft' ? -5 : 5
+            onSeekFraction(Math.min(1, Math.max(0, (current + delta) / Math.max(duration, 1))))
+          }}
+        >
+          <div className="relative h-1 w-full rounded-full bg-white/30 transition-[height] duration-150 ease-out group-hover/watch-progress:h-1.5">
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-white"
+              style={{ width: `${pct}%` }}
+            />
+            <div
+              className={`pointer-events-none absolute top-1/2 z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-200 ease-out ${
+                isScrubbing ? 'opacity-100' : 'opacity-0 group-hover/watch-progress:opacity-100'
+              }`}
+              style={{ left: `${pct}%` }}
+              aria-hidden
+            >
+              <div className="h-full w-full rounded-full bg-white shadow-[0_0_0_1.5px_rgba(0,0,0,0.45),0_1px_4px_rgba(0,0,0,0.35)] transition-transform duration-200 ease-out group-hover/watch-progress:scale-110" />
             </div>
           </div>
-          <span className="shrink-0 text-[11px] font-medium tabular-nums text-white/95 sm:text-xs">
-            {formatWatchClock(current)}/{formatWatchClock(duration)}
-          </span>
         </div>
-        <div className="relative z-10 ml-auto flex shrink-0 items-center gap-0.5">
-          <TooltipHoverWrap tip="Trình phát nổi" hoverOnly>
+        <span className="shrink-0 text-[11px] font-medium tabular-nums text-white/95 sm:text-xs">
+          {formatWatchClock(current)}/{formatWatchClock(duration)}
+        </span>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <TooltipHoverWrap tip="Trình phát nổi" placement="top" hoverOnly>
             <button
               type="button"
               className={WATCH_BAR_ICON_BTN}
@@ -473,12 +481,7 @@ function watchVideoClass(orientation) {
 }
 
 function resolveWatchPlaybackUrl(video) {
-  const progressive = String(video?.videoUrl ?? '').trim()
-  const preferred = resolveFeedPlaybackUrl(video)
-  if (preferred && isHlsPlaybackUrl(preferred)) {
-    return progressive || preferred
-  }
-  return preferred || progressive || ''
+  return resolveFeedPlaybackUrl(video) || ''
 }
 
 function mergeExploreItems(existing, incoming) {
@@ -632,7 +635,8 @@ function orderCreatorGridWithPlayingFirst(queue, playingPublicId) {
   return playing.length > 0 ? [...playing, ...rest] : queue
 }
 
-export function VideoWatchPage() {
+export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
+  const useSuggestedSidebar = sidebarVariant === 'suggested'
   const { username: usernameParam, publicId: publicIdParam } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
@@ -650,6 +654,9 @@ export function VideoWatchPage() {
   const [videoReady, setVideoReady] = useState(false)
   const [liked, setLiked] = useState(false)
   const [bookmarked, setBookmarked] = useState(false)
+  const [reposted, setReposted] = useState(false)
+  const [repostBusy, setRepostBusy] = useState(false)
+  const [repostToast, setRepostToast] = useState('')
   const [comments, setComments] = useState([])
   const [commentsLoading, setCommentsLoading] = useState(false)
   const [commentsError, setCommentsError] = useState('')
@@ -662,6 +669,8 @@ export function VideoWatchPage() {
   const [exploreQueue, setExploreQueue] = useState([])
   const [creatorQueue, setCreatorQueue] = useState([])
   const [creatorQueueLoading, setCreatorQueueLoading] = useState(false)
+  const [suggestedVideos, setSuggestedVideos] = useState([])
+  const [suggestedLoading, setSuggestedLoading] = useState(false)
   const [watchSidebarTab, setWatchSidebarTab] = useState('comments')
   const [exploreCursor, setExploreCursor] = useState(null)
   const [exploreHasNext, setExploreHasNext] = useState(false)
@@ -695,6 +704,18 @@ export function VideoWatchPage() {
   const [watchPlaybackSpeed, setWatchPlaybackSpeed] = usePersistedFeedPlaybackSpeed()
   const [watchQualityOptions, setWatchQualityOptions] = useState(['auto'])
   const [watchAutoScroll, setWatchAutoScroll] = useState(false)
+  const [videoContextMenu, setVideoContextMenu] = useState(null)
+  const [videoDownloadBusy, setVideoDownloadBusy] = useState(false)
+  const [shareModalOpen, setShareModalOpen] = useState(false)
+  const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout())
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)')
+    const syncLayout = () => setMobileLayout(mq.matches)
+    syncLayout()
+    mq.addEventListener('change', syncLayout)
+    return () => mq.removeEventListener('change', syncLayout)
+  }, [])
 
   const routeSlug = useMemo(() => normalizeUsernameKey(usernameParam), [usernameParam])
   const publicIdFromRoute = useMemo(
@@ -824,7 +845,11 @@ export function VideoWatchPage() {
       current: el.currentTime || 0,
       duration: Number.isFinite(el.duration) ? el.duration : 0,
     })
-    if (e?.type === 'loadedmetadata') {
+    if (
+      e?.type === 'loadedmetadata' ||
+      e?.type === 'canplay' ||
+      e?.type === 'loadeddata'
+    ) {
       setVideoReady(true)
       if (el.videoWidth > 0 && el.videoHeight > 0) {
         setIntrinsicSize({
@@ -835,10 +860,57 @@ export function VideoWatchPage() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!mobileLayout || !isVideoFrameReady || !activePlaybackUrl || watchUserPaused) {
+      return undefined
+    }
+    const el = videoRef.current
+    if (!el) return undefined
+    el.muted = watchMuted
+    const playAttempt = el.play()
+    if (playAttempt?.catch) {
+      playAttempt.catch(() => {})
+    }
+    return undefined
+  }, [
+    mobileLayout,
+    isVideoFrameReady,
+    activePlaybackUrl,
+    watchUserPaused,
+    watchMuted,
+    publicIdFromRoute,
+  ])
+
+  const closeVideoContextMenu = useCallback(() => {
+    setVideoContextMenu(null)
+  }, [])
+
+  const openWatchVideoContextMenu = useCallback(
+    (event) => {
+      if (watchScrubbingRef.current || watchMoreMenuOpen) return
+      if (!activeVideo?.publicId || !isWatchableVideo(activeVideo)) return
+      event.preventDefault()
+      event.stopPropagation()
+      setVideoContextMenu({
+        x: event.clientX,
+        y: event.clientY,
+        video: activeVideo,
+      })
+    },
+    [activeVideo, watchMoreMenuOpen],
+  )
+
+  const handleWatchVideoContextMenu = useCallback(
+    (event) => {
+      openWatchVideoContextMenu(event)
+    },
+    [openWatchVideoContextMenu],
+  )
+
   const toggleWatchPlayback = useCallback(
     (e) => {
       e?.stopPropagation?.()
-      if (watchScrubbingRef.current || watchMoreMenuOpen) return
+      if (watchScrubbingRef.current || watchMoreMenuOpen || videoContextMenu) return
       const el = videoRef.current
       if (!el) return
       if (el.paused) {
@@ -849,8 +921,48 @@ export function VideoWatchPage() {
         el.pause()
       }
     },
-    [watchMoreMenuOpen],
+    [videoContextMenu, watchMoreMenuOpen],
   )
+
+  const handleWatchVideoClick = useCallback(
+    (event) => {
+      if (mobileLayout) {
+        toggleWatchPlayback(event)
+        return
+      }
+      openWatchVideoContextMenu(event)
+    },
+    [mobileLayout, openWatchVideoContextMenu, toggleWatchPlayback],
+  )
+
+  const handleWatchContextMenuDownload = useCallback(async () => {
+    const menuVideo = videoContextMenu?.video
+    const publicId = menuVideo?.publicId
+    if (!publicId || videoDownloadBusy) return
+    setVideoDownloadBusy(true)
+    try {
+      const username = String(menuVideo?.authorUsername ?? 'vibely')
+        .trim()
+        .replace(/^@+/, '')
+      await downloadWatermarkedVideo(publicId, username, { token })
+      closeVideoContextMenu()
+    } catch (error) {
+      window.alert(
+        error instanceof Error ? error.message : 'Không tải được video.',
+      )
+    } finally {
+      setVideoDownloadBusy(false)
+    }
+  }, [
+    closeVideoContextMenu,
+    token,
+    videoContextMenu?.video,
+    videoDownloadBusy,
+  ])
+
+  useEffect(() => {
+    closeVideoContextMenu()
+  }, [closeVideoContextMenu, publicIdFromRoute])
 
   useEffect(() => {
     if (!watchMoreMenuOpen) setWatchMoreMenuSubpage('main')
@@ -992,11 +1104,41 @@ export function VideoWatchPage() {
   }, [exploreLoadingMore, exploreQueue.length, isFromExplore, loadExploreChunk])
 
   useEffect(() => {
-    setWatchSidebarTab('comments')
-  }, [publicIdFromRoute])
+    setWatchSidebarTab(useSuggestedSidebar ? 'suggested' : 'comments')
+  }, [publicIdFromRoute, useSuggestedSidebar])
 
   useEffect(() => {
-    if (!isCreatorWatch || !routeSlug) {
+    if (!useSuggestedSidebar || !publicIdFromRoute) {
+      setSuggestedVideos([])
+      setSuggestedLoading(false)
+      return undefined
+    }
+    let cancelled = false
+    setSuggestedLoading(true)
+    apiClient
+      .getExploreRelated(publicIdFromRoute, { size: 24 })
+      .then((page) => {
+        if (cancelled) return
+        const items = Array.isArray(page?.items) ? page.items : []
+        setSuggestedVideos(
+          items.filter(
+            (row) => normalizeVideoPublicId(row?.publicId) !== publicIdFromRoute,
+          ),
+        )
+      })
+      .catch(() => {
+        if (!cancelled) setSuggestedVideos([])
+      })
+      .finally(() => {
+        if (!cancelled) setSuggestedLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [publicIdFromRoute, useSuggestedSidebar])
+
+  useEffect(() => {
+    if (useSuggestedSidebar || !isCreatorWatch || !routeSlug) {
       setCreatorQueue([])
       setCreatorQueueLoading(false)
       return undefined
@@ -1022,10 +1164,10 @@ export function VideoWatchPage() {
     return () => {
       cancelled = true
     }
-  }, [isCreatorWatch, isOwnCreatorProfile, routeSlug, token])
+  }, [isCreatorWatch, isOwnCreatorProfile, routeSlug, token, useSuggestedSidebar])
 
   useEffect(() => {
-    if (!isCreatorWatch || !video?.publicId) return
+    if (useSuggestedSidebar || !isCreatorWatch || !video?.publicId) return
     setCreatorQueue((prev) => {
       const id = normalizeVideoPublicId(video.publicId)
       if (!id || prev.some((row) => normalizeVideoPublicId(row?.publicId) === id)) {
@@ -1033,7 +1175,7 @@ export function VideoWatchPage() {
       }
       return sortVideosNewestFirst([...prev, video])
     })
-  }, [isCreatorWatch, video])
+  }, [isCreatorWatch, useSuggestedSidebar, video])
 
   useEffect(() => {
     if (!publicIdFromRoute) {
@@ -1072,7 +1214,7 @@ export function VideoWatchPage() {
         videoDetailCacheRef.current.set(publicIdFromRoute, v)
         setVideo(v)
         const authorKey = normalizeUsernameKey(v?.authorUsername)
-        const canonical = buildProfileVideoUrl(authorKey, videoPublicIdOf(v))
+        const canonical = buildProfileWatchUrl(authorKey, videoPublicIdOf(v))
         if (canonical && routeSlug && authorKey !== routeSlug) {
           navigate(canonical, {
             replace: true,
@@ -1155,12 +1297,15 @@ export function VideoWatchPage() {
     const routeId = publicIdFromRoute
     if (!token || !routeId) return
     let cancelled = false
+    setReposted(false)
+    setRepostToast('')
     apiClient
       .getVideoMeState(routeId, token)
       .then((s) => {
         if (cancelled || !s) return
         setLiked(Boolean(s.liked))
         setBookmarked(Boolean(s.bookmarked))
+        setReposted(Boolean(s.reposted))
       })
       .catch(() => {})
     return () => {
@@ -1270,7 +1415,7 @@ export function VideoWatchPage() {
   )
 
   useEffect(() => {
-    if (watchSidebarTab !== 'creator') return
+    if (watchSidebarTab !== 'creator' && watchSidebarTab !== 'suggested') return
     const el = watchSidebarScrollRef.current
     if (el) el.scrollTop = 0
   }, [watchSidebarTab, publicIdFromRoute])
@@ -1283,15 +1428,20 @@ export function VideoWatchPage() {
   )
 
   const hasPrevCreator =
-    isCreatorWatch && currentCreatorIndex > 0 && creatorQueue.length > 1
+    !useSuggestedSidebar &&
+    isCreatorWatch &&
+    currentCreatorIndex > 0 &&
+    creatorQueue.length > 1
   const hasNextCreator =
+    !useSuggestedSidebar &&
     isCreatorWatch &&
     currentCreatorIndex >= 0 &&
     currentCreatorIndex < creatorQueue.length - 1
   const hasPrevWatch = hasPrevExplore || hasPrevCreator
   const hasNextWatch = hasNextExplore || hasNextCreator
   const showWatchNavArrows =
-    isFromExplore || (isCreatorWatch && creatorQueue.length > 1)
+    isFromExplore ||
+    (!useSuggestedSidebar && isCreatorWatch && creatorQueue.length > 1)
 
   useEffect(() => {
     if (!isFromExplore || currentExploreIndex < 0) return undefined
@@ -1421,7 +1571,7 @@ export function VideoWatchPage() {
       if (!nextId || !slug) return
       creatorNavLockRef.current = true
       setExploreNavBusy(true)
-      const nextPath = buildProfileVideoUrl(slug, nextId)
+      const nextPath = buildProfileWatchUrl(slug, nextId)
       if (!nextPath) {
         creatorNavLockRef.current = false
         setExploreNavBusy(false)
@@ -1474,13 +1624,24 @@ export function VideoWatchPage() {
       const slug =
         routeSlug || normalizeUsernameKey(target?.authorUsername ?? panelVideo?.authorUsername)
       if (!id || !slug) return
-      const path = buildProfileVideoUrl(slug, id)
+      const path = buildProfileWatchUrl(slug, id)
       if (!path) return
       if (id === publicIdFromRoute) return
       recordProfileLastWatchedFromVideo(target, { tab: 'videos' })
       navigate(path, { replace: true })
     },
     [navigate, panelVideo?.authorUsername, publicIdFromRoute, routeSlug],
+  )
+
+  const goToSuggestedVideo = useCallback(
+    (target) => {
+      const id = videoPublicIdOf(target)
+      if (!id || id === publicIdFromRoute) return
+      const path = buildProfileVideoUrl(target?.authorUsername, id)
+      if (!path) return
+      navigate(path)
+    },
+    [navigate, publicIdFromRoute],
   )
 
   useEffect(() => {
@@ -1529,6 +1690,55 @@ export function VideoWatchPage() {
     [patchVideo, video?.shareCount],
   )
 
+  const handleUnrepost = useCallback(() => {
+    const publicId = panelVideo?.publicId
+    if (!publicId || !isWatchableVideo(panelVideo) || !reposted) return
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    if (repostBusy) return
+    setRepostBusy(true)
+    setReposted(false)
+    apiClient
+      .unrepostVideo(publicId, token)
+      .catch(() => {
+        setReposted(true)
+      })
+      .finally(() => {
+        setRepostBusy(false)
+      })
+  }, [navigate, panelVideo, repostBusy, reposted, token])
+
+  const handleRepostToggle = useCallback(() => {
+    const publicId = panelVideo?.publicId
+    if (!publicId || !isWatchableVideo(panelVideo)) return
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    if (repostBusy) return
+    const next = !reposted
+    setRepostBusy(true)
+    setReposted(next)
+    const req = next
+      ? apiClient.repostVideo(publicId, token)
+      : apiClient.unrepostVideo(publicId, token)
+    req
+      .then(() => {
+        if (next) {
+          setRepostToast('Đã đăng lại')
+          window.setTimeout(() => setRepostToast(''), 2500)
+        }
+      })
+      .catch(() => {
+        setReposted(!next)
+      })
+      .finally(() => {
+        setRepostBusy(false)
+      })
+  }, [panelVideo, repostBusy, reposted, token, navigate])
+
   const focusCommentField = () => {
     const el = commentInputRef.current
     if (!el) return
@@ -1540,10 +1750,28 @@ export function VideoWatchPage() {
     loading && !activePlaybackUrl && !displayPosterUrl && !loadError
 
   return (
-    <section className="flex h-dvh min-h-0 bg-black text-zinc-100">
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-stretch">
-          <div className="relative min-h-0 flex-1 overflow-hidden bg-black">
+    <section
+      className={`flex bg-black text-zinc-100 ${
+        mobileLayout ? 'min-h-dvh flex-col overflow-y-auto overscroll-y-auto' : 'h-dvh min-h-0'
+      }`}
+    >
+      <div
+        className={`relative flex flex-col ${
+          mobileLayout ? '' : 'min-h-0 flex-1 overflow-hidden'
+        }`}
+      >
+        <div
+          className={`flex flex-col ${
+            mobileLayout ? '' : 'min-h-0 flex-1 lg:flex-row lg:items-stretch'
+          }`}
+        >
+          <div
+            className={`relative bg-black ${
+              mobileLayout
+                ? 'aspect-[9/16] w-full shrink-0'
+                : 'min-h-0 flex-1 overflow-hidden'
+            }`}
+          >
             <div className="absolute inset-0">
               {loadError ? (
                 <div className="flex h-full items-center justify-center px-6">
@@ -1558,7 +1786,11 @@ export function VideoWatchPage() {
                   </div>
                 </div>
               ) : activePlaybackUrl || displayPosterUrl ? (
-                <div className="group/watch relative h-full min-h-0 overflow-hidden">
+                <div
+                  className="group/watch relative h-full min-h-0 overflow-hidden"
+                  onContextMenu={handleWatchVideoContextMenu}
+                  onDoubleClick={toggleWatchPlayback}
+                >
                   {displayPosterUrl ? (
                     <div
                       className="pointer-events-none absolute inset-0 scale-110 bg-cover bg-center opacity-40 blur-3xl"
@@ -1584,16 +1816,28 @@ export function VideoWatchPage() {
                       loadMedia={Boolean(activePlaybackUrl)}
                       isActive={Boolean(activePlaybackUrl) && !watchUserPaused}
                       userPaused={watchUserPaused}
-                      visibilityRatio={0}
+                      visibilityRatio={mobileLayout ? 1 : 0}
                       streamQuality={watchVideoQuality}
+                      sourceHeightPx={activeVideo?.sourceHeightPx}
                       containLandscape={watchOrientation === 'landscape'}
                       feedVideoId={activeVideo?.publicId ?? publicIdFromRoute}
                       onHlsQualitiesAvailable={handleWatchHlsQualitiesAvailable}
                       onPlaybackTick={handleWatchPlaybackTick}
                       onPlaybackEnded={handleWatchPlaybackEnded}
                       className={`watch-video-el absolute cursor-pointer bg-black transition-opacity duration-200 ${watchMediaPlacementClass(watchOrientation)} z-[2] ${isVideoFrameReady ? 'opacity-100' : 'opacity-0'}`}
-                      onClick={toggleWatchPlayback}
+                      onClick={handleWatchVideoClick}
                     />
+                  ) : null}
+
+                  {repostToast ? (
+                    <div
+                      className="pointer-events-none absolute inset-x-0 top-14 z-[40] flex justify-center px-4 sm:top-16"
+                      role="status"
+                    >
+                      <span className="rounded-md bg-black/75 px-4 py-2 text-sm font-semibold text-white shadow-lg backdrop-blur-sm">
+                        {repostToast}
+                      </span>
+                    </div>
                   ) : null}
 
                   {isVideoFrameReady && activePlaybackUrl && !pipActive ? (
@@ -1698,7 +1942,7 @@ export function VideoWatchPage() {
             </div>
 
             {showWatchNavArrows ? (
-              <div className="pointer-events-none absolute right-3 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-2 sm:right-4">
+              <div className="pointer-events-none absolute right-3 top-1/2 z-30 hidden -translate-y-1/2 flex-col gap-2 lg:flex lg:right-4">
                 <button
                   type="button"
                   className={`${WATCH_CHROME_BTN} pointer-events-auto ${hasPrevWatch && !exploreNavBusy ? '' : 'cursor-not-allowed opacity-45'}`}
@@ -1721,7 +1965,13 @@ export function VideoWatchPage() {
             ) : null}
           </div>
 
-          <aside className="flex h-[min(46dvh,480px)] w-full shrink-0 flex-col border-t border-zinc-800 bg-black lg:h-auto lg:max-h-none lg:min-h-0 lg:w-[min(400px,34vw)] lg:border-l lg:border-t-0">
+          <aside
+            className={`flex w-full shrink-0 flex-col border-t border-zinc-800 bg-black ${
+              mobileLayout
+                ? ''
+                : 'h-[min(46dvh,480px)] lg:h-auto lg:max-h-none lg:min-h-0 lg:w-[min(400px,34vw)] lg:border-l lg:border-t-0'
+            }`}
+          >
             {!activeVideo ? (
               <div className="flex flex-1 items-center justify-center p-6">
                 <p className="text-sm text-zinc-500">…</p>
@@ -1783,6 +2033,19 @@ export function VideoWatchPage() {
                       <p className="mt-2 whitespace-pre-wrap text-sm leading-snug text-zinc-200">
                         {renderInteractiveText(caption)}
                       </p>
+                    ) : null}
+                    {reposted ? (
+                      <SelfRepostIndicator
+                        avatarUrl={user?.avatarUrl}
+                        displayName={user?.displayName}
+                        username={user?.username}
+                        profilePath={
+                          user?.username ? buildProfilePath(token, user) : undefined
+                        }
+                        onUnrepost={handleUnrepost}
+                        busy={repostBusy}
+                        theme="sidebar"
+                      />
                     ) : null}
                     <div className="mt-2 flex items-center gap-1.5 text-xs text-zinc-400">
                       <IoMusicalNotes className="shrink-0 text-base text-zinc-500" aria-hidden />
@@ -1883,6 +2146,9 @@ export function VideoWatchPage() {
                     videoDescription={panelVideo.description ?? ''}
                     token={token}
                     disabled={!isWatchableVideo(panelVideo)}
+                    reposted={reposted}
+                    repostBusy={repostBusy}
+                    onRepostToggle={handleRepostToggle}
                     onShareCountChange={handleShareCountChange}
                   />
                 </div>
@@ -1925,28 +2191,67 @@ export function VideoWatchPage() {
                   <button
                     type="button"
                     role="tab"
-                    aria-selected={watchSidebarTab === 'creator'}
-                    disabled={!isCreatorWatch}
+                    aria-selected={
+                      useSuggestedSidebar
+                        ? watchSidebarTab === 'suggested'
+                        : watchSidebarTab === 'creator'
+                    }
+                    disabled={!useSuggestedSidebar && !isCreatorWatch}
                     className={`min-w-0 flex-1 border-b-2 px-2 py-3 text-left text-[15px] font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${
-                      watchSidebarTab === 'creator'
+                      (
+                        useSuggestedSidebar
+                          ? watchSidebarTab === 'suggested'
+                          : watchSidebarTab === 'creator'
+                      )
                         ? 'border-white text-zinc-100'
                         : 'border-transparent text-zinc-500 hover:text-zinc-300'
                     }`}
-                    onClick={() => setWatchSidebarTab('creator')}
+                    onClick={() =>
+                      setWatchSidebarTab(useSuggestedSidebar ? 'suggested' : 'creator')
+                    }
                   >
-                    Video của nhà sáng tạo
+                    {useSuggestedSidebar ? 'Bạn có thể thích' : 'Video của nhà sáng tạo'}
                   </button>
                 </div>
 
                 <div
                   ref={watchSidebarScrollRef}
-                  className={`min-h-0 flex-1 overscroll-contain px-3 py-3 ${
-                    watchSidebarTab === 'creator'
-                      ? 'scrollbar-none overflow-y-auto'
-                      : 'overflow-y-auto'
+                  className={`px-3 py-3 ${
+                    mobileLayout
+                      ? ''
+                      : `min-h-0 flex-1 overscroll-contain ${
+                          watchSidebarTab === 'creator' || watchSidebarTab === 'suggested'
+                            ? 'scrollbar-none overflow-y-auto'
+                            : 'overflow-y-auto'
+                        }`
                   }`}
                 >
-                  {watchSidebarTab === 'creator' ? (
+                  {watchSidebarTab === 'suggested' ? (
+                    suggestedLoading ? (
+                      <p className="py-10 text-center text-sm text-zinc-500">
+                        Đang tải gợi ý…
+                      </p>
+                    ) : suggestedVideos.length === 0 ? (
+                      <p className="py-10 text-center text-sm text-zinc-500">
+                        Chưa có gợi ý.
+                      </p>
+                    ) : (
+                      <ul className="grid grid-cols-2 gap-2">
+                        {suggestedVideos.map((v) => {
+                          const vid = videoPublicIdOf(v)
+                          return (
+                            <li key={vid ?? v.id}>
+                              <WatchCreatorVideoTile
+                                video={v}
+                                isPlaying={false}
+                                onSelect={goToSuggestedVideo}
+                              />
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    )
+                  ) : watchSidebarTab === 'creator' ? (
                     creatorQueueLoading ? (
                       <p className="py-10 text-center text-sm text-zinc-500">
                         Đang tải video…
@@ -2098,6 +2403,53 @@ export function VideoWatchPage() {
           </aside>
         </div>
       </div>
+
+      <VideoContextMenu
+        open={Boolean(videoContextMenu)}
+        x={videoContextMenu?.x ?? 0}
+        y={videoContextMenu?.y ?? 0}
+        downloading={videoDownloadBusy}
+        onClose={closeVideoContextMenu}
+        onDownload={handleWatchContextMenuDownload}
+        onShare={() => {
+          closeVideoContextMenu()
+          setShareModalOpen(true)
+        }}
+        onCopyLink={async () => {
+          const menuVideo = videoContextMenu?.video
+          const url = buildShareableVideoUrl(
+            menuVideo?.publicId,
+            menuVideo?.authorUsername,
+          )
+          if (!url) return
+          try {
+            await navigator.clipboard.writeText(url)
+            setShareCopied(true)
+            setTimeout(() => setShareCopied(false), 2000)
+          } catch {
+            setShareCopied(false)
+          }
+        }}
+        onRepost={() => {
+          closeVideoContextMenu()
+          handleRepostToggle()
+        }}
+        reposted={reposted}
+        repostBusy={repostBusy}
+        onViewDetails={() => {
+          closeVideoContextMenu()
+        }}
+      />
+
+      <VideoShareModal
+        open={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        videoId={panelVideo?.publicId}
+        authorUsername={panelVideo?.authorUsername}
+        videoTitle={panelVideo?.title ?? ''}
+        token={token}
+        onShareCountChange={handleShareCountChange}
+      />
     </section>
   )
 }

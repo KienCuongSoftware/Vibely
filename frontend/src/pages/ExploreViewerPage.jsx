@@ -1,10 +1,9 @@
 import React from 'react'
-import { VideoWatchPage } from './VideoWatchPage.jsx'
+import { PublicVideoDetailPage } from './PublicVideoDetailPage.jsx'
 
 /**
- * Dedicated immersive explore route. We reuse watch playback primitives
- * so interactions remain consistent with the main feed/watch stack.
+ * Xem video từ Khám phá — cùng giao diện chi tiết công khai (gợi ý "Bạn có thể thích").
  */
 export function ExploreViewerPage() {
-  return <VideoWatchPage />
+  return <PublicVideoDetailPage />
 }

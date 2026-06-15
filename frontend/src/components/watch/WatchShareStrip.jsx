@@ -76,6 +76,9 @@ export function WatchShareStrip({
   token,
   onShareCountChange,
   disabled = false,
+  reposted = false,
+  repostBusy = false,
+  onRepostToggle,
 }) {
   const shareCaption = useMemo(
     () =>
@@ -149,8 +152,9 @@ export function WatchShareStrip({
   )
 
   const handleRepost = useCallback(() => {
-    void copyText(watchUrl, 'repost')
-  }, [copyText, watchUrl])
+    if (disabled || repostBusy) return
+    onRepostToggle?.()
+  }, [disabled, repostBusy, onRepostToggle])
 
   const handleEmbed = useCallback(() => {
     const snippet = `<iframe src="${embedUrl}" width="325" height="580" frameborder="0" allowfullscreen></iframe>`
@@ -162,9 +166,9 @@ export function WatchShareStrip({
   return (
     <div className="flex shrink-0 items-center gap-1">
       <WatchShareCircleButton
-        className="bg-[#FACE15] text-black"
-        tip="Đăng lại"
-        disabled={disabled}
+        className={`bg-[#FACE15] text-black ${reposted ? 'ring-2 ring-[#FACE15]/60 ring-offset-1 ring-offset-black' : ''}`}
+        tip={reposted ? 'Xóa video đăng lại' : 'Đăng lại'}
+        disabled={disabled || repostBusy}
         onClick={handleRepost}
       >
         <LuRepeat2 className="text-sm" strokeWidth={2.25} aria-hidden />

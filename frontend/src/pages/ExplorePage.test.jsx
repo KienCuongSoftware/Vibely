@@ -20,6 +20,12 @@ import { apiClient } from '../api/client'
 describe('ExplorePage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    window.matchMedia = vi.fn().mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }))
     apiClient.getExploreTabs.mockResolvedValue([{ slug: 'all', name: 'Tất cả', kind: 'category', videoCount: 99 }])
     apiClient.getExploreTrending.mockResolvedValue({ items: [], hasNext: false, nextCursor: null })
     apiClient.getExploreCategory.mockResolvedValue({ items: [], hasNext: false, nextCursor: null })
@@ -41,7 +47,14 @@ describe('ExplorePage', () => {
     })
   })
 
-  it('does not render search input anymore', async () => {
+  it('shows mobile search link on small screens', async () => {
+    window.matchMedia = vi.fn().mockImplementation((query) => ({
+      matches: query.includes('max-width: 1023px'),
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }))
+
     render(
       <MemoryRouter initialEntries={['/explore']}>
         <AuthContext.Provider value={{ token: null, refreshToken: null, user: null, login: vi.fn(), register: vi.fn(), refreshSession: vi.fn(), refreshProfile: vi.fn(), logout: vi.fn(), authReady: true }}>
@@ -53,7 +66,7 @@ describe('ExplorePage', () => {
     await waitFor(() => {
       expect(apiClient.getExploreTrending).toHaveBeenCalled()
     })
-    expect(screen.queryByPlaceholderText(/tìm hashtag/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/tìm kiếm trên vibely/i)).toBeInTheDocument()
     expect(apiClient.searchExplore).not.toHaveBeenCalled()
   })
 })

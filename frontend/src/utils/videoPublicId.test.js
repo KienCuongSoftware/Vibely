@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildActivityVideoUrl,
   buildProfileVideoUrl,
+  buildProfileWatchUrl,
   buildVideoWatchUrl,
   isVideoPublicId,
   normalizeVideoPublicId,
@@ -23,7 +24,10 @@ describe("videoPublicId", () => {
   it("builds watch and profile urls", () => {
     expect(buildVideoWatchUrl(SAMPLE)).toContain(`/watch/${SAMPLE}`);
     expect(buildProfileVideoUrl("creator", SAMPLE)).toBe(
-      "/creator/video/" + SAMPLE,
+      "/@creator/video/" + SAMPLE,
+    );
+    expect(buildProfileWatchUrl("creator", SAMPLE)).toBe(
+      "/@creator/" + SAMPLE,
     );
     expect(buildActivityVideoUrl("creator", SAMPLE)).toBe(
       "/activity/creator/video/" + SAMPLE,

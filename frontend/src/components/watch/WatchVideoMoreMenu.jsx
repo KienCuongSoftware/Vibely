@@ -21,11 +21,7 @@ import {
   formatPlaybackSpeedOption,
 } from '../../feed/feedPlaybackSpeedStorage.js'
 
-function watchQualityLabel(mode) {
-  if (mode === '720') return '720P'
-  if (mode === '540') return '540P'
-  return 'Tự động'
-}
+import { formatQualityLabel } from '../../feed/hlsQualityUtils.js'
 
 function WatchMoreSubpageHeader({ title, onBack }) {
   return (
@@ -113,7 +109,7 @@ export function WatchVideoMoreMenu({
                 <span className={FEED_MORE_MENU_BADGE_ICON_CLASS}>HD</span>
                 <span className="min-w-0 flex-1">Chất lượng</span>
                 <span className={FEED_MORE_MENU_VALUE_CLASS}>
-                  {watchQualityLabel(videoQuality)}
+                  {formatQualityLabel(videoQuality)}
                 </span>
                 <IoChevronForward className={FEED_MORE_MENU_CHEVRON_CLASS} aria-hidden />
               </button>
@@ -208,7 +204,7 @@ export function WatchVideoMoreMenu({
                       closeMenu()
                     }}
                   >
-                    <span>{watchQualityLabel(q)}</span>
+                    <span>{formatQualityLabel(q)}</span>
                     {selected ? (
                       <IoCheckmark className="h-4 w-4 shrink-0 text-white" aria-hidden />
                     ) : (

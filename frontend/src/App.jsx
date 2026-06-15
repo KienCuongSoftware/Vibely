@@ -1,5 +1,5 @@
 import React from 'react'
-import { Navigate, Route, Routes, useParams } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { SignupPage } from './pages/SignupPage.jsx'
 import { FeedPage } from './pages/FeedPage.jsx'
@@ -14,7 +14,8 @@ import { StudioVideoAnalyticsPage } from './pages/StudioVideoAnalyticsPage.jsx'
 import { StudioPostCommentsPage } from './pages/StudioPostCommentsPage.jsx'
 import { ProfilePage } from './pages/ProfilePage.jsx'
 import { ActivityVideoWatchPage } from './pages/ActivityVideoWatchPage.jsx'
-import { VideoWatchPage } from './pages/VideoWatchPage.jsx'
+import { PublicVideoDetailPage } from './pages/PublicVideoDetailPage.jsx'
+import { ProfileWatchVideoRoutePage } from './pages/ProfileWatchVideoRoutePage.jsx'
 import { TermsOfServicePage } from './pages/TermsOfServicePage.jsx'
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage.jsx'
 import { SoundPage } from './pages/SoundPage.jsx'
@@ -23,28 +24,7 @@ import { ExplorePage } from './pages/ExplorePage.jsx'
 import { ExploreViewerPage } from './pages/ExploreViewerPage.jsx'
 import { SearchResultsPage } from './pages/SearchResultsPage.jsx'
 import { useAuth } from './state/useAuth'
-import { isVideoPublicId } from './utils/videoPublicId.js'
-
-function WatchRedirect() {
-  const { publicId } = useParams()
-  const id = String(publicId ?? '').trim()
-  if (!isVideoPublicId(id)) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-black px-6 text-center text-zinc-300">
-        <div>
-          <p className="text-lg font-semibold text-white">Liên kết video không hợp lệ</p>
-          <p className="mt-2 text-sm text-zinc-400">
-            Video được chia sẻ bằng mã UUID. Liên kết cũ dạng số không còn được hỗ trợ.
-          </p>
-          <a href="/foryou" className="mt-4 inline-block text-sm text-red-400 hover:text-red-300">
-            Về trang feed
-          </a>
-        </div>
-      </div>
-    )
-  }
-  return <Navigate to={`/foryou?v=${encodeURIComponent(id)}`} replace />
-}
+import { WatchRedirect } from './components/watch/WatchRedirect.jsx'
 
 function App() {
   const { token } = useAuth()
@@ -79,7 +59,8 @@ function App() {
           <Route path="/vibelystudio/upload/post/:publicId" element={<Navigate to="/login" replace />} />
           <Route path="/vibelystudio/comment/:publicId" element={<Navigate to="/login" replace />} />
           <Route path="/activity/:username/video/:publicId" element={<ActivityVideoWatchPage />} />
-          <Route path="/:username/video/:publicId" element={<VideoWatchPage />} />
+          <Route path="/:username/video/:publicId" element={<PublicVideoDetailPage />} />
+          <Route path="/:username/:publicId" element={<ProfileWatchVideoRoutePage />} />
           <Route path="/profile" element={<Navigate to="/login" replace />} />
           <Route path="/:username" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/foryou" replace />} />
@@ -117,7 +98,8 @@ function App() {
         <Route path="/search" element={<SearchResultsPage />} />
         <Route path="/tag/:tag" element={<HashtagPage />} />
         <Route path="/activity/:username/video/:publicId" element={<ActivityVideoWatchPage />} />
-        <Route path="/:username/video/:publicId" element={<VideoWatchPage />} />
+        <Route path="/:username/video/:publicId" element={<PublicVideoDetailPage />} />
+        <Route path="/:username/:publicId" element={<ProfileWatchVideoRoutePage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/:username" element={<ProfilePage />} />
         <Route path="/watch/:publicId" element={<WatchRedirect />} />

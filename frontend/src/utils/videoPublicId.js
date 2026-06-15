@@ -60,6 +60,7 @@ export function buildVideoEmbedUrl(publicId) {
 }
 
 /**
+ * Trang chi tiết video công khai — /@handle/video/{publicId} (shell For You, giống TikTok ?is_from_webapp=1).
  * @param {string} username
  * @param {unknown} publicId
  * @returns {string}
@@ -68,7 +69,20 @@ export function buildProfileVideoUrl(username, publicId) {
   const id = normalizeVideoPublicId(publicId);
   const handle = String(username ?? "").trim().replace(/^@+/, "");
   if (!id || !handle) return "";
-  return `/${encodeURIComponent(handle)}/video/${id}`;
+  return `/@${encodeURIComponent(handle)}/video/${id}`;
+}
+
+/**
+ * Xem video từ lưới hồ sơ — /@handle/{publicId} (modal watch TikTok desktop, tab video nhà sáng tạo).
+ * @param {string} username
+ * @param {unknown} publicId
+ * @returns {string}
+ */
+export function buildProfileWatchUrl(username, publicId) {
+  const id = normalizeVideoPublicId(publicId);
+  const handle = String(username ?? "").trim().replace(/^@+/, "");
+  if (!id || !handle) return "";
+  return `/@${encodeURIComponent(handle)}/${id}`;
 }
 
 /** Permalink when opening a video from the activity / notifications inbox (TikTok-style shell). */
