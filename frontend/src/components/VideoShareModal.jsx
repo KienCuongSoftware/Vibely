@@ -258,30 +258,38 @@ export function VideoShareModal({
     window.setTimeout(() => setToast(""), 2200);
   }, []);
 
+  const persistShare = useCallback(
+    async (channel) => {
+      if (!videoId) return null;
+      if (token) {
+        const data = await apiClient.createVideoShare(String(videoId), token, {
+          channel,
+          referrer: buildCurrentPageShareUrl() || null,
+          idempotencyKey: shareIdempotencyKey(channel, videoId),
+        });
+        if (data?.shareCount != null) {
+          onShareCountChange?.(Number(data.shareCount));
+        }
+        return data;
+      }
+      await apiClient.recordVideoShare(String(videoId));
+      onShareCountChange?.(null);
+      return null;
+    },
+    [videoId, token, onShareCountChange],
+  );
+
   const recordShare = useCallback(
     async (channel) => {
       if (!videoId || busy) return null;
       setBusy(true);
       try {
-        if (token) {
-          const data = await apiClient.createVideoShare(String(videoId), token, {
-            channel,
-            referrer: buildCurrentPageShareUrl() || null,
-            idempotencyKey: shareIdempotencyKey(channel, videoId),
-          });
-          if (data?.shareCount != null) {
-            onShareCountChange?.(Number(data.shareCount));
-          }
-          return data;
-        }
-        await apiClient.recordVideoShare(String(videoId));
-        onShareCountChange?.(null);
-        return null;
+        return await persistShare(channel);
       } finally {
         setBusy(false);
       }
     },
-    [videoId, token, busy, onShareCountChange],
+    [videoId, busy, persistShare],
   );
 
   const copyText = useCallback(
@@ -346,21 +354,25 @@ export function VideoShareModal({
       if (successCount === 0) {
         throw new Error("Không gửi được vào tin nhắn");
       }
-      await recordShare("direct");
-      showToast(
+      const toastMessage =
         successCount === selectedConversationIds.length
           ? "Đã gửi vào tin nhắn"
-          : `Đã gửi ${successCount}/${selectedConversationIds.length} cuộc trò chuyện`,
-      );
+          : `Đã gửi ${successCount}/${selectedConversationIds.length} cuộc trò chuyện`;
       setSelectedConversationIds([]);
       setDirectNote("");
       onClose?.();
+      showToast(toastMessage);
+      try {
+        await persistShare("direct");
+      } catch {
+        /* chat sent — share count is best-effort */
+      }
     } catch {
       showToast("Không gửi được vào tin nhắn");
     } finally {
       setBusy(false);
     }
-  }, [token, selectedConversationIds, busy, directNote, videoId, recordShare, showToast, onClose]);
+  }, [token, selectedConversationIds, busy, directNote, videoId, persistShare, showToast, onClose]);
 
   if (!open || !videoId) return null;
 

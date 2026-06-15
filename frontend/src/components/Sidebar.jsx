@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ActivityPanel } from "./activity/ActivityPanel.jsx";
 import { useActivityModal } from "../state/ActivityModalContext.jsx";
+import { useChatInboxBadge } from "../state/ChatInboxBadgeContext.jsx";
 import { useNotificationUnread } from "../state/NotificationUnreadContext.jsx";
 import { formatNotificationBadgeCount } from "../utils/notificationBadge.js";
 import { useSearchModal } from "../state/SearchModalContext.jsx";
@@ -37,6 +38,7 @@ export function Sidebar({
   const searchModal = useSearchModal();
   const activityModal = useActivityModal();
   const { unreadCount } = useNotificationUnread();
+  const { chatInboxBadgeCount } = useChatInboxBadge();
   const openSearch = onOpenSearch ?? searchModal?.openSearch;
   const [moreOpen, setMoreOpen] = useState(false);
   const [darkModeOn, setDarkModeOn] = useState(true);
@@ -154,7 +156,12 @@ export function Sidebar({
             const useProfileAvatarIcon = token && item.id === "profile";
             const showActivityBadge =
               token && item.id === "activity" && unreadCount > 0;
-            const activityBadgeLabel = formatNotificationBadgeCount(unreadCount);
+            const showMessagesBadge =
+              token && item.id === "messages" && chatInboxBadgeCount > 0;
+            const navBadgeLabel = formatNotificationBadgeCount(
+              showActivityBadge ? unreadCount : chatInboxBadgeCount,
+            );
+            const showNavBadge = showActivityBadge || showMessagesBadge;
             return (
               <button
                 key={item.id}
@@ -186,12 +193,12 @@ export function Sidebar({
                 ) : (
                   <span className="relative inline-flex shrink-0">
                     <Icon className="text-base" />
-                    {showActivityBadge && collapsed ? (
+                    {showNavBadge && collapsed ? (
                       <span
                         className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FE2C55] px-0.5 text-[9px] font-bold leading-none text-white"
                         aria-hidden
                       >
-                        {activityBadgeLabel}
+                        {navBadgeLabel}
                       </span>
                     ) : null}
                   </span>
@@ -199,9 +206,9 @@ export function Sidebar({
                 {!collapsed ? (
                   <>
                     <span className="min-w-0 flex-1">{item.label}</span>
-                    {showActivityBadge ? (
+                    {showNavBadge ? (
                       <span className="inline-flex min-w-5 shrink-0 items-center justify-center rounded-full bg-[#FE2C55] px-1.5 text-[10px] font-bold text-white">
-                        {activityBadgeLabel}
+                        {navBadgeLabel}
                       </span>
                     ) : null}
                   </>

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   IoChatbubbleOutline,
   IoChevronBack,
@@ -14,7 +14,13 @@ import {
 } from "react-icons/io5";
 import { apiClient, uploadThumbnailToStorage, uploadToPresignedPutUrl } from "../api/client";
 import { CreatorGridShell, GridLoadingState, GridLoginPrompt } from "../components/feed/CreatorGridShell.jsx";
+import { isMobileFeedLayout } from "../components/feed/MobileFeedShell.jsx";
+import { MobileLoginPrompt, MobilePageShell } from "../components/feed/MobilePageShell.jsx";
+import { ActivityPanel } from "../components/activity/ActivityPanel.jsx";
+import { buildVideoWatchUrl } from "../utils/videoPublicId.js";
+import { handleSidebarMenuSelect } from "../utils/sidebarNavigation.js";
 import { useAuth } from "../state/useAuth";
+import { useChatInboxBadge } from "../state/ChatInboxBadgeContext.jsx";
 import { createChatSocketClient } from "../realtime/chatSocket.js";
 import { resolveRealtimeWsToken, SessionExpiredError } from "../realtime/wsAuth.js";
 
@@ -108,9 +114,11 @@ function extractSharedVideoCaption(content) {
   return lines.slice(1).join("\n").trim();
 }
 
-function toConversationPreview(content) {
-  if (extractImageMessageUrl(content)) return "Đã gửi một ảnh";
-  if (extractVideoMessageUrl(content)) return "Đã gửi một video";
+function toConversationPreview(msgOrContent) {
+  const content = typeof msgOrContent === "string" ? msgOrContent : msgOrContent?.content;
+  const mediaType = typeof msgOrContent === "string" ? null : msgOrContent?.mediaType;
+  if (mediaType === "IMAGE" || extractImageMessageUrl(content)) return "Đã gửi một ảnh";
+  if (mediaType === "VIDEO" || extractVideoMessageUrl(content)) return "Đã gửi một video";
   if (extractSharedVideoId(content)) return "Đã chia sẻ một video";
   return content || "Bắt đầu cuộc trò chuyện";
 }
@@ -130,9 +138,26 @@ function upsertMessage(list, incoming) {
   return [...list, incoming].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 }
 
+function conversationAfterOutgoingMessage(conv, sent) {
+  const wasAcceptingReply = Boolean(conv.canAcceptMessageRequest || conv.messageRequest);
+  return {
+    ...conv,
+    lastMessage: sent.content,
+    lastMessageAt: sent.createdAt,
+    unreadCount: 0,
+    messageRequest: false,
+    canAcceptMessageRequest: false,
+    canSendMessage: wasAcceptingReply ? true : Boolean(conv.canSendMessage ?? true),
+  };
+}
+
 export function MessagesPage() {
+  const navigate = useNavigate();
   const { token, user, logout, authReady } = useAuth();
+  const { syncChatInboxBadgeFromConversations } = useChatInboxBadge();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout());
+  const [inboxTab, setInboxTab] = useState("activity");
   const initialPreferredConversationIdRef = useRef(Number(searchParams.get("c")));
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [conversations, setConversations] = useState([]);
@@ -152,7 +177,7 @@ export function MessagesPage() {
   const [videoViewerBuffering, setVideoViewerBuffering] = useState(false);
   const [pendingMediaItems, setPendingMediaItems] = useState([]);
   const [pendingMediaNotice, setPendingMediaNotice] = useState("");
-  const [sharedVideoUrlsById, setSharedVideoUrlsById] = useState({});
+  const [sharedVideoMetaById, setSharedVideoMetaById] = useState({});
   const activeConversationRef = useRef(null);
   const pendingMediaItemsRef = useRef([]);
   const selectionOrderRef = useRef(1);
@@ -163,6 +188,19 @@ export function MessagesPage() {
   useEffect(() => {
     document.title = PAGE_TITLE;
   }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const sync = () => setMobileLayout(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  const handleSelectMenu = useCallback(
+    (id) => handleSidebarMenuSelect(navigate, id, { token, user }),
+    [navigate, token, user],
+  );
 
   useEffect(() => {
     activeConversationRef.current = activeConversationId;
@@ -205,7 +243,7 @@ export function MessagesPage() {
       new Set(
         messages
           .map((msg) => extractSharedVideoId(msg?.content))
-          .filter((id) => id && !sharedVideoUrlsById[id]),
+          .filter((id) => id && !sharedVideoMetaById[id]),
       ),
     );
     if (ids.length === 0) return;
@@ -213,17 +251,22 @@ export function MessagesPage() {
       apiClient
         .getVideo(id, token ? { token } : {})
         .then((video) => {
-          const url =
+          const playbackUrl =
+            String(video?.masterPlaylistUrl ?? "").trim() ||
             String(video?.videoUrl ?? "").trim() ||
             String(video?.playbackUrl ?? "").trim();
-          if (!url) return;
-          setSharedVideoUrlsById((prev) => ({ ...prev, [id]: url }));
+          const thumbnailUrl = String(video?.thumbnailUrl ?? "").trim();
+          if (!playbackUrl && !thumbnailUrl) return;
+          setSharedVideoMetaById((prev) => ({
+            ...prev,
+            [id]: { playbackUrl, thumbnailUrl, watchUrl: buildVideoWatchUrl(id) },
+          }));
         })
         .catch(() => {
           /* noop */
         });
     });
-  }, [messages, token, sharedVideoUrlsById]);
+  }, [messages, token, sharedVideoMetaById]);
 
   useEffect(() => () => {
     pendingMediaItemsRef.current.forEach((item) => URL.revokeObjectURL(item.previewUrl));
@@ -261,10 +304,29 @@ export function MessagesPage() {
     }
   }, [token]);
 
+  const syncActiveConversationMeta = useCallback(async (conversationId) => {
+    if (!token || !conversationId) return;
+    try {
+      const data = await apiClient.getChatConversations(token);
+      const rows = Array.isArray(data?.items) ? data.items : [];
+      const fresh = rows.find((row) => Number(row.id) === Number(conversationId));
+      if (!fresh) return;
+      setConversations((prev) =>
+        prev.map((conv) => (Number(conv.id) === Number(conversationId) ? fresh : conv)),
+      );
+    } catch {
+      /* keep optimistic state */
+    }
+  }, [token]);
+
   useEffect(() => {
     if (!authReady || !token) return;
     void loadConversations();
   }, [authReady, token, loadConversations]);
+
+  useEffect(() => {
+    syncChatInboxBadgeFromConversations(conversations);
+  }, [conversations, syncChatInboxBadgeFromConversations]);
 
   const loadMessages = useCallback(async (conversationId) => {
     if (!token || !conversationId) {
@@ -451,20 +513,7 @@ export function MessagesPage() {
         prev
           .map((conv) =>
             Number(conv.id) === Number(activeConversationId)
-              ? {
-                  ...conv,
-                  lastMessage: sent.content,
-                  lastMessageAt: sent.createdAt,
-                  unreadCount: 0,
-                  messageRequest: false,
-                  canAcceptMessageRequest: false,
-                  canSendMessage:
-                    conv.canAcceptMessageRequest || conv.messageRequest
-                      ? true
-                      : Number(sent.senderId) === Number(user?.id)
-                        ? false
-                        : Boolean(conv.canSendMessage ?? true),
-                }
+              ? conversationAfterOutgoingMessage(conv, sent)
               : conv,
           )
           .sort(
@@ -474,6 +523,7 @@ export function MessagesPage() {
           ),
       );
       setDraft("");
+      await syncActiveConversationMeta(activeConversationId);
     } catch (error) {
       setComposerNotice(error?.message || "Không thể gửi tin nhắn lúc này.");
     } finally {
@@ -567,20 +617,7 @@ export function MessagesPage() {
         prev
           .map((conv) =>
             Number(conv.id) === Number(activeConversationId)
-              ? {
-                  ...conv,
-                  lastMessage: sentMessages.at(-1)?.content ?? conv.lastMessage,
-                  lastMessageAt: sentMessages.at(-1)?.createdAt ?? conv.lastMessageAt,
-                  unreadCount: 0,
-                  messageRequest: false,
-                  canAcceptMessageRequest: false,
-                  canSendMessage:
-                    conv.canAcceptMessageRequest || conv.messageRequest
-                      ? true
-                      : Number(sentMessages.at(-1)?.senderId) === Number(user?.id)
-                        ? false
-                        : Boolean(conv.canSendMessage ?? true),
-                }
+              ? conversationAfterOutgoingMessage(conv, sentMessages.at(-1))
               : conv,
           )
           .sort(
@@ -590,6 +627,7 @@ export function MessagesPage() {
           ),
       );
       closePendingMediaComposer();
+      await syncActiveConversationMeta(activeConversationId);
     } catch (error) {
       setComposerNotice(error?.message || "Không thể gửi tập tin lúc này.");
     } finally {
@@ -666,6 +704,16 @@ export function MessagesPage() {
   };
 
   if (!token) {
+    if (mobileLayout) {
+      return (
+        <MobilePageShell token={token} user={user} activeNavId="messages" onSelectMenu={handleSelectMenu}>
+          <MobileLoginPrompt
+            title="Đăng nhập để dùng Hộp thư"
+            description="Kết nối và trò chuyện realtime với bạn bè trên Vibely."
+          />
+        </MobilePageShell>
+      );
+    }
     return (
       <CreatorGridShell activeMenu="messages" token={token} user={user} onLogout={logout} sidebarCollapsed contentFullBleed>
         <GridLoginPrompt
@@ -677,6 +725,13 @@ export function MessagesPage() {
   }
 
   if (!authReady) {
+    if (mobileLayout) {
+      return (
+        <MobilePageShell token={token} user={user} activeNavId="messages" onSelectMenu={handleSelectMenu}>
+          <GridLoadingState />
+        </MobilePageShell>
+      );
+    }
     return (
       <CreatorGridShell activeMenu="messages" token={token} user={user} onLogout={logout} sidebarCollapsed contentFullBleed>
         <GridLoadingState />
@@ -684,10 +739,53 @@ export function MessagesPage() {
     );
   }
 
-  return (
-    <CreatorGridShell activeMenu="messages" token={token} user={user} onLogout={logout} sidebarCollapsed contentFullBleed>
-      <div className="flex min-h-0 flex-1 overflow-hidden border border-zinc-900 bg-black">
-        <aside className="flex w-[300px] shrink-0 flex-col border-r border-zinc-900 bg-black">
+  const mobileInChat = mobileLayout && inboxTab === "messages" && Boolean(activeConversation);
+  const showMobileActivity = mobileLayout && inboxTab === "activity";
+
+  const inboxBody = (
+      <div className={`flex min-h-0 flex-1 overflow-hidden bg-black ${mobileLayout ? "flex-col" : "border border-zinc-900"}`}>
+        {mobileLayout && !mobileInChat ? (
+          <div className="flex shrink-0 border-b border-zinc-900">
+            <button
+              type="button"
+              onClick={() => {
+                setInboxTab("activity");
+                setActiveConversationId(null);
+              }}
+              className={`flex-1 cursor-pointer py-3 text-[15px] font-semibold ${
+                inboxTab === "activity" ? "border-b-2 border-white text-white" : "text-zinc-500"
+              }`}
+            >
+              Thông báo
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setInboxTab("messages");
+                setActiveConversationId(null);
+              }}
+              className={`flex-1 cursor-pointer py-3 text-[15px] font-semibold ${
+                inboxTab === "messages" ? "border-b-2 border-white text-white" : "text-zinc-500"
+              }`}
+            >
+              Tin nhắn
+            </button>
+          </div>
+        ) : null}
+
+        {showMobileActivity ? (
+          <ActivityPanel fullPage />
+        ) : (
+        <>
+        <aside
+          className={`flex shrink-0 flex-col bg-black ${
+            mobileLayout
+              ? mobileInChat
+                ? "hidden"
+                : "min-h-0 w-full flex-1"
+              : "w-[300px] border-r border-zinc-900"
+          }`}
+        >
           <div className="border-b border-zinc-900 px-4 py-4">
             {listMode === "requests" ? (
               <button
@@ -703,7 +801,7 @@ export function MessagesPage() {
                 </span>
                 Yêu cầu tin nhắn
               </button>
-            ) : (
+            ) : mobileLayout ? null : (
               <h1 className="text-[20px] font-semibold text-zinc-100">Tin nhắn</h1>
             )}
           </div>
@@ -852,18 +950,34 @@ export function MessagesPage() {
           </div>
         </aside>
 
-        <section className="flex min-h-0 flex-1 flex-col bg-black">
+        <section
+          className={`flex min-h-0 flex-col bg-black ${
+            mobileLayout ? (mobileInChat ? "min-h-0 flex-1" : "hidden") : "min-h-0 flex-1"
+          }`}
+        >
           {!activeConversation ? (
+            !mobileLayout ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center text-zinc-500">
               <IoChatbubbleOutline className="h-16 w-16 text-zinc-800" aria-hidden />
               {listMode !== "requests" ? (
                 <p>Chọn một hội thoại để bắt đầu nhắn tin.</p>
               ) : null}
             </div>
+            ) : null
           ) : (
             <>
               <div className="border-b border-zinc-900 px-4 py-3">
                 <div className="flex items-center gap-2.5">
+                  {mobileLayout ? (
+                    <button
+                      type="button"
+                      onClick={() => setActiveConversationId(null)}
+                      className="mr-1 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-xl text-zinc-100"
+                      aria-label="Quay lại danh sách"
+                    >
+                      <IoChevronBack aria-hidden />
+                    </button>
+                  ) : null}
                   <img
                     src={activeConversation.peerAvatarUrl || DEFAULT_AVATAR}
                     alt=""
@@ -901,14 +1015,30 @@ export function MessagesPage() {
                     <div className="space-y-2">
                     {messages.map((msg) => {
                       const mine = Boolean(msg.mine);
-                      const imageUrl = extractImageMessageUrl(msg.content);
-                      const directVideoUrl = extractVideoMessageUrl(msg.content);
-                      const directVideoCaption = extractVideoMessageCaption(msg.content);
+                      const imageUrl =
+                        msg.mediaType === "IMAGE"
+                          ? msg.mediaUrl
+                          : extractImageMessageUrl(msg.content);
+                      const directVideoUrl =
+                        msg.mediaType === "VIDEO"
+                          ? msg.mediaUrl
+                          : extractVideoMessageUrl(msg.content);
+                      const directVideoCaption =
+                        msg.mediaType === "VIDEO"
+                          ? String(msg.mediaCaption ?? "").trim()
+                          : extractVideoMessageCaption(msg.content);
                       const sharedVideoId = extractSharedVideoId(msg.content);
-                      const sharedVideoUrl = sharedVideoId ? sharedVideoUrlsById[sharedVideoId] : "";
+                      const sharedVideoMeta = sharedVideoId ? sharedVideoMetaById[sharedVideoId] : null;
+                      const sharedPlaybackUrl = sharedVideoMeta?.playbackUrl ?? "";
+                      const sharedThumbnailUrl = sharedVideoMeta?.thumbnailUrl ?? "";
+                      const sharedVideoUrl =
+                        sharedPlaybackUrl && !sharedPlaybackUrl.includes(".m3u8")
+                          ? sharedPlaybackUrl
+                          : "";
                       const sharedVideoCaption = extractSharedVideoCaption(msg.content);
                       const videoUrl = directVideoUrl || sharedVideoUrl;
                       const videoCaption = directVideoCaption || sharedVideoCaption;
+                      const sharedPreviewUrl = sharedThumbnailUrl || sharedVideoUrl;
                       return (
                         <div key={msg.id} className="space-y-1">
                           <div className="flex justify-center">
@@ -941,6 +1071,28 @@ export function MessagesPage() {
                                       preload="metadata"
                                       muted
                                       playsInline
+                                    />
+                                    <span className="absolute inset-0 flex items-center justify-center bg-black/10">
+                                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white">
+                                        <IoPlay className="ml-0.5 h-5 w-5" aria-hidden />
+                                      </span>
+                                    </span>
+                                  </button>
+                                ) : sharedPreviewUrl ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const target = sharedVideoMeta?.watchUrl || buildVideoWatchUrl(sharedVideoId);
+                                      if (target) navigate(target);
+                                    }}
+                                    className="relative block cursor-pointer overflow-hidden rounded-xl bg-black"
+                                    aria-label="Mở video đã chia sẻ"
+                                  >
+                                    <img
+                                      src={sharedPreviewUrl}
+                                      alt=""
+                                      className="h-44 w-36 object-cover"
+                                      referrerPolicy="no-referrer"
                                     />
                                     <span className="absolute inset-0 flex items-center justify-center bg-black/10">
                                       <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white">
@@ -1089,7 +1241,184 @@ export function MessagesPage() {
             </>
           )}
         </section>
+        </>
+        )}
       </div>
+  );
+
+  if (mobileLayout) {
+    return (
+      <>
+        <MobilePageShell token={token} user={user} activeNavId="messages" onSelectMenu={handleSelectMenu}>
+          {inboxBody}
+        </MobilePageShell>
+        {deleteTargetConversationId ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-[380px] rounded-xl bg-zinc-900 p-6 shadow-2xl shadow-black/60">
+            <h3 className="text-center text-[30px] font-bold text-zinc-100">Xóa tin nhắn này?</h3>
+            <p className="mt-3 text-center text-sm text-zinc-400">
+              Bạn sẽ không còn nhận được tin nhắn từ tài khoản này trong tương lai.
+            </p>
+            <div className="mt-6 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTargetConversationId(null)}
+                disabled={deleteBusy}
+                className="h-11 flex-1 cursor-pointer rounded-md bg-zinc-800 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={() => rejectMessageRequest(deleteTargetConversationId)}
+                disabled={deleteBusy}
+                className="h-11 flex-1 cursor-pointer rounded-md bg-[#fe2c55] text-sm font-semibold text-white transition hover:bg-[#da2448] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deleteBusy ? "Đang xóa..." : "Xóa"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {pendingMediaItems.length > 0 ? (
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/70 px-4">
+          <div className={`w-full ${pendingModalMaxWidthClass} rounded-xl border border-zinc-700 bg-zinc-800/95 p-3 shadow-2xl shadow-black/70`}>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-[32px] font-bold leading-none text-zinc-100">Gửi tập tin</h3>
+              <button
+                type="button"
+                onClick={closePendingMediaComposer}
+                disabled={imageBusy}
+                className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-zinc-700 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                aria-label="Đóng gửi tập tin"
+              >
+                <IoClose className="h-5 w-5" aria-hidden />
+              </button>
+            </div>
+            {pendingMediaNotice ? (
+              <div className="mb-2 rounded bg-[#5b3a36] px-3 py-2 text-sm font-medium text-[#ff7865]">
+                {pendingMediaNotice}
+              </div>
+            ) : null}
+            <div className={pendingPreviewWrapClass}>
+              <div className={`scrollbar-none max-h-[360px] ${pendingGridDisplayClass} ${pendingGridColsClass} ${pendingGridJustifyClass} gap-2 overflow-y-auto`}>
+                {[...pendingMediaItems]
+                  .sort((a, b) => Number(a.selectionOrder) - Number(b.selectionOrder))
+                  .map((item, index) => (
+                  <div key={`${item.file.name}-${item.file.size}-${index}`} className="relative w-fit rounded-md">
+                    {item.kind === "video" ? (
+                      <video
+                        src={item.previewUrl}
+                        className="h-32 w-28 rounded-md object-cover"
+                        muted
+                        autoPlay
+                        loop
+                        playsInline
+                      />
+                    ) : (
+                      <img
+                        src={item.previewUrl}
+                        alt="Ảnh chờ gửi"
+                        className="h-32 w-28 rounded-md object-cover"
+                      />
+                    )}
+                    {item.kind === "video" ? (
+                      <span className={`absolute bottom-1 left-1 rounded px-1 text-[11px] ${item.tooLong ? "bg-red-600/80 text-white" : "bg-black/60 text-zinc-100"}`}>
+                        {formatDuration(item.durationSeconds)}
+                      </span>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => removePendingMediaAt(index)}
+                      disabled={imageBusy}
+                      className="absolute bottom-1 right-1 inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-black/55 text-zinc-100 transition hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-60"
+                      aria-label="Xóa tập tin đã chọn"
+                    >
+                      <IoTrashOutline className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                  </div>
+                  ))}
+              </div>
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={imageBusy}
+                className="h-9 min-w-[86px] cursor-pointer rounded border border-zinc-600 bg-zinc-700/70 px-3 text-sm text-zinc-100 transition hover:bg-zinc-600 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                + Thêm
+              </button>
+              <button
+                type="button"
+                onClick={sendPendingImage}
+                disabled={imageBusy || pendingMediaItems.length === 0 || pendingMediaItems.some((item) => item.kind === "video" && item.tooLong)}
+                className="h-9 min-w-[86px] cursor-pointer rounded bg-[#fe2c55] px-3 text-sm font-semibold text-white transition hover:bg-[#da2448] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {imageBusy ? "Đang gửi..." : `Gửi (${pendingMediaItems.length})`}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {activeVideoViewerUrl ? (
+        <div
+          className="fixed inset-0 z-70 flex items-center justify-center bg-black/75 px-4"
+          onClick={() => setActiveVideoViewerUrl("")}
+        >
+          <div
+            className="relative w-full max-w-4xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setActiveVideoViewerUrl("")}
+              className="absolute -top-11 right-0 inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-zinc-900/90 text-zinc-100 transition hover:bg-zinc-800"
+              aria-label="Đóng xem video"
+            >
+              <IoClose className="h-5 w-5" aria-hidden />
+            </button>
+            <div className="relative">
+              {!videoViewerReady || videoViewerBuffering ? (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-xl bg-[#070911]">
+                  <div className="h-10 w-10 rounded-full border-2 border-white/20 border-t-[#fe2c55] animate-spin" />
+                  <p className="text-sm font-medium text-zinc-300">Đang tải...</p>
+                </div>
+              ) : null}
+              <video
+                src={activeVideoViewerUrl}
+                autoPlay
+                controlsList="nodownload noplaybackrate nofullscreen noremoteplayback"
+                disablePictureInPicture
+                className={`watch-video-el max-h-[78vh] w-full rounded-xl ${videoViewerReady && !videoViewerBuffering ? "bg-transparent opacity-100" : "bg-zinc-900 opacity-0"} transition-opacity duration-200`}
+                preload="metadata"
+                onLoadedData={() => {
+                  setVideoViewerReady(true);
+                  setVideoViewerBuffering(false);
+                }}
+                onCanPlay={() => {
+                  setVideoViewerReady(true);
+                  setVideoViewerBuffering(false);
+                }}
+                onPlaying={() => setVideoViewerBuffering(false)}
+                onWaiting={() => setVideoViewerBuffering(true)}
+                onStalled={() => setVideoViewerBuffering(true)}
+                onError={() => {
+                  setVideoViewerReady(true);
+                  setVideoViewerBuffering(false);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
+      </>
+    );
+  }
+
+  return (
+    <CreatorGridShell activeMenu="messages" token={token} user={user} onLogout={logout} sidebarCollapsed contentFullBleed>
+      {inboxBody}
       {deleteTargetConversationId ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-[380px] rounded-xl bg-zinc-900 p-6 shadow-2xl shadow-black/60">
