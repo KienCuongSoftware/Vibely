@@ -1,0 +1,5 @@
+# Copy to local.properties (gitignored) and fill in values.
+# sdk.dir is set automatically by Flutter/Android Studio.
+
+# Meta Developer → App Settings → Advanced → Client token
+facebook.client.token=

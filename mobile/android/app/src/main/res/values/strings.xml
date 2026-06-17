@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vibely</string>
+    <string name="facebook_app_id">2213321186098020</string>
+    <string name="fb_login_protocol_scheme">fb2213321186098020</string>
+    <string name="facebook_client_token">057ba361ca09843a74c6ad405eec26d8</string>
+</resources>
