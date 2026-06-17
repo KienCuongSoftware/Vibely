@@ -15,10 +15,14 @@ import com.vibely.backend.common.BadRequestException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthProtectionService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthProtectionService.class);
 
     public static final String CAPTCHA_VERIFICATION_HEADER = "X-Captcha-Verification";
 
@@ -108,32 +112,44 @@ public class AuthProtectionService {
     }
 
     public void onLoginFailure(String email, HttpServletRequest request) {
-        String ip = clientIp(request);
-        loginAttemptTracker.recordFailure(ip, email);
-        ipReputationService.penalize(ip, 4);
-        telemetryPublisher.publish("login-events", Map.of(
-            "event", "login_failed",
-            "emailHash", hash(email),
-            "ipHash", hash(ip)
-        ));
+        try {
+            String ip = clientIp(request);
+            loginAttemptTracker.recordFailure(ip, email);
+            ipReputationService.penalize(ip, 4);
+            telemetryPublisher.publish("login-events", Map.of(
+                "event", "login_failed",
+                "emailHash", hash(email),
+                "ipHash", hash(ip)
+            ));
+        } catch (Exception ex) {
+            log.warn("Login failure telemetry skipped: {}", ex.toString());
+        }
     }
 
     public void onLoginSuccess(String email, HttpServletRequest request) {
-        String ip = clientIp(request);
-        loginAttemptTracker.recordSuccess(ip, email);
-        telemetryPublisher.publish("login-events", Map.of(
-            "event", "login_success",
-            "emailHash", hash(email),
-            "ipHash", hash(ip)
-        ));
+        try {
+            String ip = clientIp(request);
+            loginAttemptTracker.recordSuccess(ip, email);
+            telemetryPublisher.publish("login-events", Map.of(
+                "event", "login_success",
+                "emailHash", hash(email),
+                "ipHash", hash(ip)
+            ));
+        } catch (Exception ex) {
+            log.warn("Login success telemetry skipped: {}", ex.toString());
+        }
     }
 
     public void onRegisterSuccess(String email, HttpServletRequest request) {
-        telemetryPublisher.publish("login-events", Map.of(
-            "event", "register_success",
-            "emailHash", hash(email),
-            "ipHash", hash(clientIp(request))
-        ));
+        try {
+            telemetryPublisher.publish("login-events", Map.of(
+                "event", "register_success",
+                "emailHash", hash(email),
+                "ipHash", hash(clientIp(request))
+            ));
+        } catch (Exception ex) {
+            log.warn("Register success telemetry skipped: {}", ex.toString());
+        }
     }
 
     private void guardAuthAction(
@@ -150,40 +166,50 @@ public class AuthProtectionService {
             return;
         }
 
-        String ip = clientIp(request);
-        if (loginAttemptTracker.isBlocked(ip, email)) {
-            telemetryPublisher.publish("abuse-events", Map.of(
-                "event", "login_blocked",
-                "emailHash", hash(email),
-                "ipHash", hash(ip)
-            ));
-            throw new SuspiciousLoginException(
-                "Tài khoản hoặc IP tạm thời bị khóa do nhiều lần đăng nhập thất bại"
+        try {
+            String ip = clientIp(request);
+            if (loginAttemptTracker.isBlocked(ip, email)) {
+                telemetryPublisher.publish("abuse-events", Map.of(
+                    "event", "login_blocked",
+                    "emailHash", hash(email),
+                    "ipHash", hash(ip)
+                ));
+                throw new SuspiciousLoginException(
+                    "Tài khoản hoặc IP tạm thời bị khóa do nhiều lần đăng nhập thất bại"
+                );
+            }
+
+            ChallengeLevel required = resolveRequiredChallenge(
+                purpose,
+                email,
+                sessionId,
+                deviceHash,
+                request,
+                loginFlow
             );
-        }
 
-        ChallengeLevel required = resolveRequiredChallenge(
-            purpose,
-            email,
-            sessionId,
-            deviceHash,
-            request,
-            loginFlow
-        );
+            if (required == ChallengeLevel.NONE) {
+                return;
+            }
 
-        if (required == ChallengeLevel.NONE) {
-            return;
-        }
+            if (verificationToken == null || verificationToken.isBlank()) {
+                throw new CaptchaRequiredException(
+                    required,
+                    estimateRiskScore(email, sessionId, deviceHash, request, purpose)
+                );
+            }
 
-        if (verificationToken == null || verificationToken.isBlank()) {
-            throw new CaptchaRequiredException(required, estimateRiskScore(email, sessionId, deviceHash, request, purpose));
-        }
-
-        boolean valid = consumeToken
-            ? verificationTokenStore.consume(verificationToken, purpose.name())
-            : verificationTokenStore.validateUnused(verificationToken, purpose.name());
-        if (!valid) {
-            throw new BadRequestException("Captcha verification không hợp lệ hoặc đã được sử dụng");
+            boolean valid = consumeToken
+                ? verificationTokenStore.consume(verificationToken, purpose.name())
+                : verificationTokenStore.validateUnused(verificationToken, purpose.name());
+            if (!valid) {
+                throw new BadRequestException("Captcha verification không hợp lệ hoặc đã được sử dụng");
+            }
+        } catch (CaptchaRequiredException | SuspiciousLoginException | BadRequestException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            // Redis/DB outage must not block mobile login with HTTP 500.
+            log.warn("Auth protection degraded for {}: {}", purpose, ex.toString());
         }
     }
 
@@ -202,20 +228,16 @@ public class AuthProtectionService {
             escalated = maxLevel(escalated, ChallengeLevel.CHECKBOX);
         }
 
-        int ipRep = ipReputationService.score(request);
+        int ipRep = safeIpReputation(request);
         if (ipRep < 40) {
             escalated = maxLevel(escalated, ChallengeLevel.ROTATE);
         }
 
-        RiskEvaluateResponse risk = riskEngine.evaluate(
-            new RiskEvaluateRequest(
-                sessionId == null ? "auth-" + hash(email) : sessionId,
-                purpose.name().toLowerCase(),
-                deviceHash,
-                null,
-                null,
-                buildContext(email, deviceHash)
-            ),
+        RiskEvaluateResponse risk = safeRiskEvaluate(
+            purpose,
+            email,
+            sessionId,
+            deviceHash,
             request
         );
 
@@ -237,6 +259,69 @@ public class AuthProtectionService {
         return merged;
     }
 
+    private int safeIpReputation(HttpServletRequest request) {
+        try {
+            return ipReputationService.score(request);
+        } catch (Exception ex) {
+            log.warn("IP reputation check failed: {}", ex.toString());
+            return 60;
+        }
+    }
+
+    private RiskEvaluateResponse safeRiskEvaluate(
+        CaptchaPurpose purpose,
+        String email,
+        String sessionId,
+        String deviceHash,
+        HttpServletRequest request
+    ) {
+        try {
+            return riskEngine.evaluate(
+                new RiskEvaluateRequest(
+                    sessionId == null ? "auth-" + hash(email) : sessionId,
+                    purpose.name().toLowerCase(),
+                    deviceHash,
+                    null,
+                    null,
+                    buildContext(email, deviceHash)
+                ),
+                request
+            );
+        } catch (Exception ex) {
+            log.warn("Risk evaluation failed: {}", ex.toString());
+            return new RiskEvaluateResponse(
+                0,
+                com.vibely.backend.antibot.domain.RiskLevel.LOW,
+                ChallengeLevel.NONE,
+                false,
+                null,
+                properties.getDefaultTrustScore(),
+                properties.getDefaultTrustScore(),
+                60,
+                java.util.List.of()
+            );
+        }
+    }
+
+    private int estimateRiskScore(
+        String email,
+        String sessionId,
+        String deviceHash,
+        HttpServletRequest request,
+        CaptchaPurpose purpose
+    ) {
+        return safeRiskEvaluate(purpose, email, sessionId, deviceHash, request).riskScore();
+    }
+
+    private Map<String, Object> buildContext(String email, String deviceHash) {
+        Map<String, Object> context = new HashMap<>();
+        context.put("emailHash", hash(email));
+        if (deviceHash != null) {
+            context.put("deviceHash", deviceHash);
+        }
+        return context;
+    }
+
     private ChallengeLevel escalateFromFailures(int failures) {
         if (failures >= properties.getExtremeFailureThreshold()) {
             return ChallengeLevel.MULTI_STEP;
@@ -251,35 +336,6 @@ public class AuthProtectionService {
             return ChallengeLevel.CHECKBOX;
         }
         return ChallengeLevel.NONE;
-    }
-
-    private int estimateRiskScore(
-        String email,
-        String sessionId,
-        String deviceHash,
-        HttpServletRequest request,
-        CaptchaPurpose purpose
-    ) {
-        return riskEngine.evaluate(
-            new RiskEvaluateRequest(
-                sessionId == null ? "auth-" + hash(email) : sessionId,
-                purpose.name().toLowerCase(),
-                deviceHash,
-                null,
-                null,
-                buildContext(email, deviceHash)
-            ),
-            request
-        ).riskScore();
-    }
-
-    private Map<String, Object> buildContext(String email, String deviceHash) {
-        Map<String, Object> context = new HashMap<>();
-        context.put("emailHash", hash(email));
-        if (deviceHash != null) {
-            context.put("deviceHash", deviceHash);
-        }
-        return context;
     }
 
     private ChallengeLevel maxLevel(ChallengeLevel a, ChallengeLevel b) {

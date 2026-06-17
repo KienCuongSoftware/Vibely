@@ -176,13 +176,17 @@ public class OtpVerificationService {
     }
 
     private void logChallenge(String email, boolean passed, String type, String response) {
-        OtpChallenge challenge = new OtpChallenge();
-        challenge.setEmail(email);
-        challenge.setChallengeType(type);
-        challenge.setChallengePayload("{\"mode\":\"anti-bot\"}");
-        challenge.setChallengeResponse(response);
-        challenge.setPassed(passed);
-        otpChallengeRepository.save(challenge);
+        try {
+            OtpChallenge challenge = new OtpChallenge();
+            challenge.setEmail(email);
+            challenge.setChallengeType(type);
+            challenge.setChallengePayload("{\"mode\":\"anti-bot\"}");
+            challenge.setChallengeResponse(response);
+            challenge.setPassed(passed);
+            otpChallengeRepository.save(challenge);
+        } catch (Exception ex) {
+            // Audit log is best-effort; OTP delivery must continue.
+        }
     }
 
     private String generateSixDigitCode() {

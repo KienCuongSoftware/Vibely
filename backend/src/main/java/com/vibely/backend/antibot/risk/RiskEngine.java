@@ -121,12 +121,16 @@ public class RiskEngine {
         }
 
         persistRiskEvent(request, deviceHash, ipHash, score, riskLevel, challengeLevel, signals);
-        telemetryPublisher.publish("risk-events", Map.of(
-            "event", "risk_evaluated",
-            "sessionId", request.sessionId(),
-            "score", score,
-            "level", riskLevel.name()
-        ));
+        try {
+            telemetryPublisher.publish("risk-events", Map.of(
+                "event", "risk_evaluated",
+                "sessionId", request.sessionId(),
+                "score", score,
+                "level", riskLevel.name()
+            ));
+        } catch (Exception ex) {
+            // Telemetry must not break auth flows.
+        }
 
         return new RiskEvaluateResponse(
             score,
@@ -202,7 +206,11 @@ public class RiskEngine {
         if (request.context() != null && request.context().get("userId") instanceof Number number) {
             entity.setUserId(number.longValue());
         }
-        riskEventRepository.save(entity);
+        try {
+            riskEventRepository.save(entity);
+        } catch (Exception ex) {
+            // Risk audit persistence must not break login/register.
+        }
     }
 
     private String clientIp(HttpServletRequest request) {

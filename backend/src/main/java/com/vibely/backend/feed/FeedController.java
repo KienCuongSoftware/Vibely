@@ -1,7 +1,9 @@
 package com.vibely.backend.feed;
 
 import com.vibely.backend.common.ApiResponse;
+import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.video.VideoService;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,6 +60,11 @@ public class FeedController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size
     ) {
+        if (authentication == null
+            || !authentication.isAuthenticated()
+            || authentication instanceof AnonymousAuthenticationToken) {
+            throw new BadRequestException("Đăng nhập để xem feed Đã follow");
+        }
         return ApiResponse.success(
             videoService.getFollowingFeed(authentication.getName(), page, Math.min(size, 50))
         );
