@@ -30,6 +30,16 @@ public class GlobalExceptionHandler {
             .body(ApiResponse.failure(ApiError.of(HttpStatus.BAD_REQUEST.value(), "BAD_REQUEST", ex.getMessage())));
     }
 
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUnauthorized(UnauthorizedException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(ApiResponse.failure(ApiError.of(
+                HttpStatus.UNAUTHORIZED.value(),
+                "AUTH_REQUIRED",
+                ex.getMessage()
+            )));
+    }
+
     @ExceptionHandler(StorageDeletionException.class)
     public ResponseEntity<ApiResponse<Void>> handleStorageDeletion(StorageDeletionException ex) {
         log.warn("S3 deletion failed: {}", ex.getMessage());

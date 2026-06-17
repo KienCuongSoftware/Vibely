@@ -3,6 +3,7 @@ package com.vibely.backend.auth;
 import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.common.UnauthorizedException;
 import com.vibely.backend.security.AuthCookieService;
 import com.vibely.backend.security.JwtService;
 import com.vibely.backend.user.User;
@@ -27,6 +28,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final OtpVerificationService otpVerificationService;
+    private final NativeOAuthService nativeOAuthService;
     private final UserRepository userRepository;
     private final UserAvatarResolver userAvatarResolver;
     private final AuthCookieService authCookieService;
@@ -36,6 +38,7 @@ public class AuthController {
     public AuthController(
         AuthService authService,
         OtpVerificationService otpVerificationService,
+        NativeOAuthService nativeOAuthService,
         UserRepository userRepository,
         UserAvatarResolver userAvatarResolver,
         AuthCookieService authCookieService,
@@ -44,6 +47,7 @@ public class AuthController {
     ) {
         this.authService = authService;
         this.otpVerificationService = otpVerificationService;
+        this.nativeOAuthService = nativeOAuthService;
         this.userRepository = userRepository;
         this.userAvatarResolver = userAvatarResolver;
         this.authCookieService = authCookieService;
@@ -59,6 +63,7 @@ public class AuthController {
     ) {
         return AuthSessionSupport.ok(
             authService.register(request, httpRequest),
+            httpRequest,
             httpResponse,
             authCookieService,
             exposeTokensInApi
@@ -73,6 +78,7 @@ public class AuthController {
     ) {
         return AuthSessionSupport.ok(
             authService.login(request, httpRequest),
+            httpRequest,
             httpResponse,
             authCookieService,
             exposeTokensInApi
@@ -93,6 +99,7 @@ public class AuthController {
         try {
             return AuthSessionSupport.ok(
                 authService.refresh(refreshToken),
+                httpRequest,
                 httpResponse,
                 authCookieService,
                 exposeTokensInApi
@@ -139,13 +146,30 @@ public class AuthController {
         return ApiResponse.success(null);
     }
 
+    @PostMapping("/oauth/native")
+    public ResponseEntity<ApiResponse<AuthSessionResponse>> oauthNative(
+        @Valid @RequestBody NativeOAuthRequest request,
+        HttpServletRequest httpRequest,
+        HttpServletResponse httpResponse
+    ) {
+        return AuthSessionSupport.ok(
+            nativeOAuthService.authenticate(request),
+            httpRequest,
+            httpResponse,
+            authCookieService,
+            exposeTokensInApi
+        );
+    }
+
     @PostMapping("/oauth/exchange")
     public ResponseEntity<ApiResponse<AuthSessionResponse>> exchangeOauthCode(
         @Valid @RequestBody OAuthExchangeRequest request,
+        HttpServletRequest httpRequest,
         HttpServletResponse httpResponse
     ) {
         return AuthSessionSupport.ok(
             authService.exchangeOauthCode(request.getCode()),
+            httpRequest,
             httpResponse,
             authCookieService,
             exposeTokensInApi
@@ -156,10 +180,12 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthSessionResponse>> completeOnboarding(
         Authentication authentication,
         @Valid @RequestBody CompleteOnboardingRequest request,
+        HttpServletRequest httpRequest,
         HttpServletResponse httpResponse
     ) {
         return AuthSessionSupport.ok(
             authService.completeOnboarding(authentication.getName(), request),
+            httpRequest,
             httpResponse,
             authCookieService,
             exposeTokensInApi
@@ -202,10 +228,13 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ApiResponse<MeResponse> me(Authentication authentication) {
+    public ApiResponse<MeResponse> me(Authentication authentication, HttpServletRequest request) {
         if (authentication == null
             || !authentication.isAuthenticated()
             || authentication instanceof AnonymousAuthenticationToken) {
+            if (hasBearerToken(request)) {
+                throw new UnauthorizedException("Phiên đăng nhập không hợp lệ hoặc đã hết hạn");
+            }
             return ApiResponse.success(null);
         }
         User user = userRepository.findByEmail(authentication.getName())
@@ -231,5 +260,11 @@ public class AuthController {
     private String resolveRefreshToken(LogoutRequest request, HttpServletRequest httpRequest) {
         return authCookieService.readRefreshToken(httpRequest)
             .orElseGet(() -> request == null ? null : request.getRefreshToken());
+    }
+
+    private static boolean hasBearerToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        return header != null && header.regionMatches(true, 0, "Bearer ", 0, 7)
+            && !header.substring(7).trim().isEmpty();
     }
 }

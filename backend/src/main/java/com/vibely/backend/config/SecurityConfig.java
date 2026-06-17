@@ -139,7 +139,8 @@ public class SecurityConfig {
                     "/api/auth/send-code",
                     "/api/auth/verify-code",
                     "/api/auth/reset-password",
-                    "/api/auth/oauth/exchange"
+                    "/api/auth/oauth/exchange",
+                    "/api/auth/oauth/native"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/me", "/api/auth/ws-ticket").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/risk/evaluate").permitAll()
@@ -239,6 +240,7 @@ public class SecurityConfig {
             || uri.equals("/api/auth/verify-code")
             || uri.equals("/api/auth/reset-password")
             || uri.equals("/api/auth/oauth/exchange")
+            || uri.equals("/api/auth/oauth/native")
             || uri.equals("/api/risk/evaluate")
             || uri.equals("/api/captcha/verify")
             || uri.equals("/api/fingerprint/register")
