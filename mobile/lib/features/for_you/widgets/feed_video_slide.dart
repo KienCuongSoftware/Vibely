@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -13,11 +16,13 @@ class FeedVideoSlide extends StatefulWidget {
     required this.video,
     required this.isActive,
     this.bottomInset = 0,
+    this.onRequireLogin,
   });
 
   final FeedVideo video;
   final bool isActive;
   final double bottomInset;
+  final Future<bool> Function()? onRequireLogin;
 
   @override
   State<FeedVideoSlide> createState() => _FeedVideoSlideState();
@@ -51,11 +56,15 @@ class _FeedVideoSlideState extends State<FeedVideoSlide> {
   }
 
   void _disposeController() {
-    _controller?.dispose();
+    final c = _controller;
     _controller = null;
     _initialized = false;
     _error = null;
     _initInFlight = false;
+    if (c != null) {
+      c.pause();
+      c.dispose();
+    }
   }
 
   void _syncPlayerLifecycle() {
@@ -89,19 +98,27 @@ class _FeedVideoSlideState extends State<FeedVideoSlide> {
     _initInFlight = true;
     final controller = VideoPlayerController.networkUrl(
       Uri.parse(url),
-      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+      httpHeaders: const {
+        'User-Agent': 'VibelyMobile/1.0 (Flutter)',
+        'Accept': '*/*',
+      },
+      videoPlayerOptions: VideoPlayerOptions(
+        mixWithOthers: false,
+        allowBackgroundPlayback: false,
+      ),
     );
     _controller = controller;
 
     try {
       await controller.initialize();
-      await controller.setLooping(true);
-      await controller.setVolume(0);
-      if (!mounted) {
+      if (!mounted || !widget.isActive) {
         await controller.dispose();
+        _controller = null;
         return;
       }
-      if (!widget.isActive) {
+      await controller.setLooping(true);
+      await controller.setVolume(1.0);
+      if (!mounted || !widget.isActive) {
         await controller.dispose();
         _controller = null;
         return;
@@ -110,8 +127,8 @@ class _FeedVideoSlideState extends State<FeedVideoSlide> {
         _initialized = true;
         _error = null;
       });
-      _syncPlayback();
-    } catch (_) {
+      await controller.play();
+    } catch (e) {
       await controller.dispose();
       _controller = null;
       if (!mounted) return;
@@ -119,6 +136,9 @@ class _FeedVideoSlideState extends State<FeedVideoSlide> {
         _error = 'Không phát được video';
         _initialized = false;
       });
+      if (kDebugMode) {
+        debugPrint('Video init failed (${widget.video.publicId}): $e');
+      }
     } finally {
       _initInFlight = false;
     }
@@ -128,7 +148,9 @@ class _FeedVideoSlideState extends State<FeedVideoSlide> {
     final controller = _controller;
     if (controller == null || !_initialized) return;
     if (widget.isActive) {
-      controller.play();
+      if (!controller.value.isPlaying) {
+        controller.play();
+      }
     } else {
       controller.pause();
     }
@@ -181,11 +203,11 @@ class _FeedVideoSlideState extends State<FeedVideoSlide> {
             bottom: widget.bottomInset + 88,
             child: FeedActionRail(
               video: widget.video,
-              onLikeTap: () => _showSoon(context, 'Thích'),
-              onCommentTap: () => _showSoon(context, 'Bình luận'),
-              onBookmarkTap: () => _showSoon(context, 'Lưu'),
-              onShareTap: () => _showSoon(context, 'Chia sẻ'),
-              onFollowTap: () => _showSoon(context, 'Theo dõi'),
+              onLikeTap: () => _guardAction(() => _showSoon(context, 'Thích')),
+              onCommentTap: () => _guardAction(() => _showSoon(context, 'Bình luận')),
+              onBookmarkTap: () => _guardAction(() => _showSoon(context, 'Lưu')),
+              onShareTap: () => _guardAction(() => _showSoon(context, 'Chia sẻ')),
+              onFollowTap: () => _guardAction(() => _showSoon(context, 'Theo dõi')),
             ),
           ),
           Positioned(
@@ -233,29 +255,45 @@ class _FeedVideoSlideState extends State<FeedVideoSlide> {
   }
 
   Widget _buildVideoLayer(String poster) {
-    if (_initialized && _controller != null) {
-      final size = _controller!.value.size;
-      if (size.width <= 0 || size.height <= 0) {
-        return _buildPoster(poster);
-      }
-      final fit = _fitForDimensions(size.width, size.height);
-      return ColoredBox(
-        color: Colors.black,
-        child: Center(
-          child: FittedBox(
-            fit: fit,
-            clipBehavior: fit == BoxFit.cover ? Clip.hardEdge : Clip.none,
-            child: SizedBox(
-              width: size.width,
-              height: size.height,
-              child: VideoPlayer(_controller!),
-            ),
-          ),
-        ),
-      );
+    final controller = _controller;
+    if (!_initialized || controller == null) {
+      return _buildPoster(poster);
     }
 
-    return _buildPoster(poster);
+    // Android often reports 0×0 in value.size while ExoPlayer is already decoding.
+    return ValueListenableBuilder<VideoPlayerValue>(
+      valueListenable: controller,
+      builder: (context, value, _) {
+        final (width, height) = _resolveVideoDimensions(value.size);
+        final fit = _fitForDimensions(width, height);
+        return ColoredBox(
+          color: Colors.black,
+          child: Center(
+            child: FittedBox(
+              fit: fit,
+              clipBehavior: fit == BoxFit.cover ? Clip.hardEdge : Clip.none,
+              child: SizedBox(
+                width: width,
+                height: height,
+                child: VideoPlayer(controller),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  (double, double) _resolveVideoDimensions(Size size) {
+    if (size.width > 0 && size.height > 0) {
+      return (size.width, size.height);
+    }
+    final w = widget.video.sourceWidthPx;
+    final h = widget.video.sourceHeightPx;
+    if (w != null && h != null && w > 0 && h > 0) {
+      return (w.toDouble(), h.toDouble());
+    }
+    return (9, 16);
   }
 
   BoxFit _fitForDimensions(double width, double height) {
@@ -286,6 +324,15 @@ class _FeedVideoSlideState extends State<FeedVideoSlide> {
         ),
       ),
     );
+  }
+
+  Future<void> _guardAction(FutureOr<void> Function() action) async {
+    final guard = widget.onRequireLogin;
+    if (guard != null) {
+      final ok = await guard();
+      if (!ok) return;
+    }
+    await action();
   }
 
   void _showSoon(BuildContext context, String feature) {

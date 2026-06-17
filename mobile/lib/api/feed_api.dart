@@ -26,4 +26,18 @@ class FeedApi {
 
     return FeedPage.fromJson(data);
   }
+
+  Future<FeedPage> getFollowingFeed({
+    int page = 0,
+    int size = 10,
+    required String token,
+  }) async {
+    final data = await _client.getJson(
+      '/api/feed/following',
+      query: {'page': '$page', 'size': '$size'},
+      bearerToken: token,
+    );
+
+    return FeedPage.fromJson(data);
+  }
 }

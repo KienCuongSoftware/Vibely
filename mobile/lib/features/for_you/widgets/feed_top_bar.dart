@@ -2,66 +2,109 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/vibely_theme.dart';
 
+/// TikTok-style top bar: LIVE | [centered tabs] | search
 class FeedTopBar extends StatelessWidget {
   const FeedTopBar({
     super.key,
     this.activeTab = FeedTopTab.forYou,
     this.onTabChanged,
     this.onSearchTap,
-    this.onMenuTap,
+    this.onLiveTap,
   });
 
   final FeedTopTab activeTab;
   final ValueChanged<FeedTopTab>? onTabChanged;
   final VoidCallback? onSearchTap;
-  final VoidCallback? onMenuTap;
+  final VoidCallback? onLiveTap;
+
+  static const _tabs = <({FeedTopTab id, String label})>[
+    (id: FeedTopTab.friends, label: 'Bạn bè'),
+    (id: FeedTopTab.following, label: 'Đã follow'),
+    (id: FeedTopTab.forYou, label: 'Đề xuất'),
+  ];
 
   @override
   Widget build(BuildContext context) {
+    // Match web MobileFeedShell: LIVE/search pinned to sides, tabs centered on screen.
     return SizedBox(
       height: kFeedTopBarHeight,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Row(
-          children: [
-            IconButton(
-              onPressed: onMenuTap,
-              icon: const Icon(Icons.menu, color: Colors.white, size: 26),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+            left: 8,
+            top: 0,
+            bottom: 0,
+            child: IconButton(
+              onPressed: onLiveTap,
+              icon: const _LiveIcon(),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              tooltip: 'Live',
             ),
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _TabButton(
-                    label: 'Đã follow',
-                    selected: activeTab == FeedTopTab.following,
-                    onTap: () => onTabChanged?.call(FeedTopTab.following),
-                  ),
-                  const SizedBox(width: 20),
-                  _TabButton(
-                    label: 'Đề xuất',
-                    selected: activeTab == FeedTopTab.forYou,
-                    onTap: () => onTabChanged?.call(FeedTopTab.forYou),
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
+          ),
+          Positioned(
+            right: 8,
+            top: 0,
+            bottom: 0,
+            child: IconButton(
               onPressed: onSearchTap,
               icon: const Icon(Icons.search, color: Colors.white, size: 24),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              tooltip: 'Tìm kiếm',
             ),
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 56),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (var i = 0; i < _tabs.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 16),
+                  _TabButton(
+                    label: _tabs[i].label,
+                    selected: activeTab == _tabs[i].id,
+                    onTap: () => onTabChanged?.call(_tabs[i].id),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-enum FeedTopTab { following, forYou }
+enum FeedTopTab { friends, following, forYou }
+
+class _LiveIcon extends StatelessWidget {
+  const _LiveIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 28,
+      height: 20,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.white, width: 1.5),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: const Text(
+        'LIVE',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 8,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.2,
+          height: 1,
+        ),
+      ),
+    );
+  }
+}
 
 class _TabButton extends StatelessWidget {
   const _TabButton({
@@ -87,7 +130,9 @@ class _TabButton extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: selected ? Colors.white : Colors.white.withValues(alpha: 0.55),
+                color: selected
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.55),
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
               ),

@@ -1,6 +1,7 @@
 class FeedVideo {
   const FeedVideo({
     required this.publicId,
+    this.authorId,
     required this.authorUsername,
     required this.authorDisplayName,
     required this.authorAvatarUrl,
@@ -20,6 +21,7 @@ class FeedVideo {
   });
 
   final String publicId;
+  final int? authorId;
   final String authorUsername;
   final String authorDisplayName;
   final String? authorAvatarUrl;
@@ -40,6 +42,7 @@ class FeedVideo {
   factory FeedVideo.fromJson(Map<String, dynamic> json) {
     return FeedVideo(
       publicId: json['publicId']?.toString() ?? '',
+      authorId: _asOptionalInt(json['authorId']),
       authorUsername: json['authorUsername']?.toString() ?? 'user',
       authorDisplayName: json['authorDisplayName']?.toString() ?? '',
       authorAvatarUrl: json['authorAvatarUrl']?.toString(),
