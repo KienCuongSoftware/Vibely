@@ -20,11 +20,19 @@ export function handleSidebarMenuSelect(
   }
 
   if (id === 'explore') {
+    if (!token) {
+      navigate('/login')
+      return
+    }
     navigate('/explore')
     return
   }
 
   if (id === 'upload') {
+    if (!token) {
+      navigate('/login')
+      return
+    }
     navigate('/vibelystudio/upload')
     return
   }

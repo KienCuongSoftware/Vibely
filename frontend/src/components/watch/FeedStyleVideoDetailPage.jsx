@@ -44,6 +44,7 @@ import {
   writeFeedFollowedAuthorIds,
 } from '../../utils/feedFollowState.js'
 import { buildMainSidebarMenuItems } from '../../utils/mainSidebarMenuItems.js'
+import { redirectGuestToLogin } from '../../utils/guestAuthGate.js'
 import { buildShareableVideoUrl } from '../../utils/shareUrl.js'
 import { handleSidebarMenuSelect } from '../../utils/sidebarNavigation.js'
 import {
@@ -789,7 +790,13 @@ export function FeedStyleVideoDetailPage({
   return (
     <section className="flex h-dvh max-h-dvh min-h-0 w-full flex-col overflow-hidden bg-black text-zinc-100 lg:flex-row">
       <div className="shrink-0 lg:hidden">
-        <MobileFeedTopBar onMenuOpen={() => setMobileMenuOpen(true)} />
+        <MobileFeedTopBar
+          onLiveTap={() => redirectGuestToLogin(navigate, token)}
+          onSearchTap={() => {
+            if (redirectGuestToLogin(navigate, token)) return
+            navigate('/search')
+          }}
+        />
       </div>
 
       <MobileFeedMenuDrawer

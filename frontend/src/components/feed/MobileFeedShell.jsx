@@ -4,7 +4,6 @@ import {
   IoClose,
   IoCompass,
   IoHome,
-  IoMenu,
   IoPaperPlane,
   IoPeople,
   IoPerson,
@@ -49,71 +48,99 @@ export function isMobileFeedLayout() {
 }
 
 export function MobileFeedTopBar({
-  onMenuOpen,
+  onLiveTap,
   showBack = false,
   onBack,
   feedTabs = false,
   activeFeedTab = 'for-you',
   onFeedTabChange,
+  onSearchTap,
 }) {
+  const feedTabClass = (tab) =>
+    `cursor-pointer pb-0.5 ${
+      activeFeedTab === tab
+        ? 'border-b-2 border-white text-white'
+        : 'text-white/55'
+    }`
+
   return (
-    <header className="relative z-40 flex h-12 shrink-0 items-center justify-between bg-black px-3 text-white">
-      {showBack ? (
-        <button
-          type="button"
-          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-2xl text-white"
-          aria-label="Quay lại"
-          onClick={onBack}
-        >
-          <IoClose aria-hidden />
-        </button>
-      ) : (
-        <button
-          type="button"
-          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-2xl text-white"
-          aria-label="Menu"
-          onClick={onMenuOpen}
-        >
-          <IoMenu aria-hidden />
-        </button>
-      )}
-      {feedTabs ? (
-        <div className="flex items-center gap-5 text-[15px] font-semibold">
+    <header className="relative z-40 h-12 shrink-0 bg-black text-white">
+      <div className="absolute left-2 top-1/2 z-10 -translate-y-1/2">
+        {showBack ? (
           <button
             type="button"
-            className={`cursor-pointer pb-0.5 ${
-              activeFeedTab === 'following'
-                ? 'border-b-2 border-white text-white'
-                : 'text-white/55'
-            }`}
+            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-2xl text-white"
+            aria-label="Quay lại"
+            onClick={onBack}
+          >
+            <IoClose aria-hidden />
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="flex h-9 w-11 cursor-pointer items-center justify-center"
+            aria-label="Live"
+            onClick={onLiveTap}
+          >
+            <span className="flex h-5 w-7 items-center justify-center rounded border-[1.5px] border-white text-[8px] font-extrabold leading-none tracking-wide">
+              LIVE
+            </span>
+          </button>
+        )}
+      </div>
+
+      <div className="absolute right-2 top-1/2 z-10 -translate-y-1/2">
+        {onSearchTap ? (
+          <button
+            type="button"
+            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-xl text-white"
+            aria-label="Tìm kiếm"
+            onClick={onSearchTap}
+          >
+            <IoSearch aria-hidden />
+          </button>
+        ) : (
+          <Link
+            to="/search"
+            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-xl text-white"
+            aria-label="Tìm kiếm"
+          >
+            <IoSearch aria-hidden />
+          </Link>
+        )}
+      </div>
+
+      {feedTabs ? (
+        <div className="flex h-12 items-center justify-center gap-4 px-14 text-[15px] font-semibold">
+          <button
+            type="button"
+            className={feedTabClass('friends')}
+            onClick={() => onFeedTabChange?.('friends')}
+          >
+            Bạn bè
+          </button>
+          <button
+            type="button"
+            className={feedTabClass('following')}
             onClick={() => onFeedTabChange?.('following')}
           >
             Đã follow
           </button>
           <button
             type="button"
-            className={`cursor-pointer pb-0.5 ${
-              activeFeedTab === 'for-you'
-                ? 'border-b-2 border-white text-white'
-                : 'text-white/55'
-            }`}
+            className={feedTabClass('for-you')}
             onClick={() => onFeedTabChange?.('for-you')}
           >
             Đề xuất
           </button>
         </div>
       ) : (
-        <Link to="/foryou" className="text-lg font-bold tracking-tight text-white">
-          Vibely
-        </Link>
+        <div className="flex h-12 items-center justify-center px-14">
+          <Link to="/foryou" className="text-lg font-bold tracking-tight text-white">
+            Vibely
+          </Link>
+        </div>
       )}
-      <Link
-        to="/search"
-        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-xl text-white"
-        aria-label="Tìm kiếm"
-      >
-        <IoSearch aria-hidden />
-      </Link>
     </header>
   )
 }
@@ -156,7 +183,7 @@ export function MobileFeedBottomNav({ token, user, onSelectMenu, activeId = 'lat
       <button
         type="button"
         className={itemClass('explore')}
-        onClick={() => go('explore')}
+        onClick={() => (token ? go('explore') : navigate('/login'))}
       >
         <IoCompass className="text-[22px]" aria-hidden />
         <span>Khám phá</span>
@@ -164,7 +191,7 @@ export function MobileFeedBottomNav({ token, user, onSelectMenu, activeId = 'lat
       <button
         type="button"
         className="flex flex-1 cursor-pointer flex-col items-center justify-center gap-0.5"
-        onClick={() => go('upload')}
+        onClick={() => (token ? go('upload') : navigate('/login'))}
         aria-label="Tải lên"
       >
         <span className="relative flex h-9 w-10 items-center justify-center">

@@ -67,6 +67,7 @@ import {
   filterVideosFromFollowedCreators,
 } from "../../utils/feedFollowState.js";
 import { handleSidebarMenuSelect } from "../../utils/sidebarNavigation.js";
+import { redirectGuestToLogin } from "../../utils/guestAuthGate.js";
 import { markFollowingPreferFeedFromSidebar } from "../../utils/followingPageView.js";
 import { buildProfilePath } from "../../utils/buildProfilePath.js";
 import { buildMainSidebarMenuItems } from "../../utils/mainSidebarMenuItems.js";
@@ -679,10 +680,11 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   }, []);
 
   const handleBookmarkToggle = useCallback(() => {
-    if (!token || !isVideoPublicId(activeVideo?.publicId)) {
-      setBookmarked((prev) => !prev);
+    if (!token) {
+      navigate("/login");
       return;
     }
+    if (!isVideoPublicId(activeVideo?.publicId)) return;
     const next = !bookmarked;
     const prevBm = Number(activeVideo.bookmarkCount ?? 0);
     setBookmarked(next);
@@ -1435,6 +1437,10 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   );
 
   const handleSidebarSelect = (id) => {
+    if (!token && id !== "latest") {
+      navigate("/login");
+      return;
+    }
     handleSidebarMenuSelect(navigate, id, {
       token,
       profilePath: buildProfilePath(token, user),
@@ -1479,21 +1485,92 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     }
   };
 
+  const handleMobileFeedTabChange = useCallback(
+    (tab) => {
+      if (redirectGuestToLogin(navigate, token)) return;
+      if (tab === "following") {
+        markFollowingPreferFeedFromSidebar();
+        navigate("/following");
+        return;
+      }
+      if (tab === "friends") {
+        navigate("/friends");
+        return;
+      }
+      navigate("/foryou");
+    },
+    [navigate, token],
+  );
+
+  const handleMobileLiveTap = useCallback(() => {
+    redirectGuestToLogin(navigate, token);
+  }, [navigate, token]);
+
+  const handleMobileSearchTap = useCallback(() => {
+    if (redirectGuestToLogin(navigate, token)) return;
+    navigate("/search");
+  }, [navigate, token]);
+
+  const toggleFeedComments = useCallback(() => {
+    if (redirectGuestToLogin(navigate, token)) return;
+    setFeedCommentsOpen((open) => !open);
+  }, [navigate, token]);
+
+  const openShareModal = useCallback(() => {
+    if (!isVideoPublicId(activeVideo?.publicId)) return;
+    if (redirectGuestToLogin(navigate, token)) return;
+    setShareModalOpen(true);
+  }, [activeVideo?.publicId, navigate, token]);
+
+  const handleFeedLikeToggle = useCallback(() => {
+    if (!isVideoPublicId(activeVideo?.publicId)) return;
+    if (redirectGuestToLogin(navigate, token)) return;
+    const next = !liked;
+    const prevCount = Number(activeVideo.likeCount ?? 0);
+    setLiked(next);
+    patchVideoByPublicId(activeVideo.publicId, {
+      likeCount: Math.max(0, prevCount + (next ? 1 : -1)),
+    });
+    const req = next
+      ? apiClient.likeVideo(activeVideo.publicId, token)
+      : apiClient.unlikeVideo(activeVideo.publicId, token);
+    req.catch(() => {
+      setLiked(!next);
+      patchVideoByPublicId(activeVideo.publicId, { likeCount: prevCount });
+    });
+  }, [activeVideo, liked, navigate, patchVideoByPublicId, token]);
+
+  const handleSoundNavigate = useCallback(() => {
+    if (redirectGuestToLogin(navigate, token)) return;
+    const rawAudioUrl = String(activeVideo?.audioUrl ?? "").trim();
+    if (!rawAudioUrl) return;
+    const q = new URLSearchParams({
+      audioUrl: rawAudioUrl,
+      title: String(activeVideo?.audioTitle ?? "").trim(),
+      creator: resolveFeedAuthorDisplayName(activeVideo),
+    });
+    const av = String(activeVideo?.avatarUrl ?? "").trim();
+    if (av) q.set("creatorAvatar", av);
+    const un = String(activeVideo?.authorUsername ?? "")
+      .trim()
+      .replace(/^@/, "");
+    if (un) q.set("creatorUsername", un);
+    const sid = activeVideo?.publicId;
+    if (isVideoPublicId(sid)) {
+      q.set("sourceVideoId", String(sid).toLowerCase());
+    }
+    navigate(`/sound?${q.toString()}`);
+  }, [activeVideo, navigate, token]);
+
   return (
     <section className="flex h-dvh max-h-dvh min-h-0 w-full flex-col overflow-hidden bg-black text-zinc-100 lg:flex-row">
       <div className="shrink-0 lg:hidden">
         <MobileFeedTopBar
-          onMenuOpen={() => setMobileMenuOpen(true)}
+          onLiveTap={handleMobileLiveTap}
           feedTabs={isForYouFeed || isFollowingFeed}
           activeFeedTab={isFollowingFeed ? "following" : "for-you"}
-          onFeedTabChange={(tab) => {
-            if (tab === "following") {
-              markFollowingPreferFeedFromSidebar();
-              navigate("/following");
-            } else {
-              navigate("/foryou");
-            }
-          }}
+          onFeedTabChange={handleMobileFeedTabChange}
+          onSearchTap={handleMobileSearchTap}
         />
       </div>
 
@@ -1836,25 +1913,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   className={FEED_ROUND_ICON_BUTTON}
                   aria-pressed={liked}
                   aria-label={liked ? "Bỏ thích" : "Thích"}
-                  onClick={() => {
-                    if (!token || !isVideoPublicId(activeVideo?.publicId)) {
-                      setLiked((prev) => !prev);
-                      return;
-                    }
-                    const next = !liked;
-                    const prevCount = Number(activeVideo.likeCount ?? 0);
-                    setLiked(next);
-                    patchVideoByPublicId(activeVideo.publicId, {
-                      likeCount: Math.max(0, prevCount + (next ? 1 : -1)),
-                    });
-                    const req = next
-                      ? apiClient.likeVideo(activeVideo.publicId, token)
-                      : apiClient.unlikeVideo(activeVideo.publicId, token);
-                    req.catch(() => {
-                      setLiked(!next);
-                      patchVideoByPublicId(activeVideo.publicId, { likeCount: prevCount });
-                    });
-                  }}
+                  onClick={handleFeedLikeToggle}
                 >
                   <IoHeart
                     className={liked ? "text-red-500" : "text-zinc-100"}
@@ -1871,7 +1930,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   className={`${FEED_ROUND_ICON_BUTTON} ${feedCommentsOpen ? "ring-2 ring-white/35 ring-offset-2 ring-offset-black" : ""}`}
                   aria-label="Bình luận"
                   aria-expanded={feedCommentsOpen}
-                  onClick={() => setFeedCommentsOpen((open) => !open)}
+                  onClick={toggleFeedComments}
                 >
                   <FaComment className="text-lg text-zinc-100" aria-hidden />
                 </button>
@@ -1927,10 +1986,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   className={FEED_ROUND_ICON_BUTTON}
                   aria-label="Chia sẻ"
                   aria-expanded={shareModalOpen}
-                  onClick={() => {
-                    if (!isVideoPublicId(activeVideo?.publicId)) return;
-                    setShareModalOpen(true);
-                  }}
+                  onClick={openShareModal}
                 >
                   <IoArrowRedo aria-hidden />
                 </button>
@@ -1942,26 +1998,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   type="button"
                   aria-label="Âm thanh đang phát"
                   className="relative mt-1 flex h-11 w-11 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-white/35 bg-zinc-950 shadow-lg"
-                  onClick={() => {
-                    const rawAudioUrl = String(activeVideo?.audioUrl ?? "").trim();
-                    if (!rawAudioUrl) return;
-                    const q = new URLSearchParams({
-                      audioUrl: rawAudioUrl,
-                      title: String(activeVideo?.audioTitle ?? "").trim(),
-                      creator: resolveFeedAuthorDisplayName(activeVideo),
-                    });
-                    const av = String(activeVideo?.avatarUrl ?? "").trim();
-                    if (av) q.set("creatorAvatar", av);
-                    const un = String(activeVideo?.authorUsername ?? "")
-                      .trim()
-                      .replace(/^@/, "");
-                    if (un) q.set("creatorUsername", un);
-                    const sid = activeVideo?.publicId;
-                    if (isVideoPublicId(sid)) {
-                      q.set("sourceVideoId", String(sid).toLowerCase());
-                    }
-                    navigate(`/sound?${q.toString()}`);
-                  }}
+                  onClick={handleSoundNavigate}
                 >
                   <AvatarImage
                     src={activeVideo?.avatarUrl ?? FEED_DEFAULT_AUTHOR_AVATAR}

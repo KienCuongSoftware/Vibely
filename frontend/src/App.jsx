@@ -36,8 +36,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/foryou" replace />} />
           <Route path="/foryou" element={<FeedPage />} />
-          <Route path="/following" element={<FollowingPage />} />
-          <Route path="/friends" element={<FriendsPage />} />
+          <Route path="/following" element={<Navigate to="/login" replace />} />
+          <Route path="/friends" element={<Navigate to="/login" replace />} />
           <Route path="/messages" element={<Navigate to="/login" replace />} />
           <Route path="/feed" element={<Navigate to="/foryou" replace />} />
           <Route path="/login" element={<LoginPage />} />
@@ -47,9 +47,9 @@ function App() {
           <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
           <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/sound" element={<SoundPage />} />
-          <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/explore" element={<Navigate to="/login" replace />} />
           <Route path="/explore/view/:publicId" element={<ExploreViewerPage />} />
-          <Route path="/search" element={<SearchResultsPage />} />
+          <Route path="/search" element={<Navigate to="/login" replace />} />
           <Route path="/tag/:tag" element={<HashtagPage />} />
           <Route path="/watch/:publicId" element={<WatchRedirect />} />
           <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
