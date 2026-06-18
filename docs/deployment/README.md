@@ -118,6 +118,43 @@ docker run --rm -p 8080:8080 --env-file .\vibely.env kiencuongsoftware/vibely-ba
 
 For VPS/container deployments, keep secrets in the runtime environment rather than baking them into the image. Required values are the same as `/opt/vibely/vibely.env` (database, JWT, S3, OAuth, Redis, mail).
 
+## Build and Push Frontend Docker Image
+
+Docker Hub repository:
+
+```text
+kiencuongsoftware/vibely-frontend
+```
+
+Build from the frontend directory:
+
+```powershell
+cd D:\Worksplace\FullStack\Vibely\frontend
+docker build -t kiencuongsoftware/vibely-frontend:latest .
+```
+
+Push:
+
+```powershell
+docker login
+docker push kiencuongsoftware/vibely-frontend:latest
+```
+
+The frontend image serves the Vite build with Nginx. Runtime environment:
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `BACKEND_UPSTREAM` | `http://backend:8080` | Nginx upstream for `/api`, OAuth callbacks, share redirects, and WebSocket |
+| `CLIENT_MAX_BODY_SIZE` | `200m` | Nginx upload body limit |
+
+Example local container run against a host backend:
+
+```powershell
+docker run --rm -p 8081:80 `
+  -e BACKEND_UPSTREAM=http://host.docker.internal:8080 `
+  kiencuongsoftware/vibely-frontend:latest
+```
+
 ## OAuth Smoke Tests
 
 Validate Facebook app credentials directly against Meta:
