@@ -81,6 +81,43 @@ curl -s https://vibely.sbs/api/feed/for-you?size=2
 journalctl -u vibely -n 80 --no-pager
 ```
 
+## Build and Push Backend Docker Image
+
+Docker Hub repository:
+
+```text
+kiencuongsoftware/vibely-backend
+```
+
+Build from the backend directory:
+
+```powershell
+cd D:\Worksplace\FullStack\Vibely\backend
+docker build -t kiencuongsoftware/vibely-backend:latest .
+```
+
+Tag an immutable version when preparing a release:
+
+```powershell
+docker tag kiencuongsoftware/vibely-backend:latest kiencuongsoftware/vibely-backend:YYYYMMDD-HHMM
+```
+
+Push:
+
+```powershell
+docker login
+docker push kiencuongsoftware/vibely-backend:latest
+docker push kiencuongsoftware/vibely-backend:YYYYMMDD-HHMM
+```
+
+Run locally with env supplied from a file:
+
+```powershell
+docker run --rm -p 8080:8080 --env-file .\vibely.env kiencuongsoftware/vibely-backend:latest
+```
+
+For VPS/container deployments, keep secrets in the runtime environment rather than baking them into the image. Required values are the same as `/opt/vibely/vibely.env` (database, JWT, S3, OAuth, Redis, mail).
+
 ## OAuth Smoke Tests
 
 Validate Facebook app credentials directly against Meta:
