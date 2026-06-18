@@ -13,6 +13,13 @@
 
 - Validate signature and expiry on every protected route
 - No sensitive claims in payload
+- Invalid Bearer tokens return `401 AUTH_REQUIRED`; `/api/auth/me` without Bearer may return `data: null`
+
+## Native mobile OAuth
+
+- `POST /api/auth/oauth/native` verifies Google/Facebook tokens server-side before issuing a Vibely JWT
+- Mobile sends `X-Vibely-Client: mobile` so the backend can expose the access token for native storage
+- Facebook App Secret and Google client secrets must stay in backend/VPS config, never in Flutter resources
 
 ## Captcha gate
 

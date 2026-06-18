@@ -34,13 +34,16 @@ sequenceDiagram
 
 Access token in `Authorization: Bearer`. Refresh in body to `/api/auth/refresh`.
 
+For `GET /api/auth/me`, a missing Bearer token may return a successful envelope with `data: null` so anonymous UI can detect "not logged in". An invalid or expired Bearer token returns `401 AUTH_REQUIRED`; mobile clears the stale local token and prompts the user to log in again.
+
 ## 6–7.
 
 Multi-device: multiple refresh rows per user allowed. Scaling: JWT verify is CPU-cheap; refresh hits DB.
 
 ## 8. Performance
 
-- No server session store for API (OAuth2 may use session for handshake only)
+- No server session store for API (browser OAuth2 may use session for handshake only)
+- Native mobile OAuth exchanges provider tokens for the same JWT session model through `POST /api/auth/oauth/native`
 
 ## 9. Security
 

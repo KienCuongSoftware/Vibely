@@ -20,17 +20,33 @@
 | POST | `/api/auth/verify-code` | Body: `email`, `code`, optional `purpose` |
 | POST | `/api/auth/reset-password` | Body: `email`, `code`, `newPassword` |
 | POST | `/api/auth/oauth/exchange` | |
+| POST | `/api/auth/oauth/native` | Mobile Google/Facebook; `X-Vibely-Client: mobile` |
+| POST | `/api/auth/complete-onboarding` | Bearer; body `username`, `birthDate` |
+
+`GET /api/auth/me` returns `401 AUTH_REQUIRED` for invalid Bearer tokens. A request without Bearer may return a successful envelope with `data: null`.
 
 ## Feed & video
 
-| Method | Path |
-|--------|------|
-| GET | `/api/feed` |
-| GET | `/api/feed/following` |
-| GET | `/api/videos/{id}` |
-| POST | `/api/videos` |
-| POST | `/api/videos/upload/presign` |
-| POST | `/api/videos/{id}/views` |
+| Method | Path | Auth |
+|--------|------|------|
+| GET | `/api/feed` | No |
+| GET | `/api/feed/for-you` | No |
+| GET | `/api/feed/following` | Bearer |
+| GET | `/api/videos/{id}` | No |
+| POST | `/api/videos` | Bearer |
+| POST | `/api/videos/upload/presign` | Bearer |
+| POST | `/api/videos/{id}/views` | No |
+
+## Users, profile, follows
+
+| Method | Path | Auth |
+|--------|------|------|
+| GET | `/api/users/{username}` | Optional Bearer |
+| GET | `/api/users/{username}/videos?page=&size=` | Optional Bearer |
+| GET | `/api/users/me/videos?page=&size=` | Bearer |
+| GET | `/api/follows/friends` | Bearer |
+| POST | `/api/follows/{userId}` | Bearer |
+| DELETE | `/api/follows/{userId}` | Bearer |
 
 ## Explore
 

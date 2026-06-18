@@ -5,6 +5,7 @@
 [![Java](https://img.shields.io/badge/Java-17+-007396?logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Flutter](https://img.shields.io/badge/Flutter-Mobile-02569B?logo=flutter&logoColor=white)](https://flutter.dev/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)](https://redis.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -102,6 +103,7 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 | Layer         | Technologies                                                                       |
 | ------------- | ---------------------------------------------------------------------------------- |
 | **Frontend**  | React 19, Vite 8, React Router 7, Tailwind CSS 4, TanStack Virtual, HLS.js, Vitest |
+| **Mobile**    | Flutter, `http`, `video_player`, Google Sign-In, Facebook Login                    |
 | **Backend**   | Spring Boot 3.5, Spring Security, Spring Data JPA, Flyway, PostgreSQL              |
 | **Cache**     | Redis 7 (share cache, captcha sessions, rate limits)                               |
 | **Messaging** | Spring WebSocket + STOMP                                                           |
@@ -263,7 +265,7 @@ Legacy numeric routes are **rejected** — no silent fallback to internal IDs.
 
 **Login** — may require captcha (`428 CAPTCHA_REQUIRED`); complete challenge via `GET /api/captcha/challenge` + `POST /api/captcha/verify`, then retry with `X-Captcha-Verification`. Failed attempts do not burn the captcha token until login succeeds.
 
-OAuth providers (Google, Facebook, LINE) exchange through a dedicated security filter chain, then issue the same JWT session model after onboarding (birth date, Vibely ID).
+OAuth providers (Google, Facebook, LINE) exchange through the browser OAuth security chain. Flutter mobile uses `POST /api/auth/oauth/native` with Google `idToken` or Facebook `accessToken`; the backend verifies provider tokens and then issues the same JWT session model after onboarding (birth date, Vibely ID).
 
 **Deeper docs:** [docs/auth/](docs/auth/) · [docs/anti-bot/](docs/anti-bot/)
 
@@ -457,6 +459,11 @@ Vibely/
 │       ├── components/search/  # SearchInput, WatchSearchDropdown, searchUtils
 │       ├── security/           # Anti-bot SDK, captcha UI, fingerprint
 │       └── api/                # API client
+├── mobile/                     # Flutter app (feed, auth, profile, search)
+│   ├── lib/api/                # Mobile API clients
+│   ├── lib/features/auth/      # Email + native Google/Facebook auth
+│   ├── lib/features/for_you/   # TikTok-style feed
+│   └── android/                # Android OAuth metadata and manifest
 ├── docs/                       # Engineering docs (auth, anti-bot, API, …)
 │   ├── erd/                    # Full database ERD (vibely-erd-full.png)
 │   └── database/               # Schema, migrations, indexing
@@ -517,11 +524,15 @@ Create a PostgreSQL database named `vibely` (or configure `DB_URL`).
 | `APP_MAIL_ENABLED`                | Send real OTP emails      | `false` (use `demoCode` in API)       |
 | `SMTP_HOST` / `SMTP_PORT`         | SMTP server               | Gmail `587` when mail enabled         |
 | `SMTP_USERNAME` / `SMTP_PASSWORD` | SMTP credentials          | —                                     |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth web client | —                            |
+| `FACEBOOK_APP_ID` / `FACEBOOK_APP_SECRET` | Facebook OAuth app credentials | —                        |
+| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_ID` | Direct Spring Facebook client ID for VPS | — |
+| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_SECRET` | Direct Spring Facebook secret for VPS | — |
 | `ANTIBOT_HMAC_SECRET`             | Captcha/token signing     | dev default in `application-dev.yaml` |
 | `OPENAI_API_KEY`                  | OpenAI key for discovery  | — (set in `application-local.yaml`)   |
 | `DISCOVERY_OPENAI_ENABLED`        | Enable OpenAI indexing    | `true`                                |
 
-Merge mail/OAuth/S3/discovery secrets into `backend/src/main/resources/application-local.yaml` (gitignored; see `application-dev.yaml` for keys).
+For local dev, merge mail/OAuth/S3/discovery secrets into `backend/src/main/resources/application-local.yaml` (gitignored; see `application-dev.yaml` for keys). The current VPS reads `/opt/vibely/vibely.env` and imports `/opt/vibely/config/application-local.yaml`; see [docs/deployment/README.md](docs/deployment/README.md).
 
 ```bash
 # Discovery (content understanding on upload/edit)
@@ -550,7 +561,17 @@ npm run dev
 
 App: `http://localhost:5173` (proxies `/api` → backend)
 
-### 5. Tests
+### 5. Mobile
+
+```powershell
+cd mobile
+flutter pub get
+flutter run
+```
+
+The mobile app points at `https://vibely.sbs` by default. OAuth setup details are in [mobile/README.md](mobile/README.md).
+
+### 6. Tests
 
 ```bash
 # Backend
@@ -588,7 +609,7 @@ cd frontend && npm test
 - [ ] **Push notifications** — follows, likes, comments
 - [x] **Direct messaging** — STOMP chat with message requests (see [docs/chat/](docs/chat/))
 - [ ] **Real-time** — live comment counts and presence on watch feed
-- [ ] **Mobile apps** — React Native client sharing the same API
+- [x] **Mobile app** — Flutter client sharing the same API
 - [ ] **Live streaming** — RTMP ingest → LL-HLS
 - [ ] **AI moderation** — automated content safety pipeline
 - [ ] **Distributed workers** — SQS/Kafka-driven transcoding fleet
