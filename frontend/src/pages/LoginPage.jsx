@@ -36,7 +36,7 @@ import { clearVerificationToken } from "../security/sdk/antiBotClient.js";
 const OAUTH_ONBOARDING_KEY = "vibely_oauth_pending";
 
 export function LoginPage() {
-  const { token, login, completeOAuthLogin } = useAuth();
+  const { token, user, login, completeOAuthLogin } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const oauthInFlightRef = useRef(false);
@@ -127,8 +127,9 @@ export function LoginPage() {
   }, [resendSeconds]);
 
   useEffect(() => {
-    if (token) {
-      navigate("/foryou", { replace: true });
+    if (token && user) {
+      const destination = String(user.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/foryou";
+      navigate(destination, { replace: true });
       return;
     }
 
@@ -197,9 +198,15 @@ export function LoginPage() {
           username: profile.username ?? oauthData.username,
           displayName: profile.displayName ?? oauthData.displayName,
           email: profile.email ?? oauthData.email,
+          role: profile.role ?? oauthData.role,
           avatarUrl: profile.avatarUrl ?? oauthData.avatarUrl,
         });
-        navigate("/foryou", { replace: true });
+        navigate(
+          String((profile.role ?? oauthData.role) ?? "").toUpperCase() === "ADMIN"
+            ? "/admin"
+            : "/foryou",
+          { replace: true },
+        );
       })
       .catch((error) => {
         oauthInFlightRef.current = false;
@@ -208,7 +215,7 @@ export function LoginPage() {
           { replace: true },
         );
       });
-  }, [completeOAuthLogin, navigate, searchParams, token]);
+  }, [completeOAuthLogin, navigate, searchParams, token, user]);
 
   const startOAuth = (provider) => {
     window.location.href = `${resolveBackendOrigin()}/oauth2/authorization/${provider}`;
