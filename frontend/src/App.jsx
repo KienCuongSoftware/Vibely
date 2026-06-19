@@ -23,6 +23,7 @@ import { HashtagPage } from './pages/HashtagPage.jsx'
 import { ExplorePage } from './pages/ExplorePage.jsx'
 import { ExploreViewerPage } from './pages/ExploreViewerPage.jsx'
 import { SearchResultsPage } from './pages/SearchResultsPage.jsx'
+import { AdminUsersPage } from './pages/AdminUsersPage.jsx'
 import { useAuth } from './state/useAuth'
 import { WatchRedirect } from './components/watch/WatchRedirect.jsx'
 
@@ -58,6 +59,8 @@ function App() {
           <Route path="/vibelystudio/upload" element={<Navigate to="/login" replace />} />
           <Route path="/vibelystudio/upload/post/:publicId" element={<Navigate to="/login" replace />} />
           <Route path="/vibelystudio/comment/:publicId" element={<Navigate to="/login" replace />} />
+          <Route path="/admin" element={<Navigate to="/login" replace />} />
+          <Route path="/admin/users" element={<Navigate to="/login" replace />} />
           <Route path="/activity/:username/video/:publicId" element={<ActivityVideoWatchPage />} />
           <Route path="/:username/video/:publicId" element={<PublicVideoDetailPage />} />
           <Route path="/:username/:publicId" element={<ProfileWatchVideoRoutePage />} />
@@ -90,6 +93,8 @@ function App() {
         <Route path="/vibelystudio/upload/post/:publicId" element={<StudioEditPostPage />} />
         <Route path="/vibelystudio/analytics/:publicId" element={<StudioVideoAnalyticsPage />} />
         <Route path="/vibelystudio/comment/:publicId" element={<StudioPostCommentsPage />} />
+        <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
+        <Route path="/admin/users" element={<AdminUsersPage />} />
         <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
         <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/sound" element={<SoundPage />} />

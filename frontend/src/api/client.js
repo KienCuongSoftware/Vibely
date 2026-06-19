@@ -199,6 +199,8 @@ export const apiClient = {
     request(`/api/studio/analytics/video/${publicId}${toQuery({ days })}`, {
       token,
     }),
+  getAdminUsers: (token, { page = 0, size = 20 } = {}) =>
+    request(`/api/admin/users${toQuery({ page, size })}`, { token }),
   getFollowingFeed: (token, { page = 0, size = 10 } = {}) =>
     request(`/api/feed/following${toQuery({ page, size })}`, { token }),
   createVideo: (payload, token) =>

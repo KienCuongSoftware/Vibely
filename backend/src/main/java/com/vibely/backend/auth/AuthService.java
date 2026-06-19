@@ -291,6 +291,7 @@ public class AuthService {
             user.getUsername(),
             user.getDisplayName(),
             user.getEmail(),
+            user.getRole().name(),
             userAvatarResolver.resolve(user),
             userRequiresOnboardingCheck(user)
         );

@@ -247,6 +247,7 @@ public class AuthController {
                 user.getEmail(),
                 user.getBio(),
                 userAvatarResolver.resolve(user),
+                user.getRole().name(),
                 authService.userRequiresOnboarding(user)
             )
         );

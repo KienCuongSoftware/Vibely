@@ -72,6 +72,7 @@ function mapUserWithDefaultAvatar(userLike) {
     ...userLike,
     username,
     avatarUrl,
+    role: userLike?.role,
   };
 }
 
@@ -91,6 +92,7 @@ function mapAuthSessionToUser(result) {
     username: result.username,
     displayName: result.displayName,
     email: result.email,
+    role: result.role,
     avatarUrl: result.avatarUrl,
   });
 }
@@ -101,6 +103,7 @@ function persistSessionUser(result) {
     username: result.username,
     displayName: result.displayName,
     email: result.email,
+    role: result.role,
     bio: null,
     avatarUrl: mapAuthSessionToUser(result).avatarUrl,
   });
@@ -188,6 +191,7 @@ export function AuthProvider({ children }) {
       username: payload.username,
       displayName: payload.displayName,
       email: payload.email,
+      role: payload.role,
       avatarUrl: payload.avatarUrl,
       needsOnboarding: false,
     });

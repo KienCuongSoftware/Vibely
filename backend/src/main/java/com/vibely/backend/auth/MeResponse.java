@@ -7,6 +7,7 @@ public record MeResponse(
     String email,
     String bio,
     String avatarUrl,
+    String role,
     boolean needsOnboarding
 ) {
 }
