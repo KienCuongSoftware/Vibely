@@ -79,7 +79,7 @@ async function request(path, { method = "GET", body, token, headers: extraHeader
     const err = new Error(localizeError(code, message));
     err.status = response.status;
     if (code) err.code = code;
-    if (response.status === 428 && captchaRequired) {
+    if (captchaRequired && (response.status === 428 || code === "CAPTCHA_REQUIRED")) {
       err.captchaRequired = captchaRequired;
     }
     throw err;

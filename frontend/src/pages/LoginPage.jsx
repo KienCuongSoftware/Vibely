@@ -223,8 +223,8 @@ export function LoginPage() {
       persistLastLoginMethod("email");
       setStatus("Đăng nhập thành công");
     } catch (error) {
-      if (error.status === 428 && error.captchaRequired) {
-        handleCaptchaRequired(error.captchaRequired);
+      if (error.captchaRequired || error.code === "CAPTCHA_REQUIRED") {
+        handleCaptchaRequired(error.captchaRequired ?? { challengeLevel: "ROTATE" });
         setStatus("Vui lòng hoàn thành xác minh bảo mật");
         return;
       }
