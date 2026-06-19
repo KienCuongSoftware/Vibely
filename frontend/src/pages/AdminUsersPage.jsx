@@ -4,6 +4,19 @@ import { AdminLayout } from '../components/AdminLayout.jsx'
 import { useAuth } from '../state/useAuth.js'
 
 const PAGE_SIZE = 20
+const DEFAULT_AVATAR = '/images/users/default-avatar.jpeg'
+
+function roleLabel(role) {
+  return String(role ?? '').toUpperCase() === 'ADMIN' ? 'Quản trị viên' : 'Người dùng'
+}
+
+function resolveAdminAvatarUrl(avatarUrl) {
+  const value = String(avatarUrl ?? '').trim()
+  if (!value || value.startsWith('/api/users/oauth-avatar/')) {
+    return DEFAULT_AVATAR
+  }
+  return value
+}
 
 function formatDateTime(value) {
   if (!value) return '—'
@@ -28,7 +41,7 @@ function RoleBadge({ role }) {
           : 'bg-sky-500/15 text-sky-300 ring-1 ring-sky-500/30'
       }`}
     >
-      {admin ? 'ADMIN' : 'USER'}
+      {roleLabel(role)}
     </span>
   )
 }
@@ -57,6 +70,7 @@ export function AdminUsersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
+  const [selectedRole, setSelectedRole] = useState('ALL')
 
   useEffect(() => {
     document.title = 'Vibely Admin | Quản lý tài khoản'
@@ -91,13 +105,19 @@ export function AdminUsersPage() {
 
   const filteredUsers = useMemo(() => {
     const keyword = query.trim().toLowerCase()
-    if (!keyword) return users
     return users.filter((item) =>
-      [item.username, item.displayName, item.email, item.role]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(keyword)),
+      (selectedRole === 'ALL' || String(item.role ?? '').toUpperCase() === selectedRole) &&
+      (!keyword ||
+        [item.username, item.displayName, item.email, roleLabel(item.role)]
+          .filter(Boolean)
+          .some((value) => String(value).toLowerCase().includes(keyword))),
     )
-  }, [query, users])
+  }, [query, selectedRole, users])
+
+  const availableRoles = useMemo(() => {
+    const roles = new Set(users.map((item) => String(item.role ?? '').toUpperCase()).filter(Boolean))
+    return Array.from(roles).sort((a, b) => roleLabel(a).localeCompare(roleLabel(b), 'vi'))
+  }, [users])
 
   const pageStart = total === 0 ? 0 : page * PAGE_SIZE + 1
   const pageEnd = Math.min(total, page * PAGE_SIZE + users.length)
@@ -106,7 +126,7 @@ export function AdminUsersPage() {
     <AdminLayout
       active="users"
       title="Quản lý tài khoản người dùng"
-      subtitle="Theo dõi danh sách tài khoản, vai trò và trạng thái onboarding."
+      subtitle="Theo dõi danh sách tài khoản, vai trò và trạng thái hoàn tất hồ sơ."
     >
       {!authReady || loading ? (
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center text-sm text-zinc-400">
@@ -116,7 +136,7 @@ export function AdminUsersPage() {
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center">
           <p className="text-lg font-semibold text-zinc-100">Bạn không có quyền truy cập Admin</p>
           <p className="mt-2 text-sm text-zinc-400">
-            Tài khoản hiện tại cần role ADMIN để xem khu vực quản trị.
+            Tài khoản hiện tại cần vai trò Quản trị viên để xem khu vực quản trị.
           </p>
         </section>
       ) : (
@@ -126,14 +146,30 @@ export function AdminUsersPage() {
               <p className="text-sm font-medium text-zinc-200">Tổng tài khoản: {total}</p>
               <p className="mt-1 text-xs text-zinc-500">
                 Đang hiển thị {pageStart}-{pageEnd}
+                {filteredUsers.length !== users.length ? ` • Kết quả lọc: ${filteredUsers.length}` : ''}
               </p>
             </div>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-500 focus:border-pink-500 sm:w-72"
-              placeholder="Tìm username, email, role..."
-            />
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                className="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-pink-500"
+                aria-label="Lọc theo vai trò"
+              >
+                <option value="ALL">Tất cả vai trò</option>
+                {availableRoles.map((role) => (
+                  <option key={role} value={role}>
+                    {roleLabel(role)}
+                  </option>
+                ))}
+              </select>
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-500 focus:border-pink-500 sm:w-72"
+                placeholder="Tìm tên, email, vai trò..."
+              />
+            </div>
           </div>
 
           {error ? <p className="mt-4 text-sm text-amber-400">{error}</p> : null}
@@ -144,18 +180,15 @@ export function AdminUsersPage() {
                 <tr className="border-b border-zinc-800 text-xs text-zinc-500">
                   <th className="py-3 pr-4 font-medium">Người dùng</th>
                   <th className="px-3 py-3 font-medium">Email</th>
-                  <th className="px-3 py-3 font-medium">Role</th>
-                  <th className="px-3 py-3 font-medium">Onboarding</th>
+                  <th className="px-3 py-3 font-medium">Vai trò</th>
+                  <th className="px-3 py-3 font-medium">Hồ sơ</th>
                   <th className="px-3 py-3 font-medium">Ngày tạo</th>
                   <th className="px-3 py-3 font-medium">Cập nhật</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredUsers.map((item) => {
-                  const avatarSrc =
-                    item.avatarUrl && String(item.avatarUrl).trim()
-                      ? item.avatarUrl
-                      : '/images/users/default-avatar.jpeg'
+                  const avatarSrc = resolveAdminAvatarUrl(item.avatarUrl)
                   return (
                     <tr key={item.id} className="border-b border-zinc-800/80">
                       <td className="py-3 pr-4">
@@ -166,7 +199,7 @@ export function AdminUsersPage() {
                             className="h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-zinc-800"
                             referrerPolicy="no-referrer"
                             onError={(e) => {
-                              e.currentTarget.src = '/images/users/default-avatar.jpeg'
+                              e.currentTarget.src = DEFAULT_AVATAR
                             }}
                           />
                           <div className="min-w-0">
