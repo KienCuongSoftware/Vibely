@@ -27,11 +27,16 @@ import { AdminUsersPage } from './pages/AdminUsersPage.jsx'
 import { useAuth } from './state/useAuth'
 import { WatchRedirect } from './components/watch/WatchRedirect.jsx'
 
+function AuthenticatedHomeRedirect({ user }) {
+  if (!user) return null
+  const destination = String(user.role ?? '').toUpperCase() === 'ADMIN' ? '/admin' : '/foryou'
+  return <Navigate to={destination} replace />
+}
+
 function App() {
   const { token, user } = useAuth()
   const shellClass = 'min-h-screen bg-black text-zinc-100'
-  const authenticatedHome =
-    String(user?.role ?? '').toUpperCase() === 'ADMIN' ? '/admin' : '/foryou'
+  const isAdmin = String(user?.role ?? '').toUpperCase() === 'ADMIN'
 
   if (!token) {
     return (
@@ -77,16 +82,16 @@ function App() {
   return (
     <div className={shellClass}>
       <Routes>
-        <Route path="/" element={<Navigate to="/foryou" replace />} />
-        <Route path="/foryou" element={<FeedPage />} />
+        <Route path="/" element={<AuthenticatedHomeRedirect user={user} />} />
+        <Route path="/foryou" element={isAdmin ? <Navigate to="/admin" replace /> : <FeedPage />} />
         <Route path="/following" element={<FollowingPage />} />
         <Route path="/friends" element={<FriendsPage />} />
         <Route path="/messages" element={<MessagesPage />} />
-        <Route path="/feed" element={<Navigate to="/foryou" replace />} />
-        <Route path="/login" element={<Navigate to={authenticatedHome} replace />} />
-        <Route path="/signin" element={<Navigate to={authenticatedHome} replace />} />
-        <Route path="/signup" element={<Navigate to={authenticatedHome} replace />} />
-        <Route path="/register" element={<Navigate to={authenticatedHome} replace />} />
+        <Route path="/feed" element={<AuthenticatedHomeRedirect user={user} />} />
+        <Route path="/login" element={<AuthenticatedHomeRedirect user={user} />} />
+        <Route path="/signin" element={<AuthenticatedHomeRedirect user={user} />} />
+        <Route path="/signup" element={<AuthenticatedHomeRedirect user={user} />} />
+        <Route path="/register" element={<AuthenticatedHomeRedirect user={user} />} />
         <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
         <Route path="/vibelystudio" element={<Navigate to="/vibelystudio/home" replace />} />
         <Route path="/vibelystudio/home" element={<StudioHomePage />} />
@@ -110,7 +115,7 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/:username" element={<ProfilePage />} />
         <Route path="/watch/:publicId" element={<WatchRedirect />} />
-        <Route path="*" element={<Navigate to="/foryou" replace />} />
+        <Route path="*" element={<AuthenticatedHomeRedirect user={user} />} />
       </Routes>
     </div>
   )
