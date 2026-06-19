@@ -28,8 +28,10 @@ import { useAuth } from './state/useAuth'
 import { WatchRedirect } from './components/watch/WatchRedirect.jsx'
 
 function App() {
-  const { token } = useAuth()
+  const { token, user } = useAuth()
   const shellClass = 'min-h-screen bg-black text-zinc-100'
+  const authenticatedHome =
+    String(user?.role ?? '').toUpperCase() === 'ADMIN' ? '/admin' : '/foryou'
 
   if (!token) {
     return (
@@ -81,10 +83,10 @@ function App() {
         <Route path="/friends" element={<FriendsPage />} />
         <Route path="/messages" element={<MessagesPage />} />
         <Route path="/feed" element={<Navigate to="/foryou" replace />} />
-        <Route path="/login" element={<Navigate to="/foryou" replace />} />
-        <Route path="/signin" element={<Navigate to="/foryou" replace />} />
-        <Route path="/signup" element={<Navigate to="/foryou" replace />} />
-        <Route path="/register" element={<Navigate to="/foryou" replace />} />
+        <Route path="/login" element={<Navigate to={authenticatedHome} replace />} />
+        <Route path="/signin" element={<Navigate to={authenticatedHome} replace />} />
+        <Route path="/signup" element={<Navigate to={authenticatedHome} replace />} />
+        <Route path="/register" element={<Navigate to={authenticatedHome} replace />} />
         <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
         <Route path="/vibelystudio" element={<Navigate to="/vibelystudio/home" replace />} />
         <Route path="/vibelystudio/home" element={<StudioHomePage />} />
