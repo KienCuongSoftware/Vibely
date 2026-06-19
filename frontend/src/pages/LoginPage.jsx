@@ -225,10 +225,13 @@ export function LoginPage() {
     setLoading(true);
     setStatus("Đang đăng nhập...");
     try {
-      await login(identifier, password, buildAntiBotHeaders());
+      const result = await login(identifier, password, buildAntiBotHeaders());
       clearVerificationToken();
       persistLastLoginMethod("email");
       setStatus("Đăng nhập thành công");
+      navigate(String(result?.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/foryou", {
+        replace: true,
+      });
     } catch (error) {
       if (error.captchaRequired || error.code === "CAPTCHA_REQUIRED") {
         handleCaptchaRequired(error.captchaRequired ?? { challengeLevel: "ROTATE" });

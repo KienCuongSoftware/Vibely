@@ -120,8 +120,8 @@ export function AuthProvider({ children }) {
 
   const establishSession = (result) => {
     const mapped = mapAuthSessionToUser(result);
-    setToken(COOKIE_SESSION_MARKER);
     setUser(mapped);
+    setToken(COOKIE_SESSION_MARKER);
     persistSessionUser(result);
     return result;
   };
