@@ -31,6 +31,11 @@ public class AdminPostController {
         return ApiResponse.success(adminPostService.listPosts(page, size, query, status));
     }
 
+    @GetMapping("/{publicId}")
+    public ApiResponse<AdminPostResponse> getPost(@PathVariable String publicId) {
+        return ApiResponse.success(adminPostService.getPost(VideoPublicIds.parse(publicId)));
+    }
+
     @DeleteMapping("/{publicId}")
     public ApiResponse<Void> deletePost(@PathVariable String publicId) {
         adminPostService.deletePost(VideoPublicIds.parse(publicId));

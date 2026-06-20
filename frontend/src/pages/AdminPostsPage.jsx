@@ -350,7 +350,7 @@ export function AdminPostsPage() {
                         <td className="px-3 py-3">
                           <div className="flex items-center justify-end gap-2">
                             <Link
-                              to={`/watch/${item.publicId}`}
+                              to={`/admin/posts/${item.publicId}`}
                               className="inline-flex h-9 items-center justify-center rounded-full border border-zinc-700 px-3 text-xs font-semibold text-zinc-200 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-300"
                             >
                               Xem

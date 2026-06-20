@@ -100,6 +100,22 @@ public class AdminPostService {
         notificationService.purgeForRemovedVideo(video.getId());
     }
 
+    @Transactional(readOnly = true)
+    public AdminPostResponse getPost(UUID publicId) {
+        Video video = videoRepository.findWithAuthorByPublicId(publicId)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy bài đăng"));
+        if (video.getStatus() == VideoStatus.REMOVED) {
+            throw new NotFoundException("Không tìm thấy bài đăng");
+        }
+        return toResponse(
+            video,
+            Map.of(video.getId(), likeRepository.countByVideoId(video.getId())),
+            Map.of(video.getId(), commentRepository.countByVideoId(video.getId())),
+            Map.of(video.getId(), videoBookmarkRepository.countByVideo_Id(video.getId())),
+            Map.of(video.getId(), videoViewRepository.countByVideo_Id(video.getId()))
+        );
+    }
+
     private AdminPostResponse toResponse(
         Video video,
         Map<Long, Long> likeCounts,
