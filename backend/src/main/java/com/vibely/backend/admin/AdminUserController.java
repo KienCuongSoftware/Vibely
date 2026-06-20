@@ -73,7 +73,9 @@ public class AdminUserController {
         @PathVariable Long id,
         @Valid @RequestBody AdminUpdateUserRequest request
     ) {
-        return ApiResponse.success(toResponse(adminUserService.updateUser(id, request)));
+        AdminUserUpdateResult result = adminUserService.updateUser(id, request);
+        accountDeletionEmailService.sendAccountUpdated(result.notification());
+        return ApiResponse.success(toResponse(result.user()));
     }
 
     @DeleteMapping("/{id}")

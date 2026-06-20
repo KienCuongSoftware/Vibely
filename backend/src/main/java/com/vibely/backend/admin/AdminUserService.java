@@ -54,18 +54,17 @@ public class AdminUserService {
     }
 
     @Transactional
-    public User updateUser(Long userId, AdminUpdateUserRequest request) {
+    public AdminUserUpdateResult updateUser(Long userId, AdminUpdateUserRequest request) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
 
-        String email = normalizeEmail(request.email());
         String username = usernameService.validateForRegistration(request.username());
         Role role = parseRole(request.role());
+        String oldUsername = user.getUsername();
+        boolean passwordChanged = false;
 
-        ensureEmailAvailable(email, userId);
         ensureUsernameAvailable(username, userId);
 
-        user.setEmail(email);
         user.setUsername(username);
         user.setDisplayName(normalizeDisplayName(request.displayName()));
         user.setRole(role);
@@ -76,9 +75,21 @@ public class AdminUserService {
                 throw new BadRequestException("Mật khẩu phải từ 6 đến 100 ký tự");
             }
             user.setPasswordHash(passwordEncoder.encode(password));
+            passwordChanged = true;
         }
 
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        boolean usernameChanged = !Objects.equals(oldUsername, saved.getUsername());
+        AdminUpdatedUserInfo notification = new AdminUpdatedUserInfo(
+            saved.getId(),
+            saved.getEmail(),
+            saved.getDisplayName(),
+            oldUsername,
+            saved.getUsername(),
+            usernameChanged,
+            passwordChanged
+        );
+        return new AdminUserUpdateResult(saved, notification);
     }
 
     @Transactional

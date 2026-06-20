@@ -110,7 +110,7 @@ function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit
               {isEdit ? 'Sửa người dùng' : 'Thêm người dùng'}
             </h2>
             <p className="mt-1 text-sm text-zinc-500">
-              {isEdit ? 'Bỏ trống mật khẩu nếu muốn giữ mật khẩu hiện tại.' : 'Tạo tài khoản Vibely mới từ trang quản trị.'}
+              {isEdit ? 'Email đã xác minh nên không thể sửa. Bỏ trống mật khẩu nếu muốn giữ mật khẩu hiện tại.' : 'Tạo tài khoản Vibely mới từ trang quản trị.'}
             </p>
           </div>
           <button
@@ -129,9 +129,10 @@ function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit
             <input
               type="email"
               required
+              disabled={isEdit}
               value={form.email}
               onChange={(e) => updateField('email', e.target.value)}
-              className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-red-500"
+              className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-red-500 disabled:cursor-not-allowed disabled:bg-zinc-900/70 disabled:text-zinc-500"
               placeholder="user@example.com"
             />
           </div>
@@ -160,7 +161,7 @@ function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit
             <select
               value={form.role}
               onChange={(e) => updateField('role', e.target.value)}
-              className="w-full rounded-xl border border-red-500/60 bg-red-600 px-4 py-3 text-sm font-semibold text-white outline-none transition focus:border-red-300"
+              className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm font-semibold text-zinc-100 outline-none transition hover:border-red-500 hover:bg-red-500/10 focus:border-red-500"
             >
               <option value="USER">Người dùng</option>
               <option value="ADMIN">Quản trị viên</option>
@@ -193,7 +194,7 @@ function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-xl border border-zinc-800 bg-black px-5 py-3 text-sm font-bold text-zinc-100 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? 'Đang lưu...' : isEdit ? 'Lưu thay đổi' : 'Thêm người dùng'}
           </button>
@@ -249,7 +250,7 @@ function DeleteConfirmModal({ user, submitting, error, onClose, onConfirm }) {
             type="button"
             onClick={onConfirm}
             disabled={submitting}
-            className="rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-xl border border-zinc-800 bg-black px-5 py-3 text-sm font-bold text-zinc-100 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? 'Đang xóa...' : 'Xóa tài khoản'}
           </button>
@@ -429,7 +430,7 @@ export function AdminUsersPage() {
               <select
                 value={selectedRole}
                 onChange={(e) => setSelectedRole(e.target.value)}
-                className="h-12 rounded-full border border-red-500/60 bg-red-600 px-5 text-sm font-semibold text-white outline-none transition focus:border-red-300"
+                className="h-12 rounded-full border border-zinc-700 bg-zinc-950 px-5 text-sm font-semibold text-zinc-100 outline-none transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200 focus:border-red-500"
                 aria-label="Lọc theo vai trò"
               >
                 <option value="ALL">Tất cả vai trò</option>
@@ -442,7 +443,7 @@ export function AdminUsersPage() {
               <button
                 type="button"
                 onClick={openCreateModal}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-red-600 px-5 text-sm font-bold text-white transition hover:bg-red-500"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-zinc-700 bg-zinc-950 px-5 text-sm font-bold text-zinc-100 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200"
               >
                 <IoAdd className="text-lg" aria-hidden />
                 Thêm người dùng
