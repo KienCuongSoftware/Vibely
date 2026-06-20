@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { IoChevronBack, IoChevronForward } from 'react-icons/io5'
 import { apiClient } from '../api/client.js'
 import { AdminLayout } from '../components/AdminLayout.jsx'
 import { useAuth } from '../state/useAuth.js'
@@ -238,19 +239,21 @@ export function AdminUsersPage() {
             <button
               type="button"
               disabled={page === 0}
-              className="rounded-md border border-zinc-700 px-3 py-2 text-sm text-zinc-200 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-700 text-zinc-200 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Trang trước"
               onClick={() => setPage((current) => Math.max(current - 1, 0))}
             >
-              Trước
+              <IoChevronBack className="text-lg" aria-hidden />
             </button>
             <span className="px-2 text-sm text-zinc-500">Trang {page + 1}</span>
             <button
               type="button"
               disabled={!hasNext}
-              className="rounded-md border border-zinc-700 px-3 py-2 text-sm text-zinc-200 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-700 text-zinc-200 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Trang sau"
               onClick={() => setPage((current) => current + 1)}
             >
-              Sau
+              <IoChevronForward className="text-lg" aria-hidden />
             </button>
           </div>
         </section>
