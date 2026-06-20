@@ -201,6 +201,10 @@ export const apiClient = {
     }),
   getAdminUsers: (token, { page = 0, size = 20 } = {}) =>
     request(`/api/admin/users${toQuery({ page, size })}`, { token }),
+  getAdminPosts: (token, { page = 0, size = 20, query, status } = {}) =>
+    request(`/api/admin/posts${toQuery({ page, size, query, status })}`, { token }),
+  deleteAdminPost: (token, publicId) =>
+    request(`/api/admin/posts/${publicId}`, { method: "DELETE", token }),
   createAdminUser: (token, payload) =>
     request("/api/admin/users", { method: "POST", token, body: payload }),
   updateAdminUser: (token, userId, payload) =>

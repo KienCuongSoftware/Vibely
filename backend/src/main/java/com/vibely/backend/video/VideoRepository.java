@@ -25,6 +25,43 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     @Query("SELECT v.author.id FROM Video v WHERE v.publicId = :publicId")
     Optional<Long> findAuthorIdByPublicId(@Param("publicId") UUID publicId);
 
+    @Query(
+        value = """
+            select v from Video v
+            join fetch v.author a
+            where v.status <> com.vibely.backend.video.VideoStatus.REMOVED
+              and (:status is null or v.status = :status)
+              and (
+                :query is null
+                or lower(coalesce(v.title, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(v.description, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(a.username, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(a.displayName, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(a.email, '')) like lower(concat('%', :query, '%'))
+              )
+            order by v.createdAt desc
+            """,
+        countQuery = """
+            select count(v) from Video v
+            join v.author a
+            where v.status <> com.vibely.backend.video.VideoStatus.REMOVED
+              and (:status is null or v.status = :status)
+              and (
+                :query is null
+                or lower(coalesce(v.title, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(v.description, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(a.username, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(a.displayName, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(a.email, '')) like lower(concat('%', :query, '%'))
+              )
+            """
+    )
+    Page<Video> findAdminPosts(
+        @Param("query") String query,
+        @Param("status") VideoStatus status,
+        Pageable pageable
+    );
+
     Page<Video> findByStatusOrderByCreatedAtDesc(VideoStatus status, Pageable pageable);
     Page<Video> findByAuthorInAndStatusOrderByCreatedAtDesc(Collection<User> authors, VideoStatus status, Pageable pageable);
 

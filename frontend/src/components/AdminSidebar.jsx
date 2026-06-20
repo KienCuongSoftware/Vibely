@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { IoPeopleOutline } from 'react-icons/io5'
+import { IoPeopleOutline, IoVideocamOutline } from 'react-icons/io5'
 
 const ADMIN_NAV_ITEMS = [
   {
@@ -8,6 +8,12 @@ const ADMIN_NAV_ITEMS = [
     to: '/admin/users',
     label: 'Quản lý tài khoản',
     icon: IoPeopleOutline,
+  },
+  {
+    id: 'posts',
+    to: '/admin/posts',
+    label: 'Quản lý bài đăng',
+    icon: IoVideocamOutline,
   },
 ]
 

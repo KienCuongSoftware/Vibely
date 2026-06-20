@@ -24,6 +24,7 @@ import { ExplorePage } from './pages/ExplorePage.jsx'
 import { ExploreViewerPage } from './pages/ExploreViewerPage.jsx'
 import { SearchResultsPage } from './pages/SearchResultsPage.jsx'
 import { AdminUsersPage } from './pages/AdminUsersPage.jsx'
+import { AdminPostsPage } from './pages/AdminPostsPage.jsx'
 import { useAuth } from './state/useAuth'
 import { WatchRedirect } from './components/watch/WatchRedirect.jsx'
 
@@ -76,6 +77,7 @@ function App() {
           <Route path="/vibelystudio/comment/:publicId" element={<Navigate to="/login" replace />} />
           <Route path="/admin" element={<Navigate to="/login" replace />} />
           <Route path="/admin/users" element={<Navigate to="/login" replace />} />
+          <Route path="/admin/posts" element={<Navigate to="/login" replace />} />
           <Route path="/activity/:username/video/:publicId" element={<ActivityVideoWatchPage />} />
           <Route path="/:username/video/:publicId" element={<PublicVideoDetailPage />} />
           <Route path="/:username/:publicId" element={<ProfileWatchVideoRoutePage />} />
@@ -121,6 +123,14 @@ function App() {
           element={
             <AdminRoute user={user}>
               <AdminUsersPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/posts"
+          element={
+            <AdminRoute user={user}>
+              <AdminPostsPage />
             </AdminRoute>
           }
         />
