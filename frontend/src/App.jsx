@@ -33,6 +33,14 @@ function AuthenticatedHomeRedirect({ user }) {
   return <Navigate to={destination} replace />
 }
 
+function AdminRoute({ user, children }) {
+  if (!user) return null
+  if (String(user.role ?? '').toUpperCase() !== 'ADMIN') {
+    return <Navigate to="/foryou" replace />
+  }
+  return children
+}
+
 function App() {
   const { token, user } = useAuth()
   const shellClass = 'min-h-screen bg-black text-zinc-100'
@@ -100,8 +108,22 @@ function App() {
         <Route path="/vibelystudio/upload/post/:publicId" element={<StudioEditPostPage />} />
         <Route path="/vibelystudio/analytics/:publicId" element={<StudioVideoAnalyticsPage />} />
         <Route path="/vibelystudio/comment/:publicId" element={<StudioPostCommentsPage />} />
-        <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
-        <Route path="/admin/users" element={<AdminUsersPage />} />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute user={user}>
+              <Navigate to="/admin/users" replace />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminRoute user={user}>
+              <AdminUsersPage />
+            </AdminRoute>
+          }
+        />
         <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
         <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/sound" element={<SoundPage />} />
