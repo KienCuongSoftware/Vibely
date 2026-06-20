@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   IoAdd,
   IoChevronBack,
+  IoChevronDown,
   IoChevronForward,
   IoClose,
   IoPencil,
@@ -77,6 +78,58 @@ function OnboardingBadge({ completed }) {
 
 function FieldLabel({ children }) {
   return <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500">{children}</label>
+}
+
+function RoleDropdown({ value, options, onChange, ariaLabel, buttonClassName = '' }) {
+  const [open, setOpen] = useState(false)
+  const selected = options.find((option) => option.value === value) ?? options[0]
+
+  return (
+    <div
+      className="relative"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setOpen(false)
+        }
+      }}
+    >
+      <button
+        type="button"
+        aria-label={ariaLabel}
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+        className={`flex items-center justify-between gap-3 border border-zinc-700 bg-zinc-950 text-sm font-semibold text-zinc-100 outline-none transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200 focus:border-red-500 ${buttonClassName}`}
+      >
+        <span className="truncate">{selected?.label}</span>
+        <IoChevronDown className={`shrink-0 text-base transition ${open ? 'rotate-180 text-red-300' : ''}`} aria-hidden />
+      </button>
+      {open ? (
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-b-2xl rounded-t-md border border-zinc-800 bg-black shadow-2xl shadow-black/70">
+          {options.map((option) => {
+            const active = option.value === value
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => {
+                  onChange(option.value)
+                  setOpen(false)
+                }}
+                className={`block w-full px-5 py-3 text-left text-sm transition ${
+                  active
+                    ? 'bg-red-500/10 font-semibold text-red-200'
+                    : 'text-zinc-200 hover:bg-red-500/10 hover:text-red-200'
+                }`}
+              >
+                {option.label}
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
+    </div>
+  )
 }
 
 function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit }) {
@@ -158,14 +211,16 @@ function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit
           </div>
           <div className="space-y-1.5">
             <FieldLabel>Vai trò</FieldLabel>
-            <select
+            <RoleDropdown
               value={form.role}
-              onChange={(e) => updateField('role', e.target.value)}
-              className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm font-semibold text-zinc-100 outline-none transition hover:border-red-500 hover:bg-red-500/10 focus:border-red-500"
-            >
-              <option value="USER">Người dùng</option>
-              <option value="ADMIN">Quản trị viên</option>
-            </select>
+              onChange={(role) => updateField('role', role)}
+              options={[
+                { value: 'USER', label: 'Người dùng' },
+                { value: 'ADMIN', label: 'Quản trị viên' },
+              ]}
+              ariaLabel="Chọn vai trò"
+              buttonClassName="w-full rounded-xl px-4 py-3"
+            />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <FieldLabel>Mật khẩu</FieldLabel>
@@ -324,6 +379,14 @@ export function AdminUsersPage() {
     return Array.from(roles).sort((a, b) => roleLabel(a).localeCompare(roleLabel(b), 'vi'))
   }, [users])
 
+  const roleFilterOptions = useMemo(
+    () => [
+      { value: 'ALL', label: 'Tất cả vai trò' },
+      ...availableRoles.map((role) => ({ value: role, label: roleLabel(role) })),
+    ],
+    [availableRoles],
+  )
+
   const openCreateModal = () => {
     setModalError('')
     setEditingUser(null)
@@ -427,19 +490,13 @@ export function AdminUsersPage() {
               placeholder="Tìm theo tên, email, Vibely ID hoặc vai trò..."
             />
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center xl:justify-end">
-              <select
+              <RoleDropdown
                 value={selectedRole}
-                onChange={(e) => setSelectedRole(e.target.value)}
-                className="h-12 rounded-full border border-zinc-700 bg-zinc-950 px-5 text-sm font-semibold text-zinc-100 outline-none transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200 focus:border-red-500"
-                aria-label="Lọc theo vai trò"
-              >
-                <option value="ALL">Tất cả vai trò</option>
-                {availableRoles.map((role) => (
-                  <option key={role} value={role}>
-                    {roleLabel(role)}
-                  </option>
-                ))}
-              </select>
+                onChange={setSelectedRole}
+                options={roleFilterOptions}
+                ariaLabel="Lọc theo vai trò"
+                buttonClassName="h-12 min-w-44 rounded-full px-5"
+              />
               <button
                 type="button"
                 onClick={openCreateModal}
