@@ -62,11 +62,10 @@ public class AdminPostService {
         int safeSize = Math.min(Math.max(size, 1), 100);
         VideoStatus parsedStatus = parseStatus(status);
         String normalizedQuery = normalizeQuery(query);
-        Page<Video> result = videoRepository.findAdminPosts(
-            normalizedQuery,
-            parsedStatus,
-            PageRequest.of(safePage, safeSize)
-        );
+        PageRequest pageable = PageRequest.of(safePage, safeSize);
+        Page<Video> result = parsedStatus == null
+            ? videoRepository.findAdminPosts(normalizedQuery, pageable)
+            : videoRepository.findAdminPostsByStatus(normalizedQuery, parsedStatus, pageable);
         Collection<Long> ids = result.getContent().stream().map(Video::getId).toList();
         Map<Long, Long> likeCounts = ids.isEmpty() ? Map.of() : groupedCounts(likeRepository.countGroupedByVideoIds(ids));
         Map<Long, Long> commentCounts = ids.isEmpty() ? Map.of() : groupedCounts(commentRepository.countGroupedByVideoIds(ids));
@@ -136,7 +135,7 @@ public class AdminPostService {
     }
 
     private String normalizeQuery(String query) {
-        return StringUtils.hasText(query) ? query.trim() : null;
+        return StringUtils.hasText(query) ? query.trim() : "";
     }
 
     private Map<Long, Long> groupedCounts(Collection<Object[]> rows) {

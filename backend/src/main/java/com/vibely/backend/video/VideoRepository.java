@@ -30,10 +30,8 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
             select v from Video v
             join fetch v.author a
             where v.status <> com.vibely.backend.video.VideoStatus.REMOVED
-              and (:status is null or v.status = :status)
               and (
-                :query is null
-                or lower(coalesce(v.title, '')) like lower(concat('%', :query, '%'))
+                lower(coalesce(v.title, '')) like lower(concat('%', :query, '%'))
                 or lower(coalesce(v.description, '')) like lower(concat('%', :query, '%'))
                 or lower(coalesce(a.username, '')) like lower(concat('%', :query, '%'))
                 or lower(coalesce(a.displayName, '')) like lower(concat('%', :query, '%'))
@@ -45,10 +43,8 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
             select count(v) from Video v
             join v.author a
             where v.status <> com.vibely.backend.video.VideoStatus.REMOVED
-              and (:status is null or v.status = :status)
               and (
-                :query is null
-                or lower(coalesce(v.title, '')) like lower(concat('%', :query, '%'))
+                lower(coalesce(v.title, '')) like lower(concat('%', :query, '%'))
                 or lower(coalesce(v.description, '')) like lower(concat('%', :query, '%'))
                 or lower(coalesce(a.username, '')) like lower(concat('%', :query, '%'))
                 or lower(coalesce(a.displayName, '')) like lower(concat('%', :query, '%'))
@@ -57,6 +53,40 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
             """
     )
     Page<Video> findAdminPosts(
+        @Param("query") String query,
+        Pageable pageable
+    );
+
+    @Query(
+        value = """
+            select v from Video v
+            join fetch v.author a
+            where v.status <> com.vibely.backend.video.VideoStatus.REMOVED
+              and v.status = :status
+              and (
+                lower(coalesce(v.title, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(v.description, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(a.username, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(a.displayName, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(a.email, '')) like lower(concat('%', :query, '%'))
+              )
+            order by v.createdAt desc
+            """,
+        countQuery = """
+            select count(v) from Video v
+            join v.author a
+            where v.status <> com.vibely.backend.video.VideoStatus.REMOVED
+              and v.status = :status
+              and (
+                lower(coalesce(v.title, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(v.description, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(a.username, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(a.displayName, '')) like lower(concat('%', :query, '%'))
+                or lower(coalesce(a.email, '')) like lower(concat('%', :query, '%'))
+              )
+            """
+    )
+    Page<Video> findAdminPostsByStatus(
         @Param("query") String query,
         @Param("status") VideoStatus status,
         Pageable pageable
