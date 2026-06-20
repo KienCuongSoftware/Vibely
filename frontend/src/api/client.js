@@ -201,6 +201,12 @@ export const apiClient = {
     }),
   getAdminUsers: (token, { page = 0, size = 20 } = {}) =>
     request(`/api/admin/users${toQuery({ page, size })}`, { token }),
+  createAdminUser: (token, payload) =>
+    request("/api/admin/users", { method: "POST", token, body: payload }),
+  updateAdminUser: (token, userId, payload) =>
+    request(`/api/admin/users/${userId}`, { method: "PUT", token, body: payload }),
+  deleteAdminUser: (token, userId) =>
+    request(`/api/admin/users/${userId}`, { method: "DELETE", token }),
   getFollowingFeed: (token, { page = 0, size = 10 } = {}) =>
     request(`/api/feed/following${toQuery({ page, size })}`, { token }),
   createVideo: (payload, token) =>

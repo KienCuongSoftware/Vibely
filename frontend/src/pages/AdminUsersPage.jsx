@@ -1,11 +1,25 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { IoChevronBack, IoChevronForward } from 'react-icons/io5'
+import {
+  IoAdd,
+  IoChevronBack,
+  IoChevronForward,
+  IoClose,
+  IoPencil,
+  IoTrash,
+} from 'react-icons/io5'
 import { apiClient } from '../api/client.js'
 import { AdminLayout } from '../components/AdminLayout.jsx'
 import { useAuth } from '../state/useAuth.js'
 
 const PAGE_SIZE = 20
 const DEFAULT_AVATAR = '/images/users/default-avatar.jpeg'
+const EMPTY_FORM = {
+  email: '',
+  username: '',
+  displayName: '',
+  role: 'USER',
+  password: '',
+}
 
 function roleLabel(role) {
   return String(role ?? '').toUpperCase() === 'ADMIN' ? 'Quản trị viên' : 'Người dùng'
@@ -61,6 +75,190 @@ function OnboardingBadge({ completed }) {
   )
 }
 
+function FieldLabel({ children }) {
+  return <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500">{children}</label>
+}
+
+function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit }) {
+  const [form, setForm] = useState(() => ({
+    ...EMPTY_FORM,
+    email: initialUser?.email ?? '',
+    username: initialUser?.username ?? '',
+    displayName: initialUser?.displayName ?? '',
+    role: String(initialUser?.role ?? 'USER').toUpperCase(),
+  }))
+  const isEdit = mode === 'edit'
+
+  const updateField = (field, value) => {
+    setForm((current) => ({ ...current, [field]: value }))
+  }
+
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    onSubmit(form)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-xl rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/60"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-bold text-zinc-100">
+              {isEdit ? 'Sửa người dùng' : 'Thêm người dùng'}
+            </h2>
+            <p className="mt-1 text-sm text-zinc-500">
+              {isEdit ? 'Bỏ trống mật khẩu nếu muốn giữ mật khẩu hiện tại.' : 'Tạo tài khoản Vibely mới từ trang quản trị.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-2 text-zinc-500 transition hover:bg-zinc-900 hover:text-zinc-100"
+            aria-label="Đóng"
+          >
+            <IoClose className="text-xl" aria-hidden />
+          </button>
+        </div>
+
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <FieldLabel>Email</FieldLabel>
+            <input
+              type="email"
+              required
+              value={form.email}
+              onChange={(e) => updateField('email', e.target.value)}
+              className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-red-500"
+              placeholder="user@example.com"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <FieldLabel>Vibely ID</FieldLabel>
+            <input
+              required
+              value={form.username}
+              onChange={(e) => updateField('username', e.target.value)}
+              className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-red-500"
+              placeholder="vibely.id"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <FieldLabel>Tên hiển thị</FieldLabel>
+            <input
+              required
+              value={form.displayName}
+              onChange={(e) => updateField('displayName', e.target.value)}
+              className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-red-500"
+              placeholder="Tên người dùng"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <FieldLabel>Vai trò</FieldLabel>
+            <select
+              value={form.role}
+              onChange={(e) => updateField('role', e.target.value)}
+              className="w-full rounded-xl border border-red-500/60 bg-red-600 px-4 py-3 text-sm font-semibold text-white outline-none transition focus:border-red-300"
+            >
+              <option value="USER">Người dùng</option>
+              <option value="ADMIN">Quản trị viên</option>
+            </select>
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <FieldLabel>Mật khẩu</FieldLabel>
+            <input
+              type="password"
+              required={!isEdit}
+              value={form.password}
+              onChange={(e) => updateField('password', e.target.value)}
+              className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-red-500"
+              placeholder={isEdit ? 'Bỏ trống để giữ mật khẩu hiện tại' : 'Nhập mật khẩu'}
+            />
+          </div>
+        </div>
+
+        {error ? <p className="mt-4 rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</p> : null}
+
+        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={submitting}
+            className="rounded-xl border border-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-300 transition hover:bg-zinc-900 disabled:opacity-50"
+          >
+            Hủy
+          </button>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {submitting ? 'Đang lưu...' : isEdit ? 'Lưu thay đổi' : 'Thêm người dùng'}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
+function DeleteConfirmModal({ user, submitting, error, onClose, onConfirm }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">
+      <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/60">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-bold text-zinc-100">Xác nhận xóa tài khoản</h2>
+            <p className="mt-1 text-sm text-zinc-500">
+              Hành động này sẽ xóa tài khoản và dữ liệu liên quan, không thể hoàn tác.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-2 text-zinc-500 transition hover:bg-zinc-900 hover:text-zinc-100"
+            aria-label="Đóng"
+          >
+            <IoClose className="text-xl" aria-hidden />
+          </button>
+        </div>
+
+        <div className="mt-5 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
+          <p>
+            Bạn sắp xóa <strong>{user?.displayName || 'Người dùng Vibely'}</strong> (@{user?.username || 'unknown'}).
+          </p>
+          <p className="mt-2 text-red-200/90">Email nhận thông báo: {user?.email || 'Không có email'}</p>
+          <p className="mt-3 text-red-200/90">
+            Video, follow, lượt thích, bookmark, repost, bình luận, thông báo và dữ liệu phụ liên quan sẽ bị xóa theo giao dịch.
+          </p>
+        </div>
+
+        {error ? <p className="mt-4 rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</p> : null}
+
+        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={submitting}
+            className="rounded-xl border border-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-300 transition hover:bg-zinc-900 disabled:opacity-50"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={submitting}
+            className="rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {submitting ? 'Đang xóa...' : 'Xóa tài khoản'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function AdminUsersPage() {
   const { token, user, authReady } = useAuth()
   const isAdmin = String(user?.role ?? '').toUpperCase() === 'ADMIN'
@@ -72,6 +270,11 @@ export function AdminUsersPage() {
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
   const [selectedRole, setSelectedRole] = useState('ALL')
+  const [formMode, setFormMode] = useState(null)
+  const [editingUser, setEditingUser] = useState(null)
+  const [deletingUser, setDeletingUser] = useState(null)
+  const [modalError, setModalError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     document.title = 'Vibely Admin | Quản lý tài khoản'
@@ -120,8 +323,77 @@ export function AdminUsersPage() {
     return Array.from(roles).sort((a, b) => roleLabel(a).localeCompare(roleLabel(b), 'vi'))
   }, [users])
 
-  const pageStart = total === 0 ? 0 : page * PAGE_SIZE + 1
-  const pageEnd = Math.min(total, page * PAGE_SIZE + users.length)
+  const openCreateModal = () => {
+    setModalError('')
+    setEditingUser(null)
+    setFormMode('create')
+  }
+
+  const openEditModal = (item) => {
+    setModalError('')
+    setEditingUser(item)
+    setFormMode('edit')
+  }
+
+  const openDeleteModal = (item) => {
+    setModalError('')
+    setDeletingUser(item)
+  }
+
+  const closeModals = () => {
+    if (submitting) return
+    setFormMode(null)
+    setEditingUser(null)
+    setDeletingUser(null)
+    setModalError('')
+  }
+
+  const handleSubmitUser = async (form) => {
+    setSubmitting(true)
+    setModalError('')
+    try {
+      const payload = {
+        email: form.email.trim(),
+        username: form.username.trim(),
+        displayName: form.displayName.trim(),
+        role: form.role,
+        password: form.password,
+      }
+      if (formMode === 'edit' && editingUser?.id) {
+        await apiClient.updateAdminUser(token, editingUser.id, payload)
+      } else {
+        await apiClient.createAdminUser(token, payload)
+      }
+      setFormMode(null)
+      setEditingUser(null)
+      setModalError('')
+      await loadUsers()
+    } catch (e) {
+      setModalError(e.message ?? 'Không lưu được người dùng.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeleteUser = async () => {
+    if (!deletingUser?.id) return
+    setSubmitting(true)
+    setModalError('')
+    try {
+      await apiClient.deleteAdminUser(token, deletingUser.id)
+      setDeletingUser(null)
+      setModalError('')
+      if (users.length === 1 && page > 0) {
+        setPage((current) => Math.max(current - 1, 0))
+      } else {
+        await loadUsers()
+      }
+    } catch (e) {
+      setModalError(e.message ?? 'Không xóa được người dùng.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <AdminLayout
@@ -141,20 +413,23 @@ export function AdminUsersPage() {
           </p>
         </section>
       ) : (
+        <>
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-medium text-zinc-200">Tổng tài khoản: {total}</p>
-              <p className="mt-1 text-xs text-zinc-500">
-                Đang hiển thị {pageStart}-{pageEnd}
-                {filteredUsers.length !== users.length ? ` • Kết quả lọc: ${filteredUsers.length}` : ''}
-              </p>
+          <div className="grid gap-3 xl:grid-cols-[minmax(160px,220px)_minmax(320px,1fr)_auto] xl:items-center">
+            <div className="min-w-0">
+              <p className="text-sm font-bold uppercase tracking-wide text-zinc-200">Tổng tài khoản: {total}</p>
             </div>
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="h-12 w-full rounded-full border border-zinc-700 bg-zinc-950 px-5 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-500 focus:border-red-500"
+              placeholder="Tìm theo tên, email, Vibely ID hoặc vai trò..."
+            />
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center xl:justify-end">
               <select
                 value={selectedRole}
                 onChange={(e) => setSelectedRole(e.target.value)}
-                className="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-pink-500"
+                className="h-12 rounded-full border border-red-500/60 bg-red-600 px-5 text-sm font-semibold text-white outline-none transition focus:border-red-300"
                 aria-label="Lọc theo vai trò"
               >
                 <option value="ALL">Tất cả vai trò</option>
@@ -164,19 +439,21 @@ export function AdminUsersPage() {
                   </option>
                 ))}
               </select>
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-500 focus:border-pink-500 sm:w-72"
-                placeholder="Tìm tên, email, vai trò..."
-              />
+              <button
+                type="button"
+                onClick={openCreateModal}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-red-600 px-5 text-sm font-bold text-white transition hover:bg-red-500"
+              >
+                <IoAdd className="text-lg" aria-hidden />
+                Thêm người dùng
+              </button>
             </div>
           </div>
 
           {error ? <p className="mt-4 text-sm text-amber-400">{error}</p> : null}
 
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[900px] border-collapse text-left text-sm text-zinc-200">
+            <table className="w-full min-w-[1020px] border-collapse text-left text-sm text-zinc-200">
               <thead>
                 <tr className="border-b border-zinc-800 text-xs text-zinc-500">
                   <th className="py-3 pr-4 font-medium">Người dùng</th>
@@ -185,11 +462,15 @@ export function AdminUsersPage() {
                   <th className="px-3 py-3 font-medium">Hồ sơ</th>
                   <th className="px-3 py-3 font-medium">Ngày tạo</th>
                   <th className="px-3 py-3 font-medium">Cập nhật</th>
+                  <th className="px-3 py-3 text-right font-medium">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredUsers.map((item) => {
                   const avatarSrc = resolveAdminAvatarUrl(item.avatarUrl)
+                  const itemIsAdmin = String(item.role ?? '').toUpperCase() === 'ADMIN'
+                  const itemIsSelf = Number(item.id) === Number(user?.id)
+                  const cannotDelete = itemIsAdmin || itemIsSelf
                   return (
                     <tr key={item.id} className="border-b border-zinc-800/80">
                       <td className="py-3 pr-4">
@@ -221,6 +502,28 @@ export function AdminUsersPage() {
                       </td>
                       <td className="whitespace-nowrap px-3 py-3 text-xs text-zinc-400">
                         {formatDateTime(item.updatedAt)}
+                      </td>
+                      <td className="px-3 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(item)}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-700 text-zinc-200 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-300"
+                            aria-label={`Sửa ${item.username}`}
+                          >
+                            <IoPencil className="text-base" aria-hidden />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openDeleteModal(item)}
+                            disabled={cannotDelete}
+                            title={cannotDelete ? 'Không thể xóa chính mình hoặc tài khoản ADMIN' : 'Xóa người dùng'}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-700 text-zinc-200 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-35"
+                            aria-label={`Xóa ${item.username}`}
+                          >
+                            <IoTrash className="text-base" aria-hidden />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )
@@ -257,6 +560,26 @@ export function AdminUsersPage() {
             </button>
           </div>
         </section>
+        {formMode ? (
+          <UserFormModal
+            mode={formMode}
+            initialUser={editingUser}
+            submitting={submitting}
+            error={modalError}
+            onClose={closeModals}
+            onSubmit={handleSubmitUser}
+          />
+        ) : null}
+        {deletingUser ? (
+          <DeleteConfirmModal
+            user={deletingUser}
+            submitting={submitting}
+            error={modalError}
+            onClose={closeModals}
+            onConfirm={handleDeleteUser}
+          />
+        ) : null}
+        </>
       )}
     </AdminLayout>
   )
