@@ -2,7 +2,8 @@ package com.vibely.backend.auth;
 
 public enum OtpCodePurpose {
     REGISTER,
-    PASSWORD_RESET;
+    PASSWORD_RESET,
+    ACCOUNT_DEACTIVATION;
 
     public static OtpCodePurpose fromRequestValue(String raw) {
         if (raw == null || raw.isBlank()) {

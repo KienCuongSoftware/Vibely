@@ -25,6 +25,10 @@ public class AppUserDetailsService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
             user.getEmail(),
             user.getPasswordHash(),
+            user.isActive(),
+            true,
+            true,
+            true,
             AuthorityUtils.createAuthorityList("ROLE_" + user.getRole().name())
         );
     }

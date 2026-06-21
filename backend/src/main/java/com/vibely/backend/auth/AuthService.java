@@ -114,10 +114,16 @@ public class AuthService {
             );
         } catch (AuthenticationException ex) {
             authProtectionService.onLoginFailure(request.getEmail(), httpRequest);
+            userRepository.findByEmail(request.getEmail())
+                .filter(user -> !user.isActive())
+                .ifPresent(user -> {
+                    throw new BadRequestException("Tài khoản đã bị hủy kích hoạt");
+                });
             throw new BadRequestException("Thông tin đăng nhập không chính xác");
         }
         User user = userRepository.findByEmail(request.getEmail())
             .orElseThrow(() -> new BadRequestException("Thông tin đăng nhập không chính xác"));
+        ensureActive(user);
         authProtectionService.consumeLoginVerification(httpRequest);
         authProtectionService.onLoginSuccess(request.getEmail(), httpRequest);
         return issueTokens(user);
@@ -129,6 +135,7 @@ public class AuthService {
         if (token.isRevoked() || token.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Refresh token đã hết hạn hoặc đã bị thu hồi");
         }
+        ensureActive(token.getUser());
         token.setRevoked(true);
         return issueTokens(token.getUser());
     }
@@ -156,6 +163,7 @@ public class AuthService {
         }
 
         var existingUser = userRepository.findByEmail(email);
+        existingUser.ifPresent(this::ensureActive);
         User user = existingUser.orElseGet(() -> {
             User created = new User();
             created.setEmail(email);
@@ -273,6 +281,7 @@ public class AuthService {
     }
 
     private AuthResponse issueTokens(User user) {
+        ensureActive(user);
         String accessToken = jwtService.generateToken(user.getEmail());
         String refreshTokenRaw = generateRefreshToken();
 
@@ -295,6 +304,12 @@ public class AuthService {
             userAvatarResolver.resolve(user),
             userRequiresOnboardingCheck(user)
         );
+    }
+
+    private void ensureActive(User user) {
+        if (!user.isActive()) {
+            throw new BadRequestException("Tài khoản đã bị hủy kích hoạt");
+        }
     }
 
     private static String oauthProviderLabel(String registrationId) {

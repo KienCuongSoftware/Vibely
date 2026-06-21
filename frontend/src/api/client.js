@@ -140,6 +140,10 @@ export const apiClient = {
     request("/api/auth/verify-code", { method: "POST", body: payload }),
   resetPassword: (payload) =>
     request("/api/auth/reset-password", { method: "POST", body: payload }),
+  sendAccountDeactivationCode: (token) =>
+    request("/api/account/deactivation/send-code", { method: "POST", token }),
+  deactivateAccount: (token, payload) =>
+    request("/api/account/deactivation", { method: "POST", token, body: payload }),
   exchangeOAuthCode: (code) =>
     request("/api/auth/oauth/exchange", { method: "POST", body: { code } }),
   completeOnboarding: (payload, token) =>

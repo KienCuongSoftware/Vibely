@@ -38,6 +38,13 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role = Role.USER;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "account_status", nullable = false, length = 20)
+    private UserAccountStatus accountStatus = UserAccountStatus.ACTIVE;
+
+    @Column(name = "deactivated_at")
+    private LocalDateTime deactivatedAt;
+
     @Column(length = 300)
     private String bio;
 
@@ -125,6 +132,26 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public UserAccountStatus getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void setAccountStatus(UserAccountStatus accountStatus) {
+        this.accountStatus = accountStatus;
+    }
+
+    public boolean isActive() {
+        return accountStatus == null || accountStatus == UserAccountStatus.ACTIVE;
+    }
+
+    public LocalDateTime getDeactivatedAt() {
+        return deactivatedAt;
+    }
+
+    public void setDeactivatedAt(LocalDateTime deactivatedAt) {
+        this.deactivatedAt = deactivatedAt;
     }
 
     public void setBio(String bio) {

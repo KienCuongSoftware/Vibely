@@ -119,6 +119,10 @@ public class OtpVerificationService {
         otpCode.setConsumed(true);
     }
 
+    public void consumeAccountDeactivationCode(String email, String code) {
+        validateOtpCode(email, code, OtpCodePurpose.ACCOUNT_DEACTIVATION, true);
+    }
+
     private OtpVerificationCode validateOtpCode(
         String rawEmail,
         String rawCode,

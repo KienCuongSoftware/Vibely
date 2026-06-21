@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { apiClient } from '../api/client'
+import { useAuth } from '../state/useAuth'
 import {
   IoArrowBack,
   IoBriefcaseOutline,
@@ -60,10 +62,18 @@ function SettingsRow({ title, description, trailing, danger = false, onClick }) 
   )
 }
 
-function AccountRemovalChoice({ title, description }) {
+function maskEmail(email) {
+  const [name = '', domain = ''] = String(email ?? '').split('@')
+  if (!name || !domain) return email ?? ''
+  const visible = name.slice(0, Math.min(2, name.length))
+  return `${visible}${'*'.repeat(Math.max(3, name.length - visible.length))}@${domain}`
+}
+
+function AccountRemovalChoice({ title, description, onClick }) {
   return (
     <button
       type="button"
+      onClick={onClick}
       className="group flex w-full items-start justify-between gap-4 rounded-xl bg-zinc-800/90 px-4 py-4 text-left transition hover:bg-zinc-800"
     >
       <span>
@@ -86,6 +96,7 @@ function SettingsSection({ title, children }) {
 
 export function SettingsPage() {
   const navigate = useNavigate()
+  const { token, user, logout } = useAuth()
   const [privateAccount, setPrivateAccount] = useState(false)
   const [suggestAccount, setSuggestAccount] = useState(true)
   const [profileViews, setProfileViews] = useState(false)
@@ -94,10 +105,25 @@ export function SettingsPage() {
   const [weeklyScreenReport, setWeeklyScreenReport] = useState(false)
   const [activeSetting, setActiveSetting] = useState('account')
   const [accountView, setAccountView] = useState('main')
+  const [deactivationStep, setDeactivationStep] = useState('intro')
+  const [deactivationCode, setDeactivationCode] = useState('')
+  const [deactivationError, setDeactivationError] = useState('')
+  const [deactivationCooldown, setDeactivationCooldown] = useState(0)
+  const [sendingDeactivationCode, setSendingDeactivationCode] = useState(false)
+  const [deactivatingAccount, setDeactivatingAccount] = useState(false)
+  const [confirmDeactivateOpen, setConfirmDeactivateOpen] = useState(false)
 
   useEffect(() => {
     document.title = 'Cài đặt | Vibely'
   }, [])
+
+  useEffect(() => {
+    if (deactivationCooldown <= 0) return undefined
+    const timer = window.setInterval(() => {
+      setDeactivationCooldown((value) => Math.max(0, value - 1))
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [deactivationCooldown])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -125,6 +151,51 @@ export function SettingsPage() {
 
     return () => observer.disconnect()
   }, [])
+
+  const startDeactivationFlow = () => {
+    setAccountView('deactivation')
+    setDeactivationStep('intro')
+    setDeactivationCode('')
+    setDeactivationError('')
+    setConfirmDeactivateOpen(false)
+  }
+
+  const sendDeactivationCode = async () => {
+    if (!token) {
+      setDeactivationError('Bạn cần đăng nhập để tiếp tục.')
+      return
+    }
+    setSendingDeactivationCode(true)
+    setDeactivationError('')
+    try {
+      const result = await apiClient.sendAccountDeactivationCode(token)
+      setDeactivationCooldown(result?.resendAfterSeconds ?? 60)
+      setDeactivationStep('code')
+    } catch (error) {
+      setDeactivationError(error?.message || 'Không thể gửi mã xác minh.')
+    } finally {
+      setSendingDeactivationCode(false)
+    }
+  }
+
+  const deactivateAccount = async () => {
+    if (!token) {
+      setDeactivationError('Bạn cần đăng nhập để tiếp tục.')
+      return
+    }
+    setDeactivatingAccount(true)
+    setDeactivationError('')
+    try {
+      await apiClient.deactivateAccount(token, { code: deactivationCode })
+      logout()
+      navigate('/login', { replace: true })
+    } catch (error) {
+      setConfirmDeactivateOpen(false)
+      setDeactivationError(error?.message || 'Không thể hủy kích hoạt tài khoản.')
+    } finally {
+      setDeactivatingAccount(false)
+    }
+  }
 
   return (
     <section className="flex h-dvh overflow-hidden bg-black text-zinc-100">
@@ -188,6 +259,7 @@ export function SettingsPage() {
                     <AccountRemovalChoice
                       title="Hủy kích hoạt tài khoản"
                       description="Không ai có thể nhìn thấy tài khoản của bạn, bao gồm nội dung đã đăng, bình luận và hồ sơ. Bạn có thể kích hoạt lại bất cứ khi nào đăng nhập lại."
+                      onClick={startDeactivationFlow}
                     />
                     <AccountRemovalChoice
                       title="Xóa tài khoản vĩnh viễn"
@@ -195,6 +267,126 @@ export function SettingsPage() {
                     />
                   </div>
                 </section>
+              </div>
+            ) : accountView === 'deactivation' ? (
+              <div className="relative min-h-[520px]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (deactivationStep === 'code') {
+                      setDeactivationStep('intro')
+                      setDeactivationError('')
+                      return
+                    }
+                    setAccountView('removal')
+                  }}
+                  className="mb-5 flex h-9 w-9 items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-900 hover:text-white"
+                  aria-label="Quay lại"
+                >
+                  <IoArrowBack className="text-lg" aria-hidden />
+                </button>
+
+                {deactivationStep === 'intro' ? (
+                  <section className="flex min-h-[460px] flex-col rounded-xl border border-zinc-900 bg-zinc-900/40 p-5">
+                    <div>
+                      <h1 className="text-lg font-bold text-zinc-100">
+                        {user?.username}: Hủy kích hoạt tài khoản này?
+                      </h1>
+                      <p className="mt-4 text-sm text-zinc-400">Nếu bạn hủy kích hoạt tài khoản của mình:</p>
+                      <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-zinc-400">
+                        <li>Không ai có thể tìm thấy tài khoản và nội dung của bạn.</li>
+                        <li>Người khác vẫn có thể xem được những tương tác trong tài khoản của họ, chẳng hạn như tin nhắn.</li>
+                        <li>Vibely sẽ tiếp tục lưu trữ dữ liệu để bạn có thể khôi phục khi đăng nhập lại.</li>
+                        <li>Bạn có thể kích hoạt lại bằng cách đăng nhập và xác minh tài khoản.</li>
+                      </ul>
+                    </div>
+
+                    {deactivationError ? (
+                      <p className="mt-5 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-300">{deactivationError}</p>
+                    ) : null}
+
+                    <button
+                      type="button"
+                      onClick={sendDeactivationCode}
+                      disabled={sendingDeactivationCode}
+                      className="mt-auto w-full rounded-md bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-500/90 disabled:cursor-not-allowed disabled:bg-red-500/45"
+                    >
+                      {sendingDeactivationCode ? 'Đang gửi mã...' : 'Hủy kích hoạt'}
+                    </button>
+                  </section>
+                ) : (
+                  <section className="flex min-h-[460px] flex-col rounded-xl border border-zinc-900 bg-zinc-900/40 p-5">
+                    <div>
+                      <h1 className="text-lg font-bold text-zinc-100">Hãy giúp chúng tôi xác nhận đó là bạn</h1>
+                      <p className="mt-4 text-sm leading-relaxed text-zinc-400">
+                        Để hủy kích hoạt {user?.username}, hãy nhập mã chúng tôi gửi tới email {maskEmail(user?.email)} của bạn.
+                      </p>
+
+                      <div className="mt-5 flex max-w-sm overflow-hidden rounded-lg bg-zinc-800">
+                        <input
+                          value={deactivationCode}
+                          onChange={(event) => {
+                            setDeactivationCode(event.target.value.replace(/\D/g, '').slice(0, 6))
+                            setDeactivationError('')
+                          }}
+                          inputMode="numeric"
+                          placeholder="Nhập mã gồm 6 chữ số"
+                          className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={sendDeactivationCode}
+                          disabled={sendingDeactivationCode || deactivationCooldown > 0}
+                          className="shrink-0 px-4 text-xs font-medium text-zinc-300 transition hover:text-white disabled:cursor-not-allowed disabled:text-zinc-500"
+                        >
+                          {deactivationCooldown > 0 ? `Gửi lại mã ${deactivationCooldown}s` : 'Gửi lại mã'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {deactivationError ? (
+                      <p className="mt-5 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-300">{deactivationError}</p>
+                    ) : null}
+
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDeactivateOpen(true)}
+                      disabled={deactivationCode.length !== 6}
+                      className="mt-auto w-full rounded-md bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-500/90 disabled:cursor-not-allowed disabled:bg-red-500/35"
+                    >
+                      Hủy kích hoạt tài khoản
+                    </button>
+                  </section>
+                )}
+
+                {confirmDeactivateOpen ? (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/70 px-4">
+                    <div className="w-full max-w-xs overflow-hidden rounded-xl bg-zinc-900 text-center shadow-2xl ring-1 ring-zinc-800">
+                      <div className="px-5 py-5">
+                        <h2 className="text-sm font-semibold text-zinc-100">Hủy kích hoạt</h2>
+                        <p className="mt-1 text-sm text-zinc-200">{user?.username}?</p>
+                      </div>
+                      <div className="grid grid-cols-2 border-t border-zinc-800">
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeactivateOpen(false)}
+                          disabled={deactivatingAccount}
+                          className="px-4 py-3 text-sm text-zinc-100 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:text-zinc-500"
+                        >
+                          Hủy
+                        </button>
+                        <button
+                          type="button"
+                          onClick={deactivateAccount}
+                          disabled={deactivatingAccount}
+                          className="border-l border-zinc-800 px-4 py-3 text-sm font-semibold text-red-400 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:text-red-400/50"
+                        >
+                          {deactivatingAccount ? 'Đang xử lý...' : 'Hủy kích hoạt'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ) : (
               <>
