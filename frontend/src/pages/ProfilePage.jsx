@@ -1220,6 +1220,7 @@ export function ProfilePage() {
                         type="button"
                         aria-label="Cài đặt hồ sơ"
                         className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
+                        onClick={() => navigate('/settings')}
                       >
                         <IoSettingsOutline />
                       </button>

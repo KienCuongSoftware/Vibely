@@ -13,6 +13,7 @@ import { StudioEditPostPage } from './pages/StudioEditPostPage.jsx'
 import { StudioVideoAnalyticsPage } from './pages/StudioVideoAnalyticsPage.jsx'
 import { StudioPostCommentsPage } from './pages/StudioPostCommentsPage.jsx'
 import { ProfilePage } from './pages/ProfilePage.jsx'
+import { SettingsPage } from './pages/SettingsPage.jsx'
 import { ActivityVideoWatchPage } from './pages/ActivityVideoWatchPage.jsx'
 import { PublicVideoDetailPage } from './pages/PublicVideoDetailPage.jsx'
 import { ProfileWatchVideoRoutePage } from './pages/ProfileWatchVideoRoutePage.jsx'
@@ -70,6 +71,7 @@ function App() {
           <Route path="/search" element={<Navigate to="/login" replace />} />
           <Route path="/tag/:tag" element={<HashtagPage />} />
           <Route path="/watch/:publicId" element={<WatchRedirect />} />
+          <Route path="/settings" element={<Navigate to="/login" replace />} />
           <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
           <Route path="/vibelystudio/home" element={<Navigate to="/login" replace />} />
           <Route path="/vibelystudio/posts" element={<Navigate to="/login" replace />} />
@@ -104,6 +106,7 @@ function App() {
         <Route path="/signin" element={<AuthenticatedHomeRedirect user={user} />} />
         <Route path="/signup" element={<AuthenticatedHomeRedirect user={user} />} />
         <Route path="/register" element={<AuthenticatedHomeRedirect user={user} />} />
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
         <Route path="/vibelystudio" element={<Navigate to="/vibelystudio/home" replace />} />
         <Route path="/vibelystudio/home" element={<StudioHomePage />} />

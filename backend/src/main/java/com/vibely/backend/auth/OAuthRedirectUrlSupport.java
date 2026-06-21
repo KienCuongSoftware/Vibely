@@ -11,8 +11,19 @@ public final class OAuthRedirectUrlSupport {
 
     /** Origin công khai, ví dụ {@code https://xxx.trycloudflare.com}. */
     public static String resolvePublicOrigin(HttpServletRequest request, String configuredPublicBaseUrl) {
+        String requestOrigin = resolveRequestOrigin(request);
+        if (isLocalhostOrigin(requestOrigin)) {
+            return requestOrigin;
+        }
         if (StringUtils.hasText(configuredPublicBaseUrl)) {
             return trimTrailingSlash(configuredPublicBaseUrl.trim());
+        }
+        return requestOrigin;
+    }
+
+    private static String resolveRequestOrigin(HttpServletRequest request) {
+        if (request == null) {
+            return "";
         }
         try {
             String origin = ServletUriComponentsBuilder.fromRequest(request)
@@ -33,6 +44,17 @@ public final class OAuthRedirectUrlSupport {
             return "";
         }
         return trimTrailingSlash(proto + "://" + host);
+    }
+
+    private static boolean isLocalhostOrigin(String origin) {
+        if (!StringUtils.hasText(origin)) {
+            return false;
+        }
+        String normalized = origin.toLowerCase();
+        return normalized.startsWith("http://localhost:")
+            || normalized.startsWith("https://localhost:")
+            || normalized.startsWith("http://127.0.0.1:")
+            || normalized.startsWith("https://127.0.0.1:");
     }
 
     /** URL trang /login trên cùng origin với callback OAuth. */

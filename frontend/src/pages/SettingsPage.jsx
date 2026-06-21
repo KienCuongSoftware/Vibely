@@ -9,19 +9,8 @@ import {
   IoNotificationsOutline,
   IoShieldCheckmarkOutline,
   IoTimeOutline,
-  IoCompass,
-  IoEllipsisHorizontal,
-  IoHome,
-  IoNotifications,
-  IoPaperPlane,
-  IoPeople,
   IoPerson,
-  IoVideocam,
 } from 'react-icons/io5'
-import { Sidebar } from '../components/Sidebar.jsx'
-import { useAuth } from '../state/useAuth.js'
-import { handleSidebarMenuSelect } from '../utils/sidebarNavigation.js'
-import { MdOutlineFileUpload } from 'react-icons/md'
 
 const SETTINGS_NAV = [
   { id: 'account', label: 'Quản lý tài khoản', icon: IoPerson },
@@ -31,19 +20,6 @@ const SETTINGS_NAV = [
   { id: 'ads', label: 'Quảng cáo', icon: IoShieldCheckmarkOutline },
   { id: 'screen-time', label: 'Thời gian sử dụng màn hình', icon: IoTimeOutline },
   { id: 'content', label: 'Tùy chọn nội dung', icon: IoGlobeOutline },
-]
-
-const SIDEBAR_MENU_ITEMS = [
-  { id: 'latest', label: 'Đề xuất', icon: IoHome },
-  { id: 'explore', label: 'Khám phá', icon: IoCompass },
-  { id: 'following', label: 'Đã follow', icon: IoPeople },
-  { id: 'friends', label: 'Bạn bè', icon: IoPeople },
-  { id: 'messages', label: 'Tin nhắn', icon: IoPaperPlane },
-  { id: 'activity', label: 'Hoạt động', icon: IoNotifications },
-  { id: 'live', label: 'LIVE', icon: IoVideocam },
-  { id: 'upload', label: 'Tải lên', icon: MdOutlineFileUpload },
-  { id: 'profile', label: 'Hồ sơ', icon: IoPerson },
-  { id: 'more', label: 'Thêm', icon: IoEllipsisHorizontal },
 ]
 
 function SettingsSwitch({ checked, onChange, label }) {
@@ -65,20 +41,36 @@ function SettingsSwitch({ checked, onChange, label }) {
   )
 }
 
-function SettingsRow({ title, description, trailing, danger = false }) {
+function SettingsRow({ title, description, trailing, danger = false, onClick }) {
   return (
     <button
       type="button"
-      className="group flex w-full items-center justify-between gap-4 border-b border-zinc-800/70 py-4 text-left last:border-b-0"
+      onClick={onClick}
+      className="group flex w-full items-center justify-between gap-4 rounded-lg border-b border-zinc-800/70 px-3 py-4 text-left transition hover:bg-zinc-800/70 last:border-b-0"
     >
       <span className="min-w-0">
-        <span className={`block text-sm font-medium ${danger ? 'text-red-400' : 'text-zinc-100'}`}>{title}</span>
-        {description ? <span className="mt-1 block text-xs leading-relaxed text-zinc-500">{description}</span> : null}
+        <span className={`block text-sm font-medium transition ${danger ? 'text-red-400' : 'text-zinc-100 group-hover:text-white'}`}>{title}</span>
+        {description ? <span className="mt-1 block text-xs leading-relaxed text-zinc-500 transition group-hover:text-zinc-400">{description}</span> : null}
       </span>
-      <span className="flex shrink-0 items-center gap-2 text-xs text-zinc-500">
+      <span className="flex shrink-0 items-center gap-2 text-xs text-zinc-500 transition group-hover:text-zinc-300">
         {trailing}
         <IoChevronForward className="text-base transition group-hover:text-zinc-300" aria-hidden />
       </span>
+    </button>
+  )
+}
+
+function AccountRemovalChoice({ title, description }) {
+  return (
+    <button
+      type="button"
+      className="group flex w-full items-start justify-between gap-4 rounded-xl bg-zinc-800/90 px-4 py-4 text-left transition hover:bg-zinc-800"
+    >
+      <span>
+        <span className="block text-sm font-semibold text-zinc-100">{title}</span>
+        <span className="mt-1 block text-xs leading-relaxed text-zinc-400">{description}</span>
+      </span>
+      <IoChevronForward className="mt-0.5 shrink-0 text-lg text-zinc-400 transition group-hover:text-zinc-100" aria-hidden />
     </button>
   )
 }
@@ -94,7 +86,6 @@ function SettingsSection({ title, children }) {
 
 export function SettingsPage() {
   const navigate = useNavigate()
-  const { token, user, logout } = useAuth()
   const [privateAccount, setPrivateAccount] = useState(false)
   const [suggestAccount, setSuggestAccount] = useState(true)
   const [profileViews, setProfileViews] = useState(false)
@@ -102,6 +93,7 @@ export function SettingsPage() {
   const [adPersonalization, setAdPersonalization] = useState(true)
   const [weeklyScreenReport, setWeeklyScreenReport] = useState(false)
   const [activeSetting, setActiveSetting] = useState('account')
+  const [accountView, setAccountView] = useState('main')
 
   useEffect(() => {
     document.title = 'Cài đặt | Vibely'
@@ -134,27 +126,8 @@ export function SettingsPage() {
     return () => observer.disconnect()
   }, [])
 
-  const handleSelectMenu = (id) => {
-    handleSidebarMenuSelect(navigate, id, {
-      token,
-      profilePath: user?.username ? `/@${encodeURIComponent(user.username)}` : '/profile',
-    })
-  }
-
   return (
     <section className="flex h-dvh overflow-hidden bg-black text-zinc-100">
-      <div className="hidden shrink-0 lg:block">
-        <Sidebar
-          menuItems={SIDEBAR_MENU_ITEMS}
-          activeMenu={null}
-          onSelectMenu={handleSelectMenu}
-          token={token}
-          user={user}
-          onLogout={logout}
-          hideSearch
-        />
-      </div>
-
       <main className="scrollbar-none min-w-0 flex-1 overflow-y-auto">
         <div className="mx-auto flex w-full max-w-5xl gap-5 px-4 py-6 sm:px-6 lg:px-8">
           <aside className="sticky top-6 hidden h-[calc(100dvh-48px)] w-64 shrink-0 rounded-xl bg-zinc-950 p-2 ring-1 ring-zinc-900 lg:block">
@@ -174,7 +147,10 @@ export function SettingsPage() {
                   <a
                     key={item.id}
                     href={`#${item.id}`}
-                    onClick={() => setActiveSetting(item.id)}
+                    onClick={() => {
+                      setAccountView('main')
+                      setActiveSetting(item.id)
+                    }}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                       active
                         ? 'bg-zinc-900 text-red-500'
@@ -190,10 +166,49 @@ export function SettingsPage() {
           </aside>
 
           <div id="account" className="min-w-0 flex-1 scroll-mt-6 rounded-xl bg-zinc-950 px-5 py-6 ring-1 ring-zinc-900 sm:px-8">
+            {accountView === 'removal' ? (
+              <div className="min-h-[520px]">
+                <button
+                  type="button"
+                  onClick={() => setAccountView('main')}
+                  className="mb-5 flex h-9 w-9 items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-900 hover:text-white"
+                  aria-label="Quay lại quản lý tài khoản"
+                >
+                  <IoArrowBack className="text-lg" aria-hidden />
+                </button>
+
+                <section className="rounded-xl border border-zinc-900 bg-zinc-900/40 p-5">
+                  <h1 className="text-2xl font-bold text-zinc-100">Xóa hoặc hủy kích hoạt?</h1>
+                  <p className="mt-4 max-w-xl text-sm leading-relaxed text-zinc-400">
+                    Nếu bạn muốn tạm ngừng sử dụng Vibely, bạn chỉ cần hủy kích hoạt tài khoản.
+                    Tuy nhiên, nếu bạn chọn xóa tài khoản, bạn sẽ không thể khôi phục tài khoản đó sau 30 ngày.
+                  </p>
+
+                  <div className="mt-5 space-y-3">
+                    <AccountRemovalChoice
+                      title="Hủy kích hoạt tài khoản"
+                      description="Không ai có thể nhìn thấy tài khoản của bạn, bao gồm nội dung đã đăng, bình luận và hồ sơ. Bạn có thể kích hoạt lại bất cứ khi nào đăng nhập lại."
+                    />
+                    <AccountRemovalChoice
+                      title="Xóa tài khoản vĩnh viễn"
+                      description="Tài khoản và nội dung của bạn sẽ bị xóa vĩnh viễn. Bạn có thể hủy yêu cầu xóa bằng cách kích hoạt lại tài khoản trong vòng 30 ngày."
+                    />
+                  </div>
+                </section>
+              </div>
+            ) : (
+              <>
             <h1 className="text-2xl font-bold text-zinc-100">Quản lý tài khoản</h1>
 
             <SettingsSection title="Kiểm soát tài khoản">
-              <SettingsRow title="Hủy kích hoạt hoặc xóa tài khoản" />
+              <SettingsRow
+                title="Hủy kích hoạt hoặc xóa tài khoản"
+                onClick={() => {
+                  setAccountView('removal')
+                  setActiveSetting('account')
+                  document.getElementById('account')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }}
+              />
             </SettingsSection>
 
             <SettingsSection title="Thông tin tài khoản">
@@ -287,6 +302,8 @@ export function SettingsPage() {
                 <SettingsRow title="Ngôn ngữ nội dung" trailing="Tiếng Việt" />
               </div>
             </SettingsSection>
+              </>
+            )}
           </div>
         </div>
       </main>

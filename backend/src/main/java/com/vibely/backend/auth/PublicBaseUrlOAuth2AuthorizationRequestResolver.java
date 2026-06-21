@@ -3,7 +3,6 @@ package com.vibely.backend.auth;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.util.StringUtils;
@@ -59,8 +58,19 @@ public final class PublicBaseUrlOAuth2AuthorizationRequestResolver
     }
 
     private String resolvePublicBaseUrl(HttpServletRequest request) {
+        String requestOrigin = resolveRequestOrigin(request);
+        if (isLocalhostOrigin(requestOrigin)) {
+            return requestOrigin;
+        }
         if (StringUtils.hasText(configuredPublicBaseUrl)) {
             return trimTrailingSlash(configuredPublicBaseUrl);
+        }
+        return requestOrigin;
+    }
+
+    private String resolveRequestOrigin(HttpServletRequest request) {
+        if (request == null) {
+            return "";
         }
         try {
             String origin = ServletUriComponentsBuilder.fromRequest(request)
@@ -81,6 +91,17 @@ public final class PublicBaseUrlOAuth2AuthorizationRequestResolver
             return "";
         }
         return trimTrailingSlash(proto + "://" + host);
+    }
+
+    private static boolean isLocalhostOrigin(String origin) {
+        if (!StringUtils.hasText(origin)) {
+            return false;
+        }
+        String normalized = origin.toLowerCase();
+        return normalized.startsWith("http://localhost:")
+            || normalized.startsWith("https://localhost:")
+            || normalized.startsWith("http://127.0.0.1:")
+            || normalized.startsWith("https://127.0.0.1:");
     }
 
     private static String headerFirst(HttpServletRequest request, String name, String fallback) {
