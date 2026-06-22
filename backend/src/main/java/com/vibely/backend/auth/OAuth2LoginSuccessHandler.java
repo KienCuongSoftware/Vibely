@@ -20,17 +20,20 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final AuthService authService;
     private final OAuthLoginCodeStore oAuthLoginCodeStore;
+    private final AccountReactivationTokenStore reactivationTokenStore;
     private final String frontendSuccessUrl;
     private final String oauthPublicBaseUrl;
 
     public OAuth2LoginSuccessHandler(
         @Lazy AuthService authService,
         OAuthLoginCodeStore oAuthLoginCodeStore,
+        AccountReactivationTokenStore reactivationTokenStore,
         @Value("${app.oauth2.frontend-success-url:http://localhost:5173/login}") String frontendSuccessUrl,
         @Value("${app.oauth2.public-base-url:}") String oauthPublicBaseUrl
     ) {
         this.authService = authService;
         this.oAuthLoginCodeStore = oAuthLoginCodeStore;
+        this.reactivationTokenStore = reactivationTokenStore;
         this.frontendSuccessUrl = frontendSuccessUrl;
         this.oauthPublicBaseUrl = oauthPublicBaseUrl == null ? "" : oauthPublicBaseUrl.trim();
     }
@@ -56,6 +59,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         try {
             authResponse = authService.authenticateWithOAuthProvider(email, name, picture, registrationId);
         } catch (AccountDeactivatedException ex) {
+            String reactivationToken = reactivationTokenStore.createToken(ex.getEmail());
             String loginBase = OAuthRedirectUrlSupport.resolveFrontendLoginUrl(
                 request,
                 frontendSuccessUrl,
@@ -63,7 +67,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             );
             String redirectUrl = UriComponentsBuilder.fromUriString(loginBase)
                 .queryParam("reactivate", "1")
-                .queryParam("email", ex.getEmail())
+                .queryParam("token", reactivationToken)
+                .queryParam("maskedEmail", maskEmail(ex.getEmail()))
                 .queryParam("provider", registrationId)
                 .build()
                 .encode()
@@ -162,5 +167,21 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             return picture;
         }
         return stringValue(attributes.get("profilePhotoUrl"));
+    }
+
+    private String maskEmail(String email) {
+        if (email == null || !email.contains("@")) {
+            return "";
+        }
+        int at = email.indexOf('@');
+        String local = email.substring(0, at);
+        String domain = email.substring(at);
+        if (local.isEmpty()) {
+            return "***" + domain;
+        }
+        if (local.length() == 1) {
+            return "*" + domain;
+        }
+        return local.charAt(0) + "***" + local.charAt(local.length() - 1) + domain;
     }
 }

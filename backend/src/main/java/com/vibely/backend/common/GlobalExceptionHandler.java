@@ -5,6 +5,7 @@ import com.vibely.backend.antibot.exception.CaptchaRequiredException;
 import com.vibely.backend.antibot.exception.SuspiciousLoginException;
 import com.vibely.backend.auth.AccountDeactivatedException;
 import com.vibely.backend.auth.AccountDeactivatedPayload;
+import com.vibely.backend.auth.AccountReactivationTokenStore;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private final AccountReactivationTokenStore reactivationTokenStore;
+
+    public GlobalExceptionHandler(AccountReactivationTokenStore reactivationTokenStore) {
+        this.reactivationTokenStore = reactivationTokenStore;
+    }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNotFound(NotFoundException ex) {
@@ -36,10 +42,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<AccountDeactivatedPayload>> handleAccountDeactivated(
         AccountDeactivatedException ex
     ) {
+        String token = reactivationTokenStore.createToken(ex.getEmail());
         return ResponseEntity.status(HttpStatus.CONFLICT)
             .body(new ApiResponse<>(
                 false,
-                new AccountDeactivatedPayload(ex.getEmail()),
+                new AccountDeactivatedPayload(token, maskEmail(ex.getEmail())),
                 ApiError.of(HttpStatus.CONFLICT.value(), "ACCOUNT_DEACTIVATED", ex.getMessage())
             ));
     }
@@ -121,5 +128,21 @@ public class GlobalExceptionHandler {
                 "INTERNAL_SERVER_ERROR",
                 "Lỗi hệ thống, vui lòng thử lại sau"
             )));
+    }
+
+    private String maskEmail(String email) {
+        if (email == null || !email.contains("@")) {
+            return "";
+        }
+        int at = email.indexOf('@');
+        String local = email.substring(0, at);
+        String domain = email.substring(at);
+        if (local.isEmpty()) {
+            return "***" + domain;
+        }
+        if (local.length() == 1) {
+            return "*" + domain;
+        }
+        return local.charAt(0) + "***" + local.charAt(local.length() - 1) + domain;
     }
 }

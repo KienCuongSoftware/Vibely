@@ -1,22 +1,20 @@
 package com.vibely.backend.auth;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public class SendReactivationCodeRequest {
 
-    @Email(message = "Email không hợp lệ")
-    @NotBlank(message = "Email là bắt buộc")
-    private String email;
+    @NotBlank(message = "Phiên kích hoạt lại tài khoản là bắt buộc")
+    private String reactivationToken;
 
     private LoginContextRequest loginContext;
 
-    public String getEmail() {
-        return email;
+    public String getReactivationToken() {
+        return reactivationToken;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setReactivationToken(String reactivationToken) {
+        this.reactivationToken = reactivationToken;
     }
 
     public LoginContextRequest getLoginContext() {

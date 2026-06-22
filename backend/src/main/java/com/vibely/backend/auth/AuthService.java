@@ -43,6 +43,7 @@ public class AuthService {
     private final AuthProtectionService authProtectionService;
     private final LoginContextService loginContextService;
     private final OtpVerificationService otpVerificationService;
+    private final AccountReactivationTokenStore reactivationTokenStore;
 
     public AuthService(
         UserRepository userRepository,
@@ -56,6 +57,7 @@ public class AuthService {
         AuthProtectionService authProtectionService,
         LoginContextService loginContextService,
         OtpVerificationService otpVerificationService,
+        AccountReactivationTokenStore reactivationTokenStore,
         @Value("${app.jwt.refresh-expiration-seconds:604800}") long refreshExpirationSeconds
     ) {
         this.userRepository = userRepository;
@@ -69,6 +71,7 @@ public class AuthService {
         this.authProtectionService = authProtectionService;
         this.loginContextService = loginContextService;
         this.otpVerificationService = otpVerificationService;
+        this.reactivationTokenStore = reactivationTokenStore;
         this.refreshExpirationSeconds = refreshExpirationSeconds;
     }
 
@@ -214,7 +217,7 @@ public class AuthService {
         SendReactivationCodeRequest request,
         OtpRequestMetadata metadata
     ) {
-        String email = request.getEmail().trim().toLowerCase();
+        String email = reactivationTokenStore.resolveEmail(request.getReactivationToken()).trim().toLowerCase();
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new BadRequestException("Không tìm thấy tài khoản với email này"));
         if (user.isActive()) {
@@ -229,7 +232,7 @@ public class AuthService {
     }
 
     public AuthResponse reactivateAccount(ReactivateAccountRequest request, HttpServletRequest httpRequest) {
-        String email = request.getEmail().trim().toLowerCase();
+        String email = reactivationTokenStore.resolveEmail(request.getReactivationToken()).trim().toLowerCase();
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new BadRequestException("Không tìm thấy tài khoản với email này"));
         if (user.isActive()) {
@@ -240,6 +243,7 @@ public class AuthService {
         user.setAccountStatus(UserAccountStatus.ACTIVE);
         user.setDeactivatedAt(null);
         User saved = userRepository.save(user);
+        reactivationTokenStore.invalidate(request.getReactivationToken());
         loginContextService.recordSuccessfulLogin(saved, httpRequest, null);
         return issueTokens(saved);
     }
