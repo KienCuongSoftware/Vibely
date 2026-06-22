@@ -36,14 +36,6 @@ import { collectLoginContext } from "../security/loginContext.js";
 
 const OAUTH_ONBOARDING_KEY = "vibely_oauth_pending";
 
-function maskEmailForDisplay(email) {
-  if (!email || !email.includes("@")) return "";
-  const [local, domain] = email.split("@");
-  if (!local || !domain) return "";
-  if (local.length === 1) return `*@${domain}`;
-  return `${local[0]}***${local[local.length - 1]}@${domain}`;
-}
-
 export function LoginPage() {
   const { token, user, login, reactivateAccount, completeOAuthLogin } = useAuth();
   const navigate = useNavigate();
@@ -65,7 +57,7 @@ export function LoginPage() {
   const [sendResetError, setSendResetError] = useState("");
   const [isResetPasswordFocused, setIsResetPasswordFocused] = useState(false);
   const [reactivationOpen, setReactivationOpen] = useState(false);
-  const [reactivationEmail, setReactivationEmail] = useState("");
+  const [reactivationToken, setReactivationToken] = useState("");
   const [reactivationMaskedEmail, setReactivationMaskedEmail] = useState("");
   const [reactivationProvider, setReactivationProvider] = useState("");
   const [reactivationCode, setReactivationCode] = useState("");
@@ -104,7 +96,7 @@ export function LoginPage() {
     isResetPasswordValid &&
     !resetLoading;
   const canConfirmReactivation =
-    reactivationEmail.trim().length > 0 &&
+    reactivationToken.trim().length > 0 &&
     reactivationCode.trim().length === 6 &&
     !reactivationLoading;
   const challengePurpose =
@@ -155,9 +147,8 @@ export function LoginPage() {
     }
 
     if (searchParams.get("reactivate") === "1") {
-      const email = searchParams.get("email") ?? "";
-      setReactivationEmail(email);
-      setReactivationMaskedEmail(maskEmailForDisplay(email));
+      setReactivationToken(searchParams.get("token") ?? "");
+      setReactivationMaskedEmail(searchParams.get("maskedEmail") ?? "");
       setReactivationProvider(normalizeLastLoginMethod(searchParams.get("provider")) ?? "");
       setReactivationOpen(true);
       setReactivationCode("");
@@ -255,10 +246,9 @@ export function LoginPage() {
     window.location.href = `${resolveBackendOrigin()}/oauth2/authorization/${provider}`;
   };
 
-  const openReactivationModal = (email, provider = "") => {
-    const normalizedEmail = email || identifier.trim().toLowerCase();
-    setReactivationEmail(normalizedEmail);
-    setReactivationMaskedEmail(maskEmailForDisplay(normalizedEmail));
+  const openReactivationModal = (payload, provider = "") => {
+    setReactivationToken(payload?.reactivationToken ?? "");
+    setReactivationMaskedEmail(payload?.maskedEmail ?? "");
     setReactivationProvider(provider);
     setReactivationCode("");
     setReactivationCodeSent(false);
@@ -273,19 +263,22 @@ export function LoginPage() {
     setReactivationCodeSent(false);
     setReactivationError("");
     setReactivationMaskedEmail("");
+    setReactivationToken("");
   };
 
   const sendReactivationCode = async () => {
-    const email = reactivationEmail.trim().toLowerCase();
-    if (!email) {
-      setReactivationError("Không tìm thấy email của tài khoản cần kích hoạt lại");
+    if (!reactivationToken.trim()) {
+      setReactivationError("Phiên kích hoạt lại tài khoản không hợp lệ, vui lòng đăng nhập lại");
       return;
     }
     setReactivationLoading(true);
     setReactivationError("");
     try {
       const loginContext = await collectLoginContext();
-      const result = await apiClient.sendReactivationCode({ email, loginContext });
+      const result = await apiClient.sendReactivationCode({
+        reactivationToken,
+        loginContext,
+      });
       setReactivationCodeSent(true);
       if (result?.demoCode) {
         setReactivationError(`Chưa bật gửi email (dev). Mã kích hoạt lại: ${result.demoCode}`);
@@ -303,7 +296,7 @@ export function LoginPage() {
     setReactivationError("");
     try {
       const result = await reactivateAccount({
-        email: reactivationEmail.trim().toLowerCase(),
+        reactivationToken,
         code: reactivationCode.trim(),
       });
       if (reactivationProvider) {
@@ -334,7 +327,7 @@ export function LoginPage() {
       });
     } catch (error) {
       if (error.code === "ACCOUNT_DEACTIVATED") {
-        openReactivationModal(error.data?.email ?? identifier.trim().toLowerCase(), "email");
+        openReactivationModal(error.data, "email");
         setStatus("");
         return;
       }
