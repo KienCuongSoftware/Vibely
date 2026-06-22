@@ -274,7 +274,7 @@ export function LoginPage() {
     setReactivationLoading(true);
     setReactivationError("");
     try {
-      const loginContext = await collectLoginContext();
+      const loginContext = await collectLoginContext({ requireLocation: true });
       const result = await apiClient.sendReactivationCode({
         reactivationToken,
         loginContext,
