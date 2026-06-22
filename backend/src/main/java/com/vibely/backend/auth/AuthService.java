@@ -1,6 +1,8 @@
 package com.vibely.backend.auth;
 
 import com.vibely.backend.antibot.auth.AuthProtectionService;
+import com.vibely.backend.auth.context.UserLoginHistory;
+import com.vibely.backend.auth.context.UserLoginHistoryRepository;
 import com.vibely.backend.auth.context.LoginContextService;
 import com.vibely.backend.common.BadRequestException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,6 +46,7 @@ public class AuthService {
     private final LoginContextService loginContextService;
     private final OtpVerificationService otpVerificationService;
     private final AccountReactivationTokenStore reactivationTokenStore;
+    private final UserLoginHistoryRepository loginHistoryRepository;
 
     public AuthService(
         UserRepository userRepository,
@@ -58,6 +61,7 @@ public class AuthService {
         LoginContextService loginContextService,
         OtpVerificationService otpVerificationService,
         AccountReactivationTokenStore reactivationTokenStore,
+        UserLoginHistoryRepository loginHistoryRepository,
         @Value("${app.jwt.refresh-expiration-seconds:604800}") long refreshExpirationSeconds
     ) {
         this.userRepository = userRepository;
@@ -72,6 +76,7 @@ public class AuthService {
         this.loginContextService = loginContextService;
         this.otpVerificationService = otpVerificationService;
         this.reactivationTokenStore = reactivationTokenStore;
+        this.loginHistoryRepository = loginHistoryRepository;
         this.refreshExpirationSeconds = refreshExpirationSeconds;
     }
 
@@ -228,7 +233,7 @@ public class AuthService {
         sendCodeRequest.setEmail(user.getEmail());
         sendCodeRequest.setPurpose(OtpCodePurpose.ACCOUNT_REACTIVATION.name());
         sendCodeRequest.setChallengePassed(true);
-        return otpVerificationService.sendCode(sendCodeRequest, null, metadata);
+        return otpVerificationService.sendCode(sendCodeRequest, null, enrichReactivationMetadata(user, metadata));
     }
 
     public AuthResponse reactivateAccount(ReactivateAccountRequest request, HttpServletRequest httpRequest) {
@@ -357,6 +362,50 @@ public class AuthService {
         if (!user.isActive()) {
             throw new AccountDeactivatedException(user.getEmail());
         }
+    }
+
+    private OtpRequestMetadata enrichReactivationMetadata(User user, OtpRequestMetadata metadata) {
+        if (metadata != null && !isUnknown(metadata.approximateLocation())) {
+            return metadata;
+        }
+        String fallbackLocation = loginHistoryRepository.findTop10ByUserIdOrderByLoginTimeDesc(user.getId()).stream()
+            .map(this::displayLoginHistoryLocation)
+            .filter(location -> !isUnknown(location))
+            .findFirst()
+            .orElse("Không xác định");
+        return new OtpRequestMetadata(
+            metadata == null ? "Trình duyệt" : metadata.browser(),
+            fallbackLocation,
+            metadata == null ? "Không xác định" : metadata.ipAddress()
+        );
+    }
+
+    private String displayLoginHistoryLocation(UserLoginHistory history) {
+        StringBuilder location = new StringBuilder();
+        appendLocationPart(location, history.getWard());
+        appendLocationPart(location, history.getDistrict());
+        appendLocationPart(location, history.getCity());
+        appendLocationPart(location, history.getProvince());
+        appendLocationPart(location, history.getCountry());
+        return location.isEmpty() ? "Không xác định" : location.toString();
+    }
+
+    private void appendLocationPart(StringBuilder builder, String value) {
+        if (value == null || value.isBlank() || "Không xác định".equalsIgnoreCase(value.trim())) {
+            return;
+        }
+        String normalized = value.trim().replace('+', ' ');
+        if (builder.indexOf(normalized) >= 0) {
+            return;
+        }
+        if (!builder.isEmpty()) {
+            builder.append(", ");
+        }
+        builder.append(normalized);
+    }
+
+    private boolean isUnknown(String value) {
+        return value == null || value.isBlank() || "Không xác định".equalsIgnoreCase(value.trim());
     }
 
     private static String oauthProviderLabel(String registrationId) {
