@@ -66,6 +66,7 @@ export function LoginPage() {
   const [isResetPasswordFocused, setIsResetPasswordFocused] = useState(false);
   const [reactivationOpen, setReactivationOpen] = useState(false);
   const [reactivationEmail, setReactivationEmail] = useState("");
+  const [reactivationMaskedEmail, setReactivationMaskedEmail] = useState("");
   const [reactivationProvider, setReactivationProvider] = useState("");
   const [reactivationCode, setReactivationCode] = useState("");
   const [reactivationCodeSent, setReactivationCodeSent] = useState(false);
@@ -156,6 +157,7 @@ export function LoginPage() {
     if (searchParams.get("reactivate") === "1") {
       const email = searchParams.get("email") ?? "";
       setReactivationEmail(email);
+      setReactivationMaskedEmail(maskEmailForDisplay(email));
       setReactivationProvider(normalizeLastLoginMethod(searchParams.get("provider")) ?? "");
       setReactivationOpen(true);
       setReactivationCode("");
@@ -254,7 +256,9 @@ export function LoginPage() {
   };
 
   const openReactivationModal = (email, provider = "") => {
-    setReactivationEmail(email || identifier.trim().toLowerCase());
+    const normalizedEmail = email || identifier.trim().toLowerCase();
+    setReactivationEmail(normalizedEmail);
+    setReactivationMaskedEmail(maskEmailForDisplay(normalizedEmail));
     setReactivationProvider(provider);
     setReactivationCode("");
     setReactivationCodeSent(false);
@@ -268,6 +272,7 @@ export function LoginPage() {
     setReactivationCode("");
     setReactivationCodeSent(false);
     setReactivationError("");
+    setReactivationMaskedEmail("");
   };
 
   const sendReactivationCode = async () => {
@@ -503,9 +508,9 @@ export function LoginPage() {
                 Bạn đang đăng nhập vào tài khoản đã bị hủy kích hoạt. Kích hoạt lại
                 tài khoản để tiếp tục sử dụng Vibely và khôi phục nội dung của bạn.
               </p>
-              {reactivationEmail ? (
+              {reactivationMaskedEmail ? (
                 <p className="mt-3 break-all text-[12px] text-zinc-500">
-                  {maskEmailForDisplay(reactivationEmail)}
+                  {reactivationMaskedEmail}
                 </p>
               ) : null}
               {reactivationCodeSent ? (
