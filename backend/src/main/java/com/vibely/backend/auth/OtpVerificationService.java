@@ -98,6 +98,11 @@ public class OtpVerificationService {
                 .map(User::getUsername)
                 .orElse(email);
             emailSent = emailSender.sendAccountDeactivationCode(email, username, code, codeExpirySeconds, metadata);
+        } else if (purpose == OtpCodePurpose.ACCOUNT_REACTIVATION) {
+            String username = userRepository.findByEmail(email)
+                .map(User::getUsername)
+                .orElse(email);
+            emailSent = emailSender.sendAccountReactivationCode(email, username, code, codeExpirySeconds, metadata);
         } else {
             emailSent = emailSender.sendVerificationCode(email, code, codeExpirySeconds);
         }

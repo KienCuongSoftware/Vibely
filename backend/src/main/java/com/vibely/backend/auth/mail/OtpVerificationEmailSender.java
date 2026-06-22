@@ -115,6 +115,52 @@ public class OtpVerificationEmailSender {
         }
     }
 
+    public boolean sendAccountReactivationCode(
+        String toEmail,
+        String username,
+        String code,
+        int expirySeconds,
+        OtpRequestMetadata metadata
+    ) {
+        if (!mailProperties.isEnabled()) {
+            log.info("Account reactivation email skipped (app.mail.enabled=false). recipient={}", maskEmail(toEmail));
+            return false;
+        }
+
+        JavaMailSender mailSender = mailSenderProvider.getIfAvailable();
+        if (mailSender == null) {
+            log.warn("Account reactivation email skipped: JavaMailSender not configured");
+            return false;
+        }
+
+        String expiryLabel = OtpVerificationEmailTemplate.formatExpiryLabel(expirySeconds);
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
+            helper.setFrom(resolveFromAddress(), mailProperties.getFromName());
+            helper.setTo(toEmail);
+            helper.setSubject(OtpVerificationEmailTemplate.accountReactivationSubject(code));
+            helper.setText(
+                OtpVerificationEmailTemplate.accountReactivationPlainBody(username, code, expiryLabel, metadata),
+                OtpVerificationEmailTemplate.accountReactivationHtmlBody(
+                    username,
+                    code,
+                    expiryLabel,
+                    helpUrl,
+                    metadata
+                )
+            );
+            mailSender.send(message);
+            log.info("Account reactivation email sent to {}", maskEmail(toEmail));
+            return true;
+        } catch (Exception ex) {
+            log.error("Failed to send account reactivation email to {}", maskEmail(toEmail), ex);
+            throw new BadRequestException(
+                "Không gửi được email xác minh. Vui lòng kiểm tra cấu hình SMTP hoặc thử lại sau."
+            );
+        }
+    }
+
     public boolean sendVerificationCode(String toEmail, String code, int expirySeconds) {
         if (!mailProperties.isEnabled()) {
             log.info("OTP email skipped (app.mail.enabled=false). recipient={}", maskEmail(toEmail));

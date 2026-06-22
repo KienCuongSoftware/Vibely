@@ -4,6 +4,8 @@ import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.common.UnauthorizedException;
+import com.vibely.backend.auth.context.LoginContext;
+import com.vibely.backend.auth.context.LoginContextService;
 import com.vibely.backend.security.AuthCookieService;
 import com.vibely.backend.security.JwtService;
 import com.vibely.backend.user.User;
@@ -33,6 +35,7 @@ public class AuthController {
     private final UserAvatarResolver userAvatarResolver;
     private final AuthCookieService authCookieService;
     private final JwtService jwtService;
+    private final LoginContextService loginContextService;
     private final boolean exposeTokensInApi;
 
     public AuthController(
@@ -43,6 +46,7 @@ public class AuthController {
         UserAvatarResolver userAvatarResolver,
         AuthCookieService authCookieService,
         JwtService jwtService,
+        LoginContextService loginContextService,
         @Value("${app.auth.expose-tokens-in-api:false}") boolean exposeTokensInApi
     ) {
         this.authService = authService;
@@ -52,6 +56,7 @@ public class AuthController {
         this.userAvatarResolver = userAvatarResolver;
         this.authCookieService = authCookieService;
         this.jwtService = jwtService;
+        this.loginContextService = loginContextService;
         this.exposeTokensInApi = exposeTokensInApi;
     }
 
@@ -156,9 +161,11 @@ public class AuthController {
 
     @PostMapping("/reactivation/send-code")
     public ApiResponse<SendCodeResponse> sendReactivationCode(
-        @Valid @RequestBody SendReactivationCodeRequest request
+        @Valid @RequestBody SendReactivationCodeRequest request,
+        HttpServletRequest httpRequest
     ) {
-        return ApiResponse.success(authService.sendReactivationCode(request));
+        LoginContext loginContext = loginContextService.buildContext(httpRequest, request.getLoginContext());
+        return ApiResponse.success(authService.sendReactivationCode(request, toMetadata(loginContext)));
     }
 
     @PostMapping("/reactivation/confirm")
@@ -297,5 +304,37 @@ public class AuthController {
         String header = request.getHeader("Authorization");
         return header != null && header.regionMatches(true, 0, "Bearer ", 0, 7)
             && !header.substring(7).trim().isEmpty();
+    }
+
+    private OtpRequestMetadata toMetadata(LoginContext context) {
+        return new OtpRequestMetadata(
+            context.getBrowser() + " trên " + context.getOperatingSystem(),
+            displayLocation(context),
+            context.getIpAddress()
+        );
+    }
+
+    private String displayLocation(LoginContext context) {
+        StringBuilder location = new StringBuilder();
+        appendLocationPart(location, context.getWard());
+        appendLocationPart(location, context.getDistrict());
+        appendLocationPart(location, context.getCity());
+        appendLocationPart(location, context.getProvince());
+        appendLocationPart(location, context.getCountry());
+        return location.isEmpty() ? "Không xác định" : location.toString();
+    }
+
+    private void appendLocationPart(StringBuilder builder, String value) {
+        if (value == null || value.isBlank()) {
+            return;
+        }
+        String normalized = value.trim().replace('+', ' ');
+        if (builder.indexOf(normalized) >= 0) {
+            return;
+        }
+        if (!builder.isEmpty()) {
+            builder.append(", ");
+        }
+        builder.append(normalized);
     }
 }

@@ -210,7 +210,10 @@ public class AuthService {
         return issueTokens(saved);
     }
 
-    public SendCodeResponse sendReactivationCode(SendReactivationCodeRequest request) {
+    public SendCodeResponse sendReactivationCode(
+        SendReactivationCodeRequest request,
+        OtpRequestMetadata metadata
+    ) {
         String email = request.getEmail().trim().toLowerCase();
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new BadRequestException("Không tìm thấy tài khoản với email này"));
@@ -222,7 +225,7 @@ public class AuthService {
         sendCodeRequest.setEmail(user.getEmail());
         sendCodeRequest.setPurpose(OtpCodePurpose.ACCOUNT_REACTIVATION.name());
         sendCodeRequest.setChallengePassed(true);
-        return otpVerificationService.sendCode(sendCodeRequest, null);
+        return otpVerificationService.sendCode(sendCodeRequest, null, metadata);
     }
 
     public AuthResponse reactivateAccount(ReactivateAccountRequest request, HttpServletRequest httpRequest) {

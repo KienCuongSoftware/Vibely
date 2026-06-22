@@ -22,6 +22,10 @@ final class OtpVerificationEmailTemplate {
         return code + " là mã 6 chữ số của bạn";
     }
 
+    static String accountReactivationSubject(String code) {
+        return code + " là mã kích hoạt lại tài khoản Vibely";
+    }
+
     static String accountDeactivationHtmlBody(
         String username,
         String code,
@@ -147,6 +151,44 @@ final class OtpVerificationEmailTemplate {
                 metadata.approximateLocation(),
                 metadata.browser()
             ).trim();
+    }
+
+    static String accountReactivationHtmlBody(
+        String username,
+        String code,
+        String expiryLabel,
+        String helpUrl,
+        OtpRequestMetadata metadata
+    ) {
+        return accountDeactivationHtmlBody(username, code, expiryLabel, helpUrl, metadata)
+            .replace("<title>Mã hủy kích hoạt tài khoản Vibely</title>", "<title>Mã kích hoạt lại tài khoản Vibely</title>")
+            .replace(
+                "Hãy dùng mã này để xác minh rằng <strong>@%s</strong> là tài khoản Vibely của bạn trước khi hủy kích hoạt."
+                    .formatted(escapeHtml(username)),
+                "Hãy dùng mã này để xác minh rằng <strong>@%s</strong> là tài khoản Vibely của bạn trước khi kích hoạt lại."
+                    .formatted(escapeHtml(username))
+            )
+            .replace(
+                "Nếu bạn không yêu cầu mã này, có thể có người đang cố truy cập tài khoản của bạn. Hãy đổi mật khẩu ngay trong Vibely.",
+                "Nếu bạn không yêu cầu kích hoạt lại tài khoản, hãy bỏ qua email này và đổi mật khẩu ngay trong Vibely."
+            );
+    }
+
+    static String accountReactivationPlainBody(
+        String username,
+        String code,
+        String expiryLabel,
+        OtpRequestMetadata metadata
+    ) {
+        return accountDeactivationPlainBody(username, code, expiryLabel, metadata)
+            .replace(
+                "Hãy dùng mã này để xác minh rằng @" + username + " là tài khoản Vibely của bạn trước khi hủy kích hoạt.",
+                "Hãy dùng mã này để xác minh rằng @" + username + " là tài khoản Vibely của bạn trước khi kích hoạt lại."
+            )
+            .replace(
+                "Nếu bạn không yêu cầu mã này, hãy đổi mật khẩu ngay trong Vibely.",
+                "Nếu bạn không yêu cầu kích hoạt lại tài khoản, hãy bỏ qua email này và đổi mật khẩu ngay trong Vibely."
+            );
     }
 
     static String passwordResetHtmlBody(String code, String expiryLabel, String helpUrl) {
