@@ -64,9 +64,11 @@ async function request(path, { method = "GET", body, token, headers: extraHeader
     let message = `Yêu cầu thất bại (mã ${response.status})`;
     let code;
     let captchaRequired;
+    let errorData;
     try {
       const payload = await response.json();
       code = payload?.error?.code;
+      errorData = payload?.data;
       captchaRequired = payload?.data;
       if (payload?.error?.message) {
         message = payload.error.message;
@@ -78,6 +80,7 @@ async function request(path, { method = "GET", body, token, headers: extraHeader
     }
     const err = new Error(localizeError(code, message));
     err.status = response.status;
+    if (errorData) err.data = errorData;
     if (code) err.code = code;
     if (captchaRequired && (response.status === 428 || code === "CAPTCHA_REQUIRED")) {
       err.captchaRequired = captchaRequired;
@@ -140,6 +143,10 @@ export const apiClient = {
     request("/api/auth/verify-code", { method: "POST", body: payload }),
   resetPassword: (payload) =>
     request("/api/auth/reset-password", { method: "POST", body: payload }),
+  sendReactivationCode: (payload) =>
+    request("/api/auth/reactivation/send-code", { method: "POST", body: payload }),
+  reactivateAccount: (payload) =>
+    request("/api/auth/reactivation/confirm", { method: "POST", body: payload }),
   sendAccountDeactivationCode: (token, payload) =>
     request("/api/account/deactivation/send-code", { method: "POST", token, body: payload }),
   deactivateAccount: (token, payload) =>

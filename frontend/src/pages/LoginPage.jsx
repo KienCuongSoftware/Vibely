@@ -36,7 +36,7 @@ import { clearVerificationToken } from "../security/sdk/antiBotClient.js";
 const OAUTH_ONBOARDING_KEY = "vibely_oauth_pending";
 
 export function LoginPage() {
-  const { token, user, login, completeOAuthLogin } = useAuth();
+  const { token, user, login, reactivateAccount, completeOAuthLogin } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const oauthInFlightRef = useRef(false);
@@ -55,6 +55,13 @@ export function LoginPage() {
   const [resetLoading, setResetLoading] = useState(false);
   const [sendResetError, setSendResetError] = useState("");
   const [isResetPasswordFocused, setIsResetPasswordFocused] = useState(false);
+  const [reactivationOpen, setReactivationOpen] = useState(false);
+  const [reactivationEmail, setReactivationEmail] = useState("");
+  const [reactivationProvider, setReactivationProvider] = useState("");
+  const [reactivationCode, setReactivationCode] = useState("");
+  const [reactivationCodeSent, setReactivationCodeSent] = useState(false);
+  const [reactivationLoading, setReactivationLoading] = useState(false);
+  const [reactivationError, setReactivationError] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const lastLoginMethod = useLastLoginMethod();
@@ -86,6 +93,10 @@ export function LoginPage() {
     resetCode.trim().length === 6 &&
     isResetPasswordValid &&
     !resetLoading;
+  const canConfirmReactivation =
+    reactivationEmail.trim().length > 0 &&
+    reactivationCode.trim().length === 6 &&
+    !reactivationLoading;
   const challengePurpose =
     pendingCaptchaActionRef.current === "sendResetCode"
       ? "PASSWORD_RESET"
@@ -130,6 +141,18 @@ export function LoginPage() {
     if (token && user) {
       const destination = String(user.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/foryou";
       navigate(destination, { replace: true });
+      return;
+    }
+
+    if (searchParams.get("reactivate") === "1") {
+      const email = searchParams.get("email") ?? "";
+      setReactivationEmail(email);
+      setReactivationProvider(normalizeLastLoginMethod(searchParams.get("provider")) ?? "");
+      setReactivationOpen(true);
+      setReactivationCode("");
+      setReactivationCodeSent(false);
+      setReactivationError("");
+      navigate("/login", { replace: true });
       return;
     }
 
@@ -221,6 +244,68 @@ export function LoginPage() {
     window.location.href = `${resolveBackendOrigin()}/oauth2/authorization/${provider}`;
   };
 
+  const openReactivationModal = (email, provider = "") => {
+    setReactivationEmail(email || identifier.trim().toLowerCase());
+    setReactivationProvider(provider);
+    setReactivationCode("");
+    setReactivationCodeSent(false);
+    setReactivationError("");
+    setReactivationOpen(true);
+  };
+
+  const closeReactivationModal = () => {
+    if (reactivationLoading) return;
+    setReactivationOpen(false);
+    setReactivationCode("");
+    setReactivationCodeSent(false);
+    setReactivationError("");
+  };
+
+  const sendReactivationCode = async () => {
+    const email = reactivationEmail.trim().toLowerCase();
+    if (!email) {
+      setReactivationError("Không tìm thấy email của tài khoản cần kích hoạt lại");
+      return;
+    }
+    setReactivationLoading(true);
+    setReactivationError("");
+    try {
+      const result = await apiClient.sendReactivationCode({ email });
+      setReactivationCodeSent(true);
+      if (result?.demoCode) {
+        setReactivationError(`Chưa bật gửi email (dev). Mã kích hoạt lại: ${result.demoCode}`);
+      }
+    } catch (error) {
+      setReactivationError(error.message);
+    } finally {
+      setReactivationLoading(false);
+    }
+  };
+
+  const confirmReactivation = async () => {
+    if (!canConfirmReactivation) return;
+    setReactivationLoading(true);
+    setReactivationError("");
+    try {
+      const result = await reactivateAccount({
+        email: reactivationEmail.trim().toLowerCase(),
+        code: reactivationCode.trim(),
+      });
+      if (reactivationProvider) {
+        persistLastLoginMethod(reactivationProvider);
+      }
+      setReactivationOpen(false);
+      setStatus("Tài khoản đã được kích hoạt lại");
+      navigate(String(result?.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/foryou", {
+        replace: true,
+      });
+    } catch (error) {
+      setReactivationError(error.message);
+    } finally {
+      setReactivationLoading(false);
+    }
+  };
+
   const performLogin = async () => {
     setLoading(true);
     setStatus("Đang đăng nhập...");
@@ -233,6 +318,11 @@ export function LoginPage() {
         replace: true,
       });
     } catch (error) {
+      if (error.code === "ACCOUNT_DEACTIVATED") {
+        openReactivationModal(error.data?.email ?? identifier.trim().toLowerCase(), "email");
+        setStatus("");
+        return;
+      }
       if (error.captchaRequired || error.code === "CAPTCHA_REQUIRED") {
         handleCaptchaRequired(error.captchaRequired ?? { challengeLevel: "ROTATE" });
         setStatus("Vui lòng hoàn thành xác minh bảo mật");
@@ -392,6 +482,87 @@ export function LoginPage() {
           performLogin();
         }}
       />
+      {reactivationOpen ? (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-[340px] overflow-hidden rounded-sm border border-zinc-800 bg-[#121212] text-center shadow-2xl">
+            <div className="px-6 py-6">
+              <h2 className="text-xl font-bold text-zinc-100">
+                Kích hoạt lại tài khoản Vibely
+              </h2>
+              <p className="mt-4 text-[13px] leading-relaxed text-zinc-300">
+                Bạn đang đăng nhập vào tài khoản đã bị hủy kích hoạt. Kích hoạt lại
+                tài khoản để tiếp tục sử dụng Vibely và khôi phục nội dung của bạn.
+              </p>
+              {reactivationEmail ? (
+                <p className="mt-3 break-all text-[12px] text-zinc-500">
+                  {reactivationEmail}
+                </p>
+              ) : null}
+              {reactivationCodeSent ? (
+                <div className="mt-4 text-left">
+                  <label className="mb-1 block text-[12px] font-medium text-zinc-300">
+                    Nhập mã xác minh 6 chữ số
+                  </label>
+                  <input
+                    className={AUTH_FIELD}
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="Mã xác minh"
+                    value={reactivationCode}
+                    onChange={(event) =>
+                      setReactivationCode(event.target.value.replace(/\D/g, ""))
+                    }
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    className="mt-2 text-[12px] font-medium text-zinc-400 hover:text-zinc-100"
+                    onClick={sendReactivationCode}
+                    disabled={reactivationLoading}
+                  >
+                    Gửi lại mã
+                  </button>
+                </div>
+              ) : null}
+              {reactivationError ? (
+                <p className="mt-3 text-[12px] leading-relaxed text-red-400">
+                  {reactivationError}
+                </p>
+              ) : null}
+            </div>
+            <div className="border-t border-zinc-800">
+              <button
+                type="button"
+                className={`h-12 w-full text-[15px] font-semibold text-white transition ${
+                  reactivationLoading
+                    ? "cursor-not-allowed bg-red-900"
+                    : "bg-red-600 hover:bg-red-500"
+                }`}
+                onClick={
+                  reactivationCodeSent ? confirmReactivation : sendReactivationCode
+                }
+                disabled={
+                  reactivationLoading ||
+                  (reactivationCodeSent && !canConfirmReactivation)
+                }
+              >
+                {reactivationLoading
+                  ? "Đang xử lý..."
+                  : reactivationCodeSent
+                    ? "Kích hoạt lại"
+                    : "Gửi mã xác minh"}
+              </button>
+              <button
+                type="button"
+                className="h-12 w-full border-t border-zinc-800 text-[15px] font-medium text-zinc-200 hover:bg-zinc-900"
+                onClick={closeReactivationModal}
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <div className="flex max-h-[94vh] w-full max-w-[520px] flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
         <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#27272a_transparent] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-800 [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar]:w-1.5">
         {view === "methods" ? (

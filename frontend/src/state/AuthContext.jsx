@@ -133,6 +133,11 @@ export function AuthProvider({ children }) {
     return establishSession(result);
   };
 
+  const reactivateAccount = async (payload) => {
+    const result = await apiClient.reactivateAccount(payload);
+    return establishSession(result);
+  };
+
   const register = async (payload, headers) => {
     const result = await apiClient.register(payload, headers);
     return establishSession(result);
@@ -261,6 +266,7 @@ export function AuthProvider({ children }) {
     authReady,
     login,
     register,
+    reactivateAccount,
     refreshSession,
     refreshProfile,
     updateProfile,
