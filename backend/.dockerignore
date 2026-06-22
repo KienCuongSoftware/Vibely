@@ -1,4 +1,5 @@
-target/
+target/*
+!target/vibely-backend-*.jar
 BOOT-INF/
 
 .mvn/wrapper/maven-wrapper.jar

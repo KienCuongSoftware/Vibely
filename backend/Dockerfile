@@ -1,14 +1,3 @@
-FROM maven:3.9.9-eclipse-temurin-17 AS build
-
-WORKDIR /workspace
-
-COPY pom.xml .
-RUN mvn -q -DskipTests dependency:go-offline
-
-COPY src ./src
-ARG MAVEN_ARGS="-DskipTests package"
-RUN mvn -q ${MAVEN_ARGS}
-
 FROM eclipse-temurin:17-jre-jammy
 
 RUN apt-get update \
@@ -18,7 +7,7 @@ RUN apt-get update \
 RUN groupadd --system vibely && useradd --system --gid vibely --home-dir /app vibely
 
 WORKDIR /app
-COPY --from=build /workspace/target/vibely-backend-*.jar /app/app.jar
+COPY target/vibely-backend-*.jar /app/app.jar
 RUN chown -R vibely:vibely /app
 
 USER vibely
