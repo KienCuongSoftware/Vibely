@@ -32,8 +32,17 @@ import {
 } from "../security/headers/buildAntiBotHeaders.js";
 import { useAntiBot } from "../security/hooks/useAntiBot.js";
 import { clearVerificationToken } from "../security/sdk/antiBotClient.js";
+import { collectLoginContext } from "../security/loginContext.js";
 
 const OAUTH_ONBOARDING_KEY = "vibely_oauth_pending";
+
+function maskEmailForDisplay(email) {
+  if (!email || !email.includes("@")) return "";
+  const [local, domain] = email.split("@");
+  if (!local || !domain) return "";
+  if (local.length === 1) return `*@${domain}`;
+  return `${local[0]}***${local[local.length - 1]}@${domain}`;
+}
 
 export function LoginPage() {
   const { token, user, login, reactivateAccount, completeOAuthLogin } = useAuth();
@@ -270,7 +279,8 @@ export function LoginPage() {
     setReactivationLoading(true);
     setReactivationError("");
     try {
-      const result = await apiClient.sendReactivationCode({ email });
+      const loginContext = await collectLoginContext();
+      const result = await apiClient.sendReactivationCode({ email, loginContext });
       setReactivationCodeSent(true);
       if (result?.demoCode) {
         setReactivationError(`Chưa bật gửi email (dev). Mã kích hoạt lại: ${result.demoCode}`);
@@ -495,7 +505,7 @@ export function LoginPage() {
               </p>
               {reactivationEmail ? (
                 <p className="mt-3 break-all text-[12px] text-zinc-500">
-                  {reactivationEmail}
+                  {maskEmailForDisplay(reactivationEmail)}
                 </p>
               ) : null}
               {reactivationCodeSent ? (
