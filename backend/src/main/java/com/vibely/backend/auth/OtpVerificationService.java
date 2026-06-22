@@ -136,6 +136,10 @@ public class OtpVerificationService {
         validateOtpCode(email, code, OtpCodePurpose.ACCOUNT_DEACTIVATION, true);
     }
 
+    public void consumeAccountReactivationCode(String email, String code) {
+        validateOtpCode(email, code, OtpCodePurpose.ACCOUNT_REACTIVATION, true);
+    }
+
     private OtpVerificationCode validateOtpCode(
         String rawEmail,
         String rawCode,

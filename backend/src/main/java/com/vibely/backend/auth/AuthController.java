@@ -132,7 +132,8 @@ public class AuthController {
             required = false
         ) String verificationToken
     ) {
-        if (OtpCodePurpose.fromRequestValue(request.getPurpose()) == OtpCodePurpose.ACCOUNT_DEACTIVATION) {
+        OtpCodePurpose purpose = OtpCodePurpose.fromRequestValue(request.getPurpose());
+        if (purpose == OtpCodePurpose.ACCOUNT_DEACTIVATION || purpose == OtpCodePurpose.ACCOUNT_REACTIVATION) {
             throw new BadRequestException("Mục đích mã OTP không hợp lệ");
         }
         return ApiResponse.success(otpVerificationService.sendCode(request, verificationToken));
@@ -140,6 +141,10 @@ public class AuthController {
 
     @PostMapping("/verify-code")
     public ApiResponse<VerifyCodeResponse> verifyCode(@Valid @RequestBody VerifyCodeRequest request) {
+        OtpCodePurpose purpose = OtpCodePurpose.fromRequestValue(request.getPurpose());
+        if (purpose == OtpCodePurpose.ACCOUNT_DEACTIVATION || purpose == OtpCodePurpose.ACCOUNT_REACTIVATION) {
+            throw new BadRequestException("Mục đích mã OTP không hợp lệ");
+        }
         return ApiResponse.success(otpVerificationService.verifyCode(request));
     }
 
@@ -147,6 +152,28 @@ public class AuthController {
     public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         otpVerificationService.resetPassword(request);
         return ApiResponse.success(null);
+    }
+
+    @PostMapping("/reactivation/send-code")
+    public ApiResponse<SendCodeResponse> sendReactivationCode(
+        @Valid @RequestBody SendReactivationCodeRequest request
+    ) {
+        return ApiResponse.success(authService.sendReactivationCode(request));
+    }
+
+    @PostMapping("/reactivation/confirm")
+    public ResponseEntity<ApiResponse<AuthSessionResponse>> reactivateAccount(
+        @Valid @RequestBody ReactivateAccountRequest request,
+        HttpServletRequest httpRequest,
+        HttpServletResponse httpResponse
+    ) {
+        return AuthSessionSupport.ok(
+            authService.reactivateAccount(request, httpRequest),
+            httpRequest,
+            httpResponse,
+            authCookieService,
+            exposeTokensInApi
+        );
     }
 
     @PostMapping("/oauth/native")

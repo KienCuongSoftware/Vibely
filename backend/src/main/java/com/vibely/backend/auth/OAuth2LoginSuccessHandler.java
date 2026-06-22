@@ -52,8 +52,25 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String name = resolveOAuthDisplayName(registrationId, attributes);
         String picture = extractProfilePictureUrl(attributes);
 
-        AuthResponse authResponse =
-            authService.authenticateWithOAuthProvider(email, name, picture, registrationId);
+        AuthResponse authResponse;
+        try {
+            authResponse = authService.authenticateWithOAuthProvider(email, name, picture, registrationId);
+        } catch (AccountDeactivatedException ex) {
+            String loginBase = OAuthRedirectUrlSupport.resolveFrontendLoginUrl(
+                request,
+                frontendSuccessUrl,
+                oauthPublicBaseUrl
+            );
+            String redirectUrl = UriComponentsBuilder.fromUriString(loginBase)
+                .queryParam("reactivate", "1")
+                .queryParam("email", ex.getEmail())
+                .queryParam("provider", registrationId)
+                .build()
+                .encode()
+                .toUriString();
+            response.sendRedirect(redirectUrl);
+            return;
+        }
         String oneTimeCode = oAuthLoginCodeStore.createCode(authResponse);
         String loginBase = OAuthRedirectUrlSupport.resolveFrontendLoginUrl(
             request,

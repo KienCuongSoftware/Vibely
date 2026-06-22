@@ -3,6 +3,8 @@ package com.vibely.backend.common;
 import com.vibely.backend.antibot.dto.CaptchaRequiredPayload;
 import com.vibely.backend.antibot.exception.CaptchaRequiredException;
 import com.vibely.backend.antibot.exception.SuspiciousLoginException;
+import com.vibely.backend.auth.AccountDeactivatedException;
+import com.vibely.backend.auth.AccountDeactivatedPayload;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleBadRequest(BadRequestException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(ApiResponse.failure(ApiError.of(HttpStatus.BAD_REQUEST.value(), "BAD_REQUEST", ex.getMessage())));
+    }
+
+    @ExceptionHandler(AccountDeactivatedException.class)
+    public ResponseEntity<ApiResponse<AccountDeactivatedPayload>> handleAccountDeactivated(
+        AccountDeactivatedException ex
+    ) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new ApiResponse<>(
+                false,
+                new AccountDeactivatedPayload(ex.getEmail()),
+                ApiError.of(HttpStatus.CONFLICT.value(), "ACCOUNT_DEACTIVATED", ex.getMessage())
+            ));
     }
 
     @ExceptionHandler(UnauthorizedException.class)

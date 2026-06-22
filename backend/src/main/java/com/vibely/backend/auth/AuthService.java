@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import com.vibely.backend.security.JwtService;
 import com.vibely.backend.user.Role;
 import com.vibely.backend.user.User;
+import com.vibely.backend.user.UserAccountStatus;
 import com.vibely.backend.user.UserRepository;
 import com.vibely.backend.user.UsernameCheckResponse;
 import com.vibely.backend.user.UsernameService;
@@ -41,6 +42,7 @@ public class AuthService {
     private final long refreshExpirationSeconds;
     private final AuthProtectionService authProtectionService;
     private final LoginContextService loginContextService;
+    private final OtpVerificationService otpVerificationService;
 
     public AuthService(
         UserRepository userRepository,
@@ -53,6 +55,7 @@ public class AuthService {
         UserAvatarResolver userAvatarResolver,
         AuthProtectionService authProtectionService,
         LoginContextService loginContextService,
+        OtpVerificationService otpVerificationService,
         @Value("${app.jwt.refresh-expiration-seconds:604800}") long refreshExpirationSeconds
     ) {
         this.userRepository = userRepository;
@@ -65,6 +68,7 @@ public class AuthService {
         this.userAvatarResolver = userAvatarResolver;
         this.authProtectionService = authProtectionService;
         this.loginContextService = loginContextService;
+        this.otpVerificationService = otpVerificationService;
         this.refreshExpirationSeconds = refreshExpirationSeconds;
     }
 
@@ -121,7 +125,7 @@ public class AuthService {
             userRepository.findByEmail(request.getEmail())
                 .filter(user -> !user.isActive())
                 .ifPresent(user -> {
-                    throw new BadRequestException("Tài khoản đã bị hủy kích hoạt");
+                    throw new AccountDeactivatedException(user.getEmail());
                 });
             throw new BadRequestException("Thông tin đăng nhập không chính xác");
         }
@@ -203,6 +207,37 @@ public class AuthService {
         }
 
         User saved = userRepository.save(user);
+        return issueTokens(saved);
+    }
+
+    public SendCodeResponse sendReactivationCode(SendReactivationCodeRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new BadRequestException("Không tìm thấy tài khoản với email này"));
+        if (user.isActive()) {
+            throw new BadRequestException("Tài khoản này đang hoạt động");
+        }
+
+        SendCodeRequest sendCodeRequest = new SendCodeRequest();
+        sendCodeRequest.setEmail(user.getEmail());
+        sendCodeRequest.setPurpose(OtpCodePurpose.ACCOUNT_REACTIVATION.name());
+        sendCodeRequest.setChallengePassed(true);
+        return otpVerificationService.sendCode(sendCodeRequest, null);
+    }
+
+    public AuthResponse reactivateAccount(ReactivateAccountRequest request, HttpServletRequest httpRequest) {
+        String email = request.getEmail().trim().toLowerCase();
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new BadRequestException("Không tìm thấy tài khoản với email này"));
+        if (user.isActive()) {
+            throw new BadRequestException("Tài khoản này đang hoạt động");
+        }
+
+        otpVerificationService.consumeAccountReactivationCode(user.getEmail(), request.getCode());
+        user.setAccountStatus(UserAccountStatus.ACTIVE);
+        user.setDeactivatedAt(null);
+        User saved = userRepository.save(user);
+        loginContextService.recordSuccessfulLogin(saved, httpRequest, null);
         return issueTokens(saved);
     }
 
@@ -313,7 +348,7 @@ public class AuthService {
 
     private void ensureActive(User user) {
         if (!user.isActive()) {
-            throw new BadRequestException("Tài khoản đã bị hủy kích hoạt");
+            throw new AccountDeactivatedException(user.getEmail());
         }
     }
 
