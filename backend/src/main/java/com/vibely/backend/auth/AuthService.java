@@ -1,6 +1,7 @@
 package com.vibely.backend.auth;
 
 import com.vibely.backend.antibot.auth.AuthProtectionService;
+import com.vibely.backend.auth.context.LoginContextService;
 import com.vibely.backend.common.BadRequestException;
 import jakarta.servlet.http.HttpServletRequest;
 import com.vibely.backend.security.JwtService;
@@ -39,6 +40,7 @@ public class AuthService {
     private final UserAvatarResolver userAvatarResolver;
     private final long refreshExpirationSeconds;
     private final AuthProtectionService authProtectionService;
+    private final LoginContextService loginContextService;
 
     public AuthService(
         UserRepository userRepository,
@@ -50,6 +52,7 @@ public class AuthService {
         UsernameService usernameService,
         UserAvatarResolver userAvatarResolver,
         AuthProtectionService authProtectionService,
+        LoginContextService loginContextService,
         @Value("${app.jwt.refresh-expiration-seconds:604800}") long refreshExpirationSeconds
     ) {
         this.userRepository = userRepository;
@@ -61,6 +64,7 @@ public class AuthService {
         this.usernameService = usernameService;
         this.userAvatarResolver = userAvatarResolver;
         this.authProtectionService = authProtectionService;
+        this.loginContextService = loginContextService;
         this.refreshExpirationSeconds = refreshExpirationSeconds;
     }
 
@@ -126,6 +130,7 @@ public class AuthService {
         ensureActive(user);
         authProtectionService.consumeLoginVerification(httpRequest);
         authProtectionService.onLoginSuccess(request.getEmail(), httpRequest);
+        loginContextService.recordSuccessfulLogin(user, httpRequest, request.getLoginContext());
         return issueTokens(user);
     }
 

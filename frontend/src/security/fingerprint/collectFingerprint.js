@@ -40,11 +40,34 @@ function webglRenderer() {
   }
 }
 
+async function detectBrowserName() {
+  try {
+    if (navigator.brave && (await navigator.brave.isBrave())) {
+      return "Brave";
+    }
+  } catch {
+    // Ignore browser detection failures; the backend can still parse User-Agent.
+  }
+  const brands = navigator.userAgentData?.brands || navigator.userAgentData?.fullVersionList || [];
+  const brandNames = brands.map((item) => item.brand).filter(Boolean);
+  const knownBrand = brandNames.find((brand) =>
+    /Brave|Microsoft Edge|Google Chrome|Chromium|Opera|Vivaldi|CocCoc|Firefox|Safari/i.test(brand),
+  );
+  if (knownBrand) {
+    return knownBrand
+      .replace(/Microsoft Edge/i, "Edge")
+      .replace(/Google Chrome/i, "Chrome")
+      .replace(/CocCoc/i, "Cốc Cốc");
+  }
+  return "";
+}
+
 export async function collectFingerprint() {
   const nav = navigator;
   const screenInfo = window.screen || {};
 
   return {
+    browserName: await detectBrowserName(),
     userAgent: nav.userAgent,
     platform: nav.platform,
     language: nav.language,

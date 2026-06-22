@@ -56,6 +56,14 @@ public class OtpVerificationService {
     }
 
     public SendCodeResponse sendCode(SendCodeRequest request, String verificationToken) {
+        return sendCode(request, verificationToken, OtpRequestMetadata.unknown());
+    }
+
+    public SendCodeResponse sendCode(
+        SendCodeRequest request,
+        String verificationToken,
+        OtpRequestMetadata metadata
+    ) {
         String email = request.getEmail().trim().toLowerCase();
         OtpCodePurpose purpose = OtpCodePurpose.fromRequestValue(request.getPurpose());
 
@@ -85,6 +93,11 @@ public class OtpVerificationService {
         boolean emailSent;
         if (purpose == OtpCodePurpose.PASSWORD_RESET) {
             emailSent = emailSender.sendPasswordResetCode(email, code, codeExpirySeconds);
+        } else if (purpose == OtpCodePurpose.ACCOUNT_DEACTIVATION) {
+            String username = userRepository.findByEmail(email)
+                .map(User::getUsername)
+                .orElse(email);
+            emailSent = emailSender.sendAccountDeactivationCode(email, username, code, codeExpirySeconds, metadata);
         } else {
             emailSent = emailSender.sendVerificationCode(email, code, codeExpirySeconds);
         }

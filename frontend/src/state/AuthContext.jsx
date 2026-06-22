@@ -2,6 +2,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { apiClient } from "../api/client";
 import { COOKIE_SESSION_MARKER } from "../auth/session.js";
+import { collectLoginContext } from "../security/loginContext.js";
 import { DEFAULT_AVATAR_URL, sanitizeAvatarUrl } from "../utils/avatarUrl.js";
 import { AuthContext } from "./auth-context";
 
@@ -127,7 +128,8 @@ export function AuthProvider({ children }) {
   };
 
   const login = async (email, password, headers) => {
-    const result = await apiClient.login({ email, password }, headers);
+    const loginContext = await collectLoginContext();
+    const result = await apiClient.login({ email, password, loginContext }, headers);
     return establishSession(result);
   };
 

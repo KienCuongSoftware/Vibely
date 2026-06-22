@@ -78,6 +78,7 @@ public class FingerprintService {
     public String hashFingerprint(DeviceFingerprintPayload fingerprint, AutomationSignals automation) {
         StringJoiner joiner = new StringJoiner("|");
         if (fingerprint != null) {
+            joiner.add(safe(fingerprint.browserName()));
             joiner.add(safe(fingerprint.userAgent()));
             joiner.add(safe(fingerprint.platform()));
             joiner.add(safe(fingerprint.language()));

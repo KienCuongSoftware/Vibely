@@ -132,6 +132,9 @@ public class AuthController {
             required = false
         ) String verificationToken
     ) {
+        if (OtpCodePurpose.fromRequestValue(request.getPurpose()) == OtpCodePurpose.ACCOUNT_DEACTIVATION) {
+            throw new BadRequestException("Mục đích mã OTP không hợp lệ");
+        }
         return ApiResponse.success(otpVerificationService.sendCode(request, verificationToken));
     }
 

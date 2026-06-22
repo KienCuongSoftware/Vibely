@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../api/client'
+import { collectLoginContext } from '../security/loginContext'
 import { useAuth } from '../state/useAuth'
 import {
   IoArrowBack,
@@ -48,7 +49,7 @@ function SettingsRow({ title, description, trailing, danger = false, onClick }) 
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full items-center justify-between gap-4 rounded-lg border-b border-zinc-800/70 px-3 py-4 text-left transition hover:bg-zinc-800/70 last:border-b-0"
+      className="group flex w-full cursor-pointer items-center justify-between gap-4 rounded-lg border-b border-zinc-800/70 px-3 py-4 text-left transition hover:bg-zinc-800/70 last:border-b-0"
     >
       <span className="min-w-0">
         <span className={`block text-sm font-medium transition ${danger ? 'text-red-400' : 'text-zinc-100 group-hover:text-white'}`}>{title}</span>
@@ -74,7 +75,7 @@ function AccountRemovalChoice({ title, description, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full items-start justify-between gap-4 rounded-xl bg-zinc-800/90 px-4 py-4 text-left transition hover:bg-zinc-800"
+      className="group flex w-full cursor-pointer items-start justify-between gap-4 rounded-xl bg-zinc-800/90 px-4 py-4 text-left transition hover:bg-zinc-800"
     >
       <span>
         <span className="block text-sm font-semibold text-zinc-100">{title}</span>
@@ -168,7 +169,8 @@ export function SettingsPage() {
     setSendingDeactivationCode(true)
     setDeactivationError('')
     try {
-      const result = await apiClient.sendAccountDeactivationCode(token)
+      const loginContext = await collectLoginContext()
+      const result = await apiClient.sendAccountDeactivationCode(token, loginContext)
       setDeactivationCooldown(result?.resendAfterSeconds ?? 60)
       setDeactivationStep('code')
     } catch (error) {

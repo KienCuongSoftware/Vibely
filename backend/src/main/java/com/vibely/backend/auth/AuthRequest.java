@@ -14,6 +14,8 @@ public class AuthRequest {
     @Size(min = 6, max = 100, message = "Mật khẩu phải từ 6 đến 100 ký tự")
     private String password;
 
+    private LoginContextRequest loginContext;
+
     public String getEmail() {
         return email;
     }
@@ -28,5 +30,13 @@ public class AuthRequest {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public LoginContextRequest getLoginContext() {
+        return loginContext;
+    }
+
+    public void setLoginContext(LoginContextRequest loginContext) {
+        this.loginContext = loginContext;
     }
 }

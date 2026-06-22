@@ -3,6 +3,7 @@ package com.vibely.backend.antibot.dto;
 import java.util.List;
 
 public record DeviceFingerprintPayload(
+    String browserName,
     String userAgent,
     String platform,
     String language,
