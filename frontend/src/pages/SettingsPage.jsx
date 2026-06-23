@@ -25,6 +25,39 @@ const SETTINGS_NAV = [
   { id: 'content', label: 'Tùy chọn nội dung', icon: IoGlobeOutline },
 ]
 
+const DELETE_REASONS = [
+  {
+    id: 'temporary',
+    label: 'Tôi chỉ tạm thời ngừng sử dụng',
+    help: 'Nếu bạn chỉ muốn nghỉ một thời gian, hủy kích hoạt có thể phù hợp hơn.',
+    action: 'Hủy kích hoạt tài khoản',
+  },
+  {
+    id: 'too-much',
+    label: 'Tôi dùng Vibely quá nhiều',
+    help: 'Bạn có thể đặt giới hạn thời gian sử dụng thay vì xóa tài khoản.',
+    action: 'Đi tới Thời gian sử dụng màn hình',
+  },
+  {
+    id: 'privacy',
+    label: 'Lo ngại về sự an toàn hoặc quyền riêng tư',
+    help: 'Bạn có thể chuyển sang tài khoản riêng tư hoặc cập nhật cài đặt quyền riêng tư.',
+    action: 'Chuyển sang tài khoản riêng tư',
+  },
+  {
+    id: 'ads',
+    label: 'Quá nhiều quảng cáo không phù hợp',
+    help: 'Bạn có thể quản lý quảng cáo và chủ đề quảng cáo trong cài đặt.',
+    action: 'Quản lý cá nhân hóa quảng cáo',
+  },
+  {
+    id: 'trouble',
+    label: 'Gặp sự cố khi bắt đầu',
+    help: 'Nếu có lỗi hoặc khó sử dụng, hồ sơ và cài đặt có thể giúp bạn tiếp tục.',
+    action: 'Thiết lập hồ sơ của bạn',
+  },
+]
+
 function SettingsSwitch({ checked, onChange, label }) {
   return (
     <button
@@ -113,6 +146,15 @@ export function SettingsPage() {
   const [sendingDeactivationCode, setSendingDeactivationCode] = useState(false)
   const [deactivatingAccount, setDeactivatingAccount] = useState(false)
   const [confirmDeactivateOpen, setConfirmDeactivateOpen] = useState(false)
+  const [deletionStep, setDeletionStep] = useState('reason')
+  const [deletionReason, setDeletionReason] = useState('')
+  const [deletionDataAcknowledged, setDeletionDataAcknowledged] = useState(false)
+  const [deletionCode, setDeletionCode] = useState('')
+  const [deletionError, setDeletionError] = useState('')
+  const [deletionCooldown, setDeletionCooldown] = useState(0)
+  const [sendingDeletionCode, setSendingDeletionCode] = useState(false)
+  const [deletingAccount, setDeletingAccount] = useState(false)
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
 
   useEffect(() => {
     document.title = 'Cài đặt | Vibely'
@@ -125,6 +167,14 @@ export function SettingsPage() {
     }, 1000)
     return () => window.clearInterval(timer)
   }, [deactivationCooldown])
+
+  useEffect(() => {
+    if (deletionCooldown <= 0) return undefined
+    const timer = window.setInterval(() => {
+      setDeletionCooldown((value) => Math.max(0, value - 1))
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [deletionCooldown])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -159,6 +209,16 @@ export function SettingsPage() {
     setDeactivationCode('')
     setDeactivationError('')
     setConfirmDeactivateOpen(false)
+  }
+
+  const startDeletionFlow = () => {
+    setAccountView('deletion')
+    setDeletionStep('reason')
+    setDeletionReason('')
+    setDeletionDataAcknowledged(false)
+    setDeletionCode('')
+    setDeletionError('')
+    setConfirmDeleteOpen(false)
   }
 
   const sendDeactivationCode = async () => {
@@ -196,6 +256,44 @@ export function SettingsPage() {
       setDeactivationError(error?.message || 'Không thể hủy kích hoạt tài khoản.')
     } finally {
       setDeactivatingAccount(false)
+    }
+  }
+
+  const sendDeletionCode = async () => {
+    if (!token) {
+      setDeletionError('Bạn cần đăng nhập để tiếp tục.')
+      return
+    }
+    setSendingDeletionCode(true)
+    setDeletionError('')
+    try {
+      const loginContext = await collectLoginContext({ requireLocation: true })
+      const result = await apiClient.sendAccountDeletionCode(token, loginContext)
+      setDeletionCooldown(result?.resendAfterSeconds ?? 60)
+      setDeletionStep('code')
+    } catch (error) {
+      setDeletionError(error?.message || 'Không thể gửi mã xác minh.')
+    } finally {
+      setSendingDeletionCode(false)
+    }
+  }
+
+  const deleteAccount = async () => {
+    if (!token) {
+      setDeletionError('Bạn cần đăng nhập để tiếp tục.')
+      return
+    }
+    setDeletingAccount(true)
+    setDeletionError('')
+    try {
+      await apiClient.deleteAccount(token, { code: deletionCode })
+      logout()
+      navigate('/signup', { replace: true })
+    } catch (error) {
+      setConfirmDeleteOpen(false)
+      setDeletionError(error?.message || 'Không thể xóa tài khoản.')
+    } finally {
+      setDeletingAccount(false)
     }
   }
 
@@ -265,7 +363,8 @@ export function SettingsPage() {
                     />
                     <AccountRemovalChoice
                       title="Xóa tài khoản vĩnh viễn"
-                      description="Tài khoản và nội dung của bạn sẽ bị xóa vĩnh viễn. Bạn có thể hủy yêu cầu xóa bằng cách kích hoạt lại tài khoản trong vòng 30 ngày."
+                      description="Tài khoản và nội dung của bạn sẽ bị xóa vĩnh viễn. Sau khi xác nhận xóa, bạn không thể khôi phục tài khoản này."
+                      onClick={startDeletionFlow}
                     />
                   </div>
                 </section>
@@ -384,6 +483,197 @@ export function SettingsPage() {
                           className="border-l border-zinc-800 px-4 py-3 text-sm font-semibold text-red-400 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:text-red-400/50"
                         >
                           {deactivatingAccount ? 'Đang xử lý...' : 'Hủy kích hoạt'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ) : accountView === 'deletion' ? (
+              <div className="relative min-h-[520px]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (deletionStep === 'code') {
+                      setDeletionStep('confirm')
+                      setDeletionError('')
+                      return
+                    }
+                    if (deletionStep === 'confirm') {
+                      setDeletionStep('data')
+                      setDeletionError('')
+                      return
+                    }
+                    if (deletionStep === 'data') {
+                      setDeletionStep('reason')
+                      setDeletionError('')
+                      return
+                    }
+                    setAccountView('removal')
+                  }}
+                  className="mb-5 flex h-9 w-9 items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-900 hover:text-white"
+                  aria-label="Quay lại"
+                >
+                  <IoArrowBack className="text-lg" aria-hidden />
+                </button>
+
+                {deletionStep === 'reason' ? (
+                  <section className="flex min-h-[460px] flex-col rounded-xl border border-zinc-900 bg-zinc-900/40 p-5">
+                    <h1 className="text-lg font-bold text-zinc-100">Trước khi bạn thoát, chúng tôi có thể giúp gì cho bạn?</h1>
+                    <p className="mt-4 text-sm leading-relaxed text-zinc-400">
+                      Hãy cho chúng tôi biết lý do bạn muốn xóa tài khoản để chúng tôi có thể giúp giải quyết vấn đề thường gặp.
+                    </p>
+                    <div className="mt-5 space-y-3">
+                      {DELETE_REASONS.map((reason) => {
+                        const selected = deletionReason === reason.id
+                        return (
+                          <button
+                            key={reason.id}
+                            type="button"
+                            onClick={() => setDeletionReason(reason.id)}
+                            className="w-full text-left"
+                          >
+                            <span className="flex items-center justify-between gap-4 text-sm text-zinc-100">
+                              {reason.label}
+                              <span className={`h-4 w-4 rounded-full border ${selected ? 'border-red-500 bg-red-500 shadow-[inset_0_0_0_4px_#27272a]' : 'border-zinc-600'}`} />
+                            </span>
+                            {selected ? (
+                              <span className="mt-3 block rounded-lg bg-zinc-800 px-4 py-3 text-xs leading-relaxed text-zinc-400">
+                                {reason.help}
+                                <span className="mt-2 block font-semibold text-zinc-100">{reason.action} ›</span>
+                              </span>
+                            ) : null}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setDeletionStep('data')}
+                      disabled={!deletionReason}
+                      className="mt-auto w-full rounded-md bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-500/90 disabled:cursor-not-allowed disabled:bg-red-500/35"
+                    >
+                      Tiếp tục
+                    </button>
+                    <button type="button" onClick={() => setAccountView('removal')} className="mt-4 text-sm text-zinc-300 hover:text-white">
+                      Bỏ qua
+                    </button>
+                  </section>
+                ) : deletionStep === 'data' ? (
+                  <section className="flex min-h-[460px] flex-col rounded-xl border border-zinc-900 bg-zinc-900/40 p-5">
+                    <h1 className="text-lg font-bold text-zinc-100">Tải về dữ liệu Vibely của bạn</h1>
+                    <p className="mt-4 text-sm leading-relaxed text-zinc-400">
+                      Chúng tôi khuyên bạn tải dữ liệu trước khi xóa tài khoản. Sau khi tài khoản bị xóa, bạn có thể không truy cập được hồ sơ, video, bình luận và dữ liệu liên quan.
+                    </p>
+                    <button type="button" className="mt-5 w-fit text-sm font-semibold text-sky-400 hover:text-sky-300">
+                      Yêu cầu tải về
+                    </button>
+                    <label className="mt-auto flex items-start gap-3 text-xs leading-relaxed text-zinc-400">
+                      <input
+                        type="checkbox"
+                        checked={deletionDataAcknowledged}
+                        onChange={(event) => setDeletionDataAcknowledged(event.target.checked)}
+                        className="mt-0.5 h-4 w-4 rounded border-zinc-600 bg-zinc-900 accent-red-500"
+                      />
+                      Việc bỏ qua bước này có nghĩa là bạn đã xét duyệt yêu cầu dữ liệu của mình và muốn tiếp tục xóa tài khoản.
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setDeletionStep('confirm')}
+                      disabled={!deletionDataAcknowledged}
+                      className="mt-5 w-full rounded-md bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-500/90 disabled:cursor-not-allowed disabled:bg-red-500/35"
+                    >
+                      Tiếp tục
+                    </button>
+                  </section>
+                ) : deletionStep === 'confirm' ? (
+                  <section className="flex min-h-[460px] flex-col rounded-xl border border-zinc-900 bg-zinc-900/40 p-5">
+                    <h1 className="text-lg font-bold text-zinc-100">{user?.username}: Xóa tài khoản này?</h1>
+                    <p className="mt-4 text-sm leading-relaxed text-zinc-400">
+                      Sau khi xác nhận, tài khoản của bạn sẽ bị xóa khỏi Vibely và bạn sẽ bị đăng xuất khỏi tất cả thiết bị.
+                    </p>
+                    <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed text-zinc-400">
+                      <li>Bạn sẽ không thể đăng nhập bằng tài khoản này sau khi xóa.</li>
+                      <li>Video, hồ sơ, lượt thích, bình luận và quan hệ follow liên quan sẽ bị xóa theo dữ liệu tài khoản.</li>
+                      <li>Một số dữ liệu pháp lý hoặc bảo mật có thể được giữ lại theo yêu cầu hệ thống.</li>
+                    </ul>
+                    {deletionError ? (
+                      <p className="mt-5 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-300">{deletionError}</p>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={sendDeletionCode}
+                      disabled={sendingDeletionCode}
+                      className="mt-auto w-full rounded-md bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-500/90 disabled:cursor-not-allowed disabled:bg-red-500/45"
+                    >
+                      {sendingDeletionCode ? 'Đang gửi mã...' : 'Tiếp tục'}
+                    </button>
+                  </section>
+                ) : (
+                  <section className="flex min-h-[460px] flex-col rounded-xl border border-zinc-900 bg-zinc-900/40 p-5">
+                    <div>
+                      <h1 className="text-lg font-bold text-zinc-100">Hãy giúp chúng tôi xác nhận đó là bạn</h1>
+                      <p className="mt-4 text-sm leading-relaxed text-zinc-400">
+                        Để xóa {user?.username}, hãy nhập mã chúng tôi gửi tới email {maskEmail(user?.email)} của bạn.
+                      </p>
+                      <div className="mt-5 flex max-w-sm overflow-hidden rounded-lg bg-zinc-800">
+                        <input
+                          value={deletionCode}
+                          onChange={(event) => {
+                            setDeletionCode(event.target.value.replace(/\D/g, '').slice(0, 6))
+                            setDeletionError('')
+                          }}
+                          inputMode="numeric"
+                          placeholder="Nhập mã gồm 6 chữ số"
+                          className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={sendDeletionCode}
+                          disabled={sendingDeletionCode || deletionCooldown > 0}
+                          className="shrink-0 px-4 text-xs font-medium text-zinc-300 transition hover:text-white disabled:cursor-not-allowed disabled:text-zinc-500"
+                        >
+                          {deletionCooldown > 0 ? `Gửi lại mã ${deletionCooldown}s` : 'Gửi lại mã'}
+                        </button>
+                      </div>
+                    </div>
+                    {deletionError ? (
+                      <p className="mt-5 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-300">{deletionError}</p>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDeleteOpen(true)}
+                      disabled={deletionCode.length !== 6}
+                      className="mt-auto w-full rounded-md bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-500/90 disabled:cursor-not-allowed disabled:bg-red-500/35"
+                    >
+                      Xóa tài khoản
+                    </button>
+                  </section>
+                )}
+
+                {confirmDeleteOpen ? (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/80 px-4">
+                    <div className="w-full max-w-xs overflow-hidden rounded-xl bg-zinc-900 text-center shadow-2xl ring-1 ring-zinc-800">
+                      <div className="px-5 py-5">
+                        <h2 className="text-sm font-semibold text-zinc-100">Xóa</h2>
+                        <p className="mt-1 text-sm font-semibold text-zinc-100">{user?.username}?</p>
+                      </div>
+                      <div className="grid grid-cols-2 border-t border-zinc-800">
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteOpen(false)}
+                          disabled={deletingAccount}
+                          className="px-4 py-3 text-sm text-zinc-100 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:text-zinc-500"
+                        >
+                          Hủy
+                        </button>
+                        <button
+                          type="button"
+                          onClick={deleteAccount}
+                          disabled={deletingAccount}
+                          className="border-l border-zinc-800 px-4 py-3 text-sm font-semibold text-red-400 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:text-red-400/50"
+                        >
+                          {deletingAccount ? 'Đang xóa...' : 'Xóa'}
                         </button>
                       </div>
                     </div>

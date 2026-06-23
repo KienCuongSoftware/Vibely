@@ -151,6 +151,10 @@ export const apiClient = {
     request("/api/account/deactivation/send-code", { method: "POST", token, body: payload }),
   deactivateAccount: (token, payload) =>
     request("/api/account/deactivation", { method: "POST", token, body: payload }),
+  sendAccountDeletionCode: (token, payload) =>
+    request("/api/account/deletion/send-code", { method: "POST", token, body: payload }),
+  deleteAccount: (token, payload) =>
+    request("/api/account/deletion", { method: "POST", token, body: payload }),
   exchangeOAuthCode: (code) =>
     request("/api/auth/oauth/exchange", { method: "POST", body: { code } }),
   completeOnboarding: (payload, token) =>
