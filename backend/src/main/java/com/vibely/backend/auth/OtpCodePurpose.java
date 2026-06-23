@@ -4,7 +4,8 @@ public enum OtpCodePurpose {
     REGISTER,
     PASSWORD_RESET,
     ACCOUNT_DEACTIVATION,
-    ACCOUNT_REACTIVATION;
+    ACCOUNT_REACTIVATION,
+    ACCOUNT_DELETION;
 
     public static OtpCodePurpose fromRequestValue(String raw) {
         if (raw == null || raw.isBlank()) {

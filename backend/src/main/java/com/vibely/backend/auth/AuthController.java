@@ -138,7 +138,9 @@ public class AuthController {
         ) String verificationToken
     ) {
         OtpCodePurpose purpose = OtpCodePurpose.fromRequestValue(request.getPurpose());
-        if (purpose == OtpCodePurpose.ACCOUNT_DEACTIVATION || purpose == OtpCodePurpose.ACCOUNT_REACTIVATION) {
+        if (purpose == OtpCodePurpose.ACCOUNT_DEACTIVATION
+            || purpose == OtpCodePurpose.ACCOUNT_REACTIVATION
+            || purpose == OtpCodePurpose.ACCOUNT_DELETION) {
             throw new BadRequestException("Mục đích mã OTP không hợp lệ");
         }
         return ApiResponse.success(otpVerificationService.sendCode(request, verificationToken));
@@ -147,7 +149,9 @@ public class AuthController {
     @PostMapping("/verify-code")
     public ApiResponse<VerifyCodeResponse> verifyCode(@Valid @RequestBody VerifyCodeRequest request) {
         OtpCodePurpose purpose = OtpCodePurpose.fromRequestValue(request.getPurpose());
-        if (purpose == OtpCodePurpose.ACCOUNT_DEACTIVATION || purpose == OtpCodePurpose.ACCOUNT_REACTIVATION) {
+        if (purpose == OtpCodePurpose.ACCOUNT_DEACTIVATION
+            || purpose == OtpCodePurpose.ACCOUNT_REACTIVATION
+            || purpose == OtpCodePurpose.ACCOUNT_DELETION) {
             throw new BadRequestException("Mục đích mã OTP không hợp lệ");
         }
         return ApiResponse.success(otpVerificationService.verifyCode(request));

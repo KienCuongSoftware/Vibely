@@ -26,6 +26,10 @@ final class OtpVerificationEmailTemplate {
         return code + " là mã kích hoạt lại tài khoản Vibely";
     }
 
+    static String accountDeletionSubject(String code) {
+        return code + " là mã xóa tài khoản Vibely";
+    }
+
     static String accountDeactivationHtmlBody(
         String username,
         String code,
@@ -188,6 +192,45 @@ final class OtpVerificationEmailTemplate {
             .replace(
                 "Nếu bạn không yêu cầu mã này, hãy đổi mật khẩu ngay trong Vibely.",
                 "Nếu bạn không yêu cầu kích hoạt lại tài khoản, hãy bỏ qua email này và đổi mật khẩu ngay trong Vibely."
+            );
+    }
+
+    static String accountDeletionHtmlBody(
+        String username,
+        String code,
+        String expiryLabel,
+        String helpUrl,
+        OtpRequestMetadata metadata
+    ) {
+        String safeUsername = escapeHtml(username);
+        return accountDeactivationHtmlBody(username, code, expiryLabel, helpUrl, metadata)
+            .replace("<title>Mã hủy kích hoạt tài khoản Vibely</title>", "<title>Mã xóa tài khoản Vibely</title>")
+            .replace(
+                "Hãy dùng mã này để xác minh rằng <strong>@%s</strong> là tài khoản Vibely của bạn trước khi hủy kích hoạt."
+                    .formatted(safeUsername),
+                "Hãy dùng mã này để xác minh rằng <strong>@%s</strong> là tài khoản Vibely của bạn trước khi xóa tài khoản vĩnh viễn."
+                    .formatted(safeUsername)
+            )
+            .replace(
+                "Nếu bạn không yêu cầu mã này, có thể có người đang cố truy cập tài khoản của bạn. Hãy đổi mật khẩu ngay trong Vibely.",
+                "Nếu bạn không yêu cầu xóa tài khoản, có thể có người đang cố truy cập tài khoản của bạn. Hãy đổi mật khẩu ngay trong Vibely."
+            );
+    }
+
+    static String accountDeletionPlainBody(
+        String username,
+        String code,
+        String expiryLabel,
+        OtpRequestMetadata metadata
+    ) {
+        return accountDeactivationPlainBody(username, code, expiryLabel, metadata)
+            .replace(
+                "Hãy dùng mã này để xác minh rằng @" + username + " là tài khoản Vibely của bạn trước khi hủy kích hoạt.",
+                "Hãy dùng mã này để xác minh rằng @" + username + " là tài khoản Vibely của bạn trước khi xóa tài khoản vĩnh viễn."
+            )
+            .replace(
+                "Nếu bạn không yêu cầu mã này, hãy đổi mật khẩu ngay trong Vibely.",
+                "Nếu bạn không yêu cầu xóa tài khoản, hãy đổi mật khẩu ngay trong Vibely."
             );
     }
 

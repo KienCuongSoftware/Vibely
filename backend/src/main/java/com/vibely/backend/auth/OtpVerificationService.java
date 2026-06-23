@@ -103,6 +103,11 @@ public class OtpVerificationService {
                 .map(User::getUsername)
                 .orElse(email);
             emailSent = emailSender.sendAccountReactivationCode(email, username, code, codeExpirySeconds, metadata);
+        } else if (purpose == OtpCodePurpose.ACCOUNT_DELETION) {
+            String username = userRepository.findByEmail(email)
+                .map(User::getUsername)
+                .orElse(email);
+            emailSent = emailSender.sendAccountDeletionCode(email, username, code, codeExpirySeconds, metadata);
         } else {
             emailSent = emailSender.sendVerificationCode(email, code, codeExpirySeconds);
         }
@@ -143,6 +148,10 @@ public class OtpVerificationService {
 
     public void consumeAccountReactivationCode(String email, String code) {
         validateOtpCode(email, code, OtpCodePurpose.ACCOUNT_REACTIVATION, true);
+    }
+
+    public void consumeAccountDeletionCode(String email, String code) {
+        validateOtpCode(email, code, OtpCodePurpose.ACCOUNT_DELETION, true);
     }
 
     private OtpVerificationCode validateOtpCode(
