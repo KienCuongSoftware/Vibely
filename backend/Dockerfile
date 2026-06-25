@@ -7,8 +7,7 @@ RUN apt-get update \
 RUN groupadd --system vibely && useradd --system --gid vibely --home-dir /app vibely
 
 WORKDIR /app
-COPY target/vibely-backend-*.jar /app/app.jar
-RUN chown -R vibely:vibely /app
+COPY --chown=vibely:vibely target/vibely-backend-*.jar /app/app.jar
 
 USER vibely
 
