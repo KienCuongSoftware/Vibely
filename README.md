@@ -487,7 +487,7 @@ Vibely/
 | Node.js          | 20+                                     |
 | PostgreSQL       | 14+                                     |
 | FFmpeg / FFprobe | 6+ (on `PATH` or via `FFMPEG_PATH`)     |
-| Redis            | 7+ (optional; enabled in `dev` profile) |
+| Redis            | 7+ (optional; disabled by default in `dev` unless `APP_REDIS_ENABLED=true`) |
 
 ### 1. Start Redis (and optional Kafka)
 
@@ -501,7 +501,7 @@ docker compose up -d redis
 
 Create a PostgreSQL database named `vibely` (or configure `DB_URL`).
 
-**Schema:** ~42 tables, Flyway migrations `backend/src/main/resources/db/migration/`. Full ERD: [docs/erd/vibely-erd-full.png](docs/erd/vibely-erd-full.png) · [docs/database/](docs/database/)
+**Schema:** Flyway migrations currently reach `V44` under `backend/src/main/resources/db/migration/`. The SQL migrations are the source of truth; refresh the ERD when table count or major relationships change. Full ERD: [docs/erd/vibely-erd-full.png](docs/erd/vibely-erd-full.png) · [docs/database/](docs/database/)
 
 ### 3. Backend environment
 
@@ -512,7 +512,7 @@ Create a PostgreSQL database named `vibely` (or configure `DB_URL`).
 | `DB_URL`                          | JDBC URL                  | local PostgreSQL                      |
 | `DB_USERNAME`                     | DB user                   | `postgres`                            |
 | `REDIS_HOST`                      | Redis host                | `localhost`                           |
-| `APP_REDIS_ENABLED`               | Enable Redis features     | `true` in dev profile                 |
+| `APP_REDIS_ENABLED`               | Enable Redis features     | `false` in dev unless overridden      |
 | `APP_S3_ENABLED`                  | Enable S3 uploads/HLS     | `true` in dev profile                 |
 | `AWS_S3_BUCKET`                   | S3 bucket name            | —                                     |
 | `AWS_ACCESS_KEY_ID`               | AWS credentials           | —                                     |
@@ -529,10 +529,10 @@ Create a PostgreSQL database named `vibely` (or configure `DB_URL`).
 | `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_ID` | Direct Spring Facebook client ID for VPS | — |
 | `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_SECRET` | Direct Spring Facebook secret for VPS | — |
 | `ANTIBOT_HMAC_SECRET`             | Captcha/token signing     | dev default in `application-dev.yaml` |
-| `OPENAI_API_KEY`                  | OpenAI key for discovery  | — (set in `application-local.yaml`)   |
+| `OPENAI_API_KEY`                  | OpenAI key for discovery  | placeholder in dev; set real value in `application-local.yaml` |
 | `DISCOVERY_OPENAI_ENABLED`        | Enable OpenAI indexing    | `true`                                |
 
-For local dev, merge mail/OAuth/S3/discovery secrets into `backend/src/main/resources/application-local.yaml` (gitignored; see `application-dev.yaml` for keys). The current VPS reads `/opt/vibely/vibely.env` and imports `/opt/vibely/config/application-local.yaml`; see [docs/deployment/README.md](docs/deployment/README.md).
+For local dev, merge mail/OAuth/S3/discovery secrets into `backend/src/main/resources/application-local.yaml` (gitignored; see `application-dev.yaml` for keys). Do not use the sample `sk-...` placeholder as a real OpenAI key. The current VPS reads `/opt/vibely/vibely.env` and imports `/opt/vibely/config/application-local.yaml`; see [docs/deployment/README.md](docs/deployment/README.md).
 
 ```bash
 # Discovery (content understanding on upload/edit)

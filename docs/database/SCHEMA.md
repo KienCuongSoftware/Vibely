@@ -2,17 +2,17 @@
 
 ## 1. Overview
 
-Single PostgreSQL database, multi-domain tables, Flyway versioned migrations **V1–V36** (~**42 tables**).
+Single PostgreSQL database, multi-domain tables, Flyway versioned migrations through **V44**. The SQL migrations currently create about **46 tables** across auth, video, engagement, sharing, explore, discovery, search, chat, anti-bot, notification, moderation, account, and login-history domains.
 
 **Canonical source:** SQL under `backend/src/main/resources/db/migration/`.
 
 ## 2. Full ERD
 
-![Vibely full database ERD (42 tables)](../erd/vibely-erd-full.png)
+![Vibely full database ERD](../erd/vibely-erd-full.png)
 
 High-resolution diagram: [docs/erd/vibely-erd-full.png](../erd/vibely-erd-full.png)
 
-The diagram above is the complete schema. Section 3 below is a simplified relationship view for onboarding; section 4 lists tables by domain.
+The SQL migrations are the canonical source of truth. Refresh the ERD image after table-count or major foreign-key changes. Section 3 below is a simplified relationship view for onboarding; section 4 lists tables by domain.
 
 ## 3. Core relationships (simplified)
 
@@ -42,7 +42,9 @@ erDiagram
 | **Search** | `search_query_logs`, `search_suggest_cache` (see V35) |
 | **Chat** | `chat_conversations`, `chat_messages`, `chat_participants`, `chat_message_requests` |
 | **Anti-bot** | `anti_bot_risk_events`, `anti_bot_device_fingerprints`, `anti_bot_captcha_challenges`, … |
+| **Notifications** | `user_notifications`, `system_notifications`, `user_notification_actors` |
 | **Moderation** | `video_reports`, columns on `videos` / `users` |
+| **Account lifecycle** | account status/deletion/reactivation columns on `users`, `user_login_history` |
 
 ## 5. Public vs internal IDs
 

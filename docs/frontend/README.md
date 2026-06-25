@@ -3,7 +3,7 @@
 ## File structure
 
 ```
-frontend/
+docs/frontend/
 ├── README.md
 ├── REACT_ARCHITECTURE.md
 ├── STATE_AND_ROUTING.md
@@ -13,6 +13,14 @@ frontend/
 Related: ../search/ (global search API + UI)
 ```
 
-**Stack:** React 19, Vite 8, TailwindCSS 4, React Router 7, Zustand (minimal), hls.js.
+**App root:** `frontend/`
 
-**Entry:** `src/main.jsx` → routes in App shell.
+**Stack:** React 19, Vite 8, Tailwind CSS 4, React Router 7, hls.js, TanStack Virtual, STOMP/WebSocket, Vitest.
+
+**Entry:** `frontend/src/main.jsx` → `frontend/src/App.jsx`.
+
+**Route groups:** public feed/watch/profile/legal/auth pages, authenticated following/friends/messages/settings/studio/explore/search pages, and role-gated admin pages.
+
+**Config:** frontend env is resolved in `frontend/src/config/apiBase.js` and `frontend/src/config/appOrigin.js`. Dev proxy routes in `frontend/vite.config.js` forward `/api`, `/share`, `/oauth2`, `/login/oauth2`, and `/ws` to the backend.
+
+**Run:** `cd frontend && npm install && npm run dev`.

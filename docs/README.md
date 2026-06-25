@@ -34,11 +34,13 @@ Each major document follows:
 
 ## Documentation map
 
+Start with [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) for the current repository snapshot, then use the domain docs below for deeper detail.
+
 | Domain | Index | Primary documents |
 |--------|-------|-------------------|
 | Architecture | [architecture/README.md](architecture/README.md) | System overview, request lifecycle, events, CDN, WebSocket |
 | Backend | [backend/README.md](backend/README.md) | Spring modules, DDD, Redis/Kafka |
-| Frontend | [frontend/README.md](frontend/README.md) | React 19, Zustand, HLS, virtualization |
+| Frontend | [frontend/README.md](frontend/README.md) | React 19, Vite, HLS, virtualization, realtime UI |
 | Feed | [feed/README.md](feed/README.md) | Keyset pagination, ranking hooks |
 | Media | [media/README.md](media/README.md) | FFmpeg HLS pipeline, S3, CDN |
 | Auth | [auth/README.md](auth/README.md) | JWT, refresh rotation, OAuth |
@@ -55,7 +57,7 @@ Each major document follows:
 | Observability | [observability/README.md](observability/README.md) | Metrics, Grafana, tracing |
 | Security | [security/README.md](security/README.md) | Platform security model |
 | Performance | [performance/README.md](performance/README.md) | Caching, HLS, DB |
-| Database | [database/README.md](database/README.md) | [Full ERD (42 tables)](erd/vibely-erd-full.png), schema, migrations |
+| Database | [database/README.md](database/README.md) | Schema domains, Flyway migrations through V44, ERD refresh notes |
 | API | [api/README.md](api/README.md) | REST contracts, errors |
 | Testing | [testing/README.md](testing/README.md) | Test pyramid, load/security |
 | Roadmap | [roadmap/README.md](roadmap/README.md) | MVP → scale milestones |
@@ -66,6 +68,7 @@ Each major document follows:
 Vibely/
 ├── backend/          # Spring Boot 3.5 modular monolith
 ├── frontend/         # React 19 + Vite SPA
+├── mobile/           # Flutter client using the same API
 ├── docs/             # This documentation tree
 ├── infra/            # Lambda samples (audio extract)
 └── docker-compose.yml
