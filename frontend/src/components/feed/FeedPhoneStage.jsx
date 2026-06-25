@@ -172,9 +172,9 @@ function FeedVideoCaption({ caption, onNeedsGradientChange }) {
     <div className="relative min-w-0 w-full">
       <p
         ref={visibleRef}
-        className={`${CAPTION_TEXT_CLASS} break-words ${
+        className={`${CAPTION_TEXT_CLASS} wrap-break-word ${
           !expanded ? "line-clamp-1" : ""
-        } ${collapsed ? "pr-[3.5rem]" : ""}`}
+        } ${collapsed ? "pr-14" : ""}`}
       >
         {renderInteractiveCaption(text)}
       </p>
@@ -212,10 +212,10 @@ function feedQualityLabel(mode) {
 
 function FeedMoreSubpageHeader({ title, onBack }) {
   return (
-    <div className="relative flex items-center border-b border-white/[0.06] px-2 py-2">
+    <div className="relative flex items-center border-b border-white/6 px-2 py-2">
       <button
         type="button"
-        className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-white transition-colors hover:bg-white/[0.06]"
+        className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-white transition-colors hover:bg-white/6"
         onClick={onBack}
         aria-label="Quay lại"
       >
@@ -422,7 +422,7 @@ function FeedVolumeControl({
 
   const sliderTrackPad = "pl-0.5 pr-3.5";
   const sliderTrackWidth =
-    "w-[4.75rem] group-hover:w-[4.75rem] focus-within:w-[4.75rem]";
+    "w-19 group-hover:w-19 focus-within:w-19";
   const expanded = "pointer-events-auto max-w-[9.25rem] opacity-100";
   const collapsed = `pointer-events-none max-w-9 opacity-0 group-hover:pointer-events-auto group-hover:max-w-[9.25rem] group-hover:opacity-100 group-has-[.feed-video-more-panel:hover]:pointer-events-none group-has-[.feed-video-more-panel:hover]:max-w-9 group-has-[.feed-video-more-panel:hover]:opacity-0 focus-within:pointer-events-auto focus-within:max-w-[9.25rem] focus-within:opacity-100`;
 
@@ -445,7 +445,7 @@ function FeedVolumeControl({
       <div
         className={`relative flex h-9 shrink-0 items-center overflow-hidden transition-[width,opacity,padding] duration-200 ease-out ${sliderTrackPad} ${
           pinned
-            ? "w-[4.75rem] opacity-100"
+            ? "w-19 opacity-100"
             : `w-0 opacity-0 ${sliderTrackWidth} group-hover:opacity-100 focus-within:opacity-100`
         }`}
       >
@@ -509,7 +509,6 @@ export function FeedPhoneStage({
   toggleFeedPlayback,
   userPaused = false,
   toggleFeedPictureInPicture,
-  resolveFeedAuthorDisplayName,
   feedDefaultAuthorAvatar,
   thumbnailFallbackUrl,
   playbackFlash,
@@ -1035,16 +1034,16 @@ export function FeedPhoneStage({
                     }
                   />
                   <div
-                    className="pointer-events-none absolute inset-x-0 top-0 z-[9] h-[42%] max-h-56 bg-linear-to-b from-black/60 via-black/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    className="pointer-events-none absolute inset-x-0 top-0 z-9 h-[42%] max-h-56 bg-linear-to-b from-black/60 via-black/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                     aria-hidden
                   />
 
                   {isActive && playbackFlash && !feedMoreMenuOpen ? (
                     <div
-                      className="pointer-events-none absolute inset-0 z-[30] flex items-center justify-center"
+                      className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center"
                       aria-hidden
                     >
-                      <div className="feed-playback-flash flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-full border border-white/30 bg-black/45 text-white shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-[2px] sm:h-24 sm:w-24">
+                      <div className="feed-playback-flash flex h-18 w-18 shrink-0 items-center justify-center rounded-full border border-white/30 bg-black/45 text-white shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-[2px] sm:h-24 sm:w-24">
                         {playbackFlash === "play" ? (
                           <IoPlay
                             className="ml-1 h-11 w-11 sm:h-14 sm:w-14"
@@ -1064,7 +1063,7 @@ export function FeedPhoneStage({
                     <button
                       type="button"
                       aria-label="Đóng menu"
-                      className="absolute inset-0 z-[35] cursor-default rounded-xl bg-black/45 transition-colors sm:rounded-2xl"
+                      className="absolute inset-0 z-35 cursor-default rounded-xl bg-black/45 transition-colors sm:rounded-2xl"
                       onMouseDown={(e) => {
                         e.preventDefault();
                         setFeedMoreMenuOpen(false);
@@ -1074,7 +1073,7 @@ export function FeedPhoneStage({
 
                   {isActive ? (
                     <>
-                      <div className="pointer-events-none absolute inset-x-0 top-0 z-[50] flex items-center justify-between px-3 pt-3">
+                      <div className="pointer-events-none absolute inset-x-0 top-0 z-50 flex items-center justify-between px-3 pt-3">
                         <FeedVolumeControl
                           volume={feedVolume}
                           onVolumeChange={setFeedVolume}
@@ -1108,7 +1107,7 @@ export function FeedPhoneStage({
                         role="dialog"
                         aria-modal="true"
                         aria-label="Menu video"
-                        className="feed-video-more-panel pointer-events-auto absolute top-[52px] right-2.5 z-[55] w-[min(220px,calc(100%-16px))] overflow-visible"
+                        className="feed-video-more-panel pointer-events-auto absolute top-[52px] right-2.5 z-55 w-[min(220px,calc(100%-16px))] overflow-visible"
                         onMouseDown={(e) => e.stopPropagation()}
                       >
                         <div
@@ -1214,7 +1213,7 @@ export function FeedPhoneStage({
                               </button>
 
                               <div
-                                className="my-0.5 border-t border-white/[0.08]"
+                                className="my-0.5 border-t border-white/8"
                                 aria-hidden
                               />
 
@@ -1256,7 +1255,7 @@ export function FeedPhoneStage({
                                   <button
                                     key={rate}
                                     type="button"
-                                    className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-[13px] text-white transition-colors hover:bg-white/[0.06] active:bg-white/10 ${selected ? "bg-white/[0.08]" : ""}`}
+                                    className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-[13px] text-white transition-colors hover:bg-white/6 active:bg-white/10 ${selected ? "bg-white/8" : ""}`}
                                     onClick={() => {
                                       setFeedPlaybackSpeed(rate);
                                       setFeedMoreMenuSubpage("main");
@@ -1293,7 +1292,7 @@ export function FeedPhoneStage({
                                   <button
                                     key={q}
                                     type="button"
-                                    className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-[13px] text-white transition-colors hover:bg-white/[0.06] active:bg-white/10 ${selected ? "bg-white/[0.08]" : ""}`}
+                                    className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-[13px] text-white transition-colors hover:bg-white/6 active:bg-white/10 ${selected ? "bg-white/8" : ""}`}
                                     onClick={() => {
                                       setFeedVideoQuality(q);
                                       setFeedMoreMenuSubpage("main");
@@ -1361,7 +1360,7 @@ export function FeedPhoneStage({
 
               {isActive && hasPlayback ? (
                 <div
-                  className="pointer-events-none absolute inset-x-0 bottom-0 z-[50] max-h-[42%] overflow-hidden [&_*]:pointer-events-auto"
+                  className="pointer-events-none absolute inset-x-0 bottom-0 z-50 max-h-[42%] overflow-hidden **:pointer-events-auto"
                   style={{ paddingBottom: FEED_CAPTION_PROGRESS_PAD_PX }}
                 >
                   <FeedSlideAuthorMeta
@@ -1397,10 +1396,10 @@ export function FeedPhoneStage({
         }}
       </VirtualizedFeed>
 
-      {Boolean(resolveFeedPlaybackUrl(activeVideo)) ? (
+      {resolveFeedPlaybackUrl(activeVideo) ? (
         <div
           ref={progressTrackRef}
-          className="group/progress pointer-events-auto absolute inset-x-0 bottom-0 z-[70] h-4 w-full cursor-pointer"
+          className="group/progress pointer-events-auto absolute inset-x-0 bottom-0 z-70 h-4 w-full cursor-pointer"
           role="slider"
           tabIndex={0}
           aria-valuemin={0}

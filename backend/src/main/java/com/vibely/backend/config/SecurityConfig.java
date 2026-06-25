@@ -115,6 +115,7 @@ public class SecurityConfig {
                 var chain = auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/ws", "/ws/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/robots.txt", "/sitemap.xml", "/sitemap-*.xml").permitAll()
                 .requestMatchers("/api/health/**").permitAll();
                 if (isProdProfile()) {
                     chain = chain

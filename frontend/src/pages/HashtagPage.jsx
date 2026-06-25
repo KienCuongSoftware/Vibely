@@ -16,6 +16,7 @@ import { Sidebar } from '../components/Sidebar'
 import { handleSidebarMenuSelect } from '../utils/sidebarNavigation.js'
 import { DEFAULT_COVER, SoundGridVideoCard } from './SoundPage.jsx'
 import { useAuth } from '../state/useAuth'
+import { Seo } from '../seo/Seo.jsx'
 
 function normalizeHashtag(raw) {
   return String(raw ?? '')
@@ -102,6 +103,11 @@ export function HashtagPage() {
   }, [items])
 
   const postCount = items.length
+  const hashtagTitle = hashtag ? `#${hashtag} | Vibely` : 'Hashtag | Vibely'
+  const hashtagDescription = hashtag
+    ? `Khám phá các video liên quan đến #${hashtag}.`
+    : 'Khám phá các video theo hashtag trên Vibely.'
+  const hashtagCanonical = hashtag ? `/tag/${encodeURIComponent(hashtag)}` : '/foryou'
 
   const hashtagVideoIds = useMemo(
     () => items.map((video) => video?.publicId).filter(Boolean),
@@ -124,6 +130,12 @@ export function HashtagPage() {
 
   return (
     <section className="flex h-dvh max-h-dvh min-h-0 bg-black text-zinc-100">
+      <Seo
+        title={hashtagTitle}
+        description={hashtagDescription}
+        canonical={hashtagCanonical}
+        image={cover}
+      />
       <Sidebar
         menuItems={menuItems}
         activeMenu={null}

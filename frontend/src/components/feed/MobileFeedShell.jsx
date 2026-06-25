@@ -4,6 +4,7 @@ import {
   IoClose,
   IoCompass,
   IoHome,
+  IoMenu,
   IoPaperPlane,
   IoPeople,
   IoPerson,
@@ -300,11 +301,11 @@ export function MobileFeedMenuDrawer({
     <>
       <button
         type="button"
-        className="fixed inset-0 z-[200] bg-black/45"
+        className="fixed inset-0 z-200 bg-black/45"
         aria-label="Đóng menu"
         onClick={onClose}
       />
-      <aside className="fixed inset-y-0 left-0 z-[210] flex w-[min(320px,78vw)] flex-col overflow-y-auto bg-zinc-950 py-3 text-zinc-100 shadow-2xl">
+      <aside className="fixed inset-y-0 left-0 z-210 flex w-[min(320px,78vw)] flex-col overflow-y-auto bg-zinc-950 py-3 text-zinc-100 shadow-2xl">
         <div className="flex items-center gap-3 px-3 pb-4">
           <button
             type="button"

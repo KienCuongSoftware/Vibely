@@ -159,7 +159,7 @@ export function MessagesPage() {
   const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout());
   const [inboxTab, setInboxTab] = useState("activity");
   const initialPreferredConversationIdRef = useRef(Number(searchParams.get("c")));
-  const [loadingConversations, setLoadingConversations] = useState(true);
+  const [, setLoadingConversations] = useState(true);
   const [conversations, setConversations] = useState([]);
   const [activeConversationId, setActiveConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -464,7 +464,7 @@ export function MessagesPage() {
   const normalConversations = useMemo(
     () =>
       conversations.filter((row) => {
-        if (Boolean(row?.messageRequest)) return false;
+        if (row?.messageRequest) return false;
         const hasRealMessage = Boolean(
           (typeof row?.lastMessage === "string" && row.lastMessage.trim()) ||
           row?.lastMessageAt,

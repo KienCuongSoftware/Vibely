@@ -407,8 +407,6 @@ export function SoundGridVideoCard({
     String(video.description ?? '').trim() ||
     String(video.title ?? '').trim() ||
     '\u00A0'
-  const poster =
-    String(video.thumbnailUrl ?? '').trim() || coverFallback || DEFAULT_COVER
   const overlayAvatar = resolveGridAuthorAvatar(video)
 
   const thumb = (

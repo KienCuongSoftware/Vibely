@@ -52,6 +52,9 @@ import {
   normalizeVideoPublicId,
   videoPublicIdOf,
 } from '../../utils/videoPublicId.js'
+import { Seo } from '../../seo/Seo.jsx'
+import { videoObjectJsonLd } from '../../seo/jsonLd.js'
+import { absoluteUrl } from '../../seo/seoConfig.js'
 
 import { FEED_ACTION_ITEM_CLASS } from '../../feed/feedLayout.js'
 
@@ -358,7 +361,7 @@ export function FeedStyleVideoDetailPage({
     const authorId = Number(feedVideo.authorId)
     if (!Number.isFinite(authorId) || authorId <= 0) return false
     if (Number(user?.id) === authorId) return false
-    return !Boolean(feedVideo.isAuthorFollowed)
+    return !feedVideo.isAuthorFollowed
   }, [feedVideo, forYouStyle, user?.id])
 
   const showActiveAuthorFollowSuccess = useMemo(() => {
@@ -482,9 +485,12 @@ export function FeedStyleVideoDetailPage({
     return () => window.removeEventListener('pointerdown', unlock, { capture: true })
   }, [])
 
-  useEffect(() => {
-    document.title = videoDocumentTitle(video, forYouStyle)
-  }, [forYouStyle, video?.description, video?.title])
+  const videoSeoTitle = videoDocumentTitle(video, false)
+  const videoSeoDescription = 'Xem video trên Vibely.'
+  const videoSeoCanonical =
+    buildDetailVideoUrl(video?.authorUsername ?? routeUsername, videoPublicIdOf(video) ?? publicId) ||
+    (publicId ? `/watch/${publicId}` : '/foryou')
+  const videoSeoImage = video?.thumbnailUrl || video?.authorAvatarUrl || DEFAULT_AVATAR
 
   useEffect(() => {
     if (!token || !notificationId || !useActivitySidebar) {
@@ -789,6 +795,14 @@ export function FeedStyleVideoDetailPage({
 
   return (
     <section className="flex h-dvh max-h-dvh min-h-0 w-full flex-col overflow-hidden bg-black text-zinc-100 lg:flex-row">
+      <Seo
+        title={videoSeoTitle}
+        description={videoSeoDescription}
+        canonical={videoSeoCanonical}
+        image={videoSeoImage}
+        type="video.other"
+        jsonLd={video ? videoObjectJsonLd(video, absoluteUrl(videoSeoCanonical)) : null}
+      />
       <div className="shrink-0 lg:hidden">
         <MobileFeedTopBar
           onLiveTap={() => redirectGuestToLogin(navigate, token)}

@@ -8,7 +8,6 @@ import {
 } from '../utils/feedFollowState.js'
 import { useAuth } from '../state/useAuth'
 import {
-  buildProfileVideoUrl,
   buildProfileWatchUrl,
   videoPublicIdOf,
 } from '../utils/videoPublicId.js'
@@ -50,6 +49,9 @@ import {
 import { MdOutlineFileUpload } from 'react-icons/md'
 import { LuGrid2X2, LuRepeat2 } from 'react-icons/lu'
 import { AvatarImage } from '../components/AvatarImage.jsx'
+import { Seo } from '../seo/Seo.jsx'
+import { profilePageJsonLd } from '../seo/jsonLd.js'
+import { absoluteUrl } from '../seo/seoConfig.js'
 
 const DEFAULT_USER_AVATAR_URL = '/images/users/default-avatar.jpeg'
 
@@ -198,19 +200,19 @@ function ProfileGridVideoTile({
         onClick={() => onOpen(video)}
       >
         <div
-          className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
+          className="relative aspect-9/16 w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
           onMouseEnter={() => onHover(video.publicId)}
         >
           <ProfileGridMedia item={video} playing={playing} />
           {isLastWatched ? (
-            <div className="pointer-events-none absolute inset-0 z-[3] flex items-center justify-center bg-black/50">
+            <div className="pointer-events-none absolute inset-0 z-3 flex items-center justify-center bg-black/50">
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white drop-shadow-md">
                 <IoPlay className="text-base" aria-hidden />
                 Vừa xem
               </span>
             </div>
           ) : null}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-2 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
             <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
               <IoPlayOutline className="text-[13px]" aria-hidden />
               <span>{formatCompactCount(video.viewCount ?? 0)}</span>
@@ -258,9 +260,9 @@ export function ProfilePage() {
   const [bookmarkItems, setBookmarkItems] = useState([])
   const [bookmarkTotal, setBookmarkTotal] = useState(0)
   const [likedItems, setLikedItems] = useState([])
-  const [likedTotal, setLikedTotal] = useState(0)
+  const [, setLikedTotal] = useState(0)
   const [repostItems, setRepostItems] = useState([])
-  const [repostTotal, setRepostTotal] = useState(0)
+  const [, setRepostTotal] = useState(0)
   const [bookmarkLoading, setBookmarkLoading] = useState(false)
   const [likedLoading, setLikedLoading] = useState(false)
   const [repostLoading, setRepostLoading] = useState(false)
@@ -823,24 +825,20 @@ export function ProfilePage() {
     normalizedEditUsername.length > 0 &&
     editForm.displayName.trim().length > 0
 
-  useEffect(() => {
-    if (!username && !token) {
-      document.title = 'Hồ sơ | Vibely'
-      return
-    }
-    if (isPublicProfileLoading) {
-      document.title = 'Đang tải hồ sơ | Vibely'
-      return
-    }
-    const p = profile
-    if (!p?.username) {
-      document.title = 'Hồ sơ | Vibely'
-      return
-    }
-    const display = String(p.displayName ?? '').trim() || 'Người dùng Vibely'
-    const id = String(p.username).trim().replace(/^@/, '').toLowerCase()
-    document.title = `${display} (@${id}) | Vibely`
-  }, [username, token, isPublicProfileLoading, profile])
+  const seoProfile = profile?.username ? profile : null
+  const seoUsername = String(seoProfile?.username ?? username ?? user?.username ?? '')
+    .trim()
+    .replace(/^@/, '')
+  const profileCanonical = seoUsername ? `/@${encodeURIComponent(seoUsername)}` : '/profile'
+  const profileDescription = seoUsername
+    ? `Khám phá hồ sơ và video của ${seoUsername} trên Vibely.`
+    : 'Khám phá hồ sơ và video của người dùng trên Vibely.'
+  const profileImage = seoProfile?.avatarUrl || DEFAULT_USER_AVATAR_URL
+  const profileSeoTitle = seoUsername
+    ? `${seoUsername} | Vibely`
+    : isPublicProfileLoading
+      ? 'Đang tải hồ sơ | Vibely'
+      : 'Hồ sơ | Vibely'
 
   const menuItems = [
     { id: 'latest', label: 'Đề xuất', icon: IoHome },
@@ -981,6 +979,7 @@ export function ProfilePage() {
   if (mobileLayout && !username && !token) {
     return (
       <section className="flex h-dvh max-h-dvh min-h-0 flex-col bg-black text-zinc-100 lg:hidden">
+        <Seo title="Hồ sơ | Vibely" description="Đăng nhập để quản lý hồ sơ và video của bạn trên Vibely." canonical="/profile" />
         <MobileLoginPrompt
           title="Đăng nhập để xem hồ sơ"
           description="Tạo tài khoản hoặc đăng nhập để quản lý video và hồ sơ của bạn."
@@ -992,6 +991,21 @@ export function ProfilePage() {
 
   return (
     <section className="flex h-dvh max-h-dvh min-h-0 flex-col bg-black text-zinc-100 lg:flex-row">
+      <Seo
+        title={profileSeoTitle}
+        description={profileDescription}
+        canonical={profileCanonical}
+        image={profileImage}
+        type="profile"
+        jsonLd={
+          seoProfile
+            ? profilePageJsonLd(
+                { ...seoProfile, avatarUrl: absoluteUrl(profileImage) },
+                absoluteUrl(profileCanonical),
+              )
+            : null
+        }
+      />
       <div className="hidden shrink-0 lg:block">
         <Sidebar
           menuItems={menuItems}
@@ -1579,7 +1593,7 @@ export function ProfilePage() {
           <button
             type="button"
             onClick={scrollToLastWatched}
-            className="fixed bottom-[4.75rem] right-4 z-[100] inline-flex cursor-pointer items-center gap-1 rounded-full bg-[#fe2c55] px-3 py-3.5 text-[13px] font-semibold leading-none text-white shadow-lg shadow-black/40 transition hover:bg-[#e0264b] active:scale-[0.98] lg:bottom-8 lg:right-8 lg:gap-1.5 lg:px-4 lg:py-2.5 lg:text-sm"
+            className="fixed bottom-19 right-4 z-100 inline-flex cursor-pointer items-center gap-1 rounded-full bg-[#fe2c55] px-3 py-3.5 text-[13px] font-semibold leading-none text-white shadow-lg shadow-black/40 transition hover:bg-[#e0264b] active:scale-[0.98] lg:bottom-8 lg:right-8 lg:gap-1.5 lg:px-4 lg:py-2.5 lg:text-sm"
             aria-label="Cuộn đến video vừa xem"
           >
             Vừa xem
@@ -1951,7 +1965,7 @@ export function ProfilePage() {
                                 }
                                 className="relative block w-full cursor-pointer text-left"
                               >
-                                <div className="relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-950 ring-1 ring-zinc-700">
+                                <div className="relative aspect-9/16 w-full overflow-hidden rounded-md bg-zinc-950 ring-1 ring-zinc-700">
                                   <ProfileGridMedia item={v} playing={false} />
                                   <span
                                     className={`absolute bottom-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 ${

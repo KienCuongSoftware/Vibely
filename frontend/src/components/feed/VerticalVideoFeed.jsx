@@ -356,11 +356,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const [feedVideoQuality, setFeedVideoQuality] = usePersistedFeedVideoQuality();
   const [feedPlaybackSpeed, setFeedPlaybackSpeed] = usePersistedFeedPlaybackSpeed();
   const [feedAutoScrollEnabled, setFeedAutoScrollEnabled] = useState(false);
-  const [feedPaused, setFeedPaused] = useState(true);
+  const [, setFeedPaused] = useState(true);
   const [userPaused, setUserPaused] = useState(false);
   const [feedCommentsOpen, setFeedCommentsOpen] = useState(false);
-  const mobileCommentsOpen =
-    mobileLayout && feedCommentsOpen && videos.length > 0;
   const [mobileCommentsLayout, setMobileCommentsLayout] = useState(() =>
     computeMobileFeedCommentsLayout({ includeBottomNav: true }),
   );
@@ -617,7 +615,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     const authorId = Number(activeVideo.authorId);
     if (!Number.isFinite(authorId) || authorId <= 0) return false;
     if (Number(user?.id) === authorId) return false;
-    return !Boolean(activeVideo.isAuthorFollowed);
+    return !activeVideo.isAuthorFollowed;
   }, [activeVideo, user?.id]);
 
   const showActiveAuthorFollowSuccess = useMemo(() => {
@@ -1601,7 +1599,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
         }`}
       >
         <AccountActionsPill
-          className="absolute right-8 top-5 z-[100] max-lg:hidden"
+          className="absolute right-8 top-5 z-100 max-lg:hidden"
           tone="profile"
         >
           {!token ? (
@@ -1633,7 +1631,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 </button>
               </TooltipHoverWrap>
               {showAccountMenu ? (
-                <div className="absolute right-0 z-[110] mt-2 w-44 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-800 py-1 shadow-2xl">
+                <div className="absolute right-0 z-110 mt-2 w-44 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-800 py-1 shadow-2xl">
                   <Link
                     to={buildProfilePath(token, user)}
                     className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-100 hover:bg-zinc-700"
@@ -1842,7 +1840,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 />
                 {repostToastOpen ? (
                   <div
-                    className="pointer-events-none absolute inset-x-0 top-4 z-[60] flex justify-center px-4"
+                    className="pointer-events-none absolute inset-x-0 top-4 z-60 flex justify-center px-4"
                     role="status"
                   >
                     <span className="rounded-md bg-black/80 px-4 py-2 text-sm font-semibold text-white shadow-lg backdrop-blur-sm">
@@ -1851,14 +1849,14 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   </div>
                 ) : null}
               </div>
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[15] h-28 bg-linear-to-t from-black/80 via-black/35 to-transparent max-lg:block lg:hidden" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-15 h-28 bg-linear-to-t from-black/80 via-black/35 to-transparent max-lg:block lg:hidden" />
               <div
                 className={
                   mobileLayout
-                    ? `pointer-events-none absolute right-0 bottom-[5.5rem] z-30 pe-2${
+                    ? `pointer-events-none absolute right-0 bottom-22 z-30 pe-2${
                         feedCommentsOpen ? " hidden" : ""
                       }`
-                    : `pointer-events-auto z-30 flex flex-col items-center lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-3 lg:pb-12 lg:pb-14 ${
+                    : `pointer-events-auto z-30 flex flex-col items-center lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-3 lg:pb-14 ${
                         feedCommentsOpen
                           ? "lg:justify-center lg:self-center lg:pb-0"
                           : ""

@@ -42,7 +42,6 @@ export function SearchModal({ open, onClose }) {
     items: historyItems,
     loading: historyLoading,
     removingId: historyRemovingId,
-    record: recordHistory,
     remove: removeHistoryItem,
     canUseHistory,
   } = useSearchHistory({

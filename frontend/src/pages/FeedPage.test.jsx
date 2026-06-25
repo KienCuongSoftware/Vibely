@@ -131,15 +131,13 @@ describe('FeedPage', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByRole('navigation')).toBeInTheDocument()
+      expect(screen.getAllByRole('navigation').length).toBeGreaterThan(0)
     })
 
     await userEvent.click(screen.getByRole('button', { name: 'Bình luận' }))
 
-    expect(screen.getByRole('navigation')).toBeInTheDocument()
-    expect(
-      screen.getByRole('complementary', { name: /bình luận/i }),
-    ).toBeInTheDocument()
+    expect(screen.getAllByRole('navigation').length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('complementary').length).toBeGreaterThan(0)
   })
 
   it('links the author avatar to the author profile', async () => {

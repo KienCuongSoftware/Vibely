@@ -29,32 +29,37 @@ const DELETE_REASONS = [
   {
     id: 'temporary',
     label: 'Tôi chỉ tạm thời ngừng sử dụng',
-    help: 'Nếu bạn chỉ muốn nghỉ một thời gian, hủy kích hoạt có thể phù hợp hơn.',
-    action: 'Hủy kích hoạt tài khoản',
+    help: 'Nếu bạn có ý định quay lại sử dụng, hãy cân nhắc hủy kích hoạt tài khoản. Việc này sẽ tạm ẩn hồ sơ và nội dung của bạn cho đến khi bạn đăng nhập lại.',
+    actions: ['Hủy kích hoạt tài khoản'],
   },
   {
     id: 'too-much',
     label: 'Tôi dùng Vibely quá nhiều',
-    help: 'Bạn có thể đặt giới hạn thời gian sử dụng thay vì xóa tài khoản.',
-    action: 'Đi tới Thời gian sử dụng màn hình',
+    help: 'Những biện pháp sau đây có thể giúp ích cho bạn:',
+    actions: ['Đặt giới hạn về thời gian xem của bạn'],
   },
   {
     id: 'privacy',
     label: 'Lo ngại về sự an toàn hoặc quyền riêng tư',
-    help: 'Bạn có thể chuyển sang tài khoản riêng tư hoặc cập nhật cài đặt quyền riêng tư.',
-    action: 'Chuyển sang tài khoản riêng tư',
+    help: 'Những biện pháp sau đây có thể giúp ích cho bạn:',
+    actions: [
+      'Giữ an toàn cho tài khoản của bạn',
+      'Chuyển sang tài khoản riêng tư và quản lý cài đặt quyền riêng tư',
+      'Chặn người dùng',
+      'Báo cáo vấn đề',
+    ],
   },
   {
     id: 'ads',
     label: 'Quá nhiều quảng cáo không phù hợp',
-    help: 'Bạn có thể quản lý quảng cáo và chủ đề quảng cáo trong cài đặt.',
-    action: 'Quản lý cá nhân hóa quảng cáo',
+    help: 'Những biện pháp sau đây có thể giúp ích cho bạn:',
+    actions: ['Quản lý cá nhân hóa quảng cáo của bạn'],
   },
   {
     id: 'trouble',
     label: 'Gặp sự cố khi bắt đầu',
-    help: 'Nếu có lỗi hoặc khó sử dụng, hồ sơ và cài đặt có thể giúp bạn tiếp tục.',
-    action: 'Thiết lập hồ sơ của bạn',
+    help: 'Những biện pháp sau đây có thể giúp ích cho bạn:',
+    actions: ['Thiết lập hồ sơ của bạn'],
   },
 ]
 
@@ -540,7 +545,13 @@ export function SettingsPage() {
                             {selected ? (
                               <span className="mt-3 block rounded-lg bg-zinc-800 px-4 py-3 text-xs leading-relaxed text-zinc-400">
                                 {reason.help}
-                                <span className="mt-2 block font-semibold text-zinc-100">{reason.action} ›</span>
+                                <span className="mt-2 block space-y-1">
+                                  {reason.actions.map((action) => (
+                                    <span key={action} className="block font-semibold text-zinc-100">
+                                      {action} ›
+                                    </span>
+                                  ))}
+                                </span>
                               </span>
                             ) : null}
                           </button>

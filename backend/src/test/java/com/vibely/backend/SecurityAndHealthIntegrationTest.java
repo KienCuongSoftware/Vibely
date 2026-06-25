@@ -8,8 +8,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_XML;
+import static org.springframework.http.MediaType.TEXT_PLAIN;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,6 +38,25 @@ class SecurityAndHealthIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.data.status").value("ready"));
+    }
+
+    @Test
+    void shouldAllowRobotsTxtWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/robots.txt"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(TEXT_PLAIN))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("User-agent: *")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("Allow: /")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("Sitemap: ")));
+    }
+
+    @Test
+    void shouldAllowSitemapXmlWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/sitemap.xml"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_XML))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("<urlset")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("<loc>")));
     }
 
     @Test

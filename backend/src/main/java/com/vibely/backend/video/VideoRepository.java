@@ -97,6 +97,16 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
 
     @Query("""
         select v from Video v
+        join fetch v.author a
+        where v.status = :status
+          and a.accountStatus = com.vibely.backend.user.UserAccountStatus.ACTIVE
+          and a.onboardingCompleted = true
+        order by v.createdAt desc, v.id desc
+        """)
+    List<Video> findSitemapVideos(@Param("status") VideoStatus status, Pageable pageable);
+
+    @Query("""
+        select v from Video v
         join fetch v.author
         where v.status = :status
         and v.author.id in (

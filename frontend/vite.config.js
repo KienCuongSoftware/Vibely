@@ -25,12 +25,10 @@ export default defineConfig({
             return
           }
 
-          let publicId = null
           const watchMatch = pathOnly.match(UUID)
           const profileMatch = pathOnly.match(PROFILE)
-          if (watchMatch) publicId = watchMatch[1]
-          else if (profileMatch) publicId = profileMatch[2]
-          else {
+          const publicId = watchMatch?.[1] ?? profileMatch?.[2]
+          if (!publicId) {
             next()
             return
           }
@@ -134,5 +132,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: './src/test/setupTests.js',
+  },
+  build: {
+    chunkSizeWarningLimit: 600,
   },
 })

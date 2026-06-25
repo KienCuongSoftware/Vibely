@@ -19,7 +19,7 @@ import { apiClient } from '../api/client'
 import { StudioCommentDateRangePicker } from '../components/StudioCommentDateRangePicker'
 import { StudioLayout } from '../components/StudioLayout'
 import { useAuth } from '../state/useAuth'
-import { isVideoPublicId, normalizeVideoPublicId } from '../utils/videoPublicId.js'
+import { normalizeVideoPublicId } from '../utils/videoPublicId.js'
 
 function formatCount(n) {
   const v = Math.max(0, Number(n) || 0)

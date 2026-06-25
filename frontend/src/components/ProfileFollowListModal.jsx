@@ -390,7 +390,7 @@ export function ProfileFollowListModal({
         return;
       }
       if (item?.self) return;
-      const nextFollowedState = !Boolean(item?.followedByViewer);
+      const nextFollowedState = !item?.followedByViewer;
       setLists((prev) => applyBusyState(updateFollowStateInLists(prev, userId, nextFollowedState), userId, true));
       try {
         if (nextFollowedState) {

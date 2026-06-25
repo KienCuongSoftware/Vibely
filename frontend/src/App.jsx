@@ -1,34 +1,40 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { LoginPage } from './pages/LoginPage.jsx'
-import { SignupPage } from './pages/SignupPage.jsx'
-import { FeedPage } from './pages/FeedPage.jsx'
-import { FollowingPage } from './pages/FollowingPage.jsx'
-import { FriendsPage } from './pages/FriendsPage.jsx'
-import { MessagesPage } from './pages/MessagesPage.jsx'
-import { UploadPage } from './pages/UploadPage.jsx'
-import { StudioHomePage } from './pages/StudioHomePage.jsx'
-import { StudioPostsPage } from './pages/StudioPostsPage.jsx'
-import { StudioEditPostPage } from './pages/StudioEditPostPage.jsx'
-import { StudioVideoAnalyticsPage } from './pages/StudioVideoAnalyticsPage.jsx'
-import { StudioPostCommentsPage } from './pages/StudioPostCommentsPage.jsx'
-import { ProfilePage } from './pages/ProfilePage.jsx'
-import { SettingsPage } from './pages/SettingsPage.jsx'
-import { ActivityVideoWatchPage } from './pages/ActivityVideoWatchPage.jsx'
-import { PublicVideoDetailPage } from './pages/PublicVideoDetailPage.jsx'
-import { ProfileWatchVideoRoutePage } from './pages/ProfileWatchVideoRoutePage.jsx'
-import { TermsOfServicePage } from './pages/TermsOfServicePage.jsx'
-import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage.jsx'
-import { SoundPage } from './pages/SoundPage.jsx'
-import { HashtagPage } from './pages/HashtagPage.jsx'
-import { ExplorePage } from './pages/ExplorePage.jsx'
-import { ExploreViewerPage } from './pages/ExploreViewerPage.jsx'
-import { SearchResultsPage } from './pages/SearchResultsPage.jsx'
-import { AdminUsersPage } from './pages/AdminUsersPage.jsx'
-import { AdminPostsPage } from './pages/AdminPostsPage.jsx'
-import { AdminPostDetailPage } from './pages/AdminPostDetailPage.jsx'
 import { useAuth } from './state/useAuth'
 import { WatchRedirect } from './components/watch/WatchRedirect.jsx'
+import { DefaultSeo } from './seo/Seo.jsx'
+
+function lazyNamed(loader, exportName) {
+  return lazy(() => loader().then((module) => ({ default: module[exportName] })))
+}
+
+const LoginPage = lazyNamed(() => import('./pages/LoginPage.jsx'), 'LoginPage')
+const SignupPage = lazyNamed(() => import('./pages/SignupPage.jsx'), 'SignupPage')
+const FeedPage = lazyNamed(() => import('./pages/FeedPage.jsx'), 'FeedPage')
+const FollowingPage = lazyNamed(() => import('./pages/FollowingPage.jsx'), 'FollowingPage')
+const FriendsPage = lazyNamed(() => import('./pages/FriendsPage.jsx'), 'FriendsPage')
+const MessagesPage = lazyNamed(() => import('./pages/MessagesPage.jsx'), 'MessagesPage')
+const UploadPage = lazyNamed(() => import('./pages/UploadPage.jsx'), 'UploadPage')
+const StudioHomePage = lazyNamed(() => import('./pages/StudioHomePage.jsx'), 'StudioHomePage')
+const StudioPostsPage = lazyNamed(() => import('./pages/StudioPostsPage.jsx'), 'StudioPostsPage')
+const StudioEditPostPage = lazyNamed(() => import('./pages/StudioEditPostPage.jsx'), 'StudioEditPostPage')
+const StudioVideoAnalyticsPage = lazyNamed(() => import('./pages/StudioVideoAnalyticsPage.jsx'), 'StudioVideoAnalyticsPage')
+const StudioPostCommentsPage = lazyNamed(() => import('./pages/StudioPostCommentsPage.jsx'), 'StudioPostCommentsPage')
+const ProfilePage = lazyNamed(() => import('./pages/ProfilePage.jsx'), 'ProfilePage')
+const SettingsPage = lazyNamed(() => import('./pages/SettingsPage.jsx'), 'SettingsPage')
+const ActivityVideoWatchPage = lazyNamed(() => import('./pages/ActivityVideoWatchPage.jsx'), 'ActivityVideoWatchPage')
+const PublicVideoDetailPage = lazyNamed(() => import('./pages/PublicVideoDetailPage.jsx'), 'PublicVideoDetailPage')
+const ProfileWatchVideoRoutePage = lazyNamed(() => import('./pages/ProfileWatchVideoRoutePage.jsx'), 'ProfileWatchVideoRoutePage')
+const TermsOfServicePage = lazyNamed(() => import('./pages/TermsOfServicePage.jsx'), 'TermsOfServicePage')
+const PrivacyPolicyPage = lazyNamed(() => import('./pages/PrivacyPolicyPage.jsx'), 'PrivacyPolicyPage')
+const SoundPage = lazyNamed(() => import('./pages/SoundPage.jsx'), 'SoundPage')
+const HashtagPage = lazyNamed(() => import('./pages/HashtagPage.jsx'), 'HashtagPage')
+const ExplorePage = lazyNamed(() => import('./pages/ExplorePage.jsx'), 'ExplorePage')
+const ExploreViewerPage = lazyNamed(() => import('./pages/ExploreViewerPage.jsx'), 'ExploreViewerPage')
+const SearchResultsPage = lazyNamed(() => import('./pages/SearchResultsPage.jsx'), 'SearchResultsPage')
+const AdminUsersPage = lazyNamed(() => import('./pages/AdminUsersPage.jsx'), 'AdminUsersPage')
+const AdminPostsPage = lazyNamed(() => import('./pages/AdminPostsPage.jsx'), 'AdminPostsPage')
+const AdminPostDetailPage = lazyNamed(() => import('./pages/AdminPostDetailPage.jsx'), 'AdminPostDetailPage')
 
 function AuthenticatedHomeRedirect({ user }) {
   if (!user) return null
@@ -52,7 +58,9 @@ function App() {
   if (!token) {
     return (
       <div className={shellClass}>
-        <Routes>
+        <DefaultSeo />
+        <Suspense fallback={<div className="min-h-screen bg-black" />}>
+          <Routes>
           <Route path="/" element={<Navigate to="/foryou" replace />} />
           <Route path="/foryou" element={<FeedPage />} />
           <Route path="/following" element={<Navigate to="/login" replace />} />
@@ -88,14 +96,17 @@ function App() {
           <Route path="/profile" element={<Navigate to="/login" replace />} />
           <Route path="/:username" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/foryou" replace />} />
-        </Routes>
+          </Routes>
+        </Suspense>
       </div>
     )
   }
 
   return (
     <div className={shellClass}>
-      <Routes>
+      <DefaultSeo />
+      <Suspense fallback={<div className="min-h-screen bg-black" />}>
+        <Routes>
         <Route path="/" element={<AuthenticatedHomeRedirect user={user} />} />
         <Route path="/foryou" element={isAdmin ? <Navigate to="/admin" replace /> : <FeedPage />} />
         <Route path="/following" element={<FollowingPage />} />
@@ -161,7 +172,8 @@ function App() {
         <Route path="/:username" element={<ProfilePage />} />
         <Route path="/watch/:publicId" element={<WatchRedirect />} />
         <Route path="*" element={<AuthenticatedHomeRedirect user={user} />} />
-      </Routes>
+        </Routes>
+      </Suspense>
     </div>
   )
 }

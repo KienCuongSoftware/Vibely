@@ -1,5 +1,6 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
+import { HelmetProvider } from 'react-helmet-async'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
@@ -14,19 +15,21 @@ import { syncFollowingFeedFlagOnDocumentLoad } from './utils/followingPageView.j
 syncFollowingFeedFlagOnDocumentLoad()
 
 createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
-    <AuthProvider>
-      <SearchModalProvider>
-        <ActivityModalProvider>
-          <NotificationUnreadProvider>
-            <ChatInboxBadgeProvider>
-              <AppErrorBoundary>
-                <App />
-              </AppErrorBoundary>
-            </ChatInboxBadgeProvider>
-          </NotificationUnreadProvider>
-        </ActivityModalProvider>
-      </SearchModalProvider>
-    </AuthProvider>
-  </BrowserRouter>,
+  <HelmetProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <SearchModalProvider>
+          <ActivityModalProvider>
+            <NotificationUnreadProvider>
+              <ChatInboxBadgeProvider>
+                <AppErrorBoundary>
+                  <App />
+                </AppErrorBoundary>
+              </ChatInboxBadgeProvider>
+            </NotificationUnreadProvider>
+          </ActivityModalProvider>
+        </SearchModalProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  </HelmetProvider>,
 )

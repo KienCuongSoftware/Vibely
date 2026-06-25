@@ -53,7 +53,7 @@ export function clearFollowingPreferFeedFromSidebar() {
 export async function resolveFollowingViewMode(token, { preferFeed = false } = {}) {
   if (!token) return 'grid'
 
-  let followingCount = 0
+  let followingCount
   try {
     const res = await apiClient.getSuggestedCreators(token, { page: 0, size: 1 })
     followingCount = Number(res?.viewerFollowingCount ?? 0)
@@ -61,7 +61,7 @@ export async function resolveFollowingViewMode(token, { preferFeed = false } = {
     return 'grid'
   }
 
-  if (followingCount <= 0) return 'grid'
+  if (Number(followingCount) <= 0) return 'grid'
 
   const wantFeed = preferFeed || shouldShowFollowingVideoFeed()
   if (!wantFeed) return 'grid'

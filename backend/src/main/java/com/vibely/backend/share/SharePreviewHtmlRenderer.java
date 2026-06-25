@@ -14,6 +14,7 @@ final class SharePreviewHtmlRenderer {
         String imageUrl = escape(model.imageUrl());
         String redirectUrl = escape(model.redirectUrl());
         String siteName = escape(model.siteName());
+        String jsonLd = jsonVideoObject(model);
 
         return """
             <!DOCTYPE html>
@@ -34,7 +35,9 @@ final class SharePreviewHtmlRenderer {
               <meta name="twitter:title" content="%s" />
               <meta name="twitter:description" content="%s" />
               <meta name="twitter:image" content="%s" />
+              <meta name="twitter:url" content="%s" />
               <link rel="canonical" href="%s" />
+              <script type="application/ld+json">%s</script>
             </head>
             <body>
               <p>%s</p>
@@ -55,6 +58,8 @@ final class SharePreviewHtmlRenderer {
             description,
             imageUrl,
             redirectUrl,
+            redirectUrl,
+            jsonLd,
             headline,
             redirectUrl,
             redirectUrl
@@ -71,6 +76,37 @@ final class SharePreviewHtmlRenderer {
             .replace(">", "&gt;")
             .replace("\"", "&quot;")
             .replace("'", "&#39;");
+    }
+
+    private static String jsonVideoObject(SharePreviewModel model) {
+        return """
+            {"@context":"https://schema.org","@type":"VideoObject","name":"%s","description":"%s","thumbnailUrl":["%s"],"url":"%s","embedUrl":"%s","publisher":{"@type":"Organization","name":"%s","url":"%s"}}
+            """.formatted(
+            jsonEscape(model.headline()),
+            jsonEscape(model.description()),
+            jsonEscape(model.imageUrl()),
+            jsonEscape(model.redirectUrl()),
+            jsonEscape(model.redirectUrl()),
+            jsonEscape(model.siteName()),
+            jsonEscape(model.redirectUrl())
+        ).trim();
+    }
+
+    private static String jsonEscape(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        return raw
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\b", "\\b")
+            .replace("\f", "\\f")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t")
+            .replace("<", "\\u003c")
+            .replace(">", "\\u003e")
+            .replace("&", "\\u0026");
     }
 
     static String truncateDescription(String raw, int maxLen) {

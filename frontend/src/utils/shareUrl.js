@@ -23,7 +23,7 @@ export function buildSharePreviewPath(publicId) {
 }
 
 /** Link xem video để chia sẻ (preview OG + redirect tới trang xem). */
-export function buildShareableVideoUrl(publicId, _username) {
+export function buildShareableVideoUrl(publicId) {
   const path = buildSharePreviewPath(publicId)
   if (!path) return ''
   return buildAbsoluteUrl(path)
