@@ -1,10 +1,10 @@
 export const SITE_NAME = 'Vibely'
 export const DEFAULT_SITE_ORIGIN = 'https://vibely.sbs'
-export const DEFAULT_TITLE = 'Vibely - Nền tảng chia sẻ video ngắn'
+export const DEFAULT_TITLE = 'Vibely - Mạng xã hội video ngắn cho người Việt'
 export const DEFAULT_DESCRIPTION =
-  'Vibely là nền tảng mạng xã hội chia sẻ video ngắn được xây dựng bằng React và Spring Boot.'
+  'Vibely là mạng xã hội video ngắn giúp bạn khám phá video thịnh hành, chia sẻ khoảnh khắc, theo dõi creator và kết nối cộng đồng giải trí.'
 export const DEFAULT_KEYWORDS =
-  'Vibely, video ngắn, mạng xã hội video, chia sẻ video, nền tảng video ngắn'
+  'Vibely, video ngắn, mạng xã hội video, chia sẻ video, video thịnh hành, creator Việt Nam, cộng đồng giải trí'
 export const DEFAULT_OG_IMAGE = '/images/users/default-avatar.jpeg'
 
 export function getSiteOrigin() {
