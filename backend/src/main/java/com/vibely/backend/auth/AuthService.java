@@ -5,6 +5,7 @@ import com.vibely.backend.auth.context.UserLoginHistory;
 import com.vibely.backend.auth.context.UserLoginHistoryRepository;
 import com.vibely.backend.auth.context.LoginContextService;
 import com.vibely.backend.common.BadRequestException;
+import com.vibely.backend.common.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import com.vibely.backend.security.JwtService;
 import com.vibely.backend.user.Role;
@@ -255,6 +256,21 @@ public class AuthService {
 
     public boolean userRequiresOnboarding(User user) {
         return userRequiresOnboardingCheck(user);
+    }
+
+    public MeResponse getMe(String email) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        return new MeResponse(
+            user.getId(),
+            user.getUsername(),
+            user.getDisplayName(),
+            user.getEmail(),
+            user.getBio(),
+            userAvatarResolver.resolve(user),
+            user.getRole().name(),
+            userRequiresOnboardingCheck(user)
+        );
     }
 
     public AuthResponse completeOnboarding(String email, CompleteOnboardingRequest request) {

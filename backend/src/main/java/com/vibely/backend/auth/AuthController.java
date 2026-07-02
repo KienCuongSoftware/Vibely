@@ -2,14 +2,11 @@ package com.vibely.backend.auth;
 
 import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.common.BadRequestException;
-import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.common.UnauthorizedException;
 import com.vibely.backend.auth.context.LoginContext;
 import com.vibely.backend.auth.context.LoginContextService;
 import com.vibely.backend.security.AuthCookieService;
 import com.vibely.backend.security.JwtService;
-import com.vibely.backend.user.User;
-import com.vibely.backend.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -31,8 +28,6 @@ public class AuthController {
     private final AuthService authService;
     private final OtpVerificationService otpVerificationService;
     private final NativeOAuthService nativeOAuthService;
-    private final UserRepository userRepository;
-    private final UserAvatarResolver userAvatarResolver;
     private final AuthCookieService authCookieService;
     private final JwtService jwtService;
     private final LoginContextService loginContextService;
@@ -42,8 +37,6 @@ public class AuthController {
         AuthService authService,
         OtpVerificationService otpVerificationService,
         NativeOAuthService nativeOAuthService,
-        UserRepository userRepository,
-        UserAvatarResolver userAvatarResolver,
         AuthCookieService authCookieService,
         JwtService jwtService,
         LoginContextService loginContextService,
@@ -52,8 +45,6 @@ public class AuthController {
         this.authService = authService;
         this.otpVerificationService = otpVerificationService;
         this.nativeOAuthService = nativeOAuthService;
-        this.userRepository = userRepository;
-        this.userAvatarResolver = userAvatarResolver;
         this.authCookieService = authCookieService;
         this.jwtService = jwtService;
         this.loginContextService = loginContextService;
@@ -278,20 +269,7 @@ public class AuthController {
             }
             return ApiResponse.success(null);
         }
-        User user = userRepository.findByEmail(authentication.getName())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
-        return ApiResponse.success(
-            new MeResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getDisplayName(),
-                user.getEmail(),
-                user.getBio(),
-                userAvatarResolver.resolve(user),
-                user.getRole().name(),
-                authService.userRequiresOnboarding(user)
-            )
-        );
+        return ApiResponse.success(authService.getMe(authentication.getName()));
     }
 
     private String resolveRefreshToken(RefreshRequest request, HttpServletRequest httpRequest) {

@@ -3,11 +3,8 @@ package com.vibely.backend.admin;
 import com.vibely.backend.auth.UserAvatarResolver;
 import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.user.User;
-import com.vibely.backend.user.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,18 +22,15 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminUserController {
 
-    private final UserRepository userRepository;
     private final UserAvatarResolver userAvatarResolver;
     private final AdminUserService adminUserService;
     private final AdminAccountDeletionEmailService accountDeletionEmailService;
 
     public AdminUserController(
-        UserRepository userRepository,
         UserAvatarResolver userAvatarResolver,
         AdminUserService adminUserService,
         AdminAccountDeletionEmailService accountDeletionEmailService
     ) {
-        this.userRepository = userRepository;
         this.userAvatarResolver = userAvatarResolver;
         this.adminUserService = adminUserService;
         this.accountDeletionEmailService = accountDeletionEmailService;
@@ -47,11 +41,7 @@ public class AdminUserController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size
     ) {
-        int safePage = Math.max(page, 0);
-        int safeSize = Math.min(Math.max(size, 1), 100);
-        Page<User> users = userRepository.findAll(
-            PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"))
-        );
+        Page<User> users = adminUserService.listUsers(page, size);
         return ApiResponse.success(
             new AdminUserPageResponse(
                 users.getContent().stream().map(this::toResponse).toList(),

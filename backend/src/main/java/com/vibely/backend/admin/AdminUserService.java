@@ -8,6 +8,9 @@ import com.vibely.backend.user.UserRepository;
 import com.vibely.backend.user.UsernameService;
 import java.util.Locale;
 import java.util.Objects;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,6 +35,14 @@ public class AdminUserService {
         this.usernameService = usernameService;
         this.passwordEncoder = passwordEncoder;
         this.jdbcTemplate = jdbcTemplate;
+    }
+
+    public Page<User> listUsers(int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        return userRepository.findAll(
+            PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"))
+        );
     }
 
     @Transactional
