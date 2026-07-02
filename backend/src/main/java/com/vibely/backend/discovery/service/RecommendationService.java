@@ -5,7 +5,7 @@ import com.vibely.backend.discovery.repository.DiscoveryExploreQueryRepository;
 import com.vibely.backend.discovery.repository.UserTopicInterestRepository;
 import com.vibely.backend.discovery.repository.VideoTopicRepository;
 import com.vibely.backend.explore.ExploreVideoProjection;
-import com.vibely.backend.interaction.FollowRepository;
+import com.vibely.backend.interaction.repository.FollowRepository;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
 import java.util.ArrayList;

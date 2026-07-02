@@ -1,7 +1,7 @@
 package com.vibely.backend.auth;
 
-import com.vibely.backend.user.User;
-import com.vibely.backend.user.UserRepository;
+import com.vibely.backend.user.entity.User;
+import com.vibely.backend.user.repository.UserRepository;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;

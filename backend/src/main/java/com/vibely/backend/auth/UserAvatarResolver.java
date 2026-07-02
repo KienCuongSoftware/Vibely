@@ -1,6 +1,6 @@
 package com.vibely.backend.auth;
 
-import com.vibely.backend.user.User;
+import com.vibely.backend.user.entity.User;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 

@@ -1,6 +1,6 @@
 package com.vibely.backend.admin;
 
-import com.vibely.backend.user.User;
+import com.vibely.backend.user.entity.User;
 
 public record AdminUserUpdateResult(
     User user,

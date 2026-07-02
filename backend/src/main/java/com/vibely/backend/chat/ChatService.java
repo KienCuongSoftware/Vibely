@@ -2,9 +2,9 @@ package com.vibely.backend.chat;
 
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
-import com.vibely.backend.interaction.FollowRepository;
-import com.vibely.backend.user.User;
-import com.vibely.backend.user.UserRepository;
+import com.vibely.backend.interaction.repository.FollowRepository;
+import com.vibely.backend.user.entity.User;
+import com.vibely.backend.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;

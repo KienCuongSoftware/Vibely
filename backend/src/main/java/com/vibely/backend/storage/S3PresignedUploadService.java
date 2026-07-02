@@ -2,7 +2,7 @@ package com.vibely.backend.storage;
 
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
-import com.vibely.backend.user.UserRepository;
+import com.vibely.backend.user.repository.UserRepository;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

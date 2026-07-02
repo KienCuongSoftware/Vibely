@@ -1,8 +1,8 @@
 package com.vibely.backend.security;
 
 import com.vibely.backend.common.NotFoundException;
-import com.vibely.backend.user.User;
-import com.vibely.backend.user.UserRepository;
+import com.vibely.backend.user.entity.User;
+import com.vibely.backend.user.repository.UserRepository;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

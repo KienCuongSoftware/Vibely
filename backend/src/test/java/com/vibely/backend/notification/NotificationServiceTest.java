@@ -1,9 +1,9 @@
 package com.vibely.backend.notification;
 
-import com.vibely.backend.interaction.CommentEntity;
-import com.vibely.backend.interaction.CommentRepository;
-import com.vibely.backend.user.User;
-import com.vibely.backend.user.UserRepository;
+import com.vibely.backend.interaction.entity.CommentEntity;
+import com.vibely.backend.interaction.repository.CommentRepository;
+import com.vibely.backend.user.entity.User;
+import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;

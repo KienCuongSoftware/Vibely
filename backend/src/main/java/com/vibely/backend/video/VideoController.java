@@ -2,7 +2,7 @@ package com.vibely.backend.video;
 
 import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.common.NotFoundException;
-import com.vibely.backend.feed.FeedPageResponse;
+import com.vibely.backend.feed.dto.FeedPageResponse;
 import com.vibely.backend.storage.PresignedUploadResponse;
 import com.vibely.backend.storage.S3PresignedUploadService;
 import com.vibely.backend.storage.VideoPresignRequest;

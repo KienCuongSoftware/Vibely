@@ -1,0 +1,52 @@
+package com.vibely.backend.interaction.repository;
+
+import com.vibely.backend.interaction.entity.VideoBookmarkEntity;
+import com.vibely.backend.user.entity.User;
+import com.vibely.backend.video.Video;
+import com.vibely.backend.video.VideoStatus;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+public interface VideoBookmarkRepository extends JpaRepository<VideoBookmarkEntity, Long> {
+
+    boolean existsByUserAndVideo(User user, Video video);
+
+    long countByVideo_Id(Long videoId);
+
+    @Query("SELECT b.video.id, COUNT(b) FROM VideoBookmarkEntity b WHERE b.video.id IN :ids GROUP BY b.video.id")
+    List<Object[]> countGroupedByVideoIds(@Param("ids") Collection<Long> ids);
+
+    void deleteByUserAndVideo(User user, Video video);
+
+    long countByUser(User user);
+
+    @Query("""
+        select count(b) from VideoBookmarkEntity b
+        where b.video.id = :videoId and b.createdAt >= :from
+        """)
+    long countBookmarksForVideoSince(@Param("videoId") Long videoId, @Param("from") LocalDateTime from);
+
+    /**
+     * Video công khai (READY) hoặc bản nháp/xử lý của chính người lưu — khớp luật bookmark/lưu trên trang xem.
+     */
+    @Query(
+        "SELECT b.video FROM VideoBookmarkEntity b WHERE b.user = :user AND ("
+            + "b.video.status = :ready OR "
+            + "(b.video.author.id = :userId AND b.video.status <> :removed AND b.video.status <> :failed)"
+            + ") ORDER BY b.id DESC"
+    )
+    Page<Video> findBookmarkedVideosForUser(
+        @Param("user") User user,
+        @Param("ready") VideoStatus ready,
+        @Param("userId") Long userId,
+        @Param("removed") VideoStatus removed,
+        @Param("failed") VideoStatus failed,
+        Pageable pageable
+    );
+}

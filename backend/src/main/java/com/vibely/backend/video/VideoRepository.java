@@ -1,6 +1,6 @@
 package com.vibely.backend.video;
 
-import com.vibely.backend.user.User;
+import com.vibely.backend.user.entity.User;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -99,7 +99,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         select v from Video v
         join fetch v.author a
         where v.status = :status
-          and a.accountStatus = com.vibely.backend.user.UserAccountStatus.ACTIVE
+          and a.accountStatus = com.vibely.backend.user.entity.UserAccountStatus.ACTIVE
           and a.onboardingCompleted = true
         order by v.createdAt desc, v.id desc
         """)

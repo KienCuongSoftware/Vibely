@@ -2,7 +2,7 @@ package com.vibely.backend.auth.context;
 
 import com.vibely.backend.antibot.dto.DeviceFingerprintPayload;
 import com.vibely.backend.auth.LoginContextRequest;
-import com.vibely.backend.user.User;
+import com.vibely.backend.user.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

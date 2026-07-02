@@ -2,10 +2,10 @@ package com.vibely.backend.admin;
 
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
-import com.vibely.backend.user.Role;
-import com.vibely.backend.user.User;
-import com.vibely.backend.user.UserRepository;
-import com.vibely.backend.user.UsernameService;
+import com.vibely.backend.user.entity.Role;
+import com.vibely.backend.user.entity.User;
+import com.vibely.backend.user.repository.UserRepository;
+import com.vibely.backend.user.service.UsernameService;
 import java.util.Locale;
 import java.util.Objects;
 import org.springframework.data.domain.Page;

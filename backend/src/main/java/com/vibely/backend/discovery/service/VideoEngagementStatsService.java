@@ -2,10 +2,10 @@ package com.vibely.backend.discovery.service;
 
 import com.vibely.backend.discovery.config.DiscoveryProperties;
 import com.vibely.backend.discovery.repository.VideoEngagementStatsRepository;
-import com.vibely.backend.interaction.CommentRepository;
-import com.vibely.backend.interaction.LikeRepository;
-import com.vibely.backend.interaction.VideoBookmarkRepository;
-import com.vibely.backend.interaction.VideoViewRepository;
+import com.vibely.backend.interaction.repository.CommentRepository;
+import com.vibely.backend.interaction.repository.LikeRepository;
+import com.vibely.backend.interaction.repository.VideoBookmarkRepository;
+import com.vibely.backend.interaction.repository.VideoViewRepository;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import java.time.Duration;

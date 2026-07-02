@@ -20,7 +20,7 @@ public class UserTopicInterest {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @MapsId("userId")
     @JoinColumn(name = "user_id")
-    private com.vibely.backend.user.User user;
+    private com.vibely.backend.user.entity.User user;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @MapsId("topicId")
@@ -39,7 +39,7 @@ public class UserTopicInterest {
     public UserTopicInterest() {
     }
 
-    public UserTopicInterest(com.vibely.backend.user.User user, Topic topic) {
+    public UserTopicInterest(com.vibely.backend.user.entity.User user, Topic topic) {
         this.id = new UserTopicInterestId(user.getId(), topic.getId());
         this.user = user;
         this.topic = topic;

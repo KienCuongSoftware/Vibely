@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.vibely.backend.discovery.model.Topic;
 import com.vibely.backend.discovery.model.UserTopicInterest;
 import com.vibely.backend.discovery.service.TopicTabGrouper;
-import com.vibely.backend.user.User;
+import com.vibely.backend.user.entity.User;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

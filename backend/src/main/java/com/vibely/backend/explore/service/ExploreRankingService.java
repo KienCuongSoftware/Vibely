@@ -1,8 +1,8 @@
 package com.vibely.backend.explore.service;
 
-import com.vibely.backend.interaction.CommentRepository;
-import com.vibely.backend.interaction.LikeRepository;
-import com.vibely.backend.interaction.VideoViewRepository;
+import com.vibely.backend.interaction.repository.CommentRepository;
+import com.vibely.backend.interaction.repository.LikeRepository;
+import com.vibely.backend.interaction.repository.VideoViewRepository;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;

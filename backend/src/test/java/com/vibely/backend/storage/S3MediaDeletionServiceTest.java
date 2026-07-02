@@ -1,6 +1,6 @@
 package com.vibely.backend.storage;
 
-import com.vibely.backend.user.User;
+import com.vibely.backend.user.entity.User;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;

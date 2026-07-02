@@ -8,7 +8,7 @@ import com.vibely.backend.explore.Category;
 import com.vibely.backend.explore.CategoryRepository;
 import com.vibely.backend.explore.VideoCategoryRepository;
 import com.vibely.backend.explore.dto.ExploreTabDto;
-import com.vibely.backend.user.UserRepository;
+import com.vibely.backend.user.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -112,7 +112,7 @@ public class PersonalizedExploreTabsService {
             return null;
         }
         return userRepository.findByEmail(viewerEmail.trim())
-            .map(com.vibely.backend.user.User::getId)
+            .map(com.vibely.backend.user.entity.User::getId)
             .orElse(null);
     }
 }

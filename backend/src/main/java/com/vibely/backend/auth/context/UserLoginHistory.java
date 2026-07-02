@@ -1,6 +1,6 @@
 package com.vibely.backend.auth.context;
 
-import com.vibely.backend.user.User;
+import com.vibely.backend.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

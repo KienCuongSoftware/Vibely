@@ -1,7 +1,7 @@
 package com.vibely.backend.video;
 
 import com.vibely.backend.common.UuidV7;
-import com.vibely.backend.user.User;
+import com.vibely.backend.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

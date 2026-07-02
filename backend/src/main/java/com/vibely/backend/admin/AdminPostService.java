@@ -1,10 +1,10 @@
 package com.vibely.backend.admin;
 
 import com.vibely.backend.common.NotFoundException;
-import com.vibely.backend.interaction.CommentRepository;
-import com.vibely.backend.interaction.LikeRepository;
-import com.vibely.backend.interaction.VideoBookmarkRepository;
-import com.vibely.backend.interaction.VideoViewRepository;
+import com.vibely.backend.interaction.repository.CommentRepository;
+import com.vibely.backend.interaction.repository.LikeRepository;
+import com.vibely.backend.interaction.repository.VideoBookmarkRepository;
+import com.vibely.backend.interaction.repository.VideoViewRepository;
 import com.vibely.backend.notification.NotificationService;
 import com.vibely.backend.processing.VideoProcessingJobRepository;
 import com.vibely.backend.processing.VideoProcessingJobState;

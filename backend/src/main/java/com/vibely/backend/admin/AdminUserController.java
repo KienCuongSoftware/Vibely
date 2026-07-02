@@ -2,7 +2,7 @@ package com.vibely.backend.admin;
 
 import com.vibely.backend.auth.UserAvatarResolver;
 import com.vibely.backend.common.ApiResponse;
-import com.vibely.backend.user.User;
+import com.vibely.backend.user.entity.User;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;

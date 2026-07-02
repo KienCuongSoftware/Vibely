@@ -1,7 +1,7 @@
 package com.vibely.backend.auth.context;
 
 import com.vibely.backend.auth.mail.OtpMailProperties;
-import com.vibely.backend.user.User;
+import com.vibely.backend.user.entity.User;
 import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;

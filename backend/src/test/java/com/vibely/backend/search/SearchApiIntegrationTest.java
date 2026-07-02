@@ -9,9 +9,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.vibely.backend.search.repository.SearchHistoryRepository;
-import com.vibely.backend.user.Role;
-import com.vibely.backend.user.User;
-import com.vibely.backend.user.UserRepository;
+import com.vibely.backend.user.entity.Role;
+import com.vibely.backend.user.entity.User;
+import com.vibely.backend.user.repository.UserRepository;
 import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.junit.jupiter.api.BeforeEach;
