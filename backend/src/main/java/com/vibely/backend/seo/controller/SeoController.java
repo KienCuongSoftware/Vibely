@@ -1,7 +1,7 @@
-package com.vibely.backend.seo;
+package com.vibely.backend.seo.controller;
 
+import com.vibely.backend.seo.service.SitemapService;
 import java.nio.charset.StandardCharsets;
-
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

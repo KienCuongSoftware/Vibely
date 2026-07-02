@@ -1,4 +1,4 @@
-package com.vibely.backend.seo;
+package com.vibely.backend.seo.service;
 
 import com.vibely.backend.config.AppUrlProperties;
 import com.vibely.backend.explore.Hashtag;
