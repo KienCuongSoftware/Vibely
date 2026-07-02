@@ -10,7 +10,7 @@ import com.vibely.backend.interaction.dto.PlaybackSample;
 import com.vibely.backend.interaction.repository.VideoViewRepository;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
-import com.vibely.backend.video.VideoService;
+import com.vibely.backend.video.service.VideoService;
 import com.vibely.backend.video.VideoResponse;
 import com.vibely.backend.video.VideoStatus;
 import java.time.LocalDate;

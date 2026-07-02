@@ -26,7 +26,7 @@ import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
-import com.vibely.backend.video.VideoService;
+import com.vibely.backend.video.service.VideoService;
 import com.vibely.backend.video.VideoStatus;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -256,7 +256,7 @@ public class InteractionService {
 
     /**
      * Công khai khi video {@link VideoStatus#READY}; bản nháp/xử lý chỉ tác giả (khớp luật xem trong
-     * {@link VideoService#getVideoByIdForViewer(Long, String)}).
+     * {@link VideoQueryService#getVideoByIdForViewer(Long, String)}).
      */
     @Transactional(readOnly = true)
     public List<CommentResponse> getComments(UUID videoPublicId, String viewerEmail) {

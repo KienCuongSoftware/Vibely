@@ -7,6 +7,7 @@ import com.vibely.backend.storage.PresignedUploadResponse;
 import com.vibely.backend.storage.S3PresignedUploadService;
 import com.vibely.backend.storage.VideoPresignRequest;
 import com.vibely.backend.video.download.VideoWatermarkDownloadService;
+import com.vibely.backend.video.service.VideoService;
 import jakarta.validation.Valid;
 import java.nio.file.Files;
 import java.nio.file.Path;

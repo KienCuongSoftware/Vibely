@@ -1,0 +1,187 @@
+package com.vibely.backend.video.service;
+
+import com.vibely.backend.common.BadRequestException;
+import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.notification.NotificationService;
+import com.vibely.backend.processing.VideoProcessingEnqueueService;
+import com.vibely.backend.processing.VideoProcessingJobRepository;
+import com.vibely.backend.processing.VideoProcessingJobState;
+import com.vibely.backend.storage.S3MediaDeletionService;
+import com.vibely.backend.storage.S3OwnedMediaValidator;
+import com.vibely.backend.user.entity.User;
+import com.vibely.backend.user.repository.UserRepository;
+import com.vibely.backend.video.Video;
+import com.vibely.backend.video.VideoCreateRequest;
+import com.vibely.backend.video.VideoRepository;
+import com.vibely.backend.video.VideoResponse;
+import com.vibely.backend.video.VideoStatus;
+import com.vibely.backend.video.VideoUpdateRequest;
+import java.util.Objects;
+import java.util.UUID;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class VideoCommandService {
+
+    private final VideoRepository videoRepository;
+    private final UserRepository userRepository;
+    private final VideoProcessingEnqueueService videoProcessingEnqueueService;
+    private final S3OwnedMediaValidator ownedMediaValidator;
+    private final VideoExploreSyncService exploreSyncService;
+    private final VideoResponseMapper responseMapper;
+    private final VideoQueryService queryService;
+    private final NotificationService notificationService;
+    private final VideoProcessingJobRepository videoProcessingJobRepository;
+    private final ObjectProvider<S3MediaDeletionService> s3MediaDeletionService;
+
+    public VideoCommandService(
+        VideoRepository videoRepository,
+        UserRepository userRepository,
+        VideoProcessingEnqueueService videoProcessingEnqueueService,
+        S3OwnedMediaValidator ownedMediaValidator,
+        VideoExploreSyncService exploreSyncService,
+        VideoResponseMapper responseMapper,
+        VideoQueryService queryService,
+        NotificationService notificationService,
+        VideoProcessingJobRepository videoProcessingJobRepository,
+        ObjectProvider<S3MediaDeletionService> s3MediaDeletionService
+    ) {
+        this.videoRepository = videoRepository;
+        this.userRepository = userRepository;
+        this.videoProcessingEnqueueService = videoProcessingEnqueueService;
+        this.ownedMediaValidator = ownedMediaValidator;
+        this.exploreSyncService = exploreSyncService;
+        this.responseMapper = responseMapper;
+        this.queryService = queryService;
+        this.notificationService = notificationService;
+        this.videoProcessingJobRepository = videoProcessingJobRepository;
+        this.s3MediaDeletionService = s3MediaDeletionService;
+    }
+
+    @Transactional
+    public VideoResponse createVideo(String email, VideoCreateRequest request) {
+        User author = userRepository.findByEmail(email)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        long authorId = author.getId();
+        ownedMediaValidator.requireOwnedUpload(request.getVideoUrl(), authorId);
+        String thumb = VideoMediaUtils.normalizeText(request.getThumbnailUrl());
+        if (thumb != null) {
+            ownedMediaValidator.requireOwnedThumbnail(thumb, authorId);
+        }
+        String explicitAudio = VideoMediaUtils.normalizeText(request.getAudioUrl());
+        if (explicitAudio != null) {
+            ownedMediaValidator.requireOwnedAudio(explicitAudio, authorId);
+        }
+        Video video = new Video();
+        video.setAuthor(author);
+        video.setTitle(request.getTitle());
+        video.setDescription(request.getDescription());
+        video.setVideoUrl(request.getVideoUrl());
+        video.setThumbnailUrl(request.getThumbnailUrl());
+        String audioUrl = VideoMediaUtils.normalizeText(request.getAudioUrl());
+        if (audioUrl == null) {
+            audioUrl = VideoMediaUtils.deriveAudioUrlFromVideoUrl(request.getVideoUrl());
+        }
+        video.setAudioUrl(audioUrl);
+        String audioTitle = VideoMediaUtils.normalizeText(request.getAudioTitle());
+        if (audioTitle == null) {
+            audioTitle = "âm thanh gốc - " + VideoMediaUtils.resolveAuthorDisplayName(author);
+        }
+        video.setAudioTitle(audioTitle);
+        video.setStatus(VideoStatus.RAW);
+        Video saved = videoRepository.save(video);
+        exploreSyncService.syncExploreSignals(saved);
+        videoProcessingEnqueueService.enqueueAfterVideoPersisted(saved);
+        return responseMapper.toResponse(saved);
+    }
+
+    @Transactional
+    public VideoResponse updateVideo(String email, UUID publicId, VideoUpdateRequest request) {
+        return updateVideo(email, queryService.getVideoByPublicIdOrThrow(publicId).getId(), request);
+    }
+
+    @Transactional
+    public VideoResponse updateVideo(String email, Long videoId, VideoUpdateRequest request) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        Video video = queryService.getVideoOrThrow(videoId);
+        if (!Objects.equals(video.getAuthor().getId(), user.getId())) {
+            throw new BadRequestException("Bạn không có quyền sửa video này.");
+        }
+        if (video.getStatus() == VideoStatus.REMOVED) {
+            throw new BadRequestException("Video đã bị gỡ, không thể sửa.");
+        }
+        video.setTitle(request.getTitle().trim());
+        String desc = request.getDescription();
+        video.setDescription(desc == null || desc.isBlank() ? null : desc.trim());
+        if (request.getThumbnailUrl() != null) {
+            String thumbUrl = VideoMediaUtils.normalizeText(request.getThumbnailUrl());
+            if (thumbUrl != null) {
+                ownedMediaValidator.requireOwnedThumbnail(thumbUrl, user.getId());
+            }
+            video.setThumbnailUrl(thumbUrl);
+        }
+        Video saved = videoRepository.save(video);
+        exploreSyncService.syncExploreSignals(saved);
+        return responseMapper.toResponse(saved);
+    }
+
+    @Transactional
+    public void deleteVideo(String email, UUID publicId) {
+        deleteVideo(email, queryService.getVideoByPublicIdOrThrow(publicId).getId());
+    }
+
+    @Transactional
+    public void deleteVideo(String email, Long videoId) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        Video video = videoRepository.findWithAuthorById(videoId)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
+        if (!Objects.equals(video.getAuthor().getId(), user.getId())) {
+            throw new BadRequestException("Bạn không có quyền xóa video này.");
+        }
+        if (video.getStatus() == VideoStatus.REMOVED) {
+            return;
+        }
+        cancelProcessingJob(video.getId());
+        S3MediaDeletionService deletionService = s3MediaDeletionService.getIfAvailable();
+        if (deletionService != null) {
+            deletionService.deleteVideoArtifacts(video);
+        }
+        video.setStatus(VideoStatus.REMOVED);
+        videoRepository.save(video);
+        notificationService.purgeForRemovedVideo(video.getId());
+    }
+
+    @Transactional
+    public VideoResponse retryVideoProcessing(String email, UUID publicId) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        Video video = queryService.getVideoByPublicIdOrThrow(publicId);
+        if (!Objects.equals(video.getAuthor().getId(), user.getId())) {
+            throw new BadRequestException("Bạn không có quyền xử lý lại video này.");
+        }
+        if (video.getStatus() == VideoStatus.REMOVED) {
+            throw new BadRequestException("Video đã bị gỡ.");
+        }
+        if (video.getStatus() == VideoStatus.READY) {
+            throw new BadRequestException("Video đã sẵn sàng phát.");
+        }
+        video.setStatus(VideoStatus.RAW);
+        video.setProcessingError(null);
+        videoRepository.save(video);
+        videoProcessingEnqueueService.enqueueAfterVideoPersisted(video);
+        return responseMapper.toResponse(video, responseMapper.resolveFollowedByViewer(video, email));
+    }
+
+    private void cancelProcessingJob(Long videoId) {
+        videoProcessingJobRepository.findByVideo_Id(videoId).ifPresent(job -> {
+            if (job.getJobState() != VideoProcessingJobState.COMPLETED) {
+                job.setJobState(VideoProcessingJobState.COMPLETED);
+                videoProcessingJobRepository.save(job);
+            }
+        });
+    }
+}

@@ -3,7 +3,7 @@ package com.vibely.backend.share;
 import com.vibely.backend.config.AppUrlProperties;
 import com.vibely.backend.video.VideoPublicIds;
 import com.vibely.backend.video.VideoResponse;
-import com.vibely.backend.video.VideoService;
+import com.vibely.backend.video.service.VideoService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Locale;
 import java.util.UUID;

@@ -4,7 +4,7 @@ import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.feed.dto.FeedPageResponse;
 import com.vibely.backend.feed.FeedSort;
-import com.vibely.backend.video.VideoService;
+import com.vibely.backend.video.service.VideoService;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;

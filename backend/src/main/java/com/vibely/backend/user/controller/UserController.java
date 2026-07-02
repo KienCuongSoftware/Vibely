@@ -10,7 +10,7 @@ import com.vibely.backend.user.service.UserDiscoveryService;
 import com.vibely.backend.user.service.UserService;
 import com.vibely.backend.user.service.UsernameService;
 import com.vibely.backend.feed.dto.FeedPageResponse;
-import com.vibely.backend.video.VideoService;
+import com.vibely.backend.video.service.VideoService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
