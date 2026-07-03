@@ -1,6 +1,6 @@
 package com.vibely.backend.user.service;
 
-import com.vibely.backend.auth.UserAvatarResolver;
+import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.user.dto.PublicUserProfileResponse;
 import com.vibely.backend.user.dto.UpdateProfileRequest;
 import com.vibely.backend.user.dto.UserFollowListItemResponse;

@@ -1,7 +1,7 @@
 package com.vibely.backend.auth.mail;
 
 import com.vibely.backend.common.BadRequestException;
-import com.vibely.backend.auth.OtpRequestMetadata;
+import com.vibely.backend.auth.dto.OtpRequestMetadata;
 import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;

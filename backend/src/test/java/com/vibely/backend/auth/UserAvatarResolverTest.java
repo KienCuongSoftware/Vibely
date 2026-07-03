@@ -2,6 +2,7 @@ package com.vibely.backend.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.user.entity.User;
 import org.junit.jupiter.api.Test;
 

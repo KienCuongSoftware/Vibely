@@ -1,6 +1,6 @@
 package com.vibely.backend.auth.mail;
 
-import com.vibely.backend.auth.OtpRequestMetadata;
+import com.vibely.backend.auth.dto.OtpRequestMetadata;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;

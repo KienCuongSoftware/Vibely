@@ -1,6 +1,6 @@
 package com.vibely.backend.storage;
 
-import com.vibely.backend.auth.UserAvatarResolver;
+import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.common.BadRequestException;
 import org.springframework.stereotype.Component;
 

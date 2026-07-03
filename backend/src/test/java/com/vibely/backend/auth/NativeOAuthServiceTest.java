@@ -5,6 +5,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vibely.backend.auth.dto.NativeOAuthRequest;
+import com.vibely.backend.auth.service.AuthService;
+import com.vibely.backend.auth.service.NativeOAuthService;
 import com.vibely.backend.common.BadRequestException;
 import org.junit.jupiter.api.Test;
 

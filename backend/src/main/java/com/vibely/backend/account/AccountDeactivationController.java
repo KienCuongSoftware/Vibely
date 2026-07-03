@@ -1,11 +1,11 @@
 package com.vibely.backend.account;
 
-import com.vibely.backend.auth.LoginContextRequest;
-import com.vibely.backend.auth.OtpCodePurpose;
-import com.vibely.backend.auth.OtpRequestMetadata;
-import com.vibely.backend.auth.OtpVerificationService;
-import com.vibely.backend.auth.SendCodeRequest;
-import com.vibely.backend.auth.SendCodeResponse;
+import com.vibely.backend.auth.dto.LoginContextRequest;
+import com.vibely.backend.auth.entity.OtpCodePurpose;
+import com.vibely.backend.auth.dto.OtpRequestMetadata;
+import com.vibely.backend.auth.service.OtpVerificationService;
+import com.vibely.backend.auth.dto.SendCodeRequest;
+import com.vibely.backend.auth.dto.SendCodeResponse;
 import com.vibely.backend.auth.context.LoginContext;
 import com.vibely.backend.auth.context.LoginContextService;
 import com.vibely.backend.common.ApiResponse;

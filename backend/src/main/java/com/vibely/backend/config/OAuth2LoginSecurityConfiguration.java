@@ -1,8 +1,8 @@
 package com.vibely.backend.config;
 
-import com.vibely.backend.auth.OAuth2LoginFailureHandler;
-import com.vibely.backend.auth.OAuth2LoginSuccessHandler;
-import com.vibely.backend.auth.PublicBaseUrlOAuth2AuthorizationRequestResolver;
+import com.vibely.backend.auth.oauth.OAuth2LoginFailureHandler;
+import com.vibely.backend.auth.oauth.OAuth2LoginSuccessHandler;
+import com.vibely.backend.auth.oauth.PublicBaseUrlOAuth2AuthorizationRequestResolver;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;

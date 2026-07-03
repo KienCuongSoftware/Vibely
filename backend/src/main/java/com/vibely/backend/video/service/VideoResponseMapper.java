@@ -1,6 +1,6 @@
 package com.vibely.backend.video.service;
 
-import com.vibely.backend.auth.UserAvatarResolver;
+import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.feed.dto.FeedPageResponse;
 import com.vibely.backend.interaction.repository.CommentRepository;
 import com.vibely.backend.interaction.repository.FollowRepository;

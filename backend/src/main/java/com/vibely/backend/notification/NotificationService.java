@@ -1,6 +1,6 @@
 package com.vibely.backend.notification;
 
-import com.vibely.backend.auth.UserAvatarResolver;
+import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.feed.FeedCursorCodec;

@@ -1,6 +1,6 @@
 package com.vibely.backend.user.service;
 
-import com.vibely.backend.auth.UserAvatarResolver;
+import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.user.dto.SuggestedCreatorDto;
 import com.vibely.backend.user.dto.SuggestedCreatorsResponse;
 import com.vibely.backend.user.entity.User;

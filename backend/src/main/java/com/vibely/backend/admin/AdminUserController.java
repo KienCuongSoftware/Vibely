@@ -1,6 +1,6 @@
 package com.vibely.backend.admin;
 
-import com.vibely.backend.auth.UserAvatarResolver;
+import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.user.entity.User;
 import jakarta.validation.Valid;
