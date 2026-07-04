@@ -46,6 +46,7 @@ describe('ProfilePage', () => {
           refreshSession: vi.fn(),
           refreshProfile: vi.fn(),
           logout: vi.fn(),
+          authReady: true,
         }}
       >
         <MemoryRouter initialEntries={['/profile']}>
@@ -72,6 +73,7 @@ describe('ProfilePage', () => {
           refreshSession: vi.fn(),
           refreshProfile,
           logout: vi.fn(),
+          authReady: true,
         }}
       >
         <MemoryRouter initialEntries={['/profile']}>
@@ -109,6 +111,7 @@ describe('ProfilePage', () => {
           refreshProfile,
           updateProfile: vi.fn(),
           logout: vi.fn(),
+          authReady: true,
         }}
       >
         <MemoryRouter initialEntries={['/profile?tab=favorites']}>
@@ -147,6 +150,7 @@ describe('ProfilePage', () => {
           refreshProfile,
           updateProfile: vi.fn(),
           logout: vi.fn(),
+          authReady: true,
         }}
       >
         <MemoryRouter initialEntries={['/profile?tab=liked']}>
@@ -184,6 +188,7 @@ describe('ProfilePage', () => {
           refreshProfile,
           updateProfile: vi.fn(),
           logout: vi.fn(),
+          authReady: true,
         }}
       >
         <MemoryRouter initialEntries={['/profile?tab=favorites']}>
@@ -243,6 +248,7 @@ describe('ProfilePage', () => {
           refreshProfile: vi.fn(),
           updateProfile: vi.fn(),
           logout: vi.fn(),
+          authReady: true,
         }}
       >
         <MemoryRouter initialEntries={['/@creator']}>
@@ -313,6 +319,7 @@ describe('ProfilePage', () => {
           refreshProfile: vi.fn(),
           updateProfile: vi.fn(),
           logout: vi.fn(),
+          authReady: true,
         }}
       >
         <MemoryRouter initialEntries={['/@creator']}>
@@ -340,5 +347,48 @@ describe('ProfilePage', () => {
       token: 'token',
     })
     expect(await screen.findByText('Fan One')).toBeInTheDocument()
+  })
+
+  it('hides videos for private profile when viewer is not logged in', async () => {
+    apiClient.getPublicProfile.mockResolvedValue({
+      id: 7,
+      username: 'creator',
+      displayName: 'Creator',
+      bio: '',
+      avatarUrl: '',
+      followingCount: 0,
+      followerCount: 0,
+      totalLikeCount: 4,
+      totalViewCount: 100,
+      privateAccount: true,
+      contentVisible: false,
+      followedByViewer: false,
+      followRequestPending: false,
+    })
+
+    render(
+      <AuthContext.Provider
+        value={{
+          token: null,
+          refreshToken: null,
+          user: null,
+          login: vi.fn(),
+          register: vi.fn(),
+          refreshSession: vi.fn(),
+          refreshProfile: vi.fn(),
+          logout: vi.fn(),
+          authReady: true,
+        }}
+      >
+        <MemoryRouter initialEntries={['/@creator']}>
+          <Routes>
+            <Route path="/:username" element={<ProfilePage />} />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>,
+    )
+
+    expect(await screen.findByText('Đây là tài khoản riêng tư')).toBeInTheDocument()
+    expect(apiClient.getVideosByUsername).not.toHaveBeenCalled()
   })
 })

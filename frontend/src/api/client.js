@@ -169,6 +169,8 @@ export const apiClient = {
     request("/api/auth/ws-ticket", token ? { token } : {}),
   updateMyProfile: (token, payload) =>
     request("/api/users/me", { method: "PUT", token, body: payload }),
+  updatePrivacySettings: (token, payload) =>
+    request("/api/users/me/privacy", { method: "PATCH", token, body: payload }),
   checkUsername: (username) =>
     request(`/api/users/check-username${toQuery({ username })}`),
   getPublicProfile: (username, token) =>
@@ -176,12 +178,13 @@ export const apiClient = {
       `/api/users/${encodeURIComponent(username)}`,
       token ? { token } : {},
     ),
-  getVideosByUsername: (username, { page = 0, size = 48 } = {}) => {
+  getVideosByUsername: (username, { page = 0, size = 48, token } = {}) => {
     const u = String(username ?? "")
       .trim()
       .replace(/^@/, "");
     return request(
       `/api/users/${encodeURIComponent(u)}/videos${toQuery({ page, size })}`,
+      token ? { token } : {},
     );
   },
   getProfileFollowing: (username, { page = 0, size = 20, token } = {}) => {
@@ -352,6 +355,10 @@ export const apiClient = {
     request(`/api/follows/${userId}`, { method: "POST", token }),
   unfollow: (userId, token) =>
     request(`/api/follows/${userId}`, { method: "DELETE", token }),
+  acceptFollowRequest: (userId, token) =>
+    request(`/api/follows/requests/${userId}/accept`, { method: "POST", token }),
+  rejectFollowRequest: (userId, token) =>
+    request(`/api/follows/requests/${userId}/reject`, { method: "POST", token }),
   getMentionableFriends: (token) => request("/api/follows/friends", { token }),
   recordVideoView: (publicId, body, { token } = {}) =>
     request(`/api/videos/${publicId}/views`, { method: "POST", body, ...(token ? { token } : {}) }),

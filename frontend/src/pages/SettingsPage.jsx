@@ -63,15 +63,16 @@ const DELETE_REASONS = [
   },
 ]
 
-function SettingsSwitch({ checked, onChange, label }) {
+function SettingsSwitch({ checked, onChange, label, disabled = false }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
       aria-label={label}
+      disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition ${checked ? 'bg-emerald-500' : 'bg-zinc-700'}`}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition ${checked ? 'bg-emerald-500' : 'bg-zinc-700'} ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
     >
       <span
         className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${
@@ -135,8 +136,10 @@ function SettingsSection({ title, children }) {
 
 export function SettingsPage() {
   const navigate = useNavigate()
-  const { token, user, logout } = useAuth()
+  const { token, user, logout, refreshProfile } = useAuth()
   const [privateAccount, setPrivateAccount] = useState(false)
+  const [privacySaving, setPrivacySaving] = useState(false)
+  const [privacyError, setPrivacyError] = useState('')
   const [suggestAccount, setSuggestAccount] = useState(true)
   const [profileViews, setProfileViews] = useState(false)
   const [browserActivity, setBrowserActivity] = useState(true)
@@ -164,6 +167,30 @@ export function SettingsPage() {
   useEffect(() => {
     document.title = 'Cài đặt | Vibely'
   }, [])
+
+  useEffect(() => {
+    setPrivateAccount(Boolean(user?.privateAccount))
+  }, [user?.privateAccount])
+
+  const handlePrivateAccountToggle = async (nextValue) => {
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    const previous = privateAccount
+    setPrivateAccount(nextValue)
+    setPrivacySaving(true)
+    setPrivacyError('')
+    try {
+      await apiClient.updatePrivacySettings(token, { privateAccount: nextValue })
+      await refreshProfile()
+    } catch (error) {
+      setPrivateAccount(previous)
+      setPrivacyError(error?.message || 'Không thể cập nhật quyền riêng tư.')
+    } finally {
+      setPrivacySaving(false)
+    }
+  }
 
   useEffect(() => {
     if (deactivationCooldown <= 0) return undefined
@@ -719,8 +746,19 @@ export function SettingsPage() {
                       Khi bật, chỉ người bạn phê duyệt mới có thể follow và xem nội dung của bạn.
                     </p>
                   </div>
-                  <SettingsSwitch checked={privateAccount} onChange={setPrivateAccount} label="Tài khoản riêng tư" />
+                  <SettingsSwitch
+                    checked={privateAccount}
+                    onChange={(next) => void handlePrivateAccountToggle(next)}
+                    label="Tài khoản riêng tư"
+                    disabled={privacySaving}
+                  />
                 </div>
+                {privacyError ? (
+                  <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-300">{privacyError}</p>
+                ) : null}
+                {privacySaving ? (
+                  <p className="text-xs text-zinc-500">Đang lưu cài đặt quyền riêng tư…</p>
+                ) : null}
                 <SettingsRow title="Tương tác" description="Bình luận, nhắn tin, duet và quyền tương tác khác." trailing="Mọi người" />
                 <SettingsRow title="Tin nhắn trực tiếp" trailing="Bạn bè" />
                 <SettingsRow title="Đã thích" trailing="Chỉ mình tôi" />

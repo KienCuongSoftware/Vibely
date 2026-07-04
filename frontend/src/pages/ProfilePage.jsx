@@ -35,6 +35,7 @@ import {
   IoHeartOutline,
   IoHome,
   IoLogOutOutline,
+  IoLockClosed,
   IoNotifications,
   IoPaperPlane,
   IoPeople,
@@ -115,6 +116,23 @@ function profileVideoPermalinkForGrid(video, fallbackUsernameRaw) {
 }
 
 /** Ô lưới hồ sơ: chỉ phát khi `playing`; tắt tiếng, loop. */
+function PrivateProfileLockedState() {
+  return (
+    <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+      <div className="mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-zinc-800 text-zinc-400">
+        <span className="relative">
+          <IoPerson className="text-5xl" aria-hidden />
+          <IoLockClosed className="absolute -bottom-1 -right-1 rounded-full bg-zinc-800 p-1 text-lg text-zinc-300" aria-hidden />
+        </span>
+      </div>
+      <p className="text-xl font-bold text-zinc-100">Đây là tài khoản riêng tư</p>
+      <p className="mt-2 max-w-sm text-sm leading-relaxed text-zinc-400">
+        Hãy Follow tài khoản này để xem nội dung và các lượt thích của họ
+      </p>
+    </div>
+  )
+}
+
 function ProfileGridMedia({ item: v, playing = false }) {
   const videoRef = useRef(null)
   const url = typeof v?.videoUrl === 'string' ? v.videoUrl.trim() : ''
@@ -226,7 +244,7 @@ function ProfileGridVideoTile({
 
 export function ProfilePage() {
   const { username } = useParams()
-  const { token, user, refreshProfile, updateProfile, logout } = useAuth()
+  const { token, user, authReady, refreshProfile, updateProfile, logout } = useAuth()
   const navigate = useNavigate()
   const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout())
   const [searchParams, setSearchParams] = useSearchParams()
@@ -299,6 +317,11 @@ export function ProfilePage() {
 
   useEffect(() => {
     if (username) {
+      if (!authReady) return undefined
+      setPublicProfile(null)
+      setProfileVideos([])
+      setProfileVideosLoading(true)
+      setStatus('')
       let isMounted = true
       apiClient
         .getPublicProfile(username, token)
@@ -312,17 +335,20 @@ export function ProfilePage() {
           setPublicProfile(null)
           setStatus(error.message)
         })
+        .finally(() => {
+          if (isMounted) setProfileVideosLoading(false)
+        })
       return () => {
         isMounted = false
       }
     }
 
-    if (!token) return undefined
+    if (!token || !authReady) return undefined
     refreshProfile()
       .then(() => setStatus('Đã tải hồ sơ'))
       .catch((error) => setStatus(error.message))
     return undefined
-  }, [token, refreshProfile, username])
+  }, [token, refreshProfile, username, authReady])
 
   useEffect(() => {
     if (username || !token || !user?.username) {
@@ -400,14 +426,26 @@ export function ProfilePage() {
       totalViewCount: ownPublicProfile.totalViewCount,
     }
   }, [username, publicProfile, user, ownPublicProfile])
-  const isPublicProfileLoading = Boolean(username) && !publicProfile && !status
+  const isPublicProfileLoading = Boolean(username) && (!authReady || (!publicProfile && !status))
   const normalizeUsername = (value) => String(value ?? '').trim().replace(/^@/, '').toLowerCase()
   const isOwnProfile =
-    (Boolean(token) && !username) ||
-    (Boolean(user?.username) &&
-      Boolean(profile?.username) &&
-      normalizeUsername(user.username) === normalizeUsername(profile.username))
+    Boolean(token) &&
+    ((!username && Boolean(user)) ||
+      (Boolean(user?.username) &&
+        Boolean(profile?.username) &&
+        normalizeUsername(user.username) === normalizeUsername(profile.username)))
   const isFollowingProfile = Boolean(profile?.followedByViewer)
+  const isFollowRequestPending = Boolean(profile?.followRequestPending)
+  const isPrivateProfileLocked =
+    Boolean(profile?.privateAccount) && !isOwnProfile && !isFollowingProfile
+
+  const followButtonLabel = followBusy
+    ? 'Đang lưu...'
+    : isFollowingProfile
+      ? 'Đã follow'
+      : isFollowRequestPending
+        ? 'Đã yêu cầu'
+        : 'Follow'
 
   useEffect(() => {
     setProfileActionNotice('')
@@ -429,31 +467,34 @@ export function ProfilePage() {
     }
     if (followBusy) return
     setProfileActionNotice('')
-    const next = !isFollowingProfile
     const prevFollowerCount = Number(profile?.followerCount ?? 0)
     setFollowBusy(true)
-    patchPublicProfile({
-      followedByViewer: next,
-      followerCount: Math.max(0, prevFollowerCount + (next ? 1 : -1)),
-    })
     try {
-      if (next) {
-        await apiClient.follow(profile.id, token)
-        markFeedAuthorFollowed(token, profile.id)
-      } else {
+      if (isFollowingProfile || isFollowRequestPending) {
         await apiClient.unfollow(profile.id, token)
         markFeedAuthorUnfollowed(token, profile.id)
+        patchPublicProfile({
+          followedByViewer: false,
+          followRequestPending: false,
+          followerCount: isFollowingProfile ? Math.max(0, prevFollowerCount - 1) : prevFollowerCount,
+          contentVisible: false,
+        })
+      } else {
+        await apiClient.follow(profile.id, token)
+        markFeedAuthorFollowed(token, profile.id)
+        patchPublicProfile({
+          followedByViewer: true,
+          followRequestPending: false,
+          followerCount: prevFollowerCount + 1,
+          contentVisible: true,
+        })
       }
     } catch (error) {
-      patchPublicProfile({
-        followedByViewer: !next,
-        followerCount: prevFollowerCount,
-      })
       setProfileActionNotice(error?.message || 'Không thể cập nhật trạng thái theo dõi.')
     } finally {
       setFollowBusy(false)
     }
-  }, [profile?.id, profile?.followerCount, isOwnProfile, token, followBusy, isFollowingProfile, navigate, patchPublicProfile])
+  }, [profile?.id, profile?.followerCount, profile?.privateAccount, isOwnProfile, token, followBusy, isFollowingProfile, isFollowRequestPending, navigate, patchPublicProfile])
 
   const handleProfileMessageClick = useCallback(async () => {
     if (!token) {
@@ -519,8 +560,17 @@ export function ProfilePage() {
   }
 
   useEffect(() => {
+    if (!authReady) return undefined
     if (profileMainTab !== 'videos' || !profile?.username) {
-      return
+      return undefined
+    }
+    if (username && !publicProfile) {
+      return undefined
+    }
+    if (isPrivateProfileLocked) {
+      setProfileVideos([])
+      setProfileVideosLoading(false)
+      return undefined
     }
     let cancelled = false
     setProfileVideosLoading(true)
@@ -530,7 +580,7 @@ export function ProfilePage() {
         if (isOwnProfile && token) {
           data = await apiClient.getMyUploadedVideos(token, { page: 0, size: 48 })
         } else {
-          data = await apiClient.getVideosByUsername(profile.username, { page: 0, size: 48 })
+          data = await apiClient.getVideosByUsername(profile.username, { page: 0, size: 48, token })
         }
         if (!cancelled) {
           setProfileVideos(sortVideosNewestFirst(data?.items))
@@ -544,7 +594,7 @@ export function ProfilePage() {
     return () => {
       cancelled = true
     }
-  }, [profileMainTab, profile?.username, isOwnProfile, token])
+  }, [authReady, profileMainTab, profile?.username, username, publicProfile, isOwnProfile, token, isPrivateProfileLocked])
 
   useEffect(() => {
     if (!token || !isOwnProfile) {
@@ -1095,7 +1145,12 @@ export function ProfilePage() {
             {mobileLayout ? (
               <div className="mb-6 flex flex-col items-center text-center lg:hidden">
                 <h2 className="mb-4 max-w-full truncate text-[17px] font-bold text-white">
-                  {profile?.displayName ?? 'Người dùng Vibely'}
+                  <span className="inline-flex items-center gap-1.5">
+                    {profile?.displayName ?? 'Người dùng Vibely'}
+                    {profile?.privateAccount ? (
+                      <IoLockClosed className="shrink-0 text-sm text-zinc-400" aria-label="Tài khoản riêng tư" />
+                    ) : null}
+                  </span>
                 </h2>
                 <AvatarImage
                   className="h-24 w-24 rounded-full border border-zinc-800 object-cover"
@@ -1143,14 +1198,14 @@ export function ProfilePage() {
                     <button
                       type="button"
                       className={`min-w-[112px] rounded-md px-5 py-2 text-sm font-semibold ${
-                        isFollowingProfile
+                        isFollowingProfile || isFollowRequestPending
                           ? 'border border-zinc-700 bg-zinc-900 text-zinc-100'
                           : 'bg-[#FE2C55] text-white'
                       } ${followBusy ? 'cursor-wait opacity-80' : 'cursor-pointer'}`}
                       onClick={() => void handleProfileFollowToggle()}
                       disabled={followBusy}
                     >
-                      {followBusy ? 'Đang lưu...' : isFollowingProfile ? 'Đã follow' : 'Follow'}
+                      {followButtonLabel}
                     </button>
                     <button
                       type="button"
@@ -1178,7 +1233,12 @@ export function ProfilePage() {
                 <div className="min-w-0 flex-1 space-y-3">
                   <div className="flex flex-wrap items-end gap-x-4 gap-y-1">
                     <h2 className="text-3xl font-bold leading-none">
-                      {profile?.displayName ?? 'Người dùng Vibely'}
+                      <span className="inline-flex items-center gap-2">
+                        {profile?.displayName ?? 'Người dùng Vibely'}
+                        {profile?.privateAccount ? (
+                          <IoLockClosed className="shrink-0 text-lg text-zinc-400" aria-label="Tài khoản riêng tư" />
+                        ) : null}
+                      </span>
                     </h2>
                     <span className="text-zinc-500">|</span>
                     <p className="pt-1 text-base text-zinc-400">@{profile?.username ?? '-'}</p>
@@ -1251,18 +1311,14 @@ export function ProfilePage() {
                       <button
                         type="button"
                         className={`min-w-[112px] rounded-full px-5 py-2 text-sm font-semibold transition ${
-                          isFollowingProfile
+                          isFollowingProfile || isFollowRequestPending
                             ? 'border border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800'
                             : 'bg-[#FE2C55] text-white hover:bg-[#ea284f]'
                         } ${followBusy ? 'cursor-wait opacity-80' : 'cursor-pointer'}`}
                         onClick={() => void handleProfileFollowToggle()}
                         disabled={followBusy}
                       >
-                        {followBusy
-                          ? 'Đang lưu...'
-                          : isFollowingProfile
-                            ? 'Đã follow'
-                            : 'Follow'}
+                        {followButtonLabel}
                       </button>
                       <button
                         type="button"
@@ -1444,7 +1500,9 @@ export function ProfilePage() {
 
             {profileMainTab === 'videos' ? (
               <div className="min-h-[320px] px-2 py-4 sm:px-4 sm:py-5">
-                {profileVideosLoading && profileVideos.length === 0 ? (
+                {isPrivateProfileLocked ? (
+                  <PrivateProfileLockedState />
+                ) : isPublicProfileLoading || (profileVideosLoading && profileVideos.length === 0) ? (
                   <p className="py-10 text-center text-sm text-zinc-500">Đang tải video…</p>
                 ) : profileVideos.length > 0 ? (
                   renderProfileVideoGrid(profileVideos)
@@ -1519,7 +1577,9 @@ export function ProfilePage() {
 
             {profileMainTab === 'liked' ? (
               <div className="min-h-0 flex-1 px-2 py-4 sm:px-4 sm:py-5">
-                {!isOwnProfile ? (
+                {!isOwnProfile && isPrivateProfileLocked ? (
+                  <PrivateProfileLockedState />
+                ) : !isOwnProfile ? (
                   <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
                     <IoHeartOutline className="mb-4 h-28 w-28 shrink-0 text-zinc-100" aria-hidden />
                     <p className="text-lg font-semibold text-zinc-100">Video đã thích</p>
