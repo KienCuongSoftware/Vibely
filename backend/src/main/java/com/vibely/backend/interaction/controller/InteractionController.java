@@ -195,6 +195,26 @@ public class InteractionController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @PostMapping("/follows/requests/{userId}/accept")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ApiResponse<Void>> acceptFollowRequest(
+        Authentication authentication,
+        @PathVariable Long userId
+    ) {
+        interactionService.acceptFollowRequest(authentication.getName(), userId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PostMapping("/follows/requests/{userId}/reject")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ApiResponse<Void>> rejectFollowRequest(
+        Authentication authentication,
+        @PathVariable Long userId
+    ) {
+        interactionService.rejectFollowRequest(authentication.getName(), userId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
     @GetMapping("/follows/friends")
     @PreAuthorize("hasRole('USER')")
     public ApiResponse<List<FriendMentionResponse>> getMentionableFriends(Authentication authentication) {

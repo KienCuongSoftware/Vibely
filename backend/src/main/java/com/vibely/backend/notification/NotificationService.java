@@ -66,6 +66,33 @@ public class NotificationService {
             );
     }
 
+    public void onFollowRequest(User follower, User following) {
+        if (follower == null || following == null || follower.getId().equals(following.getId())) {
+            return;
+        }
+        if (userNotificationRepository.findFollowRequestNotification(following.getId(), follower.getId()).isPresent()) {
+            return;
+        }
+        UserNotificationEntity row = baseRow(following, follower, NotificationType.FOLLOW_REQUEST);
+        saveBucketWithActor(row, follower);
+    }
+
+    public void onFollowRequestCancelled(User follower, User following) {
+        if (follower == null || following == null || follower.getId().equals(following.getId())) {
+            return;
+        }
+        userNotificationRepository
+            .findFollowRequestNotification(following.getId(), follower.getId())
+            .ifPresent(row -> {
+                userNotificationRepository.delete(row);
+                publishBucketRemoved(following, row.getId());
+            });
+    }
+
+    public void onFollowRequestAccepted(User follower, User following) {
+        onFollowRequestCancelled(follower, following);
+    }
+
     public void onUnfollow(User follower, User following) {
         if (follower == null || following == null || follower.getId().equals(following.getId())) {
             return;

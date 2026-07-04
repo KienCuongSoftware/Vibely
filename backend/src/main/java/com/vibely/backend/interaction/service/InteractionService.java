@@ -12,6 +12,7 @@ import com.vibely.backend.interaction.dto.VideoMeStateResponse;
 import com.vibely.backend.interaction.entity.CommentEntity;
 import com.vibely.backend.interaction.entity.CommentLikeEntity;
 import com.vibely.backend.interaction.entity.FollowEntity;
+import com.vibely.backend.interaction.entity.FollowStatus;
 import com.vibely.backend.interaction.entity.LikeEntity;
 import com.vibely.backend.interaction.entity.VideoBookmarkEntity;
 import com.vibely.backend.interaction.entity.VideoRepostEntity;
@@ -24,6 +25,7 @@ import com.vibely.backend.interaction.repository.VideoRepostRepository;
 import com.vibely.backend.notification.NotificationService;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
+import com.vibely.backend.user.service.ProfileVisibilityService;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.service.VideoService;
@@ -59,6 +61,7 @@ public class InteractionService {
     private final ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService;
     private final VideoRepository videoRepository;
     private final NotificationService notificationService;
+    private final ProfileVisibilityService profileVisibilityService;
 
     public InteractionService(
         UserRepository userRepository,
@@ -74,7 +77,8 @@ public class InteractionService {
         ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor,
         ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService,
         VideoRepository videoRepository,
-        NotificationService notificationService
+        NotificationService notificationService,
+        ProfileVisibilityService profileVisibilityService
     ) {
         this.userRepository = userRepository;
         this.videoService = videoService;
@@ -90,6 +94,7 @@ public class InteractionService {
         this.videoEngagementStatsService = videoEngagementStatsService;
         this.videoRepository = videoRepository;
         this.notificationService = notificationService;
+        this.profileVisibilityService = profileVisibilityService;
     }
 
     public void likeVideo(String email, UUID videoPublicId) {
@@ -297,12 +302,14 @@ public class InteractionService {
         if (follower.getId().equals(following.getId())) {
             throw new BadRequestException("Bạn không thể tự theo dõi chính mình");
         }
-        if (followRepository.existsByFollowerAndFollowing(follower, following)) {
+        if (followRepository.existsAcceptedByFollowerAndFollowing(follower, following)) {
             return;
         }
-        FollowEntity follow = new FollowEntity();
+        FollowEntity follow = followRepository.findByFollowerAndFollowing(follower, following)
+            .orElseGet(FollowEntity::new);
         follow.setFollower(follower);
         follow.setFollowing(following);
+        follow.setStatus(FollowStatus.ACCEPTED);
         followRepository.save(follow);
         notificationService.onFollow(follower, following);
         List<Video> recentVideos = videoRepository.findByAuthorIdAndStatusEquals(
@@ -317,8 +324,50 @@ public class InteractionService {
         User follower = getUser(email);
         User following = userRepository.findById(followingUserId)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng cần bỏ theo dõi"));
-        followRepository.deleteByFollowerAndFollowing(follower, following);
-        notificationService.onUnfollow(follower, following);
+        FollowEntity existing = followRepository.findByFollowerAndFollowing(follower, following).orElse(null);
+        if (existing == null) {
+            return;
+        }
+        followRepository.delete(existing);
+        if (existing.getStatus() == FollowStatus.ACCEPTED) {
+            notificationService.onUnfollow(follower, following);
+        } else {
+            notificationService.onFollowRequestCancelled(follower, following);
+        }
+    }
+
+    public void acceptFollowRequest(String email, Long followerUserId) {
+        User owner = getUser(email);
+        User follower = userRepository.findById(followerUserId)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        FollowEntity follow = followRepository.findByFollowerAndFollowing(follower, owner)
+            .orElseThrow(() -> new BadRequestException("Không tìm thấy yêu cầu follow"));
+        if (follow.getStatus() != FollowStatus.PENDING) {
+            throw new BadRequestException("Yêu cầu follow không còn hiệu lực");
+        }
+        follow.setStatus(FollowStatus.ACCEPTED);
+        followRepository.save(follow);
+        notificationService.onFollowRequestAccepted(follower, owner);
+        notificationService.onFollow(follower, owner);
+        List<Video> recentVideos = videoRepository.findByAuthorIdAndStatusEquals(
+            owner.getId(),
+            VideoStatus.READY,
+            PageRequest.of(0, 5)
+        ).getContent();
+        userInterestSignalProcessor.ifAvailable(p -> p.onFollowCreator(follower.getId(), owner.getId(), recentVideos));
+    }
+
+    public void rejectFollowRequest(String email, Long followerUserId) {
+        User owner = getUser(email);
+        User follower = userRepository.findById(followerUserId)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        FollowEntity follow = followRepository.findByFollowerAndFollowing(follower, owner)
+            .orElseThrow(() -> new BadRequestException("Không tìm thấy yêu cầu follow"));
+        if (follow.getStatus() != FollowStatus.PENDING) {
+            throw new BadRequestException("Yêu cầu follow không còn hiệu lực");
+        }
+        followRepository.delete(follow);
+        notificationService.onFollowRequestCancelled(follower, owner);
     }
 
     @Transactional(readOnly = true)
@@ -329,7 +378,7 @@ public class InteractionService {
         for (FollowEntity relation : myFollowing) {
             User candidate = relation.getFollowing();
             if (candidate == null || candidate.getId() == null) continue;
-            if (!followRepository.existsByFollowerAndFollowing(candidate, me)) continue;
+            if (!followRepository.existsAcceptedByFollowerAndFollowing(candidate, me)) continue;
             friends.put(
                 candidate.getId(),
                 new FriendMentionResponse(

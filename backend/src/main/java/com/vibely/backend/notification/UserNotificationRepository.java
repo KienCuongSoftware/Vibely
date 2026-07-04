@@ -142,6 +142,19 @@ public interface UserNotificationRepository extends JpaRepository<UserNotificati
         """
         select n from UserNotificationEntity n
         where n.recipient.id = :recipientId
+        and n.type = com.vibely.backend.notification.NotificationType.FOLLOW_REQUEST
+        and n.actor.id = :actorId
+        """
+    )
+    Optional<UserNotificationEntity> findFollowRequestNotification(
+        @Param("recipientId") Long recipientId,
+        @Param("actorId") Long actorId
+    );
+
+    @Query(
+        """
+        select n from UserNotificationEntity n
+        where n.recipient.id = :recipientId
         and n.type = :type
         and n.video.id = :videoId
         """

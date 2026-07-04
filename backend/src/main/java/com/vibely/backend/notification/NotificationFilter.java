@@ -16,7 +16,7 @@ public enum NotificationFilter {
             case likes -> List.of(NotificationType.VIDEO_LIKE, NotificationType.COMMENT_LIKE);
             case comments -> List.of(NotificationType.COMMENT_REPLY, NotificationType.COMMENT_LIKE);
             case mentions -> List.of(NotificationType.MENTION);
-            case followers -> List.of(NotificationType.FOLLOW);
+            case followers -> List.of(NotificationType.FOLLOW, NotificationType.FOLLOW_REQUEST);
         };
     }
 
