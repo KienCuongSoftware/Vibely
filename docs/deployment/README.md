@@ -78,8 +78,12 @@ Useful checks:
 ```bash
 curl -s http://127.0.0.1:8080/actuator/health
 curl -s https://vibely.sbs/api/feed/for-you?size=2
+# OAuth must 302 to Google (not return SPA index.html):
+curl -sI https://vibely.sbs/oauth2/authorization/google | head -5
 journalctl -u vibely -n 80 --no-pager
 ```
+
+If `curl -sI https://vibely.sbs/oauth2/authorization/google` returns `200` + `text/html`, nginx is missing `/oauth2/` and `/login/oauth2/` proxy blocks — copy [deploy/nginx/vibely.conf](../../deploy/nginx/vibely.conf) to the VPS and `nginx -t && systemctl reload nginx`.
 
 ## Build and Push Backend Docker Image
 
