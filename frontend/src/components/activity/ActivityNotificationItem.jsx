@@ -31,6 +31,64 @@ function VideoThumb({ thumbnailUrl }) {
   )
 }
 
+function FollowRequestActions({ actorId, onResolved }) {
+  const { token } = useAuth()
+  const [busy, setBusy] = useState(false)
+
+  if (!actorId) return null
+
+  const handleAccept = async (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (!token || busy) return
+    setBusy(true)
+    try {
+      await apiClient.acceptFollowRequest(actorId, token)
+      onResolved?.()
+    } catch {
+      /* keep buttons for retry */
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleReject = async (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (!token || busy) return
+    setBusy(true)
+    try {
+      await apiClient.rejectFollowRequest(actorId, token)
+      onResolved?.()
+    } catch {
+      /* keep buttons for retry */
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="flex shrink-0 items-center gap-2">
+      <button
+        type="button"
+        onClick={(event) => void handleReject(event)}
+        disabled={busy}
+        className="rounded-full border border-zinc-700 px-3 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-70"
+      >
+        Từ chối
+      </button>
+      <button
+        type="button"
+        onClick={(event) => void handleAccept(event)}
+        disabled={busy}
+        className="rounded-full bg-[#FE2C55] px-3 py-1 text-xs font-semibold text-white transition hover:bg-[#ea284f] disabled:cursor-wait disabled:opacity-70"
+      >
+        {busy ? 'Đang lưu...' : 'Chấp nhận'}
+      </button>
+    </div>
+  )
+}
+
 function FollowBackButton({ actorId, initialFollowing, onFollowed }) {
   const { token } = useAuth()
   const [following, setFollowing] = useState(Boolean(initialFollowing))
@@ -124,10 +182,11 @@ function unreadRowClass(read) {
   return read ? '' : 'bg-zinc-900/50'
 }
 
-export function ActivityNotificationItem({ item, onNavigate, onMarkRead }) {
+export function ActivityNotificationItem({ item, onNavigate, onMarkRead, onRefresh }) {
   const navigate = useNavigate()
   const isSystem = item.type === 'system'
   const isFollow = item.type === 'follow'
+  const isFollowRequest = item.type === 'follow_request'
   const profileHref = !isSystem ? buildProfileHref(item.actor?.username) : null
   const videoHref =
     buildActivityVideoUrl(item.videoAuthorUsername, item.videoPublicId) || null
@@ -145,6 +204,30 @@ export function ActivityNotificationItem({ item, onNavigate, onMarkRead }) {
       onNavigate?.()
       navigate(primaryHref, { state: { notificationId: item.id } })
     }
+  }
+
+  if (isFollowRequest) {
+    return (
+      <div
+        className={`flex items-center gap-2.5 rounded-lg px-2 py-2 transition hover:bg-zinc-900/80 ${unreadRowClass(item.read)}`}
+      >
+        <Link
+          to={profileHref || '/foryou'}
+          onClick={handleActivate}
+          className="flex min-w-0 flex-1 items-center gap-3"
+        >
+          <ActivityAvatar item={item} isSystem={false} />
+          <ActivityText
+            item={item}
+            isSystem={false}
+            actorName={actorName}
+            actionText={actionText}
+            timeLabel={timeLabel}
+          />
+        </Link>
+        <FollowRequestActions actorId={actorId} onResolved={onRefresh} />
+      </div>
+    )
   }
 
   if (isFollow) {

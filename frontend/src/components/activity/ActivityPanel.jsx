@@ -182,6 +182,7 @@ export function ActivityPanel({ onClose, fullPage = false }) {
                       item={item}
                       onNavigate={fullPage ? undefined : onClose}
                       onMarkRead={handleMarkRead}
+                      onRefresh={refresh}
                     />
                   ))}
                 </div>
@@ -200,6 +201,7 @@ export function ActivityPanel({ onClose, fullPage = false }) {
                       item={item}
                       onNavigate={fullPage ? undefined : onClose}
                       onMarkRead={handleMarkRead}
+                      onRefresh={refresh}
                     />
                   ))}
                 </div>

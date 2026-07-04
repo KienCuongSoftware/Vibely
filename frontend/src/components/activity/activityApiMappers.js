@@ -1,5 +1,6 @@
 const TYPE_TO_FRONT = {
   FOLLOW: 'follow',
+  FOLLOW_REQUEST: 'follow_request',
   VIDEO_LIKE: 'video_like',
   COMMENT_LIKE: 'comment_like',
   COMMENT_REPLY: 'comment_reply',
@@ -8,6 +9,7 @@ const TYPE_TO_FRONT = {
 
 const TYPE_TO_FILTER = {
   FOLLOW: 'followers',
+  FOLLOW_REQUEST: 'followers',
   VIDEO_LIKE: 'likes',
   COMMENT_LIKE: 'likes',
   COMMENT_REPLY: 'comments',

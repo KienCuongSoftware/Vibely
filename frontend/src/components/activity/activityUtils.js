@@ -38,6 +38,8 @@ export function buildActivityActionText(item) {
       return aggregatedOthersAction('đã nhắc đến bạn trong bình luận', item.actorCount)
     case 'follow':
       return aggregatedOthersAction('đã bắt đầu follow bạn', item.actorCount)
+    case 'follow_request':
+      return 'đã yêu cầu follow bạn'
     default:
       return 'đã tương tác với bạn'
   }
