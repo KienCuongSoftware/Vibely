@@ -10,6 +10,9 @@ public record PublicUserProfileResponse(
     long followerCount,
     long totalLikeCount,
     long totalViewCount,
-    boolean followedByViewer
+    boolean privateAccount,
+    boolean contentVisible,
+    boolean followedByViewer,
+    boolean followRequestPending
 ) {
 }

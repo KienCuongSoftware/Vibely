@@ -348,8 +348,8 @@ public class ChatService {
             return new RequestState(false, true, false);
         }
 
-        boolean viewerFollowsPeer = followRepository.existsByFollowerAndFollowing(viewer, peer);
-        boolean peerFollowsViewer = followRepository.existsByFollowerAndFollowing(peer, viewer);
+        boolean viewerFollowsPeer = followRepository.existsAcceptedByFollowerAndFollowing(viewer, peer);
+        boolean peerFollowsViewer = followRepository.existsAcceptedByFollowerAndFollowing(peer, viewer);
         if (viewerFollowsPeer && peerFollowsViewer) {
             return new RequestState(false, true, false);
         }

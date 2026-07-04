@@ -167,7 +167,7 @@ public class VideoResponseMapper {
         if (viewer == null) {
             return false;
         }
-        return followRepository.existsByFollowerAndFollowing(viewer, video.getAuthor());
+        return followRepository.existsAcceptedByFollowerAndFollowing(viewer, video.getAuthor());
     }
 
     private VideoResponse toResponse(Video video, FeedInteractionCounts batch, boolean followedByViewer) {

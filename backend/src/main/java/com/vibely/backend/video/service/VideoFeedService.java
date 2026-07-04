@@ -16,6 +16,7 @@ import com.vibely.backend.interaction.repository.VideoRepostRepository;
 import com.vibely.backend.interaction.repository.VideoViewRepository;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
+import com.vibely.backend.user.service.ProfileVisibilityService;
 import com.vibely.backend.user.service.UsernameService;
 import com.vibely.backend.video.FollowingFeedRowView;
 import com.vibely.backend.video.Video;
@@ -34,6 +35,8 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +52,7 @@ public class VideoFeedService {
     private final UsernameService usernameService;
     private final com.vibely.backend.storage.S3ObjectUrlBuilder objectUrlBuilder;
     private final VideoResponseMapper responseMapper;
+    private final ProfileVisibilityService profileVisibilityService;
 
     public VideoFeedService(
         VideoRepository videoRepository,
@@ -59,7 +63,8 @@ public class VideoFeedService {
         FollowRepository followRepository,
         UsernameService usernameService,
         com.vibely.backend.storage.S3ObjectUrlBuilder objectUrlBuilder,
-        VideoResponseMapper responseMapper
+        VideoResponseMapper responseMapper,
+        ProfileVisibilityService profileVisibilityService
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
@@ -70,6 +75,7 @@ public class VideoFeedService {
         this.usernameService = usernameService;
         this.objectUrlBuilder = objectUrlBuilder;
         this.responseMapper = responseMapper;
+        this.profileVisibilityService = profileVisibilityService;
     }
 
     @Transactional(readOnly = true)
@@ -266,10 +272,20 @@ public class VideoFeedService {
     }
 
     @Transactional(readOnly = true)
-    public FeedPageResponse getPublicVideosForUsername(String rawUsername, int page, int size) {
+    public FeedPageResponse getPublicVideosForUsername(
+        String rawUsername,
+        int page,
+        int size,
+        Authentication authentication
+    ) {
         String normalized = usernameService.normalize(rawUsername);
         User author = userRepository.findByUsername(normalized)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        User viewer = resolveViewer(authentication);
+        if (!profileVisibilityService.canViewProfileContent(author, viewer)) {
+            int cappedSize = Math.min(size, 50);
+            return new FeedPageResponse(List.of(), page, cappedSize, 0, false, "profile-uploads", null);
+        }
         Pageable pageable = PageRequest.of(page, Math.min(size, 50));
         Page<Video> resultPage = videoRepository.findByAuthorIdAndStatusEquals(
             author.getId(),
@@ -277,6 +293,15 @@ public class VideoFeedService {
             pageable
         );
         return responseMapper.toFeedPageResponse(resultPage, "profile-uploads");
+    }
+
+    private User resolveViewer(Authentication authentication) {
+        if (authentication == null
+            || !authentication.isAuthenticated()
+            || authentication instanceof AnonymousAuthenticationToken) {
+            return null;
+        }
+        return userRepository.findByEmail(authentication.getName()).orElse(null);
     }
 
     private FeedPageResponse withFeedSort(FeedPageResponse page, String sort) {

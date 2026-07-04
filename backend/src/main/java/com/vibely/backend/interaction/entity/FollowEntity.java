@@ -3,6 +3,8 @@ package com.vibely.backend.interaction.entity;
 import com.vibely.backend.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -32,6 +34,10 @@ public class FollowEntity {
     @JoinColumn(name = "following_id", nullable = false)
     private User following;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private FollowStatus status = FollowStatus.ACCEPTED;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -60,5 +66,13 @@ public class FollowEntity {
 
     public void setFollowing(User following) {
         this.following = following;
+    }
+
+    public FollowStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(FollowStatus status) {
+        this.status = status;
     }
 }

@@ -8,6 +8,7 @@ import com.vibely.backend.video.VideoResponse;
 import com.vibely.backend.video.VideoUpdateRequest;
 import com.vibely.backend.video.VideoViewRequest;
 import java.util.UUID;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 /**
@@ -77,8 +78,13 @@ public class VideoService {
         return feedService.getMyUploadedVideos(email, page, size);
     }
 
-    public FeedPageResponse getPublicVideosForUsername(String rawUsername, int page, int size) {
-        return feedService.getPublicVideosForUsername(rawUsername, page, size);
+    public FeedPageResponse getPublicVideosForUsername(
+        String rawUsername,
+        int page,
+        int size,
+        Authentication authentication
+    ) {
+        return feedService.getPublicVideosForUsername(rawUsername, page, size, authentication);
     }
 
     public VideoResponse getVideoByPublicIdForViewer(UUID publicId, String viewerEmail) {

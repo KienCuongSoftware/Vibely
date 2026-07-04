@@ -1,7 +1,9 @@
 package com.vibely.backend.user.service;
 
 import com.vibely.backend.auth.service.UserAvatarResolver;
+import com.vibely.backend.user.dto.PrivacySettingsResponse;
 import com.vibely.backend.user.dto.PublicUserProfileResponse;
+import com.vibely.backend.user.dto.UpdatePrivacySettingsRequest;
 import com.vibely.backend.user.dto.UpdateProfileRequest;
 import com.vibely.backend.user.dto.UserFollowListItemResponse;
 import com.vibely.backend.user.dto.UserFollowListResponse;
@@ -37,6 +39,7 @@ public class UserService {
     private final LikeRepository likeRepository;
     private final VideoViewRepository videoViewRepository;
     private final S3OwnedMediaValidator ownedMediaValidator;
+    private final ProfileVisibilityService profileVisibilityService;
 
     public UserService(
         UserRepository userRepository,
@@ -45,7 +48,8 @@ public class UserService {
         FollowRepository followRepository,
         LikeRepository likeRepository,
         VideoViewRepository videoViewRepository,
-        S3OwnedMediaValidator ownedMediaValidator
+        S3OwnedMediaValidator ownedMediaValidator,
+        ProfileVisibilityService profileVisibilityService
     ) {
         this.userRepository = userRepository;
         this.usernameService = usernameService;
@@ -54,6 +58,7 @@ public class UserService {
         this.likeRepository = likeRepository;
         this.videoViewRepository = videoViewRepository;
         this.ownedMediaValidator = ownedMediaValidator;
+        this.profileVisibilityService = profileVisibilityService;
     }
 
     public PublicUserProfileResponse getPublicProfile(String username, Authentication authentication) {
@@ -115,6 +120,15 @@ public class UserService {
         return toPublicProfile(saved, authentication);
     }
 
+    @Transactional
+    public PrivacySettingsResponse updatePrivacySettings(String email, UpdatePrivacySettingsRequest request) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        user.setPrivateAccount(Boolean.TRUE.equals(request.privateAccount()));
+        userRepository.save(user);
+        return new PrivacySettingsResponse(user.isPrivateAccount());
+    }
+
     private User getViewer(Authentication authentication) {
         if (authentication == null
             || !authentication.isAuthenticated()
@@ -136,11 +150,15 @@ public class UserService {
         long followerCount = followRepository.countByFollowing_Id(uid);
         long totalLikeCount = likeRepository.countByVideo_Author_IdAndVideo_Status(uid, VideoStatus.READY);
         long totalViewCount = videoViewRepository.countByVideo_Author_IdAndVideo_Status(uid, VideoStatus.READY);
-        boolean followedByViewer = false;
         User viewer = getViewer(authentication);
+        boolean followedByViewer = false;
+        boolean followRequestPending = false;
         if (viewer != null && !viewer.getId().equals(uid)) {
-            followedByViewer = followRepository.existsByFollowerAndFollowing(viewer, user);
+            followedByViewer = followRepository.existsAcceptedByFollowerAndFollowing(viewer, user);
+            followRequestPending = !followedByViewer
+                && followRepository.existsPendingByFollowerAndFollowing(viewer, user);
         }
+        boolean contentVisible = profileVisibilityService.canViewProfileContent(user, viewer);
         return new PublicUserProfileResponse(
             user.getId(),
             user.getUsername(),
@@ -151,7 +169,10 @@ public class UserService {
             followerCount,
             totalLikeCount,
             totalViewCount,
-            followedByViewer
+            user.isPrivateAccount(),
+            contentVisible,
+            followedByViewer,
+            followRequestPending
         );
     }
 

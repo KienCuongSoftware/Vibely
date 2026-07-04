@@ -285,7 +285,8 @@ public class AuthService {
             user.getBio(),
             userAvatarResolver.resolve(user),
             user.getRole().name(),
-            userRequiresOnboardingCheck(user)
+            userRequiresOnboardingCheck(user),
+            user.isPrivateAccount()
         );
     }
 

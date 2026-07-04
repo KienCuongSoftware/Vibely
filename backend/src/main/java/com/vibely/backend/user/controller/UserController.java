@@ -1,8 +1,10 @@
 package com.vibely.backend.user.controller;
 
 import com.vibely.backend.common.ApiResponse;
-import com.vibely.backend.user.dto.PublicUserProfileResponse;
+import com.vibely.backend.user.dto.PrivacySettingsResponse;
+import com.vibely.backend.user.dto.UpdatePrivacySettingsRequest;
 import com.vibely.backend.user.dto.SuggestedCreatorsResponse;
+import com.vibely.backend.user.dto.PublicUserProfileResponse;
 import com.vibely.backend.user.dto.UpdateProfileRequest;
 import com.vibely.backend.user.dto.UserFollowListResponse;
 import com.vibely.backend.user.dto.UsernameCheckResponse;
@@ -16,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -104,9 +107,12 @@ public class UserController {
     public ApiResponse<FeedPageResponse> publicUserVideos(
         @PathVariable("username") String username,
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "24") int size
+        @RequestParam(defaultValue = "24") int size,
+        Authentication authentication
     ) {
-        return ApiResponse.success(videoService.getPublicVideosForUsername(username, page, size));
+        return ApiResponse.success(
+            videoService.getPublicVideosForUsername(username, page, size, authentication)
+        );
     }
 
     @GetMapping("/{username}/following")
@@ -136,6 +142,17 @@ public class UserController {
     ) {
         return ApiResponse.success(
             userService.updateProfile(authentication.getName(), request, authentication)
+        );
+    }
+
+    @PatchMapping("/me/privacy")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<PrivacySettingsResponse> updatePrivacySettings(
+        Authentication authentication,
+        @Valid @RequestBody UpdatePrivacySettingsRequest request
+    ) {
+        return ApiResponse.success(
+            userService.updatePrivacySettings(authentication.getName(), request)
         );
     }
 
