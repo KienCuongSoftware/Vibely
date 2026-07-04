@@ -12,7 +12,7 @@ import com.vibely.backend.search.dto.SearchHistoryItemDto;
 import com.vibely.backend.search.dto.SearchTrendingResponseDto;
 import com.vibely.backend.search.entity.SearchHistory;
 import com.vibely.backend.search.entity.SearchTrend;
-import com.vibely.backend.auth.UserAvatarResolver;
+import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.search.repository.SearchHistoryRepository;
 import com.vibely.backend.search.repository.SearchQueryRepository;
 import com.vibely.backend.search.repository.SearchTrendRepository;
