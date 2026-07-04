@@ -78,6 +78,9 @@ public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
         if (lower.contains("invalid_grant")) {
             return "invalid_grant";
         }
+        if (lower.contains("invalid_token_response") || lower.contains("invalid_client")) {
+            return "invalid_client";
+        }
         return null;
     }
 }

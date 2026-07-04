@@ -118,6 +118,9 @@ export function LoginPage() {
     if (reason === "invalid_grant") {
       return "Mã xác thực OAuth hết hạn hoặc đã dùng. Vui lòng thử đăng nhập lại.";
     }
+    if (reason === "invalid_client") {
+      return "Client ID hoặc Client Secret Google không hợp lệ. Vào Google Cloud Console → Credentials → OAuth client (Web) → tạo lại Client Secret, cập nhật application-local.yaml rồi restart backend.";
+    }
     return (
       searchParams.get("message") ??
       "Đăng nhập bằng tài khoản liên kết thất bại, vui lòng thử lại"

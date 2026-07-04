@@ -28,22 +28,16 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
               - openid
               - profile
               - email
           facebook:
-            client-id: ${FACEBOOK_CLIENT_ID:${FACEBOOK_APP_ID}}
-            client-secret: ${FACEBOOK_CLIENT_SECRET:${FACEBOOK_APP_SECRET}}
             scope:
               - public_profile
               - email
             client-name: Facebook
           line:
-            client-id: ${LINE_CHANNEL_ID}
-            client-secret: ${LINE_CHANNEL_SECRET}
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             # Callback URL trên LINE Developers phải khớp (có thể thêm localhost khi dev local).
@@ -81,7 +75,7 @@ app:
     otp-resend-seconds: 60
     otp-expiry-seconds: 600
     cookie:
-      secure: ${APP_AUTH_COOKIE_SECURE:true}
+      secure: ${APP_AUTH_COOKIE_SECURE:false}
   mail:
     enabled: ${APP_MAIL_ENABLED:false}
     from: ${APP_MAIL_FROM:${SMTP_USERNAME:}}
@@ -133,5 +127,5 @@ server:
   servlet:
     session:
       cookie:
-        secure: ${APP_SESSION_COOKIE_SECURE:true}
+        secure: ${APP_SESSION_COOKIE_SECURE:false}
         same-site: lax
