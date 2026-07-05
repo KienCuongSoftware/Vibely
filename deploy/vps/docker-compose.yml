@@ -1,0 +1,38 @@
+# Production VPS — /opt/vibely/docker-compose.yml
+# Host nginx should proxy https://vibely.sbs → 127.0.0.1:8081 (frontend container),
+# OR serve /var/www/vibely after running sync-frontend-static.sh.
+
+services:
+  backend:
+    image: kiencuongsoftware/vibely-backend:latest
+    container_name: vibely-backend
+    restart: unless-stopped
+    env_file:
+      - vibely.env
+    ports:
+      - "127.0.0.1:8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  frontend:
+    image: kiencuongsoftware/vibely-frontend:latest
+    container_name: vibely-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      BACKEND_UPSTREAM: http://backend:8080
+      CLIENT_MAX_BODY_SIZE: 200m
+    ports:
+      - "127.0.0.1:8081:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

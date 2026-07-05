@@ -159,6 +159,56 @@ docker run --rm -p 8081:80 `
   kiencuongsoftware/vibely-frontend:latest
 ```
 
+## Deploy Frontend Static Files to VPS
+
+Host nginx serves the SPA from `/var/www/vibely`. **`docker compose pull` alone does not update that folder** unless you sync or point nginx at the frontend container (`127.0.0.1:8081`).
+
+After pushing a new frontend image:
+
+```bash
+cd /opt/vibely
+bash deploy/vps/sync-frontend-static.sh
+# or from repo root on VPS:
+bash /path/to/Vibely/deploy/vps/sync-frontend-static.sh
+```
+
+Verify the bundle uses `/api/oauth2/authorization/` (not bare `/oauth2/`):
+
+```bash
+grep -o 'oauth2/authorization[^`"]*' /var/www/vibely/assets/LoginPage-*.js | head -1
+# expected: /api/oauth2/authorization/
+```
+
+## Fix OAuth “jumps to /foryou” (no Google/Facebook picker)
+
+**Symptom:** Click Google/Facebook on `https://vibely.sbs` → back to `/foryou` without account picker. Local works.
+
+**Cause:** Stale SPA in `/var/www/vibely` calls `/oauth2/authorization/{provider}`. If host nginx has no rule for `/oauth2/`, nginx returns `index.html`, React catch-all sends you to `/foryou`. Direct API works: `curl -sI https://vibely.sbs/api/oauth2/authorization/google` → `302`.
+
+**Fix (pick one or both):**
+
+1. **Nginx legacy redirect** — add to `/etc/nginx/sites-available/vibely` (see `deploy/nginx/vibely.conf`):
+
+```nginx
+location /oauth2/ {
+    return 307 /api$request_uri;
+}
+location /login/oauth2/ {
+    return 307 /api$request_uri;
+}
+```
+
+Then `nginx -t && systemctl reload nginx`. Smoke test:
+
+```bash
+curl -sI https://vibely.sbs/oauth2/authorization/google | grep -i '^HTTP\|^Location'
+# expect 307 → /api/oauth2/authorization/google, then 302 to accounts.google.com
+```
+
+2. **Sync new frontend** — run `deploy/vps/sync-frontend-static.sh` so the bundle calls `/api/oauth2/authorization/` directly and includes OAuth callback fixes.
+
+Reference compose for VPS: `deploy/vps/docker-compose.yml`.
+
 ## OAuth Smoke Tests
 
 Validate Facebook app credentials directly against Meta:
