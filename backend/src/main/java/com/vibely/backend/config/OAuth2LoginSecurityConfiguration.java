@@ -91,7 +91,7 @@ public class OAuth2LoginSecurityConfiguration {
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-            .addFilter(authorizationRedirectFilter)
+            .addFilterBefore(authorizationRedirectFilter, OAuth2LoginAuthenticationFilter.class)
             .addFilter(loginFilter);
 
         return http.build();
