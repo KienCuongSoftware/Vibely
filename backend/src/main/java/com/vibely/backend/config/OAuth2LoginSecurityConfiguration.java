@@ -49,7 +49,8 @@ public class OAuth2LoginSecurityConfiguration {
         OAuth2LoginSuccessHandler successHandler,
         OAuth2LoginFailureHandler failureHandler,
         CorsConfigurationSource corsConfigurationSource,
-        @Value("${app.oauth2.public-base-url:}") String oauthPublicBaseUrl
+        @Value("${app.oauth2.public-base-url:}") String oauthPublicBaseUrl,
+        @Value("${app.urls.frontend-base-url:http://localhost:5173}") String frontendBaseUrl
     ) throws Exception {
         OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> tokenClient =
             new DefaultAuthorizationCodeTokenResponseClient();
@@ -69,7 +70,8 @@ public class OAuth2LoginSecurityConfiguration {
             new PublicBaseUrlOAuth2AuthorizationRequestResolver(
                 clientRegistrationRepository,
                 OAuth2WebPaths.AUTHORIZATION_BASE_URI,
-                oauthPublicBaseUrl
+                oauthPublicBaseUrl,
+                frontendBaseUrl
             );
 
         ApiOAuth2AuthorizationRequestRedirectFilter authorizationRedirectFilter =

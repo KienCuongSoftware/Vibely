@@ -27,19 +27,22 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final AccountReactivationTokenStore reactivationTokenStore;
     private final String frontendSuccessUrl;
     private final String oauthPublicBaseUrl;
+    private final String frontendBaseUrl;
 
     public OAuth2LoginSuccessHandler(
         @Lazy AuthService authService,
         OAuthLoginCodeStore oAuthLoginCodeStore,
         AccountReactivationTokenStore reactivationTokenStore,
         @Value("${app.oauth2.frontend-success-url:http://localhost:5173/login}") String frontendSuccessUrl,
-        @Value("${app.oauth2.public-base-url:}") String oauthPublicBaseUrl
+        @Value("${app.oauth2.public-base-url:}") String oauthPublicBaseUrl,
+        @Value("${app.urls.frontend-base-url:http://localhost:5173}") String frontendBaseUrl
     ) {
         this.authService = authService;
         this.oAuthLoginCodeStore = oAuthLoginCodeStore;
         this.reactivationTokenStore = reactivationTokenStore;
         this.frontendSuccessUrl = frontendSuccessUrl;
         this.oauthPublicBaseUrl = oauthPublicBaseUrl == null ? "" : oauthPublicBaseUrl.trim();
+        this.frontendBaseUrl = frontendBaseUrl == null ? "" : frontendBaseUrl.trim();
     }
 
     @Override
@@ -67,7 +70,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             String loginBase = OAuthRedirectUrlSupport.resolveFrontendLoginUrl(
                 request,
                 frontendSuccessUrl,
-                oauthPublicBaseUrl
+                oauthPublicBaseUrl,
+                frontendBaseUrl
             );
             String redirectUrl = UriComponentsBuilder.fromUriString(loginBase)
                 .queryParam("reactivate", "1")
@@ -84,7 +88,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String loginBase = OAuthRedirectUrlSupport.resolveFrontendLoginUrl(
             request,
             frontendSuccessUrl,
-            oauthPublicBaseUrl
+            oauthPublicBaseUrl,
+            frontendBaseUrl
         );
         String redirectUrl = UriComponentsBuilder.fromUriString(loginBase)
             .queryParam("oauth", "success")

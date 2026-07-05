@@ -10,13 +10,23 @@ public final class OAuthRedirectUrlSupport {
     private OAuthRedirectUrlSupport() {}
 
     /** Origin công khai, ví dụ {@code https://xxx.trycloudflare.com}. */
-    public static String resolvePublicOrigin(HttpServletRequest request, String configuredPublicBaseUrl) {
-        String requestOrigin = resolveRequestOrigin(request);
-        if (isLocalhostOrigin(requestOrigin)) {
-            return requestOrigin;
-        }
+    public static String resolvePublicOrigin(
+        HttpServletRequest request,
+        String configuredPublicBaseUrl,
+        String frontendBaseUrl
+    ) {
         if (StringUtils.hasText(configuredPublicBaseUrl)) {
             return trimTrailingSlash(configuredPublicBaseUrl.trim());
+        }
+        String requestOrigin = resolveRequestOrigin(request);
+        if (isBackendDevOrigin(requestOrigin) && StringUtils.hasText(frontendBaseUrl)) {
+            return trimTrailingSlash(frontendBaseUrl);
+        }
+        if (isLocalhostOrigin(requestOrigin) && StringUtils.hasText(frontendBaseUrl)) {
+            return trimTrailingSlash(frontendBaseUrl);
+        }
+        if (isLocalhostOrigin(requestOrigin)) {
+            return requestOrigin;
         }
         return requestOrigin;
     }
@@ -61,13 +71,30 @@ public final class OAuthRedirectUrlSupport {
     public static String resolveFrontendLoginUrl(
         HttpServletRequest request,
         String configuredFallback,
-        String configuredPublicBaseUrl
+        String configuredPublicBaseUrl,
+        String frontendBaseUrl
     ) {
-        String origin = resolvePublicOrigin(request, configuredPublicBaseUrl);
+        String requestOrigin = resolveRequestOrigin(request);
+        if (isBackendDevOrigin(requestOrigin) || isLocalhostOrigin(requestOrigin)) {
+            return configuredFallback;
+        }
+        String origin = resolvePublicOrigin(request, configuredPublicBaseUrl, frontendBaseUrl);
         if (StringUtils.hasText(origin)) {
             return origin + "/login";
         }
         return configuredFallback;
+    }
+
+    /** Vite proxy chưa gửi X-Forwarded-Host — backend thấy :8080 thay vì frontend :5173. */
+    static boolean isBackendDevOrigin(String origin) {
+        if (!StringUtils.hasText(origin)) {
+            return false;
+        }
+        String normalized = origin.toLowerCase();
+        return normalized.equals("http://localhost:8080")
+            || normalized.equals("https://localhost:8080")
+            || normalized.equals("http://127.0.0.1:8080")
+            || normalized.equals("https://127.0.0.1:8080");
     }
 
     private static String headerFirst(HttpServletRequest request, String name, String fallback) {

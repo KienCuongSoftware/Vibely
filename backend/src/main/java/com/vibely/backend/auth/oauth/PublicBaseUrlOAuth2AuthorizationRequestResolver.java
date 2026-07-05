@@ -17,11 +17,13 @@ public final class PublicBaseUrlOAuth2AuthorizationRequestResolver
 
     private final DefaultOAuth2AuthorizationRequestResolver delegate;
     private final String configuredPublicBaseUrl;
+    private final String frontendBaseUrl;
 
     public PublicBaseUrlOAuth2AuthorizationRequestResolver(
         ClientRegistrationRepository clientRegistrationRepository,
         String authorizationRequestBaseUri,
-        String configuredPublicBaseUrl
+        String configuredPublicBaseUrl,
+        String frontendBaseUrl
     ) {
         this.delegate = new DefaultOAuth2AuthorizationRequestResolver(
             clientRegistrationRepository,
@@ -29,6 +31,7 @@ public final class PublicBaseUrlOAuth2AuthorizationRequestResolver
         );
         this.configuredPublicBaseUrl =
             configuredPublicBaseUrl == null ? "" : configuredPublicBaseUrl.trim();
+        this.frontendBaseUrl = frontendBaseUrl == null ? "" : frontendBaseUrl.trim();
     }
 
     @Override
@@ -58,12 +61,18 @@ public final class PublicBaseUrlOAuth2AuthorizationRequestResolver
     }
 
     private String resolvePublicBaseUrl(HttpServletRequest request) {
-        String requestOrigin = resolveRequestOrigin(request);
-        if (isLocalhostOrigin(requestOrigin)) {
-            return requestOrigin;
-        }
         if (StringUtils.hasText(configuredPublicBaseUrl)) {
             return trimTrailingSlash(configuredPublicBaseUrl);
+        }
+        String requestOrigin = resolveRequestOrigin(request);
+        if (OAuthRedirectUrlSupport.isBackendDevOrigin(requestOrigin) && StringUtils.hasText(frontendBaseUrl)) {
+            return trimTrailingSlash(frontendBaseUrl);
+        }
+        if (isLocalhostOrigin(requestOrigin) && StringUtils.hasText(frontendBaseUrl)) {
+            return trimTrailingSlash(frontendBaseUrl);
+        }
+        if (isLocalhostOrigin(requestOrigin)) {
+            return requestOrigin;
         }
         return requestOrigin;
     }
