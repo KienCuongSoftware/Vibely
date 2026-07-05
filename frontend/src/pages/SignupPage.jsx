@@ -341,7 +341,7 @@ export function SignupPage() {
   };
 
   const startOAuth = (provider) => {
-    window.location.href = `${resolveBackendOrigin()}/oauth2/authorization/${provider}`;
+    window.location.href = `${resolveBackendOrigin()}/api/oauth2/authorization/${provider}`;
   };
 
   const continueToUsernameStep = async (event) => {

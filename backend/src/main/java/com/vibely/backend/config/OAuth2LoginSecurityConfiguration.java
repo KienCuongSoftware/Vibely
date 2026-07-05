@@ -1,7 +1,9 @@
 package com.vibely.backend.config;
 
+import com.vibely.backend.auth.oauth.ApiOAuth2AuthorizationRequestRedirectFilter;
 import com.vibely.backend.auth.oauth.OAuth2LoginFailureHandler;
 import com.vibely.backend.auth.oauth.OAuth2LoginSuccessHandler;
+import com.vibely.backend.auth.oauth.OAuth2WebPaths;
 import com.vibely.backend.auth.oauth.PublicBaseUrlOAuth2AuthorizationRequestResolver;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -22,7 +24,6 @@ import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
@@ -67,21 +68,25 @@ public class OAuth2LoginSecurityConfiguration {
         OAuth2AuthorizationRequestResolver authorizationRequestResolver =
             new PublicBaseUrlOAuth2AuthorizationRequestResolver(
                 clientRegistrationRepository,
-                OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI,
+                OAuth2WebPaths.AUTHORIZATION_BASE_URI,
                 oauthPublicBaseUrl
             );
 
-        OAuth2AuthorizationRequestRedirectFilter authorizationRedirectFilter =
-            new OAuth2AuthorizationRequestRedirectFilter(authorizationRequestResolver);
+        ApiOAuth2AuthorizationRequestRedirectFilter authorizationRedirectFilter =
+            new ApiOAuth2AuthorizationRequestRedirectFilter(
+                authorizationRequestResolver,
+                OAuth2WebPaths.AUTHORIZATION_BASE_URI
+            );
 
         OAuth2LoginAuthenticationFilter loginFilter =
             new OAuth2LoginAuthenticationFilter(clientRegistrationRepository, authorizedClientService);
+        loginFilter.setFilterProcessesUrl(OAuth2WebPaths.LOGIN_PROCESSING_URI);
         loginFilter.setAuthenticationManager(oauthAuthenticationManager);
         loginFilter.setAuthenticationSuccessHandler(successHandler);
         loginFilter.setAuthenticationFailureHandler(failureHandler);
 
         http
-            .securityMatcher("/oauth2/**", "/login/oauth2/**")
+            .securityMatcher("/api/oauth2/**", "/api/login/oauth2/**")
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))

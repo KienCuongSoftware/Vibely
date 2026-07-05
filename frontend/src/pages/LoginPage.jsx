@@ -246,7 +246,7 @@ export function LoginPage() {
   }, [completeOAuthLogin, navigate, searchParams, token, user]);
 
   const startOAuth = (provider) => {
-    window.location.href = `${resolveBackendOrigin()}/oauth2/authorization/${provider}`;
+    window.location.href = `${resolveBackendOrigin()}/api/oauth2/authorization/${provider}`;
   };
 
   const openReactivationModal = (payload, provider = "") => {

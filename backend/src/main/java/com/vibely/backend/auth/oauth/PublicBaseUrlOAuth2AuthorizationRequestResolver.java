@@ -53,7 +53,7 @@ public final class PublicBaseUrlOAuth2AuthorizationRequestResolver
         if (!StringUtils.hasText(publicBase)) {
             return request;
         }
-        String redirectUri = publicBase + "/login/oauth2/code/" + registrationId;
+        String redirectUri = OAuth2WebPaths.callbackUri(publicBase, registrationId);
         return OAuth2AuthorizationRequest.from(request).redirectUri(redirectUri).build();
     }
 

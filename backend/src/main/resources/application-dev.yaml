@@ -41,7 +41,7 @@ spring:
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             # Callback URL trên LINE Developers phải khớp (có thể thêm localhost khi dev local).
-            redirect-uri: "${OAUTH_PUBLIC_BASE_URL:https://vibely.sbs}/login/oauth2/code/line"
+            redirect-uri: "${OAUTH_PUBLIC_BASE_URL:https://vibely.sbs}/api/login/oauth2/code/line"
             scope:
               - openid
               - profile
