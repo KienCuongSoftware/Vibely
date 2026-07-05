@@ -37,7 +37,7 @@ import { collectLoginContext } from "../security/loginContext.js";
 const OAUTH_ONBOARDING_KEY = "vibely_oauth_pending";
 
 export function LoginPage() {
-  const { token, user, login, reactivateAccount, completeOAuthLogin } = useAuth();
+  const { token, user, login, reactivateAccount, completeOAuthLogin, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const oauthInFlightRef = useRef(false);
@@ -229,6 +229,11 @@ export function LoginPage() {
           role: profile.role ?? oauthData.role,
           avatarUrl: profile.avatarUrl ?? oauthData.avatarUrl,
         });
+        try {
+          await refreshProfile();
+        } catch {
+          // Cookie session from exchange is enough; profile refresh is best-effort.
+        }
         navigate(
           String((profile.role ?? oauthData.role) ?? "").toUpperCase() === "ADMIN"
             ? "/admin"
@@ -243,7 +248,7 @@ export function LoginPage() {
           { replace: true },
         );
       });
-  }, [completeOAuthLogin, navigate, searchParams, token, user]);
+  }, [completeOAuthLogin, navigate, refreshProfile, searchParams, token, user]);
 
   const startOAuth = (provider) => {
     window.location.href = `${resolveBackendOrigin()}/api/oauth2/authorization/${provider}`;

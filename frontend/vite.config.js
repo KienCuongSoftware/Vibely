@@ -85,6 +85,20 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
+            if (req.headers.host) {
+              proxyReq.setHeader('X-Forwarded-Host', req.headers.host)
+            }
+            const host = String(req.headers.host ?? '')
+            const secure =
+              req.headers['x-forwarded-proto'] === 'https' ||
+              host.includes('ngrok') ||
+              host.includes('trycloudflare.com') ||
+              host.includes('vibely.sbs')
+            proxyReq.setHeader('X-Forwarded-Proto', secure ? 'https' : 'http')
+          })
+        },
       },
       '/oauth2': {
         target: 'http://localhost:8080',

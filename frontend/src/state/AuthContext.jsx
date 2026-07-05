@@ -2,6 +2,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { apiClient } from "../api/client";
 import { COOKIE_SESSION_MARKER } from "../auth/session.js";
+import { isPendingOAuthBrowserCallback } from "../auth/oauthCallback.js";
 import { collectLoginContext } from "../security/loginContext.js";
 import { DEFAULT_AVATAR_URL, sanitizeAvatarUrl } from "../utils/avatarUrl.js";
 import { AuthContext } from "./auth-context";
@@ -221,6 +222,15 @@ export function AuthProvider({ children }) {
 
     const bootstrap = async () => {
       setAuthReady(false);
+
+      // LoginPage exchanges the one-time code and sets httpOnly cookies — avoid
+      // racing bootstrap /me (401) and clearSession() wiping a fresh OAuth login.
+      if (isPendingOAuthBrowserCallback()) {
+        if (!cancelled) {
+          setAuthReady(true);
+        }
+        return;
+      }
 
       const cachedBootstrap = readCachedUserPayload();
       if (cachedBootstrap) {
