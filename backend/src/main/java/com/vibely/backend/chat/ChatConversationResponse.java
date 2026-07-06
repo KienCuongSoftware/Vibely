@@ -14,5 +14,6 @@ public record ChatConversationResponse(
     long unreadCount,
     boolean messageRequest,
     boolean canSendMessage,
-    boolean canAcceptMessageRequest
+    boolean canAcceptMessageRequest,
+    boolean pinned
 ) {}

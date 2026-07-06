@@ -87,8 +87,7 @@ public class ChatService {
 
         List<ChatConversationResponse> items = mine.stream()
             .map(row -> toConversationResponse(row.getConversation(), me))
-            .sorted(Comparator.comparing(ChatConversationResponse::lastMessageAt,
-                Comparator.nullsLast(Comparator.reverseOrder())))
+            .sorted(conversationListOrder())
             .toList();
         Map<String, ChatConversationResponse> deduped = new LinkedHashMap<>();
         for (ChatConversationResponse item : items) {
@@ -248,6 +247,34 @@ public class ChatService {
         participantRepository.save(mine);
     }
 
+    @Transactional
+    public ChatConversationResponse pinConversation(String email, Long conversationId) {
+        return setConversationPinned(email, conversationId, true);
+    }
+
+    @Transactional
+    public ChatConversationResponse unpinConversation(String email, Long conversationId) {
+        return setConversationPinned(email, conversationId, false);
+    }
+
+    private ChatConversationResponse setConversationPinned(String email, Long conversationId, boolean pinned) {
+        User me = findUserByEmail(email);
+        ConversationEntity conversation = findMemberConversation(conversationId, me);
+        ConversationParticipantEntity mine = requireParticipant(conversation, me);
+        mine.setPinnedAt(pinned ? LocalDateTime.now() : null);
+        participantRepository.save(mine);
+        return toConversationResponse(conversation, me);
+    }
+
+    private static Comparator<ChatConversationResponse> conversationListOrder() {
+        return Comparator
+            .comparing(ChatConversationResponse::pinned, Comparator.reverseOrder())
+            .thenComparing(
+                ChatConversationResponse::lastMessageAt,
+                Comparator.nullsLast(Comparator.reverseOrder())
+            );
+    }
+
     private ConversationEntity createDirectConversation(User me, User peer) {
         ConversationEntity conversation = new ConversationEntity();
         conversation.setDirect(true);
@@ -317,6 +344,7 @@ public class ChatService {
         }
 
         RequestState requestState = resolveRequestState(conversation, me);
+        boolean pinned = mine != null && mine.getPinnedAt() != null;
         return new ChatConversationResponse(
             conversation.getId(),
             conversation.isDirect(),
@@ -329,7 +357,8 @@ public class ChatService {
             unreadCount,
             requestState.messageRequest(),
             requestState.canSendMessage(),
-            requestState.canAcceptMessageRequest()
+            requestState.canAcceptMessageRequest(),
+            pinned
         );
     }
 

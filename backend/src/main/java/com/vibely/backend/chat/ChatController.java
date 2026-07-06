@@ -78,4 +78,20 @@ public class ChatController {
         chatService.deleteConversationForMe(authentication.getName(), conversationId);
         return ApiResponse.success(null);
     }
+
+    @PostMapping("/conversations/{conversationId}/pin")
+    public ApiResponse<ChatConversationResponse> pinConversation(
+        Authentication authentication,
+        @PathVariable Long conversationId
+    ) {
+        return ApiResponse.success(chatService.pinConversation(authentication.getName(), conversationId));
+    }
+
+    @PostMapping("/conversations/{conversationId}/unpin")
+    public ApiResponse<ChatConversationResponse> unpinConversation(
+        Authentication authentication,
+        @PathVariable Long conversationId
+    ) {
+        return ApiResponse.success(chatService.unpinConversation(authentication.getName(), conversationId));
+    }
 }
