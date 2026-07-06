@@ -1,17 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
+  IoBanOutline,
   IoChatbubbleOutline,
   IoChevronBack,
   IoClose,
   IoEllipsisHorizontal,
+  IoFlagOutline,
   IoHappyOutline,
   IoImageOutline,
   IoPaperPlaneOutline,
   IoPlay,
   IoPersonOutline,
   IoTrashOutline,
+  IoVolumeMuteOutline,
 } from "react-icons/io5";
+import { LuPin, LuPinOff } from "react-icons/lu";
 import { apiClient, uploadThumbnailToStorage, uploadToPresignedPutUrl } from "../api/client";
 import { CreatorGridShell, GridLoadingState, GridLoginPrompt } from "../components/feed/CreatorGridShell.jsx";
 import { isMobileFeedLayout } from "../components/feed/MobileFeedShell.jsx";
@@ -23,6 +27,38 @@ import { useAuth } from "../state/useAuth";
 import { useChatInboxBadge } from "../state/ChatInboxBadgeContext.jsx";
 import { createChatSocketClient } from "../realtime/chatSocket.js";
 import { resolveRealtimeWsToken, SessionExpiredError } from "../realtime/wsAuth.js";
+import { sortChatConversations } from "../utils/chatConversations.js";
+
+const CHAT_MENU_ICON_CLASS = "h-[18px] w-[18px] shrink-0";
+
+function ChatConversationMenuItem({ icon, label, onClick, disabled = false, danger = false }) {
+  const tone = danger
+    ? "text-red-500"
+    : disabled
+      ? "text-zinc-500"
+      : "text-zinc-100";
+  const iconTone = danger
+    ? "text-red-500"
+    : disabled
+      ? "text-zinc-500"
+      : "text-zinc-300";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`mt-1 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[15px] font-medium transition first:mt-0 ${
+        disabled
+          ? "cursor-not-allowed"
+          : "cursor-pointer hover:bg-zinc-700"
+      } ${tone}`}
+    >
+      <span className={`flex items-center justify-center ${iconTone}`}>{icon}</span>
+      {label}
+    </button>
+  );
+}
 
 const PAGE_TITLE = "Tin nhắn | Vibely";
 const DEFAULT_AVATAR = "/images/users/default-avatar.jpeg";
@@ -402,11 +438,7 @@ export function MessagesPage() {
               : 0,
           };
         });
-        return [...next].sort(
-          (a, b) =>
-            new Date(b?.lastMessageAt ?? 0).getTime() -
-            new Date(a?.lastMessageAt ?? 0).getTime(),
-        );
+        return sortChatConversations(next);
       });
 
       if (Number(activeConversationRef.current) === conversationId) {
@@ -510,17 +542,13 @@ export function MessagesPage() {
       const sent = await apiClient.sendChatMessage(activeConversationId, text, token);
       setMessages((prev) => upsertMessage(prev, sent));
       setConversations((prev) =>
-        prev
-          .map((conv) =>
+        sortChatConversations(
+          prev.map((conv) =>
             Number(conv.id) === Number(activeConversationId)
               ? conversationAfterOutgoingMessage(conv, sent)
               : conv,
-          )
-          .sort(
-            (a, b) =>
-              new Date(b?.lastMessageAt ?? 0).getTime() -
-              new Date(a?.lastMessageAt ?? 0).getTime(),
           ),
+        ),
       );
       setDraft("");
       await syncActiveConversationMeta(activeConversationId);
@@ -614,17 +642,13 @@ export function MessagesPage() {
       }
       setMessages((prev) => sentMessages.reduce((acc, msg) => upsertMessage(acc, msg), prev));
       setConversations((prev) =>
-        prev
-          .map((conv) =>
+        sortChatConversations(
+          prev.map((conv) =>
             Number(conv.id) === Number(activeConversationId)
               ? conversationAfterOutgoingMessage(conv, sentMessages.at(-1))
               : conv,
-          )
-          .sort(
-            (a, b) =>
-              new Date(b?.lastMessageAt ?? 0).getTime() -
-              new Date(a?.lastMessageAt ?? 0).getTime(),
           ),
+        ),
       );
       closePendingMediaComposer();
       await syncActiveConversationMeta(activeConversationId);
@@ -700,6 +724,29 @@ export function MessagesPage() {
       setComposerNotice(error?.message || "Không thể xóa yêu cầu lúc này.");
     } finally {
       setDeleteBusy(false);
+    }
+  };
+
+  const togglePinConversation = async (conv) => {
+    if (!token || !conv?.id) return;
+    const conversationId = Number(conv.id);
+    const nextPinned = !Boolean(conv.pinned);
+    setMenuConversationId(null);
+    try {
+      const updated = nextPinned
+        ? await apiClient.pinChatConversation(conversationId, token)
+        : await apiClient.unpinChatConversation(conversationId, token);
+      setConversations((prev) =>
+        sortChatConversations(
+          prev.map((row) =>
+            Number(row.id) === conversationId
+              ? { ...row, ...updated, pinned: nextPinned }
+              : row,
+          ),
+        ),
+      );
+    } catch (error) {
+      setComposerNotice(error?.message || "Không thể ghim hội thoại lúc này.");
     }
   };
 
@@ -873,9 +920,17 @@ export function MessagesPage() {
                       />
                       <div className="min-w-0 flex-1">
                         <div className="relative flex items-center justify-between gap-3">
-                          <p className="truncate text-sm font-semibold text-zinc-100">
-                            {conv.peerDisplayName || conv.peerUsername || "Người dùng"}
-                          </p>
+                          <div className="flex min-w-0 items-center gap-1">
+                            <p className="truncate text-sm font-semibold text-zinc-100">
+                              {conv.peerDisplayName || conv.peerUsername || "Người dùng"}
+                            </p>
+                            {conv.pinned ? (
+                              <LuPin
+                                className="h-3 w-3 shrink-0 -rotate-45 text-zinc-500"
+                                aria-label="Đã ghim"
+                              />
+                            ) : null}
+                          </div>
                           <button
                             type="button"
                             onClick={(event) => {
@@ -892,35 +947,46 @@ export function MessagesPage() {
                           </button>
                           {Number(menuConversationId) === Number(conv.id) ? (
                             <div
-                              className="absolute right-0 top-7 z-20 w-44 rounded-xl border border-zinc-700 bg-zinc-800/95 p-1.5 shadow-2xl shadow-black/60"
+                              className="absolute right-0 top-7 z-20 w-52 rounded-xl border border-zinc-700 bg-zinc-800/95 p-1.5 shadow-2xl shadow-black/60"
                               onClick={(event) => event.stopPropagation()}
                             >
                               <div className="absolute -top-2 right-3 h-0 w-0 border-b-8 border-l-8 border-r-8 border-b-zinc-700 border-l-transparent border-r-transparent" />
                               <div className="absolute top-[-7px] right-3 h-0 w-0 border-b-[7px] border-l-[7px] border-r-[7px] border-b-zinc-800 border-l-transparent border-r-transparent" />
-                              <button
-                                type="button"
+                              <ChatConversationMenuItem
+                                icon={<IoVolumeMuteOutline className={CHAT_MENU_ICON_CLASS} aria-hidden />}
+                                label="Tắt tiếng"
+                                disabled
+                              />
+                              <ChatConversationMenuItem
+                                icon={
+                                  conv.pinned ? (
+                                    <LuPinOff className={CHAT_MENU_ICON_CLASS} aria-hidden />
+                                  ) : (
+                                    <LuPin className={`${CHAT_MENU_ICON_CLASS} -rotate-45`} aria-hidden />
+                                  )
+                                }
+                                label={conv.pinned ? "Bỏ ghim" : "Ghim lên đầu"}
+                                onClick={() => togglePinConversation(conv)}
+                              />
+                              <ChatConversationMenuItem
+                                icon={<IoFlagOutline className={CHAT_MENU_ICON_CLASS} aria-hidden />}
+                                label="Báo cáo"
+                                disabled
+                              />
+                              <ChatConversationMenuItem
+                                icon={<IoBanOutline className={CHAT_MENU_ICON_CLASS} aria-hidden />}
+                                label="Chặn"
+                                disabled
+                              />
+                              <ChatConversationMenuItem
+                                icon={<IoTrashOutline className={CHAT_MENU_ICON_CLASS} aria-hidden />}
+                                label="Xóa"
+                                danger
                                 onClick={() => {
                                   setDeleteTargetConversationId(conv.id);
                                   setMenuConversationId(null);
                                 }}
-                                className="flex w-full cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[15px] font-medium text-zinc-100 transition hover:bg-zinc-700"
-                              >
-                                Xóa
-                              </button>
-                              <button
-                                type="button"
-                                className="mt-1 flex w-full items-center rounded-lg px-3 py-2 text-left text-[15px] font-medium text-zinc-300/80"
-                                disabled
-                              >
-                                Báo cáo
-                              </button>
-                              <button
-                                type="button"
-                                className="mt-1 flex w-full items-center rounded-lg px-3 py-2 text-left text-[15px] font-medium text-zinc-300/80"
-                                disabled
-                              >
-                                Chặn
-                              </button>
+                              />
                             </div>
                           ) : null}
                         </div>

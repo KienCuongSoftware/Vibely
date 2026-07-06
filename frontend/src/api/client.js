@@ -404,6 +404,16 @@ export const apiClient = {
       method: "POST",
       token,
     }),
+  pinChatConversation: (conversationId, token) =>
+    request(`/api/chat/conversations/${conversationId}/pin`, {
+      method: "POST",
+      token,
+    }),
+  unpinChatConversation: (conversationId, token) =>
+    request(`/api/chat/conversations/${conversationId}/unpin`, {
+      method: "POST",
+      token,
+    }),
   getNotifications: (token, { filter = "all", cursor, size = 20 } = {}) =>
     request(
       `/api/notifications${toQuery({
