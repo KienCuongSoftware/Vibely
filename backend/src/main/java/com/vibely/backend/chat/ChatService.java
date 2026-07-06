@@ -257,11 +257,30 @@ public class ChatService {
         return setConversationPinned(email, conversationId, false);
     }
 
+    @Transactional
+    public ChatConversationResponse muteConversation(String email, Long conversationId) {
+        return setConversationMuted(email, conversationId, true);
+    }
+
+    @Transactional
+    public ChatConversationResponse unmuteConversation(String email, Long conversationId) {
+        return setConversationMuted(email, conversationId, false);
+    }
+
     private ChatConversationResponse setConversationPinned(String email, Long conversationId, boolean pinned) {
         User me = findUserByEmail(email);
         ConversationEntity conversation = findMemberConversation(conversationId, me);
         ConversationParticipantEntity mine = requireParticipant(conversation, me);
         mine.setPinnedAt(pinned ? LocalDateTime.now() : null);
+        participantRepository.save(mine);
+        return toConversationResponse(conversation, me);
+    }
+
+    private ChatConversationResponse setConversationMuted(String email, Long conversationId, boolean muted) {
+        User me = findUserByEmail(email);
+        ConversationEntity conversation = findMemberConversation(conversationId, me);
+        ConversationParticipantEntity mine = requireParticipant(conversation, me);
+        mine.setMutedAt(muted ? LocalDateTime.now() : null);
         participantRepository.save(mine);
         return toConversationResponse(conversation, me);
     }
@@ -345,6 +364,7 @@ public class ChatService {
 
         RequestState requestState = resolveRequestState(conversation, me);
         boolean pinned = mine != null && mine.getPinnedAt() != null;
+        boolean muted = mine != null && mine.getMutedAt() != null;
         return new ChatConversationResponse(
             conversation.getId(),
             conversation.isDirect(),
@@ -358,7 +378,8 @@ public class ChatService {
             requestState.messageRequest(),
             requestState.canSendMessage(),
             requestState.canAcceptMessageRequest(),
-            pinned
+            pinned,
+            muted
         );
     }
 

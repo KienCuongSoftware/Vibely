@@ -25,4 +25,13 @@ describe('computeChatInboxBadgeCount', () => {
       ]),
     ).toBe(3)
   })
+
+  it('ignores unread from muted conversations', () => {
+    expect(
+      computeChatInboxBadgeCount([
+        { messageRequest: false, unreadCount: 5, muted: true },
+        { messageRequest: false, unreadCount: 2, muted: false },
+      ]),
+    ).toBe(2)
+  })
 })

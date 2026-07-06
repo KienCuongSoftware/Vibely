@@ -13,6 +13,7 @@ import {
   IoPlay,
   IoPersonOutline,
   IoTrashOutline,
+  IoVolumeHighOutline,
   IoVolumeMuteOutline,
 } from "react-icons/io5";
 import { LuPin, LuPinOff } from "react-icons/lu";
@@ -190,7 +191,7 @@ function conversationAfterOutgoingMessage(conv, sent) {
 export function MessagesPage() {
   const navigate = useNavigate();
   const { token, user, logout, authReady } = useAuth();
-  const { syncChatInboxBadgeFromConversations } = useChatInboxBadge();
+  const { syncChatInboxBadgeFromConversations, setActiveChatConversationId } = useChatInboxBadge();
   const [searchParams, setSearchParams] = useSearchParams();
   const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout());
   const [inboxTab, setInboxTab] = useState("activity");
@@ -240,7 +241,12 @@ export function MessagesPage() {
 
   useEffect(() => {
     activeConversationRef.current = activeConversationId;
-  }, [activeConversationId]);
+    setActiveChatConversationId(activeConversationId);
+  }, [activeConversationId, setActiveChatConversationId]);
+
+  useEffect(() => {
+    return () => setActiveChatConversationId(null);
+  }, [setActiveChatConversationId]);
 
   useEffect(() => {
     setComposerNotice("");
@@ -414,7 +420,8 @@ export function MessagesPage() {
           if (Number(conv.id) !== conversationId) return conv;
           const shouldIncreaseUnread =
             Number(activeConversationRef.current) !== conversationId &&
-            Number(incoming?.senderId) !== Number(user?.id);
+            Number(incoming?.senderId) !== Number(user?.id) &&
+            !Boolean(conv.muted);
           return {
             ...conv,
             lastMessage: incoming?.content ?? conv.lastMessage,
@@ -750,6 +757,27 @@ export function MessagesPage() {
     }
   };
 
+  const toggleMuteConversation = async (conv) => {
+    if (!token || !conv?.id) return;
+    const conversationId = Number(conv.id);
+    const nextMuted = !Boolean(conv.muted);
+    setMenuConversationId(null);
+    try {
+      const updated = nextMuted
+        ? await apiClient.muteChatConversation(conversationId, token)
+        : await apiClient.unmuteChatConversation(conversationId, token);
+      setConversations((prev) =>
+        prev.map((row) =>
+          Number(row.id) === conversationId
+            ? { ...row, ...updated, muted: nextMuted }
+            : row,
+        ),
+      );
+    } catch (error) {
+      setComposerNotice(error?.message || "Không thể tắt tiếng hội thoại lúc này.");
+    }
+  };
+
   if (!token) {
     if (mobileLayout) {
       return (
@@ -930,6 +958,12 @@ export function MessagesPage() {
                                 aria-label="Đã ghim"
                               />
                             ) : null}
+                            {conv.muted ? (
+                              <IoVolumeMuteOutline
+                                className="h-3.5 w-3.5 shrink-0 text-zinc-500"
+                                aria-label="Đã tắt tiếng"
+                              />
+                            ) : null}
                           </div>
                           <button
                             type="button"
@@ -953,9 +987,15 @@ export function MessagesPage() {
                               <div className="absolute -top-2 right-3 h-0 w-0 border-b-8 border-l-8 border-r-8 border-b-zinc-700 border-l-transparent border-r-transparent" />
                               <div className="absolute top-[-7px] right-3 h-0 w-0 border-b-[7px] border-l-[7px] border-r-[7px] border-b-zinc-800 border-l-transparent border-r-transparent" />
                               <ChatConversationMenuItem
-                                icon={<IoVolumeMuteOutline className={CHAT_MENU_ICON_CLASS} aria-hidden />}
-                                label="Tắt tiếng"
-                                disabled
+                                icon={
+                                  conv.muted ? (
+                                    <IoVolumeHighOutline className={CHAT_MENU_ICON_CLASS} aria-hidden />
+                                  ) : (
+                                    <IoVolumeMuteOutline className={CHAT_MENU_ICON_CLASS} aria-hidden />
+                                  )
+                                }
+                                label={conv.muted ? "Bỏ tắt tiếng" : "Tắt tiếng"}
+                                onClick={() => toggleMuteConversation(conv)}
                               />
                               <ChatConversationMenuItem
                                 icon={

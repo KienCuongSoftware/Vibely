@@ -94,4 +94,20 @@ public class ChatController {
     ) {
         return ApiResponse.success(chatService.unpinConversation(authentication.getName(), conversationId));
     }
+
+    @PostMapping("/conversations/{conversationId}/mute")
+    public ApiResponse<ChatConversationResponse> muteConversation(
+        Authentication authentication,
+        @PathVariable Long conversationId
+    ) {
+        return ApiResponse.success(chatService.muteConversation(authentication.getName(), conversationId));
+    }
+
+    @PostMapping("/conversations/{conversationId}/unmute")
+    public ApiResponse<ChatConversationResponse> unmuteConversation(
+        Authentication authentication,
+        @PathVariable Long conversationId
+    ) {
+        return ApiResponse.success(chatService.unmuteConversation(authentication.getName(), conversationId));
+    }
 }

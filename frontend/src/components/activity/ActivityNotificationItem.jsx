@@ -68,12 +68,12 @@ function FollowRequestActions({ actorId, onResolved }) {
   }
 
   return (
-    <div className="flex shrink-0 items-center gap-2">
+    <div className="flex shrink-0 flex-col items-stretch gap-1">
       <button
         type="button"
         onClick={(event) => void handleReject(event)}
         disabled={busy}
-        className="rounded-full border border-zinc-700 px-3 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-70"
+        className="rounded-full border border-zinc-700 px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-zinc-200 transition hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-70"
       >
         Từ chối
       </button>
@@ -81,7 +81,7 @@ function FollowRequestActions({ actorId, onResolved }) {
         type="button"
         onClick={(event) => void handleAccept(event)}
         disabled={busy}
-        className="rounded-full bg-[#FE2C55] px-3 py-1 text-xs font-semibold text-white transition hover:bg-[#ea284f] disabled:cursor-wait disabled:opacity-70"
+        className="rounded-full bg-[#FE2C55] px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-white transition hover:bg-[#ea284f] disabled:cursor-wait disabled:opacity-70"
       >
         {busy ? 'Đang lưu...' : 'Chấp nhận'}
       </button>
@@ -153,7 +153,22 @@ function ActivityAvatar({ item, isSystem }) {
   )
 }
 
-function ActivityText({ item, isSystem, actorName, actionText, timeLabel }) {
+function ActivityText({ item, isSystem, actorName, actionText, timeLabel, compact = false }) {
+  if (compact) {
+    return (
+      <div className="min-w-0 flex-1">
+        <p className="line-clamp-2 text-[13px] leading-snug text-zinc-300">
+          <span className="font-semibold text-white">{actorName}</span>
+          {' '}
+          {actionText}
+          {timeLabel ? (
+            <span className="text-[11px] text-zinc-600">{` · ${timeLabel}`}</span>
+          ) : null}
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="min-w-0 flex-1">
       <p className="text-[13px] leading-snug text-zinc-300">
@@ -209,12 +224,12 @@ export function ActivityNotificationItem({ item, onNavigate, onMarkRead, onRefre
   if (isFollowRequest) {
     return (
       <div
-        className={`flex items-center gap-2.5 rounded-lg px-2 py-2 transition hover:bg-zinc-900/80 ${unreadRowClass(item.read)}`}
+        className={`flex items-start gap-2 rounded-lg px-2 py-2 transition hover:bg-zinc-900/80 ${unreadRowClass(item.read)}`}
       >
         <Link
           to={profileHref || '/foryou'}
           onClick={handleActivate}
-          className="flex min-w-0 flex-1 items-center gap-3"
+          className="flex min-w-0 flex-1 items-start gap-3"
         >
           <ActivityAvatar item={item} isSystem={false} />
           <ActivityText
@@ -223,6 +238,7 @@ export function ActivityNotificationItem({ item, onNavigate, onMarkRead, onRefre
             actorName={actorName}
             actionText={actionText}
             timeLabel={timeLabel}
+            compact
           />
         </Link>
         <FollowRequestActions actorId={actorId} onResolved={onRefresh} />

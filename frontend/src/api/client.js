@@ -414,6 +414,16 @@ export const apiClient = {
       method: "POST",
       token,
     }),
+  muteChatConversation: (conversationId, token) =>
+    request(`/api/chat/conversations/${conversationId}/mute`, {
+      method: "POST",
+      token,
+    }),
+  unmuteChatConversation: (conversationId, token) =>
+    request(`/api/chat/conversations/${conversationId}/unmute`, {
+      method: "POST",
+      token,
+    }),
   getNotifications: (token, { filter = "all", cursor, size = 20 } = {}) =>
     request(
       `/api/notifications${toQuery({

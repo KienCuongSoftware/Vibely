@@ -41,6 +41,9 @@ public class ConversationParticipantEntity {
     @Column(name = "pinned_at")
     private LocalDateTime pinnedAt;
 
+    @Column(name = "muted_at")
+    private LocalDateTime mutedAt;
+
     @PrePersist
     void prePersist() {
         if (joinedAt == null) joinedAt = LocalDateTime.now();
@@ -92,5 +95,13 @@ public class ConversationParticipantEntity {
 
     public void setPinnedAt(LocalDateTime pinnedAt) {
         this.pinnedAt = pinnedAt;
+    }
+
+    public LocalDateTime getMutedAt() {
+        return mutedAt;
+    }
+
+    public void setMutedAt(LocalDateTime mutedAt) {
+        this.mutedAt = mutedAt;
     }
 }
