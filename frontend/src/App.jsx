@@ -68,8 +68,10 @@ function App() {
           <Route path="/messages" element={<Navigate to="/login" replace />} />
           <Route path="/feed" element={<Navigate to="/foryou" replace />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/Login" element={<Navigate to="/login" replace />} />
           <Route path="/signin" element={<Navigate to="/login" replace />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/Signup" element={<Navigate to="/signup" replace />} />
           <Route path="/register" element={<Navigate to="/signup" replace />} />
           <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
           <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />

@@ -37,7 +37,7 @@ import { collectLoginContext } from "../security/loginContext.js";
 const OAUTH_ONBOARDING_KEY = "vibely_oauth_pending";
 
 export function LoginPage() {
-  const { token, user, login, reactivateAccount, completeOAuthLogin, refreshProfile } = useAuth();
+  const { token, user, login, reactivateAccount, completeOAuthLogin, refreshProfile, authReady } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const oauthInFlightRef = useRef(false);
@@ -143,6 +143,8 @@ export function LoginPage() {
   }, [resendSeconds]);
 
   useEffect(() => {
+    if (!authReady) return;
+
     if (token && user) {
       const destination = String(user.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/foryou";
       navigate(destination, { replace: true });
@@ -248,7 +250,7 @@ export function LoginPage() {
           { replace: true },
         );
       });
-  }, [completeOAuthLogin, navigate, refreshProfile, searchParams, token, user]);
+  }, [authReady, completeOAuthLogin, navigate, refreshProfile, searchParams, token, user]);
 
   const startOAuth = (provider) => {
     window.location.href = `${resolveBackendOrigin()}/api/oauth2/authorization/${provider}`;

@@ -1,22 +1,23 @@
 # Production VPS — /opt/vibely/docker-compose.yml
-# Host nginx should proxy https://vibely.sbs → 127.0.0.1:8081 (frontend container),
-# OR serve /var/www/vibely after running sync-frontend-static.sh.
+# Postgres on the VPS host listens on 127.0.0.1 only — backend uses host network so localhost:5432 works.
+# Host nginx: /api/ → 127.0.0.1:8080 (backend), SPA → /var/www/vibely or 127.0.0.1:8081 (frontend).
 
 services:
   backend:
     image: kiencuongsoftware/vibely-backend:latest
     container_name: vibely-backend
     restart: unless-stopped
+    network_mode: host
     env_file:
       - vibely.env
-    ports:
-      - "127.0.0.1:8080:8080"
+    volumes:
+      - /opt/vibely/config/application-local.yaml:/opt/vibely/config/application-local.yaml:ro
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/actuator/health"]
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/actuator/health"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 60s
+      start_period: 90s
 
   frontend:
     image: kiencuongsoftware/vibely-frontend:latest
@@ -25,8 +26,10 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
-      BACKEND_UPSTREAM: http://backend:8080
+      BACKEND_UPSTREAM: http://host.docker.internal:8080
       CLIENT_MAX_BODY_SIZE: 200m
     ports:
       - "127.0.0.1:8081:80"

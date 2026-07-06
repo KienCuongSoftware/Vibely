@@ -232,14 +232,9 @@ export function AuthProvider({ children }) {
         return;
       }
 
-      const cachedBootstrap = readCachedUserPayload();
-      if (cachedBootstrap) {
-        setUser(mapUserWithDefaultAvatar(cachedBootstrap));
-      }
-
       try {
         let me = await apiClient.me();
-        if (!me && cachedBootstrap) {
+        if (!me) {
           const refreshed = await apiClient.refresh();
           if (refreshed) {
             me = await apiClient.me();
