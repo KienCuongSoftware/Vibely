@@ -51,9 +51,18 @@ function AdminRoute({ user, children }) {
 }
 
 function App() {
-  const { token, user } = useAuth()
+  const { token, user, authReady } = useAuth()
   const shellClass = 'min-h-screen bg-black text-zinc-100'
   const isAdmin = String(user?.role ?? '').toUpperCase() === 'ADMIN'
+
+  if (!authReady) {
+    return (
+      <div className={shellClass}>
+        <DefaultSeo />
+        <div className="min-h-screen bg-black" aria-busy="true" aria-label="Đang tải" />
+      </div>
+    )
+  }
 
   if (!token) {
     return (

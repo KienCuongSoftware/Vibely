@@ -18,6 +18,7 @@ vi.mock('./pages/FeedPage.jsx', () => ({
 const authMock = {
   token: null,
   user: null,
+  authReady: true,
   login: async () => ({}),
   register: async () => ({}),
   refreshProfile: async () => null,
