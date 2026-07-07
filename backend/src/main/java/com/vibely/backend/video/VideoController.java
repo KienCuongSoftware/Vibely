@@ -7,9 +7,9 @@ import com.vibely.backend.storage.PresignedUploadResponse;
 import com.vibely.backend.storage.S3PresignedUploadService;
 import com.vibely.backend.storage.VideoPresignRequest;
 import com.vibely.backend.video.download.VideoWatermarkDownloadService;
+import com.vibely.backend.video.download.WatermarkedDownloadArtifact;
 import com.vibely.backend.video.service.VideoService;
 import jakarta.validation.Valid;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 import org.springframework.beans.factory.ObjectProvider;
@@ -205,9 +205,9 @@ public class VideoController {
             && !(authentication instanceof AnonymousAuthenticationToken)) {
             viewerEmail = authentication.getName();
         }
-        final Path output;
+        final WatermarkedDownloadArtifact artifact;
         try {
-            output = svc.renderWatermarkedMp4(videoPublicId, viewerEmail);
+            artifact = svc.resolveWatermarkedDownload(videoPublicId, viewerEmail);
         } catch (NotFoundException e) {
             throw e;
         } catch (Exception e) {
@@ -216,10 +216,10 @@ public class VideoController {
                 e.getMessage() != null ? e.getMessage() : "Không tạo được video tải về."
             );
         }
-        Path workRoot = output.getParent();
+        Path workRoot = artifact.workRoot();
         StreamingResponseBody body = out -> {
             try {
-                Files.copy(output, out);
+                svc.streamArtifact(artifact, out);
             } finally {
                 VideoWatermarkDownloadService.deleteRecursively(workRoot);
             }

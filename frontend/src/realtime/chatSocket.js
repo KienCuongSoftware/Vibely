@@ -1,6 +1,6 @@
 import { createStompClient } from './createStompClient.js'
 
-export function createChatSocketClient(token, onMessageEvent) {
+export function createChatSocketClient(token, onMessageEvent, options = {}) {
   const client = createStompClient(token, (connected) => {
     connected.subscribe('/user/queue/chat.messages', (frame) => {
       try {
@@ -10,7 +10,7 @@ export function createChatSocketClient(token, onMessageEvent) {
         /* ignore invalid payload */
       }
     })
-  })
+  }, options)
 
   return client
 }

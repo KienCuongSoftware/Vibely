@@ -98,7 +98,7 @@ export function VideoContextMenu({
         }}
       >
         <IoDownloadOutline className="h-[18px] w-[18px] shrink-0 opacity-90" aria-hidden />
-        <span>{downloading ? 'Đang tạo video…' : 'Tải về video'}</span>
+        <span>{downloading ? 'Đang chuẩn bị tải về…' : 'Tải về video'}</span>
       </button>
       <button
         type="button"

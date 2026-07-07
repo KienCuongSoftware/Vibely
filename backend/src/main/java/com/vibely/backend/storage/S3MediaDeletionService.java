@@ -4,6 +4,7 @@ import com.vibely.backend.common.StorageDeletionException;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
+import com.vibely.backend.video.download.VideoWatermarkDownloadService;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -95,6 +96,7 @@ public class S3MediaDeletionService {
         collectObjectKey(objectKeys, video.getVideoUrl(), authorUploadsPrefix(authorId));
         collectObjectKey(objectKeys, video.getThumbnailUrl(), authorThumbnailsPrefix(authorId));
         collectObjectKey(objectKeys, video.getMasterPlaylistUrl(), authorHlsPrefix(authorId));
+        objectKeys.add(VideoWatermarkDownloadService.cacheKeyFor(publicId));
 
         if (isAudioExclusiveToVideo(video)) {
             collectObjectKey(objectKeys, video.getAudioUrl(), authorAudiosPrefix(authorId));

@@ -987,9 +987,9 @@ export function FeedStyleVideoDetailPage({
 
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[15] h-28 bg-linear-to-t from-black/80 via-black/35 to-transparent lg:hidden" />
 
-              <div className="pointer-events-none absolute right-2 bottom-[4.75rem] z-30 lg:static lg:ml-1 lg:shrink-0 lg:self-center lg:pb-0 lg:ml-3">
-                <div className="pointer-events-auto flex flex-col items-center gap-2 lg:contents lg:gap-3">
-                <div className="relative mb-3 h-12 w-12">
+              <div className="pointer-events-none absolute right-2 bottom-[4.75rem] z-30 lg:pointer-events-auto lg:static lg:ml-3 lg:flex lg:shrink-0 lg:flex-col lg:items-center lg:gap-4 lg:self-center">
+                <div className="pointer-events-auto flex flex-col items-center gap-3">
+                <div className="relative h-12 w-12">
                   <Link
                     to={authorProfilePath}
                     aria-label={`Xem hồ sơ ${feedVideo.authorUsername ?? 'user'}`}
@@ -1106,7 +1106,7 @@ export function FeedStyleVideoDetailPage({
                   <button
                     type="button"
                     aria-label="Âm thanh đang phát"
-                    className="relative mt-1 flex h-11 w-11 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-white/35 bg-zinc-950 shadow-lg"
+                    className="relative flex h-11 w-11 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-white/35 bg-zinc-950 shadow-lg"
                     onClick={() => {
                       const rawAudioUrl = String(feedVideo?.audioUrl ?? '').trim()
                       if (!rawAudioUrl) return

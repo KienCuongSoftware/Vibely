@@ -10,14 +10,16 @@ export class SessionExpiredError extends Error {
 }
 
 /**
- * Cookie session: refresh access cookie via ws-ticket, then connect with cookies only.
+ * Verifies the session (and that the API is reachable) before opening `/ws`.
+ * Cookie sessions refresh via ws-ticket; JWT sessions validate the bearer token the same way.
  */
 export async function resolveRealtimeWsToken(sessionToken) {
   if (!sessionToken) return null
-  if (!isCookieSession(sessionToken)) return sessionToken
 
   try {
-    const ticket = await apiClient.wsTicket()
+    const ticket = await apiClient.wsTicket(
+      isCookieSession(sessionToken) ? undefined : sessionToken,
+    )
     if (!ticket?.token) {
       throw new SessionExpiredError()
     }

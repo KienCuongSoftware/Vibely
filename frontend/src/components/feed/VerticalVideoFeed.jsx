@@ -1856,7 +1856,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     ? `pointer-events-none absolute right-0 bottom-22 z-30 pe-2${
                         feedCommentsOpen ? " hidden" : ""
                       }`
-                    : `pointer-events-auto z-30 flex flex-col items-center lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-3 lg:pb-14 ${
+                    : `pointer-events-auto z-30 flex flex-col items-center gap-3 lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-4 lg:pb-14 ${
                         feedCommentsOpen
                           ? "lg:justify-center lg:self-center lg:pb-0"
                           : ""
@@ -1866,11 +1866,11 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 <div
                   className={
                     mobileLayout
-                      ? "pointer-events-auto flex flex-col items-center gap-2"
+                      ? "pointer-events-auto flex flex-col items-center gap-3"
                       : "contents"
                   }
                 >
-                <div className={`relative h-12 w-12 ${mobileLayout ? "mb-1" : "mb-3"}`}>
+                <div className="relative h-12 w-12">
                   <Link
                     to={activeAuthorProfilePath || "#"}
                     aria-label={`Xem hồ sơ ${activeVideo?.authorUsername ?? "user"}`}

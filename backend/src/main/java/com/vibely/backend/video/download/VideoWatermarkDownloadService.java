@@ -5,12 +5,14 @@ import com.vibely.backend.processing.ProcessingProperties;
 import com.vibely.backend.processing.WindowsFfmpegPathResolver;
 import com.vibely.backend.storage.ResolvedS3Object;
 import com.vibely.backend.storage.S3ObjectUrlBuilder;
+import com.vibely.backend.storage.S3Properties;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -26,9 +28,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 /**
  * Renders a downloadable MP4 with Vibely logo + @username watermark (TikTok-style).
@@ -40,6 +47,7 @@ public class VideoWatermarkDownloadService {
     private static final Logger log = LoggerFactory.getLogger(VideoWatermarkDownloadService.class);
 
     private final S3Client s3Client;
+    private final S3Properties s3Properties;
     private final S3ObjectUrlBuilder objectUrlBuilder;
     private final ProcessingProperties processingProperties;
     private final VideoRepository videoRepository;
@@ -47,23 +55,37 @@ public class VideoWatermarkDownloadService {
 
     public VideoWatermarkDownloadService(
         S3Client s3Client,
+        S3Properties s3Properties,
         S3ObjectUrlBuilder objectUrlBuilder,
         ProcessingProperties processingProperties,
         VideoRepository videoRepository,
         UserRepository userRepository
     ) {
         this.s3Client = s3Client;
+        this.s3Properties = s3Properties;
         this.objectUrlBuilder = objectUrlBuilder;
         this.processingProperties = processingProperties;
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
     }
 
+    public static String cacheKeyFor(UUID publicId) {
+        return "downloads/" + publicId + "/watermarked.mp4";
+    }
+
     /**
-     * @return path to watermarked MP4 inside a temp work directory (caller deletes parent dir)
+     * Returns a cached S3 object when available; otherwise renders once, uploads, then streams locally.
      */
-    public Path renderWatermarkedMp4(UUID publicId, String viewerEmail) throws Exception {
+    public WatermarkedDownloadArtifact resolveWatermarkedDownload(UUID publicId, String viewerEmail)
+        throws Exception {
         DownloadContext ctx = resolveDownloadContext(publicId, viewerEmail);
+        String bucket = s3Properties.getBucket();
+        String cacheKey = cacheKeyFor(publicId);
+        if (bucket != null && !bucket.isBlank() && objectExists(bucket, cacheKey)) {
+            log.info("Watermarked download cache hit publicId={} author=@{}", publicId, ctx.username());
+            return new WatermarkedDownloadArtifact(bucket, cacheKey, null, null);
+        }
+
         ResolvedS3Object source = objectUrlBuilder.resolveObjectFromUrl(ctx.rawVideoUrl())
             .orElseThrow(() -> new IllegalStateException("URL video không map được sang S3."));
 
@@ -74,8 +96,17 @@ public class VideoWatermarkDownloadService {
             Path logoPng = VibelyWatermarkLogo.materializePng(workRoot);
             Path output = workRoot.resolve("download.mp4");
             transcodeWithWatermark(sourceFile, logoPng, output, ctx.username());
-            log.info("Watermarked download ready publicId={} author=@{}", publicId, ctx.username());
-            return output;
+            if (bucket != null && !bucket.isBlank()) {
+                uploadObject(bucket, cacheKey, output);
+                log.info(
+                    "Watermarked download rendered and cached publicId={} author=@{}",
+                    publicId,
+                    ctx.username()
+                );
+                return new WatermarkedDownloadArtifact(bucket, cacheKey, output, workRoot);
+            }
+            log.info("Watermarked download ready (no S3 cache) publicId={} author=@{}", publicId, ctx.username());
+            return new WatermarkedDownloadArtifact(null, null, output, workRoot);
         } catch (Exception e) {
             deleteRecursively(workRoot);
             throw e;
@@ -129,6 +160,46 @@ public class VideoWatermarkDownloadService {
         );
     }
 
+    private boolean objectExists(String bucket, String key) {
+        try {
+            s3Client.headObject(HeadObjectRequest.builder().bucket(bucket).key(key).build());
+            return true;
+        } catch (NoSuchKeyException e) {
+            return false;
+        } catch (S3Exception e) {
+            if (e.statusCode() == 404) {
+                return false;
+            }
+            throw e;
+        }
+    }
+
+    private void uploadObject(String bucket, String key, Path file) {
+        PutObjectRequest put = PutObjectRequest.builder()
+            .bucket(bucket)
+            .key(key)
+            .contentType("video/mp4")
+            .build();
+        s3Client.putObject(put, RequestBody.fromFile(file));
+    }
+
+    public void streamArtifact(WatermarkedDownloadArtifact artifact, OutputStream out) throws IOException {
+        if (artifact == null) {
+            throw new IllegalArgumentException("artifact is required");
+        }
+        if (artifact.cachedInS3() && !artifact.hasLocalFile()) {
+            s3Client.getObject(
+                GetObjectRequest.builder().bucket(artifact.bucket()).key(artifact.key()).build(),
+                ResponseTransformer.toOutputStream(out)
+            );
+            return;
+        }
+        if (!artifact.hasLocalFile()) {
+            throw new IllegalStateException("Không có file video để tải về.");
+        }
+        Files.copy(artifact.localFile(), out);
+    }
+
     private void transcodeWithWatermark(Path input, Path logoPng, Path output, String username)
         throws Exception {
         WindowsFfmpegPathResolver.applyIfNeeded(processingProperties);
@@ -171,7 +242,9 @@ public class VideoWatermarkDownloadService {
         cmd.add("-profile:v");
         cmd.add("main");
         cmd.add("-preset");
-        cmd.add("veryfast");
+        cmd.add("ultrafast");
+        cmd.add("-threads");
+        cmd.add("0");
         cmd.add("-crf");
         cmd.add("23");
         cmd.add("-c:a");

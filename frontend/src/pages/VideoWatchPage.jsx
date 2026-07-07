@@ -937,12 +937,12 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
     const publicId = menuVideo?.publicId
     if (!publicId || videoDownloadBusy) return
     setVideoDownloadBusy(true)
+    closeVideoContextMenu()
     try {
       const username = String(menuVideo?.authorUsername ?? 'vibely')
         .trim()
         .replace(/^@+/, '')
       await downloadWatermarkedVideo(publicId, username, { token })
-      closeVideoContextMenu()
     } catch (error) {
       window.alert(
         error instanceof Error ? error.message : 'Không tải được video.',

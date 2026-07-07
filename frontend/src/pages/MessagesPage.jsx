@@ -414,15 +414,20 @@ export function MessagesPage() {
       }
     };
 
+    const scheduleReconnect = () => {
+      if (cancelled) return;
+      retryTimer = scheduleRealtimeRetry(() => {
+        void connect();
+      }, REALTIME_RETRY_DELAY_MS);
+    };
+
     async function connect() {
       if (cancelled) return;
       try {
       const wsToken = await resolveRealtimeWsToken(token);
       if (cancelled) return;
       if (!wsToken) {
-        retryTimer = scheduleRealtimeRetry(() => {
-          void connect();
-        }, REALTIME_RETRY_DELAY_MS);
+        scheduleReconnect();
         return;
       }
 
@@ -474,6 +479,12 @@ export function MessagesPage() {
           /* noop */
         }
       }
+      }, {
+        onDisconnect: () => {
+          if (cancelled) return;
+          socket = undefined;
+          scheduleReconnect();
+        },
       });
 
       socket.activate();
@@ -483,9 +494,7 @@ export function MessagesPage() {
           logout();
           return;
         }
-        retryTimer = scheduleRealtimeRetry(() => {
-          void connect();
-        }, REALTIME_RETRY_DELAY_MS);
+        scheduleReconnect();
       }
     }
 

@@ -1,6 +1,6 @@
 import { createStompClient } from './createStompClient.js'
 
-export function createNotificationSocketClient(token, onEvent) {
+export function createNotificationSocketClient(token, onEvent, options = {}) {
   const client = createStompClient(token, (connected) => {
     connected.subscribe('/user/queue/notifications', (frame) => {
       try {
@@ -10,7 +10,7 @@ export function createNotificationSocketClient(token, onEvent) {
         /* ignore invalid payload */
       }
     })
-  })
+  }, options)
 
   return client
 }

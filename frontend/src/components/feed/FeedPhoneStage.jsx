@@ -575,6 +575,7 @@ export function FeedPhoneStage({
     const publicId = video?.publicId;
     if (!publicId || videoDownloadBusy) return;
     setVideoDownloadBusy(true);
+    closeVideoContextMenu();
     try {
       const username = String(video?.authorUsername ?? "vibely")
         .trim()
@@ -582,7 +583,6 @@ export function FeedPhoneStage({
       await downloadWatermarkedVideo(publicId, username, {
         token: contextMenuToken,
       });
-      closeVideoContextMenu();
     } catch (error) {
       window.alert(
         error instanceof Error ? error.message : "Không tải được video.",
