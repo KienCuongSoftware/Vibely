@@ -1,6 +1,11 @@
-import React, { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { IoCheckmark, IoChevronDown } from "react-icons/io5";
+import {
+  buildBirthDayOptions,
+  buildBirthMonthOptions,
+  buildBirthYearOptions,
+} from "../../utils/birthDate.js";
 
 const LIST_GAP_PX = 4;
 const VISIBLE_ROWS = 7;
@@ -167,24 +172,32 @@ export function BirthDateFields({
   onDayChange,
   onYearChange,
   monthOptions,
-  yearOptions,
 }) {
   const [openField, setOpenField] = useState(null);
 
-  const monthSelectOptions = monthOptions.map((label, index) => ({
-    value: String(index + 1),
-    label,
-  }));
+  const yearSelectOptions = useMemo(
+    () =>
+      buildBirthYearOptions().map((year) => ({
+        value: year,
+        label: year,
+      })),
+    [],
+  );
 
-  const daySelectOptions = Array.from({ length: 31 }, (_, index) => ({
-    value: String(index + 1),
-    label: String(index + 1),
-  }));
+  const monthSelectOptions = useMemo(() => {
+    const values = buildBirthMonthOptions();
+    return values.map((value) => ({
+      value,
+      label: monthOptions[Number(value) - 1] ?? value,
+    }));
+  }, [monthOptions]);
 
-  const yearSelectOptions = yearOptions.map((year) => ({
-    value: year,
-    label: year,
-  }));
+  const daySelectOptions = useMemo(() => {
+    return buildBirthDayOptions(birthYear, birthMonth).map((day) => ({
+      value: day,
+      label: day,
+    }));
+  }, [birthMonth, birthYear]);
 
   return (
     <div className="grid grid-cols-3 gap-2">
