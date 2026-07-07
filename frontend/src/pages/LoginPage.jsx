@@ -33,8 +33,11 @@ import {
 import { useAntiBot } from "../security/hooks/useAntiBot.js";
 import { clearVerificationToken } from "../security/sdk/antiBotClient.js";
 import { collectLoginContext } from "../security/loginContext.js";
-
-const OAUTH_ONBOARDING_KEY = "vibely_oauth_pending";
+import {
+  buildOnboardingPendingFromUser,
+  persistOnboardingPending,
+  userNeedsOnboarding,
+} from "../utils/onboarding.js";
 
 export function LoginPage() {
   const { token, user, login, reactivateAccount, completeOAuthLogin, refreshProfile, authReady } = useAuth();
@@ -146,6 +149,11 @@ export function LoginPage() {
     if (!authReady) return;
 
     if (token && user) {
+      if (userNeedsOnboarding(user)) {
+        persistOnboardingPending(buildOnboardingPendingFromUser(user));
+        navigate("/signup?onboarding=oauth", { replace: true });
+        return;
+      }
       const destination = String(user.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/foryou";
       navigate(destination, { replace: true });
       return;
@@ -206,16 +214,24 @@ export function LoginPage() {
         const needsOnboarding =
           Boolean(oauthData?.needsOnboarding) || Boolean(me?.needsOnboarding);
         if (needsOnboarding) {
-          sessionStorage.setItem(
-            OAUTH_ONBOARDING_KEY,
-            JSON.stringify({
-              userId: Number(profile.userId ?? profile.id ?? oauthData.userId),
-              email: profile.email ?? oauthData.email,
-              displayName: profile.displayName ?? oauthData.displayName,
-              avatarUrl: profile.avatarUrl ?? oauthData.avatarUrl,
-              provider: oauthProvider ?? undefined,
-            }),
-          );
+          const pending = {
+            userId: Number(profile.userId ?? profile.id ?? oauthData.userId),
+            email: profile.email ?? oauthData.email,
+            displayName: profile.displayName ?? oauthData.displayName,
+            avatarUrl: profile.avatarUrl ?? oauthData.avatarUrl,
+            username: profile.username ?? oauthData.username,
+            provider: oauthProvider ?? undefined,
+          };
+          completeOAuthLogin({
+            userId: pending.userId,
+            username: pending.username,
+            displayName: pending.displayName,
+            email: pending.email,
+            role: profile.role ?? oauthData.role,
+            avatarUrl: pending.avatarUrl,
+            needsOnboarding: true,
+          });
+          persistOnboardingPending(pending);
           navigate("/signup?onboarding=oauth", { replace: true });
           return;
         }
@@ -332,6 +348,16 @@ export function LoginPage() {
       clearVerificationToken();
       persistLastLoginMethod("email");
       setStatus("Đăng nhập thành công");
+      if (result?.needsOnboarding) {
+        persistOnboardingPending({
+          userId: Number(result.userId),
+          email: result.email,
+          displayName: result.displayName,
+          username: result.username,
+        });
+        navigate("/signup?onboarding=oauth", { replace: true });
+        return;
+      }
       navigate(String(result?.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/foryou", {
         replace: true,
       });

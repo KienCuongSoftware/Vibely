@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from './state/useAuth'
 import { WatchRedirect } from './components/watch/WatchRedirect.jsx'
 import { DefaultSeo } from './seo/Seo.jsx'
+import { userNeedsOnboarding } from './utils/onboarding.js'
 
 function lazyNamed(loader, exportName) {
   return lazy(() => loader().then((module) => ({ default: module[exportName] })))
@@ -38,6 +39,9 @@ const AdminPostDetailPage = lazyNamed(() => import('./pages/AdminPostDetailPage.
 
 function AuthenticatedHomeRedirect({ user }) {
   if (!user) return null
+  if (userNeedsOnboarding(user)) {
+    return <Navigate to="/signup?onboarding=oauth" replace />
+  }
   const destination = String(user.role ?? '').toUpperCase() === 'ADMIN' ? '/admin' : '/foryou'
   return <Navigate to={destination} replace />
 }
@@ -54,6 +58,7 @@ function App() {
   const { token, user, authReady } = useAuth()
   const shellClass = 'min-h-screen bg-black text-zinc-100'
   const isAdmin = String(user?.role ?? '').toUpperCase() === 'ADMIN'
+  const needsOnboarding = userNeedsOnboarding(user)
 
   if (!authReady) {
     return (
@@ -117,6 +122,12 @@ function App() {
     <div className={shellClass}>
       <DefaultSeo />
       <Suspense fallback={<div className="min-h-screen bg-black" />}>
+        {needsOnboarding ? (
+          <Routes>
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="*" element={<Navigate to="/signup?onboarding=oauth" replace />} />
+          </Routes>
+        ) : (
         <Routes>
         <Route path="/" element={<AuthenticatedHomeRedirect user={user} />} />
         <Route path="/foryou" element={isAdmin ? <Navigate to="/admin" replace /> : <FeedPage />} />
@@ -184,6 +195,7 @@ function App() {
         <Route path="/watch/:publicId" element={<WatchRedirect />} />
         <Route path="*" element={<AuthenticatedHomeRedirect user={user} />} />
         </Routes>
+        )}
       </Suspense>
     </div>
   )

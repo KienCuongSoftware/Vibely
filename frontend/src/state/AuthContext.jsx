@@ -96,6 +96,7 @@ function mapAuthSessionToUser(result) {
     email: result.email,
     role: result.role,
     avatarUrl: result.avatarUrl,
+    needsOnboarding: Boolean(result.needsOnboarding),
   });
 }
 
@@ -108,6 +109,7 @@ function persistSessionUser(result) {
     role: result.role,
     bio: null,
     avatarUrl: mapAuthSessionToUser(result).avatarUrl,
+    needsOnboarding: Boolean(result.needsOnboarding),
   });
 }
 
@@ -201,7 +203,7 @@ export function AuthProvider({ children }) {
       email: payload.email,
       role: payload.role,
       avatarUrl: payload.avatarUrl,
-      needsOnboarding: false,
+      needsOnboarding: Boolean(payload.needsOnboarding),
     });
   };
 

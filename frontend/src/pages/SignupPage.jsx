@@ -25,6 +25,16 @@ import {
   AUTH_FIELD_WITH_ICON,
 } from "../components/auth/authFieldClasses.js";
 import { BirthDateFields } from "../components/auth/BirthDateSelect.jsx";
+import { validateBirthDateParts } from "../utils/birthDate.js";
+import {
+  buildOnboardingPendingFromUser,
+  clearOnboardingSession,
+  isPendingUsername,
+  OAUTH_ONBOARDING_KEY,
+  OAUTH_ONBOARDING_STEP_KEY,
+  persistOnboardingPending,
+  userNeedsOnboarding,
+} from "../utils/onboarding.js";
 import { LoginMethodButton } from "../components/auth/LoginMethodButton.jsx";
 import { ChallengeModal } from "../security/captcha/ChallengeModal.jsx";
 import {
@@ -34,14 +44,12 @@ import {
 import { useAntiBot } from "../security/hooks/useAntiBot.js";
 import { clearVerificationToken } from "../security/sdk/antiBotClient.js";
 
-const OAUTH_ONBOARDING_KEY = "vibely_oauth_pending";
-
 function normalizeVibelyId(value) {
   return value.trim().toLowerCase().replace(/^@+/, "");
 }
 
 export function SignupPage() {
-  const { register, completeOAuthLogin } = useAuth();
+  const { register, refreshProfile, user, token } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [view, setView] = useState("methods");
@@ -94,29 +102,61 @@ export function SignupPage() {
   }, []);
 
   useEffect(() => {
-    if (searchParams.get("onboarding") !== "oauth") return;
+    const isOAuthOnboarding = searchParams.get("onboarding") === "oauth";
+    const fromAuth = Boolean(token && user && userNeedsOnboarding(user));
+
+    if (!isOAuthOnboarding && !fromAuth) return;
+
+    if (fromAuth && !isOAuthOnboarding) {
+      navigate("/signup?onboarding=oauth", { replace: true });
+      return;
+    }
+
+    let pending = null;
     const raw = sessionStorage.getItem(OAUTH_ONBOARDING_KEY);
-    if (!raw) {
+    if (raw) {
+      try {
+        pending = JSON.parse(raw);
+      } catch {
+        pending = null;
+      }
+    }
+
+    if ((!pending?.userId && !pending?.email) && fromAuth) {
+      pending = buildOnboardingPendingFromUser(user);
+      persistOnboardingPending(pending);
+    }
+
+    if (!pending?.userId && !pending?.email) {
       navigate("/login", { replace: true });
       return;
     }
-    try {
-      const parsed = JSON.parse(raw);
-      if (!parsed?.userId && !parsed?.email) {
-        navigate("/login", { replace: true });
-        return;
-      }
-      setOauthPending(parsed);
+
+    setOauthPending(pending);
+
+    const storedStep = sessionStorage.getItem(OAUTH_ONBOARDING_STEP_KEY);
+    const usernameNeedsSelection = isPendingUsername(
+      pending?.username ?? user?.username,
+    );
+    if (storedStep === "username" && usernameNeedsSelection) {
+      setView("oauth-username");
+    } else {
       setView("oauth-birth");
-    } catch {
-      navigate("/login", { replace: true });
     }
-  }, [navigate, searchParams]);
+  }, [navigate, searchParams, token, user]);
+
+  const birthDateValidation = validateBirthDateParts(
+    birthMonth,
+    birthDay,
+    birthYear,
+  );
+  const isBirthDateValid = birthDateValidation.valid;
 
   const canContinueToUsername =
     birthMonth &&
     birthDay &&
     birthYear &&
+    isBirthDateValid &&
     normalizedEmail.length > 0 &&
     isEmailValid &&
     password.trim().length > 0 &&
@@ -130,7 +170,7 @@ export function SignupPage() {
     !usernameChecking &&
     !loading;
   const canContinueOAuthBirth = Boolean(
-    birthMonth && birthDay && birthYear && !loading,
+    birthMonth && birthDay && birthYear && isBirthDateValid && !loading,
   );
   const canSubmitOAuthUsername =
     normalizedVibelyId.length > 0 &&
@@ -150,6 +190,7 @@ export function SignupPage() {
     birthMonth &&
     birthDay &&
     birthYear &&
+    isBirthDateValid &&
     normalizedEmail.length > 0 &&
     isEmailValid &&
     isPasswordValid &&
@@ -170,9 +211,6 @@ export function SignupPage() {
     "Tháng Mười Một",
     "Tháng Mười Hai",
   ];
-  const yearOptions = Array.from({ length: 2026 - 1900 + 1 }, (_, index) =>
-    String(2026 - index),
-  );
   useEffect(() => {
     if (resendSeconds <= 0) {
       return undefined;
@@ -222,24 +260,84 @@ export function SignupPage() {
 
   const continueOAuthBirthStep = (event) => {
     event.preventDefault();
-    if (!birthMonth || !birthDay || !birthYear) {
-      setStatus("Vui lòng chọn ngày sinh");
+    const birthCheck = validateBirthDateParts(birthMonth, birthDay, birthYear);
+    if (!birthCheck.valid) {
+      setStatus(birthCheck.message);
+      return;
+    }
+    const existingUsername = normalizeVibelyId(
+      oauthPending?.username ?? user?.username ?? "",
+    );
+    if (existingUsername && !isPendingUsername(existingUsername)) {
+      void finishOAuthOnboarding(existingUsername);
       return;
     }
     const suggestion = buildSuggestedUsername(oauthPending?.email ?? "");
     setUsernameChecking(true);
     setVibelyId(suggestion);
+    sessionStorage.setItem(OAUTH_ONBOARDING_STEP_KEY, "username");
     setView("oauth-username");
     setStatus("Chọn Vibely ID để hoàn tất đăng ký.");
   };
 
-  const submitOAuthOnboarding = async (event) => {
-    event.preventDefault();
+  const finishOAuthOnboarding = async (usernameToSubmit) => {
     if (!oauthPending?.userId && !oauthPending?.email) {
       setStatus("Phiên đăng ký đã hết hạn, vui lòng đăng nhập lại");
       navigate("/login", { replace: true });
       return;
     }
+    const normalizedUsername = normalizeVibelyId(usernameToSubmit);
+    if (!normalizedUsername) {
+      setStatus("Vui lòng nhập Vibely ID");
+      return;
+    }
+    if (isPendingUsername(normalizedUsername)) {
+      if (!usernameAvailable) {
+        const suggestionText = usernameSuggestion
+          ? ` Gợi ý: @${usernameSuggestion}`
+          : "";
+        setStatus(`Vibely ID chưa hợp lệ hoặc đã tồn tại.${suggestionText}`);
+        return;
+      }
+    }
+    if (!birthMonth || !birthDay || !birthYear) {
+      setStatus("Vui lòng chọn ngày sinh");
+      setView("oauth-birth");
+      return;
+    }
+    const birthCheck = validateBirthDateParts(birthMonth, birthDay, birthYear);
+    if (!birthCheck.valid) {
+      setStatus(birthCheck.message);
+      setView("oauth-birth");
+      return;
+    }
+
+    const birthDate = `${birthYear}-${String(birthMonth).padStart(2, "0")}-${String(birthDay).padStart(2, "0")}`;
+
+    setLoading(true);
+    setStatus("Đang hoàn tất đăng ký...");
+    try {
+      await apiClient.completeOnboarding({
+        username: normalizedUsername,
+        birthDate,
+      });
+      clearOnboardingSession();
+      const provider = oauthPending?.provider;
+      if (provider) {
+        persistLastLoginMethod(provider);
+      }
+      await refreshProfile();
+      setStatus("Đăng ký thành công");
+      navigate("/foryou", { replace: true });
+    } catch (error) {
+      setStatus(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitOAuthOnboarding = async (event) => {
+    event.preventDefault();
     if (!normalizedVibelyId) {
       setStatus("Vui lòng nhập Vibely ID");
       return;
@@ -251,40 +349,7 @@ export function SignupPage() {
       setStatus(`Vibely ID chưa hợp lệ hoặc đã tồn tại.${suggestionText}`);
       return;
     }
-    if (!birthMonth || !birthDay || !birthYear) {
-      setStatus("Vui lòng chọn ngày sinh");
-      setView("oauth-birth");
-      return;
-    }
-
-    const birthDate = `${birthYear}-${String(birthMonth).padStart(2, "0")}-${String(birthDay).padStart(2, "0")}`;
-
-    setLoading(true);
-    setStatus("Đang hoàn tất đăng ký...");
-    try {
-      const result = await apiClient.completeOnboarding({
-        username: normalizedVibelyId,
-        birthDate,
-      });
-      sessionStorage.removeItem(OAUTH_ONBOARDING_KEY);
-      const provider = oauthPending?.provider;
-      if (provider) {
-        persistLastLoginMethod(provider);
-      }
-      completeOAuthLogin({
-        userId: Number(result.userId),
-        username: result.username,
-        displayName: result.displayName,
-        email: result.email,
-        avatarUrl: result.avatarUrl,
-      });
-      setStatus("Đăng ký thành công");
-      navigate("/foryou", { replace: true });
-    } catch (error) {
-      setStatus(error.message);
-    } finally {
-      setLoading(false);
-    }
+    await finishOAuthOnboarding(normalizedVibelyId);
   };
 
   const doSendVerificationCode = async () => {
@@ -358,6 +423,11 @@ export function SignupPage() {
       setStatus("Vui lòng nhập đầy đủ thông tin");
       return;
     }
+    const birthCheck = validateBirthDateParts(birthMonth, birthDay, birthYear);
+    if (!birthCheck.valid) {
+      setStatus(birthCheck.message);
+      return;
+    }
     if (!isEmailValid) {
       setStatus("Vui lòng nhập email hợp lệ để đăng ký tài khoản.");
       return;
@@ -410,6 +480,12 @@ export function SignupPage() {
 
     if (!birthMonth || !birthDay || !birthYear) {
       setStatus("Vui lòng chọn ngày sinh");
+      setView("credentials");
+      return;
+    }
+    const birthCheck = validateBirthDateParts(birthMonth, birthDay, birthYear);
+    if (!birthCheck.valid) {
+      setStatus(birthCheck.message);
       setView("credentials");
       return;
     }
@@ -576,9 +652,16 @@ export function SignupPage() {
                     onDayChange={setBirthDay}
                     onYearChange={setBirthYear}
                     monthOptions={monthOptions}
-                    yearOptions={yearOptions}
                   />
 
+                  {!isBirthDateValid &&
+                  birthMonth &&
+                  birthDay &&
+                  birthYear ? (
+                    <p className="text-[12px] text-red-400">
+                      {birthDateValidation.message}
+                    </p>
+                  ) : null}
                   <p className="text-[12px] text-zinc-500">
                     Ngày sinh của bạn sẽ không được hiển thị công khai.
                   </p>
@@ -738,15 +821,7 @@ export function SignupPage() {
             </>
           ) : view === "oauth-birth" ? (
             <>
-              <div className="flex justify-end p-4">
-                <Link
-                  to="/foryou"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                  aria-label="Đóng"
-                >
-                  <IoClose className="text-2xl" />
-                </Link>
-              </div>
+              <div className="p-4" />
               <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
                 <h2 className="text-center text-3xl font-bold leading-tight">
                   Đăng ký
@@ -763,8 +838,15 @@ export function SignupPage() {
                     onDayChange={setBirthDay}
                     onYearChange={setBirthYear}
                     monthOptions={monthOptions}
-                    yearOptions={yearOptions}
                   />
+                  {!isBirthDateValid &&
+                  birthMonth &&
+                  birthDay &&
+                  birthYear ? (
+                    <p className="text-[12px] text-red-400">
+                      {birthDateValidation.message}
+                    </p>
+                  ) : null}
                   <p className="text-[12px] text-zinc-500">
                     Ngày sinh của bạn sẽ không được hiển thị công khai.
                   </p>
@@ -787,22 +869,18 @@ export function SignupPage() {
             </>
           ) : view === "oauth-username" ? (
             <>
-              <div className="flex items-center justify-between p-4">
+              <div className="flex items-center p-4">
                 <button
                   type="button"
-                  onClick={() => setView("oauth-birth")}
+                  onClick={() => {
+                    sessionStorage.removeItem(OAUTH_ONBOARDING_STEP_KEY);
+                    setView("oauth-birth");
+                  }}
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
                   aria-label="Quay lại"
                 >
                   <IoArrowBack className="text-2xl" />
                 </button>
-                <Link
-                  to="/foryou"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                  aria-label="Đóng"
-                >
-                  <IoClose className="text-2xl" />
-                </Link>
               </div>
               <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
                 <h2 className="text-center text-3xl font-bold leading-tight">
