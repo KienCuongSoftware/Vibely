@@ -280,7 +280,7 @@ export function ProfilePage() {
   const [likedItems, setLikedItems] = useState([])
   const [, setLikedTotal] = useState(0)
   const [repostItems, setRepostItems] = useState([])
-  const [, setRepostTotal] = useState(0)
+  const [repostTotal, setRepostTotal] = useState(0)
   const [bookmarkLoading, setBookmarkLoading] = useState(false)
   const [likedLoading, setLikedLoading] = useState(false)
   const [repostLoading, setRepostLoading] = useState(false)
@@ -660,10 +660,8 @@ export function ProfilePage() {
     if (!token || !isOwnProfile) {
       setRepostItems([])
       setRepostTotal(0)
-      return
-    }
-    if (profileMainTab !== 'reposted') {
-      return
+      setRepostLoading(false)
+      return undefined
     }
     let live = true
     setRepostLoading(true)
@@ -684,7 +682,18 @@ export function ProfilePage() {
     return () => {
       live = false
     }
-  }, [token, isOwnProfile, profileMainTab])
+  }, [token, isOwnProfile])
+
+  useEffect(() => {
+    if (
+      profileMainTab === 'reposted' &&
+      isOwnProfile &&
+      !repostLoading &&
+      repostTotal === 0
+    ) {
+      setProfileMainTab('videos')
+    }
+  }, [profileMainTab, isOwnProfile, repostLoading, repostTotal])
 
   const collectionTotal = 0
 
@@ -1368,7 +1377,7 @@ export function ProfilePage() {
             <div className={`border-b border-zinc-900 ${mobileLayout ? 'mt-2' : 'mt-6'}`}>
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div
-                  className={`flex text-sm ${mobileLayout ? 'w-full justify-center gap-10' : 'gap-1 sm:gap-6'}`}
+                  className={`flex text-base ${mobileLayout ? 'w-full justify-center gap-10' : 'gap-1 sm:gap-6'}`}
                   role="tablist"
                 >
                   <button
@@ -1387,6 +1396,7 @@ export function ProfilePage() {
                       <span className="hidden lg:inline">Video</span>
                     </span>
                   </button>
+                  {isOwnProfile && repostTotal > 0 ? (
                   <button
                     type="button"
                     role="tab"
@@ -1403,6 +1413,7 @@ export function ProfilePage() {
                       Bài đăng lại
                     </span>
                   </button>
+                  ) : null}
                   <button
                     type="button"
                     role="tab"
@@ -1438,7 +1449,7 @@ export function ProfilePage() {
                 </div>
 
                 {profileMainTab === 'videos' ? (
-                  <div className="mb-2 hidden items-center gap-1 rounded-md bg-zinc-900 p-1 text-xs text-zinc-300 md:flex">
+                  <div className="mb-2 hidden items-center gap-1 rounded-md bg-zinc-900 p-1 text-sm text-zinc-300 md:flex">
                     <button
                       type="button"
                       className="cursor-pointer rounded bg-zinc-700 px-3 py-1 font-semibold text-zinc-100"
