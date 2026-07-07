@@ -29,7 +29,8 @@ export async function resolveRealtimeWsToken(sessionToken) {
     if (err?.status === 400 || err?.status === 401) {
       throw new SessionExpiredError()
     }
-    return sessionToken
+    // Backend unreachable — skip realtime until the provider retries.
+    return null
   }
 }
 

@@ -12,6 +12,7 @@ import { apiClient } from '../api/client.js'
 import { ChatMessageNotificationToast } from '../components/chat/ChatMessageNotificationToast.jsx'
 import { createChatSocketClient } from '../realtime/chatSocket.js'
 import { resolveRealtimeWsToken, SessionExpiredError } from '../realtime/wsAuth.js'
+import { REALTIME_RETRY_DELAY_MS, scheduleRealtimeRetry } from '../realtime/realtimeRetry.js'
 import { computeChatInboxBadgeCount } from '../utils/chatInboxBadge.js'
 import { useAuth } from './useAuth.js'
 
@@ -30,6 +31,8 @@ export function ChatInboxBadgeProvider({ children }) {
   const [toastNotification, setToastNotification] = useState(null)
   const conversationsRef = useRef([])
   const activeConversationIdRef = useRef(null)
+  const locationPathRef = useRef(location.pathname)
+  const userIdRef = useRef(user?.id)
 
   const syncFromConversations = useCallback((conversations) => {
     conversationsRef.current = Array.isArray(conversations) ? conversations : []
@@ -52,6 +55,48 @@ export function ChatInboxBadgeProvider({ children }) {
     }
   }, [token])
 
+  const refreshChatInboxBadgeRef = useRef(refreshChatInboxBadge)
+
+  useEffect(() => {
+    locationPathRef.current = location.pathname
+  }, [location.pathname])
+
+  useEffect(() => {
+    userIdRef.current = user?.id
+  }, [user?.id])
+
+  useEffect(() => {
+    refreshChatInboxBadgeRef.current = refreshChatInboxBadge
+  }, [refreshChatInboxBadge])
+
+  const handleRealtimeEvent = useCallback((event) => {
+    const refreshBadge = refreshChatInboxBadgeRef.current
+    if (event?.type !== 'message.created') {
+      void refreshBadge()
+      return
+    }
+
+    const incoming = event.payload
+    const conversationId = Number(incoming?.conversationId)
+    if (!Number.isFinite(conversationId)) {
+      void refreshBadge()
+      return
+    }
+
+    const isMine = Number(incoming?.senderId) === Number(userIdRef.current)
+    const muted = isConversationMuted(conversationsRef.current, conversationId)
+    const onMessagesRoute = locationPathRef.current === '/messages'
+    const viewingConversation =
+      onMessagesRoute &&
+      Number(activeConversationIdRef.current) === conversationId
+
+    if (!isMine && !muted && !viewingConversation) {
+      setToastNotification(event)
+    }
+
+    void refreshBadge()
+  }, [])
+
   const setActiveChatConversationId = useCallback((conversationId) => {
     activeConversationIdRef.current =
       conversationId == null || conversationId === ''
@@ -73,36 +118,6 @@ export function ChatInboxBadgeProvider({ children }) {
     [dismissToast, navigate],
   )
 
-  const handleRealtimeEvent = useCallback(
-    (event) => {
-      if (event?.type !== 'message.created') {
-        void refreshChatInboxBadge()
-        return
-      }
-
-      const incoming = event.payload
-      const conversationId = Number(incoming?.conversationId)
-      if (!Number.isFinite(conversationId)) {
-        void refreshChatInboxBadge()
-        return
-      }
-
-      const isMine = Number(incoming?.senderId) === Number(user?.id)
-      const muted = isConversationMuted(conversationsRef.current, conversationId)
-      const onMessagesRoute = location.pathname === '/messages'
-      const viewingConversation =
-        onMessagesRoute &&
-        Number(activeConversationIdRef.current) === conversationId
-
-      if (!isMine && !muted && !viewingConversation) {
-        setToastNotification(event)
-      }
-
-      void refreshChatInboxBadge()
-    },
-    [location.pathname, refreshChatInboxBadge, user?.id],
-  )
-
   useEffect(() => {
     void refreshChatInboxBadge()
   }, [refreshChatInboxBadge])
@@ -121,25 +136,48 @@ export function ChatInboxBadgeProvider({ children }) {
 
     let cancelled = false
     let socket
+    let retryTimer
+
+    const cleanupSocket = () => {
+      const activeSocket = socket
+      socket = undefined
+      if (activeSocket) {
+        void activeSocket.deactivate()
+      }
+    }
 
     async function connect() {
+      if (cancelled) return
       try {
         const wsToken = await resolveRealtimeWsToken(token)
-        if (cancelled || !wsToken) return
+        if (cancelled) return
+        if (!wsToken) {
+          retryTimer = scheduleRealtimeRetry(() => {
+            void connect()
+          }, REALTIME_RETRY_DELAY_MS)
+          return
+        }
 
+        cleanupSocket()
         socket = createChatSocketClient(wsToken, handleRealtimeEvent)
         socket.activate()
       } catch (err) {
+        if (cancelled) return
         if (err instanceof SessionExpiredError) {
           logout()
+          return
         }
+        retryTimer = scheduleRealtimeRetry(() => {
+          void connect()
+        }, REALTIME_RETRY_DELAY_MS)
       }
     }
 
     void connect()
     return () => {
       cancelled = true
-      socket?.deactivate()
+      if (retryTimer) window.clearTimeout(retryTimer)
+      cleanupSocket()
     }
   }, [authReady, handleRealtimeEvent, logout, token])
 

@@ -10,6 +10,7 @@ import React, {
 import { apiClient } from '../api/client.js'
 import { createNotificationSocketClient } from '../realtime/notificationSocket.js'
 import { resolveRealtimeWsToken, SessionExpiredError } from '../realtime/wsAuth.js'
+import { REALTIME_RETRY_DELAY_MS, scheduleRealtimeRetry } from '../realtime/realtimeRetry.js'
 import { useAuth } from './useAuth.js'
 
 const NotificationUnreadContext = createContext(null)
@@ -77,12 +78,29 @@ export function NotificationUnreadProvider({ children }) {
 
     let cancelled = false
     let socket
+    let retryTimer
+
+    const cleanupSocket = () => {
+      const activeSocket = socket
+      socket = undefined
+      if (activeSocket) {
+        void activeSocket.deactivate()
+      }
+    }
 
     async function connect() {
+      if (cancelled) return
       try {
         const wsToken = await resolveRealtimeWsToken(token)
-        if (cancelled || !wsToken) return
+        if (cancelled) return
+        if (!wsToken) {
+          retryTimer = scheduleRealtimeRetry(() => {
+            void connect()
+          }, REALTIME_RETRY_DELAY_MS)
+          return
+        }
 
+        cleanupSocket()
         socket = createNotificationSocketClient(wsToken, (event) => {
           if (event?.unreadCount != null) {
             setUnreadCount(normalizeUnreadCount(event.unreadCount))
@@ -94,16 +112,22 @@ export function NotificationUnreadProvider({ children }) {
 
         socket.activate()
       } catch (err) {
+        if (cancelled) return
         if (err instanceof SessionExpiredError) {
           logout()
+          return
         }
+        retryTimer = scheduleRealtimeRetry(() => {
+          void connect()
+        }, REALTIME_RETRY_DELAY_MS)
       }
     }
 
     void connect()
     return () => {
       cancelled = true
-      socket?.deactivate()
+      if (retryTimer) window.clearTimeout(retryTimer)
+      cleanupSocket()
     }
   }, [authReady, emitRealtime, logout, token])
 

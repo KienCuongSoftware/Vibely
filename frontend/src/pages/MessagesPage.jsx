@@ -28,6 +28,7 @@ import { useAuth } from "../state/useAuth";
 import { useChatInboxBadge } from "../state/ChatInboxBadgeContext.jsx";
 import { createChatSocketClient } from "../realtime/chatSocket.js";
 import { resolveRealtimeWsToken, SessionExpiredError } from "../realtime/wsAuth.js";
+import { REALTIME_RETRY_DELAY_MS, scheduleRealtimeRetry } from "../realtime/realtimeRetry.js";
 import { sortChatConversations } from "../utils/chatConversations.js";
 
 const CHAT_MENU_ICON_CLASS = "h-[18px] w-[18px] shrink-0";
@@ -403,12 +404,29 @@ export function MessagesPage() {
 
     let cancelled = false;
     let socket;
+    let retryTimer;
+
+    const cleanupSocket = () => {
+      const activeSocket = socket;
+      socket = undefined;
+      if (activeSocket) {
+        void activeSocket.deactivate();
+      }
+    };
 
     async function connect() {
+      if (cancelled) return;
       try {
       const wsToken = await resolveRealtimeWsToken(token);
-      if (cancelled || !wsToken) return;
+      if (cancelled) return;
+      if (!wsToken) {
+        retryTimer = scheduleRealtimeRetry(() => {
+          void connect();
+        }, REALTIME_RETRY_DELAY_MS);
+        return;
+      }
 
+      cleanupSocket();
       socket = createChatSocketClient(wsToken, async (event) => {
       if (event?.type !== "message.created") return;
       const incoming = event.payload;
@@ -460,9 +478,14 @@ export function MessagesPage() {
 
       socket.activate();
       } catch (err) {
+        if (cancelled) return;
         if (err instanceof SessionExpiredError) {
           logout();
+          return;
         }
+        retryTimer = scheduleRealtimeRetry(() => {
+          void connect();
+        }, REALTIME_RETRY_DELAY_MS);
       }
     }
 
@@ -470,7 +493,8 @@ export function MessagesPage() {
 
     return () => {
       cancelled = true;
-      socket?.deactivate();
+      if (retryTimer) window.clearTimeout(retryTimer);
+      cleanupSocket();
     };
   }, [authReady, logout, token, user?.id]);
 
