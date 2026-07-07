@@ -728,16 +728,7 @@ export function SignupPage() {
                     type="submit"
                     disabled={!canContinueToUsername}
                   >
-                    {loading ? (
-                      <span
-                        className="inline-flex items-center justify-center"
-                        aria-label="Đang xử lý"
-                      >
-                        <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      </span>
-                    ) : (
-                      "Tiếp"
-                    )}
+                    Tiếp
                   </button>
                 </form>
                 {status ? (
@@ -878,16 +869,7 @@ export function SignupPage() {
                     type="submit"
                     disabled={!canSubmitOAuthUsername}
                   >
-                    {loading ? (
-                      <span
-                        className="inline-flex items-center justify-center"
-                        aria-label="Đang xử lý"
-                      >
-                        <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      </span>
-                    ) : (
-                      "Hoàn tất"
-                    )}
+                    Hoàn tất
                   </button>
                 </form>
                 {status ? (
@@ -979,16 +961,7 @@ export function SignupPage() {
                     type="submit"
                     disabled={!canSubmitUsername}
                   >
-                    {loading ? (
-                      <span
-                        className="inline-flex items-center justify-center"
-                        aria-label="Đang xử lý"
-                      >
-                        <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      </span>
-                    ) : (
-                      "Đăng ký"
-                    )}
+                    Đăng ký
                   </button>
                 </form>
                 <button

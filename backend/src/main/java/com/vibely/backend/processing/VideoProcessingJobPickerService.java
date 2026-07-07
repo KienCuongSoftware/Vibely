@@ -44,12 +44,17 @@ public class VideoProcessingJobPickerService {
         video.setProcessingError(null);
         jobRepository.save(job);
         videoRepository.save(video);
+        String authorUsername = video.getAuthor().getUsername();
+        if (authorUsername == null || authorUsername.isBlank()) {
+            authorUsername = "vibely";
+        }
         return Optional.of(
             new VideoPipelineWorkItem(
                 job.getId(),
                 video.getId(),
                 video.getPublicId(),
                 video.getAuthor().getId(),
+                authorUsername.trim(),
                 video.getVideoUrl(),
                 video.getThumbnailUrl()
             )

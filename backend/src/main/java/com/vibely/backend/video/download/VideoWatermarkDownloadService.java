@@ -74,6 +74,38 @@ public class VideoWatermarkDownloadService {
     }
 
     /**
+     * Renders a watermarked MP4 from a local upload file and uploads it to the download cache.
+     * Called from the HLS pipeline while the raw file is already on disk.
+     */
+    public void preRenderAndUploadFromLocal(
+        Path sourceFile,
+        Path workDir,
+        UUID publicId,
+        String authorUsername
+    ) throws Exception {
+        String bucket = s3Properties.getBucket();
+        if (bucket == null || bucket.isBlank()) {
+            return;
+        }
+        String cacheKey = cacheKeyFor(publicId);
+        if (objectExists(bucket, cacheKey)) {
+            log.info("Watermarked download already cached publicId={}", publicId);
+            return;
+        }
+        String username = normalizeUsername(authorUsername);
+        Path logoPng = VibelyWatermarkLogo.materializePng(workDir);
+        Path output = workDir.resolve("watermarked.mp4");
+        transcodeWithWatermark(sourceFile, logoPng, output, username);
+        uploadObject(bucket, cacheKey, output);
+        log.info("Watermarked download pre-rendered publicId={} author=@{}", publicId, username);
+    }
+
+    static String normalizeUsername(String username) {
+        String value = username != null ? username.trim().replace("@", "") : "";
+        return value.isBlank() ? "vibely" : value;
+    }
+
+    /**
      * Returns a cached S3 object when available; otherwise renders once, uploads, then streams locally.
      */
     public WatermarkedDownloadArtifact resolveWatermarkedDownload(UUID publicId, String viewerEmail)
@@ -125,12 +157,7 @@ public class VideoWatermarkDownloadService {
         }
 
         User author = video.getAuthor();
-        String username = author != null && author.getUsername() != null
-            ? author.getUsername().trim()
-            : "vibely";
-        if (username.isBlank()) {
-            username = "vibely";
-        }
+        String username = author != null ? normalizeUsername(author.getUsername()) : "vibely";
         return new DownloadContext(rawUrl, username);
     }
 

@@ -7,6 +7,7 @@ import com.vibely.backend.processing.audio.AudioProcessingResult;
 import com.vibely.backend.storage.ResolvedS3Object;
 import com.vibely.backend.storage.S3ObjectUrlBuilder;
 import com.vibely.backend.storage.S3Properties;
+import com.vibely.backend.video.download.VideoWatermarkDownloadService;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
@@ -16,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -48,6 +51,7 @@ public class FfmpegHlsPipelineRunner {
     private final VideoProcessingStateService stateService;
     private final ObjectMapper objectMapper;
     private final AudioEnhancementService audioEnhancementService;
+    private final VideoWatermarkDownloadService watermarkDownloadService;
 
     public FfmpegHlsPipelineRunner(
         S3Client s3Client,
@@ -56,7 +60,8 @@ public class FfmpegHlsPipelineRunner {
         ProcessingProperties processingProperties,
         VideoProcessingStateService stateService,
         ObjectMapper objectMapper,
-        AudioEnhancementService audioEnhancementService
+        AudioEnhancementService audioEnhancementService,
+        VideoWatermarkDownloadService watermarkDownloadService
     ) {
         this.s3Client = s3Client;
         this.s3Properties = s3Properties;
@@ -65,6 +70,7 @@ public class FfmpegHlsPipelineRunner {
         this.stateService = stateService;
         this.objectMapper = objectMapper;
         this.audioEnhancementService = audioEnhancementService;
+        this.watermarkDownloadService = watermarkDownloadService;
     }
 
     public void run(VideoPipelineWorkItem item) {
@@ -118,6 +124,20 @@ public class FfmpegHlsPipelineRunner {
             Path sourceFile = workRoot.resolve("source" + extensionFromKey(source.key()));
             downloadObject(source.bucket(), source.key(), sourceFile);
             log.info("HLS pipeline downloaded local file sizeBytes={}", Files.size(sourceFile));
+
+            Path downloadWorkDir = Files.createDirectories(workRoot.resolve("watermarked-dl"));
+            CompletableFuture<Void> watermarkedDownloadFuture = CompletableFuture.runAsync(() -> {
+                try {
+                    watermarkDownloadService.preRenderAndUploadFromLocal(
+                        sourceFile,
+                        downloadWorkDir,
+                        item.videoPublicId(),
+                        item.authorUsername()
+                    );
+                } catch (Exception e) {
+                    throw new CompletionException(e);
+                }
+            });
 
             Integer durationSeconds = probeDurationSeconds(sourceFile, workRoot);
             log.info("HLS pipeline ffprobe durationSeconds={}", durationSeconds);
@@ -178,6 +198,16 @@ public class FfmpegHlsPipelineRunner {
                 masterKey,
                 durationSeconds
             );
+            try {
+                watermarkedDownloadFuture.join();
+            } catch (CompletionException e) {
+                Throwable cause = e.getCause() != null ? e.getCause() : e;
+                log.warn(
+                    "HLS pipeline: watermarked download pre-render failed videoId={} (on-demand download still available)",
+                    item.videoId(),
+                    cause
+                );
+            }
             stateService.markReadyWithArtifacts(
                 item.jobId(),
                 item.videoId(),

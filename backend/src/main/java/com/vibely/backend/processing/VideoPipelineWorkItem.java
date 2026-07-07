@@ -10,6 +10,7 @@ public record VideoPipelineWorkItem(
     long videoId,
     UUID videoPublicId,
     long authorId,
+    String authorUsername,
     String rawVideoUrl,
     String existingThumbnailUrl
 ) {

@@ -714,7 +714,7 @@ export function LoginPage() {
                   type="submit"
                   disabled={!canSubmit}
                 >
-                  {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+                  Đăng nhập
                 </button>
               </form>
               {oauthErrorMessage || status ? (
