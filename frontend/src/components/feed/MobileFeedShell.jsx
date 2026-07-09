@@ -25,10 +25,11 @@ export const MOBILE_COMMENTS_SHEET_RATIO = 0.58;
 
 export function computeMobileFeedCommentsLayout(options = {}) {
   const includeBottomNav = options.includeBottomNav !== false;
+  const includeTopBar = options.includeTopBar !== false;
   if (typeof window === "undefined") {
     const contentH =
       667 -
-      MOBILE_FEED_TOP_BAR_PX -
+      (includeTopBar ? MOBILE_FEED_TOP_BAR_PX : 0) -
       (includeBottomNav ? MOBILE_FEED_BOTTOM_NAV_PX : 0);
     const sheetH = Math.round(contentH * MOBILE_COMMENTS_SHEET_RATIO);
     return { contentH, sheetH, peekH: contentH - sheetH };
@@ -38,7 +39,7 @@ export function computeMobileFeedCommentsLayout(options = {}) {
     320,
     Math.round(
       viewportH -
-        MOBILE_FEED_TOP_BAR_PX -
+        (includeTopBar ? MOBILE_FEED_TOP_BAR_PX : 0) -
         (includeBottomNav ? MOBILE_FEED_BOTTOM_NAV_PX : 0),
     ),
   );

@@ -10,9 +10,7 @@ import { FeedCommentsPanel } from "./FeedCommentsPanel.jsx";
 import {
   computeMobileFeedCommentsLayout,
   isMobileFeedLayout,
-  MOBILE_FEED_TOP_BAR_PX,
   MobileFeedMenuDrawer,
-  MobileFeedTopBar,
 } from "./MobileFeedShell.jsx";
 import { MobileFollowingEmptyState } from "./MobileFollowingEmptyState.jsx";
 import { Sidebar } from "../Sidebar";
@@ -72,7 +70,6 @@ import {
 } from "../../utils/feedFollowState.js";
 import { handleSidebarMenuSelect } from "../../utils/sidebarNavigation.js";
 import { redirectGuestToLogin } from "../../utils/guestAuthGate.js";
-import { markFollowingPreferFeedFromSidebar } from "../../utils/followingPageView.js";
 import { buildProfilePath } from "../../utils/buildProfilePath.js";
 import { buildMainSidebarMenuItems } from "../../utils/mainSidebarMenuItems.js";
 import { recordProfileLastWatchedFromVideo } from "../../utils/profileLastWatched.js";
@@ -249,10 +246,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     if (mobile) {
       const viewportH =
         window.visualViewport?.height ?? window.innerHeight;
-      return Math.max(
-        320,
-        Math.round(viewportH - MOBILE_FEED_TOP_BAR_PX),
-      );
+      return Math.max(320, Math.round(viewportH));
     }
     const insetPx = 12;
     return Math.max(320, Math.round(window.innerHeight - insetPx * 2));
@@ -344,13 +338,13 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const [userPaused, setUserPaused] = useState(false);
   const [feedCommentsOpen, setFeedCommentsOpen] = useState(false);
   const [mobileCommentsLayout, setMobileCommentsLayout] = useState(() =>
-    computeMobileFeedCommentsLayout({ includeBottomNav: false }),
+    computeMobileFeedCommentsLayout({ includeBottomNav: false, includeTopBar: false }),
   );
   useEffect(() => {
     if (!mobileLayout) return undefined;
     const sync = () => {
       setMobileCommentsLayout(
-        computeMobileFeedCommentsLayout({ includeBottomNav: false }),
+        computeMobileFeedCommentsLayout({ includeBottomNav: false, includeTopBar: false }),
       );
     };
     sync();
@@ -1493,32 +1487,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     }
   };
 
-  const handleMobileFeedTabChange = useCallback(
-    (tab) => {
-      if (redirectGuestToLogin(navigate, token)) return;
-      if (tab === "following") {
-        markFollowingPreferFeedFromSidebar();
-        navigate("/following");
-        return;
-      }
-      if (tab === "friends") {
-        navigate("/friends");
-        return;
-      }
-      navigate("/foryou");
-    },
-    [navigate, token],
-  );
-
-  const handleMobileLiveTap = useCallback(() => {
-    redirectGuestToLogin(navigate, token);
-  }, [navigate, token]);
-
-  const handleMobileSearchTap = useCallback(() => {
-    if (redirectGuestToLogin(navigate, token)) return;
-    navigate("/search");
-  }, [navigate, token]);
-
   const toggleFeedComments = useCallback(() => {
     if (redirectGuestToLogin(navigate, token)) return;
     setFeedCommentsOpen((open) => !open);
@@ -1572,18 +1540,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
 
   return (
     <section className="flex h-dvh max-h-dvh min-h-0 w-full flex-col overflow-hidden bg-black text-zinc-100">
-      <div className="shrink-0 lg:hidden">
-        <MobileFeedTopBar
-          onLiveTap={mobileLayout ? undefined : handleMobileLiveTap}
-          feedTabs={!mobileLayout && (isForYouFeed || isFollowingFeed)}
-          activeFeedTab={isFollowingFeed ? "following" : "for-you"}
-          onFeedTabChange={mobileLayout ? undefined : handleMobileFeedTabChange}
-          onSearchTap={mobileLayout ? undefined : handleMobileSearchTap}
-          hideLive={mobileLayout}
-          hideSearch={mobileLayout}
-        />
-      </div>
-
       <MobileFeedMenuDrawer
         open={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
@@ -1867,7 +1823,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               <div
                 className={
                   mobileLayout
-                    ? `pointer-events-auto z-30 flex shrink-0 flex-col items-center gap-3 px-2 pb-4${
+                    ? `pointer-events-auto z-30 flex h-full shrink-0 flex-col items-center justify-end gap-3 px-2 pb-16${
                         feedCommentsOpen ? " hidden" : ""
                       }`
                     : `pointer-events-auto z-30 flex flex-col items-center gap-3 lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-4 lg:pb-14 ${
