@@ -1025,6 +1025,7 @@ export function FeedPhoneStage({
                       isActive ? onActiveFeedPlaybackEnded : undefined
                     }
                     className="relative z-0 h-full w-full cursor-pointer"
+                    fitContain={mobileFullBleed}
                     onClick={toggleFeedPlayback}
                     onIntrinsicLandscape={
                       isActive
@@ -1348,6 +1349,7 @@ export function FeedPhoneStage({
                     isActive ? onActiveFeedPlaybackEnded : undefined
                   }
                   className="relative z-0 h-full w-full cursor-pointer"
+                  fitContain={mobileFullBleed}
                   onClick={toggleFeedPlayback}
                   onIntrinsicLandscape={
                     isActive

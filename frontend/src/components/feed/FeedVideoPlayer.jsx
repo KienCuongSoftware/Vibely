@@ -82,6 +82,8 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
     landscapeBoost = false,
     /** Video ngang: hiển thị đủ khung (letterbox) thay vì cắt mép (cover) */
     containLandscape = false,
+    /** Luôn object-contain — toàn bộ video nằm trong khung (mobile feed). */
+    fitContain = false,
     /** Gọi khi biết layout intrinsic: (wide, videoId). videoId để parent lọc callback cũ. */
     onIntrinsicLandscape,
   },
@@ -491,9 +493,11 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
   }
 
   const fitClass =
-    containLandscape && isWideAspect ? 'object-contain' : 'object-cover'
+    fitContain || (containLandscape && isWideAspect)
+      ? 'object-contain'
+      : 'object-cover'
   const boostClass =
-    landscapeBoost && isWideAspect && !containLandscape
+    landscapeBoost && isWideAspect && !containLandscape && !fitContain
       ? ' origin-center scale-[1.08] sm:scale-[1.12] motion-reduce:transform-none'
       : ''
 
