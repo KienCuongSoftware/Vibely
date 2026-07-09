@@ -86,7 +86,7 @@ export function Sidebar({
   );
 
   return (
-    <div className="flex h-screen min-h-0 shrink-0 overflow-hidden">
+    <div className="flex h-full min-h-0 shrink-0 overflow-hidden">
       <aside
         className={`flex h-full min-h-0 flex-col overflow-hidden border-r border-zinc-900 py-4 transition-[width] duration-200 ease-out ${
           collapsed ? "w-[72px] px-2" : "w-[220px] px-3"
