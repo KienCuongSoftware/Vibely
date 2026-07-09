@@ -39,7 +39,17 @@ public class OpenAiEmbeddingService {
 
     @Transactional
     public void indexVideoEmbedding(Video video, List<String> hashtags) {
-        String sourceText = buildSourceText(video.getTitle(), video.getDescription(), hashtags);
+        indexVideoEmbedding(video, hashtags, null, null);
+    }
+
+    @Transactional
+    public void indexVideoEmbedding(
+        Video video,
+        List<String> hashtags,
+        String transcript,
+        String ocrText
+    ) {
+        String sourceText = buildSourceText(video.getTitle(), video.getDescription(), hashtags, transcript, ocrText);
         String hash = sha256(sourceText);
         var existing = videoEmbeddingRepository.findByVideoId(video.getId());
         if (existing.isPresent() && hash.equals(existing.get().getSourceTextHash())) {
@@ -66,11 +76,27 @@ public class OpenAiEmbeddingService {
     }
 
     static String buildSourceText(String title, String description, List<String> hashtags) {
-        return String.join("\n",
-            "title: " + nullSafe(title),
-            "description: " + nullSafe(description),
-            "hashtags: " + (hashtags == null ? "" : String.join(" ", hashtags))
-        );
+        return buildSourceText(title, description, hashtags, null, null);
+    }
+
+    static String buildSourceText(
+        String title,
+        String description,
+        List<String> hashtags,
+        String transcript,
+        String ocrText
+    ) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("title: ").append(nullSafe(title)).append('\n');
+        sb.append("description: ").append(nullSafe(description)).append('\n');
+        sb.append("hashtags: ").append(hashtags == null ? "" : String.join(" ", hashtags));
+        if (transcript != null && !transcript.isBlank()) {
+            sb.append('\n').append("transcript: ").append(transcript.trim());
+        }
+        if (ocrText != null && !ocrText.isBlank()) {
+            sb.append('\n').append("ocr: ").append(ocrText.trim());
+        }
+        return sb.toString();
     }
 
     static float[] pseudoEmbedding(String text, int dimensions) {

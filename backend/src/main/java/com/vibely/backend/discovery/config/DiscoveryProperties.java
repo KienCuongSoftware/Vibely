@@ -20,6 +20,12 @@ public class DiscoveryProperties {
     private double hashtagWeightCap = 0.25;
     private double embeddingSimilarityWeight = 0.70;
     private double topicSimilarityWeight = 0.30;
+    private boolean mediaUnderstandingEnabled = true;
+    private String whisperModel = "whisper-1";
+    private String visionModel = "gpt-4o-mini";
+    private int transcriptMaxSeconds = 60;
+    private int ocrFrameCount = 3;
+    private long mediaMaxBytes = 120L * 1024 * 1024;
     private RankingWeights ranking = new RankingWeights();
     private TopicFeedRankingWeights topicFeedRanking = new TopicFeedRankingWeights();
     private UserInterestWeights interest = new UserInterestWeights();
@@ -142,6 +148,58 @@ public class DiscoveryProperties {
 
     public void setTopicSimilarityWeight(double topicSimilarityWeight) {
         this.topicSimilarityWeight = topicSimilarityWeight;
+    }
+
+    public boolean isMediaUnderstandingEnabled() {
+        return mediaUnderstandingEnabled;
+    }
+
+    public void setMediaUnderstandingEnabled(boolean mediaUnderstandingEnabled) {
+        this.mediaUnderstandingEnabled = mediaUnderstandingEnabled;
+    }
+
+    public String getWhisperModel() {
+        return whisperModel;
+    }
+
+    public void setWhisperModel(String whisperModel) {
+        this.whisperModel = whisperModel;
+    }
+
+    public String getVisionModel() {
+        return visionModel;
+    }
+
+    public void setVisionModel(String visionModel) {
+        this.visionModel = visionModel;
+    }
+
+    public int getTranscriptMaxSeconds() {
+        return transcriptMaxSeconds;
+    }
+
+    public void setTranscriptMaxSeconds(int transcriptMaxSeconds) {
+        this.transcriptMaxSeconds = transcriptMaxSeconds;
+    }
+
+    public int getOcrFrameCount() {
+        return ocrFrameCount;
+    }
+
+    public void setOcrFrameCount(int ocrFrameCount) {
+        this.ocrFrameCount = ocrFrameCount;
+    }
+
+    public long getMediaMaxBytes() {
+        return mediaMaxBytes;
+    }
+
+    public void setMediaMaxBytes(long mediaMaxBytes) {
+        this.mediaMaxBytes = mediaMaxBytes;
+    }
+
+    public boolean isMediaUnderstandingReady() {
+        return hasOpenAiCredentials() && mediaUnderstandingEnabled;
     }
 
     public RankingWeights getRanking() {

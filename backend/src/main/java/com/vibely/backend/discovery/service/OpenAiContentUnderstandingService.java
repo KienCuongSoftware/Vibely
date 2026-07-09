@@ -21,7 +21,8 @@ public class OpenAiContentUnderstandingService {
 
     private static final String SYSTEM_PROMPT = """
         You are a short-form video content understanding engine for TikTok-style platforms.
-        Analyze title, description, and hashtags. Hashtags are weak signals — weight title and description higher.
+        Analyze title, description, hashtags, spoken transcript, and on-screen OCR text.
+        Weight transcript and on-screen text higher than hashtags. Hashtags are weak signals.
         Return JSON only with keys:
         topics (array of {name, score}),
         semantic_tags (array of strings),
@@ -30,6 +31,7 @@ public class OpenAiContentUnderstandingService {
         dance, finance, fitness, sports, fashion, pets, news, automotive, all.
         confidence (0-1 number).
         Topic names must be lowercase snake_case. Scores are 0-1.
+        Only assign a category when the media content clearly supports it.
         """;
 
     private final DiscoveryProperties properties;

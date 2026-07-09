@@ -41,6 +41,12 @@ public class VideoContentUnderstanding {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "transcript_text", columnDefinition = "TEXT")
+    private String transcriptText;
+
+    @Column(name = "ocr_text", columnDefinition = "TEXT")
+    private String ocrText;
+
     @PrePersist
     void prePersist() {
         LocalDateTime now = LocalDateTime.now();
@@ -84,5 +90,21 @@ public class VideoContentUnderstanding {
 
     public String getPayloadJson() {
         return payloadJson;
+    }
+
+    public String getTranscriptText() {
+        return transcriptText;
+    }
+
+    public void setTranscriptText(String transcriptText) {
+        this.transcriptText = transcriptText;
+    }
+
+    public String getOcrText() {
+        return ocrText;
+    }
+
+    public void setOcrText(String ocrText) {
+        this.ocrText = ocrText;
     }
 }

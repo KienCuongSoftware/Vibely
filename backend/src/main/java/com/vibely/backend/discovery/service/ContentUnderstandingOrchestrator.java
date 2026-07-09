@@ -3,6 +3,7 @@ package com.vibely.backend.discovery.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vibely.backend.discovery.config.DiscoveryProperties;
 import com.vibely.backend.discovery.dto.ContentUnderstandingResult;
+import com.vibely.backend.discovery.dto.VideoMediaSignals;
 import com.vibely.backend.discovery.model.VideoContentUnderstanding;
 import com.vibely.backend.discovery.repository.VideoContentUnderstandingRepository;
 import com.vibely.backend.explore.service.CategoryClassifierService;
@@ -25,6 +26,8 @@ public class ContentUnderstandingOrchestrator {
     private final TopicGraphService topicGraphService;
     private final CategoryTopicMapper categoryTopicMapper;
     private final VideoContentUnderstandingRepository understandingRepository;
+    private final VideoMediaUnderstandingService videoMediaUnderstandingService;
+    private final ExploreLegacyCategorySyncService exploreLegacyCategorySyncService;
     private final ObjectMapper objectMapper;
 
     public ContentUnderstandingOrchestrator(
@@ -34,6 +37,8 @@ public class ContentUnderstandingOrchestrator {
         TopicGraphService topicGraphService,
         CategoryTopicMapper categoryTopicMapper,
         VideoContentUnderstandingRepository understandingRepository,
+        VideoMediaUnderstandingService videoMediaUnderstandingService,
+        ExploreLegacyCategorySyncService exploreLegacyCategorySyncService,
         ObjectMapper objectMapper
     ) {
         this.properties = properties;
@@ -42,28 +47,57 @@ public class ContentUnderstandingOrchestrator {
         this.topicGraphService = topicGraphService;
         this.categoryTopicMapper = categoryTopicMapper;
         this.understandingRepository = understandingRepository;
+        this.videoMediaUnderstandingService = videoMediaUnderstandingService;
+        this.exploreLegacyCategorySyncService = exploreLegacyCategorySyncService;
         this.objectMapper = objectMapper;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public ContentUnderstandingResult analyzeAndPersist(Video video) {
         List<String> hashtags = categoryClassifierService.extractHashtags(video.getTitle(), video.getDescription());
-        ContentUnderstandingResult result = analyzeWithFailover(video, hashtags);
-        persistUnderstanding(video, result);
+        VideoMediaSignals mediaSignals = resolveMediaSignals(video);
+        ContentUnderstandingResult result = analyzeWithFailover(video, hashtags, mediaSignals);
+        persistUnderstanding(video, result, mediaSignals);
         topicGraphService.replaceVideoTopics(video, result.topics(), result.source());
         categoryTopicMapper.persistCategoryScores(video, result);
+        exploreLegacyCategorySyncService.syncFromAiResult(video, result);
         return result;
     }
 
-    private ContentUnderstandingResult analyzeWithFailover(Video video, List<String> hashtags) {
+    private VideoMediaSignals resolveMediaSignals(Video video) {
+        VideoContentUnderstanding cached = understandingRepository.findByVideoId(video.getId()).orElse(null);
+        if (cached != null && (hasText(cached.getTranscriptText()) || hasText(cached.getOcrText()))) {
+            return new VideoMediaSignals(
+                cached.getTranscriptText() == null ? "" : cached.getTranscriptText(),
+                cached.getOcrText() == null ? "" : cached.getOcrText()
+            );
+        }
+        VideoMediaSignals extracted = videoMediaUnderstandingService.extractSignals(video);
+        if (extracted.hasContent()) {
+            log.debug(
+                "Media signals extracted for video {} transcriptChars={} ocrChars={}",
+                video.getId(),
+                length(extracted.transcript()),
+                length(extracted.ocrText())
+            );
+        }
+        return extracted;
+    }
+
+    private ContentUnderstandingResult analyzeWithFailover(
+        Video video,
+        List<String> hashtags,
+        VideoMediaSignals mediaSignals
+    ) {
+        String enrichedDescription = enrichDescription(video.getDescription(), mediaSignals);
         if (properties.hasOpenAiCredentials()) {
             try {
                 return openAiContentUnderstandingService.analyze(
                     video.getTitle(),
-                    video.getDescription(),
+                    enrichedDescription,
                     hashtags,
-                    null,
-                    null,
+                    mediaSignals.transcript(),
+                    mediaSignals.ocrText(),
                     video.getAudioTitle()
                 );
             } catch (Exception ex) {
@@ -73,20 +107,24 @@ public class ContentUnderstandingOrchestrator {
         return openAiContentUnderstandingService.fromLegacyClassifier(
             categoryClassifierService,
             video.getTitle(),
-            video.getDescription()
+            enrichedDescription
         );
     }
 
-    private void persistUnderstanding(Video video, ContentUnderstandingResult result) {
+    private void persistUnderstanding(
+        Video video,
+        ContentUnderstandingResult result,
+        VideoMediaSignals mediaSignals
+    ) {
         VideoContentUnderstanding row = understandingRepository.findByVideoId(video.getId())
             .orElseGet(VideoContentUnderstanding::new);
-        applyUnderstanding(row, video, result);
+        applyUnderstanding(row, video, result, mediaSignals);
         try {
             understandingRepository.saveAndFlush(row);
         } catch (DataIntegrityViolationException ex) {
             VideoContentUnderstanding existing = understandingRepository.findByVideoId(video.getId())
                 .orElseThrow(() -> ex);
-            applyUnderstanding(existing, video, result);
+            applyUnderstanding(existing, video, result, mediaSignals);
             understandingRepository.save(existing);
         }
     }
@@ -94,7 +132,8 @@ public class ContentUnderstandingOrchestrator {
     private void applyUnderstanding(
         VideoContentUnderstanding row,
         Video video,
-        ContentUnderstandingResult result
+        ContentUnderstandingResult result,
+        VideoMediaSignals mediaSignals
     ) {
         row.setVideo(video);
         row.setModel(properties.hasOpenAiCredentials() ? properties.getUnderstandingModel() : "legacy-classifier");
@@ -105,5 +144,41 @@ public class ContentUnderstandingOrchestrator {
         }
         row.setConfidence(result.confidence());
         row.setSource(result.source());
+        if (mediaSignals != null) {
+            if (hasText(mediaSignals.transcript())) {
+                row.setTranscriptText(mediaSignals.transcript());
+            }
+            if (hasText(mediaSignals.ocrText())) {
+                row.setOcrText(mediaSignals.ocrText());
+            }
+        }
+    }
+
+    static String enrichDescription(String description, VideoMediaSignals mediaSignals) {
+        StringBuilder sb = new StringBuilder(description == null ? "" : description.trim());
+        if (mediaSignals == null) {
+            return sb.toString();
+        }
+        if (hasText(mediaSignals.transcript())) {
+            if (!sb.isEmpty()) {
+                sb.append('\n');
+            }
+            sb.append("[transcript] ").append(mediaSignals.transcript().trim());
+        }
+        if (hasText(mediaSignals.ocrText())) {
+            if (!sb.isEmpty()) {
+                sb.append('\n');
+            }
+            sb.append("[on-screen] ").append(mediaSignals.ocrText().trim());
+        }
+        return sb.toString();
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private static int length(String value) {
+        return value == null ? 0 : value.length();
     }
 }

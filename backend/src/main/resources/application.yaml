@@ -105,6 +105,12 @@ app:
     embedding-similarity-weight: ${DISCOVERY_EMBEDDING_WEIGHT:0.70}
     topic-similarity-weight: ${DISCOVERY_TOPIC_WEIGHT:0.30}
     hashtag-weight-cap: ${DISCOVERY_HASHTAG_WEIGHT_CAP:0.25}
+    media-understanding-enabled: ${DISCOVERY_MEDIA_UNDERSTANDING_ENABLED:true}
+    whisper-model: ${DISCOVERY_WHISPER_MODEL:whisper-1}
+    vision-model: ${DISCOVERY_VISION_MODEL:gpt-4o-mini}
+    transcript-max-seconds: ${DISCOVERY_TRANSCRIPT_MAX_SECONDS:60}
+    ocr-frame-count: ${DISCOVERY_OCR_FRAME_COUNT:3}
+    media-max-bytes: ${DISCOVERY_MEDIA_MAX_BYTES:125829120}
     ranking:
       watch-time: ${DISCOVERY_RANK_WATCH_TIME:0.35}
       completion: ${DISCOVERY_RANK_COMPLETION:0.20}

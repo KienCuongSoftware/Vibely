@@ -2,6 +2,8 @@ package com.vibely.backend.discovery.service;
 
 import com.vibely.backend.discovery.config.DiscoveryProperties;
 import com.vibely.backend.discovery.event.VideoDiscoveryIndexEvent;
+import com.vibely.backend.discovery.model.VideoContentUnderstanding;
+import com.vibely.backend.discovery.repository.VideoContentUnderstandingRepository;
 import com.vibely.backend.explore.service.CategoryClassifierService;
 import com.vibely.backend.explore.service.ExploreCacheService;
 import com.vibely.backend.video.Video;
@@ -25,6 +27,7 @@ public class VideoDiscoveryIndexer {
     private final VideoEngagementStatsService videoEngagementStatsService;
     private final CategoryClassifierService categoryClassifierService;
     private final ExploreCacheService exploreCacheService;
+    private final VideoContentUnderstandingRepository understandingRepository;
 
     public VideoDiscoveryIndexer(
         DiscoveryProperties properties,
@@ -34,7 +37,8 @@ public class VideoDiscoveryIndexer {
         OpenAiEmbeddingService openAiEmbeddingService,
         VideoEngagementStatsService videoEngagementStatsService,
         CategoryClassifierService categoryClassifierService,
-        ExploreCacheService exploreCacheService
+        ExploreCacheService exploreCacheService,
+        VideoContentUnderstandingRepository understandingRepository
     ) {
         this.properties = properties;
         this.eventPublisher = eventPublisher;
@@ -44,6 +48,7 @@ public class VideoDiscoveryIndexer {
         this.videoEngagementStatsService = videoEngagementStatsService;
         this.categoryClassifierService = categoryClassifierService;
         this.exploreCacheService = exploreCacheService;
+        this.understandingRepository = understandingRepository;
     }
 
     public void indexAfterLegacySync(Long videoId) {
@@ -61,9 +66,14 @@ public class VideoDiscoveryIndexer {
         }
         try {
             var result = contentUnderstandingOrchestrator.analyzeAndPersist(video);
+            VideoContentUnderstanding understanding = understandingRepository.findByVideoId(videoId).orElse(null);
+            String transcript = understanding != null ? understanding.getTranscriptText() : null;
+            String ocrText = understanding != null ? understanding.getOcrText() : null;
             openAiEmbeddingService.indexVideoEmbedding(
                 video,
-                categoryClassifierService.extractHashtags(video.getTitle(), video.getDescription())
+                categoryClassifierService.extractHashtags(video.getTitle(), video.getDescription()),
+                transcript,
+                ocrText
             );
             videoEngagementStatsService.recomputeSafely(video);
             exploreCacheService.evictByPrefix("trending");
