@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Vibely">
+  <rect width="512" height="512" fill="#000000"/>
+  <defs>
+    <!-- Quaver (eighth note) silhouette: readable at 48px, not TikTok-shaped -->
+    <g id="vibely-note" transform="translate(116 52)">
+      <!-- note head -->
+      <ellipse cx="128" cy="336" rx="92" ry="78"/>
+      <!-- stem -->
+      <rect x="186" y="96" width="32" height="256" rx="14"/>
+      <!-- flag: attach near the top to the stem, but keep the lower return shorter (gap) -->
+      <path d="M 218 104
+               C 304 128 320 196 278 236
+               C 260 254 240 264 232 268
+               L 232 244
+               C 248 238 264 228 272 216
+               C 290 192 282 154 218 138
+               Z"/>
+    </g>
+  </defs>
+  <use href="#vibely-note" fill="#25F4EE" transform="translate(-7 -5)"/>
+  <use href="#vibely-note" fill="#FE2C55" transform="translate(7 5)"/>
+  <use href="#vibely-note" fill="#FFFFFF"/>
+</svg>
