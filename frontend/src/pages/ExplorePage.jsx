@@ -16,6 +16,19 @@ import { useAuth } from '../state/useAuth'
 import { buildProfileVideoUrl } from '../utils/videoPublicId.js'
 
 const EXPLORE_PAGE_TITLE = 'Khám phá - Tìm video bạn thích trên Vibely'
+const ALL_TAB = { slug: 'all', name: 'Tất cả', kind: 'category', videoCount: 0 }
+
+function normalizeExploreTabs(rows) {
+  const filtered = rows.filter((tab) => {
+    const kind = tab.kind ?? 'category'
+    if (tab.slug === 'all') return true
+    if (kind === 'for_you' || kind === 'topic') return true
+    return Number(tab.videoCount ?? 0) > 0
+  })
+  const allTab = filtered.find((tab) => tab.slug === 'all') ?? ALL_TAB
+  const rest = filtered.filter((tab) => tab.slug !== 'all')
+  return [allTab, ...rest]
+}
 
 function formatCompactCount(value) {
   const count = Number(value ?? 0)
@@ -149,15 +162,11 @@ export function ExplorePage() {
 
   useEffect(() => {
     apiClient.getExploreTabs({ token }).then((res) => {
-      const rows = Array.isArray(res) ? res : []
+      const rows = normalizeExploreTabs(Array.isArray(res) ? res : [])
       setTabs(rows)
-      const first = rows[0]
-      setActiveTab({
-        slug: first?.slug ?? 'all',
-        kind: first?.kind ?? 'category',
-      })
+      setActiveTab({ slug: 'all', kind: 'category' })
     }).catch(() => {
-      setTabs([{ slug: 'all', name: 'Tất cả', kind: 'category', personalized: false, videoCount: 0 }])
+      setTabs([ALL_TAB])
       setActiveTab({ slug: 'all', kind: 'category' })
     })
   }, [token])
@@ -173,9 +182,36 @@ export function ExplorePage() {
   const scrollCategories = React.useCallback((direction) => {
     const el = categoryScrollRef.current
     if (!el) return
+    const maxLeft = Math.max(0, el.scrollWidth - el.clientWidth)
+    if (direction > 0 && el.scrollLeft >= maxLeft - 4) {
+      el.scrollTo({ left: 0, behavior: 'smooth' })
+      return
+    }
+    if (direction < 0 && el.scrollLeft <= 4) {
+      el.scrollTo({ left: maxLeft, behavior: 'smooth' })
+      return
+    }
     const shift = Math.max(140, Math.floor(el.clientWidth * 0.6))
     el.scrollBy({ left: direction * shift, behavior: 'smooth' })
   }, [])
+
+  const scrollCategoriesToStart = React.useCallback(() => {
+    const el = categoryScrollRef.current
+    if (!el) return
+    if (typeof el.scrollTo === 'function') {
+      el.scrollTo({ left: 0, behavior: 'smooth' })
+    } else {
+      el.scrollLeft = 0
+    }
+    window.setTimeout(updateCategoryScrollState, 280)
+  }, [updateCategoryScrollState])
+
+  const handleSelectTab = React.useCallback((tab, index) => {
+    setActiveTab({ slug: tab.slug, kind: tab.kind ?? 'category' })
+    if (index === tabs.length - 1) {
+      scrollCategoriesToStart()
+    }
+  }, [scrollCategoriesToStart, tabs.length])
 
   useEffect(() => {
     updateCategoryScrollState()
@@ -183,22 +219,6 @@ export function ExplorePage() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [updateCategoryScrollState, tabs.length])
-
-  useEffect(() => {
-    const scroller = categoryScrollRef.current
-    if (scroller) {
-      if (typeof scroller.scrollTo === 'function') {
-        scroller.scrollTo({ left: 0, behavior: 'smooth' })
-      } else {
-        scroller.scrollLeft = 0
-      }
-      updateCategoryScrollState()
-    }
-    const focusTimer = window.setTimeout(() => {
-      allCategoryButtonRef.current?.focus({ preventScroll: true })
-    }, 120)
-    return () => window.clearTimeout(focusTimer)
-  }, [updateCategoryScrollState, activeTab.slug])
 
   const load = React.useCallback((nextCursor = null, append = false) => {
     const generation = ++loadGenerationRef.current
@@ -332,12 +352,12 @@ export function ExplorePage() {
                 className="scrollbar-none min-w-0 flex-1 overflow-x-auto"
               >
                 <div className="flex w-max gap-2 pb-1">
-                  {tabs.map((tab) => (
+                  {tabs.map((tab, index) => (
                     <button
                       key={`${tab.kind}:${tab.slug}`}
                       ref={tab.slug === 'all' ? allCategoryButtonRef : undefined}
                       type="button"
-                      onClick={() => setActiveTab({ slug: tab.slug, kind: tab.kind ?? 'category' })}
+                      onClick={() => handleSelectTab(tab, index)}
                       className={`cursor-pointer whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition lg:px-4 lg:text-sm ${
                         activeTab.slug === tab.slug && activeTab.kind === (tab.kind ?? 'category')
                           ? 'border-white bg-white font-bold text-black'

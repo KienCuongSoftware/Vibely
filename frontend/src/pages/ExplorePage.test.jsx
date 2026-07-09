@@ -26,7 +26,11 @@ describe('ExplorePage', () => {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
     }))
-    apiClient.getExploreTabs.mockResolvedValue([{ slug: 'all', name: 'Tất cả', kind: 'category', videoCount: 99 }])
+    apiClient.getExploreTabs.mockResolvedValue([
+      { slug: 'all', name: 'Tất cả', kind: 'category', videoCount: 5 },
+      { slug: 'cong-nghe', name: 'Công nghệ', kind: 'category', videoCount: 2 },
+      { slug: 'anime', name: 'Anime', kind: 'category', videoCount: 0 },
+    ])
     apiClient.getExploreTrending.mockResolvedValue({ items: [], hasNext: false, nextCursor: null })
     apiClient.getExploreCategory.mockResolvedValue({ items: [], hasNext: false, nextCursor: null })
     apiClient.searchExplore.mockResolvedValue({ items: [], hasNext: false, nextCursor: null })
@@ -45,6 +49,9 @@ describe('ExplorePage', () => {
       expect(apiClient.getExploreTabs).toHaveBeenCalled()
       expect(apiClient.getExploreTrending).toHaveBeenCalled()
     })
+    expect(screen.getByRole('button', { name: 'Tất cả' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Anime' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Công nghệ' })).toBeInTheDocument()
   })
 
   it('shows mobile search link on small screens', async () => {
