@@ -77,6 +77,9 @@ public class CategoryTopicMapper {
         Map<String, Category> bySlug = enabled.stream()
             .collect(java.util.stream.Collectors.toMap(Category::getSlug, c -> c, (a, b) -> a));
         for (Map.Entry<String, Double> entry : scores.entrySet()) {
+            if (entry.getValue() < 0.35) {
+                continue;
+            }
             Category category = bySlug.get(entry.getKey());
             if (category == null || "all".equals(category.getSlug())) {
                 continue;

@@ -53,6 +53,54 @@ class CategoryClassifierServiceTest {
         assertThat(inferred.get(0).category().getSlug()).isEqualTo("all");
     }
 
+    @Test
+    void inferDoesNotMapGaiXinhNhayToTechnology() {
+        Category dance = category("dance", "Nhảy");
+        Category technology = category("technology", "Công nghệ");
+        when(categoryRepository.findByEnabledTrueOrderByNameAsc()).thenReturn(List.of(dance, technology));
+
+        List<CategoryClassifierService.ScoredCategory> inferred = classifierService.inferCategories(
+            "Gái xinh nhảy",
+            ""
+        );
+
+        assertThat(inferred).isNotEmpty();
+        assertThat(inferred.get(0).category().getSlug()).isEqualTo("dance");
+        assertThat(inferred.stream().map(sc -> sc.category().getSlug())).doesNotContain("technology");
+    }
+
+    @Test
+    void selectCategoriesForPersistSkipsAllFallback() {
+        Category all = category("all", "Tất cả");
+        Category dance = category("dance", "Nhảy");
+        List<CategoryClassifierService.ScoredCategory> persisted = classifierService.selectCategoriesForPersist(
+            List.of(new CategoryClassifierService.ScoredCategory(all, 1.0))
+        );
+        assertThat(persisted).isEmpty();
+
+        persisted = classifierService.selectCategoriesForPersist(
+            List.of(
+                new CategoryClassifierService.ScoredCategory(dance, 1.0),
+                new CategoryClassifierService.ScoredCategory(all, 1.0)
+            )
+        );
+        assertThat(persisted).hasSize(1);
+        assertThat(persisted.get(0).category().getSlug()).isEqualTo("dance");
+    }
+
+    @Test
+    void selectCategoriesForPersistKeepsStrongSecondaryCategories() {
+        Category music = category("music", "Âm nhạc");
+        Category dance = category("dance", "Nhảy");
+        List<CategoryClassifierService.ScoredCategory> persisted = classifierService.selectCategoriesForPersist(
+            List.of(
+                new CategoryClassifierService.ScoredCategory(music, 2.0),
+                new CategoryClassifierService.ScoredCategory(dance, 2.0)
+            )
+        );
+        assertThat(persisted).hasSize(2);
+    }
+
     private static Category category(String slug, String name) {
         Category category = new Category();
         category.setSlug(slug);

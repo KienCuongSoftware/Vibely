@@ -52,8 +52,14 @@ public interface DiscoveryExploreQueryRepository extends Repository<com.vibely.b
             left join video_engagement_stats ves on ves.video_id = v.id
             where v.status = 'READY'
               and v.id in (
-                select vc.video_id from video_categories vc
-                join categories c on c.id = vc.category_id
+                select primary_vc.video_id from (
+                  select distinct on (vc.video_id) vc.video_id, vc.category_id
+                  from video_categories vc
+                  join categories c on c.id = vc.category_id
+                  where c.slug <> 'all' and c.enabled = true and vc.score >= 1.0
+                  order by vc.video_id, vc.score desc, vc.category_id asc
+                ) primary_vc
+                join categories c on c.id = primary_vc.category_id
                 where c.slug = :slug and c.enabled = true
                 union
                 select vcs.video_id from video_category_scores vcs

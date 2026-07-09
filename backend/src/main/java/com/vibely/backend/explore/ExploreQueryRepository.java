@@ -45,8 +45,14 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
                    coalesce(nullif(trim(u.google_avatar_url), ''), nullif(trim(u.avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl
             from videos v
             join users u on u.id = v.author_id
-            join video_categories vc on vc.video_id = v.id
-            join categories c on c.id = vc.category_id
+            join (
+              select distinct on (vc.video_id) vc.video_id, vc.category_id
+              from video_categories vc
+              join categories c on c.id = vc.category_id
+              where c.slug <> 'all' and c.enabled = true and vc.score >= 1.0
+              order by vc.video_id, vc.score desc, vc.category_id asc
+            ) primary_vc on primary_vc.video_id = v.id
+            join categories c on c.id = primary_vc.category_id
             where v.status = 'READY'
               and c.slug = :slug
               and c.enabled = true

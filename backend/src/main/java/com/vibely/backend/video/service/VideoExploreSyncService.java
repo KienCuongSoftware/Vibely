@@ -52,7 +52,7 @@ public class VideoExploreSyncService {
             video.getDescription(),
             video.getAudioTitle()
         );
-        for (CategoryClassifierService.ScoredCategory scored : inferred) {
+        for (CategoryClassifierService.ScoredCategory scored : categoryClassifierService.selectCategoriesForPersist(inferred)) {
             videoCategoryRepository.save(new VideoCategory(video, scored.category(), scored.score()));
         }
         List<String> tags = categoryClassifierService.extractHashtags(video.getTitle(), video.getDescription());

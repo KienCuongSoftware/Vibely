@@ -17,20 +17,29 @@ import org.springframework.stereotype.Service;
 @Service
 public class CategoryClassifierService {
     private static final Pattern HASHTAG_PATTERN = Pattern.compile("#([\\p{L}\\p{N}_]{2,80})");
+    private static final double MIN_CATEGORY_SCORE = 1.0;
+    private static final double STRONG_CATEGORY_SCORE = 2.0;
+    public static final String ALL_CATEGORY_SLUG = "all";
+
     private static final Map<String, Set<String>> KEYWORDS = Map.of(
         "music", Set.of(
             "music", "song", "amnhac", "am nhac", "nhac", "remix", "cover",
             "lyrics", "lyric", "karaoke", "sing", "audio", "am thanh",
             "sound", "soundtrack", "melody", "lofi", "ballad", "rap", "hiphop", "edm"
         ),
-        "dance", Set.of("dance", "nhay", "choreography"),
+        "dance", Set.of(
+            "dance", "nhay", "nhảy", "choreography", "tiktok dance", "nhay dep", "nhảy đẹp"
+        ),
         "food", Set.of("food", "monan", "anuong", "recipe", "nauan"),
         "travel", Set.of("travel", "dulich", "trip", "review"),
-        "gaming", Set.of("game", "gaming", "esports"),
-        "beauty", Set.of("beauty", "makeup", "lamdep", "skincare"),
+        "gaming", Set.of("game", "gaming", "esports", "gameplay"),
+        "beauty", Set.of("beauty", "makeup", "lamdep", "skincare", "gai xinh"),
         "fitness", Set.of("fitness", "gym", "workout"),
-        "comedy", Set.of("funny", "hai", "comedy"),
-        "technology", Set.of("tech", "congnghe", "ai", "coding")
+        "comedy", Set.of("funny", "hai", "comedy", "hai huoc"),
+        "technology", Set.of(
+            "technology", "congnghe", "cong nghe", "programming", "software",
+            "developer", "coding", "chatgpt", "springboot", "artificial intelligence"
+        )
     );
 
     /** Hashtags that should map to a explore category slug (not 1:1 with tag name). */
@@ -61,7 +70,11 @@ public class CategoryClassifierService {
         Map.entry("makeup", "beauty"),
         Map.entry("skincare", "beauty"),
         Map.entry("congnghe", "technology"),
+        Map.entry("tech", "technology"),
         Map.entry("coding", "technology"),
+        Map.entry("programming", "technology"),
+        Map.entry("chatgpt", "technology"),
+        Map.entry("ai", "technology"),
         Map.entry("anime", "anime"),
         Map.entry("manga", "anime")
     );
@@ -131,9 +144,39 @@ public class CategoryClassifierService {
         if (!result.isEmpty()) {
             return result;
         }
-        return categoryRepository.findBySlugAndEnabledTrue("all")
+        return categoryRepository.findBySlugAndEnabledTrue(ALL_CATEGORY_SLUG)
             .map(c -> List.of(new ScoredCategory(c, 1.0)))
             .orElseGet(List::of);
+    }
+
+    /**
+     * Persist only confident category links. The fallback {@code all} bucket is excluded so
+     * unrelated videos do not appear inside specific explore tabs.
+     */
+    public List<ScoredCategory> selectCategoriesForPersist(List<ScoredCategory> inferred) {
+        if (inferred == null || inferred.isEmpty()) {
+            return List.of();
+        }
+        List<ScoredCategory> ranked = inferred.stream()
+            .filter(sc -> sc.category() != null && !ALL_CATEGORY_SLUG.equals(sc.category().getSlug()))
+            .sorted(Comparator.comparingDouble(ScoredCategory::score).reversed())
+            .toList();
+        if (ranked.isEmpty()) {
+            return List.of();
+        }
+        ScoredCategory primary = ranked.get(0);
+        if (primary.score() < MIN_CATEGORY_SCORE) {
+            return List.of();
+        }
+        List<ScoredCategory> selected = new ArrayList<>();
+        selected.add(primary);
+        for (int i = 1; i < ranked.size(); i++) {
+            ScoredCategory candidate = ranked.get(i);
+            if (candidate.score() >= STRONG_CATEGORY_SCORE) {
+                selected.add(candidate);
+            }
+        }
+        return selected;
     }
 
     private String resolveCategorySlug(String tag, Map<String, Category> bySlug) {
@@ -158,11 +201,22 @@ public class CategoryClassifierService {
         if (normalizedKeyword.isBlank()) {
             return false;
         }
-        if (normalizedText.contains(normalizedKeyword)) {
+        if (normalizedKeyword.contains(" ")) {
+            return normalizedText.contains(normalizedKeyword);
+        }
+        if (matchesToken(normalizedText, normalizedKeyword)) {
             return true;
         }
         String compactKeyword = normalizedKeyword.replace(" ", "");
-        return !compactKeyword.isBlank() && compactText.contains(compactKeyword);
+        return compactKeyword.length() >= 5 && compactText.contains(compactKeyword);
+    }
+
+    private boolean matchesToken(String text, String token) {
+        if (text.isBlank() || token.isBlank()) {
+            return false;
+        }
+        String pattern = "(?<![\\p{L}\\p{N}_])" + Pattern.quote(token) + "(?![\\p{L}\\p{N}_])";
+        return Pattern.compile(pattern, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE).matcher(text).find();
     }
 
     public record ScoredCategory(Category category, double score) {
