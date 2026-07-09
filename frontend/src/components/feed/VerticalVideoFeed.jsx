@@ -1574,11 +1574,13 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     <section className="flex h-dvh max-h-dvh min-h-0 w-full flex-col overflow-hidden bg-black text-zinc-100">
       <div className="shrink-0 lg:hidden">
         <MobileFeedTopBar
-          onLiveTap={handleMobileLiveTap}
-          feedTabs={isForYouFeed || isFollowingFeed}
+          onLiveTap={mobileLayout ? undefined : handleMobileLiveTap}
+          feedTabs={!mobileLayout && (isForYouFeed || isFollowingFeed)}
           activeFeedTab={isFollowingFeed ? "following" : "for-you"}
-          onFeedTabChange={handleMobileFeedTabChange}
-          onSearchTap={handleMobileSearchTap}
+          onFeedTabChange={mobileLayout ? undefined : handleMobileFeedTabChange}
+          onSearchTap={mobileLayout ? undefined : handleMobileSearchTap}
+          hideLive={mobileLayout}
+          hideSearch={mobileLayout}
         />
       </div>
 
@@ -1770,7 +1772,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               ref={mobileLayout ? mobileFeedSlotRef : undefined}
               className={
                 mobileLayout
-                  ? "relative min-h-0 w-full flex-1"
+                  ? "relative min-h-0 w-full flex-1 flex flex-row overflow-hidden"
                   : `relative min-h-0 w-full max-lg:flex-1 max-lg:overflow-hidden h-full ${
                       feedCommentsOpen && !mobileLayout
                         ? feedDockLandscape
@@ -1785,7 +1787,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               <div
                 className={
                   mobileLayout
-                    ? "absolute inset-0 overflow-hidden"
+                    ? "relative min-h-0 flex-1 overflow-hidden"
                     : feedCommentsOpen && !mobileLayout
                       ? feedDockLandscape
                         ? "relative flex h-full min-h-0 w-full flex-col items-start justify-center max-lg:flex-1"
@@ -1865,7 +1867,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               <div
                 className={
                   mobileLayout
-                    ? `pointer-events-none absolute right-0 bottom-4 z-30 pe-2${
+                    ? `pointer-events-auto z-30 flex shrink-0 flex-col items-center gap-3 px-2 pb-4${
                         feedCommentsOpen ? " hidden" : ""
                       }`
                     : `pointer-events-auto z-30 flex flex-col items-center gap-3 lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-4 lg:pb-14 ${
@@ -1878,7 +1880,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 <div
                   className={
                     mobileLayout
-                      ? "pointer-events-auto flex flex-col items-center gap-3"
+                      ? "flex flex-col items-center gap-3"
                       : "contents"
                   }
                 >

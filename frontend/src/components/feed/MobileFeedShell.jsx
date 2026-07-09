@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   IoClose,
   IoCompass,
@@ -9,28 +9,31 @@ import {
   IoPeople,
   IoPerson,
   IoSearch,
-} from 'react-icons/io5'
-import { apiClient } from '../../api/client.js'
-import { useChatInboxBadge } from '../../state/ChatInboxBadgeContext.jsx'
-import { formatNotificationBadgeCount } from '../../utils/notificationBadge.js'
-import { DEFAULT_AVATAR_URL } from '../AvatarImage.jsx'
-import { buildProfilePath } from '../../utils/buildProfilePath.js'
-import { handleSidebarMenuSelect } from '../../utils/sidebarNavigation.js'
-import { markFollowingPreferFeedFromSidebar } from '../../utils/followingPageView.js'
+} from "react-icons/io5";
+import { apiClient } from "../../api/client.js";
+import { useChatInboxBadge } from "../../state/ChatInboxBadgeContext.jsx";
+import { formatNotificationBadgeCount } from "../../utils/notificationBadge.js";
+import { DEFAULT_AVATAR_URL } from "../AvatarImage.jsx";
+import { buildProfilePath } from "../../utils/buildProfilePath.js";
+import { handleSidebarMenuSelect } from "../../utils/sidebarNavigation.js";
+import { markFollowingPreferFeedFromSidebar } from "../../utils/followingPageView.js";
 
-export const MOBILE_FEED_TOP_BAR_PX = 48
-export const MOBILE_FEED_BOTTOM_NAV_PX = 56
+export const MOBILE_FEED_TOP_BAR_PX = 48;
+export const MOBILE_FEED_BOTTOM_NAV_PX = 56;
 /** Mobile comment sheet — overlay ~58% đáy vùng feed; video full phía sau (TikTok). */
-export const MOBILE_COMMENTS_SHEET_RATIO = 0.58
+export const MOBILE_COMMENTS_SHEET_RATIO = 0.58;
 
 export function computeMobileFeedCommentsLayout(options = {}) {
-  const includeBottomNav = options.includeBottomNav !== false
-  if (typeof window === 'undefined') {
-    const contentH = 667 - MOBILE_FEED_TOP_BAR_PX - (includeBottomNav ? MOBILE_FEED_BOTTOM_NAV_PX : 0)
-    const sheetH = Math.round(contentH * MOBILE_COMMENTS_SHEET_RATIO)
-    return { contentH, sheetH, peekH: contentH - sheetH }
+  const includeBottomNav = options.includeBottomNav !== false;
+  if (typeof window === "undefined") {
+    const contentH =
+      667 -
+      MOBILE_FEED_TOP_BAR_PX -
+      (includeBottomNav ? MOBILE_FEED_BOTTOM_NAV_PX : 0);
+    const sheetH = Math.round(contentH * MOBILE_COMMENTS_SHEET_RATIO);
+    return { contentH, sheetH, peekH: contentH - sheetH };
   }
-  const viewportH = window.visualViewport?.height ?? window.innerHeight
+  const viewportH = window.visualViewport?.height ?? window.innerHeight;
   const contentH = Math.max(
     320,
     Math.round(
@@ -38,14 +41,14 @@ export function computeMobileFeedCommentsLayout(options = {}) {
         MOBILE_FEED_TOP_BAR_PX -
         (includeBottomNav ? MOBILE_FEED_BOTTOM_NAV_PX : 0),
     ),
-  )
-  const sheetH = Math.round(contentH * MOBILE_COMMENTS_SHEET_RATIO)
-  return { contentH, sheetH, peekH: contentH - sheetH }
+  );
+  const sheetH = Math.round(contentH * MOBILE_COMMENTS_SHEET_RATIO);
+  return { contentH, sheetH, peekH: contentH - sheetH };
 }
 
 export function isMobileFeedLayout() {
-  if (typeof window === 'undefined') return false
-  return window.matchMedia('(max-width: 1023px)').matches
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(max-width: 1023px)").matches;
 }
 
 export function MobileFeedTopBar({
@@ -53,16 +56,18 @@ export function MobileFeedTopBar({
   showBack = false,
   onBack,
   feedTabs = false,
-  activeFeedTab = 'for-you',
+  activeFeedTab = "for-you",
   onFeedTabChange,
   onSearchTap,
+  hideLive = false,
+  hideSearch = false,
 }) {
   const feedTabClass = (tab) =>
     `cursor-pointer pb-0.5 ${
       activeFeedTab === tab
-        ? 'border-b-2 border-white text-white'
-        : 'text-white/55'
-    }`
+        ? "border-b-2 border-white text-white"
+        : "text-white/55"
+    }`;
 
   return (
     <header className="relative z-40 h-12 shrink-0 bg-black text-white">
@@ -76,7 +81,7 @@ export function MobileFeedTopBar({
           >
             <IoClose aria-hidden />
           </button>
-        ) : (
+        ) : !hideLive && typeof onLiveTap === "function" ? (
           <button
             type="button"
             className="flex h-9 w-11 cursor-pointer items-center justify-center"
@@ -87,86 +92,96 @@ export function MobileFeedTopBar({
               LIVE
             </span>
           </button>
-        )}
+        ) : null}
       </div>
 
-      <div className="absolute right-2 top-1/2 z-10 -translate-y-1/2">
-        {onSearchTap ? (
-          <button
-            type="button"
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-xl text-white"
-            aria-label="Tìm kiếm"
-            onClick={onSearchTap}
-          >
-            <IoSearch aria-hidden />
-          </button>
-        ) : (
-          <Link
-            to="/search"
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-xl text-white"
-            aria-label="Tìm kiếm"
-          >
-            <IoSearch aria-hidden />
-          </Link>
-        )}
-      </div>
+      {!hideSearch ? (
+        <div className="absolute right-2 top-1/2 z-10 -translate-y-1/2">
+          {onSearchTap ? (
+            <button
+              type="button"
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-xl text-white"
+              aria-label="Tìm kiếm"
+              onClick={onSearchTap}
+            >
+              <IoSearch aria-hidden />
+            </button>
+          ) : (
+            <Link
+              to="/search"
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-xl text-white"
+              aria-label="Tìm kiếm"
+            >
+              <IoSearch aria-hidden />
+            </Link>
+          )}
+        </div>
+      ) : null}
 
       {feedTabs ? (
         <div className="flex h-12 items-center justify-center gap-4 px-14 text-[15px] font-semibold">
           <button
             type="button"
-            className={feedTabClass('friends')}
-            onClick={() => onFeedTabChange?.('friends')}
+            className={feedTabClass("friends")}
+            onClick={() => onFeedTabChange?.("friends")}
           >
             Bạn bè
           </button>
           <button
             type="button"
-            className={feedTabClass('following')}
-            onClick={() => onFeedTabChange?.('following')}
+            className={feedTabClass("following")}
+            onClick={() => onFeedTabChange?.("following")}
           >
             Đã follow
           </button>
           <button
             type="button"
-            className={feedTabClass('for-you')}
-            onClick={() => onFeedTabChange?.('for-you')}
+            className={feedTabClass("for-you")}
+            onClick={() => onFeedTabChange?.("for-you")}
           >
             Đề xuất
           </button>
         </div>
       ) : (
         <div className="flex h-12 items-center justify-center px-14">
-          <Link to="/foryou" className="text-lg font-bold tracking-tight text-white">
+          <Link
+            to="/foryou"
+            className="text-lg font-bold tracking-tight text-white"
+          >
             Vibely
           </Link>
         </div>
       )}
     </header>
-  )
+  );
 }
 
-export function MobileFeedBottomNav({ token, user, onSelectMenu, activeId = 'latest' }) {
-  const navigate = useNavigate()
-  const profilePath = buildProfilePath(token, user)
-  const { chatInboxBadgeCount } = useChatInboxBadge()
-  const messagesBadgeLabel = formatNotificationBadgeCount(chatInboxBadgeCount)
+export function MobileFeedBottomNav({
+  token,
+  user,
+  onSelectMenu,
+  activeId = "latest",
+}) {
+  const navigate = useNavigate();
+  const profilePath = buildProfilePath(token, user);
+  const { chatInboxBadgeCount } = useChatInboxBadge();
+  const messagesBadgeLabel = formatNotificationBadgeCount(chatInboxBadgeCount);
 
   const go = (id) => {
     if (onSelectMenu) {
-      onSelectMenu(id)
-      return
+      onSelectMenu(id);
+      return;
     }
     handleSidebarMenuSelect(navigate, id, {
       token,
       profilePath,
-    })
-  }
+    });
+  };
 
   const itemClass = (id) =>
     `flex flex-1 cursor-pointer flex-col items-center justify-center gap-0.5 ${
-      activeId === id ? 'text-white' : 'text-zinc-400'
-    }`
+      activeId === id ? "text-white" : "text-zinc-400"
+    }`;
 
   return (
     <nav
@@ -175,16 +190,16 @@ export function MobileFeedBottomNav({ token, user, onSelectMenu, activeId = 'lat
     >
       <button
         type="button"
-        className={itemClass('latest')}
-        onClick={() => go('latest')}
+        className={itemClass("latest")}
+        onClick={() => go("latest")}
       >
         <IoHome className="text-[22px]" aria-hidden />
         <span>Trang chủ</span>
       </button>
       <button
         type="button"
-        className={itemClass('explore')}
-        onClick={() => (token ? go('explore') : navigate('/login'))}
+        className={itemClass("explore")}
+        onClick={() => (token ? go("explore") : navigate("/login"))}
       >
         <IoCompass className="text-[22px]" aria-hidden />
         <span>Khám phá</span>
@@ -192,7 +207,7 @@ export function MobileFeedBottomNav({ token, user, onSelectMenu, activeId = 'lat
       <button
         type="button"
         className="flex flex-1 cursor-pointer flex-col items-center justify-center gap-0.5"
-        onClick={() => (token ? go('upload') : navigate('/login'))}
+        onClick={() => (token ? go("upload") : navigate("/login"))}
         aria-label="Tải lên"
       >
         <span className="relative flex h-9 w-10 items-center justify-center">
@@ -207,8 +222,8 @@ export function MobileFeedBottomNav({ token, user, onSelectMenu, activeId = 'lat
       </button>
       <button
         type="button"
-        className={itemClass('messages')}
-        onClick={() => (token ? go('messages') : navigate('/login'))}
+        className={itemClass("messages")}
+        onClick={() => (token ? go("messages") : navigate("/login"))}
       >
         <span className="relative inline-flex">
           <IoPaperPlane className="text-[22px]" aria-hidden />
@@ -225,21 +240,21 @@ export function MobileFeedBottomNav({ token, user, onSelectMenu, activeId = 'lat
       </button>
       <button
         type="button"
-        className={itemClass('profile')}
-        onClick={() => (token ? go('profile') : navigate('/login'))}
+        className={itemClass("profile")}
+        onClick={() => (token ? go("profile") : navigate("/login"))}
       >
         <IoPerson className="text-[22px]" aria-hidden />
         <span>Hồ sơ</span>
       </button>
     </nav>
-  )
+  );
 }
 
 function profileHrefFor(username) {
-  const raw = String(username ?? '')
+  const raw = String(username ?? "")
     .trim()
-    .replace(/^@/, '')
-  return raw ? `/@${encodeURIComponent(raw)}` : '/foryou'
+    .replace(/^@/, "");
+  return raw ? `/@${encodeURIComponent(raw)}` : "/foryou";
 }
 
 export function MobileFeedMenuDrawer({
@@ -247,55 +262,55 @@ export function MobileFeedMenuDrawer({
   onClose,
   token,
   user,
-  activeFeedTab = 'for-you',
+  activeFeedTab = "for-you",
 }) {
-  const navigate = useNavigate()
-  const [following, setFollowing] = useState([])
-  const [followingLoading, setFollowingLoading] = useState(false)
+  const navigate = useNavigate();
+  const [following, setFollowing] = useState([]);
+  const [followingLoading, setFollowingLoading] = useState(false);
 
   useEffect(() => {
-    if (!open) return undefined
+    if (!open) return undefined;
     if (!token || !user?.username) {
-      setFollowing([])
-      setFollowingLoading(false)
-      return undefined
+      setFollowing([]);
+      setFollowingLoading(false);
+      return undefined;
     }
-    let cancelled = false
-    setFollowingLoading(true)
+    let cancelled = false;
+    setFollowingLoading(true);
     apiClient
       .getProfileFollowing(user.username, { token, page: 0, size: 50 })
       .then((res) => {
-        if (cancelled) return
-        setFollowing(Array.isArray(res?.items) ? res.items : [])
+        if (cancelled) return;
+        setFollowing(Array.isArray(res?.items) ? res.items : []);
       })
       .catch(() => {
-        if (!cancelled) setFollowing([])
+        if (!cancelled) setFollowing([]);
       })
       .finally(() => {
-        if (!cancelled) setFollowingLoading(false)
-      })
+        if (!cancelled) setFollowingLoading(false);
+      });
     return () => {
-      cancelled = true
-    }
-  }, [open, token, user?.username])
+      cancelled = true;
+    };
+  }, [open, token, user?.username]);
 
-  if (!open) return null
+  if (!open) return null;
 
   const goForYou = () => {
-    navigate('/foryou')
-    onClose()
-  }
+    navigate("/foryou");
+    onClose();
+  };
 
   const goFollowing = () => {
-    markFollowingPreferFeedFromSidebar()
-    navigate('/following')
-    onClose()
-  }
+    markFollowingPreferFeedFromSidebar();
+    navigate("/following");
+    onClose();
+  };
 
   const goProfile = (username) => {
-    navigate(profileHrefFor(username))
-    onClose()
-  }
+    navigate(profileHrefFor(username));
+    onClose();
+  };
 
   return (
     <>
@@ -328,14 +343,14 @@ export function MobileFeedMenuDrawer({
           <button
             type="button"
             className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[15px] font-semibold ${
-              activeFeedTab === 'for-you'
-                ? 'text-[#fe2c55]'
-                : 'text-zinc-100 hover:bg-white/5'
+              activeFeedTab === "for-you"
+                ? "text-[#fe2c55]"
+                : "text-zinc-100 hover:bg-white/5"
             }`}
             onClick={goForYou}
           >
             <IoHome
-              className={`text-[22px] ${activeFeedTab === 'for-you' ? 'text-[#fe2c55]' : 'text-zinc-100'}`}
+              className={`text-[22px] ${activeFeedTab === "for-you" ? "text-[#fe2c55]" : "text-zinc-100"}`}
               aria-hidden
             />
             Đề xuất
@@ -343,14 +358,14 @@ export function MobileFeedMenuDrawer({
           <button
             type="button"
             className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[15px] font-semibold ${
-              activeFeedTab === 'following'
-                ? 'text-[#fe2c55]'
-                : 'text-zinc-100 hover:bg-white/5'
+              activeFeedTab === "following"
+                ? "text-[#fe2c55]"
+                : "text-zinc-100 hover:bg-white/5"
             }`}
             onClick={goFollowing}
           >
             <IoPeople
-              className={`text-[22px] ${activeFeedTab === 'following' ? 'text-[#fe2c55]' : 'text-zinc-100'}`}
+              className={`text-[22px] ${activeFeedTab === "following" ? "text-[#fe2c55]" : "text-zinc-100"}`}
               aria-hidden
             />
             Đã follow
@@ -360,7 +375,9 @@ export function MobileFeedMenuDrawer({
         <div className="my-3 h-px bg-zinc-800" />
 
         <div className="px-4 pb-2">
-          <h2 className="text-[15px] font-bold text-white">Các tài khoản Đã follow</h2>
+          <h2 className="text-[15px] font-bold text-white">
+            Các tài khoản Đã follow
+          </h2>
         </div>
 
         <div className="min-h-0 flex-1 px-2 pb-6">
@@ -377,8 +394,9 @@ export function MobileFeedMenuDrawer({
           ) : (
             <ul className="space-y-0.5">
               {following.map((row) => {
-                const username = String(row?.username ?? '').trim()
-                const avatar = String(row?.avatarUrl ?? '').trim() || DEFAULT_AVATAR_URL
+                const username = String(row?.username ?? "").trim();
+                const avatar =
+                  String(row?.avatarUrl ?? "").trim() || DEFAULT_AVATAR_URL;
                 return (
                   <li key={row?.id ?? username}>
                     <button
@@ -392,7 +410,7 @@ export function MobileFeedMenuDrawer({
                         className="h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-zinc-700"
                         referrerPolicy="no-referrer"
                         onError={(e) => {
-                          e.currentTarget.src = DEFAULT_AVATAR_URL
+                          e.currentTarget.src = DEFAULT_AVATAR_URL;
                         }}
                       />
                       <span className="min-w-0 truncate text-[15px] font-semibold text-white">
@@ -400,12 +418,12 @@ export function MobileFeedMenuDrawer({
                       </span>
                     </button>
                   </li>
-                )
+                );
               })}
             </ul>
           )}
         </div>
       </aside>
     </>
-  )
+  );
 }
