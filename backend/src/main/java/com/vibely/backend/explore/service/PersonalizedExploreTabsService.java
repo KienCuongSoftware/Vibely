@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PersonalizedExploreTabsService {
+    public static final String ALL_SLUG = "all";
+    public static final String ALL_NAME = "Tất cả";
     public static final String FOR_YOU_SLUG = "for-you";
     public static final String FOR_YOU_NAME = "Dành cho bạn";
 
@@ -51,6 +53,16 @@ public class PersonalizedExploreTabsService {
         Long userId = resolveUserId(viewerEmail);
         List<ExploreTabDto> tabs = new ArrayList<>();
         Set<String> usedSlugs = new HashSet<>();
+
+        tabs.add(new ExploreTabDto(
+            ALL_SLUG,
+            ALL_NAME,
+            "category",
+            false,
+            null,
+            videoCategoryRepository.countDistinctVideos()
+        ));
+        usedSlugs.add(ALL_SLUG);
 
         if (userId != null && discoveryProperties.isEnabled()) {
             List<UserTopicInterest> interests = userTopicInterestRepository.findTopByUserId(
@@ -95,13 +107,17 @@ public class PersonalizedExploreTabsService {
             if (slug == null || slug.isBlank() || !usedSlugs.add(slug)) {
                 continue;
             }
+            long videoCount = videoCategoryRepository.countByCategoryId(category.getId());
+            if (videoCount <= 0) {
+                continue;
+            }
             tabs.add(new ExploreTabDto(
                 slug,
                 category.getName(),
                 "category",
                 false,
                 null,
-                videoCategoryRepository.countByCategoryId(category.getId())
+                videoCount
             ));
         }
         return tabs;

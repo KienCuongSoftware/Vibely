@@ -80,6 +80,7 @@ public class ExploreService {
     public List<ExploreCategoryDto> categories() {
         return categoryRepository.findByEnabledTrueOrderByNameAsc().stream()
             .map(c -> new ExploreCategoryDto(c.getSlug(), c.getName(), videoCategoryRepository.countByCategoryId(c.getId())))
+            .filter(c -> c.videoCount() > 0)
             .toList();
     }
 

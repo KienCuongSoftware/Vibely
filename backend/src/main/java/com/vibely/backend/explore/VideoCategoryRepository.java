@@ -14,6 +14,9 @@ public interface VideoCategoryRepository extends JpaRepository<VideoCategory, Vi
     @Query("select count(vc) from VideoCategory vc where vc.id.categoryId = :categoryId")
     long countByCategoryId(@Param("categoryId") Long categoryId);
 
+    @Query("select count(distinct vc.id.videoId) from VideoCategory vc")
+    long countDistinctVideos();
+
     @Query("select distinct vc.id.videoId from VideoCategory vc where vc.id.categoryId in :categoryIds")
     java.util.List<Long> findVideoIdsByCategoryIds(@Param("categoryIds") Collection<Long> categoryIds);
 }

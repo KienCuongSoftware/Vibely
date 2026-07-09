@@ -24,7 +24,9 @@ class ExploreTabsIntegrationTest {
         mockMvc.perform(get("/api/explore/tabs"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.data").isArray());
+            .andExpect(jsonPath("$.data").isArray())
+            .andExpect(jsonPath("$.data[0].slug").value("all"))
+            .andExpect(jsonPath("$.data[0].name").value("Tất cả"));
     }
 
     @Test
