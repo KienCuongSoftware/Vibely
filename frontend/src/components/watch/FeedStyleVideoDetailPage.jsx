@@ -57,6 +57,7 @@ import { videoObjectJsonLd } from '../../seo/jsonLd.js'
 import { absoluteUrl } from '../../seo/seoConfig.js'
 import { buildProfileHref } from '../search/searchUtils.js'
 import { formatRelativeTimeVi } from '../../utils/relativeTimeVi.js'
+import { isEnterKey } from '../../utils/keyboardShortcuts.js'
 
 import { FEED_ACTION_ITEM_CLASS } from '../../feed/feedLayout.js'
 
@@ -1319,6 +1320,11 @@ export function FeedStyleVideoDetailPage({
                     placeholder={token ? 'Thêm bình luận...' : 'Đăng nhập để bình luận...'}
                     disabled={!token || !isVideoPublicId(publicId)}
                     className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-14 text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-zinc-600 disabled:opacity-50"
+                    onKeyDown={(e) => {
+                      if (!isEnterKey(e) || e.nativeEvent.isComposing || e.shiftKey) return
+                      e.preventDefault()
+                      void submitComment()
+                    }}
                   />
                   <button
                     type="button"

@@ -22,6 +22,11 @@ import { buildShareableVideoUrl } from '../utils/shareUrl.js'
 import { pickShareCaption } from '../utils/shareCaption.js'
 import { recordProfileLastWatchedFromVideo } from '../utils/profileLastWatched.js'
 import { formatRelativeTimeVi } from '../utils/relativeTimeVi.js'
+import {
+  isEnterKey,
+  isSpaceKey,
+  shouldHandleGlobalShortcut,
+} from '../utils/keyboardShortcuts.js'
 import { isMobileFeedLayout } from '../components/feed/MobileFeedShell.jsx'
 import { WatchSearchDropdown } from '../components/search/WatchSearchDropdown.jsx'
 import {
@@ -1325,6 +1330,22 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
 
   const caption = watchPageCaption(activeVideo ?? {})
   const panelVideo = activeVideo ?? video
+  const submitWatchComment = useCallback(async () => {
+    const text = commentDraft.trim()
+    if (!text || !token || !isWatchableVideo(panelVideo)) return
+    setCommentPostError('')
+    try {
+      const created = await apiClient.addComment(panelVideo.publicId, text, token)
+      setCommentDraft('')
+      setComments((prev) => [created, ...prev])
+      const prevCc = Number(panelVideo.commentCount ?? 0)
+      patchVideo({ commentCount: prevCc + 1 })
+    } catch (e) {
+      setCommentPostError(
+        e instanceof Error ? e.message : 'Không gửi được bình luận.',
+      )
+    }
+  }, [commentDraft, panelVideo, patchVideo, token])
   const authorVibelyId = normalizeUsernameKey(panelVideo?.authorUsername) || 'user'
   const seoVideoId = videoPublicIdOf(panelVideo) || publicIdFromRoute
   const seoVideoTitleSource =
@@ -1629,10 +1650,11 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
   useEffect(() => {
     if (!isFromExplore && !isCreatorWatch) return undefined
     const onKeyDown = (e) => {
+      if (!shouldHandleGlobalShortcut(e)) return
       if (e.key === 'ArrowUp') {
         e.preventDefault()
         moveWatchVideo('prev')
-      } else if (e.key === 'ArrowDown') {
+      } else if (e.key === 'ArrowDown' || isSpaceKey(e)) {
         e.preventDefault()
         moveWatchVideo('next')
       }
@@ -2343,6 +2365,11 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
                         }
                         disabled={!token || !isWatchableVideo(panelVideo)}
                         className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-21 text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-zinc-600 disabled:opacity-50"
+                        onKeyDown={(e) => {
+                          if (!isEnterKey(e) || e.nativeEvent.isComposing || e.shiftKey) return
+                          e.preventDefault()
+                          void submitWatchComment()
+                        }}
                       />
                       <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
                         <button
@@ -2366,22 +2393,7 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
                       className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600 text-white shadow-md transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
                       aria-label="Gửi bình luận"
                       disabled={!commentDraft.trim() || !token || !isWatchableVideo(panelVideo)}
-                      onClick={async () => {
-                        const text = commentDraft.trim()
-                        if (!text || !token || !isWatchableVideo(panelVideo)) return
-                        setCommentPostError('')
-                        try {
-                          const created = await apiClient.addComment(panelVideo.publicId, text, token)
-                          setCommentDraft('')
-                          setComments((prev) => [created, ...prev])
-                          const prevCc = Number(panelVideo.commentCount ?? 0)
-                          patchVideo({ commentCount: prevCc + 1 })
-                        } catch (e) {
-                          setCommentPostError(
-                            e instanceof Error ? e.message : 'Không gửi được bình luận.',
-                          )
-                        }
-                      }}
+                      onClick={() => void submitWatchComment()}
                     >
                       <IoArrowUp className="text-xl" aria-hidden />
                     </button>

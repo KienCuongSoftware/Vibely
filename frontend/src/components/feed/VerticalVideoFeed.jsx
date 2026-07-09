@@ -35,6 +35,11 @@ import {
 import { useRapidStepNavigation } from "../../hooks/useRapidStepNavigation.js";
 import { formatRelativeTimeVi } from "../../utils/relativeTimeVi.js";
 import {
+  isEnterKey,
+  isSpaceKey,
+  shouldHandleGlobalShortcut,
+} from "../../utils/keyboardShortcuts.js";
+import {
   IoArrowRedo,
   IoBookmark,
   IoChevronDown,
@@ -1190,6 +1195,34 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [feedMoreMenuOpen, feedMoreMenuSubpage]);
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (
+        shareModalOpen ||
+        feedMoreMenuOpen ||
+        showAccountMenu ||
+        showLogoutConfirm ||
+        mobileMenuOpen
+      ) {
+        return
+      }
+      if (!shouldHandleGlobalShortcut(e)) return
+      if (isSpaceKey(e)) {
+        e.preventDefault()
+        requestFeedStep(1)
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [
+    feedMoreMenuOpen,
+    mobileMenuOpen,
+    requestFeedStep,
+    shareModalOpen,
+    showAccountMenu,
+    showLogoutConfirm,
+  ])
 
   const onActiveFeedPlaybackTick = useCallback((e) => {
     const el = e.currentTarget;

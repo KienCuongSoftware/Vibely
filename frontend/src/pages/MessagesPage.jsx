@@ -24,6 +24,7 @@ import { MobileLoginPrompt, MobilePageShell } from "../components/feed/MobilePag
 import { ActivityPanel } from "../components/activity/ActivityPanel.jsx";
 import { buildVideoWatchUrl } from "../utils/videoPublicId.js";
 import { handleSidebarMenuSelect } from "../utils/sidebarNavigation.js";
+import { isEnterKey } from "../utils/keyboardShortcuts.js";
 import { useAuth } from "../state/useAuth";
 import { useChatInboxBadge } from "../state/ChatInboxBadgeContext.jsx";
 import { createChatSocketClient } from "../realtime/chatSocket.js";
@@ -1349,6 +1350,11 @@ export function MessagesPage() {
                       placeholder="Nhập tin nhắn..."
                       disabled={!canSendActiveMessage}
                       className="h-10 flex-1 rounded-full border border-zinc-800 bg-zinc-900 px-4 text-sm text-zinc-100 outline-none ring-0 placeholder:text-zinc-500 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-60"
+                      onKeyDown={(e) => {
+                        if (!isEnterKey(e) || e.nativeEvent.isComposing || e.shiftKey) return
+                        e.preventDefault()
+                        void submitMessage(e)
+                      }}
                     />
                     <button
                       type="button"
