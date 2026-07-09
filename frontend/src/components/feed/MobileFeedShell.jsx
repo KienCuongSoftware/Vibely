@@ -19,6 +19,8 @@ import { handleSidebarMenuSelect } from "../../utils/sidebarNavigation.js";
 import { markFollowingPreferFeedFromSidebar } from "../../utils/followingPageView.js";
 
 export const MOBILE_FEED_TOP_BAR_PX = 48;
+/** Khoảng đen phía trên video trên mobile feed (đỉnh video không sát mép màn hình). */
+export const MOBILE_FEED_VIDEO_TOP_INSET_PX = MOBILE_FEED_TOP_BAR_PX;
 export const MOBILE_FEED_BOTTOM_NAV_PX = 56;
 /** Mobile comment sheet — overlay ~58% đáy vùng feed; video full phía sau (TikTok). */
 export const MOBILE_COMMENTS_SHEET_RATIO = 0.58;

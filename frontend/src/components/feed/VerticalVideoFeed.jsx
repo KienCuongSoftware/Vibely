@@ -10,6 +10,7 @@ import { FeedCommentsPanel } from "./FeedCommentsPanel.jsx";
 import {
   computeMobileFeedCommentsLayout,
   isMobileFeedLayout,
+  MOBILE_FEED_VIDEO_TOP_INSET_PX,
   MobileFeedMenuDrawer,
 } from "./MobileFeedShell.jsx";
 import { MobileFollowingEmptyState } from "./MobileFollowingEmptyState.jsx";
@@ -246,7 +247,10 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     if (mobile) {
       const viewportH =
         window.visualViewport?.height ?? window.innerHeight;
-      return Math.max(320, Math.round(viewportH));
+      return Math.max(
+        320,
+        Math.round(viewportH - MOBILE_FEED_VIDEO_TOP_INSET_PX),
+      );
     }
     const insetPx = 12;
     return Math.max(320, Math.round(window.innerHeight - insetPx * 2));
@@ -338,13 +342,13 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const [userPaused, setUserPaused] = useState(false);
   const [feedCommentsOpen, setFeedCommentsOpen] = useState(false);
   const [mobileCommentsLayout, setMobileCommentsLayout] = useState(() =>
-    computeMobileFeedCommentsLayout({ includeBottomNav: false, includeTopBar: false }),
+    computeMobileFeedCommentsLayout({ includeBottomNav: false, includeTopBar: true }),
   );
   useEffect(() => {
     if (!mobileLayout) return undefined;
     const sync = () => {
       setMobileCommentsLayout(
-        computeMobileFeedCommentsLayout({ includeBottomNav: false, includeTopBar: false }),
+        computeMobileFeedCommentsLayout({ includeBottomNav: false, includeTopBar: true }),
       );
     };
     sync();
@@ -1724,6 +1728,14 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
             </div>
             )
           ) : (
+            <>
+              {mobileLayout ? (
+                <div
+                  className="shrink-0 bg-black"
+                  style={{ height: MOBILE_FEED_VIDEO_TOP_INSET_PX }}
+                  aria-hidden
+                />
+              ) : null}
             <div
               ref={mobileLayout ? mobileFeedSlotRef : undefined}
               className={
@@ -1823,7 +1835,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               <div
                 className={
                   mobileLayout
-                    ? `pointer-events-auto z-30 flex h-full shrink-0 flex-col items-center justify-end gap-3 px-2 pb-16${
+                    ? `pointer-events-auto z-30 flex h-full shrink-0 flex-col items-center justify-center gap-3 px-2 pb-8${
                         feedCommentsOpen ? " hidden" : ""
                       }`
                     : `pointer-events-auto z-30 flex flex-col items-center gap-3 lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-4 lg:pb-14 ${
@@ -1986,6 +1998,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 />
               </div>
             </div>
+            </>
           )}
         </div>
 
