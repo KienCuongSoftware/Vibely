@@ -55,6 +55,7 @@ import {
 import { Seo } from '../../seo/Seo.jsx'
 import { videoObjectJsonLd } from '../../seo/jsonLd.js'
 import { absoluteUrl } from '../../seo/seoConfig.js'
+import { buildProfileHref } from '../search/searchUtils.js'
 
 import { FEED_ACTION_ITEM_CLASS } from '../../feed/feedLayout.js'
 
@@ -1214,30 +1215,66 @@ export function FeedStyleVideoDetailPage({
                 </div>
               ) : (
                 <ul className="space-y-4 px-1">
-                  {comments.map((comment) => (
-                    <li key={comment.id} className="flex gap-2">
-                      <img
-                        src={comment.authorAvatarUrl?.trim() || DEFAULT_AVATAR}
-                        alt=""
-                        className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-zinc-800"
-                        referrerPolicy="no-referrer"
-                        onError={(e) => {
-                          e.currentTarget.src = DEFAULT_AVATAR
-                        }}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-zinc-300">
-                          @{comment.username ?? 'user'}
-                          <span className="ml-2 font-normal text-zinc-600">
-                            {formatRelativeTime(comment.createdAt)}
-                          </span>
-                        </p>
-                        <p className="mt-0.5 whitespace-pre-wrap text-sm text-zinc-100">
-                          {comment.content}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
+                  {comments.map((comment) => {
+                    const profileHref = comment.username
+                      ? buildProfileHref(comment.username)
+                      : null
+                    const displayName = comment.username ?? 'user'
+                    const avatarSrc =
+                      comment.authorAvatarUrl?.trim() || DEFAULT_AVATAR
+
+                    return (
+                      <li key={comment.id} className="flex gap-2">
+                        {profileHref ? (
+                          <Link
+                            to={profileHref}
+                            className="shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#69C9D0]"
+                            aria-label={`Xem trang cá nhân ${displayName}`}
+                          >
+                            <img
+                              src={avatarSrc}
+                              alt=""
+                              className="h-9 w-9 rounded-full object-cover ring-1 ring-zinc-800"
+                              referrerPolicy="no-referrer"
+                              onError={(e) => {
+                                e.currentTarget.src = DEFAULT_AVATAR
+                              }}
+                            />
+                          </Link>
+                        ) : (
+                          <img
+                            src={avatarSrc}
+                            alt=""
+                            className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-zinc-800"
+                            referrerPolicy="no-referrer"
+                            onError={(e) => {
+                              e.currentTarget.src = DEFAULT_AVATAR
+                            }}
+                          />
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold text-zinc-300">
+                            {profileHref ? (
+                              <Link
+                                to={profileHref}
+                                className="hover:underline"
+                              >
+                                @{displayName}
+                              </Link>
+                            ) : (
+                              <span>@{displayName}</span>
+                            )}
+                            <span className="ml-2 font-normal text-zinc-600">
+                              {formatRelativeTime(comment.createdAt)}
+                            </span>
+                          </p>
+                          <p className="mt-0.5 whitespace-pre-wrap text-sm text-zinc-100">
+                            {comment.content}
+                          </p>
+                        </div>
+                      </li>
+                    )
+                  })}
                 </ul>
               )
             ) : relatedLoading ? (

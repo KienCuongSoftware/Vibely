@@ -9,6 +9,7 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { Link } from "react-router-dom";
 import {
   IoArrowUp,
   IoChevronDown,
@@ -25,6 +26,7 @@ import {
   threadRootId,
 } from "../../feed/feedCommentThreads.js";
 import { FeedCommentsEmptyState } from "./FeedCommentsEmptyState.jsx";
+import { buildProfileHref } from "../search/searchUtils.js";
 import { feedCommentsPanelWidthCss } from "../../feed/feedLayout.js";
 import { MOBILE_FEED_TOP_BAR_PX } from "./MobileFeedShell.jsx";
 
@@ -627,33 +629,62 @@ function FeedCommentRow({
     Number(comment.userId) === Number(videoAuthorId);
   const liked = Boolean(comment.likedByViewer);
   const likeLabel = formatCommentLikeCount(comment.likeCount);
+  const profileHref = comment.username
+    ? buildProfileHref(comment.username)
+    : null;
+  const displayName = comment.username ?? "Người dùng";
+  const avatarSrc =
+    comment.authorAvatarUrl && String(comment.authorAvatarUrl).trim()
+      ? String(comment.authorAvatarUrl).trim()
+      : FEED_DEFAULT_AUTHOR_AVATAR;
+  const avatarClassName = `shrink-0 rounded-full object-cover bg-zinc-800 ${
+    compact ? "h-6 w-6" : "h-10 w-10"
+  }`;
+  const nameTextClassName = `font-semibold text-zinc-100 ${
+    compact ? "text-xs" : "text-[13px]"
+  }`;
 
   return (
     <div className={`group flex gap-3 ${compact ? "py-2.5" : "py-3"}`}>
-      <img
-        src={
-          comment.authorAvatarUrl && String(comment.authorAvatarUrl).trim()
-            ? String(comment.authorAvatarUrl).trim()
-            : FEED_DEFAULT_AUTHOR_AVATAR
-        }
-        alt=""
-        className={`shrink-0 rounded-full object-cover bg-zinc-800 ${
-          compact ? "h-6 w-6" : "h-10 w-10"
-        }`}
-        referrerPolicy="no-referrer"
-        onError={(e) => {
-          e.currentTarget.src = FEED_DEFAULT_AUTHOR_AVATAR;
-        }}
-      />
+      {profileHref ? (
+        <Link
+          to={profileHref}
+          className="shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#69C9D0]"
+          aria-label={`Xem trang cá nhân ${displayName}`}
+        >
+          <img
+            src={avatarSrc}
+            alt=""
+            className={avatarClassName}
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              e.currentTarget.src = FEED_DEFAULT_AUTHOR_AVATAR;
+            }}
+          />
+        </Link>
+      ) : (
+        <img
+          src={avatarSrc}
+          alt=""
+          className={avatarClassName}
+          referrerPolicy="no-referrer"
+          onError={(e) => {
+            e.currentTarget.src = FEED_DEFAULT_AUTHOR_AVATAR;
+          }}
+        />
+      )}
       <div className="min-w-0 flex-1 pt-0.5">
         <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
-          <span
-            className={`font-semibold text-zinc-100 ${
-              compact ? "text-xs" : "text-[13px]"
-            }`}
-          >
-            {comment.username ?? "Người dùng"}
-          </span>
+          {profileHref ? (
+            <Link
+              to={profileHref}
+              className={`${nameTextClassName} hover:underline`}
+            >
+              {displayName}
+            </Link>
+          ) : (
+            <span className={nameTextClassName}>{displayName}</span>
+          )}
           {isCreator ? (
             <>
               <span
