@@ -33,6 +33,7 @@ import {
   watchTimeQualifiesForViewRecord,
 } from "../../utils/watchQualifiesForViewRecord";
 import { useRapidStepNavigation } from "../../hooks/useRapidStepNavigation.js";
+import { formatRelativeTimeVi } from "../../utils/relativeTimeVi.js";
 import {
   IoArrowRedo,
   IoBookmark,
@@ -128,24 +129,6 @@ const FEED_DEFAULT_AUTHOR_AVATAR = "/images/users/default-avatar.jpeg";
 
 function resolveVideoAuthorAvatar(item) {
   return sanitizeAvatarUrl(item?.authorAvatarUrl, FEED_DEFAULT_AUTHOR_AVATAR);
-}
-
-function formatRelativeTimeVi(isoOrMs) {
-  if (isoOrMs == null) return "";
-  const d =
-    typeof isoOrMs === "string" || typeof isoOrMs === "number"
-      ? new Date(isoOrMs)
-      : isoOrMs;
-  if (!(d instanceof Date) || Number.isNaN(d.getTime())) return "";
-  const sec = Math.floor((Date.now() - d.getTime()) / 1000);
-  if (sec < 45) return "Vừa xong";
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min} phút trước`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr} giờ trước`;
-  const day = Math.floor(hr / 24);
-  if (day < 14) return `${day} ngày trước`;
-  return d.toLocaleDateString("vi-VN");
 }
 
 const FEED_ROUND_ICON_BUTTON = FEED_ROUND_ICON_BUTTON_CLASS;

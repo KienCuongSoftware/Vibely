@@ -20,6 +20,7 @@ import { StudioCommentDateRangePicker } from '../components/StudioCommentDateRan
 import { StudioLayout } from '../components/StudioLayout'
 import { useAuth } from '../state/useAuth'
 import { normalizeVideoPublicId } from '../utils/videoPublicId.js'
+import { formatRelativeTimeVi } from '../utils/relativeTimeVi.js'
 
 function formatCount(n) {
   const v = Math.max(0, Number(n) || 0)
@@ -37,26 +38,8 @@ function formatClockFromSeconds(totalSec) {
 }
 
 function formatRelativePostTime(iso) {
-  if (!iso) return '—'
-  try {
-    const d = new Date(iso)
-    const diff = Date.now() - d.getTime()
-    const sec = Math.floor(diff / 1000)
-    if (sec < 45) return 'Vừa xong'
-    const min = Math.floor(sec / 60)
-    if (min < 60) return `${min} phút trước`
-    const h = Math.floor(min / 60)
-    if (h < 24) return `${h} giờ trước`
-    const days = Math.floor(h / 24)
-    if (days < 14) return `${days} ngày trước`
-    return d.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    })
-  } catch {
-    return '—'
-  }
+  const label = formatRelativeTimeVi(iso)
+  return label || '—'
 }
 
 function startOfLocalDay(d) {

@@ -1,13 +1,13 @@
 package com.vibely.backend.interaction.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record CommentResponse(
     Long id,
     Long userId,
     String username,
     String content,
-    LocalDateTime createdAt,
+    Instant createdAt,
     String authorAvatarUrl,
     Long parentCommentId,
     long likeCount,

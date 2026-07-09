@@ -21,6 +21,7 @@ import {
 import { buildShareableVideoUrl } from '../utils/shareUrl.js'
 import { pickShareCaption } from '../utils/shareCaption.js'
 import { recordProfileLastWatchedFromVideo } from '../utils/profileLastWatched.js'
+import { formatRelativeTimeVi } from '../utils/relativeTimeVi.js'
 import { isMobileFeedLayout } from '../components/feed/MobileFeedShell.jsx'
 import { WatchSearchDropdown } from '../components/search/WatchSearchDropdown.jsx'
 import {
@@ -136,22 +137,6 @@ function normalizeUsernameKey(raw) {
 
 function isWatchableVideo(video) {
   return isVideoPublicId(videoPublicIdOf(video))
-}
-
-function formatRelativeTime(iso) {
-  if (!iso) return ''
-  const t = new Date(iso).getTime()
-  if (!Number.isFinite(t)) return ''
-  const diff = Date.now() - t
-  const sec = Math.floor(diff / 1000)
-  if (sec < 60) return 'Vừa xong'
-  const min = Math.floor(sec / 60)
-  if (min < 60) return `${min} phút trước`
-  const h = Math.floor(min / 60)
-  if (h < 24) return `${h} giờ trước`
-  const d = Math.floor(h / 24)
-  if (d < 7) return `${d} ngày trước`
-  return new Date(t).toLocaleDateString('vi-VN')
 }
 
 const ACTION_ROW =
@@ -2010,7 +1995,7 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
                             {String(panelVideo.authorDisplayName ?? '').trim() || 'Nhà sáng tạo'}
                       </Link>
                       <span className="shrink-0 text-xs text-zinc-500">
-                            {formatRelativeTime(panelVideo.createdAt)}
+                            {formatRelativeTimeVi(panelVideo.createdAt)}
                       </span>
                     </div>
                         <p className="truncate text-xs text-zinc-400">@{authorVibelyId}</p>

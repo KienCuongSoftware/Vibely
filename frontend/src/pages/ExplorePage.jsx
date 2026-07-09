@@ -14,6 +14,7 @@ import { resolveFeedPlaybackUrl } from '../feed/feedPlayback.js'
 import { DEFAULT_COVER, SoundGridVideoCard } from './SoundPage.jsx'
 import { useAuth } from '../state/useAuth'
 import { buildProfileVideoUrl } from '../utils/videoPublicId.js'
+import { formatRelativeTimeVi } from '../utils/relativeTimeVi.js'
 
 const EXPLORE_PAGE_TITLE = 'Khám phá - Tìm video bạn thích trên Vibely'
 const ALL_TAB = { slug: 'all', name: 'Tất cả', kind: 'category', videoCount: 0 }
@@ -39,26 +40,6 @@ function formatCompactCount(value) {
     return `${(count / 1_000).toFixed(count >= 10_000 ? 0 : 1).replace(/\.0$/, '')}K`
   }
   return String(count)
-}
-
-function formatRelativeTimeVi(isoOrMs) {
-  if (isoOrMs == null) return ''
-  const d =
-    typeof isoOrMs === 'string' || typeof isoOrMs === 'number'
-      ? new Date(isoOrMs)
-      : isoOrMs
-  if (!(d instanceof Date) || Number.isNaN(d.getTime())) return ''
-  const sec = Math.floor((Date.now() - d.getTime()) / 1000)
-  if (sec < 45) return 'Vừa xong'
-  const min = Math.floor(sec / 60)
-  if (min < 60) return `${min} phút trước`
-  const hr = Math.floor(min / 60)
-  if (hr < 24) return `${hr} giờ trước`
-  const day = Math.floor(hr / 24)
-  if (day < 7) return `${day} ngày trước`
-  const week = Math.floor(day / 7)
-  if (week < 5) return `${week} tuần trước`
-  return d.toLocaleDateString('vi-VN')
 }
 
 function ExploreMobileVideoCard({ video, coverFallback, onOpen }) {

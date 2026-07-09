@@ -56,6 +56,7 @@ import { Seo } from '../../seo/Seo.jsx'
 import { videoObjectJsonLd } from '../../seo/jsonLd.js'
 import { absoluteUrl } from '../../seo/seoConfig.js'
 import { buildProfileHref } from '../search/searchUtils.js'
+import { formatRelativeTimeVi } from '../../utils/relativeTimeVi.js'
 
 import { FEED_ACTION_ITEM_CLASS } from '../../feed/feedLayout.js'
 
@@ -74,22 +75,6 @@ function formatCompactCount(value) {
     return `${(count / 1_000).toFixed(count >= 10_000 ? 0 : 1).replace(/\.0$/, '')}K`
   }
   return String(count)
-}
-
-function formatRelativeTime(iso) {
-  if (!iso) return ''
-  const t = new Date(iso).getTime()
-  if (!Number.isFinite(t)) return ''
-  const diff = Date.now() - t
-  const sec = Math.floor(diff / 1000)
-  if (sec < 60) return 'Vừa xong'
-  const min = Math.floor(sec / 60)
-  if (min < 60) return `${min} phút trước`
-  const h = Math.floor(min / 60)
-  if (h < 24) return `${h} giờ trước`
-  const d = Math.floor(h / 24)
-  if (d < 7) return `${d} ngày trước`
-  return new Date(t).toLocaleDateString('vi-VN')
 }
 
 function resolveFeedAuthorDisplayName(video) {
@@ -1265,7 +1250,7 @@ export function FeedStyleVideoDetailPage({
                               <span>@{displayName}</span>
                             )}
                             <span className="ml-2 font-normal text-zinc-600">
-                              {formatRelativeTime(comment.createdAt)}
+                              {formatRelativeTimeVi(comment.createdAt)}
                             </span>
                           </p>
                           <p className="mt-0.5 whitespace-pre-wrap text-sm text-zinc-100">

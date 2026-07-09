@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.time.ZoneOffset;
 import java.util.UUID;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.PageRequest;
@@ -463,7 +464,9 @@ public class InteractionService {
             entity.getUser().getId(),
             entity.getUser().getUsername(),
             entity.getContent(),
-            entity.getCreatedAt(),
+            entity.getCreatedAt() != null
+                ? entity.getCreatedAt().atZone(ZoneOffset.UTC).toInstant()
+                : null,
             userAvatarResolver.resolve(entity.getUser()),
             parentId,
             likeCount,
