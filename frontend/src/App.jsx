@@ -35,6 +35,7 @@ const ExploreViewerPage = lazyNamed(() => import('./pages/ExploreViewerPage.jsx'
 const SearchResultsPage = lazyNamed(() => import('./pages/SearchResultsPage.jsx'), 'SearchResultsPage')
 const AdminUsersPage = lazyNamed(() => import('./pages/AdminUsersPage.jsx'), 'AdminUsersPage')
 const AdminBannedUsersPage = lazyNamed(() => import('./pages/AdminBannedUsersPage.jsx'), 'AdminBannedUsersPage')
+const AdminBanAppealsPage = lazyNamed(() => import('./pages/AdminBanAppealsPage.jsx'), 'AdminBanAppealsPage')
 const AdminPostsPage = lazyNamed(() => import('./pages/AdminPostsPage.jsx'), 'AdminPostsPage')
 const AdminPostDetailPage = lazyNamed(() => import('./pages/AdminPostDetailPage.jsx'), 'AdminPostDetailPage')
 
@@ -178,6 +179,14 @@ function App() {
           element={
             <AdminRoute user={user}>
               <AdminBannedUsersPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/ban-appeals"
+          element={
+            <AdminRoute user={user}>
+              <AdminBanAppealsPage />
             </AdminRoute>
           }
         />

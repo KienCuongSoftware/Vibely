@@ -2,6 +2,7 @@ package com.vibely.backend.auth.oauth;
 
 import com.vibely.backend.auth.dto.AuthResponse;
 import com.vibely.backend.auth.exception.AccountBannedException;
+import com.vibely.backend.auth.mail.EmailMasking;
 import com.vibely.backend.auth.exception.AccountDeactivatedException;
 import com.vibely.backend.auth.service.AuthService;
 import com.vibely.backend.auth.store.AccountReactivationTokenStore;
@@ -76,6 +77,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             String redirectUrl = UriComponentsBuilder.fromUriString(loginBase)
                 .queryParam("banned", "1")
                 .queryParam("reason", ex.getReason())
+                .queryParam("maskedEmail", EmailMasking.mask(ex.getEmail()))
                 .queryParam("provider", registrationId)
                 .build()
                 .encode()

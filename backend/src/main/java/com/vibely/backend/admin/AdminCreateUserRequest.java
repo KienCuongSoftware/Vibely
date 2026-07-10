@@ -2,7 +2,9 @@ package com.vibely.backend.admin;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 
 public record AdminCreateUserRequest(
     @NotBlank(message = "Email là bắt buộc")
@@ -21,6 +23,9 @@ public record AdminCreateUserRequest(
 
     @NotBlank(message = "Mật khẩu là bắt buộc")
     @Size(min = 6, max = 100, message = "Mật khẩu phải từ 6 đến 100 ký tự")
-    String password
+    String password,
+
+    @NotNull(message = "Ngày sinh là bắt buộc")
+    LocalDate birthDate
 ) {
 }

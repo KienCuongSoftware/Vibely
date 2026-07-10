@@ -140,6 +140,7 @@ public class SecurityConfig {
                     "/api/auth/send-code",
                     "/api/auth/verify-code",
                     "/api/auth/reset-password",
+                    "/api/auth/ban-appeal",
                     "/api/auth/reactivation/send-code",
                     "/api/auth/reactivation/confirm",
                     "/api/auth/oauth/exchange",
@@ -242,6 +243,7 @@ public class SecurityConfig {
             || uri.equals("/api/auth/send-code")
             || uri.equals("/api/auth/verify-code")
             || uri.equals("/api/auth/reset-password")
+            || uri.equals("/api/auth/ban-appeal")
             || uri.equals("/api/auth/reactivation/send-code")
             || uri.equals("/api/auth/reactivation/confirm")
             || uri.equals("/api/auth/oauth/exchange")

@@ -73,6 +73,11 @@ export function SignupPage() {
   const [usernameAvailable, setUsernameAvailable] = useState(false);
   const [usernameSuggestion, setUsernameSuggestion] = useState("");
   const [usernameMessage, setUsernameMessage] = useState("");
+  const [usernameCanRecheck, setUsernameCanRecheck] = useState(false);
+  const [emailChecking, setEmailChecking] = useState(false);
+  const [emailAvailable, setEmailAvailable] = useState(false);
+  const [emailMessage, setEmailMessage] = useState("");
+  const [emailCanRecheck, setEmailCanRecheck] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const [verifiedCodeSnapshot, setVerifiedCodeSnapshot] = useState("");
   const [verifiedEmailSnapshot, setVerifiedEmailSnapshot] = useState("");
@@ -193,6 +198,8 @@ export function SignupPage() {
     isBirthDateValid &&
     normalizedEmail.length > 0 &&
     isEmailValid &&
+    emailAvailable &&
+    !emailChecking &&
     isPasswordValid &&
     !sendingCode &&
     !loading &&
@@ -236,17 +243,85 @@ export function SignupPage() {
           setUsernameAvailable(Boolean(result?.available));
           setUsernameSuggestion(result?.suggestion ?? "");
           setUsernameMessage(result?.message ?? "");
+          setUsernameCanRecheck(Boolean(result?.canRecheck));
         })
         .catch((error) => {
           setUsernameAvailable(false);
           setUsernameSuggestion("");
           setUsernameMessage(error.message);
+          setUsernameCanRecheck(false);
         })
         .finally(() => setUsernameChecking(false));
     }, 350);
 
     return () => clearTimeout(timeoutId);
   }, [normalizedVibelyId, view]);
+
+  useEffect(() => {
+    if (view !== "credentials" || !isEmailValid) {
+      setEmailAvailable(false);
+      setEmailMessage("");
+      setEmailChecking(false);
+      return undefined;
+    }
+
+    setEmailChecking(true);
+    const timeoutId = setTimeout(() => {
+      apiClient
+        .checkEmail(normalizedEmail)
+        .then((result) => {
+          setEmailAvailable(Boolean(result?.available));
+          setEmailMessage(result?.message ?? "");
+          setEmailCanRecheck(Boolean(result?.canRecheck));
+        })
+        .catch((error) => {
+          setEmailAvailable(false);
+          setEmailMessage(error.message);
+          setEmailCanRecheck(false);
+        })
+        .finally(() => setEmailChecking(false));
+    }, 350);
+
+    return () => clearTimeout(timeoutId);
+  }, [isEmailValid, normalizedEmail, view]);
+
+  const recheckEmailAvailability = async () => {
+    if (!isEmailValid) return;
+    setEmailChecking(true);
+    setEmailCanRecheck(false);
+    try {
+      const result = await apiClient.checkEmail(normalizedEmail, { confirm: true });
+      setEmailAvailable(Boolean(result?.available));
+      setEmailMessage(result?.message ?? "");
+      setEmailCanRecheck(Boolean(result?.canRecheck));
+    } catch (error) {
+      setEmailAvailable(false);
+      setEmailMessage(error.message);
+      setEmailCanRecheck(false);
+    } finally {
+      setEmailChecking(false);
+    }
+  };
+
+  const recheckUsernameAvailability = async () => {
+    if (!normalizedVibelyId) return;
+    setUsernameChecking(true);
+    setUsernameCanRecheck(false);
+    try {
+      const result = await apiClient.checkUsername(normalizedVibelyId, { confirm: true });
+      setUsernameAvailable(Boolean(result?.available));
+      setUsernameSuggestion(result?.suggestion ?? "");
+      setUsernameMessage(result?.message ?? "");
+      setUsernameCanRecheck(Boolean(result?.canRecheck));
+    } catch (error) {
+      setUsernameAvailable(false);
+      setUsernameSuggestion("");
+      setUsernameMessage(error.message);
+      setUsernameCanRecheck(false);
+    } finally {
+      setUsernameChecking(false);
+    }
+  };
 
   const buildSuggestedUsername = (emailSource = normalizedEmail) => {
     const fromEmail = normalizeVibelyId(String(emailSource).split("@")[0] ?? "")
@@ -430,6 +505,10 @@ export function SignupPage() {
     }
     if (!isEmailValid) {
       setStatus("Vui lòng nhập email hợp lệ để đăng ký tài khoản.");
+      return;
+    }
+    if (!emailAvailable) {
+      setStatus(emailMessage || "Email đã được sử dụng hoặc chưa hợp lệ.");
       return;
     }
 
@@ -703,6 +782,26 @@ export function SignupPage() {
                       Nhập địa chỉ email hợp lệ
                     </p>
                   ) : null}
+                  {isEmailValid ? (
+                    <p
+                      className={`text-[12px] ${
+                        emailAvailable ? "text-emerald-400" : "text-amber-400"
+                      }`}
+                    >
+                      {emailChecking
+                        ? "Đang kiểm tra email..."
+                        : emailMessage || " "}
+                    </p>
+                  ) : null}
+                  {emailCanRecheck && !emailChecking ? (
+                    <button
+                      type="button"
+                      className="text-[12px] text-zinc-300 underline hover:text-white"
+                      onClick={() => void recheckEmailAvailability()}
+                    >
+                      Kiểm tra lại email với cơ sở dữ liệu
+                    </button>
+                  ) : null}
                   <div className="relative">
                     <input
                       className={AUTH_FIELD_WITH_ICON}
@@ -908,6 +1007,7 @@ export function SignupPage() {
                         setUsernameAvailable(false);
                         setUsernameSuggestion("");
                         setUsernameMessage("");
+                        setUsernameCanRecheck(false);
                       }}
                     />
                   </div>
@@ -926,6 +1026,15 @@ export function SignupPage() {
                         ? usernameMessage || "Bạn luôn có thể thay đổi sau"
                         : "Nhập Vibely ID để kiểm tra"}
                   </p>
+                  {usernameCanRecheck && !usernameChecking ? (
+                    <button
+                      type="button"
+                      className="text-[12px] text-zinc-300 underline hover:text-white"
+                      onClick={() => void recheckUsernameAvailability()}
+                    >
+                      Kiểm tra lại Vibely ID với cơ sở dữ liệu
+                    </button>
+                  ) : null}
                   {usernameSuggestion && !usernameAvailable ? (
                     <button
                       type="button"
@@ -1000,6 +1109,7 @@ export function SignupPage() {
                         setUsernameAvailable(false);
                         setUsernameSuggestion("");
                         setUsernameMessage("");
+                        setUsernameCanRecheck(false);
                       }}
                     />
                   </div>
@@ -1018,6 +1128,15 @@ export function SignupPage() {
                         ? usernameMessage || "Bạn luôn có thể thay đổi sau"
                         : "Nhập Vibely ID để kiểm tra"}
                   </p>
+                  {usernameCanRecheck && !usernameChecking ? (
+                    <button
+                      type="button"
+                      className="text-[12px] text-zinc-300 underline hover:text-white"
+                      onClick={() => void recheckUsernameAvailability()}
+                    >
+                      Kiểm tra lại Vibely ID với cơ sở dữ liệu
+                    </button>
+                  ) : null}
                   {usernameSuggestion && !usernameAvailable ? (
                     <button
                       type="button"

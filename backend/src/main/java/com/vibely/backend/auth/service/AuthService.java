@@ -22,6 +22,7 @@ import com.vibely.backend.auth.oauth.OAuthLoginCodeStore;
 import com.vibely.backend.auth.repository.RefreshTokenRepository;
 import com.vibely.backend.auth.store.AccountReactivationTokenStore;
 import com.vibely.backend.common.BadRequestException;
+import com.vibely.backend.common.BirthDateValidator;
 import com.vibely.backend.common.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import com.vibely.backend.security.JwtService;
@@ -30,6 +31,7 @@ import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.entity.UserAccountStatus;
 import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.user.dto.UsernameCheckResponse;
+import com.vibely.backend.user.service.UserExistenceBloomFilterService;
 import com.vibely.backend.user.service.UsernameService;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -58,6 +60,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final OAuthLoginCodeStore oAuthLoginCodeStore;
     private final UsernameService usernameService;
+    private final UserExistenceBloomFilterService bloomFilterService;
     private final UserAvatarResolver userAvatarResolver;
     private final long refreshExpirationSeconds;
     private final AuthProtectionService authProtectionService;
@@ -74,6 +77,7 @@ public class AuthService {
         RefreshTokenRepository refreshTokenRepository,
         OAuthLoginCodeStore oAuthLoginCodeStore,
         UsernameService usernameService,
+        UserExistenceBloomFilterService bloomFilterService,
         UserAvatarResolver userAvatarResolver,
         AuthProtectionService authProtectionService,
         LoginContextService loginContextService,
@@ -89,6 +93,7 @@ public class AuthService {
         this.refreshTokenRepository = refreshTokenRepository;
         this.oAuthLoginCodeStore = oAuthLoginCodeStore;
         this.usernameService = usernameService;
+        this.bloomFilterService = bloomFilterService;
         this.userAvatarResolver = userAvatarResolver;
         this.authProtectionService = authProtectionService;
         this.loginContextService = loginContextService;
@@ -112,7 +117,7 @@ public class AuthService {
             String suffix = usernameCheck.suggestion() != null ? " Gợi ý: @" + usernameCheck.suggestion() : "";
             throw new BadRequestException("Vibely ID đã tồn tại." + suffix);
         }
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (bloomFilterService.mightContainEmail(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email đã được sử dụng");
         }
         User user = new User();
@@ -126,9 +131,10 @@ public class AuthService {
         user.setBio(request.getBio());
         user.setRole(Role.USER);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setBirthDate(validateBirthDate(request.getBirthDate()));
+        user.setBirthDate(BirthDateValidator.validate(request.getBirthDate()));
         user.setOnboardingCompleted(true);
         User saved = userRepository.save(user);
+        bloomFilterService.registerUser(saved.getEmail(), saved.getUsername());
         authProtectionService.consumeRegisterVerification(httpRequest);
         authProtectionService.onRegisterSuccess(request.getEmail(), httpRequest);
         return issueTokens(saved);
@@ -236,6 +242,7 @@ public class AuthService {
         }
 
         User saved = userRepository.save(user);
+        bloomFilterService.registerUser(saved.getEmail(), saved.getUsername());
         return issueTokens(saved);
     }
 
@@ -327,6 +334,7 @@ public class AuthService {
 
         user.setOnboardingCompleted(true);
         User saved = userRepository.save(user);
+        bloomFilterService.registerUser(saved.getEmail(), saved.getUsername());
         return issueTokens(saved);
     }
 
@@ -350,20 +358,7 @@ public class AuthService {
     }
 
     private static LocalDate validateBirthDate(LocalDate birthDate) {
-        if (birthDate == null) {
-            throw new BadRequestException("Vui lòng chọn ngày sinh");
-        }
-        LocalDate today = LocalDate.now();
-        if (birthDate.isAfter(today)) {
-            throw new BadRequestException("Ngày sinh không thể sau ngày hiện tại");
-        }
-        if (birthDate.isAfter(today.minusYears(18))) {
-            throw new BadRequestException("Bạn phải đủ 18 tuổi để sử dụng Vibely");
-        }
-        if (birthDate.isBefore(LocalDate.of(1900, 1, 1))) {
-            throw new BadRequestException("Ngày sinh không hợp lệ");
-        }
-        return birthDate;
+        return BirthDateValidator.validate(birthDate);
     }
 
     private String generatePendingUsername() {

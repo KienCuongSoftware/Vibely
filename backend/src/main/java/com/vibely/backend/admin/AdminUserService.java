@@ -2,11 +2,15 @@ package com.vibely.backend.admin;
 
 import com.vibely.backend.auth.repository.RefreshTokenRepository;
 import com.vibely.backend.common.BadRequestException;
+import com.vibely.backend.common.BirthDateValidator;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.user.dto.UsernameCheckResponse;
 import com.vibely.backend.user.entity.Role;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.entity.UserAccountStatus;
 import com.vibely.backend.user.repository.UserRepository;
+import com.vibely.backend.user.service.EmailAvailabilityService;
+import com.vibely.backend.user.service.UserExistenceBloomFilterService;
 import com.vibely.backend.user.service.UsernameService;
 import java.time.LocalDateTime;
 import java.util.Locale;
@@ -25,6 +29,8 @@ public class AdminUserService {
 
     private final UserRepository userRepository;
     private final UsernameService usernameService;
+    private final EmailAvailabilityService emailAvailabilityService;
+    private final UserExistenceBloomFilterService bloomFilterService;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -32,12 +38,16 @@ public class AdminUserService {
     public AdminUserService(
         UserRepository userRepository,
         UsernameService usernameService,
+        EmailAvailabilityService emailAvailabilityService,
+        UserExistenceBloomFilterService bloomFilterService,
         PasswordEncoder passwordEncoder,
         JdbcTemplate jdbcTemplate,
         RefreshTokenRepository refreshTokenRepository
     ) {
         this.userRepository = userRepository;
         this.usernameService = usernameService;
+        this.emailAvailabilityService = emailAvailabilityService;
+        this.bloomFilterService = bloomFilterService;
         this.passwordEncoder = passwordEncoder;
         this.jdbcTemplate = jdbcTemplate;
         this.refreshTokenRepository = refreshTokenRepository;
@@ -66,8 +76,14 @@ public class AdminUserService {
         String username = usernameService.validateForRegistration(request.username());
         Role role = parseRole(request.role());
 
-        ensureEmailAvailable(email, null);
-        ensureUsernameAvailable(username, null);
+        if (!emailAvailabilityService.checkAvailability(email).available()) {
+            throw new BadRequestException("Email đã được sử dụng");
+        }
+        UsernameCheckResponse usernameCheck = usernameService.checkAvailability(username);
+        if (!usernameCheck.available()) {
+            String suffix = usernameCheck.suggestion() != null ? " Gợi ý: @" + usernameCheck.suggestion() : "";
+            throw new BadRequestException("Vibely ID đã tồn tại." + suffix);
+        }
 
         User user = new User();
         user.setEmail(email);
@@ -75,8 +91,11 @@ public class AdminUserService {
         user.setDisplayName(normalizeDisplayName(request.displayName()));
         user.setRole(role);
         user.setPasswordHash(passwordEncoder.encode(request.password()));
+        user.setBirthDate(BirthDateValidator.validate(request.birthDate()));
         user.setOnboardingCompleted(true);
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        bloomFilterService.registerUser(saved.getEmail(), saved.getUsername());
+        return saved;
     }
 
     @Transactional
@@ -106,6 +125,9 @@ public class AdminUserService {
 
         User saved = userRepository.save(user);
         boolean usernameChanged = !Objects.equals(oldUsername, saved.getUsername());
+        if (usernameChanged) {
+            bloomFilterService.registerUsername(saved.getUsername());
+        }
         AdminUpdatedUserInfo notification = new AdminUpdatedUserInfo(
             saved.getId(),
             saved.getEmail(),

@@ -154,6 +154,8 @@ export const apiClient = {
     request("/api/auth/verify-code", { method: "POST", body: payload }),
   resetPassword: (payload) =>
     request("/api/auth/reset-password", { method: "POST", body: payload }),
+  submitBanAppeal: (payload) =>
+    request("/api/auth/ban-appeal", { method: "POST", body: payload }),
   sendReactivationCode: (payload) =>
     request("/api/auth/reactivation/send-code", { method: "POST", body: payload }),
   reactivateAccount: (payload) =>
@@ -182,8 +184,14 @@ export const apiClient = {
     request("/api/users/me", { method: "PUT", token, body: payload }),
   updatePrivacySettings: (token, payload) =>
     request("/api/users/me/privacy", { method: "PATCH", token, body: payload }),
-  checkUsername: (username) =>
-    request(`/api/users/check-username${toQuery({ username })}`),
+  checkUsername: (username, { confirm = false } = {}) =>
+    request(
+      `/api/users/check-username${toQuery({ username, confirm: confirm || undefined })}`,
+    ),
+  checkEmail: (email, { confirm = false } = {}) =>
+    request(
+      `/api/users/check-email${toQuery({ email, confirm: confirm || undefined })}`,
+    ),
   getPublicProfile: (username, token) =>
     request(
       `/api/users/${encodeURIComponent(username)}`,
@@ -244,6 +252,16 @@ export const apiClient = {
     request(`/api/admin/users/${userId}`, { method: "DELETE", token }),
   getAdminBannedUsers: (token, { page = 0, size = 20 } = {}) =>
     request(`/api/admin/users/banned${toQuery({ page, size })}`, { token }),
+  getAdminBanAppeals: (token, { page = 0, size = 20, status } = {}) =>
+    request(`/api/admin/ban-appeals${toQuery({ page, size, status })}`, { token }),
+  getAdminBanAppeal: (token, appealId) =>
+    request(`/api/admin/ban-appeals/${appealId}`, { token }),
+  updateAdminBanAppealStatus: (token, appealId, payload) =>
+    request(`/api/admin/ban-appeals/${appealId}/status`, {
+      method: "PATCH",
+      token,
+      body: payload,
+    }),
   banAdminUser: (token, userId, payload) =>
     request(`/api/admin/users/${userId}/ban`, { method: "POST", token, body: payload }),
   unbanAdminUser: (token, userId) =>

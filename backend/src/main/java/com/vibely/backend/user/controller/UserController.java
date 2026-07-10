@@ -1,6 +1,7 @@
 package com.vibely.backend.user.controller;
 
 import com.vibely.backend.common.ApiResponse;
+import com.vibely.backend.user.dto.EmailCheckResponse;
 import com.vibely.backend.user.dto.PrivacySettingsResponse;
 import com.vibely.backend.user.dto.UpdatePrivacySettingsRequest;
 import com.vibely.backend.user.dto.SuggestedCreatorsResponse;
@@ -8,6 +9,7 @@ import com.vibely.backend.user.dto.PublicUserProfileResponse;
 import com.vibely.backend.user.dto.UpdateProfileRequest;
 import com.vibely.backend.user.dto.UserFollowListResponse;
 import com.vibely.backend.user.dto.UsernameCheckResponse;
+import com.vibely.backend.user.service.EmailAvailabilityService;
 import com.vibely.backend.user.service.UserDiscoveryService;
 import com.vibely.backend.user.service.UserService;
 import com.vibely.backend.user.service.UsernameService;
@@ -31,24 +33,38 @@ public class UserController {
 
     private final UserService userService;
     private final UsernameService usernameService;
+    private final EmailAvailabilityService emailAvailabilityService;
     private final VideoService videoService;
     private final UserDiscoveryService userDiscoveryService;
 
     public UserController(
         UserService userService,
         UsernameService usernameService,
+        EmailAvailabilityService emailAvailabilityService,
         VideoService videoService,
         UserDiscoveryService userDiscoveryService
     ) {
         this.userService = userService;
         this.usernameService = usernameService;
+        this.emailAvailabilityService = emailAvailabilityService;
         this.videoService = videoService;
         this.userDiscoveryService = userDiscoveryService;
     }
 
     @GetMapping("/check-username")
-    public ApiResponse<UsernameCheckResponse> checkUsername(@RequestParam("username") String username) {
-        return ApiResponse.success(usernameService.checkAvailability(username));
+    public ApiResponse<UsernameCheckResponse> checkUsername(
+        @RequestParam("username") String username,
+        @RequestParam(value = "confirm", defaultValue = "false") boolean confirm
+    ) {
+        return ApiResponse.success(usernameService.checkAvailability(username, confirm));
+    }
+
+    @GetMapping("/check-email")
+    public ApiResponse<EmailCheckResponse> checkEmail(
+        @RequestParam("email") String email,
+        @RequestParam(value = "confirm", defaultValue = "false") boolean confirm
+    ) {
+        return ApiResponse.success(emailAvailabilityService.checkAvailability(email, confirm));
     }
 
     @GetMapping("/me/liked-videos")

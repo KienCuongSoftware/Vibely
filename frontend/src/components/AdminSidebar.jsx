@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { IoPeopleOutline, IoShieldOutline, IoVideocamOutline } from 'react-icons/io5'
+import { IoChatbubbleEllipsesOutline, IoPeopleOutline, IoShieldOutline, IoVideocamOutline } from 'react-icons/io5'
 
 const ADMIN_NAV_ITEMS = [
   {
@@ -20,6 +20,12 @@ const ADMIN_NAV_ITEMS = [
     to: '/admin/banned-users',
     label: 'Tài khoản bị cấm',
     icon: IoShieldOutline,
+  },
+  {
+    id: 'appeals',
+    to: '/admin/ban-appeals',
+    label: 'Khiếu nại cấm',
+    icon: IoChatbubbleEllipsesOutline,
   },
 ]
 

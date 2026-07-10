@@ -11,6 +11,7 @@ import {
 import { Link } from 'react-router-dom'
 import { apiClient } from '../api/client.js'
 import { AdminLayout } from '../components/AdminLayout.jsx'
+import { AdminPostsPageSkeleton } from '../components/admin/AdminListSkeletons.jsx'
 import { useAuth } from '../state/useAuth.js'
 
 const PAGE_SIZE = 20
@@ -257,9 +258,7 @@ export function AdminPostsPage() {
       subtitle="Theo dõi bài đăng của người dùng, trạng thái xử lý và thao tác gỡ bài khi cần."
     >
       {!authReady || loading ? (
-        <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center text-sm text-zinc-400">
-          Đang tải danh sách bài đăng...
-        </section>
+        <AdminPostsPageSkeleton />
       ) : !isAdmin ? (
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center">
           <p className="text-lg font-semibold text-zinc-100">Bạn không có quyền truy cập Admin</p>

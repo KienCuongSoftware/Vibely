@@ -70,6 +70,11 @@ export function LoginPage() {
   const [bannedOpen, setBannedOpen] = useState(false);
   const [bannedReason, setBannedReason] = useState("");
   const [bannedMaskedEmail, setBannedMaskedEmail] = useState("");
+  const [bannedAppealOpen, setBannedAppealOpen] = useState(false);
+  const [appealDescription, setAppealDescription] = useState("");
+  const [appealEmail, setAppealEmail] = useState("");
+  const [appealLoading, setAppealLoading] = useState(false);
+  const [appealError, setAppealError] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const lastLoginMethod = useLastLoginMethod();
@@ -105,6 +110,14 @@ export function LoginPage() {
     reactivationToken.trim().length > 0 &&
     reactivationCode.trim().length === 6 &&
     !reactivationLoading;
+  const normalizedAppealEmail = appealEmail.trim().toLowerCase();
+  const isAppealEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedAppealEmail);
+  const appealDescriptionLength = appealDescription.length;
+  const canSubmitBanAppeal =
+    appealDescription.trim().length >= 5 &&
+    appealDescriptionLength <= 200 &&
+    isAppealEmailValid &&
+    !appealLoading;
   const challengePurpose =
     pendingCaptchaActionRef.current === "sendResetCode"
       ? "PASSWORD_RESET"
@@ -312,27 +325,51 @@ export function LoginPage() {
 
   const closeBannedModal = () => {
     setBannedOpen(false);
+    setBannedAppealOpen(false);
     setBannedReason("");
     setBannedMaskedEmail("");
+    setAppealDescription("");
+    setAppealEmail("");
+    setAppealError("");
+    setAppealLoading(false);
   };
 
-  const bannedAppealHref = (() => {
-    const subject = encodeURIComponent("Khiếu nại cấm tài khoản Vibely");
-    const body = encodeURIComponent(
-      [
-        "Xin chào đội ngũ Vibely,",
-        "",
-        "Tôi muốn gửi khiếu nại về việc tài khoản của tôi bị cấm.",
-        bannedMaskedEmail ? `Email tài khoản: ${bannedMaskedEmail}` : "",
-        bannedReason ? `Lý do cấm được thông báo: ${bannedReason}` : "",
-        "",
-        "Mô tả thêm:",
-      ]
-        .filter(Boolean)
-        .join("\n"),
-    );
-    return `mailto:kiencuongsoftware@gmail.com?subject=${subject}&body=${body}`;
-  })();
+  const openBannedAppealModal = () => {
+    setAppealDescription("");
+    setAppealEmail("");
+    setAppealError("");
+    setBannedAppealOpen(true);
+  };
+
+  const closeBannedAppealModal = () => {
+    if (appealLoading) return;
+    setBannedAppealOpen(false);
+    setAppealDescription("");
+    setAppealEmail("");
+    setAppealError("");
+  };
+
+  const submitBanAppeal = async () => {
+    if (!canSubmitBanAppeal) return;
+    setAppealLoading(true);
+    setAppealError("");
+    try {
+      await apiClient.submitBanAppeal({
+        email: normalizedAppealEmail,
+        description: appealDescription.trim(),
+        banReason: bannedReason.trim() || undefined,
+        maskedAccountEmail: bannedMaskedEmail.trim() || undefined,
+      });
+      closeBannedModal();
+      setStatus(
+        "Đã gửi khiếu nại thành công. Chúng tôi sẽ phản hồi qua email của bạn.",
+      );
+    } catch (error) {
+      setAppealError(error.message);
+    } finally {
+      setAppealLoading(false);
+    }
+  };
 
   const closeReactivationModal = () => {
     if (reactivationLoading) return;
@@ -583,7 +620,7 @@ export function LoginPage() {
           performLogin();
         }}
       />
-      {bannedOpen ? (
+      {bannedOpen && !bannedAppealOpen ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-[340px] overflow-hidden rounded-sm border border-zinc-800 bg-[#121212] text-center shadow-2xl">
             <div className="px-6 py-6">
@@ -593,31 +630,98 @@ export function LoginPage() {
               <p className="mt-4 text-[13px] leading-relaxed text-zinc-300">
                 Nếu bạn cho rằng đây là một sự nhầm lẫn, bạn có thể gửi khiếu nại
               </p>
-              {bannedReason ? (
-                <p className="mt-4 rounded-md border border-zinc-800 bg-zinc-950/80 px-3 py-2 text-left text-[12px] leading-relaxed text-zinc-400">
-                  <span className="font-medium text-zinc-300">Lý do: </span>
-                  {bannedReason}
-                </p>
-              ) : null}
-              {bannedMaskedEmail ? (
-                <p className="mt-3 break-all text-[12px] text-zinc-500">
-                  {bannedMaskedEmail}
-                </p>
-              ) : null}
             </div>
             <div className="border-t border-zinc-800">
-              <a
-                href={bannedAppealHref}
+              <button
+                type="button"
                 className="flex h-12 w-full items-center justify-center text-[15px] font-semibold text-white transition hover:bg-zinc-900"
+                onClick={openBannedAppealModal}
               >
                 Khiếu nại
-              </a>
+              </button>
               <button
                 type="button"
                 className="h-12 w-full border-t border-zinc-800 text-[15px] font-medium text-zinc-200 hover:bg-zinc-900"
                 onClick={closeBannedModal}
               >
                 Bỏ qua
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {bannedOpen && bannedAppealOpen ? (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-[420px] overflow-hidden rounded-lg border border-zinc-800 bg-[#121212] shadow-2xl">
+            <div className="relative border-b border-zinc-800 px-4 py-4">
+              <button
+                type="button"
+                className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-zinc-200 hover:bg-zinc-900"
+                onClick={closeBannedAppealModal}
+                disabled={appealLoading}
+                aria-label="Quay lại"
+              >
+                <IoArrowBack className="h-5 w-5" />
+              </button>
+              <h2 className="text-center text-[17px] font-bold text-zinc-100">
+                Gửi khiếu nại
+              </h2>
+            </div>
+            <div className="max-h-[min(70vh,560px)] overflow-y-auto px-5 py-4">
+              <p className="text-[13px] leading-relaxed text-zinc-400">
+                Tiêu chuẩn cộng đồng Vibely áp dụng cho mọi tài khoản và nội dung.
+                Nếu bạn cho rằng tài khoản bị hạn chế do nhầm lẫn, hãy gửi khiếu nại
+                để chúng tôi xem xét.
+              </p>
+              <div className="mt-4 rounded-md border border-zinc-800 bg-zinc-950/70 p-4">
+                <label className="block text-[13px] font-semibold text-zinc-100">
+                  Mô tả <span className="text-red-500">*</span>
+                </label>
+                <p className="mt-1 text-[12px] text-zinc-500">
+                  Cung cấp thêm thông tin để chúng tôi đánh giá trường hợp của bạn.
+                </p>
+                <div className="relative mt-3">
+                  <textarea
+                    className="min-h-[120px] w-full resize-none rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2.5 text-[14px] text-zinc-100 outline-none focus:border-zinc-600"
+                    maxLength={200}
+                    value={appealDescription}
+                    onChange={(event) => setAppealDescription(event.target.value)}
+                    disabled={appealLoading}
+                  />
+                  <span className="pointer-events-none absolute bottom-2 right-3 text-[11px] text-zinc-500">
+                    {appealDescriptionLength}/200
+                  </span>
+                </div>
+              </div>
+              <div className="mt-4 rounded-md border border-zinc-800 bg-zinc-950/70 p-4">
+                <label className="block text-[13px] font-semibold text-zinc-100">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <p className="mt-1 text-[12px] text-zinc-500">
+                  Chúng tôi sẽ gửi cho bạn kết quả của khiếu nại qua địa chỉ email này.
+                </p>
+                <input
+                  type="email"
+                  className="mt-3 h-11 w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 text-[14px] text-zinc-100 outline-none focus:border-zinc-600"
+                  placeholder="example@example.com"
+                  value={appealEmail}
+                  onChange={(event) => setAppealEmail(event.target.value)}
+                  disabled={appealLoading}
+                  autoComplete="email"
+                />
+              </div>
+              {appealError ? (
+                <p className="mt-3 text-[12px] text-red-400">{appealError}</p>
+              ) : null}
+            </div>
+            <div className="flex justify-end border-t border-zinc-800 px-5 py-4">
+              <button
+                type="button"
+                className="rounded-md bg-zinc-100 px-5 py-2 text-[14px] font-semibold text-zinc-900 transition enabled:hover:bg-white disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
+                onClick={submitBanAppeal}
+                disabled={!canSubmitBanAppeal}
+              >
+                {appealLoading ? "Đang gửi..." : "Gửi"}
               </button>
             </div>
           </div>

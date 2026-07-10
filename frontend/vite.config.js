@@ -2,6 +2,31 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+function isBenignProxySocketError(error) {
+  const code = error?.code
+  return code === 'ECONNABORTED' || code === 'ECONNRESET' || code === 'EPIPE'
+}
+
+function configureBenignProxyErrors(proxy) {
+  proxy.on('error', (error, _req, res) => {
+    if (isBenignProxySocketError(error)) {
+      if (res && !res.headersSent) {
+        res.writeHead(502)
+        res.end()
+      }
+      return
+    }
+  })
+  proxy.on('proxyReqWs', (_proxyReq, _req, socket) => {
+    socket.on('error', (error) => {
+      if (isBenignProxySocketError(error)) {
+        return
+      }
+    })
+  })
+  proxy.on('close', () => {})
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -140,6 +165,9 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
         ws: true,
+        configure: (proxy) => {
+          configureBenignProxyErrors(proxy)
+        },
       },
     },
   },

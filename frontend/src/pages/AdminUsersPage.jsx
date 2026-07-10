@@ -11,16 +11,37 @@ import {
 } from 'react-icons/io5'
 import { apiClient } from '../api/client.js'
 import { AdminLayout } from '../components/AdminLayout.jsx'
+import { AdminUsersPageSkeleton } from '../components/admin/AdminListSkeletons.jsx'
+import { BirthDateFields } from '../components/auth/BirthDateSelect.jsx'
+import { validateBirthDateParts } from '../utils/birthDate.js'
 import { useAuth } from '../state/useAuth.js'
 
 const PAGE_SIZE = 20
 const DEFAULT_AVATAR = '/images/users/default-avatar.jpeg'
+const BIRTH_MONTH_OPTIONS = [
+  'Tháng Một',
+  'Tháng Hai',
+  'Tháng Ba',
+  'Tháng Tư',
+  'Tháng Năm',
+  'Tháng Sáu',
+  'Tháng Bảy',
+  'Tháng Tám',
+  'Tháng Chín',
+  'Tháng Mười',
+  'Tháng Mười Một',
+  'Tháng Mười Hai',
+]
 const EMPTY_FORM = {
   email: '',
   username: '',
   displayName: '',
   role: 'USER',
   password: '',
+}
+
+function normalizeVibelyId(value) {
+  return String(value ?? '').trim().toLowerCase().replace(/^@+/, '')
 }
 
 function roleLabel(role) {
@@ -157,6 +178,7 @@ function RoleDropdown({ value, options, onChange, ariaLabel, buttonClassName = '
 }
 
 function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit }) {
+  const isEdit = mode === 'edit'
   const [form, setForm] = useState(() => ({
     ...EMPTY_FORM,
     email: initialUser?.email ?? '',
@@ -164,7 +186,178 @@ function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit
     displayName: initialUser?.displayName ?? '',
     role: String(initialUser?.role ?? 'USER').toUpperCase(),
   }))
-  const isEdit = mode === 'edit'
+  const [birthMonth, setBirthMonth] = useState('')
+  const [birthDay, setBirthDay] = useState('')
+  const [birthYear, setBirthYear] = useState('')
+  const [emailChecking, setEmailChecking] = useState(false)
+  const [emailAvailable, setEmailAvailable] = useState(false)
+  const [emailMessage, setEmailMessage] = useState('')
+  const [emailCanRecheck, setEmailCanRecheck] = useState(false)
+  const [usernameChecking, setUsernameChecking] = useState(false)
+  const [usernameAvailable, setUsernameAvailable] = useState(false)
+  const [usernameMessage, setUsernameMessage] = useState('')
+  const [usernameCanRecheck, setUsernameCanRecheck] = useState(false)
+
+  const normalizedEmail = form.email.trim().toLowerCase()
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)
+  const normalizedUsername = normalizeVibelyId(form.username)
+  const birthDateValidation = validateBirthDateParts(birthMonth, birthDay, birthYear)
+  const isBirthDateValid = birthDateValidation.valid
+
+  const initialSnapshot = useMemo(
+    () => ({
+      username: String(initialUser?.username ?? '').trim(),
+      displayName: String(initialUser?.displayName ?? '').trim(),
+      role: String(initialUser?.role ?? 'USER').toUpperCase(),
+    }),
+    [initialUser],
+  )
+
+  const hasChanges = useMemo(() => {
+    if (!isEdit) return true
+    const passwordChanged = form.password.trim().length > 0
+    return (
+      form.username.trim() !== initialSnapshot.username ||
+      form.displayName.trim() !== initialSnapshot.displayName ||
+      form.role !== initialSnapshot.role ||
+      passwordChanged
+    )
+  }, [form, initialSnapshot, isEdit])
+
+  const canCompleteCreate = useMemo(() => {
+    if (isEdit) return false
+    return (
+      isEmailValid &&
+      emailAvailable &&
+      !emailChecking &&
+      normalizedUsername.length >= 4 &&
+      usernameAvailable &&
+      !usernameChecking &&
+      form.displayName.trim().length > 0 &&
+      form.password.trim().length >= 6 &&
+      birthMonth &&
+      birthDay &&
+      birthYear &&
+      isBirthDateValid
+    )
+  }, [
+    birthDay,
+    birthMonth,
+    birthYear,
+    emailAvailable,
+    emailChecking,
+    form.displayName,
+    form.password,
+    isBirthDateValid,
+    isEdit,
+    isEmailValid,
+    normalizedUsername.length,
+    usernameAvailable,
+    usernameChecking,
+  ])
+
+  const profileCompletedPreview = isEdit
+    ? Boolean(initialUser?.onboardingCompleted)
+    : canCompleteCreate
+
+  useEffect(() => {
+    if (isEdit || !isEmailValid) {
+      setEmailAvailable(false)
+      setEmailMessage('')
+      setEmailChecking(false)
+      return undefined
+    }
+
+    setEmailChecking(true)
+    const timeoutId = setTimeout(() => {
+      apiClient
+        .checkEmail(normalizedEmail)
+        .then((result) => {
+          setEmailAvailable(Boolean(result?.available))
+          setEmailMessage(result?.message ?? '')
+          setEmailCanRecheck(Boolean(result?.canRecheck))
+        })
+        .catch((err) => {
+          setEmailAvailable(false)
+          setEmailMessage(err.message ?? 'Không kiểm tra được email')
+          setEmailCanRecheck(false)
+        })
+        .finally(() => setEmailChecking(false))
+    }, 350)
+
+    return () => clearTimeout(timeoutId)
+  }, [isEdit, isEmailValid, normalizedEmail])
+
+  useEffect(() => {
+    if (!normalizedUsername) {
+      setUsernameAvailable(false)
+      setUsernameMessage('')
+      setUsernameChecking(false)
+      return undefined
+    }
+
+    if (isEdit && normalizedUsername === normalizeVibelyId(initialSnapshot.username)) {
+      setUsernameAvailable(true)
+      setUsernameMessage('Vibely ID hiện tại')
+      setUsernameChecking(false)
+      return undefined
+    }
+
+    setUsernameChecking(true)
+    const timeoutId = setTimeout(() => {
+      apiClient
+        .checkUsername(normalizedUsername)
+        .then((result) => {
+          setUsernameAvailable(Boolean(result?.available))
+          setUsernameMessage(result?.message ?? '')
+          setUsernameCanRecheck(Boolean(result?.canRecheck))
+        })
+        .catch((err) => {
+          setUsernameAvailable(false)
+          setUsernameMessage(err.message ?? 'Không kiểm tra được Vibely ID')
+          setUsernameCanRecheck(false)
+        })
+        .finally(() => setUsernameChecking(false))
+    }, 350)
+
+    return () => clearTimeout(timeoutId)
+  }, [initialSnapshot.username, isEdit, normalizedUsername])
+
+  const recheckEmailAvailability = async () => {
+    if (!isEmailValid) return
+    setEmailChecking(true)
+    setEmailCanRecheck(false)
+    try {
+      const result = await apiClient.checkEmail(normalizedEmail, { confirm: true })
+      setEmailAvailable(Boolean(result?.available))
+      setEmailMessage(result?.message ?? '')
+      setEmailCanRecheck(Boolean(result?.canRecheck))
+    } catch (err) {
+      setEmailAvailable(false)
+      setEmailMessage(err.message ?? 'Không kiểm tra được email')
+      setEmailCanRecheck(false)
+    } finally {
+      setEmailChecking(false)
+    }
+  }
+
+  const recheckUsernameAvailability = async () => {
+    if (!normalizedUsername) return
+    setUsernameChecking(true)
+    setUsernameCanRecheck(false)
+    try {
+      const result = await apiClient.checkUsername(normalizedUsername, { confirm: true })
+      setUsernameAvailable(Boolean(result?.available))
+      setUsernameMessage(result?.message ?? '')
+      setUsernameCanRecheck(Boolean(result?.canRecheck))
+    } catch (err) {
+      setUsernameAvailable(false)
+      setUsernameMessage(err.message ?? 'Không kiểm tra được Vibely ID')
+      setUsernameCanRecheck(false)
+    } finally {
+      setUsernameChecking(false)
+    }
+  }
 
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }))
@@ -172,7 +365,14 @@ function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    onSubmit(form)
+    if (isEdit && !hasChanges) return
+    if (!isEdit && !canCompleteCreate) return
+
+    const payload = { ...form }
+    if (!isEdit) {
+      payload.birthDate = `${birthYear}-${String(birthMonth).padStart(2, '0')}-${String(birthDay).padStart(2, '0')}`
+    }
+    onSubmit(payload)
   }
 
   return (
@@ -187,7 +387,9 @@ function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit
               {isEdit ? 'Sửa người dùng' : 'Thêm người dùng'}
             </h2>
             <p className="mt-1 text-sm text-zinc-500">
-              {isEdit ? 'Email đã xác minh nên không thể sửa. Bỏ trống mật khẩu nếu muốn giữ mật khẩu hiện tại.' : 'Tạo tài khoản Vibely mới từ trang quản trị.'}
+              {isEdit
+                ? 'Email đã xác minh nên không thể sửa. Bỏ trống mật khẩu nếu muốn giữ mật khẩu hiện tại.'
+                : 'Điền đầy đủ thông tin để tạo tài khoản Vibely mới.'}
             </p>
           </div>
           <button
@@ -212,6 +414,22 @@ function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit
               className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-red-500 disabled:cursor-not-allowed disabled:bg-zinc-900/70 disabled:text-zinc-500"
               placeholder="user@example.com"
             />
+            {!isEdit && normalizedEmail && isEmailValid ? (
+              <div className="space-y-1">
+                <p className={`text-xs ${emailAvailable ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  {emailChecking ? 'Đang kiểm tra email...' : emailMessage}
+                </p>
+                {emailCanRecheck && !emailChecking ? (
+                  <button
+                    type="button"
+                    className="text-xs text-zinc-300 underline hover:text-white"
+                    onClick={() => void recheckEmailAvailability()}
+                  >
+                    Kiểm tra lại email với cơ sở dữ liệu
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           <div className="space-y-1.5">
             <FieldLabel>Vibely ID</FieldLabel>
@@ -222,6 +440,22 @@ function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit
               className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-red-500"
               placeholder="vibely.id"
             />
+            {normalizedUsername ? (
+              <div className="space-y-1">
+                <p className={`text-xs ${usernameAvailable ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  {usernameChecking ? 'Đang kiểm tra Vibely ID...' : usernameMessage}
+                </p>
+                {usernameCanRecheck && !usernameChecking ? (
+                  <button
+                    type="button"
+                    className="text-xs text-zinc-300 underline hover:text-white"
+                    onClick={() => void recheckUsernameAvailability()}
+                  >
+                    Kiểm tra lại Vibely ID với cơ sở dữ liệu
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           <div className="space-y-1.5">
             <FieldLabel>Tên hiển thị</FieldLabel>
@@ -246,6 +480,39 @@ function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit
               buttonClassName="w-full rounded-xl px-4 py-3"
             />
           </div>
+          {isEdit ? (
+            <div className="space-y-1.5">
+              <FieldLabel>Trạng thái</FieldLabel>
+              <div className="flex min-h-[48px] items-center rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-3">
+                <AccountStatusBadge accountStatus={initialUser?.accountStatus} />
+              </div>
+            </div>
+          ) : null}
+          <div className="space-y-1.5">
+            <FieldLabel>Hồ sơ</FieldLabel>
+            <div className="flex min-h-[48px] items-center rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-3">
+              <OnboardingBadge completed={profileCompletedPreview} />
+            </div>
+          </div>
+          {!isEdit ? (
+            <div className="space-y-1.5 sm:col-span-2">
+              <FieldLabel>Ngày sinh</FieldLabel>
+              <BirthDateFields
+                birthMonth={birthMonth}
+                birthDay={birthDay}
+                birthYear={birthYear}
+                onMonthChange={setBirthMonth}
+                onDayChange={setBirthDay}
+                onYearChange={setBirthYear}
+                monthOptions={BIRTH_MONTH_OPTIONS}
+              />
+              {!isBirthDateValid && birthMonth && birthDay && birthYear ? (
+                <p className="text-xs text-red-400">{birthDateValidation.message}</p>
+              ) : (
+                <p className="text-xs text-zinc-500">Người dùng phải đủ 18 tuổi.</p>
+              )}
+            </div>
+          ) : null}
           <div className="space-y-1.5 sm:col-span-2">
             <FieldLabel>Mật khẩu</FieldLabel>
             <input
@@ -254,7 +521,7 @@ function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit
               value={form.password}
               onChange={(e) => updateField('password', e.target.value)}
               className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-red-500"
-              placeholder={isEdit ? 'Bỏ trống để giữ mật khẩu hiện tại' : 'Nhập mật khẩu'}
+              placeholder={isEdit ? 'Bỏ trống để giữ mật khẩu hiện tại' : 'Nhập mật khẩu (tối thiểu 6 ký tự)'}
             />
           </div>
         </div>
@@ -272,10 +539,16 @@ function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit
           </button>
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || (isEdit && !hasChanges) || (!isEdit && !canCompleteCreate)}
             className="rounded-xl border border-zinc-800 bg-black px-5 py-3 text-sm font-bold text-zinc-100 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {submitting ? 'Đang lưu...' : isEdit ? 'Lưu thay đổi' : 'Thêm người dùng'}
+            {submitting
+              ? 'Đang lưu...'
+              : isEdit
+                ? 'Lưu thay đổi'
+                : canCompleteCreate
+                  ? 'Hoàn tất'
+                  : 'Thêm người dùng'}
           </button>
         </div>
       </form>
@@ -537,7 +810,10 @@ export function AdminUsersPage() {
       if (formMode === 'edit' && editingUser?.id) {
         await apiClient.updateAdminUser(token, editingUser.id, payload)
       } else {
-        await apiClient.createAdminUser(token, payload)
+        await apiClient.createAdminUser(token, {
+          ...payload,
+          birthDate: form.birthDate,
+        })
       }
       setFormMode(null)
       setEditingUser(null)
@@ -590,12 +866,10 @@ export function AdminUsersPage() {
     <AdminLayout
       active="users"
       title="Quản lý tài khoản người dùng"
-      subtitle="Theo dõi danh sách tài khoản, vai trò và trạng thái hoàn tất hồ sơ."
+      subtitle="Theo dõi danh sách tài khoản, vai trò và trạng thái hoạt động."
     >
       {!authReady || loading ? (
-        <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center text-sm text-zinc-400">
-          Đang tải danh sách tài khoản...
-        </section>
+        <AdminUsersPageSkeleton />
       ) : !isAdmin ? (
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center">
           <p className="text-lg font-semibold text-zinc-100">Bạn không có quyền truy cập Admin</p>
@@ -638,17 +912,16 @@ export function AdminUsersPage() {
           {error ? <p className="mt-4 text-sm text-amber-400">{error}</p> : null}
 
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[1020px] border-collapse text-left text-sm text-zinc-200">
+            <table className="w-full min-w-[920px] border-collapse text-sm text-zinc-200">
               <thead>
                 <tr className="border-b border-zinc-800 text-xs text-zinc-500">
-                  <th className="py-3 pr-4 font-medium">Người dùng</th>
-                  <th className="px-3 py-3 font-medium">Email</th>
-                  <th className="px-3 py-3 font-medium">Vai trò</th>
-                  <th className="px-3 py-3 font-medium">Trạng thái</th>
-                  <th className="px-3 py-3 font-medium">Hồ sơ</th>
-                  <th className="px-3 py-3 font-medium">Ngày tạo</th>
-                  <th className="px-3 py-3 font-medium">Cập nhật</th>
-                  <th className="px-3 py-3 text-right font-medium">Thao tác</th>
+                  <th className="py-3 pr-4 text-center font-medium">Người dùng</th>
+                  <th className="px-3 py-3 text-center font-medium">Email</th>
+                  <th className="px-3 py-3 text-center font-medium">Vai trò</th>
+                  <th className="px-3 py-3 text-center font-medium">Trạng thái</th>
+                  <th className="px-3 py-3 text-center font-medium">Ngày tạo</th>
+                  <th className="px-3 py-3 text-center font-medium">Cập nhật</th>
+                  <th className="px-3 py-3 text-center font-medium">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -679,23 +952,20 @@ export function AdminUsersPage() {
                         </div>
                       </td>
                       <td className="px-3 py-3 text-zinc-300">{item.email || '—'}</td>
-                      <td className="px-3 py-3">
+                      <td className="px-3 py-3 text-center">
                         <RoleBadge role={item.role} />
                       </td>
-                      <td className="px-3 py-3">
+                      <td className="px-3 py-3 text-center">
                         <AccountStatusBadge accountStatus={item.accountStatus} />
                       </td>
-                      <td className="px-3 py-3">
-                        <OnboardingBadge completed={item.onboardingCompleted} />
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-3 text-xs text-zinc-400">
+                      <td className="whitespace-nowrap px-3 py-3 text-center text-xs text-zinc-400">
                         {formatDateTime(item.createdAt)}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-3 text-xs text-zinc-400">
+                      <td className="whitespace-nowrap px-3 py-3 text-center text-xs text-zinc-400">
                         {formatDateTime(item.updatedAt)}
                       </td>
                       <td className="px-3 py-3">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-center gap-2">
                           <button
                             type="button"
                             onClick={() => openEditModal(item)}

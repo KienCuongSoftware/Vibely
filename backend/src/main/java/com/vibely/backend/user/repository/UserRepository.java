@@ -15,6 +15,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
     boolean existsByUsername(String username);
 
+    @Query("select lower(u.email) from User u where u.email is not null")
+    List<String> findAllEmails();
+
+    @Query("select lower(u.username) from User u where u.username is not null")
+    List<String> findAllUsernames();
+
     @Query("""
         select u from User u
         where u.accountStatus = com.vibely.backend.user.entity.UserAccountStatus.ACTIVE

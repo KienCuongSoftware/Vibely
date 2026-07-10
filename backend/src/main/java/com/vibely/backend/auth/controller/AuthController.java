@@ -2,6 +2,7 @@ package com.vibely.backend.auth.controller;
 
 import com.vibely.backend.auth.context.LoginContext;
 import com.vibely.backend.auth.context.LoginContextService;
+import com.vibely.backend.auth.dto.BanAppealRequest;
 import com.vibely.backend.auth.dto.AuthRequest;
 import com.vibely.backend.auth.dto.AuthResponse;
 import com.vibely.backend.auth.dto.AuthSessionResponse;
@@ -23,6 +24,7 @@ import com.vibely.backend.auth.dto.VerifyCodeRequest;
 import com.vibely.backend.auth.dto.VerifyCodeResponse;
 import com.vibely.backend.auth.dto.WsTicketResponse;
 import com.vibely.backend.auth.service.AuthService;
+import com.vibely.backend.auth.service.BanAppealService;
 import com.vibely.backend.auth.service.AuthSessionSupport;
 import com.vibely.backend.auth.service.NativeOAuthService;
 import com.vibely.backend.auth.service.OtpVerificationService;
@@ -55,6 +57,7 @@ public class AuthController {
     private final AuthCookieService authCookieService;
     private final JwtService jwtService;
     private final LoginContextService loginContextService;
+    private final BanAppealService banAppealService;
     private final boolean exposeTokensInApi;
 
     public AuthController(
@@ -64,6 +67,7 @@ public class AuthController {
         AuthCookieService authCookieService,
         JwtService jwtService,
         LoginContextService loginContextService,
+        BanAppealService banAppealService,
         @Value("${app.auth.expose-tokens-in-api:false}") boolean exposeTokensInApi
     ) {
         this.authService = authService;
@@ -72,6 +76,7 @@ public class AuthController {
         this.authCookieService = authCookieService;
         this.jwtService = jwtService;
         this.loginContextService = loginContextService;
+        this.banAppealService = banAppealService;
         this.exposeTokensInApi = exposeTokensInApi;
     }
 
@@ -175,6 +180,12 @@ public class AuthController {
     @PostMapping("/reset-password")
     public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         otpVerificationService.resetPassword(request);
+        return ApiResponse.success(null);
+    }
+
+    @PostMapping("/ban-appeal")
+    public ApiResponse<Void> submitBanAppeal(@Valid @RequestBody BanAppealRequest request) {
+        banAppealService.submit(request);
         return ApiResponse.success(null);
     }
 

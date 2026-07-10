@@ -14,9 +14,14 @@ public class UsernameService {
 
     private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-z0-9._]{4,24}$");
     private final UserRepository userRepository;
+    private final UserExistenceBloomFilterService bloomFilterService;
 
-    public UsernameService(UserRepository userRepository) {
+    public UsernameService(
+        UserRepository userRepository,
+        UserExistenceBloomFilterService bloomFilterService
+    ) {
         this.userRepository = userRepository;
+        this.bloomFilterService = bloomFilterService;
     }
 
     public String normalize(String rawUsername) {
@@ -39,6 +44,10 @@ public class UsernameService {
     }
 
     public UsernameCheckResponse checkAvailability(String rawUsername) {
+        return checkAvailability(rawUsername, false);
+    }
+
+    public UsernameCheckResponse checkAvailability(String rawUsername, boolean confirm) {
         String normalized = normalize(rawUsername);
         if (normalized.isBlank()) {
             return new UsernameCheckResponse(false, "", "Vui lòng nhập Vibely ID", null);
@@ -51,12 +60,29 @@ public class UsernameService {
                 null
             );
         }
+
+        boolean bloomHint = bloomFilterService.mightContainUsername(normalized);
         boolean available = !userRepository.existsByUsername(normalized);
+
+        if (available) {
+            String message = confirm
+                ? "Vibely ID có thể sử dụng (đã xác minh lại với cơ sở dữ liệu)"
+                : "Vibely ID có thể sử dụng";
+            return new UsernameCheckResponse(true, normalized, message, null, bloomHint, false);
+        }
+
+        String message = confirm
+            ? "Vibely ID đã tồn tại (đã xác minh lại với cơ sở dữ liệu)"
+            : bloomHint
+                ? "Vibely ID có thể đã tồn tại. Nhấn Kiểm tra lại để xác minh chính xác."
+                : "Vibely ID đã tồn tại";
         return new UsernameCheckResponse(
-            available,
+            false,
             normalized,
-            available ? "Vibely ID có thể sử dụng" : "Vibely ID đã tồn tại",
-            available ? null : suggestAvailable(normalized)
+            message,
+            suggestAvailable(normalized),
+            bloomHint,
+            !confirm
         );
     }
 
