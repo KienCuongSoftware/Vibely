@@ -8,7 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BanAppealRepository extends JpaRepository<BanAppeal, Long> {
 
-    Page<BanAppeal> findAllByOrderByCreatedAtDesc(Pageable pageable);
-
-    Page<BanAppeal> findByStatusOrderByCreatedAtDesc(BanAppealStatus status, Pageable pageable);
+    Page<BanAppeal> findByStatus(BanAppealStatus status, Pageable pageable);
 }

@@ -63,8 +63,8 @@ public class BanAppealService {
         int safeSize = Math.min(Math.max(size, 1), 100);
         PageRequest pageable = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<BanAppeal> appeals = status == null
-            ? banAppealRepository.findAllByOrderByCreatedAtDesc(pageable)
-            : banAppealRepository.findByStatusOrderByCreatedAtDesc(status, pageable);
+            ? banAppealRepository.findAll(pageable)
+            : banAppealRepository.findByStatus(status, pageable);
         Map<Long, User> usersById = loadUsers(appeals.getContent());
         List<AdminBanAppealResponse> items = appeals.getContent().stream()
             .map(appeal -> toAdminResponse(appeal, usersById.get(appeal.getUserId())))
