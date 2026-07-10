@@ -10,6 +10,9 @@ public record AdminUserResponse(
     String role,
     String avatarUrl,
     boolean onboardingCompleted,
+    String accountStatus,
+    String banReason,
+    LocalDateTime bannedAt,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {

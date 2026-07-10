@@ -1,6 +1,7 @@
 package com.vibely.backend.admin;
 
 import com.vibely.backend.auth.mail.OtpMailProperties;
+import com.vibely.backend.auth.mail.VibelyEmailLayout;
 import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
@@ -96,23 +97,28 @@ public class AdminAccountDeletionEmailService {
             Tài khoản Vibely @%s của bạn đã bị xóa bởi quản trị viên.
             Toàn bộ dữ liệu liên quan đến tài khoản có thể không còn truy cập được trên Vibely.
 
-            Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ đội ngũ hỗ trợ Vibely.
+            Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ đội ngũ hỗ trợ Vibely qua %s.
 
             Vibely
-            """.formatted(displayName(user), user.username());
+            """.formatted(displayName(user), user.username(), VibelyEmailLayout.SUPPORT_EMAIL);
     }
 
     private String htmlBody(AdminDeletedUserInfo user) {
-        return """
-            <div style="font-family:Arial,sans-serif;line-height:1.6;color:#18181b">
-              <h2 style="margin:0 0 12px;color:#ef4444">Tài khoản Vibely của bạn đã bị xóa</h2>
-              <p>Xin chào <strong>%s</strong>,</p>
-              <p>Tài khoản Vibely <strong>@%s</strong> của bạn đã bị xóa bởi quản trị viên.</p>
-              <p>Toàn bộ dữ liệu liên quan đến tài khoản có thể không còn truy cập được trên Vibely.</p>
-              <p>Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ đội ngũ hỗ trợ Vibely.</p>
-              <p style="margin-top:24px;color:#71717a">Vibely</p>
-            </div>
-            """.formatted(escapeHtml(displayName(user)), escapeHtml(user.username()));
+        String bodyRows = VibelyEmailLayout.headingRow("Tài khoản của bạn đã bị xóa") + """
+            <tr>
+              <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
+                <p style="margin:0 0 16px;">Xin chào <strong>%s</strong>,</p>
+                <p style="margin:0 0 16px;">Tài khoản Vibely <strong>@%s</strong> của bạn đã bị xóa bởi quản trị viên.</p>
+                <p style="margin:0 0 16px;">Toàn bộ dữ liệu liên quan đến tài khoản có thể không còn truy cập được trên Vibely.</p>
+                <p style="margin:0;">Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ đội ngũ hỗ trợ Vibely qua %s.</p>
+              </td>
+            </tr>
+            """.formatted(
+            VibelyEmailLayout.escapeHtml(displayName(user)),
+            VibelyEmailLayout.escapeHtml(user.username()),
+            VibelyEmailLayout.supportEmailLink()
+        );
+        return VibelyEmailLayout.document("Tài khoản Vibely của bạn đã bị xóa", bodyRows, user.username());
     }
 
     private String updatePlainBody(AdminUpdatedUserInfo user) {
@@ -122,23 +128,28 @@ public class AdminAccountDeletionEmailService {
             Quản trị viên Vibely vừa cập nhật thông tin tài khoản của bạn:
             %s
 
-            Nếu bạn không nhận ra thay đổi này, vui lòng liên hệ đội ngũ hỗ trợ Vibely.
+            Nếu bạn không nhận ra thay đổi này, vui lòng liên hệ đội ngũ hỗ trợ Vibely qua %s.
 
             Vibely
-            """.formatted(displayName(user), updateChangeLines(user));
+            """.formatted(displayName(user), updateChangeLines(user), VibelyEmailLayout.SUPPORT_EMAIL);
     }
 
     private String updateHtmlBody(AdminUpdatedUserInfo user) {
-        return """
-            <div style="font-family:Arial,sans-serif;line-height:1.6;color:#18181b">
-              <h2 style="margin:0 0 12px;color:#ef4444">Thông tin tài khoản Vibely đã được cập nhật</h2>
-              <p>Xin chào <strong>%s</strong>,</p>
-              <p>Quản trị viên Vibely vừa cập nhật thông tin tài khoản của bạn:</p>
-              <ul>%s</ul>
-              <p>Nếu bạn không nhận ra thay đổi này, vui lòng liên hệ đội ngũ hỗ trợ Vibely.</p>
-              <p style="margin-top:24px;color:#71717a">Vibely</p>
-            </div>
-            """.formatted(escapeHtml(displayName(user)), updateChangeItems(user));
+        String bodyRows = VibelyEmailLayout.headingRow("Thông tin tài khoản đã được cập nhật") + """
+            <tr>
+              <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
+                <p style="margin:0 0 16px;">Xin chào <strong>%s</strong>,</p>
+                <p style="margin:0 0 16px;">Quản trị viên Vibely vừa cập nhật thông tin tài khoản của bạn:</p>
+                <ul style="margin:0 0 18px;padding-left:20px;">%s</ul>
+                <p style="margin:0;">Nếu bạn không nhận ra thay đổi này, vui lòng liên hệ đội ngũ hỗ trợ Vibely qua %s.</p>
+              </td>
+            </tr>
+            """.formatted(
+            VibelyEmailLayout.escapeHtml(displayName(user)),
+            updateChangeItems(user),
+            VibelyEmailLayout.supportEmailLink()
+        );
+        return VibelyEmailLayout.document("Thông tin tài khoản Vibely đã được cập nhật", bodyRows, user.newUsername());
     }
 
     private String displayName(AdminDeletedUserInfo user) {
@@ -168,9 +179,9 @@ public class AdminAccountDeletionEmailService {
         StringBuilder items = new StringBuilder();
         if (user.usernameChanged()) {
             items.append("<li>Vibely ID đổi từ <strong>@")
-                .append(escapeHtml(user.oldUsername()))
+                .append(VibelyEmailLayout.escapeHtml(user.oldUsername()))
                 .append("</strong> sang <strong>@")
-                .append(escapeHtml(user.newUsername()))
+                .append(VibelyEmailLayout.escapeHtml(user.newUsername()))
                 .append("</strong></li>");
         }
         if (user.passwordChanged()) {
@@ -190,15 +201,7 @@ public class AdminAccountDeletionEmailService {
     }
 
     private String escapeHtml(String value) {
-        if (value == null) {
-            return "";
-        }
-        return value
-            .replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace("\"", "&quot;")
-            .replace("'", "&#39;");
+        return VibelyEmailLayout.escapeHtml(value);
     }
 
     private String maskEmail(String email) {

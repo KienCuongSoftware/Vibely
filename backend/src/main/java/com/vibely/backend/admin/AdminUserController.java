@@ -3,6 +3,7 @@ package com.vibely.backend.admin;
 import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.user.entity.User;
+import com.vibely.backend.user.entity.UserAccountStatus;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,15 +26,56 @@ public class AdminUserController {
     private final UserAvatarResolver userAvatarResolver;
     private final AdminUserService adminUserService;
     private final AdminAccountDeletionEmailService accountDeletionEmailService;
+    private final AdminAccountBanEmailService accountBanEmailService;
 
     public AdminUserController(
         UserAvatarResolver userAvatarResolver,
         AdminUserService adminUserService,
-        AdminAccountDeletionEmailService accountDeletionEmailService
+        AdminAccountDeletionEmailService accountDeletionEmailService,
+        AdminAccountBanEmailService accountBanEmailService
     ) {
         this.userAvatarResolver = userAvatarResolver;
         this.adminUserService = adminUserService;
         this.accountDeletionEmailService = accountDeletionEmailService;
+        this.accountBanEmailService = accountBanEmailService;
+    }
+
+    @GetMapping("/banned")
+    public ApiResponse<AdminUserPageResponse> listBannedUsers(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
+    ) {
+        Page<User> users = adminUserService.listBannedUsers(page, size);
+        return ApiResponse.success(
+            new AdminUserPageResponse(
+                users.getContent().stream().map(this::toResponse).toList(),
+                users.getTotalElements(),
+                users.getNumber(),
+                users.getSize(),
+                users.hasNext()
+            )
+        );
+    }
+
+    @PostMapping("/{id}/ban")
+    public ApiResponse<AdminBannedUserInfo> banUser(
+        @PathVariable Long id,
+        @Valid @RequestBody AdminBanUserRequest request,
+        Authentication authentication
+    ) {
+        AdminBannedUserInfo bannedUser = adminUserService.banUser(id, authentication.getName(), request.reason());
+        accountBanEmailService.sendAccountBanned(bannedUser);
+        return ApiResponse.success(bannedUser);
+    }
+
+    @PostMapping("/{id}/unban")
+    public ApiResponse<AdminUserResponse> unbanUser(
+        @PathVariable Long id,
+        Authentication authentication
+    ) {
+        AdminUnbanResult result = adminUserService.unbanUser(id, authentication.getName());
+        accountBanEmailService.sendAccountUnbanned(result.notification());
+        return ApiResponse.success(toResponse(result.user()));
     }
 
     @GetMapping
@@ -84,6 +126,9 @@ public class AdminUserController {
             user.getRole().name(),
             userAvatarResolver.resolve(user),
             user.isOnboardingCompleted(),
+            user.getAccountStatus() != null ? user.getAccountStatus().name() : UserAccountStatus.ACTIVE.name(),
+            user.getBanReason(),
+            user.getBannedAt(),
             user.getCreatedAt(),
             user.getUpdatedAt()
         );

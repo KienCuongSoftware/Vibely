@@ -16,6 +16,7 @@ import com.vibely.backend.auth.dto.SendCodeResponse;
 import com.vibely.backend.auth.dto.SendReactivationCodeRequest;
 import com.vibely.backend.auth.entity.OtpCodePurpose;
 import com.vibely.backend.auth.entity.RefreshToken;
+import com.vibely.backend.auth.exception.AccountBannedException;
 import com.vibely.backend.auth.exception.AccountDeactivatedException;
 import com.vibely.backend.auth.oauth.OAuthLoginCodeStore;
 import com.vibely.backend.auth.repository.RefreshTokenRepository;
@@ -150,6 +151,9 @@ public class AuthService {
             userRepository.findByEmail(request.getEmail())
                 .filter(user -> !user.isActive())
                 .ifPresent(user -> {
+                    if (user.isBanned()) {
+                        throw new AccountBannedException(user.getEmail(), user.getBanReason());
+                    }
                     throw new AccountDeactivatedException(user.getEmail());
                 });
             throw new BadRequestException("Thông tin đăng nhập không chính xác");
@@ -245,6 +249,9 @@ public class AuthService {
         if (user.isActive()) {
             throw new BadRequestException("Tài khoản này đang hoạt động");
         }
+        if (user.isBanned()) {
+            throw new BadRequestException("Tài khoản đã bị cấm và không thể tự kích hoạt lại");
+        }
 
         SendCodeRequest sendCodeRequest = new SendCodeRequest();
         sendCodeRequest.setEmail(user.getEmail());
@@ -259,6 +266,9 @@ public class AuthService {
             .orElseThrow(() -> new BadRequestException("Không tìm thấy tài khoản với email này"));
         if (user.isActive()) {
             throw new BadRequestException("Tài khoản này đang hoạt động");
+        }
+        if (user.isBanned()) {
+            throw new BadRequestException("Tài khoản đã bị cấm và không thể tự kích hoạt lại");
         }
 
         otpVerificationService.consumeAccountReactivationCode(user.getEmail(), request.getCode());
@@ -396,6 +406,9 @@ public class AuthService {
     }
 
     private void ensureActive(User user) {
+        if (user.isBanned()) {
+            throw new AccountBannedException(user.getEmail(), user.getBanReason());
+        }
         if (!user.isActive()) {
             throw new AccountDeactivatedException(user.getEmail());
         }

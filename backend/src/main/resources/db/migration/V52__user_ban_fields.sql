@@ -1,0 +1,4 @@
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS ban_reason VARCHAR(500),
+    ADD COLUMN IF NOT EXISTS banned_at TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS banned_by_admin_id BIGINT;

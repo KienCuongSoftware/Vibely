@@ -1,11 +1,14 @@
 package com.vibely.backend.admin;
 
+import com.vibely.backend.auth.repository.RefreshTokenRepository;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.user.entity.Role;
 import com.vibely.backend.user.entity.User;
+import com.vibely.backend.user.entity.UserAccountStatus;
 import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.user.service.UsernameService;
+import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Objects;
 import org.springframework.data.domain.Page;
@@ -24,17 +27,20 @@ public class AdminUserService {
     private final UsernameService usernameService;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public AdminUserService(
         UserRepository userRepository,
         UsernameService usernameService,
         PasswordEncoder passwordEncoder,
-        JdbcTemplate jdbcTemplate
+        JdbcTemplate jdbcTemplate,
+        RefreshTokenRepository refreshTokenRepository
     ) {
         this.userRepository = userRepository;
         this.usernameService = usernameService;
         this.passwordEncoder = passwordEncoder;
         this.jdbcTemplate = jdbcTemplate;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     public Page<User> listUsers(int page, int size) {
@@ -42,6 +48,15 @@ public class AdminUserService {
         int safeSize = Math.min(Math.max(size, 1), 100);
         return userRepository.findAll(
             PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"))
+        );
+    }
+
+    public Page<User> listBannedUsers(int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        return userRepository.findByAccountStatusOrderByBannedAtDesc(
+            UserAccountStatus.BANNED,
+            PageRequest.of(safePage, safeSize)
         );
     }
 
@@ -131,6 +146,84 @@ public class AdminUserService {
         }
         cleanupOrphanedChatConversations();
         return deletedUser;
+    }
+
+    @Transactional
+    public AdminBannedUserInfo banUser(Long targetUserId, String adminEmail, String reason) {
+        User admin = userRepository.findByEmail(normalizeEmail(adminEmail))
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy tài khoản quản trị viên"));
+        User target = userRepository.findById(targetUserId)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+
+        if (Objects.equals(admin.getId(), target.getId())) {
+            throw new BadRequestException("Không thể cấm chính tài khoản đang đăng nhập");
+        }
+        if (target.getRole() == Role.ADMIN) {
+            throw new BadRequestException("Không thể cấm tài khoản ADMIN");
+        }
+        if (target.isBanned()) {
+            throw new BadRequestException("Tài khoản này đã bị cấm");
+        }
+
+        String normalizedReason = normalizeBanReason(reason);
+        target.setAccountStatus(UserAccountStatus.BANNED);
+        target.setBanReason(normalizedReason);
+        target.setBannedAt(LocalDateTime.now());
+        target.setBannedByAdminId(admin.getId());
+        target.setDeactivatedAt(null);
+        userRepository.save(target);
+        refreshTokenRepository.revokeAllByUserId(target.getId());
+
+        return toBannedUserInfo(target);
+    }
+
+    @Transactional
+    public AdminUnbanResult unbanUser(Long targetUserId, String adminEmail) {
+        userRepository.findByEmail(normalizeEmail(adminEmail))
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy tài khoản quản trị viên"));
+        User target = userRepository.findById(targetUserId)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        if (!target.isBanned()) {
+            throw new BadRequestException("Tài khoản này hiện không bị cấm");
+        }
+
+        AdminUnbannedUserInfo notification = toUnbannedUserInfo(target);
+        target.setAccountStatus(UserAccountStatus.ACTIVE);
+        target.setBanReason(null);
+        target.setBannedAt(null);
+        target.setBannedByAdminId(null);
+        return new AdminUnbanResult(userRepository.save(target), notification);
+    }
+
+    public AdminUnbannedUserInfo toUnbannedUserInfo(User user) {
+        return new AdminUnbannedUserInfo(
+            user.getId(),
+            user.getUsername(),
+            user.getDisplayName(),
+            user.getEmail()
+        );
+    }
+
+    public AdminBannedUserInfo toBannedUserInfo(User user) {
+        return new AdminBannedUserInfo(
+            user.getId(),
+            user.getUsername(),
+            user.getDisplayName(),
+            user.getEmail(),
+            user.getBanReason(),
+            user.getBannedAt()
+        );
+    }
+
+    private String normalizeBanReason(String reason) {
+        if (!StringUtils.hasText(reason)) {
+            throw new BadRequestException("Lý do cấm tài khoản là bắt buộc");
+        }
+        String trimmed = reason.trim();
+        if (trimmed.length() < 5 || trimmed.length() > 500) {
+            throw new BadRequestException("Lý do cấm phải từ 5 đến 500 ký tự");
+        }
+        return trimmed;
     }
 
     private void cleanupRowsThatWouldOtherwiseRemain(Long userId) {

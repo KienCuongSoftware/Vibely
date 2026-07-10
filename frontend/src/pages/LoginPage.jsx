@@ -67,6 +67,9 @@ export function LoginPage() {
   const [reactivationCodeSent, setReactivationCodeSent] = useState(false);
   const [reactivationLoading, setReactivationLoading] = useState(false);
   const [reactivationError, setReactivationError] = useState("");
+  const [bannedOpen, setBannedOpen] = useState(false);
+  const [bannedReason, setBannedReason] = useState("");
+  const [bannedMaskedEmail, setBannedMaskedEmail] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const lastLoginMethod = useLastLoginMethod();
@@ -171,6 +174,19 @@ export function LoginPage() {
       return;
     }
 
+    if (searchParams.get("banned") === "1") {
+      const provider = normalizeLastLoginMethod(searchParams.get("provider")) ?? "";
+      if (provider) {
+        persistLastLoginMethod(provider);
+      }
+      setBannedReason(String(searchParams.get("reason") ?? "").trim());
+      setBannedMaskedEmail(String(searchParams.get("maskedEmail") ?? "").trim());
+      setBannedOpen(true);
+      setStatus("");
+      navigate("/login", { replace: true });
+      return;
+    }
+
     const oauthStatus = searchParams.get("oauth");
     if (!oauthStatus) return;
     if (oauthStatus !== "success") {
@@ -261,6 +277,11 @@ export function LoginPage() {
       })
       .catch((error) => {
         oauthInFlightRef.current = false;
+        if (error.code === "ACCOUNT_BANNED") {
+          openBannedModal(error.data);
+          navigate("/login", { replace: true });
+          return;
+        }
         navigate(
           `/login?oauth=error&message=${encodeURIComponent(error.message || "Đăng nhập bằng tài khoản liên kết thất bại, vui lòng thử lại")}`,
           { replace: true },
@@ -281,6 +302,37 @@ export function LoginPage() {
     setReactivationError("");
     setReactivationOpen(true);
   };
+
+  const openBannedModal = (payload = {}) => {
+    setBannedReason(String(payload?.reason ?? "").trim());
+    setBannedMaskedEmail(String(payload?.maskedEmail ?? "").trim());
+    setBannedOpen(true);
+    setStatus("");
+  };
+
+  const closeBannedModal = () => {
+    setBannedOpen(false);
+    setBannedReason("");
+    setBannedMaskedEmail("");
+  };
+
+  const bannedAppealHref = (() => {
+    const subject = encodeURIComponent("Khiếu nại cấm tài khoản Vibely");
+    const body = encodeURIComponent(
+      [
+        "Xin chào đội ngũ Vibely,",
+        "",
+        "Tôi muốn gửi khiếu nại về việc tài khoản của tôi bị cấm.",
+        bannedMaskedEmail ? `Email tài khoản: ${bannedMaskedEmail}` : "",
+        bannedReason ? `Lý do cấm được thông báo: ${bannedReason}` : "",
+        "",
+        "Mô tả thêm:",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    );
+    return `mailto:kiencuongsoftware@gmail.com?subject=${subject}&body=${body}`;
+  })();
 
   const closeReactivationModal = () => {
     if (reactivationLoading) return;
@@ -364,6 +416,11 @@ export function LoginPage() {
     } catch (error) {
       if (error.code === "ACCOUNT_DEACTIVATED") {
         openReactivationModal(error.data, "email");
+        setStatus("");
+        return;
+      }
+      if (error.code === "ACCOUNT_BANNED") {
+        openBannedModal(error.data);
         setStatus("");
         return;
       }
@@ -526,6 +583,46 @@ export function LoginPage() {
           performLogin();
         }}
       />
+      {bannedOpen ? (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-[340px] overflow-hidden rounded-sm border border-zinc-800 bg-[#121212] text-center shadow-2xl">
+            <div className="px-6 py-6">
+              <h2 className="text-xl font-bold text-zinc-100">
+                Tài khoản của bạn đã bị cấm
+              </h2>
+              <p className="mt-4 text-[13px] leading-relaxed text-zinc-300">
+                Nếu bạn cho rằng đây là một sự nhầm lẫn, bạn có thể gửi khiếu nại
+              </p>
+              {bannedReason ? (
+                <p className="mt-4 rounded-md border border-zinc-800 bg-zinc-950/80 px-3 py-2 text-left text-[12px] leading-relaxed text-zinc-400">
+                  <span className="font-medium text-zinc-300">Lý do: </span>
+                  {bannedReason}
+                </p>
+              ) : null}
+              {bannedMaskedEmail ? (
+                <p className="mt-3 break-all text-[12px] text-zinc-500">
+                  {bannedMaskedEmail}
+                </p>
+              ) : null}
+            </div>
+            <div className="border-t border-zinc-800">
+              <a
+                href={bannedAppealHref}
+                className="flex h-12 w-full items-center justify-center text-[15px] font-semibold text-white transition hover:bg-zinc-900"
+              >
+                Khiếu nại
+              </a>
+              <button
+                type="button"
+                className="h-12 w-full border-t border-zinc-800 text-[15px] font-medium text-zinc-200 hover:bg-zinc-900"
+                onClick={closeBannedModal}
+              >
+                Bỏ qua
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       {reactivationOpen ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-[340px] overflow-hidden rounded-sm border border-zinc-800 bg-[#121212] text-center shadow-2xl">

@@ -1,8 +1,10 @@
 package com.vibely.backend.user.repository;
 
 import com.vibely.backend.user.entity.User;
+import com.vibely.backend.user.entity.UserAccountStatus;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,4 +24,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
         order by u.updatedAt desc, u.id desc
         """)
     List<User> findSitemapUsers(Pageable pageable);
+
+    Page<User> findByAccountStatusOrderByBannedAtDesc(UserAccountStatus accountStatus, Pageable pageable);
 }

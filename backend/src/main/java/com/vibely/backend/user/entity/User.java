@@ -45,6 +45,15 @@ public class User {
     @Column(name = "deactivated_at")
     private LocalDateTime deactivatedAt;
 
+    @Column(name = "ban_reason", length = 500)
+    private String banReason;
+
+    @Column(name = "banned_at")
+    private LocalDateTime bannedAt;
+
+    @Column(name = "banned_by_admin_id")
+    private Long bannedByAdminId;
+
     @Column(length = 300)
     private String bio;
 
@@ -147,6 +156,34 @@ public class User {
 
     public boolean isActive() {
         return accountStatus == null || accountStatus == UserAccountStatus.ACTIVE;
+    }
+
+    public boolean isBanned() {
+        return accountStatus == UserAccountStatus.BANNED;
+    }
+
+    public String getBanReason() {
+        return banReason;
+    }
+
+    public void setBanReason(String banReason) {
+        this.banReason = banReason;
+    }
+
+    public LocalDateTime getBannedAt() {
+        return bannedAt;
+    }
+
+    public void setBannedAt(LocalDateTime bannedAt) {
+        this.bannedAt = bannedAt;
+    }
+
+    public Long getBannedByAdminId() {
+        return bannedByAdminId;
+    }
+
+    public void setBannedByAdminId(Long bannedByAdminId) {
+        this.bannedByAdminId = bannedByAdminId;
     }
 
     public LocalDateTime getDeactivatedAt() {

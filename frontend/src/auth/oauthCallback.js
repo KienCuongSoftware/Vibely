@@ -6,5 +6,6 @@ export function isPendingOAuthBrowserCallback() {
   if (oauth === "success" && params.get("code")) return true;
   if (oauth === "error") return true;
   if (params.get("reactivate") === "1" && params.get("token")) return true;
+  if (params.get("banned") === "1") return true;
   return false;
 }

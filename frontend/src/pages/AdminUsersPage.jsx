@@ -5,6 +5,7 @@ import {
   IoChevronDown,
   IoChevronForward,
   IoClose,
+  IoLockClosedOutline,
   IoPencil,
   IoTrash,
 } from 'react-icons/io5'
@@ -72,6 +73,29 @@ function OnboardingBadge({ completed }) {
       }`}
     >
       {completed ? 'Đã hoàn tất' : 'Chưa hoàn tất'}
+    </span>
+  )
+}
+
+function AccountStatusBadge({ accountStatus }) {
+  const status = String(accountStatus ?? 'ACTIVE').toUpperCase()
+  if (status === 'BANNED') {
+    return (
+      <span className="inline-flex rounded-full bg-red-500/15 px-2.5 py-1 text-xs font-semibold text-red-300 ring-1 ring-red-500/30">
+        Bị cấm
+      </span>
+    )
+  }
+  if (status === 'DEACTIVATED') {
+    return (
+      <span className="inline-flex rounded-full bg-zinc-500/15 px-2.5 py-1 text-xs font-semibold text-zinc-300 ring-1 ring-zinc-500/30">
+        Đã hủy kích hoạt
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300 ring-1 ring-emerald-500/30">
+      Hoạt động
     </span>
   )
 }
@@ -259,6 +283,86 @@ function UserFormModal({ mode, initialUser, submitting, error, onClose, onSubmit
   )
 }
 
+function BanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
+  const [reason, setReason] = useState('')
+  const trimmedReason = reason.trim()
+  const canSubmit = trimmedReason.length >= 5 && trimmedReason.length <= 500 && !submitting
+
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    if (!canSubmit) return
+    onConfirm(trimmedReason)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/60"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-bold text-zinc-100">Cấm tài khoản</h2>
+            <p className="mt-1 text-sm text-zinc-500">
+              Người dùng sẽ không thể đăng nhập. Lý do cấm sẽ được gửi qua email.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-2 text-zinc-500 transition hover:bg-zinc-900 hover:text-zinc-100"
+            aria-label="Đóng"
+          >
+            <IoClose className="text-xl" aria-hidden />
+          </button>
+        </div>
+
+        <div className="mt-5 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
+          <p>
+            Bạn sắp cấm <strong>{user?.displayName || 'Người dùng Vibely'}</strong> (@
+            {user?.username || 'unknown'}).
+          </p>
+          <p className="mt-2 text-red-200/90">Email nhận thông báo: {user?.email || 'Không có email'}</p>
+        </div>
+
+        <div className="mt-4 space-y-1.5">
+          <FieldLabel>Lý do cấm</FieldLabel>
+          <textarea
+            required
+            rows={4}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            maxLength={500}
+            className="w-full resize-y rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-red-500"
+            placeholder="Nhập lý do cấm tài khoản (5–500 ký tự)..."
+          />
+          <p className="text-right text-xs text-zinc-500">{trimmedReason.length}/500</p>
+        </div>
+
+        {error ? <p className="mt-4 rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</p> : null}
+
+        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={submitting}
+            className="rounded-xl border border-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-300 transition hover:bg-zinc-900 disabled:opacity-50"
+          >
+            Hủy
+          </button>
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            className="rounded-xl border border-zinc-800 bg-black px-5 py-3 text-sm font-bold text-zinc-100 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {submitting ? 'Đang cấm...' : 'Cấm tài khoản'}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
 function DeleteConfirmModal({ user, submitting, error, onClose, onConfirm }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">
@@ -329,6 +433,7 @@ export function AdminUsersPage() {
   const [formMode, setFormMode] = useState(null)
   const [editingUser, setEditingUser] = useState(null)
   const [deletingUser, setDeletingUser] = useState(null)
+  const [banningUser, setBanningUser] = useState(null)
   const [modalError, setModalError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -404,11 +509,17 @@ export function AdminUsersPage() {
     setDeletingUser(item)
   }
 
+  const openBanModal = (item) => {
+    setModalError('')
+    setBanningUser(item)
+  }
+
   const closeModals = () => {
     if (submitting) return
     setFormMode(null)
     setEditingUser(null)
     setDeletingUser(null)
+    setBanningUser(null)
     setModalError('')
   }
 
@@ -454,6 +565,22 @@ export function AdminUsersPage() {
       }
     } catch (e) {
       setModalError(e.message ?? 'Không xóa được người dùng.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleBanUser = async (reason) => {
+    if (!banningUser?.id) return
+    setSubmitting(true)
+    setModalError('')
+    try {
+      await apiClient.banAdminUser(token, banningUser.id, { reason })
+      setBanningUser(null)
+      setModalError('')
+      await loadUsers()
+    } catch (e) {
+      setModalError(e.message ?? 'Không cấm được người dùng.')
     } finally {
       setSubmitting(false)
     }
@@ -517,6 +644,7 @@ export function AdminUsersPage() {
                   <th className="py-3 pr-4 font-medium">Người dùng</th>
                   <th className="px-3 py-3 font-medium">Email</th>
                   <th className="px-3 py-3 font-medium">Vai trò</th>
+                  <th className="px-3 py-3 font-medium">Trạng thái</th>
                   <th className="px-3 py-3 font-medium">Hồ sơ</th>
                   <th className="px-3 py-3 font-medium">Ngày tạo</th>
                   <th className="px-3 py-3 font-medium">Cập nhật</th>
@@ -528,7 +656,9 @@ export function AdminUsersPage() {
                   const avatarSrc = resolveAdminAvatarUrl(item.avatarUrl)
                   const itemIsAdmin = String(item.role ?? '').toUpperCase() === 'ADMIN'
                   const itemIsSelf = Number(item.id) === Number(user?.id)
+                  const itemIsBanned = String(item.accountStatus ?? '').toUpperCase() === 'BANNED'
                   const cannotDelete = itemIsAdmin || itemIsSelf
+                  const cannotBan = itemIsAdmin || itemIsSelf || itemIsBanned
                   return (
                     <tr key={item.id} className="border-b border-zinc-800/80">
                       <td className="py-3 pr-4">
@@ -553,6 +683,9 @@ export function AdminUsersPage() {
                         <RoleBadge role={item.role} />
                       </td>
                       <td className="px-3 py-3">
+                        <AccountStatusBadge accountStatus={item.accountStatus} />
+                      </td>
+                      <td className="px-3 py-3">
                         <OnboardingBadge completed={item.onboardingCompleted} />
                       </td>
                       <td className="whitespace-nowrap px-3 py-3 text-xs text-zinc-400">
@@ -570,6 +703,20 @@ export function AdminUsersPage() {
                             aria-label={`Sửa ${item.username}`}
                           >
                             <IoPencil className="text-base" aria-hidden />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openBanModal(item)}
+                            disabled={cannotBan}
+                            title={
+                              cannotBan
+                                ? 'Không thể cấm chính mình, tài khoản ADMIN hoặc tài khoản đã bị cấm'
+                                : 'Cấm tài khoản'
+                            }
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-700 text-zinc-200 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-35"
+                            aria-label={`Cấm ${item.username}`}
+                          >
+                            <IoLockClosedOutline className="text-base" aria-hidden />
                           </button>
                           <button
                             type="button"
@@ -635,6 +782,15 @@ export function AdminUsersPage() {
             error={modalError}
             onClose={closeModals}
             onConfirm={handleDeleteUser}
+          />
+        ) : null}
+        {banningUser ? (
+          <BanConfirmModal
+            user={banningUser}
+            submitting={submitting}
+            error={modalError}
+            onClose={closeModals}
+            onConfirm={handleBanUser}
           />
         ) : null}
         </>

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { IoPeopleOutline, IoVideocamOutline } from 'react-icons/io5'
+import { IoPeopleOutline, IoShieldOutline, IoVideocamOutline } from 'react-icons/io5'
 
 const ADMIN_NAV_ITEMS = [
   {
@@ -14,6 +14,12 @@ const ADMIN_NAV_ITEMS = [
     to: '/admin/posts',
     label: 'Quản lý bài đăng',
     icon: IoVideocamOutline,
+  },
+  {
+    id: 'banned',
+    to: '/admin/banned-users',
+    label: 'Tài khoản bị cấm',
+    icon: IoShieldOutline,
   },
 ]
 

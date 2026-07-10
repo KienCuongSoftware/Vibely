@@ -8,7 +8,7 @@ const ERROR_MESSAGES_VI = {
   ACCESS_DENIED: "Bạn không có quyền thực hiện thao tác này.",
   RATE_LIMITED: "Bạn thao tác quá nhanh, vui lòng thử lại sau.",
   CAPTCHA_REQUIRED: "Yêu cầu xác minh captcha trước khi tiếp tục.",
-  SUSPICIOUS_LOGIN: "Đăng nhập tạm khóa do hoạt động bất thường.",
+  ACCOUNT_BANNED: "Tài khoản của bạn đã bị cấm.",
   VALIDATION_ERROR: "Dữ liệu gửi lên chưa hợp lệ.",
   BAD_REQUEST: "Yêu cầu chưa hợp lệ, vui lòng kiểm tra lại.",
   NOT_FOUND: "Không tìm thấy dữ liệu yêu cầu.",
@@ -231,6 +231,12 @@ export const apiClient = {
     request(`/api/admin/users/${userId}`, { method: "PUT", token, body: payload }),
   deleteAdminUser: (token, userId) =>
     request(`/api/admin/users/${userId}`, { method: "DELETE", token }),
+  getAdminBannedUsers: (token, { page = 0, size = 20 } = {}) =>
+    request(`/api/admin/users/banned${toQuery({ page, size })}`, { token }),
+  banAdminUser: (token, userId, payload) =>
+    request(`/api/admin/users/${userId}/ban`, { method: "POST", token, body: payload }),
+  unbanAdminUser: (token, userId) =>
+    request(`/api/admin/users/${userId}/unban`, { method: "POST", token }),
   getFollowingFeed: (token, { page = 0, size = 10 } = {}) =>
     request(`/api/feed/following${toQuery({ page, size })}`, { token }),
   createVideo: (payload, token) =>

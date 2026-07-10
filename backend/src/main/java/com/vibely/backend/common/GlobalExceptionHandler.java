@@ -3,7 +3,9 @@ package com.vibely.backend.common;
 import com.vibely.backend.antibot.dto.CaptchaRequiredPayload;
 import com.vibely.backend.antibot.exception.CaptchaRequiredException;
 import com.vibely.backend.antibot.exception.SuspiciousLoginException;
+import com.vibely.backend.auth.exception.AccountBannedException;
 import com.vibely.backend.auth.exception.AccountDeactivatedException;
+import com.vibely.backend.auth.dto.AccountBannedPayload;
 import com.vibely.backend.auth.dto.AccountDeactivatedPayload;
 import com.vibely.backend.auth.store.AccountReactivationTokenStore;
 import jakarta.validation.ConstraintViolationException;
@@ -36,6 +38,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleBadRequest(BadRequestException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(ApiResponse.failure(ApiError.of(HttpStatus.BAD_REQUEST.value(), "BAD_REQUEST", ex.getMessage())));
+    }
+
+    @ExceptionHandler(AccountBannedException.class)
+    public ResponseEntity<ApiResponse<AccountBannedPayload>> handleAccountBanned(
+        AccountBannedException ex
+    ) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(new ApiResponse<>(
+                false,
+                new AccountBannedPayload(maskEmail(ex.getEmail()), ex.getReason()),
+                ApiError.of(HttpStatus.FORBIDDEN.value(), "ACCOUNT_BANNED", ex.getMessage())
+            ));
     }
 
     @ExceptionHandler(AccountDeactivatedException.class)

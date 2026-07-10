@@ -1,6 +1,7 @@
 package com.vibely.backend.auth.context;
 
 import com.vibely.backend.auth.mail.OtpMailProperties;
+import com.vibely.backend.auth.mail.VibelyEmailLayout;
 import com.vibely.backend.user.entity.User;
 import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
@@ -67,38 +68,38 @@ public class SecurityLoginEmailService {
         String device = escape(context.getBrowser() + " trên " + context.getOperatingSystem());
         String location = escape(displayLocation(context)).replace("\n", "<br />");
         String reasons = escape(String.join(", ", risk.reasons()));
-        return """
-            <!DOCTYPE html>
-            <html lang="vi">
-            <body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#161823;">
-              <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="padding:28px 16px;background:#f5f5f5;">
-                <tr><td align="center">
-                  <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#fff;border-radius:12px;padding:28px;">
-                    <tr><td style="font-size:28px;font-weight:900;text-align:center;padding-bottom:16px;">Vibely</td></tr>
-                    <tr><td style="font-size:22px;font-weight:800;padding-bottom:10px;">Phát hiện đăng nhập mới</td></tr>
-                    <tr><td style="font-size:14px;line-height:1.6;color:#444;padding-bottom:18px;">Xin chào <strong>%s</strong>, chúng tôi phát hiện một lần đăng nhập có dấu hiệu mới: <strong>%s</strong>.</td></tr>
-                    <tr><td>
-                      <div style="background:#f7f7f8;border-radius:10px;padding:18px 20px;font-size:14px;line-height:1.8;color:#4b5563;">
-                        <div>Thời gian:<br /><strong style="color:#161823;">%s</strong></div>
-                        <div style="margin-top:10px;">Thiết bị:<br /><strong style="color:#161823;">%s</strong></div>
-                        <div style="margin-top:10px;">Vị trí:<br /><strong style="color:#161823;">%s</strong></div>
-                      </div>
-                    </td></tr>
-                    <tr><td style="font-size:14px;line-height:1.6;color:#444;padding-top:18px;">Nếu đây là bạn, bạn có thể bỏ qua email này. Nếu không phải bạn, hãy đổi mật khẩu ngay và kiểm tra hoạt động tài khoản.</td></tr>
-                    <tr><td style="padding-top:16px;"><a href="%s/settings" style="color:#fe2c55;text-decoration:none;font-weight:700;">Mở cài đặt bảo mật Vibely</a></td></tr>
-                  </table>
-                </td></tr>
-              </table>
-            </body>
-            </html>
+        String bodyRows = VibelyEmailLayout.headingRow("Phát hiện đăng nhập mới") + """
+            <tr>
+              <td style="padding:0 56px 8px;font-size:15px;line-height:1.7;color:#161823;">
+                <p style="margin:0 0 18px;">Xin chào <strong>%s</strong>, chúng tôi phát hiện một lần đăng nhập có dấu hiệu mới: <strong>%s</strong>.</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 56px 24px;">
+                <div style="background:#f7f7f8;border-radius:10px;padding:18px 20px;font-size:14px;line-height:1.7;color:#4b5563;">
+                  <div>Thời gian: <strong style="color:#161823;">%s</strong></div>
+                  <div>Vị trí: <strong style="color:#161823;">%s</strong></div>
+                  <div>Thiết bị: <strong style="color:#161823;">%s</strong></div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 56px 28px;font-size:14px;line-height:1.65;color:#161823;">
+                <p style="margin:0 0 16px;">Nếu đây là bạn, bạn có thể bỏ qua email này. Nếu không phải bạn, hãy đổi mật khẩu ngay và kiểm tra hoạt động tài khoản.</p>
+                <p style="margin:0 0 8px;"><a href="%s/settings" style="color:#2563eb;text-decoration:none;">Mở cài đặt bảo mật Vibely</a></p>
+                <p style="margin:0;">Liên hệ hỗ trợ: %s</p>
+              </td>
+            </tr>
             """.formatted(
                 escape(user.getUsername()),
                 reasons,
                 time,
-                device,
                 location,
-                frontendBaseUrl
+                device,
+                frontendBaseUrl,
+                VibelyEmailLayout.supportEmailLink()
             );
+        return VibelyEmailLayout.document("Cảnh báo đăng nhập Vibely", bodyRows, user.getUsername());
     }
 
     private String plainBody(LoginContext context, LoginRiskResult risk) {
