@@ -1,22 +1,39 @@
 /**
  * Dev: mặc định gọi API qua proxy Vite (same-origin /api → localhost:8080).
  * Production + nginx/cloudflared: để trống → gọi /api cùng origin (điện thoại khác mạng vẫn được).
+ * Lưu ý: mọi path client đã có prefix /api/... — không set VITE_API_BASE_URL kết thúc bằng /api.
  */
+function normalizeConfiguredOrigin(value) {
+  if (value == null || String(value).trim() === "") {
+    return "";
+  }
+  let trimmed = String(value).trim().replace(/\/$/, "");
+  if (trimmed.endsWith("/api")) {
+    trimmed = trimmed.slice(0, -4);
+  }
+  return trimmed;
+}
+
 export function resolveApiBaseUrl() {
-  const raw = import.meta.env.VITE_API_BASE_URL
-  const trimmed =
-    raw == null || String(raw).trim() === ""
-      ? ""
-      : String(raw).trim().replace(/\/$/, "")
+  const trimmed = normalizeConfiguredOrigin(import.meta.env.VITE_API_BASE_URL);
 
   if (import.meta.env.DEV) {
     if (!trimmed || trimmed.includes(":8000")) {
-      return ""
+      return "";
     }
-    return trimmed
+    return trimmed;
   }
 
-  return trimmed
+  return trimmed;
+}
+
+/** Ghép base URL với path API (path luôn bắt đầu bằng /api/...). */
+export function buildApiUrl(path) {
+  const base = resolveApiBaseUrl();
+  const normalizedPath = String(path ?? "").startsWith("/")
+    ? String(path)
+    : `/${String(path)}`;
+  return `${base}${normalizedPath}`;
 }
 
 function isLoopbackHostname(hostname) {
@@ -42,10 +59,7 @@ export function resolveBackendOrigin() {
 
   const fromEnv =
     import.meta.env.VITE_BACKEND_ORIGIN ?? import.meta.env.VITE_API_BASE_URL
-  const trimmed =
-    fromEnv == null || String(fromEnv).trim() === ""
-      ? ""
-      : String(fromEnv).trim().replace(/\/$/, "")
+  const trimmed = normalizeConfiguredOrigin(fromEnv)
 
   if (import.meta.env.DEV) {
     if (typeof window !== "undefined" && window.location?.origin) {

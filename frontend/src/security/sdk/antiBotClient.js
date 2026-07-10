@@ -1,19 +1,38 @@
-import { resolveApiBaseUrl } from "../../config/apiBase.js";
+import { buildApiUrl } from "../../config/apiBase.js";
 import { collectFingerprint } from "../fingerprint/collectFingerprint.js";
 import { detectAutomation } from "../antiAutomation/detectAutomation.js";
 import { getOrCreateSessionId } from "../sessionId.js";
 
-const API_BASE_URL = resolveApiBaseUrl();
+function localizeAntiBotError(code, fallbackMessage, status) {
+  const msg = String(fallbackMessage ?? "").trim();
+  if (msg && msg !== "Bạn không có quyền truy cập tài nguyên này") {
+    return msg;
+  }
+  if (code === "ACCESS_DENIED" || status === 403) {
+    return "Không thể xác minh bảo mật. Vui lòng tải lại trang và thử lại.";
+  }
+  if (status >= 500) {
+    return "Hệ thống bảo mật tạm thời không phản hồi. Vui lòng thử lại sau.";
+  }
+  return "Không thể xác minh bảo mật. Vui lòng tải lại trang và thử lại.";
+}
 
 async function antiBotRequest(path, { method = "GET", body } = {}) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(buildApiUrl(path), {
     method,
     headers: { "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
   });
-  const payload = await response.json();
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error(localizeAntiBotError(undefined, "", response.status));
+  }
   if (!response.ok || payload?.success === false) {
-    throw new Error(payload?.error?.message || "Anti-bot request failed");
+    throw new Error(
+      localizeAntiBotError(payload?.error?.code, payload?.error?.message, response.status),
+    );
   }
   return payload.data;
 }

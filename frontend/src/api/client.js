@@ -1,7 +1,5 @@
 import { isCookieSession } from "../auth/session.js";
-import { resolveApiBaseUrl } from "../config/apiBase.js";
-
-const API_BASE_URL = resolveApiBaseUrl();
+import { buildApiUrl } from "../config/apiBase.js";
 
 const ERROR_MESSAGES_VI = {
   AUTH_REQUIRED: "Bạn cần đăng nhập để tiếp tục.",
@@ -15,13 +13,26 @@ const ERROR_MESSAGES_VI = {
   INTERNAL_SERVER_ERROR: "Hệ thống đang bận, vui lòng thử lại sau.",
 };
 
-function localizeError(code, fallbackMessage) {
+const LEGACY_ACCESS_DENIED_MESSAGE = "Bạn không có quyền truy cập tài nguyên này";
+
+function localizeError(code, fallbackMessage, status) {
   const msg = String(fallbackMessage ?? "").trim();
-  if (msg) return msg;
+  if (msg && msg !== LEGACY_ACCESS_DENIED_MESSAGE) {
+    return msg;
+  }
   if (code && ERROR_MESSAGES_VI[code]) {
     return ERROR_MESSAGES_VI[code];
   }
-  return "Đã có lỗi xảy ra.";
+  if (status === 401) {
+    return ERROR_MESSAGES_VI.AUTH_REQUIRED;
+  }
+  if (status === 403) {
+    return ERROR_MESSAGES_VI.ACCESS_DENIED;
+  }
+  if (status >= 500) {
+    return ERROR_MESSAGES_VI.INTERNAL_SERVER_ERROR;
+  }
+  return "Đã có lỗi xảy ra. Vui lòng thử lại.";
 }
 
 function readCsrfToken() {
@@ -33,7 +44,7 @@ function readCsrfToken() {
 async function ensureCsrfCookie() {
   if (typeof document === "undefined" || readCsrfToken()) return;
   try {
-    await fetch(`${API_BASE_URL}/api/health`, { credentials: "include" });
+    await fetch(buildApiUrl("/api/health"), { credentials: "include" });
   } catch {
     /* health probe is best-effort */
   }
@@ -53,7 +64,7 @@ async function request(path, { method = "GET", body, token, headers: extraHeader
     }
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(buildApiUrl(path), {
     method,
     headers,
     credentials: "include",
@@ -78,7 +89,7 @@ async function request(path, { method = "GET", body, token, headers: extraHeader
     } catch {
       // Keep default message when response is not JSON.
     }
-    const err = new Error(localizeError(code, message));
+    const err = new Error(localizeError(code, message, response.status));
     err.status = response.status;
     if (errorData) err.data = errorData;
     if (code) err.code = code;
@@ -97,7 +108,7 @@ async function request(path, { method = "GET", body, token, headers: extraHeader
     if (!payload.success) {
       const code = payload?.error?.code;
       const fallbackMessage = payload?.error?.message ?? "Yêu cầu thất bại";
-      throw new Error(localizeError(code, fallbackMessage));
+      throw new Error(localizeError(code, fallbackMessage, response.status));
     }
     return payload.data;
   }

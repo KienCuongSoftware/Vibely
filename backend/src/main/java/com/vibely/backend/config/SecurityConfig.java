@@ -107,7 +107,7 @@ public class SecurityConfig {
                         response,
                         HttpStatus.FORBIDDEN,
                         "ACCESS_DENIED",
-                        "Bạn không có quyền truy cập tài nguyên này"
+                        "Bạn không có quyền thực hiện thao tác này"
                     )
                 )
             )

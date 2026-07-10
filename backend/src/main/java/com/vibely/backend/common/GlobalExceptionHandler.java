@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -131,6 +133,16 @@ public class GlobalExceptionHandler {
             .orElse("Dữ liệu không hợp lệ");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(ApiResponse.failure(ApiError.of(HttpStatus.BAD_REQUEST.value(), "VALIDATION_ERROR", message)));
+    }
+
+    @ExceptionHandler({ AccessDeniedException.class, AuthorizationDeniedException.class })
+    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(Exception ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(ApiResponse.failure(ApiError.of(
+                HttpStatus.FORBIDDEN.value(),
+                "ACCESS_DENIED",
+                "Bạn không có quyền thực hiện thao tác này"
+            )));
     }
 
     @ExceptionHandler(Exception.class)

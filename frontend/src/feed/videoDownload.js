@@ -1,4 +1,4 @@
-import { resolveApiBaseUrl } from '../config/apiBase.js'
+import { buildApiUrl } from '../config/apiBase.js'
 import { isCookieSession } from '../auth/session.js'
 
 function readCsrfToken() {
@@ -25,7 +25,7 @@ export async function downloadWatermarkedVideo(publicId, username, { token } = {
   if (csrf) {
     headers['X-XSRF-TOKEN'] = csrf
   }
-  const response = await fetch(`${resolveApiBaseUrl()}/api/videos/${encodeURIComponent(id)}/download`, {
+  const response = await fetch(buildApiUrl(`/api/videos/${encodeURIComponent(id)}/download`), {
     method: 'GET',
     credentials: 'include',
     headers,

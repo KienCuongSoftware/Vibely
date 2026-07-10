@@ -1,6 +1,7 @@
 package com.vibely.backend.security;
 
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.user.entity.Role;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -22,6 +23,9 @@ public class AppUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+        String[] authorities = user.getRole() == Role.ADMIN
+            ? new String[] { "ROLE_ADMIN", "ROLE_USER" }
+            : new String[] { "ROLE_" + user.getRole().name() };
         return new org.springframework.security.core.userdetails.User(
             user.getEmail(),
             user.getPasswordHash(),
@@ -29,7 +33,7 @@ public class AppUserDetailsService implements UserDetailsService {
             true,
             true,
             true,
-            AuthorityUtils.createAuthorityList("ROLE_" + user.getRole().name())
+            AuthorityUtils.createAuthorityList(authorities)
         );
     }
 
