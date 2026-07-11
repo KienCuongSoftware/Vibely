@@ -17,6 +17,8 @@ mkdir -p "${DEST}"
 docker cp "${TMP_CONTAINER}:/usr/share/nginx/html/." "${DEST}/"
 docker rm -f "${TMP_CONTAINER}" >/dev/null
 
-echo "Done. Verify OAuth path in bundle:"
+echo "Done. Verify ban appeal email prefill in bundle:"
+grep -o 'Bạn có thể đổi sang email khác' "${DEST}/assets/"LoginPage-*.js 2>/dev/null | head -1 || true
+echo "Verify OAuth path in bundle:"
 grep -o 'oauth2/authorization[^`"]*' "${DEST}/assets/"LoginPage-*.js 2>/dev/null | head -1 || true
 echo "Smoke test (expect HTTP/2 302): curl -sI https://vibely.sbs/api/oauth2/authorization/google | head -1"

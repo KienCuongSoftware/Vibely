@@ -1,3 +1,11 @@
+FROM maven:3.9.9-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY pom.xml .
+COPY .mvn .mvn
+COPY mvnw .
+COPY src ./src
+RUN chmod +x mvnw && ./mvnw -DskipTests package -q
+
 FROM eclipse-temurin:17-jre-jammy
 
 RUN apt-get update \
@@ -7,7 +15,7 @@ RUN apt-get update \
 RUN groupadd --system vibely && useradd --system --gid vibely --home-dir /app vibely
 
 WORKDIR /app
-COPY --chown=vibely:vibely target/vibely-backend-*.jar /app/app.jar
+COPY --from=build /app/target/vibely-backend-*.jar /app/app.jar
 
 USER vibely
 

@@ -39,12 +39,45 @@ import {
   userNeedsOnboarding,
 } from "../utils/onboarding.js";
 
+const BANNED_APPEAL_EMAIL_STORAGE_KEY = "vibely:bannedAppealEmail";
+
+function readStoredBannedAppealEmail() {
+  try {
+    const stored = sessionStorage.getItem(BANNED_APPEAL_EMAIL_STORAGE_KEY);
+    if (!stored) return "";
+    const normalized = stored.trim().toLowerCase();
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized) ? normalized : "";
+  } catch {
+    return "";
+  }
+}
+
+function persistBannedAppealEmail(email) {
+  try {
+    const normalized = String(email ?? "").trim().toLowerCase();
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+      sessionStorage.setItem(BANNED_APPEAL_EMAIL_STORAGE_KEY, normalized);
+    }
+  } catch {
+    // sessionStorage may be unavailable in some browsers.
+  }
+}
+
+function clearStoredBannedAppealEmail() {
+  try {
+    sessionStorage.removeItem(BANNED_APPEAL_EMAIL_STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 export function LoginPage() {
   const { token, user, login, reactivateAccount, completeOAuthLogin, refreshProfile, authReady } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const oauthInFlightRef = useRef(false);
   const processedOAuthCodeRef = useRef("");
+  const bannedPayloadRef = useRef(null);
   const pendingCaptchaActionRef = useRef(null);
   const [view, setView] = useState("methods");
   const [identifier, setIdentifier] = useState("");
@@ -193,11 +226,16 @@ export function LoginPage() {
       if (provider) {
         persistLastLoginMethod(provider);
       }
-      setBannedReason(String(searchParams.get("reason") ?? "").trim());
-      setBannedAccountEmail(String(searchParams.get("accountEmail") ?? "").trim());
-      setBannedMaskedEmail(String(searchParams.get("maskedEmail") ?? "").trim());
-      setBannedOpen(true);
-      setStatus("");
+      const accountEmailFromUrl = String(searchParams.get("accountEmail") ?? "").trim();
+      if (accountEmailFromUrl) {
+        persistBannedAppealEmail(accountEmailFromUrl);
+      }
+      applyBannedState({
+        reason: searchParams.get("reason"),
+        accountEmail: accountEmailFromUrl,
+        email: accountEmailFromUrl,
+        maskedEmail: searchParams.get("maskedEmail"),
+      });
       navigate("/login", { replace: true });
       return;
     }
@@ -318,29 +356,55 @@ export function LoginPage() {
     setReactivationOpen(true);
   };
 
-  const resolveBannedAccountEmail = (payload = {}) => {
-    const fromPayload = String(payload?.email ?? "").trim().toLowerCase();
-    if (fromPayload) {
-      return fromPayload;
+  const resolveBannedAccountEmail = (payload = {}, loginId = identifier) => {
+    const candidates = [
+      payload?.email,
+      payload?.accountEmail,
+      bannedPayloadRef.current?.email,
+      bannedPayloadRef.current?.accountEmail,
+      readStoredBannedAppealEmail(),
+    ];
+    for (const raw of candidates) {
+      const normalized = String(raw ?? "").trim().toLowerCase();
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+        return normalized;
+      }
     }
-    const loginIdentifier = identifier.trim().toLowerCase();
+    const loginIdentifier = String(loginId ?? "").trim().toLowerCase();
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginIdentifier)) {
       return loginIdentifier;
     }
     return "";
   };
 
-  const openBannedModal = (payload = {}) => {
-    setBannedReason(String(payload?.reason ?? "").trim());
-    setBannedMaskedEmail(String(payload?.maskedEmail ?? "").trim());
-    setBannedAccountEmail(resolveBannedAccountEmail(payload));
+  const applyBannedState = (payload = {}) => {
+    const accountEmail = resolveBannedAccountEmail(payload);
+    if (accountEmail) {
+      persistBannedAppealEmail(accountEmail);
+    }
+    const normalizedPayload = {
+      reason: String(payload?.reason ?? "").trim(),
+      maskedEmail: String(payload?.maskedEmail ?? "").trim(),
+      email: accountEmail,
+      accountEmail,
+    };
+    bannedPayloadRef.current = normalizedPayload;
+    setBannedReason(normalizedPayload.reason);
+    setBannedMaskedEmail(normalizedPayload.maskedEmail);
+    setBannedAccountEmail(accountEmail);
     setBannedOpen(true);
     setStatus("");
+  };
+
+  const openBannedModal = (payload = {}) => {
+    applyBannedState(payload);
   };
 
   const closeBannedModal = () => {
     setBannedOpen(false);
     setBannedAppealOpen(false);
+    bannedPayloadRef.current = null;
+    clearStoredBannedAppealEmail();
     setBannedReason("");
     setBannedMaskedEmail("");
     setBannedAccountEmail("");
@@ -351,8 +415,14 @@ export function LoginPage() {
   };
 
   const openBannedAppealModal = () => {
+    const resolvedEmail =
+      bannedAccountEmail.trim() ||
+      resolveBannedAccountEmail(bannedPayloadRef.current ?? {});
+    if (resolvedEmail && resolvedEmail !== bannedAccountEmail) {
+      setBannedAccountEmail(resolvedEmail);
+    }
     setAppealDescription("");
-    setAppealEmail(bannedAccountEmail.trim());
+    setAppealEmail(resolvedEmail);
     setAppealError("");
     setBannedAppealOpen(true);
   };
@@ -446,6 +516,10 @@ export function LoginPage() {
   };
 
   const performLogin = async () => {
+    const attemptedIdentifier = identifier.trim();
+    if (attemptedIdentifier) {
+      persistBannedAppealEmail(attemptedIdentifier);
+    }
     setLoading(true);
     setStatus("Đang đăng nhập...");
     try {
@@ -598,12 +672,6 @@ export function LoginPage() {
     event.preventDefault();
     if (!identifier.trim() || !password.trim()) {
       setStatus("Vui lòng nhập email/tên người dùng và mật khẩu");
-      return;
-    }
-    if (!identifier.includes("@")) {
-      setStatus(
-        "Hiện tại backend chỉ hỗ trợ đăng nhập bằng email. Vui lòng nhập email đã đăng ký.",
-      );
       return;
     }
     try {

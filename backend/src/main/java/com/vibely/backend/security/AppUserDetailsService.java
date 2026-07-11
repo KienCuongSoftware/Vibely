@@ -4,6 +4,8 @@ import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.user.entity.Role;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
+import java.util.Locale;
+import java.util.Optional;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,8 +22,8 @@ public class AppUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
+    public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
+        User user = resolveUserForLoginIdentifier(identifier)
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
         String[] authorities = user.getRole() == Role.ADMIN
             ? new String[] { "ROLE_ADMIN", "ROLE_USER" }
@@ -35,6 +37,19 @@ public class AppUserDetailsService implements UserDetailsService {
             true,
             AuthorityUtils.createAuthorityList(authorities)
         );
+    }
+
+    private Optional<User> resolveUserForLoginIdentifier(String identifier) {
+        if (identifier == null || identifier.isBlank()) {
+            return Optional.empty();
+        }
+        String normalized = identifier.trim().toLowerCase(Locale.ROOT);
+        Optional<User> byEmail = userRepository.findByEmail(normalized);
+        if (byEmail.isPresent()) {
+            return byEmail;
+        }
+        String username = normalized.startsWith("@") ? normalized.substring(1) : normalized;
+        return userRepository.findByUsername(username);
     }
 
     public User loadDomainUserByEmail(String email) {

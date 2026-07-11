@@ -40,6 +40,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -154,7 +156,7 @@ public class AuthService {
             );
         } catch (AuthenticationException ex) {
             authProtectionService.onLoginFailure(request.getEmail(), httpRequest);
-            userRepository.findByEmail(request.getEmail())
+            findUserForLoginIdentifier(request.getEmail())
                 .filter(user -> !user.isActive())
                 .ifPresent(user -> {
                     if (user.isBanned()) {
@@ -164,7 +166,7 @@ public class AuthService {
                 });
             throw new BadRequestException("Thông tin đăng nhập không chính xác");
         }
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = findUserForLoginIdentifier(request.getEmail())
             .orElseThrow(() -> new BadRequestException("Thông tin đăng nhập không chính xác"));
         ensureActive(user);
         authProtectionService.consumeLoginVerification(httpRequest);
@@ -407,6 +409,19 @@ public class AuthService {
         if (!user.isActive()) {
             throw new AccountDeactivatedException(user.getEmail());
         }
+    }
+
+    private Optional<User> findUserForLoginIdentifier(String identifier) {
+        if (identifier == null || identifier.isBlank()) {
+            return Optional.empty();
+        }
+        String normalized = identifier.trim().toLowerCase(Locale.ROOT);
+        Optional<User> byEmail = userRepository.findByEmail(normalized);
+        if (byEmail.isPresent()) {
+            return byEmail;
+        }
+        String username = normalized.startsWith("@") ? normalized.substring(1) : normalized;
+        return userRepository.findByUsername(username);
     }
 
     private OtpRequestMetadata enrichReactivationMetadata(User user, OtpRequestMetadata metadata) {
