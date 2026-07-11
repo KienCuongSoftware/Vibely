@@ -2,6 +2,7 @@ package com.vibely.backend.video.service;
 
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.common.SqlSafe;
 import com.vibely.backend.discovery.service.UserInterestSignalProcessor;
 import com.vibely.backend.discovery.service.VideoEngagementStatsService;
 import com.vibely.backend.explore.service.ExploreCacheService;
@@ -195,7 +196,7 @@ public class VideoFeedService {
         Pageable pageable = PageRequest.of(page, Math.min(size, 60));
         Page<Video> resultPage = videoRepository.findByHashtag(
             VideoStatus.READY.name(),
-            VideoMediaUtils.escapeRegexLiteral(normalizedTag),
+            SqlSafe.escapeRegexLiteral(normalizedTag),
             pageable
         );
         return responseMapper.toFeedPageResponse(resultPage, "hashtag");

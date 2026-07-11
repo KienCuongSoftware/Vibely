@@ -2,6 +2,7 @@ package com.vibely.backend.search.service;
 
 import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.common.BadRequestException;
+import com.vibely.backend.common.SqlSafe;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.search.dto.SearchHashtagResultDto;
 import com.vibely.backend.search.dto.SearchHistoryItemDto;
@@ -311,10 +312,11 @@ public class SearchService {
         if (normalized.startsWith("#")) {
             normalized = normalized.substring(1).trim();
         }
+        normalized = normalized.toLowerCase(Locale.ROOT);
         if (normalized.length() > MAX_QUERY_LENGTH) {
             normalized = normalized.substring(0, MAX_QUERY_LENGTH);
         }
-        return normalized.toLowerCase(Locale.ROOT);
+        return SqlSafe.escapeLike(normalized);
     }
 
     private static int capLimit(int limit, int defaultLimit, int maxLimit) {

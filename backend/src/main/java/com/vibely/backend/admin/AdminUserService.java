@@ -4,6 +4,7 @@ import com.vibely.backend.auth.repository.RefreshTokenRepository;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.BirthDateValidator;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.common.SqlSafe;
 import com.vibely.backend.user.dto.UsernameCheckResponse;
 import com.vibely.backend.user.entity.Role;
 import com.vibely.backend.user.entity.User;
@@ -54,19 +55,19 @@ public class AdminUserService {
     }
 
     public Page<User> listUsers(int page, int size) {
-        int safePage = Math.max(page, 0);
-        int safeSize = Math.min(Math.max(size, 1), 100);
-        return userRepository.findAll(
-            PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"))
+        PageRequest pageable = SqlSafe.pageRequest(
+            page,
+            size,
+            100,
+            Sort.by(Sort.Direction.DESC, "createdAt")
         );
+        return userRepository.findAll(pageable);
     }
 
     public Page<User> listBannedUsers(int page, int size) {
-        int safePage = Math.max(page, 0);
-        int safeSize = Math.min(Math.max(size, 1), 100);
         return userRepository.findByAccountStatusOrderByBannedAtDesc(
             UserAccountStatus.BANNED,
-            PageRequest.of(safePage, safeSize)
+            SqlSafe.pageRequest(page, size, 100)
         );
     }
 

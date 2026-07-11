@@ -5,6 +5,7 @@ import com.vibely.backend.discovery.service.RecommendationService;
 import com.vibely.backend.discovery.service.RelatedVideoDiscoveryService;
 import com.vibely.backend.explore.CategoryRepository;
 import com.vibely.backend.explore.ExploreCursorCodec;
+import com.vibely.backend.common.SqlSafe;
 import com.vibely.backend.explore.ExploreQueryRepository;
 import com.vibely.backend.explore.ExploreVideoProjection;
 import com.vibely.backend.explore.VideoCategoryRepository;
@@ -96,7 +97,7 @@ public class ExploreService {
 
     @Transactional(readOnly = true)
     public ExplorePageDto category(String slug, String cursor, int size) {
-        String normalized = String.valueOf(slug == null ? "" : slug).trim().toLowerCase();
+        String normalized = SqlSafe.requireIdentifierSlug(slug);
         return cachedPage("category:" + normalized + ":" + (cursor == null ? "first" : cursor), () -> toPage(
             exploreDiscoveryEngine.isHybridEnabled()
                 ? exploreDiscoveryEngine.category(normalized, score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1))
@@ -107,7 +108,7 @@ public class ExploreService {
 
     @Transactional(readOnly = true)
     public ExplorePageDto topic(String slug, String cursor, int size) {
-        String normalized = String.valueOf(slug == null ? "" : slug).trim().toLowerCase();
+        String normalized = SqlSafe.requireIdentifierSlug(slug);
         return cachedPage("topic:" + normalized + ":" + (cursor == null ? "first" : cursor), () -> toPage(
             exploreDiscoveryEngine.isHybridEnabled()
                 ? exploreDiscoveryEngine.topic(normalized, score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1))
@@ -132,7 +133,7 @@ public class ExploreService {
 
     @Transactional(readOnly = true)
     public ExplorePageDto search(String q, String cursor, int size) {
-        String query = String.valueOf(q == null ? "" : q).trim();
+        String query = SqlSafe.sanitizeLikeTerm(q, 200);
         return presignExplorePage(toPage(
             exploreDiscoveryEngine.isHybridEnabled()
                 ? exploreDiscoveryEngine.search(query, score(cursor), time(cursor), id(cursor), PageRequest.of(0, capSize(size) + 1))

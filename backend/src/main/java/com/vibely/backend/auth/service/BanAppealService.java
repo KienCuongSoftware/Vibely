@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import com.vibely.backend.common.SqlSafe;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -59,9 +60,14 @@ public class BanAppealService {
     }
 
     public AdminBanAppealPageResponse listForAdmin(int page, int size, BanAppealStatus status) {
-        int safePage = Math.max(page, 0);
-        int safeSize = Math.min(Math.max(size, 1), 100);
-        PageRequest pageable = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+        int safePage = SqlSafe.clampPage(page);
+        int safeSize = SqlSafe.clampPageSize(size, 1, 100);
+        PageRequest pageable = SqlSafe.pageRequest(
+            safePage,
+            safeSize,
+            100,
+            Sort.by(Sort.Direction.DESC, "createdAt")
+        );
         Page<BanAppeal> appeals = status == null
             ? banAppealRepository.findAll(pageable)
             : banAppealRepository.findByStatus(status, pageable);

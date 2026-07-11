@@ -1,6 +1,7 @@
 package com.vibely.backend.admin;
 
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.common.SqlSafe;
 import com.vibely.backend.interaction.repository.CommentRepository;
 import com.vibely.backend.interaction.repository.LikeRepository;
 import com.vibely.backend.interaction.repository.VideoBookmarkRepository;
@@ -58,11 +59,9 @@ public class AdminPostService {
 
     @Transactional(readOnly = true)
     public AdminPostPageResponse listPosts(int page, int size, String query, String status) {
-        int safePage = Math.max(page, 0);
-        int safeSize = Math.min(Math.max(size, 1), 100);
         VideoStatus parsedStatus = parseStatus(status);
         String normalizedQuery = normalizeQuery(query);
-        PageRequest pageable = PageRequest.of(safePage, safeSize);
+        PageRequest pageable = SqlSafe.pageRequest(page, size, 100);
         Page<Video> result = parsedStatus == null
             ? videoRepository.findAdminPosts(normalizedQuery, pageable)
             : videoRepository.findAdminPostsByStatus(normalizedQuery, parsedStatus, pageable);
@@ -151,7 +150,10 @@ public class AdminPostService {
     }
 
     private String normalizeQuery(String query) {
-        return StringUtils.hasText(query) ? query.trim() : "";
+        if (!StringUtils.hasText(query)) {
+            return "";
+        }
+        return SqlSafe.sanitizeLikeTerm(query, 200);
     }
 
     private Map<Long, Long> groupedCounts(Collection<Object[]> rows) {
