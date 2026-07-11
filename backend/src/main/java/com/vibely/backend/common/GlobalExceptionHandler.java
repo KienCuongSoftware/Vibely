@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
             .body(new ApiResponse<>(
                 false,
-                new AccountBannedPayload(maskEmail(ex.getEmail()), ex.getReason()),
+                new AccountBannedPayload(ex.getEmail(), maskEmail(ex.getEmail()), ex.getReason()),
                 ApiError.of(HttpStatus.FORBIDDEN.value(), "ACCOUNT_BANNED", ex.getMessage())
             ));
     }

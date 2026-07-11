@@ -70,6 +70,7 @@ export function LoginPage() {
   const [bannedOpen, setBannedOpen] = useState(false);
   const [bannedReason, setBannedReason] = useState("");
   const [bannedMaskedEmail, setBannedMaskedEmail] = useState("");
+  const [bannedAccountEmail, setBannedAccountEmail] = useState("");
   const [bannedAppealOpen, setBannedAppealOpen] = useState(false);
   const [appealDescription, setAppealDescription] = useState("");
   const [appealEmail, setAppealEmail] = useState("");
@@ -193,6 +194,7 @@ export function LoginPage() {
         persistLastLoginMethod(provider);
       }
       setBannedReason(String(searchParams.get("reason") ?? "").trim());
+      setBannedAccountEmail(String(searchParams.get("accountEmail") ?? "").trim());
       setBannedMaskedEmail(String(searchParams.get("maskedEmail") ?? "").trim());
       setBannedOpen(true);
       setStatus("");
@@ -316,9 +318,22 @@ export function LoginPage() {
     setReactivationOpen(true);
   };
 
+  const resolveBannedAccountEmail = (payload = {}) => {
+    const fromPayload = String(payload?.email ?? "").trim().toLowerCase();
+    if (fromPayload) {
+      return fromPayload;
+    }
+    const loginIdentifier = identifier.trim().toLowerCase();
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginIdentifier)) {
+      return loginIdentifier;
+    }
+    return "";
+  };
+
   const openBannedModal = (payload = {}) => {
     setBannedReason(String(payload?.reason ?? "").trim());
     setBannedMaskedEmail(String(payload?.maskedEmail ?? "").trim());
+    setBannedAccountEmail(resolveBannedAccountEmail(payload));
     setBannedOpen(true);
     setStatus("");
   };
@@ -328,6 +343,7 @@ export function LoginPage() {
     setBannedAppealOpen(false);
     setBannedReason("");
     setBannedMaskedEmail("");
+    setBannedAccountEmail("");
     setAppealDescription("");
     setAppealEmail("");
     setAppealError("");
@@ -336,7 +352,7 @@ export function LoginPage() {
 
   const openBannedAppealModal = () => {
     setAppealDescription("");
-    setAppealEmail("");
+    setAppealEmail(bannedAccountEmail.trim());
     setAppealError("");
     setBannedAppealOpen(true);
   };
@@ -699,6 +715,7 @@ export function LoginPage() {
                 </label>
                 <p className="mt-1 text-[12px] text-zinc-500">
                   Chúng tôi sẽ gửi cho bạn kết quả của khiếu nại qua địa chỉ email này.
+                  {bannedAccountEmail ? " Bạn có thể đổi sang email khác nếu muốn." : ""}
                 </p>
                 <input
                   type="email"

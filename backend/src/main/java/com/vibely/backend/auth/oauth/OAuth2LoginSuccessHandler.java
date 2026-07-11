@@ -77,6 +77,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             String redirectUrl = UriComponentsBuilder.fromUriString(loginBase)
                 .queryParam("banned", "1")
                 .queryParam("reason", ex.getReason())
+                .queryParam("accountEmail", ex.getEmail())
                 .queryParam("maskedEmail", EmailMasking.mask(ex.getEmail()))
                 .queryParam("provider", registrationId)
                 .build()
