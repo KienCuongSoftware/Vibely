@@ -47,7 +47,7 @@ public class CategoryClassifierService {
         keywords.put("horror", Set.of(
             "horror", "horror story", "horrorstory", "kinh di", "kinhdi", "truyen ma", "truyenma",
             "creepypasta", "creepy", "halloween", "ghost", "scary", "true crime", "phim ma",
-            "bo cau ke chuyen", "ke chuyen ma", "am anh"
+            "ke chuyen ma", "am anh"
         ));
         keywords.put("romance", Set.of(
             "romance", "tinh cam", "tinhcam", "love story", "ngon tinh", "couple"
@@ -155,8 +155,6 @@ public class CategoryClassifierService {
         aliases.put("ghost", "horror");
         aliases.put("ghoststory", "horror");
         aliases.put("truecrime", "horror");
-        aliases.put("bocaukechuyen", "horror");
-        aliases.put("bo_cau_ke_chuyen", "horror");
         aliases.put("kechuyenma", "horror");
         aliases.put("phimkinhdi", "horror");
         aliases.put("tinhcam", "romance");
@@ -368,8 +366,7 @@ public class CategoryClassifierService {
             || tag.contains("kinhdi")
             || tag.contains("phimma")
             || tag.contains("ghost")
-            || tag.contains("truecrime")
-            || tag.contains("bocaukechuyen");
+            || tag.contains("truecrime");
     }
 
     private String normalizeToken(String raw) {

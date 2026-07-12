@@ -24,23 +24,20 @@ WHERE c.slug = 'horror'
                     OR lower(h.tag) LIKE '%halloween%'
                     OR lower(h.tag) LIKE '%kinhdi%'
                     OR lower(h.tag) LIKE '%ghost%'
-                    OR lower(h.tag) LIKE '%bocau%'
                 )
         )
-        OR lower(coalesce(v.title, '') || ' ' || coalesce(v.description, '')) LIKE ANY (ARRAY[
-            '%horror%',
-            '%halloween%',
-            '%creepy%',
-            '%creepypasta%',
-            '%ghost%',
-            '%truyện ma%',
-            '%truyen ma%',
-            '%truyenma%',
-            '%kinh dị%',
-            '%kinh di%',
-            '%kinhdi%',
-            '%phim ma%',
-        ])
+        OR lower(coalesce(v.title, '') || ' ' || coalesce(v.description, '')) LIKE '%horror%'
+        OR lower(coalesce(v.title, '') || ' ' || coalesce(v.description, '')) LIKE '%halloween%'
+        OR lower(coalesce(v.title, '') || ' ' || coalesce(v.description, '')) LIKE '%creepy%'
+        OR lower(coalesce(v.title, '') || ' ' || coalesce(v.description, '')) LIKE '%creepypasta%'
+        OR lower(coalesce(v.title, '') || ' ' || coalesce(v.description, '')) LIKE '%ghost%'
+        OR lower(coalesce(v.title, '') || ' ' || coalesce(v.description, '')) LIKE '%truyen ma%'
+        OR lower(coalesce(v.title, '') || ' ' || coalesce(v.description, '')) LIKE '%truyenma%'
+        OR lower(coalesce(v.title, '') || ' ' || coalesce(v.description, '')) LIKE '%kinh di%'
+        OR lower(coalesce(v.title, '') || ' ' || coalesce(v.description, '')) LIKE '%kinhdi%'
+        OR lower(coalesce(v.title, '') || ' ' || coalesce(v.description, '')) LIKE '%phim ma%'
+        OR coalesce(v.title, '') || ' ' || coalesce(v.description, '') ILIKE '%truyện ma%'
+        OR coalesce(v.title, '') || ' ' || coalesce(v.description, '') ILIKE '%kinh dị%'
     )
 ON CONFLICT (video_id, category_id) DO UPDATE
 SET score = GREATEST(video_categories.score, EXCLUDED.score);
