@@ -139,7 +139,9 @@ public class AccountBanAppealEmailService {
               <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
                 <p style="margin:0 0 16px;">Xin chào, <strong>%s</strong>,</p>
                 <p style="margin:0 0 16px;">Chúng tôi đã cập nhật kết quả khiếu nại của bạn.</p>
-                <p style="margin:0 0 8px;"><strong>Trạng thái:</strong> %s</p>
+                <div style="margin:0 0 16px;background:#f7f7f8;border-radius:10px;padding:18px 20px;font-size:14px;line-height:1.7;color:#4b5563;">
+                  <div>Trạng thái: <strong style="color:#161823;">%s</strong></div>
+                </div>
                 <p style="margin:0 0 16px;">%s</p>
                 %s
                 <p style="margin:0;">Nếu bạn có thắc mắc, vui lòng liên hệ %s.</p>
