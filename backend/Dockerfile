@@ -1,10 +1,7 @@
-FROM maven:3.9.9-eclipse-temurin-17 AS build
-WORKDIR /app
-# Use Maven from the base image — do not use ./mvnw (it downloads another Maven and often fails offline/DNS).
-COPY pom.xml .
-COPY src ./src
-RUN mvn -B -DskipTests package -q
-
+# Build JAR on the host first (DNS inside Docker Desktop is often flaky):
+#   mvn -DskipTests package
+# then:
+#   docker build -t kiencuongsoftware/vibely-backend:latest .
 FROM eclipse-temurin:17-jre-jammy
 
 RUN apt-get update \
@@ -14,7 +11,7 @@ RUN apt-get update \
 RUN groupadd --system vibely && useradd --system --gid vibely --home-dir /app vibely
 
 WORKDIR /app
-COPY --from=build /app/target/vibely-backend-*.jar /app/app.jar
+COPY --chown=vibely:vibely target/vibely-backend-*.jar /app/app.jar
 
 USER vibely
 
