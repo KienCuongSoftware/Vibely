@@ -88,7 +88,8 @@ class ApiFlowIntegrationTest {
               "title":"First Vibely Clip",
               "description":"test video",
               "videoUrl":"https://cdn.example.com/video-1.mp4",
-              "thumbnailUrl":"https://cdn.example.com/thumb-1.jpg"
+              "thumbnailUrl":"https://cdn.example.com/thumb-1.jpg",
+              "durationSeconds": 42
             }
             """;
 

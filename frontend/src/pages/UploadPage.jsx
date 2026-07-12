@@ -6,6 +6,8 @@ import { CoverPickerModal } from '../components/CoverPickerModal'
 import { StudioLayout } from '../components/StudioLayout'
 import { extractThumbnailBlobFromFile } from '../utils/videoThumbnail.js'
 import {
+  MAX_VIDEO_DURATION_SECONDS,
+  isDurationLimitRejectMessage,
   resolveUploadContentType,
   validateVideoFileBasics,
   validateVideoMetadata,
@@ -147,6 +149,7 @@ export function UploadPage() {
   const [uploadErrorToast, setUploadErrorToast] = useState('')
   const [dragActive, setDragActive] = useState(false)
   const uploadErrorTimerRef = useRef(null)
+  const processingPollRef = useRef(0)
   const [busy, setBusy] = useState(false)
   /** 0–100 while S3 upload is in progress; null when idle / finished */
   const [uploadProgress, setUploadProgress] = useState(null)
@@ -576,6 +579,7 @@ export function UploadPage() {
   useEffect(() => {
     return () => {
       if (uploadErrorTimerRef.current) clearTimeout(uploadErrorTimerRef.current)
+      processingPollRef.current += 1
     }
   }, [])
 
@@ -584,12 +588,58 @@ export function UploadPage() {
     setStatus(text)
     setUploadErrorToast(text)
     if (uploadErrorTimerRef.current) clearTimeout(uploadErrorTimerRef.current)
-    uploadErrorTimerRef.current = setTimeout(() => setUploadErrorToast(''), 6000)
+    uploadErrorTimerRef.current = setTimeout(() => setUploadErrorToast(''), 8000)
   }, [])
 
   const resetFileInput = useCallback(() => {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }, [])
+
+  /** Clear editor + force user to pick another file. */
+  const resetUploadSession = useCallback(() => {
+    processingPollRef.current += 1
+    setVideoFile(null)
+    setUploadedVideo(null)
+    setThumbnailUrl('')
+    setUploadProgress(null)
+    setDescription('')
+    setCoverModalOpen(false)
+    resetFileInput()
+  }, [resetFileInput])
+
+  const watchServerDurationReject = useCallback(
+    async (publicId) => {
+      if (!token || !publicId) return
+      const pollId = ++processingPollRef.current
+      const deadline = Date.now() + 10 * 60 * 1000
+      while (Date.now() < deadline && processingPollRef.current === pollId) {
+        await new Promise((r) => setTimeout(r, 2000))
+        if (processingPollRef.current !== pollId) return
+        try {
+          const video = await apiClient.getVideo(publicId, { token })
+          if (processingPollRef.current !== pollId) return
+          if (video?.status === 'FAILED') {
+            const msg =
+              video.processingError ||
+              'Video bị từ chối. Vui lòng chọn video khác.'
+            resetUploadSession()
+            showUploadRejected(
+              isDurationLimitRejectMessage(msg)
+                ? msg
+                : 'Video không đạt yêu cầu và đã bị gỡ. Vui lòng tải video khác lên.',
+            )
+            return
+          }
+          if (video?.status === 'READY' || video?.status === 'REMOVED') {
+            return
+          }
+        } catch {
+          // Keep polling while author can still see RAW/PROCESSING.
+        }
+      }
+    },
+    [token, resetUploadSession, showUploadRejected],
+  )
 
   const handleSelectedFile = async (file) => {
     if (!file) return
@@ -602,14 +652,11 @@ export function UploadPage() {
 
     const basicError = validateVideoFileBasics(file)
     if (basicError) {
-      setVideoFile(null)
-      setUploadedVideo(null)
+      resetUploadSession()
       showUploadRejected(basicError)
-      resetFileInput()
       return
     }
 
-    setVideoFile(file)
     setThumbnailUrl('')
     setUploadProgress(null)
     setBusy(true)
@@ -620,12 +667,13 @@ export function UploadPage() {
       const meta = await readVideoMetadata(file)
       const metaError = validateVideoMetadata(meta)
       if (metaError) {
-        setVideoFile(null)
-        setUploadedVideo(null)
+        resetUploadSession()
         showUploadRejected(metaError)
-        resetFileInput()
         return
       }
+
+      const durationSeconds = Math.round(Number(meta.duration))
+      setVideoFile(file)
 
       // TikTok-style: show editor card immediately; bar tracks upload progress.
       setUploadedVideo({
@@ -636,6 +684,8 @@ export function UploadPage() {
         audioUrl: '',
         audioTitle: `âm thanh gốc - ${user?.displayName || user?.username || 'Vibely'}`,
         resolutionLabel: formatResolutionLabel(meta.width, meta.height),
+        durationSeconds,
+        publicId: null,
       })
       setDescription(inferredTitle || 'Video mới')
       setPreviewTab('feed')
@@ -671,6 +721,36 @@ export function UploadPage() {
         // Không chặn luồng đăng video nếu tạo thumbnail tự động thất bại.
       }
 
+      // Create immediately so server ffprobe can reject over-duration and delete S3
+      // while the user is still on the upload page.
+      let created
+      try {
+        created = await apiClient.createVideo(
+          {
+            title: (inferredTitle || 'Video mới').slice(0, 120),
+            description: (inferredTitle || 'Video mới').slice(0, 1000),
+            videoUrl: playbackUrl,
+            thumbnailUrl: autoThumbUrl || undefined,
+            audioUrl,
+            audioTitle,
+            durationSeconds,
+          },
+          token,
+        )
+      } catch (createErr) {
+        const msg = createErr?.message ?? 'Không thể đăng ký video sau khi tải lên.'
+        resetUploadSession()
+        showUploadRejected(
+          isDurationLimitRejectMessage(msg)
+            ? msg
+            : `${msg} Vui lòng chọn video khác.`,
+        )
+        return
+      }
+
+      if (autoThumbUrl) {
+        setThumbnailUrl(autoThumbUrl)
+      }
       setUploadedVideo({
         fileName: file.name,
         fileSize: file.size,
@@ -679,18 +759,17 @@ export function UploadPage() {
         audioUrl,
         audioTitle,
         resolutionLabel: formatResolutionLabel(meta.width, meta.height),
+        durationSeconds,
+        publicId: created?.publicId ?? null,
       })
-      if (autoThumbUrl) {
-        setThumbnailUrl(autoThumbUrl)
-      }
       setUploadProgress(null)
       setStatus('')
+      if (created?.publicId) {
+        void watchServerDurationReject(created.publicId)
+      }
     } catch (error) {
-      setUploadProgress(null)
-      setUploadedVideo(null)
-      setVideoFile(null)
+      resetUploadSession()
       showUploadRejected(error.message ?? 'Đăng tải thất bại.')
-      resetFileInput()
     } finally {
       setBusy(false)
     }
@@ -759,29 +838,72 @@ export function UploadPage() {
       setStatus('URL video không hợp lệ. Vui lòng tải lại video rồi thử đăng lại.')
       return
     }
+    const durationSeconds = Number(uploadedVideo.durationSeconds)
+    if (
+      !Number.isFinite(durationSeconds) ||
+      durationSeconds <= 0 ||
+      durationSeconds > MAX_VIDEO_DURATION_SECONDS
+    ) {
+      resetUploadSession()
+      showUploadRejected(
+        'Video vượt quá thời lượng tối đa 60 phút. Vui lòng chọn video khác.',
+      )
+      return
+    }
     if (description.length > DESC_MAX) {
       setStatus(`Mô tả không quá ${DESC_MAX} ký tự.`)
       return
     }
     setBusy(true)
     try {
-      await apiClient.createVideo(
-        {
-          title: uploadedVideo.title,
-          description: description.trim(),
-          videoUrl: uploadedVideo.playbackUrl,
-          thumbnailUrl: thumbnailUrl.trim(),
-          audioUrl: uploadedVideo.audioUrl,
-          audioTitle: uploadedVideo.audioTitle,
-        },
-        token,
-      )
+      const title = (uploadedVideo.title || 'Video mới').slice(0, 120)
+      const desc = description.trim().slice(0, 1000)
+      if (uploadedVideo.publicId) {
+        const latest = await apiClient.getVideo(uploadedVideo.publicId, { token })
+        if (latest?.status === 'FAILED') {
+          const msg =
+            latest.processingError ||
+            'Video bị từ chối. Vui lòng chọn video khác.'
+          resetUploadSession()
+          showUploadRejected(msg)
+          return
+        }
+        await apiClient.updateVideo(
+          uploadedVideo.publicId,
+          {
+            title,
+            description: desc,
+            thumbnailUrl: thumbnailUrl.trim() || undefined,
+          },
+          token,
+        )
+      } else {
+        await apiClient.createVideo(
+          {
+            title,
+            description: desc,
+            videoUrl: uploadedVideo.playbackUrl,
+            thumbnailUrl: thumbnailUrl.trim(),
+            audioUrl: uploadedVideo.audioUrl,
+            audioTitle: uploadedVideo.audioTitle,
+            durationSeconds: Math.round(durationSeconds),
+          },
+          token,
+        )
+      }
+      processingPollRef.current += 1
       navigate('/vibelystudio/posts', {
         state: { successMessage: 'Đã đăng video thành công.' },
       })
       return
     } catch (error) {
-      setStatus(error.message ?? 'Không thể lưu video.')
+      const msg = error.message ?? 'Không thể lưu video.'
+      if (isDurationLimitRejectMessage(msg)) {
+        resetUploadSession()
+        showUploadRejected(msg)
+      } else {
+        setStatus(msg)
+      }
     } finally {
       setBusy(false)
     }
@@ -843,6 +965,7 @@ export function UploadPage() {
         >
           <p className="font-semibold text-rose-300">Không thể tải lên</p>
           <p className="mt-1 text-pretty text-rose-100/90">{uploadErrorToast}</p>
+          <p className="mt-2 text-xs text-rose-200/80">Vui lòng chọn một video khác đạt yêu cầu.</p>
         </div>
       ) : null}
       <CoverPickerModal

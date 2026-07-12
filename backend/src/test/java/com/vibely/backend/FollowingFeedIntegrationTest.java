@@ -79,7 +79,8 @@ class FollowingFeedIntegrationTest {
             {
               "title":"%s",
               "description":"seed",
-              "videoUrl":"https://cdn.example.com/%s.mp4"
+              "videoUrl":"https://cdn.example.com/%s.mp4",
+              "durationSeconds": 30
             }
             """.formatted(title, title.toLowerCase().replace(" ", "-"));
 

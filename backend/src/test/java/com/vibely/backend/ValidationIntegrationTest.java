@@ -69,7 +69,8 @@ class ValidationIntegrationTest {
             {
               "title":"Validation Clip",
               "description":"validation",
-              "videoUrl":"https://cdn.example.com/validation.mp4"
+              "videoUrl":"https://cdn.example.com/validation.mp4",
+              "durationSeconds": 15
             }
             """;
 

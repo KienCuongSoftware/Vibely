@@ -145,7 +145,37 @@ public class S3MediaDeletionService {
         );
     }
 
-    static String deriveAudioKeyFromUploadKey(String uploadKey) {
+    /**
+     * Deletes a raw upload (+ derived audio key) and optional thumbnail owned by authorId.
+     * Used when rejecting an upload before / without a persisted Video row.
+     */
+    public void deleteOwnedUploadMedia(long authorId, String videoUrl, String thumbnailUrl) {
+        String bucket = properties.getBucket();
+        if (bucket == null || bucket.isBlank()) {
+            return;
+        }
+        Set<String> objectKeys = new LinkedHashSet<>();
+        collectObjectKey(objectKeys, videoUrl, authorUploadsPrefix(authorId));
+        collectObjectKey(objectKeys, thumbnailUrl, authorThumbnailsPrefix(authorId));
+        resolveKeyFromUrl(videoUrl)
+            .map(S3MediaDeletionService::deriveAudioKeyFromUploadKey)
+            .ifPresent(key -> {
+                if (key != null && key.startsWith(authorAudiosPrefix(authorId))) {
+                    objectKeys.add(key);
+                }
+            });
+        for (String key : objectKeys) {
+            deleteObject(bucket, key);
+        }
+        log.info(
+            "Deleted {} orphan upload object(s) for authorId={} videoUrl={}",
+            objectKeys.size(),
+            authorId,
+            videoUrl
+        );
+    }
+
+    public static String deriveAudioKeyFromUploadKey(String uploadKey) {
         if (uploadKey == null || uploadKey.isBlank()) {
             return null;
         }

@@ -65,6 +65,16 @@ public class VideoCommandService {
         User author = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
         long authorId = author.getId();
+        Integer durationSeconds = request.getDurationSeconds();
+        if (durationSeconds == null || durationSeconds <= 0) {
+            throw new BadRequestException("Thiếu thời lượng video.");
+        }
+        if (durationSeconds > VideoCreateRequest.MAX_DURATION_SECONDS) {
+            deleteOwnedUploadBestEffort(authorId, request.getVideoUrl(), request.getThumbnailUrl());
+            throw new BadRequestException(
+                "Video vượt quá thời lượng tối đa 60 phút. Vui lòng chọn video khác."
+            );
+        }
         ownedMediaValidator.requireOwnedUpload(request.getVideoUrl(), authorId);
         String thumb = VideoMediaUtils.normalizeText(request.getThumbnailUrl());
         if (thumb != null) {
@@ -80,6 +90,7 @@ public class VideoCommandService {
         video.setDescription(request.getDescription());
         video.setVideoUrl(request.getVideoUrl());
         video.setThumbnailUrl(request.getThumbnailUrl());
+        video.setDurationSeconds(durationSeconds);
         String audioUrl = VideoMediaUtils.normalizeText(request.getAudioUrl());
         if (audioUrl == null) {
             audioUrl = VideoMediaUtils.deriveAudioUrlFromVideoUrl(request.getVideoUrl());
@@ -95,6 +106,18 @@ public class VideoCommandService {
         exploreSyncService.syncExploreSignals(saved);
         videoProcessingEnqueueService.enqueueAfterVideoPersisted(saved);
         return responseMapper.toResponse(saved);
+    }
+
+    private void deleteOwnedUploadBestEffort(long authorId, String videoUrl, String thumbnailUrl) {
+        S3MediaDeletionService deletionService = s3MediaDeletionService.getIfAvailable();
+        if (deletionService == null) {
+            return;
+        }
+        try {
+            deletionService.deleteOwnedUploadMedia(authorId, videoUrl, thumbnailUrl);
+        } catch (Exception ignored) {
+            // Best-effort cleanup when rejecting over-duration uploads.
+        }
     }
 
     @Transactional

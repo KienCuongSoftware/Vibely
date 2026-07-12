@@ -83,10 +83,13 @@ public class VideoProcessingStateService {
         VideoProcessingJobEntity job = jobRepository.findById(jobId).orElseThrow();
         Video video = videoRepository.findById(videoId).orElseThrow();
         String truncated = truncate(errorMessage, 2000);
+        // High attempt count so recovery does not treat this as a soft/retryable failure.
+        job.setAttempts(Math.max(job.getAttempts(), 99));
         job.setJobState(VideoProcessingJobState.FAILED);
         job.setLastError(truncated);
         video.setStatus(VideoStatus.FAILED);
         video.setProcessingError(truncated);
+        video.setMasterPlaylistUrl(null);
         jobRepository.save(job);
         videoRepository.save(video);
     }

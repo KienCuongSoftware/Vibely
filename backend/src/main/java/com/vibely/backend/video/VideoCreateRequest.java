@@ -1,9 +1,14 @@
 package com.vibely.backend.video;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class VideoCreateRequest {
+
+    /** Matches Studio Upload / FFmpeg pipeline max duration (60 minutes). */
+    public static final int MAX_DURATION_SECONDS = 60 * 60;
 
     @NotBlank(message = "Tiêu đề là bắt buộc")
     @Size(max = 120, message = "Tiêu đề tối đa 120 ký tự")
@@ -19,6 +24,10 @@ public class VideoCreateRequest {
     private String audioUrl;
     @Size(max = 180, message = "Tên âm thanh tối đa 180 ký tự")
     private String audioTitle;
+
+    @NotNull(message = "Thời lượng video là bắt buộc")
+    @Min(value = 1, message = "Thời lượng video không hợp lệ")
+    private Integer durationSeconds;
 
     public String getTitle() {
         return title;
@@ -66,5 +75,13 @@ public class VideoCreateRequest {
 
     public void setAudioTitle(String audioTitle) {
         this.audioTitle = audioTitle;
+    }
+
+    public Integer getDurationSeconds() {
+        return durationSeconds;
+    }
+
+    public void setDurationSeconds(Integer durationSeconds) {
+        this.durationSeconds = durationSeconds;
     }
 }

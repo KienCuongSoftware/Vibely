@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vibely.backend.processing.audio.AudioEnhancementService;
 import com.vibely.backend.processing.audio.AudioProcessingResult;
 import com.vibely.backend.storage.ResolvedS3Object;
+import com.vibely.backend.storage.S3MediaDeletionService;
 import com.vibely.backend.storage.S3ObjectUrlBuilder;
 import com.vibely.backend.storage.S3Properties;
+import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.download.VideoWatermarkDownloadService;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -23,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -44,6 +47,9 @@ public class FfmpegHlsPipelineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(FfmpegHlsPipelineRunner.class);
 
+    /** Matches Studio Upload copy and client-side validation. */
+    static final int MAX_VIDEO_DURATION_SECONDS = 60 * 60;
+
     private final S3Client s3Client;
     private final S3Properties s3Properties;
     private final S3ObjectUrlBuilder objectUrlBuilder;
@@ -52,6 +58,8 @@ public class FfmpegHlsPipelineRunner {
     private final ObjectMapper objectMapper;
     private final AudioEnhancementService audioEnhancementService;
     private final VideoWatermarkDownloadService watermarkDownloadService;
+    private final VideoRepository videoRepository;
+    private final ObjectProvider<S3MediaDeletionService> s3MediaDeletionService;
 
     public FfmpegHlsPipelineRunner(
         S3Client s3Client,
@@ -61,7 +69,9 @@ public class FfmpegHlsPipelineRunner {
         VideoProcessingStateService stateService,
         ObjectMapper objectMapper,
         AudioEnhancementService audioEnhancementService,
-        VideoWatermarkDownloadService watermarkDownloadService
+        VideoWatermarkDownloadService watermarkDownloadService,
+        VideoRepository videoRepository,
+        ObjectProvider<S3MediaDeletionService> s3MediaDeletionService
     ) {
         this.s3Client = s3Client;
         this.s3Properties = s3Properties;
@@ -71,6 +81,8 @@ public class FfmpegHlsPipelineRunner {
         this.objectMapper = objectMapper;
         this.audioEnhancementService = audioEnhancementService;
         this.watermarkDownloadService = watermarkDownloadService;
+        this.videoRepository = videoRepository;
+        this.s3MediaDeletionService = s3MediaDeletionService;
     }
 
     public void run(VideoPipelineWorkItem item) {
@@ -112,6 +124,36 @@ public class FfmpegHlsPipelineRunner {
         return false;
     }
 
+    /**
+     * Authoritative duration gate: mark FAILED (no retries) and delete uploaded media from S3.
+     */
+    private void rejectExcessiveDuration(VideoPipelineWorkItem item, int durationSeconds) {
+        String message =
+            "Video vượt quá thời lượng tối đa 60 phút (thực tế "
+                + durationSeconds
+                + " giây). File đã bị từ chối và xóa.";
+        log.warn(
+            "HLS pipeline reject over-duration videoId={} durationSeconds={} max={}",
+            item.videoId(),
+            durationSeconds,
+            MAX_VIDEO_DURATION_SECONDS
+        );
+        stateService.markTerminalFailure(item.jobId(), item.videoId(), message);
+        S3MediaDeletionService deletion = s3MediaDeletionService.getIfAvailable();
+        if (deletion == null) {
+            log.warn("S3 deletion unavailable; over-duration videoId={} left on bucket", item.videoId());
+            return;
+        }
+        try {
+            videoRepository.findWithAuthorById(item.videoId()).ifPresentOrElse(
+                deletion::deleteVideoArtifacts,
+                () -> log.warn("Video missing after duration reject videoId={}", item.videoId())
+            );
+        } catch (Exception e) {
+            log.warn("Failed to delete S3 artifacts after duration reject videoId={}", item.videoId(), e);
+        }
+    }
+
     private void runInternal(VideoPipelineWorkItem item) throws Exception {
         log.info("HLS pipeline start videoId={} rawUrl={}", item.videoId(), item.rawVideoUrl());
         ResolvedS3Object source = objectUrlBuilder
@@ -124,6 +166,13 @@ public class FfmpegHlsPipelineRunner {
             Path sourceFile = workRoot.resolve("source" + extensionFromKey(source.key()));
             downloadObject(source.bucket(), source.key(), sourceFile);
             log.info("HLS pipeline downloaded local file sizeBytes={}", Files.size(sourceFile));
+
+            Integer durationSeconds = probeDurationSeconds(sourceFile, workRoot);
+            log.info("HLS pipeline ffprobe durationSeconds={}", durationSeconds);
+            if (durationSeconds != null && durationSeconds > MAX_VIDEO_DURATION_SECONDS) {
+                rejectExcessiveDuration(item, durationSeconds);
+                return;
+            }
 
             Path downloadWorkDir = Files.createDirectories(workRoot.resolve("watermarked-dl"));
             CompletableFuture<Void> watermarkedDownloadFuture = CompletableFuture.runAsync(() -> {
@@ -139,8 +188,6 @@ public class FfmpegHlsPipelineRunner {
                 }
             });
 
-            Integer durationSeconds = probeDurationSeconds(sourceFile, workRoot);
-            log.info("HLS pipeline ffprobe durationSeconds={}", durationSeconds);
             SourceDimensions dims = probeSourceVideoDimensions(sourceFile, workRoot);
             log.info("HLS pipeline ffprobe source dimensions width={} height={}", dims.widthPx(), dims.heightPx());
 

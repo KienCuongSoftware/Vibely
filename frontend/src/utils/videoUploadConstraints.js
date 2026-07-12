@@ -45,9 +45,15 @@ export function validateVideoMetadata(meta) {
     return 'Video này không có thời lượng cố định nên không thể tải lên.'
   }
   if (duration > MAX_VIDEO_DURATION_SECONDS) {
-    return 'Video vượt quá thời lượng tối đa 60 phút. Vui lòng cắt ngắn rồi thử lại.'
+    return 'Video vượt quá thời lượng tối đa 60 phút. Vui lòng cắt ngắn rồi chọn video khác.'
   }
   return null
+}
+
+/** @param {string | null | undefined} message */
+export function isDurationLimitRejectMessage(message) {
+  const text = String(message || '').toLowerCase()
+  return text.includes('60 phút') || text.includes('thời lượng tối đa')
 }
 
 /**

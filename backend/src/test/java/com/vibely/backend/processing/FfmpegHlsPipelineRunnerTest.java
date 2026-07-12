@@ -37,4 +37,9 @@ class FfmpegHlsPipelineRunnerTest {
         assertEquals(0, scaled[0] % 2);
         assertEquals(0, scaled[1] % 2);
     }
+
+    @Test
+    void maxVideoDurationIsSixtyMinutes() {
+        assertEquals(3600, FfmpegHlsPipelineRunner.MAX_VIDEO_DURATION_SECONDS);
+    }
 }

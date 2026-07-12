@@ -5,6 +5,7 @@ import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -230,8 +231,22 @@ public class VideoProcessingRecoveryService {
     }
 
     private boolean canRequeueExhaustedJob(VideoProcessingJobEntity job) {
+        if (isNonRetryableLastError(job.getLastError())) {
+            return false;
+        }
         LocalDateTime cooldownBefore = LocalDateTime.now().minusMinutes(exhaustedCooldownMinutes());
         return !job.getUpdatedAt().isAfter(cooldownBefore);
+    }
+
+    /** Policy rejects / missing source must not be auto-retried after S3 cleanup. */
+    private static boolean isNonRetryableLastError(String error) {
+        if (error == null || error.isBlank()) {
+            return false;
+        }
+        String lower = error.toLowerCase(Locale.ROOT);
+        return lower.contains("thời lượng tối đa 60 phút")
+            || lower.contains("nosuchkey")
+            || lower.contains("file gốc không tồn tại");
     }
 
     private int maxAttempts() {
