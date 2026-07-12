@@ -255,6 +255,8 @@ public class AdminUserService {
         jdbcTemplate.update("DELETE FROM anti_bot_device_fingerprints WHERE user_id = ?", userId);
         jdbcTemplate.update("DELETE FROM anti_bot_risk_events WHERE user_id = ?", userId);
         jdbcTemplate.update("DELETE FROM anti_bot_abuse_reports WHERE reporter_user_id = ?", userId);
+        // ban_appeals.user_id historically had no ON DELETE; unlink before removing the user.
+        jdbcTemplate.update("UPDATE ban_appeals SET user_id = NULL WHERE user_id = ?", userId);
     }
 
     private void cleanupOrphanedChatConversations() {
