@@ -21,63 +21,209 @@ public class CategoryClassifierService {
     private static final double STRONG_CATEGORY_SCORE = 2.0;
     public static final String ALL_CATEGORY_SLUG = "all";
 
-    private static final Map<String, Set<String>> KEYWORDS = Map.of(
-        "music", Set.of(
+    private static final Map<String, Set<String>> KEYWORDS;
+    private static final Map<String, String> HASHTAG_CATEGORY_ALIASES;
+
+    static {
+        Map<String, Set<String>> keywords = new LinkedHashMap<>();
+        keywords.put("music", Set.of(
             "music", "song", "amnhac", "am nhac", "nhac", "remix", "cover",
             "lyrics", "lyric", "karaoke", "sing", "audio", "am thanh",
             "sound", "soundtrack", "melody", "lofi", "ballad", "rap", "hiphop", "edm"
-        ),
-        "dance", Set.of(
+        ));
+        keywords.put("dance", Set.of(
             "dance", "nhay", "nhảy", "choreography", "tiktok dance", "nhay dep", "nhảy đẹp"
-        ),
-        "food", Set.of("food", "monan", "anuong", "recipe", "nauan"),
-        "travel", Set.of("travel", "dulich", "trip", "review"),
-        "gaming", Set.of("game", "gaming", "esports", "gameplay"),
-        "beauty", Set.of("beauty", "makeup", "lamdep", "skincare", "gai xinh"),
-        "fitness", Set.of("fitness", "gym", "workout"),
-        "comedy", Set.of("funny", "hai", "comedy", "hai huoc"),
-        "technology", Set.of(
+        ));
+        keywords.put("food", Set.of("food", "monan", "anuong", "recipe", "nauan", "nau an"));
+        keywords.put("travel", Set.of("travel", "dulich", "trip", "review du lich"));
+        keywords.put("gaming", Set.of("game", "gaming", "esports", "gameplay"));
+        keywords.put("beauty", Set.of("beauty", "makeup", "lamdep", "skincare", "gai xinh"));
+        keywords.put("fitness", Set.of("fitness", "gym", "workout"));
+        keywords.put("comedy", Set.of("funny", "hai", "comedy", "hai huoc", "hài"));
+        keywords.put("technology", Set.of(
             "technology", "congnghe", "cong nghe", "programming", "software",
             "developer", "coding", "chatgpt", "springboot", "artificial intelligence"
-        )
-    );
+        ));
+        keywords.put("horror", Set.of(
+            "horror", "kinh di", "kinhdi", "ma", "ghost", "scary", "creepy", "true crime", "phim ma"
+        ));
+        keywords.put("romance", Set.of(
+            "romance", "tinh cam", "tinhcam", "love story", "ngon tinh", "couple"
+        ));
+        keywords.put("action", Set.of("action", "hanh dong", "hanhdong", "fight", "combat"));
+        keywords.put("thriller", Set.of("thriller", "giat gan", "suspense", "mystery"));
+        keywords.put("scifi", Set.of("scifi", "sci fi", "khoa hoc vien tuong", "futuristic"));
+        keywords.put("movies", Set.of("movie", "movies", "phim", "film", "cinema"));
+        keywords.put("documentary", Set.of("documentary", "phim tai lieu", "tailieu"));
+        keywords.put("meme", Set.of("meme", "shitpost", "mode"));
+        keywords.put("prank", Set.of("prank", "tro dua", "trodua"));
+        keywords.put("challenge", Set.of("challenge", "thu thach", "thuthach", "trend challenge"));
+        keywords.put("reaction", Set.of("reaction", "react", "phan ung"));
+        keywords.put("asmr", Set.of("asmr", "whisper", "tingles"));
+        keywords.put("motivation", Set.of("motivation", "dong luc", "dongluc", "inspirational"));
+        keywords.put("diy", Set.of("diy", "handmade", "thu cong", "craft"));
+        keywords.put("nature", Set.of("nature", "thien nhien", "thiennhien", "forest", "mountain"));
+        keywords.put("photography", Set.of("photography", "nhiep anh", "nhiepanh", "photo", "camera"));
+        keywords.put("magic", Set.of("magic", "ao thuat", "aothuat", "illusion", "magician"));
+        keywords.put("cosplay", Set.of("cosplay", "costume"));
+        keywords.put("books", Set.of("books", "sach", "reading", "novel"));
+        keywords.put("science", Set.of("science", "khoa hoc", "khoahoc", "experiment"));
+        keywords.put("history", Set.of("history", "lich su", "lichsu"));
+        keywords.put("language", Set.of("language", "ngoai ngu", "ngoaingu", "english", "tieng anh"));
+        keywords.put("health", Set.of("health", "suc khoe", "suckhoe", "wellness", "y te"));
+        keywords.put("kids", Set.of("kids", "tre em", "treem", "baby", "children"));
+        keywords.put("wedding", Set.of("wedding", "dam cuoi", "damcuoi", "bride"));
+        keywords.put("relationships", Set.of("relationships", "moi quan he", "dating", "hen ho"));
+        keywords.put("career", Set.of("career", "su nghiep", "sunghiep", "job", "cv"));
+        keywords.put("realestate", Set.of("realestate", "bat dong san", "batdongsan", "bds", "nha dat"));
+        keywords.put("camping", Set.of("camping", "cam trai", "camtrai", "glamping"));
+        keywords.put("fishing", Set.of("fishing", "cau ca", "cauca"));
+        keywords.put("farming", Set.of("farming", "nong nghiep", "nongnghiep", "nong trai"));
+        keywords.put("unboxing", Set.of("unboxing", "mo hop", "mohop"));
+        keywords.put("review", Set.of("review", "danh gia", "danhgia"));
+        keywords.put("podcast", Set.of("podcast", "talkshow"));
+        keywords.put("instruments", Set.of("instrument", "nhac cu", "nhaccu", "guitar", "piano", "violin"));
+        keywords.put("kpop", Set.of("kpop", "k-pop", "k pop", "bts", "blackpink"));
+        keywords.put("vpop", Set.of("vpop", "v-pop", "v pop", "nhac viet"));
+        keywords.put("mukbang", Set.of("mukbang", "an thung", "eating show"));
+        keywords.put("streetfood", Set.of("streetfood", "am thuc duong pho", "street food"));
+        keywords.put("spirituality", Set.of("spirituality", "tam linh", "tamlinh", "meditation"));
+        keywords.put("viral", Set.of("viral", "xu huong", "xuhuong", "trending", "fyp"));
+        keywords.put("anime", Set.of("anime", "manga", "otaku", "gfxanime"));
+        keywords.put("pets", Set.of("pet", "pets", "dog", "cat", "cho", "meo", "thu cung"));
+        keywords.put("sports", Set.of("sports", "the thao", "thethao", "football", "bong da"));
+        keywords.put("fashion", Set.of("fashion", "thoi trang", "thoitrang", "outfit", "ootd"));
+        keywords.put("news", Set.of("news", "tin tuc", "tintuc", "breaking"));
+        keywords.put("education", Set.of("education", "giao duc", "giaoduc", "tutorial", "hoc"));
+        keywords.put("family", Set.of("family", "gia dinh", "giadinh", "bo me"));
+        keywords.put("lifestyle", Set.of("lifestyle", "daily vlog", "vlog"));
+        keywords.put("art", Set.of("art", "nghe thuat", "nghethuat", "drawing", "painting"));
+        keywords.put("finance", Set.of("finance", "tai chinh", "taichinh", "crypto", "stock", "dautu"));
+        keywords.put("automotive", Set.of("automotive", "xe", "car", "moto", "oto", "xe co"));
+        KEYWORDS = Map.copyOf(keywords);
 
-    /** Hashtags that should map to a explore category slug (not 1:1 with tag name). */
-    private static final Map<String, String> HASHTAG_CATEGORY_ALIASES = Map.ofEntries(
-        Map.entry("lyrics", "music"),
-        Map.entry("lyric", "music"),
-        Map.entry("lyricvideo", "music"),
-        Map.entry("singing", "music"),
-        Map.entry("sing", "music"),
-        Map.entry("karaoke", "music"),
-        Map.entry("nhac", "music"),
-        Map.entry("amnhac", "music"),
-        Map.entry("remix", "music"),
-        Map.entry("cover", "music"),
-        Map.entry("audio", "music"),
-        Map.entry("sound", "music"),
-        Map.entry("beat", "music"),
-        Map.entry("edm", "music"),
-        Map.entry("hiphop", "music"),
-        Map.entry("choreography", "dance"),
-        Map.entry("dancing", "dance"),
-        Map.entry("nhay", "dance"),
-        Map.entry("monan", "food"),
-        Map.entry("anuong", "food"),
-        Map.entry("nauan", "food"),
-        Map.entry("dulich", "travel"),
-        Map.entry("lamdep", "beauty"),
-        Map.entry("makeup", "beauty"),
-        Map.entry("skincare", "beauty"),
-        Map.entry("congnghe", "technology"),
-        Map.entry("tech", "technology"),
-        Map.entry("coding", "technology"),
-        Map.entry("programming", "technology"),
-        Map.entry("chatgpt", "technology"),
-        Map.entry("ai", "technology"),
-        Map.entry("anime", "anime"),
-        Map.entry("manga", "anime")
-    );
+        Map<String, String> aliases = new LinkedHashMap<>();
+        aliases.put("lyrics", "music");
+        aliases.put("lyric", "music");
+        aliases.put("lyricvideo", "music");
+        aliases.put("singing", "music");
+        aliases.put("sing", "music");
+        aliases.put("karaoke", "music");
+        aliases.put("nhac", "music");
+        aliases.put("amnhac", "music");
+        aliases.put("remix", "music");
+        aliases.put("cover", "music");
+        aliases.put("audio", "music");
+        aliases.put("sound", "music");
+        aliases.put("beat", "music");
+        aliases.put("edm", "music");
+        aliases.put("hiphop", "music");
+        aliases.put("choreography", "dance");
+        aliases.put("dancing", "dance");
+        aliases.put("nhay", "dance");
+        aliases.put("monan", "food");
+        aliases.put("anuong", "food");
+        aliases.put("nauan", "food");
+        aliases.put("dulich", "travel");
+        aliases.put("lamdep", "beauty");
+        aliases.put("makeup", "beauty");
+        aliases.put("skincare", "beauty");
+        aliases.put("congnghe", "technology");
+        aliases.put("tech", "technology");
+        aliases.put("coding", "technology");
+        aliases.put("programming", "technology");
+        aliases.put("chatgpt", "technology");
+        aliases.put("ai", "technology");
+        aliases.put("anime", "anime");
+        aliases.put("manga", "anime");
+        aliases.put("gfxanime", "anime");
+        aliases.put("kinhdi", "horror");
+        aliases.put("kinh_di", "horror");
+        aliases.put("horror", "horror");
+        aliases.put("phimma", "horror");
+        aliases.put("ghost", "horror");
+        aliases.put("scary", "horror");
+        aliases.put("tinhcam", "romance");
+        aliases.put("love", "romance");
+        aliases.put("ngontinh", "romance");
+        aliases.put("hanhdong", "action");
+        aliases.put("action", "action");
+        aliases.put("giatgan", "thriller");
+        aliases.put("thriller", "thriller");
+        aliases.put("scifi", "scifi");
+        aliases.put("khoahocvientuong", "scifi");
+        aliases.put("phim", "movies");
+        aliases.put("movie", "movies");
+        aliases.put("film", "movies");
+        aliases.put("phimtailieu", "documentary");
+        aliases.put("documentary", "documentary");
+        aliases.put("meme", "meme");
+        aliases.put("prank", "prank");
+        aliases.put("thuthach", "challenge");
+        aliases.put("challenge", "challenge");
+        aliases.put("reaction", "reaction");
+        aliases.put("react", "reaction");
+        aliases.put("asmr", "asmr");
+        aliases.put("dongluc", "motivation");
+        aliases.put("motivation", "motivation");
+        aliases.put("diy", "diy");
+        aliases.put("thiennhien", "nature");
+        aliases.put("nature", "nature");
+        aliases.put("nhiepanh", "photography");
+        aliases.put("photography", "photography");
+        aliases.put("aothuat", "magic");
+        aliases.put("magic", "magic");
+        aliases.put("cosplay", "cosplay");
+        aliases.put("sach", "books");
+        aliases.put("books", "books");
+        aliases.put("khoahoc", "science");
+        aliases.put("science", "science");
+        aliases.put("lichsu", "history");
+        aliases.put("history", "history");
+        aliases.put("ngoaingu", "language");
+        aliases.put("english", "language");
+        aliases.put("tienganh", "language");
+        aliases.put("suckhoe", "health");
+        aliases.put("health", "health");
+        aliases.put("treem", "kids");
+        aliases.put("kids", "kids");
+        aliases.put("baby", "kids");
+        aliases.put("damcuoi", "wedding");
+        aliases.put("wedding", "wedding");
+        aliases.put("dating", "relationships");
+        aliases.put("moiquanhe", "relationships");
+        aliases.put("sunghiep", "career");
+        aliases.put("career", "career");
+        aliases.put("batdongsan", "realestate");
+        aliases.put("bds", "realestate");
+        aliases.put("camtrai", "camping");
+        aliases.put("camping", "camping");
+        aliases.put("cauca", "fishing");
+        aliases.put("fishing", "fishing");
+        aliases.put("nongnghiep", "farming");
+        aliases.put("farming", "farming");
+        aliases.put("unboxing", "unboxing");
+        aliases.put("mohop", "unboxing");
+        aliases.put("review", "review");
+        aliases.put("danhgia", "review");
+        aliases.put("podcast", "podcast");
+        aliases.put("nhaccu", "instruments");
+        aliases.put("guitar", "instruments");
+        aliases.put("piano", "instruments");
+        aliases.put("kpop", "kpop");
+        aliases.put("k_pop", "kpop");
+        aliases.put("vpop", "vpop");
+        aliases.put("v_pop", "vpop");
+        aliases.put("mukbang", "mukbang");
+        aliases.put("streetfood", "streetfood");
+        aliases.put("amthucduongpho", "streetfood");
+        aliases.put("tamlinh", "spirituality");
+        aliases.put("viral", "viral");
+        aliases.put("xuhuong", "viral");
+        aliases.put("fyp", "viral");
+        aliases.put("trending", "viral");
+        HASHTAG_CATEGORY_ALIASES = Map.copyOf(aliases);
+    }
 
     private final CategoryRepository categoryRepository;
 

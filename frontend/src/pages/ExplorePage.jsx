@@ -24,7 +24,8 @@ function normalizeExploreTabs(rows) {
     const kind = tab.kind ?? 'category'
     if (tab.slug === 'all') return true
     if (kind === 'for_you' || kind === 'topic') return true
-    return Number(tab.videoCount ?? 0) > 0
+    // Keep all enabled explore categories (including empty ones) for discovery.
+    return kind === 'category'
   })
   const allTab = filtered.find((tab) => tab.slug === 'all') ?? ALL_TAB
   const rest = filtered.filter((tab) => tab.slug !== 'all')

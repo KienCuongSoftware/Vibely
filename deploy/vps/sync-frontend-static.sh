@@ -14,11 +14,12 @@ echo "Extracting static files to ${DEST}..."
 docker rm -f "${TMP_CONTAINER}" 2>/dev/null || true
 docker create --name "${TMP_CONTAINER}" "${IMAGE}" >/dev/null
 mkdir -p "${DEST}"
+# Clear first so old hashed chunks cannot mix with a new index.html
+find "${DEST}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
 docker cp "${TMP_CONTAINER}:/usr/share/nginx/html/." "${DEST}/"
 docker rm -f "${TMP_CONTAINER}" >/dev/null
 
-echo "Done. Verify ban appeal email prefill in bundle:"
-grep -o 'Bạn có thể đổi sang email khác' "${DEST}/assets/"LoginPage-*.js 2>/dev/null | head -1 || true
-echo "Verify OAuth path in bundle:"
-grep -o 'oauth2/authorization[^`"]*' "${DEST}/assets/"LoginPage-*.js 2>/dev/null | head -1 || true
-echo "Smoke test (expect HTTP/2 302): curl -sI https://vibely.sbs/api/oauth2/authorization/google | head -1"
+echo "Done. Assets:"
+ls -1 "${DEST}/assets"/StudioEditPostPage-*.js 2>/dev/null | head -3 || echo "(no StudioEditPostPage chunk found)"
+ls -1 "${DEST}/assets"/index-*.js 2>/dev/null | head -1 || true
+echo "Smoke: curl -sI https://vibely.sbs/ | head -5"

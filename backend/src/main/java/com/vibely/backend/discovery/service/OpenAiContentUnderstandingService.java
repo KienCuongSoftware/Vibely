@@ -28,7 +28,11 @@ public class OpenAiContentUnderstandingService {
         semantic_tags (array of strings),
         category_scores (array of {slug, score}) using slugs:
         music, food, anime, technology, travel, gaming, family, education, comedy, beauty, lifestyle, art,
-        dance, finance, fitness, sports, fashion, pets, news, automotive, all.
+        dance, finance, fitness, sports, fashion, pets, news, automotive,
+        horror, romance, action, thriller, scifi, movies, documentary, meme, prank, challenge, reaction,
+        asmr, motivation, diy, nature, photography, magic, cosplay, books, science, history, language,
+        health, kids, wedding, relationships, career, realestate, camping, fishing, farming,
+        unboxing, review, podcast, instruments, kpop, vpop, mukbang, streetfood, spirituality, viral, all.
         confidence (0-1 number).
         Topic names must be lowercase snake_case. Scores are 0-1.
         Only assign a category when the media content clearly supports it.
