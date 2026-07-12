@@ -116,18 +116,49 @@ async function request(path, { method = "GET", body, token, headers: extraHeader
 }
 
 /** PUT file trực tiếp lên S3 bằng URL đã ký (không qua JSON API). */
-export async function uploadToPresignedPutUrl(uploadUrl, file, contentType) {
+export function uploadToPresignedPutUrl(uploadUrl, file, contentType, onProgress) {
   const ct = contentType || file?.type || "application/octet-stream";
-  const response = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: { "Content-Type": ct },
-    body: file,
-  });
-  if (!response.ok) {
-    throw new Error(
-      `Tải file lên kho lưu trữ thất bại (mã ${response.status}).`,
-    );
+  if (typeof onProgress !== "function") {
+    return fetch(uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": ct },
+      body: file,
+    }).then((response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Tải file lên kho lưu trữ thất bại (mã ${response.status}).`,
+        );
+      }
+    });
   }
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", uploadUrl);
+    xhr.setRequestHeader("Content-Type", ct);
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable) return;
+      const percent = Math.max(
+        0,
+        Math.min(100, Math.round((event.loaded / event.total) * 100)),
+      );
+      onProgress(percent);
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        onProgress(100);
+        resolve();
+        return;
+      }
+      reject(
+        new Error(`Tải file lên kho lưu trữ thất bại (mã ${xhr.status}).`),
+      );
+    };
+    xhr.onerror = () => {
+      reject(new Error("Tải file lên kho lưu trữ thất bại."));
+    };
+    xhr.send(file);
+  });
 }
 
 function toQuery(params = {}) {

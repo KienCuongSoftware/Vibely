@@ -140,6 +140,8 @@ export function UploadPage() {
   const [activeMentionIndex, setActiveMentionIndex] = useState(0)
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
+  /** 0–100 while S3 upload is in progress; null when idle / finished */
+  const [uploadProgress, setUploadProgress] = useState(null)
   const [showMoreSettings, setShowMoreSettings] = useState(false)
   const [postTiming, setPostTiming] = useState('now')
   const [privacyOpen, setPrivacyOpen] = useState(false)
@@ -582,6 +584,7 @@ export function UploadPage() {
     setVideoFile(file ?? null)
     if (!file) return
     setThumbnailUrl('')
+    setUploadProgress(null)
 
     if (!token) {
       setStatus('Bạn cần đăng nhập trước khi đăng tải.')
@@ -608,20 +611,37 @@ export function UploadPage() {
         return
       }
 
-      setStatus('Đang lấy liên kết tải lên…')
+      // TikTok-style: show editor card immediately; bar tracks upload progress.
+      setUploadedVideo({
+        fileName: file.name,
+        fileSize: file.size,
+        title: inferredTitle || 'Video mới',
+        playbackUrl: '',
+        audioUrl: '',
+        audioTitle: `âm thanh gốc - ${user?.displayName || user?.username || 'Vibely'}`,
+        resolutionLabel: formatResolutionLabel(meta.width, meta.height),
+      })
+      setDescription(inferredTitle || 'Video mới')
+      setPreviewTab('feed')
+      setStatus('')
+      setUploadProgress(0)
+
       const presign = await apiClient.presignVideoUpload(token, {
         contentType: file.type || 'video/mp4',
         fileName: file.name,
       })
 
-      setStatus('Đang tải video lên kho lưu trữ…')
-      await uploadToPresignedPutUrl(presign.uploadUrl, file, presign.contentType)
+      await uploadToPresignedPutUrl(
+        presign.uploadUrl,
+        file,
+        presign.contentType,
+        (percent) => setUploadProgress(percent),
+      )
       const playbackUrl = presign.playbackUrl
       const audioUrl = deriveAudioUrlFromVideoUrl(playbackUrl)
       const audioTitle = `âm thanh gốc - ${user?.displayName || user?.username || 'Vibely'}`
       let autoThumbUrl = ''
       try {
-        setStatus('Đang tạo ảnh bìa tự động…')
         const thumbBlob = await extractThumbnailBlob(file, 1)
         autoThumbUrl = await uploadThumbnailToStorage(
           token,
@@ -644,10 +664,11 @@ export function UploadPage() {
       if (autoThumbUrl) {
         setThumbnailUrl(autoThumbUrl)
       }
-      setDescription(inferredTitle || 'Video mới')
-      setPreviewTab('feed')
+      setUploadProgress(null)
       setStatus('')
     } catch (error) {
+      setUploadProgress(null)
+      setUploadedVideo(null)
       setStatus(error.message ?? 'Đăng tải thất bại.')
     } finally {
       setBusy(false)
@@ -686,6 +707,10 @@ export function UploadPage() {
 
   const saveVideo = async () => {
     if (!token || !uploadedVideo) return
+    if (!uploadedVideo.playbackUrl || uploadProgress != null) {
+      setStatus('Vui lòng đợi video tải lên xong rồi đăng.')
+      return
+    }
     if (isInvalidApiVideoPlaybackUrl(uploadedVideo.playbackUrl)) {
       setStatus('URL video không hợp lệ. Vui lòng tải lại video rồi thử đăng lại.')
       return
@@ -834,10 +859,18 @@ export function UploadPage() {
                           {uploadedVideo.resolutionLabel}
                         </span>
                       </div>
-                      <p className="mt-2 flex items-center gap-1.5 text-sm text-emerald-400">
-                        <IoCheckmarkCircle className="text-lg" aria-hidden />
-                        Đã tải lên ({formatFileSize(uploadedVideo.fileSize)})
-                      </p>
+                      {uploadProgress != null ? (
+                        <p className="mt-2 text-sm font-medium text-sky-400">
+                          Đang tải lên… {uploadProgress}%
+                        </p>
+                      ) : uploadedVideo.playbackUrl ? (
+                        <p className="mt-2 flex items-center gap-1.5 text-sm text-emerald-400">
+                          <IoCheckmarkCircle className="text-lg" aria-hidden />
+                          Đã tải lên ({formatFileSize(uploadedVideo.fileSize)})
+                        </p>
+                      ) : (
+                        <p className="mt-2 text-sm text-zinc-400">Đang chuẩn bị…</p>
+                      )}
                     </div>
                     <button
                       type="button"
@@ -849,7 +882,22 @@ export function UploadPage() {
                       Thay thế
                     </button>
                   </div>
-                  <div className="h-1 w-full bg-emerald-600" aria-hidden />
+                  <div className="h-1 w-full bg-zinc-800" aria-hidden>
+                    <div
+                      className={`h-full transition-[width] duration-150 ease-out ${
+                        uploadProgress != null ? 'bg-sky-500' : 'bg-emerald-600'
+                      }`}
+                      style={{
+                        width: `${
+                          uploadProgress != null
+                            ? Math.max(2, uploadProgress)
+                            : uploadedVideo.playbackUrl
+                              ? 100
+                              : 0
+                        }%`,
+                      }}
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -1227,9 +1275,13 @@ export function UploadPage() {
                       type="button"
                       className="rounded-lg bg-[#fe2c55] px-8 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#e62a4d] disabled:opacity-50"
                       onClick={() => void saveVideo()}
-                      disabled={busy}
+                      disabled={busy || uploadProgress != null || !uploadedVideo.playbackUrl}
                     >
-                      {busy ? 'Đang đăng…' : 'Đăng'}
+                      {uploadProgress != null
+                        ? 'Đang tải lên…'
+                        : busy
+                          ? 'Đang đăng…'
+                          : 'Đăng'}
                     </button>
                     {status ? <p className="text-sm text-zinc-400">{status}</p> : null}
                   </div>
