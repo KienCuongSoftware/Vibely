@@ -32,6 +32,6 @@ describe('UploadPage', () => {
     fireEvent.change(fileInput, {
       target: { files: [new File(['demo'], 'demo.mp4', { type: 'video/mp4' })] },
     })
-    expect(screen.getByText('Bạn cần đăng nhập trước khi đăng tải.')).toBeInTheDocument()
+    expect(screen.getAllByText('Bạn cần đăng nhập trước khi đăng tải.').length).toBeGreaterThan(0)
   })
 })

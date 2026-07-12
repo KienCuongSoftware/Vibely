@@ -26,6 +26,9 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 @ConditionalOnProperty(prefix = "app.s3", name = "enabled", havingValue = "true")
 public class S3PresignedUploadService {
 
+    /** Matches Studio Upload copy: max 30 GB per video. */
+    private static final long MAX_VIDEO_UPLOAD_BYTES = 30L * 1024 * 1024 * 1024;
+
     private static final Map<String, String> MIME_TO_EXT = Map.of(
         "video/mp4", ".mp4",
         "video/webm", ".webm",
@@ -67,6 +70,7 @@ public class S3PresignedUploadService {
         if (!ALLOWED_CONTENT_TYPES.contains(contentType)) {
             throw new BadRequestException("Chỉ chấp nhận video MP4, WebM hoặc MOV.");
         }
+        long fileSizeBytes = requireValidVideoFileSize(request.getFileSizeBytes());
         String extension = resolveExtension(request.getFileName(), contentType);
         long authorId = userRepository.findByEmail(userEmail)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"))
@@ -77,6 +81,7 @@ public class S3PresignedUploadService {
             .bucket(properties.getBucket())
             .key(key)
             .contentType(contentType)
+            .contentLength(fileSizeBytes)
             .build();
 
         Instant expiresAt = Instant.now().plus(properties.getPresignExpirationMinutes(), ChronoUnit.MINUTES);
@@ -216,6 +221,16 @@ public class S3PresignedUploadService {
                 return ".mov";
             });
         return fromName.orElse(MIME_TO_EXT.get(contentType));
+    }
+
+    private static long requireValidVideoFileSize(Long fileSizeBytes) {
+        if (fileSizeBytes == null || fileSizeBytes <= 0L) {
+            throw new BadRequestException("Thiếu kích thước tệp video.");
+        }
+        if (fileSizeBytes > MAX_VIDEO_UPLOAD_BYTES) {
+            throw new BadRequestException("Video vượt quá giới hạn 30 GB.");
+        }
+        return fileSizeBytes;
     }
 
 }

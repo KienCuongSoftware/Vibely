@@ -5,6 +5,11 @@ import { apiClient, uploadThumbnailToStorage, uploadToPresignedPutUrl } from '..
 import { CoverPickerModal } from '../components/CoverPickerModal'
 import { StudioLayout } from '../components/StudioLayout'
 import { extractThumbnailBlobFromFile } from '../utils/videoThumbnail.js'
+import {
+  resolveUploadContentType,
+  validateVideoFileBasics,
+  validateVideoMetadata,
+} from '../utils/videoUploadConstraints.js'
 import { useAuth } from '../state/useAuth'
 import { LuHeart, LuLayoutGrid, LuMinimize2, LuRepeat2, LuSmartphone, LuWifi } from 'react-icons/lu'
 import {
@@ -139,6 +144,9 @@ export function UploadPage() {
   const [mentionDropdownPos, setMentionDropdownPos] = useState({ top: 0, left: 0 })
   const [activeMentionIndex, setActiveMentionIndex] = useState(0)
   const [status, setStatus] = useState('')
+  const [uploadErrorToast, setUploadErrorToast] = useState('')
+  const [dragActive, setDragActive] = useState(false)
+  const uploadErrorTimerRef = useRef(null)
   const [busy, setBusy] = useState(false)
   /** 0–100 while S3 upload is in progress; null when idle / finished */
   const [uploadProgress, setUploadProgress] = useState(null)
@@ -206,7 +214,7 @@ export function UploadPage() {
     {
       key: 'format',
       title: 'Định dạng tệp',
-      detail: 'Khuyến nghị dùng .mp4. Các định dạng phổ biến khác vẫn được hỗ trợ.',
+      detail: 'Khuyến nghị dùng .mp4. Cũng hỗ trợ .mov và .webm.',
     },
     {
       key: 'resolution',
@@ -565,34 +573,57 @@ export function UploadPage() {
     })
   }
 
+  useEffect(() => {
+    return () => {
+      if (uploadErrorTimerRef.current) clearTimeout(uploadErrorTimerRef.current)
+    }
+  }, [])
+
+  const showUploadRejected = useCallback((message) => {
+    const text = String(message || 'Video không đúng yêu cầu tải lên.')
+    setStatus(text)
+    setUploadErrorToast(text)
+    if (uploadErrorTimerRef.current) clearTimeout(uploadErrorTimerRef.current)
+    uploadErrorTimerRef.current = setTimeout(() => setUploadErrorToast(''), 6000)
+  }, [])
+
+  const resetFileInput = useCallback(() => {
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }, [])
+
   const handleSelectedFile = async (file) => {
-    setVideoFile(file ?? null)
     if (!file) return
-    setThumbnailUrl('')
-    setUploadProgress(null)
 
     if (!token) {
-      setStatus('Bạn cần đăng nhập trước khi đăng tải.')
-      return
-    }
-    const maxSizeBytes = 30 * 1024 * 1024 * 1024
-    if (!(file.type || '').startsWith('video/')) {
-      setStatus('Tệp đã chọn không phải video hợp lệ.')
-      return
-    }
-    if (file.size > maxSizeBytes) {
-      setStatus('Video vượt quá giới hạn 30 GB.')
+      showUploadRejected('Bạn cần đăng nhập trước khi đăng tải.')
+      resetFileInput()
       return
     }
 
+    const basicError = validateVideoFileBasics(file)
+    if (basicError) {
+      setVideoFile(null)
+      setUploadedVideo(null)
+      showUploadRejected(basicError)
+      resetFileInput()
+      return
+    }
+
+    setVideoFile(file)
+    setThumbnailUrl('')
+    setUploadProgress(null)
     setBusy(true)
     try {
       const inferredTitle = String(file.name ?? 'Video mới')
         .replace(/\.[^/.]+$/, '')
         .trim()
       const meta = await readVideoMetadata(file)
-      if (meta.duration > 60 * 60) {
-        setStatus('Video vượt quá thời lượng tối đa 60 phút.')
+      const metaError = validateVideoMetadata(meta)
+      if (metaError) {
+        setVideoFile(null)
+        setUploadedVideo(null)
+        showUploadRejected(metaError)
+        resetFileInput()
         return
       }
 
@@ -609,11 +640,14 @@ export function UploadPage() {
       setDescription(inferredTitle || 'Video mới')
       setPreviewTab('feed')
       setStatus('')
+      setUploadErrorToast('')
       setUploadProgress(0)
 
+      const contentType = resolveUploadContentType(file)
       const presign = await apiClient.presignVideoUpload(token, {
-        contentType: file.type || 'video/mp4',
+        contentType,
         fileName: file.name,
+        fileSizeBytes: file.size,
       })
 
       await uploadToPresignedPutUrl(
@@ -654,7 +688,9 @@ export function UploadPage() {
     } catch (error) {
       setUploadProgress(null)
       setUploadedVideo(null)
-      setStatus(error.message ?? 'Đăng tải thất bại.')
+      setVideoFile(null)
+      showUploadRejected(error.message ?? 'Đăng tải thất bại.')
+      resetFileInput()
     } finally {
       setBusy(false)
     }
@@ -670,7 +706,9 @@ export function UploadPage() {
             {
               description: 'Video Files',
               accept: {
-                'video/*': ['.mp4', '.mov', '.webm', '.mkv', '.avi', '.m4v'],
+                'video/mp4': ['.mp4', '.m4v'],
+                'video/quicktime': ['.mov'],
+                'video/webm': ['.webm'],
               },
             },
           ],
@@ -687,6 +725,27 @@ export function UploadPage() {
 
   const onFileChange = async (event) => {
     const file = event.target.files?.[0] ?? null
+    await handleSelectedFile(file)
+  }
+
+  const onDropZoneDragOver = (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (!busy) setDragActive(true)
+  }
+
+  const onDropZoneDragLeave = (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    setDragActive(false)
+  }
+
+  const onDropZoneDrop = async (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    setDragActive(false)
+    if (busy) return
+    const file = event.dataTransfer?.files?.[0] ?? null
     await handleSelectedFile(file)
   }
 
@@ -777,6 +836,15 @@ export function UploadPage() {
 
   return (
     <StudioLayout active="upload" hidePageHeader>
+      {uploadErrorToast ? (
+        <div
+          role="alert"
+          className="fixed top-4 right-4 left-4 z-[120] mx-auto max-w-lg rounded-xl border border-rose-500/40 bg-zinc-950/95 px-4 py-3 text-sm text-rose-100 shadow-xl backdrop-blur sm:left-auto"
+        >
+          <p className="font-semibold text-rose-300">Không thể tải lên</p>
+          <p className="mt-1 text-pretty text-rose-100/90">{uploadErrorToast}</p>
+        </div>
+      ) : null}
       <CoverPickerModal
         open={coverModalOpen && Boolean(uploadedVideo)}
         onClose={() => setCoverModalOpen(false)}
@@ -788,7 +856,7 @@ export function UploadPage() {
         <input
           ref={fileInputRef}
           type="file"
-          accept="video/*,.mp4,.mov,.webm,.mkv,.avi,.m4v"
+          accept="video/mp4,video/webm,video/quicktime,.mp4,.m4v,.mov,.webm"
           className="hidden"
           onChange={onFileChange}
         />
@@ -796,7 +864,17 @@ export function UploadPage() {
         <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-3 sm:p-4 lg:p-6">
           {!uploadedVideo ? (
             <>
-              <div className="rounded-xl border border-dashed border-zinc-600/80 bg-zinc-950/80 px-4 py-10 text-center sm:px-8 sm:py-14">
+              <div
+                className={`rounded-xl border border-dashed px-4 py-10 text-center sm:px-8 sm:py-14 ${
+                  dragActive
+                    ? 'border-[#fe2c55]/70 bg-[#fe2c55]/10'
+                    : 'border-zinc-600/80 bg-zinc-950/80'
+                }`}
+                onDragEnter={onDropZoneDragOver}
+                onDragOver={onDropZoneDragOver}
+                onDragLeave={onDropZoneDragLeave}
+                onDrop={(e) => void onDropZoneDrop(e)}
+              >
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-zinc-900 text-zinc-400 sm:h-16 sm:w-16">
                   <IoCloudUploadOutline className="text-2xl sm:text-3xl" aria-hidden />
                 </div>
@@ -814,7 +892,11 @@ export function UploadPage() {
                 >
                   Chọn video
                 </button>
-                {status ? <p className="mt-4 text-sm text-amber-400">{status}</p> : null}
+                {status ? (
+                  <p className="mt-4 text-sm font-medium text-rose-400" role="alert">
+                    {status}
+                  </p>
+                ) : null}
                 {videoFile ? (
                   <p className="mt-2 text-xs text-zinc-500">Đã chọn: {videoFile.name}</p>
                 ) : null}

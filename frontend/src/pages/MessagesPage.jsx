@@ -667,6 +667,7 @@ export function MessagesPage() {
           const presign = await apiClient.presignVideoUpload(token, {
             contentType: item.file.type || "video/mp4",
             fileName: item.file.name || "chat-video.mp4",
+            fileSizeBytes: item.file.size,
           });
           await uploadToPresignedPutUrl(presign.uploadUrl, item.file, presign.contentType);
           messageContent = `${VIDEO_MESSAGE_PREFIX}${presign.playbackUrl}`;
