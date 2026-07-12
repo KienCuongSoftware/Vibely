@@ -160,25 +160,10 @@ export function UploadPage() {
   const [isPreviewMuted, setIsPreviewMuted] = useState(true)
   /** Đồng bộ UI play/pause với thẻ video (autoplay / click có thể thay đổi trạng thái) */
   const [previewUiPlaying, setPreviewUiPlaying] = useState(false)
-  /** TikTok-style: ngang / vuông → letterbox trong khung 9:16; dọc → phủ khung */
-  const [studioPreviewObjectFit, setStudioPreviewObjectFit] = useState('cover')
-
-  const onStudioPreviewVideoMetadata = useCallback((e) => {
-    const el = e.currentTarget
-    const w = Number(el.videoWidth || 0)
-    const h = Number(el.videoHeight || 0)
-    if (w > 0 && h > 0) {
-      setStudioPreviewObjectFit(w >= h ? 'contain' : 'cover')
-    }
-  }, [])
 
   useEffect(() => {
     document.title = 'VibelyStudio | Upload'
   }, [])
-
-  useEffect(() => {
-    setStudioPreviewObjectFit('cover')
-  }, [uploadedVideo?.playbackUrl])
 
   useEffect(() => {
     setPreviewUiPlaying(false)
@@ -1051,11 +1036,8 @@ export function UploadPage() {
                           src={uploadedVideo.playbackUrl}
                           muted
                           playsInline
-                          className={`aspect-9/16 max-h-[280px] w-full ${
-                            studioPreviewObjectFit === 'contain' ? 'object-contain' : 'object-cover'
-                          }`}
+                          className="aspect-9/16 max-h-[280px] w-full bg-black object-contain"
                           preload="metadata"
-                          onLoadedMetadata={onStudioPreviewVideoMetadata}
                         />
                       )}
                       <button
@@ -1352,11 +1334,8 @@ export function UploadPage() {
                             playsInline
                             preload="auto"
                             loop
-                            className={`h-full w-full ${
-                              studioPreviewObjectFit === 'contain' ? 'object-contain' : 'object-cover'
-                            }`}
+                            className="h-full w-full bg-black object-contain"
                             autoPlay
-                            onLoadedMetadata={onStudioPreviewVideoMetadata}
                             onPlay={() => setPreviewUiPlaying(true)}
                             onPause={() => setPreviewUiPlaying(false)}
                             onEnded={() => setPreviewUiPlaying(false)}
@@ -1625,7 +1604,6 @@ export function UploadPage() {
                                 playsInline
                                 loop
                                 className="absolute inset-0 h-full w-full object-cover"
-                                onLoadedMetadata={onStudioPreviewVideoMetadata}
                               />
                             </div>
                             {Array.from({ length: 8 }).map((_, i) => (
@@ -1668,9 +1646,8 @@ export function UploadPage() {
                             className={
                               isPreviewFullscreen
                                 ? 'max-h-full max-w-full object-contain'
-                                : 'h-full w-full object-contain'
+                                : 'h-full w-full bg-black object-contain'
                             }
-                            onLoadedMetadata={onStudioPreviewVideoMetadata}
                             onPlay={() => setPreviewUiPlaying(true)}
                             onPause={() => setPreviewUiPlaying(false)}
                             onEnded={() => setPreviewUiPlaying(false)}
