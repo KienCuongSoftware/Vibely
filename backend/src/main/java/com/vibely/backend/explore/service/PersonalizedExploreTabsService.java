@@ -108,8 +108,9 @@ public class PersonalizedExploreTabsService {
                 continue;
             }
             long videoCount = videoCategoryRepository.countByCategoryId(category.getId());
-            // Always list enabled categories so new tabs (e.g. Kinh dị) are discoverable
-            // even before the first video is classified into them.
+            if (videoCount <= 0) {
+                continue;
+            }
             tabs.add(new ExploreTabDto(
                 slug,
                 category.getName(),
