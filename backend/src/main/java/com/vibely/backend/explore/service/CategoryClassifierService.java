@@ -45,7 +45,9 @@ public class CategoryClassifierService {
             "developer", "coding", "chatgpt", "springboot", "artificial intelligence"
         ));
         keywords.put("horror", Set.of(
-            "horror", "kinh di", "kinhdi", "ma", "ghost", "scary", "creepy", "true crime", "phim ma"
+            "horror", "horror story", "horrorstory", "kinh di", "kinhdi", "truyen ma", "truyenma",
+            "creepypasta", "creepy", "halloween", "ghost", "scary", "true crime", "phim ma",
+            "bo cau ke chuyen", "ke chuyen ma", "am anh"
         ));
         keywords.put("romance", Set.of(
             "romance", "tinh cam", "tinhcam", "love story", "ngon tinh", "couple"
@@ -140,9 +142,23 @@ public class CategoryClassifierService {
         aliases.put("kinhdi", "horror");
         aliases.put("kinh_di", "horror");
         aliases.put("horror", "horror");
-        aliases.put("phimma", "horror");
-        aliases.put("ghost", "horror");
+        aliases.put("horrorstory", "horror");
+        aliases.put("horror_story", "horror");
+        aliases.put("truyenma", "horror");
+        aliases.put("truyen_ma", "horror");
+        aliases.put("creepypasta", "horror");
+        aliases.put("creepy", "horror");
         aliases.put("scary", "horror");
+        aliases.put("halloween", "horror");
+        aliases.put("phimma", "horror");
+        aliases.put("phim_ma", "horror");
+        aliases.put("ghost", "horror");
+        aliases.put("ghoststory", "horror");
+        aliases.put("truecrime", "horror");
+        aliases.put("bocaukechuyen", "horror");
+        aliases.put("bo_cau_ke_chuyen", "horror");
+        aliases.put("kechuyenma", "horror");
+        aliases.put("phimkinhdi", "horror");
         aliases.put("tinhcam", "romance");
         aliases.put("love", "romance");
         aliases.put("ngontinh", "romance");
@@ -333,7 +349,27 @@ public class CategoryClassifierService {
         if (alias != null && bySlug.containsKey(alias)) {
             return alias;
         }
+        // Compound tags like #horrorstory / #truecrimehorror
+        if (bySlug.containsKey("horror") && isHorrorCompoundTag(tag)) {
+            return "horror";
+        }
         return null;
+    }
+
+    private static boolean isHorrorCompoundTag(String tag) {
+        if (tag == null || tag.isBlank()) {
+            return false;
+        }
+        return tag.contains("horror")
+            || tag.contains("truyenma")
+            || tag.contains("creepy")
+            || tag.contains("creepypasta")
+            || tag.contains("halloween")
+            || tag.contains("kinhdi")
+            || tag.contains("phimma")
+            || tag.contains("ghost")
+            || tag.contains("truecrime")
+            || tag.contains("bocaukechuyen");
     }
 
     private String normalizeToken(String raw) {
