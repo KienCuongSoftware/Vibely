@@ -73,7 +73,7 @@ function AppealDetailModal({ appeal, submitting, error, onClose, onUpdateStatus 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/60">
+      <div className="scrollbar-none max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/60">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">

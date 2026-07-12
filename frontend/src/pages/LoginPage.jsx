@@ -751,7 +751,7 @@ export function LoginPage() {
                 Gửi khiếu nại
               </h2>
             </div>
-            <div className="max-h-[min(70vh,560px)] overflow-y-auto px-5 py-4">
+            <div className="scrollbar-none max-h-[min(70vh,560px)] overflow-y-auto px-5 py-4">
               <p className="text-[13px] leading-relaxed text-zinc-400">
                 Tiêu chuẩn cộng đồng Vibely áp dụng cho mọi tài khoản và nội dung.
                 Nếu bạn cho rằng tài khoản bị hạn chế do nhầm lẫn, hãy gửi khiếu nại

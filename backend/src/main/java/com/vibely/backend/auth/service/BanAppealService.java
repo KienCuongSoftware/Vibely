@@ -101,15 +101,52 @@ public class BanAppealService {
     ) {
         BanAppeal appeal = banAppealRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy khiếu nại"));
-        appeal.setStatus(request.status());
+        BanAppealStatus previousStatus = appeal.getStatus();
+        BanAppealStatus nextStatus = request.status();
+
+        appeal.setStatus(nextStatus);
         appeal.setAdminNotes(trimToNull(request.adminNotes()));
         appeal.setReviewedByAdminId(adminUserId);
         appeal.setReviewedAt(LocalDateTime.now());
         BanAppeal saved = banAppealRepository.save(appeal);
-        User user = saved.getUserId() == null
-            ? null
-            : userRepository.findById(saved.getUserId()).orElse(null);
+
+        User user = resolveLinkedUserEntity(saved);
+        if (nextStatus == BanAppealStatus.APPROVED) {
+            user = unbanLinkedUserIfNeeded(saved, user);
+        }
+
+        if (previousStatus != nextStatus) {
+            accountBanAppealEmailService.sendAppealDecision(saved);
+        }
+
         return toAdminResponse(saved, user);
+    }
+
+    private User resolveLinkedUserEntity(BanAppeal appeal) {
+        if (appeal.getUserId() != null) {
+            return userRepository.findById(appeal.getUserId()).orElse(null);
+        }
+        return userRepository.findByEmail(normalizeEmail(appeal.getContactEmail())).orElse(null);
+    }
+
+    private User unbanLinkedUserIfNeeded(BanAppeal appeal, User user) {
+        User target = user;
+        if (target == null) {
+            target = resolveLinkedUserEntity(appeal);
+        }
+        if (target == null || !target.isBanned()) {
+            return target;
+        }
+        target.setAccountStatus(UserAccountStatus.ACTIVE);
+        target.setBanReason(null);
+        target.setBannedAt(null);
+        target.setBannedByAdminId(null);
+        User savedUser = userRepository.save(target);
+        if (appeal.getUserId() == null) {
+            appeal.setUserId(savedUser.getId());
+            banAppealRepository.save(appeal);
+        }
+        return savedUser;
     }
 
     private void resolveLinkedUser(BanAppeal appeal, BanAppealRequest request) {
