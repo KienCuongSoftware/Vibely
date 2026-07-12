@@ -55,7 +55,10 @@ public class BanAppealService {
         appeal.setStatus(BanAppealStatus.PENDING);
         resolveLinkedUser(appeal, request);
         BanAppeal saved = banAppealRepository.save(appeal);
-        accountBanAppealEmailService.sendAppeal(request, saved.getId());
+        User linkedUser = saved.getUserId() == null
+            ? userRepository.findByEmail(saved.getContactEmail()).orElse(null)
+            : userRepository.findById(saved.getUserId()).orElse(null);
+        accountBanAppealEmailService.sendAppeal(request, resolveDisplayName(linkedUser, request.email()));
         return saved;
     }
 
@@ -116,10 +119,26 @@ public class BanAppealService {
         }
 
         if (previousStatus != nextStatus) {
-            accountBanAppealEmailService.sendAppealDecision(saved);
+            accountBanAppealEmailService.sendAppealDecision(
+                saved,
+                resolveDisplayName(user, saved.getContactEmail())
+            );
         }
 
         return toAdminResponse(saved, user);
+    }
+
+    private static String resolveDisplayName(User user, String fallbackEmail) {
+        if (user != null && StringUtils.hasText(user.getDisplayName())) {
+            return user.getDisplayName().trim();
+        }
+        if (user != null && StringUtils.hasText(user.getUsername())) {
+            return user.getUsername().trim();
+        }
+        if (StringUtils.hasText(fallbackEmail) && fallbackEmail.contains("@")) {
+            return fallbackEmail.substring(0, fallbackEmail.indexOf('@')).trim();
+        }
+        return "bạn";
     }
 
     private User resolveLinkedUserEntity(BanAppeal appeal) {
