@@ -1,10 +1,9 @@
 FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /app
+# Use Maven from the base image — do not use ./mvnw (it downloads another Maven and often fails offline/DNS).
 COPY pom.xml .
-COPY .mvn .mvn
-COPY mvnw .
 COPY src ./src
-RUN chmod +x mvnw && ./mvnw -DskipTests package -q
+RUN mvn -B -DskipTests package -q
 
 FROM eclipse-temurin:17-jre-jammy
 
