@@ -173,6 +173,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/videos/*/share").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/videos/*/share/analytics").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*/download").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/videos/*/originality").authenticated()
+                .requestMatchers("/api/internal/originality/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*").permitAll()
                 .anyRequest().authenticated();
             })

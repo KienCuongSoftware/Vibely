@@ -90,6 +90,15 @@ app:
       sample-rate-hz: ${APP_PROCESSING_AUDIO_SAMPLE_RATE:48000}
     worker:
       enabled: ${APP_PROCESSING_WORKER_ENABLED:false}
+  originality:
+    enabled: ${APP_ORIGINALITY_ENABLED:true}
+    internal-token: ${APP_ORIGINALITY_INTERNAL_TOKEN:vibely-dev-originality-token}
+    policy-version: ${APP_ORIGINALITY_POLICY_VERSION:v1}
+    max-job-attempts: ${APP_ORIGINALITY_MAX_JOB_ATTEMPTS:5}
+    stale-processing-minutes: ${APP_ORIGINALITY_STALE_MINUTES:45}
+    recovery:
+      enabled: ${APP_ORIGINALITY_RECOVERY_ENABLED:true}
+      interval-ms: ${APP_ORIGINALITY_RECOVERY_INTERVAL_MS:60000}
   discovery:
     enabled: ${DISCOVERY_ENABLED:true}
     open-ai-enabled: ${DISCOVERY_OPENAI_ENABLED:true}

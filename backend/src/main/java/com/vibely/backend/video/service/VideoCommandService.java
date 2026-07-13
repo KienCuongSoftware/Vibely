@@ -3,6 +3,7 @@ package com.vibely.backend.video.service;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.notification.NotificationService;
+import com.vibely.backend.originality.OriginalityEnqueueService;
 import com.vibely.backend.processing.VideoProcessingEnqueueService;
 import com.vibely.backend.processing.VideoProcessingJobRepository;
 import com.vibely.backend.processing.VideoProcessingJobState;
@@ -28,6 +29,7 @@ public class VideoCommandService {
     private final VideoRepository videoRepository;
     private final UserRepository userRepository;
     private final VideoProcessingEnqueueService videoProcessingEnqueueService;
+    private final OriginalityEnqueueService originalityEnqueueService;
     private final S3OwnedMediaValidator ownedMediaValidator;
     private final VideoExploreSyncService exploreSyncService;
     private final VideoResponseMapper responseMapper;
@@ -40,6 +42,7 @@ public class VideoCommandService {
         VideoRepository videoRepository,
         UserRepository userRepository,
         VideoProcessingEnqueueService videoProcessingEnqueueService,
+        OriginalityEnqueueService originalityEnqueueService,
         S3OwnedMediaValidator ownedMediaValidator,
         VideoExploreSyncService exploreSyncService,
         VideoResponseMapper responseMapper,
@@ -51,6 +54,7 @@ public class VideoCommandService {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
         this.videoProcessingEnqueueService = videoProcessingEnqueueService;
+        this.originalityEnqueueService = originalityEnqueueService;
         this.ownedMediaValidator = ownedMediaValidator;
         this.exploreSyncService = exploreSyncService;
         this.responseMapper = responseMapper;
@@ -105,6 +109,7 @@ public class VideoCommandService {
         Video saved = videoRepository.save(video);
         exploreSyncService.syncExploreSignals(saved);
         videoProcessingEnqueueService.enqueueAfterVideoPersisted(saved);
+        originalityEnqueueService.enqueueAfterVideoPersisted(saved);
         return responseMapper.toResponse(saved);
     }
 

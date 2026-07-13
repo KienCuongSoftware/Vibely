@@ -24,6 +24,9 @@ app:
     dry-run-promote-when-worker-disabled: true
     worker:
       enabled: false
+  originality:
+    enabled: false
+    internal-token: vibely-dev-originality-token
   cors:
     allowed-origins: http://localhost:5173
   discovery:
