@@ -23,3 +23,7 @@ backend/src/main/resources/*.local.yaml
 
 # IDE
 .vscode/
+
+__pycache__/
+*.py[cod]
+
