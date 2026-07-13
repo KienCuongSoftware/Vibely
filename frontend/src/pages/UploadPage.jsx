@@ -37,6 +37,7 @@ import {
   IoSearchOutline,
   IoVolumeHighOutline,
   IoVolumeMuteOutline,
+  IoWarningOutline,
 } from 'react-icons/io5'
 
 const DESC_MAX = 4000
@@ -171,6 +172,50 @@ export function UploadPage() {
   const [isPreviewMuted, setIsPreviewMuted] = useState(true)
   /** Đồng bộ UI play/pause với thẻ video (autoplay / click có thể thay đổi trạng thái) */
   const [previewUiPlaying, setPreviewUiPlaying] = useState(false)
+  const [originalityStatus, setOriginalityStatus] = useState(null)
+
+  const originalityCheck = useMemo(() => {
+    if (!uploadedVideo?.publicId) return null
+    const jobState = String(originalityStatus?.jobState || '')
+    const decision = String(originalityStatus?.decision || '')
+    if (!originalityStatus || !jobState || jobState === 'PENDING' || jobState === 'PROCESSING') {
+      return {
+        tone: 'pending',
+        title: 'Kiểm tra nội dung',
+        detail: 'Đang quét video… Có thể mất vài phút lần đầu.',
+      }
+    }
+    if (jobState === 'FAILED') {
+      return {
+        tone: 'warn',
+        title: 'Kiểm tra nội dung',
+        detail: 'Không hoàn tất kiểm tra. Bạn vẫn có thể đăng; hệ thống sẽ rà soát lại sau.',
+      }
+    }
+    if (decision === 'BLOCK') {
+      return {
+        tone: 'danger',
+        title: 'Kiểm tra nội dung',
+        detail: 'Nội dung bị chặn vì nghi ngờ không nguyên gốc. Hãy tải video khác.',
+      }
+    }
+    if (decision === 'LIMIT_DISTRIBUTION' || decision === 'REVIEW') {
+      return {
+        tone: 'danger',
+        title: 'Kiểm tra nội dung',
+        detail:
+          'Nội dung có thể bị hạn chế phân phối. Bạn vẫn có thể đăng, nhưng chỉnh sửa để tuân thủ nguyên tắc có thể cải thiện khả năng hiển thị.',
+      }
+    }
+    return {
+      tone: 'ok',
+      title: 'Kiểm tra nội dung',
+      detail: 'Không phát hiện vấn đề.',
+    }
+  }, [uploadedVideo?.publicId, originalityStatus])
+
+  const originalityBlockingPost =
+    originalityCheck?.tone === 'pending' || String(originalityStatus?.decision || '') === 'BLOCK'
 
   useEffect(() => {
     document.title = 'VibelyStudio | Upload'
@@ -604,16 +649,17 @@ export function UploadPage() {
     setUploadProgress(null)
     setDescription('')
     setCoverModalOpen(false)
+    setOriginalityStatus(null)
     resetFileInput()
   }, [resetFileInput])
 
-  const watchServerDurationReject = useCallback(
+  const watchServerPostUploadChecks = useCallback(
     async (publicId) => {
       if (!token || !publicId) return
       const pollId = ++processingPollRef.current
-      const deadline = Date.now() + 10 * 60 * 1000
+      const deadline = Date.now() + 15 * 60 * 1000
       while (Date.now() < deadline && processingPollRef.current === pollId) {
-        await new Promise((r) => setTimeout(r, 2000))
+        await new Promise((r) => setTimeout(r, 2500))
         if (processingPollRef.current !== pollId) return
         try {
           const video = await apiClient.getVideo(publicId, { token })
@@ -630,11 +676,36 @@ export function UploadPage() {
             )
             return
           }
-          if (video?.status === 'READY' || video?.status === 'REMOVED') {
-            return
+
+          let originality = null
+          try {
+            originality = await apiClient.getVideoOriginality(publicId, token)
+          } catch {
+            originality = null
+          }
+          if (processingPollRef.current !== pollId) return
+          if (originality) {
+            setOriginalityStatus(originality)
+            const decision = String(originality.decision || '')
+            // Hard block only — LIMIT/REVIEW keep the draft and show Checks warning (TikTok-style).
+            if (decision === 'BLOCK') {
+              resetUploadSession()
+              showUploadRejected(
+                `Video bị chặn vì nghi ngờ không nguyên gốc. ` +
+                  `Originality ${Number(originality.originalityScore ?? 0).toFixed(1)}. ` +
+                  'Vui lòng tải video khác lên.',
+              )
+              return
+            }
+            if (
+              originality.jobState === 'COMPLETED' ||
+              originality.jobState === 'FAILED'
+            ) {
+              return
+            }
           }
         } catch {
-          // Keep polling while author can still see RAW/PROCESSING.
+          // Keep polling.
         }
       }
     },
@@ -765,7 +836,7 @@ export function UploadPage() {
       setUploadProgress(null)
       setStatus('')
       if (created?.publicId) {
-        void watchServerDurationReject(created.publicId)
+        void watchServerPostUploadChecks(created.publicId)
       }
     } catch (error) {
       resetUploadSession()
@@ -1457,18 +1528,79 @@ export function UploadPage() {
                     )}
                   </div>
 
-                  <div className="mt-8 flex flex-wrap items-center gap-3">
+                  <div className="mt-8 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-100">Kiểm tra</h3>
+                    <div className="mt-3 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <IoCheckmarkCircle className="mt-0.5 shrink-0 text-lg text-emerald-400" aria-hidden />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-zinc-200">Kiểm tra bản quyền nhạc</p>
+                          <p className="mt-0.5 text-xs text-zinc-500">Không phát hiện vấn đề.</p>
+                        </div>
+                      </div>
+                      {originalityCheck ? (
+                        <div className="flex items-start gap-3">
+                          {originalityCheck.tone === 'ok' ? (
+                            <IoCheckmarkCircle className="mt-0.5 shrink-0 text-lg text-emerald-400" aria-hidden />
+                          ) : originalityCheck.tone === 'pending' ? (
+                            <span
+                              className="mt-1 inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-200"
+                              aria-hidden
+                            />
+                          ) : (
+                            <IoWarningOutline className="mt-0.5 shrink-0 text-lg text-red-400" aria-hidden />
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-zinc-200">{originalityCheck.title}</p>
+                            <p
+                              className={`mt-0.5 text-xs ${
+                                originalityCheck.tone === 'danger'
+                                  ? 'text-red-300'
+                                  : originalityCheck.tone === 'warn'
+                                    ? 'text-amber-300'
+                                    : 'text-zinc-500'
+                              }`}
+                            >
+                              {originalityCheck.detail}
+                              {originalityStatus?.jobState === 'COMPLETED' && originalityStatus?.decision ? (
+                                <span className="mt-1 block text-[11px] text-zinc-500">
+                                  {originalityStatus.decision}
+                                  {originalityStatus.originalityScore != null
+                                    ? ` · điểm ${Number(originalityStatus.originalityScore).toFixed(1)}`
+                                    : ''}
+                                </span>
+                              ) : null}
+                            </p>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex flex-wrap items-center gap-3">
                     <button
                       type="button"
                       className="rounded-lg bg-[#fe2c55] px-8 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#e62a4d] disabled:opacity-50"
                       onClick={() => void saveVideo()}
-                      disabled={busy || uploadProgress != null || !uploadedVideo.playbackUrl}
+                      disabled={
+                        busy ||
+                        uploadProgress != null ||
+                        !uploadedVideo.playbackUrl ||
+                        originalityBlockingPost
+                      }
+                      title={
+                        originalityCheck?.tone === 'pending'
+                          ? 'Đợi kiểm tra nội dung hoàn tất'
+                          : undefined
+                      }
                     >
                       {uploadProgress != null
                         ? 'Đang tải lên…'
                         : busy
                           ? 'Đang đăng…'
-                          : 'Đăng'}
+                          : originalityCheck?.tone === 'pending'
+                            ? 'Đang kiểm tra…'
+                            : 'Đăng'}
                     </button>
                     {status ? <p className="text-sm text-zinc-400">{status}</p> : null}
                   </div>

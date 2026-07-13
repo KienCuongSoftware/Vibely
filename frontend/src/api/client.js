@@ -301,6 +301,8 @@ export const apiClient = {
     request(`/api/feed/following${toQuery({ page, size })}`, { token }),
   createVideo: (payload, token) =>
     request("/api/videos", { method: "POST", body: payload, token }),
+  getVideoOriginality: (publicId, token) =>
+    request(`/api/videos/${encodeURIComponent(publicId)}/originality`, { token }),
   getVideo: (publicId, { token } = {}) =>
     request(`/api/videos/${publicId}`, token ? { token } : {}),
   getVideosBySound: (audioUrl, { page = 0, size = 24 } = {}) =>
