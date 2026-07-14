@@ -139,6 +139,8 @@ public class CategoryClassifierService {
         aliases.put("anime", "anime");
         aliases.put("manga", "anime");
         aliases.put("gfxanime", "anime");
+        aliases.put("アニメ", "anime");
+        aliases.put("アニメーション", "anime");
         aliases.put("kinhdi", "horror");
         aliases.put("kinh_di", "horror");
         aliases.put("horror", "horror");

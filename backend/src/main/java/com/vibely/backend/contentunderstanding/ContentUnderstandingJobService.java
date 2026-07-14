@@ -138,7 +138,11 @@ public class ContentUnderstandingJobService {
             tagScores.merge(tag.getId(), conf, Math::max);
         }
 
-        ContentFeatureEntity features = contentFeatureRepository.findById(videoId).orElseGet(ContentFeatureEntity::new);
+        ContentFeatureEntity features = contentFeatureRepository.findById(videoId).orElseGet(() -> {
+            ContentFeatureEntity created = new ContentFeatureEntity();
+            created.setVideo(video);
+            return created;
+        });
         features.setVideo(video);
         features.setFeatureVersion(blankTo(request.getFeatureVersion(), "cu-phase1"));
         features.setContentSha256(request.getContentSha256());

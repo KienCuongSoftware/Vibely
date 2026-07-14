@@ -22,13 +22,16 @@ import requests
 
 LOG = logging.getLogger("content_understanding.worker")
 
-HASHTAG_RE = re.compile(r"[#＠]?([\w\u00C0-\u024F\u1E00-\u1EFF]+)", re.UNICODE)
+HASHTAG_RE = re.compile(
+    r"[#＃＠@]?([0-9A-Za-z_\u00C0-\u024F\u1E00-\u1EFF\u3040-\u30FF\u3400-\u9FFF]+)",
+    re.UNICODE,
+)
 
-# slug -> keywords / aliases (lowercase, accent-stripped)
+# slug -> keywords / aliases (lowercase, accent-stripped; CJK kept as-is)
 LEXICON: dict[str, tuple[str, ...]] = {
-    "anime": ("anime", "manga", "waifu", "naruto", "onepiece"),
-    "music": ("music", "lyrics", "song", "lofi", "amnhac", "nhac"),
-    "horror": ("horror", "ghost", "kinhdi", "ma", "creepy"),
+    "anime": ("anime", "manga", "waifu", "naruto", "onepiece", "アニメ", "アニメ", "アニメーション"),
+    "music": ("music", "lyrics", "song", "lofi", "amnhac", "nhac", "音楽"),
+    "horror": ("horror", "ghost", "kinhdi", "ma", "creepy", "ホラー"),
     "gaming": ("gaming", "game", "valorant", "minecraft", "lol"),
     "food": ("food", "amthuc", "pho", "bun", "an uong"),
     "travel": ("travel", "dulich", "dalat", "beach", "mountain"),
@@ -62,12 +65,13 @@ def analyze_metadata(claim: dict[str, Any]) -> dict[str, Any]:
     title = str(claim.get("title") or "")
     description = str(claim.get("description") or "")
     audio = str(claim.get("audioTitle") or "")
-    blob = strip_accents(f"{title}\n{description}\n{audio}")
+    raw_blob = f"{title}\n{description}\n{audio}"
+    blob = strip_accents(raw_blob)
     tags: list[dict[str, Any]] = []
     matched: list[str] = []
 
     for slug, keywords in LEXICON.items():
-        hits = [kw for kw in keywords if kw in blob]
+        hits = [kw for kw in keywords if kw in blob or kw in raw_blob]
         if not hits:
             continue
         conf = min(0.95, 0.55 + 0.08 * len(hits))
@@ -83,17 +87,23 @@ def analyze_metadata(claim: dict[str, Any]) -> dict[str, Any]:
         )
         matched.append(slug)
 
-    # Hashtag boost
-    for raw in HASHTAG_RE.findall(f"{title} {description}"):
+    # Hashtag boost (keeps CJK tags like #アニメ)
+    for raw in HASHTAG_RE.findall(raw_blob):
         key = strip_accents(raw)
+        raw_key = raw.strip()
         for slug, keywords in LEXICON.items():
-            if key == slug or key in keywords:
+            if key == slug or key in keywords or raw_key in keywords or raw_key == slug:
                 if slug in matched:
+                    # bump existing
+                    for t in tags:
+                        if t["slug"] == slug:
+                            t["confidence"] = max(float(t["confidence"]), 0.92)
+                            t["reason"] = f"{t['reason']}; hashtag #{raw}"
                     continue
                 tags.append(
                     {
                         "slug": slug,
-                        "confidence": 0.9,
+                        "confidence": 0.92,
                         "source": "metadata",
                         "modelVersion": "metadata-lexicon-phase1-v1",
                         "reason": f"hashtag #{raw}",

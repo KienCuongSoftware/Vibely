@@ -8,19 +8,22 @@ import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.springframework.data.domain.Persistable;
 
 @Entity
 @Table(name = "video_semantic_tags")
 @IdClass(VideoSemanticTagEntity.Pk.class)
-public class VideoSemanticTagEntity {
+public class VideoSemanticTagEntity implements Persistable<VideoSemanticTagEntity.Pk> {
 
     @Id
     @Column(name = "video_id")
@@ -30,11 +33,12 @@ public class VideoSemanticTagEntity {
     @Column(name = "tag_id")
     private Long tagId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    // Read-only joins; IDs alone are written so associations stay optional for flush.
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "video_id", insertable = false, updatable = false)
     private Video video;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id", insertable = false, updatable = false)
     private SemanticTagEntity tag;
 
@@ -60,6 +64,14 @@ public class VideoSemanticTagEntity {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Transient
+    private boolean newEntity = true;
+
+    @PostLoad
+    void markNotNew() {
+        newEntity = false;
+    }
+
     @PrePersist
     void prePersist() {
         LocalDateTime now = LocalDateTime.now();
@@ -75,6 +87,16 @@ public class VideoSemanticTagEntity {
     @PreUpdate
     void preUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    @Override
+    public Pk getId() {
+        return new Pk(videoId, tagId);
+    }
+
+    @Override
+    public boolean isNew() {
+        return newEntity;
     }
 
     public Long getVideoId() {

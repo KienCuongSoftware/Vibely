@@ -8,16 +8,19 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.springframework.data.domain.Persistable;
 
 @Entity
 @Table(name = "content_features")
-public class ContentFeatureEntity {
+public class ContentFeatureEntity implements Persistable<Long> {
 
     @Id
     @Column(name = "video_id")
@@ -69,6 +72,18 @@ public class ContentFeatureEntity {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    /**
+     * Assigned {@code @MapsId} means the id is non-null before insert — Spring Data would
+     * treat that as an update (merge) and blow up with ObjectOptimisticLockingFailureException.
+     */
+    @Transient
+    private boolean newEntity = true;
+
+    @PostLoad
+    void markNotNew() {
+        newEntity = false;
+    }
+
     @PrePersist
     @PreUpdate
     void touch() {
@@ -97,6 +112,16 @@ public class ContentFeatureEntity {
         if (audio == null || audio.isBlank()) {
             audio = "{}";
         }
+    }
+
+    @Override
+    public Long getId() {
+        return videoId;
+    }
+
+    @Override
+    public boolean isNew() {
+        return newEntity;
     }
 
     public Long getVideoId() {
