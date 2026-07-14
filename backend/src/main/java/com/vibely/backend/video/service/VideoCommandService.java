@@ -1,5 +1,6 @@
 package com.vibely.backend.video.service;
 
+import com.vibely.backend.contentunderstanding.ContentUnderstandingEnqueueService;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.notification.NotificationService;
@@ -31,6 +32,7 @@ public class VideoCommandService {
     private final UserRepository userRepository;
     private final VideoProcessingEnqueueService videoProcessingEnqueueService;
     private final OriginalityEnqueueService originalityEnqueueService;
+    private final ContentUnderstandingEnqueueService contentUnderstandingEnqueueService;
     private final S3OwnedMediaValidator ownedMediaValidator;
     private final VideoExploreSyncService exploreSyncService;
     private final VideoResponseMapper responseMapper;
@@ -44,6 +46,7 @@ public class VideoCommandService {
         UserRepository userRepository,
         VideoProcessingEnqueueService videoProcessingEnqueueService,
         OriginalityEnqueueService originalityEnqueueService,
+        ContentUnderstandingEnqueueService contentUnderstandingEnqueueService,
         S3OwnedMediaValidator ownedMediaValidator,
         VideoExploreSyncService exploreSyncService,
         VideoResponseMapper responseMapper,
@@ -56,6 +59,7 @@ public class VideoCommandService {
         this.userRepository = userRepository;
         this.videoProcessingEnqueueService = videoProcessingEnqueueService;
         this.originalityEnqueueService = originalityEnqueueService;
+        this.contentUnderstandingEnqueueService = contentUnderstandingEnqueueService;
         this.ownedMediaValidator = ownedMediaValidator;
         this.exploreSyncService = exploreSyncService;
         this.responseMapper = responseMapper;
@@ -117,6 +121,7 @@ public class VideoCommandService {
         }
         videoProcessingEnqueueService.enqueueAfterVideoPersisted(saved);
         originalityEnqueueService.enqueueAfterVideoPersisted(saved);
+        contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "upload");
         return responseMapper.toResponse(saved);
     }
 
@@ -167,6 +172,10 @@ public class VideoCommandService {
         Video saved = videoRepository.save(video);
         if (wasDraft) {
             exploreSyncService.syncExploreSignals(saved);
+            originalityEnqueueService.enqueueAfterVideoPersisted(saved);
+            contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "publish");
+        } else {
+            contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "metadata_updated");
         }
         return responseMapper.toResponse(saved);
     }

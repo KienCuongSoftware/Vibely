@@ -2,13 +2,15 @@ package com.vibely.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(exclude = {
     RedisAutoConfiguration.class,
-    RedisRepositoriesAutoConfiguration.class
+    RedisRepositoriesAutoConfiguration.class,
+    RabbitAutoConfiguration.class
 })
 @EnableScheduling
 public class VibelyBackendApplication {

@@ -1,0 +1,46 @@
+# Content Understanding Phase 1 — RabbitMQ + CU worker
+# Usage (next to docker-compose.yml + vibely.env):
+#   docker compose -f docker-compose.content-understanding.yml up -d
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: vibely-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-vibely}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-vibely}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  content-understanding-worker:
+    image: kiencuongsoftware/vibely-cu-worker:latest
+    build:
+      context: ../../ai-workers/content-understanding
+    container_name: vibely-cu-worker
+    restart: unless-stopped
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - vibely.env
+    environment:
+      VIBELY_API_BASE: http://host.docker.internal:8080
+      CU_INTERNAL_TOKEN: ${APP_CU_INTERNAL_TOKEN:-vibely-dev-cu-token}
+      CU_RABBITMQ_ENABLED: ${APP_CU_RABBITMQ_ENABLED:-true}
+      RABBITMQ_URL: amqp://${RABBITMQ_USERNAME:-vibely}:${RABBITMQ_PASSWORD:-vibely}@rabbitmq:5672/%2F
+      CU_QUEUE_ANALYZE: ${APP_CU_QUEUE_ANALYZE:-cu.analyze}
+      CU_POLL_SECONDS: "3"
+
+volumes:
+  rabbitmq_data:
