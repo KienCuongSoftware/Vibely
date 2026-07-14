@@ -1,6 +1,6 @@
 import React from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useBlocker } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { apiClient, uploadThumbnailToStorage, uploadToPresignedPutUrl } from '../api/client'
 import { CoverPickerModal } from '../components/CoverPickerModal'
 import { StudioLayout } from '../components/StudioLayout'
@@ -237,6 +237,7 @@ export function UploadPage() {
   const draftPublicIdRef = useRef(null)
   const publishingRef = useRef(false)
   const discardingLeaveRef = useRef(false)
+  const pendingLeaveToRef = useRef(null)
 
   const originalityCheck = useMemo(() => {
     if (!uploadedVideo?.publicId) return null
@@ -760,18 +761,6 @@ export function UploadPage() {
     uploadedVideo?.publicId || uploadedVideo?.playbackUrl,
   )
 
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      hasUnsavedUploadDraft &&
-      !publishingRef.current &&
-      !discardingLeaveRef.current &&
-      currentLocation.pathname !== nextLocation.pathname,
-  )
-
-  useEffect(() => {
-    if (blocker.state === 'blocked') setLeaveConfirmOpen(true)
-  }, [blocker.state])
-
   useEffect(() => {
     if (!token) return undefined
     const liveId = String(draftPublicIdRef.current || '').trim()
@@ -819,9 +808,58 @@ export function UploadPage() {
     }
   }, [token, uploadedVideo?.publicId, uploadedVideo?.playbackUrl])
 
+  // BrowserRouter không hỗ trợ useBlocker — chặn click link nội bộ + nút Back.
+  useEffect(() => {
+    if (!hasUnsavedUploadDraft || publishingRef.current) return undefined
+
+    const onDocumentClick = (event) => {
+      if (discardingLeaveRef.current || leaveConfirmOpen) return
+      if (event.defaultPrevented) return
+      if (event.button !== 0) return
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      const anchor = event.target?.closest?.('a[href]')
+      if (!anchor) return
+      if (anchor.target && anchor.target !== '_self') return
+      if (anchor.hasAttribute('download')) return
+      const hrefAttr = anchor.getAttribute('href')
+      if (!hrefAttr || hrefAttr.startsWith('#')) return
+      let url
+      try {
+        url = new URL(hrefAttr, window.location.href)
+      } catch {
+        return
+      }
+      if (url.origin !== window.location.origin) return
+      const nextPath = `${url.pathname}${url.search}${url.hash}`
+      const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`
+      if (nextPath === currentPath) return
+      event.preventDefault()
+      event.stopPropagation()
+      pendingLeaveToRef.current = nextPath
+      setLeaveConfirmOpen(true)
+    }
+
+    const onPopState = () => {
+      if (discardingLeaveRef.current || publishingRef.current) return
+      window.history.pushState(null, '', window.location.href)
+      pendingLeaveToRef.current = '__BACK__'
+      setLeaveConfirmOpen(true)
+    }
+
+    window.history.pushState(null, '', window.location.href)
+    document.addEventListener('click', onDocumentClick, true)
+    window.addEventListener('popstate', onPopState)
+    return () => {
+      document.removeEventListener('click', onDocumentClick, true)
+      window.removeEventListener('popstate', onPopState)
+    }
+  }, [hasUnsavedUploadDraft, leaveConfirmOpen])
+
   const confirmLeaveAndDiscard = useCallback(async () => {
     discardingLeaveRef.current = true
     setLeaveConfirmOpen(false)
+    const to = pendingLeaveToRef.current
+    pendingLeaveToRef.current = null
     await discardDraftVideo()
     setVideoFile(null)
     setUploadedVideo(null)
@@ -831,15 +869,16 @@ export function UploadPage() {
     setOriginalityStatus(null)
     setOriginalityDetailsOpen(false)
     draftPublicIdRef.current = null
-    if (blocker.state === 'blocked') blocker.proceed()
+    if (to === '__BACK__') navigate(-1)
+    else if (to) navigate(to)
     discardingLeaveRef.current = false
-  }, [blocker, discardDraftVideo])
+  }, [discardDraftVideo, navigate])
 
   const cancelLeave = useCallback(() => {
     setLeaveConfirmOpen(false)
+    pendingLeaveToRef.current = null
     discardingLeaveRef.current = false
-    if (blocker.state === 'blocked') blocker.reset()
-  }, [blocker])
+  }, [])
 
   const watchServerPostUploadChecks = useCallback(
     async (publicId) => {
