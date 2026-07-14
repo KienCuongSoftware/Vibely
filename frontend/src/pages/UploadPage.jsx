@@ -1290,7 +1290,7 @@ export function UploadPage() {
       />
       {originalityDetailsOpen && originalityCheck?.showDetails ? (
         <div
-          className="fixed inset-0 z-[130] flex items-center justify-center bg-black/60 px-4 py-6"
+          className="fixed inset-0 z-[130] flex items-center justify-center bg-black/70 px-4 py-6"
           role="presentation"
           onClick={() => setOriginalityDetailsOpen(false)}
         >
@@ -1298,18 +1298,18 @@ export function UploadPage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="originality-details-title"
-            className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white text-zinc-900 shadow-2xl"
+            className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start gap-3 border-b border-zinc-200 px-5 py-4">
-              <IoWarningOutline className="mt-0.5 shrink-0 text-2xl text-orange-500" aria-hidden />
+            <div className="flex items-start gap-3 border-b border-zinc-800 px-5 py-4">
+              <IoWarningOutline className="mt-0.5 shrink-0 text-2xl text-orange-400" aria-hidden />
               <div className="min-w-0 flex-1">
-                <h2 id="originality-details-title" className="text-lg font-bold text-zinc-900">
+                <h2 id="originality-details-title" className="text-lg font-bold text-zinc-50">
                   {String(originalityStatus?.decision || '') === 'BLOCK'
                     ? 'Nội dung bị chặn'
                     : 'Nội dung có thể bị hạn chế'}
                 </h2>
-                <p className="mt-1 text-sm text-zinc-600">
+                <p className="mt-1 text-sm text-zinc-400">
                   {String(originalityStatus?.decision || '') === 'BLOCK'
                     ? 'Video này không thể đăng vì nghi ngờ không nguyên gốc. Hãy thay thế bằng video khác.'
                     : 'Bạn vẫn có thể đăng, nhưng chỉnh sửa để tuân thủ nguyên tắc có thể cải thiện khả năng hiển thị.'}
@@ -1317,7 +1317,7 @@ export function UploadPage() {
               </div>
               <button
                 type="button"
-                className="shrink-0 rounded-full p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+                className="shrink-0 rounded-full p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
                 aria-label="Đóng"
                 onClick={() => setOriginalityDetailsOpen(false)}
               >
@@ -1327,19 +1327,19 @@ export function UploadPage() {
 
             <div className="space-y-5 px-5 py-4">
               <section>
-                <h3 className="text-sm font-bold text-zinc-900">Lý do vi phạm</h3>
-                <p className="mt-2 text-sm font-semibold text-zinc-800">
+                <h3 className="text-sm font-bold text-zinc-100">Lý do vi phạm</h3>
+                <p className="mt-2 text-sm font-semibold text-zinc-200">
                   {originalityViolationCopy.reasonTitle}
                 </p>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                <p className="mt-2 text-sm leading-relaxed text-zinc-400">
                   {originalityViolationCopy.reasonBody}
                 </p>
               </section>
 
               <section>
-                <h3 className="text-sm font-bold text-zinc-900">Chi tiết vi phạm</h3>
-                <p className="mt-2 text-sm text-zinc-600">Một số dấu hiệu tiềm ẩn đã được phát hiện.</p>
-                <div className="mt-3 inline-block overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-zinc-200">
+                <h3 className="text-sm font-bold text-zinc-100">Chi tiết vi phạm</h3>
+                <p className="mt-2 text-sm text-zinc-400">Một số dấu hiệu tiềm ẩn đã được phát hiện.</p>
+                <div className="mt-3 inline-block overflow-hidden rounded-lg bg-zinc-900 ring-1 ring-zinc-700">
                   {thumbnailUrl || uploadedVideo?.playbackUrl ? (
                     <div className="relative h-28 w-28">
                       {thumbnailUrl ? (
@@ -1373,10 +1373,10 @@ export function UploadPage() {
               </section>
             </div>
 
-            <div className="flex justify-end border-t border-zinc-200 px-5 py-4">
+            <div className="flex justify-end border-t border-zinc-800 px-5 py-4">
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800"
+                className="inline-flex items-center gap-2 rounded-lg bg-zinc-100 px-4 py-2.5 text-sm font-semibold text-zinc-900 hover:bg-white"
                 onClick={() => {
                   setOriginalityDetailsOpen(false)
                   void onPickFile()
@@ -1391,7 +1391,7 @@ export function UploadPage() {
       ) : null}
       {leaveConfirmOpen ? (
         <div
-          className="fixed inset-0 z-[140] flex items-center justify-center bg-black/60 px-4 py-6"
+          className="fixed inset-0 z-[140] flex items-center justify-center bg-black/70 px-4 py-6"
           role="presentation"
           onClick={cancelLeave}
         >
@@ -1399,21 +1399,21 @@ export function UploadPage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="upload-leave-title"
-            className="w-full max-w-md rounded-2xl bg-white text-zinc-900 shadow-2xl"
+            className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="px-5 pt-5 pb-2">
-              <h2 id="upload-leave-title" className="text-lg font-bold text-zinc-900">
+              <h2 id="upload-leave-title" className="text-lg font-bold text-zinc-50">
                 Rời khỏi trang?
               </h2>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
                 Bạn chưa đăng video này. Nếu rời đi, video đã tải lên sẽ bị xóa khỏi hệ thống.
               </p>
             </div>
             <div className="flex justify-end gap-2 px-5 py-4">
               <button
                 type="button"
-                className="rounded-lg px-4 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-100"
+                className="rounded-lg px-4 py-2.5 text-sm font-semibold text-zinc-300 hover:bg-zinc-800"
                 onClick={cancelLeave}
               >
                 Ở lại
