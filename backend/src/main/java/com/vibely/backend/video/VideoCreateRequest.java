@@ -30,7 +30,8 @@ public class VideoCreateRequest {
     private Integer durationSeconds;
 
     /**
-     * When true, video is a Studio draft (not yet posted). Defaults to false for API/mobile clients.
+     * When true (or omitted), video is a Studio draft until Đăng.
+     * Send false only when intentionally publishing in the same create call.
      */
     private Boolean studioDraft;
 

@@ -106,7 +106,8 @@ public class VideoCommandService {
         }
         video.setAudioTitle(audioTitle);
         video.setStatus(VideoStatus.RAW);
-        boolean draft = Boolean.TRUE.equals(request.getStudioDraft());
+        // Default draft when omitted — only explicit studioDraft=false publishes into lists.
+        boolean draft = !Boolean.FALSE.equals(request.getStudioDraft());
         video.setStudioDraft(draft);
         Video saved = videoRepository.save(video);
         if (!draft) {
