@@ -1,10 +1,16 @@
 import React from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useBlocker } from 'react-router-dom'
 import { apiClient, uploadThumbnailToStorage, uploadToPresignedPutUrl } from '../api/client'
 import { CoverPickerModal } from '../components/CoverPickerModal'
 import { StudioLayout } from '../components/StudioLayout'
 import { extractThumbnailBlobFromFile } from '../utils/videoThumbnail.js'
+import {
+  deleteUploadDraftKeepalive,
+  readUploadDraftPublicIds,
+  trackUploadDraftPublicId,
+  untrackUploadDraftPublicId,
+} from '../utils/uploadDraftCleanup.js'
 import {
   MAX_VIDEO_DURATION_SECONDS,
   isDurationLimitRejectMessage,
@@ -227,6 +233,10 @@ export function UploadPage() {
   const [previewUiPlaying, setPreviewUiPlaying] = useState(false)
   const [originalityStatus, setOriginalityStatus] = useState(null)
   const [originalityDetailsOpen, setOriginalityDetailsOpen] = useState(false)
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false)
+  const draftPublicIdRef = useRef(null)
+  const publishingRef = useRef(false)
+  const discardingLeaveRef = useRef(false)
 
   const originalityCheck = useMemo(() => {
     if (!uploadedVideo?.publicId) return null
@@ -704,9 +714,36 @@ export function UploadPage() {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }, [])
 
+  const markDraftTracked = useCallback((publicId) => {
+    const id = String(publicId || '').trim()
+    if (!id) return
+    draftPublicIdRef.current = id
+    trackUploadDraftPublicId(id)
+  }, [])
+
+  const discardDraftVideo = useCallback(
+    async (publicId) => {
+      const id = String(publicId || draftPublicIdRef.current || '').trim()
+      if (!id) return
+      untrackUploadDraftPublicId(id)
+      if (draftPublicIdRef.current === id) draftPublicIdRef.current = null
+      if (!token) {
+        deleteUploadDraftKeepalive(id, null)
+        return
+      }
+      try {
+        await apiClient.deleteVideo(id, token)
+      } catch {
+        deleteUploadDraftKeepalive(id, token)
+      }
+    },
+    [token],
+  )
+
   /** Clear editor + force user to pick another file. */
   const resetUploadSession = useCallback(() => {
     processingPollRef.current += 1
+    const draftId = draftPublicIdRef.current
     setVideoFile(null)
     setUploadedVideo(null)
     setThumbnailUrl('')
@@ -716,7 +753,93 @@ export function UploadPage() {
     setOriginalityStatus(null)
     setOriginalityDetailsOpen(false)
     resetFileInput()
-  }, [resetFileInput])
+    if (draftId) void discardDraftVideo(draftId)
+  }, [resetFileInput, discardDraftVideo])
+
+  const hasUnsavedUploadDraft = Boolean(
+    uploadedVideo?.publicId || uploadedVideo?.playbackUrl,
+  )
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      hasUnsavedUploadDraft &&
+      !publishingRef.current &&
+      !discardingLeaveRef.current &&
+      currentLocation.pathname !== nextLocation.pathname,
+  )
+
+  useEffect(() => {
+    if (blocker.state === 'blocked') setLeaveConfirmOpen(true)
+  }, [blocker.state])
+
+  useEffect(() => {
+    if (!token) return undefined
+    const liveId = String(draftPublicIdRef.current || '').trim()
+    const orphans = readUploadDraftPublicIds().filter((id) => id !== liveId)
+    if (orphans.length === 0) return undefined
+    let cancelled = false
+    void (async () => {
+      for (const id of orphans) {
+        if (cancelled) return
+        untrackUploadDraftPublicId(id)
+        try {
+          await apiClient.deleteVideo(id, token)
+        } catch {
+          // đã gỡ / không còn quyền — bỏ qua
+        }
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [token])
+
+  useEffect(() => {
+    const onBeforeUnload = (event) => {
+      if (publishingRef.current) return
+      const id = draftPublicIdRef.current || uploadedVideo?.publicId
+      if (!id && !uploadedVideo?.playbackUrl) return
+      event.preventDefault()
+      event.returnValue =
+        'Bạn chưa đăng video này. Nếu rời trang, video đã tải lên sẽ bị xóa.'
+      return event.returnValue
+    }
+    const onPageHide = () => {
+      if (publishingRef.current) return
+      const id = draftPublicIdRef.current || uploadedVideo?.publicId
+      if (!id) return
+      // Reload/đóng tab: gửi DELETE keepalive; trang sau sẽ dọn orphan còn sót.
+      deleteUploadDraftKeepalive(id, token)
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    window.addEventListener('pagehide', onPageHide)
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload)
+      window.removeEventListener('pagehide', onPageHide)
+    }
+  }, [token, uploadedVideo?.publicId, uploadedVideo?.playbackUrl])
+
+  const confirmLeaveAndDiscard = useCallback(async () => {
+    discardingLeaveRef.current = true
+    setLeaveConfirmOpen(false)
+    await discardDraftVideo()
+    setVideoFile(null)
+    setUploadedVideo(null)
+    setThumbnailUrl('')
+    setUploadProgress(null)
+    setDescription('')
+    setOriginalityStatus(null)
+    setOriginalityDetailsOpen(false)
+    draftPublicIdRef.current = null
+    if (blocker.state === 'blocked') blocker.proceed()
+    discardingLeaveRef.current = false
+  }, [blocker, discardDraftVideo])
+
+  const cancelLeave = useCallback(() => {
+    setLeaveConfirmOpen(false)
+    discardingLeaveRef.current = false
+    if (blocker.state === 'blocked') blocker.reset()
+  }, [blocker])
 
   const watchServerPostUploadChecks = useCallback(
     async (publicId) => {
@@ -793,8 +916,17 @@ export function UploadPage() {
       return
     }
 
+    // Thay thế video: hủy draft cũ (DB + S3) trước khi tải file mới.
+    const previousDraftId = draftPublicIdRef.current || uploadedVideo?.publicId
+    if (previousDraftId) {
+      processingPollRef.current += 1
+      await discardDraftVideo(previousDraftId)
+    }
+
     setThumbnailUrl('')
     setUploadProgress(null)
+    setOriginalityStatus(null)
+    setOriginalityDetailsOpen(false)
     setBusy(true)
     try {
       const inferredTitle = String(file.name ?? 'Video mới')
@@ -901,6 +1033,7 @@ export function UploadPage() {
       setUploadProgress(null)
       setStatus('')
       if (created?.publicId) {
+        markDraftTracked(created.publicId)
         void watchServerPostUploadChecks(created.publicId)
       }
     } catch (error) {
@@ -991,6 +1124,7 @@ export function UploadPage() {
       return
     }
     setBusy(true)
+    publishingRef.current = false
     try {
       const title = (uploadedVideo.title || 'Video mới').slice(0, 120)
       const desc = description.trim().slice(0, 1000)
@@ -1013,6 +1147,8 @@ export function UploadPage() {
           },
           token,
         )
+        untrackUploadDraftPublicId(uploadedVideo.publicId)
+        draftPublicIdRef.current = null
       } else {
         await apiClient.createVideo(
           {
@@ -1027,12 +1163,14 @@ export function UploadPage() {
           token,
         )
       }
+      publishingRef.current = true
       processingPollRef.current += 1
       navigate('/vibelystudio/posts', {
         state: { successMessage: 'Đã đăng video thành công.' },
       })
       return
     } catch (error) {
+      publishingRef.current = false
       const msg = error.message ?? 'Không thể lưu video.'
       if (isDurationLimitRejectMessage(msg)) {
         resetUploadSession()
@@ -1207,6 +1345,46 @@ export function UploadPage() {
               >
                 <IoRefreshOutline className="text-lg" aria-hidden />
                 Thay thế video
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {leaveConfirmOpen ? (
+        <div
+          className="fixed inset-0 z-[140] flex items-center justify-center bg-black/60 px-4 py-6"
+          role="presentation"
+          onClick={cancelLeave}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="upload-leave-title"
+            className="w-full max-w-md rounded-2xl bg-white text-zinc-900 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-5 pt-5 pb-2">
+              <h2 id="upload-leave-title" className="text-lg font-bold text-zinc-900">
+                Rời khỏi trang?
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                Bạn chưa đăng video này. Nếu rời đi, video đã tải lên sẽ bị xóa khỏi hệ thống.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2 px-5 py-4">
+              <button
+                type="button"
+                className="rounded-lg px-4 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-100"
+                onClick={cancelLeave}
+              >
+                Ở lại
+              </button>
+              <button
+                type="button"
+                className="rounded-lg bg-[#fe2c55] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e62a4d]"
+                onClick={() => void confirmLeaveAndDiscard()}
+              >
+                Rời đi
               </button>
             </div>
           </div>
