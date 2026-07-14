@@ -21,6 +21,7 @@ import {
   IoChatbubbleEllipsesOutline,
   IoCheckmarkCircle,
   IoChevronBack,
+  IoClose,
   IoCloudUploadOutline,
   IoEllipsisHorizontal,
   IoExpandOutline,
@@ -58,6 +59,58 @@ function formatResolutionLabel(width, height) {
   if (height >= 1080) return '1080P'
   if (height >= 720) return '720P'
   return '540P'
+}
+
+function formatClockMmSs(totalSeconds) {
+  const sec = Math.max(0, Math.floor(Number(totalSeconds) || 0))
+  const m = Math.floor(sec / 60)
+  const s = sec % 60
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+}
+
+function parseOriginalityExplain(raw) {
+  if (!raw) return null
+  if (typeof raw === 'object') return raw
+  try {
+    return JSON.parse(String(raw))
+  } catch {
+    return null
+  }
+}
+
+function buildOriginalityViolationCopy(originalityStatus) {
+  const decision = String(originalityStatus?.decision || '')
+  const explain = parseOriginalityExplain(originalityStatus?.explainJson)
+  const wmLabels = Array.isArray(explain?.watermark?.labels) ? explain.watermark.labels : []
+  const downloaderHints = Array.isArray(explain?.metadata?.downloaderHints)
+    ? explain.metadata.downloaderHints
+    : []
+  const reasons = []
+  if (downloaderHints.length > 0) {
+    reasons.push('nội dung tải từ nền tảng khác (có dấu hiệu công cụ tải)')
+  }
+  if (wmLabels.length > 0) {
+    reasons.push('có dấu hiệu watermark/logo nền tảng khác')
+  }
+  if (Number(originalityStatus?.visualSimilarity || 0) >= 0.55) {
+    reasons.push('nội dung trùng khớp cao với video đã có trên Vibely')
+  }
+  if (reasons.length === 0) {
+    reasons.push('nội dung không nguyên gốc hoặc chất lượng thấp')
+  }
+
+  const reasonTitle =
+    decision === 'BLOCK'
+      ? 'Nội dung không nguyên gốc — bị chặn đăng'
+      : 'Nội dung không nguyên gốc, chất lượng thấp hoặc dấu hiệu tái tải'
+
+  const reasonBody =
+    'Nội dung không nguyên gốc gồm video nhập/sao chép mà không có chỉnh sửa sáng tạo rõ ràng, ' +
+    'video mang watermark/logo nền tảng khác, hoặc tệp đến từ công cụ tải bên thứ ba. ' +
+    'Nội dung chất lượng thấp gồm video quá ngắn, ảnh tĩnh hoặc nội dung gần như không đổi cảnh. ' +
+    `(Phát hiện: ${reasons.join('; ')}.)`
+
+  return { reasonTitle, reasonBody }
 }
 
 function readVideoMetadata(file, timeoutMs = 25000) {
@@ -173,6 +226,7 @@ export function UploadPage() {
   /** Đồng bộ UI play/pause với thẻ video (autoplay / click có thể thay đổi trạng thái) */
   const [previewUiPlaying, setPreviewUiPlaying] = useState(false)
   const [originalityStatus, setOriginalityStatus] = useState(null)
+  const [originalityDetailsOpen, setOriginalityDetailsOpen] = useState(false)
 
   const originalityCheck = useMemo(() => {
     if (!uploadedVideo?.publicId) return null
@@ -183,6 +237,7 @@ export function UploadPage() {
         tone: 'pending',
         title: 'Kiểm tra nội dung',
         detail: 'Đang quét video… Có thể mất vài phút lần đầu.',
+        showDetails: false,
       }
     }
     if (jobState === 'FAILED') {
@@ -190,6 +245,7 @@ export function UploadPage() {
         tone: 'warn',
         title: 'Kiểm tra nội dung',
         detail: 'Không hoàn tất kiểm tra. Bạn vẫn có thể đăng; hệ thống sẽ rà soát lại sau.',
+        showDetails: false,
       }
     }
     if (decision === 'BLOCK') {
@@ -197,6 +253,7 @@ export function UploadPage() {
         tone: 'danger',
         title: 'Kiểm tra nội dung',
         detail: 'Nội dung bị chặn vì nghi ngờ không nguyên gốc. Hãy tải video khác.',
+        showDetails: true,
       }
     }
     if (decision === 'LIMIT_DISTRIBUTION' || decision === 'REVIEW') {
@@ -205,14 +262,21 @@ export function UploadPage() {
         title: 'Kiểm tra nội dung',
         detail:
           'Nội dung có thể bị hạn chế phân phối. Bạn vẫn có thể đăng, nhưng chỉnh sửa để tuân thủ nguyên tắc có thể cải thiện khả năng hiển thị.',
+        showDetails: true,
       }
     }
     return {
       tone: 'ok',
       title: 'Kiểm tra nội dung',
       detail: 'Không phát hiện vấn đề.',
+      showDetails: false,
     }
   }, [uploadedVideo?.publicId, originalityStatus])
+
+  const originalityViolationCopy = useMemo(
+    () => buildOriginalityViolationCopy(originalityStatus),
+    [originalityStatus],
+  )
 
   const originalityBlockingPost =
     originalityCheck?.tone === 'pending' || String(originalityStatus?.decision || '') === 'BLOCK'
@@ -650,6 +714,7 @@ export function UploadPage() {
     setDescription('')
     setCoverModalOpen(false)
     setOriginalityStatus(null)
+    setOriginalityDetailsOpen(false)
     resetFileInput()
   }, [resetFileInput])
 
@@ -1046,6 +1111,107 @@ export function UploadPage() {
         token={token}
         onConfirm={(url) => setThumbnailUrl(url)}
       />
+      {originalityDetailsOpen && originalityCheck?.showDetails ? (
+        <div
+          className="fixed inset-0 z-[130] flex items-center justify-center bg-black/60 px-4 py-6"
+          role="presentation"
+          onClick={() => setOriginalityDetailsOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="originality-details-title"
+            className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white text-zinc-900 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3 border-b border-zinc-200 px-5 py-4">
+              <IoWarningOutline className="mt-0.5 shrink-0 text-2xl text-orange-500" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <h2 id="originality-details-title" className="text-lg font-bold text-zinc-900">
+                  {String(originalityStatus?.decision || '') === 'BLOCK'
+                    ? 'Nội dung bị chặn'
+                    : 'Nội dung có thể bị hạn chế'}
+                </h2>
+                <p className="mt-1 text-sm text-zinc-600">
+                  {String(originalityStatus?.decision || '') === 'BLOCK'
+                    ? 'Video này không thể đăng vì nghi ngờ không nguyên gốc. Hãy thay thế bằng video khác.'
+                    : 'Bạn vẫn có thể đăng, nhưng chỉnh sửa để tuân thủ nguyên tắc có thể cải thiện khả năng hiển thị.'}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="shrink-0 rounded-full p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+                aria-label="Đóng"
+                onClick={() => setOriginalityDetailsOpen(false)}
+              >
+                <IoClose className="text-xl" aria-hidden />
+              </button>
+            </div>
+
+            <div className="space-y-5 px-5 py-4">
+              <section>
+                <h3 className="text-sm font-bold text-zinc-900">Lý do vi phạm</h3>
+                <p className="mt-2 text-sm font-semibold text-zinc-800">
+                  {originalityViolationCopy.reasonTitle}
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                  {originalityViolationCopy.reasonBody}
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-sm font-bold text-zinc-900">Chi tiết vi phạm</h3>
+                <p className="mt-2 text-sm text-zinc-600">Một số dấu hiệu tiềm ẩn đã được phát hiện.</p>
+                <div className="mt-3 inline-block overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-zinc-200">
+                  {thumbnailUrl || uploadedVideo?.playbackUrl ? (
+                    <div className="relative h-28 w-28">
+                      {thumbnailUrl ? (
+                        <img
+                          src={thumbnailUrl}
+                          alt="Đoạn video bị gắn cờ"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <video
+                          src={uploadedVideo.playbackUrl}
+                          className="h-full w-full object-cover"
+                          muted
+                          playsInline
+                          preload="metadata"
+                        />
+                      )}
+                      <span className="absolute inset-x-0 bottom-0 bg-black/55 px-1.5 py-1 text-center text-[11px] font-medium text-white">
+                        00:00-
+                        {formatClockMmSs(
+                          Math.min(15, Number(uploadedVideo?.durationSeconds) || 15),
+                        )}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex h-28 w-28 items-center justify-center text-xs text-zinc-500">
+                      Không có xem trước
+                    </div>
+                  )}
+                </div>
+              </section>
+            </div>
+
+            <div className="flex justify-end border-t border-zinc-200 px-5 py-4">
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800"
+                onClick={() => {
+                  setOriginalityDetailsOpen(false)
+                  void onPickFile()
+                }}
+              >
+                <IoRefreshOutline className="text-lg" aria-hidden />
+                Thay thế video
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <div className="flex min-h-0 flex-col">
         <input
           ref={fileInputRef}
@@ -1548,27 +1714,31 @@ export function UploadPage() {
                               aria-hidden
                             />
                           ) : (
-                            <IoWarningOutline className="mt-0.5 shrink-0 text-lg text-red-400" aria-hidden />
+                            <IoWarningOutline className="mt-0.5 shrink-0 text-lg text-orange-400" aria-hidden />
                           )}
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-zinc-200">{originalityCheck.title}</p>
                             <p
-                              className={`mt-0.5 text-xs ${
+                              className={`mt-0.5 text-xs leading-relaxed ${
                                 originalityCheck.tone === 'danger'
-                                  ? 'text-red-300'
+                                  ? 'text-orange-300'
                                   : originalityCheck.tone === 'warn'
                                     ? 'text-amber-300'
                                     : 'text-zinc-500'
                               }`}
                             >
                               {originalityCheck.detail}
-                              {originalityStatus?.jobState === 'COMPLETED' && originalityStatus?.decision ? (
-                                <span className="mt-1 block text-[11px] text-zinc-500">
-                                  {originalityStatus.decision}
-                                  {originalityStatus.originalityScore != null
-                                    ? ` · điểm ${Number(originalityStatus.originalityScore).toFixed(1)}`
-                                    : ''}
-                                </span>
+                              {originalityCheck.showDetails ? (
+                                <>
+                                  {' '}
+                                  <button
+                                    type="button"
+                                    className="font-semibold text-[#fe2c55] hover:underline"
+                                    onClick={() => setOriginalityDetailsOpen(true)}
+                                  >
+                                    Xem chi tiết
+                                  </button>
+                                </>
                               ) : null}
                             </p>
                           </div>
