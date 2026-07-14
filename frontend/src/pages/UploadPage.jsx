@@ -217,7 +217,7 @@ export function UploadPage() {
   const [postTiming, setPostTiming] = useState('now')
   const [privacyOpen, setPrivacyOpen] = useState(false)
   const [privacy, setPrivacy] = useState('everyone')
-  const [highQuality, setHighQuality] = useState(true)
+  const highQuality = true
   const [allowComment, setAllowComment] = useState(true)
   const [allowReuse, setAllowReuse] = useState(true)
   const [discloseContent, setDiscloseContent] = useState(false)
@@ -1376,7 +1376,7 @@ export function UploadPage() {
             <div className="flex justify-end border-t border-zinc-800 px-5 py-4">
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-lg bg-zinc-100 px-4 py-2.5 text-sm font-semibold text-zinc-900 hover:bg-white"
+                className="inline-flex items-center gap-2 rounded-lg bg-[#fe2c55] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e62a4d]"
                 onClick={() => {
                   setOriginalityDetailsOpen(false)
                   void onPickFile()
@@ -1724,120 +1724,110 @@ export function UploadPage() {
                   </div>
 
                   <div className="mt-6 rounded-xl border border-zinc-800/80 bg-zinc-950/80 p-4">
-                    {!showMoreSettings ? (
-                      <>
-                        <div className="space-y-4">
-                          <div>
-                            <p className="text-sm font-semibold text-zinc-200">Thời điểm đăng</p>
-                            <div className="mt-2 flex flex-wrap gap-4">
-                              <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-300">
-                                <input
-                                  type="radio"
-                                  name="postTiming"
-                                  checked={postTiming === 'now'}
-                                  onChange={() => setPostTiming('now')}
-                                  className="accent-[#fe2c55]"
-                                />
-                                Ngay bây giờ
-                              </label>
-                              <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-300">
-                                <input
-                                  type="radio"
-                                  name="postTiming"
-                                  checked={postTiming === 'schedule'}
-                                  onChange={() => setPostTiming('schedule')}
-                                  className="accent-[#fe2c55]"
-                                />
-                                Lên lịch
-                                <IoInformationCircleOutline className="text-zinc-500" aria-hidden />
-                              </label>
-                            </div>
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm font-semibold text-zinc-200">Thời điểm đăng</p>
+                        <div className="mt-2 flex flex-wrap gap-4">
+                          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-300">
+                            <input
+                              type="radio"
+                              name="postTiming"
+                              checked={postTiming === 'now'}
+                              onChange={() => setPostTiming('now')}
+                              className="accent-[#fe2c55]"
+                            />
+                            Ngay bây giờ
+                          </label>
+                          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-300">
+                            <input
+                              type="radio"
+                              name="postTiming"
+                              checked={postTiming === 'schedule'}
+                              onChange={() => setPostTiming('schedule')}
+                              className="accent-[#fe2c55]"
+                            />
+                            Lên lịch
+                            <IoInformationCircleOutline className="text-zinc-500" aria-hidden />
+                          </label>
+                        </div>
+                      </div>
+                      <div className="relative">
+                        <p className="text-sm font-semibold text-zinc-200">Ai có thể xem video này</p>
+                        <button
+                          type="button"
+                          onClick={() => setPrivacyOpen((o) => !o)}
+                          className="mt-2 flex w-full max-w-md items-center justify-between rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-left text-sm text-zinc-100"
+                        >
+                          {privacyLabels[privacy]}
+                          <span className="text-zinc-500">{privacyOpen ? '▲' : '▼'}</span>
+                        </button>
+                        {privacyOpen ? (
+                          <div className="absolute z-10 mt-1 w-full max-w-md rounded-lg border border-zinc-700 bg-zinc-900 py-1 shadow-xl">
+                            {[
+                              ['everyone', 'Mọi người', null],
+                              ['friends', 'Bạn bè', 'Người theo dõi mà bạn cũng theo dõi'],
+                              ['onlyYou', 'Chỉ mình tôi', null],
+                            ].map(([key, label, sub]) => (
+                              <button
+                                key={key}
+                                type="button"
+                                className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-sm hover:bg-zinc-800"
+                                onClick={() => {
+                                  setPrivacy(key)
+                                  setPrivacyOpen(false)
+                                }}
+                              >
+                                <span>
+                                  <span className="block text-zinc-100">{label}</span>
+                                  {sub ? (
+                                    <span className="mt-0.5 block text-xs text-zinc-500">{sub}</span>
+                                  ) : null}
+                                </span>
+                                {privacy === key ? (
+                                  <span className="shrink-0 text-[#fe2c55]" aria-hidden>
+                                    ✓
+                                  </span>
+                                ) : null}
+                              </button>
+                            ))}
                           </div>
-                          <div className="relative">
-                            <p className="text-sm font-semibold text-zinc-200">Ai có thể xem video này</p>
-                            <button
-                              type="button"
-                              onClick={() => setPrivacyOpen((o) => !o)}
-                              className="mt-2 flex w-full max-w-md items-center justify-between rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-left text-sm text-zinc-100"
-                            >
-                              {privacyLabels[privacy]}
-                              <span className="text-zinc-500">{privacyOpen ? '▲' : '▼'}</span>
-                            </button>
-                            {privacyOpen ? (
-                              <div className="absolute z-10 mt-1 w-full max-w-md rounded-lg border border-zinc-700 bg-zinc-900 py-1 shadow-xl">
-                                {[
-                                  ['everyone', 'Mọi người', null],
-                                  ['friends', 'Bạn bè', 'Người theo dõi mà bạn cũng theo dõi'],
-                                  ['onlyYou', 'Chỉ mình tôi', null],
-                                ].map(([key, label, sub]) => (
-                                  <button
-                                    key={key}
-                                    type="button"
-                                    className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-sm hover:bg-zinc-800"
-                                    onClick={() => {
-                                      setPrivacy(key)
-                                      setPrivacyOpen(false)
-                                    }}
-                                  >
-                                    <span>
-                                      <span className="block text-zinc-100">{label}</span>
-                                      {sub ? (
-                                        <span className="mt-0.5 block text-xs text-zinc-500">{sub}</span>
-                                      ) : null}
-                                    </span>
-                                    {privacy === key ? (
-                                      <span className="shrink-0 text-[#fe2c55]" aria-hidden>
-                                        ✓
-                                      </span>
-                                    ) : null}
-                                  </button>
-                                ))}
-                              </div>
-                            ) : null}
-                          </div>
+                        ) : null}
+                      </div>
+                      <div className="flex items-start justify-between gap-4 opacity-55">
+                        <div>
+                          <p className="flex items-center gap-1.5 text-sm font-semibold text-zinc-300">
+                            Tải lên video chất lượng cao
+                            <IoInformationCircleOutline className="text-zinc-500" aria-hidden />
+                          </p>
+                          <p className="mt-1 text-xs text-zinc-500">
+                            Mặc định ở chế độ HD khi bạn đăng từ Web Studio
+                          </p>
                         </div>
                         <button
                           type="button"
-                          className="mt-4 flex w-full items-center justify-center gap-1 border-t border-zinc-800 pt-4 text-sm font-medium text-zinc-400 hover:text-zinc-200"
-                          onClick={() => setShowMoreSettings(true)}
+                          role="switch"
+                          aria-checked={highQuality}
+                          aria-disabled="true"
+                          disabled
+                          title="Luôn bật khi đăng từ Web Studio"
+                          className="relative h-7 w-12 shrink-0 cursor-not-allowed rounded-full bg-sky-400/45"
                         >
-                          Xem thêm <span aria-hidden>▼</span>
+                          <span className="absolute top-0.5 left-0.5 h-6 w-6 translate-x-5 rounded-full bg-white/90 shadow" />
                         </button>
-                      </>
+                      </div>
+                    </div>
+
+                    {!showMoreSettings ? (
+                      <button
+                        type="button"
+                        className="mt-4 flex w-full items-center justify-center gap-1 border-t border-zinc-800 pt-4 text-sm font-medium text-zinc-400 hover:text-zinc-200"
+                        onClick={() => setShowMoreSettings(true)}
+                      >
+                        Xem thêm <span aria-hidden>▼</span>
+                      </button>
                     ) : (
                       <>
-                        <div className="space-y-5">
-                          <div>
-                            <p className="text-sm font-semibold text-zinc-200">Ai có thể xem video này</p>
-                            <select
-                              value={privacy}
-                              onChange={(e) => setPrivacy(e.target.value)}
-                              className="mt-2 w-full max-w-md rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-100"
-                            >
-                              <option value="everyone">Mọi người</option>
-                              <option value="friends">Bạn bè</option>
-                              <option value="onlyYou">Chỉ mình tôi</option>
-                            </select>
-                          </div>
-                          <div className="flex items-start justify-between gap-4">
-                            <div>
-                              <p className="text-sm font-semibold text-zinc-200">Tải lên chất lượng cao</p>
-                              <p className="mt-1 text-xs text-zinc-500">
-                                Mặc định ở chế độ HD khi bạn đăng từ Web Studio
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              role="switch"
-                              aria-checked={highQuality}
-                              onClick={() => setHighQuality((v) => !v)}
-                              className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${highQuality ? 'bg-sky-600' : 'bg-zinc-600'}`}
-                            >
-                              <span
-                                className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${highQuality ? 'translate-x-5' : ''}`}
-                              />
-                            </button>
-                          </div>
+                        <div className="mt-5 space-y-5 border-t border-zinc-800 pt-5">
                           <div>
                             <p className="text-sm font-semibold text-zinc-200">Cho phép người dùng:</p>
                             <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-zinc-300">
