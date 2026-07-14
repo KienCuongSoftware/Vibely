@@ -92,13 +92,32 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         Pageable pageable
     );
 
-    Page<Video> findByStatusOrderByCreatedAtDesc(VideoStatus status, Pageable pageable);
-    Page<Video> findByAuthorInAndStatusOrderByCreatedAtDesc(Collection<User> authors, VideoStatus status, Pageable pageable);
+    @Query("""
+        select v from Video v
+        where v.status = :status and v.studioDraft = false
+        order by v.createdAt desc
+        """)
+    Page<Video> findByStatusOrderByCreatedAtDesc(
+        @Param("status") VideoStatus status,
+        Pageable pageable
+    );
+
+    @Query("""
+        select v from Video v
+        where v.author in :authors and v.status = :status and v.studioDraft = false
+        order by v.createdAt desc
+        """)
+    Page<Video> findByAuthorInAndStatusOrderByCreatedAtDesc(
+        @Param("authors") Collection<User> authors,
+        @Param("status") VideoStatus status,
+        Pageable pageable
+    );
 
     @Query("""
         select v from Video v
         join fetch v.author a
         where v.status = :status
+          and v.studioDraft = false
           and a.accountStatus = com.vibely.backend.user.entity.UserAccountStatus.ACTIVE
           and a.onboardingCompleted = true
         order by v.createdAt desc, v.id desc
@@ -219,7 +238,9 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
 
     @Query("""
         select v from Video v
-        where v.author.id = :authorId and v.status <> :excludedStatus
+        where v.author.id = :authorId
+          and v.status <> :excludedStatus
+          and v.studioDraft = false
         order by v.createdAt desc
         """)
     Page<Video> findByAuthorIdExcludingStatus(
@@ -230,7 +251,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
 
     @Query("""
         select v from Video v
-        where v.author.id = :authorId and v.status = :status
+        where v.author.id = :authorId and v.status = :status and v.studioDraft = false
         order by v.createdAt desc
         """)
     Page<Video> findByAuthorIdAndStatusEquals(
@@ -244,6 +265,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         left join LikeEntity l on l.video = v
         left join CommentEntity c on c.video = v
         where v.status = :status
+          and v.studioDraft = false
         group by v
         order by (count(distinct l.id) + count(distinct c.id)) desc, v.createdAt desc
         """)
@@ -260,6 +282,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     @Query("""
         select v from Video v join fetch v.author
         where v.status = :status
+          and v.studioDraft = false
         order by v.createdAt desc, v.id desc
         """)
     Page<Video> findReadyFeedFirstPage(
@@ -270,6 +293,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     @Query("""
         select v from Video v join fetch v.author
         where v.status = :status
+          and v.studioDraft = false
         and (v.createdAt < :cTime or (v.createdAt = :cTime and v.id < :cId))
         order by v.createdAt desc, v.id desc
         """)

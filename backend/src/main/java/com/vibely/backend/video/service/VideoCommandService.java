@@ -106,8 +106,12 @@ public class VideoCommandService {
         }
         video.setAudioTitle(audioTitle);
         video.setStatus(VideoStatus.RAW);
+        boolean draft = Boolean.TRUE.equals(request.getStudioDraft());
+        video.setStudioDraft(draft);
         Video saved = videoRepository.save(video);
-        exploreSyncService.syncExploreSignals(saved);
+        if (!draft) {
+            exploreSyncService.syncExploreSignals(saved);
+        }
         videoProcessingEnqueueService.enqueueAfterVideoPersisted(saved);
         originalityEnqueueService.enqueueAfterVideoPersisted(saved);
         return responseMapper.toResponse(saved);
@@ -141,18 +145,23 @@ public class VideoCommandService {
         if (video.getStatus() == VideoStatus.REMOVED) {
             throw new BadRequestException("Video đã bị gỡ, không thể sửa.");
         }
+        boolean wasDraft = video.isStudioDraft();
         video.setTitle(request.getTitle().trim());
         String desc = request.getDescription();
         video.setDescription(desc == null || desc.isBlank() ? null : desc.trim());
         if (request.getThumbnailUrl() != null) {
-            String thumbUrl = VideoMediaUtils.normalizeText(request.getThumbnailUrl());
-            if (thumbUrl != null) {
-                ownedMediaValidator.requireOwnedThumbnail(thumbUrl, user.getId());
+            String thumb = VideoMediaUtils.normalizeText(request.getThumbnailUrl());
+            if (thumb != null) {
+                ownedMediaValidator.requireOwnedThumbnail(thumb, user.getId());
             }
-            video.setThumbnailUrl(thumbUrl);
+            video.setThumbnailUrl(request.getThumbnailUrl());
         }
+        // Studio "Đăng" publishes the draft into the creator's post list.
+        video.setStudioDraft(false);
         Video saved = videoRepository.save(video);
-        exploreSyncService.syncExploreSignals(saved);
+        if (wasDraft) {
+            exploreSyncService.syncExploreSignals(saved);
+        }
         return responseMapper.toResponse(saved);
     }
 

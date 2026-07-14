@@ -4,6 +4,7 @@ import { useAuth } from './state/useAuth'
 import { WatchRedirect } from './components/watch/WatchRedirect.jsx'
 import { DefaultSeo } from './seo/Seo.jsx'
 import { userNeedsOnboarding } from './utils/onboarding.js'
+import { StudioUploadDraftCleanup } from './components/StudioUploadDraftCleanup.jsx'
 
 function lazyNamed(loader, exportName) {
   return lazy(() => loader().then((module) => ({ default: module[exportName] })))
@@ -123,6 +124,7 @@ function App() {
   return (
     <div className={shellClass}>
       <DefaultSeo />
+      <StudioUploadDraftCleanup />
       <Suspense fallback={<div className="min-h-screen bg-black" />}>
         {needsOnboarding ? (
           <Routes>

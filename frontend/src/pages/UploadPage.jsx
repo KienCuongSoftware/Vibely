@@ -770,11 +770,12 @@ export function UploadPage() {
     void (async () => {
       for (const id of orphans) {
         if (cancelled) return
-        untrackUploadDraftPublicId(id)
         try {
           await apiClient.deleteVideo(id, token)
+          untrackUploadDraftPublicId(id)
         } catch {
-          // đã gỡ / không còn quyền — bỏ qua
+          // đã gỡ / không còn quyền — bỏ tracking để khỏi treo
+          untrackUploadDraftPublicId(id)
         }
       }
     })()
@@ -1041,6 +1042,7 @@ export function UploadPage() {
             audioUrl,
             audioTitle,
             durationSeconds,
+            studioDraft: true,
           },
           token,
         )
@@ -1198,6 +1200,7 @@ export function UploadPage() {
             audioUrl: uploadedVideo.audioUrl,
             audioTitle: uploadedVideo.audioTitle,
             durationSeconds: Math.round(durationSeconds),
+            studioDraft: false,
           },
           token,
         )

@@ -91,6 +91,13 @@ public class Video {
     @Column(name = "ranking_score")
     private Double rankingScore;
 
+    /**
+     * Studio upload draft before the creator taps Đăng.
+     * Hidden from studio post lists and public discovery until published.
+     */
+    @Column(name = "studio_draft", nullable = false)
+    private boolean studioDraft;
+
     @PrePersist
     void prePersist() {
         if (publicId == null) {
@@ -266,5 +273,13 @@ public class Video {
 
     public void setRankingScore(Double rankingScore) {
         this.rankingScore = rankingScore;
+    }
+
+    public boolean isStudioDraft() {
+        return studioDraft;
+    }
+
+    public void setStudioDraft(boolean studioDraft) {
+        this.studioDraft = studioDraft;
     }
 }

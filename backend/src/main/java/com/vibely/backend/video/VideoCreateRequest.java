@@ -29,6 +29,11 @@ public class VideoCreateRequest {
     @Min(value = 1, message = "Thời lượng video không hợp lệ")
     private Integer durationSeconds;
 
+    /**
+     * When true, video is a Studio draft (not yet posted). Defaults to false for API/mobile clients.
+     */
+    private Boolean studioDraft;
+
     public String getTitle() {
         return title;
     }
@@ -83,5 +88,13 @@ public class VideoCreateRequest {
 
     public void setDurationSeconds(Integer durationSeconds) {
         this.durationSeconds = durationSeconds;
+    }
+
+    public Boolean getStudioDraft() {
+        return studioDraft;
+    }
+
+    public void setStudioDraft(Boolean studioDraft) {
+        this.studioDraft = studioDraft;
     }
 }
