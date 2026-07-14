@@ -113,18 +113,19 @@ export function StudioEditPostPage() {
         const snapTitle = String(v.title ?? '')
         const snapDesc = String(v.description ?? '')
         const snapThumb = String(v.thumbnailUrl ?? '').trim()
+        const rawPrivacy = String(v.privacy || 'PUBLIC').toUpperCase()
+        const snapPrivacy =
+          rawPrivacy === 'FRIENDS' ? 'friends' : rawPrivacy === 'PRIVATE' ? 'onlyYou' : 'everyone'
         setSavedSnapshot({
           title: snapTitle,
           description: snapDesc,
           thumbnailUrl: snapThumb,
+          privacy: snapPrivacy,
         })
         setVideo(v)
         setDescription(snapDesc)
         setThumbnailUrl(snapThumb)
-        const rawPrivacy = String(v.privacy || 'PUBLIC').toUpperCase()
-        setPrivacy(
-          rawPrivacy === 'FRIENDS' ? 'friends' : rawPrivacy === 'PRIVATE' ? 'onlyYou' : 'everyone',
-        )
+        setPrivacy(snapPrivacy)
       })
       .catch((e) => {
         if (!cancelled) {
@@ -437,9 +438,10 @@ export function StudioEditPostPage() {
     const th = String(thumbnailUrl ?? '').trim()
     return (
       d !== String(savedSnapshot.description ?? '').trim() ||
-      th !== String(savedSnapshot.thumbnailUrl ?? '').trim()
+      th !== String(savedSnapshot.thumbnailUrl ?? '').trim() ||
+      privacy !== String(savedSnapshot.privacy ?? 'everyone')
     )
-  }, [description, thumbnailUrl, savedSnapshot])
+  }, [description, thumbnailUrl, privacy, savedSnapshot])
 
   const highlightTags = useCallback((text) => {
     const source = String(text ?? '')
@@ -853,8 +855,7 @@ export function StudioEditPostPage() {
                               </div>
                             ) : null}
                             <p className="mt-1 text-[11px] text-zinc-600">
-                              Tuỳ chọn riêng tư hiển thị để đồng bộ giao diện; API Vibely hiện chỉ lưu mô tả /
-                              ảnh bìa.
+                              Mọi người · Bạn bè (theo dõi lẫn nhau) · Chỉ mình tôi.
                             </p>
                           </div>
                         </div>
