@@ -35,6 +35,11 @@ public class VideoCreateRequest {
      */
     private Boolean studioDraft;
 
+    /**
+     * everyone | friends | onlyYou | PUBLIC | FRIENDS | PRIVATE
+     */
+    private String privacy;
+
     public String getTitle() {
         return title;
     }
@@ -97,5 +102,13 @@ public class VideoCreateRequest {
 
     public void setStudioDraft(Boolean studioDraft) {
         this.studioDraft = studioDraft;
+    }
+
+    public String getPrivacy() {
+        return privacy;
+    }
+
+    public void setPrivacy(String privacy) {
+        this.privacy = privacy;
     }
 }

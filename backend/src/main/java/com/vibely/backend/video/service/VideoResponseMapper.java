@@ -237,6 +237,7 @@ public class VideoResponseMapper {
             video.getSourceHeightPx(),
             video.getProcessingError(),
             followedByViewer,
+            video.getPrivacy().name(),
             repostedByUserId,
             repostedByUsername,
             repostedByDisplayName,

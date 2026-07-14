@@ -21,6 +21,8 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
             from videos v
             join users u on u.id = v.author_id
             where v.status = 'READY'
+              and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
+              and coalesce(v.studio_draft, false) = false
               and (:cursorScore is null or (v.explore_score < :cursorScore
                    or (v.explore_score = :cursorScore and (v.created_at < :cursorTime
                    or (v.created_at = :cursorTime and v.id < :cursorId)))))
@@ -54,6 +56,8 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
             ) primary_vc on primary_vc.video_id = v.id
             join categories c on c.id = primary_vc.category_id
             where v.status = 'READY'
+              and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
+              and coalesce(v.studio_draft, false) = false
               and c.slug = :slug
               and c.enabled = true
               and (:cursorScore is null or (v.explore_score < :cursorScore
@@ -84,6 +88,8 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
             left join video_hashtags vh on vh.video_id = v.id
             left join hashtags h on h.id = vh.hashtag_id
             where v.status = 'READY'
+              and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
+              and coalesce(v.studio_draft, false) = false
               and (
                 lower(coalesce(v.title,'')) like concat('%', lower(:q), '%')
                 or lower(coalesce(v.description,'')) like concat('%', lower(:q), '%')
@@ -121,6 +127,8 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
             left join video_hashtags vh2 on vh2.hashtag_id = vh1.hashtag_id and vh2.video_id = v2.id
             where v1.public_id = :publicId
               and v2.status = 'READY'
+              and coalesce(v2.privacy, 'PUBLIC') = 'PUBLIC'
+              and coalesce(v2.studio_draft, false) = false
               and v2.id <> v1.id
               and (vc2.video_id is not null or vh2.video_id is not null)
             order by v2.explore_score desc, v2.created_at desc, v2.id desc

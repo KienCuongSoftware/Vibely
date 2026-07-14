@@ -98,6 +98,10 @@ public class Video {
     @Column(name = "studio_draft", nullable = false)
     private boolean studioDraft;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "privacy", nullable = false, length = 20)
+    private VideoPrivacy privacy = VideoPrivacy.PUBLIC;
+
     @PrePersist
     void prePersist() {
         if (publicId == null) {
@@ -281,5 +285,13 @@ public class Video {
 
     public void setStudioDraft(boolean studioDraft) {
         this.studioDraft = studioDraft;
+    }
+
+    public VideoPrivacy getPrivacy() {
+        return privacy == null ? VideoPrivacy.PUBLIC : privacy;
+    }
+
+    public void setPrivacy(VideoPrivacy privacy) {
+        this.privacy = privacy == null ? VideoPrivacy.PUBLIC : privacy;
     }
 }

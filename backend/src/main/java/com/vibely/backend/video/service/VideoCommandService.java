@@ -13,6 +13,7 @@ import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoCreateRequest;
+import com.vibely.backend.video.VideoPrivacy;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoResponse;
 import com.vibely.backend.video.VideoStatus;
@@ -109,6 +110,7 @@ public class VideoCommandService {
         // Default draft when omitted — only explicit studioDraft=false publishes into lists.
         boolean draft = !Boolean.FALSE.equals(request.getStudioDraft());
         video.setStudioDraft(draft);
+        video.setPrivacy(resolvePrivacy(request.getPrivacy()));
         Video saved = videoRepository.save(video);
         if (!draft) {
             exploreSyncService.syncExploreSignals(saved);
@@ -159,11 +161,28 @@ public class VideoCommandService {
         }
         // Studio "Đăng" publishes the draft into the creator's post list.
         video.setStudioDraft(false);
+        if (request.getPrivacy() != null && !request.getPrivacy().isBlank()) {
+            video.setPrivacy(resolvePrivacy(request.getPrivacy()));
+        }
         Video saved = videoRepository.save(video);
         if (wasDraft) {
             exploreSyncService.syncExploreSignals(saved);
         }
         return responseMapper.toResponse(saved);
+    }
+
+    private static VideoPrivacy resolvePrivacy(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return VideoPrivacy.PUBLIC;
+        }
+        String trimmed = raw.trim();
+        if ("everyone".equalsIgnoreCase(trimmed)
+            || "friends".equalsIgnoreCase(trimmed)
+            || "onlyYou".equalsIgnoreCase(trimmed)
+            || "only_you".equalsIgnoreCase(trimmed)) {
+            return VideoPrivacy.fromStudioUi(trimmed);
+        }
+        return VideoPrivacy.fromApi(trimmed);
     }
 
     @Transactional

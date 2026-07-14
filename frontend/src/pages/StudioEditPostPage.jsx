@@ -121,6 +121,10 @@ export function StudioEditPostPage() {
         setVideo(v)
         setDescription(snapDesc)
         setThumbnailUrl(snapThumb)
+        const rawPrivacy = String(v.privacy || 'PUBLIC').toUpperCase()
+        setPrivacy(
+          rawPrivacy === 'FRIENDS' ? 'friends' : rawPrivacy === 'PRIVATE' ? 'onlyYou' : 'everyone',
+        )
       })
       .catch((e) => {
         if (!cancelled) {
@@ -493,6 +497,7 @@ export function StudioEditPostPage() {
           title: preservedTitle,
           description: String(description ?? '').trim() || null,
           thumbnailUrl: String(thumbnailUrl ?? '').trim() || null,
+          privacy,
         },
         token,
       )

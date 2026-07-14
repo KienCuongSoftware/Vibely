@@ -198,6 +198,17 @@ function ProfileGridMedia({ item: v, playing = false }) {
   return thumbNode
 }
 
+function profilePrivacyIcon(privacy) {
+  const key = String(privacy || 'PUBLIC').toUpperCase()
+  if (key === 'FRIENDS') {
+    return <IoPeople className="text-[14px] text-white drop-shadow-md" aria-label="Bạn bè" />
+  }
+  if (key === 'PRIVATE') {
+    return <IoLockClosed className="text-[14px] text-white drop-shadow-md" aria-label="Chỉ mình tôi" />
+  }
+  return null
+}
+
 function ProfileGridVideoTile({
   video,
   profileUsername,
@@ -207,6 +218,7 @@ function ProfileGridVideoTile({
   tileRef,
   onOpen,
 }) {
+  const privacyIcon = profilePrivacyIcon(video?.privacy)
   return (
     <li
       ref={isLastWatched ? tileRef : undefined}
@@ -214,7 +226,7 @@ function ProfileGridVideoTile({
     >
       <Link
         to={profileVideoPermalinkForGrid(video, profileUsername)}
-        className="block"
+        className="block cursor-pointer"
         onClick={() => onOpen(video)}
       >
         <div
@@ -231,9 +243,12 @@ function ProfileGridVideoTile({
             </div>
           ) : null}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-2 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
-            <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
-              <IoPlayOutline className="text-[13px]" aria-hidden />
-              <span>{formatCompactCount(video.viewCount ?? 0)}</span>
+            <div className="flex items-end justify-between gap-2">
+              <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
+                <IoPlayOutline className="text-[13px]" aria-hidden />
+                <span>{formatCompactCount(video.viewCount ?? 0)}</span>
+              </div>
+              {privacyIcon ? <div className="shrink-0 pb-0.5">{privacyIcon}</div> : null}
             </div>
           </div>
         </div>

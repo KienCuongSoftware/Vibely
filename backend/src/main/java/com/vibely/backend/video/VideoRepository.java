@@ -95,6 +95,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     @Query("""
         select v from Video v
         where v.status = :status and v.studioDraft = false
+          and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
         order by v.createdAt desc
         """)
     Page<Video> findByStatusOrderByCreatedAtDesc(
@@ -105,6 +106,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     @Query("""
         select v from Video v
         where v.author in :authors and v.status = :status and v.studioDraft = false
+          and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
         order by v.createdAt desc
         """)
     Page<Video> findByAuthorInAndStatusOrderByCreatedAtDesc(
@@ -118,6 +120,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         join fetch v.author a
         where v.status = :status
           and v.studioDraft = false
+          and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
           and a.accountStatus = com.vibely.backend.user.entity.UserAccountStatus.ACTIVE
           and a.onboardingCompleted = true
         order by v.createdAt desc, v.id desc
@@ -262,10 +265,31 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
 
     @Query("""
         select v from Video v
+        where v.author.id = :authorId
+          and v.status = :status
+          and v.studioDraft = false
+          and (
+            :includeAll = true
+            or v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
+            or (:includeFriends = true and v.privacy = com.vibely.backend.video.VideoPrivacy.FRIENDS)
+          )
+        order by v.createdAt desc
+        """)
+    Page<Video> findProfileVideosVisibleToViewer(
+        @Param("authorId") Long authorId,
+        @Param("status") VideoStatus status,
+        @Param("includeAll") boolean includeAll,
+        @Param("includeFriends") boolean includeFriends,
+        Pageable pageable
+    );
+
+    @Query("""
+        select v from Video v
         left join LikeEntity l on l.video = v
         left join CommentEntity c on c.video = v
         where v.status = :status
           and v.studioDraft = false
+          and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
         group by v
         order by (count(distinct l.id) + count(distinct c.id)) desc, v.createdAt desc
         """)
@@ -283,6 +307,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         select v from Video v join fetch v.author
         where v.status = :status
           and v.studioDraft = false
+          and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
         order by v.createdAt desc, v.id desc
         """)
     Page<Video> findReadyFeedFirstPage(
@@ -294,6 +319,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         select v from Video v join fetch v.author
         where v.status = :status
           and v.studioDraft = false
+          and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
         and (v.createdAt < :cTime or (v.createdAt = :cTime and v.id < :cId))
         order by v.createdAt desc, v.id desc
         """)

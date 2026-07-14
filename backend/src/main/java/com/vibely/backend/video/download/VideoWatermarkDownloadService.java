@@ -11,6 +11,7 @@ import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
+import com.vibely.backend.video.service.VideoPrivacyAccessService;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -52,6 +53,7 @@ public class VideoWatermarkDownloadService {
     private final ProcessingProperties processingProperties;
     private final VideoRepository videoRepository;
     private final UserRepository userRepository;
+    private final VideoPrivacyAccessService privacyAccessService;
 
     public VideoWatermarkDownloadService(
         S3Client s3Client,
@@ -59,7 +61,8 @@ public class VideoWatermarkDownloadService {
         S3ObjectUrlBuilder objectUrlBuilder,
         ProcessingProperties processingProperties,
         VideoRepository videoRepository,
-        UserRepository userRepository
+        UserRepository userRepository,
+        VideoPrivacyAccessService privacyAccessService
     ) {
         this.s3Client = s3Client;
         this.s3Properties = s3Properties;
@@ -67,6 +70,7 @@ public class VideoWatermarkDownloadService {
         this.processingProperties = processingProperties;
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
+        this.privacyAccessService = privacyAccessService;
     }
 
     public static String cacheKeyFor(UUID publicId) {
@@ -167,15 +171,17 @@ public class VideoWatermarkDownloadService {
         if (video.getStatus() == VideoStatus.REMOVED) {
             throw new NotFoundException("Không tìm thấy video");
         }
+        User viewer = null;
+        if (viewerEmail != null && !viewerEmail.isBlank()) {
+            viewer = userRepository.findByEmail(viewerEmail.trim()).orElse(null);
+        }
         if (video.getStatus() == VideoStatus.READY) {
+            if (!privacyAccessService.canViewerWatch(video, viewer)) {
+                throw new NotFoundException("Không tìm thấy video");
+            }
             return;
         }
-        if (viewerEmail == null || viewerEmail.isBlank()) {
-            throw new NotFoundException("Không tìm thấy video");
-        }
-        User viewer = userRepository.findByEmail(viewerEmail.trim())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
-        if (!Objects.equals(video.getAuthor().getId(), viewer.getId())) {
+        if (viewer == null || !Objects.equals(video.getAuthor().getId(), viewer.getId())) {
             throw new NotFoundException("Không tìm thấy video");
         }
     }

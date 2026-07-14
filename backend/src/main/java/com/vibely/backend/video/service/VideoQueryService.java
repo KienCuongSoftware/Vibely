@@ -18,15 +18,18 @@ public class VideoQueryService {
     private final VideoRepository videoRepository;
     private final UserRepository userRepository;
     private final VideoResponseMapper responseMapper;
+    private final VideoPrivacyAccessService privacyAccessService;
 
     public VideoQueryService(
         VideoRepository videoRepository,
         UserRepository userRepository,
-        VideoResponseMapper responseMapper
+        VideoResponseMapper responseMapper,
+        VideoPrivacyAccessService privacyAccessService
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
         this.responseMapper = responseMapper;
+        this.privacyAccessService = privacyAccessService;
     }
 
     public Video getVideoByPublicIdOrThrow(UUID publicId) {
@@ -45,7 +48,7 @@ public class VideoQueryService {
     }
 
     /**
-     * Public: READY for everyone. Other statuses (e.g. RAW) only for the author when viewerEmail is set.
+     * READY videos respect per-video privacy. Non-READY (e.g. RAW) only for the author.
      */
     @Transactional(readOnly = true)
     public VideoResponse getVideoByIdForViewer(Long id, String viewerEmail) {
@@ -53,17 +56,23 @@ public class VideoQueryService {
         if (video.getStatus() == VideoStatus.REMOVED) {
             throw new NotFoundException("Không tìm thấy video");
         }
+        User viewer = resolveViewer(viewerEmail);
         if (video.getStatus() == VideoStatus.READY) {
+            if (!privacyAccessService.canViewerWatch(video, viewer)) {
+                throw new NotFoundException("Không tìm thấy video");
+            }
             return responseMapper.toResponse(video, responseMapper.resolveFollowedByViewer(video, viewerEmail));
         }
-        if (viewerEmail == null || viewerEmail.isBlank()) {
-            throw new NotFoundException("Không tìm thấy video");
-        }
-        User viewer = userRepository.findByEmail(viewerEmail.trim())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
-        if (!Objects.equals(video.getAuthor().getId(), viewer.getId())) {
+        if (viewer == null || !Objects.equals(video.getAuthor().getId(), viewer.getId())) {
             throw new NotFoundException("Không tìm thấy video");
         }
         return responseMapper.toResponse(video);
+    }
+
+    private User resolveViewer(String viewerEmail) {
+        if (viewerEmail == null || viewerEmail.isBlank()) {
+            return null;
+        }
+        return userRepository.findByEmail(viewerEmail.trim()).orElse(null);
     }
 }

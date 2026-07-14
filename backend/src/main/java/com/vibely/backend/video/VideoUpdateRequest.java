@@ -15,6 +15,9 @@ public class VideoUpdateRequest {
     @Size(max = 2048, message = "URL ảnh bìa tối đa 2048 ký tự")
     private String thumbnailUrl;
 
+    /** everyone | friends | onlyYou | PUBLIC | FRIENDS | PRIVATE */
+    private String privacy;
+
     public String getTitle() {
         return title;
     }
@@ -37,5 +40,13 @@ public class VideoUpdateRequest {
 
     public void setThumbnailUrl(String thumbnailUrl) {
         this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public String getPrivacy() {
+        return privacy;
+    }
+
+    public void setPrivacy(String privacy) {
+        this.privacy = privacy;
     }
 }

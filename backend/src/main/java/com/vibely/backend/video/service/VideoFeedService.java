@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -54,6 +55,7 @@ public class VideoFeedService {
     private final com.vibely.backend.storage.S3ObjectUrlBuilder objectUrlBuilder;
     private final VideoResponseMapper responseMapper;
     private final ProfileVisibilityService profileVisibilityService;
+    private final VideoPrivacyAccessService privacyAccessService;
 
     public VideoFeedService(
         VideoRepository videoRepository,
@@ -65,7 +67,8 @@ public class VideoFeedService {
         UsernameService usernameService,
         com.vibely.backend.storage.S3ObjectUrlBuilder objectUrlBuilder,
         VideoResponseMapper responseMapper,
-        ProfileVisibilityService profileVisibilityService
+        ProfileVisibilityService profileVisibilityService,
+        VideoPrivacyAccessService privacyAccessService
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
@@ -77,6 +80,7 @@ public class VideoFeedService {
         this.objectUrlBuilder = objectUrlBuilder;
         this.responseMapper = responseMapper;
         this.profileVisibilityService = profileVisibilityService;
+        this.privacyAccessService = privacyAccessService;
     }
 
     @Transactional(readOnly = true)
@@ -288,9 +292,13 @@ public class VideoFeedService {
             return new FeedPageResponse(List.of(), page, cappedSize, 0, false, "profile-uploads", null);
         }
         Pageable pageable = PageRequest.of(page, Math.min(size, 50));
-        Page<Video> resultPage = videoRepository.findByAuthorIdAndStatusEquals(
+        boolean isAuthor = viewer != null && Objects.equals(viewer.getId(), author.getId());
+        boolean mutualFriends = !isAuthor && viewer != null && privacyAccessService.isMutualFriends(viewer, author);
+        Page<Video> resultPage = videoRepository.findProfileVideosVisibleToViewer(
             author.getId(),
             VideoStatus.READY,
+            isAuthor,
+            mutualFriends,
             pageable
         );
         return responseMapper.toFeedPageResponse(resultPage, "profile-uploads");

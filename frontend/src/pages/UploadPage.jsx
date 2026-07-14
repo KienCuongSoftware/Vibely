@@ -1043,6 +1043,7 @@ export function UploadPage() {
             audioTitle,
             durationSeconds,
             studioDraft: true,
+            privacy,
           },
           token,
         )
@@ -1185,6 +1186,7 @@ export function UploadPage() {
             title,
             description: desc,
             thumbnailUrl: thumbnailUrl.trim() || undefined,
+            privacy,
           },
           token,
         )
@@ -1201,6 +1203,7 @@ export function UploadPage() {
             audioTitle: uploadedVideo.audioTitle,
             durationSeconds: Math.round(durationSeconds),
             studioDraft: false,
+            privacy,
           },
           token,
         )
@@ -1320,7 +1323,7 @@ export function UploadPage() {
               </div>
               <button
                 type="button"
-                className="shrink-0 rounded-full p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+                className="shrink-0 rounded-full p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 cursor-pointer"
                 aria-label="Đóng"
                 onClick={() => setOriginalityDetailsOpen(false)}
               >
@@ -1379,7 +1382,7 @@ export function UploadPage() {
             <div className="flex justify-end border-t border-zinc-800 px-5 py-4">
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-lg bg-[#fe2c55] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e62a4d]"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#fe2c55] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e62a4d]"
                 onClick={() => {
                   setOriginalityDetailsOpen(false)
                   void onPickFile()
@@ -1416,14 +1419,14 @@ export function UploadPage() {
             <div className="flex justify-end gap-2 px-5 py-4">
               <button
                 type="button"
-                className="rounded-lg px-4 py-2.5 text-sm font-semibold text-zinc-300 hover:bg-zinc-800"
+                className="cursor-pointer rounded-lg px-4 py-2.5 text-sm font-semibold text-zinc-300 hover:bg-zinc-800"
                 onClick={cancelLeave}
               >
                 Ở lại
               </button>
               <button
                 type="button"
-                className="rounded-lg bg-[#fe2c55] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e62a4d]"
+                className="cursor-pointer rounded-lg bg-[#fe2c55] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e62a4d]"
                 onClick={() => void confirmLeaveAndDiscard()}
               >
                 Rời đi
@@ -1466,7 +1469,7 @@ export function UploadPage() {
                 </p>
                 <button
                   type="button"
-                  className="mt-6 rounded-lg bg-[#fe2c55] px-6 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow hover:bg-[#e62a4d] disabled:opacity-40"
+                  className="mt-6 cursor-pointer rounded-lg bg-[#fe2c55] px-6 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow hover:bg-[#e62a4d] disabled:cursor-not-allowed disabled:opacity-40"
                   onClick={onPickFile}
                   disabled={busy}
                 >
@@ -1521,7 +1524,7 @@ export function UploadPage() {
                     </div>
                     <button
                       type="button"
-                      className="flex shrink-0 items-center gap-2 rounded-lg border border-zinc-600 bg-zinc-900 px-3 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-800"
+                      className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-zinc-600 bg-zinc-900 px-3 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={onPickFile}
                       disabled={busy}
                     >
@@ -1652,14 +1655,14 @@ export function UploadPage() {
                         <div className="flex flex-wrap gap-3 text-xs">
                           <button
                             type="button"
-                            className="font-medium text-[#fe2c55] hover:underline"
+                            className="cursor-pointer font-medium text-[#fe2c55] hover:underline"
                             onClick={() => setDescription((p) => `${p}#`.trim())}
                           >
                             # Thẻ hashtag
                           </button>
                           <button
                             type="button"
-                            className="font-medium text-[#fe2c55] hover:underline"
+                            className="cursor-pointer font-medium text-[#fe2c55] hover:underline"
                             onClick={() => insertAtCaret('@')}
                           >
                             @ Nhắc đến
@@ -1704,7 +1707,7 @@ export function UploadPage() {
                       )}
                       <button
                         type="button"
-                        className="absolute inset-x-0 bottom-0 bg-black/70 py-2 text-center text-xs font-medium text-white backdrop-blur-sm hover:bg-black/80"
+                        className="absolute inset-x-0 bottom-0 cursor-pointer bg-black/70 py-2 text-center text-xs font-medium text-white backdrop-blur-sm hover:bg-black/80"
                         onClick={() => setCoverModalOpen(true)}
                       >
                         Chỉnh sửa ảnh bìa
@@ -1759,7 +1762,7 @@ export function UploadPage() {
                         <button
                           type="button"
                           onClick={() => setPrivacyOpen((o) => !o)}
-                          className="mt-2 flex w-full max-w-md items-center justify-between rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-left text-sm text-zinc-100"
+                          className="mt-2 flex w-full max-w-md cursor-pointer items-center justify-between rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-left text-sm text-zinc-100"
                         >
                           {privacyLabels[privacy]}
                           <span className="text-zinc-500">{privacyOpen ? '▲' : '▼'}</span>
@@ -1774,7 +1777,7 @@ export function UploadPage() {
                               <button
                                 key={key}
                                 type="button"
-                                className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-sm hover:bg-zinc-800"
+                                className="flex w-full cursor-pointer items-center justify-between gap-2 px-3 py-2.5 text-left text-sm hover:bg-zinc-800"
                                 onClick={() => {
                                   setPrivacy(key)
                                   setPrivacyOpen(false)
@@ -1823,7 +1826,7 @@ export function UploadPage() {
                     {!showMoreSettings ? (
                       <button
                         type="button"
-                        className="mt-4 flex w-full items-center justify-center gap-1 border-t border-zinc-800 pt-4 text-sm font-medium text-zinc-400 hover:text-zinc-200"
+                        className="mt-4 flex w-full cursor-pointer items-center justify-center gap-1 border-t border-zinc-800 pt-4 text-sm font-medium text-zinc-400 hover:text-zinc-200"
                         onClick={() => setShowMoreSettings(true)}
                       >
                         Xem thêm <span aria-hidden>▼</span>
@@ -1865,7 +1868,7 @@ export function UploadPage() {
                               role="switch"
                               aria-checked={discloseContent}
                               onClick={() => setDiscloseContent((v) => !v)}
-                              className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${discloseContent ? 'bg-[#fe2c55]' : 'bg-zinc-600'}`}
+                              className={`relative h-7 w-12 shrink-0 cursor-pointer rounded-full transition-colors ${discloseContent ? 'bg-[#fe2c55]' : 'bg-zinc-600'}`}
                             >
                               <span
                                 className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${discloseContent ? 'translate-x-5' : ''}`}
@@ -1885,7 +1888,7 @@ export function UploadPage() {
                               role="switch"
                               aria-checked={aiContent}
                               onClick={() => setAiContent((v) => !v)}
-                              className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${aiContent ? 'bg-[#fe2c55]' : 'bg-zinc-600'}`}
+                              className={`relative h-7 w-12 shrink-0 cursor-pointer rounded-full transition-colors ${aiContent ? 'bg-[#fe2c55]' : 'bg-zinc-600'}`}
                             >
                               <span
                                 className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${aiContent ? 'translate-x-5' : ''}`}
@@ -1895,7 +1898,7 @@ export function UploadPage() {
                         </div>
                         <button
                           type="button"
-                          className="mt-4 flex w-full items-center justify-center gap-1 border-t border-zinc-800 pt-4 text-sm font-medium text-zinc-400 hover:text-zinc-200"
+                          className="mt-4 flex w-full cursor-pointer items-center justify-center gap-1 border-t border-zinc-800 pt-4 text-sm font-medium text-zinc-400 hover:text-zinc-200"
                           onClick={() => setShowMoreSettings(false)}
                         >
                           Ẩn bớt <span aria-hidden>▲</span>
@@ -1943,7 +1946,7 @@ export function UploadPage() {
                                   {' '}
                                   <button
                                     type="button"
-                                    className="font-semibold text-[#fe2c55] hover:underline"
+                                    className="cursor-pointer font-semibold text-[#fe2c55] hover:underline"
                                     onClick={() => setOriginalityDetailsOpen(true)}
                                   >
                                     Xem chi tiết
@@ -1960,7 +1963,7 @@ export function UploadPage() {
                   <div className="mt-6 flex flex-wrap items-center gap-3">
                     <button
                       type="button"
-                      className="rounded-lg bg-[#fe2c55] px-8 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#e62a4d] disabled:opacity-50"
+                      className="cursor-pointer rounded-lg bg-[#fe2c55] px-8 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#e62a4d] disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={() => void saveVideo()}
                       disabled={
                         busy ||

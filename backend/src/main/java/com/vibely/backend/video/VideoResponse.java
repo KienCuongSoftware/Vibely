@@ -28,6 +28,8 @@ public record VideoResponse(
     Integer sourceHeightPx,
     String processingError,
     boolean followedByViewer,
+    /** PUBLIC | FRIENDS | PRIVATE */
+    String privacy,
     /** Set when this Following-feed item is a repost by someone the viewer follows. */
     Long repostedByUserId,
     String repostedByUsername,
