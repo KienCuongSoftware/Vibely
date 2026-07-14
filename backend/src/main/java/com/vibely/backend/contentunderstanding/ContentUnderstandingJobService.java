@@ -20,29 +20,23 @@ import org.springframework.transaction.annotation.Transactional;
 public class ContentUnderstandingJobService {
 
     private final AnalysisJobRepository jobRepository;
-    private final VideoSemanticTagRepository videoSemanticTagRepository;
     private final SemanticTagRepository semanticTagRepository;
     private final SemanticTagAliasRepository aliasRepository;
-    private final ContentFeatureRepository contentFeatureRepository;
     private final ContentUnderstandingProperties properties;
     private final ObjectMapper objectMapper;
     private final JdbcTemplate jdbcTemplate;
 
     public ContentUnderstandingJobService(
         AnalysisJobRepository jobRepository,
-        VideoSemanticTagRepository videoSemanticTagRepository,
         SemanticTagRepository semanticTagRepository,
         SemanticTagAliasRepository aliasRepository,
-        ContentFeatureRepository contentFeatureRepository,
         ContentUnderstandingProperties properties,
         ObjectMapper objectMapper,
         JdbcTemplate jdbcTemplate
     ) {
         this.jobRepository = jobRepository;
-        this.videoSemanticTagRepository = videoSemanticTagRepository;
         this.semanticTagRepository = semanticTagRepository;
         this.aliasRepository = aliasRepository;
-        this.contentFeatureRepository = contentFeatureRepository;
         this.properties = properties;
         this.objectMapper = objectMapper;
         this.jdbcTemplate = jdbcTemplate;
@@ -111,8 +105,8 @@ public class ContentUnderstandingJobService {
         Video video = job.getVideo();
         Long videoId = video.getId();
 
-        videoSemanticTagRepository.deleteByVideoId(videoId);
-        videoSemanticTagRepository.flush();
+        // Prefer JDBC upsert: assigned @MapsId / composite IDs confuse Spring Data save→merge.
+        jdbcTemplate.update("DELETE FROM video_semantic_tags WHERE video_id = ?", videoId);
 
         List<CuCompleteRequest.TagItem> tags =
             request.getSemanticTags() == null ? List.of() : request.getSemanticTags();
@@ -126,29 +120,51 @@ public class ContentUnderstandingJobService {
                 continue;
             }
             float conf = clamp01(item.getConfidence() == null ? 0.5f : item.getConfidence());
-            VideoSemanticTagEntity row = new VideoSemanticTagEntity();
-            row.setVideoId(videoId);
-            row.setTagId(tag.getId());
-            row.setConfidence(conf);
-            row.setSource(blankTo(item.getSource(), "fusion"));
-            row.setModelVersion(blankTo(item.getModelVersion(), job.getModelBundleVersion()));
-            row.setReason(blankTo(item.getReason(), "phase1"));
-            row.setEvidence(toJson(item.getEvidence() == null ? Map.of() : item.getEvidence()));
-            videoSemanticTagRepository.save(row);
+            String evidenceJson = toJson(item.getEvidence() == null ? Map.of() : item.getEvidence());
+            jdbcTemplate.update(
+                """
+                    INSERT INTO video_semantic_tags
+                        (video_id, tag_id, confidence, source, model_version, reason, evidence, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, CAST(? AS jsonb), NOW(), NOW())
+                    ON CONFLICT (video_id, tag_id) DO UPDATE SET
+                        confidence = EXCLUDED.confidence,
+                        source = EXCLUDED.source,
+                        model_version = EXCLUDED.model_version,
+                        reason = EXCLUDED.reason,
+                        evidence = EXCLUDED.evidence,
+                        updated_at = NOW()
+                    """,
+                videoId,
+                tag.getId(),
+                conf,
+                blankTo(item.getSource(), "fusion"),
+                blankTo(item.getModelVersion(), job.getModelBundleVersion()),
+                blankTo(item.getReason(), "phase1"),
+                evidenceJson
+            );
             tagScores.merge(tag.getId(), conf, Math::max);
         }
 
-        ContentFeatureEntity features = contentFeatureRepository.findById(videoId).orElseGet(() -> {
-            ContentFeatureEntity created = new ContentFeatureEntity();
-            created.setVideo(video);
-            return created;
-        });
-        features.setVideo(video);
-        features.setFeatureVersion(blankTo(request.getFeatureVersion(), "cu-phase1"));
-        features.setContentSha256(request.getContentSha256());
-        features.setMetadata(toJson(request.getMetadataFeatures() == null ? Map.of() : request.getMetadataFeatures()));
-        features.setOcr(toJson(request.getOcrFeatures() == null ? Map.of() : request.getOcrFeatures()));
-        contentFeatureRepository.save(features);
+        String metadataJson = toJson(request.getMetadataFeatures() == null ? Map.of() : request.getMetadataFeatures());
+        String ocrJson = toJson(request.getOcrFeatures() == null ? Map.of() : request.getOcrFeatures());
+        jdbcTemplate.update(
+            """
+                INSERT INTO content_features
+                    (video_id, content_sha256, feature_version, metadata, ocr, updated_at)
+                VALUES (?, ?, ?, CAST(? AS jsonb), CAST(? AS jsonb), NOW())
+                ON CONFLICT (video_id) DO UPDATE SET
+                    content_sha256 = EXCLUDED.content_sha256,
+                    feature_version = EXCLUDED.feature_version,
+                    metadata = EXCLUDED.metadata,
+                    ocr = EXCLUDED.ocr,
+                    updated_at = NOW()
+                """,
+            videoId,
+            request.getContentSha256(),
+            blankTo(request.getFeatureVersion(), "cu-phase1"),
+            metadataJson,
+            ocrJson
+        );
 
         projectCategories(videoId, tagScores);
 
