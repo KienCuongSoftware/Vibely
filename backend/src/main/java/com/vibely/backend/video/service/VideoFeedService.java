@@ -35,6 +35,7 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -294,13 +295,30 @@ public class VideoFeedService {
         Pageable pageable = PageRequest.of(page, Math.min(size, 50));
         boolean isAuthor = viewer != null && Objects.equals(viewer.getId(), author.getId());
         boolean mutualFriends = !isAuthor && viewer != null && privacyAccessService.isMutualFriends(viewer, author);
-        Page<Video> resultPage = videoRepository.findProfileVideosVisibleToViewer(
-            author.getId(),
-            VideoStatus.READY,
-            isAuthor,
-            mutualFriends,
-            pageable
-        );
+        Page<Video> resultPage;
+        if (isAuthor) {
+            resultPage = videoRepository.findProfileVideosForAuthor(author.getId(), VideoStatus.READY, pageable);
+        } else if (mutualFriends) {
+            resultPage = videoRepository.findProfilePublicOrFriendsVideos(
+                author.getId(),
+                VideoStatus.READY,
+                pageable
+            );
+        } else {
+            // Anonymous + non-friends: PUBLIC only (never FRIENDS / PRIVATE).
+            resultPage = videoRepository.findProfilePublicVideos(
+                author.getId(),
+                VideoStatus.READY,
+                pageable
+            );
+        }
+        // Defense in depth: never return a row the privacy service would deny.
+        List<Video> visible = resultPage.getContent().stream()
+            .filter(v -> privacyAccessService.canViewerWatch(v, viewer))
+            .toList();
+        if (visible.size() != resultPage.getContent().size()) {
+            resultPage = new PageImpl<>(visible, pageable, visible.size());
+        }
         return responseMapper.toFeedPageResponse(resultPage, "profile-uploads");
     }
 

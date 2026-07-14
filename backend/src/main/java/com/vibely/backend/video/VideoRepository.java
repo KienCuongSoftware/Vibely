@@ -263,6 +263,48 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         Pageable pageable
     );
 
+    /** Profile grid for the author (all non-draft videos with matching status). */
+    default Page<Video> findProfileVideosForAuthor(Long authorId, VideoStatus status, Pageable pageable) {
+        return findByAuthorIdAndStatusEquals(authorId, status, pageable);
+    }
+
+    /** Public visitors / non-friends: only PUBLIC videos. */
+    @Query("""
+        select v from Video v
+        where v.author.id = :authorId
+          and v.status = :status
+          and v.studioDraft = false
+          and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
+        order by v.createdAt desc
+        """)
+    Page<Video> findProfilePublicVideos(
+        @Param("authorId") Long authorId,
+        @Param("status") VideoStatus status,
+        Pageable pageable
+    );
+
+    /** Mutual friends: PUBLIC + FRIENDS. */
+    @Query("""
+        select v from Video v
+        where v.author.id = :authorId
+          and v.status = :status
+          and v.studioDraft = false
+          and (
+            v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
+            or v.privacy = com.vibely.backend.video.VideoPrivacy.FRIENDS
+          )
+        order by v.createdAt desc
+        """)
+    Page<Video> findProfilePublicOrFriendsVideos(
+        @Param("authorId") Long authorId,
+        @Param("status") VideoStatus status,
+        Pageable pageable
+    );
+
+    /**
+     * @deprecated Prefer {@link #findProfilePublicVideos} / {@link #findProfilePublicOrFriendsVideos}.
+     * Kept for callers that still pass boolean flags.
+     */
     @Query("""
         select v from Video v
         where v.author.id = :authorId

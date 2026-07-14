@@ -209,6 +209,18 @@ function profilePrivacyIcon(privacy) {
   return null
 }
 
+/** Non-owners never see PRIVATE; anonymous never sees FRIENDS (owner sees all). */
+function isProfileVideoVisibleToViewer(video, { isOwnProfile, hasViewer }) {
+  if (isOwnProfile) return true
+  const key = String(video?.privacy || 'PUBLIC').toUpperCase()
+  if (key === 'PRIVATE' || key === 'ONLYYOU' || key === 'ONLY_YOU') return false
+  if (key === 'FRIENDS' && !hasViewer) return false
+  if (key === 'EVERYONE' || key === 'PUBLIC' || !key) return true
+  // FRIENDS for logged-in viewers: backend already filtered; keep if present.
+  if (key === 'FRIENDS') return Boolean(hasViewer)
+  return key === 'PUBLIC'
+}
+
 function ProfileGridVideoTile({
   video,
   profileUsername,
@@ -598,7 +610,14 @@ export function ProfilePage() {
           data = await apiClient.getVideosByUsername(profile.username, { page: 0, size: 48, token })
         }
         if (!cancelled) {
-          setProfileVideos(sortVideosNewestFirst(data?.items))
+          const rows = Array.isArray(data?.items) ? data.items : []
+          const visible = rows.filter((video) =>
+            isProfileVideoVisibleToViewer(video, {
+              isOwnProfile,
+              hasViewer: Boolean(token),
+            }),
+          )
+          setProfileVideos(sortVideosNewestFirst(visible))
         }
       } catch {
         if (!cancelled) setProfileVideos([])

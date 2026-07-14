@@ -1138,9 +1138,18 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
         const data =
           isOwnCreatorProfile && token
             ? await apiClient.getMyUploadedVideos(token, { page: 0, size: 48 })
-            : await apiClient.getVideosByUsername(slug, { page: 0, size: 48 })
+            : await apiClient.getVideosByUsername(slug, { page: 0, size: 48, token })
         if (cancelled) return
-        setCreatorQueue(sortVideosNewestFirst(data?.items))
+        const rows = Array.isArray(data?.items) ? data.items : []
+        const visible = isOwnCreatorProfile
+          ? rows
+          : rows.filter((video) => {
+              const key = String(video?.privacy || 'PUBLIC').toUpperCase()
+              if (key === 'PRIVATE' || key === 'ONLYYOU' || key === 'ONLY_YOU') return false
+              if (key === 'FRIENDS' && !token) return false
+              return true
+            })
+        setCreatorQueue(sortVideosNewestFirst(visible))
       } catch {
         if (!cancelled) setCreatorQueue([])
       } finally {
