@@ -41,6 +41,9 @@ services:
       RABBITMQ_URL: amqp://${RABBITMQ_USERNAME:-vibely}:${RABBITMQ_PASSWORD:-vibely}@rabbitmq:5672/%2F
       CU_QUEUE_ANALYZE: ${APP_CU_QUEUE_ANALYZE:-cu.analyze}
       CU_POLL_SECONDS: "3"
+      CU_FRAMES_ENABLED: ${CU_FRAMES_ENABLED:-true}
+      CU_OCR_ENABLED: ${CU_OCR_ENABLED:-true}
+      CU_FRAME_COUNT: ${CU_FRAME_COUNT:-8}
 
 volumes:
   rabbitmq_data:

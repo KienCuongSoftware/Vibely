@@ -78,4 +78,6 @@ Keep rule-based classifier as **cold fallback** when worker unavailable (parity 
 | Worker | `ai-workers/content-understanding` (metadata lexicon + poll/Rabbit) |
 | Compose | `deploy/vps/docker-compose.content-understanding.yml` |
 
-**Not yet:** real OCR/CLIP/Whisper, Qdrant CU collections, public REST analysis APIs, Explore UI consuming tags first.
+**Phase 1.1 landed (code):** frame sample (OpenCV) + RapidOCR (shared approach with originality) → `ocrFeatures` + lexicon boost; soft-fail if OCR/deps missing.
+
+**Not yet (Phase 2+):** Whisper, OpenCLIP/SigLIP, YOLO, Qdrant CU collections, public REST analysis APIs, Explore UI consuming tags first.
