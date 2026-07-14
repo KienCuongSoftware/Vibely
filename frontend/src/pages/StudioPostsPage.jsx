@@ -252,11 +252,11 @@ export function StudioPostsPage() {
           </div>
         ) : (
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[860px] border-collapse text-left text-sm text-zinc-200">
+            <table className="w-full min-w-[920px] border-collapse text-left text-sm text-zinc-200">
               <thead>
                 <tr className="border-b border-zinc-800 text-xs text-zinc-500">
-                  <th className="py-3 pr-4 font-medium">Bài đăng</th>
-                  <th className="w-[1%] whitespace-nowrap px-2 py-3 text-left font-medium">
+                  <th className="py-3 pr-3 font-medium">Bài đăng</th>
+                  <th className="whitespace-nowrap px-3 py-3 text-left font-medium">
                     Quyền riêng tư
                   </th>
                   <th className="w-[1%] whitespace-nowrap px-2 py-3 text-center font-medium">
@@ -301,7 +301,7 @@ export function StudioPostsPage() {
                       key={v.publicId}
                       className="border-b border-zinc-800/80"
                     >
-                      <td className="py-3 pr-4">
+                      <td className="max-w-xs py-3 pr-3 sm:max-w-sm lg:max-w-md">
                         <div className="flex items-center gap-3">
                           <Link
                             to={detailUrl}
@@ -324,7 +324,7 @@ export function StudioPostsPage() {
                               />
                             ) : null}
                           </Link>
-                          <div className="min-w-0 max-w-md overflow-hidden">
+                          <div className="min-w-0 overflow-hidden">
                             <Link
                               to={detailUrl}
                               className="line-clamp-2 cursor-pointer font-medium text-zinc-100 hover:text-white hover:underline"
@@ -338,12 +338,12 @@ export function StudioPostsPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-2 py-3 align-middle">
+                      <td className="whitespace-nowrap px-3 py-3 align-middle">
                         <button
                           type="button"
                           data-studio-privacy-trigger
                           disabled={busyPrivacy}
-                          className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900 px-2.5 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-60"
+                          className="inline-flex w-max shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg border border-zinc-700 bg-zinc-900 px-2.5 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-60"
                           title="Chỉnh quyền riêng tư"
                           aria-expanded={
                             privacyMenu?.video?.publicId === v.publicId
@@ -365,8 +365,8 @@ export function StudioPostsPage() {
                           }}
                         >
                           <PrivacyIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                          <span>{privacy.label}</span>
-                          <IoChevronDown className="h-3.5 w-3.5 text-zinc-500" aria-hidden />
+                          <span className="whitespace-nowrap">{privacy.label}</span>
+                          <IoChevronDown className="h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
                         </button>
                       </td>
                       <td className="px-2 py-3 text-center tabular-nums">
