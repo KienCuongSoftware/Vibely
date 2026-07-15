@@ -17,3 +17,11 @@ Canonical design: **[Intelligent Content Moderation TDD](../architecture/content
 | Compose | `deploy/vps/docker-compose.content-moderation.yml` |
 
 **Shadow by default:** `APP_MODERATION_APPLY_DECISIONS=false` persists reports without mutating `videos.status` / Explore. Set `true` to apply LIMIT/REVIEW/BLOCK levers.
+
+## Phase 2 Admin
+
+| Piece | Location |
+|-------|----------|
+| UI | `/admin/moderation` |
+| API | `GET/POST /api/admin/moderation/**` (`ROLE_ADMIN`) |
+| Human resolve | Always applies distribution levers (not shadow) |

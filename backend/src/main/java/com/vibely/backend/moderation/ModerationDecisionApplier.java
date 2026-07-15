@@ -27,6 +27,28 @@ public class ModerationDecisionApplier {
      */
     @Transactional
     public void apply(Video video, ModerationReportEntity report, ModerationDecision decision, boolean shadow) {
+        apply(video, report, decision, shadow, "SYSTEM");
+    }
+
+    /** Human moderator override always applies levers (never shadow). */
+    @Transactional
+    public void applyHuman(
+        Video video,
+        ModerationReportEntity report,
+        ModerationDecision decision,
+        String appliedBy
+    ) {
+        apply(video, report, decision, false, appliedBy == null || appliedBy.isBlank() ? "ADMIN" : appliedBy);
+    }
+
+    @Transactional
+    public void apply(
+        Video video,
+        ModerationReportEntity report,
+        ModerationDecision decision,
+        boolean shadow,
+        String appliedBy
+    ) {
         boolean exploreEligible;
         boolean reviewRequired;
         String statusApplied;
@@ -37,7 +59,10 @@ public class ModerationDecisionApplier {
                 exploreEligible = true;
                 reviewRequired = false;
                 statusApplied = VideoStatus.READY.name();
-                if (!shadow && video.getStatus() == VideoStatus.HIDDEN) {
+                if (!shadow
+                    && (video.getStatus() == VideoStatus.HIDDEN
+                        || video.getStatus() == VideoStatus.REMOVED
+                        || video.getStatus() == VideoStatus.REPORTED)) {
                     nextStatus = VideoStatus.READY;
                 }
             }
@@ -45,7 +70,11 @@ public class ModerationDecisionApplier {
                 exploreEligible = false;
                 reviewRequired = false;
                 statusApplied = VideoStatus.READY.name();
-                // Keep READY so direct/profile playback still works.
+                if (!shadow
+                    && (video.getStatus() == VideoStatus.HIDDEN
+                        || video.getStatus() == VideoStatus.REMOVED)) {
+                    nextStatus = VideoStatus.READY;
+                }
             }
             case REVIEW -> {
                 exploreEligible = false;
@@ -57,7 +86,7 @@ public class ModerationDecisionApplier {
             }
             case BLOCK, DELETE -> {
                 exploreEligible = false;
-                reviewRequired = decision == ModerationDecision.BLOCK;
+                reviewRequired = false;
                 statusApplied = VideoStatus.REMOVED.name();
                 if (!shadow) {
                     nextStatus = VideoStatus.REMOVED;
@@ -80,18 +109,11 @@ public class ModerationDecisionApplier {
         row.setReviewRequired(reviewRequired);
         row.setStatusApplied(statusApplied);
         row.setAppliedAt(LocalDateTime.now());
-        row.setAppliedBy("SYSTEM");
+        row.setAppliedBy(appliedBy == null || appliedBy.isBlank() ? "SYSTEM" : appliedBy);
         row.setShadow(shadow);
         decisionRepository.save(row);
 
         if (!shadow && nextStatus != null && video.getStatus() != nextStatus) {
-            // Do not flip away from REMOVED unless ALLOW explicitly restores (handled above for HIDDEN only).
-            if (video.getStatus() == VideoStatus.REMOVED && nextStatus != VideoStatus.READY) {
-                return;
-            }
-            if (video.getStatus() == VideoStatus.REMOVED && decision != ModerationDecision.ALLOW) {
-                return;
-            }
             video.setStatus(nextStatus);
             videoRepository.save(video);
         }

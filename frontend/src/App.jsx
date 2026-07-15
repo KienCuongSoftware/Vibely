@@ -39,6 +39,7 @@ const AdminBannedUsersPage = lazyNamed(() => import('./pages/AdminBannedUsersPag
 const AdminBanAppealsPage = lazyNamed(() => import('./pages/AdminBanAppealsPage.jsx'), 'AdminBanAppealsPage')
 const AdminPostsPage = lazyNamed(() => import('./pages/AdminPostsPage.jsx'), 'AdminPostsPage')
 const AdminPostDetailPage = lazyNamed(() => import('./pages/AdminPostDetailPage.jsx'), 'AdminPostDetailPage')
+const AdminModerationPage = lazyNamed(() => import('./pages/AdminModerationPage.jsx'), 'AdminModerationPage')
 
 function AuthenticatedHomeRedirect({ user }) {
   if (!user) return null
@@ -109,6 +110,7 @@ function App() {
           <Route path="/admin/users" element={<Navigate to="/login" replace />} />
           <Route path="/admin/posts" element={<Navigate to="/login" replace />} />
           <Route path="/admin/posts/:publicId" element={<Navigate to="/login" replace />} />
+          <Route path="/admin/moderation" element={<Navigate to="/login" replace />} />
           <Route path="/activity/:username/video/:publicId" element={<ActivityVideoWatchPage />} />
           <Route path="/:username/video/:publicId" element={<PublicVideoDetailPage />} />
           <Route path="/:username/:publicId" element={<ProfileWatchVideoRoutePage />} />
@@ -189,6 +191,14 @@ function App() {
           element={
             <AdminRoute user={user}>
               <AdminBanAppealsPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/moderation"
+          element={
+            <AdminRoute user={user}>
+              <AdminModerationPage />
             </AdminRoute>
           }
         />

@@ -307,6 +307,18 @@ export const apiClient = {
       token,
       body: payload,
     }),
+  getAdminModerationQueue: (token, { page = 0, size = 20, state } = {}) =>
+    request(`/api/admin/moderation/queue${toQuery({ page, size, state })}`, { token }),
+  getAdminModerationVideo: (token, publicId) =>
+    request(`/api/admin/moderation/videos/${encodeURIComponent(publicId)}`, { token }),
+  claimAdminModerationQueue: (token, queueId) =>
+    request(`/api/admin/moderation/queue/${queueId}/claim`, { method: "POST", token }),
+  resolveAdminModerationQueue: (token, queueId, payload) =>
+    request(`/api/admin/moderation/queue/${queueId}/resolve`, {
+      method: "POST",
+      token,
+      body: payload,
+    }),
   banAdminUser: (token, userId, payload) =>
     request(`/api/admin/users/${userId}/ban`, { method: "POST", token, body: payload }),
   unbanAdminUser: (token, userId) =>

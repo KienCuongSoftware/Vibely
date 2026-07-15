@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import {
   IoChatbubbleEllipsesOutline,
   IoPeopleOutline,
+  IoShieldCheckmarkOutline,
   IoShieldOutline,
   IoVideocamOutline,
 } from 'react-icons/io5'
@@ -19,6 +20,12 @@ const ADMIN_NAV_ITEMS = [
     to: '/admin/posts',
     label: 'Quản lý bài đăng',
     icon: IoVideocamOutline,
+  },
+  {
+    id: 'moderation',
+    to: '/admin/moderation',
+    label: 'Kiểm duyệt nội dung',
+    icon: IoShieldCheckmarkOutline,
   },
   {
     id: 'banned',

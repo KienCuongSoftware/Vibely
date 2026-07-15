@@ -5,7 +5,7 @@
 |-------|--------|
 | Document ID | VIBELY-TDD-ICM-2026-07 |
 | Version | 1.1 |
-| Status | **Phase 1 landed** — schema + Spring join/claim/complete + Python policy worker (shadow apply by default) |
+| Status | **Phase 1–2 landed** — policy worker + Admin review queue (claim / resolve / override) |
 | Audience | Engineering, Moderation / Trust & Safety, AI/ML, SRE, Product |
 | Related | CU ([content-understanding/00-INDEX.md](../content-understanding/00-INDEX.md)), Originality ([Vibely-Originality-Detection-TDD.md](../Vibely-Originality-Detection-TDD.md)), Explore ([docs/explore](../../explore/)) |
 
@@ -87,7 +87,7 @@ Phase 1 primary transport is **DB poll claim** (like originality). Rabbit outbox
 | Phase | Status | Ship |
 |-------|--------|------|
 | **1** | **Landed** | Flyway `V67`, Spring join/claim/complete, Python policy worker, Explore `explore_eligible` gate (non-shadow). Default shadow apply. |
-| **2** | Planned | Admin Moderator Dashboard + review queue claim / override |
+| **2** | **Landed** | Admin `/admin/moderation` queue + detail; REST claim/resolve; human override always applies levers |
 | **3** | Planned | Creator trust + appeal workflow + audit completeness |
 | **4** | Planned | Detector plugins on stored CU embeddings — never re-OCR |
 | **5+** | Sketch | Active learning / registry / drift / A/B — [04](./04-HITL-AND-LEARNING.md) |
