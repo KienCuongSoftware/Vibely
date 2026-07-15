@@ -259,7 +259,8 @@ export function UploadPage() {
       return {
         tone: 'warn',
         title: 'Kiểm tra nội dung',
-        detail: 'Không hoàn tất kiểm tra. Bạn vẫn có thể đăng; hệ thống sẽ rà soát lại sau.',
+        detail:
+          'Kiểm tra nguyên gốc chưa hoàn tất. Bạn có thể đăng; hệ thống vẫn kiểm duyệt an toàn trước khi hiện công khai.',
         showDetails: false,
       }
     }

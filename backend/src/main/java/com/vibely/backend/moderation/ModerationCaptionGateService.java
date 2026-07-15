@@ -33,20 +33,25 @@ public class ModerationCaptionGateService {
     /** Always-on patterns (independent of DB / V70 apply state). */
     private static final int RE_FLAGS = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
 
+    /**
+     * Compact fallbacks if DB lex not loaded yet. Full lists live in Flyway
+     * {@code lex.sexual_vi} / {@code lex.violence_vi} (V72–V74) and are loaded via JDBC.
+     */
     private static final List<Pattern> BUILTIN_SEVERE = List.of(
-        // follow for/of nudes, follow 4 nudes, etc.
-        Pattern.compile("\\bfollow\\s*(?:for|of|4)\\s*nudes?\\b", RE_FLAGS),
-        Pattern.compile("\\bfollow\\s+me\\s+for\\s+nudes?\\b", RE_FLAGS),
-        Pattern.compile("\\bnudes?\\s+for\\s+follow\\b", RE_FLAGS),
-        Pattern.compile("\\bfree\\s+nudes?\\b", RE_FLAGS),
-        Pattern.compile("\\blink\\s+in\\s+bio\\s+for\\s+nudes?\\b", RE_FLAGS),
-        Pattern.compile("\\bonly\\s*fans\\b", RE_FLAGS),
-        Pattern.compile("\\btelegram\\s*@\\w+", RE_FLAGS),
-        // Vietnamese sexual / genital (fallback if Flyway V72 not loaded yet)
-        Pattern.compile("đầu\\s*buồi|dau\\s*buoi", RE_FLAGS),
-        Pattern.compile("buồi|\\bbuoi\\b", RE_FLAGS),
-        Pattern.compile("cặc|\\bcak\\b", RE_FLAGS),
-        Pattern.compile("lồn|\\bloz\\b", RE_FLAGS)
+        Pattern.compile(
+            "follow\\s*(?:for|of|4)\\s*nudes?|free\\s*nudes?|send\\s*nudes|only\\s*fans|pornhub|"
+                + "\\bfuck(?:ing)?\\b|\\bcunt\\b|\\bpussy\\b|\\bdick\\b|\\bwhore\\b|\\bslut\\b|"
+                + "đầu\\s*buồi|dau\\s*buoi|buồi|\\bbuoi\\b|cặc|\\bcak\\b|lồn|\\bloz\\b|"
+                + "địt|đụ|chịch|đéo|con\\s*đĩ|đĩ\\b|điếm|bú\\s*cu|làm\\s*tình|ảnh\\s*nóng|clip\\s*sex",
+            RE_FLAGS
+        ),
+        Pattern.compile(
+            "giết\\s*người|giet\\s*nguoi|giết\\s*chết|ám\\s*sát|am\\s*sat|thảm\\s*sát|"
+                + "khủng\\s*bố|khung\\s*bo|đặt\\s*bom|xả\\s*súng|bắn\\s*chết|chém\\s*giết|"
+                + "hiếp\\s*dâm|cưỡng\\s*hiếp|\\bkill\\s+(you|people|him|her|them)\\b|"
+                + "school\\s*shooting|terror\\s*attack|\\bmurder\\b|\\bgore\\b|behead",
+            RE_FLAGS
+        )
     );
 
     private final ModerationProperties properties;

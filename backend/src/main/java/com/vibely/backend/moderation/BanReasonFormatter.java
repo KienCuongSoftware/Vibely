@@ -1,5 +1,7 @@
 package com.vibely.backend.moderation;
 
+import java.util.Locale;
+import java.util.regex.Pattern;
 import org.springframework.util.StringUtils;
 
 /**
@@ -7,15 +9,24 @@ import org.springframework.util.StringUtils;
  */
 public final class BanReasonFormatter {
 
+    private static final Pattern VIOLENCE_CUE = Pattern.compile(
+        "giết|giet|ám\\s*sát|am\\s*sat|thảm\\s*sát|khủng\\s*bố|khung\\s*bo|"
+            + "đặt\\s*bom|chém|đâm\\s*chết|bắn\\s*chết|\\bkill\\b|massacre|gore|behead",
+        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+    );
+
     private BanReasonFormatter() {
     }
 
     public static String forCaptionViolation(String title, String description) {
         String caption = cleanCaption(title, description);
+        String kind = looksViolent(caption)
+            ? "nội dung bạo lực"
+            : "ngôn từ tục tĩu / nội dung tình dục";
         if (StringUtils.hasText(caption)) {
-            return "ngôn từ tục tĩu / nội dung tình dục trong caption: \"" + caption + "\"";
+            return kind + " trong caption: \"" + caption + "\"";
         }
-        return "ngôn từ tục tĩu / nội dung tình dục trong caption hoặc mô tả video";
+        return kind + " trong caption hoặc mô tả video";
     }
 
     /** Soften historical rows that stored regex patterns as ban_reason. */
@@ -25,15 +36,18 @@ public final class BanReasonFormatter {
         }
         String trimmed = raw.trim();
         if (looksLikeRegexLeak(trimmed)) {
-            return "ngôn từ tục tĩu / nội dung tình dục trong caption hoặc mô tả video";
+            return "vi phạm chính sách cộng đồng trong caption hoặc mô tả video";
         }
-        // Drop leading "Vi phạm … :" boilerplate for cleaner UI copy.
-        String lower = trimmed.toLowerCase();
+        String lower = trimmed.toLowerCase(Locale.ROOT);
         if (lower.startsWith("vi phạm chính sách nội dung (caption")
             || lower.contains("caption spam")) {
-            return "ngôn từ tục tĩu / nội dung tình dục trong caption hoặc mô tả video";
+            return "vi phạm chính sách cộng đồng trong caption hoặc mô tả video";
         }
         return trimmed;
+    }
+
+    private static boolean looksViolent(String caption) {
+        return StringUtils.hasText(caption) && VIOLENCE_CUE.matcher(caption).find();
     }
 
     private static boolean looksLikeRegexLeak(String text) {
