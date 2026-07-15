@@ -1,6 +1,7 @@
 FROM python:3.11-slim-bookworm
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
     libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
@@ -18,7 +19,14 @@ ENV PYTHONUNBUFFERED=1 \
     CU_POLL_SECONDS=3 \
     CU_FRAMES_ENABLED=true \
     CU_OCR_ENABLED=true \
+    CU_CLIP_ENABLED=true \
+    CU_WHISPER_ENABLED=true \
+    CU_QDRANT_ENABLED=true \
     CU_FRAME_COUNT=8 \
-    CU_WORK_DIR=/tmp/cu-work
+    CU_WHISPER_MODEL=small \
+    CU_WHISPER_MAX_SECONDS=120 \
+    CU_COMPLETE_TIMEOUT=600 \
+    CU_WORK_DIR=/tmp/cu-work \
+    QDRANT_URL=http://host.docker.internal:6333
 
 CMD ["python", "-m", "app"]

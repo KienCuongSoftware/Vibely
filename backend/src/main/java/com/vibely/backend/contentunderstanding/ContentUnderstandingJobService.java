@@ -147,23 +147,32 @@ public class ContentUnderstandingJobService {
 
         String metadataJson = toJson(request.getMetadataFeatures() == null ? Map.of() : request.getMetadataFeatures());
         String ocrJson = toJson(request.getOcrFeatures() == null ? Map.of() : request.getOcrFeatures());
+        String visualJson = toJson(request.getVisualFeatures() == null ? Map.of() : request.getVisualFeatures());
+        String speechJson = toJson(request.getSpeechFeatures() == null ? Map.of() : request.getSpeechFeatures());
+        String audioJson = toJson(request.getAudioFeatures() == null ? Map.of() : request.getAudioFeatures());
         jdbcTemplate.update(
             """
                 INSERT INTO content_features
-                    (video_id, content_sha256, feature_version, metadata, ocr, updated_at)
-                VALUES (?, ?, ?, CAST(? AS jsonb), CAST(? AS jsonb), NOW())
+                    (video_id, content_sha256, feature_version, metadata, ocr, visual, speech, audio, updated_at)
+                VALUES (?, ?, ?, CAST(? AS jsonb), CAST(? AS jsonb), CAST(? AS jsonb), CAST(? AS jsonb), CAST(? AS jsonb), NOW())
                 ON CONFLICT (video_id) DO UPDATE SET
                     content_sha256 = EXCLUDED.content_sha256,
                     feature_version = EXCLUDED.feature_version,
                     metadata = EXCLUDED.metadata,
                     ocr = EXCLUDED.ocr,
+                    visual = EXCLUDED.visual,
+                    speech = EXCLUDED.speech,
+                    audio = EXCLUDED.audio,
                     updated_at = NOW()
                 """,
             videoId,
             request.getContentSha256(),
-            blankTo(request.getFeatureVersion(), "cu-phase1"),
+            blankTo(request.getFeatureVersion(), "cu-phase2"),
             metadataJson,
-            ocrJson
+            ocrJson,
+            visualJson,
+            speechJson,
+            audioJson
         );
 
         projectCategories(videoId, tagScores);

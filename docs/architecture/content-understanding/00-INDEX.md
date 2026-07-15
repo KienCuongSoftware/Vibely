@@ -78,6 +78,12 @@ Keep rule-based classifier as **cold fallback** when worker unavailable (parity 
 | Worker | `ai-workers/content-understanding` (metadata lexicon + poll/Rabbit) |
 | Compose | `deploy/vps/docker-compose.content-understanding.yml` |
 
-**Phase 1.1 landed (code):** frame sample (OpenCV) + RapidOCR (shared approach with originality) → `ocrFeatures` + lexicon boost; soft-fail if OCR/deps missing.
+**Phase 1.1 landed (code):** frame sample (OpenCV) + RapidOCR → `ocrFeatures` + lexicon boost.
 
-**Not yet (Phase 2+):** Whisper, OpenCLIP/SigLIP, YOLO, Qdrant CU collections, public REST analysis APIs, Explore UI consuming tags first.
+**Phase 2 landed (code, monolithic worker slice):**
+- OpenCLIP ViT-B-32 zero-shot visual tag priors + frame embeddings
+- faster-whisper Small ASR + speech lexicon
+- Qdrant collections `vibely_cu_frame`, `vibely_cu_video` (separate from originality)
+- Backend persists `visual` / `speech` / `audio` JSON on `content_features`
+
+**Not yet (Phase 2+):** YOLO, scene segmentation, multi-queue Rabbit stages, public REST analysis APIs, Rec/Related wired to CU vectors.

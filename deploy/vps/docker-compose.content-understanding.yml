@@ -43,7 +43,12 @@ services:
       CU_POLL_SECONDS: "3"
       CU_FRAMES_ENABLED: ${CU_FRAMES_ENABLED:-true}
       CU_OCR_ENABLED: ${CU_OCR_ENABLED:-true}
+      CU_CLIP_ENABLED: ${CU_CLIP_ENABLED:-true}
+      CU_WHISPER_ENABLED: ${CU_WHISPER_ENABLED:-true}
+      CU_QDRANT_ENABLED: ${CU_QDRANT_ENABLED:-true}
       CU_FRAME_COUNT: ${CU_FRAME_COUNT:-8}
+      QDRANT_URL: ${QDRANT_URL:-http://host.docker.internal:6333}
+      CU_COMPLETE_TIMEOUT: "600"
 
 volumes:
   rabbitmq_data:
