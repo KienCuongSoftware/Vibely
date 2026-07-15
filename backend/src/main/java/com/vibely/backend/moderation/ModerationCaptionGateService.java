@@ -16,9 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
 /**
@@ -59,63 +56,75 @@ public class ModerationCaptionGateService {
     private final ObjectMapper objectMapper;
     private final ModerationAutoBanService autoBanService;
     private final AdminAccountBanEmailService accountBanEmailService;
-    private final TransactionTemplate requiresNewTx;
 
     public ModerationCaptionGateService(
         ModerationProperties properties,
         JdbcTemplate jdbcTemplate,
         ObjectMapper objectMapper,
         ModerationAutoBanService autoBanService,
-        AdminAccountBanEmailService accountBanEmailService,
-        PlatformTransactionManager transactionManager
+        AdminAccountBanEmailService accountBanEmailService
     ) {
         this.properties = properties;
         this.jdbcTemplate = jdbcTemplate;
         this.objectMapper = objectMapper;
         this.autoBanService = autoBanService;
         this.accountBanEmailService = accountBanEmailService;
-        this.requiresNewTx = new TransactionTemplate(transactionManager);
-        this.requiresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
     /**
-     * Call before making a video public. Severe caption → ban (nested tx) + ACCOUNT_BANNED.
+     * Call before making a video public. Severe caption → ban (own tx) + ACCOUNT_BANNED.
      * Always runs for severe builtins (not gated by {@code vibely.moderation.enabled} / apply-decisions).
      */
     public void assertPublishAllowed(Video video, String title, String description) {
         if (video == null) {
             return;
         }
+        Long authorId = video.getAuthor() == null ? null : video.getAuthor().getId();
+        String authorEmail = video.getAuthor() == null ? null : video.getAuthor().getEmail();
+        long videoId = video.getId() == null ? 0L : video.getId();
+        assertPublishAllowed(authorId, authorEmail, videoId, title, description);
+    }
+
+    /**
+     * Prefer this overload when calling outside a write transaction (detached author ids).
+     */
+    public void assertPublishAllowed(
+        Long authorId,
+        String authorEmail,
+        long videoId,
+        String title,
+        String description
+    ) {
         String hit = firstSevereHit(title, description);
         if (hit == null) {
             return;
         }
-        Long authorId = video.getAuthor() == null ? null : video.getAuthor().getId();
-        String authorEmail = video.getAuthor() == null ? null : video.getAuthor().getEmail();
-        long videoId = video.getId() == null ? 0L : video.getId();
         // User/admin-facing reason — never store regex patterns in ban_reason.
         String reason = BanReasonFormatter.forCaptionViolation(title, description);
         log.warn("Caption gate blocked videoId={} authorId={} hit={}", videoId, authorId, hit);
 
         if (properties.isAutoBanOnBlock() && authorId != null) {
-            requiresNewTx.executeWithoutResult(status -> {
-                AdminBannedUserInfo info = autoBanService.banAuthorForModeration(
-                    authorId,
-                    videoId,
-                    ModerationDecision.BLOCK,
-                    reason
-                );
-                if (info != null) {
+            AdminBannedUserInfo info = autoBanService.banAuthorForModeration(
+                authorId,
+                videoId,
+                ModerationDecision.BLOCK,
+                reason
+            );
+            // Email after ban tx commits — never roll back the ban if SMTP fails.
+            if (info != null) {
+                try {
                     accountBanEmailService.sendAccountBanned(info);
+                } catch (Exception ex) {
+                    log.warn("Ban email failed after caption gate: {}", ex.getMessage());
                 }
-            });
+            }
         }
         // 403 ACCOUNT_BANNED → frontend clears session + login ban modal
         if (StringUtils.hasText(authorEmail)) {
             throw new AccountBannedException(authorEmail, reason);
         }
         throw new BadRequestException(
-            "Caption/mô tả vi phạm chính sách cộng đồng (spam / nội dung tình dục). "
+            "Caption/mô tả vi phạm chính sách cộng đồng (spam / nội dung tình dục / bạo lực). "
                 + "Bài đăng bị từ chối."
         );
     }

@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -89,10 +90,12 @@ public class ModerationAutoBanService {
 
     /**
      * Bans the author, revokes all refresh tokens, and soft-removes public videos.
+     * Runs in {@code REQUIRES_NEW} so a caption-gate ban commits even when the outer
+     * publish/update transaction rolls back afterward.
      *
      * @return banned user info for email notification, or null if skipped
      */
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public AdminBannedUserInfo banAuthorForModeration(
         Long authorId,
         long videoId,

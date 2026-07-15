@@ -147,7 +147,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleUnknown(Exception ex) {
+    public ResponseEntity<?> handleUnknown(Exception ex) {
+        AccountBannedException banned = findCause(ex, AccountBannedException.class);
+        if (banned != null) {
+            return handleAccountBanned(banned);
+        }
         log.error("Unhandled exception", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ApiResponse.failure(ApiError.of(
@@ -155,6 +159,17 @@ public class GlobalExceptionHandler {
                 "INTERNAL_SERVER_ERROR",
                 "Lỗi hệ thống, vui lòng thử lại sau"
             )));
+    }
+
+    private static <T extends Throwable> T findCause(Throwable ex, Class<T> type) {
+        Throwable cur = ex;
+        while (cur != null) {
+            if (type.isInstance(cur)) {
+                return type.cast(cur);
+            }
+            cur = cur.getCause();
+        }
+        return null;
     }
 
     private String maskEmail(String email) {

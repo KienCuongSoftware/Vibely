@@ -26,7 +26,9 @@ import java.util.Objects;
 import java.util.UUID;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 public class VideoCommandService {
@@ -46,6 +48,7 @@ public class VideoCommandService {
     private final ModerationCaptionGateService captionGateService;
     private final ModerationJoinService moderationJoinService;
     private final ModerationPublicationHoldService publicationHoldService;
+    private final TransactionTemplate tx;
 
     public VideoCommandService(
         VideoRepository videoRepository,
@@ -62,7 +65,8 @@ public class VideoCommandService {
         ObjectProvider<S3MediaDeletionService> s3MediaDeletionService,
         ModerationCaptionGateService captionGateService,
         ModerationJoinService moderationJoinService,
-        ModerationPublicationHoldService publicationHoldService
+        ModerationPublicationHoldService publicationHoldService,
+        PlatformTransactionManager transactionManager
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
@@ -79,9 +83,9 @@ public class VideoCommandService {
         this.captionGateService = captionGateService;
         this.moderationJoinService = moderationJoinService;
         this.publicationHoldService = publicationHoldService;
+        this.tx = new TransactionTemplate(transactionManager);
     }
 
-    @Transactional
     public VideoResponse createVideo(String email, VideoCreateRequest request) {
         User author = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
@@ -107,13 +111,31 @@ public class VideoCommandService {
         }
         // Default draft when omitted — only explicit studioDraft=false publishes into lists.
         boolean draft = !Boolean.FALSE.equals(request.getStudioDraft());
+        // Caption gate BEFORE write TX so ACCOUNT_BANNED is not swallowed by rollback wrapping.
+        if (!draft) {
+            captionGateService.assertPublishAllowed(
+                author.getId(),
+                author.getEmail(),
+                0L,
+                request.getTitle(),
+                request.getDescription()
+            );
+        }
+        return tx.execute(status -> persistNewVideo(author, request, draft, durationSeconds));
+    }
+
+    private VideoResponse persistNewVideo(
+        User author,
+        VideoCreateRequest request,
+        boolean draft,
+        int durationSeconds
+    ) {
+        User managedAuthor = userRepository.findById(author.getId())
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
         Video video = new Video();
-        video.setAuthor(author);
+        video.setAuthor(managedAuthor);
         video.setTitle(request.getTitle());
         video.setDescription(request.getDescription());
-        if (!draft) {
-            captionGateService.assertPublishAllowed(video, request.getTitle(), request.getDescription());
-        }
         video.setVideoUrl(request.getVideoUrl());
         video.setThumbnailUrl(request.getThumbnailUrl());
         video.setDurationSeconds(durationSeconds);
@@ -124,7 +146,7 @@ public class VideoCommandService {
         video.setAudioUrl(audioUrl);
         String audioTitle = VideoMediaUtils.normalizeText(request.getAudioTitle());
         if (audioTitle == null) {
-            audioTitle = "âm thanh gốc - " + VideoMediaUtils.resolveAuthorDisplayName(author);
+            audioTitle = "âm thanh gốc - " + VideoMediaUtils.resolveAuthorDisplayName(managedAuthor);
         }
         video.setAudioTitle(audioTitle);
         video.setStatus(VideoStatus.RAW);
@@ -156,28 +178,64 @@ public class VideoCommandService {
         }
     }
 
-    @Transactional
     public VideoResponse updateVideo(String email, UUID publicId, VideoUpdateRequest request) {
         return updateVideo(email, queryService.getVideoByPublicIdOrThrow(publicId).getId(), request);
     }
 
-    @Transactional
     public VideoResponse updateVideo(String email, Long videoId, VideoUpdateRequest request) {
+        String nextTitle = request.getTitle().trim();
+        String nextDesc = request.getDescription();
+        nextDesc = nextDesc == null || nextDesc.isBlank() ? null : nextDesc.trim();
+
+        UpdateGateProbe probe = tx.execute(status -> {
+            User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            Video video = queryService.getVideoOrThrow(videoId);
+            if (!Objects.equals(video.getAuthor().getId(), user.getId())) {
+                throw new BadRequestException("Bạn không có quyền sửa video này.");
+            }
+            if (video.getStatus() == VideoStatus.REMOVED) {
+                throw new BadRequestException("Video đã bị gỡ, không thể sửa.");
+            }
+            return new UpdateGateProbe(
+                video.getId(),
+                video.getAuthor().getId(),
+                video.getAuthor().getEmail(),
+                video.isStudioDraft()
+            );
+        });
+
+        // Outside write TX — ban commits; client receives clean ACCOUNT_BANNED (403).
+        captionGateService.assertPublishAllowed(
+            probe.authorId(),
+            probe.authorEmail(),
+            probe.videoId(),
+            nextTitle,
+            nextDesc
+        );
+
+        final String title = nextTitle;
+        final String desc = nextDesc;
+        return tx.execute(status -> applyVideoUpdate(email, probe, request, title, desc));
+    }
+
+    private VideoResponse applyVideoUpdate(
+        String email,
+        UpdateGateProbe probe,
+        VideoUpdateRequest request,
+        String nextTitle,
+        String nextDesc
+    ) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
-        Video video = queryService.getVideoOrThrow(videoId);
+        Video video = queryService.getVideoOrThrow(probe.videoId());
         if (!Objects.equals(video.getAuthor().getId(), user.getId())) {
             throw new BadRequestException("Bạn không có quyền sửa video này.");
         }
         if (video.getStatus() == VideoStatus.REMOVED) {
             throw new BadRequestException("Video đã bị gỡ, không thể sửa.");
         }
-        boolean wasDraft = video.isStudioDraft();
-        String nextTitle = request.getTitle().trim();
-        String nextDesc = request.getDescription();
-        nextDesc = nextDesc == null || nextDesc.isBlank() ? null : nextDesc.trim();
-        // Block severe spam/sexual captions before the post can hit For You.
-        captionGateService.assertPublishAllowed(video, nextTitle, nextDesc);
+        boolean wasDraft = probe.wasDraft();
         video.setTitle(nextTitle);
         video.setDescription(nextDesc);
         if (request.getThumbnailUrl() != null) {
@@ -205,6 +263,9 @@ public class VideoCommandService {
         publicationHoldService.holdIfPendingModeration(saved);
         moderationJoinService.tryEnqueue(saved.getId(), false);
         return responseMapper.toResponse(saved);
+    }
+
+    private record UpdateGateProbe(long videoId, Long authorId, String authorEmail, boolean wasDraft) {
     }
 
     private static VideoPrivacy resolvePrivacy(String raw) {
