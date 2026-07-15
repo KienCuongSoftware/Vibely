@@ -36,4 +36,6 @@ public interface SearchVideoProjection {
     Boolean getDescriptionMatch();
 
     Boolean getHashtagMatch();
+
+    Boolean getSemanticTagMatch();
 }

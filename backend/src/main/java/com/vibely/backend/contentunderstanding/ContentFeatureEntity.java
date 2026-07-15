@@ -150,4 +150,12 @@ public class ContentFeatureEntity implements Persistable<Long> {
     public void setOcr(String ocr) {
         this.ocr = ocr;
     }
+
+    public String getFeatureVersion() {
+        return featureVersion;
+    }
+
+    public String getContentSha256() {
+        return contentSha256;
+    }
 }

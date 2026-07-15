@@ -15,6 +15,10 @@ public class ContentUnderstandingProperties {
     private String routingKeyAnalyze = "cu.analyze.requested";
     private String queueAnalyze = "cu.analyze";
     private long outboxPublishIntervalMs = 5000;
+    private boolean qdrantEnabled = true;
+    private String qdrantUrl = "http://127.0.0.1:6333";
+    private String qdrantVideoCollection = "vibely_cu_video";
+    private int qdrantTopK = 32;
     private final Recovery recovery = new Recovery();
 
     public boolean isEnabled() {
@@ -95,6 +99,38 @@ public class ContentUnderstandingProperties {
 
     public void setOutboxPublishIntervalMs(long outboxPublishIntervalMs) {
         this.outboxPublishIntervalMs = outboxPublishIntervalMs;
+    }
+
+    public boolean isQdrantEnabled() {
+        return qdrantEnabled;
+    }
+
+    public void setQdrantEnabled(boolean qdrantEnabled) {
+        this.qdrantEnabled = qdrantEnabled;
+    }
+
+    public String getQdrantUrl() {
+        return qdrantUrl;
+    }
+
+    public void setQdrantUrl(String qdrantUrl) {
+        this.qdrantUrl = qdrantUrl;
+    }
+
+    public String getQdrantVideoCollection() {
+        return qdrantVideoCollection;
+    }
+
+    public void setQdrantVideoCollection(String qdrantVideoCollection) {
+        this.qdrantVideoCollection = qdrantVideoCollection;
+    }
+
+    public int getQdrantTopK() {
+        return qdrantTopK;
+    }
+
+    public void setQdrantTopK(int qdrantTopK) {
+        this.qdrantTopK = qdrantTopK;
     }
 
     public Recovery getRecovery() {

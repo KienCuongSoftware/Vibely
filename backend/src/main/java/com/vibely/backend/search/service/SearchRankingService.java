@@ -56,13 +56,14 @@ public class SearchRankingService {
         double titleScore = fieldTextScore(q, row.getTitle());
         double descriptionScore = fieldTextScore(q, row.getDescription()) * 0.65;
         double hashtagScore = Boolean.TRUE.equals(row.getHashtagMatch()) ? CONTAINS_SCORE * 0.9 : 0;
+        double semanticTagScore = Boolean.TRUE.equals(row.getSemanticTagMatch()) ? CONTAINS_SCORE * 1.05 : 0;
         if (Boolean.TRUE.equals(row.getTitleMatch()) && titleScore < CONTAINS_SCORE) {
             titleScore = CONTAINS_SCORE;
         }
         if (Boolean.TRUE.equals(row.getDescriptionMatch()) && descriptionScore < CONTAINS_SCORE * 0.65) {
             descriptionScore = CONTAINS_SCORE * 0.65;
         }
-        return Math.max(titleScore, Math.max(descriptionScore, hashtagScore));
+        return Math.max(titleScore, Math.max(descriptionScore, Math.max(hashtagScore, semanticTagScore)));
     }
 
     public Comparator<SearchUserProjection> userComparator(String query) {

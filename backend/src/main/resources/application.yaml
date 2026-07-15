@@ -115,6 +115,10 @@ app:
     routing-key-analyze: ${APP_CU_ROUTING_ANALYZE:cu.analyze.requested}
     queue-analyze: ${APP_CU_QUEUE_ANALYZE:cu.analyze}
     outbox-publish-interval-ms: ${APP_CU_OUTBOX_INTERVAL_MS:5000}
+    qdrant-enabled: ${APP_CU_QDRANT_ENABLED:true}
+    qdrant-url: ${APP_CU_QDRANT_URL:${QDRANT_URL:http://127.0.0.1:6333}}
+    qdrant-video-collection: ${APP_CU_QDRANT_VIDEO_COLLECTION:vibely_cu_video}
+    qdrant-top-k: ${APP_CU_QDRANT_TOP_K:32}
     recovery:
       enabled: ${APP_CU_RECOVERY_ENABLED:true}
       interval-ms: ${APP_CU_RECOVERY_INTERVAL_MS:60000}
@@ -129,6 +133,7 @@ app:
     async-indexing: ${DISCOVERY_ASYNC_INDEXING:true}
     hybrid-explore: ${DISCOVERY_HYBRID_EXPLORE:true}
     hybrid-related: ${DISCOVERY_HYBRID_RELATED:true}
+    cu-related-enabled: ${DISCOVERY_CU_RELATED_ENABLED:true}
     hybrid-search: ${DISCOVERY_HYBRID_SEARCH:true}
     embedding-similarity-weight: ${DISCOVERY_EMBEDDING_WEIGHT:0.70}
     topic-similarity-weight: ${DISCOVERY_TOPIC_WEIGHT:0.30}

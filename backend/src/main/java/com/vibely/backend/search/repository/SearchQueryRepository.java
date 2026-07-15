@@ -46,7 +46,12 @@ public interface SearchQueryRepository extends JpaRepository<User, Long> {
                    coalesce(lc.like_count, 0) as likeCount,
                    (lower(coalesce(v.title, '')) like concat('%', lower(:q), '%')) as titleMatch,
                    (lower(coalesce(v.description, '')) like concat('%', lower(:q), '%')) as descriptionMatch,
-                   (max(case when lower(coalesce(h.tag, '')) like concat('%', lower(:q), '%') then 1 else 0 end) = 1) as hashtagMatch
+                   (max(case when lower(coalesce(h.tag, '')) like concat('%', lower(:q), '%') then 1 else 0 end) = 1) as hashtagMatch,
+                   (max(case
+                        when lower(coalesce(st.slug, '')) like concat('%', lower(:q), '%') then 1
+                        when lower(coalesce(sta.alias, '')) like concat('%', lower(:q), '%') then 1
+                        else 0
+                    end) = 1) as semanticTagMatch
             from videos v
             join users u on u.id = v.author_id
             left join video_engagement_stats ves on ves.video_id = v.id
@@ -57,11 +62,17 @@ public interface SearchQueryRepository extends JpaRepository<User, Long> {
             ) lc on lc.video_id = v.id
             left join video_hashtags vh on vh.video_id = v.id
             left join hashtags h on h.id = vh.hashtag_id
+            left join video_semantic_tags vst on vst.video_id = v.id
+            left join semantic_tags st on st.id = vst.tag_id
+            left join semantic_tag_aliases sta on sta.tag_id = st.id
             where v.status = 'READY'
+              and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
               and (
                 lower(coalesce(v.title, '')) like concat('%', lower(:q), '%')
                 or lower(coalesce(v.description, '')) like concat('%', lower(:q), '%')
                 or lower(coalesce(h.tag, '')) like concat('%', lower(:q), '%')
+                or lower(coalesce(st.slug, '')) like concat('%', lower(:q), '%')
+                or lower(coalesce(sta.alias, '')) like concat('%', lower(:q), '%')
               )
             group by v.id, v.public_id, v.title, v.description, v.thumbnail_url, v.video_url,
                      v.master_playlist_url, v.created_at, u.id, u.username, u.display_name,

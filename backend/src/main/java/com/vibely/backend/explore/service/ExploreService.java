@@ -145,7 +145,7 @@ public class ExploreService {
 
     @Transactional(readOnly = true)
     public ExplorePageDto related(String publicId, int size) {
-        return cachedPage("related:" + publicId, () -> {
+        return cachedPage("related:v4:" + publicId, () -> {
             var hybrid = relatedVideoDiscoveryService.related(java.util.UUID.fromString(publicId), capSize(size) + 1);
             if (!hybrid.isEmpty()) {
                 return toPage(hybrid, capSize(size));

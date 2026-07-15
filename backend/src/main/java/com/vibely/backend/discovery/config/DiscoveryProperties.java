@@ -16,6 +16,7 @@ public class DiscoveryProperties {
     private boolean asyncIndexing = true;
     private boolean hybridExplore = true;
     private boolean hybridRelated = true;
+    private boolean cuRelatedEnabled = true;
     private boolean hybridSearch = true;
     private double hashtagWeightCap = 0.25;
     private double embeddingSimilarityWeight = 0.70;
@@ -116,6 +117,14 @@ public class DiscoveryProperties {
 
     public void setHybridRelated(boolean hybridRelated) {
         this.hybridRelated = hybridRelated;
+    }
+
+    public boolean isCuRelatedEnabled() {
+        return cuRelatedEnabled;
+    }
+
+    public void setCuRelatedEnabled(boolean cuRelatedEnabled) {
+        this.cuRelatedEnabled = cuRelatedEnabled;
     }
 
     public boolean isHybridSearch() {
