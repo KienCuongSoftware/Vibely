@@ -107,4 +107,6 @@ Keep rule-based classifier as **cold fallback** when worker unavailable (parity 
 - NL semantic search polish: `GET /api/search/semantic` (+ Search results matched-tag chips)
 - Studio video analytics: `topSemanticTags` on analytics payload
 
-**Not yet (Phase 6+):** Neo4j/`knowledge_edges`, learned fusion MLP, full knowledge-graph consumers.
+**Vocabulary expansion (post Phase 5):** closed lexicon grown to **~347 semantic tags** + **~1100 aliases** (Flyway `V64`, worker `vocab_catalog.py`). Still closed-vocabulary — new niches require extending the catalog (script: `ai-workers/content-understanding/scripts/build_vocab.py`), not free-form open tagging.
+
+**Not yet (Phase 6+):** Neo4j/`knowledge_edges`, learned fusion MLP, open-vocabulary / LLM tag generation, full knowledge-graph consumers.

@@ -4,9 +4,9 @@
 
 | Stage | Tech | Output |
 |-------|------|--------|
-| Metadata | hashtag/keyword lexicon | semantic tags |
+| Metadata | hashtag/keyword lexicon (**~347 tags**, `vocab_catalog.py`) | semantic tags |
 | OCR | RapidOCR on sampled frames | `ocrFeatures`, OCR tags |
-| Visual | OpenCLIP ViT-B-32 zero-shot | `visualFeatures`, visual tags |
+| Visual | OpenCLIP ViT-B-32 zero-shot (same tag catalog) | `visualFeatures`, visual tags |
 | Objects | YOLOv8n lite | `objectFeatures`, object tags |
 | Scene | YOLO indoor/outdoor heuristic | `sceneFeatures`, scene tags |
 | Speech | faster-whisper Small | `speechFeatures`, speech tags |
@@ -14,6 +14,17 @@
 | Vectors | Qdrant `vibely_cu_frame` + `vibely_cu_video` | related-video foundation (`video_id` point id) |
 
 Modality failures are **soft-fail** — job still completes with metadata at minimum.
+
+## Vocabulary
+
+Closed vocabulary lives in `app/vocab_catalog.py` (generated).
+
+```bash
+# After editing scripts/build_vocab.py
+python ai-workers/content-understanding/scripts/build_vocab.py
+```
+
+That regenerates the catalog + Flyway `V64__cu_vocab_expansion.sql` (tags, aliases, category mappings). CU still **does not invent** free-form tags outside this catalog.
 
 ## Env (Phase 2.1)
 

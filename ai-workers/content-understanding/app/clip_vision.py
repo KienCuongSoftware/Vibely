@@ -9,35 +9,14 @@ from typing import Any
 import numpy as np
 from PIL import Image
 
+from .vocab_catalog import CLIP_TAG_PROMPTS
+
 LOG = logging.getLogger("content_understanding.clip")
 
 _CLIP = None
 _PREPROCESS = None
 _MODEL_ID = None
 _TEXT_EMBEDDINGS: dict[str, np.ndarray] | None = None
-
-# slug -> English prompts (zero-shot priors)
-CLIP_TAG_PROMPTS: dict[str, tuple[str, ...]] = {
-    "anime": ("anime illustration", "anime character art", "japanese animation wallpaper"),
-    "manga": ("manga comic art", "manga drawing"),
-    "music": ("music video", "person singing", "musical performance"),
-    "horror": ("horror scene", "scary dark atmosphere", "creepy image"),
-    "gaming": ("video game gameplay", "gaming screen", "esports match"),
-    "food": ("vietnamese food", "street food dish", "cooking food"),
-    "travel": ("travel scenery", "beach landscape", "city travel vlog"),
-    "comedy": ("funny meme", "comedy sketch"),
-    "education": ("coding tutorial screen", "classroom lecture", "whiteboard explanation"),
-    "night": ("night city lights", "dark night scene"),
-    "sad": ("sad emotional scene", "melancholy mood"),
-    "lofi": ("lofi aesthetic room", "chill study aesthetic"),
-    "cat": ("a photo of a cat", "cute cat"),
-    "dog": ("a photo of a dog", "cute dog"),
-    "rain": ("rainy weather", "rain on window"),
-    "city": ("city skyline", "urban street"),
-    "girl": ("young woman portrait", "girl selfie"),
-    "boy": ("young man portrait", "boy selfie"),
-    "coding": ("programmer at computer", "code on screen"),
-}
 
 
 def _load_clip():

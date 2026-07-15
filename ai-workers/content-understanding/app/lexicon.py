@@ -6,38 +6,39 @@ import re
 import unicodedata
 from typing import Any
 
+from .vocab_catalog import LEXICON
+
 HASHTAG_RE = re.compile(
     r"[#＃＠@]?([0-9A-Za-z_\u00C0-\u024F\u1E00-\u1EFF\u3040-\u30FF\u3400-\u9FFF]+)",
     re.UNICODE,
 )
 
-LEXICON: dict[str, tuple[str, ...]] = {
-    "anime": ("anime", "manga", "waifu", "naruto", "onepiece", "アニメ", "アニメーション"),
-    "music": ("music", "lyrics", "song", "lofi", "amnhac", "nhac", "音楽", "nhạc"),
-    "horror": ("horror", "ghost", "kinhdi", "creepy", "ホラー", "truyenma"),
-    "gaming": ("gaming", "game", "valorant", "minecraft", "lol", "esports"),
-    "food": ("food", "amthuc", "pho", "bun", "an uong", "đồ ăn"),
-    "travel": ("travel", "dulich", "dalat", "beach", "mountain", "du lịch"),
-    "comedy": ("comedy", "funny", "haihuoc", "meme", "hài"),
-    "education": ("education", "hoc", "tutorial", "coding", "java", "spring", "học"),
-    "night": ("night", "dem", "midnight", "đêm"),
-    "sad": ("sad", "buon", "buồn"),
-    "lofi": ("lofi", "chill"),
-    "lyrics": ("lyrics", "loi bai hat", "lời bài hát"),
-    "coding": ("coding", "laptrinh", "docker", "postgresql", "lập trình"),
-    "cat": ("cat", "meo", "mèo"),
-    "dog": ("dog", "cho", "chó"),
-    "rain": ("rain", "mua", "mưa"),
-    "city": ("city", "thanh pho", "saigon", "hanoi", "thành phố"),
-    "girl": ("girl", "con gai", "cô gái"),
-    "boy": ("boy", "con trai", "chàng trai"),
-    "manga": ("manga", "comic", "manhwa"),
-}
-
 
 def strip_accents(text: str) -> str:
     normalized = unicodedata.normalize("NFD", text)
     return "".join(ch for ch in normalized if unicodedata.category(ch) != "Mn").lower()
+
+
+def _keyword_hit(keyword: str, blob_raw: str, blob_norm: str) -> bool:
+    """Prefer word-boundary / phrase match to avoid 'boxing'∈'unboxing' false hits."""
+    kw_raw = keyword.strip()
+    if not kw_raw:
+        return False
+    kw_norm = strip_accents(kw_raw)
+    # Multi-word phrase: require contiguous phrase in normalized blob.
+    if " " in kw_norm or "-" in kw_norm:
+        return kw_norm in blob_norm or kw_raw.lower() in blob_raw.lower()
+    # Single token: word boundary (digits/letters). Length-1/2 still constrained.
+    if len(kw_norm) <= 2:
+        return False
+    pattern = rf"(?<![0-9a-z_]){re.escape(kw_norm)}(?![0-9a-z_])"
+    if re.search(pattern, blob_norm, flags=re.IGNORECASE):
+        return True
+    # Fallback on raw (accents) with same boundary idea for non-ascii tokens
+    if any(ord(ch) > 127 for ch in kw_raw):
+        pattern_raw = rf"(?<!\w){re.escape(kw_raw)}(?!\w)"
+        return bool(re.search(pattern_raw, blob_raw, flags=re.IGNORECASE))
+    return False
 
 
 def match_lexicon(
@@ -52,7 +53,7 @@ def match_lexicon(
     matched: list[str] = []
 
     for slug, keywords in LEXICON.items():
-        hits = [kw for kw in keywords if kw in blob_norm or kw in blob_raw]
+        hits = [kw for kw in keywords if _keyword_hit(kw, blob_raw, blob_norm)]
         if not hits:
             continue
         conf = min(0.95, 0.55 + 0.08 * len(hits))
@@ -74,7 +75,8 @@ def match_lexicon(
         key = strip_accents(raw)
         raw_key = raw.strip()
         for slug, keywords in LEXICON.items():
-            if key == slug or key in keywords or raw_key in keywords or raw_key == slug:
+            kw_norms = {strip_accents(k) for k in keywords}
+            if key == slug or key in kw_norms or raw_key.lower() == slug or raw_key in keywords:
                 if slug in matched:
                     for t in tags:
                         if t["slug"] == slug:
