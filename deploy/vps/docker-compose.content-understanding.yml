@@ -45,8 +45,10 @@ services:
       CU_OCR_ENABLED: ${CU_OCR_ENABLED:-true}
       CU_CLIP_ENABLED: ${CU_CLIP_ENABLED:-true}
       CU_WHISPER_ENABLED: ${CU_WHISPER_ENABLED:-true}
+      CU_YOLO_ENABLED: ${CU_YOLO_ENABLED:-true}
       CU_QDRANT_ENABLED: ${CU_QDRANT_ENABLED:-true}
       CU_FRAME_COUNT: ${CU_FRAME_COUNT:-8}
+      CU_YOLO_WEIGHTS: ${CU_YOLO_WEIGHTS:-yolov8n.pt}
       # Prefer Docker DNS name when worker joins originality/qdrant network.
       # host.docker.internal:6333 fails if Qdrant binds only 127.0.0.1.
       QDRANT_URL: ${QDRANT_URL:-http://qdrant:6333}

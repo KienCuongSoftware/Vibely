@@ -83,11 +83,14 @@ Keep rule-based classifier as **cold fallback** when worker unavailable (parity 
 **Phase 2 landed (code, monolithic worker slice):**
 - OpenCLIP ViT-B-32 zero-shot visual tag priors + frame embeddings
 - faster-whisper Small ASR + speech lexicon
+- YOLOv8n lite → `objectFeatures` + object tags; indoor/outdoor scene heuristic → `scene`
+- Late weighted evidential fusion (`fusion.py`) — metadata contrib capped
 - Qdrant collections `vibely_cu_frame`, `vibely_cu_video` (separate from originality)
-- Backend persists `visual` / `speech` / `audio` JSON on `content_features`
+- Backend persists `visual` / `speech` / `audio` / `object_features` / `scene` on `content_features`
 
 **Phase 3 landed (code):**
 - Topic engine: `SemanticTopicProjectionService` → `video_topics` on CU complete (`source=cu_tags`)
+- Category projection → `video_categories` (Explore-visible score ≥ 1.0) + `video_category_scores` (`source=cu_tags`)
 - Admin APIs under `/api/admin/content-understanding/**` (mapping CRUD, backfill/reanalyze/jobs) — no dedicated Admin UI page
 
-**Not yet (Phase 4+):** YOLO/scene, Related-by-embedding, explainable dashboard, public analysis REST, Rec wire-up.
+**Not yet (Phase 4+):** Related-by-embedding, explainable dashboard, public analysis REST, Rec/Search wire-up, temporal scene segments, learned fusion MLP.

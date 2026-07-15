@@ -156,11 +156,15 @@ public class ContentUnderstandingJobService {
         String visualJson = toJson(request.getVisualFeatures() == null ? Map.of() : request.getVisualFeatures());
         String speechJson = toJson(request.getSpeechFeatures() == null ? Map.of() : request.getSpeechFeatures());
         String audioJson = toJson(request.getAudioFeatures() == null ? Map.of() : request.getAudioFeatures());
+        String objectJson = toJson(request.getObjectFeatures() == null ? Map.of() : request.getObjectFeatures());
+        String sceneJson = toJson(request.getSceneFeatures() == null ? Map.of() : request.getSceneFeatures());
         jdbcTemplate.update(
             """
                 INSERT INTO content_features
-                    (video_id, content_sha256, feature_version, metadata, ocr, visual, speech, audio, updated_at)
-                VALUES (?, ?, ?, CAST(? AS jsonb), CAST(? AS jsonb), CAST(? AS jsonb), CAST(? AS jsonb), CAST(? AS jsonb), NOW())
+                    (video_id, content_sha256, feature_version, metadata, ocr, visual, speech, audio,
+                     object_features, scene, updated_at)
+                VALUES (?, ?, ?, CAST(? AS jsonb), CAST(? AS jsonb), CAST(? AS jsonb), CAST(? AS jsonb),
+                        CAST(? AS jsonb), CAST(? AS jsonb), CAST(? AS jsonb), NOW())
                 ON CONFLICT (video_id) DO UPDATE SET
                     content_sha256 = EXCLUDED.content_sha256,
                     feature_version = EXCLUDED.feature_version,
@@ -169,16 +173,20 @@ public class ContentUnderstandingJobService {
                     visual = EXCLUDED.visual,
                     speech = EXCLUDED.speech,
                     audio = EXCLUDED.audio,
+                    object_features = EXCLUDED.object_features,
+                    scene = EXCLUDED.scene,
                     updated_at = NOW()
                 """,
             videoId,
             request.getContentSha256(),
-            blankTo(request.getFeatureVersion(), "cu-phase2"),
+            blankTo(request.getFeatureVersion(), "cu-phase2.1"),
             metadataJson,
             ocrJson,
             visualJson,
             speechJson,
-            audioJson
+            audioJson,
+            objectJson,
+            sceneJson
         );
 
         projectCategories(videoId, tagScores);
@@ -251,9 +259,13 @@ public class ContentUnderstandingJobService {
             categoryScores.merge(categoryId, weight * conf, Double::sum);
         }
         for (Map.Entry<Long, Double> e : categoryScores.entrySet()) {
-            if (e.getValue() < 0.5) {
+            double raw = e.getValue();
+            if (raw < 0.5) {
                 continue;
             }
+            // Explore hybrid: video_categories needs score >= 1.0; discovery scores use >= 0.35
+            double categoryTableScore = Math.max(1.0, Math.min(2.0, raw * 1.5));
+            double discoveryScore = Math.min(1.0, raw);
             jdbcTemplate.update(
                 """
                     INSERT INTO video_categories (video_id, category_id, score, created_at)
@@ -263,7 +275,21 @@ public class ContentUnderstandingJobService {
                     """,
                 videoId,
                 e.getKey(),
-                e.getValue()
+                categoryTableScore
+            );
+            jdbcTemplate.update(
+                """
+                    INSERT INTO video_category_scores
+                        (video_id, category_id, score, source, created_at, updated_at)
+                    VALUES (?, ?, ?, 'cu_tags', NOW(), NOW())
+                    ON CONFLICT (video_id, category_id) DO UPDATE SET
+                        score = GREATEST(video_category_scores.score, EXCLUDED.score),
+                        source = EXCLUDED.source,
+                        updated_at = NOW()
+                    """,
+                videoId,
+                e.getKey(),
+                discoveryScore
             );
         }
     }

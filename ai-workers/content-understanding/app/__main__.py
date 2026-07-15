@@ -128,11 +128,12 @@ def main() -> None:
     rabbit_enabled = os.environ.get("CU_RABBITMQ_ENABLED", "false").lower() in {"1", "true", "yes"}
     poll_seconds = float(os.environ.get("CU_POLL_SECONDS", "3"))
     LOG.info(
-        "CU worker phase2 api=%s rabbit=%s clip=%s whisper=%s qdrant=%s",
+        "CU worker phase2.1 api=%s rabbit=%s clip=%s whisper=%s yolo=%s qdrant=%s",
         base,
         rabbit_enabled,
         os.environ.get("CU_CLIP_ENABLED", "true"),
         os.environ.get("CU_WHISPER_ENABLED", "true"),
+        os.environ.get("CU_YOLO_ENABLED", "true"),
         os.environ.get("CU_QDRANT_ENABLED", "true"),
     )
     if rabbit_enabled:

@@ -1,4 +1,4 @@
-"""Unified CU analysis pipeline — Phase 1.1 + Phase 2 (CLIP / Whisper / Qdrant)."""
+"""Unified CU analysis pipeline — Phase 2 complete (CLIP / Whisper / YOLO / fusion / Qdrant)."""
 
 from __future__ import annotations
 
@@ -13,9 +13,11 @@ from .asr import transcribe_video
 from .clip_vision import analyze_visual, mean_pool
 from .download import download_video
 from .frames import sample_frames
-from .lexicon import match_lexicon, merge_tags, strip_accents
+from .fusion import fuse_tags
+from .lexicon import match_lexicon, strip_accents
 from .ocr import run_ocr_on_frames
 from .qdrant_cu import CuVectorStore
+from .yolo_detect import analyze_objects
 
 LOG = logging.getLogger("content_understanding.pipeline")
 
@@ -50,15 +52,19 @@ def analyze(claim: dict[str, Any]) -> dict[str, Any]:
     visual_features: dict[str, Any] = {"note": "skipped"}
     speech_features: dict[str, Any] = {"note": "skipped"}
     audio_features: dict[str, Any] = {"note": "skipped"}
+    object_features: dict[str, Any] = {"note": "skipped"}
+    scene_features: dict[str, Any] = {"note": "skipped"}
     ocr_tags: list[dict[str, Any]] = []
     visual_tags: list[dict[str, Any]] = []
     speech_tags: list[dict[str, Any]] = []
+    object_tags: list[dict[str, Any]] = []
+    scene_tags: list[dict[str, Any]] = []
     qdrant_info: dict[str, Any] = {"note": "skipped"}
     content_sha256: str | None = None
     metrics: dict[str, Any] = {"stage": "metadata_only"}
 
     if not video_url:
-        tags = merge_tags(meta["metadataTags"])
+        tags = fuse_tags(meta["metadataTags"])
         return _build_payload(
             claim,
             tags,
@@ -67,13 +73,15 @@ def analyze(claim: dict[str, Any]) -> dict[str, Any]:
             visual_features,
             speech_features,
             audio_features,
+            object_features,
+            scene_features,
             content_sha256,
             metrics,
             qdrant_info,
         )
 
     if os.environ.get("CU_FRAMES_ENABLED", "true").lower() not in {"1", "true", "yes"}:
-        tags = merge_tags(meta["metadataTags"])
+        tags = fuse_tags(meta["metadataTags"])
         metrics = {"stage": "metadata", "framesDisabled": True}
         return _build_payload(
             claim,
@@ -83,6 +91,8 @@ def analyze(claim: dict[str, Any]) -> dict[str, Any]:
             visual_features,
             speech_features,
             audio_features,
+            object_features,
+            scene_features,
             content_sha256,
             metrics,
             qdrant_info,
@@ -134,6 +144,15 @@ def analyze(claim: dict[str, Any]) -> dict[str, Any]:
         frame_vectors = visual.get("frameVectors")
         video_mean = mean_pool(frame_vectors) if frame_vectors is not None else None
 
+        # Phase 2 — YOLO lite
+        yolo = analyze_objects(frames)
+        object_tags = yolo.get("objectTags") or []
+        scene_tags = yolo.get("sceneTags") or []
+        object_features = yolo.get("objectFeatures") or {"note": "empty"}
+        scene_features = yolo.get("sceneFeatures") or {"note": "empty"}
+        if "sceneTags" in scene_features:
+            scene_features = {k: v for k, v in scene_features.items() if k != "sceneTags"}
+
         # Phase 2 — Whisper ASR
         asr = transcribe_video(video_path, job_dir)
         speech_tags = asr.get("speechTags") or []
@@ -143,7 +162,14 @@ def analyze(claim: dict[str, Any]) -> dict[str, Any]:
             "hasTranscript": bool((speech_features.get("transcript") or "").strip()),
         }
 
-        tags = merge_tags(meta["metadataTags"], ocr_tags, visual_tags, speech_tags)
+        tags = fuse_tags(
+            meta["metadataTags"],
+            ocr_tags,
+            visual_tags,
+            speech_tags,
+            object_tags,
+            scene_tags,
+        )
 
         # Phase 2 — Qdrant embeddings
         if frame_vectors is not None and frame_vectors.size > 0 and video_mean is not None:
@@ -164,12 +190,16 @@ def analyze(claim: dict[str, Any]) -> dict[str, Any]:
             "ocrTextCount": len(ocr_features.get("texts") or []),
             "visualTagCount": len(visual_tags),
             "speechTagCount": len(speech_tags),
+            "objectTagCount": len(object_tags),
+            "sceneTagCount": len(scene_tags),
             "tagCount": len(tags),
+            "fusion": "late_weighted_v1",
             "qdrantFramePoints": qdrant_info.get("framePoints", 0),
+            "yoloModel": yolo.get("modelId"),
         }
     except Exception as exc:  # noqa: BLE001
         LOG.exception("Pipeline failed videoId=%s", claim.get("videoId"))
-        tags = merge_tags(meta["metadataTags"])
+        tags = fuse_tags(meta["metadataTags"])
         ocr_features = {"texts": [], "note": f"pipeline error: {exc}"[:500]}
         metrics = {"stage": "pipeline_error", "error": str(exc)[:200]}
     finally:
@@ -183,6 +213,8 @@ def analyze(claim: dict[str, Any]) -> dict[str, Any]:
         visual_features,
         speech_features,
         audio_features,
+        object_features,
+        scene_features,
         content_sha256,
         metrics,
         qdrant_info,
@@ -197,6 +229,8 @@ def _build_payload(
     visual_features: dict[str, Any],
     speech_features: dict[str, Any],
     audio_features: dict[str, Any],
+    object_features: dict[str, Any],
+    scene_features: dict[str, Any],
     content_sha256: str | None,
     metrics: dict[str, Any],
     qdrant_info: dict[str, Any],
@@ -210,7 +244,9 @@ def _build_payload(
         "visualFeatures": visual_features,
         "speechFeatures": speech_features,
         "audioFeatures": audio_features,
+        "objectFeatures": object_features,
+        "sceneFeatures": scene_features,
         "contentSha256": content_sha256,
-        "featureVersion": "cu-phase2",
+        "featureVersion": "cu-phase2.1",
         "metrics": metrics,
     }

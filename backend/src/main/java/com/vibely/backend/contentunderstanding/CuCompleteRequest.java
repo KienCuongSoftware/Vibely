@@ -17,6 +17,8 @@ public class CuCompleteRequest {
     private Map<String, Object> visualFeatures;
     private Map<String, Object> speechFeatures;
     private Map<String, Object> audioFeatures;
+    private Map<String, Object> objectFeatures;
+    private Map<String, Object> sceneFeatures;
     private Map<String, Object> metrics;
     private String featureVersion;
     private String contentSha256;
@@ -67,6 +69,22 @@ public class CuCompleteRequest {
 
     public void setAudioFeatures(Map<String, Object> audioFeatures) {
         this.audioFeatures = audioFeatures;
+    }
+
+    public Map<String, Object> getObjectFeatures() {
+        return objectFeatures;
+    }
+
+    public void setObjectFeatures(Map<String, Object> objectFeatures) {
+        this.objectFeatures = objectFeatures;
+    }
+
+    public Map<String, Object> getSceneFeatures() {
+        return sceneFeatures;
+    }
+
+    public void setSceneFeatures(Map<String, Object> sceneFeatures) {
+        this.sceneFeatures = sceneFeatures;
     }
 
     public Map<String, Object> getMetrics() {

@@ -97,18 +97,7 @@ def match_lexicon(
 
 
 def merge_tags(*groups: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    by_slug: dict[str, dict[str, Any]] = {}
-    for group in groups:
-        for item in group:
-            slug = item["slug"]
-            if slug not in by_slug:
-                by_slug[slug] = dict(item)
-                continue
-            cur = by_slug[slug]
-            cur["confidence"] = round(max(float(cur["confidence"]), float(item["confidence"])), 3)
-            cur["reason"] = f"{cur['reason']}; {item['reason']}"
-            sources = {cur.get("source"), item.get("source")}
-            sources.discard(None)
-            if len(sources) > 1:
-                cur["source"] = "fusion"
-    return list(by_slug.values())
+    """Backward-compatible entrypoint — delegates to late weighted fusion."""
+    from .fusion import fuse_tags
+
+    return fuse_tags(*groups)
