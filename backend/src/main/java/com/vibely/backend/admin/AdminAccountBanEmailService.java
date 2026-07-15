@@ -97,7 +97,7 @@ public class AdminAccountBanEmailService {
         return """
             Xin chào %s,
 
-            Tài khoản Vibely @%s của bạn đã bị cấm bởi quản trị viên.
+            Tài khoản Vibely @%s của bạn đã bị cấm.
 
             Lý do:
             %s
@@ -115,7 +115,7 @@ public class AdminAccountBanEmailService {
             <tr>
               <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
                 <p style="margin:0 0 16px;">Xin chào <strong>%s</strong>,</p>
-                <p style="margin:0 0 16px;">Tài khoản Vibely <strong>@%s</strong> của bạn đã bị cấm bởi quản trị viên.</p>
+                <p style="margin:0 0 16px;">Tài khoản Vibely <strong>@%s</strong> của bạn đã bị cấm.</p>
                 <p style="margin:0 0 8px;"><strong>Lý do:</strong></p>
                 <p style="margin:0 0 18px;white-space:pre-wrap;background:#f7f7f8;border-radius:10px;padding:16px 18px;color:#4b5563;">%s</p>
                 <p style="margin:0 0 16px;">Bạn sẽ không thể đăng nhập hoặc sử dụng Vibely cho đến khi tài khoản được gỡ cấm.</p>

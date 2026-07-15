@@ -463,8 +463,12 @@ export function ProfilePage() {
         normalizeUsername(user.username) === normalizeUsername(profile.username)))
   const isFollowingProfile = Boolean(profile?.followedByViewer)
   const isFollowRequestPending = Boolean(profile?.followRequestPending)
+  const isBannedProfile = String(profile?.accountStatus ?? '').toUpperCase() === 'BANNED'
   const isPrivateProfileLocked =
-    Boolean(profile?.privateAccount) && !isOwnProfile && !isFollowingProfile
+    !isBannedProfile &&
+    Boolean(profile?.privateAccount) &&
+    !isOwnProfile &&
+    !isFollowingProfile
 
   const followButtonLabel = followBusy
     ? 'Đang lưu...'
@@ -594,7 +598,7 @@ export function ProfilePage() {
     if (username && !publicProfile) {
       return undefined
     }
-    if (isPrivateProfileLocked) {
+    if (isBannedProfile || isPrivateProfileLocked) {
       setProfileVideos([])
       setProfileVideosLoading(false)
       return undefined
@@ -628,7 +632,17 @@ export function ProfilePage() {
     return () => {
       cancelled = true
     }
-  }, [authReady, profileMainTab, profile?.username, username, publicProfile, isOwnProfile, token, isPrivateProfileLocked])
+  }, [
+    authReady,
+    profileMainTab,
+    profile?.username,
+    username,
+    publicProfile,
+    isOwnProfile,
+    token,
+    isBannedProfile,
+    isPrivateProfileLocked,
+  ])
 
   useEffect(() => {
     if (!token || !isOwnProfile) {
@@ -1545,7 +1559,14 @@ export function ProfilePage() {
 
             {profileMainTab === 'videos' ? (
               <div className="min-h-[320px] px-2 py-4 sm:px-4 sm:py-5">
-                {isPrivateProfileLocked ? (
+                {isBannedProfile ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <p className="text-xl font-bold text-zinc-100 sm:text-2xl">Tài khoản đã bị cấm</p>
+                    <p className="mt-2 max-w-md text-sm text-zinc-400 sm:text-base">
+                      Tài khoản {profile?.username || 'này'} không còn có sẵn nữa
+                    </p>
+                  </div>
+                ) : isPrivateProfileLocked ? (
                   <PrivateProfileLockedState />
                 ) : isPublicProfileLoading || (profileVideosLoading && profileVideos.length === 0) ? (
                   <p className="py-10 text-center text-sm text-zinc-500">Đang tải video…</p>

@@ -287,6 +287,9 @@ public class VideoFeedService {
         String normalized = usernameService.normalize(rawUsername);
         User author = userRepository.findByUsername(normalized)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        if (author.isBanned()) {
+            throw new NotFoundException("Tài khoản đã bị cấm và không còn khả dụng");
+        }
         User viewer = resolveViewer(authentication);
         if (!profileVisibilityService.canViewProfileContent(author, viewer)) {
             int cappedSize = Math.min(size, 50);

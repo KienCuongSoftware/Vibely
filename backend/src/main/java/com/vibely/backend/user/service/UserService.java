@@ -63,6 +63,9 @@ public class UserService {
 
     public PublicUserProfileResponse getPublicProfile(String username, Authentication authentication) {
         User user = getUserByUsername(username);
+        if (user.isBanned()) {
+            return toBannedPublicProfile(user);
+        }
         return toPublicProfile(user, authentication);
     }
 
@@ -144,6 +147,30 @@ public class UserService {
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
     }
 
+    private PublicUserProfileResponse toBannedPublicProfile(User user) {
+        long uid = user.getId();
+        long followingCount = followRepository.countByFollower_Id(uid);
+        long followerCount = followRepository.countByFollowing_Id(uid);
+        long totalLikeCount = likeRepository.countByVideo_Author_IdAndVideo_Status(uid, VideoStatus.READY);
+        long totalViewCount = videoViewRepository.countByVideo_Author_IdAndVideo_Status(uid, VideoStatus.READY);
+        return new PublicUserProfileResponse(
+            user.getId(),
+            user.getUsername(),
+            user.getDisplayName(),
+            "",
+            userAvatarResolver.resolve(user),
+            followingCount,
+            followerCount,
+            totalLikeCount,
+            totalViewCount,
+            false,
+            false,
+            false,
+            false,
+            "BANNED"
+        );
+    }
+
     private PublicUserProfileResponse toPublicProfile(User user, Authentication authentication) {
         long uid = user.getId();
         long followingCount = followRepository.countByFollower_Id(uid);
@@ -172,7 +199,8 @@ public class UserService {
             user.isPrivateAccount(),
             contentVisible,
             followedByViewer,
-            followRequestPending
+            followRequestPending,
+            "ACTIVE"
         );
     }
 

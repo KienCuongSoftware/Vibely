@@ -1,3 +1,4 @@
+import { emitAccountBanned } from "../auth/accountBanBridge.js";
 import { isCookieSession } from "../auth/session.js";
 import { buildApiUrl } from "../config/apiBase.js";
 
@@ -96,6 +97,9 @@ async function request(path, { method = "GET", body, token, headers: extraHeader
     if (captchaRequired && (response.status === 428 || code === "CAPTCHA_REQUIRED")) {
       err.captchaRequired = captchaRequired;
     }
+    if (code === "ACCOUNT_BANNED") {
+      emitAccountBanned(errorData ?? {});
+    }
     throw err;
   }
 
@@ -108,7 +112,13 @@ async function request(path, { method = "GET", body, token, headers: extraHeader
     if (!payload.success) {
       const code = payload?.error?.code;
       const fallbackMessage = payload?.error?.message ?? "Yêu cầu thất bại";
-      throw new Error(localizeError(code, fallbackMessage, response.status));
+      const err = new Error(localizeError(code, fallbackMessage, response.status));
+      if (code) err.code = code;
+      if (payload?.data) err.data = payload.data;
+      if (code === "ACCOUNT_BANNED") {
+        emitAccountBanned(payload?.data ?? {});
+      }
+      throw err;
     }
     return payload.data;
   }

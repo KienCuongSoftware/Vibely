@@ -1,6 +1,8 @@
 import React from "react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiClient } from "../api/client";
+import { onAccountBanned } from "../auth/accountBanBridge.js";
 import { COOKIE_SESSION_MARKER } from "../auth/session.js";
 import { isPendingOAuthBrowserCallback } from "../auth/oauthCallback.js";
 import { collectLoginContext } from "../security/loginContext.js";
@@ -114,6 +116,7 @@ function persistSessionUser(result) {
 }
 
 export function AuthProvider({ children }) {
+  const navigate = useNavigate();
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
@@ -121,6 +124,17 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     clearLegacyTokenStorage();
   }, []);
+
+  useEffect(() => {
+    return onAccountBanned(() => {
+      apiClient.logout().catch(() => {});
+      localStorage.removeItem(USER_CACHE_KEY);
+      setToken(null);
+      setUser(null);
+      setAuthReady(true);
+      navigate("/login", { replace: true });
+    });
+  }, [navigate]);
 
   const establishSession = (result) => {
     const mapped = mapAuthSessionToUser(result);

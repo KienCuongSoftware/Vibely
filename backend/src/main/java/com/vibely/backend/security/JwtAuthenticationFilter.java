@@ -56,6 +56,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
                 if (!userDetails.isEnabled()) {
+                    // Banned / deactivated: drop cookies so clients lose session immediately.
+                    authCookieService.clearSessionCookies(response);
                     filterChain.doFilter(request, response);
                     return;
                 }

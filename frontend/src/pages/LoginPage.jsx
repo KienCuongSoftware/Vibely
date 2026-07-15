@@ -13,6 +13,7 @@ import {
   IoEyeOutline,
 } from "react-icons/io5";
 
+import { consumePendingAccountBanned } from "../auth/accountBanBridge.js";
 import { resolveBackendOrigin } from "../config/apiBase.js";
 import { normalizeLastLoginMethod } from "../auth/lastLoginMethod.js";
 import {
@@ -399,6 +400,14 @@ export function LoginPage() {
   const openBannedModal = (payload = {}) => {
     applyBannedState(payload);
   };
+
+  useEffect(() => {
+    const pending = consumePendingAccountBanned();
+    if (pending) {
+      openBannedModal(pending);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- show mid-session ban modal once on mount
+  }, []);
 
   const closeBannedModal = () => {
     setBannedOpen(false);

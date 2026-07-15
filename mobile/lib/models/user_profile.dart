@@ -10,6 +10,7 @@ class UserProfile {
     required this.totalLikeCount,
     required this.totalViewCount,
     required this.followedByViewer,
+    this.accountStatus = 'ACTIVE',
   });
 
   final int id;
@@ -22,6 +23,9 @@ class UserProfile {
   final int totalLikeCount;
   final int totalViewCount;
   final bool followedByViewer;
+  final String accountStatus;
+
+  bool get isBanned => accountStatus.toUpperCase() == 'BANNED';
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
@@ -35,6 +39,7 @@ class UserProfile {
       totalLikeCount: _profileInt(json['totalLikeCount']),
       totalViewCount: _profileInt(json['totalViewCount']),
       followedByViewer: json['followedByViewer'] == true,
+      accountStatus: json['accountStatus']?.toString() ?? 'ACTIVE',
     );
   }
 }

@@ -13,6 +13,8 @@ public record PublicUserProfileResponse(
     boolean privateAccount,
     boolean contentVisible,
     boolean followedByViewer,
-    boolean followRequestPending
+    boolean followRequestPending,
+    /** ACTIVE | BANNED — public shell profiles use BANNED to drive TikTok-like empty state. */
+    String accountStatus
 ) {
 }

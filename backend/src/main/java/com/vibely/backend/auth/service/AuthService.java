@@ -296,6 +296,7 @@ public class AuthService {
     public MeResponse getMe(String email) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        ensureActive(user);
         return new MeResponse(
             user.getId(),
             user.getUsername(),

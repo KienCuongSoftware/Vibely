@@ -86,18 +86,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
         token: token,
       );
 
-      final page = isOwn
-          ? await _profileApi.getMyVideos(token: token, size: 48)
-          : await _profileApi.getVideosByUsername(
-              username: username,
-              token: token,
-              size: 48,
-            );
+      final page = profile.isBanned
+          ? null
+          : isOwn
+              ? await _profileApi.getMyVideos(token: token, size: 48)
+              : await _profileApi.getVideosByUsername(
+                  username: username,
+                  token: token,
+                  size: 48,
+                );
 
       if (!mounted) return;
       setState(() {
         _profile = profile;
-        _videos = page.items;
+        _videos = page?.items ?? const [];
         _isOwnProfile = isOwn;
         _loading = false;
       });
@@ -362,12 +364,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           if (_videos.isEmpty)
-            const SliverFillRemaining(
+            SliverFillRemaining(
               hasScrollBody: false,
               child: Center(
-                child: Text(
-                  'Chưa có video',
-                  style: TextStyle(color: Colors.white54),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _profile?.isBanned == true
+                            ? 'Tài khoản đã bị cấm'
+                            : 'Chưa có video',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (_profile?.isBanned == true) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Tài khoản ${_profile!.username} không còn có sẵn nữa',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
             )
