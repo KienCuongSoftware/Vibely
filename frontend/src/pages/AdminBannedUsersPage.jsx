@@ -43,7 +43,7 @@ function formatBanReasonDisplay(raw) {
     text.includes('(?:') ||
     /caption spam/i.test(text)
   ) {
-    return 'Spam / nội dung tình dục trong caption hoặc mô tả video'
+    return 'ngôn từ tục tĩu / nội dung tình dục trong caption hoặc mô tả video'
   }
   return text
 }

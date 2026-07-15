@@ -13,9 +13,9 @@ public final class BanReasonFormatter {
     public static String forCaptionViolation(String title, String description) {
         String caption = cleanCaption(title, description);
         if (StringUtils.hasText(caption)) {
-            return "Spam / nội dung tình dục trong caption: \"" + caption + "\"";
+            return "ngôn từ tục tĩu / nội dung tình dục trong caption: \"" + caption + "\"";
         }
-        return "Spam / nội dung tình dục trong caption hoặc mô tả video";
+        return "ngôn từ tục tĩu / nội dung tình dục trong caption hoặc mô tả video";
     }
 
     /** Soften historical rows that stored regex patterns as ban_reason. */
@@ -25,12 +25,13 @@ public final class BanReasonFormatter {
         }
         String trimmed = raw.trim();
         if (looksLikeRegexLeak(trimmed)) {
-            return "Spam / nội dung tình dục trong caption hoặc mô tả video";
+            return "ngôn từ tục tĩu / nội dung tình dục trong caption hoặc mô tả video";
         }
         // Drop leading "Vi phạm … :" boilerplate for cleaner UI copy.
         String lower = trimmed.toLowerCase();
-        if (lower.startsWith("vi phạm chính sách nội dung (caption")) {
-            return "Spam / nội dung tình dục trong caption hoặc mô tả video";
+        if (lower.startsWith("vi phạm chính sách nội dung (caption")
+            || lower.contains("caption spam")) {
+            return "ngôn từ tục tĩu / nội dung tình dục trong caption hoặc mô tả video";
         }
         return trimmed;
     }

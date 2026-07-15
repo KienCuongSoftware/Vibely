@@ -31,15 +31,22 @@ public class ModerationCaptionGateService {
     private static final Logger log = LoggerFactory.getLogger(ModerationCaptionGateService.class);
 
     /** Always-on patterns (independent of DB / V70 apply state). */
+    private static final int RE_FLAGS = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+
     private static final List<Pattern> BUILTIN_SEVERE = List.of(
         // follow for/of nudes, follow 4 nudes, etc.
-        Pattern.compile("\\bfollow\\s*(?:for|of|4)\\s*nudes?\\b", Pattern.CASE_INSENSITIVE),
-        Pattern.compile("\\bfollow\\s+me\\s+for\\s+nudes?\\b", Pattern.CASE_INSENSITIVE),
-        Pattern.compile("\\bnudes?\\s+for\\s+follow\\b", Pattern.CASE_INSENSITIVE),
-        Pattern.compile("\\bfree\\s+nudes?\\b", Pattern.CASE_INSENSITIVE),
-        Pattern.compile("\\blink\\s+in\\s+bio\\s+for\\s+nudes?\\b", Pattern.CASE_INSENSITIVE),
-        Pattern.compile("\\bonly\\s*fans\\b", Pattern.CASE_INSENSITIVE),
-        Pattern.compile("\\btelegram\\s*@\\w+", Pattern.CASE_INSENSITIVE)
+        Pattern.compile("\\bfollow\\s*(?:for|of|4)\\s*nudes?\\b", RE_FLAGS),
+        Pattern.compile("\\bfollow\\s+me\\s+for\\s+nudes?\\b", RE_FLAGS),
+        Pattern.compile("\\bnudes?\\s+for\\s+follow\\b", RE_FLAGS),
+        Pattern.compile("\\bfree\\s+nudes?\\b", RE_FLAGS),
+        Pattern.compile("\\blink\\s+in\\s+bio\\s+for\\s+nudes?\\b", RE_FLAGS),
+        Pattern.compile("\\bonly\\s*fans\\b", RE_FLAGS),
+        Pattern.compile("\\btelegram\\s*@\\w+", RE_FLAGS),
+        // Vietnamese sexual / genital (fallback if Flyway V72 not loaded yet)
+        Pattern.compile("đầu\\s*buồi|dau\\s*buoi", RE_FLAGS),
+        Pattern.compile("buồi|\\bbuoi\\b", RE_FLAGS),
+        Pattern.compile("cặc|\\bcak\\b", RE_FLAGS),
+        Pattern.compile("lồn|\\bloz\\b", RE_FLAGS)
     );
 
     private final ModerationProperties properties;
@@ -129,7 +136,9 @@ public class ModerationCaptionGateService {
                 SELECT match_json
                 FROM moderation_rules
                 WHERE enabled = TRUE
-                  AND code = 'lex.spam'
+                  AND code LIKE 'lex.%'
+                  AND UPPER(COALESCE(action_hint, '')) IN ('BLOCK', 'DELETE')
+                  AND COALESCE(match_json->>'type', '') = 'lexicon'
                 """
             );
             for (Map<String, Object> row : rows) {
@@ -148,7 +157,10 @@ public class ModerationCaptionGateService {
                         continue;
                     }
                     try {
-                        out.add(Pattern.compile(p, Pattern.CASE_INSENSITIVE));
+                        out.add(Pattern.compile(
+                            p,
+                            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+                        ));
                     } catch (PatternSyntaxException ignored) {
                         // skip bad pattern
                     }
