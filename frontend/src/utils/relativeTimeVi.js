@@ -39,3 +39,18 @@ export function formatRelativeTimeVi(isoOrMs) {
   if (day < 14) return `${day} ngày trước`
   return d.toLocaleDateString('vi-VN')
 }
+
+/** Absolute date/time in Vietnam (UTC wall-clock from API → ICT). */
+export function formatApiDateTimeVi(isoOrMs) {
+  const d = parseApiDateTime(isoOrMs)
+  if (!d) return '—'
+  return d.toLocaleString('vi-VN', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+}

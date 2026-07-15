@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
-import { formatRelativeTimeVi, parseApiDateTime } from './relativeTimeVi.js'
+import { formatApiDateTimeVi, formatRelativeTimeVi, parseApiDateTime } from './relativeTimeVi.js'
 
 describe('parseApiDateTime', () => {
   afterEach(() => {
@@ -18,5 +18,12 @@ describe('parseApiDateTime', () => {
   it('keeps explicit offset timestamps', () => {
     const parsed = parseApiDateTime('2026-07-09T07:38:00Z')
     expect(parsed?.toISOString()).toBe('2026-07-09T07:38:00.000Z')
+  })
+
+  it('formatApiDateTimeVi shows local VN wall clock from UTC instant', () => {
+    // 17:26 UTC → 00:26 next day in Asia/Ho_Chi_Minh
+    const label = formatApiDateTimeVi('2026-07-15T17:26:00')
+    expect(label).toMatch(/16\/07\/2026/)
+    expect(label).toMatch(/00:26|0:26/)
   })
 })

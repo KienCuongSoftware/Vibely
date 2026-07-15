@@ -17,6 +17,7 @@ import { apiClient } from "../api/client";
 import { StudioLayout } from "../components/StudioLayout";
 import { useAuth } from "../state/useAuth";
 import { buildProfileVideoUrl } from "../utils/videoPublicId.js";
+import { formatApiDateTimeVi } from "../utils/relativeTimeVi.js";
 
 const PRIVACY_OPTIONS = [
   {
@@ -281,15 +282,7 @@ export function StudioPostsPage() {
                     (v.description && String(v.description).trim()) ||
                     v.title ||
                     "Không có mô tả";
-                  const created = v.createdAt
-                    ? new Date(v.createdAt).toLocaleString("vi-VN", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : "—";
+                  const created = formatApiDateTimeVi(v.createdAt);
                   const detailUrl =
                     buildProfileVideoUrl(username, v.publicId) ||
                     `/watch/${v.publicId}`;

@@ -20,7 +20,7 @@ import { StudioCommentDateRangePicker } from '../components/StudioCommentDateRan
 import { StudioLayout } from '../components/StudioLayout'
 import { useAuth } from '../state/useAuth'
 import { normalizeVideoPublicId } from '../utils/videoPublicId.js'
-import { formatRelativeTimeVi } from '../utils/relativeTimeVi.js'
+import { formatApiDateTimeVi, formatRelativeTimeVi } from '../utils/relativeTimeVi.js'
 
 function formatCount(n) {
   const v = Math.max(0, Number(n) || 0)
@@ -939,15 +939,7 @@ export function StudioPostCommentsPage() {
                         (v.description && String(v.description).trim()) ||
                         (v.title && String(v.title).trim()) ||
                         'Bài đăng'
-                      const posted = v.createdAt
-                        ? new Date(v.createdAt).toLocaleString('vi-VN', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })
-                        : '—'
+                      const posted = formatApiDateTimeVi(v.createdAt)
                       const isCurrent = v.publicId === publicId
                       return (
                         <li key={v.publicId}>

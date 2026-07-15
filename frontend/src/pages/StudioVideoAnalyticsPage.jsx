@@ -20,6 +20,7 @@ import {
   watchTimeNearPlaythroughEnd,
   watchTimeQualifiesForViewRecord,
 } from '../utils/watchQualifiesForViewRecord'
+import { parseApiDateTime } from '../utils/relativeTimeVi.js'
 
 const PERIOD_OPTIONS = [7, 28, 60, 90]
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -371,16 +372,13 @@ export function StudioVideoAnalyticsPage() {
         : 0
 
   const postedLabel = useMemo(() => {
-    if (!video?.createdAt) return '—'
-    try {
-      return new Date(video.createdAt).toLocaleDateString('vi-VN', {
-        day: 'numeric',
-        month: 'numeric',
-        year: 'numeric',
-      })
-    } catch {
-      return '—'
-    }
+    const d = parseApiDateTime(video?.createdAt)
+    if (!d) return '—'
+    return d.toLocaleDateString('vi-VN', {
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+    })
   }, [video?.createdAt])
 
   const title = (video?.title && String(video.title).trim()) || 'Không có tiêu đề'
