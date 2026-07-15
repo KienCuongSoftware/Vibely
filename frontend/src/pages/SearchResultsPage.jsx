@@ -105,6 +105,7 @@ function SearchResultsBody({
   userPreview,
   videoList,
   users,
+  matchedTags = [],
   token,
   user,
   openVideo,
@@ -142,6 +143,21 @@ function SearchResultsBody({
 
   return (
     <>
+      {matchedTags.length > 0 && showVideos ? (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-[12px] font-medium text-zinc-500">Liên quan:</span>
+          {matchedTags.slice(0, 8).map((slug) => (
+            <Link
+              key={slug}
+              to={`/search?q=${encodeURIComponent(slug)}`}
+              className="rounded-full border border-zinc-800 bg-zinc-950 px-2.5 py-0.5 text-[12px] font-semibold text-zinc-300 transition hover:border-zinc-600 hover:text-white"
+            >
+              #{slug}
+            </Link>
+          ))}
+        </div>
+      ) : null}
+
       {showUsers ? (
         <section className="mb-10">
           <div className="mb-4 flex items-center justify-between gap-2">
@@ -256,6 +272,7 @@ export function SearchResultsPage() {
   const [activeTab, setActiveTab] = useState('top')
   const [users, setUsers] = useState([])
   const [videos, setVideos] = useState([])
+  const [matchedTags, setMatchedTags] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout())
@@ -319,6 +336,7 @@ export function SearchResultsPage() {
     if (!qFromUrl) {
       setUsers([])
       setVideos([])
+      setMatchedTags([])
       setError('')
       return undefined
     }
@@ -330,18 +348,21 @@ export function SearchResultsPage() {
     }
     Promise.all([
       apiClient.getSearchUsers(qFromUrl, { limit: 20 }),
-      apiClient.getSearchVideos(qFromUrl, { limit: 30 }),
+      apiClient.getSearchSemantic(qFromUrl, { limit: 30 }),
     ])
-      .then(([userRows, videoRows]) => {
+      .then(([userRows, semantic]) => {
         if (cancelled) return
         setUsers(Array.isArray(userRows) ? userRows : [])
-        setVideos(Array.isArray(videoRows) ? videoRows : [])
+        const videoRows = Array.isArray(semantic?.videos) ? semantic.videos : []
+        setVideos(videoRows)
+        setMatchedTags(Array.isArray(semantic?.matchedTags) ? semantic.matchedTags : [])
       })
       .catch((err) => {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : 'Không tải được kết quả.')
           setUsers([])
           setVideos([])
+          setMatchedTags([])
         }
       })
       .finally(() => {
@@ -407,6 +428,7 @@ export function SearchResultsPage() {
       userPreview={userPreview}
       videoList={videoList}
       users={users}
+      matchedTags={matchedTags}
       token={token}
       user={user}
       openVideo={openVideo}

@@ -325,6 +325,9 @@ Services: `backend`, `frontend`, `postgres`, `redis`, `rabbitmq`, `qdrant`, `cu-
 | **3** | Topic engine, Category mapping admin UI, backfill jobs | Product value | Mapping quality |
 | **4** | Explainable dashboard, Rec/Search integration, related-by-embedding | Consumer ROI | Ranking regressions |
 | **5** | Analytics, trending-by-tag-growth, auto-hashtag, NL semantic search polish | Growth | Abuse / spam tags |
+| **6+** | Neo4j knowledge edges, learned fusion MLP | Long-term | Ops complexity |
+
+**Phase 5 (shipped MVP):** `CuTagTrendingService` + Explore chips; Studio/Upload `CuHashtagSuggestions`; `/api/search/semantic`; Studio `topSemanticTags`.
 
 **Rollback:** Feature flag `app.content-understanding.enabled`; Explore falls back to rule-based + existing discovery OpenAI path.
 

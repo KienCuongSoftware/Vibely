@@ -19,6 +19,7 @@ import {
 } from 'react-icons/io5'
 import { apiClient } from '../api/client'
 import { CoverPickerModal } from '../components/CoverPickerModal'
+import { CuHashtagSuggestions } from '../components/CuHashtagSuggestions'
 import { StudioLayout } from '../components/StudioLayout'
 import { useAuth } from '../state/useAuth'
 import { isVideoPublicId, normalizeVideoPublicId } from '../utils/videoPublicId.js'
@@ -735,6 +736,18 @@ export function StudioEditPostPage() {
                     {loadingFriends ? (
                       <p className="mt-2 text-xs text-zinc-500">Đang tải danh sách bạn bè có thể tag…</p>
                     ) : null}
+                    <CuHashtagSuggestions
+                      publicId={publicId}
+                      token={token}
+                      description={description}
+                      onAppend={(hashtag) => {
+                        setDescription((prev) => {
+                          const base = String(prev ?? '')
+                          const needsSpace = base.length > 0 && !/\s$/.test(base)
+                          return `${base}${needsSpace ? ' ' : ''}${hashtag}`
+                        })
+                      }}
+                    />
                     {mentionAtCaret == null ? (
                       <p className="mt-2 text-xs text-zinc-500">
                         Gõ <span className="font-semibold text-zinc-300">@</span> để nhắc đến bất kỳ người dùng nào.

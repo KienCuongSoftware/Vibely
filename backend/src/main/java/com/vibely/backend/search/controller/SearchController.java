@@ -4,6 +4,7 @@ import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.search.dto.SearchHashtagResultDto;
 import com.vibely.backend.search.dto.SearchHistoryCreateRequest;
 import com.vibely.backend.search.dto.SearchHistoryItemDto;
+import com.vibely.backend.search.dto.SearchSemanticResponseDto;
 import com.vibely.backend.search.dto.SearchSuggestResponseDto;
 import com.vibely.backend.search.dto.SearchTrendingResponseDto;
 import com.vibely.backend.search.dto.SearchUserResultDto;
@@ -54,6 +55,14 @@ public class SearchController {
         @RequestParam(defaultValue = "20") int limit
     ) {
         return ApiResponse.success(searchService.searchVideos(q, limit));
+    }
+
+    @GetMapping("/semantic")
+    public ApiResponse<SearchSemanticResponseDto> semantic(
+        @RequestParam("q") String q,
+        @RequestParam(defaultValue = "20") int limit
+    ) {
+        return ApiResponse.success(searchService.searchSemantic(q, limit));
     }
 
     @GetMapping("/hashtags")

@@ -6,6 +6,7 @@ import com.vibely.backend.common.SqlSafe;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.search.dto.SearchHashtagResultDto;
 import com.vibely.backend.search.dto.SearchHistoryItemDto;
+import com.vibely.backend.search.dto.SearchSemanticResponseDto;
 import com.vibely.backend.search.dto.SearchSuggestResponseDto;
 import com.vibely.backend.search.dto.SearchTrendItemDto;
 import com.vibely.backend.search.dto.SearchTrendingResponseDto;
@@ -23,12 +24,16 @@ import com.vibely.backend.storage.MediaUrlPresigner;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,6 +57,7 @@ public class SearchService {
     private final SearchSuggestionCacheService suggestionCacheService;
     private final MediaUrlPresigner mediaUrlPresigner;
     private final UserAvatarResolver userAvatarResolver;
+    private final JdbcTemplate jdbcTemplate;
     private final int suggestGroupLimit;
     private final int candidateMultiplier;
 
@@ -64,6 +70,7 @@ public class SearchService {
         SearchSuggestionCacheService suggestionCacheService,
         MediaUrlPresigner mediaUrlPresigner,
         UserAvatarResolver userAvatarResolver,
+        JdbcTemplate jdbcTemplate,
         @Value("${app.search.suggest-group-limit:8}") int suggestGroupLimit,
         @Value("${app.search.candidate-multiplier:4}") int candidateMultiplier
     ) {
@@ -75,6 +82,7 @@ public class SearchService {
         this.suggestionCacheService = suggestionCacheService;
         this.mediaUrlPresigner = mediaUrlPresigner;
         this.userAvatarResolver = userAvatarResolver;
+        this.jdbcTemplate = jdbcTemplate;
         this.suggestGroupLimit = Math.max(1, suggestGroupLimit);
         this.candidateMultiplier = Math.max(2, candidateMultiplier);
     }
@@ -126,6 +134,67 @@ public class SearchService {
             .limit(capped)
             .map(row -> toVideoResult(row, query))
             .toList();
+    }
+
+    /**
+     * Phase 5 — NL semantic search polish: same CU-aware video ranking as /videos,
+     * plus matched semantic tag slugs for UI explainability.
+     */
+    @Transactional(readOnly = true)
+    public SearchSemanticResponseDto searchSemantic(String rawQuery, int limit) {
+        String query = requireSearchTerm(rawQuery);
+        List<SearchVideoResultDto> videos = searchVideos(query, limit);
+        List<String> matchedTags = resolveMatchedSemanticTags(query, 12);
+        return new SearchSemanticResponseDto(query, matchedTags, videos);
+    }
+
+    private List<String> resolveMatchedSemanticTags(String query, int limit) {
+        String q = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
+        if (q.isEmpty()) {
+            return List.of();
+        }
+        String like = "%" + q.replace("%", "").replace("_", "") + "%";
+        int safeLimit = Math.max(1, limit);
+        List<String> rows = jdbcTemplate.query(
+            """
+                SELECT slug FROM (
+                    SELECT st.slug AS slug, 0 AS rank_ord
+                    FROM semantic_tags st
+                    WHERE st.status = 'active'
+                      AND (lower(st.slug) = ? OR lower(st.name) = ?)
+                    UNION ALL
+                    SELECT st.slug, 1
+                    FROM semantic_tags st
+                    WHERE st.status = 'active'
+                      AND (lower(st.slug) LIKE ? OR lower(st.name) LIKE ?)
+                    UNION ALL
+                    SELECT st.slug, 2
+                    FROM semantic_tag_aliases sta
+                    JOIN semantic_tags st ON st.id = sta.tag_id AND st.status = 'active'
+                    WHERE lower(sta.alias) = ? OR lower(sta.alias) LIKE ?
+                ) t
+                ORDER BY rank_ord ASC, slug ASC
+                LIMIT ?
+                """,
+            (rs, i) -> rs.getString("slug"),
+            q,
+            q,
+            like,
+            like,
+            q,
+            like,
+            safeLimit
+        );
+        Set<String> ordered = new LinkedHashSet<>();
+        for (String slug : rows) {
+            if (slug != null && !slug.isBlank()) {
+                ordered.add(slug.trim().toLowerCase(Locale.ROOT));
+            }
+            if (ordered.size() >= safeLimit) {
+                break;
+            }
+        }
+        return new ArrayList<>(ordered);
     }
 
     @Transactional(readOnly = true)

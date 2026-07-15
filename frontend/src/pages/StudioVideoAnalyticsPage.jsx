@@ -309,6 +309,7 @@ export function StudioVideoAnalyticsPage() {
             retention: Array.isArray(data?.retention) ? data.retention : [],
             trafficSources: Array.isArray(data?.trafficSources) ? data.trafficSources : [],
             searchKeywords: Array.isArray(data?.searchKeywords) ? data.searchKeywords : [],
+            topSemanticTags: Array.isArray(data?.topSemanticTags) ? data.topSemanticTags : [],
           })
           if (!cancelled && showFullLoader) setLoading(false)
           return
@@ -336,6 +337,7 @@ export function StudioVideoAnalyticsPage() {
   const retention = payload?.retention ?? []
   const trafficSources = payload?.trafficSources ?? []
   const searchKeywords = payload?.searchKeywords ?? []
+  const topSemanticTags = payload?.topSemanticTags ?? []
 
   const viewsChart = useMemo(() => buildViewsChartMeta(points), [points])
   const retentionChart = useMemo(() => buildRetentionChartMeta(retention), [retention])
@@ -1035,6 +1037,32 @@ export function StudioVideoAnalyticsPage() {
     </section>
   )
 
+  const semanticTagsBlock = (
+    <section className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
+      <h2 className="text-base font-semibold text-white">Thẻ ngữ nghĩa (CU)</h2>
+      <p className="mt-1 text-sm text-zinc-500">Tag do Content Understanding gắn cho video này.</p>
+      {topSemanticTags.length === 0 ? (
+        <p className="mt-3 text-sm text-zinc-500">Chưa có thẻ ngữ nghĩa.</p>
+      ) : (
+        <ul className="mt-3 divide-y divide-zinc-800">
+          {topSemanticTags.map((tag) => (
+            <li key={tag.slug} className="flex items-center justify-between gap-3 py-2 text-sm">
+              <span className="min-w-0 truncate text-zinc-200">
+                #{tag.slug}
+                {tag.name && tag.name !== tag.slug ? (
+                  <span className="ml-2 text-zinc-500">{tag.name}</span>
+                ) : null}
+              </span>
+              <span className="shrink-0 tabular-nums text-zinc-500">
+                {tag.confidence != null ? `${Math.round(Number(tag.confidence) * 100)}%` : '—'}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+
   const engagementTab = (
     <div className="space-y-5">
       {videoHeader}
@@ -1119,6 +1147,7 @@ export function StudioVideoAnalyticsPage() {
         <div className="space-y-4">
           {trafficBlock}
           {searchBlock}
+          {semanticTagsBlock}
         </div>
       </div>
     </div>

@@ -101,4 +101,10 @@ Keep rule-based classifier as **cold fallback** when worker unavailable (parity 
 - Admin post detail: CU explainable panel + reanalyze
 - Spring `CuQdrantClient`; worker video-mean Qdrant point id = `video_id`
 
-**Not yet (Phase 5+):** trending-by-tag-growth, auto-hashtag Studio, NL `/api/search/semantic` polish, Neo4j/`knowledge_edges`, learned fusion MLP.
+**Phase 5 landed (code):**
+- Trending-by-tag-growth: `GET /api/explore/trending-tags` + Explore chip row
+- Studio auto-hashtag: click-to-append CU tag suggestions (conf ≥ 0.7) on Upload / Studio Edit
+- NL semantic search polish: `GET /api/search/semantic` (+ Search results matched-tag chips)
+- Studio video analytics: `topSemanticTags` on analytics payload
+
+**Not yet (Phase 6+):** Neo4j/`knowledge_edges`, learned fusion MLP, full knowledge-graph consumers.

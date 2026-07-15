@@ -161,6 +161,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/search/suggest").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/search/users").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/search/videos").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/search/semantic").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/search/hashtags").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/search/trending").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/me/**").authenticated()

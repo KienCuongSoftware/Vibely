@@ -24,5 +24,7 @@ public record StudioVideoAnalyticsResponse(
     List<StudioAnalyticsPointResponse> points,
     List<StudioRetentionPointResponse> retention,
     List<StudioTrafficSourceResponse> trafficSources,
-    List<StudioSearchKeywordResponse> searchKeywords
+    List<StudioSearchKeywordResponse> searchKeywords,
+    /** Phase 5 — top CU semantic tags on this video (not period-scoped). */
+    List<StudioSemanticTagStatResponse> topSemanticTags
 ) {}

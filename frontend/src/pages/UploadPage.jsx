@@ -3,6 +3,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { useNavigate } from 'react-router-dom'
 import { apiClient, uploadThumbnailToStorage, uploadToPresignedPutUrl } from '../api/client'
 import { CoverPickerModal } from '../components/CoverPickerModal'
+import { CuHashtagSuggestions } from '../components/CuHashtagSuggestions'
 import { StudioLayout } from '../components/StudioLayout'
 import { extractThumbnailBlobFromFile } from '../utils/videoThumbnail.js'
 import {
@@ -1676,6 +1677,18 @@ export function UploadPage() {
                     {loadingFriends ? (
                       <p className="mt-2 text-xs text-zinc-500">Đang tải danh sách bạn bè có thể tag…</p>
                     ) : null}
+                    <CuHashtagSuggestions
+                      publicId={uploadedVideo?.publicId}
+                      token={token}
+                      description={description}
+                      onAppend={(hashtag) => {
+                        setDescription((prev) => {
+                          const base = String(prev ?? '')
+                          const needsSpace = base.length > 0 && !/\s$/.test(base)
+                          return `${base}${needsSpace ? ' ' : ''}${hashtag}`
+                        })
+                      }}
+                    />
                     {mentionAtCaret == null ? (
                       <p className="mt-2 text-xs text-zinc-500">
                         Gõ <span className="font-semibold text-zinc-300">@</span> để nhắc đến bất kỳ người dùng nào.

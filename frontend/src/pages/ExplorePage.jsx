@@ -118,6 +118,7 @@ export function ExplorePage() {
   const [hasNext, setHasNext] = useState(false)
   const [loading, setLoading] = useState(false)
   const [playingId, setPlayingId] = useState(null)
+  const [trendingTags, setTrendingTags] = useState([])
   const categoryScrollRef = useRef(null)
   const allCategoryButtonRef = useRef(null)
   const loadMoreSentinelRef = useRef(null)
@@ -151,6 +152,22 @@ export function ExplorePage() {
       setActiveTab({ slug: 'all', kind: 'category' })
     })
   }, [token])
+
+  useEffect(() => {
+    let cancelled = false
+    apiClient
+      .getExploreTrendingTags({ windowDays: 7, limit: 16 })
+      .then((res) => {
+        if (cancelled) return
+        setTrendingTags(Array.isArray(res?.items) ? res.items : [])
+      })
+      .catch(() => {
+        if (!cancelled) setTrendingTags([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const updateCategoryScrollState = React.useCallback(() => {
     const el = categoryScrollRef.current
@@ -360,6 +377,31 @@ export function ExplorePage() {
                 <IoChevronForward />
               </button>
             </div>
+
+            {trendingTags.length > 0 ? (
+              <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {trendingTags.map((tag) => {
+                  const slug = String(tag?.slug ?? '').trim()
+                  if (!slug) return null
+                  const label = String(tag?.name ?? slug).trim() || slug
+                  return (
+                    <Link
+                      key={slug}
+                      to={`/search?q=${encodeURIComponent(slug)}&from=explore`}
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-950 px-3 py-1 text-[12px] font-semibold text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-900 lg:text-[13px]"
+                    >
+                      <span className="text-[#fe2c55]">#</span>
+                      {label}
+                      {Number(tag?.countRecent ?? 0) > 0 ? (
+                        <span className="text-[11px] font-medium text-zinc-500">
+                          {formatCompactCount(tag.countRecent)}
+                        </span>
+                      ) : null}
+                    </Link>
+                  )
+                })}
+              </div>
+            ) : null}
 
             {mobileLayout ? (
               <ul className="mt-3 grid grid-cols-2 gap-x-2 gap-y-4 sm:gap-x-3">

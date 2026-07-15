@@ -4,6 +4,8 @@ import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.explore.dto.ExploreCategoryDto;
 import com.vibely.backend.explore.dto.ExplorePageDto;
 import com.vibely.backend.explore.dto.ExploreTabDto;
+import com.vibely.backend.explore.dto.ExploreTrendingTagsResponse;
+import com.vibely.backend.explore.service.CuTagTrendingService;
 import com.vibely.backend.explore.service.ExploreService;
 import java.util.List;
 import org.springframework.security.core.Authentication;
@@ -17,9 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/explore")
 public class ExploreController {
     private final ExploreService exploreService;
+    private final CuTagTrendingService cuTagTrendingService;
 
-    public ExploreController(ExploreService exploreService) {
+    public ExploreController(ExploreService exploreService, CuTagTrendingService cuTagTrendingService) {
         this.exploreService = exploreService;
+        this.cuTagTrendingService = cuTagTrendingService;
     }
 
     @GetMapping("/tabs")
@@ -39,6 +43,14 @@ public class ExploreController {
         @RequestParam(defaultValue = "24") int size
     ) {
         return ApiResponse.success(exploreService.trending(cursor, size));
+    }
+
+    @GetMapping("/trending-tags")
+    public ApiResponse<ExploreTrendingTagsResponse> trendingTags(
+        @RequestParam(defaultValue = "7") int windowDays,
+        @RequestParam(defaultValue = "20") int limit
+    ) {
+        return ApiResponse.success(cuTagTrendingService.trendingTags(windowDays, limit));
     }
 
     @GetMapping("/for-you")

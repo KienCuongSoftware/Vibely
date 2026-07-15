@@ -32,6 +32,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class SearchServiceTest {
@@ -60,6 +61,9 @@ class SearchServiceTest {
     @Mock
     private UserAvatarResolver userAvatarResolver;
 
+    @Mock
+    private JdbcTemplate jdbcTemplate;
+
     private SearchService searchService;
 
     @BeforeEach
@@ -73,6 +77,7 @@ class SearchServiceTest {
             suggestionCacheService,
             mediaUrlPresigner,
             userAvatarResolver,
+            jdbcTemplate,
             8,
             4
         );

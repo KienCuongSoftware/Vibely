@@ -328,6 +328,8 @@ export const apiClient = {
     request("/api/explore/tabs", token ? { token } : {}),
   getExploreTrending: ({ cursor, size = 24 } = {}) =>
     request(`/api/explore/trending${toQuery({ cursor, size })}`),
+  getExploreTrendingTags: ({ windowDays = 7, limit = 20 } = {}) =>
+    request(`/api/explore/trending-tags${toQuery({ windowDays, limit })}`),
   getExploreForYou: ({ cursor, size = 24, token } = {}) =>
     request(`/api/explore/for-you${toQuery({ cursor, size })}`, token ? { token } : {}),
   getExploreCategory: (slug, { cursor, size = 24 } = {}) =>
@@ -342,6 +344,8 @@ export const apiClient = {
     request(`/api/search/users${toQuery({ q, limit })}`),
   getSearchVideos: (q, { limit = 20 } = {}) =>
     request(`/api/search/videos${toQuery({ q, limit })}`),
+  getSearchSemantic: (q, { limit = 20 } = {}) =>
+    request(`/api/search/semantic${toQuery({ q, limit })}`),
   getSearchHashtags: (q, { limit = 20 } = {}) =>
     request(`/api/search/hashtags${toQuery({ q, limit })}`),
   getSearchTrending: ({ limit = 20 } = {}) =>

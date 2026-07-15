@@ -2,6 +2,7 @@ package com.vibely.backend.studio;
 
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.contentunderstanding.VideoSemanticTagRepository;
 import com.vibely.backend.interaction.repository.CommentRepository;
 import com.vibely.backend.interaction.repository.FollowRepository;
 import com.vibely.backend.interaction.repository.LikeRepository;
@@ -61,6 +62,7 @@ public class StudioAnalyticsService {
     private final VideoBookmarkRepository videoBookmarkRepository;
     private final VideoService videoService;
     private final FollowRepository followRepository;
+    private final VideoSemanticTagRepository videoSemanticTagRepository;
 
     public StudioAnalyticsService(
         UserRepository userRepository,
@@ -69,7 +71,8 @@ public class StudioAnalyticsService {
         CommentRepository commentRepository,
         VideoBookmarkRepository videoBookmarkRepository,
         VideoService videoService,
-        FollowRepository followRepository
+        FollowRepository followRepository,
+        VideoSemanticTagRepository videoSemanticTagRepository
     ) {
         this.userRepository = userRepository;
         this.videoViewRepository = videoViewRepository;
@@ -78,6 +81,7 @@ public class StudioAnalyticsService {
         this.videoBookmarkRepository = videoBookmarkRepository;
         this.videoService = videoService;
         this.followRepository = followRepository;
+        this.videoSemanticTagRepository = videoSemanticTagRepository;
     }
 
     @Transactional(readOnly = true)
@@ -242,6 +246,23 @@ public class StudioAnalyticsService {
         long periodNewFollowers =
             followRepository.countByFollowing_IdAndCreatedAtGreaterThanEqual(me.getId(), from);
 
+        List<StudioSemanticTagStatResponse> topSemanticTags = new ArrayList<>();
+        for (Object[] row : videoSemanticTagRepository.findTagRowsByVideoId(videoId)) {
+            if (topSemanticTags.size() >= 10) {
+                break;
+            }
+            String slug = row[1] == null ? null : String.valueOf(row[1]);
+            if (slug == null || slug.isBlank()) {
+                continue;
+            }
+            float conf = 0f;
+            if (row[2] instanceof Number n) {
+                conf = n.floatValue();
+            }
+            String name = row[6] == null ? slug : String.valueOf(row[6]);
+            topSemanticTags.add(new StudioSemanticTagStatResponse(slug, name, conf));
+        }
+
         return new StudioVideoAnalyticsResponse(
             days,
             periodViews,
@@ -257,7 +278,8 @@ public class StudioAnalyticsService {
             points,
             retention,
             DEFAULT_TRAFFIC_SOURCES,
-            List.of()
+            List.of(),
+            topSemanticTags
         );
     }
 

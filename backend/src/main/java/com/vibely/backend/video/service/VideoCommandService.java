@@ -170,8 +170,9 @@ public class VideoCommandService {
             video.setPrivacy(resolvePrivacy(request.getPrivacy()));
         }
         Video saved = videoRepository.save(video);
+        // Hashtags / Explore signals follow description text on every metadata save.
+        exploreSyncService.syncExploreSignals(saved);
         if (wasDraft) {
-            exploreSyncService.syncExploreSignals(saved);
             originalityEnqueueService.enqueueAfterVideoPersisted(saved);
             contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "publish");
         } else {
