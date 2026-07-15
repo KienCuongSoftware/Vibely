@@ -193,6 +193,10 @@ export function StudioPostsPage() {
         ),
       );
     } catch (e) {
+      if (e?.code === "ACCOUNT_BANNED") {
+        // api client emits ban → AuthContext force logout / login ban modal
+        return;
+      }
       setError(e.message ?? "Không cập nhật được quyền riêng tư.");
     } finally {
       setPrivacyBusyId(null);

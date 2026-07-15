@@ -51,6 +51,8 @@ export function StudioEditPostPage() {
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
   const [coverModalOpen, setCoverModalOpen] = useState(false)
+  const [banNoticeOpen, setBanNoticeOpen] = useState(false)
+  const [banNoticeReason, setBanNoticeReason] = useState('')
 
   const [previewTab, setPreviewTab] = useState('feed')
   const [mentionableFriends, setMentionableFriends] = useState([])
@@ -532,6 +534,13 @@ export function StudioEditPostPage() {
         state: { successMessage: 'Đã cập nhật bài đăng.' },
       })
     } catch (e) {
+      if (e?.code === 'ACCOUNT_BANNED') {
+        const reason = String(e?.data?.reason ?? '').trim()
+        setBanNoticeReason(reason || 'chính sách cộng đồng của Vibely')
+        setBanNoticeOpen(true)
+        setStatus('')
+        return
+      }
       setStatus(e instanceof Error ? e.message : 'Không lưu được thay đổi.')
     } finally {
       setBusy(false)
@@ -576,6 +585,41 @@ export function StudioEditPostPage() {
         token={token}
         onConfirm={(url) => setThumbnailUrl(url)}
       />
+      {banNoticeOpen ? (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 px-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="studio-edit-ban-title"
+            className="w-full max-w-[340px] overflow-hidden rounded-sm border border-zinc-800 bg-[#121212] text-center shadow-2xl"
+          >
+            <div className="px-6 py-6">
+              <h2 id="studio-edit-ban-title" className="text-xl font-bold text-zinc-100">
+                Tài khoản của bạn đã bị cấm
+              </h2>
+              <p className="mt-4 text-[13px] leading-relaxed text-zinc-300">
+                Tài khoản bạn đã bị cấm vì{' '}
+                <span className="font-semibold text-zinc-100">{banNoticeReason}</span>.
+              </p>
+              <p className="mt-3 text-[13px] leading-relaxed text-zinc-400">
+                Bạn có thể gửi khiếu nại từ trang đăng nhập nếu cho rằng đây là nhầm lẫn.
+              </p>
+            </div>
+            <div className="border-t border-zinc-800">
+              <button
+                type="button"
+                className="flex h-12 w-full items-center justify-center text-[15px] font-semibold text-white transition hover:bg-zinc-900"
+                onClick={() => {
+                  setBanNoticeOpen(false)
+                  navigate('/login', { replace: true })
+                }}
+              >
+                Đã hiểu
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
         <Link

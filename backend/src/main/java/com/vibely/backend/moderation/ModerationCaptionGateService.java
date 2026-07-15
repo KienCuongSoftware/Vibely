@@ -80,9 +80,10 @@ public class ModerationCaptionGateService {
 
     /**
      * Call before making a video public. Severe caption → ban (nested tx) + ACCOUNT_BANNED.
+     * Always runs for severe builtins (not gated by {@code vibely.moderation.enabled} / apply-decisions).
      */
     public void assertPublishAllowed(Video video, String title, String description) {
-        if (!properties.isEnabled() || video == null) {
+        if (video == null) {
             return;
         }
         String hit = firstSevereHit(title, description);
