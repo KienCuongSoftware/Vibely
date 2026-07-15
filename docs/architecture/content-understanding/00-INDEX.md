@@ -93,4 +93,12 @@ Keep rule-based classifier as **cold fallback** when worker unavailable (parity 
 - Category projection → `video_categories` (Explore-visible score ≥ 1.0) + `video_category_scores` (`source=cu_tags`)
 - Admin APIs under `/api/admin/content-understanding/**` (mapping CRUD, backfill/reanalyze/jobs) — no dedicated Admin UI page
 
-**Not yet (Phase 4+):** Related-by-embedding, explainable dashboard, public analysis REST, Rec/Search wire-up, temporal scene segments, learned fusion MLP.
+**Phase 4 landed (code):**
+- Related hybrid: Qdrant `vibely_cu_video` (0.55) + tag Jaccard (0.25) + topic overlap (0.20) via `RelatedVideoDiscoveryService`
+- Public explainable REST: `GET /api/videos/{publicId}/analysis|semantic-tags|topics|categories` (privacy-gated)
+- Search: CU tag/alias candidate expand + `semanticTagMatch` ranking boost
+- For-You: light CU tag↔topic-interest affinity bonus (0.10)
+- Admin post detail: CU explainable panel + reanalyze
+- Spring `CuQdrantClient`; worker video-mean Qdrant point id = `video_id`
+
+**Not yet (Phase 5+):** trending-by-tag-growth, auto-hashtag Studio, NL `/api/search/semantic` polish, Neo4j/`knowledge_edges`, learned fusion MLP.

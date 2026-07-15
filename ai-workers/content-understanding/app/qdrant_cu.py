@@ -94,7 +94,8 @@ class CuVectorStore:
                 client.upsert(collection_name=COLLECTION_FRAME, points=frame_points)
 
             video_point = self._qm.PointStruct(
-                id=abs(hash(("cu_video", video_id))) % (2**63 - 1),
+                # Stable point id = video_id so Spring Related can recommend by id.
+                id=int(video_id),
                 vector=video_mean.astype(np.float32).tolist(),
                 payload={
                     "video_id": video_id,

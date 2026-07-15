@@ -11,7 +11,7 @@
 | Scene | YOLO indoor/outdoor heuristic | `sceneFeatures`, scene tags |
 | Speech | faster-whisper Small | `speechFeatures`, speech tags |
 | Fusion | Late weighted evidential (`fusion.py`) | fused `semanticTags` |
-| Vectors | Qdrant `vibely_cu_frame` + `vibely_cu_video` | related-video foundation |
+| Vectors | Qdrant `vibely_cu_frame` + `vibely_cu_video` | related-video foundation (`video_id` point id) |
 
 Modality failures are **soft-fail** — job still completes with metadata at minimum.
 
