@@ -23,6 +23,12 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
             where v.status = 'READY'
               and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
               and coalesce(v.studio_draft, false) = false
+              and not exists (
+                  select 1 from moderation_decisions md
+                  where md.video_id = v.id
+                    and md.explore_eligible = false
+                    and md.shadow = false
+              )
               and (:cursorScore is null or (v.explore_score < :cursorScore
                    or (v.explore_score = :cursorScore and (v.created_at < :cursorTime
                    or (v.created_at = :cursorTime and v.id < :cursorId)))))
@@ -52,6 +58,12 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
             where v.status = 'READY'
               and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
               and coalesce(v.studio_draft, false) = false
+              and not exists (
+                  select 1 from moderation_decisions md
+                  where md.video_id = v.id
+                    and md.explore_eligible = false
+                    and md.shadow = false
+              )
               and c.slug = :slug
               and c.enabled = true
               and c.slug <> 'all'
@@ -86,6 +98,12 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
             where v.status = 'READY'
               and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
               and coalesce(v.studio_draft, false) = false
+              and not exists (
+                  select 1 from moderation_decisions md
+                  where md.video_id = v.id
+                    and md.explore_eligible = false
+                    and md.shadow = false
+              )
               and (
                 lower(coalesce(v.title,'')) like concat('%', lower(:q), '%')
                 or lower(coalesce(v.description,'')) like concat('%', lower(:q), '%')
@@ -125,6 +143,12 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
               and v2.status = 'READY'
               and coalesce(v2.privacy, 'PUBLIC') = 'PUBLIC'
               and coalesce(v2.studio_draft, false) = false
+              and not exists (
+                  select 1 from moderation_decisions md
+                  where md.video_id = v2.id
+                    and md.explore_eligible = false
+                    and md.shadow = false
+              )
               and v2.id <> v1.id
               and (vc2.video_id is not null or vh2.video_id is not null)
             order by v2.explore_score desc, v2.created_at desc, v2.id desc

@@ -7,7 +7,7 @@
 | Version | 1.1 |
 | Status | **Shipped** — Phase 1–5 in production |
 | Audience | Engineering, AI/ML, SRE, Product, Moderation |
-| Related | Explore (`docs/explore`), Discovery (`docs/discovery`), Originality (`Vibely-Originality-Detection-TDD.md`) |
+| Related | Explore (`docs/explore`), Discovery (`docs/discovery`), Originality (`Vibely-Originality-Detection-TDD.md`), Moderation consumer ([content-moderation/00-INDEX.md](../content-moderation/00-INDEX.md)) |
 
 ---
 
@@ -30,7 +30,7 @@ Long-horizon MLOps / Neo4j knowledge-graph design was removed from the tree (not
 3. **Python workers own the AI pipeline.** Horizontal scale, GPU/CPU separation.
 4. **Async only on upload path.** HTTP create/update must not wait for understanding.
 5. **Every tag has confidence + source + reason** (explainable).
-6. **One analysis, many consumers** (Explore, Rec, Search, Moderation).
+6. **One analysis, many consumers** (Explore, Rec, Search, Moderation). Moderation must **not** re-run OCR/Whisper/CLIP — see [Intelligent Content Moderation TDD](../content-moderation/00-INDEX.md).
 7. **Phased delivery** — ship value without boiling the ocean.
 
 ---

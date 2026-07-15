@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.moderation.ModerationJoinService;
 import com.vibely.backend.video.Video;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,7 @@ public class ContentUnderstandingJobService {
     private final ObjectMapper objectMapper;
     private final JdbcTemplate jdbcTemplate;
     private final SemanticTopicProjectionService topicProjectionService;
+    private final ObjectProvider<ModerationJoinService> moderationJoinService;
 
     public ContentUnderstandingJobService(
         AnalysisJobRepository jobRepository,
@@ -35,7 +38,8 @@ public class ContentUnderstandingJobService {
         ContentUnderstandingProperties properties,
         ObjectMapper objectMapper,
         JdbcTemplate jdbcTemplate,
-        SemanticTopicProjectionService topicProjectionService
+        SemanticTopicProjectionService topicProjectionService,
+        ObjectProvider<ModerationJoinService> moderationJoinService
     ) {
         this.jobRepository = jobRepository;
         this.semanticTagRepository = semanticTagRepository;
@@ -44,6 +48,7 @@ public class ContentUnderstandingJobService {
         this.objectMapper = objectMapper;
         this.jdbcTemplate = jdbcTemplate;
         this.topicProjectionService = topicProjectionService;
+        this.moderationJoinService = moderationJoinService;
     }
 
     @Transactional
@@ -198,6 +203,11 @@ public class ContentUnderstandingJobService {
         job.setErrorCode(null);
         job.setErrorMessage(null);
         jobRepository.save(job);
+
+        ModerationJoinService join = moderationJoinService.getIfAvailable();
+        if (join != null) {
+            join.onContentUnderstandingCompleted(videoId, job.getId());
+        }
     }
 
     @Transactional

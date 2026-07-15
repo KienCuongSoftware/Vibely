@@ -2,11 +2,13 @@ package com.vibely.backend.originality;
 
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.moderation.ModerationJoinService;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Optional;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,19 +20,22 @@ public class OriginalityJobService {
     private final OriginalityMatchRepository matchRepository;
     private final VideoRepository videoRepository;
     private final OriginalityProperties properties;
+    private final ObjectProvider<ModerationJoinService> moderationJoinService;
 
     public OriginalityJobService(
         OriginalityJobRepository jobRepository,
         OriginalityReportRepository reportRepository,
         OriginalityMatchRepository matchRepository,
         VideoRepository videoRepository,
-        OriginalityProperties properties
+        OriginalityProperties properties,
+        ObjectProvider<ModerationJoinService> moderationJoinService
     ) {
         this.jobRepository = jobRepository;
         this.reportRepository = reportRepository;
         this.matchRepository = matchRepository;
         this.videoRepository = videoRepository;
         this.properties = properties;
+        this.moderationJoinService = moderationJoinService;
     }
 
     @Transactional
@@ -125,6 +130,11 @@ public class OriginalityJobService {
         job.setJobState(OriginalityJobState.COMPLETED);
         job.setLastError(null);
         jobRepository.save(job);
+
+        ModerationJoinService join = moderationJoinService.getIfAvailable();
+        if (join != null) {
+            join.onOriginalityCompleted(video.getId(), saved.getId());
+        }
     }
 
     @Transactional

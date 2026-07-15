@@ -11,7 +11,7 @@ After **meaningful** changes (APIs, migrations, auth, feed/chat, workers), updat
 | REST routes | [api/](api/) |
 | Flyway | [database/](database/), [erd/](erd/) |
 | Auth / captcha | [auth/](auth/), [anti-bot/](anti-bot/) |
-| Feed / explore / search / CU | [feed/](feed/), [explore/](explore/), [search/](search/), [architecture/content-understanding/](architecture/content-understanding/) |
+| Feed / explore / search / CU / moderation | [feed/](feed/), [explore/](explore/), [search/](search/), [architecture/content-understanding/](architecture/content-understanding/), [architecture/content-moderation/](architecture/content-moderation/) |
 | Chat / WebSocket / notifications | [chat/](chat/), [notification/](notification/), [architecture/WEBSOCKET_REALTIME.md](architecture/WEBSOCKET_REALTIME.md) |
 | FFmpeg / S3 | [media/](media/) |
 | Redis / optional Kafka | [backend/REDIS_KAFKA_INTEGRATION.md](backend/REDIS_KAFKA_INTEGRATION.md), [infra/](infra/) |
@@ -30,6 +30,7 @@ Start with [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md).
 |--------|-------|
 | Architecture | [architecture/README.md](architecture/README.md) |
 | Content Understanding | [architecture/content-understanding/00-INDEX.md](architecture/content-understanding/00-INDEX.md) |
+| Content Moderation (TDD) | [architecture/content-moderation/00-INDEX.md](architecture/content-moderation/00-INDEX.md) |
 | Backend | [backend/README.md](backend/README.md) |
 | Frontend | [frontend/README.md](frontend/README.md) |
 | Feed | [feed/README.md](feed/README.md) |
@@ -59,7 +60,7 @@ Vibely/
 ├── backend/                 # Spring Boot modular monolith
 ├── frontend/                # React 19 + Vite SPA
 ├── mobile/                  # Flutter client
-├── ai-workers/              # originality + content-understanding (Python)
+├── ai-workers/              # originality + content-understanding + content-moderation (Python)
 ├── docs/
 ├── deploy/                  # VPS compose / nginx samples
 ├── infra/                   # Lambda samples

@@ -1,0 +1,26 @@
+# Production add-on: Intelligent Content Moderation worker (policy engine).
+# Place next to /opt/vibely/docker-compose.yml and vibely.env
+# Usage:
+#   cd /opt/vibely
+#   docker compose -f docker-compose.content-moderation.yml pull
+#   docker compose -f docker-compose.content-moderation.yml up -d
+#
+# Phase 1 transport: poll Spring claim/complete (no GPU).
+# Default apply-decisions=false on backend → shadow mode until ops flips the flag.
+
+services:
+  content-moderation-worker:
+    image: kiencuongsoftware/vibely-moderation-worker:latest
+    build:
+      context: ../../ai-workers/content-moderation
+    container_name: vibely-moderation-worker
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - vibely.env
+    environment:
+      VIBELY_API_BASE: http://host.docker.internal:8080
+      MODERATION_INTERNAL_TOKEN: ${APP_MODERATION_INTERNAL_TOKEN:-vibely-dev-moderation-token}
+      MODERATION_POLL_SECONDS: "3"
+      LOG_LEVEL: INFO

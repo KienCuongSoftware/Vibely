@@ -104,6 +104,23 @@ app:
     recovery:
       enabled: ${APP_ORIGINALITY_RECOVERY_ENABLED:true}
       interval-ms: ${APP_ORIGINALITY_RECOVERY_INTERVAL_MS:60000}
+  moderation:
+    enabled: ${APP_MODERATION_ENABLED:true}
+    apply-decisions: ${APP_MODERATION_APPLY_DECISIONS:false}
+    rabbitmq-enabled: ${APP_MODERATION_RABBITMQ_ENABLED:false}
+    internal-token: ${APP_MODERATION_INTERNAL_TOKEN:vibely-dev-moderation-token}
+    policy-version: ${APP_MODERATION_POLICY_VERSION:2026.07.1}
+    engine-version: ${APP_MODERATION_ENGINE_VERSION:mod-policy-v1}
+    max-job-attempts: ${APP_MODERATION_MAX_JOB_ATTEMPTS:5}
+    stale-processing-minutes: ${APP_MODERATION_STALE_MINUTES:30}
+    originality-soft-timeout-minutes: ${APP_MODERATION_ORIG_SOFT_TIMEOUT_MINUTES:20}
+    exchange: ${APP_MODERATION_EXCHANGE:vibely.moderation}
+    routing-key-evaluate: ${APP_MODERATION_ROUTING_EVALUATE:moderation.evaluate.requested}
+    queue-evaluate: ${APP_MODERATION_QUEUE_EVALUATE:moderation.evaluate}
+    outbox-publish-interval-ms: ${APP_MODERATION_OUTBOX_INTERVAL_MS:5000}
+    recovery:
+      enabled: ${APP_MODERATION_RECOVERY_ENABLED:true}
+      interval-ms: ${APP_MODERATION_RECOVERY_INTERVAL_MS:60000}
   content-understanding:
     enabled: ${APP_CU_ENABLED:true}
     rabbitmq-enabled: ${APP_CU_RABBITMQ_ENABLED:false}
