@@ -16,20 +16,31 @@ _TAG_WEIGHTS = {
     "kissing": 0.35,
 }
 
+# Weight ~ contribution; many hits saturate via soft logistic.
 _TEXT_PATTERNS = [
-    (r"\bonlyfans\b", 0.55),
-    (r"\bnudes?\b", 0.7),
-    (r"\bporn\b", 0.75),
-    (r"\bxxx\b", 0.7),
-    (r"\bsex\s*tape\b", 0.8),
-    (r"\bstrip\s*tease\b", 0.6),
-    # Vietnamese sexual / genital insults (no ASCII \b — diacritics)
-    (r"đầu\s*buồi|dau\s*buoi", 0.85),
-    (r"buồi|buoi", 0.8),
-    (r"cặc|\bcak\b", 0.8),
-    (r"lồn|\bloz\b|\blìn\b", 0.8),
-    (r"địt\s*mẹ|dit\s*me|đụ\s*mẹ|du\s*me", 0.75),
-    (r"ảnh\s*nóng|anh\s*nong|video\s*nóng|clip\s*sex|xem\s*sex|làm\s*tình", 0.7),
+    (r"\bonlyfans\b|fansly|pornhub|xvideos|\bxnxx\b", 0.7),
+    (r"\bnudes?\b|nude\s*pic|send\s*nudes|free\s*nudes|follow\s*(?:for|of|4)\s*nudes?", 0.75),
+    (r"\bporn\b|\bxxx\b|sex\s*tape|strip\s*tease|cam\s*sex|live\s*sex|sex\s*chat", 0.7),
+    (r"\bfuck(?:ing)?\b|motherfucker|\bcunt\b|\bpussy\b|\bdick\b|\bcock\b", 0.75),
+    (r"\btits?\b|boobs|\bwhore\b|\bslut\b|\bbitch\b|asshole|\banal\b", 0.65),
+    (r"blow\s*job|hand\s*job|deepthroat|creampie|cumshot|hentai|lolicon", 0.8),
+    (r"child\s*porn|underage\s*sex|teen\s*porn|cp\s*trade", 0.95),
+    # Vietnamese sexual / vulgar (no ASCII \b — diacritics)
+    (
+        r"đầu\s*buồi|dau\s*buoi|buồi|\bbuoi\b|cặc|\bcak\b|lồn|\bloz\b|\blìn\b|"
+        r"địt|đụ|\bchịch\b|\bchich\b|đéo|\bđcm\b|\bdcm\b",
+        0.85,
+    ),
+    (
+        r"địt\s*mẹ|dit\s*me|đụ\s*mẹ|du\s*me|mẹ\s*mày|con\s*đĩ|con\s*di|\bđĩ\b|điếm|"
+        r"gái\s*gọi|gai\s*goi|bú\s*cu|liếm\s*lồn|làm\s*tình|lam\s*tinh",
+        0.8,
+    ),
+    (
+        r"ảnh\s*nóng|anh\s*nong|video\s*nóng|clip\s*sex|xem\s*sex|phim\s*sex|"
+        r"khoe\s*vú|khoe\s*vu|khoe\s*đít|không\s*mặc\s*quần|phim\s*18\+|jav\b",
+        0.75,
+    ),
 ]
 
 

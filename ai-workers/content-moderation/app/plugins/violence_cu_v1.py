@@ -30,10 +30,33 @@ _OBJECT_WEIGHTS = {
 }
 
 _TEXT_PATTERNS = [
-    (r"\b(gore|bloodbath|behead(ing)?)\b", 0.85),
-    (r"\b(shoot(ing)?|gunfight|stab(bing)?)\b", 0.7),
-    (r"\b(kill\s+him|i'?ll\s+kill)\b", 0.65),
-    (r"\b(massacre|terror\s*attack)\b", 0.8),
+    (r"\b(gore|bloodbath|behead(?:ing)?|decapitat\w*|massacre|genocide)\b", 0.85),
+    (r"\b(shoot(?:ing)?|gunfight|stab(?:bing)?|murder|homicide|serial\s*killer)\b", 0.75),
+    (r"\b(kill\s+(?:him|her|you|people|them|everyone)|i'?ll\s+kill|i\s+will\s+kill)\b", 0.8),
+    (r"\b(school\s*shooting|mass\s*shooting|terror\s*attack|bomb\s*threat|make\s*a\s*bomb)\b", 0.9),
+    (r"\b(how\s*to\s*kill|rape\s*and\s*kill|join\s*isis|al-?qaeda)\b", 0.9),
+    # Vietnamese violence / murder / rape / terror
+    (
+        r"giết\s*người|giet\s*nguoi|giết\s*chết|giet\s*chet|giết\s*hết|"
+        r"ám\s*sát|am\s*sat|thảm\s*sát|tham\s*sat|tàn\s*sát",
+        0.9,
+    ),
+    (
+        r"khủng\s*bố|khung\s*bo|đặt\s*bom|dat\s*bom|đánh\s*bom|danh\s*bom|"
+        r"xả\s*súng|xa\s*sung|bắn\s*chết|ban\s*chet",
+        0.9,
+    ),
+    (
+        r"chém\s*giết|chem\s*giet|chém\s*đầu|đâm\s*chết|dam\s*chet|"
+        r"cắt\s*cổ|cat\s*co|chặt\s*đầu|thiêu\s*sống",
+        0.85,
+    ),
+    (
+        r"hiếp\s*dâm|hiep\s*dam|cưỡng\s*hiếp|cuong\s*hiep|cưỡng\s*bức|"
+        r"hãm\s*hiếp|tra\s*tấn|tra\s*tan",
+        0.9,
+    ),
+    (r"tự\s*sát|tu\s*sat|tự\s*vẫn|kill\s*myself|\bsuicide\b", 0.7),
 ]
 
 

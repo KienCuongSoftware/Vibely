@@ -67,6 +67,39 @@ def test_nsfw_plugin_fires_on_vietnamese_caption():
     assert out["decision"] == "BLOCK"
 
 
+def test_violence_plugin_fires_on_vietnamese_caption():
+    claim = {
+        "policyVersion": "2026.07.1",
+        "snapshot": {
+            "tags": [],
+            "title": "Giết người",
+            "description": "",
+            "ocr_text": "",
+            "speech_text": "",
+            "visual_features": {},
+            "object_features": {},
+            "trust_score": 0.5,
+        },
+        "policy": {"thresholds": {"allow_max": 24, "limit_max": 49, "review_max": 74}},
+        "rules": [
+            {
+                "code": "plugin.violence_cu_v1",
+                "label": "violence",
+                "priority": 55,
+                "match": {"type": "plugin_score", "plugin": "violence_cu_v1", "min_score": 0.55},
+                "severity": "HIGH",
+                "action_hint": "BLOCK",
+                "points": 45,
+            }
+        ],
+        "detectors": [{"code": "violence_cu_v1", "enabled": True, "config": {"min_emit": 0.25}}],
+    }
+    plugins = run_plugins(claim)
+    assert plugins["violence_cu_v1"]["score"] >= 0.55
+    out = evaluate(claim)
+    assert out["decision"] == "BLOCK"
+
+
 def test_lex_sexual_vi_blocks_vietnamese_caption():
     claim = {
         "policyVersion": "2026.07.1",
