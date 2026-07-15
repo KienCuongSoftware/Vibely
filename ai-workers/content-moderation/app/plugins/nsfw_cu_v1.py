@@ -23,6 +23,13 @@ _TEXT_PATTERNS = [
     (r"\bxxx\b", 0.7),
     (r"\bsex\s*tape\b", 0.8),
     (r"\bstrip\s*tease\b", 0.6),
+    # Vietnamese sexual / genital insults (no ASCII \b — diacritics)
+    (r"đầu\s*buồi|dau\s*buoi", 0.85),
+    (r"buồi|buoi", 0.8),
+    (r"cặc|\bcak\b", 0.8),
+    (r"lồn|\bloz\b|\blìn\b", 0.8),
+    (r"địt\s*mẹ|dit\s*me|đụ\s*mẹ|du\s*me", 0.75),
+    (r"ảnh\s*nóng|anh\s*nong|video\s*nóng|clip\s*sex|xem\s*sex|làm\s*tình", 0.7),
 ]
 
 
