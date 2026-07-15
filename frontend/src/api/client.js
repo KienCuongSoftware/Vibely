@@ -319,6 +319,22 @@ export const apiClient = {
       token,
       body: payload,
     }),
+  getAdminModerationAppeals: (token, { page = 0, size = 20, state } = {}) =>
+    request(`/api/admin/moderation/appeals${toQuery({ page, size, state })}`, { token }),
+  resolveAdminModerationAppeal: (token, appealId, payload) =>
+    request(`/api/admin/moderation/appeals/${appealId}/resolve`, {
+      method: "POST",
+      token,
+      body: payload,
+    }),
+  getVideoModerationStatus: (token, publicId) =>
+    request(`/api/videos/${encodeURIComponent(publicId)}/moderation-status`, { token }),
+  createVideoModerationAppeal: (token, publicId, payload) =>
+    request(`/api/videos/${encodeURIComponent(publicId)}/moderation-appeals`, {
+      method: "POST",
+      token,
+      body: payload,
+    }),
   banAdminUser: (token, userId, payload) =>
     request(`/api/admin/users/${userId}/ban`, { method: "POST", token, body: payload }),
   unbanAdminUser: (token, userId) =>

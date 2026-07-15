@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ public class AdminModerationService {
     private final ModerationDecisionApplier decisionApplier;
     private final ModerationEventOutboxRepository outboxRepository;
     private final VideoRepository videoRepository;
+    private final CreatorTrustService trustService;
     private final ObjectMapper objectMapper;
 
     public AdminModerationService(
@@ -33,6 +35,7 @@ public class AdminModerationService {
         ModerationDecisionApplier decisionApplier,
         ModerationEventOutboxRepository outboxRepository,
         VideoRepository videoRepository,
+        CreatorTrustService trustService,
         ObjectMapper objectMapper
     ) {
         this.jdbcTemplate = jdbcTemplate;
@@ -40,6 +43,7 @@ public class AdminModerationService {
         this.decisionApplier = decisionApplier;
         this.outboxRepository = outboxRepository;
         this.videoRepository = videoRepository;
+        this.trustService = trustService;
         this.objectMapper = objectMapper;
     }
 
@@ -57,66 +61,82 @@ public class AdminModerationService {
             ? "WHERE q.queue_state IN ('OPEN', 'CLAIMED')"
             : "WHERE q.queue_state = ?";
 
-        Long total = stateFilter == null
-            ? jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM moderation_review_queue q " + where,
-                Long.class
-            )
-            : jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM moderation_review_queue q " + where,
-                Long.class,
-                stateFilter
-            );
-        if (total == null) {
-            total = 0L;
-        }
-
-        String sql = """
-            SELECT q.id AS queue_id, q.video_id, q.report_id, q.priority, q.queue_state, q.reason,
-                   q.claimed_by, q.created_at,
-                   v.public_id, v.title, v.thumbnail_url,
-                   u.username AS author_username,
-                   r.decision AS ai_decision, r.risk, r.confidence, r.status AS report_status
-            FROM moderation_review_queue q
-            JOIN videos v ON v.id = q.video_id
-            JOIN users u ON u.id = v.author_id
-            JOIN moderation_reports r ON r.id = q.report_id
-            %s
-            ORDER BY q.priority DESC, q.created_at ASC
-            LIMIT ? OFFSET ?
-            """.formatted(where);
-
-        List<Map<String, Object>> rows = stateFilter == null
-            ? jdbcTemplate.queryForList(sql, safeSize, offset)
-            : jdbcTemplate.queryForList(sql, stateFilter, safeSize, offset);
-
-        List<AdminModerationQueueItemResponse> items = new ArrayList<>();
-        for (Map<String, Object> row : rows) {
-            Object publicId = row.get("public_id");
-            String reportStatus = String.valueOf(row.get("report_status"));
-            items.add(
-                new AdminModerationQueueItemResponse(
-                    ((Number) row.get("queue_id")).longValue(),
-                    ((Number) row.get("video_id")).longValue(),
-                    publicId == null ? null : String.valueOf(publicId),
-                    (String) row.get("title"),
-                    (String) row.get("thumbnail_url"),
-                    (String) row.get("author_username"),
-                    ((Number) row.get("report_id")).longValue(),
-                    String.valueOf(row.get("ai_decision")),
-                    ((Number) row.get("risk")).intValue(),
-                    ((Number) row.get("confidence")).doubleValue(),
-                    String.valueOf(row.get("queue_state")),
-                    ((Number) row.get("priority")).intValue(),
-                    String.valueOf(row.get("reason")),
-                    (String) row.get("claimed_by"),
-                    row.get("created_at") == null ? null : String.valueOf(row.get("created_at")),
-                    "SHADOW".equalsIgnoreCase(reportStatus)
+        try {
+            Long total = stateFilter == null
+                ? jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM moderation_review_queue q " + where,
+                    Long.class
                 )
+                : jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM moderation_review_queue q " + where,
+                    Long.class,
+                    stateFilter
+                );
+            if (total == null) {
+                total = 0L;
+            }
+
+            String sql = """
+                SELECT q.id AS queue_id, q.video_id, q.report_id, q.priority, q.queue_state, q.reason,
+                       q.claimed_by, q.created_at,
+                       v.public_id, v.title, v.thumbnail_url,
+                       u.username AS author_username,
+                       r.decision AS ai_decision, r.risk, r.confidence, r.status AS report_status
+                FROM moderation_review_queue q
+                JOIN videos v ON v.id = q.video_id
+                JOIN users u ON u.id = v.author_id
+                LEFT JOIN moderation_reports r ON r.id = q.report_id
+                %s
+                ORDER BY q.priority DESC, q.created_at ASC
+                LIMIT ? OFFSET ?
+                """.formatted(where);
+
+            List<Map<String, Object>> rows = stateFilter == null
+                ? jdbcTemplate.queryForList(sql, safeSize, offset)
+                : jdbcTemplate.queryForList(sql, stateFilter, safeSize, offset);
+
+            List<AdminModerationQueueItemResponse> items = new ArrayList<>();
+            for (Map<String, Object> row : rows) {
+                Object publicId = row.get("public_id");
+                String reportStatus = row.get("report_status") == null
+                    ? ""
+                    : String.valueOf(row.get("report_status"));
+                items.add(
+                    new AdminModerationQueueItemResponse(
+                        asLong(row.get("queue_id"), 0L),
+                        asLong(row.get("video_id"), 0L),
+                        publicId == null ? null : String.valueOf(publicId),
+                        (String) row.get("title"),
+                        (String) row.get("thumbnail_url"),
+                        (String) row.get("author_username"),
+                        asLong(row.get("report_id"), 0L),
+                        row.get("ai_decision") == null ? "REVIEW" : String.valueOf(row.get("ai_decision")),
+                        asInt(row.get("risk"), 0),
+                        asDouble(row.get("confidence"), 0.0),
+                        String.valueOf(row.get("queue_state")),
+                        asInt(row.get("priority"), 0),
+                        row.get("reason") == null ? "" : String.valueOf(row.get("reason")),
+                        (String) row.get("claimed_by"),
+                        row.get("created_at") == null ? null : String.valueOf(row.get("created_at")),
+                        "SHADOW".equalsIgnoreCase(reportStatus)
+                    )
+                );
+            }
+            boolean hasNext = (long) (safePage + 1) * safeSize < total;
+            return new AdminModerationQueuePageResponse(items, total, safePage, safeSize, hasNext);
+        } catch (DataAccessException ex) {
+            String msg = ex.getMostSpecificCause() == null
+                ? ex.getMessage()
+                : ex.getMostSpecificCause().getMessage();
+            if (msg != null && msg.toLowerCase(Locale.ROOT).contains("moderation_review_queue")) {
+                throw new BadRequestException(
+                    "Schema kiểm duyệt chưa sẵn sàng. Hãy chạy Flyway V67 rồi restart backend."
+                );
+            }
+            throw new BadRequestException(
+                "Không đọc được hàng đợi kiểm duyệt: " + (msg == null ? "lỗi DB" : msg)
             );
         }
-        boolean hasNext = (long) (safePage + 1) * safeSize < total;
-        return new AdminModerationQueuePageResponse(items, total, safePage, safeSize, hasNext);
     }
 
     @Transactional
@@ -193,6 +213,8 @@ public class AdminModerationService {
 
         String actor = "ADMIN:" + (adminUserId == null ? adminLabel : adminUserId);
         decisionApplier.applyHuman(video, report, decision, actor);
+        Long authorId = video.getAuthor() == null ? null : video.getAuthor().getId();
+        trustService.onHumanResolve(authorId, videoId, fromDecision, decision);
 
         jdbcTemplate.update(
             """
@@ -475,5 +497,26 @@ public class AdminModerationService {
 
     private static String blankTo(String value, String fallback) {
         return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private static long asLong(Object value, long fallback) {
+        if (value instanceof Number n) {
+            return n.longValue();
+        }
+        return fallback;
+    }
+
+    private static int asInt(Object value, int fallback) {
+        if (value instanceof Number n) {
+            return n.intValue();
+        }
+        return fallback;
+    }
+
+    private static double asDouble(Object value, double fallback) {
+        if (value instanceof Number n) {
+            return n.doubleValue();
+        }
+        return fallback;
     }
 }

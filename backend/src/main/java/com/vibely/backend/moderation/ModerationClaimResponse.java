@@ -12,6 +12,7 @@ public record ModerationClaimResponse(
     int attempts,
     Map<String, Object> snapshot,
     Map<String, Object> policy,
-    List<Map<String, Object>> rules
+    List<Map<String, Object>> rules,
+    List<Map<String, Object>> detectors
 ) {
 }

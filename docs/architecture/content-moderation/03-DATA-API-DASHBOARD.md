@@ -64,6 +64,7 @@ Publishing a policy version: copy rules → freeze → set `is_active` → inval
 | `moderation_audit_logs` | Append-only: who, what, before/after, request id |
 | `creator_trust_scores` | Phase 3 |
 | `creator_policy_history` | Phase 3 |
+| `detector_registry` | Phase 4 — plugin codes / artifact refs (`nsfw_cu_v1`, `violence_cu_v1`) |
 | `moderation_event_outbox` | Mirror `cu_event_outbox` pattern |
 
 User reports may keep living on `videos.report_*` initially; Phase 2 can normalize `content_reports` if needed — not required to start.

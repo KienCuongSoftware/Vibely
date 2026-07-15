@@ -78,6 +78,10 @@ export function StudioEditPostPage() {
   const [previewDuration, setPreviewDuration] = useState(0)
   const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false)
   const [isPreviewMuted, setIsPreviewMuted] = useState(true)
+  const [modStatus, setModStatus] = useState(null)
+  const [modAppealText, setModAppealText] = useState('')
+  const [modAppealBusy, setModAppealBusy] = useState(false)
+  const [modAppealMsg, setModAppealMsg] = useState('')
 
   const publicId = useMemo(
     () => normalizeVideoPublicId(publicIdParam),
@@ -137,6 +141,25 @@ export function StudioEditPostPage() {
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [token, publicId, validId])
+
+  useEffect(() => {
+    if (!token || !validId) {
+      setModStatus(null)
+      return
+    }
+    let cancelled = false
+    apiClient
+      .getVideoModerationStatus(token, publicId)
+      .then((data) => {
+        if (!cancelled) setModStatus(data)
+      })
+      .catch(() => {
+        if (!cancelled) setModStatus(null)
       })
     return () => {
       cancelled = true
@@ -608,6 +631,76 @@ export function StudioEditPostPage() {
                   </div>
                   <div className="h-1 w-full bg-emerald-600" aria-hidden />
                 </div>
+
+                {modStatus && modStatus.statusLabel && modStatus.statusLabel !== 'NONE' ? (
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-100">Kiểm duyệt nội dung</h3>
+                    <p className="mt-1 text-sm text-zinc-400">{modStatus.messageVi}</p>
+                    <p className="mt-2 text-xs text-zinc-500">
+                      Trạng thái:{' '}
+                      <span className="text-zinc-300">
+                        {modStatus.statusLabel === 'NORMAL'
+                          ? 'Bình thường'
+                          : modStatus.statusLabel === 'LIMITED'
+                            ? 'Hạn chế phân phối'
+                            : modStatus.statusLabel === 'UNDER_REVIEW'
+                              ? 'Đang xem lại'
+                              : modStatus.statusLabel === 'REMOVED'
+                                ? 'Đã gỡ'
+                                : modStatus.statusLabel}
+                      </span>
+                      {modStatus.trustScore != null ? (
+                        <>
+                          {' '}
+                          · Điểm tin cậy creator: {Number(modStatus.trustScore).toFixed(2)}
+                        </>
+                      ) : null}
+                    </p>
+                    {modStatus.hasOpenAppeal ? (
+                      <p className="mt-2 text-xs text-amber-300">
+                        Khiếu nại đang chờ xử lý ({modStatus.appealState}).
+                      </p>
+                    ) : null}
+                    {modStatus.appealable ? (
+                      <div className="mt-3 space-y-2">
+                        <textarea
+                          value={modAppealText}
+                          onChange={(e) => setModAppealText(e.target.value)}
+                          rows={3}
+                          placeholder="Giải thích vì sao bạn khiếu nại quyết định này (tối thiểu 10 ký tự)…"
+                          className="w-full rounded-lg border border-zinc-700 bg-black px-3 py-2 text-sm text-zinc-100"
+                        />
+                        {modAppealMsg ? (
+                          <p className="text-xs text-zinc-400">{modAppealMsg}</p>
+                        ) : null}
+                        <button
+                          type="button"
+                          disabled={modAppealBusy || modAppealText.trim().length < 10}
+                          onClick={async () => {
+                            setModAppealBusy(true)
+                            setModAppealMsg('')
+                            try {
+                              await apiClient.createVideoModerationAppeal(token, publicId, {
+                                appealText: modAppealText.trim(),
+                              })
+                              setModAppealMsg('Đã gửi khiếu nại. Admin sẽ xem xét.')
+                              setModAppealText('')
+                              const next = await apiClient.getVideoModerationStatus(token, publicId)
+                              setModStatus(next)
+                            } catch (e) {
+                              setModAppealMsg(e.message ?? 'Không gửi được khiếu nại.')
+                            } finally {
+                              setModAppealBusy(false)
+                            }
+                          }}
+                          className="rounded-lg bg-[#fe2c55] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                        >
+                          {modAppealBusy ? 'Đang gửi…' : 'Gửi khiếu nại'}
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
 
                 <div>
                   <h2 className="text-xl font-bold text-white">Chi tiết</h2>

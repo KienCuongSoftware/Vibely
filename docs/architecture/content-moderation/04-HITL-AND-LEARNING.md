@@ -4,7 +4,7 @@
 |-------|--------|
 | Parent | [00-INDEX.md](./00-INDEX.md) |
 | Status | Proposed |
-| Note | Phase 1–3 = product safety loop; Phase 4–5+ = sketched only — no invented MLOps fleet |
+| Note | Phase 1–4 = product safety loop + CU plugin detectors; Phase 5+ = sketched only — no invented MLOps fleet |
 
 ---
 
@@ -78,7 +78,7 @@ Export path: SQL / CSV to offline notebooks — **not** an in-repo Kubeflow stor
 
 ---
 
-## 5. Phase 4 — Detector plugins (no re-infer pipeline)
+## 5. Phase 4 — Detector plugins (no re-infer pipeline) — **landed**
 
 Goal: improve sexual / violence / gore recall using **stored** CU signals.
 
@@ -88,9 +88,16 @@ Goal: improve sexual / violence / gore recall using **stored** CU signals.
 | Run small classification head in moderation worker or sidecar | Fork full CU pipeline inside moderation |
 | Persist plugin scores as evidence rows `source_modality=PLUGIN` | Silent decisions without evidence |
 
-Plugin results feed the **same** Policy Engine as lexicon rules (extra firings).
+**Shipped**
 
-Model binaries: versioned artifacts referenced by `policy_versions` or a thin `detector_registry` table (Phase 5 may rename to model registry). Phase 4 ships 0–1 plugins max if ops-ready; TDD only requires the extension point.
+| Piece | Detail |
+|-------|--------|
+| Schema | Flyway `V69` — `detector_registry` + rules `plugin.nsfw_cu_v1` / `plugin.violence_cu_v1` (`match.type=plugin_score`) |
+| Snapshot | `visual_features` + `object_features` (aggregates only); refreshed at claim via `ModerationSnapshotBuilder.enrichForPlugins` |
+| Claim | `detectors[]` from `detector_registry` |
+| Worker | `app/plugins/*` heuristics → `snapshot.plugins` → Policy Engine; evidence `PLUGIN`; engine `mod-policy-v1.4-plugins` |
+
+Plugin results feed the **same** Policy Engine as lexicon rules (extra firings). Artifact binaries (`onnx` / `torchscript`) can replace heuristics later via `artifact_kind` + `artifact_ref` without changing the join path.
 
 ---
 

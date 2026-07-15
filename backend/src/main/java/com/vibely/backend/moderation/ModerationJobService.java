@@ -26,6 +26,8 @@ public class ModerationJobService {
     private final ModerationProperties properties;
     private final ModerationDecisionApplier decisionApplier;
     private final ModerationEventOutboxRepository outboxRepository;
+    private final CreatorTrustService trustService;
+    private final ModerationSnapshotBuilder snapshotBuilder;
     private final ObjectMapper objectMapper;
     private final JdbcTemplate jdbcTemplate;
 
@@ -35,6 +37,8 @@ public class ModerationJobService {
         ModerationProperties properties,
         ModerationDecisionApplier decisionApplier,
         ModerationEventOutboxRepository outboxRepository,
+        CreatorTrustService trustService,
+        ModerationSnapshotBuilder snapshotBuilder,
         ObjectMapper objectMapper,
         JdbcTemplate jdbcTemplate
     ) {
@@ -43,6 +47,8 @@ public class ModerationJobService {
         this.properties = properties;
         this.decisionApplier = decisionApplier;
         this.outboxRepository = outboxRepository;
+        this.trustService = trustService;
+        this.snapshotBuilder = snapshotBuilder;
         this.objectMapper = objectMapper;
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -63,9 +69,13 @@ public class ModerationJobService {
         jobRepository.save(job);
 
         Video video = job.getVideo();
-        Map<String, Object> snapshot = parseJsonMap(job.getSnapshotJson());
+        Map<String, Object> snapshot = snapshotBuilder.enrichForPlugins(
+            video.getId(),
+            parseJsonMap(job.getSnapshotJson())
+        );
         Map<String, Object> policy = loadActivePolicy(job.getPolicyVersion());
         List<Map<String, Object>> rules = loadRules(job.getPolicyVersion());
+        List<Map<String, Object>> detectors = loadDetectors();
 
         return Optional.of(
             new ModerationClaimResponse(
@@ -77,7 +87,8 @@ public class ModerationJobService {
                 job.getAttempts(),
                 snapshot,
                 policy,
-                rules
+                rules,
+                detectors
             )
         );
     }
@@ -156,6 +167,16 @@ public class ModerationJobService {
         }
 
         decisionApplier.apply(job.getVideo(), saved, decision, shadow);
+        Long authorId = job.getVideo().getAuthor() == null ? null : job.getVideo().getAuthor().getId();
+        trustService.recordPolicyEvent(
+            authorId,
+            job.getVideo().getId(),
+            decision.name(),
+            shadow ? "AI_SHADOW" : "AI"
+        );
+        if (!shadow && decision == ModerationDecision.ALLOW) {
+            trustService.onAiAllow(authorId, job.getVideo().getId());
+        }
 
         if (decision == ModerationDecision.REVIEW) {
             jdbcTemplate.update(
@@ -319,6 +340,35 @@ public class ModerationJobService {
             rules.add(rule);
         }
         return rules;
+    }
+
+    private List<Map<String, Object>> loadDetectors() {
+        List<Map<String, Object>> rows;
+        try {
+            rows = jdbcTemplate.queryForList(
+                """
+                SELECT code, display_name, artifact_kind, artifact_ref, config_json, enabled
+                FROM detector_registry
+                WHERE enabled = TRUE
+                ORDER BY code ASC
+                """
+            );
+        } catch (Exception e) {
+            // Pre-V69 databases: claim still works without plugins.
+            return List.of();
+        }
+        List<Map<String, Object>> detectors = new ArrayList<>();
+        for (Map<String, Object> row : rows) {
+            Map<String, Object> d = new LinkedHashMap<>();
+            d.put("code", row.get("code"));
+            d.put("displayName", row.get("display_name"));
+            d.put("artifactKind", row.get("artifact_kind"));
+            d.put("artifactRef", row.get("artifact_ref"));
+            d.put("config", parseJsonMap(String.valueOf(row.get("config_json"))));
+            d.put("enabled", Boolean.TRUE.equals(row.get("enabled")));
+            detectors.add(d);
+        }
+        return detectors;
     }
 
     private void writeOutbox(

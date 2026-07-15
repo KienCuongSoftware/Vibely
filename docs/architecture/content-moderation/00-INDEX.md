@@ -5,7 +5,7 @@
 |-------|--------|
 | Document ID | VIBELY-TDD-ICM-2026-07 |
 | Version | 1.1 |
-| Status | **Phase 1–2 landed** — policy worker + Admin review queue (claim / resolve / override) |
+| Status | **Phase 1–4 landed** — policy worker + Admin review + appeals / trust + detector plugins |
 | Audience | Engineering, Moderation / Trust & Safety, AI/ML, SRE, Product |
 | Related | CU ([content-understanding/00-INDEX.md](../content-understanding/00-INDEX.md)), Originality ([Vibely-Originality-Detection-TDD.md](../Vibely-Originality-Detection-TDD.md)), Explore ([docs/explore](../../explore/)) |
 
@@ -27,7 +27,7 @@
 | Fact | Detail |
 |------|--------|
 | User report | `videos.report_*` + `REPORTED` (unchanged) |
-| Phase 1 package | `com.vibely.backend.moderation` + Flyway `V67` |
+| Moderation package | `com.vibely.backend.moderation` + Flyway `V67`–`V69` |
 | Join triggers | CU `complete` → `onContentUnderstandingCompleted`; originality `complete` → `onOriginalityCompleted`; soft-timeout reconciler |
 | Worker | Poll `/api/internal/moderation/claim` → Policy Engine → `.../complete` |
 | Apply | Default **shadow** (`apply-decisions=false`): persist report/decision with `shadow=true`, no status mutate; Explore filter ignores shadow rows |
@@ -88,8 +88,8 @@ Phase 1 primary transport is **DB poll claim** (like originality). Rabbit outbox
 |-------|--------|------|
 | **1** | **Landed** | Flyway `V67`, Spring join/claim/complete, Python policy worker, Explore `explore_eligible` gate (non-shadow). Default shadow apply. |
 | **2** | **Landed** | Admin `/admin/moderation` queue + detail; REST claim/resolve; human override always applies levers |
-| **3** | Planned | Creator trust + appeal workflow + audit completeness |
-| **4** | Planned | Detector plugins on stored CU embeddings — never re-OCR |
+| **3** | **Landed** | `V68` appeals; creator trust scores; author status/appeal Studio UI; Admin khiếu nại tab; audit on appeal/resolve |
+| **4** | **Landed** | `V69` `detector_registry`; plugins `nsfw_cu_v1` / `violence_cu_v1` on stored CU visual/object JSON; `plugin_score` rules; claim enrich at job time |
 | **5+** | Sketch | Active learning / registry / drift / A/B — [04](./04-HITL-AND-LEARNING.md) |
 
 ---
@@ -101,7 +101,7 @@ Phase 1 primary transport is **DB poll claim** (like originality). Rabbit outbox
 | Trigger | After CU complete **and** originality complete; soft timeout with `originality_pending` + confidence penalty |
 | Fallback | Idempotent job key `(video_id, analysis_job_id, originality_report_id, policy_version)` |
 | Risk | Hybrid weighted firings + hard overrides; soft `action_hint` floor |
-| Phase 1 detectors | Lexicon / tag / OCR / speech / originality / metadata — no new visual heads |
+| Detectors | Lexicon / tag / OCR / speech / originality + Phase 4 plugins on stored CU visual/object (no re-encode) |
 | Explore | Gate via `moderation_decisions` only (originality is a policy input) |
 
 ---
@@ -110,7 +110,7 @@ Phase 1 primary transport is **DB poll claim** (like originality). Rabbit outbox
 
 | Piece | Location |
 |-------|----------|
-| Flyway | `V67__content_moderation_phase1.sql` |
+| Flyway | `V67` Phase 1, `V68` appeals, `V69` detector plugins |
 | Spring | `com.vibely.backend.moderation` |
 | Worker | `ai-workers/content-moderation` |
 | Compose | `deploy/vps/docker-compose.content-moderation.yml` |

@@ -20,14 +20,27 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminModerationController {
 
     private final AdminModerationService adminModerationService;
+    private final ModerationAppealService appealService;
     private final UserRepository userRepository;
 
     public AdminModerationController(
         AdminModerationService adminModerationService,
+        ModerationAppealService appealService,
         UserRepository userRepository
     ) {
         this.adminModerationService = adminModerationService;
+        this.appealService = appealService;
         this.userRepository = userRepository;
+    }
+
+    /** Alias for clients that call /api/admin/moderation without /queue. */
+    @GetMapping
+    public ApiResponse<AdminModerationQueuePageResponse> listQueueRoot(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) String state
+    ) {
+        return listQueue(page, size, state);
     }
 
     @GetMapping("/queue")
@@ -71,6 +84,27 @@ public class AdminModerationController {
     @GetMapping("/videos/{publicId}")
     public ApiResponse<AdminModerationDetailResponse> getVideoDetail(@PathVariable String publicId) {
         return ApiResponse.success(adminModerationService.getDetailByPublicId(publicId));
+    }
+
+    @GetMapping("/appeals")
+    public ApiResponse<AdminModerationAppealPageResponse> listAppeals(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) String state
+    ) {
+        return ApiResponse.success(appealService.listAppeals(page, size, state));
+    }
+
+    @PostMapping("/appeals/{appealId}/resolve")
+    public ApiResponse<ModerationAppealResponse> resolveAppeal(
+        @PathVariable long appealId,
+        @Valid @RequestBody AdminModerationAppealResolveRequest request,
+        Authentication authentication
+    ) {
+        Long adminUserId = userRepository.findByEmail(authentication.getName())
+            .map(User::getId)
+            .orElse(null);
+        return ApiResponse.success(appealService.resolveAppeal(appealId, request, adminUserId));
     }
 
     private String adminLabel(Authentication authentication) {

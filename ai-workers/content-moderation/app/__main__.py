@@ -1,8 +1,9 @@
 """
 Vibely content-moderation worker.
 
-Loads CU + originality snapshot from Spring claim API, evaluates DB-backed rules,
-posts explainable decision. Never re-runs OCR/Whisper/CLIP/YOLO.
+Loads CU + originality snapshot from Spring claim API, runs optional detector
+plugins on stored visual/object JSON, evaluates DB-backed rules, posts
+explainable decision. Never re-runs OCR/Whisper/CLIP/YOLO or re-downloads media.
 """
 
 from __future__ import annotations

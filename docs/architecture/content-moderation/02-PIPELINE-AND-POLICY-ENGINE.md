@@ -258,6 +258,6 @@ CU/Originality completed events may live on existing CU / originality exchanges;
 | Phase | Detectors |
 |-------|-----------|
 | **1** | Lexicon on OCR/speech, semantic tag sets, object/scene JSON thresholds, originality pack, metadata, stub trust |
-| **4** | Optional NSFW/violence **heads** reading stored frame embeddings / `visual` JSON — same worker process or sidecar plugin; **no** re-pipeline |
+| **4** | **Landed:** `nsfw_cu_v1` / `violence_cu_v1` heuristics on stored `visual` / `object_features` + tags/text; `match.type=plugin_score`; ONNX heads can swap in via `detector_registry` later — **no** re-pipeline |
 
 Next: [03-DATA-API-DASHBOARD.md](./03-DATA-API-DASHBOARD.md)

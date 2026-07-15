@@ -3,16 +3,22 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from .plugins import run_plugins
+
 
 SEVERITY_RANK = {"LOW": 1, "MEDIUM": 2, "HIGH": 3, "CRITICAL": 4}
 DECISION_RANK = {"ALLOW": 0, "LIMIT": 1, "REVIEW": 2, "BLOCK": 3, "DELETE": 4}
 
 
 def evaluate(claim: dict[str, Any]) -> dict[str, Any]:
-    snapshot = claim.get("snapshot") or {}
+    snapshot = dict(claim.get("snapshot") or {})
     policy = claim.get("policy") or {}
     rules = claim.get("rules") or []
     originality_pending = bool(claim.get("originalityPending") or snapshot.get("originality_pending"))
+
+    # Phase 4: detector plugins on stored CU features (never re-download media).
+    plugin_results = run_plugins(claim)
+    snapshot["plugins"] = plugin_results
 
     thresholds = policy.get("thresholds") or {}
     weights = policy.get("weights") or {}
@@ -25,6 +31,42 @@ def evaluate(claim: dict[str, Any]) -> dict[str, Any]:
     evidence: list[dict[str, Any]] = []
     label_scores: dict[str, float] = {}
     label_rules: dict[str, list[str]] = {}
+
+    # Always persist non-trivial plugin scores as PLUGIN evidence.
+    for code, result in plugin_results.items():
+        try:
+            pscore = float(result.get("score") or 0)
+        except (TypeError, ValueError):
+            pscore = 0.0
+        min_emit = 0.25
+        cfg = {}
+        for det in claim.get("detectors") or []:
+            if str(det.get("code") or "") == code:
+                cfg = det.get("config") or {}
+                break
+        try:
+            min_emit = float(cfg.get("min_emit", min_emit))
+        except (TypeError, ValueError):
+            pass
+        if pscore < min_emit:
+            continue
+        evidence.append(
+            {
+                "sourceModality": "PLUGIN",
+                "reasonCode": f"plugin.{code}",
+                "snippet": result.get("snippet") or f"{code}={pscore:.2f}",
+                "frameIndex": None,
+                "timeMs": None,
+                "weight": pscore,
+                "refJson": {
+                    "type": "plugin",
+                    "plugin": code,
+                    "score": pscore,
+                    "details": result.get("details") or {},
+                    "artifact_kind": result.get("artifact_kind"),
+                },
+            }
+        )
 
     for rule in sorted(rules, key=lambda r: int(r.get("priority") or 100)):
         hit = _match_rule(rule, snapshot)
@@ -48,6 +90,20 @@ def evaluate(claim: dict[str, Any]) -> dict[str, Any]:
         firings.append(firing)
         label_scores[label] = label_scores.get(label, 0.0) + float(points)
         label_rules.setdefault(label, []).append(code)
+        # Skip duplicate PLUGIN evidence when rule already covered by emit above.
+        if hit.get("modality") == "PLUGIN" and any(
+            e.get("reasonCode") == f"plugin.{(hit.get('evidence_ref') or {}).get('plugin')}"
+            for e in evidence
+        ):
+            # Upgrade weight/snippet to rule firing points for audit clarity.
+            for e in evidence:
+                if e.get("reasonCode") == f"plugin.{(hit.get('evidence_ref') or {}).get('plugin')}":
+                    e["weight"] = float(points)
+                    e["reasonCode"] = code
+                    e["snippet"] = hit.get("snippet") or e.get("snippet")
+                    e["refJson"] = {**(e.get("refJson") or {}), **(hit.get("evidence_ref") or {}), "rule_code": code}
+                    break
+            continue
         evidence.append(
             {
                 "sourceModality": hit.get("modality", "RULE"),
@@ -96,6 +152,16 @@ def evaluate(claim: dict[str, Any]) -> dict[str, Any]:
     if decision in {"LIMIT", "BLOCK"} and confidence < confidence_floor:
         decision = "REVIEW"
 
+    # Phase 3 creator trust soft-bias (never weakens hard overrides).
+    try:
+        trust = float(snapshot.get("trust_score") or 0.5)
+    except (TypeError, ValueError):
+        trust = 0.5
+    if not override_applied and trust >= 0.75 and decision == "REVIEW" and risk < 60:
+        decision = "LIMIT"
+    if not override_applied and trust <= 0.25 and decision == "ALLOW" and risk >= 15:
+        decision = "REVIEW"
+
     policy_results = [
         {
             "label": label,
@@ -120,11 +186,17 @@ def evaluate(claim: dict[str, Any]) -> dict[str, Any]:
             "review_max": review_max,
         },
         "firings": firings,
+        "plugins": {
+            code: {"score": (result or {}).get("score"), "snippet": (result or {}).get("snippet")}
+            for code, result in plugin_results.items()
+        },
         "inputs": {
             "analysis_job_id": snapshot.get("analysis_job_id"),
             "content_features_sha": snapshot.get("content_sha256"),
             "originality_report_id": snapshot.get("originality_report_id"),
             "tag_count": len(snapshot.get("tags") or []),
+            "has_visual_features": bool(snapshot.get("visual_features")),
+            "has_object_features": bool(snapshot.get("object_features")),
         },
     }
 
@@ -135,7 +207,7 @@ def evaluate(claim: dict[str, Any]) -> dict[str, Any]:
         "overrideApplied": override_applied,
         "originalityPending": originality_pending,
         "explainJson": explain,
-        "engineVersion": "mod-policy-v1",
+        "engineVersion": "mod-policy-v1.4-plugins",
         "evidence": evidence,
         "policyResults": policy_results,
     }
@@ -149,6 +221,9 @@ def _confidence(snapshot: dict[str, Any], originality_pending: bool, firings: li
         score += 0.12
     if snapshot.get("tags"):
         score += 0.12
+    plugins = snapshot.get("plugins") or {}
+    if any(float((p or {}).get("score") or 0) >= 0.4 for p in plugins.values()):
+        score += 0.08
     originality = snapshot.get("originality") or {}
     if originality.get("present"):
         score += 0.18
@@ -172,7 +247,36 @@ def _match_rule(rule: dict[str, Any], snapshot: dict[str, Any]) -> dict[str, Any
         return _match_lexicon(match, snapshot)
     if kind == "semantic_tags":
         return _match_tags(match, snapshot)
+    if kind == "plugin_score":
+        return _match_plugin_score(match, snapshot)
     return None
+
+
+def _match_plugin_score(match: dict[str, Any], snapshot: dict[str, Any]) -> dict[str, Any] | None:
+    plugin = str(match.get("plugin") or "")
+    if not plugin:
+        return None
+    try:
+        min_score = float(match.get("min_score") or 0.55)
+    except (TypeError, ValueError):
+        min_score = 0.55
+    result = (snapshot.get("plugins") or {}).get(plugin) or {}
+    try:
+        pscore = float(result.get("score") or 0)
+    except (TypeError, ValueError):
+        pscore = 0.0
+    if pscore < min_score:
+        return None
+    return {
+        "modality": "PLUGIN",
+        "snippet": result.get("snippet") or f"{plugin}={pscore:.2f}",
+        "evidence_ref": {
+            "type": "plugin",
+            "plugin": plugin,
+            "score": pscore,
+            "details": result.get("details") or {},
+        },
+    }
 
 
 def _match_originality(match: dict[str, Any], snapshot: dict[str, Any]) -> dict[str, Any] | None:

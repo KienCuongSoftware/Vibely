@@ -14,19 +14,27 @@ import { useAuth } from '../state/useAuth.js'
 const PAGE_SIZE = 20
 
 const STATE_FILTERS = [
-  { value: '', label: 'Mở + đang claim' },
-  { value: 'OPEN', label: 'Chờ claim' },
+  { value: '', label: 'Đang chờ / đang xử lý' },
+  { value: 'OPEN', label: 'Chờ nhận' },
   { value: 'CLAIMED', label: 'Đang xử lý' },
   { value: 'RESOLVED', label: 'Đã xong' },
 ]
 
 const DECISION_OPTIONS = [
-  { value: 'ALLOW', label: 'ALLOW — phân phối bình thường' },
-  { value: 'LIMIT', label: 'LIMIT — bỏ Explore / For-You' },
-  { value: 'REVIEW', label: 'REVIEW — giữ ẩn chờ thêm' },
-  { value: 'BLOCK', label: 'BLOCK — gỡ khỏi nền tảng' },
-  { value: 'DELETE', label: 'DELETE — gỡ (takedown)' },
+  { value: 'ALLOW', label: 'Cho phép — phân phối bình thường' },
+  { value: 'LIMIT', label: 'Hạn chế — bỏ khỏi Khám phá / Dành cho bạn' },
+  { value: 'REVIEW', label: 'Cần xem lại — giữ ẩn' },
+  { value: 'BLOCK', label: 'Chặn — gỡ khỏi nền tảng' },
+  { value: 'DELETE', label: 'Xóa — gỡ bài (takedown)' },
 ]
+
+const DECISION_LABEL = {
+  ALLOW: 'Cho phép',
+  LIMIT: 'Hạn chế',
+  REVIEW: 'Cần xem lại',
+  BLOCK: 'Chặn',
+  DELETE: 'Xóa',
+}
 
 const DECISION_BADGE = {
   ALLOW: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200',
@@ -34,6 +42,36 @@ const DECISION_BADGE = {
   REVIEW: 'border-sky-500/40 bg-sky-500/10 text-sky-200',
   BLOCK: 'border-red-500/40 bg-red-500/10 text-red-300',
   DELETE: 'border-red-600/50 bg-red-600/15 text-red-200',
+}
+
+const QUEUE_STATE_LABEL = {
+  OPEN: 'Chờ nhận',
+  CLAIMED: 'Đang xử lý',
+  RESOLVED: 'Đã xong',
+  DISMISSED: 'Đã bỏ',
+}
+
+const VIDEO_STATUS_LABEL = {
+  RAW: 'Bản nháp',
+  PROCESSING: 'Đang xử lý',
+  READY: 'Đã đăng',
+  FAILED: 'Lỗi xử lý',
+  REPORTED: 'Bị báo cáo',
+  HIDDEN: 'Đã ẩn',
+  REMOVED: 'Đã gỡ',
+}
+
+const MODALITY_LABEL = {
+  OCR: 'Chữ trên ảnh',
+  SPEECH: 'Lời thoại',
+  TAG: 'Nhãn ngữ nghĩa',
+  OBJECT: 'Đối tượng',
+  SCENE: 'Cảnh',
+  ORIGINALITY: 'Độ gốc',
+  METADATA: 'Siêu dữ liệu',
+  USER_REPORT: 'Báo cáo người dùng',
+  PLUGIN: 'Plugin',
+  RULE: 'Luật',
 }
 
 function formatDateTime(value) {
@@ -57,7 +95,7 @@ function DecisionBadge({ decision }) {
         DECISION_BADGE[key] ?? 'border-zinc-700 text-zinc-300'
       }`}
     >
-      {key || '—'}
+      {DECISION_LABEL[key] ?? (key || '—')}
     </span>
   )
 }
@@ -72,7 +110,15 @@ function ResolvePanel({ detail, queueId, submitting, error, onClose, onResolve, 
     setReasonText('')
   }, [report.decision, detail?.videoPublicId])
 
-  if (!detail) return null
+  if (!detail) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+        <p className="rounded-xl border border-zinc-800 bg-zinc-950 px-6 py-4 text-sm text-zinc-300">
+          Đang tải chi tiết…
+        </p>
+      </div>
+    )
+  }
 
   const evidence = Array.isArray(detail.evidence) ? detail.evidence : []
   const tags = Array.isArray(detail.semanticTags) ? detail.semanticTags : []
@@ -90,12 +136,12 @@ function ResolvePanel({ detail, queueId, submitting, error, onClose, onResolve, 
               <DecisionBadge decision={report.decision} />
               {report.status === 'SHADOW' ? (
                 <span className="rounded-full border border-zinc-600 px-2 py-0.5 text-[10px] font-semibold text-zinc-400">
-                  AI shadow
+                  AI chỉ ghi nhận (chưa áp dụng)
                 </span>
               ) : null}
             </div>
             <p className="mt-1 text-sm text-zinc-500">
-              @{detail.authorUsername || '—'} · risk {report.risk ?? '—'} · conf{' '}
+              @{detail.authorUsername || '—'} · mức rủi ro {report.risk ?? '—'} · độ tin cậy{' '}
               {report.confidence != null ? Number(report.confidence).toFixed(2) : '—'}
             </p>
           </div>
@@ -124,16 +170,22 @@ function ResolvePanel({ detail, queueId, submitting, error, onClose, onResolve, 
                 />
               ) : (
                 <div className="flex aspect-[9/16] max-h-[420px] items-center justify-center text-sm text-zinc-500">
-                  Không có media
+                  Không có video
                 </div>
               )}
             </div>
             <p className="text-xs text-zinc-500">
-              Status video: <span className="text-zinc-300">{detail.status || '—'}</span>
+              Trạng thái video:{' '}
+              <span className="text-zinc-300">
+                {VIDEO_STATUS_LABEL[String(detail.status || '').toUpperCase()] ?? detail.status ?? '—'}
+              </span>
               {detail.queueState ? (
                 <>
                   {' '}
-                  · Queue: <span className="text-zinc-300">{detail.queueState}</span>
+                  · Hàng đợi:{' '}
+                  <span className="text-zinc-300">
+                    {QUEUE_STATE_LABEL[detail.queueState] ?? detail.queueState}
+                  </span>
                 </>
               ) : null}
             </p>
@@ -142,7 +194,7 @@ function ResolvePanel({ detail, queueId, submitting, error, onClose, onResolve, 
                 to={`/admin/posts/${detail.videoPublicId}`}
                 className="text-xs font-semibold text-sky-400 hover:text-sky-300"
               >
-                Mở trang Admin bài đăng →
+                Mở trang quản lý bài đăng →
               </Link>
             ) : null}
           </div>
@@ -150,11 +202,11 @@ function ResolvePanel({ detail, queueId, submitting, error, onClose, onResolve, 
           <div className="space-y-4">
             <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-3">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Evidence ({evidence.length})
+                Bằng chứng ({evidence.length})
               </h3>
               <ul className="mt-2 max-h-40 space-y-2 overflow-y-auto text-sm">
                 {evidence.length === 0 ? (
-                  <li className="text-zinc-500">Không có evidence</li>
+                  <li className="text-zinc-500">Không có bằng chứng</li>
                 ) : (
                   evidence.map((item, idx) => (
                     <li
@@ -163,7 +215,11 @@ function ResolvePanel({ detail, queueId, submitting, error, onClose, onResolve, 
                     >
                       <p className="font-semibold text-zinc-200">
                         {item.reasonCode}{' '}
-                        <span className="font-normal text-zinc-500">· {item.sourceModality}</span>
+                        <span className="font-normal text-zinc-500">
+                          ·{' '}
+                          {MODALITY_LABEL[String(item.sourceModality || '').toUpperCase()] ??
+                            item.sourceModality}
+                        </span>
                       </p>
                       {item.snippet ? (
                         <p className="mt-1 line-clamp-3 text-xs text-zinc-400">{item.snippet}</p>
@@ -176,7 +232,7 @@ function ResolvePanel({ detail, queueId, submitting, error, onClose, onResolve, 
 
             <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-3">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Semantic tags
+                Nhãn ngữ nghĩa
               </h3>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {tags.length === 0 ? (
@@ -197,10 +253,13 @@ function ResolvePanel({ detail, queueId, submitting, error, onClose, onResolve, 
               </div>
               {detail.originality?.decision ? (
                 <p className="mt-2 text-xs text-zinc-400">
-                  Originality:{' '}
-                  <span className="text-zinc-200">{detail.originality.decision}</span>
+                  Độ gốc:{' '}
+                  <span className="text-zinc-200">
+                    {DECISION_LABEL[String(detail.originality.decision).toUpperCase()] ??
+                      detail.originality.decision}
+                  </span>
                   {detail.originality.overallConfidence != null
-                    ? ` · conf ${Number(detail.originality.overallConfidence).toFixed(2)}`
+                    ? ` · độ tin cậy ${Number(detail.originality.overallConfidence).toFixed(2)}`
                     : null}
                 </p>
               ) : null}
@@ -208,13 +267,14 @@ function ResolvePanel({ detail, queueId, submitting, error, onClose, onResolve, 
 
             <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-3">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Quyết định moderator
+                Quyết định kiểm duyệt viên
               </h3>
               <p className="mt-1 text-[11px] text-zinc-500">
-                Resolve luôn áp dụng lever thật (không shadow), kể cả khi AI chạy shadow.
+                Khi xác nhận, hệ thống luôn áp dụng ngay (ẩn / hạn chế phân phối / gỡ bài), kể cả
+                khi AI chỉ đang ghi nhận thử nghiệm.
               </p>
               <label className="mt-3 block text-xs text-zinc-400">
-                Decision
+                Quyết định
                 <select
                   value={decision}
                   onChange={(e) => setDecision(e.target.value)}
@@ -229,13 +289,13 @@ function ResolvePanel({ detail, queueId, submitting, error, onClose, onResolve, 
                 </select>
               </label>
               <label className="mt-3 block text-xs text-zinc-400">
-                Lý do (bắt buộc khi override)
+                Lý do (bắt buộc nếu khác quyết định AI)
                 <textarea
                   value={reasonText}
                   onChange={(e) => setReasonText(e.target.value)}
                   disabled={submitting}
                   rows={3}
-                  placeholder="VD: Xác nhận AI / false positive spam / …"
+                  placeholder="Ví dụ: Xác nhận AI / nhãn spam sai / nội dung nguy hiểm…"
                   className="mt-1 w-full rounded-lg border border-zinc-700 bg-black px-3 py-2 text-sm text-zinc-100"
                 />
               </label>
@@ -249,7 +309,7 @@ function ResolvePanel({ detail, queueId, submitting, error, onClose, onResolve, 
                     className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-600 px-3 py-2 text-xs font-semibold text-zinc-200 hover:bg-zinc-900 disabled:opacity-50"
                   >
                     <IoHandLeftOutline aria-hidden />
-                    Claim
+                    Nhận xử lý
                   </button>
                 ) : null}
                 <button
@@ -268,7 +328,7 @@ function ResolvePanel({ detail, queueId, submitting, error, onClose, onResolve, 
                   className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-500 disabled:opacity-50"
                 >
                   <IoShieldCheckmarkOutline aria-hidden />
-                  {submitting ? 'Đang lưu…' : 'Resolve & áp dụng'}
+                  {submitting ? 'Đang lưu…' : 'Xác nhận & áp dụng'}
                 </button>
               </div>
             </section>
@@ -279,9 +339,20 @@ function ResolvePanel({ detail, queueId, submitting, error, onClose, onResolve, 
   )
 }
 
+const APPEAL_STATE_FILTERS = [
+  { value: '', label: 'Đang chờ' },
+  { value: 'PENDING', label: 'Chờ xử lý' },
+  { value: 'IN_REVIEW', label: 'Đang xem' },
+  { value: 'RESTORED', label: 'Khôi phục' },
+  { value: 'SOFTENED', label: 'Nới lỏng' },
+  { value: 'UPHELD', label: 'Giữ nguyên' },
+  { value: 'REJECTED', label: 'Từ chối' },
+]
+
 export function AdminModerationPage() {
   const { token, user, authReady } = useAuth()
   const isAdmin = String(user?.role ?? '').toUpperCase() === 'ADMIN'
+  const [tab, setTab] = useState('queue')
   const [page, setPage] = useState(0)
   const [stateFilter, setStateFilter] = useState('')
   const [items, setItems] = useState([])
@@ -294,6 +365,16 @@ export function AdminModerationPage() {
   const [detail, setDetail] = useState(null)
   const [modalError, setModalError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [appeals, setAppeals] = useState([])
+  const [appealTotal, setAppealTotal] = useState(0)
+  const [appealHasNext, setAppealHasNext] = useState(false)
+  const [appealPage, setAppealPage] = useState(0)
+  const [appealStateFilter, setAppealStateFilter] = useState('')
+  const [selectedAppeal, setSelectedAppeal] = useState(null)
+  const [appealDecision, setAppealDecision] = useState('ALLOW')
+  const [appealOutcome, setAppealOutcome] = useState('RESTORED')
+  const [appealNotes, setAppealNotes] = useState('')
+  const [appealError, setAppealError] = useState('')
 
   useEffect(() => {
     document.title = 'Vibely Admin | Kiểm duyệt nội dung'
@@ -326,14 +407,41 @@ export function AdminModerationPage() {
     }
   }, [authReady, isAdmin, page, stateFilter, token])
 
+  const loadAppeals = useCallback(async () => {
+    if (!authReady || !token || !isAdmin) return
+    setLoading(true)
+    setError('')
+    try {
+      const data = await apiClient.getAdminModerationAppeals(token, {
+        page: appealPage,
+        size: PAGE_SIZE,
+        state: appealStateFilter || undefined,
+      })
+      setAppeals(Array.isArray(data?.items) ? data.items : [])
+      setAppealTotal(Number(data?.total ?? 0))
+      setAppealHasNext(Boolean(data?.hasNext))
+    } catch (e) {
+      setAppeals([])
+      setAppealTotal(0)
+      setAppealHasNext(false)
+      setError(e.message ?? 'Không tải được khiếu nại.')
+    } finally {
+      setLoading(false)
+    }
+  }, [appealPage, appealStateFilter, authReady, isAdmin, token])
+
   useEffect(() => {
-    void loadQueue()
-  }, [loadQueue])
+    if (tab === 'queue') void loadQueue()
+    else void loadAppeals()
+  }, [tab, loadQueue, loadAppeals])
 
   useEffect(() => {
     setPage(0)
   }, [stateFilter])
 
+  useEffect(() => {
+    setAppealPage(0)
+  }, [appealStateFilter])
   const openDetail = async (item) => {
     if (!item?.videoPublicId) return
     setSelectedPublicId(item.videoPublicId)
@@ -368,7 +476,7 @@ export function AdminModerationPage() {
       }
       await loadQueue()
     } catch (e) {
-      setModalError(e.message ?? 'Claim thất bại.')
+      setModalError(e.message ?? 'Không nhận được mục xử lý.')
     } finally {
       setSubmitting(false)
     }
@@ -376,14 +484,14 @@ export function AdminModerationPage() {
 
   const handleResolve = async (queueId, payload) => {
     if (!queueId) {
-      setModalError('Thiếu queue id — video chưa có mục hàng đợi mở.')
+      setModalError('Thiếu mục hàng đợi — video chưa có yêu cầu xem lại đang mở.')
       return
     }
     if (
       String(payload.decision).toUpperCase() !== String(detail?.report?.decision || '').toUpperCase()
       && !payload.reasonText
     ) {
-      setModalError('Ghi lý do khi override khác quyết định AI.')
+      setModalError('Hãy ghi lý do khi chọn khác quyết định của AI.')
       return
     }
     setSubmitting(true)
@@ -394,7 +502,7 @@ export function AdminModerationPage() {
       setSubmitting(false)
       closeModal(true)
     } catch (e) {
-      setModalError(e.message ?? 'Resolve thất bại.')
+      setModalError(e.message ?? 'Không lưu được quyết định.')
       setSubmitting(false)
     }
   }
@@ -403,7 +511,7 @@ export function AdminModerationPage() {
     () =>
       stateFilter
         ? 'Không có mục với bộ lọc này.'
-        : 'Hàng đợi trống. Video REVIEW từ AI (kể cả shadow) sẽ xuất hiện tại đây.',
+        : 'Hàng đợi trống. Video AI đánh dấu cần xem lại sẽ xuất hiện tại đây.',
     [stateFilter],
   )
 
@@ -411,11 +519,11 @@ export function AdminModerationPage() {
     <AdminLayout
       active="moderation"
       title="Kiểm duyệt nội dung"
-      subtitle="Hàng đợi REVIEW — claim, xem evidence, override ALLOW / LIMIT / BLOCK."
+      subtitle="Hàng đợi xem lại, khiếu nại creator, điểm tin cậy."
     >
       {!authReady || loading ? (
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center text-sm text-zinc-400">
-          Đang tải hàng đợi…
+          Đang tải…
         </section>
       ) : !isAdmin ? (
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center">
@@ -423,6 +531,118 @@ export function AdminModerationPage() {
         </section>
       ) : (
         <>
+          <div className="mb-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setTab('queue')}
+              className={`rounded-full border px-4 py-2 text-xs font-semibold ${
+                tab === 'queue'
+                  ? 'border-red-500 bg-red-500/10 text-red-200'
+                  : 'border-zinc-700 text-zinc-400'
+              }`}
+            >
+              Hàng đợi xem lại
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab('appeals')}
+              className={`rounded-full border px-4 py-2 text-xs font-semibold ${
+                tab === 'appeals'
+                  ? 'border-red-500 bg-red-500/10 text-red-200'
+                  : 'border-zinc-700 text-zinc-400'
+              }`}
+            >
+              Khiếu nại creator
+            </button>
+          </div>
+
+          {tab === 'appeals' ? (
+            <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                <p className="text-sm font-bold uppercase tracking-wide text-zinc-200">
+                  Tổng khiếu nại: {appealTotal}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {APPEAL_STATE_FILTERS.map((item) => {
+                    const active = appealStateFilter === item.value
+                    return (
+                      <button
+                        key={item.value || 'pending'}
+                        type="button"
+                        onClick={() => setAppealStateFilter(item.value)}
+                        className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                          active
+                            ? 'border-red-500 bg-red-500/10 text-red-200'
+                            : 'border-zinc-700 text-zinc-400'
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              {error ? <p className="mt-4 text-sm text-red-400">{error}</p> : null}
+              {appeals.length === 0 ? (
+                <p className="mt-6 text-center text-sm text-zinc-500">Chưa có khiếu nại.</p>
+              ) : (
+                <ul className="mt-4 space-y-3">
+                  {appeals.map((a) => (
+                    <li
+                      key={a.appealId}
+                      className="rounded-xl border border-zinc-800 bg-black/30 p-3"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-medium text-zinc-100">{a.title || 'Không tiêu đề'}</p>
+                          <p className="text-xs text-zinc-500">
+                            @{a.authorUsername} · từ {DECISION_LABEL[a.fromDecision] ?? a.fromDecision}
+                          </p>
+                          <p className="mt-2 text-sm text-zinc-300 whitespace-pre-wrap">
+                            {a.appealText}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedAppeal(a)
+                            setAppealOutcome('RESTORED')
+                            setAppealDecision('ALLOW')
+                            setAppealNotes('')
+                            setAppealError('')
+                          }}
+                          className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-semibold text-zinc-200"
+                        >
+                          Xử lý
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className="mt-4 flex items-center justify-between">
+                <button
+                  type="button"
+                  disabled={appealPage <= 0}
+                  onClick={() => setAppealPage((p) => Math.max(0, p - 1))}
+                  className="text-xs text-zinc-400 disabled:opacity-40"
+                >
+                  Trước
+                </button>
+                <span className="text-xs text-zinc-500">Trang {appealPage + 1}</span>
+                <button
+                  type="button"
+                  disabled={!appealHasNext}
+                  onClick={() => setAppealPage((p) => p + 1)}
+                  className="text-xs text-zinc-400 disabled:opacity-40"
+                >
+                  Sau
+                </button>
+              </div>
+            </section>
+          ) : null}
+
+          {tab === 'queue' ? (
           <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <p className="text-sm font-bold uppercase tracking-wide text-zinc-200">
@@ -460,8 +680,8 @@ export function AdminModerationPage() {
                     <tr>
                       <th className="px-2 py-2 font-semibold">Video</th>
                       <th className="px-2 py-2 font-semibold">AI</th>
-                      <th className="px-2 py-2 font-semibold">Risk</th>
-                      <th className="px-2 py-2 font-semibold">Queue</th>
+                      <th className="px-2 py-2 font-semibold">Rủi ro</th>
+                      <th className="px-2 py-2 font-semibold">Hàng đợi</th>
                       <th className="px-2 py-2 font-semibold">Tạo lúc</th>
                       <th className="px-2 py-2 font-semibold" />
                     </tr>
@@ -486,7 +706,7 @@ export function AdminModerationPage() {
                               </p>
                               <p className="truncate text-xs text-zinc-500">
                                 @{item.authorUsername}
-                                {item.reportShadow ? ' · shadow' : ''}
+                                {item.reportShadow ? ' · AI chỉ ghi nhận' : ''}
                               </p>
                             </div>
                           </div>
@@ -502,7 +722,7 @@ export function AdminModerationPage() {
                           </span>
                         </td>
                         <td className="px-2 py-3 text-zinc-300">
-                          {item.queueState}
+                          {QUEUE_STATE_LABEL[item.queueState] ?? item.queueState}
                           {item.claimedBy ? (
                             <span className="block text-[11px] text-zinc-500">{item.claimedBy}</span>
                           ) : null}
@@ -546,6 +766,7 @@ export function AdminModerationPage() {
               </button>
             </div>
           </section>
+          ) : null}
 
           {selectedPublicId ? (
             <ResolvePanel
@@ -557,6 +778,94 @@ export function AdminModerationPage() {
               onClaim={handleClaim}
               onResolve={handleResolve}
             />
+          ) : null}
+
+          {selectedAppeal ? (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+              <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
+                <h3 className="text-lg font-bold text-zinc-100">Xử lý khiếu nại #{selectedAppeal.appealId}</h3>
+                <p className="mt-2 text-sm text-zinc-400 whitespace-pre-wrap">{selectedAppeal.appealText}</p>
+                <label className="mt-4 block text-xs text-zinc-400">
+                  Kết quả
+                  <select
+                    value={appealOutcome}
+                    onChange={(e) => {
+                      const v = e.target.value
+                      setAppealOutcome(v)
+                      if (v === 'RESTORED') setAppealDecision('ALLOW')
+                      if (v === 'SOFTENED') setAppealDecision('LIMIT')
+                      if (v === 'UPHELD' || v === 'REJECTED') {
+                        setAppealDecision(selectedAppeal.fromDecision || 'BLOCK')
+                      }
+                    }}
+                    className="mt-1 w-full rounded-lg border border-zinc-700 bg-black px-3 py-2 text-sm text-zinc-100"
+                  >
+                    <option value="RESTORED">Khôi phục phân phối (ALLOW)</option>
+                    <option value="SOFTENED">Nới lỏng (vd Hạn chế)</option>
+                    <option value="UPHELD">Giữ nguyên quyết định</option>
+                    <option value="REJECTED">Từ chối khiếu nại</option>
+                  </select>
+                </label>
+                <label className="mt-3 block text-xs text-zinc-400">
+                  Quyết định áp dụng
+                  <select
+                    value={appealDecision}
+                    onChange={(e) => setAppealDecision(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-zinc-700 bg-black px-3 py-2 text-sm text-zinc-100"
+                  >
+                    {DECISION_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="mt-3 block text-xs text-zinc-400">
+                  Ghi chú
+                  <textarea
+                    value={appealNotes}
+                    onChange={(e) => setAppealNotes(e.target.value)}
+                    rows={2}
+                    className="mt-1 w-full rounded-lg border border-zinc-700 bg-black px-3 py-2 text-sm text-zinc-100"
+                  />
+                </label>
+                {appealError ? <p className="mt-2 text-sm text-red-400">{appealError}</p> : null}
+                <div className="mt-4 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    disabled={submitting}
+                    onClick={() => setSelectedAppeal(null)}
+                    className="rounded-lg border border-zinc-700 px-3 py-2 text-xs text-zinc-300"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    disabled={submitting}
+                    onClick={async () => {
+                      setSubmitting(true)
+                      setAppealError('')
+                      try {
+                        await apiClient.resolveAdminModerationAppeal(token, selectedAppeal.appealId, {
+                          outcome: appealOutcome,
+                          decision: appealDecision,
+                          notes: appealNotes.trim() || undefined,
+                        })
+                        setSelectedAppeal(null)
+                        await loadAppeals()
+                      } catch (e) {
+                        setAppealError(e.message ?? 'Không xử lý được khiếu nại.')
+                      } finally {
+                        setSubmitting(false)
+                      }
+                    }}
+                    className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white"
+                  >
+                    {submitting ? 'Đang lưu…' : 'Xác nhận'}
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : null}
         </>
       )}
