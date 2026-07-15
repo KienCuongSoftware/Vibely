@@ -68,7 +68,7 @@ flowchart TB
 
 ## 6. Sequence Flows
 
-See [REQUEST_LIFECYCLE.md](REQUEST_LIFECYCLE.md) and [FEED_PLATFORM.md](FEED_PLATFORM.md).
+See [REQUEST_LIFECYCLE.md](REQUEST_LIFECYCLE.md) and [feed/ARCHITECTURE.md](../feed/ARCHITECTURE.md).
 
 ## 7. Scaling Strategy
 

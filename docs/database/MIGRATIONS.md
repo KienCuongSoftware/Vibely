@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-**Flyway** applies SQL migrations on startup. The migration history currently reaches `V44`; some version numbers may be reserved or skipped, so inspect `backend/src/main/resources/db/migration/` instead of assuming every version exists. Java migration `V22__BackfillVideoPublicUuid` handles video public UUID data backfill.
+**Flyway** applies SQL migrations on startup. Inspect `backend/src/main/resources/db/migration/` for the real set — version numbers may skip. Current tip: **V66**. Java migration `V22__BackfillVideoPublicUuid` handles video public UUID backfill.
 
 ## 2. Rules
 
@@ -39,6 +39,8 @@
 | V42 | Video reposts |
 | V43 | User account status |
 | V44 | User login history |
+| V45–V60 | Private account/follows, videos studio draft/privacy, ban appeals, explore categories expand, originality |
+| V61–V66 | Content Understanding schema, feature SHA, trending indexes, vocab expansion, Explore category precision |
 
 After schema changes, update [SCHEMA.md](SCHEMA.md) and the [full ERD](../erd/vibely-erd-full.png) when table count or major relationships change.
 

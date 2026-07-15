@@ -21,6 +21,29 @@ class CategoryClassifierServiceTest {
     private CategoryClassifierService classifierService;
 
     @Test
+    void inferDoesNotMapCryOrMindGamesToEducationOrGaming() {
+        Category education = category("education", "Giáo dục");
+        Category gaming = category("gaming", "Gaming");
+        Category music = category("music", "Music");
+        when(categoryRepository.findByEnabledTrueOrderByNameAsc())
+            .thenReturn(List.of(education, gaming, music));
+        when(categoryRepository.findBySlugAndEnabledTrue("all")).thenReturn(java.util.Optional.empty());
+
+        List<CategoryClassifierService.ScoredCategory> crying = classifierService.inferCategories(
+            "Tiếng Khóc Của Cô Gái",
+            "Bồ Câu kể chuyện"
+        );
+        assertThat(crying.stream().map(sc -> sc.category().getSlug())).doesNotContain("education");
+
+        List<CategoryClassifierService.ScoredCategory> mindGames = classifierService.inferCategories(
+            "Mind Games | lyric video",
+            "#lyrics #song"
+        );
+        assertThat(mindGames.stream().map(sc -> sc.category().getSlug())).doesNotContain("gaming");
+        assertThat(mindGames.get(0).category().getSlug()).isEqualTo("music");
+    }
+
+    @Test
     void extractHashtagsNormalizesAndDeduplicates() {
         List<String> tags = classifierService.extractHashtags("Nhac #Music #MUSIC", "tap #dance cùng #music");
         assertThat(tags).containsExactly("music", "dance");
@@ -83,6 +106,12 @@ class CategoryClassifierServiceTest {
                 new CategoryClassifierService.ScoredCategory(dance, 1.0),
                 new CategoryClassifierService.ScoredCategory(all, 1.0)
             )
+        );
+        // Single keyword (=1.0) is too weak for Explore tabs; need hashtag or multi-hit (>=2.0).
+        assertThat(persisted).isEmpty();
+
+        persisted = classifierService.selectCategoriesForPersist(
+            List.of(new CategoryClassifierService.ScoredCategory(dance, 2.0))
         );
         assertThat(persisted).hasSize(1);
         assertThat(persisted.get(0).category().getSlug()).isEqualTo("dance");

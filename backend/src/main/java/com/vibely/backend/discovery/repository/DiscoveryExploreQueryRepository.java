@@ -51,20 +51,16 @@ public interface DiscoveryExploreQueryRepository extends Repository<com.vibely.b
             join users u on u.id = v.author_id
             left join video_engagement_stats ves on ves.video_id = v.id
             where v.status = 'READY'
+              and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
+              and coalesce(v.studio_draft, false) = false
               and v.id in (
                 select vc.video_id
                 from video_categories vc
                 join categories c on c.id = vc.category_id
-                where c.slug = :slug and c.enabled = true and c.slug <> 'all' and vc.score >= 1.0
-                union
-                select vcs.video_id from video_category_scores vcs
-                join categories c2 on c2.id = vcs.category_id
-                where c2.slug = :slug and c2.enabled = true and vcs.score >= 0.35
-                union
-                select vt.video_id from video_topics vt
-                join topic_category_mapping ctm on ctm.topic_id = vt.topic_id
-                join categories c3 on c3.id = ctm.category_id
-                where c3.slug = :slug and c3.enabled = true and vt.score >= 0.35
+                where c.slug = :slug
+                  and c.enabled = true
+                  and c.slug <> 'all'
+                  and vc.score >= 1.5
               )
               and (:cursorScore is null or (coalesce(v.ranking_score, ves.ranking_score, v.explore_score) < :cursorScore
                    or (coalesce(v.ranking_score, ves.ranking_score, v.explore_score) = :cursorScore and (v.created_at < :cursorTime

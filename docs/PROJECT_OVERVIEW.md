@@ -1,100 +1,65 @@
 # Project Overview
 
-This document is the current-code snapshot for Vibely. Use it as the first stop when onboarding or checking whether deeper docs still match the repository.
+Current-code snapshot for Vibely. Prefer this + Flyway SQL over older aspirational docs.
 
-## Repository Shape
+## Repository shape
 
 ```text
 Vibely/
-├── backend/   # Spring Boot API, media pipeline, auth, realtime, data access
-├── frontend/  # React/Vite web SPA
-├── mobile/    # Flutter mobile client
-├── docs/      # Architecture, API, domain, database, deployment docs
-├── infra/     # Optional infra examples such as lambda-audio-extract
-├── deploy/    # Deployment assets/scripts
-└── scripts/   # Utility scripts
+├── backend/       # Spring Boot API, media, auth, realtime, Explore, CU, discovery
+├── frontend/      # React/Vite SPA
+├── mobile/        # Flutter client
+├── ai-workers/    # originality + content-understanding Python workers
+├── docs/
+├── deploy/        # VPS Docker Compose / nginx samples
+├── infra/         # Optional lambda examples
+└── docker-compose.yml
 ```
 
 ## Frontend
 
-The web client lives in `frontend/` and uses React 19, Vite 8, React Router 7, Tailwind CSS 4, hls.js, TanStack Virtual, STOMP/WebSocket, and Vitest.
+React 19, Vite 8, React Router 7, Tailwind 4, hls.js, TanStack Virtual, STOMP, Vitest.
 
-Key source directories:
-
-- `frontend/src/pages/`: route-level pages for feed, auth, studio, admin, profile, explore, search, messages, settings, legal, and watch flows.
-- `frontend/src/components/`: shared UI plus feed/watch/search/captcha/chat components.
-- `frontend/src/api/`: API client facade.
-- `frontend/src/feed/`: feed playback, prefetch, and memory tuning.
-- `frontend/src/realtime/`: WebSocket/STOMP integration.
-- `frontend/src/security/`: captcha, fingerprint, and behavior telemetry client code.
-- `frontend/src/config/`: API base, backend origin, and public share origin resolution.
-
-Routes are declared in `frontend/src/App.jsx`. Dev proxy configuration is in `frontend/vite.config.js`.
+Key dirs: `pages/`, `components/`, `api/`, `feed/`, `realtime/`, `security/`. Routes in `App.jsx`.
 
 ## Backend
 
-The API lives in `backend/` and uses Spring Boot 3.5, Java 17, Spring Security, Spring Data JPA, Flyway, PostgreSQL, Redis support, optional Kafka telemetry, WebSocket/STOMP, AWS S3 SDK, FFmpeg/FFprobe integration, Actuator, and Lombok.
+Spring Boot 3.5, Java 17, Security, JPA, Flyway, PostgreSQL, Redis (optional), WebSocket/STOMP, S3, FFmpeg, Actuator.
 
-Main package root: `backend/src/main/java/com/vibely/backend/`.
+Package root: `com.vibely.backend`.
 
-Important domains include `auth`, `account`, `security`, `video`, `feed`, `explore`, `search`, `interaction`, `chat`, `notification`, `share`, `storage`, `processing`, `studio`, `admin`, `antibot`, `user`, `discovery`, and `observability`.
+Important domains: `auth`, `account`, `security`, `video`, `feed`, `explore`, `search`, `interaction`, `chat`, `notification`, `share`, `storage`, `processing`, `studio`, `admin`, `antibot`, `user`, `discovery`, `contentunderstanding`, `originality`, `observability`.
 
-Configuration is split across:
+Config: `application.yaml` / `application-dev.yaml` / `application-prod.yaml` + gitignored `application-local.yaml`.
 
-- `backend/src/main/resources/application.yaml`
-- `backend/src/main/resources/application-dev.yaml`
-- `backend/src/main/resources/application-prod.yaml`
-- optional gitignored `application-local.yaml`
+## Data and media
 
-## Data And Media
+Flyway: `backend/src/main/resources/db/migration/` — history through **V66** (gaps exist; inspect files). SQL is source of truth.
 
-PostgreSQL schema changes are managed by Flyway migrations in `backend/src/main/resources/db/migration/`. The current migration history reaches `V44`; the SQL files are the source of truth.
+S3 presigned uploads; FFmpeg → HLS. Content Understanding + Originality workers use Qdrant; CU also uses RabbitMQ when enabled.
 
-Media uploads use S3 presigned URLs. Processing uses FFmpeg/FFprobe to produce HLS outputs and stores job state in the database. In dev, S3 and the processing worker are enabled by profile defaults, so local setup needs valid S3/FFmpeg config or explicit feature overrides.
-
-## Local Commands
+## Local commands
 
 ```bash
 # Frontend
-cd frontend
-npm install
-npm run dev
-npm run test
-npm run lint
-npm run build
+cd frontend && npm install && npm run dev
 
 # Backend
-cd backend
-./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
-./mvnw test
-./mvnw package
+cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 
-# Optional local Redis
+# Optional Redis
 docker compose up -d redis
 
-# Optional Kafka profile
+# Optional Kafka (anti-bot telemetry profile only)
 docker compose --profile kafka up -d
 ```
 
-On Windows PowerShell, use `.\mvnw.cmd` instead of `./mvnw`.
+Windows: `.\mvnw.cmd` instead of `./mvnw`.
 
-## Environment Notes
+## Environment notes
 
-Frontend env:
+Frontend: `VITE_API_BASE_URL`, `VITE_BACKEND_ORIGIN`, `VITE_PUBLIC_APP_URL`
 
-- `VITE_API_BASE_URL`
-- `VITE_BACKEND_ORIGIN`
-- `VITE_PUBLIC_APP_URL`
+Backend (common): `DB_*`, `JWT_SECRET`, cookie/CORS origins, OAuth (Google / Facebook / LINE), SMTP OTP, Redis, S3/FFmpeg, optional `DISCOVERY_OPENAI_*`, CU (`APP_CU_*`, `APP_CU_RABBITMQ_*`, `APP_CU_QDRANT_*`).
 
-Backend env:
-
-- Database: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`
-- JWT/cookies: `JWT_SECRET`, `APP_AUTH_EXPOSE_TOKENS_IN_API`, `APP_AUTH_COOKIE_SECURE`, `APP_AUTH_COOKIE_SAME_SITE`, `APP_AUTH_COOKIE_DOMAIN`
-- Origins: `FRONTEND_BASE_URL`, `BACKEND_BASE_URL`, `SHORT_LINK_BASE_URL`, `CORS_ALLOWED_ORIGIN_PATTERNS`
-- OAuth: Google, Facebook, and LINE client IDs/secrets
-- Mail/OTP: `APP_MAIL_ENABLED`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`
-- Redis: `APP_REDIS_ENABLED`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`
-- S3/media: `APP_S3_ENABLED`, `AWS_S3_BUCKET`, `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `APP_S3_PUBLIC_URL_BASE`, `FFMPEG_PATH`, `FFPROBE_PATH`
-- Discovery: `DISCOVERY_OPENAI_ENABLED`, `OPENAI_API_KEY`
-
-Keep real secrets in environment variables or `application-local.yaml`; do not commit them.
+Keep secrets out of git.

@@ -520,24 +520,34 @@ def write_migration() -> None:
         )
 
     alias_values = []
+    claimed_aliases: set[tuple[str, str]] = set()
     for row in UNIQUE_TAGS:
         for alias, lang in row["aliases"]:
+            key = (alias.strip().lower(), lang)
+            if not alias.strip() or key in claimed_aliases:
+                continue
+            claimed_aliases.add(key)
             alias_values.append(
                 f"    ('{_sql_escape(row['slug'])}', '{_sql_escape(alias)}', '{_sql_escape(lang)}')"
             )
         # Also register primary keywords that differ from slug as aliases (en/vi heuristic)
         for kw in row["keywords"]:
-            key = kw.strip().lower()
-            if not key or key == row["slug"] or len(key) < 3:
-                continue
-            if any(a[0].lower() == key for a in row["aliases"]):
+            key_alias = kw.strip().lower()
+            if not key_alias or key_alias == row["slug"] or len(key_alias) < 3:
                 continue
             lang = "vi" if any(ord(ch) > 127 for ch in kw) else "en"
+            key = (key_alias, lang)
+            if key in claimed_aliases:
+                continue
+            if any(a[0].lower() == key_alias for a in row["aliases"]):
+                # already emitted from explicit aliases
+                pass
+            claimed_aliases.add(key)
             alias_values.append(
-                f"    ('{_sql_escape(row['slug'])}', '{_sql_escape(key)}', '{lang}')"
+                f"    ('{_sql_escape(row['slug'])}', '{_sql_escape(key_alias)}', '{lang}')"
             )
 
-    # de-dupe alias value lines
+    # de-dupe alias value lines (safety)
     alias_values = list(dict.fromkeys(alias_values))
 
     map_values = []

@@ -260,23 +260,11 @@ public class ContentUnderstandingJobService {
         }
         for (Map.Entry<Long, Double> e : categoryScores.entrySet()) {
             double raw = e.getValue();
-            if (raw < 0.5) {
+            // Discovery can keep softer scores; Explore tabs need strong evidence only.
+            if (raw < 0.55) {
                 continue;
             }
-            // Explore hybrid: video_categories needs score >= 1.0; discovery scores use >= 0.35
-            double categoryTableScore = Math.max(1.0, Math.min(2.0, raw * 1.5));
             double discoveryScore = Math.min(1.0, raw);
-            jdbcTemplate.update(
-                """
-                    INSERT INTO video_categories (video_id, category_id, score, created_at)
-                    VALUES (?, ?, ?, NOW())
-                    ON CONFLICT (video_id, category_id)
-                    DO UPDATE SET score = GREATEST(video_categories.score, EXCLUDED.score)
-                    """,
-                videoId,
-                e.getKey(),
-                categoryTableScore
-            );
             jdbcTemplate.update(
                 """
                     INSERT INTO video_category_scores
@@ -290,6 +278,26 @@ public class ContentUnderstandingJobService {
                 videoId,
                 e.getKey(),
                 discoveryScore
+            );
+            // Explore video_categories: require strong CU mass (≈ high-conf tag × weight).
+            // Do NOT force score ≥ 1.0 — that was putting unrelated clips into Food/Education/Gaming.
+            if (raw < 0.90) {
+                continue;
+            }
+            double categoryTableScore = Math.min(2.0, raw);
+            if (categoryTableScore < 1.0) {
+                continue;
+            }
+            jdbcTemplate.update(
+                """
+                    INSERT INTO video_categories (video_id, category_id, score, created_at)
+                    VALUES (?, ?, ?, NOW())
+                    ON CONFLICT (video_id, category_id)
+                    DO UPDATE SET score = GREATEST(video_categories.score, EXCLUDED.score)
+                    """,
+                videoId,
+                e.getKey(),
+                categoryTableScore
             );
         }
     }

@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-Single PostgreSQL database, multi-domain tables, Flyway versioned migrations through **V44**. The SQL migrations currently create about **46 tables** across auth, video, engagement, sharing, explore, discovery, search, chat, anti-bot, notification, moderation, account, and login-history domains.
+Single PostgreSQL database, multi-domain tables, Flyway versioned migrations through **V66** (inspect SQL files; versions may skip). Domains include auth, video, engagement, share, explore, discovery, search, chat, anti-bot, notification, moderation, account, originality, and content-understanding.
 
 **Canonical source:** SQL under `backend/src/main/resources/db/migration/`.
 

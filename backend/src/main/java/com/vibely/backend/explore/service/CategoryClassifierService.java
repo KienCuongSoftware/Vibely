@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class CategoryClassifierService {
     private static final Pattern HASHTAG_PATTERN = Pattern.compile("#([\\p{L}\\p{N}_]{2,80})");
-    private static final double MIN_CATEGORY_SCORE = 1.0;
+    private static final double MIN_CATEGORY_SCORE = 2.0;
     private static final double STRONG_CATEGORY_SCORE = 2.0;
     public static final String ALL_CATEGORY_SLUG = "all";
 
@@ -32,11 +32,16 @@ public class CategoryClassifierService {
             "sound", "soundtrack", "melody", "lofi", "ballad", "rap", "hiphop", "edm"
         ));
         keywords.put("dance", Set.of(
-            "dance", "nhay", "nhảy", "choreography", "tiktok dance", "nhay dep", "nhảy đẹp"
+            "dance", "nhay", "nhảy", "choreography", "viral dance", "nhay dep", "nhảy đẹp"
         ));
-        keywords.put("food", Set.of("food", "monan", "anuong", "recipe", "nauan", "nau an"));
+        keywords.put("food", Set.of(
+            "food", "monan", "mon an", "anuong", "an uong", "recipe", "nauan", "nau an",
+            "amthuc", "am thuc", "cooking", "mukbang", "streetfood", "street food"
+        ));
         keywords.put("travel", Set.of("travel", "dulich", "trip", "review du lich"));
-        keywords.put("gaming", Set.of("game", "gaming", "esports", "gameplay"));
+        keywords.put("gaming", Set.of(
+            "gaming", "gameplay", "esports", "choi game", "choigame", "stream game", "game thu"
+        ));
         keywords.put("beauty", Set.of("beauty", "makeup", "lamdep", "skincare", "gai xinh"));
         keywords.put("fitness", Set.of("fitness", "gym", "workout"));
         keywords.put("comedy", Set.of("funny", "hai", "comedy", "hai huoc", "hài"));
@@ -96,7 +101,10 @@ public class CategoryClassifierService {
         keywords.put("sports", Set.of("sports", "the thao", "thethao", "football", "bong da"));
         keywords.put("fashion", Set.of("fashion", "thoi trang", "thoitrang", "outfit", "ootd"));
         keywords.put("news", Set.of("news", "tin tuc", "tintuc", "breaking"));
-        keywords.put("education", Set.of("education", "giao duc", "giaoduc", "tutorial", "hoc"));
+        keywords.put("education", Set.of(
+            "education", "giao duc", "giaoduc", "tutorial", "hoc tap", "hoctap",
+            "bai hoc", "baihoc", "bai giang", "baigiang", "study with me", "on thi", "onthi"
+        ));
         keywords.put("family", Set.of("family", "gia dinh", "giadinh", "bo me"));
         keywords.put("lifestyle", Set.of("lifestyle", "daily vlog", "vlog"));
         keywords.put("art", Set.of("art", "nghe thuat", "nghethuat", "drawing", "painting"));

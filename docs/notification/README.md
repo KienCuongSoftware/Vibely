@@ -1,7 +1,7 @@
 # Notifications
 
-| File | Description |
-|------|-------------|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | WebSocket fanout roadmap |
+**Current (shipped):** Activity inbox + unread badge via STOMP `/user/queue/notifications` (`notification.updated` / `notification.removed`). Backend package `com.vibely.backend.notification` (Flyway V37+ aggregation).
 
-**Current:** Activity inbox + unread badge via STOMP `/user/queue/notifications` (`notification.updated` / `notification.removed`). Mobile push **roadmap**.
+**Roadmap only:** Mobile push (FCM/APNs).
+
+See also [architecture/WEBSOCKET_REALTIME.md](../architecture/WEBSOCKET_REALTIME.md).

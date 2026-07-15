@@ -327,7 +327,7 @@ Services: `backend`, `frontend`, `postgres`, `redis`, `rabbitmq`, `qdrant`, `cu-
 | **5** | Analytics, trending-by-tag-growth, auto-hashtag, NL semantic search polish | Growth | Abuse / spam tags |
 | **6+** | Neo4j knowledge edges, learned fusion MLP | Long-term | Ops complexity |
 
-**Phase 5 (shipped MVP):** `CuTagTrendingService` + Explore chips; Studio/Upload `CuHashtagSuggestions`; `/api/search/semantic`; Studio `topSemanticTags`.
+**Phase 5 (shipped MVP):** `CuTagTrendingService` (`GET /api/explore/trending-tags` — API only; Explore UI chip row removed); Studio/Upload `CuHashtagSuggestions`; `/api/search/semantic`; Studio `topSemanticTags`. Explore tabs require strong `video_categories` (see V65–V66).
 
 **Rollback:** Feature flag `app.content-understanding.enabled`; Explore falls back to rule-based + existing discovery OpenAI path.
 

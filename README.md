@@ -28,7 +28,8 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 | **Messaging**   | Direct chat with message requests, STOMP/WebSocket realtime, share-to-chat from videos                |
 | **Performance** | Keyset pagination, batched feed queries, Redis share/redirect cache, aggressive client memory cleanup |
 | **Studio**      | Upload, post editing, per-video analytics, comment moderation UI                                      |
-| **Search**      | Global suggest + users/videos/hashtags, `/search` results page, watch-page suggest dropdown           |
+| **Search**      | Global suggest + users/videos/hashtags + `/api/search/semantic` (CU), `/search` results page |
+| **AI / CU**     | Async content understanding (tags, topics, related hybrid); originality detection workers |
 
 ---
 
@@ -104,11 +105,13 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 | ------------- | ---------------------------------------------------------------------------------- |
 | **Frontend**  | React 19, Vite 8, React Router 7, Tailwind CSS 4, TanStack Virtual, HLS.js, Vitest |
 | **Mobile**    | Flutter, `http`, `video_player`, Google Sign-In, Facebook Login                    |
+| **AI workers** | Python: originality + content-understanding (OpenCV, OCR, CLIP, Whisper, YOLO, Qdrant) |
 | **Backend**   | Spring Boot 3.5, Spring Security, Spring Data JPA, Flyway, PostgreSQL              |
-| **Cache**     | Redis 7 (share cache, captcha sessions, rate limits)                               |
-| **Messaging** | Spring WebSocket + STOMP                                                           |
+| **Cache**     | Redis 7 (share cache, captcha sessions, rate limits, Explore cache)                |
+| **Messaging** | Spring WebSocket + STOMP; RabbitMQ (CU jobs when enabled); Kafka optional (anti-bot) |
 | **Media**     | FFmpeg, FFprobe, HLS (adaptive streaming)                                          |
 | **Storage**   | AWS S3 (presigned upload + CDN-ready public URLs)                                  |
+| **Vectors**   | Qdrant (originality + CU collections)                                              |
 | **Auth**      | JWT (HS256), refresh tokens, OAuth 2.0 / OIDC, SMTP OTP                            |
 | **Anti-bot**  | Procedural captcha, HMAC verification tokens, optional Kafka telemetry             |
 | **Tooling**   | Maven, ESLint, Docker Compose (Redis; Kafka optional profile)                      |
@@ -449,8 +452,11 @@ Vibely/
 │       ├── processing/         # FFmpeg HLS pipeline, job workers
 │       ├── share/              # Short links, analytics, Redis cache
 │       ├── studio/             # Creator analytics API
-│       └── video/              # Video domain, UUID public IDs
-│   └── src/main/resources/db/migration/   # Flyway SQL + Java migrations
+│       ├── video/              # Video domain, UUID public IDs
+│       ├── contentunderstanding/ # CU persist, projection, Qdrant client
+│       ├── discovery/          # Topics, for-you ranking, related
+│       └── originality/        # Originality APIs / job orchestration
+│   └── src/main/resources/db/migration/   # Flyway SQL (+ tip V66)
 ├── frontend/                   # React + Vite SPA
 │   └── src/
 │       ├── components/feed/    # VirtualizedFeed, FeedVideoPlayer
@@ -460,20 +466,20 @@ Vibely/
 │       ├── security/           # Anti-bot SDK, captcha UI, fingerprint
 │       └── api/                # API client
 ├── mobile/                     # Flutter app (feed, auth, profile, search)
-│   ├── lib/api/                # Mobile API clients
-│   ├── lib/features/auth/      # Email + native Google/Facebook auth
-│   ├── lib/features/for_you/   # TikTok-style feed
-│   └── android/                # Android OAuth metadata and manifest
-├── docs/                       # Engineering docs (auth, anti-bot, API, …)
-│   ├── erd/                    # Full database ERD (vibely-erd-full.png)
-│   └── database/               # Schema, migrations, indexing
+├── ai-workers/                 # Python workers
+│   ├── originality/            # Reupload / watermark / OCR signals → Qdrant
+│   └── content-understanding/  # Multimodal CU pipeline → tags + Qdrant
+├── docs/                       # Engineering docs — see docs/README.md
+│   ├── architecture/content-understanding/
+│   ├── erd/
+│   └── database/
+├── deploy/                     # VPS compose / nginx samples
 ├── infra/                      # Lambda audio extract (optional)
 ├── docker-compose.yml          # Redis (+ optional Kafka profile)
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 └── LICENSE
 ```
-
 ---
 
 ## Local development
@@ -501,7 +507,7 @@ docker compose up -d redis
 
 Create a PostgreSQL database named `vibely` (or configure `DB_URL`).
 
-**Schema:** Flyway migrations currently reach `V44` under `backend/src/main/resources/db/migration/`. The SQL migrations are the source of truth; refresh the ERD when table count or major relationships change. Full ERD: [docs/erd/vibely-erd-full.png](docs/erd/vibely-erd-full.png) · [docs/database/](docs/database/)
+**Schema:** Flyway tip **V66** under `backend/src/main/resources/db/migration/` (version gaps exist; SQL is source of truth). Full ERD: [docs/erd/vibely-erd-full.png](docs/erd/vibely-erd-full.png) · [docs/database/](docs/database/)
 
 ### 3. Backend environment
 

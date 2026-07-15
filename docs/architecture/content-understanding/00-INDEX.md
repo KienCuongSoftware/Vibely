@@ -4,10 +4,10 @@
 | Field | Value |
 |-------|--------|
 | Document ID | VIBELY-TDD-CUS-2026-07 |
-| Version | 1.0 |
-| Status | Proposed — Production-oriented |
+| Version | 1.1 |
+| Status | **Shipped** — Phase 1–5 in production |
 | Audience | Engineering, AI/ML, SRE, Product, Moderation |
-| Related | Explore (`docs/explore`), Discovery (`docs/discovery`), Originality (`Vibely-Originality-Detection-TDD.md`), Event-driven (`EVENT_DRIVEN_ARCHITECTURE.md`) |
+| Related | Explore (`docs/explore`), Discovery (`docs/discovery`), Originality (`Vibely-Originality-Detection-TDD.md`) |
 
 ---
 
@@ -15,25 +15,11 @@
 
 | Part | File | Scope |
 |------|------|--------|
-| 1 | [01-VISION-AND-PRINCIPLES.md](./01-VISION-AND-PRINCIPLES.md) | Problem, philosophy, Semantic Tag as source of truth, multi-consumer goals |
-| 2 | [02-AI-PIPELINE.md](./02-AI-PIPELINE.md) | Microservice pipeline, frame/OCR/ASR/vision/fusion/tags/topics/categories, Mermaid |
-| 3 | [03-DATA-WORKERS-API.md](./03-DATA-WORKERS-API.md) | PostgreSQL schema, Qdrant, RabbitMQ, workers, REST, Docker Compose, phases |
-| 4 | [04-MLOPS-LIFECYCLE.md](./04-MLOPS-LIFECYCLE.md) | Model registry, feedback, drift, A/B, GPU, monitoring, 3-year roadmap |
-| 5 | [05-KNOWLEDGE-GRAPH.md](./05-KNOWLEDGE-GRAPH.md) | Knowledge graph, semantic search, related/rec/trending consumers, 5-year roadmap |
+| 1 | [01-VISION-AND-PRINCIPLES.md](./01-VISION-AND-PRINCIPLES.md) | Problem, philosophy, Semantic Tag as source of truth |
+| 2 | [02-AI-PIPELINE.md](./02-AI-PIPELINE.md) | Pipeline: frame/OCR/ASR/vision/fusion/tags/topics/categories |
+| 3 | [03-DATA-WORKERS-API.md](./03-DATA-WORKERS-API.md) | Schema, Qdrant, RabbitMQ, workers, REST, Compose, phases |
 
----
-
-## Current Vibely baseline (must not ignore)
-
-| Capability | Today | Gap vs CUS target |
-|------------|-------|-------------------|
-| Explore categories | Rule-based `CategoryClassifierService` + optional OpenAI metadata understanding | No true multi-modal video understanding |
-| Discovery | `video_topics`, `video_category_scores`, `video_content_understanding`, embeddings | Mostly text/OpenAI; not frame+OCR+ASR fusion pipeline |
-| Originality worker | Python + frames + OCR + Qdrant (`ai-workers/originality`) | Different product goal; **reuse frame/OCR/download patterns** |
-| Messaging | Postgres job poll for HLS; Kafka optional for anti-bot | **Need RabbitMQ (or Kafka) for CU pipeline** |
-| Qdrant | Used by originality | Reuse for CU embeddings collections |
-
-**Migration rule:** CUS **replaces** “category-first” thinking. Explore becomes a **consumer** of Semantic Tags → Category Engine mapping. Legacy `video_categories` stays readable until backfill completes.
+Long-horizon MLOps / Neo4j knowledge-graph design was removed from the tree (not implemented). Keep ideas in issue trackers if needed.
 
 ---
 
@@ -44,69 +30,33 @@
 3. **Python workers own the AI pipeline.** Horizontal scale, GPU/CPU separation.
 4. **Async only on upload path.** HTTP create/update must not wait for understanding.
 5. **Every tag has confidence + source + reason** (explainable).
-6. **One analysis, many consumers** (Explore, Rec, Search, Moderation, Ads).
-7. **Model/version/config never hardcoded** in consumer code — Model Registry.
-8. **Phased delivery** — ship value without boiling the ocean.
-
----
-
-## Recommended first production slice (Phase 1–2)
-
-See Part 3 § Phases. Minimum lovable CUS:
-
-1. RabbitMQ + `content-understanding` worker skeleton  
-2. Frame sampling + PaddleOCR + Whisper-small + OpenCLIP  
-3. Fusion → Semantic Tags + Category Engine mapping  
-4. Persist Postgres + Qdrant video vectors  
-5. Wire Explore hybrid + Related/Search to tags  
-
-Keep rule-based classifier as **cold fallback** when worker unavailable (parity with today’s OpenAI fallback).
+6. **One analysis, many consumers** (Explore, Rec, Search, Moderation).
+7. **Phased delivery** — ship value without boiling the ocean.
 
 ---
 
 ## Implementation status (repo)
 
-**Phase 1 landed (code):**
+| Phase | Status | Notes |
+|-------|--------|-------|
+| **1** | Landed | Flyway V61, Spring `contentunderstanding`, RabbitMQ outbox, worker poll/Rabbit, RapidOCR |
+| **2** | Landed | OpenCLIP, Whisper, YOLO lite, late fusion, Qdrant `vibely_cu_*` |
+| **3** | Landed | Topic/category projection; Admin CU APIs (no dedicated Admin CU page) |
+| **4** | Landed | Related hybrid, public explainable REST, search/For-You CU affinity, Admin post CU panel |
+| **5** | Landed | `GET /api/explore/trending-tags`, Studio auto-hashtag, `/api/search/semantic`, studio `topSemanticTags` |
+| **Vocab** | Landed | ~347 tags + aliases (`V64`, `vocab_catalog.py`); closed vocabulary |
+| **Explore precision** | Landed | Explore category tabs use **strong** `video_categories` only (`score ≥ 1.5`); classifier persist ≥ 2.0; Flyway V65–V66 purge weak links |
+
+**UI note:** Explore **no longer shows** a second row of trending-tag chips (API remains for other clients).
+
+**Not yet:** Neo4j/`knowledge_edges`, learned fusion MLP, open-vocabulary LLM tagging.
+
+### Key paths
 
 | Piece | Location |
 |-------|----------|
-| Flyway | `backend/.../V61__content_understanding_phase1.sql` |
-| Spring module | `com.vibely.backend.contentunderstanding` |
-| Enqueue | `VideoCommandService` (publish / non-draft create / metadata update) |
-| Internal API | `/api/internal/content-understanding/**` |
-| Outbox → RabbitMQ | when `APP_CU_RABBITMQ_ENABLED=true` |
-| Worker | `ai-workers/content-understanding` (metadata lexicon + poll/Rabbit) |
+| Flyway | `V61`…`V66` CU-related migrations |
+| Spring | `com.vibely.backend.contentunderstanding` |
+| Worker | `ai-workers/content-understanding` |
 | Compose | `deploy/vps/docker-compose.content-understanding.yml` |
-
-**Phase 1.1 landed (code):** frame sample (OpenCV) + RapidOCR → `ocrFeatures` + lexicon boost.
-
-**Phase 2 landed (code, monolithic worker slice):**
-- OpenCLIP ViT-B-32 zero-shot visual tag priors + frame embeddings
-- faster-whisper Small ASR + speech lexicon
-- YOLOv8n lite → `objectFeatures` + object tags; indoor/outdoor scene heuristic → `scene`
-- Late weighted evidential fusion (`fusion.py`) — metadata contrib capped
-- Qdrant collections `vibely_cu_frame`, `vibely_cu_video` (separate from originality)
-- Backend persists `visual` / `speech` / `audio` / `object_features` / `scene` on `content_features`
-
-**Phase 3 landed (code):**
-- Topic engine: `SemanticTopicProjectionService` → `video_topics` on CU complete (`source=cu_tags`)
-- Category projection → `video_categories` (Explore-visible score ≥ 1.0) + `video_category_scores` (`source=cu_tags`)
-- Admin APIs under `/api/admin/content-understanding/**` (mapping CRUD, backfill/reanalyze/jobs) — no dedicated Admin UI page
-
-**Phase 4 landed (code):**
-- Related hybrid: Qdrant `vibely_cu_video` (0.55) + tag Jaccard (0.25) + topic overlap (0.20) via `RelatedVideoDiscoveryService`
-- Public explainable REST: `GET /api/videos/{publicId}/analysis|semantic-tags|topics|categories` (privacy-gated)
-- Search: CU tag/alias candidate expand + `semanticTagMatch` ranking boost
-- For-You: light CU tag↔topic-interest affinity bonus (0.10)
-- Admin post detail: CU explainable panel + reanalyze
-- Spring `CuQdrantClient`; worker video-mean Qdrant point id = `video_id`
-
-**Phase 5 landed (code):**
-- Trending-by-tag-growth: `GET /api/explore/trending-tags` + Explore chip row
-- Studio auto-hashtag: click-to-append CU tag suggestions (conf ≥ 0.7) on Upload / Studio Edit
-- NL semantic search polish: `GET /api/search/semantic` (+ Search results matched-tag chips)
-- Studio video analytics: `topSemanticTags` on analytics payload
-
-**Vocabulary expansion (post Phase 5):** closed lexicon grown to **~347 semantic tags** + **~1100 aliases** (Flyway `V64`, worker `vocab_catalog.py`). Still closed-vocabulary — new niches require extending the catalog (script: `ai-workers/content-understanding/scripts/build_vocab.py`), not free-form open tagging.
-
-**Not yet (Phase 6+):** Neo4j/`knowledge_edges`, learned fusion MLP, open-vocabulary / LLM tag generation, full knowledge-graph consumers.
+| Vocab codegen | `ai-workers/content-understanding/scripts/build_vocab.py` |

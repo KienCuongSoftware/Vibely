@@ -55,7 +55,7 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
               and c.slug = :slug
               and c.enabled = true
               and c.slug <> 'all'
-              and vc.score >= 1.0
+              and vc.score >= 1.5
               and (:cursorScore is null or (v.explore_score < :cursorScore
                    or (v.explore_score = :cursorScore and (v.created_at < :cursorTime
                    or (v.created_at = :cursorTime and v.id < :cursorId)))))
