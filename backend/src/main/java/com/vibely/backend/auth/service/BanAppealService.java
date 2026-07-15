@@ -76,7 +76,10 @@ public class BanAppealService {
             : banAppealRepository.findByStatus(status, pageable);
         Map<Long, User> usersById = loadUsers(appeals.getContent());
         List<AdminBanAppealResponse> items = appeals.getContent().stream()
-            .map(appeal -> toAdminResponse(appeal, usersById.get(appeal.getUserId())))
+            .map(appeal -> toAdminResponse(
+                appeal,
+                appeal.getUserId() == null ? null : usersById.get(appeal.getUserId())
+            ))
             .toList();
         return new AdminBanAppealPageResponse(
             items,
@@ -197,7 +200,8 @@ public class BanAppealService {
             .distinct()
             .toList();
         if (userIds.isEmpty()) {
-            return Map.of();
+            // Must allow .get(null) — Map.of() throws NPE on null keys.
+            return new HashMap<>();
         }
         Map<Long, User> usersById = new HashMap<>();
         userRepository.findAllById(userIds).forEach(user -> usersById.put(user.getId(), user));
