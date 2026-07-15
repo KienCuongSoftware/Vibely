@@ -273,6 +273,20 @@ export const apiClient = {
     request(`/api/admin/posts${toQuery({ page, size, query, status })}`, { token }),
   getAdminPost: (token, publicId) =>
     request(`/api/admin/posts/${publicId}`, { token }),
+  getVideoAnalysis: (publicId, token) =>
+    request(`/api/videos/${encodeURIComponent(publicId)}/analysis`, token ? { token } : {}),
+  getVideoSemanticTags: (publicId, token) =>
+    request(`/api/videos/${encodeURIComponent(publicId)}/semantic-tags`, token ? { token } : {}),
+  getVideoCuTopics: (publicId, token) =>
+    request(`/api/videos/${encodeURIComponent(publicId)}/topics`, token ? { token } : {}),
+  getVideoCuCategories: (publicId, token) =>
+    request(`/api/videos/${encodeURIComponent(publicId)}/categories`, token ? { token } : {}),
+  adminCuReanalyze: (token, payload) =>
+    request("/api/admin/content-understanding/reanalyze", {
+      method: "POST",
+      token,
+      body: payload,
+    }),
   deleteAdminPost: (token, publicId) =>
     request(`/api/admin/posts/${publicId}`, { method: "DELETE", token }),
   createAdminUser: (token, payload) =>

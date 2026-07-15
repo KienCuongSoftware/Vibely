@@ -126,6 +126,12 @@ export function AdminPostDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteBusy, setDeleteBusy] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const [cuAnalysis, setCuAnalysis] = useState(null)
+  const [cuTags, setCuTags] = useState([])
+  const [cuLoading, setCuLoading] = useState(false)
+  const [cuError, setCuError] = useState('')
+  const [reanalyzeBusy, setReanalyzeBusy] = useState(false)
+  const [reanalyzeMsg, setReanalyzeMsg] = useState('')
 
   const title = post?.description || post?.title || 'Bài đăng không có mô tả'
   const playbackUrl = post?.masterPlaylistUrl || post?.videoUrl
@@ -152,9 +158,33 @@ export function AdminPostDetailPage() {
     }
   }, [authReady, isAdmin, publicId, token])
 
+  const loadCu = useCallback(async () => {
+    if (!token || !isAdmin || !publicId) return
+    setCuLoading(true)
+    setCuError('')
+    try {
+      const [analysis, tags] = await Promise.all([
+        apiClient.getVideoAnalysis(publicId, token),
+        apiClient.getVideoSemanticTags(publicId, token),
+      ])
+      setCuAnalysis(analysis)
+      setCuTags(Array.isArray(tags) ? tags : [])
+    } catch (e) {
+      setCuAnalysis(null)
+      setCuTags([])
+      setCuError(e.message ?? 'Không tải được Content Understanding.')
+    } finally {
+      setCuLoading(false)
+    }
+  }, [isAdmin, publicId, token])
+
   useEffect(() => {
     void loadPost()
   }, [loadPost])
+
+  useEffect(() => {
+    if (post?.publicId) void loadCu()
+  }, [loadCu, post?.publicId])
 
   const stats = useMemo(
     () => [
@@ -178,6 +208,28 @@ export function AdminPostDetailPage() {
       setDeleteError(e.message ?? 'Không xóa được bài đăng.')
     } finally {
       setDeleteBusy(false)
+    }
+  }
+
+  const handleReanalyze = async () => {
+    if (!post?.publicId) return
+    setReanalyzeBusy(true)
+    setReanalyzeMsg('')
+    try {
+      const result = await apiClient.adminCuReanalyze(token, {
+        publicId: post.publicId,
+        force: true,
+      })
+      setReanalyzeMsg(
+        result?.jobIds?.[0]
+          ? `Đã enqueue job ${result.jobIds[0]}`
+          : 'Đã gửi yêu cầu phân tích lại.',
+      )
+      await loadCu()
+    } catch (e) {
+      setReanalyzeMsg(e.message ?? 'Không enqueue được job CU.')
+    } finally {
+      setReanalyzeBusy(false)
     }
   }
 
@@ -275,6 +327,78 @@ export function AdminPostDetailPage() {
             {stats.map((item) => (
               <StatCard key={item.label} icon={item.icon} label={item.label} value={item.value} />
             ))}
+          </section>
+
+          <section className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Content Understanding
+                </p>
+                <p className="mt-1 text-sm text-zinc-400">
+                  Tags + confidence + source (explainable). Job:{' '}
+                  <span className="font-semibold text-zinc-200">
+                    {cuAnalysis?.jobStatus ?? (cuLoading ? '…' : 'NONE')}
+                  </span>
+                  {cuAnalysis?.featureVersion
+                    ? ` · ${cuAnalysis.featureVersion}`
+                    : null}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleReanalyze}
+                disabled={reanalyzeBusy || cuLoading}
+                className="rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-semibold text-zinc-100 transition hover:border-emerald-500/50 hover:bg-emerald-500/10 disabled:opacity-50"
+              >
+                {reanalyzeBusy ? 'Đang enqueue…' : 'Phân tích lại (CU)'}
+              </button>
+            </div>
+            {reanalyzeMsg ? (
+              <p className="mt-2 text-sm text-zinc-400">{reanalyzeMsg}</p>
+            ) : null}
+            {cuError ? (
+              <p className="mt-3 text-sm text-amber-400">{cuError}</p>
+            ) : null}
+            {cuLoading ? (
+              <p className="mt-3 text-sm text-zinc-500">Đang tải semantic tags…</p>
+            ) : cuTags.length === 0 ? (
+              <p className="mt-3 text-sm text-zinc-500">Chưa có semantic tags cho video này.</p>
+            ) : (
+              <ul className="mt-4 divide-y divide-zinc-800/80">
+                {cuTags.map((tag) => (
+                  <li key={`${tag.slug}-${tag.source}`} className="py-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-xs font-semibold text-zinc-100">
+                        {tag.slug}
+                      </span>
+                      <span className="text-xs text-zinc-500">
+                        {(Number(tag.confidence) * 100).toFixed(0)}% · {tag.source}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-zinc-300">{tag.reason || tag.name || '—'}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {cuAnalysis?.modalityNotes ? (
+              <div className="mt-4 flex flex-wrap gap-2 text-[11px] text-zinc-500">
+                {Object.entries(cuAnalysis.modalityNotes)
+                  .filter(([, v]) => typeof v === 'boolean')
+                  .map(([k, v]) => (
+                    <span
+                      key={k}
+                      className={`rounded-md border px-2 py-1 ${
+                        v
+                          ? 'border-emerald-500/30 text-emerald-300'
+                          : 'border-zinc-800 text-zinc-600'
+                      }`}
+                    >
+                      {k}:{v ? 'yes' : 'no'}
+                    </span>
+                  ))}
+              </div>
+            ) : null}
           </section>
 
           {deleteOpen ? (
