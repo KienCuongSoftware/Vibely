@@ -90,6 +90,7 @@ Phase 1 primary transport is **DB poll claim** (like originality). Rabbit outbox
 | **2** | **Landed** | Admin `/admin/moderation` queue + detail; REST claim/resolve; human override always applies levers |
 | **3** | **Landed** | `V68` appeals; creator trust scores; author status/appeal Studio UI; Admin khiếu nại tab; audit on appeal/resolve |
 | **4** | **Landed** | `V69` `detector_registry`; plugins `nsfw_cu_v1` / `violence_cu_v1` on stored CU visual/object JSON; `plugin_score` rules; claim enrich at job time |
+| **4b** | **Landed** | `V70` spam/nsfw/violence → `BLOCK`; AI auto-ban author (`APP_MODERATION_AUTO_BAN_ON_BLOCK`, default true) when apply-decisions |
 | **5+** | Sketch | Active learning / registry / drift / A/B — [04](./04-HITL-AND-LEARNING.md) |
 
 ---

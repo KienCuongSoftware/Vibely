@@ -3,6 +3,8 @@ package com.vibely.backend.moderation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vibely.backend.admin.AdminAccountBanEmailService;
+import com.vibely.backend.admin.AdminBannedUserInfo;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.video.Video;
@@ -27,6 +29,8 @@ public class ModerationJobService {
     private final ModerationDecisionApplier decisionApplier;
     private final ModerationEventOutboxRepository outboxRepository;
     private final CreatorTrustService trustService;
+    private final ModerationAutoBanService autoBanService;
+    private final AdminAccountBanEmailService accountBanEmailService;
     private final ModerationSnapshotBuilder snapshotBuilder;
     private final ObjectMapper objectMapper;
     private final JdbcTemplate jdbcTemplate;
@@ -38,6 +42,8 @@ public class ModerationJobService {
         ModerationDecisionApplier decisionApplier,
         ModerationEventOutboxRepository outboxRepository,
         CreatorTrustService trustService,
+        ModerationAutoBanService autoBanService,
+        AdminAccountBanEmailService accountBanEmailService,
         ModerationSnapshotBuilder snapshotBuilder,
         ObjectMapper objectMapper,
         JdbcTemplate jdbcTemplate
@@ -48,6 +54,8 @@ public class ModerationJobService {
         this.decisionApplier = decisionApplier;
         this.outboxRepository = outboxRepository;
         this.trustService = trustService;
+        this.autoBanService = autoBanService;
+        this.accountBanEmailService = accountBanEmailService;
         this.snapshotBuilder = snapshotBuilder;
         this.objectMapper = objectMapper;
         this.jdbcTemplate = jdbcTemplate;
@@ -168,6 +176,46 @@ public class ModerationJobService {
 
         decisionApplier.apply(job.getVideo(), saved, decision, shadow);
         Long authorId = job.getVideo().getAuthor() == null ? null : job.getVideo().getAuthor().getId();
+        boolean autoBanned = false;
+        if (!shadow && autoBanService.shouldAutoBan(decision, request)) {
+            AdminBannedUserInfo bannedUser = autoBanService.banAuthorForModeration(
+                authorId,
+                job.getVideo().getId(),
+                decision,
+                "Vi phạm chính sách nội dung (bạo lực / tình dục / spam). Video #"
+                    + job.getVideo().getId()
+            );
+            if (bannedUser != null) {
+                autoBanned = true;
+                jdbcTemplate.update(
+                    """
+                    INSERT INTO moderation_audit_logs
+                        (video_id, report_id, actor, action, before_json, after_json, created_at)
+                    VALUES (?, ?, 'SYSTEM', 'AI_AUTO_BAN', '{}'::jsonb, CAST(? AS jsonb), NOW())
+                    """,
+                    job.getVideo().getId(),
+                    saved.getId(),
+                    toJson(Map.of(
+                        "authorId", authorId,
+                        "decision", decision.name(),
+                        "risk", request.getRisk()
+                    ))
+                );
+                writeOutbox(
+                    "user",
+                    String.valueOf(authorId),
+                    "moderation.author.auto_banned",
+                    Map.of(
+                        "eventType", "moderation.author.auto_banned",
+                        "userId", authorId,
+                        "videoId", job.getVideo().getId(),
+                        "decision", decision.name(),
+                        "reportId", saved.getId()
+                    )
+                );
+                accountBanEmailService.sendAccountBanned(bannedUser);
+            }
+        }
         trustService.recordPolicyEvent(
             authorId,
             job.getVideo().getId(),
@@ -232,7 +280,8 @@ public class ModerationJobService {
                 "decision", decision.name(),
                 "risk", request.getRisk(),
                 "confidence", request.getConfidence(),
-                "shadow", shadow
+                "shadow", shadow,
+                "autoBanned", autoBanned
             ))
         );
     }

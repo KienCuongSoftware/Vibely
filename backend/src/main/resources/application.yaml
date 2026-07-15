@@ -107,6 +107,7 @@ app:
   moderation:
     enabled: ${APP_MODERATION_ENABLED:true}
     apply-decisions: ${APP_MODERATION_APPLY_DECISIONS:false}
+    auto-ban-on-block: ${APP_MODERATION_AUTO_BAN_ON_BLOCK:true}
     rabbitmq-enabled: ${APP_MODERATION_RABBITMQ_ENABLED:false}
     internal-token: ${APP_MODERATION_INTERNAL_TOKEN:vibely-dev-moderation-token}
     policy-version: ${APP_MODERATION_POLICY_VERSION:2026.07.1}

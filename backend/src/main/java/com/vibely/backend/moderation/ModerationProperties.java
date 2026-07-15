@@ -8,6 +8,11 @@ public class ModerationProperties {
     private boolean enabled = true;
     /** Persist reports but do not mutate video status / explore when false. */
     private boolean applyDecisions = false;
+    /**
+     * When apply-decisions is true, AI BLOCK/DELETE on severe labels
+     * (sexual_content, violence, spam, …) also bans the author.
+     */
+    private boolean autoBanOnBlock = true;
     private boolean rabbitmqEnabled = false;
     private String internalToken = "vibely-dev-moderation-token";
     private String policyVersion = "2026.07.1";
@@ -36,6 +41,14 @@ public class ModerationProperties {
 
     public void setApplyDecisions(boolean applyDecisions) {
         this.applyDecisions = applyDecisions;
+    }
+
+    public boolean isAutoBanOnBlock() {
+        return autoBanOnBlock;
+    }
+
+    public void setAutoBanOnBlock(boolean autoBanOnBlock) {
+        this.autoBanOnBlock = autoBanOnBlock;
     }
 
     public boolean isRabbitmqEnabled() {

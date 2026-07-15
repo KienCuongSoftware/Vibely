@@ -62,7 +62,7 @@ public class ModerationJoinService {
                 "analysisJobId", analysisJobId == null ? null : analysisJobId.toString()
             )
         );
-        tryEnqueue(videoId, false);
+        safeTryEnqueue(videoId, false);
     }
 
     @Transactional
@@ -80,7 +80,21 @@ public class ModerationJoinService {
                 "originalityReportId", originalityReportId
             )
         );
-        tryEnqueue(videoId, false);
+        safeTryEnqueue(videoId, false);
+    }
+
+    private void safeTryEnqueue(Long videoId, boolean allowOriginalityPending) {
+        try {
+            tryEnqueue(videoId, allowOriginalityPending);
+        } catch (Exception ex) {
+            log.warn(
+                "Moderation enqueue failed videoId={} allowPending={}: {}",
+                videoId,
+                allowOriginalityPending,
+                ex.getMessage(),
+                ex
+            );
+        }
     }
 
     /** Soft-timeout path: CU done, originality still missing past deadline. */
@@ -116,6 +130,45 @@ public class ModerationJoinService {
         for (Map<String, Object> row : candidates) {
             Long videoId = ((Number) row.get("video_id")).longValue();
             tryEnqueue(videoId, true);
+        }
+    }
+
+    /**
+     * Backfill: CU + originality already complete but moderation job never enqueued
+     * (missed join after originality complete).
+     */
+    @Transactional
+    public void reconcileMissingModerationJobs() {
+        if (!properties.isEnabled()) {
+            return;
+        }
+        List<Map<String, Object>> candidates = jdbcTemplate.queryForList(
+            """
+            SELECT aj.video_id AS video_id
+            FROM analysis_jobs aj
+            JOIN originality_reports o ON o.video_id = aj.video_id
+            JOIN videos v ON v.id = aj.video_id
+            WHERE aj.status = 'COMPLETED'
+              AND COALESCE(v.studio_draft, FALSE) = FALSE
+              AND NOT EXISTS (
+                  SELECT 1 FROM moderation_jobs mj
+                  WHERE mj.video_id = aj.video_id
+                    AND mj.policy_version = ?
+                    AND mj.job_state IN ('PENDING', 'PROCESSING', 'COMPLETED')
+              )
+            ORDER BY aj.finished_at DESC NULLS LAST
+            LIMIT 50
+            """,
+            properties.getPolicyVersion()
+        );
+        for (Map<String, Object> row : candidates) {
+            Long videoId = ((Number) row.get("video_id")).longValue();
+            try {
+                tryEnqueue(videoId, false);
+                log.info("Reconcile enqueued missing moderation job videoId={}", videoId);
+            } catch (Exception ex) {
+                log.warn("Reconcile enqueue failed videoId={}: {}", videoId, ex.getMessage());
+            }
         }
     }
 

@@ -34,6 +34,7 @@ public class ModerationRecoveryScheduler {
         try {
             jobService.recoverStaleProcessing();
             joinService.reconcileSoftTimeouts();
+            joinService.reconcileMissingModerationJobs();
         } catch (Exception ex) {
             log.warn("Moderation recovery failed: {}", ex.getMessage());
         }

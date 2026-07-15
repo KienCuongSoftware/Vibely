@@ -18,6 +18,8 @@ Canonical design: **[Intelligent Content Moderation TDD](../architecture/content
 
 **Shadow by default:** `APP_MODERATION_APPLY_DECISIONS=false` persists reports without mutating `videos.status` / Explore. Set `true` to apply LIMIT/REVIEW/BLOCK levers.
 
+**Auto-ban:** with apply-decisions on, AI `BLOCK`/`DELETE` for labels `spam` / `sexual_content` / `violence` (and related evidence) bans the author (`APP_MODERATION_AUTO_BAN_ON_BLOCK=true`), removes their READY/HIDDEN posts, and hides the public profile.
+
 ## Phase 2 Admin
 
 | Piece | Location |
