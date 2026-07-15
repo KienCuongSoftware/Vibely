@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-**Flyway** applies SQL migrations on startup. Inspect `backend/src/main/resources/db/migration/` for the real set — version numbers may skip. Current tip: **V71**. Java migration `V22__BackfillVideoPublicUuid` handles video public UUID backfill.
+**Flyway** applies SQL migrations on startup. Inspect `backend/src/main/resources/db/migration/` for the real set — version numbers may skip. Current tip: **V72**. Java migration `V22__BackfillVideoPublicUuid` handles video public UUID backfill.
 
 ## 2. Rules
 
@@ -46,6 +46,7 @@
 | V69 | Content Moderation Phase 4 detector plugins (`detector_registry` + plugin_score rules) |
 | V70 | Moderation auto-ban: spam/nsfw/violence rules → BLOCK |
 | V71 | Expand lex.spam caption patterns (follow of/for nudes, …) |
+| V72 | `lex.sexual_vi` — Vietnamese sexual / vulgar caption lexicon → BLOCK |
 
 After schema changes, update [SCHEMA.md](SCHEMA.md) and the [full ERD](../erd/vibely-erd-full.png) when table count or major relationships change.
 
