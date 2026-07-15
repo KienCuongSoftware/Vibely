@@ -203,23 +203,23 @@ public class VideoContentUnderstandingQueryService {
         UUID id = VideoPublicIds.parse(publicId);
         Video video = videoRepository.findWithAuthorByPublicId(id)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
-        if (video.getStatus() != VideoStatus.READY && video.getStatus() != VideoStatus.PROCESSING) {
-            User probe = null;
-            if (authentication != null && authentication.getName() != null) {
-                probe = userRepository.findByEmail(authentication.getName()).orElse(null);
-            }
-            boolean admin = probe != null && probe.getRole() != null
-                && "ADMIN".equalsIgnoreCase(String.valueOf(probe.getRole()));
-            if (!admin) {
-                throw new NotFoundException("Không tìm thấy video");
-            }
-        }
         User viewer = null;
         if (authentication != null && authentication.getName() != null) {
             viewer = userRepository.findByEmail(authentication.getName()).orElse(null);
         }
         boolean admin = viewer != null && viewer.getRole() != null
             && "ADMIN".equalsIgnoreCase(String.valueOf(viewer.getRole()));
+        boolean author = viewer != null
+            && video.getAuthor() != null
+            && viewer.getId() != null
+            && viewer.getId().equals(video.getAuthor().getId());
+        // Draft / RAW / HIDDEN: author + admin may read analysis tags (Studio upload poll).
+        if (video.getStatus() != VideoStatus.READY && video.getStatus() != VideoStatus.PROCESSING) {
+            if (!admin && !author) {
+                throw new NotFoundException("Không tìm thấy video");
+            }
+            return video;
+        }
         if (!admin && !privacyAccessService.canViewerWatch(video, viewer)) {
             throw new NotFoundException("Không tìm thấy video");
         }

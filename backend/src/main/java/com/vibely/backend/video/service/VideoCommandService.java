@@ -3,6 +3,8 @@ package com.vibely.backend.video.service;
 import com.vibely.backend.contentunderstanding.ContentUnderstandingEnqueueService;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.moderation.ModerationCaptionGateService;
+import com.vibely.backend.moderation.ModerationJoinService;
 import com.vibely.backend.notification.NotificationService;
 import com.vibely.backend.originality.OriginalityEnqueueService;
 import com.vibely.backend.processing.VideoProcessingEnqueueService;
@@ -40,6 +42,8 @@ public class VideoCommandService {
     private final NotificationService notificationService;
     private final VideoProcessingJobRepository videoProcessingJobRepository;
     private final ObjectProvider<S3MediaDeletionService> s3MediaDeletionService;
+    private final ModerationCaptionGateService captionGateService;
+    private final ModerationJoinService moderationJoinService;
 
     public VideoCommandService(
         VideoRepository videoRepository,
@@ -53,7 +57,9 @@ public class VideoCommandService {
         VideoQueryService queryService,
         NotificationService notificationService,
         VideoProcessingJobRepository videoProcessingJobRepository,
-        ObjectProvider<S3MediaDeletionService> s3MediaDeletionService
+        ObjectProvider<S3MediaDeletionService> s3MediaDeletionService,
+        ModerationCaptionGateService captionGateService,
+        ModerationJoinService moderationJoinService
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
@@ -67,6 +73,8 @@ public class VideoCommandService {
         this.notificationService = notificationService;
         this.videoProcessingJobRepository = videoProcessingJobRepository;
         this.s3MediaDeletionService = s3MediaDeletionService;
+        this.captionGateService = captionGateService;
+        this.moderationJoinService = moderationJoinService;
     }
 
     @Transactional
@@ -93,10 +101,15 @@ public class VideoCommandService {
         if (explicitAudio != null) {
             ownedMediaValidator.requireOwnedAudio(explicitAudio, authorId);
         }
+        // Default draft when omitted — only explicit studioDraft=false publishes into lists.
+        boolean draft = !Boolean.FALSE.equals(request.getStudioDraft());
         Video video = new Video();
         video.setAuthor(author);
         video.setTitle(request.getTitle());
         video.setDescription(request.getDescription());
+        if (!draft) {
+            captionGateService.assertPublishAllowed(video, request.getTitle(), request.getDescription());
+        }
         video.setVideoUrl(request.getVideoUrl());
         video.setThumbnailUrl(request.getThumbnailUrl());
         video.setDurationSeconds(durationSeconds);
@@ -111,8 +124,6 @@ public class VideoCommandService {
         }
         video.setAudioTitle(audioTitle);
         video.setStatus(VideoStatus.RAW);
-        // Default draft when omitted — only explicit studioDraft=false publishes into lists.
-        boolean draft = !Boolean.FALSE.equals(request.getStudioDraft());
         video.setStudioDraft(draft);
         video.setPrivacy(resolvePrivacy(request.getPrivacy()));
         Video saved = videoRepository.save(video);
@@ -122,6 +133,9 @@ public class VideoCommandService {
         videoProcessingEnqueueService.enqueueAfterVideoPersisted(saved);
         originalityEnqueueService.enqueueAfterVideoPersisted(saved);
         contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "upload");
+        if (!draft) {
+            moderationJoinService.tryEnqueue(saved.getId(), false);
+        }
         return responseMapper.toResponse(saved);
     }
 
@@ -154,9 +168,13 @@ public class VideoCommandService {
             throw new BadRequestException("Video đã bị gỡ, không thể sửa.");
         }
         boolean wasDraft = video.isStudioDraft();
-        video.setTitle(request.getTitle().trim());
-        String desc = request.getDescription();
-        video.setDescription(desc == null || desc.isBlank() ? null : desc.trim());
+        String nextTitle = request.getTitle().trim();
+        String nextDesc = request.getDescription();
+        nextDesc = nextDesc == null || nextDesc.isBlank() ? null : nextDesc.trim();
+        // Block severe spam/sexual captions before the post can hit For You.
+        captionGateService.assertPublishAllowed(video, nextTitle, nextDesc);
+        video.setTitle(nextTitle);
+        video.setDescription(nextDesc);
         if (request.getThumbnailUrl() != null) {
             String thumb = VideoMediaUtils.normalizeText(request.getThumbnailUrl());
             if (thumb != null) {
@@ -178,6 +196,8 @@ public class VideoCommandService {
         } else {
             contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "metadata_updated");
         }
+        // If CU+originality already finished, do not wait for a new CU cycle to start moderation.
+        moderationJoinService.tryEnqueue(saved.getId(), false);
         return responseMapper.toResponse(saved);
     }
 

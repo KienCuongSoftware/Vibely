@@ -1217,6 +1217,11 @@ export function UploadPage() {
       return
     } catch (error) {
       publishingRef.current = false
+      if (error?.code === 'ACCOUNT_BANNED') {
+        // api client + AuthContext force-logout; keep message as fallback
+        setStatus(error.message ?? 'Tài khoản của bạn đã bị cấm.')
+        return
+      }
       const msg = error.message ?? 'Không thể lưu video.'
       if (isDurationLimitRejectMessage(msg)) {
         resetUploadSession()
