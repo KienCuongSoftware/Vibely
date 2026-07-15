@@ -88,7 +88,6 @@ Keep rule-based classifier as **cold fallback** when worker unavailable (parity 
 
 **Phase 3 landed (code):**
 - Topic engine: `SemanticTopicProjectionService` → `video_topics` on CU complete (`source=cu_tags`)
-- Admin category↔tag mapping CRUD + backfill/reanalyze/jobs APIs under `/api/admin/content-understanding/**`
-- Admin UI: `/admin/content-understanding`
+- Admin APIs under `/api/admin/content-understanding/**` (mapping CRUD, backfill/reanalyze/jobs) — no dedicated Admin UI page
 
 **Not yet (Phase 4+):** YOLO/scene, Related-by-embedding, explainable dashboard, public analysis REST, Rec wire-up.
