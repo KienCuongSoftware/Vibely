@@ -233,7 +233,7 @@ public class AdminUserService {
             user.getUsername(),
             user.getDisplayName(),
             user.getEmail(),
-            user.getBanReason(),
+            com.vibely.backend.moderation.BanReasonFormatter.forDisplay(user.getBanReason()),
             user.getBannedAt()
         );
     }

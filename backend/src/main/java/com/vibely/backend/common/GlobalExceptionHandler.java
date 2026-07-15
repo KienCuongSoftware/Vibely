@@ -46,10 +46,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<AccountBannedPayload>> handleAccountBanned(
         AccountBannedException ex
     ) {
+        String reason = com.vibely.backend.moderation.BanReasonFormatter.forDisplay(ex.getReason());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
             .body(new ApiResponse<>(
                 false,
-                new AccountBannedPayload(ex.getEmail(), maskEmail(ex.getEmail()), ex.getReason()),
+                new AccountBannedPayload(ex.getEmail(), maskEmail(ex.getEmail()), reason),
                 ApiError.of(HttpStatus.FORBIDDEN.value(), "ACCOUNT_BANNED", ex.getMessage())
             ));
     }

@@ -33,6 +33,21 @@ function resolveAdminAvatarUrl(avatarUrl) {
   return value
 }
 
+/** Hide leaked regex / engine tokens in ban_reason (legacy rows). */
+function formatBanReasonDisplay(raw) {
+  const text = String(raw ?? '').trim()
+  if (!text) return '—'
+  if (
+    text.includes('\\b') ||
+    text.includes('\\s') ||
+    text.includes('(?:') ||
+    /caption spam/i.test(text)
+  ) {
+    return 'Spam / nội dung tình dục trong caption hoặc mô tả video'
+  }
+  return text
+}
+
 function UnbanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">
@@ -62,7 +77,8 @@ function UnbanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
           <p className="mt-2 text-emerald-200/90">Email: {user?.email || 'Không có email'}</p>
           {user?.banReason ? (
             <p className="mt-3 text-emerald-200/90">
-              Lý do cấm trước đó: <span className="text-emerald-50">{user.banReason}</span>
+              Lý do cấm trước đó:{' '}
+              <span className="text-emerald-50">{formatBanReasonDisplay(user.banReason)}</span>
             </p>
           ) : null}
         </div>
@@ -245,7 +261,9 @@ export function AdminBannedUsersPage() {
                         </td>
                         <td className="px-3 py-3 text-zinc-300">{item.email || '—'}</td>
                         <td className="max-w-xs px-3 py-3 text-zinc-300">
-                          <p className="line-clamp-3 whitespace-pre-wrap text-sm">{item.banReason || '—'}</p>
+                          <p className="line-clamp-3 whitespace-pre-wrap text-sm">
+                            {formatBanReasonDisplay(item.banReason)}
+                          </p>
                         </td>
                         <td className="whitespace-nowrap px-3 py-3 text-xs text-zinc-400">
                           {formatDateTime(item.bannedAt)}

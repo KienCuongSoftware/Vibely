@@ -142,17 +142,17 @@ public class ModerationAutoBanService {
             target.getUsername(),
             target.getDisplayName(),
             target.getEmail(),
-            target.getBanReason(),
+            BanReasonFormatter.forDisplay(target.getBanReason()),
             target.getBannedAt()
         );
     }
 
     private String normalizeReason(String reason, ModerationDecision decision, long videoId) {
         String base = reason == null || reason.isBlank()
-            ? "Vi phạm chính sách nội dung (AI moderation " + decision + ", video #" + videoId + ")"
-            : reason.trim();
+            ? "Vi phạm chính sách nội dung (AI moderation)"
+            : BanReasonFormatter.forDisplay(reason.trim());
         if (base.length() < 5) {
-            base = "Vi phạm chính sách nội dung (video #" + videoId + ")";
+            base = "Vi phạm chính sách cộng đồng";
         }
         if (base.length() > 500) {
             return base.substring(0, 500);

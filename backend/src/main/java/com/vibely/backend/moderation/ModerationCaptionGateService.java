@@ -80,7 +80,8 @@ public class ModerationCaptionGateService {
         Long authorId = video.getAuthor() == null ? null : video.getAuthor().getId();
         String authorEmail = video.getAuthor() == null ? null : video.getAuthor().getEmail();
         long videoId = video.getId() == null ? 0L : video.getId();
-        String reason = "Vi phạm chính sách nội dung (caption spam/tình dục): " + hit;
+        // User/admin-facing reason — never store regex patterns in ban_reason.
+        String reason = BanReasonFormatter.forCaptionViolation(title, description);
         log.warn("Caption gate blocked videoId={} authorId={} hit={}", videoId, authorId, hit);
 
         if (properties.isAutoBanOnBlock() && authorId != null) {

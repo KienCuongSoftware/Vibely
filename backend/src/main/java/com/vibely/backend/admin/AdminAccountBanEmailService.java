@@ -176,7 +176,9 @@ public class AdminAccountBanEmailService {
     }
 
     private String reasonText(AdminBannedUserInfo user) {
-        return StringUtils.hasText(user.banReason()) ? user.banReason().trim() : "Không có lý do cụ thể";
+        String raw = user == null ? null : user.banReason();
+        String cleaned = com.vibely.backend.moderation.BanReasonFormatter.forDisplay(raw);
+        return StringUtils.hasText(cleaned) ? cleaned : "Không có lý do cụ thể";
     }
 
     private String resolveFromAddress() {

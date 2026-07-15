@@ -721,6 +721,15 @@ export function LoginPage() {
                 Tài khoản của bạn đã bị cấm
               </h2>
               <p className="mt-4 text-[13px] leading-relaxed text-zinc-300">
+                Tài khoản bạn đã bị cấm vì{" "}
+                <span className="font-semibold text-zinc-100">
+                  {bannedReason.trim()
+                    ? bannedReason.trim()
+                    : "vi phạm chính sách cộng đồng của Vibely"}
+                </span>
+                .
+              </p>
+              <p className="mt-3 text-[13px] leading-relaxed text-zinc-400">
                 Nếu bạn cho rằng đây là một sự nhầm lẫn, bạn có thể gửi khiếu nại
               </p>
             </div>

@@ -235,6 +235,9 @@ export function UploadPage() {
   const [originalityStatus, setOriginalityStatus] = useState(null)
   const [originalityDetailsOpen, setOriginalityDetailsOpen] = useState(false)
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false)
+  /** { reason } when publish returns ACCOUNT_BANNED */
+  const [banNoticeOpen, setBanNoticeOpen] = useState(false)
+  const [banNoticeReason, setBanNoticeReason] = useState('')
   const draftPublicIdRef = useRef(null)
   const publishingRef = useRef(false)
   const discardingLeaveRef = useRef(false)
@@ -1218,8 +1221,12 @@ export function UploadPage() {
     } catch (error) {
       publishingRef.current = false
       if (error?.code === 'ACCOUNT_BANNED') {
-        // api client + AuthContext force-logout; keep message as fallback
-        setStatus(error.message ?? 'Tài khoản của bạn đã bị cấm.')
+        const reason = String(error?.data?.reason ?? '').trim()
+        setBanNoticeReason(
+          reason || 'chính sách cộng đồng của Vibely',
+        )
+        setBanNoticeOpen(true)
+        setStatus('')
         return
       }
       const msg = error.message ?? 'Không thể lưu video.'
@@ -1396,6 +1403,41 @@ export function UploadPage() {
               >
                 <IoRefreshOutline className="text-lg" aria-hidden />
                 Thay thế video
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {banNoticeOpen ? (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 px-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="upload-ban-title"
+            className="w-full max-w-[340px] overflow-hidden rounded-sm border border-zinc-800 bg-[#121212] text-center shadow-2xl"
+          >
+            <div className="px-6 py-6">
+              <h2 id="upload-ban-title" className="text-xl font-bold text-zinc-100">
+                Tài khoản của bạn đã bị cấm
+              </h2>
+              <p className="mt-4 text-[13px] leading-relaxed text-zinc-300">
+                Tài khoản bạn đã bị cấm vì{' '}
+                <span className="font-semibold text-zinc-100">{banNoticeReason}</span>.
+              </p>
+              <p className="mt-3 text-[13px] leading-relaxed text-zinc-400">
+                Bạn có thể gửi khiếu nại từ trang đăng nhập nếu cho rằng đây là nhầm lẫn.
+              </p>
+            </div>
+            <div className="border-t border-zinc-800">
+              <button
+                type="button"
+                className="flex h-12 w-full items-center justify-center text-[15px] font-semibold text-white transition hover:bg-zinc-900"
+                onClick={() => {
+                  setBanNoticeOpen(false)
+                  navigate('/login', { replace: true })
+                }}
+              >
+                Đã hiểu
               </button>
             </div>
           </div>
@@ -2003,7 +2045,9 @@ export function UploadPage() {
                             ? 'Đang kiểm tra…'
                             : 'Đăng'}
                     </button>
-                    {status ? <p className="text-sm text-zinc-400">{status}</p> : null}
+                    {status && !banNoticeOpen ? (
+                      <p className="text-sm text-zinc-400">{status}</p>
+                    ) : null}
                   </div>
                 </div>
               </div>

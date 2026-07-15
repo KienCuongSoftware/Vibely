@@ -127,7 +127,7 @@ public class AdminUserController {
             userAvatarResolver.resolve(user),
             user.isOnboardingCompleted(),
             user.getAccountStatus() != null ? user.getAccountStatus().name() : UserAccountStatus.ACTIVE.name(),
-            user.getBanReason(),
+            com.vibely.backend.moderation.BanReasonFormatter.forDisplay(user.getBanReason()),
             user.getBannedAt(),
             user.getCreatedAt(),
             user.getUpdatedAt()
