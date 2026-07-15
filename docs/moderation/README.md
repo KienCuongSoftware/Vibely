@@ -15,6 +15,7 @@ Canonical design: **[Intelligent Content Moderation TDD](../architecture/content
 | Internal API | `/api/internal/moderation/**` (`X-Internal-Token`) |
 | Worker | `ai-workers/content-moderation` |
 | Compose | `deploy/vps/docker-compose.content-moderation.yml` |
+| Publication hold | With `APP_MODERATION_APPLY_DECISIONS=true`, new public posts stay `HIDDEN` until the moderation worker ALLOW/LIMIT |
 
 **Shadow by default:** `APP_MODERATION_APPLY_DECISIONS=false` persists reports without mutating `videos.status` / Explore. Set `true` to apply LIMIT/REVIEW/BLOCK levers.
 

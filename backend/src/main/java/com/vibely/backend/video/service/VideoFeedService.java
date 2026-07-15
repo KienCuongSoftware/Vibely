@@ -300,7 +300,11 @@ public class VideoFeedService {
         boolean mutualFriends = !isAuthor && viewer != null && privacyAccessService.isMutualFriends(viewer, author);
         Page<Video> resultPage;
         if (isAuthor) {
-            resultPage = videoRepository.findProfileVideosForAuthor(author.getId(), VideoStatus.READY, pageable);
+            resultPage = videoRepository.findProfileVideosForAuthorStatuses(
+                author.getId(),
+                java.util.List.of(VideoStatus.READY, VideoStatus.HIDDEN),
+                pageable
+            );
         } else if (mutualFriends) {
             resultPage = videoRepository.findProfilePublicOrFriendsVideos(
                 author.getId(),

@@ -1,5 +1,6 @@
 package com.vibely.backend.processing;
 
+import com.vibely.backend.moderation.ModerationPublicationHoldService;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
@@ -12,10 +13,16 @@ public class VideoProcessingStateService {
 
     private final VideoRepository videoRepository;
     private final VideoProcessingJobRepository jobRepository;
+    private final ModerationPublicationHoldService publicationHoldService;
 
-    public VideoProcessingStateService(VideoRepository videoRepository, VideoProcessingJobRepository jobRepository) {
+    public VideoProcessingStateService(
+        VideoRepository videoRepository,
+        VideoProcessingJobRepository jobRepository,
+        ModerationPublicationHoldService publicationHoldService
+    ) {
         this.videoRepository = videoRepository;
         this.jobRepository = jobRepository;
+        this.publicationHoldService = publicationHoldService;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -54,6 +61,7 @@ public class VideoProcessingStateService {
         }
         jobRepository.save(job);
         videoRepository.save(video);
+        publicationHoldService.holdIfPendingModeration(video);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

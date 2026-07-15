@@ -59,6 +59,7 @@ public class ModerationDecisionApplier {
                 exploreEligible = true;
                 reviewRequired = false;
                 statusApplied = VideoStatus.READY.name();
+                // Publication hold keeps new posts HIDDEN until AI ALLOW → promote to READY.
                 if (!shadow
                     && (video.getStatus() == VideoStatus.HIDDEN
                         || video.getStatus() == VideoStatus.REMOVED
@@ -72,7 +73,8 @@ public class ModerationDecisionApplier {
                 statusApplied = VideoStatus.READY.name();
                 if (!shadow
                     && (video.getStatus() == VideoStatus.HIDDEN
-                        || video.getStatus() == VideoStatus.REMOVED)) {
+                        || video.getStatus() == VideoStatus.REMOVED
+                        || video.getStatus() == VideoStatus.REPORTED)) {
                     nextStatus = VideoStatus.READY;
                 }
             }

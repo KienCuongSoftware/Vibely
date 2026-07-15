@@ -263,7 +263,21 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         Pageable pageable
     );
 
-    /** Profile grid for the author (all non-draft videos with matching status). */
+    /** Profile grid for the author — READY + HIDDEN (pending AI moderation). */
+    @Query("""
+        select v from Video v
+        where v.author.id = :authorId
+          and v.studioDraft = false
+          and v.status in :statuses
+        order by v.createdAt desc
+        """)
+    Page<Video> findProfileVideosForAuthorStatuses(
+        @Param("authorId") Long authorId,
+        @Param("statuses") java.util.Collection<VideoStatus> statuses,
+        Pageable pageable
+    );
+
+    /** Profile grid for the author (legacy single-status helper). */
     default Page<Video> findProfileVideosForAuthor(Long authorId, VideoStatus status, Pageable pageable) {
         return findByAuthorIdAndStatusEquals(authorId, status, pageable);
     }

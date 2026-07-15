@@ -5,6 +5,7 @@ import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.moderation.ModerationCaptionGateService;
 import com.vibely.backend.moderation.ModerationJoinService;
+import com.vibely.backend.moderation.ModerationPublicationHoldService;
 import com.vibely.backend.notification.NotificationService;
 import com.vibely.backend.originality.OriginalityEnqueueService;
 import com.vibely.backend.processing.VideoProcessingEnqueueService;
@@ -44,6 +45,7 @@ public class VideoCommandService {
     private final ObjectProvider<S3MediaDeletionService> s3MediaDeletionService;
     private final ModerationCaptionGateService captionGateService;
     private final ModerationJoinService moderationJoinService;
+    private final ModerationPublicationHoldService publicationHoldService;
 
     public VideoCommandService(
         VideoRepository videoRepository,
@@ -59,7 +61,8 @@ public class VideoCommandService {
         VideoProcessingJobRepository videoProcessingJobRepository,
         ObjectProvider<S3MediaDeletionService> s3MediaDeletionService,
         ModerationCaptionGateService captionGateService,
-        ModerationJoinService moderationJoinService
+        ModerationJoinService moderationJoinService,
+        ModerationPublicationHoldService publicationHoldService
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
@@ -75,6 +78,7 @@ public class VideoCommandService {
         this.s3MediaDeletionService = s3MediaDeletionService;
         this.captionGateService = captionGateService;
         this.moderationJoinService = moderationJoinService;
+        this.publicationHoldService = publicationHoldService;
     }
 
     @Transactional
@@ -134,6 +138,7 @@ public class VideoCommandService {
         originalityEnqueueService.enqueueAfterVideoPersisted(saved);
         contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "upload");
         if (!draft) {
+            publicationHoldService.holdIfPendingModeration(saved);
             moderationJoinService.tryEnqueue(saved.getId(), false);
         }
         return responseMapper.toResponse(saved);
@@ -196,7 +201,8 @@ public class VideoCommandService {
         } else {
             contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "metadata_updated");
         }
-        // If CU+originality already finished, do not wait for a new CU cycle to start moderation.
+        // AI-first: keep off For You until moderation ALLOW/LIMIT; enqueue if CU+orig already done.
+        publicationHoldService.holdIfPendingModeration(saved);
         moderationJoinService.tryEnqueue(saved.getId(), false);
         return responseMapper.toResponse(saved);
     }

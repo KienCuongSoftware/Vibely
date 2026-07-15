@@ -1,5 +1,6 @@
 package com.vibely.backend.processing;
 
+import com.vibely.backend.moderation.ModerationPublicationHoldService;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
@@ -31,17 +32,20 @@ public class VideoProcessingRecoveryService {
     private final VideoProcessingJobRepository jobRepository;
     private final VideoProcessingEnqueueService enqueueService;
     private final ProcessingProperties processingProperties;
+    private final ModerationPublicationHoldService publicationHoldService;
 
     public VideoProcessingRecoveryService(
         VideoRepository videoRepository,
         VideoProcessingJobRepository jobRepository,
         VideoProcessingEnqueueService enqueueService,
-        ProcessingProperties processingProperties
+        ProcessingProperties processingProperties,
+        ModerationPublicationHoldService publicationHoldService
     ) {
         this.videoRepository = videoRepository;
         this.jobRepository = jobRepository;
         this.enqueueService = enqueueService;
         this.processingProperties = processingProperties;
+        this.publicationHoldService = publicationHoldService;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -186,6 +190,7 @@ public class VideoProcessingRecoveryService {
             video.setStatus(VideoStatus.READY);
             video.setProcessingError(null);
             videoRepository.save(video);
+            publicationHoldService.holdIfPendingModeration(video);
             return;
         }
         log.warn("Recovery: completed job but missing HLS output videoId={}", video.getId());

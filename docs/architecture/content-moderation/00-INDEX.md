@@ -31,6 +31,7 @@
 | Join triggers | CU `complete` → `onContentUnderstandingCompleted`; originality `complete` → `onOriginalityCompleted`; soft-timeout reconciler |
 | Worker | Poll `/api/internal/moderation/claim` → Policy Engine → `.../complete` |
 | Apply | Default **shadow** (`apply-decisions=false`): persist report/decision with `shadow=true`, no status mutate; Explore filter ignores shadow rows |
+| Publication hold | When `apply-decisions=true`, published posts stay **HIDDEN** until AI ALLOW/LIMIT → READY (For You / public profile only after clearance) |
 | Thin docs | [`docs/moderation/`](../../moderation/) points here |
 
 ---
