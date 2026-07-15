@@ -44,6 +44,60 @@ function compactNumber(value) {
   return new Intl.NumberFormat('vi-VN', { notation: 'compact', maximumFractionDigits: 1 }).format(Number(value ?? 0))
 }
 
+const CU_JOB_STATUS_VI = {
+  NONE: 'Chưa có',
+  PENDING: 'Đang chờ',
+  RUNNING: 'Đang chạy',
+  COMPLETED: 'Hoàn tất',
+  FAILED_RETRYABLE: 'Lỗi (thử lại)',
+  FAILED_TERMINAL: 'Thất bại',
+}
+
+const CU_SOURCE_VI = {
+  metadata: 'siêu dữ liệu',
+  ocr: 'OCR khung hình',
+  speech: 'lời thoại',
+  visual: 'hình ảnh',
+  object: 'đối tượng',
+  scene: 'cảnh',
+  fusion: 'kết hợp đa nguồn',
+}
+
+const CU_MODALITY_VI = {
+  hasContentSha: 'Mã nội dung',
+  ocr: 'OCR',
+  visual: 'Hình ảnh',
+  speech: 'Lời thoại',
+  audio: 'Âm thanh',
+  object: 'Đối tượng',
+  scene: 'Cảnh',
+}
+
+function cuJobStatusLabel(status) {
+  const key = String(status ?? 'NONE').toUpperCase()
+  return CU_JOB_STATUS_VI[key] ?? key
+}
+
+function cuSourceLabel(source) {
+  const key = String(source ?? '').toLowerCase()
+  return CU_SOURCE_VI[key] ?? (key || 'không rõ')
+}
+
+function cuModalityLabel(key) {
+  return CU_MODALITY_VI[key] ?? key
+}
+
+function localizeCuReason(reason) {
+  let text = String(reason ?? '').trim()
+  if (!text) return '—'
+  text = text.replace(/\bkeyword hit:/gi, 'Khớp từ khóa:')
+  text = text.replace(/\bhashtag\s+#/gi, 'thẻ #')
+  text = text.replace(/\byolo scene heuristic\b/gi, 'gợi ý cảnh YOLO')
+  text = text.replace(/\byolo:/gi, 'YOLO:')
+  text = text.replace(/\bclip\b/gi, 'CLIP')
+  return text
+}
+
 function StatusBadge({ status }) {
   const value = String(status ?? '').toUpperCase()
   const palette = {
@@ -172,7 +226,7 @@ export function AdminPostDetailPage() {
     } catch (e) {
       setCuAnalysis(null)
       setCuTags([])
-      setCuError(e.message ?? 'Không tải được Content Understanding.')
+      setCuError(e.message ?? 'Không tải được dữ liệu hiểu nội dung.')
     } finally {
       setCuLoading(false)
     }
@@ -222,12 +276,12 @@ export function AdminPostDetailPage() {
       })
       setReanalyzeMsg(
         result?.jobIds?.[0]
-          ? `Đã enqueue job ${result.jobIds[0]}`
+          ? `Đã đưa job ${result.jobIds[0]} vào hàng chờ phân tích.`
           : 'Đã gửi yêu cầu phân tích lại.',
       )
       await loadCu()
     } catch (e) {
-      setReanalyzeMsg(e.message ?? 'Không enqueue được job CU.')
+      setReanalyzeMsg(e.message ?? 'Không đưa được job phân tích vào hàng chờ.')
     } finally {
       setReanalyzeBusy(false)
     }
@@ -333,15 +387,17 @@ export function AdminPostDetailPage() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  Content Understanding
+                  Hiểu nội dung (CU)
                 </p>
                 <p className="mt-1 text-sm text-zinc-400">
-                  Tags + confidence + source (explainable). Job:{' '}
+                  Nhãn ngữ nghĩa kèm độ tin cậy và nguồn (có thể giải thích). Trạng thái job:{' '}
                   <span className="font-semibold text-zinc-200">
-                    {cuAnalysis?.jobStatus ?? (cuLoading ? '…' : 'NONE')}
+                    {cuLoading
+                      ? '…'
+                      : cuJobStatusLabel(cuAnalysis?.jobStatus ?? 'NONE')}
                   </span>
                   {cuAnalysis?.featureVersion
-                    ? ` · ${cuAnalysis.featureVersion}`
+                    ? ` · phiên bản ${cuAnalysis.featureVersion}`
                     : null}
                 </p>
               </div>
@@ -351,7 +407,7 @@ export function AdminPostDetailPage() {
                 disabled={reanalyzeBusy || cuLoading}
                 className="rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-semibold text-zinc-100 transition hover:border-emerald-500/50 hover:bg-emerald-500/10 disabled:opacity-50"
               >
-                {reanalyzeBusy ? 'Đang enqueue…' : 'Phân tích lại (CU)'}
+                {reanalyzeBusy ? 'Đang gửi yêu cầu…' : 'Phân tích lại'}
               </button>
             </div>
             {reanalyzeMsg ? (
@@ -361,9 +417,9 @@ export function AdminPostDetailPage() {
               <p className="mt-3 text-sm text-amber-400">{cuError}</p>
             ) : null}
             {cuLoading ? (
-              <p className="mt-3 text-sm text-zinc-500">Đang tải semantic tags…</p>
+              <p className="mt-3 text-sm text-zinc-500">Đang tải nhãn ngữ nghĩa…</p>
             ) : cuTags.length === 0 ? (
-              <p className="mt-3 text-sm text-zinc-500">Chưa có semantic tags cho video này.</p>
+              <p className="mt-3 text-sm text-zinc-500">Chưa có nhãn ngữ nghĩa cho video này.</p>
             ) : (
               <ul className="mt-4 divide-y divide-zinc-800/80">
                 {cuTags.map((tag) => (
@@ -373,10 +429,12 @@ export function AdminPostDetailPage() {
                         {tag.slug}
                       </span>
                       <span className="text-xs text-zinc-500">
-                        {(Number(tag.confidence) * 100).toFixed(0)}% · {tag.source}
+                        {(Number(tag.confidence) * 100).toFixed(0)}% · {cuSourceLabel(tag.source)}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm text-zinc-300">{tag.reason || tag.name || '—'}</p>
+                    <p className="mt-1 text-sm text-zinc-300">
+                      {localizeCuReason(tag.reason) || tag.name || '—'}
+                    </p>
                   </li>
                 ))}
               </ul>
@@ -394,7 +452,7 @@ export function AdminPostDetailPage() {
                           : 'border-zinc-800 text-zinc-600'
                       }`}
                     >
-                      {k}:{v ? 'yes' : 'no'}
+                      {cuModalityLabel(k)}: {v ? 'có' : 'không'}
                     </span>
                   ))}
               </div>
