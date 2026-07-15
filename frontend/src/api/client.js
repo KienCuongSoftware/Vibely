@@ -297,6 +297,45 @@ export const apiClient = {
     request(`/api/admin/users/${userId}/ban`, { method: "POST", token, body: payload }),
   unbanAdminUser: (token, userId) =>
     request(`/api/admin/users/${userId}/unban`, { method: "POST", token }),
+  getAdminCuMappings: (token) =>
+    request("/api/admin/content-understanding/category-tag-mappings", { token }),
+  createAdminCuMapping: (token, payload) =>
+    request("/api/admin/content-understanding/category-tag-mappings", {
+      method: "POST",
+      token,
+      body: payload,
+    }),
+  updateAdminCuMapping: (token, id, payload) =>
+    request(`/api/admin/content-understanding/category-tag-mappings/${id}`, {
+      method: "PUT",
+      token,
+      body: payload,
+    }),
+  deleteAdminCuMapping: (token, id) =>
+    request(`/api/admin/content-understanding/category-tag-mappings/${id}`, {
+      method: "DELETE",
+      token,
+    }),
+  getAdminCuCategories: (token) =>
+    request("/api/admin/content-understanding/categories", { token }),
+  getAdminCuSemanticTags: (token) =>
+    request("/api/admin/content-understanding/semantic-tags", { token }),
+  adminCuBackfill: (token, payload) =>
+    request("/api/admin/content-understanding/backfill", {
+      method: "POST",
+      token,
+      body: payload,
+    }),
+  adminCuReanalyze: (token, payload) =>
+    request("/api/admin/content-understanding/reanalyze", {
+      method: "POST",
+      token,
+      body: payload,
+    }),
+  getAdminCuJobs: (token, { page = 0, size = 20, status } = {}) =>
+    request(`/api/admin/content-understanding/jobs${toQuery({ page, size, status })}`, {
+      token,
+    }),
   getFollowingFeed: (token, { page = 0, size = 10 } = {}) =>
     request(`/api/feed/following${toQuery({ page, size })}`, { token }),
   createVideo: (payload, token) =>

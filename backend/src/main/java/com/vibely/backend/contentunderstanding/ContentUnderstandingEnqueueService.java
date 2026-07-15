@@ -6,6 +6,7 @@ import com.vibely.backend.video.Video;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,22 +32,35 @@ public class ContentUnderstandingEnqueueService {
 
     @Transactional
     public void enqueueAfterVideoPersisted(Video video, String triggerReason) {
+        enqueue(video, triggerReason, 100, false);
+    }
+
+    /**
+     * @param force cancel existing PENDING job so a new one can be created; RUNNING is skipped
+     * @return new job id, or empty if skipped
+     */
+    @Transactional
+    public Optional<UUID> enqueue(Video video, String triggerReason, int priority, boolean force) {
         if (!properties.isEnabled() || video == null || video.getId() == null) {
-            return;
+            return Optional.empty();
         }
         if (video.isStudioDraft()) {
-            return;
+            return Optional.empty();
         }
         Optional<AnalysisJobEntity> latest = jobRepository.findFirstByVideo_IdOrderByCreatedAtDesc(video.getId());
         if (latest.isPresent()) {
-            AnalysisJobEntity job = latest.get();
-            if (job.getStatus() == AnalysisJobStatus.PENDING || job.getStatus() == AnalysisJobStatus.RUNNING) {
-                return;
+            AnalysisJobEntity existing = latest.get();
+            if (existing.getStatus() == AnalysisJobStatus.RUNNING) {
+                return Optional.empty();
             }
-            if (job.getStatus() == AnalysisJobStatus.COMPLETED
-                || job.getStatus() == AnalysisJobStatus.FAILED_RETRYABLE
-                || job.getStatus() == AnalysisJobStatus.FAILED_TERMINAL) {
-                // Re-queue as a new job row for audit trail clarity.
+            if (existing.getStatus() == AnalysisJobStatus.PENDING) {
+                if (!force) {
+                    return Optional.empty();
+                }
+                existing.setStatus(AnalysisJobStatus.FAILED_TERMINAL);
+                existing.setErrorMessage("Superseded by admin/backfill requeue");
+                existing.setFinishedAt(java.time.LocalDateTime.now());
+                jobRepository.save(existing);
             }
         }
         AnalysisJobEntity job = new AnalysisJobEntity();
@@ -54,9 +68,10 @@ public class ContentUnderstandingEnqueueService {
         job.setStatus(AnalysisJobStatus.PENDING);
         job.setTriggerReason(triggerReason == null || triggerReason.isBlank() ? "upload" : triggerReason);
         job.setModelBundleVersion(properties.getModelBundleVersion());
-        job.setPriority(100);
+        job.setPriority(Math.max(1, Math.min(priority, 1000)));
         jobRepository.save(job);
         writeOutbox(job, video);
+        return Optional.of(job.getId());
     }
 
     private void writeOutbox(AnalysisJobEntity job, Video video) {

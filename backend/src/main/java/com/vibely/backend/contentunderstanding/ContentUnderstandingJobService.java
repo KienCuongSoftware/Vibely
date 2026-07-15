@@ -6,6 +6,7 @@ import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.video.Video;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -25,6 +26,7 @@ public class ContentUnderstandingJobService {
     private final ContentUnderstandingProperties properties;
     private final ObjectMapper objectMapper;
     private final JdbcTemplate jdbcTemplate;
+    private final SemanticTopicProjectionService topicProjectionService;
 
     public ContentUnderstandingJobService(
         AnalysisJobRepository jobRepository,
@@ -32,7 +34,8 @@ public class ContentUnderstandingJobService {
         SemanticTagAliasRepository aliasRepository,
         ContentUnderstandingProperties properties,
         ObjectMapper objectMapper,
-        JdbcTemplate jdbcTemplate
+        JdbcTemplate jdbcTemplate,
+        SemanticTopicProjectionService topicProjectionService
     ) {
         this.jobRepository = jobRepository;
         this.semanticTagRepository = semanticTagRepository;
@@ -40,6 +43,7 @@ public class ContentUnderstandingJobService {
         this.properties = properties;
         this.objectMapper = objectMapper;
         this.jdbcTemplate = jdbcTemplate;
+        this.topicProjectionService = topicProjectionService;
     }
 
     @Transactional
@@ -111,6 +115,7 @@ public class ContentUnderstandingJobService {
         List<CuCompleteRequest.TagItem> tags =
             request.getSemanticTags() == null ? List.of() : request.getSemanticTags();
         Map<Long, Float> tagScores = new HashMap<>();
+        List<SemanticTopicProjectionService.ScoredTag> topicTags = new ArrayList<>();
         for (CuCompleteRequest.TagItem item : tags) {
             if (item == null || item.getSlug() == null || item.getSlug().isBlank()) {
                 continue;
@@ -143,6 +148,7 @@ public class ContentUnderstandingJobService {
                 evidenceJson
             );
             tagScores.merge(tag.getId(), conf, Math::max);
+            topicTags.add(new SemanticTopicProjectionService.ScoredTag(tag.getSlug(), conf));
         }
 
         String metadataJson = toJson(request.getMetadataFeatures() == null ? Map.of() : request.getMetadataFeatures());
@@ -176,6 +182,7 @@ public class ContentUnderstandingJobService {
         );
 
         projectCategories(videoId, tagScores);
+        topicProjectionService.projectTopicsFromTags(video, topicTags);
 
         job.setStatus(AnalysisJobStatus.COMPLETED);
         job.setFinishedAt(LocalDateTime.now());

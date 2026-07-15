@@ -86,4 +86,9 @@ Keep rule-based classifier as **cold fallback** when worker unavailable (parity 
 - Qdrant collections `vibely_cu_frame`, `vibely_cu_video` (separate from originality)
 - Backend persists `visual` / `speech` / `audio` JSON on `content_features`
 
-**Not yet (Phase 2+):** YOLO, scene segmentation, multi-queue Rabbit stages, public REST analysis APIs, Rec/Related wired to CU vectors.
+**Phase 3 landed (code):**
+- Topic engine: `SemanticTopicProjectionService` → `video_topics` on CU complete (`source=cu_tags`)
+- Admin category↔tag mapping CRUD + backfill/reanalyze/jobs APIs under `/api/admin/content-understanding/**`
+- Admin UI: `/admin/content-understanding`
+
+**Not yet (Phase 4+):** YOLO/scene, Related-by-embedding, explainable dashboard, public analysis REST, Rec wire-up.

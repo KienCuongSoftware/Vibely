@@ -1,6 +1,12 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { IoChatbubbleEllipsesOutline, IoPeopleOutline, IoShieldOutline, IoVideocamOutline } from 'react-icons/io5'
+import {
+  IoChatbubbleEllipsesOutline,
+  IoPeopleOutline,
+  IoPricetagsOutline,
+  IoShieldOutline,
+  IoVideocamOutline,
+} from 'react-icons/io5'
 
 const ADMIN_NAV_ITEMS = [
   {
@@ -14,6 +20,12 @@ const ADMIN_NAV_ITEMS = [
     to: '/admin/posts',
     label: 'Quản lý bài đăng',
     icon: IoVideocamOutline,
+  },
+  {
+    id: 'cu-mappings',
+    to: '/admin/content-understanding',
+    label: 'Content Understanding',
+    icon: IoPricetagsOutline,
   },
   {
     id: 'banned',

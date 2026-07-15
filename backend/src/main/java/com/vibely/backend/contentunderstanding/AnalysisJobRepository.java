@@ -4,8 +4,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -14,6 +15,8 @@ public interface AnalysisJobRepository extends JpaRepository<AnalysisJobEntity, 
     Optional<AnalysisJobEntity> findFirstByVideo_IdOrderByCreatedAtDesc(Long videoId);
 
     List<AnalysisJobEntity> findByStatusAndLockedAtBefore(AnalysisJobStatus status, LocalDateTime before);
+
+    Page<AnalysisJobEntity> findByStatus(AnalysisJobStatus status, Pageable pageable);
 
     @Query(
         value = """
