@@ -10,11 +10,14 @@ _TAG_WEIGHTS = {
     "explicit": 1.0,
     "porn": 1.0,
     "adult_content": 0.95,
-    "adult": 0.85,
-    "lingerie": 0.7,
-    "seductive": 0.65,
-    "kissing": 0.35,
+    "adult": 0.9,
+    "nudity": 0.95,
+    "lingerie": 0.75,
+    "seductive": 0.7,
+    "kissing": 0.4,
 }
+
+_VISUAL_TAG_SCORE_MULT = 0.95
 
 # Weight ~ contribution; many hits saturate via soft logistic.
 _TEXT_PATTERNS = [
@@ -70,13 +73,16 @@ def score(snapshot: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
             if not isinstance(item, dict):
                 continue
             name = str(item.get("slug") or item.get("tag") or item.get("label") or "").lower()
-            if not any(k in name for k in ("nsfw", "nude", "explicit", "sexy", "porn", "adult")):
+            if not any(
+                k in name
+                for k in ("nsfw", "nude", "nudity", "explicit", "sexy", "porn", "adult", "lingerie", "seductive")
+            ):
                 continue
             try:
                 conf = float(item.get("score") or item.get("confidence") or 0)
             except (TypeError, ValueError):
                 conf = 0.0
-            part = 0.85 * conf
+            part = _VISUAL_TAG_SCORE_MULT * conf
             raw += part
             contributions.append({"source": "visual_tagScore", "name": name, "part": round(part, 4)})
 

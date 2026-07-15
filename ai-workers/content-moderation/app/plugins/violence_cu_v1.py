@@ -6,16 +6,18 @@ import re
 from typing import Any
 
 _TAG_WEIGHTS = {
-    "mma": 0.55,
-    "boxing": 0.5,
-    "wrestling": 0.45,
+    "mma": 0.6,
+    "boxing": 0.55,
+    "wrestling": 0.5,
     "violence": 0.95,
     "gore": 1.0,
-    "weapon": 0.9,
+    "weapon": 0.92,
     "guns": 0.95,
     "gun": 0.95,
+    "blood": 0.85,
     "knife_fight": 0.9,
-    "action": 0.25,
+    "action": 0.2,
+    "horror": 0.35,
 }
 
 # COCO / YOLO class names with violence prior (knife alone is usually food).
@@ -59,6 +61,19 @@ _TEXT_PATTERNS = [
     (r"tự\s*sát|tu\s*sat|tự\s*vẫn|kill\s*myself|\bsuicide\b", 0.7),
 ]
 
+_VISUAL_VIOLENCE_KEYS = (
+    "violence",
+    "gore",
+    "weapon",
+    "gun",
+    "guns",
+    "blood",
+    "fight",
+    "assault",
+    "murder",
+)
+_VISUAL_TAG_SCORE_MULT = 0.92
+
 
 def score(snapshot: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
     contributions: list[dict[str, Any]] = []
@@ -76,6 +91,25 @@ def score(snapshot: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
         part = weight * conf
         raw += part
         contributions.append({"source": "tag", "slug": slug, "confidence": conf, "part": round(part, 4)})
+
+    visual = snapshot.get("visual_features") or {}
+    tag_scores = visual.get("tagScores")
+    if tag_scores is None and isinstance(visual.get("visualFeatures"), dict):
+        tag_scores = visual["visualFeatures"].get("tagScores")
+    if isinstance(tag_scores, list):
+        for item in tag_scores:
+            if not isinstance(item, dict):
+                continue
+            name = str(item.get("slug") or item.get("tag") or item.get("label") or "").lower()
+            if not any(k in name for k in _VISUAL_VIOLENCE_KEYS):
+                continue
+            try:
+                conf = float(item.get("score") or item.get("confidence") or 0)
+            except (TypeError, ValueError):
+                conf = 0.0
+            part = _VISUAL_TAG_SCORE_MULT * conf
+            raw += part
+            contributions.append({"source": "visual_tagScore", "name": name, "part": round(part, 4)})
 
     objects = snapshot.get("object_features") or {}
     class_counts = objects.get("classCounts") if isinstance(objects, dict) else None
@@ -103,8 +137,10 @@ def score(snapshot: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
             except (TypeError, ValueError):
                 person_n = 0.0
             mult = 1.0
-            if key == "knife" and person_n < 2:
-                mult = 0.35
+            if key == "knife":
+                mult = 0.55 if person_n >= 1 else 0.4
+            elif key == "baseball bat" and person_n >= 1:
+                mult = 1.15
             part = weight * min(1.0, 0.35 + 0.15 * n) * max_conf * mult
             raw += part
             contributions.append(

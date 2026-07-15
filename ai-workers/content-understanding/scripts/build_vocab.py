@@ -459,6 +459,162 @@ add(
     _t("smart_home", "Smart Home", "technology", ["smart home", "iot", "alexa", "nha thong minh"], [], ["smart home devices"]),
 )
 
+# --- Content moderation visual (CLIP zero-shot; category=None — not Explore discovery) ---
+add(
+    _t(
+        "nsfw",
+        "NSFW",
+        None,
+        ["nsfw", "adult only", "18+", "not safe for work"],
+        [],
+        [
+            "explicit nudity pornographic adult content",
+            "nsfw sexual content in video",
+            "adult explicit material not safe for work",
+        ],
+    ),
+    _t(
+        "explicit",
+        "Explicit Content",
+        None,
+        ["explicit", "explicit content", "18 plus", "mature explicit"],
+        [],
+        [
+            "explicit sexual content in video",
+            "explicit nudity scene",
+            "adult explicit sexual act",
+        ],
+    ),
+    _t(
+        "porn",
+        "Pornography",
+        None,
+        ["porn", "pornography", "xxx video", "hardcore"],
+        [],
+        [
+            "pornographic video scene",
+            "hardcore pornography",
+            "adult porn video",
+        ],
+    ),
+    _t(
+        "adult_content",
+        "Adult Content",
+        None,
+        ["adult content", "adult video", "mature content", "adults only"],
+        [],
+        [
+            "adult only mature sexual content",
+            "restricted adult video",
+            "mature audience sexual content",
+        ],
+    ),
+    _t(
+        "adult",
+        "Adult",
+        None,
+        ["adult", "adult material", "adult scene"],
+        [],
+        ["adult sexual content", "adult only video", "mature adult scene"],
+    ),
+    _t(
+        "nudity",
+        "Nudity",
+        None,
+        ["nudity", "nude", "naked", "topless", "no clothes"],
+        [],
+        [
+            "full frontal nudity",
+            "naked person without clothes",
+            "topless nude body",
+        ],
+    ),
+    _t(
+        "lingerie",
+        "Lingerie",
+        None,
+        ["lingerie", "underwear model", "sexy lingerie"],
+        [],
+        ["person in lingerie underwear", "sexy lingerie photoshoot", "revealing lingerie"],
+    ),
+    _t(
+        "seductive",
+        "Seductive",
+        None,
+        ["seductive", "provocative pose", "sensual"],
+        [],
+        ["seductive provocative pose", "sensual adult pose", "provocative sexual pose"],
+    ),
+    _t(
+        "kissing",
+        "Kissing",
+        None,
+        ["kissing", "make out", "passionate kiss"],
+        [],
+        ["passionate kissing couple", "people kissing intimately", "romantic kiss closeup"],
+    ),
+    _t(
+        "violence",
+        "Violence",
+        None,
+        ["violence", "violent", "graphic violence", "assault"],
+        [],
+        [
+            "graphic violence assault",
+            "violent fight beating",
+            "people fighting violently",
+        ],
+    ),
+    _t(
+        "gore",
+        "Gore",
+        None,
+        ["gore", "bloodbath", "graphic gore", "disturbing gore"],
+        [],
+        [
+            "graphic gore blood injury",
+            "bloody gore violent injury",
+            "disturbing gore scene",
+        ],
+    ),
+    _t(
+        "weapon",
+        "Weapon",
+        None,
+        ["weapon", "armed", "weapon threat", "deadly weapon"],
+        [],
+        [
+            "person holding weapon threatening",
+            "knife or gun weapon violence",
+            "armed person with weapon",
+        ],
+    ),
+    _t(
+        "guns",
+        "Guns",
+        None,
+        ["guns", "gun", "firearm", "shooting", "pistol", "rifle"],
+        [],
+        [
+            "person holding gun firearm",
+            "gun shooting violence",
+            "firearm pointed at camera",
+        ],
+    ),
+    _t(
+        "blood",
+        "Blood",
+        None,
+        ["blood", "bloody", "bleeding", "blood injury"],
+        [],
+        [
+            "blood injury wound",
+            "bloody violent scene",
+            "bleeding graphic wound",
+        ],
+    ),
+)
+
 # Deduplicate by slug (first wins)
 _seen: set[str] = set()
 UNIQUE_TAGS: list[dict] = []
