@@ -62,52 +62,57 @@ class CuVectorStore:
         top_tag_slugs: list[str],
         frame_meta: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
-        client = self._client_or_none()
-        if client is None or frame_vectors.size == 0:
-            return {"note": "qdrant disabled or no vectors", "framePoints": 0}
+        """Never raise — Qdrant outages must not fail CU jobs."""
+        try:
+            client = self._client_or_none()
+            if client is None or frame_vectors.size == 0:
+                return {"note": "qdrant disabled or no vectors", "framePoints": 0}
 
-        dim = int(frame_vectors.shape[1])
-        self._ensure(COLLECTION_FRAME, dim)
-        self._ensure(COLLECTION_VIDEO, dim)
+            dim = int(frame_vectors.shape[1])
+            self._ensure(COLLECTION_FRAME, dim)
+            self._ensure(COLLECTION_VIDEO, dim)
 
-        frame_meta = frame_meta or []
-        frame_points = []
-        for i, vec in enumerate(frame_vectors):
-            meta = frame_meta[i] if i < len(frame_meta) else {}
-            frame_points.append(
-                self._qm.PointStruct(
-                    id=abs(hash(("cu_frame", video_id, i))) % (2**63 - 1),
-                    vector=vec.astype(np.float32).tolist(),
-                    payload={
-                        "video_id": video_id,
-                        "public_id": public_id,
-                        "frame_index": meta.get("frameIndex", i),
-                        "t_ms": meta.get("tMs"),
-                        "model_version": model_id,
-                        "kind": "frame",
-                    },
+            frame_meta = frame_meta or []
+            frame_points = []
+            for i, vec in enumerate(frame_vectors):
+                meta = frame_meta[i] if i < len(frame_meta) else {}
+                frame_points.append(
+                    self._qm.PointStruct(
+                        id=abs(hash(("cu_frame", video_id, i))) % (2**63 - 1),
+                        vector=vec.astype(np.float32).tolist(),
+                        payload={
+                            "video_id": video_id,
+                            "public_id": public_id,
+                            "frame_index": meta.get("frameIndex", i),
+                            "t_ms": meta.get("tMs"),
+                            "model_version": model_id,
+                            "kind": "frame",
+                        },
+                    )
                 )
+            if frame_points:
+                client.upsert(collection_name=COLLECTION_FRAME, points=frame_points)
+
+            video_point = self._qm.PointStruct(
+                id=abs(hash(("cu_video", video_id))) % (2**63 - 1),
+                vector=video_mean.astype(np.float32).tolist(),
+                payload={
+                    "video_id": video_id,
+                    "public_id": public_id,
+                    "model_version": model_id,
+                    "top_tags": top_tag_slugs[:12],
+                    "frame_count": int(frame_vectors.shape[0]),
+                    "kind": "video_mean",
+                },
             )
-        if frame_points:
-            client.upsert(collection_name=COLLECTION_FRAME, points=frame_points)
+            client.upsert(collection_name=COLLECTION_VIDEO, points=[video_point])
 
-        video_point = self._qm.PointStruct(
-            id=abs(hash(("cu_video", video_id))) % (2**63 - 1),
-            vector=video_mean.astype(np.float32).tolist(),
-            payload={
-                "video_id": video_id,
-                "public_id": public_id,
-                "model_version": model_id,
-                "top_tags": top_tag_slugs[:12],
-                "frame_count": int(frame_vectors.shape[0]),
-                "kind": "video_mean",
-            },
-        )
-        client.upsert(collection_name=COLLECTION_VIDEO, points=[video_point])
-
-        return {
-            "frameCollection": COLLECTION_FRAME,
-            "videoCollection": COLLECTION_VIDEO,
-            "framePoints": len(frame_points),
-            "vectorDim": dim,
-        }
+            return {
+                "frameCollection": COLLECTION_FRAME,
+                "videoCollection": COLLECTION_VIDEO,
+                "framePoints": len(frame_points),
+                "vectorDim": dim,
+            }
+        except Exception as exc:  # noqa: BLE001
+            LOG.warning("Qdrant upsert soft-failed: %s", exc)
+            return {"note": f"qdrant error: {exc}"[:300], "framePoints": 0}

@@ -160,13 +160,20 @@ def analyze_visual(frames: list[dict]) -> dict[str, Any]:
     probs = np.exp(logits * 8.0)
     probs = probs / (probs.sum() + 1e-8)
 
-    threshold = float(os.environ.get("CU_CLIP_TAG_THRESHOLD", "0.12"))
+    # Softmax is flat across similar prompts — keep top-K near the winner only.
+    threshold = float(os.environ.get("CU_CLIP_TAG_THRESHOLD", "0.08"))
+    min_raw_top1 = float(os.environ.get("CU_CLIP_TOP1_MIN_RAW", "0.20"))
+    max_tags = int(os.environ.get("CU_CLIP_MAX_TAGS", "3"))
+    relative = float(os.environ.get("CU_CLIP_RELATIVE", "0.75"))
+    top1_conf = float(probs[0]) if len(probs) else 0.0
     visual_tags: list[dict[str, Any]] = []
     tag_scores = []
     for i, (slug, raw) in enumerate(top):
         conf = float(probs[i])
         tag_scores.append({"slug": slug, "raw": round(raw, 4), "confidence": round(conf, 3)})
-        if conf < threshold:
+        near_top = conf >= top1_conf * relative
+        keep = (conf >= threshold and near_top) or (i == 0 and raw >= min_raw_top1)
+        if not keep:
             continue
         visual_tags.append(
             {
@@ -178,6 +185,8 @@ def analyze_visual(frames: list[dict]) -> dict[str, Any]:
                 "evidence": {"rawScore": round(raw, 4), "softmax": round(conf, 3)},
             }
         )
+        if len(visual_tags) >= max_tags:
+            break
 
     return {
         "visualFeatures": {
