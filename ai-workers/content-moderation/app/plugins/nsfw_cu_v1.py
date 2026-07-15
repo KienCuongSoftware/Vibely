@@ -18,6 +18,10 @@ _TAG_WEIGHTS = {
 }
 
 _VISUAL_TAG_SCORE_MULT = 0.95
+_MODERATION_SCORE_MULT = 1.15
+_NSFW_MOD_SLUGS = frozenset(
+    {"nsfw", "porn", "nudity", "explicit", "adult", "adult_content", "lingerie", "seductive"}
+)
 
 # Weight ~ contribution; many hits saturate via soft logistic.
 _TEXT_PATTERNS = [
@@ -65,9 +69,33 @@ def score(snapshot: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
         contributions.append({"source": "tag", "slug": slug, "confidence": conf, "part": round(part, 4)})
 
     visual = snapshot.get("visual_features") or {}
+    nested_vf = visual.get("visualFeatures") if isinstance(visual.get("visualFeatures"), dict) else {}
+
+    mod_scores = visual.get("moderationScores")
+    if mod_scores is None:
+        mod_scores = nested_vf.get("moderationScores") if nested_vf else None
+    if isinstance(mod_scores, list):
+        for item in mod_scores:
+            if not isinstance(item, dict):
+                continue
+            slug = str(item.get("slug") or "").lower()
+            if slug not in _NSFW_MOD_SLUGS:
+                continue
+            try:
+                conf = float(item.get("confidence") or item.get("score") or 0)
+            except (TypeError, ValueError):
+                conf = 0.0
+            if conf < 0.25:
+                continue
+            part = _MODERATION_SCORE_MULT * conf
+            raw += part
+            contributions.append(
+                {"source": "moderationScores", "slug": slug, "confidence": conf, "part": round(part, 4)}
+            )
+
     tag_scores = visual.get("tagScores")
-    if tag_scores is None and isinstance(visual.get("visualFeatures"), dict):
-        tag_scores = visual["visualFeatures"].get("tagScores")
+    if tag_scores is None:
+        tag_scores = nested_vf.get("tagScores") if nested_vf else None
     if isinstance(tag_scores, list):
         for item in tag_scores:
             if not isinstance(item, dict):

@@ -129,7 +129,8 @@ public class ModerationSnapshotBuilder {
         }
         Map<String, Object> out = new LinkedHashMap<>();
         for (String key : List.of(
-            "modelId", "note", "frameCount", "tagScores", "qdrant", "topTags", "visualTags"
+            "modelId", "note", "frameCount", "tagScores", "moderationScores",
+            "qdrant", "topTags", "visualTags"
         )) {
             if (visual.containsKey(key)) {
                 out.put(key, visual.get(key));
@@ -147,6 +148,9 @@ public class ModerationSnapshotBuilder {
             out.put("visualFeatures", vf);
             if (!out.containsKey("tagScores") && vf.get("tagScores") != null) {
                 out.put("tagScores", vf.get("tagScores"));
+            }
+            if (!out.containsKey("moderationScores") && vf.get("moderationScores") != null) {
+                out.put("moderationScores", vf.get("moderationScores"));
             }
             if (!out.containsKey("modelId") && vf.get("modelId") != null) {
                 out.put("modelId", vf.get("modelId"));

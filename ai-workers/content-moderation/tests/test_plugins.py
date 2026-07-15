@@ -134,6 +134,44 @@ def test_lex_sexual_vi_blocks_vietnamese_caption():
     assert out["decision"] == "BLOCK"
 
 
+def test_nsfw_plugin_fires_on_moderation_scores():
+    claim = {
+        "policyVersion": "2026.07.1",
+        "snapshot": {
+            "tags": [{"slug": "satisfying", "confidence": 0.58}],
+            "title": "Video nay ne",
+            "description": "",
+            "ocr_text": "",
+            "speech_text": "",
+            "visual_features": {
+                "moderationScores": [
+                    {"slug": "nsfw", "raw": 0.28, "confidence": 0.62},
+                    {"slug": "nudity", "raw": 0.26, "confidence": 0.55},
+                ]
+            },
+            "object_features": {},
+            "trust_score": 0.5,
+        },
+        "policy": {"thresholds": {"allow_max": 24, "limit_max": 49, "review_max": 74}},
+        "rules": [
+            {
+                "code": "plugin.nsfw_cu_v1",
+                "label": "sexual_content",
+                "priority": 55,
+                "match": {"type": "plugin_score", "plugin": "nsfw_cu_v1", "min_score": 0.42},
+                "severity": "HIGH",
+                "action_hint": "BLOCK",
+                "points": 45,
+            }
+        ],
+        "detectors": [{"code": "nsfw_cu_v1", "enabled": True, "config": {"min_emit": 0.25}}],
+    }
+    plugins = run_plugins(claim)
+    assert plugins["nsfw_cu_v1"]["score"] >= 0.42
+    out = evaluate(claim)
+    assert out["decision"] == "BLOCK"
+
+
 def test_nsfw_plugin_fires_on_visual_nsfw_tag():
     claim = {
         "policyVersion": "2026.07.1",
