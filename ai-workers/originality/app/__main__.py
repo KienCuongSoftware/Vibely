@@ -17,15 +17,19 @@ from pathlib import Path
 
 import requests
 
+from .embed import warm_clip
 from .pipeline import analyze_video
+from .qdrant_store import VectorStore
 from .scoring import build_complete_payload
 
 LOG = logging.getLogger("originality.worker")
 
 
 def env(name: str, default: str | None = None) -> str:
-    value = os.environ.get(name, default)
+    value = os.environ.get(name)
     if value is None or value == "":
+        if default is not None and default != "":
+            return default
         raise RuntimeError(f"Missing required env var: {name}")
     return value
 
@@ -40,7 +44,16 @@ def main() -> None:
     poll_seconds = float(os.environ.get("ORIGINALITY_POLL_SECONDS", "3"))
     headers = {"X-Internal-Token": token, "Content-Type": "application/json"}
 
-    LOG.info("Originality worker started api=%s", base)
+    LOG.info(
+        "Originality worker started api=%s max_frames=%s ocr=%s watermark=%s",
+        base,
+        os.environ.get("ORIGINALITY_MAX_FRAMES", "8"),
+        os.environ.get("ORIGINALITY_OCR_ENABLED", "false"),
+        os.environ.get("ORIGINALITY_WATERMARK_ENABLED", "true"),
+    )
+    if os.environ.get("ORIGINALITY_WARM_ON_START", "true").lower() in {"1", "true", "yes"}:
+        warm_clip()
+        VectorStore().warm()
     while True:
         try:
             claim = requests.post(f"{base}/api/internal/originality/claim", headers=headers, timeout=30)

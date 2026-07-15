@@ -19,6 +19,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -146,11 +147,29 @@ public class GlobalExceptionHandler {
             )));
     }
 
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ApiResponse<Void>> handleResponseStatus(ResponseStatusException ex) {
+        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+        if (status == null) {
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        String message = ex.getReason() != null ? ex.getReason() : status.getReasonPhrase();
+        String code = status == HttpStatus.UNAUTHORIZED
+            ? "UNAUTHORIZED"
+            : status.name();
+        return ResponseEntity.status(status)
+            .body(ApiResponse.failure(ApiError.of(status.value(), code, message)));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleUnknown(Exception ex) {
         AccountBannedException banned = findCause(ex, AccountBannedException.class);
         if (banned != null) {
             return handleAccountBanned(banned);
+        }
+        ResponseStatusException statusEx = findCause(ex, ResponseStatusException.class);
+        if (statusEx != null) {
+            return handleResponseStatus(statusEx);
         }
         log.error("Unhandled exception", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

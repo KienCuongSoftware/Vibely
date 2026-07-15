@@ -643,7 +643,13 @@ def write_vocab_catalog() -> None:
         lines.append("    {")
         lines.append(f'        "slug": {json.dumps(row["slug"])},')
         lines.append(f'        "name": {json.dumps(row["name"], ensure_ascii=False)},')
-        lines.append(f'        "category": {json.dumps(row["category"])},')
+        # json.dumps(None) → null (invalid Python); emit None literal instead.
+        cat = row["category"]
+        lines.append(
+            '        "category": None,'
+            if cat is None
+            else f'        "category": {json.dumps(cat)},'
+        )
         lines.append(f'        "keywords": {_py_str_tuple(row["keywords"])},')
         alias_tuples = ", ".join(
             f'({json.dumps(a)}, {json.dumps(lang)})' for a, lang in row["aliases"]

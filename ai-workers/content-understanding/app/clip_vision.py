@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import os
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -131,15 +133,59 @@ def _encode_prompt_mean(prompts: list[str] | tuple[str, ...]) -> np.ndarray:
         return mean.detach().cpu().numpy().astype(np.float32)
 
 
+def _cache_dir() -> Path:
+    return Path(os.environ.get("CU_CLIP_CACHE_DIR", "/var/cache/cu-clip"))
+
+
+def _prompt_fingerprint(prompts_map: dict[str, tuple[str, ...] | list[str]]) -> str:
+    h = hashlib.sha256()
+    for slug in sorted(prompts_map.keys()):
+        h.update(slug.encode("utf-8"))
+        for p in prompts_map[slug]:
+            h.update(b"\0")
+            h.update(str(p).encode("utf-8"))
+    return h.hexdigest()[:16]
+
+
+def _load_emb_cache(path: Path) -> dict[str, np.ndarray] | None:
+    if not path.is_file():
+        return None
+    try:
+        data = np.load(path, allow_pickle=False)
+        return {k: data[k].astype(np.float32) for k in data.files}
+    except Exception as exc:  # noqa: BLE001
+        LOG.warning("CLIP emb cache load failed %s: %s", path, exc)
+        return None
+
+
+def _save_emb_cache(path: Path, embeddings: dict[str, np.ndarray]) -> None:
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        np.savez_compressed(path, **embeddings)
+        LOG.info("Wrote CLIP emb cache %s keys=%s", path, len(embeddings))
+    except Exception as exc:  # noqa: BLE001
+        LOG.warning("CLIP emb cache write failed %s: %s", path, exc)
+
+
 def _text_embeddings() -> dict[str, np.ndarray]:
     global _TEXT_EMBEDDINGS
     if _TEXT_EMBEDDINGS is not None:
         return _TEXT_EMBEDDINGS
     _load_clip()
+    cache_path = _cache_dir() / f"discovery_{_MODEL_ID.replace(':', '_')}_{_prompt_fingerprint(CLIP_TAG_PROMPTS)}.npz"
+    cached = _load_emb_cache(cache_path)
+    if cached is not None and len(cached) == len(CLIP_TAG_PROMPTS):
+        LOG.info("Loaded discovery CLIP text emb cache keys=%s", len(cached))
+        _TEXT_EMBEDDINGS = cached
+        return cached
     out: dict[str, np.ndarray] = {}
-    for slug, prompts in CLIP_TAG_PROMPTS.items():
+    total = len(CLIP_TAG_PROMPTS)
+    for i, (slug, prompts) in enumerate(CLIP_TAG_PROMPTS.items(), start=1):
         out[slug] = _encode_prompt_mean(prompts)
+        if i == 1 or i % 50 == 0 or i == total:
+            LOG.info("Encoding discovery CLIP prompts %s/%s", i, total)
     _TEXT_EMBEDDINGS = out
+    _save_emb_cache(cache_path, out)
     return out
 
 
@@ -148,12 +194,34 @@ def _moderation_text_embeddings() -> dict[str, np.ndarray]:
     if _MODERATION_TEXT_EMBEDDINGS is not None:
         return _MODERATION_TEXT_EMBEDDINGS
     _load_clip()
+    prompts_map = {**MODERATION_CLIP_PROMPTS, "__safe__": _SAFE_CLIP_PROMPTS}
+    cache_path = (
+        _cache_dir() / f"moderation_{_MODEL_ID.replace(':', '_')}_{_prompt_fingerprint(prompts_map)}.npz"
+    )
+    cached = _load_emb_cache(cache_path)
+    if cached is not None and set(cached.keys()) == set(prompts_map.keys()):
+        LOG.info("Loaded moderation CLIP text emb cache keys=%s", len(cached))
+        _MODERATION_TEXT_EMBEDDINGS = cached
+        return cached
     out: dict[str, np.ndarray] = {
         slug: _encode_prompt_mean(prompts) for slug, prompts in MODERATION_CLIP_PROMPTS.items()
     }
     out["__safe__"] = _encode_prompt_mean(_SAFE_CLIP_PROMPTS)
     _MODERATION_TEXT_EMBEDDINGS = out
+    _save_emb_cache(cache_path, out)
     return out
+
+
+def warm_clip_models() -> None:
+    """Load CLIP (+ optional text emb caches) before accepting jobs."""
+    try:
+        _load_clip()
+        if os.environ.get("CU_WARM_TEXT_EMBEDDINGS", "true").lower() in {"1", "true", "yes"}:
+            _text_embeddings()
+            _moderation_text_embeddings()
+        LOG.info("CLIP warm complete model=%s", _MODEL_ID)
+    except Exception as exc:  # noqa: BLE001
+        LOG.warning("CLIP warm failed: %s", exc)
 
 
 def _score_moderation(video_mean: np.ndarray, model_id: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:

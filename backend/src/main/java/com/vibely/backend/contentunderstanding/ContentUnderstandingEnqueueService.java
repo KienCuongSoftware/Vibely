@@ -36,7 +36,7 @@ public class ContentUnderstandingEnqueueService {
     }
 
     /**
-     * @param force cancel existing PENDING job so a new one can be created; RUNNING is skipped
+     * @param force supersede existing PENDING/COMPLETED job so a fresh analyze can run; RUNNING is skipped
      * @return new job id, or empty if skipped
      */
     @Transactional
@@ -53,13 +53,17 @@ public class ContentUnderstandingEnqueueService {
             if (existing.getStatus() == AnalysisJobStatus.RUNNING) {
                 return Optional.empty();
             }
-            if (existing.getStatus() == AnalysisJobStatus.PENDING) {
-                if (!force) {
-                    return Optional.empty();
-                }
+            boolean pendingLike = existing.getStatus() == AnalysisJobStatus.PENDING
+                || existing.getStatus() == AnalysisJobStatus.FAILED_RETRYABLE;
+            if (pendingLike && !force) {
+                return Optional.empty();
+            }
+            if (pendingLike || (force && existing.getStatus() == AnalysisJobStatus.COMPLETED)) {
                 existing.setStatus(AnalysisJobStatus.FAILED_TERMINAL);
                 existing.setErrorMessage("Superseded by admin/backfill requeue");
                 existing.setFinishedAt(java.time.LocalDateTime.now());
+                existing.setLockedAt(null);
+                existing.setLockedBy(null);
                 jobRepository.save(existing);
             }
         }

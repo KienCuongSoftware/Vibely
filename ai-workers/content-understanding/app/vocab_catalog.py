@@ -2784,7 +2784,7 @@ TAG_ROWS: list[dict[str, Any]] = [
     {
         "slug": "nsfw",
         "name": "NSFW",
-        "category": null,
+        "category": None,
         "keywords": ("nsfw", "adult only", "18+", "not safe for work"),
         "aliases": (),
         "clip": ("explicit nudity pornographic adult content", "nsfw sexual content in video", "adult explicit material not safe for work"),
@@ -2792,7 +2792,7 @@ TAG_ROWS: list[dict[str, Any]] = [
     {
         "slug": "explicit",
         "name": "Explicit Content",
-        "category": null,
+        "category": None,
         "keywords": ("explicit", "explicit content", "18 plus", "mature explicit"),
         "aliases": (),
         "clip": ("explicit sexual content in video", "explicit nudity scene", "adult explicit sexual act"),
@@ -2800,7 +2800,7 @@ TAG_ROWS: list[dict[str, Any]] = [
     {
         "slug": "porn",
         "name": "Pornography",
-        "category": null,
+        "category": None,
         "keywords": ("porn", "pornography", "xxx video", "hardcore"),
         "aliases": (),
         "clip": ("pornographic video scene", "hardcore pornography", "adult porn video"),
@@ -2808,7 +2808,7 @@ TAG_ROWS: list[dict[str, Any]] = [
     {
         "slug": "adult_content",
         "name": "Adult Content",
-        "category": null,
+        "category": None,
         "keywords": ("adult content", "adult video", "mature content", "adults only"),
         "aliases": (),
         "clip": ("adult only mature sexual content", "restricted adult video", "mature audience sexual content"),
@@ -2816,7 +2816,7 @@ TAG_ROWS: list[dict[str, Any]] = [
     {
         "slug": "adult",
         "name": "Adult",
-        "category": null,
+        "category": None,
         "keywords": ("adult", "adult material", "adult scene"),
         "aliases": (),
         "clip": ("adult sexual content", "adult only video", "mature adult scene"),
@@ -2824,7 +2824,7 @@ TAG_ROWS: list[dict[str, Any]] = [
     {
         "slug": "nudity",
         "name": "Nudity",
-        "category": null,
+        "category": None,
         "keywords": ("nudity", "nude", "naked", "topless", "no clothes"),
         "aliases": (),
         "clip": ("full frontal nudity", "naked person without clothes", "topless nude body"),
@@ -2832,7 +2832,7 @@ TAG_ROWS: list[dict[str, Any]] = [
     {
         "slug": "lingerie",
         "name": "Lingerie",
-        "category": null,
+        "category": None,
         "keywords": ("lingerie", "underwear model", "sexy lingerie"),
         "aliases": (),
         "clip": ("person in lingerie underwear", "sexy lingerie photoshoot", "revealing lingerie"),
@@ -2840,7 +2840,7 @@ TAG_ROWS: list[dict[str, Any]] = [
     {
         "slug": "seductive",
         "name": "Seductive",
-        "category": null,
+        "category": None,
         "keywords": ("seductive", "provocative pose", "sensual"),
         "aliases": (),
         "clip": ("seductive provocative pose", "sensual adult pose", "provocative sexual pose"),
@@ -2848,7 +2848,7 @@ TAG_ROWS: list[dict[str, Any]] = [
     {
         "slug": "kissing",
         "name": "Kissing",
-        "category": null,
+        "category": None,
         "keywords": ("kissing", "make out", "passionate kiss"),
         "aliases": (),
         "clip": ("passionate kissing couple", "people kissing intimately", "romantic kiss closeup"),
@@ -2856,7 +2856,7 @@ TAG_ROWS: list[dict[str, Any]] = [
     {
         "slug": "violence",
         "name": "Violence",
-        "category": null,
+        "category": None,
         "keywords": ("violence", "violent", "graphic violence", "assault"),
         "aliases": (),
         "clip": ("graphic violence assault", "violent fight beating", "people fighting violently"),
@@ -2864,7 +2864,7 @@ TAG_ROWS: list[dict[str, Any]] = [
     {
         "slug": "gore",
         "name": "Gore",
-        "category": null,
+        "category": None,
         "keywords": ("gore", "bloodbath", "graphic gore", "disturbing gore"),
         "aliases": (),
         "clip": ("graphic gore blood injury", "bloody gore violent injury", "disturbing gore scene"),
@@ -2872,7 +2872,7 @@ TAG_ROWS: list[dict[str, Any]] = [
     {
         "slug": "weapon",
         "name": "Weapon",
-        "category": null,
+        "category": None,
         "keywords": ("weapon", "armed", "weapon threat", "deadly weapon"),
         "aliases": (),
         "clip": ("person holding weapon threatening", "knife or gun weapon violence", "armed person with weapon"),
@@ -2880,7 +2880,7 @@ TAG_ROWS: list[dict[str, Any]] = [
     {
         "slug": "guns",
         "name": "Guns",
-        "category": null,
+        "category": None,
         "keywords": ("guns", "gun", "firearm", "shooting", "pistol", "rifle"),
         "aliases": (),
         "clip": ("person holding gun firearm", "gun shooting violence", "firearm pointed at camera"),
@@ -2888,7 +2888,7 @@ TAG_ROWS: list[dict[str, Any]] = [
     {
         "slug": "blood",
         "name": "Blood",
-        "category": null,
+        "category": None,
         "keywords": ("blood", "bloody", "bleeding", "blood injury"),
         "aliases": (),
         "clip": ("blood injury wound", "bloody violent scene", "bleeding graphic wound"),

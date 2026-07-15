@@ -10,7 +10,9 @@ import time
 
 import requests
 
+from .clip_vision import warm_clip_models
 from .pipeline import analyze
+from .qdrant_cu import CuVectorStore
 
 LOG = logging.getLogger("content_understanding.worker")
 
@@ -136,6 +138,11 @@ def main() -> None:
         os.environ.get("CU_YOLO_ENABLED", "true"),
         os.environ.get("CU_QDRANT_ENABLED", "true"),
     )
+    if os.environ.get("CU_WARM_ON_START", "true").lower() in {"1", "true", "yes"}:
+        if os.environ.get("CU_CLIP_ENABLED", "true").lower() in {"1", "true", "yes"}:
+            warm_clip_models()
+        if os.environ.get("CU_QDRANT_ENABLED", "true").lower() in {"1", "true", "yes"}:
+            CuVectorStore().warm()
     if rabbit_enabled:
         rabbit_loop(base, headers)
     else:

@@ -33,6 +33,14 @@ def _load_clip():
     LOG.info("Loaded CLIP %s", _CLIP_NAME)
 
 
+def warm_clip() -> None:
+    """Eager-load CLIP at worker boot so the first claim is not a multi-minute hang."""
+    try:
+        _load_clip()
+    except Exception as exc:  # noqa: BLE001
+        LOG.warning("CLIP warm failed: %s", exc)
+
+
 def phash64(image_path: Path) -> int:
     """8x8 DCT-style average hash as 64-bit int (deterministic perceptual hash)."""
     img = Image.open(image_path).convert("L").resize((8, 8), Image.Resampling.LANCZOS)

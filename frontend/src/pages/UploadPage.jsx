@@ -251,7 +251,8 @@ export function UploadPage() {
       return {
         tone: 'pending',
         title: 'Kiểm tra nội dung',
-        detail: 'Đang quét video… Có thể mất vài phút lần đầu.',
+        detail:
+          'Đang quét video… Vui lòng đợi xong trước khi đăng. Sau khi đăng, kiểm duyệt nội dung (tình dục / bạo lực) vẫn chạy — video chỉ lên For You khi đạt.',
         showDetails: false,
       }
     }
@@ -260,7 +261,7 @@ export function UploadPage() {
         tone: 'warn',
         title: 'Kiểm tra nội dung',
         detail:
-          'Kiểm tra nguyên gốc chưa hoàn tất. Bạn có thể đăng; hệ thống vẫn kiểm duyệt an toàn trước khi hiện công khai.',
+          'Kiểm tra nguyên gốc chưa hoàn tất. Bạn vẫn có thể đăng; video sẽ ẩn khỏi For You đến khi kiểm duyệt nội dung xong.',
         showDetails: false,
       }
     }
@@ -294,8 +295,31 @@ export function UploadPage() {
     [originalityStatus],
   )
 
+  // Lock Post while originality is still running, or when it returned BLOCK.
+  // FAILED does not lock — publication hold keeps the video off For You until AI moderation.
+  const originalityJobState = String(originalityStatus?.jobState || '')
   const originalityBlockingPost =
-    originalityCheck?.tone === 'pending' || String(originalityStatus?.decision || '') === 'BLOCK'
+    String(originalityStatus?.decision || '') === 'BLOCK' ||
+    !originalityStatus ||
+    !originalityJobState ||
+    originalityJobState === 'PENDING' ||
+    originalityJobState === 'PROCESSING'
+
+  const postButtonTitle =
+    String(originalityStatus?.decision || '') === 'BLOCK'
+      ? 'Nội dung bị chặn — không thể đăng'
+      : originalityBlockingPost
+        ? 'Đợi kiểm tra nội dung hoàn tất'
+        : undefined
+
+  const postButtonLabel =
+    uploadProgress != null
+      ? 'Đang tải lên…'
+      : busy
+        ? 'Đang đăng…'
+        : originalityBlockingPost && String(originalityStatus?.decision || '') !== 'BLOCK'
+          ? 'Đang kiểm tra…'
+          : 'Đăng'
 
   useEffect(() => {
     document.title = 'VibelyStudio | Upload'
@@ -1148,6 +1172,14 @@ export function UploadPage() {
 
   const saveVideo = async () => {
     if (!token || !uploadedVideo) return
+    if (originalityBlockingPost) {
+      setStatus(
+        String(originalityStatus?.decision || '') === 'BLOCK'
+          ? 'Nội dung bị chặn — không thể đăng.'
+          : 'Đang kiểm tra nội dung — vui lòng đợi xong rồi đăng.',
+      )
+      return
+    }
     if (!uploadedVideo.playbackUrl || uploadProgress != null) {
       setStatus('Vui lòng đợi video tải lên xong rồi đăng.')
       return
@@ -2035,19 +2067,9 @@ export function UploadPage() {
                         !uploadedVideo.playbackUrl ||
                         originalityBlockingPost
                       }
-                      title={
-                        originalityCheck?.tone === 'pending'
-                          ? 'Đợi kiểm tra nội dung hoàn tất'
-                          : undefined
-                      }
+                      title={postButtonTitle}
                     >
-                      {uploadProgress != null
-                        ? 'Đang tải lên…'
-                        : busy
-                          ? 'Đang đăng…'
-                          : originalityCheck?.tone === 'pending'
-                            ? 'Đang kiểm tra…'
-                            : 'Đăng'}
+                      {postButtonLabel}
                     </button>
                     {status && !banNoticeOpen ? (
                       <p className="text-sm text-zinc-400">{status}</p>

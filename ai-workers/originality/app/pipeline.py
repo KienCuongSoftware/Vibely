@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +17,10 @@ from .qdrant_store import VectorStore
 from .watermark import detect_platform_watermark
 
 LOG = logging.getLogger("originality.pipeline")
+
+
+def _env_flag(name: str, default: str = "false") -> bool:
+    return os.environ.get(name, default).lower() in {"1", "true", "yes"}
 
 
 def analyze_video(claim: dict[str, Any], work_dir: Path) -> dict[str, Any]:
@@ -76,24 +81,25 @@ def analyze_video(claim: dict[str, Any], work_dir: Path) -> dict[str, Any]:
     # Upsert after search so we do not match ourselves.
     store.upsert_video_vectors(video_id, public_id, vectors, duration)
 
-    ocr_text, ocr_model = ocr_frames(frames)
-    # OCR similarity requires neighbor OCR profiles; v1 stores text in explain and
-    # uses keyword density vs empty corpus => 0 unless neighbor texts available.
+    # Full-frame OCR is expensive and weak on cold corpus — off by default for upload latency.
+    if _env_flag("ORIGINALITY_OCR_ENABLED", "false"):
+        ocr_text, ocr_model = ocr_frames(frames)
+    else:
+        ocr_text, ocr_model = "", "ocr:skipped"
     ocr_score = 0.0
     ocr_explain = {"textPreview": ocr_text[:500], "tokenCount": len(ocr_text.split())}
     if matched_video_id is not None and ocr_text:
-        # Approximate: platform watermark keywords in OCR raise ocr_similarity slightly
-        # when reupload captions share hashtags — use self token richness as weak prior 0.
         ocr_score = min(0.35, len(set(ocr_text.split())) / 200.0)
 
     fp, audio_model = chromaprint_fingerprint(video_path)
     audio_score = 0.0
     audio_explain = {"fingerprintPresent": bool(fp), "model": audio_model}
-    # Without a persisted audio corpus table, audio similarity stays 0 on cold start.
-    # When neighbor exists, compare fp stored in qdrant payload in P2; v1 keeps 0 unless
-    # same process memory cache — intentional concrete baseline.
 
-    wm_score, wm_explain, wm_model = detect_platform_watermark(frames)
+    if _env_flag("ORIGINALITY_WATERMARK_ENABLED", "true"):
+        wm_max = max(1, int(os.environ.get("ORIGINALITY_WATERMARK_MAX_FRAMES", "3")))
+        wm_score, wm_explain, wm_model = detect_platform_watermark(frames, max_frames=wm_max)
+    else:
+        wm_score, wm_explain, wm_model = 0.0, {"labels": [], "hits": 0, "note": "skipped"}, "watermark:skipped"
 
     # Metadata: downloader filename/title hints + duration collision with neighbor.
     hint_score, hint_explain = score_metadata_hints(

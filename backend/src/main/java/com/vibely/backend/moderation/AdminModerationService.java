@@ -27,6 +27,7 @@ public class AdminModerationService {
     private final ModerationEventOutboxRepository outboxRepository;
     private final VideoRepository videoRepository;
     private final CreatorTrustService trustService;
+    private final ModerationJoinService joinService;
     private final ObjectMapper objectMapper;
 
     public AdminModerationService(
@@ -36,6 +37,7 @@ public class AdminModerationService {
         ModerationEventOutboxRepository outboxRepository,
         VideoRepository videoRepository,
         CreatorTrustService trustService,
+        ModerationJoinService joinService,
         ObjectMapper objectMapper
     ) {
         this.jdbcTemplate = jdbcTemplate;
@@ -44,6 +46,7 @@ public class AdminModerationService {
         this.outboxRepository = outboxRepository;
         this.videoRepository = videoRepository;
         this.trustService = trustService;
+        this.joinService = joinService;
         this.objectMapper = objectMapper;
     }
 
@@ -283,6 +286,30 @@ public class AdminModerationService {
             .findByPublicId(publicId)
             .orElseThrow(() -> new NotFoundException("Video không tồn tại"));
         return getDetailByVideoId(video.getId());
+    }
+
+    @Transactional
+    public Map<String, Object> forceReevaluateByPublicId(String publicIdRaw) {
+        UUID publicId = VideoPublicIds.parse(publicIdRaw);
+        Video video = videoRepository
+            .findByPublicId(publicId)
+            .orElseThrow(() -> new NotFoundException("Video không tồn tại"));
+        try {
+            Long jobId = joinService.forceReevaluate(video.getId());
+            if (jobId == null) {
+                throw new BadRequestException(
+                    "Không thể enqueue moderation (thiếu CU completed / draft / moderation tắt)."
+                );
+            }
+            return Map.of(
+                "videoId", video.getId(),
+                "publicId", publicIdRaw,
+                "moderationJobId", jobId,
+                "status", "PENDING"
+            );
+        } catch (IllegalStateException ex) {
+            throw new BadRequestException(ex.getMessage());
+        }
     }
 
     @Transactional(readOnly = true)

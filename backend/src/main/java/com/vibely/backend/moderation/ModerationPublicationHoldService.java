@@ -10,8 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * AI-first publication: published videos stay {@link VideoStatus#HIDDEN} until the moderation
- * worker returns ALLOW/LIMIT (applier promotes to READY). Prevents For You / public profile
- * from showing content before policy evaluation.
+ * worker returns ALLOW/LIMIT (applier promotes to READY). For You / Explore only list
+ * {@code READY}, so held videos never appear there. The author's own profile may still list
+ * {@code HIDDEN} with a client "Đang kiểm tra..." overlay.
  *
  * <p>Only active when moderation is enabled and {@code apply-decisions=true}.
  */

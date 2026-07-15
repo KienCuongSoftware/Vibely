@@ -19,14 +19,40 @@ import org.springframework.web.server.ResponseStatusException;
 public class ModerationInternalController {
 
     private final ModerationJobService jobService;
+    private final ModerationJoinService joinService;
     private final ModerationProperties properties;
 
     public ModerationInternalController(
         ModerationJobService jobService,
+        ModerationJoinService joinService,
         ModerationProperties properties
     ) {
         this.jobService = jobService;
+        this.joinService = joinService;
         this.properties = properties;
+    }
+
+    /** Ops: force a new PENDING evaluate for the video's latest completed CU analysis. */
+    @PostMapping("/videos/{videoId}/reevaluate")
+    public ApiResponse<Map<String, Object>> reevaluate(
+        @RequestHeader(value = "X-Internal-Token", required = false) String token,
+        @PathVariable long videoId
+    ) {
+        requireInternalToken(token);
+        try {
+            Long jobId = joinService.forceReevaluate(videoId);
+            if (jobId == null) {
+                throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Không thể enqueue moderation (thiếu CU completed / draft)."
+                );
+            }
+            return ApiResponse.success(
+                Map.of("videoId", videoId, "moderationJobId", jobId, "status", "PENDING")
+            );
+        } catch (IllegalStateException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+        }
     }
 
     @PostMapping("/claim")

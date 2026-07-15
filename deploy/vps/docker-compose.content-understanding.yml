@@ -36,6 +36,7 @@ services:
       - vibely.env
     environment:
       VIBELY_API_BASE: http://host.docker.internal:8080
+      # Compose substitutes from host/.env — keep default so empty host env cannot wipe token.
       CU_INTERNAL_TOKEN: ${APP_CU_INTERNAL_TOKEN:-vibely-dev-cu-token}
       CU_RABBITMQ_ENABLED: ${APP_CU_RABBITMQ_ENABLED:-true}
       RABBITMQ_URL: amqp://${RABBITMQ_USERNAME:-vibely}:${RABBITMQ_PASSWORD:-vibely}@rabbitmq:5672/%2F
@@ -49,10 +50,19 @@ services:
       CU_QDRANT_ENABLED: ${CU_QDRANT_ENABLED:-true}
       CU_FRAME_COUNT: ${CU_FRAME_COUNT:-8}
       CU_YOLO_WEIGHTS: ${CU_YOLO_WEIGHTS:-yolov8n.pt}
-      # Prefer Docker DNS name when worker joins originality/qdrant network.
-      # host.docker.internal:6333 fails if Qdrant binds only 127.0.0.1.
-      QDRANT_URL: ${QDRANT_URL:-http://qdrant:6333}
+      # Qdrant lives in originality compose (published on host :6333).
+      # Default host.docker.internal — "qdrant" DNS only works if networks are joined.
+      QDRANT_URL: ${QDRANT_URL:-http://host.docker.internal:6333}
+      QDRANT_TIMEOUT_SECONDS: "5"
       CU_COMPLETE_TIMEOUT: "600"
+      CU_WARM_ON_START: "true"
+      CU_WARM_TEXT_EMBEDDINGS: ${CU_WARM_TEXT_EMBEDDINGS:-true}
+      CU_CLIP_CACHE_DIR: /var/cache/cu-clip
+    volumes:
+      - cu_clip_cache:/var/cache/cu-clip
+      - cu_hf_cache:/root/.cache/huggingface
 
 volumes:
   rabbitmq_data:
+  cu_clip_cache:
+  cu_hf_cache:

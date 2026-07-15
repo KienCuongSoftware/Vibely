@@ -332,6 +332,15 @@ export function StudioPostsPage() {
                             <p className="mt-0.5 text-xs text-zinc-500">
                               Mã #{v.publicId}
                             </p>
+                            {String(v.status || '').toUpperCase() === 'REMOVED' ? (
+                              <p className="mt-0.5 text-xs font-medium text-rose-400">
+                                Đã gỡ (vi phạm)
+                              </p>
+                            ) : String(v.status || '').toUpperCase() === 'HIDDEN' ? (
+                              <p className="mt-0.5 text-xs font-medium text-amber-400">
+                                Đang kiểm duyệt — chưa lên For You
+                              </p>
+                            ) : null}
                           </div>
                         </div>
                       </td>
@@ -339,7 +348,10 @@ export function StudioPostsPage() {
                         <button
                           type="button"
                           data-studio-privacy-trigger
-                          disabled={busyPrivacy}
+                          disabled={
+                            busyPrivacy ||
+                            String(v.status || '').toUpperCase() === 'REMOVED'
+                          }
                           className="inline-flex w-max shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg border border-zinc-700 bg-zinc-900 px-2.5 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-60"
                           title="Chỉnh quyền riêng tư"
                           aria-expanded={

@@ -77,9 +77,8 @@ public class ModerationSnapshotBuilder {
         if (snap.get("scene_labels") == null) {
             snap.put("scene_labels", features.get("scene_labels"));
         }
-        if (snap.get("tags") == null) {
-            snap.put("tags", loadTags(videoId));
-        }
+        // Always refresh tags — CU re-runs update video_semantic_tags after the job snapshot.
+        snap.put("tags", loadTags(videoId));
         return snap;
     }
 

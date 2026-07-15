@@ -221,6 +221,12 @@ function isProfileVideoVisibleToViewer(video, { isOwnProfile, hasViewer }) {
   return key === 'PUBLIC'
 }
 
+function isProfileVideoPendingModeration(video) {
+  const s = String(video?.status || '').toUpperCase()
+  // HIDDEN = publication hold until AI moderation ALLOW/LIMIT; processing = still encoding.
+  return s === 'HIDDEN' || s === 'PROCESSING' || s === 'RAW'
+}
+
 function ProfileGridVideoTile({
   video,
   profileUsername,
@@ -231,6 +237,7 @@ function ProfileGridVideoTile({
   onOpen,
 }) {
   const privacyIcon = profilePrivacyIcon(video?.privacy)
+  const pendingCheck = isProfileVideoPendingModeration(video)
   return (
     <li
       ref={isLastWatched ? tileRef : undefined}
@@ -245,8 +252,23 @@ function ProfileGridVideoTile({
           className="relative aspect-9/16 w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
           onMouseEnter={() => onHover(video.publicId)}
         >
-          <ProfileGridMedia item={video} playing={playing} />
-          {isLastWatched ? (
+          <div
+            className={
+              pendingCheck
+                ? 'absolute inset-0 brightness-[0.45]'
+                : 'absolute inset-0'
+            }
+          >
+            <ProfileGridMedia item={video} playing={playing && !pendingCheck} />
+          </div>
+          {pendingCheck ? (
+            <div className="pointer-events-none absolute inset-0 z-4 flex items-center justify-center bg-black/55 px-2">
+              <span className="text-center text-[12px] font-semibold leading-snug text-white drop-shadow-md sm:text-[13px]">
+                Đang kiểm tra...
+              </span>
+            </div>
+          ) : null}
+          {isLastWatched && !pendingCheck ? (
             <div className="pointer-events-none absolute inset-0 z-3 flex items-center justify-center bg-black/50">
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white drop-shadow-md">
                 <IoPlay className="text-base" aria-hidden />

@@ -30,13 +30,33 @@ class CuVectorStore:
             from qdrant_client import QdrantClient
             from qdrant_client.http import models as qm
 
-            self._client = QdrantClient(url=self.url, timeout=60)
+            timeout = float(os.environ.get("QDRANT_TIMEOUT_SECONDS", "5"))
+            self._client = QdrantClient(url=self.url, timeout=timeout)
             self._qm = qm
             return self._client
         except Exception as exc:  # noqa: BLE001
             LOG.warning("Qdrant unavailable: %s", exc)
             self.enabled = False
             return None
+
+    def warm(self, dim: int = 512) -> None:
+        client = self._client_or_none()
+        if client is None:
+            LOG.warning("CU Qdrant warm skipped (disabled or unreachable url=%s)", self.url)
+            return
+        try:
+            self._ensure(COLLECTION_FRAME, dim)
+            self._ensure(COLLECTION_VIDEO, dim)
+            LOG.info(
+                "CU Qdrant warm ok url=%s frames=%s video=%s",
+                self.url,
+                COLLECTION_FRAME,
+                COLLECTION_VIDEO,
+            )
+        except Exception as exc:  # noqa: BLE001
+            LOG.warning("CU Qdrant warm failed: %s", exc)
+            self._client = None
+            self.enabled = False
 
     def _ensure(self, name: str, dim: int) -> None:
         client = self._client_or_none()

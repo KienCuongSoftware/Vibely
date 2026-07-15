@@ -38,30 +38,27 @@ def probe_duration_seconds(video_path: Path) -> float:
 
 def extract_frames(video_path: Path, out_dir: Path, duration_seconds: float) -> tuple[list[Path], str]:
     """
-    Adaptive hybrid sampling:
-    - duration <= 10s  -> 2 fps, max 24 frames
-    - duration <= 60s  -> 1 fps, max 60 frames
-    - else             -> fps = min(1.0, 120/duration), max 120 frames
-    Scene-change boost is approximated via ffmpeg mpdecimate after dense sample.
+    Adaptive hybrid sampling with hard cap for upload latency.
+
+    ORIGINALITY_MAX_FRAMES (default 8) caps how many CLIP embeds we run — the
+    dominant cost on CPU. Dense sampling still uses ffmpeg fps then downsamples.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     ffmpeg = os.environ.get("FFMPEG_PATH", "ffmpeg")
     duration = max(0.1, float(duration_seconds))
+    max_frames = max(2, int(os.environ.get("ORIGINALITY_MAX_FRAMES", "8")))
+
     if duration <= 10:
-        fps = 2.0
-        max_frames = 24
-        strategy = "dense_2fps_short"
+        fps = min(2.0, max_frames / max(duration, 0.5))
+        strategy = f"dense_short_cap_{max_frames}"
     elif duration <= 60:
-        fps = 1.0
-        max_frames = 60
-        strategy = "uniform_1fps"
+        fps = min(1.0, max_frames / max(duration, 1.0))
+        strategy = f"uniform_cap_{max_frames}"
     else:
-        fps = min(1.0, 120.0 / duration)
-        max_frames = 120
-        strategy = "stride_cap_120"
+        fps = min(0.5, max_frames / duration)
+        strategy = f"stride_cap_{max_frames}"
 
     pattern = str(out_dir / "frame_%05d.jpg")
-    # Extract then keep first max_frames after mpdecimate removes near-duplicates.
     run(
         [
             ffmpeg,
@@ -69,7 +66,7 @@ def extract_frames(video_path: Path, out_dir: Path, duration_seconds: float) -> 
             "-i",
             str(video_path),
             "-vf",
-            f"fps={fps},mpdecimate,scale=320:-2",
+            f"fps={fps:.4f},mpdecimate,scale=320:-2",
             "-q:v",
             "4",
             pattern,
@@ -78,7 +75,6 @@ def extract_frames(video_path: Path, out_dir: Path, duration_seconds: float) -> 
     )
     frames = sorted(out_dir.glob("frame_*.jpg"))
     if len(frames) > max_frames:
-        # Uniform keep across the list.
         step = len(frames) / max_frames
         kept = [frames[int(i * step)] for i in range(max_frames)]
         for f in frames:

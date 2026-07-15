@@ -29,13 +29,28 @@ class VectorStore:
             from qdrant_client import QdrantClient
             from qdrant_client.http import models as qm
 
-            self._client = QdrantClient(url=self.url, timeout=30)
+            timeout = float(os.environ.get("QDRANT_TIMEOUT_SECONDS", "5"))
+            self._client = QdrantClient(url=self.url, timeout=timeout)
             self._qm = qm
             return self._client
         except Exception as exc:  # noqa: BLE001
             LOG.warning("Qdrant unavailable: %s", exc)
             self.enabled = False
             return None
+
+    def warm(self, dim: int = VECTOR_SIZE_CLIP) -> None:
+        """Connect + ensure collection at worker boot so first job does not pay cold start."""
+        client = self._client_or_none()
+        if client is None:
+            LOG.warning("Qdrant warm skipped (disabled or unreachable url=%s)", self.url)
+            return
+        try:
+            self.ensure_collection(dim)
+            LOG.info("Qdrant warm ok url=%s collection=%s dim=%s", self.url, COLLECTION, dim)
+        except Exception as exc:  # noqa: BLE001
+            LOG.warning("Qdrant warm failed: %s", exc)
+            self._client = None
+            self.enabled = False
 
     def ensure_collection(self, dim: int) -> None:
         client = self._client_or_none()

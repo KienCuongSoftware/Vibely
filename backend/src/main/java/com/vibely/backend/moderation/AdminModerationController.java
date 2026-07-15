@@ -4,6 +4,7 @@ import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
 import jakarta.validation.Valid;
+import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -84,6 +85,12 @@ public class AdminModerationController {
     @GetMapping("/videos/{publicId}")
     public ApiResponse<AdminModerationDetailResponse> getVideoDetail(@PathVariable String publicId) {
         return ApiResponse.success(adminModerationService.getDetailByPublicId(publicId));
+    }
+
+    /** Force a fresh AI moderation evaluate using the latest completed CU analysis. */
+    @PostMapping("/videos/{publicId}/reevaluate")
+    public ApiResponse<Map<String, Object>> reevaluate(@PathVariable String publicId) {
+        return ApiResponse.success(adminModerationService.forceReevaluateByPublicId(publicId));
     }
 
     @GetMapping("/appeals")

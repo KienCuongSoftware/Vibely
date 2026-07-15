@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-**Flyway** applies SQL migrations on startup. Inspect `backend/src/main/resources/db/migration/` for the real set — version numbers may skip. Current tip: **V75**. Java migration `V22__BackfillVideoPublicUuid` handles video public UUID backfill.
+**Flyway** applies SQL migrations on startup. Inspect `backend/src/main/resources/db/migration/` for the real set — version numbers may skip. Current tip: **V77**. Java migration `V22__BackfillVideoPublicUuid` handles video public UUID backfill.
 
 ## 2. Rules
 
@@ -50,6 +50,8 @@
 | V73 | `lex.violence_vi` — Vietnamese / EN violence threat lexicon → BLOCK |
 | V74 | Bulk expand sexual/vulgar + violence lexicons (VI/EN) → BLOCK |
 | V75 | CU CLIP NSFW/violence visual tags + lower plugin BLOCK thresholds (0.42) |
+| V76 | Moderation job idempotent unique index only for PENDING/PROCESSING (allow re-eval) |
+| V77 | Sexual lex title obfuscations (`tinh_duc`, `Video_Tinh_Duc`, …) → BLOCK |
 
 After schema changes, update [SCHEMA.md](SCHEMA.md) and the [full ERD](../erd/vibely-erd-full.png) when table count or major relationships change.
 

@@ -7,8 +7,10 @@ import com.vibely.backend.admin.AdminBannedUserInfo;
 import com.vibely.backend.auth.exception.AccountBannedException;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.video.Video;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -39,7 +41,10 @@ public class ModerationCaptionGateService {
             "follow\\s*(?:for|of|4)\\s*nudes?|free\\s*nudes?|send\\s*nudes|only\\s*fans|pornhub|"
                 + "\\bfuck(?:ing)?\\b|\\bcunt\\b|\\bpussy\\b|\\bdick\\b|\\bwhore\\b|\\bslut\\b|"
                 + "đầu\\s*buồi|dau\\s*buoi|buồi|\\bbuoi\\b|cặc|\\bcak\\b|lồn|\\bloz\\b|"
-                + "địt|đụ|chịch|đéo|con\\s*đĩ|đĩ\\b|điếm|bú\\s*cu|làm\\s*tình|ảnh\\s*nóng|clip\\s*sex",
+                + "địt|đụ|chịch|đéo|con\\s*đĩ|đĩ\\b|điếm|bú\\s*cu|làm\\s*tình|ảnh\\s*nóng|clip\\s*sex|"
+                // Filename / no-diacritic titles: Video_Tinh_Duc, tinh-duc, …
+                + "tinh[\\s_\\-]*duc|tình[\\s_\\-]*dục|video[\\s_\\-]*tinh[\\s_\\-]*duc|"
+                + "quan[\\s_\\-]*he[\\s_\\-]*tinh[\\s_\\-]*duc",
             RE_FLAGS
         ),
         Pattern.compile(
@@ -130,17 +135,34 @@ public class ModerationCaptionGateService {
     }
 
     String firstSevereHit(String title, String description) {
-        String blob = ((title == null ? "" : title) + "\n" + (description == null ? "" : description))
+        String raw = ((title == null ? "" : title) + "\n" + (description == null ? "" : description))
             .trim();
-        if (!StringUtils.hasText(blob)) {
+        if (!StringUtils.hasText(raw)) {
             return null;
         }
-        for (Pattern pattern : loadSeverePatterns()) {
-            if (pattern.matcher(blob).find()) {
+        // Match raw + normalized (Video_Tinh_Duc → video tinh duc) so filename titles hit lex.
+        String normalized = normalizeForMatch(raw);
+        List<Pattern> patterns = loadSeverePatterns();
+        for (Pattern pattern : patterns) {
+            if (pattern.matcher(raw).find() || pattern.matcher(normalized).find()) {
                 return pattern.pattern();
             }
         }
         return null;
+    }
+
+    /**
+     * Lowercase, map separators to spaces, strip Vietnamese diacritics — helps titles like
+     * {@code Video_Tinh_Duc} match {@code tinh duc} / {@code tinh[\\s_\\-]*duc}.
+     */
+    static String normalizeForMatch(String text) {
+        if (text == null || text.isBlank()) {
+            return "";
+        }
+        String spaced = text.replaceAll("[_\\-./]+", " ");
+        String nfd = Normalizer.normalize(spaced, Normalizer.Form.NFD);
+        String noMarks = nfd.replaceAll("\\p{M}+", "");
+        return noMarks.toLowerCase(Locale.ROOT).replaceAll("\\s+", " ").trim();
     }
 
     private List<Pattern> loadSeverePatterns() {

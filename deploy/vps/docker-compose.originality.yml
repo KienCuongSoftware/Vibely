@@ -28,14 +28,24 @@ services:
     environment:
       # Backend uses network_mode: host → API on host :8080
       VIBELY_API_BASE: http://host.docker.internal:8080
-      ORIGINALITY_INTERNAL_TOKEN: ${APP_ORIGINALITY_INTERNAL_TOKEN}
+      # Compose substitutes from host/.env — empty ${VAR} overrides env_file and crash-loops the worker.
+      ORIGINALITY_INTERNAL_TOKEN: ${APP_ORIGINALITY_INTERNAL_TOKEN:-vibely-dev-originality-token}
       QDRANT_URL: http://qdrant:6333
       QDRANT_ENABLED: "true"
+      QDRANT_TIMEOUT_SECONDS: "5"
       ORIGINALITY_CLIP_MODEL: ViT-B-32
       ORIGINALITY_POLL_SECONDS: "3"
+      # Fast pre-publish path: few CLIP frames, skip full OCR (watermark OCR stays on).
+      ORIGINALITY_MAX_FRAMES: ${ORIGINALITY_MAX_FRAMES:-8}
+      ORIGINALITY_OCR_ENABLED: ${ORIGINALITY_OCR_ENABLED:-false}
+      ORIGINALITY_WATERMARK_ENABLED: ${ORIGINALITY_WATERMARK_ENABLED:-true}
+      ORIGINALITY_WATERMARK_MAX_FRAMES: ${ORIGINALITY_WATERMARK_MAX_FRAMES:-3}
+      ORIGINALITY_WARM_ON_START: "true"
     volumes:
       - originality_tmp:/tmp
+      - originality_hf_cache:/root/.cache/huggingface
 
 volumes:
   qdrant_data:
   originality_tmp:
+  originality_hf_cache:
