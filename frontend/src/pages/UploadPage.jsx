@@ -992,6 +992,7 @@ export function UploadPage() {
       setUploadedVideo({
         fileName: file.name,
         fileSize: file.size,
+        // Keep original name only for local UI; publish title comes from caption (not filename).
         title: inferredTitle || 'Video mới',
         playbackUrl: '',
         audioUrl: '',
@@ -1000,7 +1001,8 @@ export function UploadPage() {
         durationSeconds,
         publicId: null,
       })
-      setDescription(inferredTitle || 'Video mới')
+      // Do not seed caption with the download filename (e.g. snaptik.vn_…).
+      setDescription('')
       setPreviewTab('feed')
       setStatus('')
       setUploadErrorToast('')
@@ -1040,8 +1042,8 @@ export function UploadPage() {
       try {
         created = await apiClient.createVideo(
           {
-            title: (inferredTitle || 'Video mới').slice(0, 120),
-            description: (inferredTitle || 'Video mới').slice(0, 1000),
+            title: 'Video',
+            description: null,
             videoUrl: playbackUrl,
             thumbnailUrl: autoThumbUrl || undefined,
             audioUrl,
@@ -1173,8 +1175,9 @@ export function UploadPage() {
     setBusy(true)
     publishingRef.current = false
     try {
-      const title = (uploadedVideo.title || 'Video mới').slice(0, 120)
       const desc = description.trim().slice(0, 1000)
+      // Title for API: first line of caption (or generic) — never keep snaptik/file stem.
+      const title = (desc.split('\n')[0] || 'Video').trim().slice(0, 120) || 'Video'
       if (uploadedVideo.publicId) {
         const latest = await apiClient.getVideo(uploadedVideo.publicId, { token })
         if (latest?.status === 'FAILED') {
@@ -1189,7 +1192,7 @@ export function UploadPage() {
           uploadedVideo.publicId,
           {
             title,
-            description: desc,
+            description: desc || null,
             thumbnailUrl: thumbnailUrl.trim() || undefined,
             privacy,
           },
