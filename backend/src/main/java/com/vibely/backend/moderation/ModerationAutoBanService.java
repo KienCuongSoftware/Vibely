@@ -8,7 +8,6 @@ import com.vibely.backend.user.entity.UserAccountStatus;
 import com.vibely.backend.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Locale;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,21 +16,14 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Auto-ban authors when AI moderation issues BLOCK/DELETE for severe policy labels.
+ * Auto-ban authors only for <strong>caption lexicon</strong> BLOCK hits — never for
+ * visual CLIP / OCR plugins (high false-positive rate on normal videos).
  * System bans set bannedByAdminId=null; creator can still use ban-appeal flow.
  */
 @Service
 public class ModerationAutoBanService {
 
     private static final Logger log = LoggerFactory.getLogger(ModerationAutoBanService.class);
-
-    private static final Set<String> AUTO_BAN_LABELS = Set.of(
-        "sexual_content",
-        "violence",
-        "spam",
-        "child_safety",
-        "terrorism"
-    );
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -50,6 +42,10 @@ public class ModerationAutoBanService {
         this.properties = properties;
     }
 
+    /**
+     * AI worker path: do <em>not</em> ban on visual NSFW/violence plugin BLOCK.
+     * Caption gate bans separately via {@link #banAuthorForModeration}.
+     */
     public boolean shouldAutoBan(ModerationDecision decision, ModerationCompleteRequest request) {
         if (!properties.isAutoBanOnBlock()) {
             return false;
@@ -60,50 +56,53 @@ public class ModerationAutoBanService {
         if (request == null) {
             return false;
         }
-        // Soft visual false-positives often land as BLOCK with low risk — do not ban.
-        Integer risk = request.getRisk();
-        if (risk == null || risk < 70) {
-            return false;
-        }
-        Double confidence = request.getConfidence();
-        if (confidence == null || confidence < 0.55) {
-            return false;
-        }
-        boolean severeLabel = false;
-        if (request.getPolicyResults() != null) {
-            for (ModerationCompleteRequest.PolicyResultItem item : request.getPolicyResults()) {
-                if (item == null || item.getLabel() == null) {
-                    continue;
-                }
-                if (AUTO_BAN_LABELS.contains(item.getLabel().trim().toLowerCase(Locale.ROOT))) {
-                    severeLabel = true;
-                    break;
-                }
-            }
-        }
-        if (!severeLabel && request.getEvidence() != null) {
+        // Only caption lexicon firings — never plugin.* / tag.* visual cues.
+        boolean lexHit = false;
+        if (request.getEvidence() != null) {
             for (ModerationCompleteRequest.EvidenceItem item : request.getEvidence()) {
                 if (item == null || item.getReasonCode() == null) {
                     continue;
                 }
-                String code = item.getReasonCode().toLowerCase(Locale.ROOT);
-                double weight = item.getWeight() == null ? 0.0 : item.getWeight();
-                // Ignore weak PLUGIN emit (score ~0.25–0.5); require strong hit.
-                if (weight < 0.70) {
-                    continue;
-                }
-                if (code.contains("nsfw")
-                    || code.contains("violence")
-                    || code.contains("spam")
-                    || code.contains("child")
-                    || code.contains("terror")
-                    || code.contains("sexual")) {
-                    severeLabel = true;
+                String code = item.getReasonCode().trim().toLowerCase(Locale.ROOT);
+                if (code.startsWith("lex.")) {
+                    lexHit = true;
                     break;
                 }
             }
         }
-        return severeLabel;
+        if (!lexHit && request.getPolicyResults() != null) {
+            for (ModerationCompleteRequest.PolicyResultItem item : request.getPolicyResults()) {
+                if (item == null || item.getRuleCodes() == null) {
+                    continue;
+                }
+                for (String rc : item.getRuleCodes()) {
+                    if (rc != null && rc.trim().toLowerCase(Locale.ROOT).startsWith("lex.")) {
+                        lexHit = true;
+                        break;
+                    }
+                }
+                if (lexHit) {
+                    break;
+                }
+            }
+        }
+        if (!lexHit) {
+            log.info(
+                "Skip AI auto-ban (no caption lex hit) decision={} risk={}",
+                decision,
+                request.getRisk()
+            );
+            return false;
+        }
+        Integer risk = request.getRisk();
+        Double confidence = request.getConfidence();
+        if (risk == null || risk < 40) {
+            return false;
+        }
+        if (confidence == null || confidence < 0.4) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -141,7 +140,6 @@ public class ModerationAutoBanService {
         userRepository.save(target);
         refreshTokenRepository.revokeAllByUserId(target.getId());
 
-        // Hide remaining public posts so profile/feed stay empty after ban.
         int hidden = jdbcTemplate.update(
             """
             UPDATE videos
