@@ -703,8 +703,7 @@ export function ProfilePage() {
     let cancelled = false
         const refreshPending = async () => {
       try {
-        // Probes ban status too — ACCOUNT_BANNED clears session + shows global modal.
-        await apiClient.me(token)
+        // ACCOUNT_BANNED is thrown by my-uploads when banned (no extra /me poll).
         const data = await apiClient.getMyUploadedVideos(token, { page: 0, size: 48 })
         if (cancelled) return
         const rows = Array.isArray(data?.items) ? data.items : []

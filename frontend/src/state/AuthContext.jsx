@@ -148,40 +148,55 @@ export function AuthProvider({ children }) {
     }
   }, [handleAccountBanned]);
 
-  /** Detect mid-session bans (async moderation) without page reload. */
+  /** Detect mid-session bans without flooding /me (rate-limit safe). */
   useEffect(() => {
     if (!token) return undefined;
     let cancelled = false;
     let inFlight = false;
+    let delayMs = 45000;
+    let timerId = null;
+
+    const schedule = (ms) => {
+      if (cancelled) return;
+      timerId = window.setTimeout(() => {
+        void probeSession();
+      }, ms);
+    };
+
     const probeSession = async () => {
       if (cancelled || inFlight) return;
+      if (document.visibilityState === "hidden") {
+        schedule(delayMs);
+        return;
+      }
       inFlight = true;
       try {
         await apiClient.me(COOKIE_SESSION_MARKER);
-      } catch {
-        // ACCOUNT_BANNED → api client emits → handleAccountBanned + overlay
+        delayMs = 45000;
+      } catch (err) {
+        // ACCOUNT_BANNED → api client emits → overlay
+        if (err?.status === 429 || err?.code === "RATE_LIMITED") {
+          delayMs = Math.min(delayMs * 2, 300000);
+        }
       } finally {
         inFlight = false;
+        schedule(delayMs);
       }
     };
+
     void probeSession();
-    // Fast enough that AI auto-ban shows the modal within a few seconds.
-    const timer = window.setInterval(probeSession, 3000);
     const onVisible = () => {
       if (document.visibilityState === "visible") {
+        delayMs = Math.min(delayMs, 45000);
+        if (timerId != null) window.clearTimeout(timerId);
         void probeSession();
       }
     };
-    const onFocus = () => {
-      void probeSession();
-    };
     document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("focus", onFocus);
     return () => {
       cancelled = true;
-      window.clearInterval(timer);
+      if (timerId != null) window.clearTimeout(timerId);
       document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("focus", onFocus);
     };
   }, [token]);
 

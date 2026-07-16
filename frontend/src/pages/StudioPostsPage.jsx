@@ -119,7 +119,6 @@ export function StudioPostsPage() {
     let cancelled = false;
     const quietRefresh = async () => {
       try {
-        await apiClient.me(token);
         const data = await apiClient.getMyUploadedVideos(token, {
           page: 0,
           size: 48,

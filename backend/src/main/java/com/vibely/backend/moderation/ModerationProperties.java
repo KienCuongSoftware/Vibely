@@ -20,14 +20,14 @@ public class ModerationProperties {
     private int maxJobAttempts = 5;
     private int staleProcessingMinutes = 30;
     /** Minutes after CU complete to evaluate without originality. */
-    private int originalitySoftTimeoutMinutes = 3;
+    private int originalitySoftTimeoutMinutes = 2;
     /**
      * Max time a published video may stay HIDDEN waiting for AI clearance before
      * soft-promoting to READY (BLOCK/DELETE/REVIEW decisions still win if present).
      */
-    private int publicationHoldTimeoutMinutes = 8;
+    private int publicationHoldTimeoutMinutes = 3;
     /** After this many minutes HIDDEN with CU done, force-enqueue moderation if missing. */
-    private int publicationHoldEnqueueAfterMinutes = 2;
+    private int publicationHoldEnqueueAfterMinutes = 1;
     private String exchange = "vibely.moderation";
     private String routingKeyEvaluate = "moderation.evaluate.requested";
     private String queueEvaluate = "moderation.evaluate";

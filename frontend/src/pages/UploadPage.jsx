@@ -234,6 +234,9 @@ export function UploadPage() {
   const [previewUiPlaying, setPreviewUiPlaying] = useState(false)
   const [originalityStatus, setOriginalityStatus] = useState(null)
   const [originalityDetailsOpen, setOriginalityDetailsOpen] = useState(false)
+  /** Wall-clock when we first saw a draft publicId — unlock Đăng after soft wait. */
+  const [originalityWaitStartedAt, setOriginalityWaitStartedAt] = useState(null)
+  const [nowTick, setNowTick] = useState(() => Date.now())
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false)
   /** { reason } when publish returns ACCOUNT_BANNED */
   const [banNoticeOpen, setBanNoticeOpen] = useState(false)
@@ -252,7 +255,7 @@ export function UploadPage() {
         tone: 'pending',
         title: 'Kiểm tra nội dung',
         detail:
-          'Đang quét video… Vui lòng đợi xong trước khi đăng. Sau khi đăng, kiểm duyệt nội dung (tình dục / bạo lực) vẫn chạy — video chỉ lên For You khi đạt.',
+          'Đang quét video… Bạn có thể đăng sau vài giây; kiểm duyệt tình dục/bạo lực chạy nền — video lên For You khi đạt.',
         showDetails: false,
       }
     }
@@ -278,7 +281,7 @@ export function UploadPage() {
         tone: 'danger',
         title: 'Kiểm tra nội dung',
         detail:
-          'Nội dung có thể bị hạn chế phân phối. Bạn vẫn có thể đăng, nhưng chỉnh sửa để tuân thủ nguyên tắc có thể cải thiện khả năng hiển thị.',
+          'Nội dung có thể bị hạn chế phân phối. Bạn vẫn có thể đăng.',
         showDetails: true,
       }
     }
@@ -295,21 +298,26 @@ export function UploadPage() {
     [originalityStatus],
   )
 
-  // Lock Post while originality is still running, or when it returned BLOCK.
-  // FAILED does not lock — publication hold keeps the video off For You until AI moderation.
+  // TikTok-style: only hard-lock on BLOCK. Soft-unlock pending after 40s so slow workers never trap creators.
+  const ORIGINALITY_SOFT_UNLOCK_MS = 40_000
   const originalityJobState = String(originalityStatus?.jobState || '')
-  const originalityBlockingPost =
-    String(originalityStatus?.decision || '') === 'BLOCK' ||
+  const originalityDecision = String(originalityStatus?.decision || '')
+  const originalityPending =
     !originalityStatus ||
     !originalityJobState ||
     originalityJobState === 'PENDING' ||
     originalityJobState === 'PROCESSING'
+  const waitedLongEnough =
+    originalityWaitStartedAt != null &&
+    nowTick - originalityWaitStartedAt >= ORIGINALITY_SOFT_UNLOCK_MS
+  const originalityBlockingPost =
+    originalityDecision === 'BLOCK' || (originalityPending && !waitedLongEnough)
 
   const postButtonTitle =
-    String(originalityStatus?.decision || '') === 'BLOCK'
+    originalityDecision === 'BLOCK'
       ? 'Nội dung bị chặn — không thể đăng'
       : originalityBlockingPost
-        ? 'Đợi kiểm tra nội dung hoàn tất'
+        ? 'Đang kiểm tra nhanh — tối đa ~40 giây rồi mở Đăng'
         : undefined
 
   const postButtonLabel =
@@ -317,9 +325,24 @@ export function UploadPage() {
       ? 'Đang tải lên…'
       : busy
         ? 'Đang đăng…'
-        : originalityBlockingPost && String(originalityStatus?.decision || '') !== 'BLOCK'
+        : originalityBlockingPost && originalityDecision !== 'BLOCK'
           ? 'Đang kiểm tra…'
           : 'Đăng'
+
+  useEffect(() => {
+    if (!uploadedVideo?.publicId) {
+      setOriginalityWaitStartedAt(null)
+      return undefined
+    }
+    setOriginalityWaitStartedAt((prev) => prev ?? Date.now())
+    return undefined
+  }, [uploadedVideo?.publicId])
+
+  useEffect(() => {
+    if (!originalityPending || !originalityBlockingPost) return undefined
+    const id = window.setInterval(() => setNowTick(Date.now()), 1000)
+    return () => window.clearInterval(id)
+  }, [originalityPending, originalityBlockingPost])
 
   useEffect(() => {
     document.title = 'VibelyStudio | Upload'
@@ -782,6 +805,7 @@ export function UploadPage() {
     setCoverModalOpen(false)
     setOriginalityStatus(null)
     setOriginalityDetailsOpen(false)
+    setOriginalityWaitStartedAt(null)
     resetFileInput()
     if (draftId) void discardDraftVideo(draftId)
   }, [resetFileInput, discardDraftVideo])
@@ -1175,9 +1199,9 @@ export function UploadPage() {
     if (!token || !uploadedVideo) return
     if (originalityBlockingPost) {
       setStatus(
-        String(originalityStatus?.decision || '') === 'BLOCK'
+        originalityDecision === 'BLOCK'
           ? 'Nội dung bị chặn — không thể đăng.'
-          : 'Đang kiểm tra nội dung — vui lòng đợi xong rồi đăng.',
+          : 'Đang kiểm tra nội dung — đợi thêm vài giây hoặc thử lại sau ~40s.',
       )
       return
     }
