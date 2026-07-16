@@ -701,8 +701,10 @@ export function ProfilePage() {
     if (isBannedProfile || isPrivateProfileLocked) return undefined
 
     let cancelled = false
-    const refreshPending = async () => {
+        const refreshPending = async () => {
       try {
+        // Probes ban status too — ACCOUNT_BANNED clears session + shows global modal.
+        await apiClient.me(token)
         const data = await apiClient.getMyUploadedVideos(token, { page: 0, size: 48 })
         if (cancelled) return
         const rows = Array.isArray(data?.items) ? data.items : []
@@ -714,7 +716,7 @@ export function ProfilePage() {
         )
         setProfileVideos(sortVideosNewestFirst(visible))
       } catch {
-        // Keep current grid; next tick retries.
+        // Keep current grid; next tick retries (or ban overlay takes over).
       }
     }
 

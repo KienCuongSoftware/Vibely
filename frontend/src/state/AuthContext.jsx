@@ -148,30 +148,40 @@ export function AuthProvider({ children }) {
     }
   }, [handleAccountBanned]);
 
-  /** Detect mid-session bans (async moderation) without full page reload. */
+  /** Detect mid-session bans (async moderation) without page reload. */
   useEffect(() => {
     if (!token) return undefined;
     let cancelled = false;
+    let inFlight = false;
     const probeSession = async () => {
-      if (cancelled) return;
+      if (cancelled || inFlight) return;
+      inFlight = true;
       try {
         await apiClient.me(COOKIE_SESSION_MARKER);
       } catch {
         // ACCOUNT_BANNED → api client emits → handleAccountBanned + overlay
+      } finally {
+        inFlight = false;
       }
     };
     void probeSession();
-    const timer = window.setInterval(probeSession, 15000);
+    // Fast enough that AI auto-ban shows the modal within a few seconds.
+    const timer = window.setInterval(probeSession, 3000);
     const onVisible = () => {
       if (document.visibilityState === "visible") {
         void probeSession();
       }
     };
+    const onFocus = () => {
+      void probeSession();
+    };
     document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onFocus);
     return () => {
       cancelled = true;
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onFocus);
     };
   }, [token]);
 

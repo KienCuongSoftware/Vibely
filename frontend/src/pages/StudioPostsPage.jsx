@@ -119,6 +119,7 @@ export function StudioPostsPage() {
     let cancelled = false;
     const quietRefresh = async () => {
       try {
+        await apiClient.me(token);
         const data = await apiClient.getMyUploadedVideos(token, {
           page: 0,
           size: 48,
@@ -127,7 +128,7 @@ export function StudioPostsPage() {
         setItems(Array.isArray(data?.items) ? data.items : []);
         setTotal(Number(data?.total ?? 0));
       } catch {
-        // keep list; retry on next tick
+        // keep list; retry on next tick (or ban overlay)
       }
     };
 

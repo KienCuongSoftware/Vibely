@@ -1,5 +1,6 @@
 package com.vibely.backend.video.service;
 
+import com.vibely.backend.auth.exception.AccountBannedException;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.common.SqlSafe;
@@ -268,6 +269,9 @@ public class VideoFeedService {
     public FeedPageResponse getMyUploadedVideos(String email, int page, int size) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        if (user.isBanned()) {
+            throw new AccountBannedException(user.getEmail(), user.getBanReason());
+        }
         Pageable pageable = PageRequest.of(page, Math.min(size, 50));
         Page<Video> resultPage = videoRepository.findByAuthorIdExcludingStatus(
             user.getId(),
