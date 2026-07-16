@@ -238,19 +238,17 @@ function ProfileGridVideoTile({
 }) {
   const privacyIcon = profilePrivacyIcon(video?.privacy)
   const pendingCheck = isProfileVideoPendingModeration(video)
-  return (
-    <li
-      ref={isLastWatched ? tileRef : undefined}
-      data-profile-video-id={String(video?.publicId ?? '')}
-    >
-      <Link
-        to={profileVideoPermalinkForGrid(video, profileUsername)}
-        className="block cursor-pointer"
-        onClick={() => onOpen(video)}
-      >
+  const permalink = profileVideoPermalinkForGrid(video, profileUsername)
+  const tileInner = (
         <div
-          className="relative aspect-9/16 w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
-          onMouseEnter={() => onHover(video.publicId)}
+          className={
+            pendingCheck
+              ? 'relative aspect-9/16 w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800'
+              : 'relative aspect-9/16 w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600'
+          }
+          onMouseEnter={() => {
+            if (!pendingCheck) onHover(video.publicId)
+          }}
         >
           <div
             className={
@@ -286,7 +284,30 @@ function ProfileGridVideoTile({
             </div>
           </div>
         </div>
-      </Link>
+  )
+  return (
+    <li
+      ref={isLastWatched ? tileRef : undefined}
+      data-profile-video-id={String(video?.publicId ?? '')}
+    >
+      {pendingCheck ? (
+        <div
+          className="block cursor-not-allowed"
+          role="status"
+          aria-label="Video đang được kiểm tra, chưa thể xem"
+          title="Đang kiểm tra — chưa thể xem"
+        >
+          {tileInner}
+        </div>
+      ) : (
+        <Link
+          to={permalink}
+          className="block cursor-pointer"
+          onClick={() => onOpen(video)}
+        >
+          {tileInner}
+        </Link>
+      )}
     </li>
   )
 }

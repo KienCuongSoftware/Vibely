@@ -32,6 +32,15 @@ public interface DiscoveryExploreQueryRepository extends Repository<com.vibely.b
             join users u on u.id = v.author_id
             left join video_engagement_stats ves on ves.video_id = v.id
             where v.status = 'READY'
+              and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
+              and coalesce(v.studio_draft, false) = false
+              and u.account_status = 'ACTIVE'
+              and not exists (
+                select 1 from moderation_decisions md
+                where md.video_id = v.id
+                  and md.shadow = false
+                  and md.explore_eligible = false
+              )
               and (:cursorScore is null or (coalesce(v.ranking_score, ves.ranking_score, v.explore_score) < :cursorScore
                    or (coalesce(v.ranking_score, ves.ranking_score, v.explore_score) = :cursorScore and (v.created_at < :cursorTime
                    or (v.created_at = :cursorTime and v.id < :cursorId)))))
@@ -131,6 +140,15 @@ public interface DiscoveryExploreQueryRepository extends Repository<com.vibely.b
             left join video_topics vt on vt.video_id = v.id
             left join topics t on t.id = vt.topic_id
             where v.status = 'READY'
+              and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
+              and coalesce(v.studio_draft, false) = false
+              and u.account_status = 'ACTIVE'
+              and not exists (
+                select 1 from moderation_decisions md
+                where md.video_id = v.id
+                  and md.shadow = false
+                  and md.explore_eligible = false
+              )
               and (
                 lower(coalesce(v.title,'')) like concat('%', lower(:q), '%')
                 or lower(coalesce(v.description,'')) like concat('%', lower(:q), '%')

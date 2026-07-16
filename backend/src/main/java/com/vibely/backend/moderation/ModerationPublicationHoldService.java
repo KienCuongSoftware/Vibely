@@ -1,5 +1,6 @@
 package com.vibely.backend.moderation;
 
+import com.vibely.backend.explore.service.ExploreCacheService;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
@@ -12,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
  * AI-first publication: published videos stay {@link VideoStatus#HIDDEN} until the moderation
  * worker returns ALLOW/LIMIT (applier promotes to READY). For You / Explore only list
  * {@code READY}, so held videos never appear there. The author's own profile may still list
- * {@code HIDDEN} with a client "Đang kiểm tra..." overlay.
+ * {@code HIDDEN} with a client "Đang kiểm tra..." overlay (not clickable).
  *
  * <p>Only active when moderation is enabled and {@code apply-decisions=true}.
  */
@@ -24,15 +25,18 @@ public class ModerationPublicationHoldService {
     private final ModerationProperties properties;
     private final VideoRepository videoRepository;
     private final ModerationDecisionRepository decisionRepository;
+    private final ExploreCacheService exploreCacheService;
 
     public ModerationPublicationHoldService(
         ModerationProperties properties,
         VideoRepository videoRepository,
-        ModerationDecisionRepository decisionRepository
+        ModerationDecisionRepository decisionRepository,
+        ExploreCacheService exploreCacheService
     ) {
         this.properties = properties;
         this.videoRepository = videoRepository;
         this.decisionRepository = decisionRepository;
+        this.exploreCacheService = exploreCacheService;
     }
 
     public boolean isHoldActive() {
@@ -64,6 +68,11 @@ public class ModerationPublicationHoldService {
             video.setStatus(VideoStatus.HIDDEN);
             videoRepository.save(video);
             log.info("Held videoId={} HIDDEN pending AI moderation", video.getId());
+            exploreCacheService.evictByPrefix("trending");
+            exploreCacheService.evictByPrefix("category:");
+            exploreCacheService.evictByPrefix("related:");
+            exploreCacheService.evictByPrefix("forYou");
+            exploreCacheService.evictByPrefix("search:");
         }
     }
 

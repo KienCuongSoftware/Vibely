@@ -78,6 +78,11 @@ function formatCompactCount(value) {
   return String(count)
 }
 
+function isPendingModerationStatus(status) {
+  const s = String(status || '').toUpperCase()
+  return s === 'HIDDEN' || s === 'PROCESSING' || s === 'RAW'
+}
+
 function resolveFeedAuthorDisplayName(video) {
   const name = String(video?.authorDisplayName ?? '').trim()
   if (name) return name
@@ -281,6 +286,7 @@ export function FeedStyleVideoDetailPage({
     [video, followedAuthorIds],
   )
   const feedVideos = useMemo(() => (feedVideo ? [feedVideo] : []), [feedVideo])
+  const pendingModeration = isPendingModerationStatus(feedVideo?.status)
   const authorProfilePath = feedVideo?.authorUsername
     ? `/@${encodeURIComponent(String(feedVideo.authorUsername).replace(/^@/, ''))}`
     : '/foryou'
@@ -883,6 +889,19 @@ export function FeedStyleVideoDetailPage({
               className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-700 border-t-rose-500"
               aria-label="Đang tải"
             />
+          ) : feedVideo && pendingModeration ? (
+            <div className="flex max-w-sm flex-col items-center gap-3 px-6 text-center">
+              <p className="text-base font-semibold text-white">Đang kiểm tra...</p>
+              <p className="text-sm text-zinc-400">
+                Video chưa được phép xem công khai cho đến khi kiểm duyệt AI xong.
+              </p>
+              <Link
+                to={authorProfilePath}
+                className="mt-1 text-sm font-medium text-rose-400 hover:text-rose-300"
+              >
+                Quay lại hồ sơ
+              </Link>
+            </div>
           ) : feedVideo ? (
             <div
               className={`relative h-full min-h-0 w-full max-lg:flex-1 ${
