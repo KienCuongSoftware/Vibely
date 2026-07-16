@@ -998,7 +998,8 @@ export function UploadPage() {
     setOriginalityDetailsOpen(false)
     setBusy(true)
     try {
-      const inferredTitle = String(file.name ?? 'Video mới')
+      // Local UI label only — never use download filename as the API title.
+      const displayStem = String(file.name ?? 'Video')
         .replace(/\.[^/.]+$/, '')
         .trim()
       const meta = await readVideoMetadata(file)
@@ -1017,7 +1018,7 @@ export function UploadPage() {
         fileName: file.name,
         fileSize: file.size,
         // Keep original name only for local UI; publish title comes from caption (not filename).
-        title: inferredTitle || 'Video mới',
+        title: 'Video',
         playbackUrl: '',
         audioUrl: '',
         audioTitle: `âm thanh gốc - ${user?.displayName || user?.username || 'Vibely'}`,
@@ -1054,7 +1055,7 @@ export function UploadPage() {
         autoThumbUrl = await uploadThumbnailToStorage(
           token,
           thumbBlob,
-          `${inferredTitle || 'cover'}.jpg`,
+          `${displayStem || 'cover'}.jpg`,
         )
       } catch {
         // Không chặn luồng đăng video nếu tạo thumbnail tự động thất bại.
@@ -1095,7 +1096,7 @@ export function UploadPage() {
       setUploadedVideo({
         fileName: file.name,
         fileSize: file.size,
-        title: inferredTitle || 'Video mới',
+        title: 'Video',
         playbackUrl,
         audioUrl,
         audioTitle,

@@ -21,8 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 /**
- * Sync caption / description gate so spam bait cannot go live while waiting for the
- * async moderation worker. Severe hits ban + return ACCOUNT_BANNED so clients force logout.
+ * Sync caption gate so spam / sexual / violence bait cannot go live while waiting for
+ * async CU visual moderation. Only the user-written caption ({@code description}) is
+ * scanned — never the upload filename / auto title. Visual NSFW/violence is handled by CU.
  */
 @Service
 public class ModerationCaptionGateService {
@@ -42,9 +43,7 @@ public class ModerationCaptionGateService {
                 + "\\bfuck(?:ing)?\\b|\\bcunt\\b|\\bpussy\\b|\\bdick\\b|\\bwhore\\b|\\bslut\\b|"
                 + "đầu\\s*buồi|dau\\s*buoi|buồi|\\bbuoi\\b|cặc|\\bcak\\b|lồn|\\bloz\\b|"
                 + "địt|đụ|chịch|đéo|con\\s*đĩ|đĩ\\b|điếm|bú\\s*cu|làm\\s*tình|ảnh\\s*nóng|clip\\s*sex|"
-                // Filename / no-diacritic titles: Video_Tinh_Duc, tinh-duc, …
-                + "tinh[\\s_\\-]*duc|tình[\\s_\\-]*dục|video[\\s_\\-]*tinh[\\s_\\-]*duc|"
-                + "quan[\\s_\\-]*he[\\s_\\-]*tinh[\\s_\\-]*duc",
+                + "tinh[\\s_\\-]*duc|tình[\\s_\\-]*dục|quan[\\s_\\-]*he[\\s_\\-]*tinh[\\s_\\-]*duc",
             RE_FLAGS
         ),
         Pattern.compile(
@@ -100,12 +99,13 @@ public class ModerationCaptionGateService {
         String title,
         String description
     ) {
-        String hit = firstSevereHit(title, description);
+        // Caption only — ignore title / filename (visual CU covers frame content).
+        String hit = firstSevereHit(description);
         if (hit == null) {
             return;
         }
         // User/admin-facing reason — never store regex patterns in ban_reason.
-        String reason = BanReasonFormatter.forCaptionViolation(title, description);
+        String reason = BanReasonFormatter.forCaptionViolation(description);
         log.warn("Caption gate blocked videoId={} authorId={} hit={}", videoId, authorId, hit);
 
         if (properties.isAutoBanOnBlock() && authorId != null) {
@@ -134,13 +134,14 @@ public class ModerationCaptionGateService {
         );
     }
 
-    String firstSevereHit(String title, String description) {
-        String raw = ((title == null ? "" : title) + "\n" + (description == null ? "" : description))
-            .trim();
+    /**
+     * Scan caption text only (Studio mô tả). Title / filename are ignored.
+     */
+    String firstSevereHit(String description) {
+        String raw = description == null ? "" : description.trim();
         if (!StringUtils.hasText(raw)) {
             return null;
         }
-        // Match raw + normalized (Video_Tinh_Duc → video tinh duc) so filename titles hit lex.
         String normalized = normalizeForMatch(raw);
         List<Pattern> patterns = loadSeverePatterns();
         for (Pattern pattern : patterns) {
@@ -152,8 +153,8 @@ public class ModerationCaptionGateService {
     }
 
     /**
-     * Lowercase, map separators to spaces, strip Vietnamese diacritics — helps titles like
-     * {@code Video_Tinh_Duc} match {@code tinh duc} / {@code tinh[\\s_\\-]*duc}.
+     * Lowercase, map separators to spaces, strip Vietnamese diacritics — so caption
+     * obfuscations like {@code tinh_duc} still match.
      */
     static String normalizeForMatch(String text) {
         if (text == null || text.isBlank()) {

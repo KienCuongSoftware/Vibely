@@ -39,7 +39,8 @@ public class ModerationSnapshotBuilder {
         Map<String, Object> snap = new LinkedHashMap<>();
         snap.put("video_id", video.getId());
         snap.put("video_public_id", video.getPublicId() == null ? null : video.getPublicId().toString());
-        snap.put("title", nullToEmpty(video.getTitle()));
+        // Policy: text lex uses caption only (+ OCR/speech from frames). Never title/filename.
+        snap.put("title", "");
         snap.put("description", nullToEmpty(video.getDescription()));
         Long authorId = video.getAuthor() == null ? null : video.getAuthor().getId();
         snap.put("author_id", authorId);

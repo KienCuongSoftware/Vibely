@@ -116,7 +116,7 @@ def score(snapshot: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
 
     text_blob = " ".join(
         str(snapshot.get(f) or "")
-        for f in ("title", "description", "ocr_text", "speech_text")
+        for f in ("description", "ocr_text", "speech_text")
     )
     for pattern, weight in _TEXT_PATTERNS:
         if weight <= 0:

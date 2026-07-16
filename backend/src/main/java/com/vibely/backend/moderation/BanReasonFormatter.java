@@ -17,7 +17,8 @@ public final class BanReasonFormatter {
     );
 
     /**
-     * Auto titles from downloaders / raw filenames (snaptik, tiktok ids, *.mp4, …).
+     * Auto titles from downloaders / raw filenames (snaptik, tiktok ids, *.mp4,
+     * underscore stems like {@code Video_Tinh_Duc}, …).
      * These must not appear in user-facing ban captions.
      */
     private static final Pattern FILE_LIKE_TITLE = Pattern.compile(
@@ -26,11 +27,13 @@ public final class BanReasonFormatter {
             + "|tiktok[_-]?\\d+"
             + "|\\d{10,}"
             + "|.*\\.(?:mp4|webm|mov|mkv|m4v|avi)"
+            // Underscore / dash stems without spaces: Video_Tinh_Duc, my-clip-01
+            + "|[\\p{L}\\p{N}]+(?:[_-][\\p{L}\\p{N}]+){1,}"
             + ")$"
     );
 
     private static final Pattern FILE_LIKE_TOKEN = Pattern.compile(
-        "(?i)\\b(?:snaptik(?:\\.vn)?[_-]\\d+|tiktok[_-]?\\d+)\\b"
+        "(?i)\\b(?:snaptik(?:\\.vn)?[_-]\\d+|tiktok[_-]?\\d+|[\\p{L}\\p{N}]+(?:[_-][\\p{L}\\p{N}]+){1,})\\b"
     );
 
     private static final Pattern CAPTION_QUOTE = Pattern.compile(
@@ -38,18 +41,29 @@ public final class BanReasonFormatter {
         Pattern.CASE_INSENSITIVE
     );
 
+    /** Harmless filler often left after stripping a sexual filename from the ban quote. */
+    private static final Pattern FILLER_CAPTION = Pattern.compile(
+        "(?i)^(he|ha|hí+|hi+|kk+|lol+|haha|hehe|heh)+[heha]*$"
+    );
+
     private BanReasonFormatter() {
     }
 
+    public static String forCaptionViolation(String description) {
+        return forCaptionViolation(null, description);
+    }
+
     public static String forCaptionViolation(String title, String description) {
-        String caption = cleanCaption(title, description);
-        String kind = looksViolent(title, description, caption)
+        String desc = normalizeSpace(description);
+        String kind = looksViolent(null, description, desc)
             ? "nội dung bạo lực"
             : "ngôn từ tục tĩu / nội dung tình dục";
-        if (StringUtils.hasText(caption)) {
+
+        String caption = cleanCaption(null, description);
+        if (StringUtils.hasText(caption) && !looksLikeFillerCaption(caption)) {
             return kind + " trong caption: \"" + caption + "\"";
         }
-        return kind + " trong caption hoặc mô tả video";
+        return kind + " trong caption video";
     }
 
     /** Soften historical rows that stored regex patterns as ban_reason. */
@@ -68,15 +82,39 @@ public final class BanReasonFormatter {
         }
         Matcher quote = CAPTION_QUOTE.matcher(trimmed);
         if (quote.find()) {
-            String cleaned = stripFileNoise(quote.group(1));
-            if (StringUtils.hasText(cleaned) && !cleaned.equals(quote.group(1).trim())) {
+            String quoted = quote.group(1).trim();
+            String cleaned = stripFileNoise(quoted);
+            // Old bans wrongly blamed filler captions after a filename title hit.
+            if (looksLikeFillerCaption(cleaned) || looksLikeFillerCaption(quoted)) {
+                return "vi phạm chính sách cộng đồng (đã cập nhật: chỉ xét caption + nội dung video)";
+            }
+            if (StringUtils.hasText(cleaned) && !cleaned.equals(quoted)) {
                 return trimmed.substring(0, quote.start(1)) + cleaned + trimmed.substring(quote.end(1));
             }
             if (!StringUtils.hasText(cleaned)) {
-                return trimmed.replaceFirst("(?i)\\s*trong caption:\\s*\"[^\"]*\"", "").trim();
+                String without = trimmed.replaceFirst("(?i)\\s*trong caption:\\s*\"[^\"]*\"", "").trim();
+                if (without.toLowerCase(Locale.ROOT).contains("tình dục")
+                    || without.toLowerCase(Locale.ROOT).contains("bạo lực")) {
+                    return without.endsWith("vì") || without.endsWith("vì ")
+                        ? without
+                        : (StringUtils.hasText(without)
+                            ? without
+                            : "ngôn từ tục tĩu / nội dung tình dục trong tiêu đề video (tên tệp tải lên)");
+                }
+                return StringUtils.hasText(without)
+                    ? without
+                    : "vi phạm chính sách cộng đồng trong tiêu đề video (tên tệp tải lên)";
             }
         }
         return stripFileNoise(trimmed);
+    }
+
+    static boolean looksLikeFillerCaption(String text) {
+        if (!StringUtils.hasText(text)) {
+            return true;
+        }
+        String compact = text.replaceAll("\\s+", "");
+        return FILLER_CAPTION.matcher(compact).matches();
     }
 
     private static boolean looksViolent(String title, String description, String caption) {
@@ -101,11 +139,17 @@ public final class BanReasonFormatter {
         String ttl = normalizeSpace(title);
 
         if (StringUtils.hasText(desc)) {
-            // Description already contains the title (common after draft seed with filename).
-            if (StringUtils.hasText(ttl) && !isFileLikeTitle(ttl) && !containsIgnoreCase(desc, ttl)) {
+            desc = stripFileNoise(desc);
+            if (!StringUtils.hasText(desc)) {
+                return "";
+            }
+            // Never prepend file-like / downloader titles onto the real caption.
+            if (StringUtils.hasText(ttl)
+                && !isFileLikeTitle(ttl)
+                && !containsIgnoreCase(desc, ttl)) {
                 return truncate(ttl + " " + desc);
             }
-            return truncate(stripFileNoise(desc));
+            return truncate(desc);
         }
         if (StringUtils.hasText(ttl) && !isFileLikeTitle(ttl)) {
             return truncate(ttl);
@@ -125,7 +169,7 @@ public final class BanReasonFormatter {
         return out;
     }
 
-    private static boolean isFileLikeTitle(String text) {
+    static boolean isFileLikeTitle(String text) {
         if (!StringUtils.hasText(text)) {
             return false;
         }
@@ -134,8 +178,13 @@ public final class BanReasonFormatter {
             return true;
         }
         // snaptik.vn_123… (with optional extra suffix after id)
-        return t.toLowerCase(Locale.ROOT).startsWith("snaptik")
-            && t.chars().filter(Character::isDigit).count() >= 10;
+        if (t.toLowerCase(Locale.ROOT).startsWith("snaptik")
+            && t.chars().filter(Character::isDigit).count() >= 10) {
+            return true;
+        }
+        // Spaces but still a download stem: "Video_Tinh_Duc copy"
+        String first = t.split("\\s+")[0];
+        return first.length() >= 3 && FILE_LIKE_TITLE.matcher(first).matches();
     }
 
     private static boolean containsIgnoreCase(String haystack, String needle) {
