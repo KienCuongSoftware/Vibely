@@ -60,32 +60,50 @@ public class ModerationAutoBanService {
         if (request == null) {
             return false;
         }
+        // Soft visual false-positives often land as BLOCK with low risk — do not ban.
+        Integer risk = request.getRisk();
+        if (risk == null || risk < 70) {
+            return false;
+        }
+        Double confidence = request.getConfidence();
+        if (confidence == null || confidence < 0.55) {
+            return false;
+        }
+        boolean severeLabel = false;
         if (request.getPolicyResults() != null) {
             for (ModerationCompleteRequest.PolicyResultItem item : request.getPolicyResults()) {
                 if (item == null || item.getLabel() == null) {
                     continue;
                 }
                 if (AUTO_BAN_LABELS.contains(item.getLabel().trim().toLowerCase(Locale.ROOT))) {
-                    return true;
+                    severeLabel = true;
+                    break;
                 }
             }
         }
-        if (request.getEvidence() != null) {
+        if (!severeLabel && request.getEvidence() != null) {
             for (ModerationCompleteRequest.EvidenceItem item : request.getEvidence()) {
                 if (item == null || item.getReasonCode() == null) {
                     continue;
                 }
                 String code = item.getReasonCode().toLowerCase(Locale.ROOT);
+                double weight = item.getWeight() == null ? 0.0 : item.getWeight();
+                // Ignore weak PLUGIN emit (score ~0.25–0.5); require strong hit.
+                if (weight < 0.70) {
+                    continue;
+                }
                 if (code.contains("nsfw")
                     || code.contains("violence")
                     || code.contains("spam")
                     || code.contains("child")
-                    || code.contains("terror")) {
-                    return true;
+                    || code.contains("terror")
+                    || code.contains("sexual")) {
+                    severeLabel = true;
+                    break;
                 }
             }
         }
-        return false;
+        return severeLabel;
     }
 
     /**

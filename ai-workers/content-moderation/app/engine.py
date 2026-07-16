@@ -253,27 +253,40 @@ def _match_rule(rule: dict[str, Any], snapshot: dict[str, Any]) -> dict[str, Any
 
 
 def _match_plugin_score(match: dict[str, Any], snapshot: dict[str, Any]) -> dict[str, Any] | None:
-    plugin = str(match.get("plugin") or "")
+    plugin = str(match.get("plugin") or "").strip()
     if not plugin:
         return None
     try:
         min_score = float(match.get("min_score") or 0.55)
     except (TypeError, ValueError):
         min_score = 0.55
-    result = (snapshot.get("plugins") or {}).get(plugin) or {}
+    max_score = None
+    if match.get("max_score") is not None:
+        try:
+            max_score = float(match.get("max_score"))
+        except (TypeError, ValueError):
+            max_score = None
+    plugins = snapshot.get("plugins") or {}
+    result = plugins.get(plugin) if isinstance(plugins, dict) else None
+    if not isinstance(result, dict):
+        return None
     try:
         pscore = float(result.get("score") or 0)
     except (TypeError, ValueError):
         pscore = 0.0
     if pscore < min_score:
         return None
+    if max_score is not None and pscore > max_score:
+        return None
     return {
         "modality": "PLUGIN",
         "snippet": result.get("snippet") or f"{plugin}={pscore:.2f}",
         "evidence_ref": {
-            "type": "plugin",
+            "type": "plugin_score",
             "plugin": plugin,
             "score": pscore,
+            "min_score": min_score,
+            "max_score": max_score,
             "details": result.get("details") or {},
         },
     }
