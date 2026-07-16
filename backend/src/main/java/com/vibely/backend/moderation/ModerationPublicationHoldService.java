@@ -155,7 +155,30 @@ public class ModerationPublicationHoldService {
             }
         }
 
-        // 3) Hard timeout — do not leave creators stuck for hours if pipeline is down.
+        // 2b) No CU yet after enqueue window — still try soft-timeout enqueue path via join
+        //     (originality soft timeout) and log for ops.
+        List<Map<String, Object>> noCu = jdbcTemplate.queryForList(
+            """
+            SELECT v.id AS video_id
+            FROM videos v
+            WHERE v.status = 'HIDDEN'
+              AND COALESCE(v.studio_draft, FALSE) = FALSE
+              AND v.created_at < NOW() - (INTERVAL '1 minute' * ?)
+              AND NOT EXISTS (
+                  SELECT 1 FROM analysis_jobs aj
+                  WHERE aj.video_id = v.id AND aj.status = 'COMPLETED'
+              )
+            ORDER BY v.created_at ASC
+            LIMIT 40
+            """,
+            enqueueAfter
+        );
+        for (Map<String, Object> row : noCu) {
+            long videoId = ((Number) row.get("video_id")).longValue();
+            log.warn("Hold reconcile: videoId={} still HIDDEN without completed CU", videoId);
+        }
+
+        // 3) Hard timeout — do not leave creators stuck if CU/moderation pipeline is down.
         List<Map<String, Object>> timedOut = jdbcTemplate.queryForList(
             """
             SELECT v.id AS video_id
