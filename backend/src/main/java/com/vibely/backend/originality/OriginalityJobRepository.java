@@ -14,6 +14,11 @@ public interface OriginalityJobRepository extends JpaRepository<OriginalityJobEn
         java.time.LocalDateTime claimedAt
     );
 
+    java.util.List<OriginalityJobEntity> findByJobStateAndCreatedAtBefore(
+        OriginalityJobState jobState,
+        java.time.LocalDateTime createdAt
+    );
+
     @Query(
         value = """
             SELECT id FROM originality_jobs

@@ -79,11 +79,15 @@ public class ModerationDecisionApplier {
                 }
             }
             case REVIEW -> {
+                // Author can see the post; keep off For You until human clears review.
                 exploreEligible = false;
                 reviewRequired = true;
-                statusApplied = VideoStatus.HIDDEN.name();
-                if (!shadow) {
-                    nextStatus = VideoStatus.HIDDEN;
+                statusApplied = VideoStatus.READY.name();
+                if (!shadow
+                    && (video.getStatus() == VideoStatus.HIDDEN
+                        || video.getStatus() == VideoStatus.REMOVED
+                        || video.getStatus() == VideoStatus.REPORTED)) {
+                    nextStatus = VideoStatus.READY;
                 }
             }
             case BLOCK, DELETE -> {

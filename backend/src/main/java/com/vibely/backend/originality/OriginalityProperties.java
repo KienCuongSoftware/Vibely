@@ -17,7 +17,7 @@ public class OriginalityProperties {
     private int maxJobAttempts = 5;
 
     /** Re-queue PROCESSING jobs older than this many minutes. */
-    private int staleProcessingMinutes = 45;
+    private int staleProcessingMinutes = 5;
 
     private Recovery recovery = new Recovery();
 

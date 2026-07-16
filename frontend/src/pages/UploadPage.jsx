@@ -255,7 +255,7 @@ export function UploadPage() {
         tone: 'pending',
         title: 'Kiểm tra nội dung',
         detail:
-          'Đang quét video… Bạn có thể đăng sau vài giây; kiểm duyệt tình dục/bạo lực chạy nền — video lên For You khi đạt.',
+          'Đang quét video… Nút Đăng mở khi kiểm tra xong. Nếu quá 5 phút, hệ thống sẽ kết thúc kiểm tra tự động.',
         showDetails: false,
       }
     }
@@ -280,8 +280,7 @@ export function UploadPage() {
       return {
         tone: 'danger',
         title: 'Kiểm tra nội dung',
-        detail:
-          'Nội dung có thể bị hạn chế phân phối. Bạn vẫn có thể đăng.',
+        detail: 'Nội dung có thể bị hạn chế phân phối. Bạn vẫn có thể đăng.',
         showDetails: true,
       }
     }
@@ -298,8 +297,9 @@ export function UploadPage() {
     [originalityStatus],
   )
 
-  // TikTok-style: only hard-lock on BLOCK. Soft-unlock pending after 40s so slow workers never trap creators.
-  const ORIGINALITY_SOFT_UNLOCK_MS = 40_000
+  // Only allow Đăng when originality finished (COMPLETED / FAILED) — not while PENDING.
+  // BLOCK keeps Đăng locked. Soft client unlock after 5 min if worker is dead (FAILED path).
+  const ORIGINALITY_CLIENT_FAIL_MS = 5 * 60 * 1000
   const originalityJobState = String(originalityStatus?.jobState || '')
   const originalityDecision = String(originalityStatus?.decision || '')
   const originalityPending =
@@ -307,17 +307,17 @@ export function UploadPage() {
     !originalityJobState ||
     originalityJobState === 'PENDING' ||
     originalityJobState === 'PROCESSING'
-  const waitedLongEnough =
+  const clientTimedOut =
     originalityWaitStartedAt != null &&
-    nowTick - originalityWaitStartedAt >= ORIGINALITY_SOFT_UNLOCK_MS
+    nowTick - originalityWaitStartedAt >= ORIGINALITY_CLIENT_FAIL_MS
   const originalityBlockingPost =
-    originalityDecision === 'BLOCK' || (originalityPending && !waitedLongEnough)
+    originalityDecision === 'BLOCK' || (originalityPending && !clientTimedOut)
 
   const postButtonTitle =
     originalityDecision === 'BLOCK'
       ? 'Nội dung bị chặn — không thể đăng'
       : originalityBlockingPost
-        ? 'Đang kiểm tra nhanh — tối đa ~40 giây rồi mở Đăng'
+        ? 'Đợi kiểm tra nội dung hoàn tất'
         : undefined
 
   const postButtonLabel =
@@ -340,7 +340,7 @@ export function UploadPage() {
 
   useEffect(() => {
     if (!originalityPending || !originalityBlockingPost) return undefined
-    const id = window.setInterval(() => setNowTick(Date.now()), 1000)
+    const id = window.setInterval(() => setNowTick(Date.now()), 2000)
     return () => window.clearInterval(id)
   }, [originalityPending, originalityBlockingPost])
 
@@ -1201,7 +1201,7 @@ export function UploadPage() {
       setStatus(
         originalityDecision === 'BLOCK'
           ? 'Nội dung bị chặn — không thể đăng.'
-          : 'Đang kiểm tra nội dung — đợi thêm vài giây hoặc thử lại sau ~40s.',
+          : 'Đang kiểm tra nội dung — vui lòng đợi xong rồi đăng.',
       )
       return
     }

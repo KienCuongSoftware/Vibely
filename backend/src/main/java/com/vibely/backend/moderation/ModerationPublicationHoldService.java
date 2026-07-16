@@ -91,7 +91,7 @@ public class ModerationPublicationHoldService {
         int holdTimeout = Math.max(enqueueAfter + 1, properties.getPublicationHoldTimeoutMinutes());
         int fixed = 0;
 
-        // 1) Already cleared by AI (ALLOW/LIMIT) — including shadow rows from before apply-decisions.
+        // 1) Already cleared by AI (ALLOW/LIMIT/REVIEW) — REVIEW is visible to author, off FYP.
         List<Map<String, Object>> cleared = jdbcTemplate.queryForList(
             """
             SELECT v.id AS video_id
@@ -99,7 +99,7 @@ public class ModerationPublicationHoldService {
             JOIN moderation_decisions md ON md.video_id = v.id
             WHERE v.status = 'HIDDEN'
               AND COALESCE(v.studio_draft, FALSE) = FALSE
-              AND md.effective_decision IN ('ALLOW', 'LIMIT')
+              AND md.effective_decision IN ('ALLOW', 'LIMIT', 'REVIEW')
             LIMIT 100
             """
         );
@@ -189,7 +189,7 @@ public class ModerationPublicationHoldService {
               AND NOT EXISTS (
                   SELECT 1 FROM moderation_decisions md
                   WHERE md.video_id = v.id
-                    AND md.effective_decision IN ('BLOCK', 'DELETE', 'REVIEW')
+                    AND md.effective_decision IN ('BLOCK', 'DELETE')
               )
             ORDER BY v.created_at ASC
             LIMIT 50
@@ -222,7 +222,10 @@ public class ModerationPublicationHoldService {
         return decisionRepository.findByVideo_Id(videoId)
             .map(d -> {
                 ModerationDecision eff = d.getEffectiveDecision();
-                return eff == ModerationDecision.ALLOW || eff == ModerationDecision.LIMIT;
+                // REVIEW: author-visible READY, not explore — still clears publication hold.
+                return eff == ModerationDecision.ALLOW
+                    || eff == ModerationDecision.LIMIT
+                    || eff == ModerationDecision.REVIEW;
             })
             .orElse(false);
     }

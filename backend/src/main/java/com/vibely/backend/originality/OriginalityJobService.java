@@ -8,12 +8,16 @@ import com.vibely.backend.video.VideoRepository;
 import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class OriginalityJobService {
+
+    private static final Logger log = LoggerFactory.getLogger(OriginalityJobService.class);
 
     private final OriginalityJobRepository jobRepository;
     private final OriginalityReportRepository reportRepository;
@@ -172,6 +176,23 @@ public class OriginalityJobService {
                 job.setLastError("Requeued after stale PROCESSING.");
             }
             jobRepository.save(job);
+        }
+        // Never-claimed PENDING jobs — fail so Studio can unlock Đăng.
+        LocalDateTime pendingCutoff = LocalDateTime.now().minusMinutes(
+            Math.max(2, properties.getStaleProcessingMinutes())
+        );
+        for (OriginalityJobEntity job : jobRepository.findByJobStateAndCreatedAtBefore(
+            OriginalityJobState.PENDING,
+            pendingCutoff
+        )) {
+            if (job.getClaimedAt() != null) {
+                continue;
+            }
+            job.setJobState(OriginalityJobState.FAILED);
+            job.setLastError("Originality job PENDING quá hạn (worker không nhận).");
+            jobRepository.save(job);
+            log.warn("Failed stale PENDING originality jobId={} videoId={}", job.getId(),
+                job.getVideo() == null ? null : job.getVideo().getId());
         }
     }
 
