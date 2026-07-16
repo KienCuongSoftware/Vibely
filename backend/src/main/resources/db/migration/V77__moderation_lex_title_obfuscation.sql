@@ -32,7 +32,7 @@ SET match_json = jsonb_set(
     updated_at = NOW()
 WHERE code = 'lex.sexual_vi';
 
+-- policy_versions has notes + created_at only (no updated_at)
 UPDATE policy_versions
-SET notes = 'Phase 1–4 + auto-ban + title obfuscation sexual lex (V77)',
-    updated_at = NOW()
+SET notes = 'Phase 1–4 + auto-ban + title obfuscation sexual lex (V77)'
 WHERE is_active = TRUE;
