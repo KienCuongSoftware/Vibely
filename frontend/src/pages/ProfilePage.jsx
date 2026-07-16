@@ -687,6 +687,54 @@ export function ProfilePage() {
     isPrivateProfileLocked,
   ])
 
+  // Soft realtime: poll while any tile is still HIDDEN/PROCESSING/RAW so overlay clears
+  // without a full page reload (AJAX polling — enough for moderation latency).
+  const hasPendingProfileModeration = useMemo(
+    () => profileVideos.some(isProfileVideoPendingModeration),
+    [profileVideos],
+  )
+
+  useEffect(() => {
+    if (!authReady || !isOwnProfile || !token) return undefined
+    if (profileMainTab !== 'videos') return undefined
+    if (!hasPendingProfileModeration) return undefined
+    if (isBannedProfile || isPrivateProfileLocked) return undefined
+
+    let cancelled = false
+    const refreshPending = async () => {
+      try {
+        const data = await apiClient.getMyUploadedVideos(token, { page: 0, size: 48 })
+        if (cancelled) return
+        const rows = Array.isArray(data?.items) ? data.items : []
+        const visible = rows.filter((video) =>
+          isProfileVideoVisibleToViewer(video, {
+            isOwnProfile: true,
+            hasViewer: true,
+          }),
+        )
+        setProfileVideos(sortVideosNewestFirst(visible))
+      } catch {
+        // Keep current grid; next tick retries.
+      }
+    }
+
+    const first = window.setTimeout(refreshPending, 1500)
+    const timer = window.setInterval(refreshPending, 3000)
+    return () => {
+      cancelled = true
+      window.clearTimeout(first)
+      window.clearInterval(timer)
+    }
+  }, [
+    authReady,
+    isOwnProfile,
+    token,
+    profileMainTab,
+    hasPendingProfileModeration,
+    isBannedProfile,
+    isPrivateProfileLocked,
+  ])
+
   useEffect(() => {
     if (!token || !isOwnProfile) {
       setBookmarkItems([])

@@ -1,5 +1,5 @@
 import React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -102,6 +102,43 @@ export function StudioPostsPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Soft realtime while posts are still under AI publication hold / encoding.
+  const hasPendingModeration = useMemo(
+    () =>
+      items.some((v) => {
+        const s = String(v?.status || "").toUpperCase();
+        return s === "HIDDEN" || s === "PROCESSING" || s === "RAW";
+      }),
+    [items],
+  );
+
+  useEffect(() => {
+    if (!authReady || !token || !hasPendingModeration) return undefined;
+
+    let cancelled = false;
+    const quietRefresh = async () => {
+      try {
+        const data = await apiClient.getMyUploadedVideos(token, {
+          page: 0,
+          size: 48,
+        });
+        if (cancelled) return;
+        setItems(Array.isArray(data?.items) ? data.items : []);
+        setTotal(Number(data?.total ?? 0));
+      } catch {
+        // keep list; retry on next tick
+      }
+    };
+
+    const first = window.setTimeout(quietRefresh, 1500);
+    const timer = window.setInterval(quietRefresh, 3000);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(first);
+      window.clearInterval(timer);
+    };
+  }, [authReady, token, hasPendingModeration]);
 
   useEffect(() => {
     if (!successMessage) return;
