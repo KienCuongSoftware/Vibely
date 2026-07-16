@@ -1,7 +1,11 @@
 import React from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "../api/client";
-import { onAccountBanned } from "../auth/accountBanBridge.js";
+import {
+  consumePendingAccountBanned,
+  onAccountBanned,
+} from "../auth/accountBanBridge.js";
+import { AccountBannedOverlay } from "../components/AccountBannedOverlay.jsx";
 import { COOKIE_SESSION_MARKER } from "../auth/session.js";
 import { isPendingOAuthBrowserCallback } from "../auth/oauthCallback.js";
 import { collectLoginContext } from "../security/loginContext.js";
@@ -118,21 +122,58 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
+  const [accountBannedPayload, setAccountBannedPayload] = useState(null);
 
   useEffect(() => {
     clearLegacyTokenStorage();
   }, []);
 
-  useEffect(() => {
-    // Clear cookies/session; pages (Upload/Login) show the ban modal with reason.
-    return onAccountBanned(() => {
-      apiClient.logout().catch(() => {});
-      localStorage.removeItem(USER_CACHE_KEY);
-      setToken(null);
-      setUser(null);
-      setAuthReady(true);
-    });
+  const handleAccountBanned = useCallback((payload = {}) => {
+    apiClient.logout().catch(() => {});
+    localStorage.removeItem(USER_CACHE_KEY);
+    setToken(null);
+    setUser(null);
+    setAuthReady(true);
+    setAccountBannedPayload(payload ?? {});
   }, []);
+
+  useEffect(() => {
+    return onAccountBanned(handleAccountBanned);
+  }, [handleAccountBanned]);
+
+  useEffect(() => {
+    const pending = consumePendingAccountBanned();
+    if (pending) {
+      handleAccountBanned(pending);
+    }
+  }, [handleAccountBanned]);
+
+  /** Detect mid-session bans (async moderation) without full page reload. */
+  useEffect(() => {
+    if (!token) return undefined;
+    let cancelled = false;
+    const probeSession = async () => {
+      if (cancelled) return;
+      try {
+        await apiClient.me(COOKIE_SESSION_MARKER);
+      } catch {
+        // ACCOUNT_BANNED → api client emits → handleAccountBanned + overlay
+      }
+    };
+    void probeSession();
+    const timer = window.setInterval(probeSession, 15000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        void probeSession();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [token]);
 
   const establishSession = (result) => {
     const mapped = mapAuthSessionToUser(result);
@@ -191,6 +232,9 @@ export function AuthProvider({ children }) {
       setToken(COOKIE_SESSION_MARKER);
       return me;
     } catch (e) {
+      if (e?.code === "ACCOUNT_BANNED") {
+        return null;
+      }
       if (isUnauthorizedError(e)) {
         clearSession();
         return null;
@@ -293,5 +337,13 @@ export function AuthProvider({ children }) {
     logout,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      <AccountBannedOverlay
+        payload={accountBannedPayload}
+        onClose={() => setAccountBannedPayload(null)}
+      />
+    </AuthContext.Provider>
+  );
 }
