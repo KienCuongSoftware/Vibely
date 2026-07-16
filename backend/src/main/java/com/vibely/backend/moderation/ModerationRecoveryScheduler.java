@@ -14,15 +14,18 @@ public class ModerationRecoveryScheduler {
 
     private final ModerationJobService jobService;
     private final ModerationJoinService joinService;
+    private final ModerationPublicationHoldService holdService;
     private final ModerationProperties properties;
 
     public ModerationRecoveryScheduler(
         ModerationJobService jobService,
         ModerationJoinService joinService,
+        ModerationPublicationHoldService holdService,
         ModerationProperties properties
     ) {
         this.jobService = jobService;
         this.joinService = joinService;
+        this.holdService = holdService;
         this.properties = properties;
     }
 
@@ -35,6 +38,7 @@ public class ModerationRecoveryScheduler {
             jobService.recoverStaleProcessing();
             joinService.reconcileSoftTimeouts();
             joinService.reconcileMissingModerationJobs();
+            holdService.reconcileStuckHolds();
         } catch (Exception ex) {
             log.warn("Moderation recovery failed: {}", ex.getMessage());
         }

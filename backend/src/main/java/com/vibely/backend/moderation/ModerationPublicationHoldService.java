@@ -4,8 +4,11 @@ import com.vibely.backend.explore.service.ExploreCacheService;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
+import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,17 +29,23 @@ public class ModerationPublicationHoldService {
     private final VideoRepository videoRepository;
     private final ModerationDecisionRepository decisionRepository;
     private final ExploreCacheService exploreCacheService;
+    private final JdbcTemplate jdbcTemplate;
+    private final ModerationJoinService joinService;
 
     public ModerationPublicationHoldService(
         ModerationProperties properties,
         VideoRepository videoRepository,
         ModerationDecisionRepository decisionRepository,
-        ExploreCacheService exploreCacheService
+        ExploreCacheService exploreCacheService,
+        JdbcTemplate jdbcTemplate,
+        ModerationJoinService joinService
     ) {
         this.properties = properties;
         this.videoRepository = videoRepository;
         this.decisionRepository = decisionRepository;
         this.exploreCacheService = exploreCacheService;
+        this.jdbcTemplate = jdbcTemplate;
+        this.joinService = joinService;
     }
 
     public boolean isHoldActive() {
@@ -58,32 +67,158 @@ public class ModerationPublicationHoldService {
             return;
         }
         if (hasPublicClearance(video.getId())) {
-            if (video.getStatus() == VideoStatus.HIDDEN) {
-                video.setStatus(VideoStatus.READY);
-                videoRepository.save(video);
-            }
+            promoteReady(video);
             return;
         }
         if (video.getStatus() != VideoStatus.HIDDEN) {
             video.setStatus(VideoStatus.HIDDEN);
             videoRepository.save(video);
             log.info("Held videoId={} HIDDEN pending AI moderation", video.getId());
-            exploreCacheService.evictByPrefix("trending");
-            exploreCacheService.evictByPrefix("category:");
-            exploreCacheService.evictByPrefix("related:");
-            exploreCacheService.evictByPrefix("forYou");
-            exploreCacheService.evictByPrefix("search:");
+            evictExploreCaches();
         }
     }
 
-    /** True when a non-shadow decision already cleared the video for public READY. */
+    /**
+     * Unstick HIDDEN videos: apply existing ALLOW/LIMIT (even legacy shadow rows),
+     * force-enqueue moderation when CU is done, soft-promote after timeout.
+     */
+    @Transactional
+    public int reconcileStuckHolds() {
+        if (!isHoldActive()) {
+            return 0;
+        }
+        int enqueueAfter = Math.max(1, properties.getPublicationHoldEnqueueAfterMinutes());
+        int holdTimeout = Math.max(enqueueAfter + 1, properties.getPublicationHoldTimeoutMinutes());
+        int fixed = 0;
+
+        // 1) Already cleared by AI (ALLOW/LIMIT) — including shadow rows from before apply-decisions.
+        List<Map<String, Object>> cleared = jdbcTemplate.queryForList(
+            """
+            SELECT v.id AS video_id
+            FROM videos v
+            JOIN moderation_decisions md ON md.video_id = v.id
+            WHERE v.status = 'HIDDEN'
+              AND COALESCE(v.studio_draft, FALSE) = FALSE
+              AND md.effective_decision IN ('ALLOW', 'LIMIT')
+            LIMIT 100
+            """
+        );
+        for (Map<String, Object> row : cleared) {
+            long videoId = ((Number) row.get("video_id")).longValue();
+            Video video = videoRepository.findById(videoId).orElse(null);
+            if (video == null) {
+                continue;
+            }
+            decisionRepository.findByVideo_Id(videoId).ifPresent(d -> {
+                if (d.isShadow()) {
+                    d.setShadow(false);
+                    decisionRepository.save(d);
+                }
+            });
+            if (promoteReady(video)) {
+                fixed++;
+                log.info("Released hold videoId={} after ALLOW/LIMIT decision", videoId);
+            }
+        }
+
+        // 2) CU done but moderation never ran / stuck — force enqueue.
+        List<Map<String, Object>> needEnqueue = jdbcTemplate.queryForList(
+            """
+            SELECT v.id AS video_id
+            FROM videos v
+            WHERE v.status = 'HIDDEN'
+              AND COALESCE(v.studio_draft, FALSE) = FALSE
+              AND v.created_at < NOW() - (INTERVAL '1 minute' * ?)
+              AND EXISTS (
+                  SELECT 1 FROM analysis_jobs aj
+                  WHERE aj.video_id = v.id AND aj.status = 'COMPLETED'
+              )
+              AND NOT EXISTS (
+                  SELECT 1 FROM moderation_decisions md
+                  WHERE md.video_id = v.id
+                    AND md.effective_decision IN ('ALLOW', 'LIMIT', 'BLOCK', 'DELETE')
+              )
+            ORDER BY v.created_at ASC
+            LIMIT 40
+            """,
+            enqueueAfter
+        );
+        for (Map<String, Object> row : needEnqueue) {
+            long videoId = ((Number) row.get("video_id")).longValue();
+            try {
+                Long jobId = joinService.forceReevaluate(videoId);
+                if (jobId != null) {
+                    log.info("Hold reconcile enqueued moderation videoId={} jobId={}", videoId, jobId);
+                }
+            } catch (Exception ex) {
+                log.warn("Hold reconcile enqueue failed videoId={}: {}", videoId, ex.getMessage());
+            }
+        }
+
+        // 3) Hard timeout — do not leave creators stuck for hours if pipeline is down.
+        List<Map<String, Object>> timedOut = jdbcTemplate.queryForList(
+            """
+            SELECT v.id AS video_id
+            FROM videos v
+            WHERE v.status = 'HIDDEN'
+              AND COALESCE(v.studio_draft, FALSE) = FALSE
+              AND v.created_at < NOW() - (INTERVAL '1 minute' * ?)
+              AND NOT EXISTS (
+                  SELECT 1 FROM moderation_decisions md
+                  WHERE md.video_id = v.id
+                    AND md.effective_decision IN ('BLOCK', 'DELETE', 'REVIEW')
+              )
+            ORDER BY v.created_at ASC
+            LIMIT 50
+            """,
+            holdTimeout
+        );
+        for (Map<String, Object> row : timedOut) {
+            long videoId = ((Number) row.get("video_id")).longValue();
+            Video video = videoRepository.findById(videoId).orElse(null);
+            if (video == null) {
+                continue;
+            }
+            if (promoteReady(video)) {
+                fixed++;
+                log.warn(
+                    "Soft-promoted HIDDEN videoId={} to READY after {}m hold timeout",
+                    videoId,
+                    holdTimeout
+                );
+            }
+        }
+        return fixed;
+    }
+
+    /**
+     * True when an ALLOW/LIMIT decision exists. Shadow rows count once apply-decisions
+     * is on — otherwise videos moderated in shadow stay HIDDEN forever.
+     */
     private boolean hasPublicClearance(long videoId) {
         return decisionRepository.findByVideo_Id(videoId)
-            .filter(d -> !d.isShadow())
             .map(d -> {
                 ModerationDecision eff = d.getEffectiveDecision();
                 return eff == ModerationDecision.ALLOW || eff == ModerationDecision.LIMIT;
             })
             .orElse(false);
+    }
+
+    private boolean promoteReady(Video video) {
+        if (video.getStatus() == VideoStatus.READY) {
+            return false;
+        }
+        video.setStatus(VideoStatus.READY);
+        videoRepository.save(video);
+        evictExploreCaches();
+        return true;
+    }
+
+    private void evictExploreCaches() {
+        exploreCacheService.evictByPrefix("trending");
+        exploreCacheService.evictByPrefix("category:");
+        exploreCacheService.evictByPrefix("related:");
+        exploreCacheService.evictByPrefix("forYou");
+        exploreCacheService.evictByPrefix("search:");
     }
 }
