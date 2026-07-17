@@ -1,7 +1,7 @@
 import { VideoThumbnailImg } from '../components/VideoThumbnailImg.jsx'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { apiClient } from '../api/client'
+import { apiClient, uploadThumbnailToStorage } from '../api/client'
 import {
   markFeedAuthorFollowed,
   markFeedAuthorUnfollowed,
@@ -227,6 +227,24 @@ function isProfileVideoPendingModeration(video) {
   return s === 'HIDDEN' || s === 'PROCESSING' || s === 'RAW'
 }
 
+/**
+ * Layout for avatar crop: object-cover into a square viewport, then zoom + pan.
+ * Preview and canvas must use the same math or "Áp dụng" will not match the circle.
+ */
+function avatarCoverLayout(imgW, imgH, viewSize, zoom, offsetX, offsetY) {
+  const safeW = Math.max(1, Number(imgW) || 1)
+  const safeH = Math.max(1, Number(imgH) || 1)
+  const view = Math.max(1, Number(viewSize) || 1)
+  const z = Math.max(1, Number(zoom) || 1)
+  const base = Math.max(view / safeW, view / safeH)
+  const scale = base * z
+  const dw = safeW * scale
+  const dh = safeH * scale
+  const dx = (view - dw) / 2 + Number(offsetX || 0) * view
+  const dy = (view - dh) / 2 + Number(offsetY || 0) * view
+  return { dw, dh, dx, dy }
+}
+
 function ProfileGridVideoTile({
   video,
   profileUsername,
@@ -340,7 +358,12 @@ export function ProfilePage() {
   const [savingEdit, setSavingEdit] = useState(false)
   const [isAvatarEditorOpen, setIsAvatarEditorOpen] = useState(false)
   const [avatarEditorSrc, setAvatarEditorSrc] = useState('')
-  const [avatarEditorZoom, setAvatarEditorZoom] = useState(1)
+  const [avatarEditorZoom, setAvatarEditorZoom] = useState(1.2)
+  const [avatarEditorOffset, setAvatarEditorOffset] = useState({ x: 0, y: 0 })
+  const [avatarNaturalSize, setAvatarNaturalSize] = useState({ w: 0, h: 0 })
+  const [avatarEditorBusy, setAvatarEditorBusy] = useState(false)
+  const avatarDragRef = useRef(null)
+  const avatarViewportRef = useRef(null)
   const avatarFileInputRef = useRef(null)
   const accountMenuRef = useRef(null)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
@@ -1132,7 +1155,9 @@ export function ProfilePage() {
     reader.onload = () => {
       if (typeof reader.result === 'string') {
         setAvatarEditorSrc(reader.result)
-        setAvatarEditorZoom(1)
+        setAvatarEditorZoom(1.25)
+        setAvatarEditorOffset({ x: 0, y: 0 })
+        setAvatarNaturalSize({ w: 0, h: 0 })
         setIsAvatarEditorOpen(true)
         setEditError('')
       }
@@ -1142,10 +1167,54 @@ export function ProfilePage() {
     event.target.value = ''
   }
 
+  const closeAvatarEditor = () => {
+    if (avatarEditorBusy) return
+    setIsAvatarEditorOpen(false)
+    setAvatarEditorSrc('')
+    setAvatarEditorOffset({ x: 0, y: 0 })
+  }
+
+  const onAvatarEditorPointerDown = (event) => {
+    if (avatarEditorBusy) return
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+    avatarDragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: avatarEditorOffset.x,
+      originY: avatarEditorOffset.y,
+    }
+  }
+
+  const onAvatarEditorPointerMove = (event) => {
+    const drag = avatarDragRef.current
+    if (!drag || drag.pointerId !== event.pointerId) return
+    const rect = event.currentTarget.getBoundingClientRect()
+    const size = Math.min(rect.width, rect.height) || 1
+    const dx = (event.clientX - drag.startX) / size
+    const dy = (event.clientY - drag.startY) / size
+    const max = 0.45 * avatarEditorZoom
+    setAvatarEditorOffset({
+      x: Math.max(-max, Math.min(max, drag.originX + dx)),
+      y: Math.max(-max, Math.min(max, drag.originY + dy)),
+    })
+  }
+
+  const onAvatarEditorPointerUp = (event) => {
+    const drag = avatarDragRef.current
+    if (!drag || drag.pointerId !== event.pointerId) return
+    avatarDragRef.current = null
+    try {
+      event.currentTarget.releasePointerCapture?.(event.pointerId)
+    } catch {
+      /* noop */
+    }
+  }
+
   const applyAvatarEditor = () => {
-    if (!avatarEditorSrc) return
+    if (!avatarEditorSrc || !token || avatarEditorBusy) return
     const image = new Image()
-    image.onload = () => {
+    image.onload = async () => {
       const size = 512
       const canvas = document.createElement('canvas')
       canvas.width = size
@@ -1155,25 +1224,71 @@ export function ProfilePage() {
         setEditError('Không thể xử lý ảnh, vui lòng thử lại')
         return
       }
-      const baseScale = Math.max(size / image.width, size / image.height)
-      const scale = baseScale * avatarEditorZoom
-      const drawWidth = image.width * scale
-      const drawHeight = image.height * scale
-      const dx = (size - drawWidth) / 2
-      const dy = (size - drawHeight) / 2
+      const { dw, dh, dx, dy } = avatarCoverLayout(
+        image.naturalWidth || image.width,
+        image.naturalHeight || image.height,
+        size,
+        avatarEditorZoom,
+        avatarEditorOffset.x,
+        avatarEditorOffset.y,
+      )
+      // Opaque black under transparent corners if we clip — JPEG has no alpha.
+      context.fillStyle = '#000'
+      context.fillRect(0, 0, size, size)
       context.imageSmoothingEnabled = true
       context.imageSmoothingQuality = 'high'
-      context.drawImage(image, dx, dy, drawWidth, drawHeight)
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.92)
-      setEditForm((prev) => ({ ...prev, avatarUrl: dataUrl }))
-      setIsAvatarEditorOpen(false)
-      setAvatarEditorSrc('')
+      context.drawImage(image, dx, dy, dw, dh)
+
+      setAvatarEditorBusy(true)
+      setEditError('')
+      try {
+        const blob = await new Promise((resolve, reject) => {
+          canvas.toBlob(
+            (b) => (b ? resolve(b) : reject(new Error('toBlob failed'))),
+            'image/jpeg',
+            0.9,
+          )
+        })
+        const publicUrl = await uploadThumbnailToStorage(
+          token,
+          blob,
+          `avatar-${Date.now()}.jpg`,
+        )
+        setEditForm((prev) => ({ ...prev, avatarUrl: publicUrl }))
+        setIsAvatarEditorOpen(false)
+        setAvatarEditorSrc('')
+        setAvatarEditorOffset({ x: 0, y: 0 })
+        setAvatarNaturalSize({ w: 0, h: 0 })
+      } catch (error) {
+        setEditError(error?.message ?? 'Không tải được ảnh lên. Vui lòng thử lại.')
+      } finally {
+        setAvatarEditorBusy(false)
+      }
     }
     image.onerror = () => {
       setEditError('Không thể xử lý ảnh, vui lòng thử lại')
     }
     image.src = avatarEditorSrc
   }
+
+  const avatarPreviewLayout = useMemo(() => {
+    if (!avatarNaturalSize.w || !avatarNaturalSize.h) return null
+    // Percentages relative to the square viewport (view = 100).
+    const { dw, dh, dx, dy } = avatarCoverLayout(
+      avatarNaturalSize.w,
+      avatarNaturalSize.h,
+      100,
+      avatarEditorZoom,
+      avatarEditorOffset.x,
+      avatarEditorOffset.y,
+    )
+    return {
+      width: `${dw}%`,
+      height: `${dh}%`,
+      left: `${dx}%`,
+      top: `${dy}%`,
+    }
+  }, [avatarNaturalSize, avatarEditorZoom, avatarEditorOffset])
 
   if (mobileLayout && !username && !token) {
     return (
@@ -1982,8 +2097,9 @@ export function ProfilePage() {
               <div className="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
                 <button
                   type="button"
-                  className="inline-flex cursor-pointer items-center gap-2 text-zinc-100 hover:text-white"
-                  onClick={() => setIsAvatarEditorOpen(false)}
+                  className="inline-flex cursor-pointer items-center gap-2 text-zinc-100 hover:text-white disabled:opacity-50"
+                  disabled={avatarEditorBusy}
+                  onClick={closeAvatarEditor}
                 >
                   <IoArrowBack className="text-xl" />
                   <span className="text-2xl font-semibold">Chỉnh sửa ảnh</span>
@@ -1991,36 +2107,67 @@ export function ProfilePage() {
                 <button
                   type="button"
                   aria-label="Đóng"
-                  className="cursor-pointer rounded-full p-2 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
-                  onClick={() => setIsAvatarEditorOpen(false)}
+                  className="cursor-pointer rounded-full p-2 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 disabled:opacity-50"
+                  disabled={avatarEditorBusy}
+                  onClick={closeAvatarEditor}
                 >
                   <IoClose className="text-xl" />
                 </button>
               </div>
 
               <div className="space-y-3 px-5 py-4">
-                <div className="relative flex min-h-[380px] items-center justify-center overflow-hidden rounded-lg">
+                <div
+                  ref={avatarViewportRef}
+                  className="relative mx-auto aspect-square w-full max-w-[400px] cursor-grab overflow-hidden rounded-lg bg-black active:cursor-grabbing"
+                  onPointerDown={onAvatarEditorPointerDown}
+                  onPointerMove={onAvatarEditorPointerMove}
+                  onPointerUp={onAvatarEditorPointerUp}
+                  onPointerCancel={onAvatarEditorPointerUp}
+                >
                   <img
                     src={avatarEditorSrc}
                     alt=""
-                    className="absolute inset-0 h-full w-full object-cover"
-                    style={{ transform: `scale(${avatarEditorZoom})`, transformOrigin: 'center center' }}
+                    className="pointer-events-none absolute max-w-none select-none"
+                    style={
+                      avatarPreviewLayout
+                        ? {
+                            width: avatarPreviewLayout.width,
+                            height: avatarPreviewLayout.height,
+                            left: avatarPreviewLayout.left,
+                            top: avatarPreviewLayout.top,
+                          }
+                        : {
+                            inset: 0,
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                          }
+                    }
+                    draggable={false}
                     aria-hidden
+                    onLoad={(event) => {
+                      const el = event.currentTarget
+                      setAvatarNaturalSize({
+                        w: el.naturalWidth || 0,
+                        h: el.naturalHeight || 0,
+                      })
+                    }}
                   />
                   <div
-                    className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                    className="pointer-events-none absolute inset-0 rounded-full"
+                    style={{
+                      // TikTok-style: dim outside only — no inset ring between in/out.
+                      boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.55)',
+                    }}
                     aria-hidden
-                  >
-                    <div
-                      className="h-full aspect-square rounded-full"
-                      style={{
-                        boxShadow: '0 0 0 9999px rgba(0,0,0,0.86), inset 0 0 0 6px rgba(0,0,0,0.6)',
-                      }}
-                    />
-                  </div>
+                  />
                 </div>
 
-                <div className="mx-auto flex w-full max-w-[380px] items-center gap-4 px-2">
+                <p className="text-center text-xs text-zinc-500">
+                  Kéo để chọn vùng trong khung tròn · thu phóng để phóng to/thu nhỏ
+                </p>
+
+                <div className="mx-auto flex w-full max-w-[400px] items-center gap-4 px-2">
                   <span className="w-24 whitespace-nowrap text-sm text-zinc-200">Thu phóng</span>
                   <input
                     type="range"
@@ -2028,8 +2175,9 @@ export function ProfilePage() {
                     max="3"
                     step="0.01"
                     value={avatarEditorZoom}
+                    disabled={avatarEditorBusy}
                     onChange={(event) => setAvatarEditorZoom(Number(event.target.value))}
-                    className="h-1 w-full cursor-pointer accent-red-500"
+                    className="h-1 w-full cursor-pointer accent-red-500 disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -2037,17 +2185,19 @@ export function ProfilePage() {
               <div className="flex justify-end gap-2 border-t border-zinc-800 px-5 py-4">
                 <button
                   type="button"
-                  className="cursor-pointer rounded-md bg-zinc-800 px-6 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-700"
-                  onClick={() => setIsAvatarEditorOpen(false)}
+                  className="cursor-pointer rounded-md bg-zinc-800 px-6 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-700 disabled:opacity-50"
+                  disabled={avatarEditorBusy}
+                  onClick={closeAvatarEditor}
                 >
                   Hủy
                 </button>
                 <button
                   type="button"
-                  className="cursor-pointer rounded-md bg-red-500 px-6 py-2 text-sm font-semibold text-white hover:bg-red-400"
+                  className="cursor-pointer rounded-md bg-red-500 px-6 py-2 text-sm font-semibold text-white hover:bg-red-400 disabled:cursor-wait disabled:opacity-70"
+                  disabled={avatarEditorBusy}
                   onClick={applyAvatarEditor}
                 >
-                  Đăng ký
+                  {avatarEditorBusy ? 'Đang tải lên…' : 'Áp dụng'}
                 </button>
               </div>
             </div>
