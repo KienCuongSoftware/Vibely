@@ -147,6 +147,17 @@ def evaluate(claim: dict[str, Any]) -> dict[str, Any]:
             hint = str(f.get("action_hint") or "ALLOW").upper()
             if DECISION_RANK.get(hint, 0) > DECISION_RANK.get(decision, 0):
                 decision = hint
+        # Soft ceiling: without hard override, never exceed the strongest soft hint.
+        # Stops stacked REVIEW visual points (risk>74) from escalating to BLOCK/REMOVED.
+        soft_hints = [
+            str(f.get("action_hint") or "ALLOW").upper()
+            for f in firings
+            if not f.get("override")
+        ]
+        if soft_hints:
+            ceil = max(soft_hints, key=lambda h: DECISION_RANK.get(h, 0))
+            if DECISION_RANK.get(decision, 0) > DECISION_RANK.get(ceil, 0):
+                decision = ceil
 
     confidence = _confidence(snapshot, originality_pending, firings)
     if decision in {"LIMIT", "BLOCK"} and confidence < confidence_floor:
