@@ -155,13 +155,19 @@ public class ChatService {
         participantRepository.save(mine);
 
         List<ConversationParticipantEntity> participants = participantRepository.findByConversation(conversation);
-        ChatMessageResponse response = toMessageResponse(saved, me);
-        List<String> participantEmails = participants.stream()
-            .map(p -> p.getUser().getEmail())
-            .toList();
-        realtimePublisher.publishNewMessage(participantEmails, response);
+        ChatMessageResponse responseForSender = toMessageResponse(saved, me);
+        for (ConversationParticipantEntity participant : participants) {
+            User recipient = participant.getUser();
+            if (recipient == null || recipient.getEmail() == null || recipient.getEmail().isBlank()) {
+                continue;
+            }
+            // mine must be relative to each recipient — broadcasting the sender's view
+            // made the other party render every new message as their own.
+            ChatMessageResponse forRecipient = toMessageResponse(saved, recipient);
+            realtimePublisher.publishNewMessage(List.of(recipient.getEmail()), forRecipient);
+        }
 
-        return response;
+        return responseForSender;
     }
 
     @Transactional

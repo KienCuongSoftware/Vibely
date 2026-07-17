@@ -473,7 +473,12 @@ export function MessagesPage() {
       });
 
       if (Number(activeConversationRef.current) === conversationId) {
-        setMessages((prev) => upsertMessage(prev, incoming));
+        setMessages((prev) =>
+          upsertMessage(prev, {
+            ...incoming,
+            mine: Number(incoming?.senderId) === Number(user?.id),
+          }),
+        );
         try {
           await apiClient.markChatConversationRead(conversationId, token);
         } catch {
@@ -1155,7 +1160,10 @@ export function MessagesPage() {
                   <div className="flex min-h-full flex-col justify-end">
                     <div className="space-y-2">
                     {messages.map((msg) => {
-                      const mine = Boolean(msg.mine);
+                      const mine =
+                        msg.senderId != null && user?.id != null
+                          ? Number(msg.senderId) === Number(user.id)
+                          : Boolean(msg.mine);
                       const imageUrl =
                         msg.mediaType === "IMAGE"
                           ? msg.mediaUrl
