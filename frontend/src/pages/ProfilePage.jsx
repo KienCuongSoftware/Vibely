@@ -358,7 +358,7 @@ export function ProfilePage() {
   const [savingEdit, setSavingEdit] = useState(false)
   const [isAvatarEditorOpen, setIsAvatarEditorOpen] = useState(false)
   const [avatarEditorSrc, setAvatarEditorSrc] = useState('')
-  const [avatarEditorZoom, setAvatarEditorZoom] = useState(1.2)
+  const [avatarEditorZoom, setAvatarEditorZoom] = useState(1)
   const [avatarEditorOffset, setAvatarEditorOffset] = useState({ x: 0, y: 0 })
   const [avatarNaturalSize, setAvatarNaturalSize] = useState({ w: 0, h: 0 })
   const [avatarEditorBusy, setAvatarEditorBusy] = useState(false)
@@ -1155,7 +1155,7 @@ export function ProfilePage() {
     reader.onload = () => {
       if (typeof reader.result === 'string') {
         setAvatarEditorSrc(reader.result)
-        setAvatarEditorZoom(1.25)
+        setAvatarEditorZoom(1)
         setAvatarEditorOffset({ x: 0, y: 0 })
         setAvatarNaturalSize({ w: 0, h: 0 })
         setIsAvatarEditorOpen(true)
