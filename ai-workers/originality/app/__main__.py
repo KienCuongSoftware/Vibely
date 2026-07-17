@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import logging
 import os
+import shutil
 import tempfile
 import time
 from pathlib import Path
@@ -75,6 +76,13 @@ def main() -> None:
                     json=payload,
                     timeout=60,
                 )
+                if not done.ok:
+                    LOG.error(
+                        "complete HTTP %s jobId=%s body=%s",
+                        done.status_code,
+                        job_id,
+                        (done.text or "")[:800],
+                    )
                 done.raise_for_status()
                 LOG.info(
                     "Completed jobId=%s decision=%s originality=%.2f",
@@ -91,8 +99,7 @@ def main() -> None:
                     timeout=30,
                 )
             finally:
-                # Best-effort cleanup handled by OS tmp; keep frames only during job.
-                pass
+                shutil.rmtree(work_dir, ignore_errors=True)
         except Exception as exc:  # noqa: BLE001
             LOG.warning("Claim loop error: %s", exc)
             time.sleep(poll_seconds)

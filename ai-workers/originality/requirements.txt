@@ -4,6 +4,6 @@ requests==2.32.4
 boto3==1.38.27
 qdrant-client==1.14.2
 open-clip-torch==2.32.0
-torch==2.7.1
+# torch installed separately in Dockerfile (CPU wheel — avoid multi-GB CUDA deps)
 rapidocr-onnxruntime==1.4.4
 onnxruntime==1.22.0

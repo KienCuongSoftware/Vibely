@@ -79,6 +79,10 @@ public class OriginalityJobService {
         OriginalityJobEntity job = jobRepository
             .findWithVideoAndAuthorById(jobId)
             .orElseThrow(() -> new NotFoundException("Originality job không tồn tại"));
+        if (job.getJobState() == OriginalityJobState.COMPLETED) {
+            log.info("Originality complete idempotent jobId={} already COMPLETED", jobId);
+            return;
+        }
         if (job.getJobState() != OriginalityJobState.PROCESSING
             && job.getJobState() != OriginalityJobState.PENDING) {
             throw new BadRequestException("Job originality không ở trạng thái có thể complete.");
@@ -86,9 +90,14 @@ public class OriginalityJobService {
         Video video = job.getVideo();
         Video matched = null;
         if (request.getMatchedVideoId() != null) {
-            matched = videoRepository
-                .findById(request.getMatchedVideoId())
-                .orElseThrow(() -> new BadRequestException("matchedVideoId không hợp lệ"));
+            matched = videoRepository.findById(request.getMatchedVideoId()).orElse(null);
+            if (matched == null) {
+                log.warn(
+                    "Originality complete jobId={} ignoring unknown matchedVideoId={}",
+                    jobId,
+                    request.getMatchedVideoId()
+                );
+            }
         }
 
         OriginalityReportEntity report = reportRepository
@@ -116,9 +125,18 @@ public class OriginalityJobService {
             matchRepository.deleteByReport_Id(saved.getId());
         }
         for (OriginalityCompleteRequest.MatchItem item : request.getMatches()) {
-            Video matchVideo = videoRepository
-                .findById(item.getMatchedVideoId())
-                .orElseThrow(() -> new BadRequestException("Match video id không hợp lệ"));
+            if (item.getMatchedVideoId() == null) {
+                continue;
+            }
+            Video matchVideo = videoRepository.findById(item.getMatchedVideoId()).orElse(null);
+            if (matchVideo == null) {
+                log.warn(
+                    "Originality complete jobId={} skipping match videoId={}",
+                    jobId,
+                    item.getMatchedVideoId()
+                );
+                continue;
+            }
             String modality = item.getModality() == null
                 ? ""
                 : item.getModality().trim().toUpperCase(Locale.ROOT);
@@ -149,7 +167,13 @@ public class OriginalityJobService {
         String truncated = truncate(errorMessage, 2000);
         job.setLastError(truncated);
         int maxAttempts = Math.max(1, properties.getMaxJobAttempts());
-        if (job.getAttempts() >= maxAttempts) {
+        // Client/validation errors will not succeed on retry — stop the burn loop.
+        boolean permanent = truncated != null && (
+            truncated.contains("400 Client Error")
+                || truncated.contains("HTTP 400")
+                || truncated.contains("422")
+        );
+        if (permanent || job.getAttempts() >= maxAttempts) {
             job.setJobState(OriginalityJobState.FAILED);
         } else {
             job.setJobState(OriginalityJobState.PENDING);

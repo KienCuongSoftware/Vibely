@@ -102,11 +102,25 @@ def build_complete_payload(analysis: dict[str, Any]) -> dict[str, Any]:
         "frameCount": analysis.get("frame_count", 0),
         "sampleStrategy": analysis.get("sample_strategy", ""),
     }
+    # Clamp match scores — Qdrant cosine can exceed 1.0 slightly and fail @DecimalMax.
+    matches: list[dict[str, Any]] = []
+    for raw in analysis.get("matches") or []:
+        if not isinstance(raw, dict) or raw.get("matchedVideoId") is None:
+            continue
+        matches.append(
+            {
+                **raw,
+                "matchedVideoId": int(raw["matchedVideoId"]),
+                "score": clamp01(raw.get("score", 0.0)),
+                "modality": str(raw.get("modality") or "VISUAL").strip().upper() or "VISUAL",
+                "detailJson": raw.get("detailJson") or "{}",
+            }
+        )
     payload = {
         **scores,
-        "matchedVideoId": matched_video_id,
+        "matchedVideoId": int(matched_video_id) if matched_video_id is not None else None,
         "explainJson": json.dumps(explain, ensure_ascii=False),
         "modelVersions": json.dumps(analysis.get("model_versions", {}), ensure_ascii=False),
-        "matches": analysis.get("matches", []),
+        "matches": matches,
     }
     return payload
