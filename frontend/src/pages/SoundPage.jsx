@@ -342,7 +342,7 @@ function SoundGridMedia({
   return thumbNode
 }
 
-/** Thumbnail + VibelyID trên video; mô tả + ⋮ (chỉ khi hover mô tả); popover bên phải khi bấm ⋮. */
+/** Thumbnail + VibelyID trên video; mô tả + ⋮ (hover mô tả hiện nút); popover mở khi hover/bấm ⋮. */
 export function SoundGridVideoCard({
   video,
   coverFallback,
@@ -360,6 +360,22 @@ export function SoundGridVideoCard({
   const [popoverAnchorTop, setPopoverAnchorTop] = useState(null)
   const [popoverAnchorLeft, setPopoverAnchorLeft] = useState(null)
   const [popoverAnchorRight, setPopoverAnchorRight] = useState(null)
+  const closeTimerRef = useRef(null)
+
+  const clearCloseTimer = React.useCallback(() => {
+    if (closeTimerRef.current != null) {
+      globalThis.clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
+    }
+  }, [])
+
+  const scheduleClosePopover = React.useCallback(() => {
+    clearCloseTimer()
+    closeTimerRef.current = globalThis.setTimeout(() => {
+      setPopoverOpen(false)
+      closeTimerRef.current = null
+    }, 120)
+  }, [clearCloseTimer])
 
   const updatePopoverSide = React.useCallback(() => {
     const cardRect = cardRef.current?.getBoundingClientRect()
@@ -383,6 +399,16 @@ export function SoundGridVideoCard({
     }
     setPopoverSide('left')
   }, [])
+
+  const openPopover = React.useCallback(() => {
+    clearCloseTimer()
+    updatePopoverSide()
+    setPopoverOpen(true)
+  }, [clearCloseTimer, updatePopoverSide])
+
+  useEffect(() => {
+    return () => clearCloseTimer()
+  }, [clearCloseTimer])
 
   useEffect(() => {
     if (!popoverOpen) return undefined
@@ -484,11 +510,12 @@ export function SoundGridVideoCard({
           : 'relative flex w-full flex-col'
       }
       onMouseEnter={() => {
+        clearCloseTimer()
         if (video?.publicId != null) {
           onHoverPreview?.(video.publicId)
         }
       }}
-      onMouseLeave={() => setPopoverOpen(false)}
+      onMouseLeave={() => scheduleClosePopover()}
     >
       <div className={frameClass}>{thumb}</div>
       <div
@@ -503,12 +530,19 @@ export function SoundGridVideoCard({
           aria-label="Chi tiết video"
           aria-expanded={popoverOpen}
           className="shrink-0 rounded-full p-0.5 text-lg text-zinc-300 opacity-0 transition-opacity hover:bg-white/10 hover:text-white group-hover/desc:opacity-100 group-focus-within/desc:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+          onMouseEnter={(e) => {
+            e.stopPropagation()
+            openPopover()
+          }}
+          onFocus={() => openPopover()}
           onClick={(e) => {
             e.preventDefault()
-            if (!popoverOpen) {
-              updatePopoverSide()
+            e.stopPropagation()
+            if (popoverOpen) {
+              setPopoverOpen(false)
+              return
             }
-            setPopoverOpen((o) => !o)
+            openPopover()
           }}
         >
           <BiDotsVerticalRounded aria-hidden className="block h-[18px] w-[18px]" />
@@ -523,6 +557,8 @@ export function SoundGridVideoCard({
               ? { right: popoverAnchorRight ?? undefined }
               : { left: popoverAnchorLeft ?? undefined }),
           }}
+          onMouseEnter={clearCloseTimer}
+          onMouseLeave={scheduleClosePopover}
         >
           {popoverSide === 'left' ? (
             <SoundVideoDetailPopover
