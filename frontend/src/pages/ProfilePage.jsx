@@ -73,15 +73,46 @@ function formatCompactCount(value) {
   return String(count)
 }
 
-/** Lưới hồ sơ: mới đăng trước (giống TikTok tab Video → Mới nhất). */
-function sortVideosNewestFirst(items) {
+/** Lưới hồ sơ tab Video: Mới nhất / Thịnh hành (lượt xem) / Cũ nhất. */
+function sortProfileVideos(items, mode) {
   const list = Array.isArray(items) ? [...items] : []
+  const createdMs = (v) => {
+    const t = new Date(v?.createdAt ?? 0).getTime()
+    return Number.isFinite(t) ? t : 0
+  }
+  const views = (v) => Number(v?.viewCount ?? v?.views ?? 0) || 0
+  const idNum = (v) => Number(v?.id ?? 0) || 0
+
+  if (mode === 'oldest') {
+    return list.sort((a, b) => {
+      const ta = createdMs(a)
+      const tb = createdMs(b)
+      if (ta !== tb) return ta - tb
+      return idNum(a) - idNum(b)
+    })
+  }
+  if (mode === 'trending') {
+    return list.sort((a, b) => {
+      const va = views(a)
+      const vb = views(b)
+      if (vb !== va) return vb - va
+      const ta = createdMs(a)
+      const tb = createdMs(b)
+      if (tb !== ta) return tb - ta
+      return idNum(b) - idNum(a)
+    })
+  }
+  // newest (default)
   return list.sort((a, b) => {
-    const ta = new Date(a?.createdAt ?? 0).getTime()
-    const tb = new Date(b?.createdAt ?? 0).getTime()
+    const ta = createdMs(a)
+    const tb = createdMs(b)
     if (tb !== ta) return tb - ta
-    return Number(b?.id ?? 0) - Number(a?.id ?? 0)
+    return idNum(b) - idNum(a)
   })
+}
+
+function sortVideosNewestFirst(items) {
+  return sortProfileVideos(items, 'newest')
 }
 
 /** Legacy auto-filled OAuth bios — không hiển thị như tiểu sử thật. */
@@ -385,6 +416,8 @@ export function ProfilePage() {
   const [collectionPickIds, setCollectionPickIds] = useState(() => new Set())
   const [profileVideos, setProfileVideos] = useState([])
   const [profileVideosLoading, setProfileVideosLoading] = useState(false)
+  /** Tab Video: newest | trending | oldest */
+  const [videosSortMode, setVideosSortMode] = useState('newest')
   /** Video đang preview trong lưới hồ sơ; đổi khi hover ô khác, không reset khi rời chuột. */
   const [profileGridPlayingId, setProfileGridPlayingId] = useState(null)
   const [lastWatchedPublicId, setLastWatchedPublicId] = useState(null)
@@ -860,13 +893,25 @@ export function ProfilePage() {
 
   const collectionTotal = 0
 
+  const sortedProfileVideos = useMemo(
+    () => sortProfileVideos(profileVideos, videosSortMode),
+    [profileVideos, videosSortMode],
+  )
+
   const profileGridVideoList = useMemo(() => {
-    if (profileMainTab === 'videos') return profileVideos
+    if (profileMainTab === 'videos') return sortedProfileVideos
     if (profileMainTab === 'favorites' && favoritesSubTab === 'posts') return bookmarkItems
     if (profileMainTab === 'reposted') return repostItems
     if (profileMainTab === 'liked') return likedItems
     return []
-  }, [profileMainTab, favoritesSubTab, profileVideos, bookmarkItems, repostItems, likedItems])
+  }, [
+    profileMainTab,
+    favoritesSubTab,
+    sortedProfileVideos,
+    bookmarkItems,
+    repostItems,
+    likedItems,
+  ])
 
   useEffect(() => {
     if (profileGridVideoList.length === 0) {
@@ -1704,17 +1749,41 @@ export function ProfilePage() {
                 </div>
 
                 {profileMainTab === 'videos' ? (
-                  <div className="mb-2 hidden items-center gap-1 rounded-md bg-zinc-900 p-1 text-sm text-zinc-300 md:flex">
+                  <div className="mb-2 flex items-center gap-1 rounded-md bg-zinc-900 p-1 text-sm text-zinc-300">
                     <button
                       type="button"
-                      className="cursor-pointer rounded bg-zinc-700 px-3 py-1 font-semibold text-zinc-100"
+                      aria-pressed={videosSortMode === 'newest'}
+                      className={`cursor-pointer rounded px-3 py-1 ${
+                        videosSortMode === 'newest'
+                          ? 'bg-zinc-700 font-semibold text-zinc-100'
+                          : 'hover:bg-zinc-800'
+                      }`}
+                      onClick={() => setVideosSortMode('newest')}
                     >
                       Mới nhất
                     </button>
-                    <button type="button" className="cursor-pointer rounded px-3 py-1 hover:bg-zinc-800">
+                    <button
+                      type="button"
+                      aria-pressed={videosSortMode === 'trending'}
+                      className={`cursor-pointer rounded px-3 py-1 ${
+                        videosSortMode === 'trending'
+                          ? 'bg-zinc-700 font-semibold text-zinc-100'
+                          : 'hover:bg-zinc-800'
+                      }`}
+                      onClick={() => setVideosSortMode('trending')}
+                    >
                       Thịnh hành
                     </button>
-                    <button type="button" className="cursor-pointer rounded px-3 py-1 hover:bg-zinc-800">
+                    <button
+                      type="button"
+                      aria-pressed={videosSortMode === 'oldest'}
+                      className={`cursor-pointer rounded px-3 py-1 ${
+                        videosSortMode === 'oldest'
+                          ? 'bg-zinc-700 font-semibold text-zinc-100'
+                          : 'hover:bg-zinc-800'
+                      }`}
+                      onClick={() => setVideosSortMode('oldest')}
+                    >
                       Cũ nhất
                     </button>
                   </div>
@@ -1778,7 +1847,7 @@ export function ProfilePage() {
                 ) : isPublicProfileLoading || (profileVideosLoading && profileVideos.length === 0) ? (
                   <p className="py-10 text-center text-sm text-zinc-500">Đang tải video…</p>
                 ) : profileVideos.length > 0 ? (
-                  renderProfileVideoGrid(profileVideos)
+                  renderProfileVideoGrid(sortedProfileVideos)
                 ) : (
                   <div className="flex flex-col items-center justify-center py-14 text-center">
                     <div className="mb-4 rounded-full bg-zinc-800 p-6 text-zinc-200">
