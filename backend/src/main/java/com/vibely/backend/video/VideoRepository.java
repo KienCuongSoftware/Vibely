@@ -29,8 +29,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         value = """
             select v from Video v
             join fetch v.author a
-            where v.status <> com.vibely.backend.video.VideoStatus.REMOVED
-              and (
+            where (
                 lower(coalesce(v.title, '')) like lower(concat('%', :query, '%'))
                 or lower(coalesce(v.description, '')) like lower(concat('%', :query, '%'))
                 or lower(coalesce(a.username, '')) like lower(concat('%', :query, '%'))
@@ -42,8 +41,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         countQuery = """
             select count(v) from Video v
             join v.author a
-            where v.status <> com.vibely.backend.video.VideoStatus.REMOVED
-              and (
+            where (
                 lower(coalesce(v.title, '')) like lower(concat('%', :query, '%'))
                 or lower(coalesce(v.description, '')) like lower(concat('%', :query, '%'))
                 or lower(coalesce(a.username, '')) like lower(concat('%', :query, '%'))
@@ -61,8 +59,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         value = """
             select v from Video v
             join fetch v.author a
-            where v.status <> com.vibely.backend.video.VideoStatus.REMOVED
-              and v.status = :status
+            where v.status = :status
               and (
                 lower(coalesce(v.title, '')) like lower(concat('%', :query, '%'))
                 or lower(coalesce(v.description, '')) like lower(concat('%', :query, '%'))
@@ -75,8 +72,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         countQuery = """
             select count(v) from Video v
             join v.author a
-            where v.status <> com.vibely.backend.video.VideoStatus.REMOVED
-              and v.status = :status
+            where v.status = :status
               and (
                 lower(coalesce(v.title, '')) like lower(concat('%', :query, '%'))
                 or lower(coalesce(v.description, '')) like lower(concat('%', :query, '%'))

@@ -23,6 +23,7 @@ const STATUS_OPTIONS = [
   { value: "FAILED", label: "Lỗi xử lý" },
   { value: "REPORTED", label: "Bị báo cáo" },
   { value: "HIDDEN", label: "Đã ẩn" },
+  { value: "REMOVED", label: "Ẩn khỏi hồ sơ" },
 ];
 
 function statusLabel(status) {

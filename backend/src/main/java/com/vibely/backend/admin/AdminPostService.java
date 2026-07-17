@@ -10,7 +10,6 @@ import com.vibely.backend.notification.NotificationService;
 import com.vibely.backend.moderation.ModerationReviewQueueCleanupService;
 import com.vibely.backend.processing.VideoProcessingJobRepository;
 import com.vibely.backend.processing.VideoProcessingJobState;
-import com.vibely.backend.storage.S3MediaDeletionService;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
@@ -19,7 +18,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -35,7 +33,6 @@ public class AdminPostService {
     private final VideoBookmarkRepository videoBookmarkRepository;
     private final VideoViewRepository videoViewRepository;
     private final VideoProcessingJobRepository videoProcessingJobRepository;
-    private final ObjectProvider<S3MediaDeletionService> s3MediaDeletionService;
     private final NotificationService notificationService;
     private final ModerationReviewQueueCleanupService reviewQueueCleanupService;
 
@@ -46,7 +43,6 @@ public class AdminPostService {
         VideoBookmarkRepository videoBookmarkRepository,
         VideoViewRepository videoViewRepository,
         VideoProcessingJobRepository videoProcessingJobRepository,
-        ObjectProvider<S3MediaDeletionService> s3MediaDeletionService,
         NotificationService notificationService,
         ModerationReviewQueueCleanupService reviewQueueCleanupService
     ) {
@@ -56,7 +52,6 @@ public class AdminPostService {
         this.videoBookmarkRepository = videoBookmarkRepository;
         this.videoViewRepository = videoViewRepository;
         this.videoProcessingJobRepository = videoProcessingJobRepository;
-        this.s3MediaDeletionService = s3MediaDeletionService;
         this.notificationService = notificationService;
         this.reviewQueueCleanupService = reviewQueueCleanupService;
     }
@@ -94,10 +89,7 @@ public class AdminPostService {
             return;
         }
         cancelProcessingJob(video.getId());
-        S3MediaDeletionService deletionService = s3MediaDeletionService.getIfAvailable();
-        if (deletionService != null) {
-            deletionService.deleteVideoArtifacts(video);
-        }
+        // Soft-remove only: keep S3 objects so admin can still review thumbnails / playback.
         video.setStatus(VideoStatus.REMOVED);
         videoRepository.save(video);
         notificationService.purgeForRemovedVideo(video.getId());
@@ -108,9 +100,6 @@ public class AdminPostService {
     public AdminPostResponse getPost(UUID publicId) {
         Video video = videoRepository.findWithAuthorByPublicId(publicId)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy bài đăng"));
-        if (video.getStatus() == VideoStatus.REMOVED) {
-            throw new NotFoundException("Không tìm thấy bài đăng");
-        }
         return toResponse(
             video,
             Map.of(video.getId(), likeRepository.countByVideoId(video.getId())),

@@ -96,14 +96,14 @@ public class ModerationDecisionApplier {
                     && !appliedBy.isBlank()
                     && !"SYSTEM".equalsIgnoreCase(appliedBy);
                 if (humanConfirmed) {
-                    // Admin confirmed takedown.
+                    // Soft-remove: hide from profile + public URL. Keep S3 media for admin review.
                     reviewRequired = false;
                     statusApplied = VideoStatus.REMOVED.name();
                     if (!shadow) {
                         nextStatus = VideoStatus.REMOVED;
                     }
                 } else {
-                    // AI severe hit: hide from public + human review queue (do not hard-delete).
+                    // AI severe hit: hide from public + human review queue (do not hard-delete / wipe S3).
                     reviewRequired = true;
                     statusApplied = VideoStatus.HIDDEN.name();
                     if (!shadow) {

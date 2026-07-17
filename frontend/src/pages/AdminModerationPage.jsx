@@ -20,11 +20,33 @@ const STATE_FILTERS = [
 ];
 
 const DECISION_OPTIONS = [
-  { value: "ALLOW", label: "Cho phép — phân phối bình thường" },
-  { value: "LIMIT", label: "Hạn chế — bỏ khỏi Khám phá / Dành cho bạn" },
-  { value: "REVIEW", label: "Cần xem lại — vẫn công khai, vào hàng đợi" },
-  { value: "BLOCK", label: "Chặn — ẩn bài (admin xác nhận sẽ gỡ)" },
-  { value: "DELETE", label: "Xóa — gỡ bài khỏi nền tảng" },
+  {
+    value: "ALLOW",
+    label: "Cho phép",
+    effect: "Công khai bình thường, lên Khám phá / Dành cho bạn",
+  },
+  {
+    value: "LIMIT",
+    label: "Hạn chế",
+    effect: "Vẫn công khai, nhưng bỏ khỏi Khám phá / Dành cho bạn",
+  },
+  {
+    value: "REVIEW",
+    label: "Giữ công khai",
+    effect: "Giữ bài công khai như hiện tại (không ẩn / không gỡ)",
+  },
+  {
+    value: "BLOCK",
+    label: "Chặn",
+    effect:
+      "Ẩn khỏi hồ sơ & URL công khai; giữ file để admin xem lại (không xóa S3)",
+  },
+  {
+    value: "DELETE",
+    label: "Xóa",
+    effect:
+      "Ẩn khỏi hồ sơ & URL công khai; giữ file để admin xem lại (không xóa S3)",
+  },
 ];
 
 const DECISION_LABEL = {
@@ -57,7 +79,7 @@ const VIDEO_STATUS_LABEL = {
   FAILED: "Lỗi xử lý",
   REPORTED: "Bị báo cáo",
   HIDDEN: "Đã ẩn",
-  REMOVED: "Đã gỡ",
+  REMOVED: "Đã ẩn khỏi hồ sơ",
 };
 
 const MODALITY_LABEL = {
@@ -286,7 +308,7 @@ function ResolvePanel({
               <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
                 Bằng chứng ({evidence.length})
               </h3>
-              <ul className="mt-2 max-h-40 space-y-2 overflow-y-auto text-sm">
+              <ul className="mt-2 space-y-2 text-sm">
                 {evidence.length === 0 ? (
                   <li className="text-zinc-500">Không có bằng chứng</li>
                 ) : (
@@ -356,24 +378,42 @@ function ResolvePanel({
                 Quyết định kiểm duyệt viên
               </h3>
               <p className="mt-1 text-[11px] text-zinc-500">
-                Khi xác nhận, hệ thống luôn áp dụng ngay (ẩn / hạn chế phân phối
-                / gỡ bài), kể cả khi AI chỉ đang ghi nhận thử nghiệm.
+                Chọn một quyết định — hệ thống áp dụng ngay khi xác nhận (kể cả
+                khi AI đang ở chế độ ghi nhận).
               </p>
-              <label className="mt-3 block text-xs text-zinc-400">
-                Quyết định
-                <select
-                  value={decision}
-                  onChange={(e) => setDecision(e.target.value)}
-                  disabled={submitting}
-                  className="mt-1 w-full rounded-lg border border-zinc-700 bg-black px-3 py-2 text-sm text-zinc-100"
-                >
-                  {DECISION_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <fieldset className="mt-3 space-y-2" disabled={submitting}>
+                <legend className="sr-only">Quyết định</legend>
+                {DECISION_OPTIONS.map((opt) => {
+                  const selected = decision === opt.value;
+                  return (
+                    <label
+                      key={opt.value}
+                      className={`flex cursor-pointer gap-3 rounded-lg border px-3 py-2.5 transition ${
+                        selected
+                          ? "border-rose-500/50 bg-rose-500/10"
+                          : "border-zinc-800 bg-black/40 hover:border-zinc-600"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="moderation-decision"
+                        value={opt.value}
+                        checked={selected}
+                        onChange={() => setDecision(opt.value)}
+                        className="mt-1 accent-rose-500"
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold text-zinc-100">
+                          {opt.label}
+                        </span>
+                        <span className="mt-0.5 block text-[11px] leading-snug text-zinc-500">
+                          {opt.effect}
+                        </span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </fieldset>
               <label className="mt-3 block text-xs text-zinc-400">
                 Lý do (bắt buộc nếu khác quyết định AI)
                 <textarea

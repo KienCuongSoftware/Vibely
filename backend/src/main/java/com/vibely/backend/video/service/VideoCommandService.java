@@ -12,7 +12,6 @@ import com.vibely.backend.originality.OriginalityEnqueueService;
 import com.vibely.backend.processing.VideoProcessingEnqueueService;
 import com.vibely.backend.processing.VideoProcessingJobRepository;
 import com.vibely.backend.processing.VideoProcessingJobState;
-import com.vibely.backend.storage.S3MediaDeletionService;
 import com.vibely.backend.storage.S3OwnedMediaValidator;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
@@ -25,7 +24,6 @@ import com.vibely.backend.video.VideoStatus;
 import com.vibely.backend.video.VideoUpdateRequest;
 import java.util.Objects;
 import java.util.UUID;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +43,6 @@ public class VideoCommandService {
     private final VideoQueryService queryService;
     private final NotificationService notificationService;
     private final VideoProcessingJobRepository videoProcessingJobRepository;
-    private final ObjectProvider<S3MediaDeletionService> s3MediaDeletionService;
     private final ModerationCaptionGateService captionGateService;
     private final ModerationJoinService moderationJoinService;
     private final ModerationPublicationHoldService publicationHoldService;
@@ -64,7 +61,6 @@ public class VideoCommandService {
         VideoQueryService queryService,
         NotificationService notificationService,
         VideoProcessingJobRepository videoProcessingJobRepository,
-        ObjectProvider<S3MediaDeletionService> s3MediaDeletionService,
         ModerationCaptionGateService captionGateService,
         ModerationJoinService moderationJoinService,
         ModerationPublicationHoldService publicationHoldService,
@@ -82,7 +78,6 @@ public class VideoCommandService {
         this.queryService = queryService;
         this.notificationService = notificationService;
         this.videoProcessingJobRepository = videoProcessingJobRepository;
-        this.s3MediaDeletionService = s3MediaDeletionService;
         this.captionGateService = captionGateService;
         this.moderationJoinService = moderationJoinService;
         this.publicationHoldService = publicationHoldService;
@@ -304,10 +299,7 @@ public class VideoCommandService {
             return;
         }
         cancelProcessingJob(video.getId());
-        S3MediaDeletionService deletionService = s3MediaDeletionService.getIfAvailable();
-        if (deletionService != null) {
-            deletionService.deleteVideoArtifacts(video);
-        }
+        // Soft-remove only: keep S3 media for admin review / avoid broken thumbnails.
         video.setStatus(VideoStatus.REMOVED);
         videoRepository.save(video);
         notificationService.purgeForRemovedVideo(video.getId());
