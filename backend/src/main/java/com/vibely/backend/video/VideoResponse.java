@@ -35,6 +35,8 @@ public record VideoResponse(
     String repostedByUsername,
     String repostedByDisplayName,
     String repostedByAvatarUrl,
-    LocalDateTime repostedAt
+    LocalDateTime repostedAt,
+    /** True when AI/admin has flagged the video for human review (Studio warning). */
+    boolean reviewRequired
 ) {
 }

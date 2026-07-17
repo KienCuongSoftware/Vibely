@@ -62,11 +62,12 @@ function StatusBadge({ status }) {
     FAILED: "bg-red-500/15 text-red-300 ring-red-500/30",
     REPORTED: "bg-amber-500/15 text-amber-300 ring-amber-500/30",
     HIDDEN: "bg-zinc-500/15 text-zinc-300 ring-zinc-500/30",
+    REMOVED: "bg-fuchsia-500/15 text-fuchsia-300 ring-fuchsia-500/30",
     RAW: "bg-violet-500/15 text-violet-300 ring-violet-500/30",
   };
   return (
     <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${palette[value] ?? palette.RAW}`}
+      className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${palette[value] ?? palette.RAW}`}
     >
       {statusLabel(value)}
     </span>
@@ -127,16 +128,22 @@ function StatusDropdown({ value, onChange }) {
 
 function DeletePostModal({ post, busy, error, onClose, onConfirm }) {
   const title = post?.description || post?.title || "Bài đăng không có mô tả";
+  const alreadyHidden =
+    String(post?.status || "").toUpperCase() === "REMOVED";
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">
       <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/60">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold text-zinc-100">
-              Xác nhận xóa bài đăng
+              {alreadyHidden
+                ? "Xóa vĩnh viễn khỏi admin"
+                : "Xác nhận ẩn bài đăng"}
             </h2>
             <p className="mt-1 text-sm text-zinc-500">
-              Bài đăng sẽ bị gỡ khỏi hệ thống và không hiển thị công khai.
+              {alreadyHidden
+                ? "Bài đã ẩn khỏi hồ sơ. Xác nhận sẽ xóa hẳn khỏi danh sách admin (file S3 nếu còn sẽ được dọn)."
+                : "Bài sẽ ẩn khỏi hồ sơ và URL công khai. File được giữ để admin xem lại; bấm xóa lần nữa để gỡ vĩnh viễn."}
             </p>
           </div>
           <button
@@ -178,7 +185,11 @@ function DeletePostModal({ post, busy, error, onClose, onConfirm }) {
             disabled={busy}
             className="rounded-xl border border-zinc-800 bg-black px-5 py-3 text-sm font-bold text-zinc-100 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {busy ? "Đang xóa..." : "Xóa bài đăng"}
+            {busy
+              ? "Đang xóa..."
+              : alreadyHidden
+                ? "Xóa vĩnh viễn"
+                : "Ẩn khỏi hồ sơ"}
           </button>
         </div>
       </div>
@@ -370,6 +381,9 @@ export function AdminPostsPage() {
                                   src={item.thumbnailUrl}
                                   alt=""
                                   className="h-full w-full object-cover"
+                                  onError={(event) => {
+                                    event.currentTarget.style.display = "none";
+                                  }}
                                 />
                               ) : item.videoUrl ? (
                                 <video
@@ -378,6 +392,9 @@ export function AdminPostsPage() {
                                   playsInline
                                   preload="metadata"
                                   className="h-full w-full object-cover"
+                                  onError={(event) => {
+                                    event.currentTarget.style.display = "none";
+                                  }}
                                 />
                               ) : null}
                             </div>

@@ -7,6 +7,7 @@ import com.vibely.backend.interaction.repository.FollowRepository;
 import com.vibely.backend.interaction.repository.LikeRepository;
 import com.vibely.backend.interaction.repository.VideoBookmarkRepository;
 import com.vibely.backend.interaction.repository.VideoViewRepository;
+import com.vibely.backend.moderation.ModerationDecisionRepository;
 import com.vibely.backend.storage.S3PresignedUploadService;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
@@ -16,6 +17,7 @@ import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoResponse;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +26,7 @@ import java.util.Objects;
 import java.util.Set;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -46,6 +49,8 @@ public class VideoResponseMapper {
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
     private final VideoRepository videoRepository;
+    private final ModerationDecisionRepository moderationDecisionRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     public VideoResponseMapper(
         LikeRepository likeRepository,
@@ -56,7 +61,9 @@ public class VideoResponseMapper {
         ObjectProvider<S3PresignedUploadService> presignedUploadService,
         FollowRepository followRepository,
         UserRepository userRepository,
-        VideoRepository videoRepository
+        VideoRepository videoRepository,
+        ModerationDecisionRepository moderationDecisionRepository,
+        JdbcTemplate jdbcTemplate
     ) {
         this.likeRepository = likeRepository;
         this.commentRepository = commentRepository;
@@ -67,6 +74,8 @@ public class VideoResponseMapper {
         this.followRepository = followRepository;
         this.userRepository = userRepository;
         this.videoRepository = videoRepository;
+        this.moderationDecisionRepository = moderationDecisionRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public VideoResponse toResponse(Video video) {
@@ -88,9 +97,17 @@ public class VideoResponseMapper {
             countMap(videoBookmarkRepository.countGroupedByVideoIds(ids)),
             countMap(videoViewRepository.countGroupedByVideoIds(ids))
         );
+        Map<Long, Boolean> reviewFlags = resolveReviewRequiredFlags(ids);
         Set<Long> followedAuthorIds = resolveFollowedAuthorIds(viewerId, videos);
         return videos.stream()
-            .map(v -> toResponse(v, counts, followedAuthorIds.contains(v.getAuthor().getId()), null, null))
+            .map(v -> toResponse(
+                v,
+                counts,
+                followedAuthorIds.contains(v.getAuthor().getId()),
+                null,
+                null,
+                reviewFlags.getOrDefault(v.getId(), false)
+            ))
             .toList();
     }
 
@@ -118,6 +135,7 @@ public class VideoResponseMapper {
         );
         List<Video> videosForFollow = videosById.values().stream().toList();
         Set<Long> followedAuthorIds = resolveFollowedAuthorIds(viewerId, videosForFollow);
+        Map<Long, Boolean> reviewFlags = resolveReviewRequiredFlags(videoIds);
         List<VideoResponse> out = new ArrayList<>(rows.size());
         for (FollowingFeedRowView row : rows) {
             Video video = videosById.get(row.getVideoId());
@@ -129,7 +147,14 @@ public class VideoResponseMapper {
                 : null;
             boolean followed = followedAuthorIds.contains(video.getAuthor().getId())
                 || (reposter != null && followedAuthorIds.contains(reposter.getId()));
-            out.add(toResponse(video, counts, followed, reposter, row.getFeedAt()));
+            out.add(toResponse(
+                video,
+                counts,
+                followed,
+                reposter,
+                row.getFeedAt(),
+                reviewFlags.getOrDefault(video.getId(), false)
+            ));
         }
         return out;
     }
@@ -171,7 +196,9 @@ public class VideoResponseMapper {
     }
 
     private VideoResponse toResponse(Video video, FeedInteractionCounts batch, boolean followedByViewer) {
-        return toResponse(video, batch, followedByViewer, null, null);
+        boolean reviewRequired = resolveReviewRequiredFlags(List.of(video.getId()))
+            .getOrDefault(video.getId(), false);
+        return toResponse(video, batch, followedByViewer, null, null, reviewRequired);
     }
 
     private VideoResponse toResponse(
@@ -179,7 +206,8 @@ public class VideoResponseMapper {
         FeedInteractionCounts batch,
         boolean followedByViewer,
         User repostedBy,
-        LocalDateTime repostedAt
+        LocalDateTime repostedAt,
+        boolean reviewRequired
     ) {
         Long videoId = video.getId();
         long likeCount = batch != null
@@ -242,8 +270,46 @@ public class VideoResponseMapper {
             repostedByUsername,
             repostedByDisplayName,
             repostedByAvatarUrl,
-            repostedAtValue
+            repostedAtValue,
+            reviewRequired
         );
+    }
+
+    private Map<Long, Boolean> resolveReviewRequiredFlags(Collection<Long> videoIds) {
+        Map<Long, Boolean> out = new HashMap<>();
+        if (videoIds == null || videoIds.isEmpty()) {
+            return out;
+        }
+        List<Long> ids = videoIds.stream().filter(Objects::nonNull).distinct().toList();
+        if (ids.isEmpty()) {
+            return out;
+        }
+        for (Object[] row : moderationDecisionRepository.findReviewRequiredFlags(ids)) {
+            if (row == null || row.length < 2 || row[0] == null) {
+                continue;
+            }
+            long videoId = ((Number) row[0]).longValue();
+            boolean required = Boolean.TRUE.equals(row[1]);
+            if (required) {
+                out.put(videoId, true);
+            }
+        }
+        // Also treat open/claimed moderation queue as review-in-progress.
+        String placeholders = String.join(",", ids.stream().map(id -> "?").toList());
+        List<Long> queued = jdbcTemplate.query(
+            """
+            SELECT DISTINCT video_id
+            FROM moderation_review_queue
+            WHERE video_id IN (%s)
+              AND queue_state IN ('OPEN', 'CLAIMED')
+            """.formatted(placeholders),
+            (rs, rowNum) -> rs.getLong(1),
+            ids.toArray()
+        );
+        for (Long videoId : queued) {
+            out.put(videoId, true);
+        }
+        return out;
     }
 
     private Set<Long> resolveFollowedAuthorIds(Long viewerId, List<Video> videos) {

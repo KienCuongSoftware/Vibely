@@ -371,11 +371,15 @@ export function StudioPostsPage() {
                             </p>
                             {String(v.status || '').toUpperCase() === 'REMOVED' ? (
                               <p className="mt-0.5 text-xs font-medium text-rose-400">
-                                Đã gỡ (vi phạm)
+                                Đã gỡ khỏi hồ sơ (vi phạm)
                               </p>
                             ) : String(v.status || '').toUpperCase() === 'HIDDEN' ? (
                               <p className="mt-0.5 text-xs font-medium text-amber-400">
                                 Đã ẩn / đang kiểm duyệt — chưa lên For You
+                              </p>
+                            ) : v.reviewRequired ? (
+                              <p className="mt-0.5 text-xs font-medium text-amber-400">
+                                Đang kiểm duyệt — đội ngũ Vibely đang xem xét
                               </p>
                             ) : null}
                           </div>
