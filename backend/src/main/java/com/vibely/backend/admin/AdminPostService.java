@@ -7,6 +7,7 @@ import com.vibely.backend.interaction.repository.LikeRepository;
 import com.vibely.backend.interaction.repository.VideoBookmarkRepository;
 import com.vibely.backend.interaction.repository.VideoViewRepository;
 import com.vibely.backend.notification.NotificationService;
+import com.vibely.backend.moderation.ModerationReviewQueueCleanupService;
 import com.vibely.backend.processing.VideoProcessingJobRepository;
 import com.vibely.backend.processing.VideoProcessingJobState;
 import com.vibely.backend.storage.S3MediaDeletionService;
@@ -36,6 +37,7 @@ public class AdminPostService {
     private final VideoProcessingJobRepository videoProcessingJobRepository;
     private final ObjectProvider<S3MediaDeletionService> s3MediaDeletionService;
     private final NotificationService notificationService;
+    private final ModerationReviewQueueCleanupService reviewQueueCleanupService;
 
     public AdminPostService(
         VideoRepository videoRepository,
@@ -45,7 +47,8 @@ public class AdminPostService {
         VideoViewRepository videoViewRepository,
         VideoProcessingJobRepository videoProcessingJobRepository,
         ObjectProvider<S3MediaDeletionService> s3MediaDeletionService,
-        NotificationService notificationService
+        NotificationService notificationService,
+        ModerationReviewQueueCleanupService reviewQueueCleanupService
     ) {
         this.videoRepository = videoRepository;
         this.likeRepository = likeRepository;
@@ -55,6 +58,7 @@ public class AdminPostService {
         this.videoProcessingJobRepository = videoProcessingJobRepository;
         this.s3MediaDeletionService = s3MediaDeletionService;
         this.notificationService = notificationService;
+        this.reviewQueueCleanupService = reviewQueueCleanupService;
     }
 
     @Transactional(readOnly = true)
@@ -97,6 +101,7 @@ public class AdminPostService {
         video.setStatus(VideoStatus.REMOVED);
         videoRepository.save(video);
         notificationService.purgeForRemovedVideo(video.getId());
+        reviewQueueCleanupService.dismissOpenForVideo(video.getId());
     }
 
     @Transactional(readOnly = true)

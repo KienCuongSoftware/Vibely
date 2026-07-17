@@ -238,12 +238,16 @@ public class User {
         this.privateAccount = privateAccount;
     }
 
+    /**
+     * Prefer custom uploaded avatar over OAuth (Google/Facebook) photo.
+     * Matches {@link com.vibely.backend.auth.service.UserAvatarResolver}.
+     */
     public String resolveAvatarUrl(String fallbackAvatarUrl) {
-        if (StringUtils.hasText(googleAvatarUrl)) {
-            return googleAvatarUrl;
-        }
         if (StringUtils.hasText(avatarUrl)) {
             return avatarUrl;
+        }
+        if (StringUtils.hasText(googleAvatarUrl)) {
+            return googleAvatarUrl;
         }
         return fallbackAvatarUrl;
     }

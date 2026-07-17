@@ -16,11 +16,14 @@ import com.vibely.backend.interaction.repository.FollowRepository;
 import com.vibely.backend.interaction.repository.LikeRepository;
 import com.vibely.backend.interaction.repository.VideoViewRepository;
 import com.vibely.backend.storage.S3OwnedMediaValidator;
+import com.vibely.backend.explore.service.ExploreCacheService;
 import com.vibely.backend.video.VideoStatus;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +43,7 @@ public class UserService {
     private final VideoViewRepository videoViewRepository;
     private final S3OwnedMediaValidator ownedMediaValidator;
     private final ProfileVisibilityService profileVisibilityService;
+    private final ObjectProvider<ExploreCacheService> exploreCacheService;
 
     public UserService(
         UserRepository userRepository,
@@ -49,7 +53,8 @@ public class UserService {
         LikeRepository likeRepository,
         VideoViewRepository videoViewRepository,
         S3OwnedMediaValidator ownedMediaValidator,
-        ProfileVisibilityService profileVisibilityService
+        ProfileVisibilityService profileVisibilityService,
+        ObjectProvider<ExploreCacheService> exploreCacheService
     ) {
         this.userRepository = userRepository;
         this.usernameService = usernameService;
@@ -59,6 +64,7 @@ public class UserService {
         this.videoViewRepository = videoViewRepository;
         this.ownedMediaValidator = ownedMediaValidator;
         this.profileVisibilityService = profileVisibilityService;
+        this.exploreCacheService = exploreCacheService;
     }
 
     public PublicUserProfileResponse getPublicProfile(String username, Authentication authentication) {
@@ -111,6 +117,7 @@ public class UserService {
         user.setUsername(normalizedUsername);
         user.setDisplayName(request.displayName().trim());
         user.setBio(request.bio() == null || request.bio().isBlank() ? "" : request.bio().trim());
+        String previousAvatar = user.getAvatarUrl();
         String avatarUrl = request.avatarUrl() == null || request.avatarUrl().isBlank()
             ? null
             : request.avatarUrl().trim();
@@ -119,6 +126,18 @@ public class UserService {
         }
         user.setAvatarUrl(avatarUrl);
         User saved = userRepository.save(user);
+
+        if (!Objects.equals(previousAvatar, avatarUrl)) {
+            ExploreCacheService cache = exploreCacheService.getIfAvailable();
+            if (cache != null) {
+                // Cards embed authorAvatarUrl — flush so Explore/For You pick up the new photo.
+                cache.evictByPrefix("trending");
+                cache.evictByPrefix("category:");
+                cache.evictByPrefix("topic:");
+                cache.evictByPrefix("for-you:");
+                cache.evictByPrefix("related:");
+            }
+        }
 
         return toPublicProfile(saved, authentication);
     }

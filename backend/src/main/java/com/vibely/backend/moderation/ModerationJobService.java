@@ -226,16 +226,20 @@ public class ModerationJobService {
             trustService.onAiAllow(authorId, job.getVideo().getId());
         }
 
-        if (decision == ModerationDecision.REVIEW) {
+        if (!autoBanned && (decision == ModerationDecision.REVIEW
+            || decision == ModerationDecision.BLOCK
+            || decision == ModerationDecision.DELETE)) {
+            String reason = decision == ModerationDecision.REVIEW ? "AI_REVIEW" : "AI_BLOCK_HOLD";
             jdbcTemplate.update(
                 """
                 INSERT INTO moderation_review_queue
                     (video_id, report_id, priority, queue_state, reason, created_at, updated_at)
-                VALUES (?, ?, ?, 'OPEN', 'AI_REVIEW', NOW(), NOW())
+                VALUES (?, ?, ?, 'OPEN', ?, NOW(), NOW())
                 """,
                 job.getVideo().getId(),
                 saved.getId(),
-                Math.max(1, 100 - request.getRisk())
+                Math.max(1, 100 - request.getRisk()),
+                reason
             );
             writeOutbox(
                 "moderation_report",

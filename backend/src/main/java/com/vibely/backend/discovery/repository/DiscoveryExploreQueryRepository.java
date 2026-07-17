@@ -18,7 +18,7 @@ public interface DiscoveryExploreQueryRepository extends Repository<com.vibely.b
                    v.created_at as createdAt,
                    coalesce(v.ranking_score, ves.ranking_score, v.explore_score) as exploreScore,
                    u.id as authorId, u.username as authorUsername, u.display_name as authorDisplayName,
-                   coalesce(nullif(trim(u.google_avatar_url), ''), nullif(trim(u.avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl
+                   coalesce(nullif(trim(u.avatar_url), ''), nullif(trim(u.google_avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl
         """;
 
     String RANK_ORDER = """
@@ -96,7 +96,7 @@ public interface DiscoveryExploreQueryRepository extends Repository<com.vibely.b
                      + case when v.created_at >= :freshSince then 0.10 else 0 end
                    ) as exploreScore,
                    u.id as authorId, u.username as authorUsername, u.display_name as authorDisplayName,
-                   coalesce(nullif(trim(u.google_avatar_url), ''), nullif(trim(u.avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl
+                   coalesce(nullif(trim(u.avatar_url), ''), nullif(trim(u.google_avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl
             from videos v
             join users u on u.id = v.author_id
             left join video_engagement_stats ves on ves.video_id = v.id

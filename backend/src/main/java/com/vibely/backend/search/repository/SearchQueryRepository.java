@@ -41,7 +41,7 @@ public interface SearchQueryRepository extends JpaRepository<User, Long> {
                    u.id as authorId,
                    u.username as authorUsername,
                    u.display_name as authorDisplayName,
-                   coalesce(nullif(trim(u.google_avatar_url), ''), nullif(trim(u.avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl,
+                   coalesce(nullif(trim(u.avatar_url), ''), nullif(trim(u.google_avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl,
                    coalesce(ves.views, 0) as viewCount,
                    coalesce(lc.like_count, 0) as likeCount,
                    (lower(coalesce(v.title, '')) like concat('%', lower(:q), '%')) as titleMatch,

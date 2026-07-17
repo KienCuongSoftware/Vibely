@@ -1,17 +1,25 @@
-import React from 'react'
+import React from "react";
 
-export function SkeletonBlock({ className = '' }) {
-  return <div className={`animate-pulse rounded-md bg-zinc-800/90 ${className}`} aria-hidden />
+export function SkeletonBlock({ className = "" }) {
+  return (
+    <div
+      className={`animate-pulse rounded-md bg-zinc-800/90 ${className}`}
+      aria-hidden
+    />
+  );
 }
 
 function AdminPaginationSkeleton() {
   return (
-    <div className="mt-4 flex items-center justify-end gap-2">
-      <SkeletonBlock className="h-9 w-9 rounded-full" />
-      <SkeletonBlock className="h-4 w-16" />
-      <SkeletonBlock className="h-9 w-9 rounded-full" />
+    <div className="mt-4 flex items-center justify-end gap-1.5">
+      <SkeletonBlock className="h-9 w-9 rounded-lg" />
+      <SkeletonBlock className="h-9 w-9 rounded-lg" />
+      <SkeletonBlock className="h-9 w-9 rounded-lg" />
+      <SkeletonBlock className="h-9 w-9 rounded-lg" />
+      <SkeletonBlock className="h-9 w-9 rounded-lg" />
+      <SkeletonBlock className="h-9 w-9 rounded-lg" />
     </div>
-  )
+  );
 }
 
 export function AdminUsersPageSkeleton() {
@@ -34,11 +42,13 @@ export function AdminUsersPageSkeleton() {
         <table className="w-full min-w-[920px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-zinc-800">
-              {['w-28', 'w-32', 'w-20', 'w-24', 'w-24', 'w-24', 'w-28'].map((width, index) => (
-                <th key={index} className="px-3 py-3">
-                  <SkeletonBlock className={`mx-auto h-3 ${width}`} />
-                </th>
-              ))}
+              {["w-28", "w-32", "w-20", "w-24", "w-24", "w-24", "w-28"].map(
+                (width, index) => (
+                  <th key={index} className="px-3 py-3">
+                    <SkeletonBlock className={`mx-auto h-3 ${width}`} />
+                  </th>
+                ),
+              )}
             </tr>
           </thead>
           <tbody>
@@ -83,7 +93,7 @@ export function AdminUsersPageSkeleton() {
 
       <AdminPaginationSkeleton />
     </section>
-  )
+  );
 }
 
 export function AdminPostsPageSkeleton() {
@@ -111,13 +121,21 @@ export function AdminPostsPageSkeleton() {
         <table className="w-full min-w-[1080px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-zinc-800">
-              {['w-28', 'w-24', 'w-20', 'w-12', 'w-12', 'w-16', 'w-12', 'w-24', 'w-20'].map(
-                (width, index) => (
-                  <th key={index} className="px-3 py-3 first:pl-0">
-                    <SkeletonBlock className={`h-3 ${width}`} />
-                  </th>
-                ),
-              )}
+              {[
+                "w-28",
+                "w-24",
+                "w-20",
+                "w-12",
+                "w-12",
+                "w-16",
+                "w-12",
+                "w-24",
+                "w-20",
+              ].map((width, index) => (
+                <th key={index} className="px-3 py-3 first:pl-0">
+                  <SkeletonBlock className={`h-3 ${width}`} />
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -170,7 +188,7 @@ export function AdminPostsPageSkeleton() {
 
       <AdminPaginationSkeleton />
     </section>
-  )
+  );
 }
 
 export function AdminBanAppealsPageSkeleton() {
@@ -195,11 +213,13 @@ export function AdminBanAppealsPageSkeleton() {
         <table className="w-full min-w-[980px] border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-zinc-800">
-              {['w-12', 'w-44', 'w-64', 'w-24', 'w-28', 'w-28'].map((width, index) => (
-                <th key={index} className="px-3 py-3 first:pl-0">
-                  <SkeletonBlock className={`h-3 ${width}`} />
-                </th>
-              ))}
+              {["w-12", "w-44", "w-64", "w-24", "w-28", "w-28"].map(
+                (width, index) => (
+                  <th key={index} className="px-3 py-3 first:pl-0">
+                    <SkeletonBlock className={`h-3 ${width}`} />
+                  </th>
+                ),
+              )}
             </tr>
           </thead>
           <tbody>
@@ -236,5 +256,5 @@ export function AdminBanAppealsPageSkeleton() {
 
       <AdminPaginationSkeleton />
     </section>
-  )
+  );
 }

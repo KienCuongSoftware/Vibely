@@ -17,7 +17,7 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
                    v.share_count as shareCount,
                    v.created_at as createdAt, v.explore_score as exploreScore,
                    u.id as authorId, u.username as authorUsername, u.display_name as authorDisplayName,
-                   coalesce(nullif(trim(u.google_avatar_url), ''), nullif(trim(u.avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl
+                   coalesce(nullif(trim(u.avatar_url), ''), nullif(trim(u.google_avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl
             from videos v
             join users u on u.id = v.author_id
             where v.status = 'READY'
@@ -50,7 +50,7 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
                    v.share_count as shareCount,
                    v.created_at as createdAt, v.explore_score as exploreScore,
                    u.id as authorId, u.username as authorUsername, u.display_name as authorDisplayName,
-                   coalesce(nullif(trim(u.google_avatar_url), ''), nullif(trim(u.avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl
+                   coalesce(nullif(trim(u.avatar_url), ''), nullif(trim(u.google_avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl
             from videos v
             join users u on u.id = v.author_id
             join video_categories vc on vc.video_id = v.id
@@ -90,7 +90,7 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
                    v.share_count as shareCount,
                    v.created_at as createdAt, v.explore_score as exploreScore,
                    u.id as authorId, u.username as authorUsername, u.display_name as authorDisplayName,
-                   coalesce(nullif(trim(u.google_avatar_url), ''), nullif(trim(u.avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl
+                   coalesce(nullif(trim(u.avatar_url), ''), nullif(trim(u.google_avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl
             from videos v
             join users u on u.id = v.author_id
             left join video_hashtags vh on vh.video_id = v.id
@@ -131,7 +131,7 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
                    v2.share_count as shareCount,
                    v2.created_at as createdAt, v2.explore_score as exploreScore,
                    u.id as authorId, u.username as authorUsername, u.display_name as authorDisplayName,
-                   coalesce(nullif(trim(u.google_avatar_url), ''), nullif(trim(u.avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl
+                   coalesce(nullif(trim(u.avatar_url), ''), nullif(trim(u.google_avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl
             from videos v1
             join videos v2 on true
             join users u on u.id = v2.author_id

@@ -5,6 +5,7 @@ import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.BirthDateValidator;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.common.SqlSafe;
+import com.vibely.backend.moderation.ModerationReviewQueueCleanupService;
 import com.vibely.backend.user.dto.UsernameCheckResponse;
 import com.vibely.backend.user.entity.Role;
 import com.vibely.backend.user.entity.User;
@@ -35,6 +36,7 @@ public class AdminUserService {
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final ModerationReviewQueueCleanupService reviewQueueCleanupService;
 
     public AdminUserService(
         UserRepository userRepository,
@@ -43,7 +45,8 @@ public class AdminUserService {
         UserExistenceBloomFilterService bloomFilterService,
         PasswordEncoder passwordEncoder,
         JdbcTemplate jdbcTemplate,
-        RefreshTokenRepository refreshTokenRepository
+        RefreshTokenRepository refreshTokenRepository,
+        ModerationReviewQueueCleanupService reviewQueueCleanupService
     ) {
         this.userRepository = userRepository;
         this.usernameService = usernameService;
@@ -52,6 +55,7 @@ public class AdminUserService {
         this.passwordEncoder = passwordEncoder;
         this.jdbcTemplate = jdbcTemplate;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.reviewQueueCleanupService = reviewQueueCleanupService;
     }
 
     public Page<User> listUsers(int page, int size) {
@@ -196,6 +200,7 @@ public class AdminUserService {
         target.setDeactivatedAt(null);
         userRepository.save(target);
         refreshTokenRepository.revokeAllByUserId(target.getId());
+        reviewQueueCleanupService.dismissOpenForAuthor(target.getId());
 
         return toBannedUserInfo(target);
     }

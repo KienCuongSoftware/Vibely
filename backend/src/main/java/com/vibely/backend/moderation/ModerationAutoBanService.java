@@ -29,17 +29,20 @@ public class ModerationAutoBanService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JdbcTemplate jdbcTemplate;
     private final ModerationProperties properties;
+    private final ModerationReviewQueueCleanupService reviewQueueCleanupService;
 
     public ModerationAutoBanService(
         UserRepository userRepository,
         RefreshTokenRepository refreshTokenRepository,
         JdbcTemplate jdbcTemplate,
-        ModerationProperties properties
+        ModerationProperties properties,
+        ModerationReviewQueueCleanupService reviewQueueCleanupService
     ) {
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.jdbcTemplate = jdbcTemplate;
         this.properties = properties;
+        this.reviewQueueCleanupService = reviewQueueCleanupService;
     }
 
     /**
@@ -149,6 +152,7 @@ public class ModerationAutoBanService {
             """,
             authorId
         );
+        reviewQueueCleanupService.dismissOpenForAuthor(authorId);
         log.info(
             "AI auto-ban userId={} videoId={} decision={} removedVideos={}",
             authorId,

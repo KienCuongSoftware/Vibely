@@ -375,7 +375,7 @@ export function StudioPostsPage() {
                               </p>
                             ) : String(v.status || '').toUpperCase() === 'HIDDEN' ? (
                               <p className="mt-0.5 text-xs font-medium text-amber-400">
-                                Đang kiểm duyệt — chưa lên For You
+                                Đã ẩn / đang kiểm duyệt — chưa lên For You
                               </p>
                             ) : null}
                           </div>

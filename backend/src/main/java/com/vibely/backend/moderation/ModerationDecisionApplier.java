@@ -79,8 +79,8 @@ public class ModerationDecisionApplier {
                 }
             }
             case REVIEW -> {
-                // Author can see the post; keep off For You until human clears review.
-                exploreEligible = false;
+                // Soft / borderline: stay public (READY) while humans review in admin queue.
+                exploreEligible = true;
                 reviewRequired = true;
                 statusApplied = VideoStatus.READY.name();
                 if (!shadow
@@ -92,10 +92,23 @@ public class ModerationDecisionApplier {
             }
             case BLOCK, DELETE -> {
                 exploreEligible = false;
-                reviewRequired = false;
-                statusApplied = VideoStatus.REMOVED.name();
-                if (!shadow) {
-                    nextStatus = VideoStatus.REMOVED;
+                boolean humanConfirmed = appliedBy != null
+                    && !appliedBy.isBlank()
+                    && !"SYSTEM".equalsIgnoreCase(appliedBy);
+                if (humanConfirmed) {
+                    // Admin confirmed takedown.
+                    reviewRequired = false;
+                    statusApplied = VideoStatus.REMOVED.name();
+                    if (!shadow) {
+                        nextStatus = VideoStatus.REMOVED;
+                    }
+                } else {
+                    // AI severe hit: hide from public + human review queue (do not hard-delete).
+                    reviewRequired = true;
+                    statusApplied = VideoStatus.HIDDEN.name();
+                    if (!shadow) {
+                        nextStatus = VideoStatus.HIDDEN;
+                    }
                 }
             }
             default -> {

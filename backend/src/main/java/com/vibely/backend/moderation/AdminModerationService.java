@@ -60,21 +60,28 @@ public class AdminModerationService {
             ? null
             : state.trim().toUpperCase(Locale.ROOT);
 
+        boolean activeQueue = stateFilter == null
+            || "OPEN".equals(stateFilter)
+            || "CLAIMED".equals(stateFilter);
+
         String where = stateFilter == null
             ? "WHERE q.queue_state IN ('OPEN', 'CLAIMED')"
             : "WHERE q.queue_state = ?";
+        // Soft-deleted videos stay in DB as REMOVED; hide them from the live review queue.
+        if (activeQueue) {
+            where += " AND v.status <> 'REMOVED'";
+        }
 
         try {
+            String countSql = """
+                SELECT COUNT(*)
+                FROM moderation_review_queue q
+                JOIN videos v ON v.id = q.video_id
+                %s
+                """.formatted(where);
             Long total = stateFilter == null
-                ? jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM moderation_review_queue q " + where,
-                    Long.class
-                )
-                : jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM moderation_review_queue q " + where,
-                    Long.class,
-                    stateFilter
-                );
+                ? jdbcTemplate.queryForObject(countSql, Long.class)
+                : jdbcTemplate.queryForObject(countSql, Long.class, stateFilter);
             if (total == null) {
                 total = 0L;
             }

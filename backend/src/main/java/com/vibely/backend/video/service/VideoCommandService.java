@@ -6,6 +6,7 @@ import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.moderation.ModerationCaptionGateService;
 import com.vibely.backend.moderation.ModerationJoinService;
 import com.vibely.backend.moderation.ModerationPublicationHoldService;
+import com.vibely.backend.moderation.ModerationReviewQueueCleanupService;
 import com.vibely.backend.notification.NotificationService;
 import com.vibely.backend.originality.OriginalityEnqueueService;
 import com.vibely.backend.processing.VideoProcessingEnqueueService;
@@ -48,6 +49,7 @@ public class VideoCommandService {
     private final ModerationCaptionGateService captionGateService;
     private final ModerationJoinService moderationJoinService;
     private final ModerationPublicationHoldService publicationHoldService;
+    private final ModerationReviewQueueCleanupService reviewQueueCleanupService;
     private final TransactionTemplate tx;
 
     public VideoCommandService(
@@ -66,6 +68,7 @@ public class VideoCommandService {
         ModerationCaptionGateService captionGateService,
         ModerationJoinService moderationJoinService,
         ModerationPublicationHoldService publicationHoldService,
+        ModerationReviewQueueCleanupService reviewQueueCleanupService,
         PlatformTransactionManager transactionManager
     ) {
         this.videoRepository = videoRepository;
@@ -83,6 +86,7 @@ public class VideoCommandService {
         this.captionGateService = captionGateService;
         this.moderationJoinService = moderationJoinService;
         this.publicationHoldService = publicationHoldService;
+        this.reviewQueueCleanupService = reviewQueueCleanupService;
         this.tx = new TransactionTemplate(transactionManager);
     }
 
@@ -307,6 +311,7 @@ public class VideoCommandService {
         video.setStatus(VideoStatus.REMOVED);
         videoRepository.save(video);
         notificationService.purgeForRemovedVideo(video.getId());
+        reviewQueueCleanupService.dismissOpenForVideo(video.getId());
     }
 
     @Transactional

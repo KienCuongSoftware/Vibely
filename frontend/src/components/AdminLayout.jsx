@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
-import { IoMenu } from 'react-icons/io5'
-import { AdminSidebar } from './AdminSidebar.jsx'
-import { StudioAccountMenu } from './StudioAccountMenu.jsx'
+import React, { useState } from "react";
+import { IoMenu } from "react-icons/io5";
+import { AdminSidebar } from "./AdminSidebar.jsx";
+import { StudioAccountMenu } from "./StudioAccountMenu.jsx";
 
-export function AdminLayout({ active = 'users', title, subtitle, children }) {
-  const [mobileNavOpen, setMobileNavOpen] = useState(false)
+export function AdminLayout({ active = "users", title, subtitle, children }) {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
     <section className="flex h-dvh overflow-hidden bg-black text-zinc-100">
@@ -46,7 +46,9 @@ export function AdminLayout({ active = 'users', title, subtitle, children }) {
 
         <header className="mb-4 rounded-xl border border-zinc-800/80 bg-zinc-900/50 px-4 py-3 sm:mb-6">
           <h1 className="text-xl font-bold sm:text-2xl">{title}</h1>
-          {subtitle ? <p className="mt-1 text-sm text-zinc-400">{subtitle}</p> : null}
+          {subtitle ? (
+            <p className="mt-1 text-sm text-zinc-400">{subtitle}</p>
+          ) : null}
         </header>
 
         <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain">
@@ -54,5 +56,5 @@ export function AdminLayout({ active = 'users', title, subtitle, children }) {
         </div>
       </main>
     </section>
-  )
+  );
 }
