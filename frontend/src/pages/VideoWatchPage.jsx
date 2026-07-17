@@ -1675,12 +1675,14 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
   const shareLinkDisplay = buildShareableVideoUrl(
     panelVideo?.publicId,
     panelVideo?.authorUsername,
+    { shareMethod: 'copy_link' },
   )
 
   const copyShareLink = async () => {
     const url = buildShareableVideoUrl(
       panelVideo?.publicId,
       panelVideo?.authorUsername,
+      { shareMethod: 'copy_link' },
     )
     if (!url) return
     try {
@@ -2431,6 +2433,7 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
           const url = buildShareableVideoUrl(
             menuVideo?.publicId,
             menuVideo?.authorUsername,
+            { shareMethod: 'copy_link' },
           )
           if (!url) return
           try {

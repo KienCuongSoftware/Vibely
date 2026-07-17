@@ -1075,7 +1075,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   );
 
   const handleVideoContextCopyLink = useCallback(async (video) => {
-    const url = buildShareableVideoUrl(video?.publicId, video?.authorUsername);
+    const url = buildShareableVideoUrl(video?.publicId, video?.authorUsername, {
+      shareMethod: 'copy_link',
+    });
     if (!url) return;
     await navigator.clipboard.writeText(url);
   }, []);

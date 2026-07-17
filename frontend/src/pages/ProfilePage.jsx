@@ -22,6 +22,8 @@ import { handleSidebarMenuSelect } from '../utils/sidebarNavigation.js'
 import { TooltipHoverWrap } from '../components/TooltipControls'
 import { AccountActionsPill } from '../components/AccountActionsPill'
 import { ProfileFollowListModal } from '../components/ProfileFollowListModal'
+import { ProfileShareModal } from '../components/ProfileShareModal.jsx'
+import { ProfileEmbedModal } from '../components/ProfileEmbedModal.jsx'
 import {
   IoAlbumsOutline,
   IoArrowBack,
@@ -427,6 +429,8 @@ export function ProfilePage() {
   const lastWatchedTileRef = useRef(null)
   const profileScrollRef = useRef(null)
   const [profileActionNotice, setProfileActionNotice] = useState('')
+  const [profileShareOpen, setProfileShareOpen] = useState(false)
+  const [profileEmbedOpen, setProfileEmbedOpen] = useState(false)
   const [followBusy, setFollowBusy] = useState(false)
   const [followListOpen, setFollowListOpen] = useState(false)
   const [followListTab, setFollowListTab] = useState('following')
@@ -643,16 +647,13 @@ export function ProfilePage() {
     }
   }, [token, profile?.id, isOwnProfile, navigate])
 
-  const handleProfileShareClick = useCallback(async () => {
-    try {
-      const url = typeof window !== 'undefined' ? window.location.href : ''
-      if (!url) return
-      await navigator.clipboard.writeText(url)
-      setProfileActionNotice('Đã sao chép liên kết hồ sơ.')
-    } catch {
-      setProfileActionNotice('Không thể sao chép liên kết hồ sơ.')
+  const handleProfileShareClick = useCallback(() => {
+    if (!profile?.username) {
+      setProfileActionNotice('Không tìm thấy hồ sơ để chia sẻ.')
+      return
     }
-  }, [])
+    setProfileShareOpen(true)
+  }, [profile?.username])
 
   const handleProfileMoreClick = useCallback(() => {
     setProfileActionNotice('Thêm tuỳ chọn hồ sơ sẽ sớm có mặt.')
@@ -1497,7 +1498,7 @@ export function ProfilePage() {
                       type="button"
                       aria-label="Chia sẻ hồ sơ"
                       className="cursor-pointer rounded-md border border-zinc-700 p-2 text-zinc-100"
-                      onClick={() => void handleProfileShareClick()}
+                      onClick={handleProfileShareClick}
                     >
                       <IoArrowRedo />
                     </button>
@@ -1648,7 +1649,7 @@ export function ProfilePage() {
                         type="button"
                         aria-label="Chia sẻ hồ sơ"
                         className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
-                        onClick={() => void handleProfileShareClick()}
+                        onClick={handleProfileShareClick}
                       >
                         <IoArrowRedo />
                       </button>
@@ -2018,6 +2019,22 @@ export function ProfilePage() {
           token={token}
           onRequireLogin={handleFollowListRequireLogin}
           isOwnProfile={isOwnProfile}
+        />
+        <ProfileShareModal
+          open={profileShareOpen}
+          onClose={() => setProfileShareOpen(false)}
+          username={profile?.username}
+          displayName={profile?.displayName}
+          onOpenEmbed={() => setProfileEmbedOpen(true)}
+        />
+        <ProfileEmbedModal
+          open={profileEmbedOpen}
+          onClose={() => setProfileEmbedOpen(false)}
+          profile={{
+            ...profile,
+            bio: resolveProfileBio(profile?.bio) ?? '',
+          }}
+          videos={profileVideos}
         />
         {isEditModalOpen ? (
           <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 px-4">

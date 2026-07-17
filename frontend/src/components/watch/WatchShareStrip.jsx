@@ -87,8 +87,9 @@ export function WatchShareStrip({
     [videoTitle, videoDescription],
   )
 
-  const watchUrl = useMemo(
-    () => buildShareableVideoUrl(videoPublicId, authorUsername),
+  const watchUrlFor = useCallback(
+    (shareMethod) =>
+      buildShareableVideoUrl(videoPublicId, authorUsername, { shareMethod }),
     [videoPublicId, authorUsername],
   )
   const embedUrl = useMemo(
@@ -137,7 +138,7 @@ export function WatchShareStrip({
   const openPlatform = useCallback(
     (channel) => {
       const url = buildPlatformShareUrl(channel, {
-        url: watchUrl,
+        url: watchUrlFor(channel),
         title: shareCaption,
       })
       if (!url) return
@@ -148,7 +149,7 @@ export function WatchShareStrip({
       }
       void recordShare(channel)
     },
-    [watchUrl, shareCaption, recordShare],
+    [watchUrlFor, shareCaption, recordShare],
   )
 
   const handleRepost = useCallback(() => {

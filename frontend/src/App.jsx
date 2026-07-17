@@ -23,6 +23,7 @@ const StudioEditPostPage = lazyNamed(() => import('./pages/StudioEditPostPage.js
 const StudioVideoAnalyticsPage = lazyNamed(() => import('./pages/StudioVideoAnalyticsPage.jsx'), 'StudioVideoAnalyticsPage')
 const StudioPostCommentsPage = lazyNamed(() => import('./pages/StudioPostCommentsPage.jsx'), 'StudioPostCommentsPage')
 const ProfilePage = lazyNamed(() => import('./pages/ProfilePage.jsx'), 'ProfilePage')
+const ProfileEmbedPage = lazyNamed(() => import('./pages/ProfileEmbedPage.jsx'), 'ProfileEmbedPage')
 const SettingsPage = lazyNamed(() => import('./pages/SettingsPage.jsx'), 'SettingsPage')
 const ActivityVideoWatchPage = lazyNamed(() => import('./pages/ActivityVideoWatchPage.jsx'), 'ActivityVideoWatchPage')
 const PublicVideoDetailPage = lazyNamed(() => import('./pages/PublicVideoDetailPage.jsx'), 'PublicVideoDetailPage')
@@ -112,6 +113,7 @@ function App() {
           <Route path="/admin/posts/:publicId" element={<Navigate to="/login" replace />} />
           <Route path="/admin/moderation" element={<Navigate to="/login" replace />} />
           <Route path="/activity/:username/video/:publicId" element={<ActivityVideoWatchPage />} />
+          <Route path="/embed/profile/:username" element={<ProfileEmbedPage />} />
           <Route path="/:username/video/:publicId" element={<PublicVideoDetailPage />} />
           <Route path="/:username/:publicId" element={<ProfileWatchVideoRoutePage />} />
           <Route path="/profile" element={<Navigate to="/login" replace />} />
@@ -218,6 +220,7 @@ function App() {
         <Route path="/search" element={<SearchResultsPage />} />
         <Route path="/tag/:tag" element={<HashtagPage />} />
         <Route path="/activity/:username/video/:publicId" element={<ActivityVideoWatchPage />} />
+        <Route path="/embed/profile/:username" element={<ProfileEmbedPage />} />
         <Route path="/:username/video/:publicId" element={<PublicVideoDetailPage />} />
         <Route path="/:username/:publicId" element={<ProfileWatchVideoRoutePage />} />
         <Route path="/profile" element={<ProfilePage />} />

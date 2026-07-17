@@ -435,7 +435,9 @@ export function FeedStyleVideoDetailPage({
   }, [])
 
   const handleVideoContextCopyLink = useCallback(async () => {
-    const url = buildShareableVideoUrl(video?.publicId, video?.authorUsername)
+    const url = buildShareableVideoUrl(video?.publicId, video?.authorUsername, {
+      shareMethod: 'copy_link',
+    })
     if (!url) return
     await navigator.clipboard.writeText(url)
   }, [video?.authorUsername, video?.publicId])

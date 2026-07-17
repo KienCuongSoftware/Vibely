@@ -184,8 +184,11 @@ export function VideoShareModal({
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState("");
 
-  const watchUrl = useMemo(
-    () => (open && videoId ? buildShareableVideoUrl(videoId, authorUsername) : ""),
+  const watchUrlFor = useCallback(
+    (shareMethod) =>
+      open && videoId
+        ? buildShareableVideoUrl(videoId, authorUsername, { shareMethod })
+        : "",
     [open, videoId, authorUsername],
   );
   const embedUrl = useMemo(
@@ -310,7 +313,7 @@ export function VideoShareModal({
   const openPlatform = useCallback(
     async (channel) => {
       const url = buildPlatformShareUrl(channel, {
-        url: watchUrl,
+        url: watchUrlFor(channel),
         title: videoTitle || "Vibely",
       });
       if (!url) return;
@@ -327,7 +330,7 @@ export function VideoShareModal({
         onClose?.();
       }
     },
-    [watchUrl, videoTitle, recordShare, onClose],
+    [watchUrlFor, videoTitle, recordShare, onClose],
   );
 
   const handleEmbed = useCallback(async () => {
@@ -449,7 +452,7 @@ export function VideoShareModal({
                       <FriendChip
                         key={f.id ?? f.username}
                         friend={f}
-                        onClick={() => void copyText(watchUrl, "copy")}
+                        onClick={() => void copyText(watchUrlFor("copy_link"), "copy")}
                       />
                     ))}
                   </ShareModalScrollRow>
@@ -461,7 +464,7 @@ export function VideoShareModal({
                   bgClass="bg-[#0075DC]"
                   icon={<IoLink className="text-[30px]" aria-hidden />}
                   disabled={busy}
-                  onClick={() => void copyText(watchUrl, "copy")}
+                  onClick={() => void copyText(watchUrlFor("copy_link"), "copy")}
                 />
                 <ShareCircleButton
                   label="WhatsApp"
