@@ -1,25 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { IoClose, IoEyeOutline } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { IoClose } from "react-icons/io5";
+import { ProfileEmbedPreview } from "./ProfileEmbedPreview.jsx";
 import {
   buildProfileEmbedSnippet,
+  buildShareableProfileEmbedUrl,
   buildShareableProfileUrl,
   normalizeShareUsername,
 } from "../utils/shareUrl.js";
 
-const DEFAULT_AVATAR = "/images/users/default-avatar.jpeg";
-
-function formatCompactCount(value) {
-  const n = Number(value ?? 0);
-  if (!Number.isFinite(n) || n < 0) return "0";
-  return new Intl.NumberFormat("vi-VN", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(n);
-}
-
 /**
- * TikTok-style "Nhúng hồ sơ" modal: preview card + embed code + copy.
+ * TikTok-style "Nhúng hồ sơ": left = dark embed preview page, right = code.
  */
 export function ProfileEmbedModal({
   open,
@@ -33,19 +23,17 @@ export function ProfileEmbedModal({
   const username = normalizeShareUsername(profile?.username);
   const displayName =
     String(profile?.displayName ?? "").trim() || username || "Vibely";
-  const avatar = String(profile?.avatarUrl ?? "").trim() || DEFAULT_AVATAR;
-  const bio = String(profile?.bio ?? "").trim();
   const profileUrl = useMemo(
     () => (username ? buildShareableProfileUrl(username).split("?")[0] : ""),
+    [username],
+  );
+  const embedPageUrl = useMemo(
+    () => (username ? buildShareableProfileEmbedUrl(username) : ""),
     [username],
   );
   const snippet = useMemo(
     () => (username ? buildProfileEmbedSnippet(username) : ""),
     [username],
-  );
-  const previewVideos = useMemo(
-    () => (Array.isArray(videos) ? videos.filter(Boolean).slice(0, 8) : []),
-    [videos],
   );
 
   useEffect(() => {
@@ -87,7 +75,7 @@ export function ProfileEmbedModal({
 
   return (
     <div
-      className="fixed inset-0 z-[130] flex items-center justify-center bg-black/60 p-3 sm:p-6"
+      className="fixed inset-0 z-[130] flex items-center justify-center bg-black/65 p-3 sm:p-6"
       role="presentation"
       onClick={onClose}
     >
@@ -95,11 +83,11 @@ export function ProfileEmbedModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="profile-embed-title"
-        className="relative flex max-h-[min(92vh,720px)] w-full max-w-[920px] flex-col overflow-hidden rounded-2xl bg-[#1f1f1f] text-zinc-100 shadow-2xl"
+        className="relative flex max-h-[min(94vh,760px)] w-full max-w-[980px] flex-col overflow-hidden rounded-2xl bg-[#252525] text-zinc-100 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="relative flex shrink-0 items-center justify-center border-b border-white/10 px-5 py-4">
-          <h2 id="profile-embed-title" className="text-lg font-semibold">
+        <header className="relative flex shrink-0 items-center px-5 py-4">
+          <h2 id="profile-embed-title" className="text-[17px] font-semibold">
             Nhúng hồ sơ
           </h2>
           <button
@@ -112,128 +100,57 @@ export function ProfileEmbedModal({
           </button>
         </header>
 
-        <div className="grid min-h-0 flex-1 gap-0 overflow-y-auto lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-          <section className="border-b border-white/10 p-4 sm:p-5 lg:border-b-0 lg:border-r">
-            <div className="overflow-hidden rounded-xl border border-white/10 bg-[#141414]">
-              <div className="flex items-start gap-3 p-4">
-                <img
-                  src={avatar}
-                  alt=""
-                  className="h-14 w-14 shrink-0 rounded-full object-cover ring-1 ring-white/10"
-                  onError={(e) => {
-                    e.currentTarget.src = DEFAULT_AVATAR;
-                  }}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-base font-bold text-white">
-                    @{username}
-                  </p>
-                  <p className="mt-0.5 truncate text-sm text-zinc-400">
-                    {displayName}
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-zinc-300">
-                    <span>
-                      <strong className="text-white">
-                        {formatCompactCount(profile?.followingCount)}
-                      </strong>{" "}
-                      Đang Follow
-                    </span>
-                    <span>
-                      <strong className="text-white">
-                        {formatCompactCount(profile?.followerCount)}
-                      </strong>{" "}
-                      Follower
-                    </span>
-                    <span>
-                      <strong className="text-white">
-                        {formatCompactCount(profile?.totalLikeCount)}
-                      </strong>{" "}
-                      Thích
-                    </span>
-                  </div>
-                </div>
-              </div>
+        <div className="grid min-h-0 flex-1 gap-5 overflow-y-auto px-4 pb-5 sm:px-5 lg:grid-cols-[minmax(300px,420px)_minmax(0,1fr)] lg:gap-6 lg:overflow-hidden">
+          {/* Left: standalone dark preview page (TikTok embed card) */}
+          <div className="mx-auto flex w-full max-w-[420px] justify-center lg:mx-0 lg:max-h-full lg:overflow-hidden">
+            <ProfileEmbedPreview
+              className="h-full max-h-[min(640px,70vh)] w-full"
+              username={username}
+              displayName={displayName}
+              avatarUrl={profile?.avatarUrl}
+              bio={profile?.bio}
+              followingCount={profile?.followingCount}
+              followerCount={profile?.followerCount}
+              totalLikeCount={profile?.totalLikeCount}
+              videos={videos}
+              profileHref={`/@${username}`}
+            />
+          </div>
 
-              {bio ? (
-                <p className="line-clamp-3 px-4 pb-3 text-sm leading-snug text-zinc-300">
-                  {bio}
-                </p>
-              ) : null}
-
-              {previewVideos.length > 0 ? (
-                <div className="scrollbar-none flex gap-1.5 overflow-x-auto px-4 pb-4">
-                  {previewVideos.map((video) => {
-                    const thumb =
-                      String(video?.thumbnailUrl ?? "").trim() || null;
-                    const views = formatCompactCount(
-                      video?.viewCount ?? video?.views ?? 0,
-                    );
-                    return (
-                      <div
-                        key={String(video.publicId ?? video.id)}
-                        className="relative h-[132px] w-[96px] shrink-0 overflow-hidden rounded-md bg-zinc-800"
-                      >
-                        {thumb ? (
-                          <img
-                            src={thumb}
-                            alt=""
-                            className="h-full w-full object-cover"
-                          />
-                        ) : null}
-                        <span className="absolute bottom-1 left-1 inline-flex items-center gap-0.5 rounded bg-black/55 px-1 py-0.5 text-[10px] font-semibold text-white">
-                          <IoEyeOutline aria-hidden />
-                          {views}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="px-4 pb-4 text-sm text-zinc-500">
-                  Chưa có video công khai để xem trước.
-                </p>
-              )}
-
-              <div className="flex items-center justify-between gap-3 border-t border-white/10 px-4 py-3">
-                <span className="text-sm font-bold tracking-tight text-white">
-                  Vibely
-                </span>
-                <Link
-                  to={`/@${username}`}
-                  className="inline-flex h-9 items-center justify-center rounded-md bg-[#fe2c55] px-4 text-sm font-semibold text-white transition hover:bg-[#db2449]"
-                  onClick={onClose}
-                >
-                  Mở Vibely
-                </Link>
-              </div>
-            </div>
-          </section>
-
-          <section className="flex flex-col p-4 sm:p-5">
-            <p className="text-sm text-zinc-300">
+          {/* Right: embed code */}
+          <section className="flex min-h-0 flex-col lg:overflow-hidden">
+            <p className="text-[15px] text-zinc-200">
               Video từ tài khoản này sẽ hiển thị
             </p>
-            <pre className="scrollbar-none mt-3 max-h-[240px] flex-1 overflow-auto rounded-xl border border-white/10 bg-[#121212] p-3 text-[11px] leading-relaxed whitespace-pre-wrap break-all text-zinc-300">
+            <pre className="scrollbar-none mt-3 max-h-[280px] min-h-[160px] flex-1 overflow-auto rounded-xl bg-[#1a1a1a] p-4 text-[12px] leading-relaxed whitespace-pre-wrap break-all text-zinc-400 lg:max-h-none">
               {snippet}
             </pre>
             <button
               type="button"
               disabled={busy || !snippet}
               onClick={() => void copyCode()}
-              className="mt-4 h-11 w-full cursor-pointer rounded-lg bg-[#fe2c55] text-sm font-bold text-white transition hover:bg-[#db2449] disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-4 h-12 w-full cursor-pointer rounded-lg bg-[#3a3a3a] text-[15px] font-semibold text-white transition hover:bg-[#4a4a4a] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {busy ? "Đang sao chép…" : "Sao chép mã"}
             </button>
-            <p className="mt-3 text-[11px] leading-relaxed text-zinc-500">
-              Bằng việc nhúng, bạn đồng ý với điều khoản dịch vụ và chính sách
-              quyền riêng tư của Vibely. Xem trước:{" "}
+            <p className="mt-4 text-[12px] leading-relaxed text-zinc-500">
+              Bằng việc tiếp tục, bạn đồng ý với Điều khoản dịch vụ và xác nhận
+              rằng bạn đã đọc{" "}
               <a
-                href={profileUrl}
+                href="/legal/page/row/privacy-policy"
+                className="text-zinc-300 hover:underline"
+              >
+                Chính sách quyền riêng tư
+              </a>{" "}
+              của chúng tôi để hiểu cách chúng tôi thu thập, sử dụng và chia sẻ
+              dữ liệu của bạn. Xem trước trang nhúng:{" "}
+              <a
+                href={embedPageUrl || profileUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="text-sky-400 hover:underline"
               >
-                {profileUrl}
+                {embedPageUrl || profileUrl}
               </a>
             </p>
           </section>
