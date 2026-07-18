@@ -46,7 +46,7 @@ export function findMentionAtCaret(text, caret) {
 function useAccessoryPopoverPosition(
   anchorRef,
   open,
-  { width = 280, maxHeight = 240, placement = "above" } = {},
+  { width = 280, maxHeight = 240, placement = "above", gap = 8 } = {},
 ) {
   const [pos, setPos] = useState(null);
 
@@ -57,27 +57,49 @@ function useAccessoryPopoverPosition(
     }
     const update = () => {
       const rect = anchorRef.current.getBoundingClientRect();
-      const panelW = width;
-      const panelH = maxHeight;
+      const panelW = Math.min(width, Math.max(240, Math.round(rect.width)));
       let left = Math.max(8, Math.min(rect.left, window.innerWidth - panelW - 8));
-      let top;
+
       if (placement === "below") {
-        top = rect.bottom + 8;
-        if (top + panelH > window.innerHeight - 8) {
-          top = Math.max(8, rect.top - panelH - 8);
-        }
-      } else {
-        left = Math.min(rect.right - panelW, window.innerWidth - panelW - 8);
-        left = Math.max(8, left);
-        const spaceAbove = rect.top - 8;
-        const spaceBelow = window.innerHeight - rect.bottom - 8;
-        if (spaceAbove >= panelH || spaceAbove >= spaceBelow) {
-          top = Math.max(8, rect.top - panelH - 8);
+        const top = rect.bottom + gap;
+        const spaceBelow = window.innerHeight - rect.bottom - gap - 8;
+        if (spaceBelow < 120) {
+          // Flip above: pin panel bottom to input top
+          const available = Math.max(120, rect.top - gap - 8);
+          left = Math.max(
+            8,
+            Math.min(rect.left, window.innerWidth - panelW - 8),
+          );
+          setPos({
+            bottom: window.innerHeight - rect.top + gap,
+            left,
+            width: panelW,
+            maxHeight: Math.min(maxHeight, available),
+          });
         } else {
-          top = Math.min(rect.bottom + 8, window.innerHeight - panelH - 8);
+          setPos({
+            top,
+            left,
+            width: panelW,
+            maxHeight: Math.min(maxHeight, spaceBelow),
+          });
         }
+        return;
       }
-      setPos({ top, left, width: panelW });
+
+      // "above": always pin bottom edge just above the input (TikTok-style),
+      // so short tip and tall user lists share the same anchor.
+      left = Math.max(
+        8,
+        Math.min(rect.left, window.innerWidth - panelW - 8),
+      );
+      const available = Math.max(120, rect.top - gap - 8);
+      setPos({
+        bottom: window.innerHeight - rect.top + gap,
+        left,
+        width: panelW,
+        maxHeight: Math.min(maxHeight, available),
+      });
     };
     update();
     window.addEventListener("scroll", update, true);
@@ -86,7 +108,7 @@ function useAccessoryPopoverPosition(
       window.removeEventListener("scroll", update, true);
       window.removeEventListener("resize", update);
     };
-  }, [anchorRef, maxHeight, open, placement, width]);
+  }, [anchorRef, gap, maxHeight, open, placement, width]);
 
   return pos;
 }
@@ -110,7 +132,12 @@ function CommentAccessoryPopover({
     <div
       ref={popoverRef}
       className="fixed z-[9999] overflow-hidden rounded-xl border border-white/10 bg-[#252525] shadow-2xl"
-      style={{ top: pos.top, left: pos.left, width: pos.width, maxHeight }}
+      style={{
+        left: pos.left,
+        width: pos.width,
+        maxHeight: pos.maxHeight ?? maxHeight,
+        ...(pos.bottom != null ? { bottom: pos.bottom } : { top: pos.top }),
+      }}
     >
       {children}
     </div>,
