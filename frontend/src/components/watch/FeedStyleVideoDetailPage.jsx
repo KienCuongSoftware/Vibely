@@ -6,7 +6,6 @@ import {
   IoBookmark,
   IoCheckmark,
   IoClose,
-  IoHappyOutline,
   IoHeart,
   IoLogOutOutline,
   IoPerson,
@@ -21,6 +20,7 @@ import {
   BookmarkSaveToast,
   NewCollectionModal,
 } from '../BookmarkSaveFeedback.jsx'
+import { CommentInputAccessoryButtons } from '../comments/CommentInputAccessory.jsx'
 import { FeedPhoneStage } from '../feed/FeedPhoneStage.jsx'
 import {
   isMobileFeedLayout,
@@ -227,6 +227,7 @@ export function FeedStyleVideoDetailPage({
   const virtualFeedRef = useRef(null)
   const accountMenuRef = useRef(null)
   const commentInputRef = useRef(null)
+  const commentAccessoryRef = useRef(null)
   const playbackFlashTimerRef = useRef(null)
   const bookmarkButtonRef = useRef(null)
   const followBadgeTimerRef = useRef(null)
@@ -1337,23 +1338,43 @@ export function FeedStyleVideoDetailPage({
                     ref={commentInputRef}
                     type="text"
                     value={commentDraft}
-                    onChange={(e) => setCommentDraft(e.target.value)}
+                    onChange={(e) => {
+                      const { value, selectionStart } = e.target
+                      setCommentDraft(value)
+                      commentAccessoryRef.current?.syncMentionFromInput(
+                        value,
+                        selectionStart,
+                      )
+                    }}
+                    onKeyUp={(e) => {
+                      commentAccessoryRef.current?.syncMentionFromInput(
+                        e.target.value,
+                        e.target.selectionStart,
+                      )
+                    }}
+                    onSelect={(e) => {
+                      commentAccessoryRef.current?.syncMentionFromInput(
+                        e.target.value,
+                        e.target.selectionStart,
+                      )
+                    }}
                     placeholder={token ? 'Thêm bình luận...' : 'Đăng nhập để bình luận...'}
                     disabled={!token || !isVideoPublicId(publicId)}
-                    className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-14 text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-zinc-600 disabled:opacity-50"
+                    className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-[4.75rem] text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-zinc-600 disabled:opacity-50"
                     onKeyDown={(e) => {
                       if (!isEnterKey(e) || e.nativeEvent.isComposing || e.shiftKey) return
                       e.preventDefault()
                       void submitComment()
                     }}
                   />
-                  <button
-                    type="button"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200"
-                    aria-label="Biểu tượng cảm xúc"
-                  >
-                    <IoHappyOutline className="text-lg" aria-hidden />
-                  </button>
+                  <CommentInputAccessoryButtons
+                    ref={commentAccessoryRef}
+                    inputRef={commentInputRef}
+                    draft={commentDraft}
+                    setDraft={setCommentDraft}
+                    token={token}
+                    mentionPlacement="above"
+                  />
                 </div>
                 <button
                   type="button"

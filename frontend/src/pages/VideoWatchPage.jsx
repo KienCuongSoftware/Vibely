@@ -28,6 +28,7 @@ import {
   shouldHandleGlobalShortcut,
 } from '../utils/keyboardShortcuts.js'
 import { isMobileFeedLayout } from '../components/feed/MobileFeedShell.jsx'
+import { CommentInputAccessoryButtons } from '../components/comments/CommentInputAccessory.jsx'
 import { WatchSearchDropdown } from '../components/search/WatchSearchDropdown.jsx'
 import {
   IoArrowUp,
@@ -37,7 +38,6 @@ import {
   IoChevronUp,
   IoClose,
   IoEllipsisHorizontal,
-  IoHappyOutline,
   IoHeart,
   IoMusicalNotes,
   IoPlayOutline,
@@ -633,6 +633,7 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
   const watchQualifySentRef = useRef(false)
   const watchPlaythroughSentRef = useRef(false)
   const commentInputRef = useRef(null)
+  const commentAccessoryRef = useRef(null)
   const watchSidebarScrollRef = useRef(null)
 
   const [video, setVideo] = useState(null)
@@ -2370,34 +2371,45 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
                         ref={commentInputRef}
                         type="text"
                         value={commentDraft}
-                        onChange={(e) => setCommentDraft(e.target.value)}
+                        onChange={(e) => {
+                          const { value, selectionStart } = e.target
+                          setCommentDraft(value)
+                          commentAccessoryRef.current?.syncMentionFromInput(
+                            value,
+                            selectionStart,
+                          )
+                        }}
+                        onKeyUp={(e) => {
+                          commentAccessoryRef.current?.syncMentionFromInput(
+                            e.target.value,
+                            e.target.selectionStart,
+                          )
+                        }}
+                        onSelect={(e) => {
+                          commentAccessoryRef.current?.syncMentionFromInput(
+                            e.target.value,
+                            e.target.selectionStart,
+                          )
+                        }}
                         placeholder={
                           token ? 'Thêm bình luận...' : 'Đăng nhập để bình luận...'
                         }
                         disabled={!token || !isWatchableVideo(panelVideo)}
-                        className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-21 text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-zinc-600 disabled:opacity-50"
+                        className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-[4.75rem] text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-zinc-600 disabled:opacity-50"
                         onKeyDown={(e) => {
                           if (!isEnterKey(e) || e.nativeEvent.isComposing || e.shiftKey) return
                           e.preventDefault()
                           void submitWatchComment()
                         }}
                       />
-                      <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
-                        <button
-                          type="button"
-                          className="rounded-full px-2 py-1 text-sm font-semibold text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200"
-                          aria-label="Nhắc tên"
-                        >
-                          @
-                        </button>
-                        <button
-                          type="button"
-                          className="rounded-full p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200"
-                          aria-label="Biểu tượng cảm xúc"
-                        >
-                          <IoHappyOutline className="text-lg" aria-hidden />
-                        </button>
-                      </div>
+                      <CommentInputAccessoryButtons
+                        ref={commentAccessoryRef}
+                        inputRef={commentInputRef}
+                        draft={commentDraft}
+                        setDraft={setCommentDraft}
+                        token={token}
+                        mentionPlacement="above"
+                      />
                     </div>
                     <button
                       type="button"
