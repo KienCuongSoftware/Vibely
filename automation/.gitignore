@@ -1,0 +1,27 @@
+# Build output
+target/
+
+# Allure
+allure-results/
+allure-report/
+
+# Test artifacts
+screenshots/
+logs/
+reports/
+*.log
+
+# Local secrets (test account) — keep credentials.local.properties.example only
+**/credentials.local.properties
+
+# IDE
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

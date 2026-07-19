@@ -1,0 +1,54 @@
+[
+  {
+    "name": "Ignored tests",
+    "matchedStatuses": ["skipped"]
+  },
+  {
+    "name": "Infrastructure problems",
+    "matchedStatuses": ["broken", "failed"],
+    "messageRegex": ".*(WebDriverException|SessionNotCreatedException|NoSuchWindowException|Connection refused|ConnectException|UnreachableBrowserException).*"
+  },
+  {
+    "name": "Network Error",
+    "matchedStatuses": ["broken", "failed"],
+    "messageRegex": ".*(UnknownHostException|SocketTimeoutException|SSLException|HttpHostConnectException|CORS|net::ERR_).*"
+  },
+  {
+    "name": "Element Not Found",
+    "matchedStatuses": ["broken", "failed"],
+    "messageRegex": ".*(NoSuchElementException|ElementNotInteractableException|StaleElementReferenceException|ElementClickInterceptedException).*"
+  },
+  {
+    "name": "Timeout",
+    "matchedStatuses": ["broken", "failed"],
+    "messageRegex": ".*(TimeoutException).*"
+  },
+  {
+    "name": "Assertion Error",
+    "matchedStatuses": ["failed"],
+    "messageRegex": ".*(AssertionError|ComparisonFailure|AssertJMultipleFailuresError).*"
+  },
+  {
+    "name": "Authentication Error",
+    "matchedStatuses": ["broken", "failed"],
+    "messageRegex": ".*(login|Login|auth|Auth|Unauthorized|401|credentials).*"
+  },
+  {
+    "name": "Upload Error",
+    "matchedStatuses": ["broken", "failed"],
+    "messageRegex": ".*(upload|Upload|Multipart|file input|TEST_VIDEO_PATH).*"
+  },
+  {
+    "name": "UI Error",
+    "matchedStatuses": ["broken", "failed"],
+    "messageRegex": ".*(BasePageActionException|InvalidSelectorException|JavascriptException).*"
+  },
+  {
+    "name": "Unexpected Exception",
+    "matchedStatuses": ["broken"]
+  },
+  {
+    "name": "Product defects",
+    "matchedStatuses": ["failed"]
+  }
+]
