@@ -11,6 +11,20 @@ function locationPermissionMessage(error) {
   return "Không lấy được vị trí hiện tại. Vui lòng bật quyền Location trên trình duyệt rồi thử lại.";
 }
 
+function withHardTimeout(promise, ms) {
+  let timer;
+  return Promise.race([
+    promise.finally(() => clearTimeout(timer)),
+    new Promise((_, reject) => {
+      timer = setTimeout(() => {
+        const error = new Error("Geolocation timed out");
+        error.code = 3;
+        reject(error);
+      }, ms);
+    }),
+  ]);
+}
+
 async function getLocationIfAllowed({ requireLocation = false } = {}) {
   if (!("geolocation" in navigator)) {
     if (requireLocation) {
@@ -27,14 +41,23 @@ async function getLocationIfAllowed({ requireLocation = false } = {}) {
         }
         return {};
       }
+      // Avoid the browser permission dialog on normal login — it can hang until the user clicks
+      // Allow/Block (native geolocation timeout often does not fire while the prompt is open).
+      if (permission.state === "prompt" && !requireLocation) {
+        return {};
+      }
     }
-    const position = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true,
-        timeout: requireLocation ? 10000 : 3500,
-        maximumAge: requireLocation ? 0 : 5 * 60 * 1000,
-      });
-    });
+    const geoTimeoutMs = requireLocation ? 10000 : 3500;
+    const position = await withHardTimeout(
+      new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: geoTimeoutMs,
+          maximumAge: requireLocation ? 0 : 5 * 60 * 1000,
+        });
+      }),
+      geoTimeoutMs + 500,
+    );
     return {
       latitude: position.coords.latitude,
       longitude: position.coords.longitude,

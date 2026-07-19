@@ -9,12 +9,17 @@ function isBenignProxySocketError(error) {
 
 function configureBenignProxyErrors(proxy) {
   proxy.on('error', (error, _req, res) => {
-    if (isBenignProxySocketError(error)) {
-      if (res && !res.headersSent) {
-        res.writeHead(502)
-        res.end()
-      }
+    if (!isBenignProxySocketError(error)) {
       return
+    }
+    // ws proxy errors pass a net.Socket here, not http.ServerResponse
+    if (res && typeof res.writeHead === 'function' && !res.headersSent) {
+      res.writeHead(502)
+      res.end()
+      return
+    }
+    if (res && typeof res.destroy === 'function') {
+      res.destroy()
     }
   })
   proxy.on('proxyReqWs', (_proxyReq, _req, socket) => {
