@@ -62,6 +62,23 @@ public class RiskEngine {
 
     @Transactional
     public RiskEvaluateResponse evaluate(RiskEvaluateRequest request, HttpServletRequest httpRequest) {
+        // Local/E2E: frontend ensureHuman() calls this before login. When auth protection is off,
+        // never require a captcha challenge (Selenium would otherwise get stuck on the slider).
+        if (!properties.isAuthProtectionEnabled()) {
+            int trust = properties.getDefaultTrustScore();
+            return new RiskEvaluateResponse(
+                0,
+                RiskLevel.LOW,
+                ChallengeLevel.NONE,
+                false,
+                null,
+                trust,
+                trust,
+                100,
+                List.of("auth_protection_disabled")
+            );
+        }
+
         List<String> signals = new ArrayList<>();
         int score = 0;
 

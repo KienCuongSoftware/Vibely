@@ -83,7 +83,9 @@ app:
     expose-code-in-api: ${APP_MAIL_EXPOSE_CODE:true}
   antibot:
     enabled: true
-    auth-protection-enabled: true
+    # Off by default in local/dev so Selenium E2E can login without slider captcha.
+    # Re-enable: ANTIBOT_AUTH_PROTECTION_ENABLED=true
+    auth-protection-enabled: ${ANTIBOT_AUTH_PROTECTION_ENABLED:false}
     always-require-captcha-on-auth: false
     hmac-secret: ${ANTIBOT_HMAC_SECRET:vibely-antibot-dev-secret}
     captcha-ttl-seconds: 120
