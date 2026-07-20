@@ -294,7 +294,7 @@ export function BookmarkSaveToast({ open, onManage, onDismiss }) {
   return (
     <div
       role="status"
-      className="pointer-events-auto absolute bottom-6 left-1/2 z-40 flex w-[min(92%,360px)] -translate-x-1/2 items-center gap-2 rounded-lg bg-[#545454]/95 px-3 py-2.5 text-sm text-white shadow-lg backdrop-blur-sm"
+      className="pointer-events-auto absolute bottom-24 left-1/2 z-[80] flex w-[min(92%,360px)] -translate-x-1/2 items-center gap-2 rounded-lg bg-[#545454]/95 px-3 py-2.5 text-sm text-white shadow-lg backdrop-blur-sm sm:bottom-28"
     >
       <IoCheckmarkCircle className="shrink-0 text-xl text-white" aria-hidden />
       <span className="min-w-0 flex-1 truncate font-medium">
@@ -302,8 +302,11 @@ export function BookmarkSaveToast({ open, onManage, onDismiss }) {
       </span>
       <button
         type="button"
-        onClick={onManage}
-        className="shrink-0 cursor-pointer font-semibold text-[#20d5ec] hover:underline"
+        onClick={(e) => {
+          e.stopPropagation();
+          onManage?.();
+        }}
+        className="relative z-10 shrink-0 cursor-pointer font-semibold text-[#20d5ec] hover:underline"
       >
         Quản lý ›
       </button>

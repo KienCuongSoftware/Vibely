@@ -299,7 +299,8 @@ export function UploadPage() {
 
   // Only allow Đăng when originality finished (COMPLETED / FAILED) — not while PENDING.
   // BLOCK keeps Đăng locked. Soft client unlock after 5 min if worker is dead (FAILED path).
-  const ORIGINALITY_CLIENT_FAIL_MS = 5 * 60 * 1000
+  // Local/dev: unlock sooner so Selenium / manual QA are not stuck waiting on a missing worker.
+  const ORIGINALITY_CLIENT_FAIL_MS = import.meta.env.DEV ? 20_000 : 5 * 60 * 1000
   const originalityJobState = String(originalityStatus?.jobState || '')
   const originalityDecision = String(originalityStatus?.decision || '')
   const originalityPending =
