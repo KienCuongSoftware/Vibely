@@ -72,6 +72,7 @@ public class FeedPage extends BasePage {
             return this;
         }
         button.click();
+        pace();
         LOGGER.info("Liked active video");
         return this;
     }
@@ -122,6 +123,7 @@ public class FeedPage extends BasePage {
             return this;
         }
         button.click();
+        pace();
         try {
             WaitUtils.wait(driver, Duration.ofSeconds(5)).until(d -> !d.findElements(favoriteToast).isEmpty());
         } catch (Exception ignored) {
@@ -137,6 +139,7 @@ public class FeedPage extends BasePage {
     @Step("Engage with feed video")
     public FeedPage engageWithActiveVideo(String commentText) {
         nextVideo();
+        pace();
         like();
         followAuthorIfNeeded();
         comment(commentText);

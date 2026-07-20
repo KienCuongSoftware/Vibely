@@ -73,6 +73,15 @@ public final class PropertyUtils {
     }
 
     /**
+     * Milliseconds to pause after each UI action (click/type/upload). {@code 0} disables pacing.
+     *
+     * @return delay in milliseconds
+     */
+    public static int actionDelayMs() {
+        return Math.max(0, getInt("action.delay.ms", 0));
+    }
+
+    /**
      * Returns the configured {@code environment} name (e.g. Local, Staging, Production).
      *
      * @return the environment name

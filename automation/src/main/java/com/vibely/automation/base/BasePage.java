@@ -1,5 +1,6 @@
 package com.vibely.automation.base;
 
+import com.vibely.automation.utils.PropertyUtils;
 import com.vibely.automation.utils.WaitUtils;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
@@ -22,8 +23,8 @@ import java.util.List;
  * alerts, tabs, JavaScript execution, etc.) so that concrete page objects can focus purely on
  * page-specific locators and business flows.</p>
  *
- * <p>All interactions rely on {@link WaitUtils} for explicit waits and never use
- * {@code Thread.sleep}. Failures are surfaced as clear, descriptive exceptions.</p>
+ * <p>Interactions use {@link WaitUtils} for explicit waits. Optional pacing between actions is
+ * controlled by {@code action.delay.ms} in {@code config.properties}.</p>
  */
 public abstract class BasePage {
 
@@ -44,6 +45,21 @@ public abstract class BasePage {
     }
 
     /**
+     * Pauses briefly after a user-visible action when {@code action.delay.ms} &gt; 0.
+     */
+    protected void pace() {
+        int delayMs = PropertyUtils.actionDelayMs();
+        if (delayMs <= 0) {
+            return;
+        }
+        try {
+            Thread.sleep(delayMs);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
      * Clicks the element located by {@code locator} once it is clickable.
      *
      * @param locator the element locator
@@ -52,6 +68,7 @@ public abstract class BasePage {
         try {
             waitClickable(locator).click();
             LOGGER.debug("Clicked element: {}", locator);
+            pace();
         } catch (Exception e) {
             throw new BasePageActionException("Failed to click element: " + locator, e);
         }
@@ -70,6 +87,7 @@ public abstract class BasePage {
             element.clear();
             element.sendKeys(text);
             LOGGER.debug("Typed into element {}: '{}'", locator, text);
+            pace();
         } catch (Exception e) {
             throw new BasePageActionException("Failed to type into element: " + locator, e);
         }
@@ -179,6 +197,7 @@ public abstract class BasePage {
      */
     public void pressEnter(By locator) {
         waitVisible(locator).sendKeys(Keys.ENTER);
+        pace();
     }
 
     /**
@@ -188,6 +207,7 @@ public abstract class BasePage {
      */
     public void pressEscape(By locator) {
         waitVisible(locator).sendKeys(Keys.ESCAPE);
+        pace();
     }
 
     /**
@@ -277,6 +297,7 @@ public abstract class BasePage {
             throw new IllegalArgumentException("File to upload does not exist: " + filePath);
         }
         driver.findElement(locator).sendKeys(file.getAbsolutePath());
+        pace();
     }
 
     /**
