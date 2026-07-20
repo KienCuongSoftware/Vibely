@@ -680,7 +680,7 @@ export function LoginPage() {
   const submitWithCredentials = async (event) => {
     event.preventDefault();
     if (!identifier.trim() || !password.trim()) {
-      setStatus("Vui lòng nhập email/tên người dùng và mật khẩu");
+      setStatus("Vui lòng nhập email/VibelyID và mật khẩu");
       return;
     }
     try {
@@ -932,7 +932,7 @@ export function LoginPage() {
 
               <div className="space-y-3">
                 <LoginMethodButton
-                  label="Dùng email / username"
+                  label="Dùng email / VibelyID"
                   recentlyUsed={lastLoginMethod === "email"}
                   onClick={() => {
                     setView("credentials");
@@ -1002,12 +1002,12 @@ export function LoginPage() {
                 Đăng nhập
               </h2>
               <div className="text-[13px] font-medium text-zinc-100">
-                Email hoặc tên người dùng
+                Email hoặc VibelyID
               </div>
               <form className="space-y-2.5" onSubmit={submitWithCredentials}>
                 <input
                   className={AUTH_FIELD}
-                  placeholder="Email hoặc tên người dùng"
+                  placeholder="Email hoặc VibelyID"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                 />

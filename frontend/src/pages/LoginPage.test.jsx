@@ -26,7 +26,7 @@ describe('LoginPage', () => {
     )
 
     expect(screen.getByRole('heading', { name: 'Đăng nhập vào Vibely' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Dùng email / username' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Dùng email / VibelyID' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Tiếp tục với Google' })).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Tiếp tục với Facebook' }),
