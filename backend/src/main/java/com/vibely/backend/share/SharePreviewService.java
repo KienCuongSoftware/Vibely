@@ -45,7 +45,7 @@ public class SharePreviewService {
             origin
         );
         if (imageUrl.isBlank()) {
-            imageUrl = origin + "/images/og-share.png";
+            imageUrl = origin + "/favicon-512x512.png";
         }
         return new SharePreviewModel(
             shareText.documentTitle(),

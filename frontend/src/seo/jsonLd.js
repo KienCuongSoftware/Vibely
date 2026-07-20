@@ -6,7 +6,7 @@ export function organizationJsonLd() {
     '@type': 'Organization',
     name: SITE_NAME,
     url: absoluteUrl('/'),
-    logo: absoluteUrl('/images/og-share.png'),
+    logo: absoluteUrl('/favicon-512x512.png'),
     sameAs: [absoluteUrl('/')],
   }
 }

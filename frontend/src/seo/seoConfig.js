@@ -7,10 +7,10 @@ export const DEFAULT_DESCRIPTION =
   'Vibely - nơi khởi đầu các vibe. Trên thiết bị hoặc trên web, người xem có thể xem và khám phá hàng triệu video ngắn dành riêng cho mình.'
 export const DEFAULT_KEYWORDS =
   'Vibely, video ngắn, mạng xã hội video, chia sẻ video, video thịnh hành, creator Việt Nam, cộng đồng giải trí'
-/** Branded Open Graph / Twitter share card (16:9). Avoid default avatar — crawlers show a tiny silhouette. */
-export const DEFAULT_OG_IMAGE = '/images/og-share.png'
-export const DEFAULT_OG_IMAGE_WIDTH = 1920
-export const DEFAULT_OG_IMAGE_HEIGHT = 1080
+/** Brand mark for Open Graph / Twitter (existing 512px icon — nốt nhạc cyan/đỏ). */
+export const DEFAULT_OG_IMAGE = '/favicon-512x512.png'
+export const DEFAULT_OG_IMAGE_WIDTH = 512
+export const DEFAULT_OG_IMAGE_HEIGHT = 512
 export const DEFAULT_OG_IMAGE_ALT = 'Vibely'
 
 export function getSiteOrigin() {
