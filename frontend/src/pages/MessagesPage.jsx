@@ -197,7 +197,10 @@ export function MessagesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout());
   const [inboxTab, setInboxTab] = useState("activity");
-  const initialPreferredConversationIdRef = useRef(Number(searchParams.get("c")));
+  const initialPreferredConversationIdRef = useRef((() => {
+    const n = Number(searchParams.get("c"));
+    return Number.isFinite(n) && n > 0 ? n : null;
+  })());
   const [, setLoadingConversations] = useState(true);
   const [conversations, setConversations] = useState([]);
   const [activeConversationId, setActiveConversationId] = useState(null);
@@ -332,14 +335,14 @@ export function MessagesPage() {
       setConversations(rows);
       setListMode("normal");
       const preferredConversationId = initialPreferredConversationIdRef.current;
-      if (
-        Number.isFinite(preferredConversationId) &&
-        preferredConversationId > 0 &&
-        rows.some((row) => Number(row.id) === preferredConversationId)
-      ) {
+      if (Number.isFinite(preferredConversationId) && preferredConversationId > 0) {
+        // Keep ?c= selection even if the row is briefly missing from the list
+        // (e.g. right after createOrGetDirectConversation).
         setActiveConversationId(preferredConversationId);
         const pref = rows.find((row) => Number(row.id) === preferredConversationId);
-        setListMode(pref?.messageRequest ? "requests" : "normal");
+        if (pref?.messageRequest) {
+          setListMode("requests");
+        }
       } else {
         setActiveConversationId(null);
       }

@@ -635,13 +635,23 @@ export function ProfilePage() {
       navigate('/login')
       return
     }
-    if (!profile?.id || isOwnProfile) {
+    if (isOwnProfile) {
       navigate('/messages')
       return
     }
+    if (!profile?.id) {
+      setProfileActionNotice('Đang tải hồ sơ, thử lại sau giây lát.')
+      return
+    }
+    setProfileActionNotice('')
     try {
       const convo = await apiClient.createOrGetDirectConversation(profile.id, token)
-      navigate(`/messages?c=${encodeURIComponent(convo.id)}`)
+      const conversationId = convo?.id
+      if (conversationId == null || conversationId === '') {
+        setProfileActionNotice('Không thể mở hội thoại lúc này.')
+        return
+      }
+      navigate(`/messages?c=${encodeURIComponent(String(conversationId))}`)
     } catch (error) {
       setProfileActionNotice(error?.message || 'Không thể mở hội thoại lúc này.')
     }
@@ -1519,6 +1529,7 @@ export function ProfilePage() {
                     </button>
                     <button
                       type="button"
+                      data-testid="profile-message-button"
                       className="cursor-pointer rounded-md border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-100"
                       onClick={handleProfileMessageClick}
                     >
@@ -1633,6 +1644,7 @@ export function ProfilePage() {
                       </button>
                       <button
                         type="button"
+                        data-testid="profile-message-button"
                         className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"
                         onClick={handleProfileMessageClick}
                       >
