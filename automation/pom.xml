@@ -33,7 +33,7 @@
 
         <!-- Allure -->
         <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
-        <groups>login</groups>
+        <groups>upload</groups>
     </properties>
 
     <dependencyManagement>
@@ -134,7 +134,7 @@
                             junit.jupiter.extensions.autodetection.enabled=true
                         </configurationParameters>
                     </properties>
-                    <!-- Default: login suite. Override: -Dgroups=smoke or -Dgroups=login,smoke -->
+                    <!-- Default: upload (login inside test once). Override: -Dgroups=login -->
                     <groups>${groups}</groups>
                 </configuration>
             </plugin>

@@ -32,6 +32,17 @@ public final class WaitUtils {
     }
 
     /**
+     * Creates a {@link WebDriverWait} with a custom timeout (e.g. long upload / originality checks).
+     *
+     * @param driver  the active {@link WebDriver}
+     * @param timeout how long to wait
+     * @return a new {@link WebDriverWait}
+     */
+    public static WebDriverWait wait(WebDriver driver, Duration timeout) {
+        return new WebDriverWait(driver, timeout);
+    }
+
+    /**
      * Waits until the element located by {@code locator} is visible.
      *
      * @param driver  the active {@link WebDriver}

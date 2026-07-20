@@ -1,49 +1,42 @@
 # Vibely Automation
 
-Selenium + JUnit 5 + Allure UI tests focused on **login** only.
+Selenium + JUnit 5 + Allure: **login → upload → For You engage** (like / follow / comment / favorite).
 
 ## Requirements
 
 - JDK 25+
 - Maven 3.9+
 - Brave (default), or Chrome / Edge / Firefox
-- Frontend at `base.url` + backend for real login
+- Frontend at `base.url` + backend
+- A short local `.mp4` for upload tests
 
 ## Configure
 
-Edit `src/test/resources/config.properties`:
+```powershell
+copy src\test\resources\credentials.local.properties.example src\test\resources\credentials.local.properties
+```
 
 ```properties
-base.url=http://localhost:5173
-browser=brave
-headless=false
-brave.path=C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe
+test.user.email=you@example.com
+test.user.password=your-password
+test.video.path=C:\\Users\\Admin\\Downloads\\your-video.mp4
 ```
-
-Copy credentials (gitignored):
-
-```bash
-cp src/test/resources/credentials.local.properties.example src/test/resources/credentials.local.properties
-```
-
-Or set `TEST_USER_EMAIL` / `TEST_USER_PASSWORD`.
 
 ## Run
 
-```bash
+```powershell
 cd automation
-
-# Login with credentials.local.properties (default)
 mvn test
 ```
 
+Default group is `upload`: one browser session — login, publish, then `/foryou` like / follow (if shown) / comment / favorite.
 
-### Captcha
-
-With backend profile `dev`, `auth-protection-enabled` defaults to **false** so Selenium is not blocked by the captcha slider.
+```powershell
+mvn test -Dgroups=login
+```
 
 ## Layout
 
-- `src/test/java/.../login/LoginTest.java` — login scenarios
-- `src/main/java/.../pages/LoginPage.java` — login page object
-- `src/main/java/.../driver/` — Brave/Chrome/Edge/Firefox drivers
+- `login/LoginTest` — login only
+- `upload/UploadTest` — upload then feed engagement
+- `pages/LoginPage`, `UploadPage`, `FeedPage`

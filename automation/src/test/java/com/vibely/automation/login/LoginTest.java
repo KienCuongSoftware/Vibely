@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Epic("Authentication")
 @Feature("Login")
 @Tag("login")
-@Tag("smoke")
 class LoginTest extends BaseTest {
 
     @Test
