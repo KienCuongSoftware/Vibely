@@ -12,6 +12,7 @@ import com.vibely.backend.originality.OriginalityEnqueueService;
 import com.vibely.backend.processing.VideoProcessingEnqueueService;
 import com.vibely.backend.processing.VideoProcessingJobRepository;
 import com.vibely.backend.processing.VideoProcessingJobState;
+import com.vibely.backend.storage.S3MediaDeletionService;
 import com.vibely.backend.storage.S3OwnedMediaValidator;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
@@ -24,6 +25,7 @@ import com.vibely.backend.video.VideoStatus;
 import com.vibely.backend.video.VideoUpdateRequest;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +40,7 @@ public class VideoCommandService {
     private final OriginalityEnqueueService originalityEnqueueService;
     private final ContentUnderstandingEnqueueService contentUnderstandingEnqueueService;
     private final S3OwnedMediaValidator ownedMediaValidator;
+    private final ObjectProvider<S3MediaDeletionService> s3MediaDeletionService;
     private final VideoExploreSyncService exploreSyncService;
     private final VideoResponseMapper responseMapper;
     private final VideoQueryService queryService;
@@ -56,6 +59,7 @@ public class VideoCommandService {
         OriginalityEnqueueService originalityEnqueueService,
         ContentUnderstandingEnqueueService contentUnderstandingEnqueueService,
         S3OwnedMediaValidator ownedMediaValidator,
+        ObjectProvider<S3MediaDeletionService> s3MediaDeletionService,
         VideoExploreSyncService exploreSyncService,
         VideoResponseMapper responseMapper,
         VideoQueryService queryService,
@@ -73,6 +77,7 @@ public class VideoCommandService {
         this.originalityEnqueueService = originalityEnqueueService;
         this.contentUnderstandingEnqueueService = contentUnderstandingEnqueueService;
         this.ownedMediaValidator = ownedMediaValidator;
+        this.s3MediaDeletionService = s3MediaDeletionService;
         this.exploreSyncService = exploreSyncService;
         this.responseMapper = responseMapper;
         this.queryService = queryService;
