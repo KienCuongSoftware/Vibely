@@ -20,10 +20,11 @@ public class LoginPage extends BasePage {
     private final By anyLoginHeading = By.xpath(
             "//h2[contains(.,'\u0110\u0103ng nh\u1eadp') or contains(.,'Login')]");
     private final By useEmailMethodButton = By.xpath(
-            "//button[contains(.,'D\u00f9ng email') or contains(.,'email / username')"
-                    + " or contains(.,'Email / username')]");
+            "//button[contains(.,'D\u00f9ng email') or contains(.,'email / VibelyID')"
+                    + " or contains(.,'email / username') or contains(.,'Email / username')]");
     private final By identifierInput = By.cssSelector(
-            "input[placeholder*='Email'], input[placeholder*='ng\u01b0\u1eddi d\u00f9ng']");
+            "input[placeholder*='Email'], input[placeholder*='VibelyID'],"
+                    + " input[placeholder*='ng\u01b0\u1eddi d\u00f9ng']");
     private final By passwordInput = By.cssSelector("form input[type='password']");
     private final By loginButton = By.cssSelector("form button[type='submit']");
     private final By forgotPasswordLink = By.xpath(
