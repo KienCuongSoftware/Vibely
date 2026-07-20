@@ -45,7 +45,7 @@ public class SharePreviewService {
             origin
         );
         if (imageUrl.isBlank()) {
-            imageUrl = origin + "/images/users/default-avatar.jpeg";
+            imageUrl = origin + "/images/og-share.png";
         }
         return new SharePreviewModel(
             shareText.documentTitle(),

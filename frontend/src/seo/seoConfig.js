@@ -1,11 +1,17 @@
 export const SITE_NAME = 'Vibely'
 export const DEFAULT_SITE_ORIGIN = 'https://vibely.sbs'
-export const DEFAULT_TITLE = 'Vibely - Mạng xã hội video ngắn cho người Việt'
+/** Short brand + tagline (TikTok-style: "TikTok - Make Your Day"). */
+export const DEFAULT_TITLE = 'Vibely - Make Your Vibe'
+/** Starts with brand name so Google/Messenger snippets bold it like TikTok. */
 export const DEFAULT_DESCRIPTION =
-  'Vibely là mạng xã hội video ngắn giúp bạn khám phá video thịnh hành, chia sẻ khoảnh khắc, theo dõi creator và kết nối cộng đồng giải trí.'
+  'Vibely - nơi khởi đầu các vibe. Trên thiết bị hoặc trên web, người xem có thể xem và khám phá hàng triệu video ngắn dành riêng cho mình.'
 export const DEFAULT_KEYWORDS =
   'Vibely, video ngắn, mạng xã hội video, chia sẻ video, video thịnh hành, creator Việt Nam, cộng đồng giải trí'
-export const DEFAULT_OG_IMAGE = '/images/users/default-avatar.jpeg'
+/** Branded Open Graph / Twitter share card (16:9). Avoid default avatar — crawlers show a tiny silhouette. */
+export const DEFAULT_OG_IMAGE = '/images/og-share.png'
+export const DEFAULT_OG_IMAGE_WIDTH = 1920
+export const DEFAULT_OG_IMAGE_HEIGHT = 1080
+export const DEFAULT_OG_IMAGE_ALT = 'Vibely'
 
 export function getSiteOrigin() {
   const configured = String(import.meta.env.VITE_PUBLIC_APP_URL ?? '').trim().replace(/\/$/, '')
