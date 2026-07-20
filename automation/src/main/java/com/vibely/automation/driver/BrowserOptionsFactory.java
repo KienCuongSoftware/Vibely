@@ -122,6 +122,10 @@ public final class BrowserOptionsFactory {
         // 2 = block; prevents "Know your location" dialogs during login.
         prefs.put("profile.default_content_setting_values.geolocation", 2);
         prefs.put("profile.default_content_setting_values.notifications", 2);
+        // Suppress Chromium "Save password?" bubble after form login.
+        prefs.put("credentials_enable_service", false);
+        prefs.put("profile.password_manager_enabled", false);
+        prefs.put("profile.password_manager_leak_detection", false);
         options.setExperimentalOption("prefs", prefs);
         options.setExperimentalOption("excludeSwitches", java.util.List.of("enable-automation"));
         options.setAcceptInsecureCerts(true);

@@ -133,15 +133,18 @@ public final class BraveProcessLauncher {
     }
 
     /**
-     * Pre-seeds the Brave profile so geolocation/notification prompts are blocked before the first
-     * page load (ChromeOptions prefs cannot be applied in CDP attach mode).
+     * Pre-seeds the Brave profile so permission and "Save password?" prompts are blocked before
+     * the first page load (ChromeOptions prefs cannot be applied in CDP attach mode).
      */
     private static void writeAutomationProfilePrefs(Path userDataDir) throws IOException {
         Path defaultDir = userDataDir.resolve("Default");
         Files.createDirectories(defaultDir);
         String prefsJson = """
                 {
+                  "credentials_enable_service": false,
                   "profile": {
+                    "password_manager_enabled": false,
+                    "password_manager_leak_detection": false,
                     "default_content_setting_values": {
                       "geolocation": 2,
                       "notifications": 2,
