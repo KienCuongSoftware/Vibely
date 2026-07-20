@@ -1,13 +1,16 @@
 package com.vibely.backend.auth.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public class AuthRequest {
 
-    @Email(message = "Email không hợp lệ")
-    @NotBlank(message = "Email là bắt buộc")
+    /**
+     * Login identifier: email address or VibelyID (username). Kept as {@code email} in JSON
+     * for API compatibility; not restricted to email format.
+     */
+    @NotBlank(message = "Email hoặc VibelyID là bắt buộc")
+    @Size(max = 255, message = "Email hoặc VibelyID không hợp lệ")
     private String email;
 
     @NotBlank(message = "Mật khẩu là bắt buộc")
