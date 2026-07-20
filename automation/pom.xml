@@ -33,7 +33,7 @@
 
         <!-- Allure -->
         <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
-        <groups>upload</groups>
+        <groups>message</groups>
     </properties>
 
     <dependencyManagement>
@@ -134,7 +134,7 @@
                             junit.jupiter.extensions.autodetection.enabled=true
                         </configurationParameters>
                     </properties>
-                    <!-- Default: upload (login inside test once). Override: -Dgroups=login -->
+                    <!-- Default: message (A↔B DM). Override: -Dgroups=upload or -Dgroups=login -->
                     <groups>${groups}</groups>
                 </configuration>
             </plugin>

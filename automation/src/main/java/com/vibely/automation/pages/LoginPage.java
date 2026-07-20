@@ -44,7 +44,11 @@ public class LoginPage extends BasePage {
     @Step("Open login page")
     public LoginPage open() {
         driver.get(PropertyUtils.baseUrl() + "/login");
-        waitVisible(anyLoginHeading);
+        // Auth bootstrap shows a blank shell until authReady — wait past that.
+        WaitUtils.wait(driver, java.time.Duration.ofSeconds(25))
+                .until(d -> !d.findElements(anyLoginHeading).isEmpty()
+                        || !d.findElements(useEmailMethodButton).isEmpty()
+                        || !d.findElements(identifierInput).isEmpty());
         openCredentialsForm();
         return this;
     }
