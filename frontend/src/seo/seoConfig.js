@@ -1,10 +1,14 @@
 export const SITE_NAME = 'Vibely'
 export const DEFAULT_SITE_ORIGIN = 'https://vibely.sbs'
-/** Short brand + tagline (TikTok-style: "TikTok - Make Your Day"). */
-export const DEFAULT_TITLE = 'Vibely - Make Your Vibe'
-/** Starts with brand name so Google/Messenger snippets bold it like TikTok. */
+/** Same pattern as TikTok ("TikTok - Make Your Day") — keep English tagline. */
+export const DEFAULT_TITLE = 'Vibely - Make Your Day'
+/**
+ * TikTok EN: "TikTok - trends start here. On a device or on the web, viewers can
+ * watch and discover millions of personalized short videos. Download the app to get started."
+ * → Vietnamese + Vibely brand.
+ */
 export const DEFAULT_DESCRIPTION =
-  'Vibely - nơi khởi đầu các vibe. Trên thiết bị hoặc trên web, người xem có thể xem và khám phá hàng triệu video ngắn dành riêng cho mình.'
+  'Vibely - xu hướng bắt đầu tại đây. Trên thiết bị hoặc trên web, người xem có thể xem và khám phá hàng triệu video ngắn được cá nhân hóa. Tải ứng dụng để bắt đầu.'
 export const DEFAULT_KEYWORDS =
   'Vibely, video ngắn, mạng xã hội video, chia sẻ video, video thịnh hành, creator Việt Nam, cộng đồng giải trí'
 /** Brand mark for Open Graph / Twitter (existing 512px icon — nốt nhạc cyan/đỏ). */
