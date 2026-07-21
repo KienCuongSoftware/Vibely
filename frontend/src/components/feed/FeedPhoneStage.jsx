@@ -12,7 +12,6 @@ import {
   IoCheckmark,
   IoChevronBack,
   IoChevronForward,
-  IoClose,
   IoEllipsisHorizontal,
   IoExpandOutline,
   IoPause,
@@ -376,11 +375,13 @@ function FeedVolumeIcon({ soundOn, volume }) {
 }
 
 /** Điều khiển âm lượng góc trên trái — capsule TikTok (icon tròn + track + thumb squircle). */
-function FeedVolumeControl({
+export function FeedVolumeControl({
   volume,
   onVolumeChange,
   soundOn,
   onSoundOnChange,
+  /** Theater chrome ngoài video — luôn hiện icon (không phụ thuộc hover khung video). */
+  alwaysVisible = false,
 }) {
   const [pinned, setPinned] = useState(false);
 
@@ -425,13 +426,17 @@ function FeedVolumeControl({
 
   const sliderTrackPad = "pl-0.5 pr-3.5";
   const sliderTrackWidth =
-    "w-19 group-hover:w-19 focus-within:w-19";
+    "w-19 group-hover:w-19 focus-within:w-19 group-hover/vol:w-19";
   const expanded = "pointer-events-auto max-w-[9.25rem] opacity-100";
+  const visibleIdle =
+    "pointer-events-auto max-w-9 opacity-100 hover:max-w-[9.25rem] focus-within:max-w-[9.25rem]";
   const collapsed = `pointer-events-none max-w-9 opacity-0 group-hover:pointer-events-auto group-hover:max-w-[9.25rem] group-hover:opacity-100 group-has-[.feed-video-more-panel:hover]:pointer-events-none group-has-[.feed-video-more-panel:hover]:max-w-9 group-has-[.feed-video-more-panel:hover]:opacity-0 focus-within:pointer-events-auto focus-within:max-w-[9.25rem] focus-within:opacity-100`;
 
   return (
     <div
-      className={`feed-volume-control flex h-9 items-center overflow-hidden rounded-full bg-black/30 text-white shadow-[0_2px_12px_rgba(0,0,0,0.22)] backdrop-blur-md transition-[max-width,opacity] duration-200 ease-out ${pinned ? expanded : collapsed}`}
+      className={`feed-volume-control group/vol flex h-9 items-center overflow-hidden rounded-full bg-black/30 text-white shadow-[0_2px_12px_rgba(0,0,0,0.22)] backdrop-blur-md transition-[max-width,opacity] duration-200 ease-out ${
+        pinned ? expanded : alwaysVisible ? visibleIdle : collapsed
+      }`}
       onPointerDown={pinInteraction}
       onMouseDown={stopFeedPointer}
       onClick={stopFeedPointer}
@@ -449,7 +454,9 @@ function FeedVolumeControl({
         className={`relative flex h-9 shrink-0 items-center overflow-hidden transition-[width,opacity,padding] duration-200 ease-out ${sliderTrackPad} ${
           pinned
             ? "w-19 opacity-100"
-            : `w-0 opacity-0 ${sliderTrackWidth} group-hover:opacity-100 focus-within:opacity-100`
+            : alwaysVisible
+              ? "w-0 opacity-0 group-hover/vol:w-19 group-hover/vol:opacity-100 focus-within:w-19 focus-within:opacity-100"
+              : `w-0 opacity-0 ${sliderTrackWidth} group-hover:opacity-100 focus-within:opacity-100`
         }`}
       >
         <div
@@ -474,7 +481,9 @@ function FeedVolumeControl({
           className={`feed-volume-slider relative z-10 w-full cursor-pointer ${
             pinned
               ? "pointer-events-auto"
-              : "pointer-events-none group-hover:pointer-events-auto focus-within:pointer-events-auto"
+              : alwaysVisible
+                ? "pointer-events-none group-hover/vol:pointer-events-auto focus-within:pointer-events-auto"
+                : "pointer-events-none group-hover:pointer-events-auto focus-within:pointer-events-auto"
           }`}
           onPointerDown={pinInteraction}
           onChange={onSlider}
@@ -1019,7 +1028,9 @@ export function FeedPhoneStage({
                       ? ""
                       : "rounded-xl sm:rounded-2xl"
                   }`}
-                  style={{ bottom: FEED_PROGRESS_TRACK_BOTTOM_PX }}
+                  style={{
+                    bottom: theaterMode ? 0 : FEED_PROGRESS_TRACK_BOTTOM_PX,
+                  }}
                 >
                   <FeedVideoPlayer
                     key={String(video.publicId)}
@@ -1096,29 +1107,23 @@ export function FeedPhoneStage({
 
                   {isActive ? (
                     <>
-                      <div className="pointer-events-none absolute inset-x-0 top-0 z-50 flex items-center justify-between px-3 pt-3">
-                        <div className="pointer-events-auto flex items-center gap-2">
-                          {theaterMode && onTheaterModeChange ? (
-                            <button
-                              type="button"
-                              aria-label="Thoát chế độ toàn màn hình"
-                              title="Thoát chế độ toàn màn hình"
-                              className={`cursor-pointer ${FEED_VIDEO_OVERLAY_BTN_CLASS}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onTheaterModeChange(false);
-                              }}
-                            >
-                              <IoClose aria-hidden />
-                            </button>
-                          ) : null}
-                          <FeedVolumeControl
-                            volume={feedVolume}
-                            onVolumeChange={setFeedVolume}
-                            soundOn={feedSoundOn}
-                            onSoundOnChange={setFeedSoundOn}
-                          />
-                        </div>
+                      <div
+                        className={
+                          theaterMode
+                            ? "pointer-events-none fixed top-4 right-6 z-80 flex items-center gap-2"
+                            : "pointer-events-none absolute inset-x-0 top-0 z-50 flex items-center justify-between px-3 pt-3"
+                        }
+                      >
+                        {theaterMode ? null : (
+                          <div className="pointer-events-auto flex items-center gap-2">
+                            <FeedVolumeControl
+                              volume={feedVolume}
+                              onVolumeChange={setFeedVolume}
+                              soundOn={feedSoundOn}
+                              onSoundOnChange={setFeedSoundOn}
+                            />
+                          </div>
+                        )}
                         <div className="pointer-events-auto flex items-center gap-2">
                           {!mobileFullBleed &&
                           !theaterMode &&
@@ -1153,7 +1158,7 @@ export function FeedPhoneStage({
                             aria-expanded={feedMoreMenuOpen}
                             aria-haspopup="dialog"
                             className={`cursor-pointer transition-opacity duration-200 focus-visible:opacity-100 ${FEED_VIDEO_OVERLAY_BTN_CLASS} ${
-                              feedMoreMenuOpen
+                              theaterMode || feedMoreMenuOpen
                                 ? "bg-white/25 opacity-100"
                                 : "opacity-0 group-hover:opacity-100"
                             }`}
@@ -1175,7 +1180,11 @@ export function FeedPhoneStage({
                         role="dialog"
                         aria-modal="true"
                         aria-label="Menu video"
-                        className="feed-video-more-panel pointer-events-auto absolute top-[52px] right-2.5 z-55 w-[min(220px,calc(100%-16px))] overflow-visible"
+                        className={
+                          theaterMode
+                            ? "feed-video-more-panel pointer-events-auto fixed top-[52px] right-6 z-80 w-[min(220px,calc(100%-48px))] overflow-visible"
+                            : "feed-video-more-panel pointer-events-auto absolute top-[52px] right-2.5 z-55 w-[min(220px,calc(100%-16px))] overflow-visible"
+                        }
                         onMouseDown={(e) => e.stopPropagation()}
                       >
                         <div
@@ -1468,7 +1477,11 @@ export function FeedPhoneStage({
       {resolveFeedPlaybackUrl(activeVideo) ? (
         <div
           ref={progressTrackRef}
-          className="group/progress pointer-events-auto absolute inset-x-0 bottom-0 z-70 h-4 w-full cursor-pointer"
+          className={
+            theaterMode
+              ? "group/progress pointer-events-auto fixed inset-x-6 bottom-2 z-80 h-4 cursor-pointer sm:inset-x-10"
+              : "group/progress pointer-events-auto absolute inset-x-0 bottom-0 z-70 h-4 w-full cursor-pointer"
+          }
           role="slider"
           tabIndex={0}
           aria-valuemin={0}
@@ -1512,15 +1525,25 @@ export function FeedPhoneStage({
             {formatPlaybackTime(progressPreview.current)} /{" "}
             {formatPlaybackTime(progressPreview.duration)}
           </div>
-          <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 bg-black"
-            style={{ height: FEED_PROGRESS_TRACK_BOTTOM_PX }}
-            aria-hidden
-          />
+          {theaterMode ? null : (
+            <div
+              className="pointer-events-none absolute inset-x-0 bottom-0 bg-black"
+              style={{ height: FEED_PROGRESS_TRACK_BOTTOM_PX }}
+              aria-hidden
+            />
+          )}
           <div
             ref={progressInnerRef}
-            className="absolute inset-x-0 h-1 transition-[height] duration-150 ease-out group-hover/progress:h-[5px]"
-            style={{ bottom: FEED_PROGRESS_TRACK_BOTTOM_PX }}
+            className={
+              theaterMode
+                ? "absolute inset-x-0 bottom-1 h-[3px] transition-[height] duration-150 ease-out group-hover/progress:h-[5px]"
+                : "absolute inset-x-0 h-1 transition-[height] duration-150 ease-out group-hover/progress:h-[5px]"
+            }
+            style={
+              theaterMode
+                ? undefined
+                : { bottom: FEED_PROGRESS_TRACK_BOTTOM_PX }
+            }
           >
             <div className="absolute inset-0 bg-white/40" aria-hidden />
             <div

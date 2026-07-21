@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { apiClient } from "../../api/client";
 import {
   FeedPhoneStage,
+  FeedVolumeControl,
   FEED_STAGE_OUTER_WIDTH_CLASS,
 } from "./FeedPhoneStage";
 import { FeedCommentsPanel } from "./FeedCommentsPanel.jsx";
@@ -42,6 +43,7 @@ import {
   IoChevronDown,
   IoChevronUp,
   IoCheckmark,
+  IoClose,
   IoHeart,
   IoLogOutOutline,
   IoPerson,
@@ -62,6 +64,7 @@ import { isHlsPlaybackUrl, resolveFeedPlaybackUrl } from "../../feed/feedPlaybac
 import {
   FEED_ACTION_ITEM_CLASS,
   FEED_ROUND_ICON_BUTTON_CLASS,
+  FEED_VIDEO_OVERLAY_BTN_CLASS,
 } from "../../feed/feedLayout.js";
 import { trimFeedItemsIfNeeded } from "../../feed/trimFeedItems.js";
 import {
@@ -1890,6 +1893,26 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 ) : null}
               </div>
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-15 h-28 bg-linear-to-t from-black/80 via-black/35 to-transparent max-lg:block lg:hidden" />
+              {theaterMode && !mobileLayout ? (
+                <div className="pointer-events-auto fixed top-4 left-6 z-80 flex items-center gap-2">
+                  <button
+                    type="button"
+                    aria-label="Thoát chế độ toàn màn hình"
+                    title="Thoát chế độ toàn màn hình"
+                    className={`cursor-pointer ${FEED_VIDEO_OVERLAY_BTN_CLASS}`}
+                    onClick={() => setFeedTheaterMode(false)}
+                  >
+                    <IoClose aria-hidden />
+                  </button>
+                  <FeedVolumeControl
+                    volume={feedVolume}
+                    onVolumeChange={setFeedVolume}
+                    soundOn={feedSoundOn}
+                    onSoundOnChange={setFeedSoundOn}
+                    alwaysVisible
+                  />
+                </div>
+              ) : null}
               <div
                 className={
                   mobileLayout
@@ -1897,20 +1920,12 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                         feedCommentsOpen ? " hidden" : ""
                       }`
                     : theaterMode
-                      ? "pointer-events-auto absolute z-40 flex flex-col items-center gap-3.5"
+                      ? "pointer-events-auto fixed top-1/2 right-6 z-80 flex -translate-y-1/2 flex-col items-center gap-3.5"
                       : `pointer-events-auto z-30 flex flex-col items-center gap-3 lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-4 lg:pb-14 ${
                           feedCommentsOpen
                             ? "lg:justify-center lg:self-center lg:pb-0"
                             : ""
                         }`
-                }
-                style={
-                  theaterMode && theaterVideoWidthPx != null
-                    ? {
-                        left: `calc(50% + ${theaterVideoWidthPx / 2}px - 2.75rem)`,
-                        bottom: "max(5.5rem, 14%)",
-                      }
-                    : undefined
                 }
               >
                 {theaterMode && !mobileLayout ? (
