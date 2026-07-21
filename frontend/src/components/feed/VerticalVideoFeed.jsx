@@ -153,9 +153,14 @@ function normalizeVideoItem(item) {
   };
 }
 
-function FeedChevronNav({ activeIndex, videoCount, onStep, busy }) {
+function FeedChevronNav({ activeIndex, videoCount, onStep, busy, className }) {
   return (
-    <div className="ml-2 flex shrink-0 flex-col justify-center gap-2.5 self-center sm:ml-3">
+    <div
+      className={
+        className ??
+        "ml-2 flex shrink-0 flex-col justify-center gap-2.5 self-center sm:ml-3"
+      }
+    >
       <button
         type="button"
         aria-label="Video trước"
@@ -254,7 +259,8 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
       );
     }
     const insetPx = theaterMode ? 0 : 12;
-    return Math.max(320, Math.round(window.innerHeight - insetPx * 2));
+    const viewportH = window.visualViewport?.height ?? window.innerHeight;
+    return Math.max(320, Math.round(viewportH - insetPx * 2));
   }, [theaterMode]);
   const [feedSlotHeightPx, setFeedSlotHeightPx] = useState(() =>
     typeof window === "undefined" ? 760 : computeFeedSlotHeight(),
@@ -374,6 +380,16 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     mobileLayout && videos.length > 0
       ? measuredMobileSlotPx
       : feedSlotHeightPx;
+  /** Theater: bề ngang khung 9:16 theo chiều cao viewport (như TikTok watch). */
+  const theaterVideoWidthPx =
+    theaterMode && !mobileLayout
+      ? Math.min(
+          Math.round(activeFeedSlotHeightPx * (9 / 16)),
+          typeof window !== "undefined"
+            ? Math.max(320, window.innerWidth - 32)
+            : 720,
+        )
+      : null;
   const [commentDraft, setCommentDraft] = useState("");
   const [feedComments, setFeedComments] = useState([]);
   const [feedCommentsLoading, setFeedCommentsLoading] = useState(false);
@@ -1662,13 +1678,15 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               ? "flex-col items-center justify-center"
               : mobileLayout && videos.length > 0
                 ? "flex-col items-stretch justify-stretch"
-                : "items-stretch justify-stretch lg:items-center lg:justify-center"
+                : theaterMode
+                  ? "h-full min-h-0 flex-col items-stretch justify-stretch"
+                  : "items-stretch justify-stretch lg:items-center lg:justify-center"
           } ${
             feedCommentsOpen && !mobileLayout
               ? feedDockLandscape
                 ? "min-w-0 px-1 py-0"
                 : "min-w-0 px-1 py-0"
-              : feedAlignStart
+              : feedAlignStart && !theaterMode
                 ? "lg:justify-start"
                 : ""
           }`}
@@ -1767,26 +1785,38 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               className={
                 mobileLayout
                   ? "relative min-h-0 w-full flex-1 flex flex-row overflow-hidden"
-                  : `relative min-h-0 w-full max-lg:flex-1 max-lg:overflow-hidden h-full ${
-                      feedCommentsOpen && !mobileLayout
-                        ? feedDockLandscape
-                          ? "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-start"
-                          : "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-center"
-                        : feedAlignStart
-                          ? "lg:flex lg:items-center lg:justify-start lg:gap-0 lg:pr-3"
-                          : "lg:flex lg:items-center lg:justify-center lg:gap-0"
-                    }`
+                  : theaterMode
+                    ? "relative flex h-full w-full items-center justify-center overflow-hidden"
+                    : `relative min-h-0 w-full max-lg:flex-1 max-lg:overflow-hidden h-full ${
+                        feedCommentsOpen && !mobileLayout
+                          ? feedDockLandscape
+                            ? "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-start"
+                            : "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-center"
+                          : feedAlignStart
+                            ? "lg:flex lg:items-center lg:justify-start lg:gap-0 lg:pr-3"
+                            : "lg:flex lg:items-center lg:justify-center lg:gap-0"
+                      }`
               }
             >
               <div
                 className={
                   mobileLayout
                     ? "relative min-h-0 flex-1 overflow-hidden"
-                    : feedCommentsOpen && !mobileLayout
-                      ? feedDockLandscape
-                        ? "relative flex h-full min-h-0 w-full flex-col items-start justify-center max-lg:flex-1"
-                        : "relative flex h-full min-h-0 w-full flex-col items-center justify-center max-lg:flex-1"
-                      : "relative h-full max-lg:w-full max-lg:flex-1 lg:w-auto lg:shrink-0"
+                    : theaterMode
+                      ? "relative h-full shrink-0"
+                      : feedCommentsOpen && !mobileLayout
+                        ? feedDockLandscape
+                          ? "relative flex h-full min-h-0 w-full flex-col items-start justify-center max-lg:flex-1"
+                          : "relative flex h-full min-h-0 w-full flex-col items-center justify-center max-lg:flex-1"
+                        : "relative h-full max-lg:w-full max-lg:flex-1 lg:w-auto lg:shrink-0"
+                }
+                style={
+                  theaterMode && theaterVideoWidthPx != null
+                    ? {
+                        width: theaterVideoWidthPx,
+                        height: activeFeedSlotHeightPx,
+                      }
+                    : undefined
                 }
               >
                 <FeedPhoneStage
@@ -1866,13 +1896,47 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     ? `pointer-events-auto z-30 flex h-full shrink-0 flex-col items-center justify-center gap-3 px-2 pb-8${
                         feedCommentsOpen ? " hidden" : ""
                       }`
-                    : `pointer-events-auto z-30 flex flex-col items-center gap-3 lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-4 lg:pb-14 ${
-                        feedCommentsOpen
-                          ? "lg:justify-center lg:self-center lg:pb-0"
-                          : ""
-                      }`
+                    : theaterMode
+                      ? "pointer-events-auto absolute z-40 flex flex-col items-center gap-3.5"
+                      : `pointer-events-auto z-30 flex flex-col items-center gap-3 lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-4 lg:pb-14 ${
+                          feedCommentsOpen
+                            ? "lg:justify-center lg:self-center lg:pb-0"
+                            : ""
+                        }`
+                }
+                style={
+                  theaterMode && theaterVideoWidthPx != null
+                    ? {
+                        left: `calc(50% + ${theaterVideoWidthPx / 2}px - 2.75rem)`,
+                        bottom: "max(5.5rem, 14%)",
+                      }
+                    : undefined
                 }
               >
+                {theaterMode && !mobileLayout ? (
+                  <div className="mb-1 flex flex-col gap-2.5">
+                    <button
+                      type="button"
+                      aria-label="Video trước"
+                      className={FEED_ROUND_ICON_BUTTON}
+                      disabled={feedStepBusy || activeIndex === 0}
+                      onClick={() => requestFeedStep(-1)}
+                    >
+                      <IoChevronUp aria-hidden />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Video tiếp theo"
+                      className={FEED_ROUND_ICON_BUTTON}
+                      disabled={
+                        feedStepBusy || activeIndex >= videos.length - 1
+                      }
+                      onClick={() => requestFeedStep(1)}
+                    >
+                      <IoChevronDown aria-hidden />
+                    </button>
+                  </div>
+                ) : null}
                 <div
                   className={
                     mobileLayout
@@ -2017,6 +2081,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 </button>
                 </div>
               </div>
+              {!theaterMode ? (
               <div className="hidden lg:contents">
                 <FeedChevronNav
                   activeIndex={activeIndex}
@@ -2025,6 +2090,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   busy={feedStepBusy}
                 />
               </div>
+              ) : null}
             </div>
             </>
           )}

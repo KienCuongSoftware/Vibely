@@ -874,6 +874,17 @@ export function FeedPhoneStage({
       ? Math.round((landscapeStageWidthPx * 9) / 16)
       : null;
 
+  /** Theater: khung cao gần full viewport, rộng đúng tỉ lệ 9:16 như TikTok watch. */
+  const theaterStageWidthPx =
+    theaterMode && !mobileFullBleed && !effectiveStageWide
+      ? Math.min(
+          Math.round(feedSlotHeightPx * (9 / 16)),
+          typeof window !== "undefined"
+            ? Math.max(320, window.innerWidth - 32)
+            : 720,
+        )
+      : null;
+
   const stageOuterHeightPx = mobileFullBleed
     ? mobileMeasuredSlotPx
     : effectiveStageWide && landscapeVideoHeightPx != null
@@ -886,11 +897,9 @@ export function FeedPhoneStage({
 
   const stageWidthClass = mobileFullBleed
     ? "relative h-full w-full shrink-0"
-    : effectiveStageWide
+    : effectiveStageWide || theaterMode
       ? "relative shrink-0"
-      : theaterMode
-        ? "w-[min(520px,calc((100dvh-4px)*9/16))] shrink-0 md:w-[min(560px,calc((100dvh-4px)*9/16))]"
-        : FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT;
+      : FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT;
 
   const stageOuterSurfaceClass = mobileFullBleed
     ? "relative h-full w-full overflow-hidden bg-black"
@@ -957,7 +966,8 @@ export function FeedPhoneStage({
         mobileFullBleed
           ? undefined
           : {
-              width: landscapeStageWidthPx ?? undefined,
+              width:
+                landscapeStageWidthPx ?? theaterStageWidthPx ?? undefined,
               height: stageOuterHeightPx,
             }
       }
