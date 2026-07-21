@@ -115,7 +115,7 @@ const CAPTION_TEXT_CLASS =
   "min-w-0 text-sm leading-snug text-white/90 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]";
 
 /** Mô tả dài: 1 dòng + …; «Thêm» mở rộng; «Ẩn bớt» thu lại. */
-function FeedVideoCaption({ caption, onNeedsGradientChange }) {
+export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
   const text = String(caption ?? "").trim();
   const [expanded, setExpanded] = useState(false);
   const [overflowsOneLine, setOverflowsOneLine] = useState(false);
@@ -1442,7 +1442,7 @@ export function FeedPhoneStage({
                 />
               )}
 
-              {isActive && hasPlayback ? (
+              {isActive && hasPlayback && !theaterMode ? (
                 <div
                   className="pointer-events-none absolute inset-x-0 bottom-0 z-50 max-h-[42%] overflow-hidden **:pointer-events-auto"
                   style={{ paddingBottom: FEED_CAPTION_PROGRESS_PAD_PX }}
@@ -1465,7 +1465,7 @@ export function FeedPhoneStage({
                 </div>
               ) : null}
 
-              {!hasPlayback ? (
+              {!hasPlayback && !theaterMode ? (
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 pb-5">
                   <p className="truncate text-sm font-semibold text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]">
                     @{rawVibelyUser}

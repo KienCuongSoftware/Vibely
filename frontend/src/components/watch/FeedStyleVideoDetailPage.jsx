@@ -21,7 +21,7 @@ import {
   NewCollectionModal,
 } from '../BookmarkSaveFeedback.jsx'
 import { CommentInputAccessoryButtons } from '../comments/CommentInputAccessory.jsx'
-import { FeedPhoneStage, FeedVolumeControl } from '../feed/FeedPhoneStage.jsx'
+import { FeedPhoneStage, FeedVolumeControl, FeedVideoCaption } from '../feed/FeedPhoneStage.jsx'
 import {
   isMobileFeedLayout,
   MOBILE_FEED_BOTTOM_NAV_PX,
@@ -1019,6 +1019,28 @@ export function FeedStyleVideoDetailPage({
                       onSoundOnChange={setFeedSoundOn}
                       alwaysVisible
                     />
+                  </div>
+                ) : null}
+                {watchChrome && feedVideo ? (
+                  <div className="pointer-events-auto fixed bottom-10 left-6 z-80 w-[min(17.5rem,calc(50vw-min(280px,28vh)-2rem))] max-w-[280px]">
+                    <Link
+                      to={authorProfilePath}
+                      className="inline-block max-w-full truncate text-[15px] font-bold leading-snug text-white hover:underline"
+                    >
+                      @
+                      {String(feedVideo.authorUsername ?? 'vibely')
+                        .trim()
+                        .replace(/^@/, '') || 'vibely'}
+                    </Link>
+                    <div className="mt-1.5 text-sm leading-snug text-white/90">
+                      <FeedVideoCaption
+                        caption={
+                          String(feedVideo.description ?? '').trim() ||
+                          String(feedVideo.title ?? '').trim() ||
+                          ''
+                        }
+                      />
+                    </div>
                   </div>
                 ) : null}
                 {forYouStyle && repostToastOpen ? (
