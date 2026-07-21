@@ -240,6 +240,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   useEffect(() => {
     resetFeedStepPending();
   }, [activeIndex, resetFeedStepPending]);
+  const [theaterMode, setTheaterMode] = useState(false);
   /** Chừa ít px trên/dưới — video gần full viewport như TikTok web. */
   const computeFeedSlotHeight = useCallback(() => {
     if (typeof window === "undefined") return 760;
@@ -252,9 +253,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
         Math.round(viewportH - MOBILE_FEED_VIDEO_TOP_INSET_PX),
       );
     }
-    const insetPx = 12;
+    const insetPx = theaterMode ? 0 : 12;
     return Math.max(320, Math.round(window.innerHeight - insetPx * 2));
-  }, []);
+  }, [theaterMode]);
   const [feedSlotHeightPx, setFeedSlotHeightPx] = useState(() =>
     typeof window === "undefined" ? 760 : computeFeedSlotHeight(),
   );
@@ -267,6 +268,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     mq.addEventListener("change", sync);
     return () => mq.removeEventListener("change", sync);
   }, []);
+  useEffect(() => {
+    if (mobileLayout) setTheaterMode(false);
+  }, [mobileLayout]);
   useEffect(() => {
     const syncHeight = () => setFeedSlotHeightPx(computeFeedSlotHeight());
     syncHeight();
@@ -341,6 +345,11 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const [, setFeedPaused] = useState(true);
   const [userPaused, setUserPaused] = useState(false);
   const [feedCommentsOpen, setFeedCommentsOpen] = useState(false);
+  const setFeedTheaterMode = useCallback((next) => {
+    const enabled = Boolean(next);
+    if (enabled) setFeedCommentsOpen(false);
+    setTheaterMode(enabled);
+  }, []);
   const [mobileCommentsLayout, setMobileCommentsLayout] = useState(() =>
     computeMobileFeedCommentsLayout({ includeBottomNav: false, includeTopBar: true }),
   );
@@ -1177,6 +1186,17 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   }, [feedMoreMenuOpen]);
 
   useEffect(() => {
+    if (!theaterMode) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key !== "Escape") return;
+      if (feedMoreMenuOpen) return;
+      setTheaterMode(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [theaterMode, feedMoreMenuOpen]);
+
+  useEffect(() => {
     if (!feedMoreMenuOpen) return undefined;
     const onKey = (e) => {
       if (e.key !== "Escape") return;
@@ -1555,6 +1575,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
       />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden">
+      {!theaterMode ? (
       <div className="flex h-full min-h-0 shrink-0 overflow-hidden">
         <Sidebar
           menuItems={mainMenuItems}
@@ -1566,6 +1587,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
           forceCollapsed={mobileLayout}
         />
       </div>
+      ) : null}
 
       <div
         className={`relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden lg:flex-row ${
@@ -1574,6 +1596,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
             : "lg:items-center lg:justify-center"
         }`}
       >
+        {!theaterMode ? (
         <AccountActionsPill
           className="absolute right-8 top-5 z-100 max-lg:hidden"
           tone="profile"
@@ -1631,6 +1654,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
             </div>
           )}
         </AccountActionsPill>
+        ) : null}
 
         <div
           className={`relative flex min-h-0 min-w-0 flex-1 ${
@@ -1767,6 +1791,8 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               >
                 <FeedPhoneStage
                   mobileFullBleed={mobileLayout}
+                  theaterMode={theaterMode}
+                  onTheaterModeChange={setFeedTheaterMode}
                   videos={videos}
                   activeIndex={activeIndex}
                   setActiveIndex={setActiveIndex}

@@ -12,7 +12,9 @@ import {
   IoCheckmark,
   IoChevronBack,
   IoChevronForward,
+  IoClose,
   IoEllipsisHorizontal,
+  IoExpandOutline,
   IoPause,
   IoPlay,
   IoVolumeHighOutline,
@@ -42,6 +44,7 @@ import { downloadWatermarkedVideo } from "../../feed/videoDownload.js";
 import { useFeedPrefetch } from "../../feed/useFeedPrefetch.js";
 import { VideoContextMenu } from "./VideoContextMenu.jsx";
 import { SelfRepostIndicator } from "../repost/SelfRepostIndicator.jsx";
+import { TooltipHoverWrap } from "../TooltipControls.jsx";
 import {
   FEED_COMMENTS_PANEL_WIDTH_PX,
   FEED_MORE_MENU_BADGE_ICON_CLASS,
@@ -518,6 +521,9 @@ export function FeedPhoneStage({
   commentsDockOpen = false,
   /** Mobile web: video full bleed (TikTok phone layout). */
   mobileFullBleed = false,
+  /** Desktop theater — ẩn sidebar, gần full viewport như TikTok. */
+  theaterMode = false,
+  onTheaterModeChange,
   /** Báo parent biết khung đang ở chế độ ngang (16:9). */
   onStageWideChange,
   /** Menu chuột phải video (TikTok-style). */
@@ -882,11 +888,15 @@ export function FeedPhoneStage({
     ? "relative h-full w-full shrink-0"
     : effectiveStageWide
       ? "relative shrink-0"
-      : FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT;
+      : theaterMode
+        ? "w-[min(520px,calc((100dvh-4px)*9/16))] shrink-0 md:w-[min(560px,calc((100dvh-4px)*9/16))]"
+        : FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT;
 
   const stageOuterSurfaceClass = mobileFullBleed
     ? "relative h-full w-full overflow-hidden bg-black"
-    : `${stageWidthClass} relative overflow-hidden rounded-xl border border-white/10 bg-black shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl`;
+    : theaterMode
+      ? `${stageWidthClass} relative overflow-hidden bg-black`
+      : `${stageWidthClass} relative overflow-hidden rounded-xl border border-white/10 bg-black shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl`;
 
   /** Giữ activeIndex ổn định khi chiều cao khung đổi (phát hiện 16:9). */
   const [stageHeightSettle, setStageHeightSettle] = useState(false);
@@ -965,7 +975,7 @@ export function FeedPhoneStage({
         onActiveIndexChange={setActiveIndex}
         onNearEnd={loadMoreFeed}
         scrollClassName={
-          mobileFullBleed
+          mobileFullBleed || theaterMode
             ? "scrollbar-none"
             : "scrollbar-none rounded-xl sm:rounded-2xl"
         }
@@ -995,7 +1005,9 @@ export function FeedPhoneStage({
               {hasPlayback ? (
                 <div
                   className={`absolute inset-x-0 top-0 isolate overflow-hidden ${
-                    mobileFullBleed ? "" : "rounded-xl sm:rounded-2xl"
+                    mobileFullBleed || theaterMode
+                      ? ""
+                      : "rounded-xl sm:rounded-2xl"
                   }`}
                   style={{ bottom: FEED_PROGRESS_TRACK_BOTTOM_PX }}
                 >
@@ -1075,29 +1087,74 @@ export function FeedPhoneStage({
                   {isActive ? (
                     <>
                       <div className="pointer-events-none absolute inset-x-0 top-0 z-50 flex items-center justify-between px-3 pt-3">
-                        <FeedVolumeControl
-                          volume={feedVolume}
-                          onVolumeChange={setFeedVolume}
-                          soundOn={feedSoundOn}
-                          onSoundOnChange={setFeedSoundOn}
-                        />
-                        <button
-                          type="button"
-                          aria-label="Menu video"
-                          aria-expanded={feedMoreMenuOpen}
-                          aria-haspopup="dialog"
-                          className={`pointer-events-auto cursor-pointer transition-opacity duration-200 focus-visible:opacity-100 ${FEED_VIDEO_OVERLAY_BTN_CLASS} ${
-                            feedMoreMenuOpen
-                              ? "bg-white/25 opacity-100"
-                              : "opacity-0 group-hover:opacity-100"
-                          }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setFeedMoreMenuOpen((open) => !open);
-                          }}
-                        >
-                          <IoEllipsisHorizontal aria-hidden />
-                        </button>
+                        <div className="pointer-events-auto flex items-center gap-2">
+                          {theaterMode && onTheaterModeChange ? (
+                            <button
+                              type="button"
+                              aria-label="Thoát chế độ toàn màn hình"
+                              title="Thoát chế độ toàn màn hình"
+                              className={`cursor-pointer ${FEED_VIDEO_OVERLAY_BTN_CLASS}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onTheaterModeChange(false);
+                              }}
+                            >
+                              <IoClose aria-hidden />
+                            </button>
+                          ) : null}
+                          <FeedVolumeControl
+                            volume={feedVolume}
+                            onVolumeChange={setFeedVolume}
+                            soundOn={feedSoundOn}
+                            onSoundOnChange={setFeedSoundOn}
+                          />
+                        </div>
+                        <div className="pointer-events-auto flex items-center gap-2">
+                          {!mobileFullBleed &&
+                          !theaterMode &&
+                          onTheaterModeChange ? (
+                            <TooltipHoverWrap
+                              tip="Vào chế độ toàn màn hình"
+                              placement="bottom"
+                              hoverOnly
+                              className={`transition-opacity duration-200 ${
+                                feedMoreMenuOpen
+                                  ? "opacity-100"
+                                  : "opacity-0 group-hover:opacity-100"
+                              }`}
+                            >
+                              <button
+                                type="button"
+                                aria-label="Vào chế độ toàn màn hình"
+                                className={`cursor-pointer focus-visible:opacity-100 ${FEED_VIDEO_OVERLAY_BTN_CLASS}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setFeedMoreMenuOpen(false);
+                                  onTheaterModeChange(true);
+                                }}
+                              >
+                                <IoExpandOutline aria-hidden />
+                              </button>
+                            </TooltipHoverWrap>
+                          ) : null}
+                          <button
+                            type="button"
+                            aria-label="Menu video"
+                            aria-expanded={feedMoreMenuOpen}
+                            aria-haspopup="dialog"
+                            className={`cursor-pointer transition-opacity duration-200 focus-visible:opacity-100 ${FEED_VIDEO_OVERLAY_BTN_CLASS} ${
+                              feedMoreMenuOpen
+                                ? "bg-white/25 opacity-100"
+                                : "opacity-0 group-hover:opacity-100"
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setFeedMoreMenuOpen((open) => !open);
+                            }}
+                          >
+                            <IoEllipsisHorizontal aria-hidden />
+                          </button>
+                        </div>
                       </div>
                     </>
                   ) : null}
