@@ -530,9 +530,11 @@ export function FeedPhoneStage({
   commentsDockOpen = false,
   /** Mobile web: video full bleed (TikTok phone layout). */
   mobileFullBleed = false,
-  /** Desktop theater — ẩn sidebar, gần full viewport như TikTok. */
+  /** Desktop watch chrome — ẩn sidebar-style overlays trong khung (X/volume do parent render). */
   theaterMode = false,
   onTheaterModeChange,
+  /** For You: mở trang /@user/video/{id} thay vì theater overlay. */
+  onEnterFullscreen,
   /** Báo parent biết khung đang ở chế độ ngang (16:9). */
   onStageWideChange,
   /** Menu chuột phải video (TikTok-style). */
@@ -1127,7 +1129,7 @@ export function FeedPhoneStage({
                         <div className="pointer-events-auto flex items-center gap-2">
                           {!mobileFullBleed &&
                           !theaterMode &&
-                          onTheaterModeChange ? (
+                          (onEnterFullscreen || onTheaterModeChange) ? (
                             <TooltipHoverWrap
                               tip="Vào chế độ toàn màn hình"
                               placement="bottom"
@@ -1145,7 +1147,11 @@ export function FeedPhoneStage({
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setFeedMoreMenuOpen(false);
-                                  onTheaterModeChange(true);
+                                  if (onEnterFullscreen) {
+                                    onEnterFullscreen();
+                                    return;
+                                  }
+                                  onTheaterModeChange?.(true);
                                 }}
                               >
                                 <IoExpandOutline aria-hidden />

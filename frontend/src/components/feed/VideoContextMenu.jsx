@@ -139,18 +139,20 @@ export function VideoContextMenu({
           <span>{reposted ? 'Xóa video đăng lại' : 'Đăng lại'}</span>
         </button>
       ) : null}
-      <button
-        type="button"
-        role="menuitem"
-        className={MENU_ITEM_CLASS}
-        onClick={() => {
-          onViewDetails?.()
-          onClose()
-        }}
-      >
-        <IoInformationCircleOutline className="h-[18px] w-[18px] shrink-0 opacity-90" aria-hidden />
-        <span>Xem chi tiết video</span>
-      </button>
+      {onViewDetails ? (
+        <button
+          type="button"
+          role="menuitem"
+          className={MENU_ITEM_CLASS}
+          onClick={() => {
+            onViewDetails?.()
+            onClose()
+          }}
+        >
+          <IoInformationCircleOutline className="h-[18px] w-[18px] shrink-0 opacity-90" aria-hidden />
+          <span>Xem chi tiết video</span>
+        </button>
+      ) : null}
     </div>,
     document.body,
   )

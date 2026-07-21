@@ -21,7 +21,7 @@ import {
   NewCollectionModal,
 } from '../BookmarkSaveFeedback.jsx'
 import { CommentInputAccessoryButtons } from '../comments/CommentInputAccessory.jsx'
-import { FeedPhoneStage } from '../feed/FeedPhoneStage.jsx'
+import { FeedPhoneStage, FeedVolumeControl } from '../feed/FeedPhoneStage.jsx'
 import {
   isMobileFeedLayout,
   MOBILE_FEED_BOTTOM_NAV_PX,
@@ -48,6 +48,11 @@ import { redirectGuestToLogin } from '../../utils/guestAuthGate.js'
 import { buildShareableVideoUrl } from '../../utils/shareUrl.js'
 import { handleSidebarMenuSelect } from '../../utils/sidebarNavigation.js'
 import {
+  FEED_ACTION_ITEM_CLASS,
+  FEED_ROUND_ICON_BUTTON_CLASS,
+  FEED_VIDEO_OVERLAY_BTN_CLASS,
+} from '../../feed/feedLayout.js'
+import {
   isVideoPublicId,
   normalizeVideoPublicId,
   videoPublicIdOf,
@@ -59,13 +64,10 @@ import { buildProfileHref } from '../search/searchUtils.js'
 import { formatRelativeTimeVi } from '../../utils/relativeTimeVi.js'
 import { isEnterKey } from '../../utils/keyboardShortcuts.js'
 
-import { FEED_ACTION_ITEM_CLASS } from '../../feed/feedLayout.js'
-
 const DEFAULT_AVATAR = '/images/users/default-avatar.jpeg'
 const FEED_DEFAULT_AUTHOR_AVATAR = '/images/users/default-avatar.jpeg'
 
-const FEED_ROUND_ICON_BUTTON =
-  'flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-zinc-600/90 bg-zinc-900/95 text-xl text-zinc-100 shadow-lg transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-35'
+const FEED_ROUND_ICON_BUTTON = FEED_ROUND_ICON_BUTTON_CLASS
 
 function formatCompactCount(value) {
   const count = Number(value ?? 0)
@@ -292,6 +294,11 @@ export function FeedStyleVideoDetailPage({
     ? `/@${encodeURIComponent(String(feedVideo.authorUsername).replace(/^@/, ''))}`
     : '/foryou'
   const feedDockLandscape = stageWide
+  const watchChrome = forYouStyle && !mobileLayout
+
+  const exitWatchToForYou = useCallback(() => {
+    navigate('/foryou')
+  }, [navigate])
 
   const patchVideo = useCallback((patch) => {
     setVideo((prev) => (prev ? { ...prev, ...patch } : prev))
@@ -443,14 +450,6 @@ export function FeedStyleVideoDetailPage({
     await navigator.clipboard.writeText(url)
   }, [video?.authorUsername, video?.publicId])
 
-  const handleVideoContextViewDetails = useCallback(
-    (target) => {
-      const path = buildDetailVideoUrl(target?.authorUsername, target?.publicId)
-      if (path) navigate(path)
-    },
-    [buildDetailVideoUrl, navigate],
-  )
-
   useEffect(() => {
     setFollowedAuthorIds(readFeedFollowedAuthorIds(token))
   }, [token])
@@ -465,6 +464,11 @@ export function FeedStyleVideoDetailPage({
 
   useEffect(() => {
     const onResize = () => {
+      if (forYouStyle && !mobileLayout) {
+        const viewportH = window.visualViewport?.height ?? window.innerHeight
+        setFeedSlotHeightPx(Math.max(320, Math.round(viewportH)))
+        return
+      }
       const inset = mobileLayout
         ? MOBILE_FEED_TOP_BAR_PX + MOBILE_FEED_BOTTOM_NAV_PX + 8
         : 24
@@ -472,8 +476,21 @@ export function FeedStyleVideoDetailPage({
     }
     onResize()
     window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [mobileLayout])
+    window.visualViewport?.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      window.visualViewport?.removeEventListener('resize', onResize)
+    }
+  }, [mobileLayout, forYouStyle])
+
+  useEffect(() => {
+    if (!watchChrome) return undefined
+    const onKey = (e) => {
+      if (e.key === 'Escape' && !feedMoreMenuOpen) exitWatchToForYou()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [watchChrome, feedMoreMenuOpen, exitWatchToForYou])
 
   useEffect(() => {
     const unlock = () => setSoundUnlocked(true)
@@ -767,7 +784,7 @@ export function FeedStyleVideoDetailPage({
 
   const openSidePanel = useCallback((tab) => {
     setSidebarTab(tab)
-    if (isMobileFeedLayout()) {
+    if (isMobileFeedLayout() || (forYouStyle && !isMobileFeedLayout())) {
       setMobilePanelOpen(true)
       if (tab === 'comments') {
         window.requestAnimationFrame(() => commentInputRef.current?.focus())
@@ -777,7 +794,7 @@ export function FeedStyleVideoDetailPage({
     if (tab === 'comments') {
       commentInputRef.current?.focus()
     }
-  }, [])
+  }, [forYouStyle])
 
   const openBookmarkManagePopover = useCallback(() => {
     setBookmarkToastOpen(false)
@@ -817,7 +834,7 @@ export function FeedStyleVideoDetailPage({
         activeFeedTab="for-you"
       />
 
-      <div className="hidden shrink-0 lg:block">
+      <div className={`hidden shrink-0 lg:block${watchChrome ? ' lg:hidden' : ''}`}>
         <Sidebar
           menuItems={menuItems}
           activeMenu={activeMenu}
@@ -829,6 +846,7 @@ export function FeedStyleVideoDetailPage({
       </div>
 
       <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden lg:flex-row">
+        {!watchChrome ? (
         <AccountActionsPill className="absolute right-3 top-3 z-[100] lg:right-8 lg:top-5" tone="profile">
           {!token ? (
             <Link
@@ -883,8 +901,15 @@ export function FeedStyleVideoDetailPage({
             </div>
           )}
         </AccountActionsPill>
+        ) : null}
 
-        <div className="relative flex min-h-0 min-w-0 flex-1 items-stretch justify-stretch lg:items-center lg:justify-center lg:px-1 lg:py-1">
+        <div
+          className={`relative flex min-h-0 min-w-0 flex-1 items-stretch justify-stretch ${
+            watchChrome
+              ? 'h-full lg:items-center lg:justify-center'
+              : 'lg:items-center lg:justify-center lg:px-1 lg:py-1'
+          }`}
+        >
           {loadError ? (
             <p className="px-6 text-center text-sm text-red-400">{loadError}</p>
           ) : loading && !feedVideo ? (
@@ -922,6 +947,10 @@ export function FeedStyleVideoDetailPage({
               >
                 <FeedPhoneStage
                   mobileFullBleed={mobileLayout}
+                  theaterMode={watchChrome}
+                  onTheaterModeChange={(open) => {
+                    if (!open) exitWatchToForYou()
+                  }}
                   videos={feedVideos}
                   activeIndex={0}
                   setActiveIndex={() => {}}
@@ -952,7 +981,7 @@ export function FeedStyleVideoDetailPage({
                   thumbnailFallbackUrl={undefined}
                   playbackFlash={playbackFlash}
                   onActiveFeedPlaybackTick={() => {}}
-                  commentsDockOpen
+                  commentsDockOpen={!mobileLayout && !watchChrome && sidebarTab === 'comments'}
                   onStageWideChange={setStageWide}
                   contextMenuToken={forYouStyle ? token : undefined}
                   onVideoContextShare={forYouStyle ? handleVideoContextShare : undefined}
@@ -960,9 +989,6 @@ export function FeedStyleVideoDetailPage({
                   onVideoContextRepost={forYouStyle ? () => handleRepostToggle() : undefined}
                   videoContextReposted={forYouStyle ? reposted : undefined}
                   videoContextRepostBusy={forYouStyle ? repostBusy : undefined}
-                  onVideoContextViewDetails={
-                    forYouStyle ? handleVideoContextViewDetails : undefined
-                  }
                   selfReposted={forYouStyle ? reposted : false}
                   selfRepostAvatarUrl={forYouStyle ? user?.avatarUrl : undefined}
                   selfRepostDisplayName={forYouStyle ? user?.displayName : undefined}
@@ -975,6 +1001,26 @@ export function FeedStyleVideoDetailPage({
                   onSelfUnrepost={forYouStyle ? handleRepostToggle : undefined}
                   selfRepostBusy={forYouStyle ? repostBusy : false}
                 />
+                {watchChrome ? (
+                  <div className="pointer-events-auto fixed top-4 left-6 z-80 flex items-center gap-2">
+                    <button
+                      type="button"
+                      aria-label="Quay lại For You"
+                      title="Quay lại For You"
+                      className={`cursor-pointer ${FEED_VIDEO_OVERLAY_BTN_CLASS}`}
+                      onClick={exitWatchToForYou}
+                    >
+                      <IoClose aria-hidden />
+                    </button>
+                    <FeedVolumeControl
+                      volume={feedVolume}
+                      onVolumeChange={setFeedVolume}
+                      soundOn={feedSoundOn}
+                      onSoundOnChange={setFeedSoundOn}
+                      alwaysVisible
+                    />
+                  </div>
+                ) : null}
                 {forYouStyle && repostToastOpen ? (
                   <div
                     className="pointer-events-none absolute inset-x-0 top-4 z-[60] flex justify-center px-4"
@@ -996,7 +1042,13 @@ export function FeedStyleVideoDetailPage({
 
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[15] h-28 bg-linear-to-t from-black/80 via-black/35 to-transparent lg:hidden" />
 
-              <div className="pointer-events-none absolute right-2 bottom-[4.75rem] z-30 lg:pointer-events-auto lg:static lg:ml-3 lg:flex lg:shrink-0 lg:flex-col lg:items-center lg:gap-4 lg:self-center">
+              <div
+                className={
+                  watchChrome
+                    ? 'pointer-events-auto fixed right-6 bottom-[max(6.5rem,18%)] z-80 flex flex-col items-center gap-3.5'
+                    : 'pointer-events-none absolute right-2 bottom-[4.75rem] z-30 lg:pointer-events-auto lg:static lg:ml-3 lg:flex lg:shrink-0 lg:flex-col lg:items-center lg:gap-4 lg:self-center'
+                }
+              >
                 <div className="pointer-events-auto flex flex-col items-center gap-3">
                 <div className="relative h-12 w-12">
                   <Link
@@ -1154,19 +1206,29 @@ export function FeedStyleVideoDetailPage({
         {mobilePanelOpen ? (
           <button
             type="button"
-            className="fixed inset-0 z-[80] bg-black/60 lg:hidden"
+            className={`fixed inset-0 z-[80] bg-black/60 ${watchChrome ? '' : 'lg:hidden'}`}
             aria-label="Đóng bình luận"
             onClick={() => setMobilePanelOpen(false)}
           />
         ) : null}
 
         <aside
-          className={`relative z-0 flex h-full min-h-0 shrink-0 flex-col border-white/[0.08] bg-[#121212] text-zinc-100 max-lg:fixed max-lg:inset-0 max-lg:z-[90] max-lg:w-full max-lg:border-l-0 max-lg:pt-14 ${
-            mobilePanelOpen ? 'max-lg:flex' : 'max-lg:hidden'
-          } lg:flex lg:border-l lg:pt-[4.5rem] lg:w-[clamp(380px,34vw,420px)]`}
+          className={`relative z-0 flex h-full min-h-0 shrink-0 flex-col border-white/[0.08] bg-[#121212] text-zinc-100 ${
+            mobilePanelOpen ? 'max-lg:fixed max-lg:inset-0 max-lg:z-[90] max-lg:flex max-lg:w-full max-lg:border-l-0 max-lg:pt-14' : 'max-lg:hidden'
+          } ${
+            watchChrome
+              ? mobilePanelOpen
+                ? 'lg:fixed lg:inset-y-0 lg:right-0 lg:z-[90] lg:flex lg:w-[clamp(380px,34vw,420px)] lg:border-l lg:pt-4'
+                : 'lg:hidden'
+              : 'lg:flex lg:border-l lg:pt-[4.5rem] lg:w-[clamp(380px,34vw,420px)]'
+          }`}
           aria-label="Bình luận và gợi ý"
         >
-          <div className="flex shrink-0 items-center justify-end border-b border-white/[0.08] px-3 py-2 lg:hidden">
+          <div
+            className={`flex shrink-0 items-center justify-end border-b border-white/[0.08] px-3 py-2 ${
+              watchChrome ? '' : 'lg:hidden'
+            }`}
+          >
             <button
               type="button"
               className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-zinc-200 transition hover:bg-white/10"

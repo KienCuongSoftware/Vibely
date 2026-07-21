@@ -4,7 +4,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { apiClient } from "../../api/client";
 import {
   FeedPhoneStage,
-  FeedVolumeControl,
   FEED_STAGE_OUTER_WIDTH_CLASS,
 } from "./FeedPhoneStage";
 import { FeedCommentsPanel } from "./FeedCommentsPanel.jsx";
@@ -43,7 +42,6 @@ import {
   IoChevronDown,
   IoChevronUp,
   IoCheckmark,
-  IoClose,
   IoHeart,
   IoLogOutOutline,
   IoPerson,
@@ -64,7 +62,6 @@ import { isHlsPlaybackUrl, resolveFeedPlaybackUrl } from "../../feed/feedPlaybac
 import {
   FEED_ACTION_ITEM_CLASS,
   FEED_ROUND_ICON_BUTTON_CLASS,
-  FEED_VIDEO_OVERLAY_BTN_CLASS,
 } from "../../feed/feedLayout.js";
 import { trimFeedItemsIfNeeded } from "../../feed/trimFeedItems.js";
 import {
@@ -248,7 +245,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   useEffect(() => {
     resetFeedStepPending();
   }, [activeIndex, resetFeedStepPending]);
-  const [theaterMode, setTheaterMode] = useState(false);
   /** Chừa ít px trên/dưới — video gần full viewport như TikTok web. */
   const computeFeedSlotHeight = useCallback(() => {
     if (typeof window === "undefined") return 760;
@@ -261,10 +257,10 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
         Math.round(viewportH - MOBILE_FEED_VIDEO_TOP_INSET_PX),
       );
     }
-    const insetPx = theaterMode ? 0 : 12;
+    const insetPx = 12;
     const viewportH = window.visualViewport?.height ?? window.innerHeight;
     return Math.max(320, Math.round(viewportH - insetPx * 2));
-  }, [theaterMode]);
+  }, []);
   const [feedSlotHeightPx, setFeedSlotHeightPx] = useState(() =>
     typeof window === "undefined" ? 760 : computeFeedSlotHeight(),
   );
@@ -277,9 +273,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     mq.addEventListener("change", sync);
     return () => mq.removeEventListener("change", sync);
   }, []);
-  useEffect(() => {
-    if (mobileLayout) setTheaterMode(false);
-  }, [mobileLayout]);
   useEffect(() => {
     const syncHeight = () => setFeedSlotHeightPx(computeFeedSlotHeight());
     syncHeight();
@@ -354,11 +347,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const [, setFeedPaused] = useState(true);
   const [userPaused, setUserPaused] = useState(false);
   const [feedCommentsOpen, setFeedCommentsOpen] = useState(false);
-  const setFeedTheaterMode = useCallback((next) => {
-    const enabled = Boolean(next);
-    if (enabled) setFeedCommentsOpen(false);
-    setTheaterMode(enabled);
-  }, []);
   const [mobileCommentsLayout, setMobileCommentsLayout] = useState(() =>
     computeMobileFeedCommentsLayout({ includeBottomNav: false, includeTopBar: true }),
   );
@@ -383,16 +371,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     mobileLayout && videos.length > 0
       ? measuredMobileSlotPx
       : feedSlotHeightPx;
-  /** Theater: bề ngang khung 9:16 theo chiều cao viewport (như TikTok watch). */
-  const theaterVideoWidthPx =
-    theaterMode && !mobileLayout
-      ? Math.min(
-          Math.round(activeFeedSlotHeightPx * (9 / 16)),
-          typeof window !== "undefined"
-            ? Math.max(320, window.innerWidth - 32)
-            : 720,
-        )
-      : null;
   const [commentDraft, setCommentDraft] = useState("");
   const [feedComments, setFeedComments] = useState([]);
   const [feedCommentsLoading, setFeedCommentsLoading] = useState(false);
@@ -1110,14 +1088,13 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     await navigator.clipboard.writeText(url);
   }, []);
 
-  const handleVideoContextViewDetails = useCallback(
-    (video) => {
-      const path = buildProfileVideoUrl(video?.authorUsername, video?.publicId)
-      if (!path) return
-      navigate(path)
-    },
-    [navigate],
-  )
+  const enterActiveVideoFullscreen = useCallback(() => {
+    const path = buildProfileVideoUrl(
+      activeVideo?.authorUsername,
+      activeVideo?.publicId,
+    );
+    if (path) navigate(path);
+  }, [activeVideo?.authorUsername, activeVideo?.publicId, navigate]);
 
   useEffect(() => {
     if (!authReady || !token || !isVideoPublicId(activeVideo?.publicId)) {
@@ -1203,17 +1180,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
       setFeedMoreMenuSubpage("main");
     }
   }, [feedMoreMenuOpen]);
-
-  useEffect(() => {
-    if (!theaterMode) return undefined;
-    const onKeyDown = (event) => {
-      if (event.key !== "Escape") return;
-      if (feedMoreMenuOpen) return;
-      setTheaterMode(false);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [theaterMode, feedMoreMenuOpen]);
 
   useEffect(() => {
     if (!feedMoreMenuOpen) return undefined;
@@ -1594,7 +1560,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
       />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden">
-      {!theaterMode ? (
       <div className="flex h-full min-h-0 shrink-0 overflow-hidden">
         <Sidebar
           menuItems={mainMenuItems}
@@ -1606,7 +1571,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
           forceCollapsed={mobileLayout}
         />
       </div>
-      ) : null}
 
       <div
         className={`relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden lg:flex-row ${
@@ -1615,7 +1579,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
             : "lg:items-center lg:justify-center"
         }`}
       >
-        {!theaterMode ? (
         <AccountActionsPill
           className="absolute right-8 top-5 z-100 max-lg:hidden"
           tone="profile"
@@ -1673,7 +1636,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
             </div>
           )}
         </AccountActionsPill>
-        ) : null}
 
         <div
           className={`relative flex min-h-0 min-w-0 flex-1 ${
@@ -1681,15 +1643,13 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               ? "flex-col items-center justify-center"
               : mobileLayout && videos.length > 0
                 ? "flex-col items-stretch justify-stretch"
-                : theaterMode
-                  ? "h-full min-h-0 flex-col items-stretch justify-stretch"
-                  : "items-stretch justify-stretch lg:items-center lg:justify-center"
+                : "items-stretch justify-stretch lg:items-center lg:justify-center"
           } ${
             feedCommentsOpen && !mobileLayout
               ? feedDockLandscape
                 ? "min-w-0 px-1 py-0"
                 : "min-w-0 px-1 py-0"
-              : feedAlignStart && !theaterMode
+              : feedAlignStart
                 ? "lg:justify-start"
                 : ""
           }`}
@@ -1788,44 +1748,31 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               className={
                 mobileLayout
                   ? "relative min-h-0 w-full flex-1 flex flex-row overflow-hidden"
-                  : theaterMode
-                    ? "relative flex h-full w-full items-center justify-center overflow-hidden"
-                    : `relative min-h-0 w-full max-lg:flex-1 max-lg:overflow-hidden h-full ${
-                        feedCommentsOpen && !mobileLayout
-                          ? feedDockLandscape
-                            ? "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-start"
-                            : "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-center"
-                          : feedAlignStart
-                            ? "lg:flex lg:items-center lg:justify-start lg:gap-0 lg:pr-3"
-                            : "lg:flex lg:items-center lg:justify-center lg:gap-0"
-                      }`
+                  : `relative min-h-0 w-full max-lg:flex-1 max-lg:overflow-hidden h-full ${
+                      feedCommentsOpen && !mobileLayout
+                        ? feedDockLandscape
+                          ? "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-start"
+                          : "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-center"
+                        : feedAlignStart
+                          ? "lg:flex lg:items-center lg:justify-start lg:gap-0 lg:pr-3"
+                          : "lg:flex lg:items-center lg:justify-center lg:gap-0"
+                    }`
               }
             >
               <div
                 className={
                   mobileLayout
                     ? "relative min-h-0 flex-1 overflow-hidden"
-                    : theaterMode
-                      ? "relative h-full shrink-0"
-                      : feedCommentsOpen && !mobileLayout
-                        ? feedDockLandscape
-                          ? "relative flex h-full min-h-0 w-full flex-col items-start justify-center max-lg:flex-1"
-                          : "relative flex h-full min-h-0 w-full flex-col items-center justify-center max-lg:flex-1"
-                        : "relative h-full max-lg:w-full max-lg:flex-1 lg:w-auto lg:shrink-0"
-                }
-                style={
-                  theaterMode && theaterVideoWidthPx != null
-                    ? {
-                        width: theaterVideoWidthPx,
-                        height: activeFeedSlotHeightPx,
-                      }
-                    : undefined
+                    : feedCommentsOpen && !mobileLayout
+                      ? feedDockLandscape
+                        ? "relative flex h-full min-h-0 w-full flex-col items-start justify-center max-lg:flex-1"
+                        : "relative flex h-full min-h-0 w-full flex-col items-center justify-center max-lg:flex-1"
+                      : "relative h-full max-lg:w-full max-lg:flex-1 lg:w-auto lg:shrink-0"
                 }
               >
                 <FeedPhoneStage
                   mobileFullBleed={mobileLayout}
-                  theaterMode={theaterMode}
-                  onTheaterModeChange={setFeedTheaterMode}
+                  onEnterFullscreen={enterActiveVideoFullscreen}
                   videos={videos}
                   activeIndex={activeIndex}
                   setActiveIndex={setActiveIndex}
@@ -1865,7 +1812,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   onVideoContextRepost={() => handleRepostToggle()}
                   videoContextReposted={reposted}
                   videoContextRepostBusy={repostBusy}
-                  onVideoContextViewDetails={handleVideoContextViewDetails}
                   selfReposted={reposted}
                   selfRepostAvatarUrl={user?.avatarUrl}
                   selfRepostDisplayName={user?.displayName}
@@ -1893,65 +1839,19 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 ) : null}
               </div>
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-15 h-28 bg-linear-to-t from-black/80 via-black/35 to-transparent max-lg:block lg:hidden" />
-              {theaterMode && !mobileLayout ? (
-                <div className="pointer-events-auto fixed top-4 left-6 z-80 flex items-center gap-2">
-                  <button
-                    type="button"
-                    aria-label="Thoát chế độ toàn màn hình"
-                    title="Thoát chế độ toàn màn hình"
-                    className={`cursor-pointer ${FEED_VIDEO_OVERLAY_BTN_CLASS}`}
-                    onClick={() => setFeedTheaterMode(false)}
-                  >
-                    <IoClose aria-hidden />
-                  </button>
-                  <FeedVolumeControl
-                    volume={feedVolume}
-                    onVolumeChange={setFeedVolume}
-                    soundOn={feedSoundOn}
-                    onSoundOnChange={setFeedSoundOn}
-                    alwaysVisible
-                  />
-                </div>
-              ) : null}
               <div
                 className={
                   mobileLayout
                     ? `pointer-events-auto z-30 flex h-full shrink-0 flex-col items-center justify-center gap-3 px-2 pb-8${
                         feedCommentsOpen ? " hidden" : ""
                       }`
-                    : theaterMode
-                      ? "pointer-events-auto fixed top-1/2 right-6 z-80 flex -translate-y-1/2 flex-col items-center gap-3.5"
-                      : `pointer-events-auto z-30 flex flex-col items-center gap-3 lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-4 lg:pb-14 ${
-                          feedCommentsOpen
-                            ? "lg:justify-center lg:self-center lg:pb-0"
-                            : ""
-                        }`
+                    : `pointer-events-auto z-30 flex flex-col items-center gap-3 lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-4 lg:pb-14 ${
+                        feedCommentsOpen
+                          ? "lg:justify-center lg:self-center lg:pb-0"
+                          : ""
+                      }`
                 }
               >
-                {theaterMode && !mobileLayout ? (
-                  <div className="mb-1 flex flex-col gap-2.5">
-                    <button
-                      type="button"
-                      aria-label="Video trước"
-                      className={FEED_ROUND_ICON_BUTTON}
-                      disabled={feedStepBusy || activeIndex === 0}
-                      onClick={() => requestFeedStep(-1)}
-                    >
-                      <IoChevronUp aria-hidden />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Video tiếp theo"
-                      className={FEED_ROUND_ICON_BUTTON}
-                      disabled={
-                        feedStepBusy || activeIndex >= videos.length - 1
-                      }
-                      onClick={() => requestFeedStep(1)}
-                    >
-                      <IoChevronDown aria-hidden />
-                    </button>
-                  </div>
-                ) : null}
                 <div
                   className={
                     mobileLayout
@@ -2096,7 +1996,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 </button>
                 </div>
               </div>
-              {!theaterMode ? (
               <div className="hidden lg:contents">
                 <FeedChevronNav
                   activeIndex={activeIndex}
@@ -2105,7 +2004,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   busy={feedStepBusy}
                 />
               </div>
-              ) : null}
             </div>
             </>
           )}
