@@ -416,15 +416,18 @@ public class InteractionService {
         videoRepository.save(video);
         try {
             UserReportModerationService enqueue = userReportModerationService.getIfAvailable();
-            if (enqueue != null) {
-                enqueue.enqueueUserReport(video, reporter, reason);
-            } else {
-                log.warn("UserReportModerationService unavailable — videoId={} marked REPORTED without queue", video.getId());
+            if (enqueue == null) {
+                throw new BadRequestException(
+                    "Hệ thống kiểm duyệt chưa sẵn sàng. Thử lại sau."
+                );
             }
+            enqueue.enqueueUserReport(video, reporter, reason);
+        } catch (BadRequestException ex) {
+            throw ex;
         } catch (Exception ex) {
             log.error("Failed to enqueue user report videoId={}: {}", video.getId(), ex.getMessage(), ex);
             throw new BadRequestException(
-                "Đã ghi nhận báo cáo nhưng chưa đưa vào hàng đợi kiểm duyệt. Thử lại sau."
+                "Không đưa được báo cáo vào hàng đợi kiểm duyệt. Thử lại sau."
             );
         }
         refreshExploreFor(video);

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +42,11 @@ public class UserReportModerationService {
         if (video == null || video.getId() == null) {
             return;
         }
+        enqueueUserReport(video.getId(), reporter, reason);
+    }
+
+    @Transactional
+    public void enqueueUserReport(long videoId, User reporter, String reason) {
         String trimmedReason = reason == null ? "" : reason.trim();
         if (trimmedReason.isEmpty()) {
             trimmedReason = "USER_REPORT";
@@ -56,7 +63,7 @@ public class UserReportModerationService {
             ORDER BY id DESC
             LIMIT 1
             """,
-            video.getId()
+            videoId
         );
 
         if (!openQueue.isEmpty()) {
@@ -77,7 +84,7 @@ public class UserReportModerationService {
                     (video_id, report_id, actor, action, before_json, after_json, created_at)
                 VALUES (?, ?, ?, 'USER_REPORT_APPENDED', '{}'::jsonb, CAST(? AS jsonb), NOW())
                 """,
-                video.getId(),
+                videoId,
                 reportId,
                 actorLabel(reporterId),
                 toJson(Map.of(
@@ -87,7 +94,7 @@ public class UserReportModerationService {
             );
             log.info(
                 "Appended user report evidence videoId={} reportId={} reporterId={}",
-                video.getId(),
+                videoId,
                 reportId,
                 reporterId
             );
@@ -111,7 +118,7 @@ public class UserReportModerationService {
             RETURNING id
             """,
             Long.class,
-            video.getId(),
+            videoId,
             policyVersion,
             toJson(Map.of("source", "USER_REPORT"))
         );
@@ -128,7 +135,7 @@ public class UserReportModerationService {
             """,
             Long.class,
             jobId,
-            video.getId(),
+            videoId,
             policyVersion,
             explainJson,
             ENGINE_VERSION
@@ -144,7 +151,7 @@ public class UserReportModerationService {
             RETURNING id
             """,
             Long.class,
-            video.getId(),
+            videoId,
             reportId,
             USER_REPORT_PRIORITY
         );
@@ -155,7 +162,7 @@ public class UserReportModerationService {
                 (video_id, report_id, actor, action, before_json, after_json, created_at)
             VALUES (?, ?, ?, 'USER_REPORT', '{}'::jsonb, CAST(? AS jsonb), NOW())
             """,
-            video.getId(),
+            videoId,
             reportId,
             actorLabel(reporterId),
             toJson(Map.of(
@@ -168,11 +175,57 @@ public class UserReportModerationService {
 
         log.info(
             "Enqueued user report videoId={} reportId={} queueId={} reporterId={}",
-            video.getId(),
+            videoId,
             reportId,
             queueId,
             reporterId
         );
+    }
+
+    /**
+     * Videos marked REPORTED without an open USER_REPORT queue row (old backend / failed enqueue).
+     */
+    @Transactional
+    public int backfillReportedWithoutQueue() {
+        List<Map<String, Object>> orphans = jdbcTemplate.queryForList(
+            """
+            SELECT v.id, v.report_reason
+            FROM videos v
+            WHERE v.status = 'REPORTED'
+              AND NOT EXISTS (
+                    SELECT 1
+                    FROM moderation_review_queue q
+                    WHERE q.video_id = v.id
+                      AND q.reason = 'USER_REPORT'
+                      AND q.queue_state IN ('OPEN', 'CLAIMED')
+              )
+            ORDER BY v.reported_at DESC NULLS LAST, v.id DESC
+            LIMIT 200
+            """
+        );
+        int done = 0;
+        for (Map<String, Object> row : orphans) {
+            long videoId = ((Number) row.get("id")).longValue();
+            String reason = row.get("report_reason") == null
+                ? "USER_REPORT"
+                : String.valueOf(row.get("report_reason"));
+            enqueueUserReport(videoId, null, reason);
+            done++;
+        }
+        if (done > 0) {
+            log.info("Backfilled {} REPORTED videos into USER_REPORT moderation queue", done);
+        }
+        return done;
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    @Transactional
+    public void backfillOnStartup() {
+        try {
+            backfillReportedWithoutQueue();
+        } catch (Exception ex) {
+            log.warn("USER_REPORT queue backfill skipped: {}", ex.getMessage());
+        }
     }
 
     private void insertEvidence(Long reportId, Long reporterId, String reason) {
