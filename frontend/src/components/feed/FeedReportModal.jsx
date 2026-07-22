@@ -390,6 +390,8 @@ export function FeedReportModal({
   const [error, setError] = useState('')
   /** 'detail' | 'info' — màn trước khi gửi, để khôi phục khi lỗi. */
   const [submitFrom, setSubmitFrom] = useState('detail')
+  /** Payload đã gửi thành công — gọi onSubmitted khi bấm Xong (tránh parent remount/reset modal). */
+  const [submittedPayload, setSubmittedPayload] = useState(null)
 
   const reset = () => {
     setPhase('pick')
@@ -401,6 +403,7 @@ export function FeedReportModal({
     setDetailMeta(null)
     setError('')
     setSubmitFrom('detail')
+    setSubmittedPayload(null)
   }
 
   useEffect(() => {
@@ -565,8 +568,8 @@ export function FeedReportModal({
     setPhase('submitting')
     try {
       await apiClient.reportVideo(publicId, payload, token)
+      setSubmittedPayload(payload)
       setPhase('done')
-      onSubmitted?.(payload)
     } catch (err) {
       const message =
         typeof err?.message === 'string' && err.message.trim()
@@ -575,6 +578,14 @@ export function FeedReportModal({
       setError(message)
       setPhase(submitFrom === 'info' ? 'info' : 'detail')
     }
+  }
+
+  const finishThanks = () => {
+    const payload = submittedPayload
+    if (payload != null) {
+      onSubmitted?.(payload)
+    }
+    onClose()
   }
 
   if (!open || typeof document === 'undefined') return null
@@ -604,7 +615,7 @@ export function FeedReportModal({
           type="button"
           aria-label="Đóng"
           className="absolute inset-0 cursor-default bg-black/55"
-          onClick={onClose}
+          onClick={finishThanks}
         />
         <div
           role="dialog"
@@ -631,7 +642,7 @@ export function FeedReportModal({
             <button
               type="button"
               className="mt-7 w-full cursor-pointer rounded-md bg-[#fe2c55] py-2.5 text-[16px] font-bold text-white transition hover:bg-[#ef2b50]"
-              onClick={onClose}
+              onClick={finishThanks}
             >
               Xong
             </button>
