@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   IoCheckmark,
   IoChevronBack,
@@ -25,6 +25,7 @@ import {
 } from '../../feed/feedPlaybackSpeedStorage.js'
 
 import { formatQualityLabel } from '../../feed/hlsQualityUtils.js'
+import { FeedSubtitlesModal } from '../feed/FeedSubtitlesModal.jsx'
 
 function formatSpeedPillLabel(rate) {
   const n = Number(rate)
@@ -69,11 +70,15 @@ export function WatchVideoMoreMenu({
   showAutoScroll = true,
   onTogglePip,
 }) {
-  if (!open) return null
+  const [subtitlesOpen, setSubtitlesOpen] = useState(false)
+
+  if (!open && !subtitlesOpen) return null
 
   const closeMenu = () => onOpenChange(false)
 
   return (
+    <>
+      {open ? (
     <>
       <button
         type="button"
@@ -195,7 +200,14 @@ export function WatchVideoMoreMenu({
                 <span className="flex-1">Trình phát nổi</span>
               </button>
 
-              <button type="button" className={FEED_MORE_MENU_ROW_CLASS}>
+              <button
+                type="button"
+                className={FEED_MORE_MENU_ROW_CLASS}
+                onClick={() => {
+                  closeMenu()
+                  setSubtitlesOpen(true)
+                }}
+              >
                 <span className={FEED_MORE_MENU_BADGE_ICON_CLASS} aria-hidden>
                   Aa
                 </span>
@@ -217,6 +229,12 @@ export function WatchVideoMoreMenu({
           )}
         </div>
       </div>
+    </>
+      ) : null}
+      <FeedSubtitlesModal
+        open={subtitlesOpen}
+        onClose={() => setSubtitlesOpen(false)}
+      />
     </>
   )
 }

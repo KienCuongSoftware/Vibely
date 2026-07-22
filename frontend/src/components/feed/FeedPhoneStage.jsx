@@ -40,6 +40,7 @@ import {
 import { downloadWatermarkedVideo } from "../../feed/videoDownload.js";
 import { useFeedPrefetch } from "../../feed/useFeedPrefetch.js";
 import { VideoContextMenu } from "./VideoContextMenu.jsx";
+import { FeedSubtitlesModal } from "./FeedSubtitlesModal.jsx";
 import { SelfRepostIndicator } from "../repost/SelfRepostIndicator.jsx";
 import { TooltipHoverWrap } from "../TooltipControls.jsx";
 import {
@@ -582,6 +583,7 @@ export function FeedPhoneStage({
   const [hlsQualityOptions, setHlsQualityOptions] = useState(["auto"]);
   const [videoContextMenu, setVideoContextMenu] = useState(null);
   const [videoDownloadBusy, setVideoDownloadBusy] = useState(false);
+  const [subtitlesModalOpen, setSubtitlesModalOpen] = useState(false);
 
   const closeVideoContextMenu = useCallback(() => {
     setVideoContextMenu(null);
@@ -1337,6 +1339,10 @@ export function FeedPhoneStage({
                               <button
                                 type="button"
                                 className={FEED_MORE_MENU_ROW_CLASS}
+                                onClick={() => {
+                                  setFeedMoreMenuOpen(false);
+                                  setSubtitlesModalOpen(true);
+                                }}
                               >
                                 <span
                                   className={FEED_MORE_MENU_BADGE_ICON_CLASS}
@@ -1582,6 +1588,10 @@ export function FeedPhoneStage({
             onVideoContextViewDetails?.(videoContextMenu.video);
           }
         }}
+      />
+      <FeedSubtitlesModal
+        open={subtitlesModalOpen}
+        onClose={() => setSubtitlesModalOpen(false)}
       />
     </div>
   );
