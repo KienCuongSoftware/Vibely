@@ -21,18 +21,17 @@ public class UserReportModerationService {
     private static final Logger log = LoggerFactory.getLogger(UserReportModerationService.class);
     private static final int USER_REPORT_PRIORITY = 180;
     private static final String ENGINE_VERSION = "user-report";
+    /** Distinct from AI jobs so idx_moderation_jobs_idempotent does not collide. */
+    private static final String USER_REPORT_POLICY_VERSION = "user-report";
 
     private final JdbcTemplate jdbcTemplate;
-    private final ModerationProperties properties;
     private final ObjectMapper objectMapper;
 
     public UserReportModerationService(
         JdbcTemplate jdbcTemplate,
-        ModerationProperties properties,
         ObjectMapper objectMapper
     ) {
         this.jdbcTemplate = jdbcTemplate;
-        this.properties = properties;
         this.objectMapper = objectMapper;
     }
 
@@ -95,7 +94,7 @@ public class UserReportModerationService {
             return;
         }
 
-        String policyVersion = blankTo(properties.getPolicyVersion(), "default");
+        String policyVersion = USER_REPORT_POLICY_VERSION;
         String explainJson = toJson(Map.of(
             "source", "USER_REPORT",
             "reason", trimmedReason,
@@ -194,13 +193,6 @@ public class UserReportModerationService {
 
     private static String actorLabel(Long reporterId) {
         return reporterId == null ? "USER" : "USER:" + reporterId;
-    }
-
-    private static String blankTo(String value, String fallback) {
-        if (value == null || value.isBlank()) {
-            return fallback;
-        }
-        return value.trim();
     }
 
     private static String truncate(String value, int max) {

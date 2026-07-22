@@ -34,23 +34,24 @@ public class AdminModerationController {
         this.userRepository = userRepository;
     }
 
-    /** Alias for clients that call /api/admin/moderation without /queue. */
     @GetMapping
     public ApiResponse<AdminModerationQueuePageResponse> listQueueRoot(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size,
-        @RequestParam(required = false) String state
+        @RequestParam(required = false) String state,
+        @RequestParam(required = false) String source
     ) {
-        return listQueue(page, size, state);
+        return listQueue(page, size, state, source);
     }
 
     @GetMapping("/queue")
     public ApiResponse<AdminModerationQueuePageResponse> listQueue(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size,
-        @RequestParam(required = false) String state
+        @RequestParam(required = false) String state,
+        @RequestParam(required = false) String source
     ) {
-        return ApiResponse.success(adminModerationService.listQueue(page, size, state));
+        return ApiResponse.success(adminModerationService.listQueue(page, size, state, source));
     }
 
     @PostMapping("/queue/{queueId}/claim")

@@ -52,6 +52,14 @@ public class AdminModerationService {
 
     @Transactional(readOnly = true)
     public AdminModerationQueuePageResponse listQueue(int page, int size, String state) {
+        return listQueue(page, size, state, null);
+    }
+
+    /**
+     * @param sourceFilter {@code user} = USER_REPORT only, {@code ai} = non-user, null/blank = all
+     */
+    @Transactional(readOnly = true)
+    public AdminModerationQueuePageResponse listQueue(int page, int size, String state, String sourceFilter) {
         int safePage = Math.max(0, page);
         int safeSize = Math.min(100, Math.max(1, size));
         int offset = safePage * safeSize;
@@ -70,6 +78,13 @@ public class AdminModerationService {
         // Soft-deleted / failed videos stay in DB; hide them from the live review queue.
         if (activeQueue) {
             where += " AND v.status NOT IN ('REMOVED', 'FAILED')";
+        }
+
+        String source = sourceFilter == null ? "" : sourceFilter.trim().toLowerCase(Locale.ROOT);
+        if ("user".equals(source) || "user_report".equals(source)) {
+            where += " AND q.reason = 'USER_REPORT'";
+        } else if ("ai".equals(source)) {
+            where += " AND (q.reason IS NULL OR q.reason <> 'USER_REPORT')";
         }
 
         try {
@@ -104,6 +119,7 @@ public class AdminModerationService {
             List<Map<String, Object>> rows = stateFilter == null
                 ? jdbcTemplate.queryForList(sql, safeSize, offset)
                 : jdbcTemplate.queryForList(sql, stateFilter, safeSize, offset);
+
 
             List<AdminModerationQueueItemResponse> items = new ArrayList<>();
             for (Map<String, Object> row : rows) {

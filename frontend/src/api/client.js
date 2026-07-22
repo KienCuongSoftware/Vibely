@@ -317,8 +317,8 @@ export const apiClient = {
       token,
       body: payload,
     }),
-  getAdminModerationQueue: (token, { page = 0, size = 20, state } = {}) =>
-    request(`/api/admin/moderation/queue${toQuery({ page, size, state })}`, { token }),
+  getAdminModerationQueue: (token, { page = 0, size = 20, state, source } = {}) =>
+    request(`/api/admin/moderation/queue${toQuery({ page, size, state, source })}`, { token }),
   getAdminModerationVideo: (token, publicId) =>
     request(`/api/admin/moderation/videos/${encodeURIComponent(publicId)}`, { token }),
   claimAdminModerationQueue: (token, queueId) =>

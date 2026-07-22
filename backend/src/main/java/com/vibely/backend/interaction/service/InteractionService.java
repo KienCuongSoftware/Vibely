@@ -40,6 +40,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.time.ZoneOffset;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class InteractionService {
+
+    private static final Logger log = LoggerFactory.getLogger(InteractionService.class);
 
     private final UserRepository userRepository;
     private final VideoService videoService;
@@ -403,16 +407,26 @@ public class InteractionService {
         if (video.getStatus() == VideoStatus.HIDDEN) {
             throw new BadRequestException("Video đã bị ẩn trước đó");
         }
-        if (video.getStatus() != VideoStatus.READY) {
+        if (video.getStatus() != VideoStatus.READY && video.getStatus() != VideoStatus.REPORTED) {
             throw new BadRequestException("Chỉ có thể báo cáo video đang công khai.");
         }
         video.setStatus(VideoStatus.REPORTED);
         video.setReportReason(reason);
         video.setReportedAt(LocalDateTime.now());
         videoRepository.save(video);
-        userReportModerationService.ifAvailable(
-            service -> service.enqueueUserReport(video, reporter, reason)
-        );
+        try {
+            UserReportModerationService enqueue = userReportModerationService.getIfAvailable();
+            if (enqueue != null) {
+                enqueue.enqueueUserReport(video, reporter, reason);
+            } else {
+                log.warn("UserReportModerationService unavailable — videoId={} marked REPORTED without queue", video.getId());
+            }
+        } catch (Exception ex) {
+            log.error("Failed to enqueue user report videoId={}: {}", video.getId(), ex.getMessage(), ex);
+            throw new BadRequestException(
+                "Đã ghi nhận báo cáo nhưng chưa đưa vào hàng đợi kiểm duyệt. Thử lại sau."
+            );
+        }
         refreshExploreFor(video);
     }
 

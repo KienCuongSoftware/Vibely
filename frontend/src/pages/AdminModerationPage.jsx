@@ -19,6 +19,17 @@ const STATE_FILTERS = [
   { value: "RESOLVED", label: "Đã xong" },
 ];
 
+const QUEUE_SOURCE_TABS = [
+  { value: "ai", label: "Hàng đợi AI" },
+  { value: "user", label: "Báo cáo người dùng" },
+];
+
+const QUEUE_REASON_LABEL = {
+  USER_REPORT: "Báo cáo người dùng",
+  AI_REVIEW: "AI cần xem lại",
+  AI_BLOCK_HOLD: "AI chặn — chờ duyệt",
+};
+
 const DECISION_OPTIONS = [
   {
     value: "ALLOW",
@@ -481,7 +492,7 @@ const APPEAL_STATE_FILTERS = [
 export function AdminModerationPage() {
   const { token, user, authReady } = useAuth();
   const isAdmin = String(user?.role ?? "").toUpperCase() === "ADMIN";
-  const [tab, setTab] = useState("queue");
+  const [tab, setTab] = useState("ai");
   const [page, setPage] = useState(0);
   const [stateFilter, setStateFilter] = useState("");
   const [items, setItems] = useState([]);
@@ -515,6 +526,7 @@ export function AdminModerationPage() {
       setLoading(false);
       return;
     }
+    if (tab !== "ai" && tab !== "user") return;
     setLoading(true);
     setError("");
     try {
@@ -522,6 +534,7 @@ export function AdminModerationPage() {
         page,
         size: PAGE_SIZE,
         state: stateFilter || undefined,
+        source: tab,
       });
       setItems(Array.isArray(data?.items) ? data.items : []);
       setTotal(Number(data?.total ?? 0));
@@ -534,7 +547,7 @@ export function AdminModerationPage() {
     } finally {
       setLoading(false);
     }
-  }, [authReady, isAdmin, page, stateFilter, token]);
+  }, [authReady, isAdmin, page, stateFilter, tab, token]);
 
   const loadAppeals = useCallback(async () => {
     if (!authReady || !token || !isAdmin) return;
@@ -560,13 +573,13 @@ export function AdminModerationPage() {
   }, [appealPage, appealStateFilter, authReady, isAdmin, token]);
 
   useEffect(() => {
-    if (tab === "queue") void loadQueue();
+    if (tab === "ai" || tab === "user") void loadQueue();
     else void loadAppeals();
   }, [tab, loadQueue, loadAppeals]);
 
   useEffect(() => {
     setPage(0);
-  }, [stateFilter]);
+  }, [stateFilter, tab]);
 
   useEffect(() => {
     setAppealPage(0);
@@ -645,13 +658,13 @@ export function AdminModerationPage() {
     }
   };
 
-  const emptyHint = useMemo(
-    () =>
-      stateFilter
-        ? "Không có mục với bộ lọc này."
-        : "Hàng đợi trống. Video AI đánh dấu cần xem lại sẽ xuất hiện tại đây.",
-    [stateFilter],
-  );
+  const emptyHint = useMemo(() => {
+    if (stateFilter) return "Không có mục với bộ lọc này.";
+    if (tab === "user") {
+      return "Chưa có báo cáo từ người dùng. Khi ai đó báo cáo video, mục sẽ xuất hiện tại đây.";
+    }
+    return "Hàng đợi AI trống. Video AI đánh dấu cần xem lại sẽ xuất hiện tại đây.";
+  }, [stateFilter, tab]);
 
   return (
     <AdminLayout
@@ -672,17 +685,20 @@ export function AdminModerationPage() {
       ) : (
         <>
           <div className="mb-4 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setTab("queue")}
-              className={`rounded-full border px-4 py-2 text-xs font-semibold ${
-                tab === "queue"
-                  ? "border-red-500 bg-red-500/10 text-red-200"
-                  : "border-zinc-700 text-zinc-400"
-              }`}
-            >
-              Hàng đợi xem lại
-            </button>
+            {QUEUE_SOURCE_TABS.map((item) => (
+              <button
+                key={item.value}
+                type="button"
+                onClick={() => setTab(item.value)}
+                className={`rounded-full border px-4 py-2 text-xs font-semibold ${
+                  tab === item.value
+                    ? "border-red-500 bg-red-500/10 text-red-200"
+                    : "border-zinc-700 text-zinc-400"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
             <button
               type="button"
               onClick={() => setTab("appeals")}
@@ -777,11 +793,11 @@ export function AdminModerationPage() {
             </section>
           ) : null}
 
-          {tab === "queue" ? (
+          {tab === "ai" || tab === "user" ? (
             <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                 <p className="text-sm font-bold uppercase tracking-wide text-zinc-200">
-                  Tổng mục: {total}
+                  {tab === "user" ? "Báo cáo người dùng" : "Hàng đợi AI"}: {total}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {STATE_FILTERS.map((item) => {
@@ -815,10 +831,12 @@ export function AdminModerationPage() {
                   <table className="w-full table-fixed text-left text-sm">
                     <thead className="border-b border-zinc-800 text-xs uppercase tracking-wide text-zinc-500">
                       <tr>
-                        <th className="w-[38%] px-2 py-2 font-semibold">
+                        <th className="w-[34%] px-2 py-2 font-semibold">
                           Video
                         </th>
-                        <th className="w-[12%] px-2 py-2 font-semibold">AI</th>
+                        <th className="w-[14%] px-2 py-2 font-semibold">
+                          {tab === "user" ? "Nguồn" : "AI"}
+                        </th>
                         <th className="hidden w-[14%] px-2 py-2 font-semibold sm:table-cell">
                           Rủi ro
                         </th>
@@ -862,7 +880,15 @@ export function AdminModerationPage() {
                             </div>
                           </td>
                           <td className="px-2 py-3">
-                            <DecisionBadge decision={item.aiDecision} />
+                            {tab === "user" ? (
+                              <span className="inline-flex rounded-full border border-violet-500/40 bg-violet-500/10 px-2 py-0.5 text-[11px] font-semibold text-violet-200">
+                                {QUEUE_REASON_LABEL[item.reason] ||
+                                  item.reason ||
+                                  "Báo cáo"}
+                              </span>
+                            ) : (
+                              <DecisionBadge decision={item.aiDecision} />
+                            )}
                           </td>
                           <td className="hidden px-2 py-3 sm:table-cell">
                             <RiskLevelBadge
