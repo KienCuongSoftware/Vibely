@@ -49,6 +49,7 @@ import {
 import { LuPictureInPicture2 } from 'react-icons/lu'
 import { FeedVideoPlayer } from '../components/feed/FeedVideoPlayer.jsx'
 import { VideoContextMenu } from '../components/feed/VideoContextMenu.jsx'
+import { FeedSubtitlesModal } from '../components/feed/FeedSubtitlesModal.jsx'
 import { VideoShareModal } from '../components/VideoShareModal.jsx'
 import { downloadWatermarkedVideo } from '../feed/videoDownload.js'
 import {
@@ -693,6 +694,7 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
   const [watchQualityOptions, setWatchQualityOptions] = useState(['auto'])
   const [watchAutoScroll, setWatchAutoScroll] = useState(false)
   const [videoContextMenu, setVideoContextMenu] = useState(null)
+  const [watchSubtitlesOpen, setWatchSubtitlesOpen] = useState(false)
   const [videoDownloadBusy, setVideoDownloadBusy] = useState(false)
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout())
@@ -2434,6 +2436,13 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
         x={videoContextMenu?.x ?? 0}
         y={videoContextMenu?.y ?? 0}
         downloading={videoDownloadBusy}
+        playbackSpeed={watchPlaybackSpeed}
+        onPlaybackSpeedChange={setWatchPlaybackSpeed}
+        autoScrollEnabled={watchAutoScroll}
+        onAutoScrollChange={setWatchAutoScroll}
+        showAutoScroll={showWatchNavArrows}
+        onTogglePip={() => void toggleWatchPictureInPicture()}
+        onOpenSubtitles={() => setWatchSubtitlesOpen(true)}
         onClose={closeVideoContextMenu}
         onDownload={handleWatchContextMenuDownload}
         onShare={() => {
@@ -2456,15 +2465,11 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
             setShareCopied(false)
           }
         }}
-        onRepost={() => {
-          closeVideoContextMenu()
-          handleRepostToggle()
-        }}
-        reposted={reposted}
-        repostBusy={repostBusy}
-        onViewDetails={() => {
-          closeVideoContextMenu()
-        }}
+      />
+
+      <FeedSubtitlesModal
+        open={watchSubtitlesOpen}
+        onClose={() => setWatchSubtitlesOpen(false)}
       />
 
       <VideoShareModal

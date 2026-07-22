@@ -1559,6 +1559,12 @@ export function FeedPhoneStage({
         x={videoContextMenu?.x ?? 0}
         y={videoContextMenu?.y ?? 0}
         downloading={videoDownloadBusy}
+        playbackSpeed={feedPlaybackSpeed}
+        onPlaybackSpeedChange={setFeedPlaybackSpeed}
+        autoScrollEnabled={feedAutoScrollEnabled}
+        onAutoScrollChange={setFeedAutoScrollEnabled}
+        onTogglePip={() => void toggleFeedPictureInPicture?.()}
+        onOpenSubtitles={() => setSubtitlesModalOpen(true)}
         onClose={closeVideoContextMenu}
         onDownload={handleContextMenuDownload}
         onShare={() => {
@@ -1571,22 +1577,6 @@ export function FeedPhoneStage({
             return onVideoContextCopyLink?.(videoContextMenu.video);
           }
           return undefined;
-        }}
-        onRepost={
-          onVideoContextRepost
-            ? () => {
-                if (videoContextMenu?.video) {
-                  onVideoContextRepost(videoContextMenu.video);
-                }
-              }
-            : undefined
-        }
-        reposted={videoContextReposted}
-        repostBusy={videoContextRepostBusy}
-        onViewDetails={() => {
-          if (videoContextMenu?.video) {
-            onVideoContextViewDetails?.(videoContextMenu.video);
-          }
         }}
       />
       <FeedSubtitlesModal
