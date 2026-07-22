@@ -4,7 +4,7 @@ import {
   IoChevronBack,
   IoChevronForward,
 } from 'react-icons/io5'
-import { LuFlag, LuHeartOff, LuPictureInPicture2 } from 'react-icons/lu'
+import { LuFlag, LuGauge, LuHeartOff, LuPictureInPicture2 } from 'react-icons/lu'
 import {
   FEED_MORE_MENU_BADGE_ICON_CLASS,
   FEED_MORE_MENU_CHEVRON_CLASS,
@@ -16,6 +16,7 @@ import {
   FEED_MORE_SPEED_PILL_ACTIVE_CLASS,
   FEED_MORE_SPEED_PILL_CLASS,
   FEED_MORE_SPEED_PILL_IDLE_CLASS,
+  FEED_MORE_SPEED_TRACK_CLASS,
   FEED_VIDEO_OVERLAY_BTN_CLASS,
 } from '../../feed/feedLayout.js'
 import {
@@ -123,8 +124,18 @@ export function WatchVideoMoreMenu({
             </>
           ) : (
             <>
-              <div className="px-3 pb-2 pt-2.5" role="group" aria-label="Tốc độ phát">
-                <div className="flex items-center justify-between gap-1">
+              <div className={FEED_MORE_MENU_ROW_CLASS}>
+                <LuGauge
+                  strokeWidth={1.75}
+                  className={FEED_MORE_MENU_INLINE_ICON_CLASS}
+                  aria-hidden
+                />
+                <span className="shrink-0">Tốc độ</span>
+                <div
+                  className={FEED_MORE_SPEED_TRACK_CLASS}
+                  role="group"
+                  aria-label="Tốc độ phát"
+                >
                   {FEED_PLAYBACK_SPEEDS.map((rate) => {
                     const selected = playbackSpeed === rate
                     return (

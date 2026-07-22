@@ -30,15 +30,18 @@ export const FEED_MORE_MENU_CHEVRON_CLASS = "h-4 w-4 shrink-0 text-white/45";
 
 export const FEED_MORE_MENU_VALUE_CLASS = "shrink-0 text-[14px] text-white/55";
 
-/** Pill tốc độ phát trong menu ⋯ (TikTok: 0.75 / 1.0 / …). */
+/** Pill tốc độ trong khung bao (TikTok segmented control). */
+export const FEED_MORE_SPEED_TRACK_CLASS =
+  "ml-auto flex shrink-0 items-center gap-0.5 rounded-full bg-black/50 p-0.5";
+
 export const FEED_MORE_SPEED_PILL_CLASS =
-  "min-w-[2.65rem] flex-1 rounded-full px-1.5 py-1.5 text-center text-[13px] font-semibold tabular-nums transition-colors";
+  "min-w-[2.15rem] rounded-full px-1.5 py-1 text-center text-[12px] font-semibold tabular-nums transition-colors";
 
 export const FEED_MORE_SPEED_PILL_ACTIVE_CLASS =
-  "bg-white text-black";
+  "bg-[#3a3a3a] text-white shadow-sm";
 
 export const FEED_MORE_SPEED_PILL_IDLE_CLASS =
-  "text-white/85 hover:bg-white/10";
+  "text-white/75 hover:text-white";
 
 /** Chiều ngang sidebar (đồng bộ Sidebar.jsx). */
 export const FEED_SIDEBAR_WIDTH_PX = 220;

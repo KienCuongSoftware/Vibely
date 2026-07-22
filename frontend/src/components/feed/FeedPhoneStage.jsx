@@ -23,6 +23,7 @@ import {
 } from "react-icons/io5";
 import {
   LuFlag,
+  LuGauge,
   LuHeartOff,
   LuPictureInPicture2,
   LuRepeat2,
@@ -53,6 +54,7 @@ import {
   FEED_MORE_SPEED_PILL_ACTIVE_CLASS,
   FEED_MORE_SPEED_PILL_CLASS,
   FEED_MORE_SPEED_PILL_IDLE_CLASS,
+  FEED_MORE_SPEED_TRACK_CLASS,
   FEED_VIDEO_OVERLAY_BTN_CLASS,
   computeFeedLandscapeStageWidthPx,
 } from "../../feed/feedLayout.js";
@@ -1243,14 +1245,21 @@ export function FeedPhoneStage({
                             </>
                           ) : (
                             <>
-                              <div
-                                className="px-3 pb-2 pt-2.5"
-                                role="group"
-                                aria-label="Tốc độ phát"
-                              >
-                                <div className="flex items-center justify-between gap-1">
+                              <div className={FEED_MORE_MENU_ROW_CLASS}>
+                                <LuGauge
+                                  strokeWidth={1.75}
+                                  className={FEED_MORE_MENU_INLINE_ICON_CLASS}
+                                  aria-hidden
+                                />
+                                <span className="shrink-0">Tốc độ</span>
+                                <div
+                                  className={FEED_MORE_SPEED_TRACK_CLASS}
+                                  role="group"
+                                  aria-label="Tốc độ phát"
+                                >
                                   {FEED_PLAYBACK_SPEEDS.map((rate) => {
-                                    const selected = feedPlaybackSpeed === rate;
+                                    const selected =
+                                      feedPlaybackSpeed === rate;
                                     return (
                                       <button
                                         key={rate}
