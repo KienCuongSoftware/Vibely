@@ -26,6 +26,7 @@ import {
 
 import { formatQualityLabel } from '../../feed/hlsQualityUtils.js'
 import { FeedSubtitlesModal } from '../feed/FeedSubtitlesModal.jsx'
+import { FeedReportModal } from '../feed/FeedReportModal.jsx'
 
 function formatSpeedPillLabel(rate) {
   const n = Number(rate)
@@ -70,10 +71,14 @@ export function WatchVideoMoreMenu({
   showAutoScroll = true,
   onTogglePip,
   onNotInterested,
+  videoPublicId,
+  reportToken,
+  onReportRequireAuth,
 }) {
   const [subtitlesOpen, setSubtitlesOpen] = useState(false)
+  const [reportOpen, setReportOpen] = useState(false)
 
-  if (!open && !subtitlesOpen) return null
+  if (!open && !subtitlesOpen && !reportOpen) return null
 
   const closeMenu = () => onOpenChange(false)
 
@@ -229,7 +234,14 @@ export function WatchVideoMoreMenu({
                 <span className="flex-1">Không quan tâm</span>
               </button>
 
-              <button type="button" className={FEED_MORE_MENU_ROW_CLASS} onClick={closeMenu}>
+              <button
+                type="button"
+                className={FEED_MORE_MENU_ROW_CLASS}
+                onClick={() => {
+                  closeMenu()
+                  setReportOpen(true)
+                }}
+              >
                 <LuFlag strokeWidth={1.75} className={FEED_MORE_MENU_INLINE_ICON_CLASS} aria-hidden />
                 <span className="flex-1">Báo cáo</span>
               </button>
@@ -242,6 +254,13 @@ export function WatchVideoMoreMenu({
       <FeedSubtitlesModal
         open={subtitlesOpen}
         onClose={() => setSubtitlesOpen(false)}
+      />
+      <FeedReportModal
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        videoPublicId={videoPublicId}
+        token={reportToken}
+        onRequireAuth={onReportRequireAuth}
       />
     </>
   )

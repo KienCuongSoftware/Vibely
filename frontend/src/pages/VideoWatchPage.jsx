@@ -1897,6 +1897,11 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
                         onAutoScrollChange={setWatchAutoScroll}
                         showAutoScroll={showWatchNavArrows}
                         onTogglePip={toggleWatchPictureInPicture}
+                        videoPublicId={panelVideo?.publicId ?? publicIdFromRoute}
+                        reportToken={token}
+                        onReportRequireAuth={() => {
+                          if (!token) navigate('/login')
+                        }}
                       />
                     </>
                   ) : null}

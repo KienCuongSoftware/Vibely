@@ -41,6 +41,7 @@ import { downloadWatermarkedVideo } from "../../feed/videoDownload.js";
 import { useFeedPrefetch } from "../../feed/useFeedPrefetch.js";
 import { VideoContextMenu } from "./VideoContextMenu.jsx";
 import { FeedSubtitlesModal } from "./FeedSubtitlesModal.jsx";
+import { FeedReportModal } from "./FeedReportModal.jsx";
 import { SelfRepostIndicator } from "../repost/SelfRepostIndicator.jsx";
 import { TooltipHoverWrap } from "../TooltipControls.jsx";
 import {
@@ -558,6 +559,10 @@ export function FeedPhoneStage({
   onVideoContextViewDetails,
   /** Menu ⋯ — Không quan tâm (ẩn khỏi Đề xuất). */
   onNotInterested,
+  /** Báo cáo video — cần token để gọi API. */
+  reportToken,
+  onReportRequireAuth,
+  onReportSubmitted,
   selfReposted = false,
   selfRepostAvatarUrl,
   selfRepostDisplayName,
@@ -586,6 +591,7 @@ export function FeedPhoneStage({
   const [videoContextMenu, setVideoContextMenu] = useState(null);
   const [videoDownloadBusy, setVideoDownloadBusy] = useState(false);
   const [subtitlesModalOpen, setSubtitlesModalOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   const closeVideoContextMenu = useCallback(() => {
     setVideoContextMenu(null);
@@ -1379,7 +1385,10 @@ export function FeedPhoneStage({
                               <button
                                 type="button"
                                 className={FEED_MORE_MENU_ROW_CLASS}
-                                onClick={() => setFeedMoreMenuOpen(false)}
+                                onClick={() => {
+                                  setFeedMoreMenuOpen(false);
+                                  setReportModalOpen(true);
+                                }}
                               >
                                 <LuFlag
                                   strokeWidth={1.75}
@@ -1587,6 +1596,14 @@ export function FeedPhoneStage({
       <FeedSubtitlesModal
         open={subtitlesModalOpen}
         onClose={() => setSubtitlesModalOpen(false)}
+      />
+      <FeedReportModal
+        open={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        videoPublicId={videos?.[activeIndex]?.publicId}
+        token={reportToken}
+        onRequireAuth={onReportRequireAuth}
+        onSubmitted={onReportSubmitted}
       />
     </div>
   );

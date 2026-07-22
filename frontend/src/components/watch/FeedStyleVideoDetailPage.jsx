@@ -1012,6 +1012,13 @@ export function FeedStyleVideoDetailPage({
                   onSelfUnrepost={forYouStyle ? handleRepostToggle : undefined}
                   selfRepostBusy={forYouStyle ? repostBusy : false}
                   onNotInterested={handleNotInterested}
+                  reportToken={token}
+                  onReportRequireAuth={() => {
+                    if (!token) navigate('/login')
+                  }}
+                  onReportSubmitted={() => {
+                    if (forYouStyle) navigate('/foryou')
+                  }}
                 />
                 {watchChrome ? (
                   <div className="pointer-events-auto fixed top-4 left-6 z-80 flex items-center gap-2">
