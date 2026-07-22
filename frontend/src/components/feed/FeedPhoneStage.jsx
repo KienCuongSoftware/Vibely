@@ -556,6 +556,8 @@ export function FeedPhoneStage({
   videoContextReposted = false,
   videoContextRepostBusy = false,
   onVideoContextViewDetails,
+  /** Menu ⋯ — Không quan tâm (ẩn khỏi Đề xuất). */
+  onNotInterested,
   selfReposted = false,
   selfRepostAvatarUrl,
   selfRepostDisplayName,
@@ -1361,7 +1363,10 @@ export function FeedPhoneStage({
                               <button
                                 type="button"
                                 className={FEED_MORE_MENU_ROW_CLASS}
-                                onClick={() => setFeedMoreMenuOpen(false)}
+                                onClick={() => {
+                                  setFeedMoreMenuOpen(false);
+                                  onNotInterested?.();
+                                }}
                               >
                                 <LuHeartOff
                                   strokeWidth={1.75}

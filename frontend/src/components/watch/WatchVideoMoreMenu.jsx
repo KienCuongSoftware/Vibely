@@ -69,6 +69,7 @@ export function WatchVideoMoreMenu({
   onAutoScrollChange,
   showAutoScroll = true,
   onTogglePip,
+  onNotInterested,
 }) {
   const [subtitlesOpen, setSubtitlesOpen] = useState(false)
 
@@ -216,7 +217,14 @@ export function WatchVideoMoreMenu({
 
               <div className="mx-3 my-1 border-t border-white/10" aria-hidden />
 
-              <button type="button" className={FEED_MORE_MENU_ROW_CLASS} onClick={closeMenu}>
+              <button
+                type="button"
+                className={FEED_MORE_MENU_ROW_CLASS}
+                onClick={() => {
+                  closeMenu()
+                  onNotInterested?.()
+                }}
+              >
                 <LuHeartOff strokeWidth={1.75} className={FEED_MORE_MENU_INLINE_ICON_CLASS} aria-hidden />
                 <span className="flex-1">Không quan tâm</span>
               </button>

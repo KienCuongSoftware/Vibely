@@ -65,6 +65,11 @@ import {
 } from "../../feed/feedLayout.js";
 import { trimFeedItemsIfNeeded } from "../../feed/trimFeedItems.js";
 import {
+  FEED_NOT_INTERESTED_TOAST_MESSAGE,
+  filterNotInterestedVideos,
+  markVideoNotInterested,
+} from "../../feed/feedNotInterestedStorage.js";
+import {
   readFeedFollowedAuthorIds,
   writeFeedFollowedAuthorIds,
   filterVideosFromFollowedCreators,
@@ -320,6 +325,8 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const [repostBusy, setRepostBusy] = useState(false);
   const [repostToastOpen, setRepostToastOpen] = useState(false);
   const repostToastTimerRef = useRef(null);
+  const [notInterestedToastOpen, setNotInterestedToastOpen] = useState(false);
+  const notInterestedToastTimerRef = useRef(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [bookmarkToastOpen, setBookmarkToastOpen] = useState(false);
   const [bookmarkManageOpen, setBookmarkManageOpen] = useState(false);
@@ -725,10 +732,23 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
       });
   }, [token, activeVideo, repostBusy, reposted, navigate]);
 
+  const showNotInterestedToast = useCallback(() => {
+    setNotInterestedToastOpen(true);
+    if (notInterestedToastTimerRef.current) {
+      window.clearTimeout(notInterestedToastTimerRef.current);
+    }
+    notInterestedToastTimerRef.current = window.setTimeout(() => {
+      setNotInterestedToastOpen(false);
+    }, 2800);
+  }, []);
+
   useEffect(
     () => () => {
       if (repostToastTimerRef.current) {
         window.clearTimeout(repostToastTimerRef.current);
+      }
+      if (notInterestedToastTimerRef.current) {
+        window.clearTimeout(notInterestedToastTimerRef.current);
       }
     },
     [],
@@ -774,7 +794,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
             token,
           });
       const items = response?.items ?? [];
-      const chunk = hydrateFeedFollowState(items);
+      const chunk = isForYouFeed
+        ? filterNotInterestedVideos(hydrateFeedFollowState(items))
+        : hydrateFeedFollowState(items);
       setVideos((prev) => {
         const merged = mergeVideosByPublicId(prev, chunk);
         const trimmed = trimFeedItemsIfNeeded(merged, activeIndex);
@@ -799,18 +821,49 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     activeIndex,
     prepareFollowingFeedChunk,
     token,
+    hydrateFeedFollowState,
   ]);
+
+  const handleNotInterested = useCallback(() => {
+    const idx = activeIndexRef.current;
+    const video = videos[idx];
+    const publicId = videoPublicIdOf(video);
+    if (!publicId) return;
+
+    markVideoNotInterested(publicId);
+    setFeedMoreMenuOpen(false);
+    showNotInterestedToast();
+
+    setVideos((prev) => {
+      const next = prev.filter((item) => videoPublicIdOf(item) !== publicId);
+      const newIdx =
+        next.length === 0 ? 0 : Math.min(idx, Math.max(0, next.length - 1));
+      queueMicrotask(() => {
+        setActiveIndex(newIdx);
+        virtualFeedRef.current?.scrollToIndex?.(newIdx);
+        if (next.length <= 2) {
+          void loadMoreFeed();
+        }
+      });
+      return next;
+    });
+  }, [videos, showNotInterestedToast, loadMoreFeed]);
 
   useEffect(() => {
     const raw =
       location.state?.focusVideoPublicId ?? location.state?.focusVideoId;
-    if (raw == null && location.state?.openComments == null) return;
-    studioNavRef.current = {
-      publicId: normalizeVideoPublicId(raw),
-      openComments: Boolean(location.state?.openComments),
-    };
+    const openComments = location.state?.openComments;
+    const showToast = Boolean(location.state?.feedNotInterestedToast);
+    if (raw == null && openComments == null && !showToast) return;
+    if (showToast) showNotInterestedToast();
+    if (raw != null || openComments != null) {
+      studioNavRef.current = {
+        publicId: normalizeVideoPublicId(raw),
+        openComments: Boolean(openComments),
+      };
+    }
     navigate(location.pathname, { replace: true, state: null });
-  }, [location.state, location.pathname, navigate]);
+  }, [location.state, location.pathname, navigate, showNotInterestedToast]);
 
   useEffect(() => {
     if (!authReady) return undefined;
@@ -889,6 +942,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
           if (!isMounted) return;
 
           let normalized = hydrateFeedFollowState(items);
+          if (isForYouFeed) {
+            normalized = filterNotInterestedVideos(normalized);
+          }
 
           if (items.length === 0) {
             if (focusId != null) {
@@ -917,6 +973,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 const mineItems = Array.isArray(mine?.items) ? mine.items : [];
                 if (mineItems.length > 0) {
                   normalized = hydrateFeedFollowState(mineItems);
+                  if (isForYouFeed) {
+                    normalized = filterNotInterestedVideos(normalized);
+                  }
                   setActiveIndex(0);
                   setVideos(normalized);
                   setNextCursor(null);
@@ -974,7 +1033,11 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 });
                 const mineItems = Array.isArray(mine?.items) ? mine.items : [];
                 if (mineItems.length > 0) {
-                  setVideos(hydrateFeedFollowState(mineItems));
+                  let fallback = hydrateFeedFollowState(mineItems);
+                  if (isForYouFeed) {
+                    fallback = filterNotInterestedVideos(fallback);
+                  }
+                  setVideos(fallback);
                   setHasMoreFeed(Boolean(mine?.hasNext));
                   setNextCursor(null);
                   return;
@@ -1013,7 +1076,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
           size: FEED_CONFIG.PAGE_SIZE,
           token,
         });
-        const items = hydrateFeedFollowState(response?.items ?? []);
+        const items = filterNotInterestedVideos(
+          hydrateFeedFollowState(response?.items ?? []),
+        );
         if (cancelled || items.length === 0) return;
         setVideos((prev) => {
           const merged = mergeVideosByPublicId(prev, items);
@@ -1821,6 +1886,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   }
                   onSelfUnrepost={handleRepostToggle}
                   selfRepostBusy={repostBusy}
+                  onNotInterested={handleNotInterested}
                 />
                 <BookmarkSaveToast
                   open={bookmarkToastOpen}
@@ -1834,6 +1900,16 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   >
                     <span className="rounded-md bg-black/80 px-4 py-2 text-sm font-semibold text-white shadow-lg backdrop-blur-sm">
                       Đã đăng lại
+                    </span>
+                  </div>
+                ) : null}
+                {notInterestedToastOpen ? (
+                  <div
+                    className="pointer-events-none absolute inset-x-0 top-4 z-60 flex justify-center px-4"
+                    role="status"
+                  >
+                    <span className="rounded-lg bg-black/70 px-5 py-2.5 text-center text-sm font-medium text-white shadow-lg backdrop-blur-sm">
+                      {FEED_NOT_INTERESTED_TOAST_MESSAGE}
                     </span>
                   </div>
                 ) : null}

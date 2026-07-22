@@ -35,6 +35,7 @@ import { TooltipHoverWrap } from '../TooltipControls.jsx'
 import { VideoShareModal } from '../VideoShareModal.jsx'
 import { usePersistedFeedPlaybackSpeed } from '../../feed/usePersistedFeedPlaybackSpeed.js'
 import { usePersistedFeedVideoQuality } from '../../feed/usePersistedFeedVideoQuality.js'
+import { markVideoNotInterested } from '../../feed/feedNotInterestedStorage.js'
 import { useAuth } from '../../state/useAuth.js'
 import { useActivityModal } from '../../state/ActivityModalContext.jsx'
 import { useNotificationUnread } from '../../state/NotificationUnreadContext.jsx'
@@ -299,6 +300,16 @@ export function FeedStyleVideoDetailPage({
   const exitWatchToForYou = useCallback(() => {
     navigate('/foryou')
   }, [navigate])
+
+  const handleNotInterested = useCallback(() => {
+    const id = videoPublicIdOf(feedVideo)
+    if (!id) return
+    markVideoNotInterested(id)
+    setFeedMoreMenuOpen(false)
+    if (forYouStyle) {
+      navigate('/foryou', { state: { feedNotInterestedToast: true } })
+    }
+  }, [feedVideo, forYouStyle, navigate])
 
   const patchVideo = useCallback((patch) => {
     setVideo((prev) => (prev ? { ...prev, ...patch } : prev))
@@ -1000,6 +1011,7 @@ export function FeedStyleVideoDetailPage({
                   }
                   onSelfUnrepost={forYouStyle ? handleRepostToggle : undefined}
                   selfRepostBusy={forYouStyle ? repostBusy : false}
+                  onNotInterested={handleNotInterested}
                 />
                 {watchChrome ? (
                   <div className="pointer-events-auto fixed top-4 left-6 z-80 flex items-center gap-2">
