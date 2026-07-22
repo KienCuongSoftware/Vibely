@@ -74,6 +74,7 @@ export function WatchVideoMoreMenu({
   videoPublicId,
   reportToken,
   onReportRequireAuth,
+  onReportSubmitted,
 }) {
   const [subtitlesOpen, setSubtitlesOpen] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
@@ -261,6 +262,7 @@ export function WatchVideoMoreMenu({
         videoPublicId={videoPublicId}
         token={reportToken}
         onRequireAuth={onReportRequireAuth}
+        onSubmitted={onReportSubmitted}
       />
     </>
   )

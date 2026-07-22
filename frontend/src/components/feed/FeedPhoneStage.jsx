@@ -42,6 +42,8 @@ import { useFeedPrefetch } from "../../feed/useFeedPrefetch.js";
 import { VideoContextMenu } from "./VideoContextMenu.jsx";
 import { FeedSubtitlesModal } from "./FeedSubtitlesModal.jsx";
 import { FeedReportModal } from "./FeedReportModal.jsx";
+import { FeedReportedVideoOverlay } from "./FeedReportedVideoOverlay.jsx";
+import { normalizeVideoPublicId } from "../../utils/videoPublicId.js";
 import { SelfRepostIndicator } from "../repost/SelfRepostIndicator.jsx";
 import { TooltipHoverWrap } from "../TooltipControls.jsx";
 import {
@@ -592,10 +594,42 @@ export function FeedPhoneStage({
   const [videoDownloadBusy, setVideoDownloadBusy] = useState(false);
   const [subtitlesModalOpen, setSubtitlesModalOpen] = useState(false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
+  /** publicId video đã báo cáo — ẩn media, hiện overlay kiểu TikTok. */
+  const [reportHiddenIds, setReportHiddenIds] = useState(() => new Set());
 
   const closeVideoContextMenu = useCallback(() => {
     setVideoContextMenu(null);
   }, []);
+
+  const markVideoReportedHidden = useCallback((rawId) => {
+    const id = normalizeVideoPublicId(rawId);
+    if (!id) return;
+    setReportHiddenIds((prev) => {
+      if (prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+  }, []);
+
+  const clearVideoReportedHidden = useCallback((rawId) => {
+    const id = normalizeVideoPublicId(rawId);
+    if (!id) return;
+    setReportHiddenIds((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }, []);
+
+  const handleReportSubmitted = useCallback(
+    (payload) => {
+      markVideoReportedHidden(videos?.[activeIndex]?.publicId);
+      onReportSubmitted?.(payload);
+    },
+    [activeIndex, markVideoReportedHidden, onReportSubmitted, videos],
+  );
 
   const handleVideoContextMenu = useCallback((event, video) => {
     event.preventDefault();
@@ -1036,6 +1070,9 @@ export function FeedPhoneStage({
             "";
           const playbackUrl = resolveFeedPlaybackUrl(video);
           const hasPlayback = Boolean(playbackUrl);
+          const cellPublicId = normalizeVideoPublicId(video.publicId);
+          const reportedHidden =
+            Boolean(cellPublicId) && reportHiddenIds.has(cellPublicId);
           return (
             <div
               className={`relative h-full w-full overflow-hidden ${
@@ -1061,9 +1098,9 @@ export function FeedPhoneStage({
                     poster={poster}
                     muted={!isActive || playbackMuted}
                     loop={!feedAutoScrollEnabled}
-                    loadMedia={loadMedia && hasPlayback}
-                    isActive={isActive}
-                    userPaused={isActive && userPaused}
+                    loadMedia={loadMedia && hasPlayback && !reportedHidden}
+                    isActive={isActive && !reportedHidden}
+                    userPaused={isActive && (userPaused || reportedHidden)}
                     visibilityRatio={
                       (mobileFullBleed || commentsDockOpen) && isActive
                         ? 1
@@ -1475,12 +1512,22 @@ export function FeedPhoneStage({
                   </div>
                 </div>
               ) : null}
+
+              {reportedHidden ? (
+                <FeedReportedVideoOverlay
+                  className="z-60"
+                  onShowVideo={() => clearVideoReportedHidden(video.publicId)}
+                />
+              ) : null}
             </div>
           );
         }}
       </VirtualizedFeed>
 
-      {resolveFeedPlaybackUrl(activeVideo) ? (
+      {resolveFeedPlaybackUrl(activeVideo) &&
+      !reportHiddenIds.has(
+        normalizeVideoPublicId(activeVideo?.publicId) || "",
+      ) ? (
         <div
           ref={progressTrackRef}
           className={
@@ -1603,7 +1650,7 @@ export function FeedPhoneStage({
         videoPublicId={videos?.[activeIndex]?.publicId}
         token={reportToken}
         onRequireAuth={onReportRequireAuth}
-        onSubmitted={onReportSubmitted}
+        onSubmitted={handleReportSubmitted}
       />
     </div>
   );

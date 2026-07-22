@@ -1894,21 +1894,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   onReportSubmitted={() => {
                     const idx = activeIndexRef.current;
                     const publicId = videoPublicIdOf(videos[idx]);
-                    if (!publicId) return;
-                    setVideos((prev) => {
-                      const next = prev.filter(
-                        (item) => videoPublicIdOf(item) !== publicId,
-                      );
-                      const newIdx =
-                        next.length === 0
-                          ? 0
-                          : Math.min(idx, Math.max(0, next.length - 1));
-                      queueMicrotask(() => {
-                        setActiveIndex(newIdx);
-                        virtualFeedRef.current?.scrollToIndex?.(newIdx);
-                      });
-                      return next;
-                    });
+                    if (publicId) markVideoNotInterested(publicId);
                   }}
                 />
                 <BookmarkSaveToast

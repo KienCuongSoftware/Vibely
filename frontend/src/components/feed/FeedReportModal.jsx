@@ -440,12 +440,6 @@ export function FeedReportModal({
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onClose, phase, navStack.length])
 
-  useEffect(() => {
-    if (!open || phase !== 'done') return undefined
-    const timer = window.setTimeout(() => onClose(), 2200)
-    return () => window.clearTimeout(timer)
-  }, [open, phase, onClose])
-
   const listItems = useMemo(() => {
     if (phase === 'sub' && navStack.length > 0) {
       const current = navStack[navStack.length - 1]
@@ -603,6 +597,51 @@ export function FeedReportModal({
     infoSource?.detailPlaceholder ||
     'Cung cấp thêm thông tin chi tiết để giúp chúng tôi hiểu rõ hơn về vấn đề.'
 
+  if (phase === 'done') {
+    return createPortal(
+      <div className="fixed inset-0 z-[220] flex items-center justify-center px-4">
+        <button
+          type="button"
+          aria-label="Đóng"
+          className="absolute inset-0 cursor-default bg-black/55"
+          onClick={onClose}
+        />
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="vibely-report-thanks-title"
+          className="relative z-10 w-full max-w-[400px] rounded-xl bg-[#2f2f2f] px-6 pb-5 pt-8 shadow-[0_16px_48px_rgba(0,0,0,0.55)]"
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <div className="flex flex-col items-center text-center">
+            <IoCheckmarkCircle
+              className="mb-4 h-16 w-16 text-[#20D563]"
+              aria-hidden
+            />
+            <h2
+              id="vibely-report-thanks-title"
+              className="text-[22px] font-bold leading-tight text-white"
+            >
+              Cảm ơn bạn đã báo cáo
+            </h2>
+            <p className="mt-3 text-[15px] leading-snug text-white/70">
+              Chúng tôi sẽ xem xét báo cáo của bạn và nếu có vi phạm đối với
+              Hướng dẫn Cộng đồng, chúng tôi sẽ thực hiện hành động phù hợp.
+            </p>
+            <button
+              type="button"
+              className="mt-7 w-full cursor-pointer rounded-md bg-[#fe2c55] py-2.5 text-[16px] font-bold text-white transition hover:bg-[#ef2b50]"
+              onClick={onClose}
+            >
+              Xong
+            </button>
+          </div>
+        </div>
+      </div>,
+      document.body,
+    )
+  }
+
   return createPortal(
     <div className="fixed inset-0 z-[220] flex items-center justify-center px-4">
       <button
@@ -648,18 +687,7 @@ export function FeedReportModal({
           </button>
         </div>
 
-        {phase === 'done' ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 py-14 text-center">
-            <IoCheckmarkCircle className="h-14 w-14 text-[#00f2ea]" aria-hidden />
-            <p className="text-[17px] font-semibold text-white">
-              Cảm ơn bạn đã báo cáo
-            </p>
-            <p className="max-w-sm text-[14px] leading-snug text-white/55">
-              Chúng tôi sẽ xem xét video này và thực hiện hành động phù hợp nếu
-              vi phạm Nguyên tắc Cộng đồng.
-            </p>
-          </div>
-        ) : phase === 'info' || (phase === 'submitting' && submitFrom === 'info') ? (
+        {phase === 'info' || (phase === 'submitting' && submitFrom === 'info') ? (
           <div className="flex min-h-0 flex-1 flex-col">
             <div className="shrink-0 border-b border-white/[0.06] px-5 py-3.5">
               <p className="text-[15px] font-medium leading-snug text-white">

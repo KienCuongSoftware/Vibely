@@ -1017,7 +1017,8 @@ export function FeedStyleVideoDetailPage({
                     if (!token) navigate('/login')
                   }}
                   onReportSubmitted={() => {
-                    if (forYouStyle) navigate('/foryou')
+                    const id = videoPublicIdOf(feedVideo)
+                    if (id) markVideoNotInterested(id)
                   }}
                 />
                 {watchChrome ? (

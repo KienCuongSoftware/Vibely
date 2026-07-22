@@ -56,6 +56,7 @@ import {
   WatchVideoMoreMenu,
   WATCH_MORE_TRIGGER_BTN_CLASS,
 } from '../components/watch/WatchVideoMoreMenu.jsx'
+import { FeedReportedVideoOverlay } from '../components/feed/FeedReportedVideoOverlay.jsx'
 import { WatchShareStrip } from '../components/watch/WatchShareStrip.jsx'
 import { SelfRepostIndicator } from '../components/repost/SelfRepostIndicator.jsx'
 import { buildProfilePath } from '../utils/buildProfilePath.js'
@@ -684,6 +685,7 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
   const [watchMuted, setWatchMuted] = useState(true)
   const [watchVolume, setWatchVolume] = useState(WATCH_VOLUME_DEFAULT)
   const [pipActive, setPipActive] = useState(false)
+  const [reportHidden, setReportHidden] = useState(false)
   const [watchPlayback, setWatchPlayback] = useState({ current: 0, duration: 0 })
   const watchScrubbingRef = useRef(false)
   const [watchUserPaused, setWatchUserPaused] = useState(false)
@@ -779,6 +781,7 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
     setExploreNavBusy(false)
     setWatchMuted(true)
     setPipActive(false)
+    setReportHidden(false)
     setWatchPlayback({ current: 0, duration: 0 })
     watchScrubbingRef.current = false
     setWatchUserPaused(false)
@@ -1902,6 +1905,14 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
                         onReportRequireAuth={() => {
                           if (!token) navigate('/login')
                         }}
+                        onReportSubmitted={() => {
+                          setReportHidden(true)
+                          try {
+                            videoRef.current?.pause?.()
+                          } catch {
+                            /* ignore */
+                          }
+                        }}
                       />
                     </>
                   ) : null}
@@ -1918,6 +1929,13 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
                   </button>
                 </div>
               ) : null}
+
+                  {reportHidden && !pipActive ? (
+                    <FeedReportedVideoOverlay
+                      className="z-40"
+                      onShowVideo={() => setReportHidden(false)}
+                    />
+                  ) : null}
 
                   {isVideoFrameReady && activePlaybackUrl && !pipActive ? (
                     <WatchPlaybackBar
