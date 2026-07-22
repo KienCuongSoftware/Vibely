@@ -117,8 +117,9 @@ export function VideoContextMenu({
           className={FEED_MORE_MENU_INLINE_ICON_CLASS}
           aria-hidden
         />
+        <span className="shrink-0">Tốc độ</span>
         <div
-          className={`${FEED_MORE_SPEED_TRACK_CLASS} ml-0 flex-1 justify-end`}
+          className={FEED_MORE_SPEED_TRACK_CLASS}
           role="group"
           aria-label="Tốc độ phát"
         >
