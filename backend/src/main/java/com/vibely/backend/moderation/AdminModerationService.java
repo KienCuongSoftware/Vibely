@@ -67,9 +67,9 @@ public class AdminModerationService {
         String where = stateFilter == null
             ? "WHERE q.queue_state IN ('OPEN', 'CLAIMED')"
             : "WHERE q.queue_state = ?";
-        // Soft-deleted videos stay in DB as REMOVED; hide them from the live review queue.
+        // Soft-deleted / failed videos stay in DB; hide them from the live review queue.
         if (activeQueue) {
-            where += " AND v.status <> 'REMOVED'";
+            where += " AND v.status NOT IN ('REMOVED', 'FAILED')";
         }
 
         try {

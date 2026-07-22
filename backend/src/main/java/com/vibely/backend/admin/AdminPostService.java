@@ -109,12 +109,12 @@ public class AdminPostService {
         video.setStatus(VideoStatus.REMOVED);
         videoRepository.save(video);
         notificationService.purgeForRemovedVideo(video.getId());
-        reviewQueueCleanupService.dismissOpenForVideo(video.getId());
+        reviewQueueCleanupService.purgeForVideo(video.getId());
     }
 
     private void purgePermanently(Video video) {
         cancelProcessingJob(video.getId());
-        reviewQueueCleanupService.dismissOpenForVideo(video.getId());
+        reviewQueueCleanupService.purgeForVideo(video.getId());
         notificationService.purgeForRemovedVideo(video.getId());
         S3MediaDeletionService deletionService = s3MediaDeletionService.getIfAvailable();
         if (deletionService != null) {

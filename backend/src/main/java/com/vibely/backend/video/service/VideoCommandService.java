@@ -308,7 +308,7 @@ public class VideoCommandService {
         video.setStatus(VideoStatus.REMOVED);
         videoRepository.save(video);
         notificationService.purgeForRemovedVideo(video.getId());
-        reviewQueueCleanupService.dismissOpenForVideo(video.getId());
+        reviewQueueCleanupService.purgeForVideo(video.getId());
     }
 
     @Transactional

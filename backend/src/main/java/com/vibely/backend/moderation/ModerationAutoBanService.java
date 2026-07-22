@@ -152,7 +152,7 @@ public class ModerationAutoBanService {
             """,
             authorId
         );
-        reviewQueueCleanupService.dismissOpenForAuthor(authorId);
+        reviewQueueCleanupService.purgeForAuthor(authorId);
         log.info(
             "AI auto-ban userId={} videoId={} decision={} removedVideos={}",
             authorId,

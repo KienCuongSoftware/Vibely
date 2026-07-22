@@ -200,7 +200,7 @@ public class AdminUserService {
         target.setDeactivatedAt(null);
         userRepository.save(target);
         refreshTokenRepository.revokeAllByUserId(target.getId());
-        reviewQueueCleanupService.dismissOpenForAuthor(target.getId());
+        reviewQueueCleanupService.purgeForAuthor(target.getId());
 
         return toBannedUserInfo(target);
     }
