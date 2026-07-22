@@ -10,26 +10,35 @@ export const FEED_ROUND_ICON_BUTTON_CLASS =
 export const FEED_ACTION_ITEM_CLASS =
   "flex min-w-10 flex-col items-center gap-0.5";
 
-/** Panel menu ⋯ — nền đen/xám đậm kiểu TikTok web. */
+/** Panel menu ⋯ — nền xám đậm đặc kiểu TikTok web. */
 export const FEED_MORE_PANEL_SURFACE_CLASS =
-  "overflow-hidden rounded-xl border border-white/10 bg-[rgba(37,37,37,0.97)] py-0.5 shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-xl";
+  "overflow-hidden rounded-xl bg-[#2f2f2f] py-1 shadow-[0_12px_40px_rgba(0,0,0,0.55)]";
 
-export const FEED_MORE_PANEL_CARET_CLASS =
-  "border-l border-t border-white/10 bg-[rgba(37,37,37,0.97)]";
+export const FEED_MORE_PANEL_CARET_CLASS = "bg-[#2f2f2f]";
 
-/** Hàng menu trong panel ⋯ — chữ nhỏ (~13px) như TikTok. */
+/** Hàng menu trong panel ⋯ — TikTok: không kẻ từng dòng, chữ ~14px. */
 export const FEED_MORE_MENU_ROW_CLASS =
-  "flex w-full items-center gap-2.5 border-b border-white/[0.06] px-3 py-2.5 text-left text-[13px] leading-tight text-white transition-colors hover:bg-white/[0.06] active:bg-white/10";
+  "flex w-full items-center gap-3 px-3.5 py-3 text-left text-[14px] leading-tight text-white transition-colors hover:bg-white/[0.06] active:bg-white/[0.09]";
 
 export const FEED_MORE_MENU_BADGE_ICON_CLASS =
-  "flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/15 bg-white/[0.06] text-[9px] font-semibold tracking-wide text-white/90";
+  "flex h-5 w-5 shrink-0 items-center justify-center text-[11px] font-semibold tracking-wide text-white/90";
 
 export const FEED_MORE_MENU_INLINE_ICON_CLASS =
   "h-[18px] w-[18px] shrink-0 text-white/95";
 
-export const FEED_MORE_MENU_CHEVRON_CLASS = "h-4 w-4 shrink-0 text-white/40";
+export const FEED_MORE_MENU_CHEVRON_CLASS = "h-4 w-4 shrink-0 text-white/45";
 
-export const FEED_MORE_MENU_VALUE_CLASS = "shrink-0 text-[13px] text-white/50";
+export const FEED_MORE_MENU_VALUE_CLASS = "shrink-0 text-[14px] text-white/55";
+
+/** Pill tốc độ phát trong menu ⋯ (TikTok: 0.75 / 1.0 / …). */
+export const FEED_MORE_SPEED_PILL_CLASS =
+  "min-w-[2.65rem] flex-1 rounded-full px-1.5 py-1.5 text-center text-[13px] font-semibold tabular-nums transition-colors";
+
+export const FEED_MORE_SPEED_PILL_ACTIVE_CLASS =
+  "bg-white text-black";
+
+export const FEED_MORE_SPEED_PILL_IDLE_CLASS =
+  "text-white/85 hover:bg-white/10";
 
 /** Chiều ngang sidebar (đồng bộ Sidebar.jsx). */
 export const FEED_SIDEBAR_WIDTH_PX = 220;
