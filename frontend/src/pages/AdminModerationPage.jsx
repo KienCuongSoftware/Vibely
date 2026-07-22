@@ -657,7 +657,7 @@ export function AdminModerationPage() {
     <AdminLayout
       active="moderation"
       title="Kiểm duyệt nội dung"
-      subtitle="Hàng đợi xem lại, khiếu nại creator, điểm tin cậy."
+      subtitle="Hàng đợi xem lại, khiếu nại người sáng tạo, điểm tin cậy."
     >
       {!authReady || loading ? (
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center text-sm text-zinc-400">
@@ -692,7 +692,7 @@ export function AdminModerationPage() {
                   : "border-zinc-700 text-zinc-400"
               }`}
             >
-              Khiếu nại creator
+              Khiếu nại người sáng tạo
             </button>
           </div>
 

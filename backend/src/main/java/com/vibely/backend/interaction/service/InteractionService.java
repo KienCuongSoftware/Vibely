@@ -22,6 +22,7 @@ import com.vibely.backend.interaction.repository.FollowRepository;
 import com.vibely.backend.interaction.repository.LikeRepository;
 import com.vibely.backend.interaction.repository.VideoBookmarkRepository;
 import com.vibely.backend.interaction.repository.VideoRepostRepository;
+import com.vibely.backend.moderation.UserReportModerationService;
 import com.vibely.backend.notification.NotificationService;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
@@ -63,6 +64,7 @@ public class InteractionService {
     private final VideoRepository videoRepository;
     private final NotificationService notificationService;
     private final ProfileVisibilityService profileVisibilityService;
+    private final ObjectProvider<UserReportModerationService> userReportModerationService;
 
     public InteractionService(
         UserRepository userRepository,
@@ -79,7 +81,8 @@ public class InteractionService {
         ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService,
         VideoRepository videoRepository,
         NotificationService notificationService,
-        ProfileVisibilityService profileVisibilityService
+        ProfileVisibilityService profileVisibilityService,
+        ObjectProvider<UserReportModerationService> userReportModerationService
     ) {
         this.userRepository = userRepository;
         this.videoService = videoService;
@@ -96,6 +99,7 @@ public class InteractionService {
         this.videoRepository = videoRepository;
         this.notificationService = notificationService;
         this.profileVisibilityService = profileVisibilityService;
+        this.userReportModerationService = userReportModerationService;
     }
 
     public void likeVideo(String email, UUID videoPublicId) {
@@ -394,7 +398,7 @@ public class InteractionService {
     }
 
     public void reportVideo(String email, UUID videoPublicId, String reason) {
-        getUser(email);
+        User reporter = getUser(email);
         Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
         if (video.getStatus() == VideoStatus.HIDDEN) {
             throw new BadRequestException("Video đã bị ẩn trước đó");
@@ -405,6 +409,11 @@ public class InteractionService {
         video.setStatus(VideoStatus.REPORTED);
         video.setReportReason(reason);
         video.setReportedAt(LocalDateTime.now());
+        videoRepository.save(video);
+        userReportModerationService.ifAvailable(
+            service -> service.enqueueUserReport(video, reporter, reason)
+        );
+        refreshExploreFor(video);
     }
 
     private User getUser(String email) {
