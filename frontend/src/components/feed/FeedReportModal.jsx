@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import {
   IoCheckmarkCircle,
@@ -406,15 +406,32 @@ export function FeedReportModal({
     setSubmittedPayload(null)
   }
 
+  const wasOpenRef = useRef(false)
   useEffect(() => {
-    if (!open) return
-    reset()
-  }, [open, videoPublicId])
+    // Chỉ reset khi mở modal (false → true). Không reset khi videoPublicId
+    // đổi giữa chừng (sau gửi báo cáo) — nếu không sẽ nhảy về màn chọn danh mục.
+    if (open && !wasOpenRef.current) {
+      reset()
+    }
+    wasOpenRef.current = open
+  }, [open])
+
+  const finishThanks = () => {
+    const payload = submittedPayload
+    if (payload != null) {
+      onSubmitted?.(payload)
+    }
+    onClose()
+  }
 
   useEffect(() => {
     if (!open) return undefined
     const onKey = (e) => {
       if (e.key !== 'Escape' || phase === 'submitting') return
+      if (phase === 'done') {
+        finishThanks()
+        return
+      }
       if (phase === 'detail' || phase === 'info') {
         if (navStack.length > 0) {
           setPhase('sub')
@@ -441,7 +458,7 @@ export function FeedReportModal({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open, onClose, phase, navStack.length])
+  }, [open, onClose, onSubmitted, phase, navStack.length, submittedPayload])
 
   const listItems = useMemo(() => {
     if (phase === 'sub' && navStack.length > 0) {
@@ -578,14 +595,6 @@ export function FeedReportModal({
       setError(message)
       setPhase(submitFrom === 'info' ? 'info' : 'detail')
     }
-  }
-
-  const finishThanks = () => {
-    const payload = submittedPayload
-    if (payload != null) {
-      onSubmitted?.(payload)
-    }
-    onClose()
   }
 
   if (!open || typeof document === 'undefined') return null
