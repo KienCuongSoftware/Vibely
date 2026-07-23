@@ -76,7 +76,8 @@ export function useDescriptionTranslation({
     const run = async () => {
       setStatus("loading");
       try {
-        const data = await apiClient.requestDescriptionTranslation(
+        // Dùng GET (get-or-create) để tránh CSRF khi đăng nhập bằng cookie.
+        const data = await apiClient.getDescriptionTranslation(
           videoPublicId,
           targetLangIso,
           token,

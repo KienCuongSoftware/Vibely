@@ -263,7 +263,8 @@ public class SecurityConfig {
             || uri.equals("/api/captcha/verify")
             || uri.equals("/api/fingerprint/register")
             || uri.equals("/api/behavior/track")
-            || uri.equals("/api/trust/evaluate");
+            || uri.equals("/api/trust/evaluate")
+            || uri.matches("^/api/videos/[^/]+/description-translation$");
     }
 
     /** CSRF for POST/PUT/PATCH/DELETE when the browser sent Vibely session cookies. */

@@ -33,6 +33,7 @@ public class DescriptionTranslationController {
         @PathVariable UUID publicId,
         @RequestParam String targetLang
     ) {
-        return translationService.getStatus(publicId, targetLang);
+        // GET cũng enqueue/dịch — feed anonymous + tránh CSRF trên POST cookie session.
+        return translationService.getOrRequest(publicId, targetLang);
     }
 }
