@@ -136,17 +136,19 @@ export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
 
   const measureCaption = useCallback(() => {
     const el = visibleRef.current;
-    if (!el || !text) {
+    if (!text) {
       overflowsRef.current = false;
       setOverflowsOneLine(false);
       return;
     }
-    if (expanded) {
+    // Khi expanded, node đo truncate bị unmount — giữ cờ overflow cũ.
+    if (expanded || !el) {
       setOverflowsOneLine(overflowsRef.current);
       return;
     }
-    const overflow = el.scrollWidth > el.clientWidth + 1
-      || el.scrollHeight > el.clientHeight + 1;
+    const overflow =
+      el.scrollWidth > el.clientWidth + 1 ||
+      el.scrollHeight > el.clientHeight + 1;
     overflowsRef.current = overflow;
     setOverflowsOneLine(overflow);
   }, [text, expanded]);
@@ -164,7 +166,6 @@ export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
   }, [measureCaption]);
 
   useLayoutEffect(() => {
-    // light = thu gọn (nhạt, sát đáy); strong = đã bấm «thêm» (đậm hơn).
     if (!text) {
       onNeedsGradientChange?.("none");
       return;
@@ -186,8 +187,9 @@ export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
     return (
       <div className="min-w-0 max-w-full">
         <p className={`${CAPTION_TEXT_CLASS} wrap-break-word`}>
-          {renderInteractiveCaption(text)}{" "}
-          {overflowsOneLine ? (
+          {renderInteractiveCaption(text)}
+          <>
+            {" "}
             <button
               type="button"
               className="inline cursor-pointer bg-transparent p-0 text-[15px] font-bold leading-[1.35] text-white hover:text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.55)]"
@@ -198,7 +200,7 @@ export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
             >
               ẩn bớt
             </button>
-          ) : null}
+          </>
         </p>
       </div>
     );
@@ -329,17 +331,26 @@ function FeedSlideAuthorMeta({
     ? "px-3 pb-0 pt-1.5 sm:px-4"
     : "px-3 pb-0 pt-2 sm:px-4 sm:pt-2.5";
 
-  /** TikTok: thu gọn = wash rất nhẹ sát đáy; mở «thêm» = tối hơn gần mép dưới. */
+  /** Wash kéo xuống sát thanh tiến trình (bù padding đáy caption). */
+  const washBottomPx = FEED_CAPTION_PROGRESS_PAD_PX;
   const washClass =
     captionWash === "strong"
-      ? "pointer-events-none absolute inset-x-0 bottom-0 h-[7.5rem] bg-linear-to-t from-black/70 from-[0%] via-black/28 via-[28%] to-transparent to-[78%]"
+      ? "pointer-events-none absolute inset-x-0 bg-linear-to-t from-black/75 from-[0%] via-black/32 via-[22%] to-transparent to-[72%]"
       : captionWash === "light"
-        ? "pointer-events-none absolute inset-x-0 bottom-0 h-[4.25rem] bg-linear-to-t from-black/38 from-[0%] via-black/12 via-[40%] to-transparent to-[88%]"
+        ? "pointer-events-none absolute inset-x-0 bg-linear-to-t from-black/40 from-[0%] via-black/14 via-[38%] to-transparent to-[90%]"
         : null;
+  const washStyle =
+    captionWash === "strong"
+      ? { bottom: -washBottomPx, height: `calc(10.5rem + ${washBottomPx}px)` }
+      : captionWash === "light"
+        ? { bottom: -washBottomPx, height: `calc(4.5rem + ${washBottomPx}px)` }
+        : undefined;
 
   return (
     <div className={`pointer-events-auto relative shrink-0 ${padClass}`}>
-      {washClass ? <div className={washClass} aria-hidden /> : null}
+      {washClass ? (
+        <div className={washClass} style={washStyle} aria-hidden />
+      ) : null}
       <div className="relative z-10 max-w-[92%]">
         {selfReposted ? (
           <SelfRepostIndicator
