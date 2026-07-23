@@ -118,7 +118,7 @@ function renderInteractiveCaption(caption) {
 }
 
 const CAPTION_TEXT_CLASS =
-  "min-w-0 text-sm leading-snug text-white/90 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]";
+  "min-w-0 text-[15px] leading-snug text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]";
 
 /** Mô tả dài: 1 dòng + …; «Thêm» mở rộng; «Ẩn bớt» thu lại. */
 export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
@@ -189,25 +189,25 @@ export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
       {collapsed ? (
         <button
           type="button"
-          className="absolute bottom-0 right-0 z-10 cursor-pointer bg-transparent p-0 text-sm font-semibold leading-snug text-white/95 hover:text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]"
+          className="absolute bottom-0 right-0 z-10 cursor-pointer bg-transparent p-0 text-[15px] font-bold leading-snug text-white hover:text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]"
           onClick={(e) => {
             e.stopPropagation();
             setExpanded(true);
           }}
         >
-          Thêm
+          thêm
         </button>
       ) : null}
       {overflowsOneLine && expanded ? (
         <button
           type="button"
-          className="mt-0.5 cursor-pointer bg-transparent p-0 text-sm font-semibold leading-snug text-white/95 hover:text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]"
+          className="mt-0.5 cursor-pointer bg-transparent p-0 text-[15px] font-bold leading-snug text-white hover:text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]"
           onClick={(e) => {
             e.stopPropagation();
             setExpanded(false);
           }}
         >
-          Ẩn bớt
+          ẩn bớt
         </button>
       ) : null}
     </div>
@@ -293,7 +293,7 @@ function FeedSlideAuthorMeta({
 }) {
   const [needsGradient, setNeedsGradient] = useState(false);
   const nameClass =
-    "inline-block max-w-full truncate text-[15px] font-bold leading-snug text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.95),0_0_1px_rgba(0,0,0,0.85)]";
+    "inline-block max-w-full truncate text-[15px] font-bold leading-snug text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]";
   const displayVibelyId = rawVibelyUser ? `@${rawVibelyUser}` : "@vibely";
   const repostLabel = repostedByUsername
     ? String(repostedByDisplayName ?? repostedByUsername).trim() ||
@@ -312,14 +312,14 @@ function FeedSlideAuthorMeta({
   );
 
   const padClass = compact
-    ? `px-3 pb-0 sm:px-4 ${needsGradient ? "pt-3" : "pt-1.5"}`
-    : `px-3 pb-0 sm:px-4 ${needsGradient ? "pt-6 sm:pt-8" : "pt-2 sm:pt-3"}`;
+    ? "px-3 pb-0 pt-1.5 sm:px-4"
+    : "px-3 pb-0 pt-2 sm:px-4 sm:pt-3";
 
   return (
     <div className={`pointer-events-auto relative shrink-0 ${padClass}`}>
       {needsGradient ? (
         <div
-          className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/28 via-black/10 to-transparent"
+          className="pointer-events-none absolute inset-x-0 bottom-0 top-[-5.5rem] bg-linear-to-t from-black/55 via-black/22 via-40% to-transparent"
           aria-hidden
         />
       ) : null}
