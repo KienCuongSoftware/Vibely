@@ -95,7 +95,7 @@ function renderInteractiveCaption(caption) {
           key={`${part}-${index}`}
           to={`/@${encodeURIComponent(username)}`}
           onClick={(e) => e.stopPropagation()}
-          className="cursor-pointer font-semibold text-sky-300 hover:text-sky-200 hover:underline"
+          className="cursor-pointer font-semibold text-[#B6E3FF] hover:text-[#D0EEFF] hover:underline"
         >
           {part}
         </Link>
@@ -107,7 +107,7 @@ function renderInteractiveCaption(caption) {
           key={`${part}-${index}`}
           to={feedHashtagPath(part)}
           onClick={(e) => e.stopPropagation()}
-          className="cursor-pointer font-semibold text-sky-300 hover:text-sky-200 hover:underline"
+          className="cursor-pointer font-semibold text-[#B6E3FF] hover:text-[#D0EEFF] hover:underline"
         >
           {part}
         </Link>
@@ -118,9 +118,9 @@ function renderInteractiveCaption(caption) {
 }
 
 const CAPTION_TEXT_CLASS =
-  "min-w-0 text-[15px] leading-snug text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]";
+  "min-w-0 text-[15px] font-normal leading-[1.35] text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.55)]";
 
-/** Mô tả dài: 1 dòng + …; «Thêm» mở rộng; «Ẩn bớt» thu lại. */
+/** Mô tả dài: 1 dòng + «thêm» sát chữ (kiểu TikTok); «ẩn bớt» khi mở rộng. */
 export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
   const text = String(caption ?? "").trim();
   const [expanded, setExpanded] = useState(false);
@@ -145,7 +145,8 @@ export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
       setOverflowsOneLine(overflowsRef.current);
       return;
     }
-    const overflow = el.scrollHeight > el.clientHeight + 1;
+    const overflow = el.scrollWidth > el.clientWidth + 1
+      || el.scrollHeight > el.clientHeight + 1;
     overflowsRef.current = overflow;
     setOverflowsOneLine(overflow);
   }, [text, expanded]);
@@ -163,12 +164,13 @@ export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
   }, [measureCaption]);
 
   useLayoutEffect(() => {
-    onNeedsGradientChange?.(Boolean(text) && overflowsOneLine && !expanded);
-  }, [expanded, onNeedsGradientChange, overflowsOneLine, text]);
+    // Gradient đáy khi có mô tả (TikTok luôn có wash nhẹ dưới caption).
+    onNeedsGradientChange?.(Boolean(text));
+  }, [onNeedsGradientChange, text]);
 
   if (!text) {
     return (
-      <p className={`${CAPTION_TEXT_CLASS} line-clamp-1`}>
+      <p className={`${CAPTION_TEXT_CLASS} truncate`}>
         {renderInteractiveCaption("\u00A0")}
       </p>
     );
@@ -176,38 +178,46 @@ export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
 
   const collapsed = overflowsOneLine && !expanded;
 
+  if (expanded) {
+    return (
+      <div className="min-w-0 max-w-full">
+        <p className={`${CAPTION_TEXT_CLASS} wrap-break-word`}>
+          {renderInteractiveCaption(text)}{" "}
+          {overflowsOneLine ? (
+            <button
+              type="button"
+              className="inline cursor-pointer bg-transparent p-0 text-[15px] font-bold leading-[1.35] text-white hover:text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.55)]"
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpanded(false);
+              }}
+            >
+              ẩn bớt
+            </button>
+          ) : null}
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative min-w-0 w-full">
+    <div className="flex min-w-0 max-w-full items-baseline gap-1.5">
       <p
         ref={visibleRef}
-        className={`${CAPTION_TEXT_CLASS} wrap-break-word ${
-          !expanded ? "line-clamp-1" : ""
-        } ${collapsed ? "pr-14" : ""}`}
+        className={`${CAPTION_TEXT_CLASS} min-w-0 flex-1 truncate`}
       >
         {renderInteractiveCaption(text)}
       </p>
       {collapsed ? (
         <button
           type="button"
-          className="absolute bottom-0 right-0 z-10 cursor-pointer bg-transparent p-0 text-[15px] font-bold leading-snug text-white hover:text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]"
+          className="shrink-0 cursor-pointer bg-transparent p-0 text-[15px] font-bold leading-[1.35] text-white hover:text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.55)]"
           onClick={(e) => {
             e.stopPropagation();
             setExpanded(true);
           }}
         >
           thêm
-        </button>
-      ) : null}
-      {overflowsOneLine && expanded ? (
-        <button
-          type="button"
-          className="mt-0.5 cursor-pointer bg-transparent p-0 text-[15px] font-bold leading-snug text-white hover:text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]"
-          onClick={(e) => {
-            e.stopPropagation();
-            setExpanded(false);
-          }}
-        >
-          ẩn bớt
         </button>
       ) : null}
     </div>
@@ -313,17 +323,17 @@ function FeedSlideAuthorMeta({
 
   const padClass = compact
     ? "px-3 pb-0 pt-1.5 sm:px-4"
-    : "px-3 pb-0 pt-2 sm:px-4 sm:pt-3";
+    : "px-3 pb-0 pt-2 sm:px-4 sm:pt-2.5";
 
   return (
     <div className={`pointer-events-auto relative shrink-0 ${padClass}`}>
       {needsGradient ? (
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 top-[-5.5rem] bg-linear-to-t from-black/55 via-black/22 via-40% to-transparent"
+          className="pointer-events-none absolute inset-x-0 bottom-0 top-[-7rem] bg-linear-to-t from-black/60 from-[12%] via-black/28 via-[42%] to-transparent"
           aria-hidden
         />
       ) : null}
-      <div className="relative z-10">
+      <div className="relative z-10 max-w-[92%]">
         {selfReposted ? (
           <SelfRepostIndicator
             avatarUrl={selfRepostAvatarUrl}
@@ -335,7 +345,7 @@ function FeedSlideAuthorMeta({
             theme="overlay"
           />
         ) : repostLabel ? (
-          <p className="mb-1 flex items-center gap-1 text-xs font-semibold text-white/90 [text-shadow:0_1px_3px_rgba(0,0,0,0.85)]">
+          <p className="mb-1 flex items-center gap-1 text-xs font-semibold text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.55)]">
             <LuRepeat2
               className="shrink-0 text-sm text-[#FACE15]"
               aria-hidden
@@ -344,7 +354,7 @@ function FeedSlideAuthorMeta({
           </p>
         ) : null}
         <div className="inline-flex max-w-full">{nameEl}</div>
-        <div className="mt-1">
+        <div className="mt-0.5 min-w-0">
           <FeedVideoCaption
             caption={captionText}
             onNeedsGradientChange={setNeedsGradient}
