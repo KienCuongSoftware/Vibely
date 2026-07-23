@@ -101,6 +101,14 @@ public class DescriptionTranslationService {
         }
 
         TranslationJobEntity job = enqueueJob(video, sourceHash, sourceLang, targetLang, original);
+
+        // Job đang chạy gần đây → không chồng sync; để worker làm.
+        if (job.getJobState() == TranslationJobState.RUNNING
+            && job.getClaimedAt() != null
+            && job.getClaimedAt().isAfter(LocalDateTime.now().minusMinutes(2))) {
+            return DescriptionTranslationResponse.pending(job.getId(), original, sourceLang, targetLang);
+        }
+
         job.setJobState(TranslationJobState.RUNNING);
         job.setClaimedAt(LocalDateTime.now());
         job.setAttempts(job.getAttempts() + 1);

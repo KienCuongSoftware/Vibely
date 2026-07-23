@@ -18,6 +18,7 @@ public interface TranslationJobRepository extends JpaRepository<TranslationJobEn
         value = """
             SELECT id FROM translation_jobs
             WHERE job_state = 'PENDING'
+               OR (job_state = 'RUNNING' AND claimed_at < NOW() - INTERVAL '2 minutes')
             ORDER BY created_at ASC
             LIMIT 1
             FOR UPDATE SKIP LOCKED

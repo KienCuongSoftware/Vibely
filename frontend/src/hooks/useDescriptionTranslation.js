@@ -3,7 +3,7 @@ import { apiClient } from "../api/client.js";
 import { sameIsoLanguage } from "../components/feed/subtitleLangMap.js";
 
 /**
- * Fetch / poll dịch mô tả bài đăng qua Spring gateway.
+ * POST enqueue/sync một lần, rồi GET poll status (không gọi sync lại mỗi poll).
  */
 export function useDescriptionTranslation({
   videoPublicId,
@@ -47,7 +47,7 @@ export function useDescriptionTranslation({
       if (cancelled || reqId !== reqIdRef.current) return "done";
       if (data?.sourceLang) setResolvedSourceLang(data.sourceLang);
       const st = String(data?.status || "").toUpperCase();
-      if (st === "READY" && data.translated != null) {
+      if (st === "READY" && data.translated != null && data.translated !== "") {
         setTranslated(data.translated);
         setStatus("ready");
         setError(null);
@@ -63,6 +63,7 @@ export function useDescriptionTranslation({
       }
       if (st === "DISABLED") {
         setStatus("disabled");
+        setError(data?.message || "Dịch đang tắt");
         return "done";
       }
       if (st === "FAILED") {
@@ -73,43 +74,45 @@ export function useDescriptionTranslation({
       return "done";
     };
 
+    const poll = async () => {
+      while (!cancelled && reqId === reqIdRef.current) {
+        if (pollRef.current >= 40) {
+          setStatus("failed");
+          setError("Dịch quá lâu, thử lại sau");
+          return;
+        }
+        pollRef.current += 1;
+        await new Promise((r) => setTimeout(r, 1200));
+        if (cancelled || reqId !== reqIdRef.current) return;
+        try {
+          const polled = await apiClient.getDescriptionTranslation(
+            videoPublicId,
+            targetLangIso,
+            token,
+          );
+          const outcome = apply(polled);
+          if (outcome !== "poll") return;
+        } catch (err) {
+          if (!cancelled) {
+            setStatus("failed");
+            setError(err?.message || "Không lấy được bản dịch");
+          }
+          return;
+        }
+      }
+    };
+
     const run = async () => {
       setStatus("loading");
       try {
-        // Dùng GET (get-or-create) để tránh CSRF khi đăng nhập bằng cookie.
-        const data = await apiClient.getDescriptionTranslation(
+        const data = await apiClient.requestDescriptionTranslation(
           videoPublicId,
           targetLangIso,
           token,
         );
         const next = apply(data);
         if (next === "poll") {
-          const tick = async () => {
-            if (cancelled || reqId !== reqIdRef.current) return;
-            if (pollRef.current >= 40) {
-              setStatus("failed");
-              setError("Dịch quá lâu, thử lại sau");
-              return;
-            }
-            pollRef.current += 1;
-            await new Promise((r) => setTimeout(r, 1500));
-            if (cancelled || reqId !== reqIdRef.current) return;
-            try {
-              const polled = await apiClient.getDescriptionTranslation(
-                videoPublicId,
-                targetLangIso,
-                token,
-              );
-              const outcome = apply(polled);
-              if (outcome === "poll") tick();
-            } catch (err) {
-              if (!cancelled) {
-                setStatus("failed");
-                setError(err?.message || "Không lấy được bản dịch");
-              }
-            }
-          };
-          tick();
+          await poll();
         }
       } catch (err) {
         if (!cancelled && reqId === reqIdRef.current) {

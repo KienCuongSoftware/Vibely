@@ -19,6 +19,7 @@ public class DescriptionTranslationController {
         this.translationService = translationService;
     }
 
+    /** Enqueue + try sync translate. */
     @PostMapping("/{publicId}/description-translation")
     public DescriptionTranslationResponse requestTranslation(
         @PathVariable UUID publicId,
@@ -28,12 +29,12 @@ public class DescriptionTranslationController {
         return translationService.getOrRequest(publicId, targetLang);
     }
 
+    /** Read cache / job status only — do not re-run sync on every poll. */
     @GetMapping("/{publicId}/description-translation")
     public DescriptionTranslationResponse getTranslation(
         @PathVariable UUID publicId,
         @RequestParam String targetLang
     ) {
-        // GET cũng enqueue/dịch — feed anonymous + tránh CSRF trên POST cookie session.
-        return translationService.getOrRequest(publicId, targetLang);
+        return translationService.getStatus(publicId, targetLang);
     }
 }

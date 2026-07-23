@@ -1,5 +1,6 @@
 package com.vibely.backend.translation;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -7,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -22,10 +24,15 @@ public class HttpMachineTranslationClient implements MachineTranslationClient {
     private final RestClient restClient;
 
     public HttpMachineTranslationClient(TranslationProperties properties) {
+        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Duration.ofSeconds(3));
+        requestFactory.setReadTimeout(Duration.ofSeconds(20));
         this.restClient = RestClient.builder()
             .baseUrl(trimSlash(properties.getBaseUrl()))
+            .requestFactory(requestFactory)
             .defaultHeader("X-Internal-Token", properties.getInternalToken())
             .build();
+        log.info("HttpMachineTranslationClient baseUrl={}", trimSlash(properties.getBaseUrl()));
     }
 
     @Override
