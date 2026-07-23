@@ -4,8 +4,9 @@ import { useFeedSubtitlesPrefs } from "../../hooks/useFeedSubtitlesPrefs.js";
 import { sameIsoLanguage } from "./subtitleLangMap.js";
 
 /**
- * Logic + toggle «Xem bản dịch» / «Xem bản gốc».
- * Parent truyền `renderCaption(displayText)` để tránh circular import với FeedPhoneStage.
+ * TikTok-style caption translation:
+ * - Đang xem bản dịch → «Xem bản gốc»
+ * - Đang xem bản gốc (hoặc chưa dịch) → «Xem bản dịch»
  */
 export function FeedTranslatedCaption({
   videoPublicId,
@@ -18,127 +19,110 @@ export function FeedTranslatedCaption({
   const { prefs, targetLangIso, isExcludedSource } = useFeedSubtitlesPrefs();
   const original = String(captionText ?? "").trim();
   const [showOriginal, setShowOriginal] = useState(false);
-  const [manualEnabled, setManualEnabled] = useState(false);
+  const [wantTranslate, setWantTranslate] = useState(false);
 
   const excluded = isExcludedSource(descriptionLang);
   const sameLang =
     descriptionLang && sameIsoLanguage(descriptionLang, targetLangIso);
 
-  const autoEnabled =
-    Boolean(prefs.alwaysTranslate) &&
+  const canTranslate =
+    Boolean(videoPublicId) &&
+    Boolean(original) &&
     Boolean(active) &&
-    Boolean(videoPublicId) &&
-    Boolean(original) &&
     !excluded &&
     !sameLang;
 
-  const manualFetchEnabled =
-    Boolean(manualEnabled) &&
-    !prefs.alwaysTranslate &&
-    Boolean(videoPublicId) &&
-    Boolean(original) &&
-    !excluded &&
-    !sameLang;
+  /** Auto khi bật «Luôn dịch»; hoặc user bấm «Xem bản dịch». */
+  const fetchEnabled =
+    canTranslate &&
+    (Boolean(prefs.alwaysTranslate) || wantTranslate);
 
-  const autoTx = useDescriptionTranslation({
+  const tx = useDescriptionTranslation({
     videoPublicId,
     originalText: original,
     sourceLang: descriptionLang,
     targetLangIso,
-    enabled: autoEnabled,
+    enabled: fetchEnabled,
     token,
   });
-
-  const manualTx = useDescriptionTranslation({
-    videoPublicId,
-    originalText: original,
-    sourceLang: descriptionLang,
-    targetLangIso,
-    enabled: manualFetchEnabled,
-    token,
-  });
-
-  const activeTx = prefs.alwaysTranslate ? autoTx : manualTx;
 
   useEffect(() => {
     setShowOriginal(false);
-    setManualEnabled(false);
+    setWantTranslate(false);
   }, [videoPublicId, prefs.alwaysTranslate, prefs.translateTo, targetLangIso]);
 
-  const hasTranslation =
-    activeTx.status === "ready" && Boolean(activeTx.translated);
+  const hasTranslation = tx.status === "ready" && Boolean(tx.translated);
 
+  /** alwaysTranslate: mặc định hiện bản dịch khi có; tắt = hiện gốc đến khi user bấm dịch. */
   const displayText = useMemo(() => {
+    if (!hasTranslation) return original;
     if (showOriginal) return original;
-    if (hasTranslation) return activeTx.translated;
+    if (prefs.alwaysTranslate || wantTranslate) return tx.translated;
     return original;
-  }, [showOriginal, original, hasTranslation, activeTx.translated]);
+  }, [
+    hasTranslation,
+    showOriginal,
+    prefs.alwaysTranslate,
+    wantTranslate,
+    original,
+    tx.translated,
+  ]);
 
-  const onToggle = (e) => {
+  const showingTranslated =
+    hasTranslation && !showOriginal && (prefs.alwaysTranslate || wantTranslate);
+
+  const busy = tx.status === "loading" || tx.status === "pending";
+
+  const onLinkClick = (e) => {
     e.stopPropagation();
-    if (!prefs.alwaysTranslate && !hasTranslation) {
-      setManualEnabled(true);
-      setShowOriginal(false);
+    if (showingTranslated) {
+      setShowOriginal(true);
       return;
     }
-    if (!hasTranslation) return;
-    setShowOriginal((v) => !v);
+    // Đang xem gốc / chưa có bản dịch
+    if (hasTranslation) {
+      setShowOriginal(false);
+      setWantTranslate(true);
+      return;
+    }
+    if (tx.status === "failed") {
+      setWantTranslate(true);
+      tx.retry?.();
+      return;
+    }
+    setWantTranslate(true);
+    setShowOriginal(false);
   };
 
-  const showManualCue =
-    !prefs.alwaysTranslate &&
-    Boolean(original) &&
-    !excluded &&
-    !sameLang &&
-    !hasTranslation &&
-    activeTx.status !== "loading" &&
-    activeTx.status !== "pending";
+  if (!canTranslate) {
+    return (
+      <div className="min-w-0">
+        {typeof renderCaption === "function" ? renderCaption(original) : null}
+      </div>
+    );
+  }
 
-  const linkLabel =
-    hasTranslation && !showOriginal
-      ? "Xem bản gốc"
-      : hasTranslation && showOriginal
-        ? "Xem bản dịch"
-        : null;
+  let linkLabel = null;
+  if (showingTranslated) {
+    linkLabel = "Xem bản gốc";
+  } else if (hasTranslation || !busy) {
+    // Chưa dịch / đang xem gốc / lỗi → luôn «Xem bản dịch» (bấm = dịch hoặc thử lại)
+    linkLabel = "Xem bản dịch";
+  }
 
   return (
     <div className="min-w-0">
-      {typeof renderCaption === "function"
-        ? renderCaption(displayText)
-        : null}
-      {(autoEnabled || manualFetchEnabled) &&
-      (activeTx.status === "loading" || activeTx.status === "pending") &&
-      !hasTranslation ? (
+      {typeof renderCaption === "function" ? renderCaption(displayText) : null}
+      {busy && !hasTranslation ? (
         <p className="mt-0.5 text-[13px] leading-snug text-white/45 [text-shadow:0_1px_2px_rgba(0,0,0,0.45)]">
           Đang dịch…
         </p>
-      ) : null}
-      {activeTx.status === "failed" ? (
-        <button
-          type="button"
-          className="mt-0.5 cursor-pointer bg-transparent p-0 text-[13px] text-white/55 hover:text-white/80"
-          onClick={(e) => {
-            e.stopPropagation();
-            activeTx.retry?.();
-          }}
-        >
-          Thử lại dịch
-        </button>
-      ) : null}
-      {showManualCue ? (
-        <button
-          type="button"
-          className="mt-0.5 cursor-pointer bg-transparent p-0 text-[13px] leading-snug text-white/55 hover:text-white/75 [text-shadow:0_1px_2px_rgba(0,0,0,0.45)]"
-          onClick={onToggle}
-        >
-          Xem bản dịch
-        </button>
       ) : null}
       {linkLabel ? (
         <button
           type="button"
           className="mt-0.5 cursor-pointer bg-transparent p-0 text-[13px] leading-snug text-white/55 hover:text-white/75 [text-shadow:0_1px_2px_rgba(0,0,0,0.45)]"
-          onClick={onToggle}
+          onClick={onLinkClick}
         >
           {linkLabel}
         </button>
