@@ -59,10 +59,9 @@ public class ModerationDecisionApplier {
                 exploreEligible = true;
                 reviewRequired = false;
                 statusApplied = VideoStatus.READY.name();
-                // Publication hold keeps new posts HIDDEN until AI ALLOW → promote to READY.
+                // Publication hold: HIDDEN/REPORTED → READY. Never revive user/admin soft-delete (REMOVED).
                 if (!shadow
                     && (video.getStatus() == VideoStatus.HIDDEN
-                        || video.getStatus() == VideoStatus.REMOVED
                         || video.getStatus() == VideoStatus.REPORTED)) {
                     nextStatus = VideoStatus.READY;
                 }
@@ -73,7 +72,6 @@ public class ModerationDecisionApplier {
                 statusApplied = VideoStatus.READY.name();
                 if (!shadow
                     && (video.getStatus() == VideoStatus.HIDDEN
-                        || video.getStatus() == VideoStatus.REMOVED
                         || video.getStatus() == VideoStatus.REPORTED)) {
                     nextStatus = VideoStatus.READY;
                 }
@@ -85,7 +83,6 @@ public class ModerationDecisionApplier {
                 statusApplied = VideoStatus.READY.name();
                 if (!shadow
                     && (video.getStatus() == VideoStatus.HIDDEN
-                        || video.getStatus() == VideoStatus.REMOVED
                         || video.getStatus() == VideoStatus.REPORTED)) {
                     nextStatus = VideoStatus.READY;
                 }

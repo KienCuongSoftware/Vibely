@@ -309,6 +309,7 @@ public class VideoCommandService {
         videoRepository.save(video);
         notificationService.purgeForRemovedVideo(video.getId());
         reviewQueueCleanupService.purgeForVideo(video.getId());
+        exploreSyncService.evictExploreCaches(video);
     }
 
     @Transactional

@@ -62,10 +62,20 @@ public class VideoExploreSyncService {
             videoHashtagRepository.save(new VideoHashtag(video, hashtag));
         }
         exploreRankingService.recomputeVideo(video);
+        evictExploreCaches(video);
+        videoDiscoveryIndexer.ifAvailable(indexer -> indexer.indexAfterLegacySync(video.getId()));
+    }
+
+    /** Soft-delete / hide: drop feed caches without re-tagging. */
+    public void evictExploreCaches(Video video) {
+        if (video == null || video.getPublicId() == null) {
+            exploreCacheService.evictByPrefix("trending");
+            exploreCacheService.evictByPrefix("category:");
+            return;
+        }
         exploreCacheService.evictByPrefix("trending");
         exploreCacheService.evictByPrefix("category:");
         exploreCacheService.evictByPrefix("related:" + video.getPublicId());
-        videoDiscoveryIndexer.ifAvailable(indexer -> indexer.indexAfterLegacySync(video.getId()));
     }
 
     private Hashtag newHashtag(String tag) {
