@@ -179,6 +179,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/videos/*/semantic-tags").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*/topics").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*/categories").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/videos/*/description-translation").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/videos/*/description-translation").permitAll()
                 .requestMatchers("/api/internal/originality/**").permitAll()
                 .requestMatchers("/api/internal/content-understanding/**").permitAll()
                 .requestMatchers("/api/internal/moderation/**").permitAll()

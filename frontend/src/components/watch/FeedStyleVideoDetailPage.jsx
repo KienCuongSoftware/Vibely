@@ -22,6 +22,7 @@ import {
 } from '../BookmarkSaveFeedback.jsx'
 import { CommentInputAccessoryButtons } from '../comments/CommentInputAccessory.jsx'
 import { FeedPhoneStage, FeedVolumeControl, FeedVideoCaption } from '../feed/FeedPhoneStage.jsx'
+import { FeedTranslatedCaption } from '../feed/FeedTranslatedCaption.jsx'
 import {
   isMobileFeedLayout,
   MOBILE_FEED_BOTTOM_NAV_PX,
@@ -1053,12 +1054,19 @@ export function FeedStyleVideoDetailPage({
                         .replace(/^@/, '') || 'vibely'}
                     </Link>
                     <div className="mt-1.5 text-sm leading-snug text-white/90">
-                      <FeedVideoCaption
-                        caption={
+                      <FeedTranslatedCaption
+                        videoPublicId={feedVideo.publicId}
+                        captionText={
                           String(feedVideo.description ?? '').trim() ||
                           String(feedVideo.title ?? '').trim() ||
                           ''
                         }
+                        descriptionLang={feedVideo.descriptionLang}
+                        token={token}
+                        active
+                        renderCaption={(text) => (
+                          <FeedVideoCaption caption={text} />
+                        )}
                       />
                     </div>
                   </div>

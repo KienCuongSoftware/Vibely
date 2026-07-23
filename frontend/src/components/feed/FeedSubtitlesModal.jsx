@@ -8,7 +8,9 @@ import {
 
 const ACCENT = "#00f2ea";
 const BRAND_RED = "#fe2c55";
-const STORAGE_KEY = "vibely_feed_subtitles_prefs";
+export const FEED_SUBTITLES_PREFS_KEY = "vibely_feed_subtitles_prefs";
+export const FEED_SUBTITLES_PREFS_EVENT = "vibely-subtitles-prefs";
+const STORAGE_KEY = FEED_SUBTITLES_PREFS_KEY;
 
 /** Danh sách ngôn ngữ kiểu TikTok (Không dịch / Dịch sang). */
 export const SUBTITLE_LANGUAGES = [
@@ -108,7 +110,7 @@ function normalizeLang(name) {
   if (!name) return name;
   return LANG_ALIASES[name] || name;
 }
-const DEFAULT_PREFS = {
+export const DEFAULT_FEED_SUBTITLES_PREFS = {
   captionsEnabled: true,
   alwaysTranslate: true,
   translateTo: "Tiếng Việt",
@@ -116,7 +118,9 @@ const DEFAULT_PREFS = {
   excludeLanguages: [],
 };
 
-function readPrefs() {
+const DEFAULT_PREFS = DEFAULT_FEED_SUBTITLES_PREFS;
+
+export function readFeedSubtitlesPrefs() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { ...DEFAULT_PREFS };
@@ -136,9 +140,18 @@ function readPrefs() {
   }
 }
 
+function readPrefs() {
+  return readFeedSubtitlesPrefs();
+}
+
 function writePrefs(prefs) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent(FEED_SUBTITLES_PREFS_EVENT, { detail: prefs }),
+      );
+    }
   } catch {
     /* ignore */
   }

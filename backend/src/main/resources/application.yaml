@@ -176,6 +176,16 @@ app:
     suggest-cache-ttl-seconds: ${SEARCH_SUGGEST_CACHE_TTL_SECONDS:300}
     suggest-group-limit: ${SEARCH_SUGGEST_GROUP_LIMIT:8}
     candidate-multiplier: ${SEARCH_CANDIDATE_MULTIPLIER:4}
+  translation:
+    enabled: ${APP_TRANSLATION_ENABLED:false}
+    base-url: ${APP_TRANSLATION_BASE_URL:http://127.0.0.1:8002}
+    internal-token: ${APP_TRANSLATION_INTERNAL_TOKEN:vibely-dev-translation-token}
+    redis-ttl-seconds: ${APP_TRANSLATION_REDIS_TTL_SECONDS:604800}
+    sync-timeout-ms: ${APP_TRANSLATION_SYNC_TIMEOUT_MS:12000}
+    poll-interval-ms: ${APP_TRANSLATION_POLL_INTERVAL_MS:3000}
+    max-job-attempts: ${APP_TRANSLATION_MAX_JOB_ATTEMPTS:5}
+    worker:
+      enabled: ${APP_TRANSLATION_WORKER_ENABLED:true}
 ---
 spring:
   config:
@@ -190,3 +200,6 @@ app:
     dry-run-promote-when-worker-disabled: false
     worker:
       enabled: ${APP_PROCESSING_WORKER_ENABLED:true}
+  translation:
+    enabled: ${APP_TRANSLATION_ENABLED:true}
+    base-url: ${APP_TRANSLATION_BASE_URL:http://127.0.0.1:8002}

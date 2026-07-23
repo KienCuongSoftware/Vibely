@@ -579,6 +579,22 @@ export const apiClient = {
       body: { ids },
       token,
     }),
+  requestDescriptionTranslation: (publicId, targetLang, token) =>
+    request(
+      `/api/videos/${encodeURIComponent(publicId)}/description-translation`,
+      {
+        method: "POST",
+        body: { targetLang },
+        ...(token ? { token } : {}),
+      },
+    ),
+  getDescriptionTranslation: (publicId, targetLang, token) =>
+    request(
+      `/api/videos/${encodeURIComponent(publicId)}/description-translation${toQuery({
+        targetLang,
+      })}`,
+      token ? { token } : {},
+    ),
 };
 
 /** Tải blob ảnh bìa lên S3 qua presign, trả về URL công khai. */

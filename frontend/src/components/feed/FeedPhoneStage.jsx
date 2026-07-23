@@ -38,6 +38,7 @@ import {
   formatQualityLabel,
 } from "../../feed/hlsQualityUtils.js";
 import { downloadWatermarkedVideo } from "../../feed/videoDownload.js";
+import { FeedTranslatedCaption } from "./FeedTranslatedCaption.jsx";
 import { useFeedPrefetch } from "../../feed/useFeedPrefetch.js";
 import { VideoContextMenu } from "./VideoContextMenu.jsx";
 import { FeedSubtitlesModal } from "./FeedSubtitlesModal.jsx";
@@ -296,6 +297,10 @@ function FeedSlideAuthorMeta({
   rawVibelyUser,
   authorProfilePath,
   captionText,
+  videoPublicId,
+  descriptionLang,
+  authToken,
+  captionActive = true,
   compact = false,
   repostedByDisplayName,
   repostedByUsername,
@@ -373,9 +378,18 @@ function FeedSlideAuthorMeta({
         ) : null}
         <div className="inline-flex max-w-full">{nameEl}</div>
         <div className="mt-0.5 min-w-0">
-          <FeedVideoCaption
-            caption={captionText}
-            onNeedsGradientChange={setCaptionWash}
+          <FeedTranslatedCaption
+            videoPublicId={videoPublicId}
+            captionText={captionText}
+            descriptionLang={descriptionLang}
+            token={authToken}
+            active={captionActive}
+            renderCaption={(text) => (
+              <FeedVideoCaption
+                caption={text}
+                onNeedsGradientChange={setCaptionWash}
+              />
+            )}
           />
         </div>
       </div>
@@ -1516,6 +1530,10 @@ export function FeedPhoneStage({
                     rawVibelyUser={rawVibelyUser}
                     authorProfilePath={authorProfilePath}
                     captionText={captionText}
+                    videoPublicId={video?.publicId}
+                    descriptionLang={video?.descriptionLang}
+                    authToken={reportToken || contextMenuToken}
+                    captionActive={isActive}
                     compact={effectiveStageWide}
                     repostedByDisplayName={video?.repostedByDisplayName}
                     repostedByUsername={video?.repostedByUsername}

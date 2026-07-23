@@ -102,6 +102,10 @@ public class Video {
     @Column(name = "privacy", nullable = false, length = 20)
     private VideoPrivacy privacy = VideoPrivacy.PUBLIC;
 
+    /** ISO-639 language of description (detect-once for translation). */
+    @Column(name = "description_lang", length = 16)
+    private String descriptionLang;
+
     @PrePersist
     void prePersist() {
         if (publicId == null) {
@@ -293,5 +297,13 @@ public class Video {
 
     public void setPrivacy(VideoPrivacy privacy) {
         this.privacy = privacy == null ? VideoPrivacy.PUBLIC : privacy;
+    }
+
+    public String getDescriptionLang() {
+        return descriptionLang;
+    }
+
+    public void setDescriptionLang(String descriptionLang) {
+        this.descriptionLang = descriptionLang;
     }
 }

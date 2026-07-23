@@ -271,7 +271,8 @@ public class VideoResponseMapper {
             repostedByDisplayName,
             repostedByAvatarUrl,
             repostedAtValue,
-            reviewRequired
+            reviewRequired,
+            video.getDescriptionLang()
         );
     }
 

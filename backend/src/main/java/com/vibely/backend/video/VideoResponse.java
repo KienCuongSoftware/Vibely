@@ -37,6 +37,8 @@ public record VideoResponse(
     String repostedByAvatarUrl,
     LocalDateTime repostedAt,
     /** True when AI/admin has flagged the video for human review (Studio warning). */
-    boolean reviewRequired
+    boolean reviewRequired,
+    /** ISO language of description when known (translation). */
+    String descriptionLang
 ) {
 }

@@ -43,6 +43,12 @@ APP_S3_ENABLED=true
 APP_PROCESSING_WORKER_ENABLED=true
 APP_AUTH_COOKIE_SECURE=true
 APP_SESSION_COOKIE_SECURE=true
+
+# Description translation (NLLB via FastAPI)
+APP_TRANSLATION_ENABLED=true
+APP_TRANSLATION_BASE_URL=http://127.0.0.1:8002
+APP_TRANSLATION_INTERNAL_TOKEN=vibely-dev-translation-token
+APP_TRANSLATION_WORKER_ENABLED=true
 ```
 
 For native Facebook login, set both generic and direct Spring properties to avoid placeholder/import ambiguity:
@@ -208,6 +214,20 @@ curl -sI https://vibely.sbs/oauth2/authorization/google | grep -i '^HTTP\|^Locat
 2. **Sync new frontend** — run `deploy/vps/sync-frontend-static.sh` so the bundle calls `/api/oauth2/authorization/` directly and includes OAuth callback fixes.
 
 Reference compose for VPS: `deploy/vps/docker-compose.yml`.
+
+## Deploy Translation API (NLLB)
+
+CPU-first FastAPI service (description translation only in v1):
+
+```bash
+cd /opt/vibely
+# Optional smoke without downloading the model:
+# TRANSLATION_MOCK=true
+docker compose -f docker-compose.translation.yml up -d --build
+curl -s http://127.0.0.1:8002/health
+```
+
+Backend must have `APP_TRANSLATION_ENABLED=true` and `APP_TRANSLATION_BASE_URL=http://127.0.0.1:8002` (host network). Swap GPU/model later by changing only this compose — Spring/React contracts stay the same.
 
 ## OAuth Smoke Tests
 

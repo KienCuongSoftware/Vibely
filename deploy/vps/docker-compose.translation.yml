@@ -1,0 +1,41 @@
+# Production add-on: description translation (NLLB-200 via FastAPI).
+# Place next to /opt/vibely/docker-compose.yml and vibely.env
+# Usage:
+#   cd /opt/vibely
+#   docker compose -f docker-compose.translation.yml up -d --build
+#
+# CPU-first. Set TRANSLATION_MOCK=true for smoke without downloading the model.
+# Point backend at this service:
+#   APP_TRANSLATION_ENABLED=true
+#   APP_TRANSLATION_BASE_URL=http://translation-api:8000
+#   APP_TRANSLATION_INTERNAL_TOKEN=...
+
+services:
+  translation-api:
+    image: kiencuongsoftware/vibely-translation:latest
+    build:
+      context: ../../ai-workers/translation
+    container_name: vibely-translation-api
+    restart: unless-stopped
+    ports:
+      - "8002:8000"
+    env_file:
+      - vibely.env
+    environment:
+      TRANSLATION_MODEL: ${TRANSLATION_MODEL:-facebook/nllb-200-distilled-600M}
+      TRANSLATION_DEVICE: ${TRANSLATION_DEVICE:-cpu}
+      TRANSLATION_MOCK: ${TRANSLATION_MOCK:-false}
+      TRANSLATION_INTERNAL_TOKEN: ${APP_TRANSLATION_INTERNAL_TOKEN:-vibely-dev-translation-token}
+      HF_HOME: /models/huggingface
+      LOG_LEVEL: INFO
+    volumes:
+      - translation-hf-cache:/models/huggingface
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 180s
+
+volumes:
+  translation-hf-cache:
