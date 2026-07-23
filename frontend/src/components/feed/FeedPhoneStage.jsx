@@ -164,9 +164,13 @@ export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
   }, [measureCaption]);
 
   useLayoutEffect(() => {
-    // Gradient đáy khi có mô tả (TikTok luôn có wash nhẹ dưới caption).
-    onNeedsGradientChange?.(Boolean(text));
-  }, [onNeedsGradientChange, text]);
+    // light = thu gọn (nhạt, sát đáy); strong = đã bấm «thêm» (đậm hơn).
+    if (!text) {
+      onNeedsGradientChange?.("none");
+      return;
+    }
+    onNeedsGradientChange?.(expanded ? "strong" : "light");
+  }, [expanded, onNeedsGradientChange, text]);
 
   if (!text) {
     return (
@@ -301,7 +305,7 @@ function FeedSlideAuthorMeta({
   onSelfUnrepost,
   selfRepostBusy = false,
 }) {
-  const [needsGradient, setNeedsGradient] = useState(false);
+  const [captionWash, setCaptionWash] = useState("none");
   const nameClass =
     "inline-block max-w-full truncate text-[15px] font-bold leading-snug text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]";
   const displayVibelyId = rawVibelyUser ? `@${rawVibelyUser}` : "@vibely";
@@ -325,14 +329,17 @@ function FeedSlideAuthorMeta({
     ? "px-3 pb-0 pt-1.5 sm:px-4"
     : "px-3 pb-0 pt-2 sm:px-4 sm:pt-2.5";
 
+  /** TikTok: thu gọn = wash rất nhẹ sát đáy; mở «thêm» = tối hơn gần mép dưới. */
+  const washClass =
+    captionWash === "strong"
+      ? "pointer-events-none absolute inset-x-0 bottom-0 h-[7.5rem] bg-linear-to-t from-black/70 from-[0%] via-black/28 via-[28%] to-transparent to-[78%]"
+      : captionWash === "light"
+        ? "pointer-events-none absolute inset-x-0 bottom-0 h-[4.25rem] bg-linear-to-t from-black/38 from-[0%] via-black/12 via-[40%] to-transparent to-[88%]"
+        : null;
+
   return (
     <div className={`pointer-events-auto relative shrink-0 ${padClass}`}>
-      {needsGradient ? (
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 top-[-7rem] bg-linear-to-t from-black/60 from-[12%] via-black/28 via-[42%] to-transparent"
-          aria-hidden
-        />
-      ) : null}
+      {washClass ? <div className={washClass} aria-hidden /> : null}
       <div className="relative z-10 max-w-[92%]">
         {selfReposted ? (
           <SelfRepostIndicator
@@ -357,7 +364,7 @@ function FeedSlideAuthorMeta({
         <div className="mt-0.5 min-w-0">
           <FeedVideoCaption
             caption={captionText}
-            onNeedsGradientChange={setNeedsGradient}
+            onNeedsGradientChange={setCaptionWash}
           />
         </div>
       </div>
