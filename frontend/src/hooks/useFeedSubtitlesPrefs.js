@@ -3,12 +3,12 @@ import {
   FEED_SUBTITLES_PREFS_EVENT,
   FEED_SUBTITLES_PREFS_KEY,
   readFeedSubtitlesPrefs,
-} from "./FeedSubtitlesModal.jsx";
+} from "../components/feed/FeedSubtitlesModal.jsx";
 import {
   normalizeIsoLang,
   sameIsoLanguage,
   subtitleLangToIso,
-} from "./subtitleLangMap.js";
+} from "../components/feed/subtitleLangMap.js";
 
 /**
  * Prefs phụ đề / dịch mô tả (localStorage) — cập nhật khi modal Phụ đề ghi.
