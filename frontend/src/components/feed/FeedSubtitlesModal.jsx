@@ -10,8 +10,8 @@ const ACCENT = "#00f2ea";
 const BRAND_RED = "#fe2c55";
 const STORAGE_KEY = "vibely_feed_subtitles_prefs";
 
-/** Danh sách ngôn ngữ kiểu TikTok «Không dịch». */
-export const SUBTITLE_EXCLUDE_LANGUAGES = [
+/** Danh sách ngôn ngữ kiểu TikTok (Không dịch / Dịch sang). */
+export const SUBTITLE_LANGUAGES = [
   "Afrikaans",
   "Azərbaycan",
   "Bahasa Indonesia",
@@ -73,42 +73,41 @@ export const SUBTITLE_EXCLUDE_LANGUAGES = [
   "فارسی",
   "मराठी",
   "हिन्दी",
-  "বাংলা",
+  "বাঙালি",
   "ਪੰਜਾਬੀ",
-  "ગુજરાતી",
+  "ગુજરાતੀ",
   "தமிழ்",
   "తెలుగు",
   "ಕನ್ನಡ",
   "മലയാളം",
   "සිංහල",
-  "ไทย",
+  "ภาษาไทย",
   "မြန်မာ",
   "ລາວ",
   "ខ្មែរ",
   "አማርኛ",
   "日本語",
-  "繁體中文",
-  "简体中文",
+  "中文 (繁體)",
+  "中文 (简体)",
   "한국어",
 ];
 
-const TRANSLATE_TO_OPTIONS = [
-  "Tiếng Việt",
-  "English",
-  "中文（简体）",
-  "中文（繁體）",
-  "日本語",
-  "한국어",
-  "ไทย",
-  "Bahasa Indonesia",
-  "Bahasa Melayu",
-  "Français",
-  "Deutsch",
-  "Español",
-  "Português",
-  "Русский",
-];
+/** @deprecated alias — dùng SUBTITLE_LANGUAGES */
+export const SUBTITLE_EXCLUDE_LANGUAGES = SUBTITLE_LANGUAGES;
 
+const LANG_ALIASES = {
+  বাংলা: "বাঙালি",
+  ไทย: "ภาษาไทย",
+  繁體中文: "中文 (繁體)",
+  简体中文: "中文 (简体)",
+  "中文（繁體）": "中文 (繁體)",
+  "中文（简体）": "中文 (简体)",
+};
+
+function normalizeLang(name) {
+  if (!name) return name;
+  return LANG_ALIASES[name] || name;
+}
 const DEFAULT_PREFS = {
   captionsEnabled: true,
   alwaysTranslate: true,
@@ -122,12 +121,15 @@ function readPrefs() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { ...DEFAULT_PREFS };
     const parsed = JSON.parse(raw);
+    const translateTo = normalizeLang(parsed?.translateTo) || DEFAULT_PREFS.translateTo;
+    const excludeLanguages = Array.isArray(parsed?.excludeLanguages)
+      ? parsed.excludeLanguages.map(normalizeLang).filter(Boolean)
+      : [];
     return {
       ...DEFAULT_PREFS,
       ...parsed,
-      excludeLanguages: Array.isArray(parsed?.excludeLanguages)
-        ? parsed.excludeLanguages
-        : [],
+      translateTo,
+      excludeLanguages,
     };
   } catch {
     return { ...DEFAULT_PREFS };
@@ -167,7 +169,7 @@ function RadioRow({ label, selected, onSelect }) {
   return (
     <button
       type="button"
-      className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.04]"
+      className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.04]"
       onClick={onSelect}
     >
       <span className="min-w-0 flex-1 text-[15px] leading-snug text-white">
@@ -247,13 +249,11 @@ export function FeedSubtitlesModal({ open, onClose }) {
     [prefs.excludeLanguages],
   );
 
-  /** Đã chọn lên đầu danh sách (giống TikTok). */
+  /** Đã chọn lên đầu danh sách (giống TikTok «Không dịch»). */
   const excludeListOrdered = useMemo(() => {
     const selected = new Set(draftExclude);
-    const top = draftExclude.filter((l) =>
-      SUBTITLE_EXCLUDE_LANGUAGES.includes(l),
-    );
-    const rest = SUBTITLE_EXCLUDE_LANGUAGES.filter((l) => !selected.has(l));
+    const top = draftExclude.filter((l) => SUBTITLE_LANGUAGES.includes(l));
+    const rest = SUBTITLE_LANGUAGES.filter((l) => !selected.has(l));
     return [...top, ...rest];
   }, [draftExclude]);
 
@@ -277,8 +277,9 @@ export function FeedSubtitlesModal({ open, onClose }) {
 
   const isPicker = view === "exclude" || view === "translateTo";
   const pickerTitle = view === "exclude" ? "Không dịch" : "Dịch sang";
+  /** Không dịch: multi + đưa đã chọn lên đầu. Dịch sang: single, giữ thứ tự list. */
   const pickerLanguages =
-    view === "exclude" ? excludeListOrdered : TRANSLATE_TO_OPTIONS;
+    view === "exclude" ? excludeListOrdered : SUBTITLE_LANGUAGES;
 
   return createPortal(
     <div className="fixed inset-0 z-[220] flex items-center justify-center px-4">
@@ -344,7 +345,7 @@ export function FeedSubtitlesModal({ open, onClose }) {
 
               <button
                 type="button"
-                className="flex w-full items-center justify-between gap-3 py-3.5 text-left"
+                className="flex w-full cursor-pointer items-center justify-between gap-3 py-3.5 text-left"
                 onClick={() => {
                   setDraftExclude([...(prefs.excludeLanguages || [])]);
                   setView("exclude");
@@ -352,7 +353,7 @@ export function FeedSubtitlesModal({ open, onClose }) {
               >
                 <span className="text-[15px] text-white">Không dịch</span>
                 <span
-                  className={`flex min-w-0 max-w-[58%] shrink-0 items-center gap-1 text-[15px] ${
+                  className={`flex min-w-0 max-w-[58%] shrink-0 cursor-pointer items-center gap-1 text-[15px] ${
                     excludeSummary ? "text-white/55" : ""
                   }`}
                   style={excludeSummary ? undefined : { color: ACCENT }}
@@ -369,7 +370,7 @@ export function FeedSubtitlesModal({ open, onClose }) {
 
               <button
                 type="button"
-                className="flex w-full items-center justify-between gap-3 py-3.5 text-left"
+                className="flex w-full cursor-pointer items-center justify-between gap-3 py-3.5 text-left"
                 onClick={() => {
                   setDraftTranslateTo(prefs.translateTo || "Tiếng Việt");
                   setView("translateTo");
