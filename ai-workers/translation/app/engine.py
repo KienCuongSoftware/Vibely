@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 from langdetect import DetectorFactory, detect_langs
 
+from .caption_prep import join_caption, split_caption
 from .lang_codes import to_iso, to_nllb
 
 DetectorFactory.seed = 0
@@ -136,30 +137,44 @@ class TranslationEngine:
         if not src_nllb or not tgt_nllb:
             raise ValueError(f"Unsupported language pair: {src_iso} → {tgt_iso}")
 
+        body, suffix = split_caption(cleaned)
+        to_translate = body if body else cleaned
+
         import torch
 
         with self._lock:
             assert self._tokenizer is not None and self._model is not None
             self._tokenizer.src_lang = src_nllb
+            # Short inputs → fast CPU decode; avoid 512-token hashtag walls
+            max_in = min(256, max(32, len(to_translate) + 16))
             inputs = self._tokenizer(
-                cleaned,
+                to_translate,
                 return_tensors="pt",
                 truncation=True,
-                max_length=512,
+                max_length=max_in,
             )
             inputs = {k: v.to(self.device) for k, v in inputs.items()}
             forced_bos = self._tokenizer.convert_tokens_to_ids(tgt_nllb)
+            max_new = min(256, max(24, int(len(to_translate.split()) * 3) + 16))
             with torch.no_grad():
                 generated = self._model.generate(
                     **inputs,
                     forced_bos_token_id=forced_bos,
-                    max_new_tokens=512,
-                    num_beams=3,
+                    max_new_tokens=max_new,
+                    num_beams=1,
+                    do_sample=False,
                 )
             out = self._tokenizer.batch_decode(generated, skip_special_tokens=True)[0]
 
+        translated_body = out.strip() or to_translate
+        final_text = (
+            join_caption(translated_body, suffix)
+            if body
+            else translated_body
+        )
+
         return TranslateResult(
-            translated_text=out.strip(),
+            translated_text=final_text.strip(),
             source_lang=src_iso,
             target_lang=tgt_iso,
             model=self.model_name,

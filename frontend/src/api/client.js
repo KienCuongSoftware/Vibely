@@ -581,12 +581,11 @@ export const apiClient = {
     }),
   requestDescriptionTranslation: (publicId, targetLang, token) =>
     request(
-      `/api/videos/${encodeURIComponent(publicId)}/description-translation`,
-      {
-        method: "POST",
-        body: { targetLang },
-        ...(token ? { token } : {}),
-      },
+      `/api/videos/${encodeURIComponent(publicId)}/description-translation${toQuery({
+        targetLang,
+        request: true,
+      })}`,
+      token ? { token } : {},
     ),
   getDescriptionTranslation: (publicId, targetLang, token) =>
     request(
