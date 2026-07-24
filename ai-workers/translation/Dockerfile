@@ -7,7 +7,12 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+
+# CPU-only torch (nhẹ hơn bản CUDA mặc định trên PyPI — VPS không có GPU)
+RUN pip install --no-cache-dir --default-timeout=1000 \
+      --index-url https://download.pytorch.org/whl/cpu \
+      torch==2.7.1+cpu \
+ && pip install --no-cache-dir --default-timeout=1000 -r requirements.txt
 
 COPY app ./app
 

@@ -1,7 +1,7 @@
 fastapi==0.115.12
 uvicorn[standard]==0.34.2
 pydantic==2.11.3
-torch==2.7.1
+# torch: cài CPU riêng trong Dockerfile (tránh kéo nvidia-* ~ vài GB)
 transformers==4.51.3
 sentencepiece==0.2.0
 protobuf==5.29.4
