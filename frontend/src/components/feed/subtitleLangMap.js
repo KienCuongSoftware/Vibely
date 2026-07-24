@@ -107,3 +107,25 @@ export function sameIsoLanguage(a, b) {
     !nb.startsWith("zh")
   );
 }
+
+/**
+ * Gợi ý ngôn ngữ khi API chưa có descriptionLang (tránh hiện «Xem bản dịch»
+ * với bài tiếng Việt dù đã chọn Không dịch → Tiếng Việt).
+ */
+export function detectCaptionLangHint(text) {
+  const s = String(text ?? "").trim();
+  if (!s) return null;
+  if (/[ăâêôơưđĂÂÊÔƠƯĐáàảãạắằẳẵặấầẩẫậéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]/i.test(
+    s,
+  )) {
+    return "vi";
+  }
+  if (/[\u3040-\u30ff]/.test(s)) return "ja";
+  if (/[\uac00-\ud7af]/.test(s)) return "ko";
+  if (/[\u4e00-\u9fff]/.test(s)) return "zh";
+  if (/[\u0e00-\u0e7f]/.test(s)) return "th";
+  if (/[\u0600-\u06ff]/.test(s)) return "ar";
+  if (/[\u0400-\u04ff]/.test(s)) return "ru";
+  // Latin không dấu: không đoán (tránh nhầm en/id/…)
+  return null;
+}
