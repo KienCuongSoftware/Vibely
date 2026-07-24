@@ -181,7 +181,7 @@ app:
     base-url: ${APP_TRANSLATION_BASE_URL:http://127.0.0.1:8002}
     internal-token: ${APP_TRANSLATION_INTERNAL_TOKEN:vibely-dev-translation-token}
     redis-ttl-seconds: ${APP_TRANSLATION_REDIS_TTL_SECONDS:604800}
-    sync-timeout-ms: ${APP_TRANSLATION_SYNC_TIMEOUT_MS:12000}
+    sync-timeout-ms: ${APP_TRANSLATION_SYNC_TIMEOUT_MS:60000}
     poll-interval-ms: ${APP_TRANSLATION_POLL_INTERVAL_MS:3000}
     max-job-attempts: ${APP_TRANSLATION_MAX_JOB_ATTEMPTS:5}
     worker:

@@ -3,7 +3,8 @@ import { apiClient } from "../api/client.js";
 import { sameIsoLanguage } from "../components/feed/subtitleLangMap.js";
 
 /**
- * POST enqueue/sync một lần, rồi GET poll status (không gọi sync lại mỗi poll).
+ * POST enqueue/sync một lần, rồi GET poll status.
+ * Nếu POST lỗi mạng/500 vẫn poll GET (job có thể đã được tạo).
  */
 export function useDescriptionTranslation({
   videoPublicId,
@@ -55,10 +56,12 @@ export function useDescriptionTranslation({
       }
       if (st === "PENDING") {
         setStatus("pending");
+        setError(null);
         return "poll";
       }
       if (st === "SKIPPED") {
         setStatus("skipped");
+        setError(null);
         return "done";
       }
       if (st === "DISABLED") {
@@ -76,13 +79,14 @@ export function useDescriptionTranslation({
 
     const poll = async () => {
       while (!cancelled && reqId === reqIdRef.current) {
-        if (pollRef.current >= 40) {
+        // ~2 phút (CPU NLLB chậm)
+        if (pollRef.current >= 80) {
           setStatus("failed");
           setError("Dịch quá lâu, thử lại sau");
           return;
         }
         pollRef.current += 1;
-        await new Promise((r) => setTimeout(r, 1200));
+        await new Promise((r) => setTimeout(r, 1500));
         if (cancelled || reqId !== reqIdRef.current) return;
         try {
           const polled = await apiClient.getDescriptionTranslation(
@@ -104,6 +108,8 @@ export function useDescriptionTranslation({
 
     const run = async () => {
       setStatus("loading");
+      setError(null);
+      let shouldPoll = false;
       try {
         const data = await apiClient.requestDescriptionTranslation(
           videoPublicId,
@@ -111,14 +117,17 @@ export function useDescriptionTranslation({
           token,
         );
         const next = apply(data);
-        if (next === "poll") {
-          await poll();
-        }
+        shouldPoll = next === "poll";
       } catch (err) {
+        // POST 500 / mạng — vẫn thử GET (job có thể đã enqueue)
         if (!cancelled && reqId === reqIdRef.current) {
-          setStatus("failed");
-          setError(err?.message || "Không dịch được");
+          setStatus("pending");
+          setError(null);
+          shouldPoll = true;
         }
+      }
+      if (shouldPoll && !cancelled && reqId === reqIdRef.current) {
+        await poll();
       }
     };
 

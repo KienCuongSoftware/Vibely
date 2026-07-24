@@ -59,6 +59,21 @@ public class DescriptionTranslationService {
     }
 
     public DescriptionTranslationResponse getOrRequest(UUID publicId, String targetLangRaw) {
+        try {
+            return getOrRequestInternal(publicId, targetLangRaw);
+        } catch (BadRequestException | NotFoundException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Translation getOrRequest failed publicId={}: {}", publicId, ex.getMessage(), ex);
+            return DescriptionTranslationResponse.failed(
+                truncate(ex.getMessage(), 500) != null
+                    ? truncate(ex.getMessage(), 500)
+                    : "Translation request failed"
+            );
+        }
+    }
+
+    private DescriptionTranslationResponse getOrRequestInternal(UUID publicId, String targetLangRaw) {
         if (!properties.isEnabled()) {
             return DescriptionTranslationResponse.disabled();
         }
@@ -132,8 +147,15 @@ public class DescriptionTranslationService {
             log.info("Translation sync timeout videoId={} jobId={}", video.getId(), job.getId());
             return DescriptionTranslationResponse.pending(job.getId(), original, sourceLang, targetLang);
         } catch (Exception ex) {
-            markJobFailed(job, ex.getMessage());
+            try {
+                markJobFailed(job, ex.getMessage());
+            } catch (Exception markEx) {
+                log.warn("markJobFailed failed jobId={}: {}", job.getId(), markEx.getMessage());
+            }
             log.warn("Translation sync failed videoId={}: {}", video.getId(), ex.getMessage());
+            if (job.getAttempts() >= properties.getMaxJobAttempts()) {
+                return DescriptionTranslationResponse.failed(truncate(ex.getMessage(), 500));
+            }
             return DescriptionTranslationResponse.pending(job.getId(), original, sourceLang, targetLang);
         }
     }
@@ -153,17 +175,21 @@ public class DescriptionTranslationService {
         String sourceLang = video.getDescriptionLang();
 
         Optional<String> redisHit = cacheService.get(sourceHash, sourceLang, targetLang);
+        if (redisHit.isEmpty() && sourceLang != null) {
+            redisHit = cacheService.get(sourceHash, "und", targetLang);
+        }
         if (redisHit.isPresent()) {
             return DescriptionTranslationResponse.ready(original, redisHit.get(), sourceLang, targetLang);
         }
         Optional<DescriptionTranslationEntity> pgHit =
             translationRepository.findByVideoIdAndSourceHashAndTargetLang(video.getId(), sourceHash, targetLang);
         if (pgHit.isPresent()) {
-            cacheService.put(sourceHash, sourceLang, targetLang, pgHit.get().getTranslatedText());
+            String src = pgHit.get().getSourceLang() != null ? pgHit.get().getSourceLang() : sourceLang;
+            cacheService.put(sourceHash, src, targetLang, pgHit.get().getTranslatedText());
             return DescriptionTranslationResponse.ready(
                 original,
                 pgHit.get().getTranslatedText(),
-                pgHit.get().getSourceLang(),
+                src,
                 targetLang
             );
         }
@@ -174,7 +200,8 @@ public class DescriptionTranslationService {
             if (j.getJobState() == TranslationJobState.FAILED && j.getAttempts() >= properties.getMaxJobAttempts()) {
                 return DescriptionTranslationResponse.failed(j.getLastError());
             }
-            return DescriptionTranslationResponse.pending(j.getId(), original, sourceLang, targetLang);
+            String pendingSrc = sourceLang != null ? sourceLang : j.getSourceLang();
+            return DescriptionTranslationResponse.pending(j.getId(), original, pendingSrc, targetLang);
         }
         return DescriptionTranslationResponse.skipped(original, sourceLang, targetLang, "Not requested yet");
     }
@@ -276,7 +303,9 @@ public class DescriptionTranslationService {
                     existing.setLastError(null);
                 } else if (existing.getJobState() == TranslationJobState.FAILED) {
                     existing.setJobState(TranslationJobState.PENDING);
+                    existing.setAttempts(0);
                     existing.setLastError(null);
+                    existing.setClaimedAt(null);
                 }
                 existing.setSourceText(sourceText);
                 existing.setSourceLang(sourceLang);

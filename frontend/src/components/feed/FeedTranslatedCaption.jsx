@@ -136,7 +136,11 @@ export function FeedTranslatedCaption({
   let linkLabel = null;
   if (showingTranslated) {
     linkLabel = "Xem bản gốc";
-  } else if (hasTranslation || !busy) {
+  } else if (hasTranslation) {
+    linkLabel = "Xem bản dịch";
+  } else if (tx.status === "failed") {
+    linkLabel = "Thử dịch lại";
+  } else if (!busy && tx.status !== "skipped" && tx.status !== "disabled") {
     linkLabel = "Xem bản dịch";
   }
 
@@ -146,6 +150,13 @@ export function FeedTranslatedCaption({
       {busy && !hasTranslation ? (
         <p className="mt-0.5 text-[13px] leading-snug text-white/45 [text-shadow:0_1px_2px_rgba(0,0,0,0.45)]">
           Đang dịch…
+        </p>
+      ) : null}
+      {!busy && tx.status === "failed" && tx.error ? (
+        <p className="mt-0.5 text-[12px] leading-snug text-red-300/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.45)]">
+          {String(tx.error).length > 80
+            ? `${String(tx.error).slice(0, 80)}…`
+            : tx.error}
         </p>
       ) : null}
       {linkLabel ? (
