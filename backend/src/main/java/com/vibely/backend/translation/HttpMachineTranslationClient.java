@@ -2,6 +2,7 @@ package com.vibely.backend.translation;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -75,6 +76,7 @@ public class HttpMachineTranslationClient implements MachineTranslationClient {
     }
 
     private Map<String, Object> postJson(String path, Map<String, Object> payload) {
+        // ExchangeFunction chỉ cho phép IOException (checked) — không throws Exception.
         return restClient.post()
             .uri(path)
             .contentType(MediaType.APPLICATION_JSON)
@@ -83,7 +85,7 @@ public class HttpMachineTranslationClient implements MachineTranslationClient {
             .exchange((request, response) -> parseJsonMap(path, response));
     }
 
-    private Map<String, Object> parseJsonMap(String path, ClientHttpResponse response) throws Exception {
+    private Map<String, Object> parseJsonMap(String path, ClientHttpResponse response) throws IOException {
         byte[] bytes = response.getBody().readAllBytes();
         String raw = new String(bytes, StandardCharsets.UTF_8);
         int code = response.getStatusCode().value();
@@ -112,7 +114,7 @@ public class HttpMachineTranslationClient implements MachineTranslationClient {
         }
         try {
             return objectMapper.readValue(raw, MAP_TYPE);
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             throw new IllegalStateException(
                 "Translation " + path + " JSON parse failed: " + truncate(raw, 300),
                 ex
