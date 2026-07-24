@@ -7,10 +7,9 @@ import {
 } from "./subtitleLangMap.js";
 
 /**
- * TikTok-style caption translation:
- * - Đang xem bản dịch → «Xem bản gốc»
- * - Đang xem bản gốc (hoặc chưa dịch) → «Xem bản dịch»
- * Tôn trọng «Không dịch» / cùng ngôn ngữ đích (kể cả khi chưa có descriptionLang).
+ * Chỉ dịch khi bật «Luôn dịch bài đăng».
+ * Tắt → giữ nguyên caption, không hiện «Xem bản dịch».
+ * Bật → hiện bản dịch + «Xem bản gốc» / «Xem bản dịch».
  */
 export function FeedTranslatedCaption({
   videoPublicId,
@@ -23,14 +22,12 @@ export function FeedTranslatedCaption({
   const { prefs, targetLangIso, isExcludedSource } = useFeedSubtitlesPrefs();
   const original = String(captionText ?? "").trim();
   const [showOriginal, setShowOriginal] = useState(false);
-  const [wantTranslate, setWantTranslate] = useState(false);
 
   const hintedLang = useMemo(
     () => detectCaptionLangHint(original),
     [original],
   );
 
-  /** Ưu tiên API → hint client → (sau này) lang từ response dịch. */
   const [resolvedLang, setResolvedLang] = useState(
     descriptionLang || hintedLang || null,
   );
@@ -39,26 +36,25 @@ export function FeedTranslatedCaption({
     setResolvedLang(descriptionLang || hintedLang || null);
   }, [descriptionLang, hintedLang, videoPublicId]);
 
+  const alwaysOn = Boolean(prefs.alwaysTranslate);
   const excluded = isExcludedSource(resolvedLang);
   const sameLang =
     resolvedLang && sameIsoLanguage(resolvedLang, targetLangIso);
 
   const canTranslate =
+    alwaysOn &&
     Boolean(videoPublicId) &&
     Boolean(original) &&
     Boolean(active) &&
     !excluded &&
     !sameLang;
 
-  const fetchEnabled =
-    canTranslate && (Boolean(prefs.alwaysTranslate) || wantTranslate);
-
   const tx = useDescriptionTranslation({
     videoPublicId,
     originalText: original,
     sourceLang: resolvedLang || descriptionLang,
     targetLangIso,
-    enabled: fetchEnabled,
+    enabled: canTranslate,
     token,
   });
 
@@ -70,10 +66,8 @@ export function FeedTranslatedCaption({
 
   useEffect(() => {
     setShowOriginal(false);
-    setWantTranslate(false);
   }, [videoPublicId, prefs.alwaysTranslate, prefs.translateTo, targetLangIso]);
 
-  // Sau khi biết source thuộc exclude / trùng đích → ẩn UI dịch
   const blockedAfterDetect =
     isExcludedSource(resolvedLang) ||
     (resolvedLang && sameIsoLanguage(resolvedLang, targetLangIso));
@@ -81,27 +75,26 @@ export function FeedTranslatedCaption({
   const hasTranslation = tx.status === "ready" && Boolean(tx.translated);
 
   const displayText = useMemo(() => {
-    if (blockedAfterDetect || !hasTranslation) return original;
+    if (!alwaysOn || blockedAfterDetect || !hasTranslation) return original;
     if (showOriginal) return original;
-    if (prefs.alwaysTranslate || wantTranslate) return tx.translated;
-    return original;
+    return tx.translated;
   }, [
+    alwaysOn,
     blockedAfterDetect,
     hasTranslation,
     showOriginal,
-    prefs.alwaysTranslate,
-    wantTranslate,
     original,
     tx.translated,
   ]);
 
   const showingTranslated =
+    alwaysOn &&
     !blockedAfterDetect &&
     hasTranslation &&
-    !showOriginal &&
-    (prefs.alwaysTranslate || wantTranslate);
+    !showOriginal;
 
   const busy =
+    alwaysOn &&
     !blockedAfterDetect &&
     (tx.status === "loading" || tx.status === "pending");
 
@@ -113,19 +106,15 @@ export function FeedTranslatedCaption({
     }
     if (hasTranslation) {
       setShowOriginal(false);
-      setWantTranslate(true);
       return;
     }
     if (tx.status === "failed") {
-      setWantTranslate(true);
       tx.retry?.();
-      return;
     }
-    setWantTranslate(true);
-    setShowOriginal(false);
   };
 
-  if (!canTranslate || blockedAfterDetect) {
+  // Tắt «Luôn dịch» hoặc không đủ điều kiện → chỉ hiện bản gốc
+  if (!alwaysOn || !canTranslate || blockedAfterDetect) {
     return (
       <div className="min-w-0">
         {typeof renderCaption === "function" ? renderCaption(original) : null}
@@ -140,8 +129,6 @@ export function FeedTranslatedCaption({
     linkLabel = "Xem bản dịch";
   } else if (tx.status === "failed") {
     linkLabel = "Thử dịch lại";
-  } else if (!busy && tx.status !== "skipped" && tx.status !== "disabled") {
-    linkLabel = "Xem bản dịch";
   }
 
   return (

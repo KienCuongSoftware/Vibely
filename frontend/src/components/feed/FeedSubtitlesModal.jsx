@@ -112,7 +112,7 @@ function normalizeLang(name) {
 }
 export const DEFAULT_FEED_SUBTITLES_PREFS = {
   captionsEnabled: true,
-  alwaysTranslate: true,
+  alwaysTranslate: false,
   translateTo: "Tiếng Việt",
   /** Ngôn ngữ không dịch (loại trừ). */
   excludeLanguages: [],
