@@ -40,10 +40,12 @@ public class OAuthAvatarProxyService {
             return Optional.empty();
         }
         String oauthUrl = user.getGoogleAvatarUrl();
-        if (!UserAvatarResolver.isOAuthCdnUrl(oauthUrl)) {
+        if (!StringUtils.hasText(oauthUrl)) {
             return Optional.empty();
         }
-        return fetchRemote(oauthUrl);
+        // Google + Facebook CDN — luôn nâng size trước khi fetch (OG/Facebook cần ≥200px).
+        String fetchUrl = UserAvatarResolver.enlargeOAuthAvatarUrl(oauthUrl.trim());
+        return fetchRemote(fetchUrl);
     }
 
     private Optional<ProxiedAvatarImage> fetchRemote(String url) {

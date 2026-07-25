@@ -40,6 +40,10 @@ final class SharePreviewHtmlRenderer {
               <meta property="og:url" content="%s" />
               <meta property="og:image" content="%s" />
               <meta property="og:image:secure_url" content="%s" />
+              <meta property="og:image:type" content="image/jpeg" />
+              <meta property="og:image:width" content="512" />
+              <meta property="og:image:height" content="512" />
+              <meta property="og:image:alt" content="%s" />
               <meta name="twitter:card" content="summary_large_image" />
               <meta name="twitter:title" content="%s" />
               <meta name="twitter:description" content="%s" />
@@ -64,6 +68,7 @@ final class SharePreviewHtmlRenderer {
             pageUrl,
             imageUrl,
             imageUrl,
+            headline,
             headline,
             description,
             imageUrl,

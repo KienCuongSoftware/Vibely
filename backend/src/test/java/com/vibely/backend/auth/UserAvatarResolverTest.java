@@ -11,13 +11,12 @@ class UserAvatarResolverTest {
     private final UserAvatarResolver resolver = new UserAvatarResolver();
 
     @Test
-    void resolveGoogleAvatarReturnsDirectUrl() {
+    void resolveGoogleAvatarReturnsProxyPath() {
         User user = new User();
         user.setId(9L);
         user.setGoogleAvatarUrl("https://lh3.googleusercontent.com/a/example-photo");
 
-        assertThat(resolver.resolve(user))
-            .isEqualTo("https://lh3.googleusercontent.com/a/example-photo");
+        assertThat(resolver.resolve(user)).isEqualTo("/api/users/oauth-avatar/9");
     }
 
     @Test

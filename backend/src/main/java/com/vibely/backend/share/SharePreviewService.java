@@ -1,5 +1,6 @@
 package com.vibely.backend.share;
 
+import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.config.AppUrlProperties;
 import com.vibely.backend.user.dto.PublicUserProfileResponse;
 import com.vibely.backend.user.service.UserService;
@@ -90,7 +91,27 @@ public class SharePreviewService {
         );
         String documentTitle = headline + " | Vibely";
 
-        String imageUrl = SharePreviewHtmlRenderer.normalizeAbsoluteUrl(profile.avatarUrl(), origin);
+        // Ưu tiên avatar trên domain Vibely (proxy OAuth) — Facebook đọc ổn hơn CDN Google s96.
+        String rawAvatar = profile.avatarUrl() == null ? "" : profile.avatarUrl().trim();
+        String imageUrl;
+        if (rawAvatar.startsWith("/api/users/oauth-avatar/")) {
+            imageUrl = SharePreviewHtmlRenderer.normalizeAbsoluteUrl(rawAvatar, origin);
+        } else if (UserAvatarResolver.isOAuthCdnUrl(rawAvatar)) {
+            imageUrl = origin + UserAvatarResolver.oauthAvatarProxyPath(profile.id());
+        } else {
+            imageUrl = SharePreviewHtmlRenderer.normalizeAbsoluteUrl(
+                UserAvatarResolver.enlargeOAuthAvatarUrl(rawAvatar),
+                origin
+            );
+        }
+        if (imageUrl.isBlank() || imageUrl.endsWith(UserAvatarResolver.DEFAULT_AVATAR_URL)) {
+            // Vẫn tuyệt đối hóa default avatar trên Vibely
+            imageUrl = SharePreviewHtmlRenderer.normalizeAbsoluteUrl(
+                UserAvatarResolver.DEFAULT_AVATAR_URL,
+                origin
+            );
+        }
+        // Fallback cuối: favicon lớn
         if (imageUrl.isBlank()) {
             imageUrl = origin + "/favicon-512x512.png";
         }
