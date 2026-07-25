@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../api/client'
+import { AccountRegionModal } from '../components/settings/AccountRegionModal'
+import {
+  DEFAULT_REGION_CODE,
+  getRegionLabel,
+} from '../data/accountRegions'
 import { collectLoginContext } from '../security/loginContext'
 import { useAuth } from '../state/useAuth'
 import {
@@ -163,6 +168,10 @@ export function SettingsPage() {
   const [sendingDeletionCode, setSendingDeletionCode] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
+  const [accountRegionCode, setAccountRegionCode] = useState(DEFAULT_REGION_CODE)
+  const [accountRegionModalOpen, setAccountRegionModalOpen] = useState(false)
+  const [accountRegionSaving, setAccountRegionSaving] = useState(false)
+  const [accountRegionError, setAccountRegionError] = useState('')
 
   useEffect(() => {
     document.title = 'Cài đặt | Vibely'
@@ -171,6 +180,11 @@ export function SettingsPage() {
   useEffect(() => {
     setPrivateAccount(Boolean(user?.privateAccount))
   }, [user?.privateAccount])
+
+  useEffect(() => {
+    const code = String(user?.accountRegion || DEFAULT_REGION_CODE).toUpperCase()
+    setAccountRegionCode(code || DEFAULT_REGION_CODE)
+  }, [user?.accountRegion])
 
   const handlePrivateAccountToggle = async (nextValue) => {
     if (!token) {
@@ -326,6 +340,27 @@ export function SettingsPage() {
       setDeletionError(error?.message || 'Không thể xóa tài khoản.')
     } finally {
       setDeletingAccount(false)
+    }
+  }
+
+  const handleConfirmAccountRegion = async (code) => {
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    const previous = accountRegionCode
+    setAccountRegionSaving(true)
+    setAccountRegionError('')
+    try {
+      await apiClient.updateAccountRegion(token, { accountRegion: code })
+      setAccountRegionCode(code)
+      await refreshProfile()
+      setAccountRegionModalOpen(false)
+    } catch (error) {
+      setAccountRegionCode(previous)
+      setAccountRegionError(error?.message || 'Không thể cập nhật khu vực tài khoản.')
+    } finally {
+      setAccountRegionSaving(false)
     }
   }
 
@@ -734,7 +769,14 @@ export function SettingsPage() {
             </SettingsSection>
 
             <SettingsSection title="Thông tin tài khoản">
-              <SettingsRow title="Khu vực tài khoản" trailing="Việt Nam" />
+              <SettingsRow
+                title="Khu vực tài khoản"
+                trailing={getRegionLabel(accountRegionCode, 'vi')}
+                onClick={() => {
+                  setAccountRegionError('')
+                  setAccountRegionModalOpen(true)
+                }}
+              />
             </SettingsSection>
 
             <SettingsSection title="Quyền riêng tư">
@@ -840,6 +882,19 @@ export function SettingsPage() {
           </div>
         </div>
       </main>
+
+      <AccountRegionModal
+        open={accountRegionModalOpen}
+        currentCode={accountRegionCode}
+        saving={accountRegionSaving}
+        error={accountRegionError}
+        onClose={() => {
+          if (accountRegionSaving) return
+          setAccountRegionError('')
+          setAccountRegionModalOpen(false)
+        }}
+        onConfirm={handleConfirmAccountRegion}
+      />
     </section>
   )
 }

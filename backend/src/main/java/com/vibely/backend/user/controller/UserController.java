@@ -1,8 +1,10 @@
 package com.vibely.backend.user.controller;
 
 import com.vibely.backend.common.ApiResponse;
+import com.vibely.backend.user.dto.AccountRegionResponse;
 import com.vibely.backend.user.dto.EmailCheckResponse;
 import com.vibely.backend.user.dto.PrivacySettingsResponse;
+import com.vibely.backend.user.dto.UpdateAccountRegionRequest;
 import com.vibely.backend.user.dto.UpdatePrivacySettingsRequest;
 import com.vibely.backend.user.dto.SuggestedCreatorsResponse;
 import com.vibely.backend.user.dto.PublicUserProfileResponse;
@@ -169,6 +171,17 @@ public class UserController {
     ) {
         return ApiResponse.success(
             userService.updatePrivacySettings(authentication.getName(), request)
+        );
+    }
+
+    @PatchMapping("/me/account-region")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<AccountRegionResponse> updateAccountRegion(
+        Authentication authentication,
+        @Valid @RequestBody UpdateAccountRegionRequest request
+    ) {
+        return ApiResponse.success(
+            userService.updateAccountRegion(authentication.getName(), request)
         );
     }
 

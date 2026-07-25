@@ -72,6 +72,9 @@ public class User {
     @Column(name = "private_account", nullable = false)
     private boolean privateAccount = false;
 
+    @Column(name = "account_region", nullable = false, length = 8)
+    private String accountRegion = "VN";
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -236,6 +239,14 @@ public class User {
 
     public void setPrivateAccount(boolean privateAccount) {
         this.privateAccount = privateAccount;
+    }
+
+    public String getAccountRegion() {
+        return accountRegion;
+    }
+
+    public void setAccountRegion(String accountRegion) {
+        this.accountRegion = accountRegion;
     }
 
     /**

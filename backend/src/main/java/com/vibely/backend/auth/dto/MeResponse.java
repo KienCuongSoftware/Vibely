@@ -9,6 +9,7 @@ public record MeResponse(
     String avatarUrl,
     String role,
     boolean needsOnboarding,
-    boolean privateAccount
+    boolean privateAccount,
+    String accountRegion
 ) {
 }

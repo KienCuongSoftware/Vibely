@@ -28,6 +28,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import com.vibely.backend.security.JwtService;
 import com.vibely.backend.user.entity.Role;
 import com.vibely.backend.user.entity.User;
+import com.vibely.backend.user.AccountRegionCodes;
 import com.vibely.backend.user.entity.UserAccountStatus;
 import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.user.dto.UsernameCheckResponse;
@@ -306,7 +307,8 @@ public class AuthService {
             userAvatarResolver.resolve(user),
             user.getRole().name(),
             userRequiresOnboardingCheck(user),
-            user.isPrivateAccount()
+            user.isPrivateAccount(),
+            AccountRegionCodes.normalizeOrDefault(user.getAccountRegion())
         );
     }
 

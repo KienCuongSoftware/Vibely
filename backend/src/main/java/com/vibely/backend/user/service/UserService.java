@@ -1,8 +1,11 @@
 package com.vibely.backend.user.service;
 
 import com.vibely.backend.auth.service.UserAvatarResolver;
+import com.vibely.backend.user.AccountRegionCodes;
+import com.vibely.backend.user.dto.AccountRegionResponse;
 import com.vibely.backend.user.dto.PrivacySettingsResponse;
 import com.vibely.backend.user.dto.PublicUserProfileResponse;
+import com.vibely.backend.user.dto.UpdateAccountRegionRequest;
 import com.vibely.backend.user.dto.UpdatePrivacySettingsRequest;
 import com.vibely.backend.user.dto.UpdateProfileRequest;
 import com.vibely.backend.user.dto.UserFollowListItemResponse;
@@ -149,6 +152,19 @@ public class UserService {
         user.setPrivateAccount(Boolean.TRUE.equals(request.privateAccount()));
         userRepository.save(user);
         return new PrivacySettingsResponse(user.isPrivateAccount());
+    }
+
+    @Transactional
+    public AccountRegionResponse updateAccountRegion(String email, UpdateAccountRegionRequest request) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        String code = AccountRegionCodes.normalize(request.accountRegion());
+        if (!AccountRegionCodes.isAllowed(code)) {
+            throw new BadRequestException("Khu vực tài khoản không hợp lệ");
+        }
+        user.setAccountRegion(code);
+        userRepository.save(user);
+        return new AccountRegionResponse(user.getAccountRegion());
     }
 
     private User getViewer(Authentication authentication) {

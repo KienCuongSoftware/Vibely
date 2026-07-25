@@ -225,6 +225,8 @@ export const apiClient = {
     request("/api/users/me", { method: "PUT", token, body: payload }),
   updatePrivacySettings: (token, payload) =>
     request("/api/users/me/privacy", { method: "PATCH", token, body: payload }),
+  updateAccountRegion: (token, payload) =>
+    request("/api/users/me/account-region", { method: "PATCH", token, body: payload }),
   checkUsername: (username, { confirm = false } = {}) =>
     request(
       `/api/users/check-username${toQuery({ username, confirm: confirm || undefined })}`,

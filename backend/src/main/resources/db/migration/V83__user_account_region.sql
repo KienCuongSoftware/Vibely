@@ -1,0 +1,2 @@
+ALTER TABLE users
+    ADD COLUMN account_region VARCHAR(8) NOT NULL DEFAULT 'VN';
