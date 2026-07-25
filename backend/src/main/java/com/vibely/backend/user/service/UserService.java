@@ -2,6 +2,7 @@ package com.vibely.backend.user.service;
 
 import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.user.AccountRegionCodes;
+import com.vibely.backend.user.CommentAudience;
 import com.vibely.backend.user.dto.AccountRegionResponse;
 import com.vibely.backend.user.dto.PrivacySettingsResponse;
 import com.vibely.backend.user.dto.PublicUserProfileResponse;
@@ -149,9 +150,26 @@ public class UserService {
     public PrivacySettingsResponse updatePrivacySettings(String email, UpdatePrivacySettingsRequest request) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
-        user.setPrivateAccount(Boolean.TRUE.equals(request.privateAccount()));
+        boolean hasPrivate = request.privateAccount() != null;
+        boolean hasAudience = request.commentAudience() != null && !request.commentAudience().isBlank();
+        if (!hasPrivate && !hasAudience) {
+            throw new BadRequestException("Không có cài đặt quyền riêng tư để cập nhật");
+        }
+        if (hasPrivate) {
+            user.setPrivateAccount(Boolean.TRUE.equals(request.privateAccount()));
+        }
+        if (hasAudience) {
+            String audience = CommentAudience.normalize(request.commentAudience());
+            if (!CommentAudience.isAllowed(audience)) {
+                throw new BadRequestException("Cài đặt bình luận không hợp lệ");
+            }
+            user.setCommentAudience(audience);
+        }
         userRepository.save(user);
-        return new PrivacySettingsResponse(user.isPrivateAccount());
+        return new PrivacySettingsResponse(
+            user.isPrivateAccount(),
+            CommentAudience.normalizeOrDefault(user.getCommentAudience())
+        );
     }
 
     @Transactional

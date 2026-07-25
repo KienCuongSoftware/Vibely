@@ -24,6 +24,7 @@ import com.vibely.backend.interaction.repository.VideoBookmarkRepository;
 import com.vibely.backend.interaction.repository.VideoRepostRepository;
 import com.vibely.backend.moderation.UserReportModerationService;
 import com.vibely.backend.notification.NotificationService;
+import com.vibely.backend.user.CommentAudience;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.user.service.ProfileVisibilityService;
@@ -187,6 +188,7 @@ public class InteractionService {
         User user = getUser(email);
         Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
         requireEngagementAllowed(video, user);
+        requireCommentAudienceAllowed(video, user);
         CommentEntity comment = new CommentEntity();
         comment.setUser(user);
         comment.setVideo(video);
@@ -436,6 +438,30 @@ public class InteractionService {
     private User getUser(String email) {
         return userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+    }
+
+    private void requireCommentAudienceAllowed(Video video, User commenter) {
+        User author = video.getAuthor();
+        if (author == null || commenter == null) {
+            return;
+        }
+        if (Objects.equals(author.getId(), commenter.getId())) {
+            return;
+        }
+        String audience = CommentAudience.normalizeOrDefault(author.getCommentAudience());
+        if (CommentAudience.EVERYONE.equals(audience)) {
+            return;
+        }
+        if (CommentAudience.FRIENDS.equals(audience)) {
+            boolean mutual =
+                followRepository.existsAcceptedByFollowerAndFollowing(commenter, author)
+                    && followRepository.existsAcceptedByFollowerAndFollowing(author, commenter);
+            if (!mutual) {
+                throw new BadRequestException("Chỉ bạn bè của tác giả mới có thể bình luận bài đăng này.");
+            }
+            return;
+        }
+        throw new BadRequestException("Không thể bình luận bài đăng này.");
     }
 
     /**

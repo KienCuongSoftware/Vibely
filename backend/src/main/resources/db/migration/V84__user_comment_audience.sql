@@ -1,0 +1,2 @@
+ALTER TABLE users
+    ADD COLUMN comment_audience VARCHAR(20) NOT NULL DEFAULT 'EVERYONE';

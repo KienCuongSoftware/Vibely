@@ -26,9 +26,10 @@ import com.vibely.backend.common.BirthDateValidator;
 import com.vibely.backend.common.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import com.vibely.backend.security.JwtService;
+import com.vibely.backend.user.AccountRegionCodes;
+import com.vibely.backend.user.CommentAudience;
 import com.vibely.backend.user.entity.Role;
 import com.vibely.backend.user.entity.User;
-import com.vibely.backend.user.AccountRegionCodes;
 import com.vibely.backend.user.entity.UserAccountStatus;
 import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.user.dto.UsernameCheckResponse;
@@ -308,7 +309,8 @@ public class AuthService {
             user.getRole().name(),
             userRequiresOnboardingCheck(user),
             user.isPrivateAccount(),
-            AccountRegionCodes.normalizeOrDefault(user.getAccountRegion())
+            AccountRegionCodes.normalizeOrDefault(user.getAccountRegion()),
+            CommentAudience.normalizeOrDefault(user.getCommentAudience())
         );
     }
 

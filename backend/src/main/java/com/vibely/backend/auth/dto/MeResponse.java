@@ -10,6 +10,7 @@ public record MeResponse(
     String role,
     boolean needsOnboarding,
     boolean privateAccount,
-    String accountRegion
+    String accountRegion,
+    String commentAudience
 ) {
 }

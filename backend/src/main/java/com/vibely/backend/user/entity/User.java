@@ -75,6 +75,9 @@ public class User {
     @Column(name = "account_region", nullable = false, length = 8)
     private String accountRegion = "VN";
 
+    @Column(name = "comment_audience", nullable = false, length = 20)
+    private String commentAudience = "EVERYONE";
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -247,6 +250,14 @@ public class User {
 
     public void setAccountRegion(String accountRegion) {
         this.accountRegion = accountRegion;
+    }
+
+    public String getCommentAudience() {
+        return commentAudience;
+    }
+
+    public void setCommentAudience(String commentAudience) {
+        this.commentAudience = commentAudience;
     }
 
     /**

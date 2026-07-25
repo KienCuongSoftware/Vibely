@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../api/client'
 import { AccountRegionModal } from '../components/settings/AccountRegionModal'
 import {
+  CommentPrivacyModal,
+  commentAudienceLabel,
+} from '../components/settings/CommentPrivacyModal'
+import {
   DEFAULT_REGION_CODE,
   getRegionLabel,
 } from '../data/accountRegions'
@@ -139,6 +143,11 @@ function SettingsSection({ title, children }) {
   )
 }
 
+/** Nhóm con trong section — chỉ tiêu đề, không bấm chọn. */
+function SettingsGroupLabel({ title }) {
+  return <h3 className="px-3 pb-1 pt-4 text-sm font-semibold text-zinc-100">{title}</h3>
+}
+
 export function SettingsPage() {
   const navigate = useNavigate()
   const { token, user, logout, refreshProfile } = useAuth()
@@ -172,6 +181,10 @@ export function SettingsPage() {
   const [accountRegionModalOpen, setAccountRegionModalOpen] = useState(false)
   const [accountRegionSaving, setAccountRegionSaving] = useState(false)
   const [accountRegionError, setAccountRegionError] = useState('')
+  const [commentAudience, setCommentAudience] = useState('EVERYONE')
+  const [commentPrivacyModalOpen, setCommentPrivacyModalOpen] = useState(false)
+  const [commentPrivacySaving, setCommentPrivacySaving] = useState(false)
+  const [commentPrivacyError, setCommentPrivacyError] = useState('')
 
   useEffect(() => {
     document.title = 'Cài đặt | Vibely'
@@ -185,6 +198,11 @@ export function SettingsPage() {
     const code = String(user?.accountRegion || DEFAULT_REGION_CODE).toUpperCase()
     setAccountRegionCode(code || DEFAULT_REGION_CODE)
   }, [user?.accountRegion])
+
+  useEffect(() => {
+    const audience = String(user?.commentAudience || 'EVERYONE').toUpperCase()
+    setCommentAudience(audience === 'FRIENDS' ? 'FRIENDS' : 'EVERYONE')
+  }, [user?.commentAudience])
 
   const handlePrivateAccountToggle = async (nextValue) => {
     if (!token) {
@@ -361,6 +379,26 @@ export function SettingsPage() {
       setAccountRegionError(error?.message || 'Không thể cập nhật khu vực tài khoản.')
     } finally {
       setAccountRegionSaving(false)
+    }
+  }
+
+  const handleSelectCommentAudience = async (nextAudience) => {
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    const previous = commentAudience
+    setCommentAudience(nextAudience)
+    setCommentPrivacySaving(true)
+    setCommentPrivacyError('')
+    try {
+      await apiClient.updatePrivacySettings(token, { commentAudience: nextAudience })
+      await refreshProfile()
+    } catch (error) {
+      setCommentAudience(previous)
+      setCommentPrivacyError(error?.message || 'Không thể cập nhật cài đặt bình luận.')
+    } finally {
+      setCommentPrivacySaving(false)
     }
   }
 
@@ -801,8 +839,21 @@ export function SettingsPage() {
                 {privacySaving ? (
                   <p className="text-xs text-zinc-500">Đang lưu cài đặt quyền riêng tư…</p>
                 ) : null}
-                <SettingsRow title="Tương tác" description="Bình luận, nhắn tin, duet và quyền tương tác khác." trailing="Mọi người" />
-                <SettingsRow title="Tin nhắn trực tiếp" trailing="Bạn bè" />
+                <SettingsGroupLabel title="Tương tác" />
+                <SettingsRow
+                  title="Bình luận"
+                  description="Người có thể bình luận bài đăng của bạn"
+                  trailing={commentAudienceLabel(commentAudience)}
+                  onClick={() => {
+                    setCommentPrivacyError('')
+                    setCommentPrivacyModalOpen(true)
+                  }}
+                />
+                <SettingsRow
+                  title="Tin nhắn trực tiếp"
+                  description="Người có thể gửi tin nhắn cho bạn"
+                  trailing="Bạn bè"
+                />
                 <SettingsRow title="Đã thích" trailing="Chỉ mình tôi" />
               </div>
             </SettingsSection>
@@ -894,6 +945,18 @@ export function SettingsPage() {
           setAccountRegionModalOpen(false)
         }}
         onConfirm={handleConfirmAccountRegion}
+      />
+      <CommentPrivacyModal
+        open={commentPrivacyModalOpen}
+        value={commentAudience}
+        saving={commentPrivacySaving}
+        error={commentPrivacyError}
+        onClose={() => {
+          if (commentPrivacySaving) return
+          setCommentPrivacyError('')
+          setCommentPrivacyModalOpen(false)
+        }}
+        onSelect={handleSelectCommentAudience}
       />
     </section>
   )
