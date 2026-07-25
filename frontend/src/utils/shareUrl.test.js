@@ -79,7 +79,7 @@ describe('shareUrl', () => {
         shareMethod: 'copy_link',
       }),
     ).toBe(
-      'https://abc.ngrok-free.app/@dulichmoingay_?source=web&device=pc&share_method=copy_link',
+      'https://abc.ngrok-free.app/share/profile/dulichmoingay_?source=web&device=pc&share_method=copy_link',
     )
     expect(
       buildShareableProfileUrl('@Creator', {
@@ -88,7 +88,7 @@ describe('shareUrl', () => {
         shareMethod: 'facebook',
       }),
     ).toBe(
-      'https://abc.ngrok-free.app/@Creator?source=android&device=mobile&share_method=facebook',
+      'https://abc.ngrok-free.app/share/profile/Creator?source=android&device=mobile&share_method=facebook',
     )
   })
 

@@ -7,6 +7,14 @@ final class SharePreviewHtmlRenderer {
     private SharePreviewHtmlRenderer() {}
 
     static String render(SharePreviewModel model) {
+        return render(model, "video.other");
+    }
+
+    static String renderProfile(SharePreviewModel model) {
+        return render(model, "profile");
+    }
+
+    private static String render(SharePreviewModel model, String ogType) {
         String title = escape(model.documentTitle());
         String headline = escape(model.headline());
         String description = escape(model.description());
@@ -14,7 +22,8 @@ final class SharePreviewHtmlRenderer {
         String imageUrl = escape(model.imageUrl());
         String redirectUrl = escape(model.redirectUrl());
         String siteName = escape(model.siteName());
-        String jsonLd = jsonVideoObject(model);
+        String type = escape(ogType == null || ogType.isBlank() ? "website" : ogType);
+        String jsonLd = "profile".equals(ogType) ? jsonPersonObject(model) : jsonVideoObject(model);
 
         return """
             <!DOCTYPE html>
@@ -24,7 +33,7 @@ final class SharePreviewHtmlRenderer {
               <meta name="viewport" content="width=device-width, initial-scale=1" />
               <title>%s</title>
               <meta name="description" content="%s" />
-              <meta property="og:type" content="video.other" />
+              <meta property="og:type" content="%s" />
               <meta property="og:site_name" content="%s" />
               <meta property="og:title" content="%s" />
               <meta property="og:description" content="%s" />
@@ -48,6 +57,7 @@ final class SharePreviewHtmlRenderer {
             """.formatted(
             title,
             description,
+            type,
             siteName,
             headline,
             description,
@@ -88,6 +98,17 @@ final class SharePreviewHtmlRenderer {
             jsonEscape(model.redirectUrl()),
             jsonEscape(model.redirectUrl()),
             jsonEscape(model.siteName()),
+            jsonEscape(model.redirectUrl())
+        ).trim();
+    }
+
+    private static String jsonPersonObject(SharePreviewModel model) {
+        return """
+            {"@context":"https://schema.org","@type":"Person","name":"%s","description":"%s","image":"%s","url":"%s"}
+            """.formatted(
+            jsonEscape(model.headline()),
+            jsonEscape(model.description()),
+            jsonEscape(model.imageUrl()),
             jsonEscape(model.redirectUrl())
         ).trim();
     }

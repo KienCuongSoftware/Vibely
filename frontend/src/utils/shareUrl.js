@@ -158,13 +158,13 @@ export function normalizeShareUsername(username) {
 }
 
 /**
- * Public profile share URL.
- * Ví dụ: https://vibely.sbs/@user?source=web&device=pc&share_method=copy_link
+ * Public profile share URL — crawler đọc OG tại /share/profile/{user}.
+ * Ví dụ: https://vibely.sbs/share/profile/user?source=web&device=pc&share_method=facebook
  */
 export function buildShareableProfileUrl(username, options = {}) {
   const handle = normalizeShareUsername(username)
   if (!handle) return ''
-  const path = `/@${encodeURIComponent(handle)}`
+  const path = `/share/profile/${encodeURIComponent(handle)}`
   return appendShareTracking(buildAbsoluteUrl(path), options)
 }
 

@@ -100,9 +100,9 @@ export function ProfileEmbedModal({
           </button>
         </header>
 
-        <div className="grid min-h-0 flex-1 gap-5 overflow-y-auto px-4 pb-5 sm:px-5 lg:grid-cols-[minmax(300px,420px)_minmax(0,1fr)] lg:gap-6 lg:overflow-hidden">
+        <div className="grid min-h-0 flex-1 gap-5 overflow-y-auto scrollbar-none px-4 pb-5 sm:px-5 lg:grid-cols-[minmax(300px,420px)_minmax(0,1fr)] lg:gap-6 lg:overflow-hidden">
           {/* Left: standalone dark preview page (TikTok embed card) */}
-          <div className="mx-auto flex w-full max-w-[420px] justify-center lg:mx-0 lg:max-h-full lg:overflow-hidden">
+          <div className="mx-auto flex w-full max-w-[420px] justify-center overflow-hidden lg:mx-0 lg:max-h-full">
             <ProfileEmbedPreview
               className="h-full max-h-[min(640px,70vh)] w-full"
               username={username}

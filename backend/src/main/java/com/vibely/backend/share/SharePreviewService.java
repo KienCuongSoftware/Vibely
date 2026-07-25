@@ -1,6 +1,8 @@
 package com.vibely.backend.share;
 
 import com.vibely.backend.config.AppUrlProperties;
+import com.vibely.backend.user.dto.PublicUserProfileResponse;
+import com.vibely.backend.user.service.UserService;
 import com.vibely.backend.video.VideoPublicIds;
 import com.vibely.backend.video.VideoResponse;
 import com.vibely.backend.video.service.VideoService;
@@ -15,10 +17,16 @@ public class SharePreviewService {
     private static final String SITE_NAME = "Vibely";
 
     private final VideoService videoService;
+    private final UserService userService;
     private final AppUrlProperties appUrlProperties;
 
-    public SharePreviewService(VideoService videoService, AppUrlProperties appUrlProperties) {
+    public SharePreviewService(
+        VideoService videoService,
+        UserService userService,
+        AppUrlProperties appUrlProperties
+    ) {
         this.videoService = videoService;
+        this.userService = userService;
         this.appUrlProperties = appUrlProperties;
     }
 
@@ -51,6 +59,46 @@ public class SharePreviewService {
             shareText.documentTitle(),
             shareText.headline(),
             shareText.metaDescription(),
+            pageUrl,
+            redirectUrl,
+            imageUrl,
+            SITE_NAME
+        );
+    }
+
+    public SharePreviewModel buildProfileModel(String rawUsername, HttpServletRequest request) {
+        PublicUserProfileResponse profile = userService.getPublicProfile(rawUsername, null);
+        String origin = SharePreviewOriginResolver.resolve(
+            appUrlProperties.normalizedFrontendBaseUrl(),
+            request
+        );
+        String handle = SharePreviewHtmlRenderer.authorHandle(profile.username(), profile.displayName());
+        String sharePath = "/share/profile/" + SharePreviewHtmlRenderer.encodePathSegment(handle);
+        String pageUrl = origin + sharePath;
+        String redirectUrl = origin + "/@" + SharePreviewHtmlRenderer.encodePathSegment(handle);
+
+        String displayName = profile.displayName() == null ? "" : profile.displayName().trim();
+        String headline = displayName.isBlank() || displayName.equalsIgnoreCase(handle)
+            ? "@" + handle + " trên Vibely"
+            : displayName + " (@" + handle + ") trên Vibely";
+        String bio = profile.bio() == null ? "" : profile.bio().trim();
+        String description = SharePreviewHtmlRenderer.truncateDescription(
+            bio.isBlank()
+                ? "Xem hồ sơ @" + handle + " trên Vibely — Make Your Day."
+                : bio,
+            300
+        );
+        String documentTitle = headline + " | Vibely";
+
+        String imageUrl = SharePreviewHtmlRenderer.normalizeAbsoluteUrl(profile.avatarUrl(), origin);
+        if (imageUrl.isBlank()) {
+            imageUrl = origin + "/favicon-512x512.png";
+        }
+
+        return new SharePreviewModel(
+            documentTitle,
+            SharePreviewHtmlRenderer.truncateDescription(headline, 120),
+            description,
             pageUrl,
             redirectUrl,
             imageUrl,

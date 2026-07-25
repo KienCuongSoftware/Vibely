@@ -28,19 +28,41 @@ public class SharePreviewController {
     ) throws IOException {
         UUID videoPublicId = SharePreviewService.parsePublicId(publicId);
         SharePreviewModel model = sharePreviewService.buildModel(videoPublicId, request);
+        writeSharePreview(request, response, model, false);
+    }
+
+    @GetMapping(value = "/share/profile/{username}", produces = MediaType.TEXT_HTML_VALUE)
+    public void shareProfilePreview(
+        @PathVariable String username,
+        HttpServletRequest request,
+        HttpServletResponse response
+    ) throws IOException {
+        SharePreviewModel model = sharePreviewService.buildProfileModel(username, request);
+        writeSharePreview(request, response, model, true);
+    }
+
+    private void writeSharePreview(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        SharePreviewModel model,
+        boolean profile
+    ) throws IOException {
         String userAgent = request.getHeader(HttpHeaders.USER_AGENT);
+        String html = profile
+            ? SharePreviewHtmlRenderer.renderProfile(model)
+            : SharePreviewHtmlRenderer.render(model);
 
         if (sharePreviewService.isSocialCrawler(userAgent)) {
             response.setStatus(HttpServletResponse.SC_OK);
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             response.setContentType(MediaType.TEXT_HTML_VALUE + ";charset=UTF-8");
-            response.getWriter().write(SharePreviewHtmlRenderer.render(model));
+            response.getWriter().write(html);
             return;
         }
 
         response.setStatus(HttpServletResponse.SC_FOUND);
         response.setHeader(HttpHeaders.LOCATION, model.redirectUrl());
         response.setContentType(MediaType.TEXT_HTML_VALUE + ";charset=UTF-8");
-        response.getWriter().write(SharePreviewHtmlRenderer.render(model));
+        response.getWriter().write(html);
     }
 }
