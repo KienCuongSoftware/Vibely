@@ -10,6 +10,7 @@ import {
   DmReceiveModal,
   dmAudienceLabel,
 } from '../components/settings/DmReceiveModal'
+import { DmPotentialOffConfirmModal } from '../components/settings/DmPotentialOffConfirmModal'
 import {
   DEFAULT_REGION_CODE,
   getRegionLabel,
@@ -193,6 +194,7 @@ export function SettingsPage() {
   const [dmPotentialAudience, setDmPotentialAudience] = useState('REQUEST')
   const [dmOthersAudience, setDmOthersAudience] = useState('REQUEST')
   const [dmModalKind, setDmModalKind] = useState(null)
+  const [dmPotentialOffConfirmOpen, setDmPotentialOffConfirmOpen] = useState(false)
   const [dmSaving, setDmSaving] = useState(false)
   const [dmError, setDmError] = useState('')
 
@@ -425,6 +427,15 @@ export function SettingsPage() {
       return
     }
     if (dmModalKind !== 'potential' && dmModalKind !== 'others') return
+
+    // Kết nối tiềm năng → Không nhận: cần xác nhận (cũng tắt Người khác).
+    if (dmModalKind === 'potential' && nextValue === 'OFF') {
+      setDmError('')
+      setDmModalKind(null)
+      setDmPotentialOffConfirmOpen(true)
+      return
+    }
+
     const isPotential = dmModalKind === 'potential'
     const previous = isPotential ? dmPotentialAudience : dmOthersAudience
     if (isPotential) setDmPotentialAudience(nextValue)
@@ -439,9 +450,37 @@ export function SettingsPage() {
           : { dmOthersAudience: nextValue },
       )
       await refreshProfile()
+      setDmModalKind(null)
     } catch (error) {
       if (isPotential) setDmPotentialAudience(previous)
       else setDmOthersAudience(previous)
+      setDmError(error?.message || 'Không thể cập nhật cài đặt tin nhắn.')
+    } finally {
+      setDmSaving(false)
+    }
+  }
+
+  const handleConfirmDmPotentialOff = async () => {
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    const previousPotential = dmPotentialAudience
+    const previousOthers = dmOthersAudience
+    setDmPotentialAudience('OFF')
+    setDmOthersAudience('OFF')
+    setDmSaving(true)
+    setDmError('')
+    try {
+      await apiClient.updatePrivacySettings(token, {
+        dmPotentialAudience: 'OFF',
+        dmOthersAudience: 'OFF',
+      })
+      await refreshProfile()
+      setDmPotentialOffConfirmOpen(false)
+    } catch (error) {
+      setDmPotentialAudience(previousPotential)
+      setDmOthersAudience(previousOthers)
       setDmError(error?.message || 'Không thể cập nhật cài đặt tin nhắn.')
     } finally {
       setDmSaving(false)
@@ -1061,6 +1100,17 @@ export function SettingsPage() {
           setDmModalKind(null)
         }}
         onSelect={handleSelectDmAudience}
+      />
+      <DmPotentialOffConfirmModal
+        open={dmPotentialOffConfirmOpen}
+        saving={dmSaving}
+        error={dmError}
+        onClose={() => {
+          if (dmSaving) return
+          setDmError('')
+          setDmPotentialOffConfirmOpen(false)
+        }}
+        onConfirm={handleConfirmDmPotentialOff}
       />
     </section>
   )
