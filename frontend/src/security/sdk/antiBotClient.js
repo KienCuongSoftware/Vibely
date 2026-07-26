@@ -1,7 +1,7 @@
-import { buildApiUrl } from "../../config/apiBase.js";
-import { collectFingerprint } from "../fingerprint/collectFingerprint.js";
-import { detectAutomation } from "../antiAutomation/detectAutomation.js";
-import { getOrCreateSessionId } from "../sessionId.js";
+import { buildApiUrl } from "@/shared/config/apiBase.js";
+import { collectFingerprint } from "@/security/fingerprint/collectFingerprint.js";
+import { detectAutomation } from "@/security/antiAutomation/detectAutomation.js";
+import { getOrCreateSessionId } from "@/security/sessionId.js";
 
 function localizeAntiBotError(code, fallbackMessage, status) {
   const msg = String(fallbackMessage ?? "").trim();

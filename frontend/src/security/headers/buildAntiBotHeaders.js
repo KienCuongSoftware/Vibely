@@ -1,5 +1,5 @@
-import { getDeviceHash, readVerificationToken } from "../sdk/antiBotClient.js";
-import { getOrCreateSessionId } from "../sessionId.js";
+import { getDeviceHash, readVerificationToken } from "@/security/sdk/antiBotClient.js";
+import { getOrCreateSessionId } from "@/security/sessionId.js";
 
 export const CAPTCHA_VERIFICATION_HEADER = "X-Captcha-Verification";
 

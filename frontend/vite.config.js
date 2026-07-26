@@ -1,6 +1,10 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function isBenignProxySocketError(error) {
   const code = error?.code
@@ -34,6 +38,11 @@ function configureBenignProxyErrors(proxy) {
 
 // https://vite.dev/config/
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),
@@ -178,7 +187,7 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
-    setupFiles: './src/test/setupTests.js',
+    setupFiles: './src/tests/setupTests.js',
   },
   build: {
     chunkSizeWarningLimit: 600,

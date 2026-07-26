@@ -1,5 +1,5 @@
-import { collectFingerprint } from "./fingerprint/collectFingerprint.js";
-import { getDeviceHash } from "./sdk/antiBotClient.js";
+import { collectFingerprint } from "@/security/fingerprint/collectFingerprint.js";
+import { getDeviceHash } from "@/security/sdk/antiBotClient.js";
 
 function locationPermissionMessage(error) {
   if (error?.code === 1) {

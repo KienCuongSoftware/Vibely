@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { IoClose, IoRefresh } from "react-icons/io5";
-import { BehaviorTracker } from "../behavior/BehaviorTracker.js";
+import { BehaviorTracker } from "@/security/behavior/BehaviorTracker.js";
 import {
   fetchCaptchaChallenge,
   getDeviceHash,
   storeVerificationToken,
   verifyCaptcha,
-} from "../sdk/antiBotClient.js";
-import { getOrCreateSessionId } from "../sessionId.js";
-import { CheckboxCaptcha } from "./CheckboxCaptcha.jsx";
-import { RotateCaptcha } from "./RotateCaptcha.jsx";
-import { SliderCaptcha } from "./SliderCaptcha.jsx";
+} from "@/security/sdk/antiBotClient.js";
+import { getOrCreateSessionId } from "@/security/sessionId.js";
+import { CheckboxCaptcha } from "@/security/captcha/CheckboxCaptcha.jsx";
+import { RotateCaptcha } from "@/security/captcha/RotateCaptcha.jsx";
+import { SliderCaptcha } from "@/security/captcha/SliderCaptcha.jsx";
 
 const TITLES = {
   CHECKBOX: "Xác minh nhanh",

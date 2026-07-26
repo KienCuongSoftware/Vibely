@@ -3,7 +3,7 @@ import {
   bootstrapAntiBot,
   evaluateRisk,
   readVerificationToken,
-} from "../sdk/antiBotClient.js";
+} from "@/security/sdk/antiBotClient.js";
 
 export function useAntiBot(action = "login") {
   const [ready, setReady] = useState(false);

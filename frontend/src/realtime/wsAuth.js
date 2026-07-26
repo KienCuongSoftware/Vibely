@@ -1,5 +1,5 @@
-import { apiClient } from '../api/client.js'
-import { isCookieSession } from '../auth/session.js'
+import { apiClient } from '@/shared/api/client.js'
+import { isCookieSession } from '@/features/auth/utils/session.js'
 
 export class SessionExpiredError extends Error {
   constructor() {
