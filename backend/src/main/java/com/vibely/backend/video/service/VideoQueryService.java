@@ -61,12 +61,12 @@ public class VideoQueryService {
             if (!privacyAccessService.canViewerWatch(video, viewer)) {
                 throw new NotFoundException("Không tìm thấy video");
             }
-            return responseMapper.toResponse(video, responseMapper.resolveFollowedByViewer(video, viewerEmail));
+            return responseMapper.toResponseForViewer(video, viewerEmail);
         }
         if (viewer == null || !Objects.equals(video.getAuthor().getId(), viewer.getId())) {
             throw new NotFoundException("Không tìm thấy video");
         }
-        return responseMapper.toResponse(video);
+        return responseMapper.toResponseForViewer(video, viewerEmail);
     }
 
     private User resolveViewer(String viewerEmail) {

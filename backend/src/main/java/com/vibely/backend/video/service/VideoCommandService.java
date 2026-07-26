@@ -330,7 +330,7 @@ public class VideoCommandService {
         video.setProcessingError(null);
         videoRepository.save(video);
         videoProcessingEnqueueService.enqueueAfterVideoPersisted(video);
-        return responseMapper.toResponse(video, responseMapper.resolveFollowedByViewer(video, email));
+        return responseMapper.toResponseForViewer(video, email);
     }
 
     private void cancelProcessingJob(Long videoId) {

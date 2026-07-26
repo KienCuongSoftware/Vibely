@@ -2374,6 +2374,12 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
 
                 {watchSidebarTab === 'comments' ? (
                 <div className="shrink-0 border-t border-zinc-800 px-3 pt-2 pb-3">
+                  {token && panelVideo?.viewerCanComment === false ? (
+                    <p className="py-3 text-center text-sm leading-relaxed text-zinc-400">
+                      Nhà sáng tạo này đã giới hạn quyền truy cập bình luận
+                    </p>
+                  ) : (
+                    <>
                   {commentPostError ? (
                     <p className="mb-1 text-xs text-red-400">{commentPostError}</p>
                   ) : null}
@@ -2446,6 +2452,8 @@ export function VideoWatchPage({ sidebarVariant = 'creator' } = {}) {
                       <IoArrowUp className="text-xl" aria-hidden />
                     </button>
                   </div>
+                    </>
+                  )}
                 </div>
                 ) : null}
               </>

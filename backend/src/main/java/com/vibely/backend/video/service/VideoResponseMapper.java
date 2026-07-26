@@ -9,6 +9,7 @@ import com.vibely.backend.interaction.repository.VideoBookmarkRepository;
 import com.vibely.backend.interaction.repository.VideoViewRepository;
 import com.vibely.backend.moderation.ModerationDecisionRepository;
 import com.vibely.backend.storage.S3PresignedUploadService;
+import com.vibely.backend.user.CommentAudience;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.video.FollowingFeedRowView;
@@ -79,11 +80,32 @@ public class VideoResponseMapper {
     }
 
     public VideoResponse toResponse(Video video) {
-        return toResponse(video, null, false);
+        return toResponse(video, null, false, null, null, false, null, Set.of());
     }
 
     public VideoResponse toResponse(Video video, boolean followedByViewer) {
-        return toResponse(video, null, followedByViewer);
+        return toResponse(video, null, followedByViewer, null, null, false, null, Set.of());
+    }
+
+    /** Single-video response with follow + comment-audience flags for the viewer. */
+    public VideoResponse toResponseForViewer(Video video, String viewerEmail) {
+        User viewer = null;
+        if (viewerEmail != null && !viewerEmail.isBlank()) {
+            viewer = userRepository.findByEmail(viewerEmail.trim()).orElse(null);
+        }
+        User author = video.getAuthor();
+        boolean followed = false;
+        Set<Long> authorsFollowingViewer = Set.of();
+        Long viewerId = viewer != null ? viewer.getId() : null;
+        if (viewer != null && author != null) {
+            followed = followRepository.existsAcceptedByFollowerAndFollowing(viewer, author);
+            if (followRepository.existsAcceptedByFollowerAndFollowing(author, viewer)) {
+                authorsFollowingViewer = Set.of(author.getId());
+            }
+        }
+        boolean reviewRequired = resolveReviewRequiredFlags(List.of(video.getId()))
+            .getOrDefault(video.getId(), false);
+        return toResponse(video, null, followed, null, null, reviewRequired, viewerId, authorsFollowingViewer);
     }
 
     public List<VideoResponse> toFeedResponses(List<Video> videos, Long viewerId) {
@@ -99,6 +121,7 @@ public class VideoResponseMapper {
         );
         Map<Long, Boolean> reviewFlags = resolveReviewRequiredFlags(ids);
         Set<Long> followedAuthorIds = resolveFollowedAuthorIds(viewerId, videos);
+        Set<Long> authorsFollowingViewer = resolveAuthorsFollowingViewer(viewerId, videos);
         return videos.stream()
             .map(v -> toResponse(
                 v,
@@ -106,7 +129,9 @@ public class VideoResponseMapper {
                 followedAuthorIds.contains(v.getAuthor().getId()),
                 null,
                 null,
-                reviewFlags.getOrDefault(v.getId(), false)
+                reviewFlags.getOrDefault(v.getId(), false),
+                viewerId,
+                authorsFollowingViewer
             ))
             .toList();
     }
@@ -135,6 +160,7 @@ public class VideoResponseMapper {
         );
         List<Video> videosForFollow = videosById.values().stream().toList();
         Set<Long> followedAuthorIds = resolveFollowedAuthorIds(viewerId, videosForFollow);
+        Set<Long> authorsFollowingViewer = resolveAuthorsFollowingViewer(viewerId, videosForFollow);
         Map<Long, Boolean> reviewFlags = resolveReviewRequiredFlags(videoIds);
         List<VideoResponse> out = new ArrayList<>(rows.size());
         for (FollowingFeedRowView row : rows) {
@@ -153,7 +179,9 @@ public class VideoResponseMapper {
                 followed,
                 reposter,
                 row.getFeedAt(),
-                reviewFlags.getOrDefault(video.getId(), false)
+                reviewFlags.getOrDefault(video.getId(), false),
+                viewerId,
+                authorsFollowingViewer
             ));
         }
         return out;
@@ -198,7 +226,7 @@ public class VideoResponseMapper {
     private VideoResponse toResponse(Video video, FeedInteractionCounts batch, boolean followedByViewer) {
         boolean reviewRequired = resolveReviewRequiredFlags(List.of(video.getId()))
             .getOrDefault(video.getId(), false);
-        return toResponse(video, batch, followedByViewer, null, null, reviewRequired);
+        return toResponse(video, batch, followedByViewer, null, null, reviewRequired, null, Set.of());
     }
 
     private VideoResponse toResponse(
@@ -207,7 +235,9 @@ public class VideoResponseMapper {
         boolean followedByViewer,
         User repostedBy,
         LocalDateTime repostedAt,
-        boolean reviewRequired
+        boolean reviewRequired,
+        Long viewerId,
+        Set<Long> authorsFollowingViewer
     ) {
         Long videoId = video.getId();
         long likeCount = batch != null
@@ -240,6 +270,18 @@ public class VideoResponseMapper {
             repostedByAvatarUrl = userAvatarResolver.resolve(repostedBy);
             repostedAtValue = repostedAt;
         }
+        String authorCommentAudience = CommentAudience.normalizeOrDefault(
+            author != null ? author.getCommentAudience() : null
+        );
+        boolean authorFollowsViewer = author != null
+            && authorsFollowingViewer != null
+            && authorsFollowingViewer.contains(author.getId());
+        boolean viewerCanComment = resolveViewerCanComment(
+            author,
+            viewerId,
+            followedByViewer,
+            authorFollowsViewer
+        );
         return new VideoResponse(
             video.getPublicId(),
             author.getId(),
@@ -266,6 +308,8 @@ public class VideoResponseMapper {
             video.getProcessingError(),
             followedByViewer,
             video.getPrivacy().name(),
+            authorCommentAudience,
+            viewerCanComment,
             repostedByUserId,
             repostedByUsername,
             repostedByDisplayName,
@@ -274,6 +318,28 @@ public class VideoResponseMapper {
             reviewRequired,
             video.getDescriptionLang()
         );
+    }
+
+    static boolean resolveViewerCanComment(
+        User author,
+        Long viewerId,
+        boolean viewerFollowsAuthor,
+        boolean authorFollowsViewer
+    ) {
+        if (author == null) {
+            return true;
+        }
+        if (viewerId != null && Objects.equals(author.getId(), viewerId)) {
+            return true;
+        }
+        String audience = CommentAudience.normalizeOrDefault(author.getCommentAudience());
+        if (CommentAudience.EVERYONE.equals(audience)) {
+            return true;
+        }
+        if (CommentAudience.FRIENDS.equals(audience)) {
+            return viewerId != null && viewerFollowsAuthor && authorFollowsViewer;
+        }
+        return false;
     }
 
     private Map<Long, Boolean> resolveReviewRequiredFlags(Collection<Long> videoIds) {
@@ -326,6 +392,21 @@ public class VideoResponseMapper {
             return Set.of();
         }
         return new HashSet<>(followRepository.findFollowingIdsForFollower(viewerId, authorIds));
+    }
+
+    private Set<Long> resolveAuthorsFollowingViewer(Long viewerId, List<Video> videos) {
+        if (viewerId == null || videos.isEmpty()) {
+            return Set.of();
+        }
+        List<Long> authorIds = videos.stream()
+            .map(v -> v.getAuthor().getId())
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+        if (authorIds.isEmpty()) {
+            return Set.of();
+        }
+        return new HashSet<>(followRepository.findFollowerIdsAmong(viewerId, authorIds));
     }
 
     private static Map<Long, Long> countMap(List<Object[]> rows) {

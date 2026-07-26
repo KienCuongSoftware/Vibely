@@ -107,4 +107,16 @@ public interface FollowRepository extends JpaRepository<FollowEntity, Long> {
         @Param("followerId") Long followerId,
         @Param("candidateIds") Collection<Long> candidateIds
     );
+
+    /** Authors (candidates) who follow the viewer (ACCEPTED). */
+    @Query("""
+        select f.follower.id from FollowEntity f
+        where f.following.id = :viewerId
+        and f.follower.id in :candidateIds
+        and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+        """)
+    List<Long> findFollowerIdsAmong(
+        @Param("viewerId") Long viewerId,
+        @Param("candidateIds") Collection<Long> candidateIds
+    );
 }

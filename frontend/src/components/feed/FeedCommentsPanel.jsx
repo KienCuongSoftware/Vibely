@@ -453,7 +453,12 @@ export function FeedCommentsPanel({
 
   if (!open || !activeVideo) return null;
 
-  const canComment = Boolean(token && isVideoPublicId(activeVideo?.publicId));
+  const commentRestricted =
+    Boolean(token) &&
+    isVideoPublicId(activeVideo?.publicId) &&
+    activeVideo?.viewerCanComment === false;
+  const canComment =
+    Boolean(token && isVideoPublicId(activeVideo?.publicId)) && !commentRestricted;
   const replyInputProps = {
     draft: replyDraft,
     setDraft: setReplyDraft,
@@ -644,66 +649,74 @@ export function FeedCommentsPanel({
       </div>
 
       <div className="flex shrink-0 flex-col gap-1.5 border-t border-white/[0.08] bg-[#121212] px-4 pt-3 pb-4">
-        {commentPostError ? (
-          <p className="text-xs text-red-400">{commentPostError}</p>
-        ) : null}
-        <div className="flex items-center gap-3">
-          <img
-            className="h-9 w-9 shrink-0 rounded-full object-cover bg-zinc-800 ring-1 ring-white/10"
-            src={
-              user?.avatarUrl && String(user.avatarUrl).trim()
-                ? user.avatarUrl
-                : DEFAULT_USER_AVATAR
-            }
-            alt=""
-            referrerPolicy="no-referrer"
-            onError={(e) => {
-              e.currentTarget.src = DEFAULT_USER_AVATAR;
-            }}
-          />
-          <div className="relative min-w-0 flex-1">
-            <input
-              ref={inputRef}
-              type="text"
-              value={commentDraft}
-              onChange={handleCommentDraftChange}
-              placeholder={
-                token
-                  ? "Thêm bình luận..."
-                  : "Đăng nhập để bình luận..."
-              }
-              disabled={!token || !isVideoPublicId(activeVideo?.publicId)}
-              className="w-full rounded-lg border border-transparent bg-[#252525] py-2.5 pl-3.5 pr-[4.75rem] text-[15px] text-zinc-100 placeholder:text-zinc-500 outline-none transition focus:border-zinc-600 disabled:opacity-50"
-              onKeyDown={(e) => {
-                if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
-                e.preventDefault();
-                void submitComment();
-              }}
-              onKeyUp={handleCommentDraftKeyUp}
-            />
-            <CommentInputAccessoryButtons
-              ref={commentAccessoryRef}
-              inputRef={inputRef}
-              draft={commentDraft}
-              setDraft={setCommentDraft}
-              token={token}
-              mentionPlacement="above"
-            />
-          </div>
-          <button
-            type="button"
-            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#fe2c55] text-white transition hover:bg-[#ff4d6d] disabled:cursor-not-allowed disabled:opacity-35"
-            aria-label="Gửi bình luận"
-            disabled={
-              !commentDraft.trim() ||
-              !token ||
-              !isVideoPublicId(activeVideo?.publicId)
-            }
-            onClick={() => void submitComment()}
-          >
-            <IoArrowUp className="text-lg" aria-hidden />
-          </button>
-        </div>
+        {commentRestricted ? (
+          <p className="py-3 text-center text-sm leading-relaxed text-zinc-400">
+            Nhà sáng tạo này đã giới hạn quyền truy cập bình luận
+          </p>
+        ) : (
+          <>
+            {commentPostError ? (
+              <p className="text-xs text-red-400">{commentPostError}</p>
+            ) : null}
+            <div className="flex items-center gap-3">
+              <img
+                className="h-9 w-9 shrink-0 rounded-full object-cover bg-zinc-800 ring-1 ring-white/10"
+                src={
+                  user?.avatarUrl && String(user.avatarUrl).trim()
+                    ? user.avatarUrl
+                    : DEFAULT_USER_AVATAR
+                }
+                alt=""
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.src = DEFAULT_USER_AVATAR;
+                }}
+              />
+              <div className="relative min-w-0 flex-1">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={commentDraft}
+                  onChange={handleCommentDraftChange}
+                  placeholder={
+                    token
+                      ? "Thêm bình luận..."
+                      : "Đăng nhập để bình luận..."
+                  }
+                  disabled={!token || !isVideoPublicId(activeVideo?.publicId)}
+                  className="w-full rounded-lg border border-transparent bg-[#252525] py-2.5 pl-3.5 pr-[4.75rem] text-[15px] text-zinc-100 placeholder:text-zinc-500 outline-none transition focus:border-zinc-600 disabled:opacity-50"
+                  onKeyDown={(e) => {
+                    if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
+                    e.preventDefault();
+                    void submitComment();
+                  }}
+                  onKeyUp={handleCommentDraftKeyUp}
+                />
+                <CommentInputAccessoryButtons
+                  ref={commentAccessoryRef}
+                  inputRef={inputRef}
+                  draft={commentDraft}
+                  setDraft={setCommentDraft}
+                  token={token}
+                  mentionPlacement="above"
+                />
+              </div>
+              <button
+                type="button"
+                className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#fe2c55] text-white transition hover:bg-[#ff4d6d] disabled:cursor-not-allowed disabled:opacity-35"
+                aria-label="Gửi bình luận"
+                disabled={
+                  !commentDraft.trim() ||
+                  !token ||
+                  !isVideoPublicId(activeVideo?.publicId)
+                }
+                onClick={() => void submitComment()}
+              >
+                <IoArrowUp className="text-lg" aria-hidden />
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </aside>
     </>

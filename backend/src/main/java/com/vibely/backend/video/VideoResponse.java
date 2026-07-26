@@ -30,6 +30,10 @@ public record VideoResponse(
     boolean followedByViewer,
     /** PUBLIC | FRIENDS | PRIVATE */
     String privacy,
+    /** EVERYONE | FRIENDS — cài đặt bình luận của tác giả. */
+    String authorCommentAudience,
+    /** Viewer hiện tại có được bình luận theo authorCommentAudience không. */
+    boolean viewerCanComment,
     /** Set when this Following-feed item is a repost by someone the viewer follows. */
     Long repostedByUserId,
     String repostedByUsername,

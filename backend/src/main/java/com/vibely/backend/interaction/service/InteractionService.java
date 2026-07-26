@@ -457,11 +457,11 @@ public class InteractionService {
                 followRepository.existsAcceptedByFollowerAndFollowing(commenter, author)
                     && followRepository.existsAcceptedByFollowerAndFollowing(author, commenter);
             if (!mutual) {
-                throw new BadRequestException("Chỉ bạn bè của tác giả mới có thể bình luận bài đăng này.");
+                throw new BadRequestException("Nhà sáng tạo này đã giới hạn quyền truy cập bình luận");
             }
             return;
         }
-        throw new BadRequestException("Không thể bình luận bài đăng này.");
+        throw new BadRequestException("Nhà sáng tạo này đã giới hạn quyền truy cập bình luận");
     }
 
     /**
