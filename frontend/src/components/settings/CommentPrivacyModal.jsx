@@ -107,7 +107,6 @@ export function CommentPrivacyModal({
           <p className="text-xs leading-relaxed text-zinc-500">
             Một số bài đăng có thể tắt bình luận riêng theo cài đặt của từng video.
           </p>
-          {saving ? <p className="mt-2 text-xs text-zinc-500">Đang lưu…</p> : null}
         </div>
       </div>
     </div>

@@ -109,7 +109,6 @@ export function DmReceiveModal({
           {helpText ? (
             <p className="text-xs leading-relaxed text-zinc-500">{helpText}</p>
           ) : null}
-          {saving ? <p className="mt-2 text-xs text-zinc-500">Đang lưu…</p> : null}
         </div>
       </div>
     </div>
