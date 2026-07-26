@@ -11,6 +11,7 @@ import {
   dmAudienceLabel,
 } from '../components/settings/DmReceiveModal'
 import { DmPotentialOffConfirmModal } from '../components/settings/DmPotentialOffConfirmModal'
+import { DownloadYourDataPanel } from '../components/settings/DownloadYourDataPanel'
 import {
   DEFAULT_REGION_CODE,
   getRegionLabel,
@@ -197,6 +198,10 @@ export function SettingsPage() {
   const [dmPotentialOffConfirmOpen, setDmPotentialOffConfirmOpen] = useState(false)
   const [dmSaving, setDmSaving] = useState(false)
   const [dmError, setDmError] = useState('')
+  const [dataExportRequests, setDataExportRequests] = useState([])
+  const [dataExportLoading, setDataExportLoading] = useState(false)
+  const [dataExportSubmitting, setDataExportSubmitting] = useState(false)
+  const [dataExportError, setDataExportError] = useState('')
 
   useEffect(() => {
     document.title = 'Cài đặt | Vibely'
@@ -487,6 +492,54 @@ export function SettingsPage() {
     }
   }
 
+  const loadDataExportRequests = async () => {
+    if (!token) return
+    setDataExportLoading(true)
+    setDataExportError('')
+    try {
+      const rows = await apiClient.listDataExports(token)
+      setDataExportRequests(Array.isArray(rows) ? rows : [])
+    } catch (error) {
+      setDataExportError(error?.message || 'Không thể tải danh sách yêu cầu dữ liệu.')
+    } finally {
+      setDataExportLoading(false)
+    }
+  }
+
+  const handleCreateDataExport = async ({ format, categories }) => {
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    setDataExportSubmitting(true)
+    setDataExportError('')
+    try {
+      await apiClient.createDataExport(token, { format, categories })
+      await loadDataExportRequests()
+    } catch (error) {
+      setDataExportError(error?.message || 'Không thể tạo yêu cầu dữ liệu.')
+    } finally {
+      setDataExportSubmitting(false)
+    }
+  }
+
+  const handleCancelDataExport = async (requestId) => {
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    setDataExportSubmitting(true)
+    setDataExportError('')
+    try {
+      await apiClient.cancelDataExport(token, requestId)
+      await loadDataExportRequests()
+    } catch (error) {
+      setDataExportError(error?.message || 'Không thể hủy yêu cầu dữ liệu.')
+    } finally {
+      setDataExportSubmitting(false)
+    }
+  }
+
   return (
     <section className="flex h-dvh overflow-hidden bg-black text-zinc-100">
       <main className="scrollbar-none min-w-0 flex-1 overflow-y-auto">
@@ -564,6 +617,19 @@ export function SettingsPage() {
                   tin nhắn dưới dạng yêu cầu trò chuyện.
                 </p>
               </div>
+            ) : privacyView === 'download-data' ? (
+              <DownloadYourDataPanel
+                requests={dataExportRequests}
+                loading={dataExportLoading}
+                submitting={dataExportSubmitting}
+                error={dataExportError}
+                onBack={() => {
+                  setDataExportError('')
+                  setPrivacyView('main')
+                }}
+                onSubmit={handleCreateDataExport}
+                onCancel={handleCancelDataExport}
+              />
             ) : accountView === 'removal' ? (
               <div className="min-h-[520px]">
                 <button
@@ -980,7 +1046,16 @@ export function SettingsPage() {
                     setActiveSetting('privacy')
                   }}
                 />
-                <SettingsRow title="Đã thích" trailing="Chỉ mình tôi" />
+                <SettingsGroupLabel title="Dữ liệu" />
+                <SettingsRow
+                  title="Tải dữ liệu của bạn"
+                  description="Lấy bản sao dữ liệu Vibely của bạn"
+                  onClick={() => {
+                    setPrivacyView('download-data')
+                    setActiveSetting('privacy')
+                    void loadDataExportRequests()
+                  }}
+                />
               </div>
             </SettingsSection>
 

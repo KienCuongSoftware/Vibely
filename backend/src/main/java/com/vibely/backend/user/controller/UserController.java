@@ -2,6 +2,8 @@ package com.vibely.backend.user.controller;
 
 import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.user.dto.AccountRegionResponse;
+import com.vibely.backend.user.dto.CreateDataExportRequest;
+import com.vibely.backend.user.dto.DataExportRequestResponse;
 import com.vibely.backend.user.dto.EmailCheckResponse;
 import com.vibely.backend.user.dto.PrivacySettingsResponse;
 import com.vibely.backend.user.dto.UpdateAccountRegionRequest;
@@ -12,17 +14,21 @@ import com.vibely.backend.user.dto.UpdateProfileRequest;
 import com.vibely.backend.user.dto.UserFollowListResponse;
 import com.vibely.backend.user.dto.UsernameCheckResponse;
 import com.vibely.backend.user.service.EmailAvailabilityService;
+import com.vibely.backend.user.service.UserDataExportService;
 import com.vibely.backend.user.service.UserDiscoveryService;
 import com.vibely.backend.user.service.UserService;
 import com.vibely.backend.user.service.UsernameService;
 import com.vibely.backend.feed.dto.FeedPageResponse;
 import com.vibely.backend.video.service.VideoService;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,19 +44,22 @@ public class UserController {
     private final EmailAvailabilityService emailAvailabilityService;
     private final VideoService videoService;
     private final UserDiscoveryService userDiscoveryService;
+    private final UserDataExportService userDataExportService;
 
     public UserController(
         UserService userService,
         UsernameService usernameService,
         EmailAvailabilityService emailAvailabilityService,
         VideoService videoService,
-        UserDiscoveryService userDiscoveryService
+        UserDiscoveryService userDiscoveryService,
+        UserDataExportService userDataExportService
     ) {
         this.userService = userService;
         this.usernameService = usernameService;
         this.emailAvailabilityService = emailAvailabilityService;
         this.videoService = videoService;
         this.userDiscoveryService = userDiscoveryService;
+        this.userDataExportService = userDataExportService;
     }
 
     @GetMapping("/check-username")
@@ -183,6 +192,30 @@ public class UserController {
         return ApiResponse.success(
             userService.updateAccountRegion(authentication.getName(), request)
         );
+    }
+
+    @GetMapping("/me/data-exports")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<List<DataExportRequestResponse>> listDataExports(Authentication authentication) {
+        return ApiResponse.success(userDataExportService.list(authentication.getName()));
+    }
+
+    @PostMapping("/me/data-exports")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<DataExportRequestResponse> createDataExport(
+        Authentication authentication,
+        @RequestBody CreateDataExportRequest request
+    ) {
+        return ApiResponse.success(userDataExportService.create(authentication.getName(), request));
+    }
+
+    @DeleteMapping("/me/data-exports/{requestId}")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<DataExportRequestResponse> cancelDataExport(
+        Authentication authentication,
+        @PathVariable("requestId") Long requestId
+    ) {
+        return ApiResponse.success(userDataExportService.cancel(authentication.getName(), requestId));
     }
 
     @GetMapping("/{username}")
