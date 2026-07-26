@@ -3,6 +3,7 @@ package com.vibely.backend.chat;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.interaction.repository.FollowRepository;
+import com.vibely.backend.user.MessageDmAudience;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
 import java.time.LocalDateTime;
@@ -74,7 +75,12 @@ public class ChatService {
                 .map(participant -> participant.getHiddenAt() == null)
                 .orElse(false))
             .findFirst()
-            .orElseGet(() -> createDirectConversation(me, peer));
+            .orElse(null);
+
+        if (conversation == null) {
+            requireRecipientAllowsInboundDm(me, peer);
+            conversation = createDirectConversation(me, peer);
+        }
 
         return toConversationResponse(conversation, me);
     }
@@ -129,6 +135,11 @@ public class ChatService {
         }
         if (!requestState.canSendMessage()) {
             throw new BadRequestException("Bạn chỉ có thể gửi 1 tin nhắn khi yêu cầu chưa được chấp nhận");
+        }
+
+        if (conversation.isDirect()) {
+            User peer = resolveDirectPeer(conversation, me);
+            requireInboundDmForSend(me, peer, conversation);
         }
 
         if (requestState.canAcceptMessageRequest()) {
@@ -389,6 +400,56 @@ public class ChatService {
         );
     }
 
+    private User resolveDirectPeer(ConversationEntity conversation, User viewer) {
+        long viewerId = requireUserId(viewer);
+        return participantRepository.findByConversation(conversation).stream()
+            .map(ConversationParticipantEntity::getUser)
+            .filter(u -> requireUserId(u) != viewerId)
+            .findFirst()
+            .orElse(viewer);
+    }
+
+    /**
+     * Bạn bè (follow lẫn nhau) và tài khoản bạn follow luôn nhắn được.
+     * Kết nối tiềm năng = follower của bạn; người khác = không có quan hệ follow.
+     */
+    private void requireRecipientAllowsInboundDm(User sender, User recipient) {
+        if (isAlwaysAllowedDm(sender, recipient)) {
+            return;
+        }
+        boolean senderFollowsRecipient = followRepository.existsAcceptedByFollowerAndFollowing(sender, recipient);
+        if (senderFollowsRecipient) {
+            if (!MessageDmAudience.allowsMessaging(recipient.getDmPotentialAudience())) {
+                throw new BadRequestException("Người này không nhận tin nhắn từ kết nối tiềm năng.");
+            }
+            return;
+        }
+        if (!MessageDmAudience.allowsMessaging(recipient.getDmOthersAudience())) {
+            throw new BadRequestException("Người này không nhận tin nhắn từ người lạ.");
+        }
+    }
+
+    private void requireInboundDmForSend(User sender, User recipient, ConversationEntity conversation) {
+        if (isAlwaysAllowedDm(sender, recipient)) {
+            return;
+        }
+        if (conversation.getRequestAcceptedAt() != null) {
+            return;
+        }
+        long recipientId = requireUserId(recipient);
+        if (messageRepository.existsByConversationAndSender_Id(conversation, recipientId)) {
+            return;
+        }
+        requireRecipientAllowsInboundDm(sender, recipient);
+    }
+
+    private boolean isAlwaysAllowedDm(User sender, User recipient) {
+        boolean senderFollowsRecipient = followRepository.existsAcceptedByFollowerAndFollowing(sender, recipient);
+        boolean recipientFollowsSender = followRepository.existsAcceptedByFollowerAndFollowing(recipient, sender);
+        // Bạn bè (mutual) hoặc người nhận đang follow người gửi ("tài khoản bạn follow")
+        return (senderFollowsRecipient && recipientFollowsSender) || recipientFollowsSender;
+    }
+
     private RequestState resolveRequestState(ConversationEntity conversation, User viewer) {
         if (!conversation.isDirect()) {
             return new RequestState(false, true, false);
@@ -404,9 +465,7 @@ public class ChatService {
             return new RequestState(false, true, false);
         }
 
-        boolean viewerFollowsPeer = followRepository.existsAcceptedByFollowerAndFollowing(viewer, peer);
-        boolean peerFollowsViewer = followRepository.existsAcceptedByFollowerAndFollowing(peer, viewer);
-        if (viewerFollowsPeer && peerFollowsViewer) {
+        if (isAlwaysAllowedDm(viewer, peer)) {
             return new RequestState(false, true, false);
         }
 

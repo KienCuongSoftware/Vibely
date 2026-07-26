@@ -78,6 +78,12 @@ public class User {
     @Column(name = "comment_audience", nullable = false, length = 20)
     private String commentAudience = "EVERYONE";
 
+    @Column(name = "dm_potential_audience", nullable = false, length = 20)
+    private String dmPotentialAudience = "REQUEST";
+
+    @Column(name = "dm_others_audience", nullable = false, length = 20)
+    private String dmOthersAudience = "REQUEST";
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -258,6 +264,22 @@ public class User {
 
     public void setCommentAudience(String commentAudience) {
         this.commentAudience = commentAudience;
+    }
+
+    public String getDmPotentialAudience() {
+        return dmPotentialAudience;
+    }
+
+    public void setDmPotentialAudience(String dmPotentialAudience) {
+        this.dmPotentialAudience = dmPotentialAudience;
+    }
+
+    public String getDmOthersAudience() {
+        return dmOthersAudience;
+    }
+
+    public void setDmOthersAudience(String dmOthersAudience) {
+        this.dmOthersAudience = dmOthersAudience;
     }
 
     /**

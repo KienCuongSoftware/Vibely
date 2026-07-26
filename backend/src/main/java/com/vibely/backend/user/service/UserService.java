@@ -3,6 +3,7 @@ package com.vibely.backend.user.service;
 import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.user.AccountRegionCodes;
 import com.vibely.backend.user.CommentAudience;
+import com.vibely.backend.user.MessageDmAudience;
 import com.vibely.backend.user.dto.AccountRegionResponse;
 import com.vibely.backend.user.dto.PrivacySettingsResponse;
 import com.vibely.backend.user.dto.PublicUserProfileResponse;
@@ -152,7 +153,9 @@ public class UserService {
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
         boolean hasPrivate = request.privateAccount() != null;
         boolean hasAudience = request.commentAudience() != null && !request.commentAudience().isBlank();
-        if (!hasPrivate && !hasAudience) {
+        boolean hasDmPotential = request.dmPotentialAudience() != null && !request.dmPotentialAudience().isBlank();
+        boolean hasDmOthers = request.dmOthersAudience() != null && !request.dmOthersAudience().isBlank();
+        if (!hasPrivate && !hasAudience && !hasDmPotential && !hasDmOthers) {
             throw new BadRequestException("Không có cài đặt quyền riêng tư để cập nhật");
         }
         if (hasPrivate) {
@@ -165,10 +168,26 @@ public class UserService {
             }
             user.setCommentAudience(audience);
         }
+        if (hasDmPotential) {
+            String value = MessageDmAudience.normalize(request.dmPotentialAudience());
+            if (!MessageDmAudience.isAllowed(value)) {
+                throw new BadRequestException("Cài đặt tin nhắn kết nối tiềm năng không hợp lệ");
+            }
+            user.setDmPotentialAudience(value);
+        }
+        if (hasDmOthers) {
+            String value = MessageDmAudience.normalize(request.dmOthersAudience());
+            if (!MessageDmAudience.isAllowed(value)) {
+                throw new BadRequestException("Cài đặt tin nhắn từ người khác không hợp lệ");
+            }
+            user.setDmOthersAudience(value);
+        }
         userRepository.save(user);
         return new PrivacySettingsResponse(
             user.isPrivateAccount(),
-            CommentAudience.normalizeOrDefault(user.getCommentAudience())
+            CommentAudience.normalizeOrDefault(user.getCommentAudience()),
+            MessageDmAudience.normalizeOrDefault(user.getDmPotentialAudience()),
+            MessageDmAudience.normalizeOrDefault(user.getDmOthersAudience())
         );
     }
 

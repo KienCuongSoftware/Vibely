@@ -1,0 +1,3 @@
+ALTER TABLE users
+    ADD COLUMN dm_potential_audience VARCHAR(20) NOT NULL DEFAULT 'REQUEST',
+    ADD COLUMN dm_others_audience VARCHAR(20) NOT NULL DEFAULT 'REQUEST';

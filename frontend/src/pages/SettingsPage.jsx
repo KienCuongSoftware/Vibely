@@ -7,6 +7,10 @@ import {
   commentAudienceLabel,
 } from '../components/settings/CommentPrivacyModal'
 import {
+  DmReceiveModal,
+  dmAudienceLabel,
+} from '../components/settings/DmReceiveModal'
+import {
   DEFAULT_REGION_CODE,
   getRegionLabel,
 } from '../data/accountRegions'
@@ -185,6 +189,12 @@ export function SettingsPage() {
   const [commentPrivacyModalOpen, setCommentPrivacyModalOpen] = useState(false)
   const [commentPrivacySaving, setCommentPrivacySaving] = useState(false)
   const [commentPrivacyError, setCommentPrivacyError] = useState('')
+  const [privacyView, setPrivacyView] = useState('main')
+  const [dmPotentialAudience, setDmPotentialAudience] = useState('REQUEST')
+  const [dmOthersAudience, setDmOthersAudience] = useState('REQUEST')
+  const [dmModalKind, setDmModalKind] = useState(null)
+  const [dmSaving, setDmSaving] = useState(false)
+  const [dmError, setDmError] = useState('')
 
   useEffect(() => {
     document.title = 'Cài đặt | Vibely'
@@ -203,6 +213,13 @@ export function SettingsPage() {
     const audience = String(user?.commentAudience || 'EVERYONE').toUpperCase()
     setCommentAudience(audience === 'FRIENDS' ? 'FRIENDS' : 'EVERYONE')
   }, [user?.commentAudience])
+
+  useEffect(() => {
+    const potential = String(user?.dmPotentialAudience || 'REQUEST').toUpperCase()
+    setDmPotentialAudience(potential === 'OFF' ? 'OFF' : 'REQUEST')
+    const others = String(user?.dmOthersAudience || 'REQUEST').toUpperCase()
+    setDmOthersAudience(others === 'OFF' ? 'OFF' : 'REQUEST')
+  }, [user?.dmPotentialAudience, user?.dmOthersAudience])
 
   const handlePrivateAccountToggle = async (nextValue) => {
     if (!token) {
@@ -402,6 +419,35 @@ export function SettingsPage() {
     }
   }
 
+  const handleSelectDmAudience = async (nextValue) => {
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    if (dmModalKind !== 'potential' && dmModalKind !== 'others') return
+    const isPotential = dmModalKind === 'potential'
+    const previous = isPotential ? dmPotentialAudience : dmOthersAudience
+    if (isPotential) setDmPotentialAudience(nextValue)
+    else setDmOthersAudience(nextValue)
+    setDmSaving(true)
+    setDmError('')
+    try {
+      await apiClient.updatePrivacySettings(
+        token,
+        isPotential
+          ? { dmPotentialAudience: nextValue }
+          : { dmOthersAudience: nextValue },
+      )
+      await refreshProfile()
+    } catch (error) {
+      if (isPotential) setDmPotentialAudience(previous)
+      else setDmOthersAudience(previous)
+      setDmError(error?.message || 'Không thể cập nhật cài đặt tin nhắn.')
+    } finally {
+      setDmSaving(false)
+    }
+  }
+
   return (
     <section className="flex h-dvh overflow-hidden bg-black text-zinc-100">
       <main className="scrollbar-none min-w-0 flex-1 overflow-y-auto">
@@ -425,6 +471,7 @@ export function SettingsPage() {
                     href={`#${item.id}`}
                     onClick={() => {
                       setAccountView('main')
+                      setPrivacyView('main')
                       setActiveSetting(item.id)
                     }}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
@@ -442,7 +489,43 @@ export function SettingsPage() {
           </aside>
 
           <div id="account" className="min-w-0 flex-1 scroll-mt-6 rounded-xl bg-zinc-950 px-5 py-6 ring-1 ring-zinc-900 sm:px-8">
-            {accountView === 'removal' ? (
+            {privacyView === 'direct-messages' ? (
+              <div className="min-h-[520px]">
+                <button
+                  type="button"
+                  onClick={() => setPrivacyView('main')}
+                  className="mb-5 flex h-10 w-10 items-center justify-center rounded-full text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+                  aria-label="Quay lại"
+                >
+                  <IoArrowBack className="text-xl" aria-hidden />
+                </button>
+                <h1 className="text-2xl font-bold text-zinc-100">Tin nhắn trực tiếp</h1>
+                <p className="mt-6 text-sm font-semibold text-zinc-100">Người có thể gửi tin nhắn cho bạn</p>
+                <div className="mt-2">
+                  <SettingsRow
+                    title="Kết nối tiềm năng"
+                    trailing={dmAudienceLabel(dmPotentialAudience)}
+                    onClick={() => {
+                      setDmError('')
+                      setDmModalKind('potential')
+                    }}
+                  />
+                  <SettingsRow
+                    title="Người khác trên Vibely"
+                    trailing={dmAudienceLabel(dmOthersAudience)}
+                    onClick={() => {
+                      setDmError('')
+                      setDmModalKind('others')
+                    }}
+                  />
+                </div>
+                <p className="mt-4 text-xs leading-relaxed text-zinc-500">
+                  Bạn bè (các follower mà bạn follow lại), tài khoản bạn follow và những người bạn biết có thể
+                  nhắn tin cho bạn, trừ khi bạn chặn họ. Khi người khác nhắn tin cho bạn, bạn có thể chọn nhận
+                  tin nhắn dưới dạng yêu cầu trò chuyện.
+                </p>
+              </div>
+            ) : accountView === 'removal' ? (
               <div className="min-h-[520px]">
                 <button
                   type="button"
@@ -853,6 +936,10 @@ export function SettingsPage() {
                   title="Tin nhắn trực tiếp"
                   description="Người có thể gửi tin nhắn cho bạn"
                   trailing="Bạn bè"
+                  onClick={() => {
+                    setPrivacyView('direct-messages')
+                    setActiveSetting('privacy')
+                  }}
                 />
                 <SettingsRow title="Đã thích" trailing="Chỉ mình tôi" />
               </div>
@@ -957,6 +1044,23 @@ export function SettingsPage() {
           setCommentPrivacyModalOpen(false)
         }}
         onSelect={handleSelectCommentAudience}
+      />
+      <DmReceiveModal
+        open={dmModalKind === 'potential' || dmModalKind === 'others'}
+        value={dmModalKind === 'others' ? dmOthersAudience : dmPotentialAudience}
+        helpText={
+          dmModalKind === 'others'
+            ? 'Bạn sẽ nhận yêu cầu trò chuyện từ người lướt trên Vibely trong yêu cầu trò chuyện của mình, trừ khi bạn chọn không nhận.'
+            : 'Kết nối tiềm năng là những follower của bạn. Bạn sẽ nhận được tin nhắn kết nối tiềm năng trong mục yêu cầu trò chuyện, trừ khi bạn không muốn nhận tin nhắn nào cả.'
+        }
+        saving={dmSaving}
+        error={dmError}
+        onClose={() => {
+          if (dmSaving) return
+          setDmError('')
+          setDmModalKind(null)
+        }}
+        onSelect={handleSelectDmAudience}
       />
     </section>
   )
