@@ -11,6 +11,7 @@ After **meaningful** changes (APIs, migrations, auth, feed/chat, workers), updat
 | REST routes | [api/](api/) |
 | Flyway | [database/](database/), [erd/](erd/) |
 | Auth / captcha | [auth/](auth/), [anti-bot/](anti-bot/) |
+| Frontend SPA structure / routes / feed UI | [frontend/](frontend/), [../frontend/README.md](../frontend/README.md) |
 | Feed / explore / search / CU / moderation | [feed/](feed/), [explore/](explore/), [search/](search/), [architecture/content-understanding/](architecture/content-understanding/), [architecture/content-moderation/](architecture/content-moderation/) |
 | Chat / WebSocket / notifications | [chat/](chat/), [notification/](notification/), [architecture/WEBSOCKET_REALTIME.md](architecture/WEBSOCKET_REALTIME.md) |
 | FFmpeg / S3 | [media/](media/) |
@@ -58,7 +59,7 @@ Start with [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md).
 ```
 Vibely/
 ├── backend/                 # Spring Boot modular monolith
-├── frontend/                # React 19 + Vite SPA
+├── frontend/                # React 19 + Vite SPA (feature-first: app/features/shared/store)
 ├── mobile/                  # Flutter client
 ├── ai-workers/              # originality + content-understanding + content-moderation (Python)
 ├── docs/

@@ -7,7 +7,7 @@ Current-code snapshot for Vibely. Prefer this + Flyway SQL over older aspiration
 ```text
 Vibely/
 ├── backend/       # Spring Boot API, media, auth, realtime, Explore, CU, discovery
-├── frontend/      # React/Vite SPA
+├── frontend/      # React/Vite SPA (feature-first)
 ├── mobile/        # Flutter client
 ├── ai-workers/    # originality + content-understanding Python workers
 ├── docs/
@@ -18,9 +18,17 @@ Vibely/
 
 ## Frontend
 
-React 19, Vite 8, React Router 7, Tailwind 4, hls.js, TanStack Virtual, STOMP, Vitest.
+React 19, Vite 8, React Router 7 (+ `react-router` 8.3 override), Tailwind 4, hls.js, TanStack Virtual, STOMP, Vitest. Path alias `@/` → `src/`. Requires **Node 22.22+**.
 
-Key dirs: `pages/`, `components/`, `api/`, `feed/`, `realtime/`, `security/`. Routes in `App.jsx`.
+Feature-first layout:
+
+- `app/` — `main.jsx`, `App.jsx`, `routes.jsx`, providers, guards
+- `features/*` — auth, feed, post, profile, explore, search, chat, studio, settings, admin, …
+- `shared/` — `api/client.js`, shared UI, config, seo
+- `store/` — AuthContext / useAuth
+- `realtime/`, `security/`, `tests/`
+
+Routes: `src/app/routes.jsx`. App README: [../frontend/README.md](../frontend/README.md).
 
 ## Backend
 

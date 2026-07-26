@@ -15,12 +15,14 @@ Related: ../search/ (global search API + UI)
 
 **App root:** `frontend/`
 
-**Stack:** React 19, Vite 8, Tailwind CSS 4, React Router 7, hls.js, TanStack Virtual, STOMP/WebSocket, Vitest.
+**Stack:** React 19, Vite 8, Tailwind CSS 4, React Router 7 (+ `react-router` 8.3 override), hls.js, TanStack Virtual, STOMP/WebSocket, Vitest.
 
-**Entry:** `frontend/src/main.jsx` → `frontend/src/App.jsx`.
+**Organization:** Feature-first under `frontend/src/features/*`. Bootstrap in `app/`, shared HTTP/UI in `shared/`, global auth in `store/`.
 
-**Route groups:** public feed/watch/profile/legal/auth pages, authenticated following/friends/messages/settings/studio/explore/search pages, and role-gated admin pages.
+**Entry:** `frontend/src/app/main.jsx` → `AppProviders` → `frontend/src/app/App.jsx` → `frontend/src/app/routes.jsx`.
 
-**Config:** frontend env is resolved in `frontend/src/config/apiBase.js` and `frontend/src/config/appOrigin.js`. Dev proxy routes in `frontend/vite.config.js` forward `/api`, `/share`, `/oauth2`, `/login/oauth2`, and `/ws` to the backend.
+**Route groups:** public feed/watch/profile/legal/auth; authenticated following/friends/messages/settings/studio/explore/search; role-gated admin.
 
-**Run:** `cd frontend && npm install && npm run dev`.
+**Config:** `frontend/src/shared/config/apiBase.js`, `frontend/src/shared/config/appOrigin.js`. Dev proxy in `frontend/vite.config.js` forwards `/api`, `/share`, `/oauth2`, `/login/oauth2`, `/ws` to the backend. Alias `@/` → `src/`.
+
+**Run:** `cd frontend && npm install && npm run dev` (Node **22.22+**).

@@ -1,6 +1,6 @@
 # Search
 
-Global search (users, videos, hashtags, trending, history) lives in the **`search`** Spring module and the React **`components/search/`** tree. Explore still exposes a separate **paginated video search** for discovery grids.
+Global search (users, videos, hashtags, trending, history) lives in the **`search`** Spring module and the React **`features/search/`** tree. Explore still exposes a separate **paginated video search** for discovery grids.
 
 | File | Description |
 |------|-------------|
@@ -30,7 +30,7 @@ Global search (users, videos, hashtags, trending, history) lives in the **`searc
 
 | Route / component | Role |
 |-------------------|------|
-| `/search?q=` | `SearchResultsPage` — Top / Users / Videos |
-| `WatchSearchDropdown` | Suggest-only panel on `VideoWatchPage` (no history rows) |
+| `/search?q=` | `features/search/pages/SearchResultsPage` — Top / Users / Videos |
+| `WatchSearchDropdown` | Suggest-only panel on watch (`features/search/components`) |
 | `useSearch` + `useSearchNavigation` | Debounced suggest + navigation to `/search` |
 | Explore | `apiClient.searchExplore` → `/api/explore/search` (when wired) |

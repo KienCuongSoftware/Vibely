@@ -67,7 +67,7 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 - **JWT + refresh token** rotation (captcha token consumed only after successful auth)
 - **OAuth 2.0 / OIDC** login (Google, Facebook, LINE) with onboarding flow
 - **Email OTP** for signup (`send-code` / `verify-code`) and **password reset** (`PASSWORD_RESET` purpose)
-- **Adaptive captcha** on login, register, and sensitive OTP sends — see `frontend/src/security/`
+- **Adaptive captcha** on login, register, and sensitive OTP sends — see `frontend/src/security/` and `frontend/src/features/auth/`
 - Share links, redirect analytics, and idempotent share writes
 
 ### Messaging
@@ -87,7 +87,7 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 
 - **Global search API** — `GET /api/search/suggest`, `/users`, `/videos`, `/hashtags`, `/trending`; authenticated **search history** (GET/POST/DELETE `/api/search/history`)
 - **Suggest while typing** — trending keywords filtered to match the query (not the full-site trending list)
-- **Results page** — `/search?q=…` with Top / Users / Videos tabs (`SearchResultsPage`)
+- **Results page** — `/search?q=…` with Top / Users / Videos tabs (`features/search`)
 - **Watch page** — inline suggest dropdown (`WatchSearchDropdown`); no history rows on watch
 - **Explore search** — separate cursor-paginated `GET /api/explore/search` for discovery grids
 
@@ -103,7 +103,7 @@ Built for engineers who care about **real pagination**, **media pipelines**, **m
 
 | Layer         | Technologies                                                                       |
 | ------------- | ---------------------------------------------------------------------------------- |
-| **Frontend**  | React 19, Vite 8, React Router 7, Tailwind CSS 4, TanStack Virtual, HLS.js, Vitest |
+| **Frontend**  | React 19, Vite 8, React Router 7 (+ react-router 8.3 override), Tailwind CSS 4, TanStack Virtual, HLS.js, Vitest |
 | **Mobile**    | Flutter, `http`, `video_player`, Google Sign-In, Facebook Login                    |
 | **AI workers** | Python: originality + content-understanding (OpenCV, OCR, CLIP, Whisper, YOLO, Qdrant) |
 | **Backend**   | Spring Boot 3.5, Spring Security, Spring Data JPA, Flyway, PostgreSQL              |
@@ -214,7 +214,7 @@ The feed is designed for **virtually infinite scrolling** without rendering or b
 - Query uses **keyset** `(createdAt, id)` — stable under concurrent inserts
 - **No `OFFSET`** on the primary latest feed path
 
-**Client tuning** (`frontend/src/feed/feedConfig.js`)
+**Client tuning** (`frontend/src/features/feed/utils/feedConfig.js`)
 
 | Constant                 | Value | Purpose                 |
 | ------------------------ | ----- | ----------------------- |
@@ -457,14 +457,15 @@ Vibely/
 │       ├── discovery/          # Topics, for-you ranking, related
 │       └── originality/        # Originality APIs / job orchestration
 │   └── src/main/resources/db/migration/   # Flyway SQL (+ tip V66)
-├── frontend/                   # React + Vite SPA
+├── frontend/                   # React + Vite SPA (feature-first)
 │   └── src/
-│       ├── components/feed/    # VirtualizedFeed, FeedVideoPlayer
-│       ├── feed/               # feedConfig, prefetch, trim helpers
-│       ├── pages/              # Feed, Watch, Studio, Profile, Messages, Search
-│       ├── components/search/  # SearchInput, WatchSearchDropdown, searchUtils
+│       ├── app/                # main, App, routes, providers, guards
+│       ├── features/           # auth, feed, post, profile, search, chat, studio, …
+│       ├── shared/             # api client, Sidebar, config, seo, shared hooks
+│       ├── store/              # AuthContext / useAuth
+│       ├── realtime/           # Shared STOMP helpers
 │       ├── security/           # Anti-bot SDK, captcha UI, fingerprint
-│       └── api/                # API client
+│       └── tests/              # Vitest setup
 ├── mobile/                     # Flutter app (feed, auth, profile, search)
 ├── ai-workers/                 # Python workers
 │   ├── originality/            # Reupload / watermark / OCR signals → Qdrant
@@ -490,7 +491,7 @@ Vibely/
 | ---------------- | --------------------------------------- |
 | Java             | 17+                                     |
 | Maven            | 3.9+                                    |
-| Node.js          | 20+                                     |
+| Node.js          | 22.22+ (frontend; Docker image uses Node 24) |
 | PostgreSQL       | 14+                                     |
 | FFmpeg / FFprobe | 6+ (on `PATH` or via `FFMPEG_PATH`)     |
 | Redis            | 7+ (optional; disabled by default in `dev` unless `APP_REDIS_ENABLED=true`) |

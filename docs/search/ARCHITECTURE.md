@@ -67,7 +67,7 @@ SearchResultsPage
   → POST /api/search/history on submit (when logged in)
 ```
 
-**Utilities:** `frontend/src/components/search/searchUtils.js` (`normalizeSearchQuery`, `buildSearchResultsHref`, `suggestKeywordMatchesQuery`).
+**Utilities:** `frontend/src/features/search/utils/searchUtils.js` (`normalizeSearchQuery`, `buildSearchResultsHref`, `suggestKeywordMatchesQuery`).
 
 ## 6. Data stores
 

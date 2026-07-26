@@ -79,9 +79,9 @@ SMTP setup: see [OAUTH_AND_ONBOARDING.md](OAUTH_AND_ONBOARDING.md#otp-email).
 
 | File | Role |
 |------|------|
-| `frontend/src/pages/LoginPage.jsx` | `forgot` view, send code, reset |
+| `frontend/src/features/auth/pages/LoginPage.jsx` | `forgot` view, send code, reset |
 | `frontend/src/security/captcha/ChallengeModal.jsx` | `purpose="PASSWORD_RESET"` when sending code |
-| `frontend/src/api/client.js` | `resetPassword()` |
+| `frontend/src/shared/api/client.js` | `resetPassword()` |
 
 ## Database
 

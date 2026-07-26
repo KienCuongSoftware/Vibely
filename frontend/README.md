@@ -1,78 +1,114 @@
 # Vibely Frontend
 
-React/Vite single-page web client for Vibely. This is not the stock Vite template; it contains the feed, watch, auth, studio, admin, explore, search, chat, settings, and public share flows used by the platform.
+React/Vite SPA for Vibely: feed, watch, auth, studio, admin, explore, search, chat, settings, and public share flows.
 
 ## Stack
 
-- React 19 with React Router 7
-- Vite 8 with `@vitejs/plugin-react`
-- Tailwind CSS 4 through `@tailwindcss/vite`
-- `hls.js` for browser HLS playback
-- TanStack Virtual for the For You feed
-- STOMP over WebSocket for chat/realtime UI
-- Vitest + Testing Library for frontend tests
+- React 19, React Router 7 (`react-router` overridden to 8.3.x for security advisories)
+- Vite 8 + `@vitejs/plugin-react`
+- Tailwind CSS 4 (`@tailwindcss/vite`)
+- `hls.js`, TanStack Virtual, STOMP WebSocket
+- Vitest + Testing Library
+- Path alias `@/` → `src/` (`vite.config.js`, `jsconfig.json`)
 
-## Project Layout
+## Architecture
+
+**Feature-first** (not layer-first). Each domain owns its pages, components, hooks, utils, and feature store where needed.
 
 ```text
-frontend/
-├── src/
-│   ├── api/          # API client facade and request helpers
-│   ├── auth/         # auth-specific helpers
-│   ├── components/   # reusable UI, feed, watch, search, captcha, chat pieces
-│   ├── config/       # API base/origin and share origin resolution
-│   ├── feed/         # feed tuning, HLS prefetch, trimming helpers
-│   ├── hooks/        # browser/UI hooks
-│   ├── pages/        # route-level pages
-│   ├── realtime/     # STOMP/WebSocket integration
-│   ├── security/     # anti-bot SDK, captcha, fingerprint/behavior telemetry
-│   ├── state/        # app state stores/hooks
-│   ├── test/         # Vitest setup
-│   └── utils/        # shared utilities
-├── vite.config.js
-└── package.json
+frontend/src/
+├── app/                 # Bootstrap: main, App, routes, providers, guards
+├── features/            # Business domains
+│   ├── auth/
+│   ├── feed/            # For You, Following, Friends + player/shells
+│   ├── post/            # Watch, hashtag, sound, share video
+│   ├── profile/
+│   ├── explore/
+│   ├── search/
+│   ├── chat/
+│   ├── notification/    # Activity panels + notification WS
+│   ├── upload/
+│   ├── studio/
+│   ├── settings/
+│   ├── admin/
+│   ├── comment/
+│   ├── bookmark/
+│   ├── report/
+│   ├── legal/
+│   └── …                # follow, reaction, media, moderation, user (scaffold)
+├── shared/              # Cross-cutting: api client, Sidebar, config, seo, hooks
+├── store/               # Global AuthContext / useAuth
+├── realtime/            # Shared STOMP helpers (wsUrl, createStompClient, …)
+├── security/            # Anti-bot SDK, captcha, fingerprint
+├── tests/               # Vitest setup
+└── index.css
 ```
+
+Typical feature layout:
+
+```text
+features/<name>/
+├── api/           # optional; most HTTP still via shared/api/client.js
+├── components/
+├── hooks/
+├── pages/
+├── store/         # feature React context when needed
+├── utils/
+├── websocket/     # chat / notification sockets
+└── index.js       # public barrel exports
+```
+
+Import style: `@/features/...`, `@/shared/...`, `@/store/...` across modules; short relatives inside a feature are fine.
 
 ## Routes
 
-Routes are declared in `src/App.jsx`. Public users can view `/foryou`, public profiles, public video URLs, legal pages, and auth pages. Authenticated users get following/friends/messages, settings, studio upload/edit/analytics/comment pages, explore/search, and role-gated admin routes under `/admin`.
+Declared in `src/app/routes.jsx`, composed from `src/app/App.jsx`. Providers live in `src/app/providers/AppProviders.jsx`. Entry: `index.html` → `src/app/main.jsx`.
 
-Important route groups:
+| Group | Paths |
+|-------|--------|
+| Feed / watch | `/foryou`, `/watch/:publicId`, `/:username/video/:publicId`, `/:username/:publicId` |
+| Studio | `/vibelystudio/home`, `/posts`, `/upload`, `/upload/post/:publicId`, `/analytics/:publicId`, `/comment/:publicId` |
+| Discovery | `/explore`, `/explore/view/:publicId`, `/search`, `/tag/:tag` |
+| Social | `/following`, `/friends`, `/messages`, `/settings` |
+| Admin | `/admin`, `/admin/users`, `/admin/posts`, `/admin/posts/:publicId`, … |
 
-- Feed/watch: `/foryou`, `/watch/:publicId`, `/:username/video/:publicId`, `/:username/:publicId`
-- Creator studio: `/vibelystudio/home`, `/vibelystudio/posts`, `/vibelystudio/upload`, `/vibelystudio/upload/post/:publicId`, `/vibelystudio/analytics/:publicId`
-- Discovery: `/explore`, `/explore/view/:publicId`, `/search`, `/tag/:tag`
-- Admin: `/admin`, `/admin/users`, `/admin/posts`, `/admin/posts/:publicId`
+Guests can open `/foryou`, public profiles/videos, legal, and auth. Authenticated users get the rest; admin is role-gated.
 
 ## Configuration
 
-The frontend defaults to same-origin API calls and relies on Vite dev proxy routes for local development.
-
 | Env var | Purpose |
 |---------|---------|
-| `VITE_API_BASE_URL` | Optional explicit API base. Empty means same-origin `/api`. |
-| `VITE_BACKEND_ORIGIN` | OAuth/backend origin override for localhost desktop development. |
-| `VITE_PUBLIC_APP_URL` | Public app origin used when share links must point at a tunnel/domain instead of localhost. |
+| `VITE_API_BASE_URL` | Optional API base; empty = same-origin `/api` |
+| `VITE_BACKEND_ORIGIN` | OAuth/backend origin for localhost desktop |
+| `VITE_PUBLIC_APP_URL` | Public origin for share links (tunnel/domain) |
 
-Vite proxies `/api`, `/share`, `/oauth2`, `/login/oauth2`, and `/ws` to `http://localhost:8080` in development. It also has dev middleware for crawler previews on public video/share URLs.
+Resolved in `src/shared/config/apiBase.js` and `src/shared/config/appOrigin.js`.
+
+Dev proxies (`vite.config.js`): `/api`, `/share`, `/oauth2`, `/login/oauth2`, `/ws` → `http://localhost:8080`.
 
 ## Run
+
+Requires **Node.js 22.22+** (engine requirement from `react-router` 8.3 override).
 
 ```bash
 npm install
 npm run dev
 ```
 
-The app runs at `http://localhost:5173`. Start the backend at `http://localhost:8080` for API, OAuth, share preview, and WebSocket flows.
+App: `http://localhost:5173`. Backend: `http://localhost:8080`.
 
 ## Scripts
 
 ```bash
 npm run dev      # Vite dev server
 npm run build    # Production build
-npm run preview  # Preview built assets
+npm run preview  # Preview dist
 npm run lint     # ESLint
-npm run test     # Vitest in run mode
+npm run test     # Vitest
 ```
 
-More detailed docs live in `../docs/frontend/`.
+## Docs
+
+- [docs/frontend/](../docs/frontend/) — architecture, routing, HLS, security SDK
+- [docs/search/](../docs/search/) — search API + UI
+- [docs/deployment/](../docs/deployment/) — Docker / VPS static sync
