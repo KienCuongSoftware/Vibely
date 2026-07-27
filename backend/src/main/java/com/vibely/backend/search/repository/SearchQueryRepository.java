@@ -45,7 +45,14 @@ public interface SearchQueryRepository extends JpaRepository<User, Long> {
                    coalesce(ves.views, 0) as viewCount,
                    coalesce(lc.like_count, 0) as likeCount,
                    (lower(coalesce(v.title, '')) like concat('%', lower(:q), '%')) as titleMatch,
-                   (lower(coalesce(v.description, '')) like concat('%', lower(:q), '%')) as descriptionMatch,
+                   (
+                     lower(coalesce(v.description, '')) like concat('%', lower(:q), '%')
+                     or max(case when lower(coalesce(dt.translated_text, '')) like concat('%', lower(:q), '%') then 1 else 0 end) = 1
+                   ) as descriptionMatch,
+                   (max(case when lower(coalesce(dt.translated_text, '')) like concat('%', lower(:q), '%') then 1 else 0 end) = 1) as translatedMatch,
+                   max(dt.translated_text) filter (
+                     where lower(coalesce(dt.translated_text, '')) like concat('%', lower(:q), '%')
+                   ) as matchedTranslatedText,
                    (max(case when lower(coalesce(h.tag, '')) like concat('%', lower(:q), '%') then 1 else 0 end) = 1) as hashtagMatch,
                    (max(case
                         when lower(coalesce(st.slug, '')) like concat('%', lower(:q), '%') then 1
@@ -65,11 +72,13 @@ public interface SearchQueryRepository extends JpaRepository<User, Long> {
             left join video_semantic_tags vst on vst.video_id = v.id
             left join semantic_tags st on st.id = vst.tag_id
             left join semantic_tag_aliases sta on sta.tag_id = st.id
+            left join description_translations dt on dt.video_id = v.id
             where v.status = 'READY'
               and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
               and (
                 lower(coalesce(v.title, '')) like concat('%', lower(:q), '%')
                 or lower(coalesce(v.description, '')) like concat('%', lower(:q), '%')
+                or lower(coalesce(dt.translated_text, '')) like concat('%', lower(:q), '%')
                 or lower(coalesce(h.tag, '')) like concat('%', lower(:q), '%')
                 or lower(coalesce(st.slug, '')) like concat('%', lower(:q), '%')
                 or lower(coalesce(sta.alias, '')) like concat('%', lower(:q), '%')

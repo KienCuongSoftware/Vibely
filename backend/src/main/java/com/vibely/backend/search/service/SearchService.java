@@ -298,10 +298,18 @@ public class SearchService {
 
     private SearchVideoResultDto toVideoResult(SearchVideoProjection row, String query) {
         UUID publicId = parsePublicId(row.getPublicId());
+        String description = row.getDescription();
+        // When the hit is only on a machine-translated caption, surface that text in results.
+        if (Boolean.TRUE.equals(row.getTranslatedMatch())
+            && !Boolean.TRUE.equals(originalDescriptionMatches(row, query))
+            && row.getMatchedTranslatedText() != null
+            && !row.getMatchedTranslatedText().isBlank()) {
+            description = row.getMatchedTranslatedText();
+        }
         return new SearchVideoResultDto(
             publicId,
             row.getTitle(),
-            row.getDescription(),
+            description,
             mediaUrlPresigner.presignPlaybackUrl(row.getThumbnailUrl()),
             mediaUrlPresigner.presignPlaybackUrl(row.getVideoUrl()),
             mediaUrlPresigner.presignPlaybackUrl(row.getMasterPlaylistUrl()),
@@ -314,6 +322,15 @@ public class SearchService {
             row.getCreatedAt(),
             searchRankingService.scoreVideo(row, query)
         );
+    }
+
+    private boolean originalDescriptionMatches(SearchVideoProjection row, String query) {
+        String q = SearchTextNormalizer.normalizeQuery(query).toLowerCase(Locale.ROOT);
+        String description = row.getDescription();
+        if (q.isEmpty() || description == null || description.isBlank()) {
+            return false;
+        }
+        return description.toLowerCase(Locale.ROOT).contains(q);
     }
 
     private SearchHashtagResultDto toHashtagResult(SearchHashtagProjection row) {

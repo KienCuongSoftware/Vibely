@@ -60,4 +60,23 @@ class SearchRankingServiceTest {
         assertThat(rankingService.scoreVideo(fresh, "dance"))
             .isGreaterThan(rankingService.scoreVideo(stale, "dance"));
     }
+
+    @Test
+    void videoRankingScoresTranslatedCaptionLikeDescription() {
+        SearchVideoProjection translatedOnly = mock(SearchVideoProjection.class);
+        when(translatedOnly.getTitle()).thenReturn("Original English Title");
+        when(translatedOnly.getDescription()).thenReturn("Live wallpaper Sylvie");
+        when(translatedOnly.getMatchedTranslatedText()).thenReturn("Hình nền động Sylvie");
+        when(translatedOnly.getTitleMatch()).thenReturn(false);
+        when(translatedOnly.getDescriptionMatch()).thenReturn(true);
+        when(translatedOnly.getTranslatedMatch()).thenReturn(true);
+        when(translatedOnly.getHashtagMatch()).thenReturn(false);
+        when(translatedOnly.getSemanticTagMatch()).thenReturn(false);
+        when(translatedOnly.getViewCount()).thenReturn(0L);
+        when(translatedOnly.getLikeCount()).thenReturn(0L);
+        when(translatedOnly.getCreatedAt()).thenReturn(LocalDateTime.now());
+
+        assertThat(rankingService.scoreVideoTextMatch(translatedOnly, "hình nền động"))
+            .isGreaterThanOrEqualTo(SearchRankingService.CONTAINS_SCORE * 0.65);
+    }
 }

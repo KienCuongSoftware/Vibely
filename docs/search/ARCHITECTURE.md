@@ -52,6 +52,8 @@ Client (debounced q)
 
 Users, hashtags, and videos in suggest are filtered by the same normalized query via dedicated repository queries.
 
+**Video text fields:** original `videos.title` / `videos.description`, hashtags, semantic tags, and **`description_translations.translated_text`** (so Vietnamese queries match captions that were machine-translated for the feed UI).
+
 ## 5. Frontend architecture
 
 ```
@@ -73,7 +75,7 @@ SearchResultsPage
 
 | Store | Usage |
 |-------|--------|
-| PostgreSQL | Users, videos, hashtags, `search_trends`, `search_history` |
+| PostgreSQL | Users, videos, hashtags, `search_trends`, `search_history`, **`description_translations`** (machine-translated captions matched in video search) |
 | Cache | Suggest response keyed by normalized query |
 
 ## 7. Scaling path

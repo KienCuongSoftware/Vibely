@@ -35,6 +35,10 @@ public interface SearchVideoProjection {
 
     Boolean getDescriptionMatch();
 
+    Boolean getTranslatedMatch();
+
+    String getMatchedTranslatedText();
+
     Boolean getHashtagMatch();
 
     Boolean getSemanticTagMatch();
