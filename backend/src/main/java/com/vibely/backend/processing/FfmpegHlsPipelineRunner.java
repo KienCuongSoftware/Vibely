@@ -478,40 +478,80 @@ public class FfmpegHlsPipelineRunner {
     private record HlsRendition(String subdir, int targetHeightPx, int bandwidthBps) {}
 
     /**
-     * Ladder ABR: giữ độ phân giải gốc tối đa (4K/1080p) + các bậc thấp hơn cho UI chọn chất lượng.
+     * Standard ABR rungs (height px). Only rungs ≤ source height are emitted — never upscale.
      */
-    private static List<HlsRendition> planHlsRenditions(int sourceHeightPx) {
+    static final int[] HLS_LADDER_HEIGHTS = {
+        2160, 1440, 1080, 720, 540, 480, 360, 240, 144
+    };
+
+    /** Skip a lower rung when it is nearly the same as the source (avoids 576p + 540p twins). */
+    private static final int HLS_LADDER_NEAR_SOURCE_GAP_PX = 50;
+
+    static int bandwidthForHeight(int heightPx) {
+        if (heightPx >= 2160) {
+            return 16_000_000;
+        }
+        if (heightPx >= 1440) {
+            return 10_000_000;
+        }
+        if (heightPx >= 1080) {
+            return 5_500_000;
+        }
+        if (heightPx >= 720) {
+            return 2_800_000;
+        }
+        if (heightPx >= 540) {
+            return 1_400_000;
+        }
+        if (heightPx >= 480) {
+            return 1_100_000;
+        }
+        if (heightPx >= 360) {
+            return 800_000;
+        }
+        if (heightPx >= 240) {
+            return 500_000;
+        }
+        return 300_000;
+    }
+
+    /**
+     * Ladder ABR: giữ độ phân giải gốc tối đa + mọi bậc chuẩn thấp hơn (144p…4K) để UI chọn chất lượng.
+     * Không tạo bậc cao hơn nguồn (ví dụ nguồn 540p sẽ không có 720p).
+     */
+    static List<HlsRendition> planHlsRenditions(int sourceHeightPx) {
         int evenSourceH = Math.max(2, sourceHeightPx - (sourceHeightPx % 2));
         List<HlsRendition> renditions = new ArrayList<>();
-        if (evenSourceH >= 2160) {
-            renditions.add(new HlsRendition("2160p", 2160, 16_000_000));
-            renditions.add(new HlsRendition("1080p", 1080, 6_000_000));
-            renditions.add(new HlsRendition("720p", 720, 2_800_000));
-            renditions.add(new HlsRendition("540p", 540, 1_400_000));
-        } else if (evenSourceH >= 1080) {
-            if (evenSourceH > 1080) {
-                renditions.add(new HlsRendition("high", evenSourceH, 8_000_000));
+
+        boolean matchedStandard = false;
+        for (int rung : HLS_LADDER_HEIGHTS) {
+            if (rung == evenSourceH) {
+                matchedStandard = true;
+                renditions.add(new HlsRendition(rung + "p", rung, bandwidthForHeight(rung)));
+                continue;
             }
-            renditions.add(new HlsRendition("1080p", 1080, 5_000_000));
-            renditions.add(new HlsRendition("720p", 720, 2_800_000));
-            renditions.add(new HlsRendition("540p", 540, 1_400_000));
-        } else if (evenSourceH >= 720) {
-            renditions.add(new HlsRendition("720p", 720, 2_800_000));
-            renditions.add(new HlsRendition("540p", 540, 1_400_000));
-        } else if (evenSourceH > 540) {
-            // TikTok-style: 720p + 540p (không giữ bậc lẻ như 576p).
-            renditions.add(new HlsRendition("720p", 720, 2_800_000));
-            renditions.add(new HlsRendition("540p", 540, 1_200_000));
-        } else if (evenSourceH > 360) {
-            renditions.add(new HlsRendition("high", evenSourceH, 1_400_000));
-            renditions.add(new HlsRendition("360p", 360, 800_000));
-        } else if (evenSourceH > 240) {
-            renditions.add(new HlsRendition("high", evenSourceH, 900_000));
-            renditions.add(new HlsRendition("240p", 240, 500_000));
-        } else {
-            renditions.add(new HlsRendition("high", evenSourceH, 600_000));
+            if (rung > evenSourceH) {
+                continue;
+            }
+            if (evenSourceH - rung < HLS_LADDER_NEAR_SOURCE_GAP_PX) {
+                continue;
+            }
+            renditions.add(new HlsRendition(rung + "p", rung, bandwidthForHeight(rung)));
+        }
+
+        if (!matchedStandard) {
+            renditions.add(0, new HlsRendition("high", evenSourceH, bandwidthForHeight(evenSourceH)));
+        }
+
+        if (renditions.isEmpty()) {
+            renditions.add(new HlsRendition("high", evenSourceH, bandwidthForHeight(evenSourceH)));
         }
         return renditions;
+    }
+
+    /** Exposed for unit tests — ordered target heights for a source. */
+    static List<Integer> planHlsTargetHeights(int sourceHeightPx) {
+        return planHlsRenditions(sourceHeightPx).stream().map(HlsRendition::targetHeightPx).toList();
     }
 
     private void transcodeToHls(

@@ -60,12 +60,19 @@ function formatFileSize(bytes) {
 }
 
 function formatResolutionLabel(width, height) {
-  if (!height) return '—'
-  if (height >= 2160) return '4K'
-  if (height >= 1440) return '1440P'
-  if (height >= 1080) return '1080P'
-  if (height >= 720) return '720P'
-  return '540P'
+  // Dùng cạnh ngắn (chuẩn TikTok): 720×1280 → 720P, 1280×720 → 720P.
+  const shortSide = Math.min(Number(width) || 0, Number(height) || 0) || Number(height) || 0
+  if (!shortSide) return '—'
+  if (shortSide >= 2160) return '4K'
+  if (shortSide >= 1440) return '1440P'
+  if (shortSide >= 1080) return '1080P'
+  if (shortSide >= 720) return '720P'
+  if (shortSide >= 540) return '540P'
+  if (shortSide >= 480) return '480P'
+  if (shortSide >= 360) return '360P'
+  if (shortSide >= 240) return '240P'
+  if (shortSide >= 144) return '144P'
+  return `${Math.round(shortSide)}P`
 }
 
 function formatClockMmSs(totalSeconds) {

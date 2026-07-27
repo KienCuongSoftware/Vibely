@@ -7,7 +7,7 @@
 export function isValidQualityMode(mode) {
   if (mode === 'auto') return true
   const height = Number(mode)
-  return Number.isFinite(height) && height >= 240 && height <= 4320
+  return Number.isFinite(height) && height >= 144 && height <= 4320
 }
 
 /**
@@ -106,15 +106,19 @@ export function applyStreamQuality(hls, mode) {
 }
 
 /**
- * Gom chiều cao thực tế về bậc chuẩn (540/720/1080/4K) cho nhãn UI — giống TikTok.
+ * Gom chiều cao thực tế về bậc chuẩn (144…4K) cho nhãn UI.
  * @param {number} height
  */
 function snapQualityHeightForLabel(height) {
   if (height >= 2160) return 2160
+  if (height >= 1440) return 1440
   if (height >= 1080) return 1080
   if (height >= 700) return 720
-  if (height >= 500) return 540
-  if (height >= 400) return 360
+  if (height >= 520) return 540
+  if (height >= 440) return 480
+  if (height >= 300) return 360
+  if (height >= 200) return 240
+  if (height >= 120) return 144
   return height
 }
 
@@ -127,9 +131,14 @@ export function formatQualityLabel(mode) {
   if (!Number.isFinite(height) || height <= 0) return 'Tự động'
   const snapped = snapQualityHeightForLabel(height)
   if (snapped >= 2160) return '4K'
+  if (snapped >= 1440) return '1440P'
   if (snapped >= 1080) return '1080P'
   if (snapped >= 720) return '720P'
   if (snapped >= 540) return '540P'
+  if (snapped >= 480) return '480P'
+  if (snapped >= 360) return '360P'
+  if (snapped >= 240) return '240P'
+  if (snapped >= 144) return '144P'
   return `${snapped}P`
 }
 

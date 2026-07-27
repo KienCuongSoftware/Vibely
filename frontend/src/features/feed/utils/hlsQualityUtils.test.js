@@ -55,13 +55,31 @@ describe('hlsQualityUtils', () => {
     expect(getAvailableQualitiesFromSourceHeight(0)).toEqual(['auto'])
   })
 
-  it('formats labels including 4K', () => {
+  it('formats labels including full ladder', () => {
     expect(formatQualityLabel('auto')).toBe('Tự động')
     expect(formatQualityLabel('2160')).toBe('4K')
+    expect(formatQualityLabel('1440')).toBe('1440P')
     expect(formatQualityLabel('1080')).toBe('1080P')
     expect(formatQualityLabel('720')).toBe('720P')
     expect(formatQualityLabel('540')).toBe('540P')
     expect(formatQualityLabel('576')).toBe('540P')
+    expect(formatQualityLabel('480')).toBe('480P')
+    expect(formatQualityLabel('360')).toBe('360P')
+    expect(formatQualityLabel('240')).toBe('240P')
+    expect(formatQualityLabel('144')).toBe('144P')
+  })
+
+  it('keeps distinct ladder labels without collapsing 480 into 540', () => {
+    expect(
+      getAvailableQualitiesFromLevels([
+        { height: 720 },
+        { height: 540 },
+        { height: 480 },
+        { height: 360 },
+        { height: 240 },
+        { height: 144 },
+      ]),
+    ).toEqual(['auto', '720', '540', '480', '360', '240', '144'])
   })
 
   it('sorts quality options with highest first after auto', () => {
