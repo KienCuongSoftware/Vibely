@@ -71,8 +71,12 @@ public class BanAppealService {
             100,
             Sort.by(Sort.Direction.DESC, "createdAt")
         );
+        // Default admin queue = open appeals only (processed ones are deleted).
         Page<BanAppeal> appeals = status == null
-            ? banAppealRepository.findAll(pageable)
+            ? banAppealRepository.findByStatusIn(
+                List.of(BanAppealStatus.PENDING, BanAppealStatus.IN_REVIEW),
+                pageable
+            )
             : banAppealRepository.findByStatus(status, pageable);
         Map<Long, User> usersById = loadUsers(appeals.getContent());
         List<AdminBanAppealResponse> items = appeals.getContent().stream()
@@ -128,7 +132,14 @@ public class BanAppealService {
             );
         }
 
-        return toAdminResponse(saved, user);
+        AdminBanAppealResponse response = toAdminResponse(saved, user);
+
+        // Processed appeals leave the admin queue after the decision email is sent.
+        if (nextStatus == BanAppealStatus.APPROVED || nextStatus == BanAppealStatus.REJECTED) {
+            banAppealRepository.delete(saved);
+        }
+
+        return response;
     }
 
     private static String resolveDisplayName(User user, String fallbackEmail) {

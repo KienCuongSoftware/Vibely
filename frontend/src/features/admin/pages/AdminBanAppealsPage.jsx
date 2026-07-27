@@ -15,8 +15,13 @@ const STATUS_FILTERS = [
   { value: '', label: 'Tất cả' },
   { value: 'PENDING', label: 'Chờ xử lý' },
   { value: 'IN_REVIEW', label: 'Đang xem xét' },
-  { value: 'APPROVED', label: 'Chấp nhận' },
-  { value: 'REJECTED', label: 'Từ chối' },
+]
+
+const DECISION_STATUS_OPTIONS = [
+  { value: 'PENDING', label: 'Chờ xử lý' },
+  { value: 'IN_REVIEW', label: 'Đang xem xét' },
+  { value: 'APPROVED', label: 'Chấp nhận (gỡ cấm & xóa khiếu nại)' },
+  { value: 'REJECTED', label: 'Từ chối (xóa khiếu nại)' },
 ]
 
 const STATUS_LABELS = {
@@ -147,7 +152,7 @@ function AppealDetailModal({ appeal, submitting, error, onClose, onUpdateStatus 
               disabled={submitting}
               className="mt-2 h-11 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 text-sm text-zinc-100 outline-none focus:border-red-500"
             >
-              {STATUS_FILTERS.filter((item) => item.value).map((item) => (
+              {DECISION_STATUS_OPTIONS.map((item) => (
                 <option key={item.value} value={item.value}>
                   {item.label}
                 </option>
@@ -287,11 +292,17 @@ export function AdminBanAppealsPage() {
     setSubmitting(true)
     setModalError('')
     try {
-      const updated = await apiClient.updateAdminBanAppealStatus(token, selectedAppeal.id, {
+      await apiClient.updateAdminBanAppealStatus(token, selectedAppeal.id, {
         status,
         adminNotes: adminNotes.trim() || undefined,
       })
-      setSelectedAppeal(updated)
+      const terminal =
+        String(status).toUpperCase() === 'APPROVED'
+        || String(status).toUpperCase() === 'REJECTED'
+      if (terminal) {
+        setSelectedAppeal(null)
+        setModalError('')
+      }
       await loadAppeals()
     } catch (e) {
       setModalError(e.message ?? 'Không cập nhật được trạng thái khiếu nại.')
