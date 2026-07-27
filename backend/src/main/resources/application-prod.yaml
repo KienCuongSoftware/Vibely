@@ -47,6 +47,8 @@ app:
     cookie:
       secure: true
       same-site: Lax
+      # Share session across apex + www (avoids OAuth on www / signup on apex mismatch).
+      domain: ${AUTH_COOKIE_DOMAIN:.vibely.sbs}
   oauth2:
     enabled: ${APP_OAUTH2_ENABLED:true}
     public-base-url: ${OAUTH_PUBLIC_BASE_URL:https://www.vibely.sbs}

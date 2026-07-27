@@ -392,6 +392,23 @@ export function SignupPage() {
     setLoading(true);
     setStatus("Đang hoàn tất đăng ký...");
     try {
+      // Cookie có thể thuộc tài khoản cũ (apex vs www) — khớp email trước khi lưu.
+      try {
+        const me = await apiClient.me();
+        const sessionEmail = String(me?.email ?? "").trim().toLowerCase();
+        const pendingEmail = String(oauthPending?.email ?? "").trim().toLowerCase();
+        if (pendingEmail && sessionEmail && sessionEmail !== pendingEmail) {
+          clearOnboardingSession();
+          setStatus(
+            "Phiên đăng nhập không khớp tài khoản LINE. Đăng xuất rồi đăng nhập lại bằng LINE.",
+          );
+          navigate("/login", { replace: true });
+          return;
+        }
+      } catch {
+        // /me lỗi — vẫn thử completeOnboarding với cookie hiện tại
+      }
+
       await apiClient.completeOnboarding({
         username: normalizedUsername,
         birthDate,
@@ -405,7 +422,18 @@ export function SignupPage() {
       setStatus("Đăng ký thành công");
       navigate("/", { replace: true });
     } catch (error) {
-      setStatus(error.message);
+      const message = String(error?.message ?? "");
+      if (message.includes("hoàn tất thiết lập")) {
+        clearOnboardingSession();
+        try {
+          await refreshProfile();
+        } catch {
+          /* ignore */
+        }
+        navigate("/", { replace: true });
+        return;
+      }
+      setStatus(message || "Không hoàn tất được đăng ký");
     } finally {
       setLoading(false);
     }

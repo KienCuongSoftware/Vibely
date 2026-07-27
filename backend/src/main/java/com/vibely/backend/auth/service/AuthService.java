@@ -321,7 +321,8 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng"));
         if (!userRequiresOnboardingCheck(user)) {
-            throw new BadRequestException("Tài khoản đã hoàn tất thiết lập");
+            // Idempotent: double-submit / wrong-host cookie race after success.
+            return issueTokens(user);
         }
 
         user.setBirthDate(validateBirthDate(request.getBirthDate()));

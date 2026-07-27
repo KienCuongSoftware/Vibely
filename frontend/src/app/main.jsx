@@ -4,11 +4,14 @@ import '@/index.css'
 import App from '@/app/App.jsx'
 import { AppProviders } from '@/app/providers/AppProviders.jsx'
 import { syncFollowingFeedFlagOnDocumentLoad } from '@/features/feed/utils/followingPageView.js'
+import { redirectToCanonicalHost } from '@/shared/config/canonicalHost.js'
 
-syncFollowingFeedFlagOnDocumentLoad()
+if (!redirectToCanonicalHost()) {
+  syncFollowingFeedFlagOnDocumentLoad()
 
-createRoot(document.getElementById('root')).render(
-  <AppProviders>
-    <App />
-  </AppProviders>,
-)
+  createRoot(document.getElementById('root')).render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  )
+}
