@@ -2051,18 +2051,18 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                       aria-hidden
                     >
                       <div
-                        className={`${
-                          watchPlaybackFlash ? "feed-playback-flash" : ""
-                        } flex h-18 w-18 shrink-0 items-center justify-center rounded-full border border-white/30 bg-black/45 text-white shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-[2px] sm:h-24 sm:w-24`}
+                        className={
+                          watchPlaybackFlash ? "feed-playback-flash" : undefined
+                        }
                       >
                         {watchPlaybackFlash === "pause" ? (
                           <IoPause
-                            className="h-11 w-11 sm:h-14 sm:w-14"
+                            className="h-16 w-16 text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)] sm:h-20 sm:w-20"
                             aria-hidden
                           />
                         ) : (
                           <IoPlay
-                            className="ml-1 h-11 w-11 sm:h-14 sm:w-14"
+                            className="ml-1 h-16 w-16 text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)] sm:h-20 sm:w-20"
                             aria-hidden
                           />
                         )}
