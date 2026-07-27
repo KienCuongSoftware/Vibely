@@ -77,7 +77,7 @@ export function handleSidebarMenuSelect(
   }
 
   if (id === 'latest') {
-    navigate('/foryou')
+    navigate('/')
     return
   }
 
@@ -86,5 +86,5 @@ export function handleSidebarMenuSelect(
     return
   }
 
-  navigate('/foryou')
+  navigate('/')
 }

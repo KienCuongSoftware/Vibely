@@ -148,7 +148,7 @@ export function MobileFeedTopBar({
       ) : (
         <div className="flex h-12 items-center justify-center px-14">
           <Link
-            to="/foryou"
+            to="/"
             className="text-lg font-bold tracking-tight text-white"
           >
             Vibely
@@ -257,7 +257,7 @@ function profileHrefFor(username) {
   const raw = String(username ?? "")
     .trim()
     .replace(/^@/, "");
-  return raw ? `/@${encodeURIComponent(raw)}` : "/foryou";
+  return raw ? `/@${encodeURIComponent(raw)}` : "/";
 }
 
 export function MobileFeedMenuDrawer({
@@ -300,7 +300,7 @@ export function MobileFeedMenuDrawer({
   if (!open) return null;
 
   const goForYou = () => {
-    navigate("/foryou");
+    navigate("/");
     onClose();
   };
 
@@ -334,7 +334,7 @@ export function MobileFeedMenuDrawer({
             <IoMenu aria-hidden />
           </button>
           <Link
-            to="/foryou"
+            to="/"
             className="text-xl font-bold tracking-tight text-white"
             onClick={onClose}
           >

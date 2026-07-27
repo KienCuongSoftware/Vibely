@@ -49,7 +49,7 @@ export function WatchRedirect() {
           <p className="mt-2 text-sm text-zinc-400">
             Video được chia sẻ bằng mã UUID. Liên kết cũ dạng số không còn được hỗ trợ.
           </p>
-          <a href="/foryou" className="mt-4 inline-block text-sm text-red-400 hover:text-red-300">
+          <a href="/" className="mt-4 inline-block text-sm text-red-400 hover:text-red-300">
             Về trang feed
           </a>
         </div>
@@ -58,7 +58,7 @@ export function WatchRedirect() {
   }
 
   if (failed) {
-    return <Navigate to="/foryou" replace />
+    return <Navigate to="/" replace />
   }
 
   return (

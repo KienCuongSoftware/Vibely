@@ -1,5 +1,5 @@
 export const SITE_NAME = "Vibely";
-export const DEFAULT_SITE_ORIGIN = "https://vibely.sbs";
+export const DEFAULT_SITE_ORIGIN = "https://www.vibely.sbs";
 /** Same pattern as TikTok ("TikTok - Make Your Day") — keep English tagline. */
 export const DEFAULT_TITLE = "Vibely - Make Your Day";
 /**

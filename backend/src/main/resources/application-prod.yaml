@@ -49,9 +49,9 @@ app:
       same-site: Lax
   oauth2:
     enabled: ${APP_OAUTH2_ENABLED:true}
-    public-base-url: ${OAUTH_PUBLIC_BASE_URL:https://vibely.sbs}
-    frontend-success-url: ${FRONTEND_BASE_URL:https://vibely.sbs}/login
-    frontend-failure-url: ${FRONTEND_BASE_URL:https://vibely.sbs}/login
+    public-base-url: ${OAUTH_PUBLIC_BASE_URL:https://www.vibely.sbs}
+    frontend-success-url: ${FRONTEND_BASE_URL:https://www.vibely.sbs}/login
+    frontend-failure-url: ${FRONTEND_BASE_URL:https://www.vibely.sbs}/login
   mail:
     expose-code-in-api: false
   discovery:

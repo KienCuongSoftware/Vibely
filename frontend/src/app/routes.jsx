@@ -42,12 +42,12 @@ const AdminModerationPage = lazyNamed(() => import('@/features/admin/pages/Admin
 export function GuestRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/foryou" replace />} />
-      <Route path="/foryou" element={<FeedPage />} />
+      <Route path="/" element={<FeedPage />} />
+      <Route path="/foryou" element={<Navigate to="/" replace />} />
       <Route path="/following" element={<Navigate to="/login" replace />} />
       <Route path="/friends" element={<Navigate to="/login" replace />} />
       <Route path="/messages" element={<Navigate to="/login" replace />} />
-      <Route path="/feed" element={<Navigate to="/foryou" replace />} />
+      <Route path="/feed" element={<Navigate to="/" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/Login" element={<Navigate to="/login" replace />} />
       <Route path="/signin" element={<Navigate to="/login" replace />} />
@@ -80,7 +80,7 @@ export function GuestRoutes() {
       <Route path="/:username/:publicId" element={<ProfileWatchVideoRoutePage />} />
       <Route path="/profile" element={<Navigate to="/login" replace />} />
       <Route path="/:username" element={<ProfilePage />} />
-      <Route path="*" element={<Navigate to="/foryou" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
@@ -97,8 +97,14 @@ export function OnboardingRoutes() {
 export function AuthenticatedRoutes({ user, isAdmin }) {
   return (
     <Routes>
-      <Route path="/" element={<AuthenticatedHomeRedirect user={user} />} />
-      <Route path="/foryou" element={isAdmin ? <Navigate to="/admin" replace /> : <FeedPage />} />
+      <Route
+        path="/"
+        element={isAdmin ? <Navigate to="/admin" replace /> : <FeedPage />}
+      />
+      <Route
+        path="/foryou"
+        element={isAdmin ? <Navigate to="/admin" replace /> : <Navigate to="/" replace />}
+      />
       <Route path="/following" element={<FollowingPage />} />
       <Route path="/friends" element={<FriendsPage />} />
       <Route path="/messages" element={<MessagesPage />} />

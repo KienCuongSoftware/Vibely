@@ -125,7 +125,7 @@ public class SitemapService {
 
     private String siteOrigin() {
         String origin = appUrlProperties.normalizedFrontendBaseUrl();
-        return origin.isBlank() ? "https://vibely.sbs" : origin;
+        return origin.isBlank() ? "https://www.vibely.sbs" : origin;
     }
 
     private static String cleanHandle(String raw) {

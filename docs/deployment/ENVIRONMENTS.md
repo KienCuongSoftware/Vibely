@@ -28,7 +28,7 @@ The current VPS deployment is intentionally simpler than the target blue/green m
 - Main env file: `/opt/vibely/vibely.env`
 - Imported config: `/opt/vibely/config/application-local.yaml`
 - Active profile: `dev`
-- Public base URL: `https://vibely.sbs`
+- Public base URL: `https://www.vibely.sbs`
 
 Important VPS env values:
 
@@ -36,8 +36,8 @@ Important VPS env values:
 |----------|---------|
 | `SPRING_PROFILES_ACTIVE=dev` | Current active Spring profile |
 | `SPRING_CONFIG_IMPORT=optional:file:/opt/vibely/config/application-local.yaml` | Imports local secret YAML |
-| `OAUTH_PUBLIC_BASE_URL=https://vibely.sbs` | OAuth redirect base |
-| `FRONTEND_BASE_URL=https://vibely.sbs` | OAuth success/failure frontend base |
+| `OAUTH_PUBLIC_BASE_URL=https://www.vibely.sbs` | OAuth redirect base |
+| `FRONTEND_BASE_URL=https://www.vibely.sbs` | OAuth success/failure frontend base |
 | `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_ID` | Direct Spring Facebook App ID |
 | `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_SECRET` | Direct Spring Facebook App Secret |
 

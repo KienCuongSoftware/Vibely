@@ -72,7 +72,7 @@ export function StudioLayout({
               }
               aria-label={onUploadRoute ? "Quay lại feed" : "Menu Studio"}
               onClick={() =>
-                onUploadRoute ? navigate("/foryou") : setMobileNavOpen(true)
+                onUploadRoute ? navigate("/") : setMobileNavOpen(true)
               }
             >
               {onUploadRoute ? (

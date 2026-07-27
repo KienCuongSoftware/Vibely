@@ -1,6 +1,6 @@
 /**
  * Origin công khai của app (production, ngrok, Cloudflare Tunnel, preview deploy).
- * Dev: đặt VITE_PUBLIC_APP_URL=https://vibely.sbs khi share link cần origin cố định (tunnel/nginx).
+ * Dev: đặt VITE_PUBLIC_APP_URL=https://www.vibely.sbs khi share link cần origin cố định (tunnel/nginx).
  */
 export function getConfiguredPublicAppOrigin() {
   const raw = import.meta.env.VITE_PUBLIC_APP_URL

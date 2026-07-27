@@ -403,7 +403,7 @@ export function SignupPage() {
       }
       await refreshProfile();
       setStatus("Đăng ký thành công");
-      navigate("/foryou", { replace: true });
+      navigate("/", { replace: true });
     } catch (error) {
       setStatus(error.message);
     } finally {
@@ -640,7 +640,7 @@ export function SignupPage() {
             <>
               <div className="flex justify-end p-4">
                 <Link
-                  to="/foryou"
+                  to="/"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
                   aria-label="Đóng"
                 >
@@ -708,7 +708,7 @@ export function SignupPage() {
                   <IoArrowBack className="text-2xl" />
                 </button>
                 <Link
-                  to="/foryou"
+                  to="/"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
                   aria-label="Đóng"
                 >
@@ -1076,7 +1076,7 @@ export function SignupPage() {
                   <IoArrowBack className="text-2xl" />
                 </button>
                 <Link
-                  to="/foryou"
+                  to="/"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
                   aria-label="Đóng"
                 >

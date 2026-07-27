@@ -88,7 +88,7 @@ export function Sidebar({
         }`}
       >
         <Link
-          to="/foryou"
+          to="/"
           className={`mb-4 flex h-10 items-center text-center font-black tracking-tight text-zinc-100 hover:text-white ${
             collapsed ? "justify-center text-xl" : "justify-start pl-2 text-3xl"
           }`}

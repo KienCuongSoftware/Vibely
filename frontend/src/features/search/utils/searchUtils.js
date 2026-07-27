@@ -14,7 +14,7 @@ export function buildProfileHref(username) {
   const raw = String(username ?? '')
     .trim()
     .replace(/^@/, '')
-  return raw ? `/@${encodeURIComponent(raw)}` : '/foryou'
+  return raw ? `/@${encodeURIComponent(raw)}` : '/'
 }
 
 export function buildHashtagHref(tag) {
@@ -26,7 +26,7 @@ export function buildHashtagHref(tag) {
 
 export function buildVideoHref(publicId) {
   const id = String(publicId ?? '').trim()
-  return id ? `/foryou?v=${encodeURIComponent(id)}` : '/foryou'
+  return id ? `/?v=${encodeURIComponent(id)}` : '/'
 }
 
 /** Gợi ý có liên quan tới chuỗi đang gõ (substring, không phân biệt hoa thường). */

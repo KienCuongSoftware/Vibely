@@ -205,7 +205,7 @@ export function LoginPage() {
         navigate("/signup?onboarding=oauth", { replace: true });
         return;
       }
-      const destination = String(user.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/foryou";
+      const destination = String(user.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/";
       navigate(destination, { replace: true });
       return;
     }
@@ -325,7 +325,7 @@ export function LoginPage() {
         navigate(
           String((profile.role ?? oauthData.role) ?? "").toUpperCase() === "ADMIN"
             ? "/admin"
-            : "/foryou",
+            : "/",
           { replace: true },
         );
       })
@@ -514,7 +514,7 @@ export function LoginPage() {
       }
       setReactivationOpen(false);
       setStatus("Tài khoản đã được kích hoạt lại");
-      navigate(String(result?.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/foryou", {
+      navigate(String(result?.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/", {
         replace: true,
       });
     } catch (error) {
@@ -546,7 +546,7 @@ export function LoginPage() {
         navigate("/signup?onboarding=oauth", { replace: true });
         return;
       }
-      navigate(String(result?.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/foryou", {
+      navigate(String(result?.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/", {
         replace: true,
       });
     } catch (error) {
@@ -917,7 +917,7 @@ export function LoginPage() {
           <>
             <div className="flex justify-end p-4">
               <Link
-                to="/foryou"
+                to="/"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
                 aria-label="Đóng"
               >
@@ -990,7 +990,7 @@ export function LoginPage() {
                 <IoArrowBack className="text-2xl" />
               </button>
               <Link
-                to="/foryou"
+                to="/"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
                 aria-label="Đóng"
               >
@@ -1070,7 +1070,7 @@ export function LoginPage() {
                 <IoArrowBack className="text-2xl" />
               </button>
               <Link
-                to="/foryou"
+                to="/"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
                 aria-label="Đóng"
               >
