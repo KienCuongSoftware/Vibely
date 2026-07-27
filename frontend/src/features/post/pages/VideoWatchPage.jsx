@@ -729,8 +729,6 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
   });
   const watchScrubbingRef = useRef(false);
   const [watchUserPaused, setWatchUserPaused] = useState(false);
-  const [watchPlaybackFlash, setWatchPlaybackFlash] = useState(null);
-  const watchPlaybackFlashTimerRef = useRef(null);
   const [watchMoreMenuOpen, setWatchMoreMenuOpen] = useState(false);
   const [watchMoreMenuSubpage, setWatchMoreMenuSubpage] = useState("main");
   const [watchVideoQuality, setWatchVideoQuality] =
@@ -837,11 +835,6 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
     setWatchPlayback({ current: 0, duration: 0 });
     watchScrubbingRef.current = false;
     setWatchUserPaused(false);
-    setWatchPlaybackFlash(null);
-    if (watchPlaybackFlashTimerRef.current != null) {
-      clearTimeout(watchPlaybackFlashTimerRef.current);
-      watchPlaybackFlashTimerRef.current = null;
-    }
     setWatchMoreMenuOpen(false);
     setWatchMoreMenuSubpage("main");
     setWatchQualityOptions(["auto"]);
@@ -969,25 +962,6 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
     [openWatchVideoContextMenu],
   );
 
-  const flashWatchPlayback = useCallback((kind) => {
-    setWatchPlaybackFlash(kind);
-    if (watchPlaybackFlashTimerRef.current != null) {
-      clearTimeout(watchPlaybackFlashTimerRef.current);
-    }
-    watchPlaybackFlashTimerRef.current = setTimeout(() => {
-      setWatchPlaybackFlash(null);
-      watchPlaybackFlashTimerRef.current = null;
-    }, 620);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (watchPlaybackFlashTimerRef.current != null) {
-        clearTimeout(watchPlaybackFlashTimerRef.current);
-      }
-    };
-  }, []);
-
   const toggleWatchPlayback = useCallback(
     (e) => {
       e?.stopPropagation?.();
@@ -1002,15 +976,12 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
       if (el.paused) {
         setWatchUserPaused(false);
         void el.play().catch(() => {});
-        flashWatchPlayback("play");
       } else {
         setWatchUserPaused(true);
         el.pause();
-        // TikTok only shows ▶ while paused — never a ‖ pause glyph.
-        setWatchPlaybackFlash(null);
       }
     },
-    [flashWatchPlayback, videoContextMenu, watchMoreMenuOpen],
+    [videoContextMenu, watchMoreMenuOpen],
   );
 
   // Desktop + mobile: left click = play/pause. Right click = context menu.
@@ -2028,7 +1999,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                       muted={watchMuted}
                       loop={false}
                       loadMedia={Boolean(activePlaybackUrl)}
-                      isActive={Boolean(activePlaybackUrl) && !watchUserPaused}
+                      isActive={Boolean(activePlaybackUrl)}
                       userPaused={watchUserPaused}
                       visibilityRatio={mobileLayout ? 1 : 0}
                       streamQuality={watchVideoQuality}
@@ -2045,23 +2016,15 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                   {activePlaybackUrl &&
                   !videoContextMenu &&
                   !watchMoreMenuOpen &&
-                  (watchPlaybackFlash === "play" || watchUserPaused) ? (
+                  watchUserPaused ? (
                     <div
                       className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center"
                       aria-hidden
                     >
-                      <div
-                        className={
-                          watchPlaybackFlash === "play"
-                            ? "feed-playback-flash"
-                            : undefined
-                        }
-                      >
-                        <IoPlay
-                          className="ml-1 h-16 w-16 text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)] sm:h-20 sm:w-20"
-                          aria-hidden
-                        />
-                      </div>
+                      <IoPlay
+                        className="ml-1 h-16 w-16 text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)] sm:h-20 sm:w-20"
+                        aria-hidden
+                      />
                     </div>
                   ) : null}
 

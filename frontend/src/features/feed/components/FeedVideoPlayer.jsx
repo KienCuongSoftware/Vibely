@@ -396,6 +396,11 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
       visibilityRatio > 0 &&
       visibilityRatio < FEED_CONFIG.PAUSE_VISIBILITY_RATIO
     if (userPaused) {
+      try {
+        el.pause()
+      } catch {
+        /* noop */
+      }
       return undefined
     }
     if (shouldPlay && !shouldPause) {
