@@ -272,24 +272,43 @@ export function LoginPage() {
     apiClient
       .exchangeOAuthCode(oneTimeCode)
       .then(async (oauthData) => {
-        let profile = oauthData;
+        // Chỉ tin payload exchange. Không merge /me lên trên — cookie host-only cũ
+        // (admin) có thể vẫn được gửi kèm cookie Domain=.vibely.sbs mới (LINE).
         let me = null;
         try {
           me = await apiClient.me();
-          profile = { ...oauthData, ...me };
         } catch {
-          // Giữ payload exchange nếu `/me` không thành công.
+          // ignore
+        }
+        const oauthEmail = String(oauthData?.email ?? "")
+          .trim()
+          .toLowerCase();
+        const meEmail = String(me?.email ?? "")
+          .trim()
+          .toLowerCase();
+        if (oauthEmail && meEmail && oauthEmail !== meEmail) {
+          try {
+            await apiClient.logout();
+          } catch {
+            // ignore
+          }
+          navigate(
+            `/login?oauth=error&message=${encodeURIComponent(
+              "Phiên đăng nhập cũ còn sót (thường do admin/www). Xóa cookie vibely.sbs rồi đăng nhập LINE lại trên https://www.vibely.sbs",
+            )}`,
+            { replace: true },
+          );
+          return;
         }
 
-        const needsOnboarding =
-          Boolean(oauthData?.needsOnboarding) || Boolean(me?.needsOnboarding);
+        const needsOnboarding = Boolean(oauthData?.needsOnboarding);
         if (needsOnboarding) {
           const pending = {
-            userId: Number(profile.userId ?? profile.id ?? oauthData.userId),
-            email: profile.email ?? oauthData.email,
-            displayName: profile.displayName ?? oauthData.displayName,
-            avatarUrl: profile.avatarUrl ?? oauthData.avatarUrl,
-            username: profile.username ?? oauthData.username,
+            userId: Number(oauthData.userId),
+            email: oauthData.email,
+            displayName: oauthData.displayName,
+            avatarUrl: oauthData.avatarUrl,
+            username: oauthData.username,
             provider: oauthProvider ?? undefined,
           };
           completeOAuthLogin({
@@ -297,7 +316,7 @@ export function LoginPage() {
             username: pending.username,
             displayName: pending.displayName,
             email: pending.email,
-            role: profile.role ?? oauthData.role,
+            role: oauthData.role,
             avatarUrl: pending.avatarUrl,
             needsOnboarding: true,
           });
@@ -310,12 +329,12 @@ export function LoginPage() {
           persistLastLoginMethod(oauthProvider);
         }
         completeOAuthLogin({
-          userId: Number(profile.userId ?? profile.id ?? oauthData.userId),
-          username: profile.username ?? oauthData.username,
-          displayName: profile.displayName ?? oauthData.displayName,
-          email: profile.email ?? oauthData.email,
-          role: profile.role ?? oauthData.role,
-          avatarUrl: profile.avatarUrl ?? oauthData.avatarUrl,
+          userId: Number(oauthData.userId),
+          username: oauthData.username,
+          displayName: oauthData.displayName,
+          email: oauthData.email,
+          role: oauthData.role,
+          avatarUrl: oauthData.avatarUrl,
         });
         try {
           await refreshProfile();
@@ -323,7 +342,7 @@ export function LoginPage() {
           // Cookie session from exchange is enough; profile refresh is best-effort.
         }
         navigate(
-          String((profile.role ?? oauthData.role) ?? "").toUpperCase() === "ADMIN"
+          String(oauthData.role ?? "").toUpperCase() === "ADMIN"
             ? "/admin"
             : "/",
           { replace: true },

@@ -43,6 +43,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String method = request.getMethod();
         String clientIp = ShareClientHints.clientIp(request);
         boolean authWriteRoute = uri.startsWith("/api/auth/") && "POST".equals(method);
+        boolean oauthSessionRoute =
+            uri.equals("/api/auth/oauth/exchange") || uri.equals("/api/auth/oauth/native");
         boolean commentWriteRoute = uri.matches("^/api/videos/\\d+/comments$") && "POST".equals(method);
         boolean redirectRoute = uri.matches("^/v/[0-9A-Za-z]+$") && "GET".equals(method);
         boolean shareWriteRoute = uri.matches("^/api/v1/videos/\\d+/share$") && "POST".equals(method);
@@ -94,6 +96,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 return;
             }
         } else if (authWriteRoute || commentWriteRoute) {
+            // OAuth exchange is retried after LINE/Google round-trips; keep it out of the tight bucket.
+            if (oauthSessionRoute) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             int limit = authWriteRoute ? AUTH_LIMIT : COMMENT_LIMIT;
             String userKey = request.getHeader("Authorization") != null ? "auth-user" : "guest";
             String key = request.getRemoteAddr() + ":" + userKey + ":" + uri;

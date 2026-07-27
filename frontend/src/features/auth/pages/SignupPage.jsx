@@ -393,20 +393,26 @@ export function SignupPage() {
     setStatus("Đang hoàn tất đăng ký...");
     try {
       // Cookie có thể thuộc tài khoản cũ (apex vs www) — khớp email trước khi lưu.
-      try {
-        const me = await apiClient.me();
-        const sessionEmail = String(me?.email ?? "").trim().toLowerCase();
-        const pendingEmail = String(oauthPending?.email ?? "").trim().toLowerCase();
-        if (pendingEmail && sessionEmail && sessionEmail !== pendingEmail) {
-          clearOnboardingSession();
-          setStatus(
-            "Phiên đăng nhập không khớp tài khoản LINE. Đăng xuất rồi đăng nhập lại bằng LINE.",
-          );
-          navigate("/login", { replace: true });
-          return;
+      const me = await apiClient.me();
+      const sessionEmail = String(me?.email ?? "").trim().toLowerCase();
+      const pendingEmail = String(oauthPending?.email ?? "").trim().toLowerCase();
+      if (pendingEmail && sessionEmail && sessionEmail !== pendingEmail) {
+        clearOnboardingSession();
+        try {
+          await apiClient.logout();
+        } catch {
+          /* ignore */
         }
-      } catch {
-        // /me lỗi — vẫn thử completeOnboarding với cookie hiện tại
+        setStatus(
+          "Phiên đăng nhập không khớp tài khoản LINE. Đăng xuất rồi đăng nhập lại bằng LINE trên www.vibely.sbs.",
+        );
+        navigate("/login", { replace: true });
+        return;
+      }
+      if (pendingEmail && !sessionEmail) {
+        setStatus("Chưa có phiên đăng nhập. Vui lòng đăng nhập LINE lại.");
+        navigate("/login", { replace: true });
+        return;
       }
 
       await apiClient.completeOnboarding({

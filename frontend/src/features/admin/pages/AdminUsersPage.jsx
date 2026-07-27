@@ -658,7 +658,7 @@ function BanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
             <strong>{user?.displayName || "Người dùng Vibely"}</strong> (@
             {user?.username || "unknown"}).
           </p>
-          <p className="mt-2 text-red-200/90">
+          <p className="mt-2 break-all text-red-200/90">
             Email nhận thông báo: {user?.email || "Không có email"}
           </p>
         </div>
@@ -737,7 +737,7 @@ function DeleteConfirmModal({ user, submitting, error, onClose, onConfirm }) {
             <strong>{user?.displayName || "Người dùng Vibely"}</strong> (@
             {user?.username || "unknown"}).
           </p>
-          <p className="mt-2 text-red-200/90">
+          <p className="mt-2 break-all text-red-200/90">
             Email nhận thông báo: {user?.email || "Không có email"}
           </p>
           <p className="mt-3 text-red-200/90">
@@ -1074,8 +1074,13 @@ export function AdminUsersPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-3 py-3 text-zinc-300">
-                          {item.email || "—"}
+                        <td className="max-w-[220px] px-3 py-3 text-zinc-300">
+                          <span
+                            className="block truncate"
+                            title={item.email || undefined}
+                          >
+                            {item.email || "—"}
+                          </span>
                         </td>
                         <td className="px-3 py-3 text-center">
                           <RoleBadge role={item.role} />

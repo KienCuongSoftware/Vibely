@@ -4,7 +4,9 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -41,13 +43,18 @@ public class AuthCookieService {
         String accessToken,
         String refreshToken
     ) {
-        addCookie(response, ACCESS_COOKIE, accessToken, "/", (int) accessExpirationSeconds);
-        addCookie(response, REFRESH_COOKIE, refreshToken, "/", (int) refreshExpirationSeconds);
+        // Drop host-only leftovers so Domain=.vibely.sbs cookies win after apex↔www migration.
+        clearSessionCookies(response);
+        addCookie(response, ACCESS_COOKIE, accessToken, "/", (int) accessExpirationSeconds, domain);
+        addCookie(response, REFRESH_COOKIE, refreshToken, "/", (int) refreshExpirationSeconds, domain);
     }
 
     public void clearSessionCookies(HttpServletResponse response) {
-        addCookie(response, ACCESS_COOKIE, "", "/", 0);
-        addCookie(response, REFRESH_COOKIE, "", "/", 0);
+        for (String name : new String[] { ACCESS_COOKIE, REFRESH_COOKIE }) {
+            for (String cookieDomain : domainsToClear()) {
+                addCookie(response, name, "", "/", 0, cookieDomain);
+            }
+        }
     }
 
     public Optional<String> readAccessToken(HttpServletRequest request) {
@@ -58,12 +65,28 @@ public class AuthCookieService {
         return readCookie(request, REFRESH_COOKIE);
     }
 
+    /**
+     * Host-only (empty) plus configured domain, and legacy vibely hosts so old cookies cannot
+     * shadow a newly issued Domain=.vibely.sbs session after OAuth.
+     */
+    private Set<String> domainsToClear() {
+        Set<String> domains = new LinkedHashSet<>();
+        domains.add(""); // host-only
+        if (!domain.isEmpty()) {
+            domains.add(domain);
+        }
+        domains.add(".vibely.sbs");
+        domains.add("vibely.sbs");
+        return domains;
+    }
+
     private void addCookie(
         HttpServletResponse response,
         String name,
         String value,
         String path,
-        int maxAgeSeconds
+        int maxAgeSeconds,
+        String cookieDomain
     ) {
         ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(name, value)
             .httpOnly(true)
@@ -71,8 +94,8 @@ public class AuthCookieService {
             .path(path)
             .maxAge(maxAgeSeconds)
             .sameSite(sameSite);
-        if (!domain.isEmpty()) {
-            builder.domain(domain);
+        if (cookieDomain != null && !cookieDomain.isEmpty()) {
+            builder.domain(cookieDomain);
         }
         response.addHeader(HttpHeaders.SET_COOKIE, builder.build().toString());
     }
@@ -82,10 +105,13 @@ public class AuthCookieService {
         if (cookies == null) {
             return Optional.empty();
         }
-        return Arrays.stream(cookies)
-            .filter(cookie -> name.equals(cookie.getName()))
-            .map(Cookie::getValue)
-            .filter(value -> value != null && !value.isBlank())
-            .findFirst();
+        // Prefer the last matching cookie — browsers may send host-only + Domain= duplicates.
+        String value = null;
+        for (Cookie cookie : cookies) {
+            if (name.equals(cookie.getName()) && cookie.getValue() != null && !cookie.getValue().isBlank()) {
+                value = cookie.getValue();
+            }
+        }
+        return Optional.ofNullable(value);
     }
 }

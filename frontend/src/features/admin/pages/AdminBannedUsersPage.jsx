@@ -73,7 +73,7 @@ function UnbanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
             Bạn sắp bỏ cấm <strong>{user?.displayName || 'Người dùng Vibely'}</strong> (@
             {user?.username || 'unknown'}).
           </p>
-          <p className="mt-2 text-emerald-200/90">Email: {user?.email || 'Không có email'}</p>
+          <p className="mt-2 break-all text-emerald-200/90">Email: {user?.email || 'Không có email'}</p>
           {user?.banReason ? (
             <p className="mt-3 text-emerald-200/90">
               Lý do cấm trước đó:{' '}
@@ -258,7 +258,11 @@ export function AdminBannedUsersPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-3 py-3 text-zinc-300">{item.email || '—'}</td>
+                        <td className="max-w-[220px] px-3 py-3 text-zinc-300">
+                          <span className="block truncate" title={item.email || undefined}>
+                            {item.email || '—'}
+                          </span>
+                        </td>
                         <td className="max-w-xs px-3 py-3 text-zinc-300">
                           <p className="line-clamp-3 whitespace-pre-wrap text-sm">
                             {formatBanReasonDisplay(item.banReason)}
