@@ -13,7 +13,7 @@ class FfmpegAudioFilterBuilderTest {
     @BeforeEach
     void setUp() {
         ProcessingProperties props = new ProcessingProperties();
-        props.getAudio().setIntegratedLoudnessLufs(-12);
+        props.getAudio().setIntegratedLoudnessLufs(-10);
         props.getAudio().setLoudnessRange(7);
         props.getAudio().setTruePeakDb(-1);
         LoudnessNormalizationService loudness = new LoudnessNormalizationService(props);
@@ -26,9 +26,10 @@ class FfmpegAudioFilterBuilderTest {
         assertThat(chain).contains("highpass=f=80");
         assertThat(chain).contains("equalizer=f=250");
         assertThat(chain).contains("equalizer=f=3500");
+        assertThat(chain).contains("aecho=");
         assertThat(chain).contains("acompressor=");
         assertThat(chain).contains("alimiter=limit=-1dB");
-        assertThat(chain).contains("loudnorm=I=-12.0:LRA=7.0:TP=-1.0");
+        assertThat(chain).contains("loudnorm=I=-10.0:LRA=7.0:TP=-1.0");
     }
 
     @Test
@@ -36,6 +37,7 @@ class FfmpegAudioFilterBuilderTest {
         String chain = builder.buildFilterChain(AudioMasteringProfile.SPEECH);
         assertThat(chain).contains("highpass=f=100");
         assertThat(chain).contains("equalizer=f=3500:t=q:w=1:g=4");
+        assertThat(chain).doesNotContain("aecho=");
     }
 
     @Test
@@ -43,6 +45,7 @@ class FfmpegAudioFilterBuilderTest {
         String defaultChain = builder.buildFilterChain(AudioMasteringProfile.DEFAULT);
         String musicChain = builder.buildFilterChain(AudioMasteringProfile.MUSIC);
         assertThat(musicChain).isNotEqualTo(defaultChain);
-        assertThat(musicChain).contains("highpass=f=70");
+        assertThat(musicChain).contains("highpass=f=60");
+        assertThat(musicChain).contains("aecho=");
     }
 }

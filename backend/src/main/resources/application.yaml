@@ -88,10 +88,10 @@ app:
     audio:
       enabled: ${APP_PROCESSING_AUDIO_ENABLED:true}
       volume-detect-enabled: ${APP_PROCESSING_AUDIO_VOLUME_DETECT:true}
-      integrated-loudness-lufs: ${APP_PROCESSING_AUDIO_LUFS:-12}
+      integrated-loudness-lufs: ${APP_PROCESSING_AUDIO_LUFS:-10}
       loudness-range: ${APP_PROCESSING_AUDIO_LRA:7}
       true-peak-db: ${APP_PROCESSING_AUDIO_TP:-1}
-      bitrate-kbps: ${APP_PROCESSING_AUDIO_BITRATE_KBPS:128}
+      bitrate-kbps: ${APP_PROCESSING_AUDIO_BITRATE_KBPS:192}
       sample-rate-hz: ${APP_PROCESSING_AUDIO_SAMPLE_RATE:48000}
     worker:
       enabled: ${APP_PROCESSING_WORKER_ENABLED:false}

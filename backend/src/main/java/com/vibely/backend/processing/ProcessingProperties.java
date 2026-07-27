@@ -121,13 +121,13 @@ public class ProcessingProperties {
         /** Run an extra ffmpeg volumedetect pass for profile heuristics. */
         private boolean volumeDetectEnabled = true;
 
-        private double integratedLoudnessLufs = -12.0;
+        private double integratedLoudnessLufs = -10.0;
 
         private double loudnessRange = 7.0;
 
         private double truePeakDb = -1.0;
 
-        private int bitrateKbps = 128;
+        private int bitrateKbps = 192;
 
         private int sampleRateHz = 48_000;
 
