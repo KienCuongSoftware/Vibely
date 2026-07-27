@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { apiClient } from '@/shared/api/client'
 import { Sidebar } from '@/shared/components/Sidebar'
@@ -7,7 +7,6 @@ import {
   MobileFeedBottomNav,
 } from '@/features/feed/components/MobileFeedShell.jsx'
 import { MobileSearchBar } from '@/features/search/components/MobileSearchBar'
-import { SearchInput } from '@/features/search/components/SearchInput'
 import {
   SearchSuggestionList,
 } from '@/features/search/components/SearchSuggestionList'
@@ -37,15 +36,15 @@ function SearchUserRow({ row, token, currentUserId }) {
     currentUserId != null && row.id != null && Number(row.id) === Number(currentUserId)
 
   return (
-    <li className="flex items-center gap-4 py-2">
+    <li className="flex items-center gap-4 py-2.5">
       <Link
         to={buildProfileHref(row.username)}
-        className="flex min-w-0 flex-1 items-center gap-4 rounded-lg transition hover:bg-zinc-900/50"
+        className="flex min-w-0 flex-1 items-center gap-3 rounded-lg transition hover:bg-zinc-900/50"
       >
         <img
           src={avatar}
           alt=""
-          className="h-14 w-14 shrink-0 rounded-full object-cover ring-1 ring-zinc-700"
+          className="h-14 w-14 shrink-0 rounded-full object-cover"
           referrerPolicy="no-referrer"
           onError={(e) => {
             e.currentTarget.src = DEFAULT_AVATAR_URL
@@ -55,7 +54,7 @@ function SearchUserRow({ row, token, currentUserId }) {
           <span className="block truncate text-[17px] font-bold leading-tight text-white">
             {row.displayName || row.username}
           </span>
-          <span className="mt-0.5 block truncate text-[15px] text-zinc-400">
+          <span className="mt-0.5 block truncate text-[14px] text-zinc-400">
             @{row.username}
           </span>
         </span>
@@ -63,14 +62,14 @@ function SearchUserRow({ row, token, currentUserId }) {
       {!isSelf && token && row.id ? (
         <Link
           to={buildProfileHref(row.username)}
-          className="shrink-0 rounded-md bg-[#fe2c55] px-5 py-2 text-[15px] font-semibold text-white transition hover:bg-[#ff4d70]"
+          className="shrink-0 rounded-full bg-[#fe2c55] px-6 py-1.5 text-[15px] font-semibold text-white transition hover:bg-[#ff4d70]"
         >
           Theo dõi
         </Link>
       ) : (
         <Link
           to={buildProfileHref(row.username)}
-          className="shrink-0 rounded-md border border-zinc-600 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-zinc-400"
+          className="shrink-0 rounded-full border border-zinc-600 px-5 py-1.5 text-[14px] font-semibold text-zinc-200 transition hover:border-zinc-400"
         >
           Xem hồ sơ
         </Link>
@@ -99,7 +98,7 @@ function SearchResultsBody({
     if (mobileLayout) return null
     return (
       <p className="py-20 text-center text-[15px] text-zinc-500">
-        Nhập từ khóa để tìm người dùng và video trên Vibely.
+        Dùng ô tìm kiếm ở thanh bên trái để tìm người dùng và video.
       </p>
     )
   }
@@ -141,14 +140,11 @@ function SearchResultsBody({
       ) : null}
 
       {showUsers ? (
-        <section className="mb-10">
-          <div className="mb-4 flex items-center justify-between gap-2">
-            <h2 className="text-[17px] font-bold text-white">Người dùng</h2>
-          </div>
+        <section>
           {userPreview.length === 0 ? (
             <p className="text-sm text-zinc-500">Không tìm thấy người dùng.</p>
           ) : (
-            <ul className="space-y-1">
+            <ul className="space-y-0.5">
               {userPreview.map((row) => (
                 <SearchUserRow
                   key={row.id ?? row.username}
@@ -195,9 +191,11 @@ export function SearchResultsPage() {
   const [users, setUsers] = useState([])
   const [videos, setVideos] = useState([])
   const [matchedTags, setMatchedTags] = useState([])
-  const [loading, setLoading] = useState(() => Boolean(qFromUrl))
+  const [usersLoading, setUsersLoading] = useState(() => Boolean(qFromUrl))
+  const [videosLoading, setVideosLoading] = useState(() => Boolean(qFromUrl))
   const [error, setError] = useState('')
   const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout())
+  const recordHistoryRef = useRef(null)
 
   const mobileSearchMode = mobileLayout && !qFromUrl
 
@@ -227,6 +225,8 @@ export function SearchResultsPage() {
     token,
     enabled: false,
   })
+
+  recordHistoryRef.current = recordSearchHistory
 
   const menuItems = useMemo(() => buildMainSidebarMenuItems(token), [token])
 
@@ -260,41 +260,60 @@ export function SearchResultsPage() {
       setVideos([])
       setMatchedTags([])
       setError('')
-      setLoading(false)
+      setUsersLoading(false)
+      setVideosLoading(false)
       return undefined
     }
+
     let cancelled = false
-    setLoading(true)
+    setUsers([])
+    setVideos([])
+    setMatchedTags([])
     setError('')
+    setUsersLoading(true)
+    setVideosLoading(true)
+
     if (token) {
-      void recordSearchHistory(qFromUrl)
+      void recordHistoryRef.current?.(qFromUrl)
     }
-    Promise.all([
-      apiClient.getSearchUsers(qFromUrl, { limit: 20 }),
-      apiClient.getSearchSemantic(qFromUrl, { limit: 30 }),
-    ])
-      .then(([userRows, semantic]) => {
+
+    // Load independently so the active tab can render as soon as its data arrives.
+    void apiClient
+      .getSearchUsers(qFromUrl, { limit: 20 })
+      .then((userRows) => {
         if (cancelled) return
         setUsers(Array.isArray(userRows) ? userRows : [])
-        const videoRows = Array.isArray(semantic?.videos) ? semantic.videos : []
-        setVideos(videoRows)
+      })
+      .catch((err) => {
+        if (cancelled) return
+        setUsers([])
+        setError(err instanceof Error ? err.message : 'Không tải được kết quả.')
+      })
+      .finally(() => {
+        if (!cancelled) setUsersLoading(false)
+      })
+
+    void apiClient
+      .getSearchSemantic(qFromUrl, { limit: 30 })
+      .then((semantic) => {
+        if (cancelled) return
+        setVideos(Array.isArray(semantic?.videos) ? semantic.videos : [])
         setMatchedTags(Array.isArray(semantic?.matchedTags) ? semantic.matchedTags : [])
       })
       .catch((err) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Không tải được kết quả.')
-          setUsers([])
-          setVideos([])
-          setMatchedTags([])
-        }
+        if (cancelled) return
+        setVideos([])
+        setMatchedTags([])
+        setError((prev) => prev || (err instanceof Error ? err.message : 'Không tải được kết quả.'))
       })
       .finally(() => {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) setVideosLoading(false)
       })
+
     return () => {
       cancelled = true
     }
-  }, [qFromUrl, token, recordSearchHistory])
+  }, [qFromUrl, token])
 
   const submitSearch = useCallback(
     (raw) => {
@@ -338,6 +357,10 @@ export function SearchResultsPage() {
           (a, b) => Number(b.viewCount ?? 0) - Number(a.viewCount ?? 0),
         )
       : videos
+
+  // Only wait on the data the active tab needs — render as soon as that arrives.
+  const loading =
+    (showUsers && usersLoading) || (showVideos && videosLoading)
   const hasResults =
     (showUsers && users.length > 0) || (showVideos && videos.length > 0)
 
@@ -451,42 +474,16 @@ export function SearchResultsPage() {
       />
 
       <div className="scrollbar-none flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
-        <header className="sticky top-0 z-20 border-b border-zinc-800/90 bg-black/95 px-6 py-4 backdrop-blur-md">
-          <form
-            className="mx-auto w-full max-w-[720px]"
-            onSubmit={(e) => {
-              e.preventDefault()
-              submitSearch(inputQuery)
-            }}
-          >
-            <SearchInput
-              value={inputQuery}
-              onChange={setInputQuery}
-              onClear={() => setInputQuery('')}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  submitSearch(inputQuery)
-                }
-              }}
-              placeholder="Tìm kiếm"
-              autoFocus={!qFromUrl}
-              id="vibely-search-results-input"
-            />
-          </form>
-
-          {qFromUrl ? (
-            <div
-              role="tablist"
-              className="mx-auto mt-4 flex w-full max-w-[720px] gap-8"
-            >
+        {qFromUrl ? (
+          <header className="sticky top-0 z-20 border-b border-zinc-800/90 bg-black/95 px-6 pt-3 backdrop-blur-md">
+            <div role="tablist" className="flex w-full gap-8">
               {SEARCH_TABS.map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
                   role="tab"
                   aria-selected={activeTab === tab.id}
-                  className={`cursor-pointer pb-2.5 text-[16px] font-semibold transition ${
+                  className={`cursor-pointer pb-3 text-[16px] font-semibold transition ${
                     activeTab === tab.id
                       ? 'border-b-2 border-white text-white'
                       : 'border-b-2 border-transparent text-zinc-500 hover:text-zinc-300'
@@ -497,10 +494,10 @@ export function SearchResultsPage() {
                 </button>
               ))}
             </div>
-          ) : null}
-        </header>
+          </header>
+        ) : null}
 
-        <main className="mx-auto w-full max-w-[1280px] flex-1 px-6 py-6">{resultsBody}</main>
+        <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-6">{resultsBody}</main>
       </div>
     </section>
   )

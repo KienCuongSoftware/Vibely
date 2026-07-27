@@ -17,7 +17,7 @@ function UserRowSkeleton() {
         <Pulse className="h-4 w-44 max-w-[50%]" />
         <Pulse className="h-3.5 w-64 max-w-[70%]" />
       </div>
-      <Pulse className="h-9 w-[108px] shrink-0 rounded-md" />
+      <Pulse className="h-9 w-[108px] shrink-0 rounded-full" />
     </li>
   )
 }
@@ -47,7 +47,7 @@ export function SearchResultsSkeleton({ activeTab = 'top' }) {
     return (
       <div aria-busy="true" aria-label="Đang tải kết quả">
         <ul className="space-y-1">
-          {Array.from({ length: 8 }, (_, i) => (
+          {Array.from({ length: 6 }, (_, i) => (
             <UserRowSkeleton key={`user-skel-${i}`} />
           ))}
         </ul>
@@ -58,7 +58,7 @@ export function SearchResultsSkeleton({ activeTab = 'top' }) {
   return (
     <div aria-busy="true" aria-label="Đang tải kết quả">
       <ul className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-        {Array.from({ length: 18 }, (_, i) => (
+        {Array.from({ length: 12 }, (_, i) => (
           <VideoCardSkeleton key={`video-skel-${i}`} />
         ))}
       </ul>
