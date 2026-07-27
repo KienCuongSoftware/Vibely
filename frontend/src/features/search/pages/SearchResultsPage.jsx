@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { IoHeart, IoPlayOutline } from 'react-icons/io5'
 import { apiClient } from '@/shared/api/client'
 import { Sidebar } from '@/shared/components/Sidebar'
 import {
@@ -12,10 +11,11 @@ import { SearchInput } from '@/features/search/components/SearchInput'
 import {
   SearchSuggestionList,
 } from '@/features/search/components/SearchSuggestionList'
+import { SearchResultsSkeleton } from '@/features/search/components/SearchResultsSkeleton'
+import { SearchVideoCard } from '@/features/search/components/SearchVideoCard'
 import {
   buildProfileHref,
   normalizeSearchQuery,
-  resolveVideoSearchCaption,
   DEFAULT_AVATAR_URL,
 } from '@/features/search/utils/searchUtils'
 import { useSearch } from '@/features/search/hooks/useSearch'
@@ -24,20 +24,6 @@ import { useAuth } from '@/store/useAuth'
 import { buildProfileVideoUrl, videoPublicIdOf } from '@/features/post/utils/videoPublicId.js'
 import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
 import { buildMainSidebarMenuItems } from '@/shared/utils/mainSidebarMenuItems.js'
-
-function formatCompactCount(value) {
-  const count = Number(value ?? 0)
-  if (count >= 1_000_000) {
-    const formatted =
-      count >= 10_000_000
-        ? (count / 1_000_000).toFixed(0)
-        : (count / 1_000_000).toFixed(1)
-    return `${formatted.replace(/\.0$/, '')}M`
-  }
-  if (count >= 10_000) return `${Math.round(count / 1000)}K`
-  if (count >= 1000) return `${(count / 1000).toFixed(1).replace(/\.0$/, '')}K`
-  return String(count)
-}
 
 const SEARCH_TABS = [
   { id: 'top', label: 'Top' },
@@ -122,7 +108,11 @@ function SearchResultsBody({
 
   if (loading) {
     return (
-      <p className="py-20 text-center text-[15px] text-zinc-500">Đang tải kết quả…</p>
+      <SearchResultsSkeleton
+        showUsers={showUsers}
+        showVideos={showVideos}
+        activeTab={activeTab}
+      />
     )
   }
 
@@ -200,57 +190,9 @@ function SearchResultsBody({
             <ul className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
               {videoList.map((v) => {
                 const id = videoPublicIdOf(v)
-                const thumb = v.thumbnailUrl?.trim()
-                const authorAvatar = v.authorAvatarUrl?.trim() || DEFAULT_AVATAR_URL
                 return (
                   <li key={id ?? v.title}>
-                    <button
-                      type="button"
-                      onClick={() => openVideo(v)}
-                      className="group w-full cursor-pointer text-left"
-                    >
-                      <div className="relative aspect-[9/16] overflow-hidden rounded-md bg-zinc-900">
-                        {thumb ? (
-                          <img
-                            src={thumb}
-                            alt=""
-                            loading="lazy"
-                            className="h-full w-full object-cover transition group-hover:opacity-90"
-                          />
-                        ) : (
-                          <div className="h-full w-full bg-zinc-800" />
-                        )}
-                        <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/90 via-black/40 to-transparent px-2 pb-2 pt-10">
-                          <div className="inline-flex items-center gap-1 text-[13px] font-semibold text-white">
-                            <IoPlayOutline className="text-sm" aria-hidden />
-                            {formatCompactCount(v.viewCount ?? 0)}
-                          </div>
-                          {(v.likeCount ?? 0) > 0 ? (
-                            <div className="mt-0.5 inline-flex items-center gap-1 text-[12px] font-semibold text-white/90">
-                              <IoHeart className="text-xs text-white" aria-hidden />
-                              {formatCompactCount(v.likeCount)}
-                            </div>
-                          ) : null}
-                        </div>
-                      </div>
-                      <p className="mt-2 line-clamp-2 text-[13px] leading-snug text-zinc-100">
-                        {resolveVideoSearchCaption(v)}
-                      </p>
-                      <div className="mt-1.5 flex items-center gap-1.5">
-                        <img
-                          src={authorAvatar}
-                          alt=""
-                          className="h-5 w-5 shrink-0 rounded-full object-cover ring-1 ring-zinc-700"
-                          referrerPolicy="no-referrer"
-                          onError={(e) => {
-                            e.currentTarget.src = DEFAULT_AVATAR_URL
-                          }}
-                        />
-                        <span className="truncate text-[12px] text-zinc-400">
-                          @{v.authorUsername ?? 'user'}
-                        </span>
-                      </div>
-                    </button>
+                    <SearchVideoCard video={v} onOpen={openVideo} />
                   </li>
                 )
               })}
