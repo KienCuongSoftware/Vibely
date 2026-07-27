@@ -47,7 +47,6 @@ import {
   IoEllipsisHorizontal,
   IoHeart,
   IoMusicalNotes,
-  IoPause,
   IoPlay,
   IoPlayOutline,
   IoVolumeHighOutline,
@@ -1007,7 +1006,8 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
       } else {
         setWatchUserPaused(true);
         el.pause();
-        flashWatchPlayback("pause");
+        // TikTok only shows ▶ while paused — never a ‖ pause glyph.
+        setWatchPlaybackFlash(null);
       }
     },
     [flashWatchPlayback, videoContextMenu, watchMoreMenuOpen],
@@ -2045,27 +2045,22 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                   {activePlaybackUrl &&
                   !videoContextMenu &&
                   !watchMoreMenuOpen &&
-                  (watchPlaybackFlash || watchUserPaused) ? (
+                  (watchPlaybackFlash === "play" || watchUserPaused) ? (
                     <div
                       className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center"
                       aria-hidden
                     >
                       <div
                         className={
-                          watchPlaybackFlash ? "feed-playback-flash" : undefined
+                          watchPlaybackFlash === "play"
+                            ? "feed-playback-flash"
+                            : undefined
                         }
                       >
-                        {watchPlaybackFlash === "pause" ? (
-                          <IoPause
-                            className="h-16 w-16 text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)] sm:h-20 sm:w-20"
-                            aria-hidden
-                          />
-                        ) : (
-                          <IoPlay
-                            className="ml-1 h-16 w-16 text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)] sm:h-20 sm:w-20"
-                            aria-hidden
-                          />
-                        )}
+                        <IoPlay
+                          className="ml-1 h-16 w-16 text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)] sm:h-20 sm:w-20"
+                          aria-hidden
+                        />
                       </div>
                     </div>
                   ) : null}
