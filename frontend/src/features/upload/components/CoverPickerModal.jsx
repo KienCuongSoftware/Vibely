@@ -337,6 +337,15 @@ export function CoverPickerModal({
       setError('Bạn cần đăng nhập.')
       return
     }
+    if (tab === 'video') {
+      if (stripLoading || !frames[selectedIdx]?.dataUrl) {
+        setError('Chưa có khung hình từ video. Đợi tạo xong hoặc chọn khung hình.')
+        return
+      }
+    } else if (!uploadFile) {
+      setError('Hãy chọn ảnh từ máy tính.')
+      return
+    }
     setBusy(true)
     setError('')
     try {
@@ -345,10 +354,6 @@ export function CoverPickerModal({
 
       if (tab === 'video') {
         const frame = frames[selectedIdx]
-        if (!frame?.dataUrl) {
-          setError('Chưa có khung hình từ video. Thử tab tải ảnh lên hoặc tải lại video.')
-          return
-        }
         // Filmstrip dùng bản nhẹ để chọn nhanh, nhưng lúc xác nhận sẽ trích frame gốc.
         if (videoSource) {
           blob = await extractOriginalResolutionFrame(videoSource, frame.time)
@@ -357,10 +362,6 @@ export function CoverPickerModal({
           blob = new Blob([blob], { type: 'image/jpeg' })
         }
       } else {
-        if (!uploadFile) {
-          setError('Hãy chọn ảnh từ máy tính.')
-          return
-        }
         blob = uploadFile
         fname = uploadFile.name || 'cover.jpg'
       }
@@ -390,6 +391,14 @@ export function CoverPickerModal({
   const previewSrc = tab === 'video' ? displayPreviewUrl : uploadPreviewUrl || undefined
 
   const canUseVideoTab = Boolean(videoSource)
+  const hasVideoCover =
+    tab === 'video' &&
+    !stripLoading &&
+    !stripError &&
+    frames.length > 0 &&
+    Boolean(frames[selectedIdx]?.dataUrl)
+  const hasUploadCover = tab === 'upload' && Boolean(uploadFile)
+  const canConfirm = !busy && (hasVideoCover || hasUploadCover)
 
   return (
     <div
@@ -599,9 +608,10 @@ export function CoverPickerModal({
           </button>
           <button
             type="button"
-            className="rounded-lg bg-[#fe2c55] px-5 py-2 text-sm font-semibold text-white hover:bg-[#e62a4d] disabled:opacity-50"
+            className="rounded-lg bg-[#fe2c55] px-5 py-2 text-sm font-semibold text-white hover:bg-[#e62a4d] disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400 disabled:opacity-100"
             onClick={() => void handleConfirm()}
-            disabled={busy}
+            disabled={!canConfirm}
+            aria-disabled={!canConfirm}
           >
             {busy ? 'Đang lưu…' : 'Xác nhận'}
           </button>

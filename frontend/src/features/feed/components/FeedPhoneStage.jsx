@@ -419,18 +419,22 @@ const FEED_VOLUME_DEFAULT = 1;
 
 function FeedVolumeIcon({ soundOn, volume }) {
   if (!soundOn || volume === 0) {
-    return <IoVolumeMuteOutline aria-hidden />;
+    return <IoVolumeMuteOutline className="h-[22px] w-[22px]" aria-hidden />;
   }
   if (volume < 0.34) {
-    return <IoVolumeLowOutline aria-hidden />;
+    return <IoVolumeLowOutline className="h-[22px] w-[22px]" aria-hidden />;
   }
   if (volume < 0.67) {
-    return <IoVolumeMediumOutline aria-hidden />;
+    return <IoVolumeMediumOutline className="h-[22px] w-[22px]" aria-hidden />;
   }
-  return <IoVolumeHighOutline aria-hidden />;
+  return <IoVolumeHighOutline className="h-[22px] w-[22px]" aria-hidden />;
 }
 
-/** Điều khiển âm lượng góc trên trái — capsule TikTok (icon tròn + track + thumb squircle). */
+/**
+ * TikTok For You volume:
+ * - Muted → mute icon always visible (no video hover needed)
+ * - Unmuted → speaker shows on video hover; slider only when hovering the control
+ */
 export function FeedVolumeControl({
   volume,
   onVolumeChange,
@@ -440,6 +444,7 @@ export function FeedVolumeControl({
   alwaysVisible = false,
 }) {
   const [pinned, setPinned] = useState(false);
+  const isMuted = !soundOn || volume <= 0;
 
   useEffect(() => {
     if (!pinned) return undefined;
@@ -463,7 +468,7 @@ export function FeedVolumeControl({
 
   const toggleSound = (e) => {
     e.stopPropagation();
-    if (soundOn && volume > 0) {
+    if (!isMuted) {
       onSoundOnChange(false);
       return;
     }
@@ -480,72 +485,73 @@ export function FeedVolumeControl({
     onSoundOnChange(v > 0);
   };
 
-  const sliderTrackPad = "pl-0.5 pr-3.5";
-  const sliderTrackWidth =
-    "w-19 group-hover:w-19 focus-within:w-19 group-hover/vol:w-19";
-  const expanded = "pointer-events-auto max-w-[9.25rem] opacity-100";
-  const visibleIdle =
-    "pointer-events-auto max-w-9 opacity-100 hover:max-w-[9.25rem] focus-within:max-w-[9.25rem]";
-  const collapsed = `pointer-events-none max-w-9 opacity-0 group-hover:pointer-events-auto group-hover:max-w-[9.25rem] group-hover:opacity-100 group-has-[.feed-video-more-panel:hover]:pointer-events-none group-has-[.feed-video-more-panel:hover]:max-w-9 group-has-[.feed-video-more-panel:hover]:opacity-0 focus-within:pointer-events-auto focus-within:max-w-[9.25rem] focus-within:opacity-100`;
+  // Muted: always on. Unmuted: only with video hover (group) unless alwaysVisible / pinned / hovering vol.
+  const shellVisibility = isMuted || alwaysVisible || pinned
+    ? "pointer-events-auto opacity-100"
+    : "pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100 focus-within:pointer-events-auto focus-within:opacity-100 group-has-[.feed-video-more-panel:hover]:pointer-events-none group-has-[.feed-video-more-panel:hover]:opacity-0";
 
   return (
     <div
-      className={`feed-volume-control group/vol flex h-9 items-center overflow-hidden rounded-full bg-black/30 text-white shadow-[0_2px_12px_rgba(0,0,0,0.22)] backdrop-blur-md transition-[max-width,opacity] duration-200 ease-out ${
-        pinned ? expanded : alwaysVisible ? visibleIdle : collapsed
-      }`}
-      onPointerDown={pinInteraction}
+      className={`feed-volume-control group/vol relative flex h-10 items-center transition-opacity duration-150 ease-out ${shellVisibility}`}
+      onPointerDown={stopFeedPointer}
       onMouseDown={stopFeedPointer}
       onClick={stopFeedPointer}
     >
-      <button
-        type="button"
-        aria-label={soundOn && volume > 0 ? "Tắt âm thanh" : "Bật âm thanh"}
-        className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white/14 text-[1.2rem] leading-none transition-colors hover:bg-white/22"
-        onPointerDown={stopFeedPointer}
-        onClick={toggleSound}
-      >
-        <FeedVolumeIcon soundOn={soundOn} volume={volume} />
-      </button>
       <div
-        className={`relative flex h-9 shrink-0 items-center overflow-hidden transition-[width,opacity,padding] duration-200 ease-out ${sliderTrackPad} ${
+        className={`flex h-10 items-center overflow-hidden rounded-full transition-[max-width,background-color,padding,box-shadow] duration-200 ease-out ${
           pinned
-            ? "w-19 opacity-100"
-            : alwaysVisible
-              ? "w-0 opacity-0 group-hover/vol:w-19 group-hover/vol:opacity-100 focus-within:w-19 focus-within:opacity-100"
-              : `w-0 opacity-0 ${sliderTrackWidth} group-hover:opacity-100 focus-within:opacity-100`
+            ? "max-w-[11.5rem] bg-black/55 py-0 pl-1.5 pr-3 shadow-[0_4px_18px_rgba(0,0,0,0.35)] backdrop-blur-md"
+            : "max-w-10 bg-transparent p-0 group-hover/vol:max-w-[11.5rem] group-hover/vol:bg-black/55 group-hover/vol:py-0 group-hover/vol:pl-1.5 group-hover/vol:pr-3 group-hover/vol:shadow-[0_4px_18px_rgba(0,0,0,0.35)] group-hover/vol:backdrop-blur-md focus-within:max-w-[11.5rem] focus-within:bg-black/55 focus-within:py-0 focus-within:pl-1.5 focus-within:pr-3"
         }`}
       >
+        <button
+          type="button"
+          aria-label={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
+          className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center text-white transition-opacity hover:opacity-90"
+          onPointerDown={stopFeedPointer}
+          onClick={toggleSound}
+        >
+          <FeedVolumeIcon soundOn={soundOn} volume={volume} />
+        </button>
         <div
-          className="pointer-events-none absolute top-1/2 right-3.5 left-0.5 h-[2px] -translate-y-1/2 rounded-full bg-white/40"
-          aria-hidden
+          className={`relative flex h-10 shrink-0 items-center overflow-hidden transition-[width,opacity] duration-200 ease-out ${
+            pinned
+              ? "w-[7.25rem] opacity-100"
+              : "w-0 opacity-0 group-hover/vol:w-[7.25rem] group-hover/vol:opacity-100 focus-within:w-[7.25rem] focus-within:opacity-100"
+          }`}
         >
           <div
-            className="absolute top-1/2 left-1/2 h-1.5 w-px -translate-x-1/2 -translate-y-1/2 bg-white/55"
+            className="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center"
             aria-hidden
+          >
+            <div className="relative h-[4px] w-full overflow-hidden rounded-full bg-white/30">
+              <div
+                className="absolute inset-y-0 left-0 rounded-full bg-white"
+                style={{ width: `${Math.min(100, Math.max(0, volume * 100))}%` }}
+              />
+            </div>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.01}
+            value={volume}
+            aria-label="Âm lượng"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(volume * 100)}
+            className={`feed-volume-slider relative z-10 w-full cursor-pointer ${
+              pinned
+                ? "pointer-events-auto"
+                : "pointer-events-none group-hover/vol:pointer-events-auto focus-within:pointer-events-auto"
+            }`}
+            onPointerDown={pinInteraction}
+            onChange={onSlider}
+            onInput={onSlider}
+            onClick={stopFeedPointer}
           />
         </div>
-        <input
-          type="range"
-          min={0}
-          max={1}
-          step={0.01}
-          value={volume}
-          aria-label="Âm lượng"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(volume * 100)}
-          className={`feed-volume-slider relative z-10 w-full cursor-pointer ${
-            pinned
-              ? "pointer-events-auto"
-              : alwaysVisible
-                ? "pointer-events-none group-hover/vol:pointer-events-auto focus-within:pointer-events-auto"
-                : "pointer-events-none group-hover:pointer-events-auto focus-within:pointer-events-auto"
-          }`}
-          onPointerDown={pinInteraction}
-          onChange={onSlider}
-          onInput={onSlider}
-          onClick={stopFeedPointer}
-        />
       </div>
     </div>
   );
