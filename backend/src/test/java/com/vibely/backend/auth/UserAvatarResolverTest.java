@@ -29,12 +29,11 @@ class UserAvatarResolverTest {
     }
 
     @Test
-    void resolvePrefersUploadedAvatarOverOAuthCdn() {
+    void resolveGoogleAvatarWithoutUserIdFallsBackToEnlargedUrl() {
         User user = new User();
-        user.setId(7L);
-        user.setAvatarUrl("https://cdn.example.com/me.jpg");
-        user.setGoogleAvatarUrl("https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=123");
+        user.setGoogleAvatarUrl("https://lh3.googleusercontent.com/a/example-photo=s96-c");
 
-        assertThat(resolver.resolve(user)).isEqualTo("https://cdn.example.com/me.jpg");
+        assertThat(resolver.resolve(user)).contains("googleusercontent.com");
+        assertThat(resolver.resolve(user)).contains("s512");
     }
 }

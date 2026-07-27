@@ -286,7 +286,11 @@ public class SearchService {
     }
 
     private SearchUserResultDto toUserResult(SearchUserProjection row, String query) {
-        String avatar = resolveAvatarFromProjection(row.getGoogleAvatarUrl(), row.getAvatarUrl());
+        String avatar = resolveAvatarFromProjection(
+            row.getId(),
+            row.getGoogleAvatarUrl(),
+            row.getAvatarUrl()
+        );
         return new SearchUserResultDto(
             row.getId(),
             row.getUsername(),
@@ -341,8 +345,9 @@ public class SearchService {
         );
     }
 
-    private String resolveAvatarFromProjection(String googleAvatarUrl, String avatarUrl) {
+    private String resolveAvatarFromProjection(Long userId, String googleAvatarUrl, String avatarUrl) {
         User proxy = new User();
+        proxy.setId(userId);
         proxy.setGoogleAvatarUrl(googleAvatarUrl);
         proxy.setAvatarUrl(avatarUrl);
         return mediaUrlPresigner.presignPlaybackUrl(userAvatarResolver.resolve(proxy));
