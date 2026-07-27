@@ -85,12 +85,10 @@ function SearchResultsBody({
   error,
   hasResults,
   activeTab,
-  setActiveTab,
   showUsers,
   showVideos,
   userPreview,
   videoList,
-  users,
   matchedTags = [],
   token,
   user,
@@ -107,13 +105,7 @@ function SearchResultsBody({
   }
 
   if (loading) {
-    return (
-      <SearchResultsSkeleton
-        showUsers={showUsers}
-        showVideos={showVideos}
-        activeTab={activeTab}
-      />
-    )
+    return <SearchResultsSkeleton activeTab={activeTab} />
   }
 
   if (error) {
@@ -152,15 +144,6 @@ function SearchResultsBody({
         <section className="mb-10">
           <div className="mb-4 flex items-center justify-between gap-2">
             <h2 className="text-[17px] font-bold text-white">Người dùng</h2>
-            {activeTab === 'top' && users.length > 5 ? (
-              <button
-                type="button"
-                className="cursor-pointer text-[15px] font-semibold text-zinc-400 hover:text-white"
-                onClick={() => setActiveTab('users')}
-              >
-                Xem thêm ›
-              </button>
-            ) : null}
           </div>
           {userPreview.length === 0 ? (
             <p className="text-sm text-zinc-500">Không tìm thấy người dùng.</p>
@@ -181,9 +164,6 @@ function SearchResultsBody({
 
       {showVideos ? (
         <section>
-          {activeTab === 'top' && users.length > 0 ? (
-            <h2 className="mb-4 text-[17px] font-bold text-white">Video</h2>
-          ) : null}
           {videoList.length === 0 ? (
             <p className="text-sm text-zinc-500">Không tìm thấy video.</p>
           ) : (
@@ -215,7 +195,7 @@ export function SearchResultsPage() {
   const [users, setUsers] = useState([])
   const [videos, setVideos] = useState([])
   const [matchedTags, setMatchedTags] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(() => Boolean(qFromUrl))
   const [error, setError] = useState('')
   const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout())
 
@@ -280,6 +260,7 @@ export function SearchResultsPage() {
       setVideos([])
       setMatchedTags([])
       setError('')
+      setLoading(false)
       return undefined
     }
     let cancelled = false
@@ -348,11 +329,17 @@ export function SearchResultsPage() {
     [navigate],
   )
 
-  const showUsers = activeTab === 'top' || activeTab === 'users'
+  const showUsers = activeTab === 'users'
   const showVideos = activeTab === 'top' || activeTab === 'videos'
-  const userPreview = activeTab === 'top' ? users.slice(0, 5) : users
-  const videoList = videos
-  const hasResults = users.length > 0 || videos.length > 0
+  const userPreview = users
+  const videoList =
+    activeTab === 'top'
+      ? [...videos].sort(
+          (a, b) => Number(b.viewCount ?? 0) - Number(a.viewCount ?? 0),
+        )
+      : videos
+  const hasResults =
+    (showUsers && users.length > 0) || (showVideos && videos.length > 0)
 
   const barValue = mobileSearchMode ? suggestQuery : inputQuery
   const barOnChange = mobileSearchMode ? setSuggestQuery : setInputQuery
@@ -364,12 +351,10 @@ export function SearchResultsPage() {
       error={error}
       hasResults={hasResults}
       activeTab={activeTab}
-      setActiveTab={setActiveTab}
       showUsers={showUsers}
       showVideos={showVideos}
       userPreview={userPreview}
       videoList={videoList}
-      users={users}
       matchedTags={matchedTags}
       token={token}
       user={user}

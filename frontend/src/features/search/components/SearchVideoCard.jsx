@@ -1,5 +1,5 @@
 import React from 'react'
-import { IoHeart } from 'react-icons/io5'
+import { IoHeartOutline } from 'react-icons/io5'
 import {
   DEFAULT_AVATAR_URL,
   resolveVideoSearchCaption,
@@ -54,7 +54,7 @@ export function SearchVideoThumb({ src, likeCount = 0, alt = '' }) {
       )}
 
       <div className="pointer-events-none absolute bottom-2 left-2 z-[2] inline-flex items-center gap-1 text-[13px] font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-        <IoHeart className="text-[14px]" aria-hidden />
+        <IoHeartOutline className="text-[15px]" aria-hidden />
         {formatCompactCount(likeCount)}
       </div>
     </div>
