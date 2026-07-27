@@ -325,12 +325,12 @@ public class SearchService {
     }
 
     private boolean originalDescriptionMatches(SearchVideoProjection row, String query) {
-        String q = SearchTextNormalizer.normalizeQuery(query).toLowerCase(Locale.ROOT);
+        String q = SearchTextNormalizer.foldForSearch(query);
         String description = row.getDescription();
         if (q.isEmpty() || description == null || description.isBlank()) {
             return false;
         }
-        return description.toLowerCase(Locale.ROOT).contains(q);
+        return SearchTextNormalizer.foldForSearch(description).contains(q);
     }
 
     private SearchHashtagResultDto toHashtagResult(SearchHashtagProjection row) {
@@ -394,11 +394,10 @@ public class SearchService {
     }
 
     static String normalizeSearchTerm(String rawQuery) {
-        String normalized = SearchTextNormalizer.normalizeQuery(rawQuery);
+        String normalized = SearchTextNormalizer.foldForSearch(rawQuery);
         if (normalized.startsWith("#")) {
             normalized = normalized.substring(1).trim();
         }
-        normalized = normalized.toLowerCase(Locale.ROOT);
         if (normalized.length() > MAX_QUERY_LENGTH) {
             normalized = normalized.substring(0, MAX_QUERY_LENGTH);
         }

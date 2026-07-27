@@ -5,7 +5,6 @@ import com.vibely.backend.search.repository.SearchVideoProjection;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
-import java.util.Locale;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,8 +18,11 @@ public class SearchRankingService {
         if (query == null || query.isBlank() || field == null || field.isBlank()) {
             return 0;
         }
-        String q = query.trim().toLowerCase(Locale.ROOT);
-        String value = field.trim().toLowerCase(Locale.ROOT);
+        String q = SearchTextNormalizer.foldForSearch(query);
+        String value = SearchTextNormalizer.foldForSearch(field);
+        if (q.isEmpty() || value.isEmpty()) {
+            return 0;
+        }
         if (value.equals(q)) {
             return EXACT_MATCH_SCORE;
         }
@@ -49,7 +51,7 @@ public class SearchRankingService {
     }
 
     public double scoreVideoTextMatch(SearchVideoProjection row, String query) {
-        String q = SearchTextNormalizer.normalizeQuery(query).toLowerCase(Locale.ROOT);
+        String q = SearchTextNormalizer.foldForSearch(query);
         if (q.isEmpty()) {
             return 0;
         }
@@ -87,11 +89,11 @@ public class SearchRankingService {
             .thenComparing(row -> row.getCreatedAt(), Comparator.nullsLast(Comparator.reverseOrder()));
     }
 
-    private double fieldTextScore(String query, String field) {
+    private double fieldTextScore(String foldedQuery, String field) {
         if (field == null || field.isBlank()) {
             return 0;
         }
-        return scoreUserTextMatch(query, field);
+        return scoreUserTextMatch(foldedQuery, SearchTextNormalizer.foldForSearch(field));
     }
 
     private double freshnessBoost(LocalDateTime createdAt) {

@@ -54,6 +54,8 @@ Users, hashtags, and videos in suggest are filtered by the same normalized query
 
 **Video text fields:** original `videos.title` / `videos.description`, hashtags, semantic tags, and **`description_translations.translated_text`** (so Vietnamese queries match captions that were machine-translated for the feed UI).
 
+**Accent fold:** query and DB text go through `vibely_search_fold` (PostgreSQL) / `SearchTextNormalizer.foldForSearch` (Java) so `hinh nen dong` matches `Hình nền động`. Space-stripped matching also lets spaced queries hit hashtags like `#hinhnendong`.
+
 ## 5. Frontend architecture
 
 ```

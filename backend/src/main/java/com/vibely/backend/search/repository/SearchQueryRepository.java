@@ -19,8 +19,8 @@ public interface SearchQueryRepository extends JpaRepository<User, Long> {
                    u.avatar_url as avatarUrl,
                    u.google_avatar_url as googleAvatarUrl
             from users u
-            where lower(u.username) like concat('%', lower(:q), '%')
-               or lower(u.display_name) like concat('%', lower(:q), '%')
+            where vibely_search_fold(u.username) like concat('%', :q, '%')
+               or vibely_search_fold(u.display_name) like concat('%', :q, '%')
             order by u.id
             limit :#{#pageable.pageSize}
             """,
@@ -44,19 +44,35 @@ public interface SearchQueryRepository extends JpaRepository<User, Long> {
                    coalesce(nullif(trim(u.avatar_url), ''), nullif(trim(u.google_avatar_url), ''), '/images/users/default-avatar.jpeg') as authorAvatarUrl,
                    coalesce(ves.views, 0) as viewCount,
                    coalesce(lc.like_count, 0) as likeCount,
-                   (lower(coalesce(v.title, '')) like concat('%', lower(:q), '%')) as titleMatch,
+                   (vibely_search_fold(coalesce(v.title, '')) like concat('%', :q, '%')
+                     or replace(vibely_search_fold(coalesce(v.title, '')), ' ', '') like concat('%', replace(:q, ' ', ''), '%')
+                   ) as titleMatch,
                    (
-                     lower(coalesce(v.description, '')) like concat('%', lower(:q), '%')
-                     or max(case when lower(coalesce(dt.translated_text, '')) like concat('%', lower(:q), '%') then 1 else 0 end) = 1
+                     vibely_search_fold(coalesce(v.description, '')) like concat('%', :q, '%')
+                     or replace(vibely_search_fold(coalesce(v.description, '')), ' ', '') like concat('%', replace(:q, ' ', ''), '%')
+                     or max(case
+                          when vibely_search_fold(coalesce(dt.translated_text, '')) like concat('%', :q, '%') then 1
+                          when replace(vibely_search_fold(coalesce(dt.translated_text, '')), ' ', '') like concat('%', replace(:q, ' ', ''), '%') then 1
+                          else 0
+                        end) = 1
                    ) as descriptionMatch,
-                   (max(case when lower(coalesce(dt.translated_text, '')) like concat('%', lower(:q), '%') then 1 else 0 end) = 1) as translatedMatch,
-                   max(dt.translated_text) filter (
-                     where lower(coalesce(dt.translated_text, '')) like concat('%', lower(:q), '%')
-                   ) as matchedTranslatedText,
-                   (max(case when lower(coalesce(h.tag, '')) like concat('%', lower(:q), '%') then 1 else 0 end) = 1) as hashtagMatch,
                    (max(case
-                        when lower(coalesce(st.slug, '')) like concat('%', lower(:q), '%') then 1
-                        when lower(coalesce(sta.alias, '')) like concat('%', lower(:q), '%') then 1
+                        when vibely_search_fold(coalesce(dt.translated_text, '')) like concat('%', :q, '%') then 1
+                        when replace(vibely_search_fold(coalesce(dt.translated_text, '')), ' ', '') like concat('%', replace(:q, ' ', ''), '%') then 1
+                        else 0
+                    end) = 1) as translatedMatch,
+                   max(dt.translated_text) filter (
+                     where vibely_search_fold(coalesce(dt.translated_text, '')) like concat('%', :q, '%')
+                        or replace(vibely_search_fold(coalesce(dt.translated_text, '')), ' ', '') like concat('%', replace(:q, ' ', ''), '%')
+                   ) as matchedTranslatedText,
+                   (max(case
+                        when vibely_search_fold(coalesce(h.tag, '')) like concat('%', :q, '%') then 1
+                        when replace(vibely_search_fold(coalesce(h.tag, '')), ' ', '') like concat('%', replace(:q, ' ', ''), '%') then 1
+                        else 0
+                    end) = 1) as hashtagMatch,
+                   (max(case
+                        when vibely_search_fold(coalesce(st.slug, '')) like concat('%', :q, '%') then 1
+                        when vibely_search_fold(coalesce(sta.alias, '')) like concat('%', :q, '%') then 1
                         else 0
                     end) = 1) as semanticTagMatch
             from videos v
@@ -76,12 +92,16 @@ public interface SearchQueryRepository extends JpaRepository<User, Long> {
             where v.status = 'READY'
               and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
               and (
-                lower(coalesce(v.title, '')) like concat('%', lower(:q), '%')
-                or lower(coalesce(v.description, '')) like concat('%', lower(:q), '%')
-                or lower(coalesce(dt.translated_text, '')) like concat('%', lower(:q), '%')
-                or lower(coalesce(h.tag, '')) like concat('%', lower(:q), '%')
-                or lower(coalesce(st.slug, '')) like concat('%', lower(:q), '%')
-                or lower(coalesce(sta.alias, '')) like concat('%', lower(:q), '%')
+                vibely_search_fold(coalesce(v.title, '')) like concat('%', :q, '%')
+                or replace(vibely_search_fold(coalesce(v.title, '')), ' ', '') like concat('%', replace(:q, ' ', ''), '%')
+                or vibely_search_fold(coalesce(v.description, '')) like concat('%', :q, '%')
+                or replace(vibely_search_fold(coalesce(v.description, '')), ' ', '') like concat('%', replace(:q, ' ', ''), '%')
+                or vibely_search_fold(coalesce(dt.translated_text, '')) like concat('%', :q, '%')
+                or replace(vibely_search_fold(coalesce(dt.translated_text, '')), ' ', '') like concat('%', replace(:q, ' ', ''), '%')
+                or vibely_search_fold(coalesce(h.tag, '')) like concat('%', :q, '%')
+                or replace(vibely_search_fold(coalesce(h.tag, '')), ' ', '') like concat('%', replace(:q, ' ', ''), '%')
+                or vibely_search_fold(coalesce(st.slug, '')) like concat('%', :q, '%')
+                or vibely_search_fold(coalesce(sta.alias, '')) like concat('%', :q, '%')
               )
             group by v.id, v.public_id, v.title, v.description, v.thumbnail_url, v.video_url,
                      v.master_playlist_url, v.created_at, u.id, u.username, u.display_name,
@@ -100,7 +120,8 @@ public interface SearchQueryRepository extends JpaRepository<User, Long> {
                    count(vh.video_id) as usageCount
             from hashtags h
             left join video_hashtags vh on vh.hashtag_id = h.id
-            where lower(h.tag) like concat('%', lower(:q), '%')
+            where vibely_search_fold(h.tag) like concat('%', :q, '%')
+               or replace(vibely_search_fold(h.tag), ' ', '') like concat('%', replace(:q, ' ', ''), '%')
             group by h.id, h.tag
             order by usageCount desc, h.tag asc
             limit :#{#pageable.pageSize}

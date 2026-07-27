@@ -18,4 +18,13 @@ class SearchTextNormalizerTest {
         assertThat(SearchTextNormalizer.normalizeTrendKeyword("  Hello  ")).isEqualTo("hello");
         assertThat(SearchTextNormalizer.normalizeTrendKeyword("x".repeat(250))).hasSize(200);
     }
+
+    @Test
+    void foldForSearchStripsVietnameseDiacritics() {
+        assertThat(SearchTextNormalizer.foldForSearch("Hình nền động"))
+            .isEqualTo("hinh nen dong");
+        assertThat(SearchTextNormalizer.foldForSearch("hinh nen dong"))
+            .isEqualTo("hinh nen dong");
+        assertThat(SearchTextNormalizer.foldForSearch("Động")).isEqualTo("dong");
+    }
 }

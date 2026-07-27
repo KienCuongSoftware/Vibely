@@ -78,5 +78,7 @@ class SearchRankingServiceTest {
 
         assertThat(rankingService.scoreVideoTextMatch(translatedOnly, "hình nền động"))
             .isGreaterThanOrEqualTo(SearchRankingService.CONTAINS_SCORE * 0.65);
+        assertThat(rankingService.scoreVideoTextMatch(translatedOnly, "hinh nen dong"))
+            .isGreaterThanOrEqualTo(SearchRankingService.CONTAINS_SCORE * 0.65);
     }
 }
