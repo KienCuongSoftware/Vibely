@@ -14,9 +14,13 @@ import { AdminPagination } from "@/features/admin/components/AdminPagination.jsx
 import { BirthDateFields } from "@/features/auth/components/BirthDateSelect.jsx";
 import { validateBirthDateParts } from "@/features/auth/utils/birthDate.js";
 import { useAuth } from "@/store/useAuth.js";
+import {
+  DEFAULT_AVATAR_URL,
+  sanitizeAvatarUrl,
+} from "@/features/profile/utils/avatarUrl.js";
 
 const PAGE_SIZE = 20;
-const DEFAULT_AVATAR = "/images/users/default-avatar.jpeg";
+const DEFAULT_AVATAR = DEFAULT_AVATAR_URL;
 const BIRTH_MONTH_OPTIONS = [
   "Tháng Một",
   "Tháng Hai",
@@ -53,11 +57,7 @@ function roleLabel(role) {
 }
 
 function resolveAdminAvatarUrl(avatarUrl) {
-  const value = String(avatarUrl ?? "").trim();
-  if (!value || value.startsWith("/api/users/oauth-avatar/")) {
-    return DEFAULT_AVATAR;
-  }
-  return value;
+  return sanitizeAvatarUrl(avatarUrl, DEFAULT_AVATAR);
 }
 
 function formatDateTime(value) {
