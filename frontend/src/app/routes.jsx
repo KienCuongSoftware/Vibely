@@ -97,14 +97,8 @@ export function OnboardingRoutes() {
 export function AuthenticatedRoutes({ user, isAdmin }) {
   return (
     <Routes>
-      <Route
-        path="/"
-        element={isAdmin ? <Navigate to="/admin" replace /> : <FeedPage />}
-      />
-      <Route
-        path="/foryou"
-        element={isAdmin ? <Navigate to="/admin" replace /> : <Navigate to="/" replace />}
-      />
+      <Route path="/" element={<FeedPage />} />
+      <Route path="/foryou" element={<Navigate to="/" replace />} />
       <Route path="/following" element={<FollowingPage />} />
       <Route path="/friends" element={<FriendsPage />} />
       <Route path="/messages" element={<MessagesPage />} />

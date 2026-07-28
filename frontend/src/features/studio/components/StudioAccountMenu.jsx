@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { IoLogOutOutline, IoPersonOutline, IoSettingsOutline } from 'react-icons/io5'
+import { IoLogOutOutline, IoPersonOutline } from 'react-icons/io5'
 import { useAuth } from '@/store/useAuth'
 
 /** @param {'dark' | 'light'} [theme='dark'] */
@@ -85,23 +85,6 @@ export function StudioAccountMenu({ theme = 'dark' }) {
               aria-hidden
             />
             Hồ sơ
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            disabled
-            title="Tính năng đang phát triển"
-            className={
-              light
-                ? 'flex w-full cursor-not-allowed items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-slate-400'
-                : 'flex w-full cursor-not-allowed items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-zinc-500'
-            }
-          >
-            <IoSettingsOutline
-              className={light ? 'text-lg text-slate-400' : 'text-lg text-zinc-600'}
-              aria-hidden
-            />
-            Cài đặt
           </button>
           <div className={light ? 'my-1 border-t border-slate-100' : 'my-1 border-t border-zinc-800'} aria-hidden />
           <button

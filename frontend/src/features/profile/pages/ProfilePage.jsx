@@ -564,6 +564,8 @@ export function ProfilePage() {
       (Boolean(user?.username) &&
         Boolean(profile?.username) &&
         normalizeUsername(user.username) === normalizeUsername(profile.username)))
+  const isAdminOwnProfile =
+    isOwnProfile && String(user?.role ?? '').toUpperCase() === 'ADMIN'
   const isFollowingProfile = Boolean(profile?.followedByViewer)
   const isFollowRequestPending = Boolean(profile?.followRequestPending)
   const isBannedProfile = String(profile?.accountStatus ?? '').toUpperCase() === 'BANNED'
@@ -1376,16 +1378,18 @@ export function ProfilePage() {
             : null
         }
       />
-      <div className="hidden shrink-0 lg:block">
-        <Sidebar
-          menuItems={menuItems}
-          activeMenu={activeMenu}
-          onSelectMenu={handleSelectMenu}
-          token={token}
-          user={user}
-          onLogout={token ? logout : undefined}
-        />
-      </div>
+      {isAdminOwnProfile ? null : (
+        <div className="hidden shrink-0 lg:block">
+          <Sidebar
+            menuItems={menuItems}
+            activeMenu={activeMenu}
+            onSelectMenu={handleSelectMenu}
+            token={token}
+            user={user}
+            onLogout={token ? logout : undefined}
+          />
+        </div>
+      )}
 
       <div
         ref={profileScrollRef}
@@ -1504,6 +1508,15 @@ export function ProfilePage() {
                     >
                       Sửa hồ sơ
                     </button>
+                    {isAdminOwnProfile ? (
+                      <button
+                        type="button"
+                        className="cursor-pointer rounded-md border border-zinc-700 bg-[#FE2C55]/15 px-4 py-1.5 text-sm font-semibold text-[#FE2C55]"
+                        onClick={() => navigate('/')}
+                      >
+                        Xem đề xuất
+                      </button>
+                    ) : null}
                     <button
                       type="button"
                       aria-label="Chia sẻ hồ sơ"
@@ -1605,12 +1618,22 @@ export function ProfilePage() {
                       >
                         Sửa hồ sơ
                       </button>
-                      <button
-                        type="button"
-                        className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"
-                      >
-                        Quảng bá bài đăng
-                      </button>
+                      {isAdminOwnProfile ? (
+                        <button
+                          type="button"
+                          className="cursor-pointer rounded-full border border-[#FE2C55]/40 bg-[#FE2C55]/10 px-5 py-2 text-sm font-semibold text-[#FE2C55] hover:bg-[#FE2C55]/20"
+                          onClick={() => navigate('/')}
+                        >
+                          Xem đề xuất
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"
+                        >
+                          Quảng bá bài đăng
+                        </button>
+                      )}
                       <button
                         type="button"
                         aria-label="Cài đặt hồ sơ"
@@ -2494,7 +2517,7 @@ export function ProfilePage() {
         ) : null}
       </div>
 
-      {mobileLayout ? (
+      {mobileLayout && !isAdminOwnProfile ? (
         <div className="shrink-0 lg:hidden">
           <MobileFeedBottomNav
             token={token}
