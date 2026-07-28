@@ -221,6 +221,21 @@ public class FfmpegHlsPipelineRunner {
             );
 
             String prefix = "hls/" + item.authorId() + "/" + item.videoPublicId() + "/";
+            S3MediaDeletionService deletion = s3MediaDeletionService.getIfAvailable();
+            if (deletion != null) {
+                try {
+                    int removed = deletion.deleteHlsPrefix(item.authorId(), item.videoPublicId());
+                    if (removed > 0) {
+                        log.info(
+                            "HLS pipeline cleared {} stale object(s) under {} before re-upload",
+                            removed,
+                            prefix
+                        );
+                    }
+                } catch (Exception e) {
+                    log.warn("HLS pipeline: failed clearing old HLS prefix {} (continuing)", prefix, e);
+                }
+            }
             int uploaded = 0;
             try (Stream<Path> paths = Files.walk(transcodeDir)) {
                 for (Path p : paths.filter(Files::isRegularFile).toList()) {

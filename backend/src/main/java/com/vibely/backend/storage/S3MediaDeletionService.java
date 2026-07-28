@@ -146,6 +146,18 @@ public class S3MediaDeletionService {
     }
 
     /**
+     * Deletes only HLS objects under {@code hls/{authorId}/{publicId}/} (keeps raw upload / thumb).
+     * Used before re-transcode so stale single-rendition masters cannot linger.
+     */
+    public int deleteHlsPrefix(long authorId, UUID publicId) {
+        String bucket = properties.getBucket();
+        if (bucket == null || bucket.isBlank()) {
+            throw new StorageDeletionException("Bucket S3 chưa được cấu hình.");
+        }
+        return deletePrefix(bucket, hlsPrefixFor(authorId, publicId), authorHlsPrefix(authorId));
+    }
+
+    /**
      * Deletes a raw upload (+ derived audio key) and optional thumbnail owned by authorId.
      * Used when rejecting an upload before / without a persisted Video row.
      */

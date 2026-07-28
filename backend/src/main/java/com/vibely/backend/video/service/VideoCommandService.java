@@ -323,9 +323,7 @@ public class VideoCommandService {
         if (video.getStatus() == VideoStatus.REMOVED) {
             throw new BadRequestException("Video đã bị gỡ.");
         }
-        if (video.getStatus() == VideoStatus.READY) {
-            throw new BadRequestException("Video đã sẵn sàng phát.");
-        }
+        // Cho phép re-encode READY để áp ladder HLS mới (144p…4K).
         video.setStatus(VideoStatus.RAW);
         video.setProcessingError(null);
         videoRepository.save(video);

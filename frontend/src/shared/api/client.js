@@ -417,6 +417,23 @@ export const apiClient = {
     request(`/api/videos/${publicId}`, { method: "PUT", body: payload, token }),
   deleteVideo: (publicId, token) =>
     request(`/api/videos/${publicId}`, { method: "DELETE", token }),
+  retryVideoProcessing: (publicId, token) =>
+    request(`/api/videos/${encodeURIComponent(publicId)}/retry-processing`, {
+      method: "POST",
+      token,
+    }),
+  adminReprocessVideoHls: (token, publicIds) =>
+    request("/api/admin/video-processing/reprocess", {
+      method: "POST",
+      token,
+      body: { publicIds },
+    }),
+  adminBackfillVideoHls: (token, limit = 50) =>
+    request("/api/admin/video-processing/backfill-hls", {
+      method: "POST",
+      token,
+      body: { limit },
+    }),
   presignVideoUpload: (token, body) =>
     request("/api/videos/upload/presign", { method: "POST", body, token }),
   presignThumbnailUpload: (token, body) =>

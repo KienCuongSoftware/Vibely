@@ -186,6 +186,8 @@ export function AdminPostDetailPage() {
   const [cuError, setCuError] = useState('')
   const [reanalyzeBusy, setReanalyzeBusy] = useState(false)
   const [reanalyzeMsg, setReanalyzeMsg] = useState('')
+  const [hlsReprocessBusy, setHlsReprocessBusy] = useState(false)
+  const [hlsReprocessMsg, setHlsReprocessMsg] = useState('')
 
   const title = post?.description || post?.title || 'Bài đăng không có mô tả'
   const playbackUrl = post?.masterPlaylistUrl || post?.videoUrl
@@ -284,6 +286,26 @@ export function AdminPostDetailPage() {
       setReanalyzeMsg(e.message ?? 'Không đưa được job phân tích vào hàng chờ.')
     } finally {
       setReanalyzeBusy(false)
+    }
+  }
+
+  const handleReprocessHls = async () => {
+    if (!post?.publicId) return
+    setHlsReprocessBusy(true)
+    setHlsReprocessMsg('')
+    try {
+      const result = await apiClient.adminReprocessVideoHls(token, [post.publicId])
+      const n = Number(result?.queued ?? 0)
+      setHlsReprocessMsg(
+        n > 0
+          ? 'Đã đưa video vào hàng chờ encode lại HLS (nhiều chất lượng). Đợi vài phút rồi hard-refresh feed.'
+          : result?.skippedDetails?.[0] || 'Không xếp hàng được.',
+      )
+      await loadPost()
+    } catch (e) {
+      setHlsReprocessMsg(e.message ?? 'Không encode lại được HLS.')
+    } finally {
+      setHlsReprocessBusy(false)
     }
   }
 
@@ -401,17 +423,30 @@ export function AdminPostDetailPage() {
                     : null}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={handleReanalyze}
-                disabled={reanalyzeBusy || cuLoading}
-                className="rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-semibold text-zinc-100 transition hover:border-emerald-500/50 hover:bg-emerald-500/10 disabled:opacity-50"
-              >
-                {reanalyzeBusy ? 'Đang gửi yêu cầu…' : 'Phân tích lại'}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleReanalyze}
+                  disabled={reanalyzeBusy || cuLoading}
+                  className="rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-semibold text-zinc-100 transition hover:border-emerald-500/50 hover:bg-emerald-500/10 disabled:opacity-50"
+                >
+                  {reanalyzeBusy ? 'Đang gửi yêu cầu…' : 'Phân tích lại'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleReprocessHls()}
+                  disabled={hlsReprocessBusy}
+                  className="rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-semibold text-zinc-100 transition hover:border-sky-500/50 hover:bg-sky-500/10 disabled:opacity-50"
+                >
+                  {hlsReprocessBusy ? 'Đang xếp hàng…' : 'Encode lại HLS'}
+                </button>
+              </div>
             </div>
             {reanalyzeMsg ? (
               <p className="mt-2 text-sm text-zinc-400">{reanalyzeMsg}</p>
+            ) : null}
+            {hlsReprocessMsg ? (
+              <p className="mt-2 text-sm text-zinc-400">{hlsReprocessMsg}</p>
             ) : null}
             {cuError ? (
               <p className="mt-3 text-sm text-amber-400">{cuError}</p>
