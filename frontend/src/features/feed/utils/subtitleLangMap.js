@@ -88,6 +88,9 @@ export function subtitleLangToIso(name) {
 export function normalizeIsoLang(code) {
   if (!code) return null;
   const value = String(code).trim().toLowerCase().replace(/_/g, "-");
+  if (value === "vi-diacritic" || value === "vidia") {
+    return "vi-diacritic";
+  }
   if (value.startsWith("zh-hant") || value === "zh-tw" || value === "zh-hk") {
     return "zh-hant";
   }

@@ -36,8 +36,11 @@ export function useDescriptionTranslation({
       return undefined;
     }
     if (sourceLang && sameIsoLanguage(sourceLang, targetLangIso)) {
-      setStatus("skipped");
-      return undefined;
+      // vi-diacritic is not a real ISO pair — never skip as "same language"
+      if (String(targetLangIso || "").toLowerCase() !== "vi-diacritic") {
+        setStatus("skipped");
+        return undefined;
+      }
     }
 
     const reqId = ++reqIdRef.current;

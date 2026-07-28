@@ -5,11 +5,14 @@ import {
   detectCaptionLangHint,
   sameIsoLanguage,
 } from "@/features/feed/utils/subtitleLangMap.js";
+import {
+  VI_DIACRITIC_TARGET_LANG,
+  looksLikeUnaccentedVietnamese,
+} from "@/features/feed/utils/vietnameseDiacritic.js";
 
 /**
- * Chỉ dịch khi bật «Luôn dịch bài đăng».
- * Tắt → giữ nguyên caption, không hiện «Xem bản dịch».
- * Bật → hiện bản dịch + «Xem bản gốc» / «Xem bản dịch».
+ * «Luôn dịch bài đăng» → bản dịch ngôn ngữ + «Xem bản gốc» / «Xem bản dịch».
+ * Caption Việt không dấu → «Xem bản có dấu» / «Xem bản gốc» (độc lập với prefs dịch).
  */
 export function FeedTranslatedCaption({
   videoPublicId,
@@ -49,12 +52,33 @@ export function FeedTranslatedCaption({
     !excluded &&
     !sameLang;
 
+  const needsDiacritic = useMemo(
+    () => looksLikeUnaccentedVietnamese(original),
+    [original],
+  );
+
+  const canDiacritic =
+    !canTranslate &&
+    needsDiacritic &&
+    Boolean(videoPublicId) &&
+    Boolean(original) &&
+    Boolean(active);
+
   const tx = useDescriptionTranslation({
     videoPublicId,
     originalText: original,
     sourceLang: resolvedLang || descriptionLang,
     targetLangIso,
     enabled: canTranslate,
+    token,
+  });
+
+  const diacriticTx = useDescriptionTranslation({
+    videoPublicId,
+    originalText: original,
+    sourceLang: "und",
+    targetLangIso: VI_DIACRITIC_TARGET_LANG,
+    enabled: canDiacritic,
     token,
   });
 
@@ -66,55 +90,82 @@ export function FeedTranslatedCaption({
 
   useEffect(() => {
     setShowOriginal(false);
-  }, [videoPublicId, prefs.alwaysTranslate, prefs.translateTo, targetLangIso]);
+  }, [
+    videoPublicId,
+    prefs.alwaysTranslate,
+    prefs.translateTo,
+    targetLangIso,
+    canDiacritic,
+  ]);
 
   const blockedAfterDetect =
     isExcludedSource(resolvedLang) ||
     (resolvedLang && sameIsoLanguage(resolvedLang, targetLangIso));
 
   const hasTranslation = tx.status === "ready" && Boolean(tx.translated);
+  const hasDiacritic =
+    diacriticTx.status === "ready" &&
+    Boolean(diacriticTx.translated) &&
+    diacriticTx.translated !== original;
+
+  const activeTx = canTranslate ? tx : canDiacritic ? diacriticTx : null;
+  const hasAlt = canTranslate ? hasTranslation : hasDiacritic;
 
   const displayText = useMemo(() => {
-    if (!alwaysOn || blockedAfterDetect || !hasTranslation) return original;
-    if (showOriginal) return original;
-    return tx.translated;
+    if (canTranslate) {
+      if (!alwaysOn || blockedAfterDetect || !hasTranslation) return original;
+      if (showOriginal) return original;
+      return tx.translated;
+    }
+    if (canDiacritic && hasDiacritic && !showOriginal) {
+      return diacriticTx.translated;
+    }
+    return original;
   }, [
+    canTranslate,
+    canDiacritic,
     alwaysOn,
     blockedAfterDetect,
     hasTranslation,
+    hasDiacritic,
     showOriginal,
     original,
     tx.translated,
+    diacriticTx.translated,
   ]);
 
-  const showingTranslated =
-    alwaysOn &&
-    !blockedAfterDetect &&
-    hasTranslation &&
-    !showOriginal;
+  const showingAlt =
+    (canTranslate &&
+      alwaysOn &&
+      !blockedAfterDetect &&
+      hasTranslation &&
+      !showOriginal) ||
+    (canDiacritic && hasDiacritic && !showOriginal);
 
   const busy =
-    alwaysOn &&
-    !blockedAfterDetect &&
-    (tx.status === "loading" || tx.status === "pending");
+    (canTranslate &&
+      alwaysOn &&
+      !blockedAfterDetect &&
+      (tx.status === "loading" || tx.status === "pending")) ||
+    (canDiacritic &&
+      (diacriticTx.status === "loading" || diacriticTx.status === "pending"));
 
   const onLinkClick = (e) => {
     e.stopPropagation();
-    if (showingTranslated) {
+    if (showingAlt) {
       setShowOriginal(true);
       return;
     }
-    if (hasTranslation) {
+    if (hasAlt) {
       setShowOriginal(false);
       return;
     }
-    if (tx.status === "failed") {
-      tx.retry?.();
+    if (activeTx?.status === "failed") {
+      activeTx.retry?.();
     }
   };
 
-  // Tắt «Luôn dịch» hoặc không đủ điều kiện → chỉ hiện bản gốc
-  if (!alwaysOn || !canTranslate || blockedAfterDetect) {
+  if (!canTranslate && !canDiacritic) {
     return (
       <div className="min-w-0">
         {typeof renderCaption === "function" ? renderCaption(original) : null}
@@ -123,27 +174,47 @@ export function FeedTranslatedCaption({
   }
 
   let linkLabel = null;
-  if (showingTranslated) {
-    linkLabel = "Xem bản gốc";
-  } else if (hasTranslation) {
-    linkLabel = "Xem bản dịch";
-  } else if (tx.status === "failed") {
-    linkLabel = "Thử dịch lại";
+  if (canTranslate) {
+    if (showingAlt) {
+      linkLabel = "Xem bản gốc";
+    } else if (hasTranslation) {
+      linkLabel = "Xem bản dịch";
+    } else if (tx.status === "failed") {
+      linkLabel = "Thử dịch lại";
+    }
+  } else if (canDiacritic) {
+    if (showingAlt) {
+      linkLabel = "Xem bản gốc";
+    } else if (hasDiacritic) {
+      linkLabel = "Xem bản có dấu";
+    } else if (diacriticTx.status === "failed") {
+      linkLabel = "Thử lại";
+    } else if (
+      diacriticTx.status === "skipped" ||
+      (diacriticTx.status === "ready" && !hasDiacritic)
+    ) {
+      linkLabel = null;
+    } else if (!busy && !hasDiacritic) {
+      // Prefetch đang chạy hoặc chưa xong — không hiện link trống
+      linkLabel = null;
+    }
   }
+
+  const busyLabel = canTranslate ? "Đang dịch…" : "Đang thêm dấu…";
 
   return (
     <div className="min-w-0">
       {typeof renderCaption === "function" ? renderCaption(displayText) : null}
-      {busy && !hasTranslation ? (
+      {busy && !hasAlt ? (
         <p className="mt-0.5 text-[13px] leading-snug text-white/45 [text-shadow:0_1px_2px_rgba(0,0,0,0.45)]">
-          Đang dịch…
+          {busyLabel}
         </p>
       ) : null}
-      {!busy && tx.status === "failed" && tx.error ? (
+      {!busy && activeTx?.status === "failed" && activeTx.error ? (
         <p className="mt-0.5 text-[12px] leading-snug text-red-300/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.45)]">
-          {String(tx.error).length > 80
-            ? `${String(tx.error).slice(0, 80)}…`
-            : tx.error}
+          {String(activeTx.error).length > 80
+            ? `${String(activeTx.error).slice(0, 80)}…`
+            : activeTx.error}
         </p>
       ) : null}
       {linkLabel ? (

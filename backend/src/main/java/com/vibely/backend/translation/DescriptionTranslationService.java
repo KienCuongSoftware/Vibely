@@ -36,6 +36,7 @@ public class DescriptionTranslationService {
     private final DescriptionTranslationRepository translationRepository;
     private final TranslationJobRepository jobRepository;
     private final TranslationCacheService cacheService;
+    private final VietnameseDiacriticRestorer diacriticRestorer;
     private final ExecutorService syncExecutor = Executors.newCachedThreadPool(r -> {
         Thread t = new Thread(r, "translation-sync");
         t.setDaemon(true);
@@ -48,7 +49,8 @@ public class DescriptionTranslationService {
         VideoRepository videoRepository,
         DescriptionTranslationRepository translationRepository,
         TranslationJobRepository jobRepository,
-        TranslationCacheService cacheService
+        TranslationCacheService cacheService,
+        VietnameseDiacriticRestorer diacriticRestorer
     ) {
         this.properties = properties;
         this.translationClient = translationClient;
@@ -56,6 +58,7 @@ public class DescriptionTranslationService {
         this.translationRepository = translationRepository;
         this.jobRepository = jobRepository;
         this.cacheService = cacheService;
+        this.diacriticRestorer = diacriticRestorer;
     }
 
     public DescriptionTranslationResponse getOrRequest(UUID publicId, String targetLangRaw) {
@@ -74,12 +77,15 @@ public class DescriptionTranslationService {
     }
 
     private DescriptionTranslationResponse getOrRequestInternal(UUID publicId, String targetLangRaw) {
-        if (!properties.isEnabled()) {
-            return DescriptionTranslationResponse.disabled();
-        }
         String targetLang = normalizeLang(targetLangRaw);
         if (!StringUtils.hasText(targetLang)) {
             throw new BadRequestException("targetLang is required");
+        }
+        if (VietnameseDiacriticRestorer.TARGET_LANG.equals(targetLang)) {
+            return getOrRequestDiacritic(publicId);
+        }
+        if (!properties.isEnabled()) {
+            return DescriptionTranslationResponse.disabled();
         }
 
         Video video = videoRepository.findWithAuthorByPublicId(publicId)
@@ -161,10 +167,13 @@ public class DescriptionTranslationService {
     }
 
     public DescriptionTranslationResponse getStatus(UUID publicId, String targetLangRaw) {
+        String targetLang = normalizeLang(targetLangRaw);
+        if (VietnameseDiacriticRestorer.TARGET_LANG.equals(targetLang)) {
+            return getOrRequestDiacritic(publicId);
+        }
         if (!properties.isEnabled()) {
             return DescriptionTranslationResponse.disabled();
         }
-        String targetLang = normalizeLang(targetLangRaw);
         Video video = videoRepository.findWithAuthorByPublicId(publicId)
             .orElseThrow(() -> new NotFoundException("Video not found"));
         String original = resolveCaption(video);
@@ -364,11 +373,65 @@ public class DescriptionTranslationService {
         return "";
     }
 
+    @Transactional
+    protected DescriptionTranslationResponse getOrRequestDiacritic(UUID publicId) {
+        String targetLang = VietnameseDiacriticRestorer.TARGET_LANG;
+        Video video = videoRepository.findWithAuthorByPublicId(publicId)
+            .orElseThrow(() -> new NotFoundException("Video not found"));
+        String original = resolveCaption(video);
+        if (!StringUtils.hasText(original)) {
+            return DescriptionTranslationResponse.skipped(original, null, targetLang, "Empty description");
+        }
+        String sourceHash = sha256(original);
+        String sourceLang = StringUtils.hasText(video.getDescriptionLang())
+            ? normalizeLang(video.getDescriptionLang())
+            : "vi";
+
+        Optional<String> redisHit = cacheService.get(sourceHash, sourceLang, targetLang);
+        if (redisHit.isEmpty()) {
+            redisHit = cacheService.get(sourceHash, "vi", targetLang);
+        }
+        if (redisHit.isPresent()) {
+            return DescriptionTranslationResponse.ready(original, redisHit.get(), sourceLang, targetLang);
+        }
+        Optional<DescriptionTranslationEntity> pgHit =
+            translationRepository.findByVideoIdAndSourceHashAndTargetLang(video.getId(), sourceHash, targetLang);
+        if (pgHit.isPresent()) {
+            String translated = pgHit.get().getTranslatedText();
+            cacheService.put(sourceHash, sourceLang, targetLang, translated);
+            return DescriptionTranslationResponse.ready(original, translated, sourceLang, targetLang);
+        }
+
+        String restored = diacriticRestorer.restore(original);
+        if (!StringUtils.hasText(restored) || restored.equals(original)) {
+            return DescriptionTranslationResponse.skipped(
+                original,
+                sourceLang,
+                targetLang,
+                "No diacritics to restore"
+            );
+        }
+
+        DescriptionTranslationEntity entity = new DescriptionTranslationEntity();
+        entity.setVideo(video);
+        entity.setSourceHash(sourceHash);
+        entity.setSourceLang(sourceLang != null ? sourceLang : "vi");
+        entity.setTargetLang(targetLang);
+        entity.setTranslatedText(restored);
+        entity.setModel("vi-diacritic-dict");
+        translationRepository.save(entity);
+        cacheService.put(sourceHash, entity.getSourceLang(), targetLang, restored);
+        return DescriptionTranslationResponse.ready(original, restored, entity.getSourceLang(), targetLang);
+    }
+
     static String normalizeLang(String raw) {
         if (!StringUtils.hasText(raw)) {
             return null;
         }
         String value = raw.trim().toLowerCase(Locale.ROOT).replace('_', '-');
+        if (value.equals(VietnameseDiacriticRestorer.TARGET_LANG) || value.equals("vidia")) {
+            return VietnameseDiacriticRestorer.TARGET_LANG;
+        }
         if (value.startsWith("zh-hant") || value.equals("zh-tw") || value.equals("zh-hk")) {
             return "zh-hant";
         }
@@ -386,6 +449,10 @@ public class DescriptionTranslationService {
         String na = normalizeLang(a);
         String nb = normalizeLang(b);
         if (na == null || nb == null) {
+            return false;
+        }
+        if (VietnameseDiacriticRestorer.TARGET_LANG.equals(na)
+            || VietnameseDiacriticRestorer.TARGET_LANG.equals(nb)) {
             return false;
         }
         if (na.equals(nb)) {
