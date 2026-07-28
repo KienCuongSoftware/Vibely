@@ -1378,18 +1378,16 @@ export function ProfilePage() {
             : null
         }
       />
-      {isAdminOwnProfile ? null : (
-        <div className="hidden shrink-0 lg:block">
-          <Sidebar
-            menuItems={menuItems}
-            activeMenu={activeMenu}
-            onSelectMenu={handleSelectMenu}
-            token={token}
-            user={user}
-            onLogout={token ? logout : undefined}
-          />
-        </div>
-      )}
+      <div className="hidden shrink-0 lg:block">
+        <Sidebar
+          menuItems={menuItems}
+          activeMenu={activeMenu}
+          onSelectMenu={handleSelectMenu}
+          token={token}
+          user={user}
+          onLogout={token ? logout : undefined}
+        />
+      </div>
 
       <div
         ref={profileScrollRef}
@@ -2500,7 +2498,7 @@ export function ProfilePage() {
         ) : null}
       </div>
 
-      {mobileLayout && !isAdminOwnProfile ? (
+      {mobileLayout ? (
         <div className="shrink-0 lg:hidden">
           <MobileFeedBottomNav
             token={token}
