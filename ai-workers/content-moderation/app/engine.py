@@ -116,6 +116,10 @@ def evaluate(claim: dict[str, Any]) -> dict[str, Any]:
             }
         )
 
+    # CLIP NSFW + adult tag (và violence tương tự) thường cùng một tín hiệu —
+    # cộng dồn điểm khiến MV/nhảy bị «Nghiêm trọng» dù chỉ REVIEW.
+    _cap_correlated_visual_points(firings)
+
     override_firings = [f for f in firings if f.get("override")]
     override_applied = False
     decision: str
@@ -158,6 +162,10 @@ def evaluate(claim: dict[str, Any]) -> dict[str, Any]:
             ceil = max(soft_hints, key=lambda h: DECISION_RANK.get(h, 0))
             if DECISION_RANK.get(decision, 0) > DECISION_RANK.get(ceil, 0):
                 decision = ceil
+
+    # Video nhạc / remix: originality audio + soft visual không nên đẩy risk > review_max.
+    if not override_applied and _looks_like_music_content(snapshot):
+        risk = _soften_music_risk(risk, firings, review_max)
 
     confidence = _confidence(snapshot, originality_pending, firings)
     if decision in {"LIMIT", "BLOCK"} and confidence < confidence_floor:
@@ -218,10 +226,102 @@ def evaluate(claim: dict[str, Any]) -> dict[str, Any]:
         "overrideApplied": override_applied,
         "originalityPending": originality_pending,
         "explainJson": explain,
-        "engineVersion": "mod-policy-v1.4-plugins",
+        "engineVersion": "mod-policy-v1.5-music-safe",
         "evidence": evidence,
         "policyResults": policy_results,
     }
+
+
+_MUSIC_TAG_SLUGS = frozenset(
+    {
+        "music",
+        "remix",
+        "karaoke",
+        "cover",
+        "dance",
+        "edm",
+        "kpop",
+        "vpop",
+        "rap",
+        "hiphop",
+        "ballad",
+        "nightcore",
+        "lofi",
+        "dj",
+        "concert",
+        "performance",
+        "singing",
+        "song",
+    }
+)
+
+
+def _looks_like_music_content(snapshot: dict[str, Any]) -> bool:
+    hits = 0
+    for tag in snapshot.get("tags") or []:
+        slug = str(tag.get("slug") or "").lower()
+        if slug not in _MUSIC_TAG_SLUGS:
+            continue
+        try:
+            conf = float(tag.get("confidence") or 0)
+        except (TypeError, ValueError):
+            conf = 0.0
+        if conf >= 0.35:
+            hits += 1
+    if hits >= 1:
+        return True
+    blob = " ".join(
+        str(snapshot.get(f) or "").lower()
+        for f in ("description", "title")
+    )
+    markers = ("remix", "nightcore", "karaoke", "cover", "#nhac", "lofi", "edm", "music")
+    return sum(1 for m in markers if m in blob) >= 1
+
+
+def _is_visual_nsfw_rule(code: str) -> bool:
+    c = code.lower()
+    return c.startswith("plugin.nsfw") or c.startswith("tag.adult")
+
+
+def _is_visual_violence_rule(code: str) -> bool:
+    c = code.lower()
+    return (
+        c.startswith("plugin.violence")
+        or c.startswith("tag.violence")
+        or c.startswith("tag.weapon")
+    )
+
+
+def _cap_correlated_visual_points(firings: list[dict[str, Any]]) -> None:
+    """Keep max points within NSFW visual group and within violence visual group."""
+    for predicate in (_is_visual_nsfw_rule, _is_visual_violence_rule):
+        members = [f for f in firings if predicate(str(f.get("rule_code") or ""))]
+        if len(members) <= 1:
+            continue
+        best = max(members, key=lambda f: int(f.get("points") or 0))
+        for f in members:
+            if f is best:
+                continue
+            capped_from = int(f.get("points") or 0)
+            if capped_from <= 0:
+                continue
+            f["points_capped_from"] = capped_from
+            f["points"] = 0
+
+
+def _soften_music_risk(risk: int, firings: list[dict[str, Any]], review_max: int) -> int:
+    """Music/remix: keep soft visual+originality in REVIEW band, not «Nghiêm trọng»."""
+    if risk <= review_max:
+        return risk
+    has_hard = any(
+        bool(f.get("override"))
+        or str(f.get("action_hint") or "").upper() in {"BLOCK", "DELETE"}
+        for f in firings
+    )
+    if has_hard:
+        return risk
+    # Soft-only stack (CLIP FP + audio originality) → clamp to review band.
+    return min(risk, review_max)
 
 
 def _confidence(snapshot: dict[str, Any], originality_pending: bool, firings: list[dict[str, Any]]) -> float:

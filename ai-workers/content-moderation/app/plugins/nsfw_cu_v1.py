@@ -23,6 +23,32 @@ _NSFW_MOD_SLUGS = frozenset(
     {"nsfw", "porn", "nudity", "explicit", "adult", "adult_content", "lingerie", "seductive"}
 )
 
+_MUSIC_TAG_SLUGS = frozenset(
+    {
+        "music",
+        "remix",
+        "karaoke",
+        "cover",
+        "dance",
+        "edm",
+        "kpop",
+        "vpop",
+        "rap",
+        "hiphop",
+        "ballad",
+        "nightcore",
+        "lofi",
+        "dj",
+        "concert",
+        "performance",
+        "singing",
+        "song",
+    }
+)
+
+# Soft performance cues — dampened for music videos (stage / dance FPs).
+_SOFT_PERF_SLUGS = frozenset({"lingerie", "seductive", "kissing"})
+
 # Weight ~ contribution; many hits saturate via soft logistic.
 _TEXT_PATTERNS = [
     (r"\bonlyfans\b|fansly|pornhub|xvideos|\bxnxx\b", 0.7),
@@ -51,15 +77,36 @@ _TEXT_PATTERNS = [
 ]
 
 
+def _is_music_content(snapshot: dict[str, Any]) -> bool:
+    for tag in snapshot.get("tags") or []:
+        slug = str(tag.get("slug") or "").lower()
+        if slug not in _MUSIC_TAG_SLUGS:
+            continue
+        try:
+            conf = float(tag.get("confidence") or 0)
+        except (TypeError, ValueError):
+            conf = 0.0
+        if conf >= 0.35:
+            return True
+    blob = " ".join(str(snapshot.get(f) or "").lower() for f in ("description", "title"))
+    return any(
+        m in blob
+        for m in ("remix", "nightcore", "karaoke", "cover", "#nhac", "lofi", "edm", " music")
+    )
+
+
 def score(snapshot: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
     contributions: list[dict[str, Any]] = []
     raw = 0.0
+    music = _is_music_content(snapshot)
 
     for tag in snapshot.get("tags") or []:
         slug = str(tag.get("slug") or "").lower()
         weight = _TAG_WEIGHTS.get(slug)
         if weight is None:
             continue
+        if music and slug in _SOFT_PERF_SLUGS:
+            weight *= 0.35
         try:
             conf = float(tag.get("confidence") or 0)
         except (TypeError, ValueError):
@@ -87,7 +134,12 @@ def score(snapshot: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
                 conf = 0.0
             if conf < 0.25:
                 continue
-            part = _MODERATION_SCORE_MULT * conf
+            mult = _MODERATION_SCORE_MULT
+            if music and slug in _SOFT_PERF_SLUGS:
+                mult *= 0.35
+            elif music:
+                mult *= 0.55
+            part = mult * conf
             raw += part
             contributions.append(
                 {"source": "moderationScores", "slug": slug, "confidence": conf, "part": round(part, 4)}
@@ -110,31 +162,44 @@ def score(snapshot: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
                 conf = float(item.get("score") or item.get("confidence") or 0)
             except (TypeError, ValueError):
                 conf = 0.0
-            part = _VISUAL_TAG_SCORE_MULT * conf
+            mult = _VISUAL_TAG_SCORE_MULT
+            if music and any(k in name for k in ("sexy", "seductive", "lingerie")):
+                mult *= 0.3
+            elif music:
+                mult *= 0.5
+            part = mult * conf
             raw += part
             contributions.append({"source": "visual_tagScore", "name": name, "part": round(part, 4)})
 
-    text_blob = " ".join(
-        str(snapshot.get(f) or "")
-        for f in ("description", "ocr_text", "speech_text")
-    )
+    # Lyrics/ASR/OCR often look "vulgar" in songs — for music use caption only (align V80 lex).
+    text_fields = ("description",) if music else ("description", "ocr_text", "speech_text")
+    text_blob = " ".join(str(snapshot.get(f) or "") for f in text_fields)
     for pattern, weight in _TEXT_PATTERNS:
         if weight <= 0:
             continue
         if re.search(pattern, text_blob, re.IGNORECASE):
-            raw += weight
-            contributions.append({"source": "text", "pattern": pattern, "part": weight})
+            part = weight * (0.45 if music else 1.0)
+            raw += part
+            contributions.append({"source": "text", "pattern": pattern, "part": part})
 
     # Soft saturation — similar to logistic without scipy.
     score_v = max(0.0, min(1.0, 1.0 - pow(2.71828, -raw)))
+    if music:
+        score_v = min(score_v, score_v * 0.65)
     top = sorted(contributions, key=lambda c: float(c.get("part") or 0), reverse=True)[:5]
     snippet = f"nsfw_cu_v1={score_v:.2f}"
+    if music:
+        snippet = f"nsfw_cu_v1={score_v:.2f} music_damp"
     if top:
         bit = top[0]
-        snippet = f"nsfw_cu_v1={score_v:.2f} via {bit.get('source')}:{bit.get('slug') or bit.get('name') or bit.get('pattern')}"
+        snippet = (
+            f"nsfw_cu_v1={score_v:.2f}"
+            f"{' music_damp' if music else ''}"
+            f" via {bit.get('source')}:{bit.get('slug') or bit.get('name') or bit.get('pattern')}"
+        )
 
     return {
         "score": round(score_v, 4),
         "snippet": snippet[:240],
-        "details": {"raw": round(raw, 4), "top": top},
+        "details": {"raw": round(raw, 4), "top": top, "music_damp": music},
     }

@@ -67,6 +67,11 @@ _SAFE_CLIP_PROMPTS: tuple[str, ...] = (
     "everyday lifestyle vlog",
     "normal people talking outdoors",
     "cooking food or travel scenery",
+    "music video performance on stage",
+    "concert stage dancing with lights",
+    "karaoke singing performance",
+    "dj remix booth with headphones",
+    "anime music video illustration",
 )
 
 
