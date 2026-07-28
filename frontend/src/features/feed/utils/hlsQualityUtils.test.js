@@ -91,31 +91,37 @@ describe('hlsQualityUtils', () => {
     ])
   })
 
-  it('switches hls.currentLevel for auto and fixed renditions', () => {
+  it('schedules smooth level switch via nextLevel', () => {
     const hls = {
       levels: [{ height: 540 }, { height: 720 }, { height: 2160 }],
       currentLevel: 0,
+      nextLevel: 0,
+      loadLevel: 0,
+      autoLevelEnabled: false,
     }
 
     applyStreamQuality(hls, 'auto')
-    expect(hls.currentLevel).toBe(-1)
+    expect(hls.nextLevel).toBe(-1)
 
     applyStreamQuality(hls, '540')
-    expect(hls.currentLevel).toBe(0)
+    expect(hls.nextLevel).toBe(0)
 
     applyStreamQuality(hls, '2160')
-    expect(hls.currentLevel).toBe(2)
+    expect(hls.nextLevel).toBe(2)
   })
 
   it('falls back to auto when requested level is missing', () => {
     const hls = {
       levels: [{ height: 540 }],
       currentLevel: 0,
+      nextLevel: 0,
+      loadLevel: 0,
+      autoLevelEnabled: false,
     }
 
     const ok = applyStreamQuality(hls, '720')
     expect(ok).toBe(false)
-    expect(hls.currentLevel).toBe(-1)
+    expect(hls.nextLevel).toBe(-1)
   })
 
   it('matches near heights from manifest metadata', () => {

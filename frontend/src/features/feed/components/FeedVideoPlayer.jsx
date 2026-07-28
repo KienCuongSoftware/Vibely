@@ -17,6 +17,11 @@ function buildHlsInstance({ prefetch = false } = {}) {
     /** Chỉ prefetch fragment khi slide đang phát — tránh ăn băng thông CDN. */
     startFragPrefetch: !prefetch,
     capLevelToPlayerSize: true,
+    /** ABR: lên chất chậm hơn, xuống nhanh hơn — ít khựng khi mạng dao động. */
+    abrEwmaDefaultEstimate: 800_000,
+    abrBandWidthFactor: 0.95,
+    abrBandWidthUpFactor: 0.6,
+    maxStarvationDelay: 4,
     maxBufferLength: prefetch ? 6 : 24,
     maxMaxBufferLength: prefetch ? 10 : 48,
     backBufferLength: prefetch ? 0 : 20,

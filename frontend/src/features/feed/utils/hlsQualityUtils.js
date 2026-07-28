@@ -81,6 +81,8 @@ export function findLevelIndexByHeight(levels, targetHeight) {
 }
 
 /**
+ * Đổi rung HLS mượt (không flush buffer ngay).
+ * Dùng {@code nextLevel} thay vì {@code currentLevel} — tránh khựng khi user chọn chất lượng.
  * @param {import('hls.js').default} hls
  * @param {FeedVideoQualityMode} mode
  */
@@ -88,17 +90,22 @@ export function applyStreamQuality(hls, mode) {
   if (!hls?.levels?.length) return false
   try {
     if (mode === 'auto') {
-      hls.currentLevel = -1
+      // -1 = bật ABR; nextLevel chuyển ở ranh fragment (mượt hơn currentLevel).
+      hls.nextLevel = -1
       return true
     }
     const targetHeight = Number(mode)
     if (!Number.isFinite(targetHeight)) return false
     const picked = findLevelIndexByHeight(hls.levels, targetHeight)
     if (picked < 0) {
-      hls.currentLevel = -1
+      hls.nextLevel = -1
       return false
     }
-    hls.currentLevel = picked
+    // Đã khóa đúng rung sắp tới → khỏi schedule lại.
+    if (!hls.autoLevelEnabled && hls.nextLevel === picked) {
+      return true
+    }
+    hls.nextLevel = picked
     return true
   } catch {
     return false
