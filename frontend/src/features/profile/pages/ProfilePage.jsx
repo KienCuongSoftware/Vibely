@@ -1465,7 +1465,7 @@ export function ProfilePage() {
             <p className="text-sm text-zinc-300">Đang tải hồ sơ...</p>
           </section>
         ) : (
-          <section className="flex min-h-0 w-full max-w-5xl flex-1 flex-col bg-black px-1 py-4 md:px-8 lg:py-6">
+          <section className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col bg-black px-1 py-4 md:px-8 lg:py-6">
             {mobileLayout ? (
               <div className="mb-6 flex flex-col items-center text-center lg:hidden">
                 <h2 className="mb-4 max-w-full truncate text-[17px] font-bold text-white">
@@ -1508,15 +1508,6 @@ export function ProfilePage() {
                     >
                       Sửa hồ sơ
                     </button>
-                    {isAdminOwnProfile ? (
-                      <button
-                        type="button"
-                        className="cursor-pointer rounded-md border border-zinc-700 bg-[#FE2C55]/15 px-4 py-1.5 text-sm font-semibold text-[#FE2C55]"
-                        onClick={() => navigate('/')}
-                      >
-                        Xem đề xuất
-                      </button>
-                    ) : null}
                     <button
                       type="button"
                       aria-label="Chia sẻ hồ sơ"
@@ -1618,15 +1609,7 @@ export function ProfilePage() {
                       >
                         Sửa hồ sơ
                       </button>
-                      {isAdminOwnProfile ? (
-                        <button
-                          type="button"
-                          className="cursor-pointer rounded-full border border-[#FE2C55]/40 bg-[#FE2C55]/10 px-5 py-2 text-sm font-semibold text-[#FE2C55] hover:bg-[#FE2C55]/20"
-                          onClick={() => navigate('/')}
-                        >
-                          Xem đề xuất
-                        </button>
-                      ) : (
+                      {isAdminOwnProfile ? null : (
                         <button
                           type="button"
                           className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"

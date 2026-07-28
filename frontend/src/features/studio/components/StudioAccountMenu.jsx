@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { IoLogOutOutline, IoPersonOutline } from 'react-icons/io5'
+import { IoHomeOutline, IoLogOutOutline, IoPersonOutline } from 'react-icons/io5'
 import { useAuth } from '@/store/useAuth'
 
 /** @param {'dark' | 'light'} [theme='dark'] */
@@ -10,6 +10,7 @@ export function StudioAccountMenu({ theme = 'dark' }) {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const wrapRef = useRef(null)
+  const isAdmin = String(user?.role ?? '').toUpperCase() === 'ADMIN'
 
   const avatarSrc =
     user?.avatarUrl && String(user.avatarUrl).trim()
@@ -86,6 +87,27 @@ export function StudioAccountMenu({ theme = 'dark' }) {
             />
             Hồ sơ
           </button>
+          {isAdmin ? (
+            <button
+              type="button"
+              role="menuitem"
+              className={
+                light
+                  ? 'flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-slate-900 transition hover:bg-slate-50'
+                  : 'flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-white transition hover:bg-zinc-900'
+              }
+              onClick={() => {
+                setOpen(false)
+                navigate('/')
+              }}
+            >
+              <IoHomeOutline
+                className={light ? 'text-lg text-slate-500' : 'text-lg text-zinc-400'}
+                aria-hidden
+              />
+              Xem đề xuất
+            </button>
+          ) : null}
           <div className={light ? 'my-1 border-t border-slate-100' : 'my-1 border-t border-zinc-800'} aria-hidden />
           <button
             type="button"
