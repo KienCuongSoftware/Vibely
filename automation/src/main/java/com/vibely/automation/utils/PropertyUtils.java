@@ -78,7 +78,7 @@ public final class PropertyUtils {
      * @return delay in milliseconds
      */
     public static int actionDelayMs() {
-        return Math.max(0, getInt("action.delay.ms", 0));
+        return Math.max(0, getInt("action.delay.ms", 2000));
     }
 
     /**

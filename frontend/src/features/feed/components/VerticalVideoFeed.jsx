@@ -1999,6 +1999,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 <div className={FEED_ACTION_ITEM_CLASS}>
                 <button
                   type="button"
+                  data-testid="feed-comment-button"
                   className={`${FEED_ROUND_ICON_BUTTON} ${feedCommentsOpen ? "ring-2 ring-white/35 ring-offset-2 ring-offset-black" : ""}`}
                   aria-label="Bình luận"
                   aria-expanded={feedCommentsOpen}

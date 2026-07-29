@@ -1378,16 +1378,18 @@ export function ProfilePage() {
             : null
         }
       />
-      <div className="hidden shrink-0 lg:block">
-        <Sidebar
-          menuItems={menuItems}
-          activeMenu={activeMenu}
-          onSelectMenu={handleSelectMenu}
-          token={token}
-          user={user}
-          onLogout={token ? logout : undefined}
-        />
-      </div>
+      {isAdminOwnProfile ? null : (
+        <div className="hidden shrink-0 lg:block">
+          <Sidebar
+            menuItems={menuItems}
+            activeMenu={activeMenu}
+            onSelectMenu={handleSelectMenu}
+            token={token}
+            user={user}
+            onLogout={token ? logout : undefined}
+          />
+        </div>
+      )}
 
       <div
         ref={profileScrollRef}

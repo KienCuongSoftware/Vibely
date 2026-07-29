@@ -1,7 +1,7 @@
 import React, { lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { WatchRedirect } from '@/features/post/components/WatchRedirect.jsx'
-import { AdminRoute, AuthenticatedHomeRedirect } from '@/app/guards/AdminRoute.jsx'
+import { AdminRoute, AuthenticatedHomeRedirect, UserOnlyRoute } from '@/app/guards/AdminRoute.jsx'
 
 function lazyNamed(loader, exportName) {
   return lazy(() => loader().then((module) => ({ default: module[exportName] })))
@@ -97,25 +97,69 @@ export function OnboardingRoutes() {
 export function AuthenticatedRoutes({ user, isAdmin }) {
   return (
     <Routes>
-      <Route path="/" element={<FeedPage />} />
+      {/* Trang chủ — admin redirect về /admin/users, user thường xem feed */}
+      <Route
+        path="/"
+        element={
+          isAdmin ? <Navigate to="/admin/users" replace /> : <FeedPage />
+        }
+      />
       <Route path="/foryou" element={<Navigate to="/" replace />} />
-      <Route path="/following" element={<FollowingPage />} />
-      <Route path="/friends" element={<FriendsPage />} />
-      <Route path="/messages" element={<MessagesPage />} />
-      <Route path="/feed" element={<AuthenticatedHomeRedirect user={user} />} />
-      <Route path="/login" element={<AuthenticatedHomeRedirect user={user} />} />
-      <Route path="/signin" element={<AuthenticatedHomeRedirect user={user} />} />
-      <Route path="/signup" element={<AuthenticatedHomeRedirect user={user} />} />
-      <Route path="/register" element={<AuthenticatedHomeRedirect user={user} />} />
-      <Route path="/settings" element={<SettingsPage />} />
+
+      {/* Các trang chỉ dành cho user thường */}
+      <Route
+        path="/following"
+        element={<UserOnlyRoute user={user}><FollowingPage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/friends"
+        element={<UserOnlyRoute user={user}><FriendsPage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/messages"
+        element={<UserOnlyRoute user={user}><MessagesPage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/settings"
+        element={<UserOnlyRoute user={user}><SettingsPage /></UserOnlyRoute>}
+      />
       <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
-      <Route path="/vibelystudio" element={<Navigate to="/vibelystudio/home" replace />} />
-      <Route path="/vibelystudio/home" element={<StudioHomePage />} />
-      <Route path="/vibelystudio/posts" element={<StudioPostsPage />} />
-      <Route path="/vibelystudio/upload" element={<UploadPage />} />
-      <Route path="/vibelystudio/upload/post/:publicId" element={<StudioEditPostPage />} />
-      <Route path="/vibelystudio/analytics/:publicId" element={<StudioVideoAnalyticsPage />} />
-      <Route path="/vibelystudio/comment/:publicId" element={<StudioPostCommentsPage />} />
+      <Route
+        path="/vibelystudio"
+        element={<UserOnlyRoute user={user}><Navigate to="/vibelystudio/home" replace /></UserOnlyRoute>}
+      />
+      <Route
+        path="/vibelystudio/home"
+        element={<UserOnlyRoute user={user}><StudioHomePage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/vibelystudio/posts"
+        element={<UserOnlyRoute user={user}><StudioPostsPage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/vibelystudio/upload"
+        element={<UserOnlyRoute user={user}><UploadPage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/vibelystudio/upload/post/:publicId"
+        element={<UserOnlyRoute user={user}><StudioEditPostPage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/vibelystudio/analytics/:publicId"
+        element={<UserOnlyRoute user={user}><StudioVideoAnalyticsPage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/vibelystudio/comment/:publicId"
+        element={<UserOnlyRoute user={user}><StudioPostCommentsPage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/explore"
+        element={<UserOnlyRoute user={user}><ExplorePage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/search"
+        element={<UserOnlyRoute user={user}><SearchResultsPage /></UserOnlyRoute>}
+      />
       <Route
         path="/admin"
         element={
@@ -172,12 +216,16 @@ export function AuthenticatedRoutes({ user, isAdmin }) {
           </AdminRoute>
         }
       />
+      {/* Trang công khai — cả admin và user đều vào được */}
+      <Route path="/feed" element={<AuthenticatedHomeRedirect user={user} />} />
+      <Route path="/login" element={<AuthenticatedHomeRedirect user={user} />} />
+      <Route path="/signin" element={<AuthenticatedHomeRedirect user={user} />} />
+      <Route path="/signup" element={<AuthenticatedHomeRedirect user={user} />} />
+      <Route path="/register" element={<AuthenticatedHomeRedirect user={user} />} />
       <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
       <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
       <Route path="/sound" element={<SoundPage />} />
-      <Route path="/explore" element={<ExplorePage />} />
       <Route path="/explore/view/:publicId" element={<ExploreViewerPage />} />
-      <Route path="/search" element={<SearchResultsPage />} />
       <Route path="/tag/:tag" element={<HashtagPage />} />
       <Route path="/activity/:username/video/:publicId" element={<ActivityVideoWatchPage />} />
       <Route path="/embed/profile/:username" element={<ProfileEmbedPage />} />

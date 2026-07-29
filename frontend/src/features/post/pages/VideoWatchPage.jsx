@@ -56,6 +56,7 @@ import {
 } from "react-icons/io5";
 import { LuPictureInPicture2 } from "react-icons/lu";
 import { FeedVideoPlayer } from "@/features/feed/components/FeedVideoPlayer.jsx";
+import { FeedTranslatedCaption } from "@/features/feed/components/FeedTranslatedCaption.jsx";
 import { VideoContextMenu } from "@/features/feed/components/VideoContextMenu.jsx";
 import { FeedSubtitlesModal } from "@/features/feed/components/FeedSubtitlesModal.jsx";
 import { VideoShareModal } from "@/features/post/components/VideoShareModal.jsx";
@@ -2264,9 +2265,20 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                       ) : null}
                     </div>
                     {caption ? (
-                      <p className="mt-2 whitespace-pre-wrap text-sm leading-snug text-zinc-200">
-                        {renderInteractiveText(caption)}
-                      </p>
+                      <div className="mt-2 min-w-0 text-sm leading-snug text-zinc-200">
+                        <FeedTranslatedCaption
+                          videoPublicId={panelVideo.publicId}
+                          captionText={caption}
+                          descriptionLang={panelVideo.descriptionLang}
+                          token={token}
+                          active
+                          renderCaption={(text) => (
+                            <p className="whitespace-pre-wrap text-sm leading-snug text-zinc-200">
+                              {renderInteractiveText(text)}
+                            </p>
+                          )}
+                        />
+                      </div>
                     ) : null}
                     {reposted ? (
                       <SelfRepostIndicator

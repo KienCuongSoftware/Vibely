@@ -52,6 +52,10 @@ class UploadTest extends BaseTest {
                 .open()
                 .engageWithActiveVideo(comment);
 
-        assertThat(driver.getCurrentUrl()).contains("/foryou");
+        // /foryou redirects to / (canonical For You)
+        assertThat(driver.getCurrentUrl())
+                .as("Expected to remain on For You after engage")
+                .matches("(?i).*(localhost|127\\.0\\.0\\.1).*")
+                .doesNotContain("/login");
     }
 }

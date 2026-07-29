@@ -16,7 +16,7 @@ test.user.b.email=b@example.com
 test.user.b.password=...
 test.user.b.username=buser
 test.video.path=C:\\path\\to\\video.mp4
-action.delay.ms=900
+action.delay.ms=2000
 ```
 
 ## Run
@@ -30,6 +30,9 @@ mvn test
 mvn test -Dgroups=upload
 mvn test -Dgroups=login
 mvn test -Dgroups=message
+
+# Chậm hơn khi xem tay (vd 3 giây mỗi thao tác)
+mvn test -Dgroups=upload "-Daction.delay.ms=3000"
 ```
 
 ## Flow (message)

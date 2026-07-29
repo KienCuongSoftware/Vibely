@@ -484,6 +484,7 @@ export function FeedCommentsPanel({
         />
       ) : null}
       <aside
+        data-testid="feed-comments-panel"
         className={`flex min-h-0 flex-col bg-[#121212] text-zinc-100 ${
           mobileSheet
             ? 'fixed inset-x-0 bottom-0 z-[90] w-full rounded-t-2xl border-t border-white/[0.08] shadow-[0_-12px_40px_rgba(0,0,0,0.45)]'
@@ -676,6 +677,7 @@ export function FeedCommentsPanel({
                 <input
                   ref={inputRef}
                   type="text"
+                  data-testid="feed-comment-input"
                   value={commentDraft}
                   onChange={handleCommentDraftChange}
                   placeholder={
@@ -703,6 +705,7 @@ export function FeedCommentsPanel({
               </div>
               <button
                 type="button"
+                data-testid="feed-comment-send"
                 className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#fe2c55] text-white transition hover:bg-[#ff4d6d] disabled:cursor-not-allowed disabled:opacity-35"
                 aria-label="Gửi bình luận"
                 disabled={
