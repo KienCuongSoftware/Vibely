@@ -15,28 +15,29 @@ const SETTINGS_ROWS = [
     title: 'Tự động kiểm tra bản quyền âm nhạc',
     description:
       'Chúng tôi sẽ tự động kiểm tra xem video của bạn có nhạc chưa được cấp phép có thể khiến video bị tắt tiếng hay không.',
-    showInfo: true,
+    infoTooltip:
+      'Chúng tôi sẽ kiểm tra video của bạn để tìm các vi phạm bản quyền tiềm ẩn đối với âm thanh được sử dụng. Nếu phát hiện vi phạm, bạn có thể chỉnh sửa video trước khi đăng.',
+    learnMoreHref: '/legal/page/row/terms-of-service',
   },
   {
     key: 'contentCheckLite',
     title: 'Tự động kiểm tra nội dung rút gọn',
     description:
       'Chúng tôi sẽ tự động kiểm tra nội dung của bạn để đánh giá khả năng đủ điều kiện xuất hiện trên trang Đề xuất.',
-    showInfo: true,
+    infoTooltip:
+      'Chúng tôi sẽ kiểm tra nhanh video của bạn theo Nguyên tắc Cộng đồng để đảm bảo đủ điều kiện được đề xuất trên trang Đề xuất. Bạn sẽ có cơ hội sửa các vấn đề trước khi đăng. Tuy nhiên, đây chỉ là kiểm tra sơ bộ và không đảm bảo tuân thủ đầy đủ điều khoản và nguyên tắc của chúng tôi.',
   },
   {
     key: 'allowVideoInsights',
     title: 'Cho phép thông tin chi tiết về video của tôi',
     description:
       'Vibely sẽ dùng AI để tóm tắt và phân loại bình luận thành các nhóm: Chủ đề, Cảm hứng, Yêu thích và Câu hỏi.',
-    showInfo: false,
   },
   {
     key: 'includeCommentsForInsights',
     title: 'Bao gồm các bình luận của tôi để phân tích',
     description:
       'Vibely sẽ đưa bình luận của bạn vào khi dùng AI để tóm tắt và lọc bình luận trên các video khác.',
-    showInfo: false,
   },
 ]
 
@@ -72,6 +73,40 @@ function SettingsSwitch({ checked, onChange, label, light }) {
         }`}
       />
     </button>
+  )
+}
+
+function InfoHoverTip({ text, learnMoreHref }) {
+  return (
+    <span className="group/infotip relative inline-flex shrink-0">
+      <button
+        type="button"
+        className="rounded-full text-zinc-500 transition hover:text-zinc-300 group-hover/infotip:text-zinc-300"
+        aria-label="Xem giải thích"
+      >
+        <IoInformationCircleOutline className="text-base" aria-hidden />
+      </button>
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-1/2 z-90 w-72 -translate-x-1/2 pb-2 opacity-0 transition-opacity duration-150 group-hover/infotip:pointer-events-auto group-hover/infotip:opacity-100"
+      >
+        <span className="block rounded-lg bg-zinc-700 px-3 py-2.5 text-left text-xs leading-relaxed font-normal text-white shadow-xl">
+          {text}
+          {learnMoreHref ? (
+            <>
+              {' '}
+              <a
+                href={learnMoreHref}
+                className="underline underline-offset-2 hover:text-zinc-100"
+                onClick={(event) => event.stopPropagation()}
+              >
+                Tìm hiểu thêm
+              </a>
+            </>
+          ) : null}
+        </span>
+      </span>
+    </span>
   )
 }
 
@@ -220,12 +255,10 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
                       >
                         {row.title}
                       </p>
-                      {row.showInfo ? (
-                        <IoInformationCircleOutline
-                          className={
-                            light ? 'shrink-0 text-base text-slate-400' : 'shrink-0 text-base text-zinc-500'
-                          }
-                          aria-hidden
+                      {row.infoTooltip ? (
+                        <InfoHoverTip
+                          text={row.infoTooltip}
+                          learnMoreHref={row.learnMoreHref}
                         />
                       ) : null}
                     </div>
