@@ -20,6 +20,7 @@ import com.vibely.backend.interaction.entity.FollowEntity;
 import com.vibely.backend.interaction.repository.FollowRepository;
 import com.vibely.backend.interaction.repository.LikeRepository;
 import com.vibely.backend.interaction.repository.VideoViewRepository;
+import com.vibely.backend.storage.MediaUrlPresigner;
 import com.vibely.backend.storage.S3OwnedMediaValidator;
 import com.vibely.backend.explore.service.ExploreCacheService;
 import com.vibely.backend.video.VideoStatus;
@@ -43,6 +44,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UsernameService usernameService;
     private final UserAvatarResolver userAvatarResolver;
+    private final MediaUrlPresigner mediaUrlPresigner;
     private final FollowRepository followRepository;
     private final LikeRepository likeRepository;
     private final VideoViewRepository videoViewRepository;
@@ -54,6 +56,7 @@ public class UserService {
         UserRepository userRepository,
         UsernameService usernameService,
         UserAvatarResolver userAvatarResolver,
+        MediaUrlPresigner mediaUrlPresigner,
         FollowRepository followRepository,
         LikeRepository likeRepository,
         VideoViewRepository videoViewRepository,
@@ -64,6 +67,7 @@ public class UserService {
         this.userRepository = userRepository;
         this.usernameService = usernameService;
         this.userAvatarResolver = userAvatarResolver;
+        this.mediaUrlPresigner = mediaUrlPresigner;
         this.followRepository = followRepository;
         this.likeRepository = likeRepository;
         this.videoViewRepository = videoViewRepository;
@@ -230,7 +234,7 @@ public class UserService {
             user.getUsername(),
             user.getDisplayName(),
             "",
-            userAvatarResolver.resolve(user),
+            mediaUrlPresigner.presignPlaybackUrl(userAvatarResolver.resolve(user)),
             followingCount,
             followerCount,
             totalLikeCount,
@@ -263,7 +267,7 @@ public class UserService {
             user.getUsername(),
             user.getDisplayName(),
             user.getBio(),
-            userAvatarResolver.resolve(user),
+            mediaUrlPresigner.presignPlaybackUrl(userAvatarResolver.resolve(user)),
             followingCount,
             followerCount,
             totalLikeCount,
@@ -297,7 +301,7 @@ public class UserService {
                 listedUser.getId(),
                 listedUser.getUsername(),
                 listedUser.getDisplayName(),
-                userAvatarResolver.resolve(listedUser),
+                mediaUrlPresigner.presignPlaybackUrl(userAvatarResolver.resolve(listedUser)),
                 viewer != null
                     && !viewer.getId().equals(listedUser.getId())
                     && finalFollowedIds.contains(listedUser.getId()),

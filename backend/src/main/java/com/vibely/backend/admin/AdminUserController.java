@@ -2,6 +2,7 @@ package com.vibely.backend.admin;
 
 import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.common.ApiResponse;
+import com.vibely.backend.storage.MediaUrlPresigner;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.entity.UserAccountStatus;
 import jakarta.validation.Valid;
@@ -24,17 +25,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminUserController {
 
     private final UserAvatarResolver userAvatarResolver;
+    private final MediaUrlPresigner mediaUrlPresigner;
     private final AdminUserService adminUserService;
     private final AdminAccountDeletionEmailService accountDeletionEmailService;
     private final AdminAccountBanEmailService accountBanEmailService;
 
     public AdminUserController(
         UserAvatarResolver userAvatarResolver,
+        MediaUrlPresigner mediaUrlPresigner,
         AdminUserService adminUserService,
         AdminAccountDeletionEmailService accountDeletionEmailService,
         AdminAccountBanEmailService accountBanEmailService
     ) {
         this.userAvatarResolver = userAvatarResolver;
+        this.mediaUrlPresigner = mediaUrlPresigner;
         this.adminUserService = adminUserService;
         this.accountDeletionEmailService = accountDeletionEmailService;
         this.accountBanEmailService = accountBanEmailService;
@@ -124,7 +128,7 @@ public class AdminUserController {
             user.getDisplayName(),
             user.getEmail(),
             user.getRole().name(),
-            userAvatarResolver.resolve(user),
+            mediaUrlPresigner.presignPlaybackUrl(userAvatarResolver.resolve(user)),
             user.isOnboardingCompleted(),
             user.getAccountStatus() != null ? user.getAccountStatus().name() : UserAccountStatus.ACTIVE.name(),
             com.vibely.backend.moderation.BanReasonFormatter.forDisplay(user.getBanReason()),

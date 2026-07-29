@@ -56,8 +56,8 @@ function roleLabel(role) {
     : "Người dùng";
 }
 
-function resolveAdminAvatarUrl(avatarUrl) {
-  return sanitizeAvatarUrl(avatarUrl, DEFAULT_AVATAR);
+function resolveAdminAvatarUrl(avatarUrl, userId) {
+  return sanitizeAvatarUrl(avatarUrl, DEFAULT_AVATAR, userId);
 }
 
 function formatDateTime(value) {
@@ -1042,7 +1042,7 @@ export function AdminUsersPage() {
                 </thead>
                 <tbody>
                   {filteredUsers.map((item) => {
-                    const avatarSrc = resolveAdminAvatarUrl(item.avatarUrl);
+                    const avatarSrc = resolveAdminAvatarUrl(item.avatarUrl, item.id);
                     const itemIsAdmin =
                       String(item.role ?? "").toUpperCase() === "ADMIN";
                     const itemIsSelf = Number(item.id) === Number(user?.id);

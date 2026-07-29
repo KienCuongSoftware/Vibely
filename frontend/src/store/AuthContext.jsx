@@ -73,7 +73,11 @@ function mapUserWithDefaultAvatar(userLike) {
     normalizedUsername ||
     (userLike?.email ? deriveVibelyIdFromEmail(userLike.email) : "");
 
-  const avatarUrl = sanitizeAvatarUrl(userLike?.avatarUrl, DEFAULT_AVATAR_URL);
+  const avatarUrl = sanitizeAvatarUrl(
+    userLike?.avatarUrl,
+    DEFAULT_AVATAR_URL,
+    userLike?.id ?? userLike?.userId,
+  );
 
   return {
     ...userLike,

@@ -28,8 +28,8 @@ function formatDateTime(value) {
   })
 }
 
-function resolveAdminAvatarUrl(avatarUrl) {
-  return sanitizeAvatarUrl(avatarUrl, DEFAULT_AVATAR)
+function resolveAdminAvatarUrl(avatarUrl, userId) {
+  return sanitizeAvatarUrl(avatarUrl, DEFAULT_AVATAR, userId)
 }
 
 /** Hide leaked regex / engine tokens in ban_reason (legacy rows). */
@@ -236,7 +236,7 @@ export function AdminBannedUsersPage() {
                 </thead>
                 <tbody>
                   {filteredUsers.map((item) => {
-                    const avatarSrc = resolveAdminAvatarUrl(item.avatarUrl)
+                    const avatarSrc = resolveAdminAvatarUrl(item.avatarUrl, item.id)
                     return (
                       <tr key={item.id} className="border-b border-zinc-800/80">
                         <td className="py-3 pr-4">
