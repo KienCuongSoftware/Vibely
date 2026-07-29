@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -285,6 +286,7 @@ public class NotificationService {
     }
 
     /** Xóa thông báo gắn video đã gỡ (soft delete — DB vẫn giữ row videos). */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void purgeForRemovedVideo(Long videoId) {
         if (videoId == null) {
             return;

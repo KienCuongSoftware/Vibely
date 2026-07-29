@@ -478,13 +478,15 @@ export function SignupPage() {
       setResendSeconds(cooldown);
       setVerifiedCodeSnapshot("");
       setVerifiedEmailSnapshot("");
-      if (result?.emailSent) {
+      if (result?.demoCode) {
+        setStatus(
+          result?.emailSent
+            ? `Đã gửi mã 6 số tới ${normalizedEmail}. (dev) Mã xác minh: ${result.demoCode}`
+            : `Chưa bật gửi email (dev). Mã xác minh: ${result.demoCode}`,
+        );
+      } else if (result?.emailSent) {
         setStatus(
           `Đã gửi mã 6 số tới ${normalizedEmail}. Kiểm tra hộp thư đến (và cả thư rác/quảng cáo).`,
-        );
-      } else if (result?.demoCode) {
-        setStatus(
-          `Chưa bật gửi email (dev). Mã xác minh: ${result.demoCode}`,
         );
       } else {
         setStatus(

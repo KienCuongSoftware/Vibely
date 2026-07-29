@@ -7,14 +7,16 @@ import com.vibely.backend.interaction.repository.CommentRepository;
 import com.vibely.backend.interaction.repository.LikeRepository;
 import com.vibely.backend.interaction.repository.VideoBookmarkRepository;
 import com.vibely.backend.interaction.repository.VideoViewRepository;
-import com.vibely.backend.notification.NotificationService;
 import com.vibely.backend.moderation.ModerationReviewQueueCleanupService;
+import com.vibely.backend.notification.NotificationService;
 import com.vibely.backend.processing.VideoProcessingJobRepository;
 import com.vibely.backend.processing.VideoProcessingJobState;
 import com.vibely.backend.storage.S3MediaDeletionService;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
@@ -26,6 +28,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -44,6 +47,10 @@ public class AdminPostService {
     private final ObjectProvider<S3MediaDeletionService> s3MediaDeletionService;
     private final NotificationService notificationService;
     private final ModerationReviewQueueCleanupService reviewQueueCleanupService;
+    private final JdbcTemplate jdbcTemplate;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public AdminPostService(
         VideoRepository videoRepository,
@@ -54,7 +61,8 @@ public class AdminPostService {
         VideoProcessingJobRepository videoProcessingJobRepository,
         ObjectProvider<S3MediaDeletionService> s3MediaDeletionService,
         NotificationService notificationService,
-        ModerationReviewQueueCleanupService reviewQueueCleanupService
+        ModerationReviewQueueCleanupService reviewQueueCleanupService,
+        JdbcTemplate jdbcTemplate
     ) {
         this.videoRepository = videoRepository;
         this.likeRepository = likeRepository;
@@ -65,6 +73,7 @@ public class AdminPostService {
         this.s3MediaDeletionService = s3MediaDeletionService;
         this.notificationService = notificationService;
         this.reviewQueueCleanupService = reviewQueueCleanupService;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Transactional(readOnly = true)
@@ -107,15 +116,30 @@ public class AdminPostService {
         cancelProcessingJob(video.getId());
         // Soft-remove first: hide from profile/public URL, keep S3 for admin review.
         video.setStatus(VideoStatus.REMOVED);
-        videoRepository.save(video);
-        notificationService.purgeForRemovedVideo(video.getId());
-        reviewQueueCleanupService.purgeForVideo(video.getId());
+        videoRepository.saveAndFlush(video);
+        bestEffortPurgeRelated(video.getId());
     }
 
     private void purgePermanently(Video video) {
-        cancelProcessingJob(video.getId());
-        reviewQueueCleanupService.purgeForVideo(video.getId());
-        notificationService.purgeForRemovedVideo(video.getId());
+        Long videoId = video.getId();
+
+        // Finish any in-flight processing row via JDBC (avoid managed Hibernate entity later).
+        try {
+            jdbcTemplate.update(
+                """
+                UPDATE video_processing_jobs
+                SET job_state = 'COMPLETED', updated_at = NOW()
+                WHERE video_id = ?
+                  AND job_state <> 'COMPLETED'
+                """,
+                videoId
+            );
+        } catch (Exception ex) {
+            log.warn("Best-effort processing-job cancel failed for videoId={}: {}", videoId, ex.getMessage());
+        }
+
+        bestEffortPurgeRelated(videoId);
+
         S3MediaDeletionService deletionService = s3MediaDeletionService.getIfAvailable();
         if (deletionService != null) {
             try {
@@ -123,18 +147,58 @@ public class AdminPostService {
             } catch (Exception ex) {
                 log.warn(
                     "Best-effort S3 cleanup failed for purged videoId={}: {}",
-                    video.getId(),
+                    videoId,
                     ex.getMessage()
                 );
             }
         }
+
         try {
-            videoRepository.delete(video);
-            videoRepository.flush();
+            jdbcTemplate.update("DELETE FROM originality_matches WHERE matched_video_id = ?", videoId);
+            jdbcTemplate.update(
+                "UPDATE originality_reports SET matched_video_id = NULL WHERE matched_video_id = ?",
+                videoId
+            );
+        } catch (Exception ex) {
+            log.warn("Best-effort originality unlink failed for videoId={}: {}", videoId, ex.getMessage());
+        }
+
+        // Drop managed entities so Hibernate does not flush stale UPDATEs after DB CASCADE delete.
+        try {
+            entityManager.flush();
+        } catch (Exception ex) {
+            log.warn("Flush before hard delete failed for videoId={}: {}", videoId, ex.getMessage());
+        }
+        entityManager.clear();
+
+        try {
+            int deleted = jdbcTemplate.update("DELETE FROM videos WHERE id = ?", videoId);
+            if (deleted <= 0) {
+                throw new NotFoundException("Không tìm thấy bài đăng");
+            }
+        } catch (NotFoundException ex) {
+            throw ex;
         } catch (DataIntegrityViolationException ex) {
+            log.error("Hard delete blocked by FK for videoId={}", videoId, ex);
             throw new BadRequestException(
                 "Không xóa vĩnh viễn được bài đăng vì còn dữ liệu liên quan. Thử lại hoặc liên hệ kỹ thuật."
             );
+        } catch (RuntimeException ex) {
+            log.error("Hard delete failed for videoId={}", videoId, ex);
+            throw new BadRequestException("Không xóa vĩnh viễn được bài đăng. Vui lòng thử lại.");
+        }
+    }
+
+    private void bestEffortPurgeRelated(Long videoId) {
+        try {
+            reviewQueueCleanupService.purgeForVideo(videoId);
+        } catch (Exception ex) {
+            log.warn("Best-effort moderation purge failed for videoId={}: {}", videoId, ex.getMessage());
+        }
+        try {
+            notificationService.purgeForRemovedVideo(videoId);
+        } catch (Exception ex) {
+            log.warn("Best-effort notification purge failed for videoId={}: {}", videoId, ex.getMessage());
         }
     }
 
@@ -201,11 +265,24 @@ public class AdminPostService {
     }
 
     private void cancelProcessingJob(Long videoId) {
-        videoProcessingJobRepository.findByVideo_Id(videoId).ifPresent(job -> {
-            if (job.getJobState() != VideoProcessingJobState.COMPLETED) {
-                job.setJobState(VideoProcessingJobState.COMPLETED);
-                videoProcessingJobRepository.save(job);
-            }
-        });
+        try {
+            jdbcTemplate.update(
+                """
+                UPDATE video_processing_jobs
+                SET job_state = 'COMPLETED', updated_at = NOW()
+                WHERE video_id = ?
+                  AND job_state <> 'COMPLETED'
+                """,
+                videoId
+            );
+        } catch (Exception ex) {
+            log.warn("Best-effort processing-job cancel failed for videoId={}: {}", videoId, ex.getMessage());
+            videoProcessingJobRepository.findByVideo_Id(videoId).ifPresent(job -> {
+                if (job.getJobState() != VideoProcessingJobState.COMPLETED) {
+                    job.setJobState(VideoProcessingJobState.COMPLETED);
+                    videoProcessingJobRepository.save(job);
+                }
+            });
+        }
     }
 }

@@ -8,6 +8,11 @@ import {
 } from 'react-icons/io5'
 import { useAuth } from '@/store/useAuth'
 import { StudioSettingsModal } from '@/features/studio/components/StudioSettingsModal.jsx'
+import { AvatarImage } from '@/shared/components/AvatarImage.jsx'
+import {
+  DEFAULT_AVATAR_URL,
+  sanitizeAvatarUrl,
+} from '@/features/profile/utils/avatarUrl.js'
 
 /** @param {'dark' | 'light'} [theme='dark'] */
 export function StudioAccountMenu({ theme = 'dark' }) {
@@ -17,10 +22,11 @@ export function StudioAccountMenu({ theme = 'dark' }) {
   const [open, setOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const wrapRef = useRef(null)
-  const avatarSrc =
-    user?.avatarUrl && String(user.avatarUrl).trim()
-      ? user.avatarUrl
-      : '/images/users/default-avatar.jpeg'
+  const avatarSrc = sanitizeAvatarUrl(
+    user?.avatarUrl,
+    DEFAULT_AVATAR_URL,
+    user?.id,
+  )
 
   useEffect(() => {
     if (!open) return undefined
@@ -58,7 +64,7 @@ export function StudioAccountMenu({ theme = 'dark' }) {
           aria-haspopup="menu"
           onClick={() => setOpen((o) => !o)}
         >
-          <img
+          <AvatarImage
             src={avatarSrc}
             alt=""
             className={
@@ -66,7 +72,6 @@ export function StudioAccountMenu({ theme = 'dark' }) {
                 ? 'h-9 w-9 rounded-full border border-slate-200 object-cover'
                 : 'h-9 w-9 rounded-full border border-zinc-800 object-cover'
             }
-            referrerPolicy="no-referrer"
           />
         </button>
         {open ? (

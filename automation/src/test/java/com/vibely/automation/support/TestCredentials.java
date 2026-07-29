@@ -73,6 +73,66 @@ public final class TestCredentials {
                 && !peerUsername().isBlank();
     }
 
+    /**
+     * Password for signup happy-path tests (8–20 chars, letters + digits + special).
+     *
+     * <p>Override with {@code TEST_SIGNUP_PASSWORD} / {@code test.signup.password}.</p>
+     */
+    public static String signupPassword() {
+        String configured = firstNonBlank(
+                System.getenv("TEST_SIGNUP_PASSWORD"),
+                System.getProperty("test.signup.password"),
+                ConfigReader.getProperty("test.signup.password", ""));
+        return configured.isBlank() ? "AutoTest@1234" : configured;
+    }
+
+    /**
+     * Optional fixed OTP when email delivery is enabled and {@code demoCode} is not returned.
+     *
+     * <p>Override with {@code TEST_SIGNUP_OTP} / {@code test.signup.otp}.</p>
+     */
+    public static String signupOtp() {
+        return firstNonBlank(
+                System.getenv("TEST_SIGNUP_OTP"),
+                System.getProperty("test.signup.otp"),
+                ConfigReader.getProperty("test.signup.otp", ""));
+    }
+
+    /**
+     * Unique email for signup (avoids collisions). Prefix override:
+     * {@code test.signup.email.prefix} (default {@code vibely.auto}).
+     */
+    public static String uniqueSignupEmail() {
+        String fixed = firstNonBlank(
+                System.getenv("TEST_SIGNUP_EMAIL"),
+                System.getProperty("test.signup.email"),
+                ConfigReader.getProperty("test.signup.email", ""));
+        if (!fixed.isBlank()) {
+            return fixed;
+        }
+        String prefix = firstNonBlank(
+                System.getenv("TEST_SIGNUP_EMAIL_PREFIX"),
+                System.getProperty("test.signup.email.prefix"),
+                ConfigReader.getProperty("test.signup.email.prefix", "vibely.auto"));
+        return prefix + "." + System.currentTimeMillis() + "@example.com";
+    }
+
+    /**
+     * Unique Vibely ID for signup. Override with {@code TEST_SIGNUP_USERNAME} /
+     * {@code test.signup.username}.
+     */
+    public static String uniqueSignupUsername() {
+        String fixed = firstNonBlank(
+                System.getenv("TEST_SIGNUP_USERNAME"),
+                System.getProperty("test.signup.username"),
+                ConfigReader.getProperty("test.signup.username", ""));
+        if (!fixed.isBlank()) {
+            return stripAt(fixed);
+        }
+        String suffix = Long.toString(System.currentTimeMillis() % 1_000_000_000L, 36);
+        return "auto" + suffix;
+    }
+
     private static String stripAt(String value) {
         if (value == null || value.isBlank()) {
             return "";
