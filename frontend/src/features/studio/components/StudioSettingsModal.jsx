@@ -17,7 +17,7 @@ const SETTINGS_ROWS = [
       'Chúng tôi sẽ tự động kiểm tra xem video của bạn có nhạc chưa được cấp phép có thể khiến video bị tắt tiếng hay không.',
     infoTooltip:
       'Chúng tôi sẽ kiểm tra video của bạn để tìm các vi phạm bản quyền tiềm ẩn đối với âm thanh được sử dụng. Nếu phát hiện vi phạm, bạn có thể chỉnh sửa video trước khi đăng.',
-    learnMoreHref: '/legal/page/row/terms-of-service',
+    learnMore: 'copyright',
   },
   {
     key: 'contentCheckLite',
@@ -76,7 +76,7 @@ function SettingsSwitch({ checked, onChange, label, light }) {
   )
 }
 
-function InfoHoverTip({ text, learnMoreHref }) {
+function InfoHoverTip({ text, onLearnMore }) {
   return (
     <span className="group/infotip relative inline-flex shrink-0">
       <button
@@ -92,21 +92,97 @@ function InfoHoverTip({ text, learnMoreHref }) {
       >
         <span className="block rounded-lg bg-zinc-700 px-3 py-2.5 text-left text-xs leading-relaxed font-normal text-white shadow-xl">
           {text}
-          {learnMoreHref ? (
+          {onLearnMore ? (
             <>
               {' '}
-              <a
-                href={learnMoreHref}
-                className="underline underline-offset-2 hover:text-zinc-100"
-                onClick={(event) => event.stopPropagation()}
+              <button
+                type="button"
+                className="inline cursor-pointer underline underline-offset-2 hover:text-zinc-100"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onLearnMore()
+                }}
               >
                 Tìm hiểu thêm
-              </a>
+              </button>
             </>
           ) : null}
         </span>
       </span>
     </span>
+  )
+}
+
+function CopyrightCheckInfoModal({ open, light, onClose }) {
+  if (!open) return null
+
+  return (
+    <div
+      className="fixed inset-0 z-90 flex items-center justify-center bg-black/70 px-4"
+      role="presentation"
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="copyright-check-info-title"
+        className={
+          light
+            ? 'w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl'
+            : 'w-full max-w-lg overflow-hidden rounded-2xl border border-zinc-700/80 bg-[#1a1a1a] shadow-2xl'
+        }
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="px-6 pt-5 pb-2">
+          <h2
+            id="copyright-check-info-title"
+            className={
+              light
+                ? 'text-lg font-bold text-slate-900'
+                : 'text-lg font-bold text-zinc-100'
+            }
+          >
+            Cách kiểm tra bản quyền hoạt động
+          </h2>
+        </div>
+
+        <div
+          className={
+            light
+              ? 'space-y-4 px-6 py-2 text-sm leading-relaxed text-slate-700'
+              : 'space-y-4 px-6 py-2 text-sm leading-relaxed text-zinc-300'
+          }
+        >
+          <p>
+            Hãy chạy kiểm tra bản quyền đối với các âm thanh bạn đã sử dụng trước khi đăng video
+            để xác định các vi phạm bản quyền tiềm ẩn. Nếu phát hiện thấy vấn đề, bạn có thể chỉnh
+            sửa video của mình trước khi đăng.
+          </p>
+          <p>
+            Bạn vẫn có thể đăng video đã bị gắn cờ vi phạm bản quyền. Tuy nhiên, video sẽ bị tắt
+            tiếng để bảo vệ quyền lợi của những âm thanh chưa được cấp phép.
+          </p>
+          <p>
+            <span className={light ? 'font-semibold text-slate-900' : 'font-semibold text-zinc-100'}>
+              Lưu ý:
+            </span>{' '}
+            Kết quả kiểm tra bản quyền không phải là kết quả cuối cùng. Ví dụ: những thay đổi trong
+            tương lai về sự cho phép của chủ sở hữu bản quyền đối với âm thanh có thể ảnh hưởng đến
+            video của bạn.
+          </p>
+        </div>
+
+        <div className="flex justify-end px-6 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="cursor-pointer rounded-lg bg-[#FE2C55] px-6 py-2 text-sm font-semibold text-white transition hover:bg-[#e6284c]"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -123,17 +199,28 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
   const saved = useMemo(() => loadSettings(userId), [userId, open])
   const [draft, setDraft] = useState(saved)
   const [activeNav, setActiveNav] = useState('agreement')
+  const [learnMoreKind, setLearnMoreKind] = useState(null)
 
   useEffect(() => {
     if (!open) return undefined
     setDraft(loadSettings(userId))
     setActiveNav('agreement')
+    setLearnMoreKind(null)
+  }, [open, userId])
+
+  useEffect(() => {
+    if (!open) return undefined
     const onKey = (event) => {
-      if (event.key === 'Escape') onClose?.()
+      if (event.key !== 'Escape') return
+      if (learnMoreKind) {
+        setLearnMoreKind(null)
+        return
+      }
+      onClose?.()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open, onClose, userId])
+  }, [open, onClose, learnMoreKind])
 
   if (!open) return null
 
@@ -158,6 +245,7 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
   }
 
   return (
+    <>
     <div
       className="fixed inset-0 z-80 flex items-center justify-center bg-black/70 px-4"
       role="presentation"
@@ -258,7 +346,11 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
                       {row.infoTooltip ? (
                         <InfoHoverTip
                           text={row.infoTooltip}
-                          learnMoreHref={row.learnMoreHref}
+                          onLearnMore={
+                            row.learnMore
+                              ? () => setLearnMoreKind(row.learnMore)
+                              : undefined
+                          }
                         />
                       ) : null}
                     </div>
@@ -315,5 +407,11 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
         </div>
       </div>
     </div>
+    <CopyrightCheckInfoModal
+      open={learnMoreKind === 'copyright'}
+      light={light}
+      onClose={() => setLearnMoreKind(null)}
+    />
+    </>
   )
 }
