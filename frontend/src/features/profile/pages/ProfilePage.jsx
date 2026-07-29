@@ -16,6 +16,7 @@ import {
   recordProfileLastWatchedFromVideo,
 } from '@/features/profile/utils/profileLastWatched.js'
 import { Sidebar } from '@/shared/components/Sidebar'
+import { AdminSidebar } from '@/features/admin/components/AdminSidebar.jsx'
 import { isMobileFeedLayout, MobileFeedBottomNav } from '@/features/feed/components/MobileFeedShell.jsx'
 import { MobileLoginPrompt } from '@/features/feed/components/MobilePageShell.jsx'
 import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
@@ -1378,8 +1379,10 @@ export function ProfilePage() {
             : null
         }
       />
-      {isAdminOwnProfile ? null : (
-        <div className="hidden shrink-0 lg:block">
+      <div className="hidden shrink-0 lg:block">
+        {isAdminOwnProfile ? (
+          <AdminSidebar active="" />
+        ) : (
           <Sidebar
             menuItems={menuItems}
             activeMenu={activeMenu}
@@ -1388,8 +1391,8 @@ export function ProfilePage() {
             user={user}
             onLogout={token ? logout : undefined}
           />
-        </div>
-      )}
+        )}
+      </div>
 
       <div
         ref={profileScrollRef}
