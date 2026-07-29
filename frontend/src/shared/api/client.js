@@ -125,14 +125,20 @@ async function request(path, { method = "GET", body, token, headers: extraHeader
   return payload;
 }
 
-/** PUT file trực tiếp lên S3 bằng URL đã ký (không qua JSON API). */
-export function uploadToPresignedPutUrl(uploadUrl, file, contentType, onProgress) {
+/** PUT file trực tiếp lên S3 bằng URL đã ký (không qua JSON API).
+ * @param {(percent: number, meta?: { loaded: number, total: number }) => void} [onProgress]
+ * @param {{ signal?: AbortSignal }} [options]
+ */
+export function uploadToPresignedPutUrl(uploadUrl, file, contentType, onProgress, options = {}) {
   const ct = contentType || file?.type || "application/octet-stream";
+  const signal = options?.signal;
+
   if (typeof onProgress !== "function") {
     return fetch(uploadUrl, {
       method: "PUT",
       headers: { "Content-Type": ct },
       body: file,
+      signal,
     }).then((response) => {
       if (!response.ok) {
         throw new Error(
@@ -146,17 +152,31 @@ export function uploadToPresignedPutUrl(uploadUrl, file, contentType, onProgress
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", uploadUrl);
     xhr.setRequestHeader("Content-Type", ct);
+
+    const onAbort = () => {
+      xhr.abort();
+    };
+    if (signal) {
+      if (signal.aborted) {
+        reject(new DOMException("Aborted", "AbortError"));
+        return;
+      }
+      signal.addEventListener("abort", onAbort, { once: true });
+    }
+
     xhr.upload.onprogress = (event) => {
       if (!event.lengthComputable) return;
       const percent = Math.max(
         0,
-        Math.min(100, Math.round((event.loaded / event.total) * 100)),
+        Math.min(100, Math.round((event.loaded / event.total) * 10000) / 100),
       );
-      onProgress(percent);
+      onProgress(percent, { loaded: event.loaded, total: event.total });
     };
     xhr.onload = () => {
+      signal?.removeEventListener("abort", onAbort);
       if (xhr.status >= 200 && xhr.status < 300) {
-        onProgress(100);
+        const total = file?.size || 0;
+        onProgress(100, { loaded: total, total });
         resolve();
         return;
       }
@@ -165,7 +185,12 @@ export function uploadToPresignedPutUrl(uploadUrl, file, contentType, onProgress
       );
     };
     xhr.onerror = () => {
+      signal?.removeEventListener("abort", onAbort);
       reject(new Error("Tải file lên kho lưu trữ thất bại."));
+    };
+    xhr.onabort = () => {
+      signal?.removeEventListener("abort", onAbort);
+      reject(new DOMException("Aborted", "AbortError"));
     };
     xhr.send(file);
   });

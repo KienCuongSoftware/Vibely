@@ -5,6 +5,7 @@ import { apiClient, uploadThumbnailToStorage, uploadToPresignedPutUrl } from '@/
 import { CoverPickerModal } from '@/features/upload/components/CoverPickerModal'
 import { CuHashtagSuggestions } from '@/features/upload/components/CuHashtagSuggestions'
 import { StudioLayout } from '@/features/studio/components/StudioLayout'
+import { loadStudioSettings } from '@/features/studio/utils/studioSettings.js'
 import { extractThumbnailBlobFromFile } from '@/features/post/utils/videoThumbnail.js'
 import {
   deleteUploadDraftKeepalive,
@@ -55,8 +56,26 @@ function formatFileSize(bytes) {
   if (bytes == null || !Number.isFinite(bytes)) return '—'
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+}
+
+function formatDurationTikTok(totalSeconds) {
+  const sec = Math.max(0, Math.floor(Number(totalSeconds) || 0))
+  const m = Math.floor(sec / 60)
+  const s = sec % 60
+  if (m <= 0) return `${s}s`
+  return `${m}m${String(s).padStart(2, '0')}s`
+}
+
+function formatEtaLabel(etaMs) {
+  if (!Number.isFinite(etaMs) || etaMs <= 0) return ''
+  const sec = Math.max(1, Math.ceil(etaMs / 1000))
+  if (sec < 60) return `${sec} giây còn lại`
+  const m = Math.floor(sec / 60)
+  const s = sec % 60
+  if (m < 60) return s > 0 ? `${m} phút ${s} giây còn lại` : `${m} phút còn lại`
+  return `${m} phút còn lại`
 }
 
 function formatResolutionLabel(width, height) {
@@ -221,6 +240,13 @@ export function UploadPage() {
   const [busy, setBusy] = useState(false)
   /** 0–100 while S3 upload is in progress; null when idle / finished */
   const [uploadProgress, setUploadProgress] = useState(null)
+  const [uploadLoadedBytes, setUploadLoadedBytes] = useState(0)
+  const [uploadTotalBytes, setUploadTotalBytes] = useState(0)
+  const [uploadStartedAt, setUploadStartedAt] = useState(null)
+  const uploadAbortRef = useRef(null)
+  const [studioSettings, setStudioSettings] = useState(() =>
+    loadStudioSettings(user?.id ?? user?.username ?? 'guest'),
+  )
   const [showMoreSettings, setShowMoreSettings] = useState(false)
   const [postTiming, setPostTiming] = useState('now')
   const [privacyOpen, setPrivacyOpen] = useState(false)
@@ -254,6 +280,7 @@ export function UploadPage() {
   const pendingLeaveToRef = useRef(null)
 
   const originalityCheck = useMemo(() => {
+    if (!studioSettings.contentCheckLite) return null
     if (!uploadedVideo?.publicId) return null
     const jobState = String(originalityStatus?.jobState || '')
     const decision = String(originalityStatus?.decision || '')
@@ -297,7 +324,7 @@ export function UploadPage() {
       detail: 'Không phát hiện vấn đề.',
       showDetails: false,
     }
-  }, [uploadedVideo?.publicId, originalityStatus])
+  }, [uploadedVideo?.publicId, originalityStatus, studioSettings.contentCheckLite])
 
   const originalityViolationCopy = useMemo(
     () => buildOriginalityViolationCopy(originalityStatus),
@@ -307,19 +334,48 @@ export function UploadPage() {
   // Only allow Đăng when originality finished (COMPLETED / FAILED) — not while PENDING.
   // BLOCK keeps Đăng locked. Soft client unlock after 5 min if worker is dead (FAILED path).
   // Local/dev: unlock sooner so Selenium / manual QA are not stuck waiting on a missing worker.
+  // When contentCheckLite is off (Studio settings), skip originality gate like TikTok.
   const ORIGINALITY_CLIENT_FAIL_MS = import.meta.env.DEV ? 20_000 : 5 * 60 * 1000
   const originalityJobState = String(originalityStatus?.jobState || '')
   const originalityDecision = String(originalityStatus?.decision || '')
   const originalityPending =
-    !originalityStatus ||
-    !originalityJobState ||
-    originalityJobState === 'PENDING' ||
-    originalityJobState === 'PROCESSING'
+    studioSettings.contentCheckLite &&
+    (!originalityStatus ||
+      !originalityJobState ||
+      originalityJobState === 'PENDING' ||
+      originalityJobState === 'PROCESSING')
   const clientTimedOut =
     originalityWaitStartedAt != null &&
     nowTick - originalityWaitStartedAt >= ORIGINALITY_CLIENT_FAIL_MS
   const originalityBlockingPost =
-    originalityDecision === 'BLOCK' || (originalityPending && !clientTimedOut)
+    studioSettings.contentCheckLite &&
+    (originalityDecision === 'BLOCK' || (originalityPending && !clientTimedOut))
+
+  const uploadEtaLabel = useMemo(() => {
+    if (uploadProgress == null || uploadProgress >= 100 || !uploadStartedAt) return ''
+    if (!uploadLoadedBytes || !uploadTotalBytes || uploadLoadedBytes <= 0) return ''
+    const elapsed = Date.now() - uploadStartedAt
+    if (elapsed < 400) return ''
+    const rate = uploadLoadedBytes / elapsed
+    if (rate <= 0) return ''
+    const remaining = Math.max(0, uploadTotalBytes - uploadLoadedBytes)
+    return formatEtaLabel(remaining / rate)
+  }, [uploadProgress, uploadStartedAt, uploadLoadedBytes, uploadTotalBytes, nowTick])
+
+  useEffect(() => {
+    const refresh = () => {
+      setStudioSettings(loadStudioSettings(user?.id ?? user?.username ?? 'guest'))
+    }
+    refresh()
+    window.addEventListener('storage', refresh)
+    window.addEventListener('focus', refresh)
+    window.addEventListener('vibely-studio-settings-changed', refresh)
+    return () => {
+      window.removeEventListener('storage', refresh)
+      window.removeEventListener('focus', refresh)
+      window.removeEventListener('vibely-studio-settings-changed', refresh)
+    }
+  }, [user?.id, user?.username])
 
   const postButtonTitle =
     originalityDecision === 'BLOCK'
@@ -338,19 +394,20 @@ export function UploadPage() {
           : 'Đăng'
 
   useEffect(() => {
-    if (!uploadedVideo?.publicId) {
+    if (!uploadedVideo?.publicId || !studioSettings.contentCheckLite) {
       setOriginalityWaitStartedAt(null)
       return undefined
     }
     setOriginalityWaitStartedAt((prev) => prev ?? Date.now())
     return undefined
-  }, [uploadedVideo?.publicId])
+  }, [uploadedVideo?.publicId, studioSettings.contentCheckLite])
 
   useEffect(() => {
-    if (!originalityPending || !originalityBlockingPost) return undefined
-    const id = window.setInterval(() => setNowTick(Date.now()), 2000)
+    const needTick = originalityBlockingPost || uploadProgress != null
+    if (!needTick) return undefined
+    const id = window.setInterval(() => setNowTick(Date.now()), 1000)
     return () => window.clearInterval(id)
-  }, [originalityPending, originalityBlockingPost])
+  }, [originalityBlockingPost, uploadProgress])
 
   useEffect(() => {
     document.title = 'VibelyStudio | Upload'
@@ -804,11 +861,18 @@ export function UploadPage() {
   /** Clear editor + force user to pick another file. */
   const resetUploadSession = useCallback(() => {
     processingPollRef.current += 1
+    if (uploadAbortRef.current) {
+      uploadAbortRef.current.abort()
+      uploadAbortRef.current = null
+    }
     const draftId = draftPublicIdRef.current
     setVideoFile(null)
     setUploadedVideo(null)
     setThumbnailUrl('')
     setUploadProgress(null)
+    setUploadLoadedBytes(0)
+    setUploadTotalBytes(0)
+    setUploadStartedAt(null)
     setDescription('')
     setCoverModalOpen(false)
     setOriginalityStatus(null)
@@ -817,6 +881,25 @@ export function UploadPage() {
     resetFileInput()
     if (draftId) void discardDraftVideo(draftId)
   }, [resetFileInput, discardDraftVideo])
+
+  const cancelActiveUpload = useCallback(() => {
+    if (uploadAbortRef.current) {
+      uploadAbortRef.current.abort()
+      uploadAbortRef.current = null
+    }
+    processingPollRef.current += 1
+    setVideoFile(null)
+    setUploadedVideo(null)
+    setThumbnailUrl('')
+    setUploadProgress(null)
+    setUploadLoadedBytes(0)
+    setUploadTotalBytes(0)
+    setUploadStartedAt(null)
+    setDescription('')
+    setOriginalityStatus(null)
+    setBusy(false)
+    resetFileInput()
+  }, [resetFileInput])
 
   const hasUnsavedUploadDraft = Boolean(
     uploadedVideo?.publicId || uploadedVideo?.playbackUrl,
@@ -943,10 +1026,13 @@ export function UploadPage() {
   }, [])
 
   const watchServerPostUploadChecks = useCallback(
-    async (publicId) => {
+    async (publicId, { runOriginalityCheck = true } = {}) => {
       if (!token || !publicId) return
       const pollId = ++processingPollRef.current
-      const deadline = Date.now() + 15 * 60 * 1000
+      const pollStartedAt = Date.now()
+      const deadline = runOriginalityCheck
+        ? pollStartedAt + 15 * 60 * 1000
+        : pollStartedAt + 90 * 1000
       while (Date.now() < deadline && processingPollRef.current === pollId) {
         await new Promise((r) => setTimeout(r, 2500))
         if (processingPollRef.current !== pollId) return
@@ -964,6 +1050,10 @@ export function UploadPage() {
                 : 'Video không đạt yêu cầu và đã bị gỡ. Vui lòng tải video khác lên.',
             )
             return
+          }
+
+          if (!runOriginalityCheck) {
+            continue
           }
 
           let originality = null
@@ -1026,6 +1116,9 @@ export function UploadPage() {
 
     setThumbnailUrl('')
     setUploadProgress(null)
+    setUploadLoadedBytes(0)
+    setUploadTotalBytes(file.size || 0)
+    setUploadStartedAt(null)
     setOriginalityStatus(null)
     setOriginalityDetailsOpen(false)
     setBusy(true)
@@ -1064,6 +1157,9 @@ export function UploadPage() {
       setStatus('')
       setUploadErrorToast('')
       setUploadProgress(0)
+      setUploadLoadedBytes(0)
+      setUploadTotalBytes(file.size || 0)
+      setUploadStartedAt(Date.now())
 
       const contentType = resolveUploadContentType(file)
       const presign = await apiClient.presignVideoUpload(token, {
@@ -1072,12 +1168,20 @@ export function UploadPage() {
         fileSizeBytes: file.size,
       })
 
+      const abortController = new AbortController()
+      uploadAbortRef.current = abortController
       await uploadToPresignedPutUrl(
         presign.uploadUrl,
         file,
         presign.contentType,
-        (percent) => setUploadProgress(percent),
+        (percent, metaProgress) => {
+          setUploadProgress(percent)
+          if (metaProgress?.loaded != null) setUploadLoadedBytes(metaProgress.loaded)
+          if (metaProgress?.total != null) setUploadTotalBytes(metaProgress.total)
+        },
+        { signal: abortController.signal },
       )
+      uploadAbortRef.current = null
       const playbackUrl = presign.playbackUrl
       const audioUrl = deriveAudioUrlFromVideoUrl(playbackUrl)
       const audioTitle = `âm thanh gốc - ${user?.displayName || user?.username || 'Vibely'}`
@@ -1137,15 +1241,27 @@ export function UploadPage() {
         publicId: created?.publicId ?? null,
       })
       setUploadProgress(null)
+      setUploadLoadedBytes(0)
+      setUploadTotalBytes(0)
+      setUploadStartedAt(null)
       setStatus('')
       if (created?.publicId) {
         markDraftTracked(created.publicId)
-        void watchServerPostUploadChecks(created.publicId)
+        const settingsNow = loadStudioSettings(user?.id ?? user?.username ?? 'guest')
+        setStudioSettings(settingsNow)
+        void watchServerPostUploadChecks(created.publicId, {
+          runOriginalityCheck: Boolean(settingsNow.contentCheckLite),
+        })
       }
     } catch (error) {
+      if (error?.name === 'AbortError') {
+        setBusy(false)
+        return
+      }
       resetUploadSession()
       showUploadRejected(error.message ?? 'Đăng tải thất bại.')
     } finally {
+      uploadAbortRef.current = null
       setBusy(false)
     }
   }
@@ -1627,9 +1743,18 @@ export function UploadPage() {
                         </span>
                       </div>
                       {uploadProgress != null ? (
-                        <p className="mt-2 text-sm font-medium text-sky-400">
-                          Đang tải lên… {uploadProgress}%
-                        </p>
+                        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                          <span className="inline-flex items-center gap-1.5 font-medium text-sky-400">
+                            <IoCloudUploadOutline className="text-base" aria-hidden />
+                            {formatFileSize(uploadLoadedBytes)}/{formatFileSize(uploadTotalBytes || uploadedVideo.fileSize)}
+                          </span>
+                          <span className="text-zinc-500">
+                            Thời lượng: {formatDurationTikTok(uploadedVideo.durationSeconds)}
+                          </span>
+                          {uploadEtaLabel ? (
+                            <span className="text-zinc-500">{uploadEtaLabel}</span>
+                          ) : null}
+                        </div>
                       ) : uploadedVideo.playbackUrl ? (
                         <p className="mt-2 flex items-center gap-1.5 text-sm text-emerald-400">
                           <IoCheckmarkCircle className="text-lg" aria-hidden />
@@ -1639,15 +1764,32 @@ export function UploadPage() {
                         <p className="mt-2 text-sm text-zinc-400">Đang chuẩn bị…</p>
                       )}
                     </div>
-                    <button
-                      type="button"
-                      className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-zinc-600 bg-zinc-900 px-3 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
-                      onClick={onPickFile}
-                      disabled={busy}
-                    >
-                      <IoRefreshOutline className="text-lg" aria-hidden />
-                      Thay thế
-                    </button>
+                    <div className="flex shrink-0 flex-col items-end gap-2">
+                      {uploadProgress != null ? (
+                        <>
+                          <button
+                            type="button"
+                            className="cursor-pointer rounded-lg bg-zinc-800 px-4 py-1.5 text-sm font-medium text-zinc-100 hover:bg-zinc-700"
+                            onClick={cancelActiveUpload}
+                          >
+                            Hủy
+                          </button>
+                          <p className="text-lg font-bold tabular-nums text-sky-400">
+                            {Number(uploadProgress).toFixed(2)}%
+                          </p>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          className="flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-600 bg-zinc-900 px-3 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+                          onClick={onPickFile}
+                          disabled={busy}
+                        >
+                          <IoRefreshOutline className="text-lg" aria-hidden />
+                          Thay thế
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="h-1 w-full bg-zinc-800" aria-hidden>
                     <div
@@ -2039,53 +2181,77 @@ export function UploadPage() {
                   <div className="mt-8 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
                     <h3 className="text-sm font-semibold text-zinc-100">Kiểm tra</h3>
                     <div className="mt-3 space-y-3">
-                      <div className="flex items-start gap-3">
-                        <IoCheckmarkCircle className="mt-0.5 shrink-0 text-lg text-emerald-400" aria-hidden />
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-zinc-200">Kiểm tra bản quyền nhạc</p>
-                          <p className="mt-0.5 text-xs text-zinc-500">Không phát hiện vấn đề.</p>
-                        </div>
-                      </div>
-                      {originalityCheck ? (
+                      {studioSettings.musicCopyrightCheck ? (
                         <div className="flex items-start gap-3">
-                          {originalityCheck.tone === 'ok' ? (
-                            <IoCheckmarkCircle className="mt-0.5 shrink-0 text-lg text-emerald-400" aria-hidden />
-                          ) : originalityCheck.tone === 'pending' ? (
-                            <span
-                              className="mt-1 inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-200"
-                              aria-hidden
-                            />
-                          ) : (
-                            <IoWarningOutline className="mt-0.5 shrink-0 text-lg text-orange-400" aria-hidden />
-                          )}
+                          <IoCheckmarkCircle className="mt-0.5 shrink-0 text-lg text-emerald-400" aria-hidden />
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-zinc-200">{originalityCheck.title}</p>
-                            <p
-                              className={`mt-0.5 text-xs leading-relaxed ${
-                                originalityCheck.tone === 'danger'
-                                  ? 'text-orange-300'
-                                  : originalityCheck.tone === 'warn'
-                                    ? 'text-amber-300'
-                                    : 'text-zinc-500'
-                              }`}
-                            >
-                              {originalityCheck.detail}
-                              {originalityCheck.showDetails ? (
-                                <>
-                                  {' '}
-                                  <button
-                                    type="button"
-                                    className="cursor-pointer font-semibold text-[#fe2c55] hover:underline"
-                                    onClick={() => setOriginalityDetailsOpen(true)}
-                                  >
-                                    Xem chi tiết
-                                  </button>
-                                </>
-                              ) : null}
+                            <p className="text-sm font-medium text-zinc-200">Kiểm tra bản quyền nhạc</p>
+                            <p className="mt-0.5 text-xs text-zinc-500">Không phát hiện vấn đề.</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-start gap-3">
+                          <span className="mt-1 inline-block h-4 w-4 shrink-0 rounded-full bg-zinc-600" aria-hidden />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-zinc-400">Kiểm tra bản quyền nhạc</p>
+                            <p className="mt-0.5 text-xs text-zinc-500">
+                              Đã tắt kiểm tra tự động — không chạy kiểm tra bản quyền nhạc.
                             </p>
                           </div>
                         </div>
-                      ) : null}
+                      )}
+                      {studioSettings.contentCheckLite ? (
+                        originalityCheck ? (
+                          <div className="flex items-start gap-3">
+                            {originalityCheck.tone === 'ok' ? (
+                              <IoCheckmarkCircle className="mt-0.5 shrink-0 text-lg text-emerald-400" aria-hidden />
+                            ) : originalityCheck.tone === 'pending' ? (
+                              <span
+                                className="mt-1 inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-200"
+                                aria-hidden
+                              />
+                            ) : (
+                              <IoWarningOutline className="mt-0.5 shrink-0 text-lg text-orange-400" aria-hidden />
+                            )}
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-zinc-200">{originalityCheck.title}</p>
+                              <p
+                                className={`mt-0.5 text-xs leading-relaxed ${
+                                  originalityCheck.tone === 'danger'
+                                    ? 'text-orange-300'
+                                    : originalityCheck.tone === 'warn'
+                                      ? 'text-amber-300'
+                                      : 'text-zinc-500'
+                                }`}
+                              >
+                                {originalityCheck.detail}
+                                {originalityCheck.showDetails ? (
+                                  <>
+                                    {' '}
+                                    <button
+                                      type="button"
+                                      className="cursor-pointer font-semibold text-[#fe2c55] hover:underline"
+                                      onClick={() => setOriginalityDetailsOpen(true)}
+                                    >
+                                      Xem chi tiết
+                                    </button>
+                                  </>
+                                ) : null}
+                              </p>
+                            </div>
+                          </div>
+                        ) : null
+                      ) : (
+                        <div className="flex items-start gap-3">
+                          <span className="mt-1 inline-block h-4 w-4 shrink-0 rounded-full bg-zinc-600" aria-hidden />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-zinc-400">Kiểm tra nội dung</p>
+                            <p className="mt-0.5 text-xs text-zinc-500">
+                              Đã tắt kiểm tra tự động — không chạy kiểm tra nội dung.
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 

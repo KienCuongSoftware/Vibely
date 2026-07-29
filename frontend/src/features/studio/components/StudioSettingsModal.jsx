@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { IoClose, IoInformationCircleOutline } from 'react-icons/io5'
 import { useAuth } from '@/store/useAuth'
+import {
+  loadStudioSettings,
+  saveStudioSettings,
+  STUDIO_SETTINGS_DEFAULTS,
+} from '@/features/studio/utils/studioSettings.js'
 
-const DEFAULT_SETTINGS = {
-  musicCopyrightCheck: true,
-  contentCheckLite: true,
-  allowVideoInsights: true,
-  includeCommentsForInsights: true,
-}
+const DEFAULT_SETTINGS = STUDIO_SETTINGS_DEFAULTS
 
 const SETTINGS_ROWS = [
   {
@@ -40,20 +40,6 @@ const SETTINGS_ROWS = [
       'Vibely sẽ đưa bình luận của bạn vào khi dùng AI để tóm tắt và lọc bình luận trên các video khác.',
   },
 ]
-
-function storageKey(userId) {
-  return `vibely.studio.settings.${userId || 'guest'}`
-}
-
-function loadSettings(userId) {
-  try {
-    const raw = localStorage.getItem(storageKey(userId))
-    if (!raw) return { ...DEFAULT_SETTINGS }
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) }
-  } catch {
-    return { ...DEFAULT_SETTINGS }
-  }
-}
 
 function SettingsSwitch({ checked, onChange, label, light }) {
   return (
@@ -196,14 +182,14 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
   const light = theme === 'light'
   const { user } = useAuth()
   const userId = user?.id ?? user?.username ?? 'guest'
-  const saved = useMemo(() => loadSettings(userId), [userId, open])
+  const saved = useMemo(() => loadStudioSettings(userId), [userId, open])
   const [draft, setDraft] = useState(saved)
   const [activeNav, setActiveNav] = useState('agreement')
   const [learnMoreKind, setLearnMoreKind] = useState(null)
 
   useEffect(() => {
     if (!open) return undefined
-    setDraft(loadSettings(userId))
+    setDraft(loadStudioSettings(userId))
     setActiveNav('agreement')
     setLearnMoreKind(null)
   }, [open, userId])
@@ -233,7 +219,7 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
 
   const handleSave = () => {
     try {
-      localStorage.setItem(storageKey(userId), JSON.stringify(draft))
+      saveStudioSettings(userId, draft)
     } catch {
       /* ignore quota */
     }
