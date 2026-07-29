@@ -88,7 +88,7 @@ function InfoHoverTip({ text, learnMoreHref }) {
       </button>
       <span
         role="tooltip"
-        className="pointer-events-none absolute bottom-full left-1/2 z-90 w-72 -translate-x-1/2 pb-2 opacity-0 transition-opacity duration-150 group-hover/infotip:pointer-events-auto group-hover/infotip:opacity-100"
+        className="pointer-events-none absolute top-full left-1/2 z-90 w-72 -translate-x-1/2 pt-2 opacity-0 transition-opacity duration-150 group-hover/infotip:pointer-events-auto group-hover/infotip:opacity-100"
       >
         <span className="block rounded-lg bg-zinc-700 px-3 py-2.5 text-left text-xs leading-relaxed font-normal text-white shadow-xl">
           {text}
