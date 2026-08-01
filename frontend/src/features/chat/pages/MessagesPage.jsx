@@ -54,6 +54,9 @@ import {
   CHAT_MENU_ICON_CLASS,
 } from "@/features/chat/components/ChatConversationMenuItem.jsx";
 
+const PAGE_TITLE = "Tin nhắn | Vibely";
+const DEFAULT_AVATAR = "/images/users/default-avatar.jpeg";
+
 export function MessagesPage() {
   const navigate = useNavigate();
   const { token, user, logout, authReady } = useAuth();
