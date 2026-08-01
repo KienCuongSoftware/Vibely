@@ -3,7 +3,7 @@ import { IoClose } from 'react-icons/io5'
 import { useSearch } from '@/features/search/hooks/useSearch'
 import { useSearchHistory } from '@/features/search/hooks/useSearchHistory'
 import { useSearchNavigation } from '@/features/search/hooks/useSearchNavigation'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { SearchInput } from '@/features/search/components/SearchInput'
 import {
   buildSearchNavItems,

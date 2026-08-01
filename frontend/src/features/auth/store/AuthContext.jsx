@@ -10,7 +10,7 @@ import { COOKIE_SESSION_MARKER } from "@/features/auth/utils/session.js";
 import { isPendingOAuthBrowserCallback } from "@/features/auth/utils/oauthCallback.js";
 import { collectLoginContext } from "@/security/loginContext.js";
 import { DEFAULT_AVATAR_URL, sanitizeAvatarUrl } from "@/features/profile/utils/avatarUrl.js";
-import { AuthContext } from "@/store/auth-context";
+import { AuthContext } from "@/features/auth/store/auth-context";
 
 const USER_CACHE_KEY = "vibely_user_cache";
 const LEGACY_TOKEN_KEY = "vibely_token";

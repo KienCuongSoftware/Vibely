@@ -11,10 +11,10 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { apiClient } from '@/shared/api/client.js'
 import { ChatMessageNotificationToast } from '@/features/chat/components/ChatMessageNotificationToast.jsx'
 import { createChatSocketClient } from '@/features/chat/websocket/chatSocket.js'
-import { resolveRealtimeWsToken, SessionExpiredError } from '@/realtime/wsAuth.js'
-import { REALTIME_RETRY_DELAY_MS, scheduleRealtimeRetry } from '@/realtime/realtimeRetry.js'
+import { resolveRealtimeWsToken, SessionExpiredError } from '@/shared/realtime/wsAuth.js'
+import { REALTIME_RETRY_DELAY_MS, scheduleRealtimeRetry } from '@/shared/realtime/realtimeRetry.js'
 import { computeChatInboxBadgeCount } from '@/features/chat/utils/chatInboxBadge.js'
-import { useAuth } from '@/store/useAuth.js'
+import { useAuth } from '@/features/auth/hooks/useAuth.js'
 
 const ChatInboxBadgeContext = createContext(null)
 

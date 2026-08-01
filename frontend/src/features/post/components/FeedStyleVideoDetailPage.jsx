@@ -37,14 +37,14 @@ import { VideoShareModal } from '@/features/post/components/VideoShareModal.jsx'
 import { usePersistedFeedPlaybackSpeed } from '@/features/feed/hooks/usePersistedFeedPlaybackSpeed.js'
 import { usePersistedFeedVideoQuality } from '@/features/feed/hooks/usePersistedFeedVideoQuality.js'
 import { markVideoNotInterested } from '@/features/feed/utils/feedNotInterestedStorage.js'
-import { useAuth } from '@/store/useAuth.js'
+import { useAuth } from '@/features/auth/hooks/useAuth.js'
 import { useActivityModal } from '@/features/notification/store/ActivityModalContext.jsx'
 import { useNotificationUnread } from '@/features/notification/store/NotificationUnreadContext.jsx'
 import { buildProfilePath } from '@/features/profile/utils/buildProfilePath.js'
 import {
   readFeedFollowedAuthorIds,
   writeFeedFollowedAuthorIds,
-} from '@/features/feed/utils/feedFollowState.js'
+} from '@/features/follow/utils/feedFollowState.js'
 import { buildMainSidebarMenuItems } from '@/shared/utils/mainSidebarMenuItems.js'
 import { redirectGuestToLogin } from '@/features/auth/utils/guestAuthGate.js'
 import { buildShareableVideoUrl } from '@/features/post/utils/shareUrl.js'

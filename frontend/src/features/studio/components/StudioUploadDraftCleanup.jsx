@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { apiClient } from '@/shared/api/client'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import {
   readUploadDraftPublicIds,
   untrackUploadDraftPublicId,

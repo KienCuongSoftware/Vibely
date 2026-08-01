@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { IoCloseCircle, IoSearchOutline } from 'react-icons/io5'
 import { useSearch } from '@/features/search/hooks/useSearch'
 import { useSearchNavigation } from '@/features/search/hooks/useSearchNavigation'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { normalizeSearchQuery, suggestKeywordMatchesQuery } from '@/features/search/utils/searchUtils'
 
 function WatchSearchQueryRows({ items, activeKey, onSelect }) {

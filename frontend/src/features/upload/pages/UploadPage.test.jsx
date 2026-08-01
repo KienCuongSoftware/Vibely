@@ -4,7 +4,7 @@ import { fireEvent } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { UploadPage } from '@/features/upload/pages/UploadPage'
-import { AuthContext } from '@/store/auth-context'
+import { AuthContext } from '@/features/auth/store/auth-context'
 
 describe('UploadPage', () => {
   it('shows login required when submitting without token', async () => {

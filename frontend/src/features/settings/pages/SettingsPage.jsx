@@ -15,9 +15,9 @@ import { DownloadYourDataPanel } from '@/features/settings/components/DownloadYo
 import {
   DEFAULT_REGION_CODE,
   getRegionLabel,
-} from '@/features/settings/data/accountRegions'
+} from '@/features/settings/utils/accountRegions'
 import { collectLoginContext } from '@/security/loginContext'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import {
   IoArrowBack,
   IoBriefcaseOutline,

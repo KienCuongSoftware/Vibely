@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { resolveWsUrl } from '@/realtime/wsUrl.js'
+import { resolveWsUrl } from '@/shared/realtime/wsUrl.js'
 
 describe('resolveWsUrl', () => {
   it('uses same-origin host without JWT in query string', () => {

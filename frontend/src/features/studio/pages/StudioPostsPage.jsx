@@ -15,7 +15,7 @@ import {
 } from "react-icons/io5";
 import { apiClient } from "@/shared/api/client";
 import { StudioLayout } from "@/features/studio/components/StudioLayout";
-import { useAuth } from "@/store/useAuth";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import { buildProfileVideoUrl } from "@/features/post/utils/videoPublicId.js";
 import { formatApiDateTimeVi } from "@/shared/utils/relativeTimeVi.js";
 

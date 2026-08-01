@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   filterVideosFromFollowedCreators,
   isVideoFromFollowedCreator,
-} from '@/features/feed/utils/feedFollowState.js'
+} from '@/features/follow/utils/feedFollowState.js'
 
 describe('feedFollowState following feed filter', () => {
   it('keeps videos from followed creators only', () => {

@@ -12,7 +12,7 @@ import { buildMainSidebarMenuItems } from '@/shared/utils/mainSidebarMenuItems.j
 import { feedPrefetchManager } from '@/features/feed/algorithms/FeedPrefetchManager.js'
 import { resolveFeedPlaybackUrl } from '@/features/feed/utils/feedPlayback.js'
 import { DEFAULT_COVER, SoundGridVideoCard } from '@/features/post/pages/SoundPage.jsx'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { buildProfileVideoUrl } from '@/features/post/utils/videoPublicId.js'
 import { formatRelativeTimeVi } from '@/shared/utils/relativeTimeVi.js'
 

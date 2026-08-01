@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { SuggestedCreatorsPanel } from '@/features/feed/components/SuggestedCreatorsPanel.jsx'
 import { VerticalVideoFeed } from '@/features/feed/components/VerticalVideoFeed.jsx'
 import { isMobileFeedLayout } from '@/features/feed/components/MobileFeedShell.jsx'
@@ -9,7 +9,7 @@ import {
   GridLoadingState,
   GridLoginPrompt,
 } from '@/features/feed/components/CreatorGridShell.jsx'
-import { useSuggestedCreatorFollow } from '@/features/feed/hooks/useSuggestedCreatorFollow.js'
+import { useSuggestedCreatorFollow } from '@/features/follow/hooks/useSuggestedCreatorFollow.js'
 import {
   clearFollowingPreferFeedFromSidebar,
   peekFollowingPreferFeedFromSidebar,

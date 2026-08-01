@@ -4,7 +4,7 @@ import { BiDotsVerticalRounded } from 'react-icons/bi'
 import { IoMusicalNotes, IoPause, IoPlay } from 'react-icons/io5'
 import Hls from 'hls.js'
 import { apiClient } from '@/shared/api/client'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { isHlsPlaybackUrl, resolveFeedPlaybackUrl } from '@/features/feed/utils/feedPlayback.js'
 import { normalizeVideoPublicId } from '@/features/post/utils/videoPublicId.js'
 

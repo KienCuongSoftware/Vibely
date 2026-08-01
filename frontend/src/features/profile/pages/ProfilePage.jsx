@@ -5,8 +5,8 @@ import { apiClient, uploadThumbnailToStorage } from '@/shared/api/client'
 import {
   markFeedAuthorFollowed,
   markFeedAuthorUnfollowed,
-} from '@/features/feed/utils/feedFollowState.js'
-import { useAuth } from '@/store/useAuth'
+} from '@/features/follow/utils/feedFollowState.js'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import {
   buildProfileWatchUrl,
   videoPublicIdOf,
@@ -22,7 +22,7 @@ import { MobileLoginPrompt } from '@/features/feed/components/MobilePageShell.js
 import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
 import { TooltipHoverWrap } from '@/shared/components/TooltipControls'
 import { AccountActionsPill } from '@/features/profile/components/AccountActionsPill'
-import { ProfileFollowListModal } from '@/features/profile/components/ProfileFollowListModal'
+import { ProfileFollowListModal } from '@/features/follow/components/ProfileFollowListModal'
 import { ProfileShareModal } from '@/features/profile/components/ProfileShareModal.jsx'
 import { ProfileEmbedModal } from '@/features/profile/components/ProfileEmbedModal.jsx'
 import {

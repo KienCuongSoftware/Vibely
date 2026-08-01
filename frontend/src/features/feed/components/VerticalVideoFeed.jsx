@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { apiClient } from "@/shared/api/client";
@@ -6,7 +6,7 @@ import {
   FeedPhoneStage,
   FEED_STAGE_OUTER_WIDTH_CLASS,
 } from "@/features/feed/components/FeedPhoneStage";
-import { FeedCommentsPanel } from "@/features/feed/components/FeedCommentsPanel.jsx";
+import { FeedCommentsPanel } from "@/features/comment/components/FeedCommentsPanel.jsx";
 import {
   computeMobileFeedCommentsLayout,
   isMobileFeedLayout,
@@ -73,7 +73,7 @@ import {
   readFeedFollowedAuthorIds,
   writeFeedFollowedAuthorIds,
   filterVideosFromFollowedCreators,
-} from "@/features/feed/utils/feedFollowState.js";
+} from "@/features/follow/utils/feedFollowState.js";
 import { handleSidebarMenuSelect } from "@/shared/utils/sidebarNavigation.js";
 import { redirectGuestToLogin } from "@/features/auth/utils/guestAuthGate.js";
 import { buildProfilePath } from "@/features/profile/utils/buildProfilePath.js";

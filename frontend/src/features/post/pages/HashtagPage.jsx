@@ -15,7 +15,7 @@ import { apiClient } from '@/shared/api/client'
 import { Sidebar } from '@/shared/components/Sidebar'
 import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
 import { DEFAULT_COVER, SoundGridVideoCard } from '@/features/post/pages/SoundPage.jsx'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Seo } from '@/shared/seo/Seo.jsx'
 
 function normalizeHashtag(raw) {

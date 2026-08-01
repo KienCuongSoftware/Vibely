@@ -18,7 +18,7 @@ import {
 import { apiClient } from '@/shared/api/client'
 import { StudioCommentDateRangePicker } from '@/features/studio/components/StudioCommentDateRangePicker'
 import { StudioLayout } from '@/features/studio/components/StudioLayout'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { normalizeVideoPublicId } from '@/features/post/utils/videoPublicId.js'
 import { formatApiDateTimeVi, formatRelativeTimeVi } from '@/shared/utils/relativeTimeVi.js'
 

@@ -21,7 +21,7 @@ import {
   FEED_REPLY_PREVIEW_COUNT,
   threadRootId,
 } from "@/features/comment/utils/feedCommentThreads.js";
-import { FeedCommentsEmptyState } from "@/features/feed/components/FeedCommentsEmptyState.jsx";
+import { FeedCommentsEmptyState } from "@/features/comment/components/FeedCommentsEmptyState.jsx";
 import { buildProfileHref } from "@/features/search/utils/searchUtils.js";
 import { feedCommentsPanelWidthCss } from "@/features/feed/utils/feedLayout.js";
 import { MOBILE_FEED_TOP_BAR_PX } from "@/features/feed/components/MobileFeedShell.jsx";

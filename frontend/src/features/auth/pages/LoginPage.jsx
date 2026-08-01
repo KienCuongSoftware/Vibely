@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect, useRef, useState } from "react";
-import { useAuth } from "@/store/useAuth";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { apiClient } from "@/shared/api/client";
 import { FaFacebook, FaUser } from "react-icons/fa";

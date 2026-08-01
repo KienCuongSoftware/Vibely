@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import App from '@/app/App'
-import { AuthContext } from '@/store/auth-context'
+import { AuthContext } from '@/features/auth/store/auth-context'
 
 vi.mock('@/features/feed/pages/FeedPage.jsx', () => ({
   FeedPage: () => (

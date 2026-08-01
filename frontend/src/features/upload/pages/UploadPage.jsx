@@ -20,7 +20,7 @@ import {
   validateVideoFileBasics,
   validateVideoMetadata,
 } from '@/features/upload/utils/videoUploadConstraints.js'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { LuHeart, LuLayoutGrid, LuMinimize2, LuRepeat2, LuSmartphone, LuWifi } from 'react-icons/lu'
 import {
   IoArrowRedoOutline,

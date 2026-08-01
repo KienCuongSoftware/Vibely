@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { FeedPage } from '@/features/feed/pages/FeedPage'
-import { AuthContext } from '@/store/auth-context'
+import { AuthContext } from '@/features/auth/store/auth-context'
 import { MemoryRouter } from 'react-router-dom'
 
 vi.mock('@/shared/api/client', () => ({

@@ -9,9 +9,9 @@ import React, {
 } from 'react'
 import { apiClient } from '@/shared/api/client.js'
 import { createNotificationSocketClient } from '@/features/notification/websocket/notificationSocket.js'
-import { resolveRealtimeWsToken, SessionExpiredError } from '@/realtime/wsAuth.js'
-import { REALTIME_RETRY_DELAY_MS, scheduleRealtimeRetry } from '@/realtime/realtimeRetry.js'
-import { useAuth } from '@/store/useAuth.js'
+import { resolveRealtimeWsToken, SessionExpiredError } from '@/shared/realtime/wsAuth.js'
+import { REALTIME_RETRY_DELAY_MS, scheduleRealtimeRetry } from '@/shared/realtime/realtimeRetry.js'
+import { useAuth } from '@/features/auth/hooks/useAuth.js'
 
 const NotificationUnreadContext = createContext(null)
 

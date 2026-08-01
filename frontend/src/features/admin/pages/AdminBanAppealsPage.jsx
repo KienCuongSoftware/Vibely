@@ -7,7 +7,7 @@ import { adminApi } from '@/features/admin/api'
 import { AdminLayout } from '@/features/admin/components/AdminLayout.jsx'
 import { AdminBanAppealsPageSkeleton } from '@/features/admin/components/AdminListSkeletons.jsx'
 import { AdminPagination } from '@/features/admin/components/AdminPagination.jsx'
-import { useAuth } from '@/store/useAuth.js'
+import { useAuth } from '@/features/auth/hooks/useAuth.js'
 
 const PAGE_SIZE = 20
 

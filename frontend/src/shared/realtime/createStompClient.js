@@ -1,5 +1,5 @@
 import { Client } from '@stomp/stompjs'
-import { resolveWsUrl } from '@/realtime/wsUrl.js'
+import { resolveWsUrl } from '@/shared/realtime/wsUrl.js'
 
 /**
  * STOMP client for Spring `/ws`. Uses an explicit WebSocket factory so Vite ESM

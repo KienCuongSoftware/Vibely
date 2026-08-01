@@ -21,7 +21,7 @@ import { apiClient } from '@/shared/api/client'
 import { CoverPickerModal } from '@/features/upload/components/CoverPickerModal'
 import { CuHashtagSuggestions } from '@/features/upload/components/CuHashtagSuggestions'
 import { StudioLayout } from '@/features/studio/components/StudioLayout'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { isVideoPublicId, normalizeVideoPublicId } from '@/features/post/utils/videoPublicId.js'
 import { resolveUploadedFileLabel } from '@/features/post/utils/videoFileLabel.js'
 

@@ -13,7 +13,7 @@ import {
 import { adminApi } from '@/features/admin/api'
 import { postApi } from '@/features/post/api'
 import { AdminLayout } from '@/features/admin/components/AdminLayout.jsx'
-import { useAuth } from '@/store/useAuth.js'
+import { useAuth } from '@/features/auth/hooks/useAuth.js'
 
 function statusLabel(status) {
   const labels = {

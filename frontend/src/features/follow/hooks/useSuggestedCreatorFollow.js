@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import {
   readFeedFollowedAuthorIds,
   writeFeedFollowedAuthorIds,
-} from '@/features/feed/utils/feedFollowState.js'
+} from '@/features/follow/utils/feedFollowState.js'
 
 export function useSuggestedCreatorFollow(token) {
   const [viewerFollowingCount, setViewerFollowingCount] = useState(null)

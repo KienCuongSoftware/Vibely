@@ -7,6 +7,11 @@ import {
 } from "react-icons/io5";
 import { IoBookmarkOutline } from "react-icons/io5";
 import { apiClient } from "@/shared/api/client";
+import {
+  clampPopoverPosition,
+  POPOVER_ESTIMATED_HEIGHT,
+  POPOVER_WIDTH,
+} from "@/features/bookmark/utils/bookmarkPopoverPosition.js";
 
 const COLLECTION_NAME_MAX = 30;
 
@@ -312,26 +317,6 @@ export function BookmarkSaveToast({ open, onManage, onDismiss }) {
       </button>
     </div>
   );
-}
-
-const POPOVER_WIDTH = 280;
-const POPOVER_ESTIMATED_HEIGHT = 128;
-
-function clampPopoverPosition(anchorRect, popoverWidth, popoverHeight) {
-  const gap = 10;
-  const margin = 12;
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-
-  let left = anchorRect.left - popoverWidth - gap;
-  if (left < margin) {
-    left = anchorRect.right + gap;
-  }
-  left = Math.max(margin, Math.min(left, vw - popoverWidth - margin));
-
-  let top = anchorRect.top - 8;
-  top = Math.max(margin, Math.min(top, vh - popoverHeight - margin));
-  return { top, left };
 }
 
 export function BookmarkCollectionPopover({

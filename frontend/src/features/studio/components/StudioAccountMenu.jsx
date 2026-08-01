@@ -6,7 +6,7 @@ import {
   IoPersonOutline,
   IoSettingsOutline,
 } from 'react-icons/io5'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { StudioSettingsModal } from '@/features/studio/components/StudioSettingsModal.jsx'
 import { AvatarImage } from '@/shared/components/AvatarImage.jsx'
 import {

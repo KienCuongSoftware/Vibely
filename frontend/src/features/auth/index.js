@@ -1,2 +1,5 @@
-﻿export { LoginPage } from './pages/LoginPage.jsx'
+export { LoginPage } from './pages/LoginPage.jsx'
 export { SignupPage } from './pages/SignupPage.jsx'
+export { AuthProvider } from './store/AuthContext.jsx'
+export { AuthContext } from './store/auth-context.js'
+export { useAuth } from './hooks/useAuth.js'

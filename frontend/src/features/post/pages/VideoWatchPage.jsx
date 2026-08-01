@@ -16,7 +16,7 @@ import {
 import { TooltipHoverWrap } from "@/shared/components/TooltipControls";
 import { feedPrefetchManager } from "@/features/feed/algorithms/FeedPrefetchManager.js";
 import { resolveFeedPlaybackUrl } from "@/features/feed/utils/feedPlayback.js";
-import { useAuth } from "@/store/useAuth";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useRapidStepNavigation } from "@/features/feed/hooks/useRapidStepNavigation.js";
 import {
   buildProfileVideoUrl,
@@ -75,7 +75,7 @@ import { usePersistedFeedPlaybackSpeed } from "@/features/feed/hooks/usePersiste
 import {
   markFeedAuthorFollowed,
   markFeedAuthorUnfollowed,
-} from "@/features/feed/utils/feedFollowState.js";
+} from "@/features/follow/utils/feedFollowState.js";
 import { Seo } from "@/shared/seo/Seo.jsx";
 import { videoObjectJsonLd } from "@/shared/seo/jsonLd.js";
 import { absoluteUrl } from "@/shared/seo/seoConfig.js";

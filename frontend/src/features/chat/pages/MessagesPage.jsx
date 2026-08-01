@@ -25,170 +25,34 @@ import { ActivityPanel } from "@/features/notification/components/ActivityPanel.
 import { buildVideoWatchUrl } from "@/features/post/utils/videoPublicId.js";
 import { handleSidebarMenuSelect } from "@/shared/utils/sidebarNavigation.js";
 import { isEnterKey } from "@/shared/utils/keyboardShortcuts.js";
-import { useAuth } from "@/store/useAuth";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useChatInboxBadge } from "@/features/chat/store/ChatInboxBadgeContext.jsx";
 import { createChatSocketClient } from "@/features/chat/websocket/chatSocket.js";
-import { resolveRealtimeWsToken, SessionExpiredError } from "@/realtime/wsAuth.js";
-import { REALTIME_RETRY_DELAY_MS, scheduleRealtimeRetry } from "@/realtime/realtimeRetry.js";
+import { resolveRealtimeWsToken, SessionExpiredError } from "@/shared/realtime/wsAuth.js";
+import { REALTIME_RETRY_DELAY_MS, scheduleRealtimeRetry } from "@/shared/realtime/realtimeRetry.js";
 import { sortChatConversations } from "@/features/chat/utils/chatConversations.js";
-
-const CHAT_MENU_ICON_CLASS = "h-[18px] w-[18px] shrink-0";
-
-function ChatConversationMenuItem({ icon, label, onClick, disabled = false, danger = false }) {
-  const tone = danger
-    ? "text-red-500"
-    : disabled
-      ? "text-zinc-500"
-      : "text-zinc-100";
-  const iconTone = danger
-    ? "text-red-500"
-    : disabled
-      ? "text-zinc-500"
-      : "text-zinc-300";
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={`mt-1 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[15px] font-medium transition first:mt-0 ${
-        disabled
-          ? "cursor-not-allowed"
-          : "cursor-pointer hover:bg-zinc-700"
-      } ${tone}`}
-    >
-      <span className={`flex items-center justify-center ${iconTone}`}>{icon}</span>
-      {label}
-    </button>
-  );
-}
-
-const PAGE_TITLE = "Tin nhắn | Vibely";
-const DEFAULT_AVATAR = "/images/users/default-avatar.jpeg";
-const IMAGE_MESSAGE_PREFIX = "__img__:";
-const VIDEO_MESSAGE_PREFIX = "__vid__:";
-const SHARED_VIDEO_ID_PREFIX = "__vshare__:";
-const MAX_MEDIA_VIDEO_SECONDS = 15;
-
-function buildPendingMediaItem(file, selectionOrder) {
-  const type = String(file?.type ?? "");
-  if (!type.startsWith("image/") && !type.startsWith("video/")) return null;
-  return {
-    file,
-    previewUrl: URL.createObjectURL(file),
-    kind: type.startsWith("video/") ? "video" : "image",
-    durationSeconds: 0,
-    tooLong: false,
-    selectionOrder,
-  };
-}
-
-function readVideoDurationSeconds(file) {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const video = document.createElement("video");
-    video.preload = "metadata";
-    video.onloadedmetadata = () => {
-      const duration = Number(video.duration);
-      URL.revokeObjectURL(url);
-      resolve(Number.isFinite(duration) ? duration : 0);
-    };
-    video.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Không thể đọc thời lượng video."));
-    };
-    video.src = url;
-  });
-}
-
-function formatDuration(seconds) {
-  const safe = Math.max(0, Math.floor(Number(seconds) || 0));
-  const mm = String(Math.floor(safe / 60)).padStart(2, "0");
-  const ss = String(safe % 60).padStart(2, "0");
-  return `${mm}:${ss}`;
-}
-
-function extractImageMessageUrl(content) {
-  const value = String(content ?? "");
-  if (!value.startsWith(IMAGE_MESSAGE_PREFIX)) return null;
-  const url = value.slice(IMAGE_MESSAGE_PREFIX.length).trim();
-  return url || null;
-}
-
-function extractVideoMessageUrl(content) {
-  const value = String(content ?? "");
-  if (!value.startsWith(VIDEO_MESSAGE_PREFIX)) return null;
-  const payload = value.slice(VIDEO_MESSAGE_PREFIX.length).trim();
-  if (!payload) return null;
-  const [firstLine] = payload.split(/\r?\n/, 1);
-  const url = String(firstLine ?? "").trim();
-  return url || null;
-}
-
-function extractVideoMessageCaption(content) {
-  const value = String(content ?? "");
-  if (!value.startsWith(VIDEO_MESSAGE_PREFIX)) return "";
-  const payload = value.slice(VIDEO_MESSAGE_PREFIX.length).trim();
-  if (!payload) return "";
-  const lines = payload.split(/\r?\n/);
-  const caption = lines.slice(1).join("\n").trim();
-  return caption;
-}
-
-function extractSharedVideoId(content) {
-  const value = String(content ?? "");
-  if (!value.startsWith(SHARED_VIDEO_ID_PREFIX)) return "";
-  const payload = value.slice(SHARED_VIDEO_ID_PREFIX.length).trim();
-  if (!payload) return "";
-  const [firstLine] = payload.split(/\r?\n/, 1);
-  return String(firstLine ?? "").trim();
-}
-
-function extractSharedVideoCaption(content) {
-  const value = String(content ?? "");
-  if (!value.startsWith(SHARED_VIDEO_ID_PREFIX)) return "";
-  const payload = value.slice(SHARED_VIDEO_ID_PREFIX.length).trim();
-  if (!payload) return "";
-  const lines = payload.split(/\r?\n/);
-  return lines.slice(1).join("\n").trim();
-}
-
-function toConversationPreview(msgOrContent) {
-  const content = typeof msgOrContent === "string" ? msgOrContent : msgOrContent?.content;
-  const mediaType = typeof msgOrContent === "string" ? null : msgOrContent?.mediaType;
-  if (mediaType === "IMAGE" || extractImageMessageUrl(content)) return "Đã gửi một ảnh";
-  if (mediaType === "VIDEO" || extractVideoMessageUrl(content)) return "Đã gửi một video";
-  if (extractSharedVideoId(content)) return "Đã chia sẻ một video";
-  return content || "Bắt đầu cuộc trò chuyện";
-}
-
-function formatTime(value) {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
-}
-
-function upsertMessage(list, incoming) {
-  const key = Number(incoming?.id);
-  if (!Number.isFinite(key)) return list;
-  const exists = list.some((m) => Number(m?.id) === key);
-  if (exists) return list;
-  return [...list, incoming].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-}
-
-function conversationAfterOutgoingMessage(conv, sent) {
-  const wasAcceptingReply = Boolean(conv.canAcceptMessageRequest || conv.messageRequest);
-  return {
-    ...conv,
-    lastMessage: sent.content,
-    lastMessageAt: sent.createdAt,
-    unreadCount: 0,
-    messageRequest: false,
-    canAcceptMessageRequest: false,
-    canSendMessage: wasAcceptingReply ? true : Boolean(conv.canSendMessage ?? true),
-  };
-}
+import {
+  IMAGE_MESSAGE_PREFIX,
+  VIDEO_MESSAGE_PREFIX,
+  SHARED_VIDEO_ID_PREFIX,
+  MAX_MEDIA_VIDEO_SECONDS,
+  buildPendingMediaItem,
+  readVideoDurationSeconds,
+  formatDuration,
+  extractImageMessageUrl,
+  extractVideoMessageUrl,
+  extractVideoMessageCaption,
+  extractSharedVideoId,
+  extractSharedVideoCaption,
+  toConversationPreview,
+  formatTime,
+  upsertMessage,
+  conversationAfterOutgoingMessage,
+} from "@/features/chat/utils/chatMessagePreview.js";
+import {
+  ChatConversationMenuItem,
+  CHAT_MENU_ICON_CLASS,
+} from "@/features/chat/components/ChatConversationMenuItem.jsx";
 
 export function MessagesPage() {
   const navigate = useNavigate();

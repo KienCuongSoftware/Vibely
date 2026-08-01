@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { IoPeople } from 'react-icons/io5'
 import { apiClient } from '@/shared/api/client'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { SuggestedCreatorsPanel } from '@/features/feed/components/SuggestedCreatorsPanel.jsx'
 import {
   CreatorGridShell,
   GridLoadingState,
   GridLoginPrompt,
 } from '@/features/feed/components/CreatorGridShell.jsx'
-import { useSuggestedCreatorFollow } from '@/features/feed/hooks/useSuggestedCreatorFollow.js'
+import { useSuggestedCreatorFollow } from '@/features/follow/hooks/useSuggestedCreatorFollow.js'
 import { FEED_STAGE_OUTER_WIDTH_CLASS } from '@/features/feed/components/FeedPhoneStage'
 
 const PAGE_TITLE = 'Bạn bè | Vibely'

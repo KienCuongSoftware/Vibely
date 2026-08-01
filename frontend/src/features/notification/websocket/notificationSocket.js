@@ -1,4 +1,4 @@
-import { createStompClient } from '@/realtime/createStompClient.js'
+import { createStompClient } from '@/shared/realtime/createStompClient.js'
 
 export function createNotificationSocketClient(token, onEvent, options = {}) {
   const client = createStompClient(token, (connected) => {

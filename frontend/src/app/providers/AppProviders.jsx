@@ -1,7 +1,7 @@
 import React from 'react'
 import { HelmetProvider } from 'react-helmet-async'
 import { BrowserRouter } from 'react-router-dom'
-import { AuthProvider } from '@/store/AuthContext.jsx'
+import { AuthProvider } from '@/features/auth/store/AuthContext.jsx'
 import { ActivityModalProvider } from '@/features/notification/store/ActivityModalContext.jsx'
 import { ChatInboxBadgeProvider } from '@/features/chat/store/ChatInboxBadgeContext.jsx'
 import { NotificationUnreadProvider } from '@/features/notification/store/NotificationUnreadContext.jsx'

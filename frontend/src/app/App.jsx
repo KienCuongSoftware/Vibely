@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { DefaultSeo } from '@/shared/seo/Seo.jsx'
 import { userNeedsOnboarding } from '@/features/auth/utils/onboarding.js'
 import { StudioUploadDraftCleanup } from '@/features/studio/components/StudioUploadDraftCleanup.jsx'

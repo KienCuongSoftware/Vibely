@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { IoClose, IoInformationCircleOutline } from 'react-icons/io5'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import {
   loadStudioSettings,
   saveStudioSettings,

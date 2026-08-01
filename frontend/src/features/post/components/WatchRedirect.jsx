@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { apiClient } from '@/shared/api/client.js'
-import { useAuth } from '@/store/useAuth.js'
+import { useAuth } from '@/features/auth/hooks/useAuth.js'
 import {
   buildProfileVideoUrl,
   isVideoPublicId,

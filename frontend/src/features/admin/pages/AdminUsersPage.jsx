@@ -14,7 +14,7 @@ import { AdminUsersPageSkeleton } from "@/features/admin/components/AdminListSke
 import { AdminPagination } from "@/features/admin/components/AdminPagination.jsx";
 import { BirthDateFields } from "@/features/auth/components/BirthDateSelect.jsx";
 import { validateBirthDateParts } from "@/features/auth/utils/birthDate.js";
-import { useAuth } from "@/store/useAuth.js";
+import { useAuth } from "@/features/auth/hooks/useAuth.js";
 import {
   DEFAULT_AVATAR_URL,
   sanitizeAvatarUrl,

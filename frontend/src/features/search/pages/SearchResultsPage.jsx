@@ -19,7 +19,7 @@ import {
 } from '@/features/search/utils/searchUtils'
 import { useSearch } from '@/features/search/hooks/useSearch'
 import { useSearchHistory } from '@/features/search/hooks/useSearchHistory'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { buildProfileVideoUrl, videoPublicIdOf } from '@/features/post/utils/videoPublicId.js'
 import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
 import { buildMainSidebarMenuItems } from '@/shared/utils/mainSidebarMenuItems.js'

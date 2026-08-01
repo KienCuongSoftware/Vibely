@@ -11,7 +11,7 @@ import {
   IoEyeOutline,
 } from "react-icons/io5";
 import { apiClient } from "@/shared/api/client";
-import { useAuth } from "@/store/useAuth";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 import { resolveBackendOrigin } from "@/shared/config/apiBase.js";
 import {

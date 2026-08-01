@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
-import { AuthContext } from '@/store/auth-context'
+import { AuthContext } from '@/features/auth/store/auth-context'
 
 const authMock = {
   token: null,

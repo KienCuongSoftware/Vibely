@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { IoClose } from 'react-icons/io5'
-import { getRegionLabel, listAccountRegions } from '@/features/settings/data/accountRegions'
+import { getRegionLabel, listAccountRegions } from '@/features/settings/utils/accountRegions'
 
 /**
  * Modal chọn khu vực tài khoản — layout gần TikTok (radio list + Tiếp).

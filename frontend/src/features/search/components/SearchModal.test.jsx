@@ -13,7 +13,7 @@ vi.mock('@/features/search/hooks/useSearchHistory', () => ({
   useSearchHistory: vi.fn(),
 }))
 
-vi.mock('@/store/useAuth', () => ({
+vi.mock('@/features/auth/hooks/useAuth', () => ({
   useAuth: () => ({ token: null }),
 }))
 

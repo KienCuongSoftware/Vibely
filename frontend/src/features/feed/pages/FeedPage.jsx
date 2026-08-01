@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useAuth } from "@/store/useAuth";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import { VerticalVideoFeed } from "@/features/feed/components/VerticalVideoFeed.jsx";
 
 export function FeedPage() {

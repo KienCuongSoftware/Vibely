@@ -2,7 +2,7 @@ import React from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '@/shared/api/client'
 import { StudioLayout } from '@/features/studio/components/StudioLayout'
-import { useAuth } from '@/store/useAuth'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 
 const PERIOD_OPTIONS = [7, 28, 60, 90]
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))

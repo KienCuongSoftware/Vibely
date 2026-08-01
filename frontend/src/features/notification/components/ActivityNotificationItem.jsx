@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { IoChevronForward, IoShieldCheckmark } from 'react-icons/io5'
 import { apiClient } from '@/shared/api/client.js'
-import { useAuth } from '@/store/useAuth.js'
+import { useAuth } from '@/features/auth/hooks/useAuth.js'
 import { DEFAULT_AVATAR_URL, buildProfileHref } from '@/features/search/utils/searchUtils.js'
 import { buildActivityVideoUrl } from '@/features/post/utils/videoPublicId.js'
 import {
