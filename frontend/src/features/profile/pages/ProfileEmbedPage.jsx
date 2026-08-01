@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { apiClient } from "@/shared/api/client.js";
 import { ProfileEmbedPreview } from "@/features/profile/components/ProfileEmbedPreview.jsx";
+import { ProfilePageSkeleton } from "@/features/profile/components/ProfilePageSkeleton.jsx";
 import { normalizeShareUsername } from "@/features/post/utils/shareUrl.js";
 
 /**
@@ -55,8 +56,10 @@ export function ProfileEmbedPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a] text-sm text-zinc-400">
-        Đang tải hồ sơ…
+      <div className="flex min-h-screen items-stretch justify-center bg-[#0a0a0a] p-0 sm:items-center sm:p-6">
+        <div className="h-full min-h-dvh w-full max-w-[780px] rounded-none border-0 bg-black sm:min-h-[520px] sm:rounded-2xl sm:border sm:border-white/10">
+          <ProfilePageSkeleton />
+        </div>
       </div>
     );
   }

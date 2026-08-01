@@ -1,0 +1,143 @@
+﻿import React from 'react'
+
+function Pulse({ className = '' }) {
+  return (
+    <div
+      className={`animate-pulse rounded-md bg-[#2f2f2f] ${className}`}
+      aria-hidden
+    />
+  )
+}
+
+function ProfileHeaderSkeleton() {
+  return (
+    <>
+      {/* Mobile header */}
+      <div className="mb-6 flex flex-col items-center text-center lg:hidden">
+        <Pulse className="mb-4 h-5 w-40" />
+        <Pulse className="h-24 w-24 rounded-full" />
+        <Pulse className="mt-3 h-5 w-36" />
+        <div className="mt-4 flex items-center gap-5">
+          <div className="space-y-1.5">
+            <Pulse className="mx-auto h-4 w-8" />
+            <Pulse className="h-3 w-14" />
+          </div>
+          <div className="space-y-1.5">
+            <Pulse className="mx-auto h-4 w-8" />
+            <Pulse className="h-3 w-14" />
+          </div>
+          <div className="space-y-1.5">
+            <Pulse className="mx-auto h-4 w-8" />
+            <Pulse className="h-3 w-16" />
+          </div>
+        </div>
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <Pulse className="h-9 w-28 rounded-md" />
+          <Pulse className="h-9 w-36 rounded-md" />
+          <Pulse className="h-9 w-9 rounded-full" />
+          <Pulse className="h-9 w-9 rounded-full" />
+        </div>
+        <Pulse className="mt-3 h-4 w-48" />
+      </div>
+
+      {/* Desktop header */}
+      <div className="hidden items-start gap-4 lg:flex">
+        <Pulse className="h-28 w-28 shrink-0 rounded-full md:h-32 md:w-32" />
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="space-y-2">
+            <Pulse className="h-8 w-56 max-w-[70%]" />
+            <Pulse className="h-5 w-40 max-w-[45%]" />
+          </div>
+          <div className="flex items-center gap-5">
+            <Pulse className="h-4 w-24" />
+            <Pulse className="h-4 w-24" />
+            <Pulse className="h-4 w-24" />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Pulse className="h-9 w-28 rounded-md" />
+            <Pulse className="h-9 w-40 rounded-md" />
+            <Pulse className="h-9 w-9 rounded-full" />
+            <Pulse className="h-9 w-9 rounded-full" />
+          </div>
+          <Pulse className="h-4 w-52 max-w-[60%]" />
+        </div>
+      </div>
+    </>
+  )
+}
+
+function ProfileTabsSkeleton() {
+  return (
+    <div className="mt-6 flex items-center justify-between border-b border-zinc-800 pb-0">
+      <div className="flex items-center gap-6">
+        <Pulse className="h-5 w-14" />
+        <Pulse className="h-5 w-20" />
+        <Pulse className="h-5 w-20" />
+      </div>
+      <div className="hidden items-center gap-1 sm:flex">
+        <Pulse className="h-8 w-20 rounded-full" />
+        <Pulse className="h-8 w-24 rounded-full" />
+        <Pulse className="h-8 w-20 rounded-full" />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Video thumbnail grid skeleton ΓÇö matches profile video grid columns.
+ */
+export function ProfileVideoGridSkeleton({ count = 10 }) {
+  return (
+    <ul
+      className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+      aria-busy="true"
+      aria-label="─Éang tß║úi video"
+    >
+      {Array.from({ length: count }, (_, i) => (
+        <li key={`profile-video-skel-${i}`}>
+          <Pulse className="aspect-9/16 w-full rounded-md" />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/**
+ * Followers / following list row skeletons.
+ */
+export function ProfileFollowListSkeleton({ count = 8 }) {
+  return (
+    <ul className="space-y-1" aria-busy="true" aria-label="─Éang tß║úi danh s├ích">
+      {Array.from({ length: count }, (_, i) => (
+        <li key={`follow-skel-${i}`} className="flex items-center gap-3 px-2 py-2.5">
+          <Pulse className="h-12 w-12 shrink-0 rounded-full" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <Pulse className="h-4 w-36 max-w-[55%]" />
+            <Pulse className="h-3 w-24 max-w-[40%]" />
+          </div>
+          <Pulse className="h-8 w-24 shrink-0 rounded-md" />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/**
+ * Full profile page skeleton (header + tabs + video grid).
+ * Used for both user and admin own-profile layouts.
+ */
+export function ProfilePageSkeleton() {
+  return (
+    <section
+      className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col bg-black px-1 py-4 md:px-8 lg:py-6"
+      aria-busy="true"
+      aria-label="─Éang tß║úi hß╗ô s╞í"
+    >
+      <ProfileHeaderSkeleton />
+      <ProfileTabsSkeleton />
+      <div className="min-h-[320px] px-2 py-4 sm:px-4 sm:py-5">
+        <ProfileVideoGridSkeleton />
+      </div>
+    </section>
+  )
+}
