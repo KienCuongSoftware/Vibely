@@ -15,6 +15,11 @@ import { DEFAULT_COVER, SoundGridVideoCard } from '@/features/post/pages/SoundPa
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { buildProfileVideoUrl } from '@/features/post/utils/videoPublicId.js'
 import { formatRelativeTimeVi } from '@/shared/utils/relativeTimeVi.js'
+import {
+  ExploreLoadMoreSkeleton,
+  ExplorePageSkeleton,
+  ExploreTabsSkeleton,
+} from '@/features/explore/components/ExplorePageSkeleton.jsx'
 
 const EXPLORE_PAGE_TITLE = 'Khám phá - Tìm video bạn thích trên Vibely'
 const ALL_TAB = { slug: 'all', name: 'Tất cả', kind: 'category', videoCount: 0 }
@@ -116,7 +121,7 @@ export function ExplorePage() {
   const [items, setItems] = useState([])
   const [cursor, setCursor] = useState(null)
   const [hasNext, setHasNext] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [playingId, setPlayingId] = useState(null)
   const categoryScrollRef = useRef(null)
   const allCategoryButtonRef = useRef(null)
@@ -204,6 +209,7 @@ export function ExplorePage() {
   const load = React.useCallback((nextCursor = null, append = false) => {
     const generation = ++loadGenerationRef.current
     setLoading(true)
+    if (!append) setItems([])
     let req
     if (activeTab.kind === 'for_you') {
       req = apiClient.getExploreForYou({ cursor: nextCursor, size: 24, token })
@@ -333,21 +339,25 @@ export function ExplorePage() {
                 className="scrollbar-none min-w-0 flex-1 overflow-x-auto"
               >
                 <div className="flex w-max gap-2 pb-1">
-                  {tabs.map((tab, index) => (
-                    <button
-                      key={`${tab.kind}:${tab.slug}`}
-                      ref={tab.slug === 'all' ? allCategoryButtonRef : undefined}
-                      type="button"
-                      onClick={() => handleSelectTab(tab, index)}
-                      className={`cursor-pointer whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition lg:px-4 lg:text-sm ${
-                        activeTab.slug === tab.slug && activeTab.kind === (tab.kind ?? 'category')
-                          ? 'border-white bg-white font-bold text-black'
-                          : 'border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-800'
-                      }`}
-                    >
-                      {tab.name}
-                    </button>
-                  ))}
+                  {tabs.length === 0 ? (
+                    <ExploreTabsSkeleton />
+                  ) : (
+                    tabs.map((tab, index) => (
+                      <button
+                        key={`${tab.kind}:${tab.slug}`}
+                        ref={tab.slug === 'all' ? allCategoryButtonRef : undefined}
+                        type="button"
+                        onClick={() => handleSelectTab(tab, index)}
+                        className={`cursor-pointer whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition lg:px-4 lg:text-sm ${
+                          activeTab.slug === tab.slug && activeTab.kind === (tab.kind ?? 'category')
+                            ? 'border-white bg-white font-bold text-black'
+                            : 'border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-800'
+                        }`}
+                      >
+                        {tab.name}
+                      </button>
+                    ))
+                  )}
                 </div>
               </div>
               <button
@@ -361,7 +371,9 @@ export function ExplorePage() {
               </button>
             </div>
 
-            {mobileLayout ? (
+            {loading && items.length === 0 ? (
+              <ExplorePageSkeleton mobile={mobileLayout} count={mobileLayout ? 8 : 12} />
+            ) : mobileLayout ? (
               <ul className="mt-3 grid grid-cols-2 gap-x-2 gap-y-4 sm:gap-x-3">
                 {items.map((video) => (
                   <li key={String(video.publicId)}>
@@ -405,20 +417,26 @@ export function ExplorePage() {
             )}
 
             {mobileLayout && hasNext ? (
-              <div ref={loadMoreSentinelRef} className="py-6 text-center text-sm text-zinc-500" aria-hidden>
-                {loading ? 'Đang tải…' : ''}
+              <div ref={loadMoreSentinelRef} className="py-2" aria-hidden>
+                {loading && items.length > 0 ? (
+                  <ExploreLoadMoreSkeleton mobile count={4} />
+                ) : null}
               </div>
             ) : null}
 
             {!mobileLayout && hasNext ? (
-              <button
-                type="button"
-                disabled={loading}
-                onClick={() => load(cursor, true)}
-                className="mt-6 cursor-pointer rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900 disabled:opacity-50"
-              >
-                {loading ? 'Đang tải...' : 'Tải thêm'}
-              </button>
+              loading && items.length > 0 ? (
+                <ExploreLoadMoreSkeleton count={6} />
+              ) : (
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => load(cursor, true)}
+                  className="mt-6 cursor-pointer rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900 disabled:opacity-50"
+                >
+                  Tải thêm
+                </button>
+              )
             ) : null}
           </div>
         </div>
