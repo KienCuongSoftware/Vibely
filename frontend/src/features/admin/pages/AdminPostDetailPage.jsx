@@ -10,7 +10,8 @@ import {
   IoShareSocialOutline,
   IoTrash,
 } from 'react-icons/io5'
-import { apiClient } from '@/shared/api/client.js'
+import { adminApi } from '@/features/admin/api'
+import { postApi } from '@/features/post/api'
 import { AdminLayout } from '@/features/admin/components/AdminLayout.jsx'
 import { useAuth } from '@/store/useAuth.js'
 
@@ -205,7 +206,7 @@ export function AdminPostDetailPage() {
     setLoading(true)
     setError('')
     try {
-      setPost(await apiClient.getAdminPost(token, publicId))
+      setPost(await adminApi.getAdminPost(token, publicId))
     } catch (e) {
       setPost(null)
       setError(e.message ?? 'Không tải được chi tiết bài đăng.')
@@ -220,8 +221,8 @@ export function AdminPostDetailPage() {
     setCuError('')
     try {
       const [analysis, tags] = await Promise.all([
-        apiClient.getVideoAnalysis(publicId, token),
-        apiClient.getVideoSemanticTags(publicId, token),
+        postApi.getVideoAnalysis(publicId, token),
+        postApi.getVideoSemanticTags(publicId, token),
       ])
       setCuAnalysis(analysis)
       setCuTags(Array.isArray(tags) ? tags : [])
@@ -258,7 +259,7 @@ export function AdminPostDetailPage() {
     setDeleteBusy(true)
     setDeleteError('')
     try {
-      await apiClient.deleteAdminPost(token, post.publicId)
+      await adminApi.deleteAdminPost(token, post.publicId)
       navigate('/admin/posts', { replace: true })
     } catch (e) {
       setDeleteError(e.message ?? 'Không xóa được bài đăng.')
@@ -272,7 +273,7 @@ export function AdminPostDetailPage() {
     setReanalyzeBusy(true)
     setReanalyzeMsg('')
     try {
-      const result = await apiClient.adminCuReanalyze(token, {
+      const result = await adminApi.adminCuReanalyze(token, {
         publicId: post.publicId,
         force: true,
       })
@@ -294,7 +295,7 @@ export function AdminPostDetailPage() {
     setHlsReprocessBusy(true)
     setHlsReprocessMsg('')
     try {
-      const result = await apiClient.adminReprocessVideoHls(token, [post.publicId])
+      const result = await adminApi.adminReprocessVideoHls(token, [post.publicId])
       const n = Number(result?.queued ?? 0)
       setHlsReprocessMsg(
         n > 0

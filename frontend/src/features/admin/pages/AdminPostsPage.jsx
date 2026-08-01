@@ -7,7 +7,7 @@ import {
   IoTrash,
 } from "react-icons/io5";
 import { Link } from "react-router-dom";
-import { apiClient } from "@/shared/api/client.js";
+import { adminApi } from "@/features/admin/api";
 import { AdminLayout } from "@/features/admin/components/AdminLayout.jsx";
 import { AdminPostsPageSkeleton } from "@/features/admin/components/AdminListSkeletons.jsx";
 import { AdminPagination } from "@/features/admin/components/AdminPagination.jsx";
@@ -234,7 +234,7 @@ export function AdminPostsPage() {
     setLoading(true);
     setError("");
     try {
-      const data = await apiClient.getAdminPosts(token, {
+      const data = await adminApi.getAdminPosts(token, {
         page,
         size: PAGE_SIZE,
         query: searchTerm || undefined,
@@ -270,7 +270,7 @@ export function AdminPostsPage() {
     setDeleteBusy(true);
     setDeleteError("");
     try {
-      await apiClient.deleteAdminPost(token, deleteTarget.publicId);
+      await adminApi.deleteAdminPost(token, deleteTarget.publicId);
       setDeleteTarget(null);
       if (items.length === 1 && page > 0) {
         setPage((current) => Math.max(current - 1, 0));

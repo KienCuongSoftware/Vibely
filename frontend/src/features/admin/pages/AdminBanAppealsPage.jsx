@@ -3,7 +3,7 @@ import {
   IoClose,
   IoMailOutline,
 } from 'react-icons/io5'
-import { apiClient } from '@/shared/api/client.js'
+import { adminApi } from '@/features/admin/api'
 import { AdminLayout } from '@/features/admin/components/AdminLayout.jsx'
 import { AdminBanAppealsPageSkeleton } from '@/features/admin/components/AdminListSkeletons.jsx'
 import { AdminPagination } from '@/features/admin/components/AdminPagination.jsx'
@@ -237,7 +237,7 @@ export function AdminBanAppealsPage() {
     setLoading(true)
     setError('')
     try {
-      const data = await apiClient.getAdminBanAppeals(token, {
+      const data = await adminApi.getAdminBanAppeals(token, {
         page,
         size: PAGE_SIZE,
         status: statusFilter || undefined,
@@ -292,7 +292,7 @@ export function AdminBanAppealsPage() {
     setSubmitting(true)
     setModalError('')
     try {
-      await apiClient.updateAdminBanAppealStatus(token, selectedAppeal.id, {
+      await adminApi.updateAdminBanAppealStatus(token, selectedAppeal.id, {
         status,
         adminNotes: adminNotes.trim() || undefined,
       })

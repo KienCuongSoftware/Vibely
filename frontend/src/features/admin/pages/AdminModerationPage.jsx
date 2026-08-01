@@ -5,7 +5,7 @@ import {
   IoHandLeftOutline,
   IoShieldCheckmarkOutline,
 } from "react-icons/io5";
-import { apiClient } from "@/shared/api/client.js";
+import { adminApi } from "@/features/admin/api";
 import { AdminLayout } from "@/features/admin/components/AdminLayout.jsx";
 import { AdminPagination } from "@/features/admin/components/AdminPagination.jsx";
 import { useAuth } from "@/store/useAuth.js";
@@ -530,7 +530,7 @@ export function AdminModerationPage() {
     setLoading(true);
     setError("");
     try {
-      const data = await apiClient.getAdminModerationQueue(token, {
+      const data = await adminApi.getAdminModerationQueue(token, {
         page,
         size: PAGE_SIZE,
         state: stateFilter || undefined,
@@ -554,7 +554,7 @@ export function AdminModerationPage() {
     setLoading(true);
     setError("");
     try {
-      const data = await apiClient.getAdminModerationAppeals(token, {
+      const data = await adminApi.getAdminModerationAppeals(token, {
         page: appealPage,
         size: PAGE_SIZE,
         state: appealStateFilter || undefined,
@@ -591,7 +591,7 @@ export function AdminModerationPage() {
     setModalError("");
     setDetail(null);
     try {
-      const data = await apiClient.getAdminModerationVideo(
+      const data = await adminApi.getAdminModerationVideo(
         token,
         item.videoPublicId,
       );
@@ -614,9 +614,9 @@ export function AdminModerationPage() {
     setSubmitting(true);
     setModalError("");
     try {
-      await apiClient.claimAdminModerationQueue(token, queueId);
+      await adminApi.claimAdminModerationQueue(token, queueId);
       if (selectedPublicId) {
-        const data = await apiClient.getAdminModerationVideo(
+        const data = await adminApi.getAdminModerationVideo(
           token,
           selectedPublicId,
         );
@@ -648,7 +648,7 @@ export function AdminModerationPage() {
     setSubmitting(true);
     setModalError("");
     try {
-      await apiClient.resolveAdminModerationQueue(token, queueId, payload);
+      await adminApi.resolveAdminModerationQueue(token, queueId, payload);
       await loadQueue();
       setSubmitting(false);
       closeModal(true);
@@ -1023,7 +1023,7 @@ export function AdminModerationPage() {
                       setSubmitting(true);
                       setAppealError("");
                       try {
-                        await apiClient.resolveAdminModerationAppeal(
+                        await adminApi.resolveAdminModerationAppeal(
                           token,
                           selectedAppeal.appealId,
                           {
