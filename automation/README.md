@@ -1,6 +1,6 @@
 # Vibely Automation
 
-Selenium flows: **login**, **signup**, **upload + For You engage**, **A↔B direct messages**.
+Selenium flows: **login**, **upload + For You engage**, **A↔B direct messages**.
 
 ## Configure
 
@@ -29,20 +29,11 @@ mvn test
 
 mvn test -Dgroups=upload
 mvn test -Dgroups=login
-mvn test -Dgroups=signup
 mvn test -Dgroups=message
 
 # Chậm hơn khi xem tay (vd 3 giây mỗi thao tác)
 mvn test -Dgroups=upload "-Daction.delay.ms=3000"
 ```
-
-## Flow (signup)
-
-1. Open `/signup` → **Sử dụng email**  
-2. DOB + email + password → OTP via API (`challengePassed`) when `expose-code-in-api` is on  
-3. Enter OTP → **Tiếp** → Vibely ID → **Đăng ký**
-
-Local tip: set `app.mail.expose-code-in-api: true` (dev only) so `demoCode` is returned. Override OTP with `test.signup.otp` if needed.
 
 ## Flow (message)
 
