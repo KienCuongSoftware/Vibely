@@ -17,6 +17,11 @@ public class UserAvatarResolver {
             return user.getAvatarUrl();
         }
         String oauthUrl = user.getGoogleAvatarUrl();
+        if (!StringUtils.hasText(oauthUrl)
+            && StringUtils.hasText(user.getAvatarUrl())
+            && isOAuthCdnUrl(user.getAvatarUrl())) {
+            oauthUrl = user.getAvatarUrl();
+        }
         if (StringUtils.hasText(oauthUrl)) {
             if (isOAuthCdnUrl(oauthUrl)) {
                 if (user.getId() == null) {
@@ -25,9 +30,6 @@ public class UserAvatarResolver {
                 return oauthAvatarProxyPath(user.getId());
             }
             return oauthUrl;
-        }
-        if (StringUtils.hasText(user.getAvatarUrl())) {
-            return user.getAvatarUrl();
         }
         return DEFAULT_AVATAR_URL;
     }

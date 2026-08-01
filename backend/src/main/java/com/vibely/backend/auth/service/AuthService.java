@@ -36,6 +36,7 @@ import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.user.dto.UsernameCheckResponse;
 import com.vibely.backend.user.service.UserExistenceBloomFilterService;
 import com.vibely.backend.user.service.UsernameService;
+import com.vibely.backend.storage.MediaUrlPresigner;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -67,6 +68,7 @@ public class AuthService {
     private final UsernameService usernameService;
     private final UserExistenceBloomFilterService bloomFilterService;
     private final UserAvatarResolver userAvatarResolver;
+    private final MediaUrlPresigner mediaUrlPresigner;
     private final long refreshExpirationSeconds;
     private final AuthProtectionService authProtectionService;
     private final LoginContextService loginContextService;
@@ -84,6 +86,7 @@ public class AuthService {
         UsernameService usernameService,
         UserExistenceBloomFilterService bloomFilterService,
         UserAvatarResolver userAvatarResolver,
+        MediaUrlPresigner mediaUrlPresigner,
         AuthProtectionService authProtectionService,
         LoginContextService loginContextService,
         OtpVerificationService otpVerificationService,
@@ -100,6 +103,7 @@ public class AuthService {
         this.usernameService = usernameService;
         this.bloomFilterService = bloomFilterService;
         this.userAvatarResolver = userAvatarResolver;
+        this.mediaUrlPresigner = mediaUrlPresigner;
         this.authProtectionService = authProtectionService;
         this.loginContextService = loginContextService;
         this.otpVerificationService = otpVerificationService;
@@ -306,7 +310,7 @@ public class AuthService {
             user.getDisplayName(),
             user.getEmail(),
             user.getBio(),
-            userAvatarResolver.resolve(user),
+            resolveAvatarForClient(user),
             user.getRole().name(),
             userRequiresOnboardingCheck(user),
             user.isPrivateAccount(),
@@ -406,9 +410,13 @@ public class AuthService {
             user.getDisplayName(),
             user.getEmail(),
             user.getRole().name(),
-            userAvatarResolver.resolve(user),
+            resolveAvatarForClient(user),
             userRequiresOnboardingCheck(user)
         );
+    }
+
+    private String resolveAvatarForClient(User user) {
+        return mediaUrlPresigner.presignPlaybackUrl(userAvatarResolver.resolve(user));
     }
 
     private void ensureActive(User user) {

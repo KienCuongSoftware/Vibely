@@ -123,9 +123,10 @@ public class OtpVerificationService {
             emailSent = emailSender.sendVerificationCode(email, code, codeExpirySeconds);
         }
 
-        // When expose-code-in-api is on (local/dev only), return the code even if SMTP succeeded
-        // so UI/automation can complete signup without reading a mailbox.
-        String demoCode = mailProperties.isExposeCodeInApi() ? code : null;
+        String demoCode = null;
+        if (!emailSent && mailProperties.isExposeCodeInApi()) {
+            demoCode = code;
+        }
         return new SendCodeResponse(resendCooldownSeconds, codeExpirySeconds, emailSent, demoCode);
     }
 

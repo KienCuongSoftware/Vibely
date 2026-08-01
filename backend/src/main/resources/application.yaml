@@ -69,6 +69,10 @@ app:
       domain: ${APP_AUTH_COOKIE_DOMAIN:}
   mail:
     expose-code-in-api: ${APP_MAIL_EXPOSE_CODE:false}
+  geoip:
+    # Optional MaxMind GeoLite2-City.mmdb path. When empty/missing, HTTP fallback is used.
+    database-path: ${GEOIP_DATABASE_PATH:}
+    http-fallback-enabled: ${GEOIP_HTTP_FALLBACK_ENABLED:true}
   s3:
     enabled: ${APP_S3_ENABLED:false}
     bucket: ${AWS_S3_BUCKET:}

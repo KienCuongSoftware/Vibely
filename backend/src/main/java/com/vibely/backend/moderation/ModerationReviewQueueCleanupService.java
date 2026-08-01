@@ -6,7 +6,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -42,15 +41,9 @@ public class ModerationReviewQueueCleanupService {
 
     /**
      * Hard-delete moderation artifacts for one video (queue, appeals, jobs → reports/evidence, decisions).
-     * REQUIRES_NEW so a cleanup failure does not poison the caller transaction (admin delete).
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public int purgeForVideo(long videoId) {
-        // Break FKs that can block job/report cascade deletes.
-        jdbcTemplate.update(
-            "DELETE FROM moderator_actions WHERE video_id = ?",
-            videoId
-        );
         int appeals = jdbcTemplate.update(
             "DELETE FROM moderation_appeals WHERE video_id = ?",
             videoId
