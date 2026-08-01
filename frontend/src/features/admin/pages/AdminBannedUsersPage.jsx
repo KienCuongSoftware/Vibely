@@ -3,7 +3,7 @@ import {
   IoClose,
   IoShieldCheckmarkOutline,
 } from 'react-icons/io5'
-import { apiClient } from '@/shared/api/client.js'
+import { adminApi } from '@/features/admin/api'
 import { AdminLayout } from '@/features/admin/components/AdminLayout.jsx'
 import { AdminPagination } from '@/features/admin/components/AdminPagination.jsx'
 import { useAuth } from '@/store/useAuth.js'
@@ -134,7 +134,7 @@ export function AdminBannedUsersPage() {
     setLoading(true)
     setError('')
     try {
-      const data = await apiClient.getAdminBannedUsers(token, { page, size: PAGE_SIZE })
+      const data = await adminApi.getAdminBannedUsers(token, { page, size: PAGE_SIZE })
       setUsers(Array.isArray(data?.items) ? data.items : [])
       setTotal(Number(data?.total ?? 0))
       setHasNext(Boolean(data?.hasNext))
@@ -173,7 +173,7 @@ export function AdminBannedUsersPage() {
     setSubmitting(true)
     setModalError('')
     try {
-      await apiClient.unbanAdminUser(token, unbanningUser.id)
+      await adminApi.unbanAdminUser(token, unbanningUser.id)
       setUnbanningUser(null)
       if (users.length === 1 && page > 0) {
         setPage((current) => Math.max(current - 1, 0))

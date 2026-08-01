@@ -7,7 +7,8 @@ import {
   IoPencil,
   IoTrash,
 } from "react-icons/io5";
-import { apiClient } from "@/shared/api/client.js";
+import { adminApi } from "@/features/admin/api";
+import { userApi } from "@/features/user/api";
 import { AdminLayout } from "@/features/admin/components/AdminLayout.jsx";
 import { AdminUsersPageSkeleton } from "@/features/admin/components/AdminListSkeletons.jsx";
 import { AdminPagination } from "@/features/admin/components/AdminPagination.jsx";
@@ -299,7 +300,7 @@ function UserFormModal({
 
     setEmailChecking(true);
     const timeoutId = setTimeout(() => {
-      apiClient
+      userApi
         .checkEmail(normalizedEmail)
         .then((result) => {
           setEmailAvailable(Boolean(result?.available));
@@ -337,7 +338,7 @@ function UserFormModal({
 
     setUsernameChecking(true);
     const timeoutId = setTimeout(() => {
-      apiClient
+      userApi
         .checkUsername(normalizedUsername)
         .then((result) => {
           setUsernameAvailable(Boolean(result?.available));
@@ -360,7 +361,7 @@ function UserFormModal({
     setEmailChecking(true);
     setEmailCanRecheck(false);
     try {
-      const result = await apiClient.checkEmail(normalizedEmail, {
+      const result = await userApi.checkEmail(normalizedEmail, {
         confirm: true,
       });
       setEmailAvailable(Boolean(result?.available));
@@ -380,7 +381,7 @@ function UserFormModal({
     setUsernameChecking(true);
     setUsernameCanRecheck(false);
     try {
-      const result = await apiClient.checkUsername(normalizedUsername, {
+      const result = await userApi.checkUsername(normalizedUsername, {
         confirm: true,
       });
       setUsernameAvailable(Boolean(result?.available));
@@ -806,7 +807,7 @@ export function AdminUsersPage() {
     setLoading(true);
     setError("");
     try {
-      const data = await apiClient.getAdminUsers(token, {
+      const data = await adminApi.getAdminUsers(token, {
         page,
         size: PAGE_SIZE,
       });
@@ -905,9 +906,9 @@ export function AdminUsersPage() {
         password: form.password,
       };
       if (formMode === "edit" && editingUser?.id) {
-        await apiClient.updateAdminUser(token, editingUser.id, payload);
+        await adminApi.updateAdminUser(token, editingUser.id, payload);
       } else {
-        await apiClient.createAdminUser(token, {
+        await adminApi.createAdminUser(token, {
           ...payload,
           birthDate: form.birthDate,
         });
@@ -928,7 +929,7 @@ export function AdminUsersPage() {
     setSubmitting(true);
     setModalError("");
     try {
-      await apiClient.deleteAdminUser(token, deletingUser.id);
+      await adminApi.deleteAdminUser(token, deletingUser.id);
       setDeletingUser(null);
       setModalError("");
       if (users.length === 1 && page > 0) {
@@ -948,7 +949,7 @@ export function AdminUsersPage() {
     setSubmitting(true);
     setModalError("");
     try {
-      await apiClient.banAdminUser(token, banningUser.id, { reason });
+      await adminApi.banAdminUser(token, banningUser.id, { reason });
       setBanningUser(null);
       setModalError("");
       await loadUsers();
