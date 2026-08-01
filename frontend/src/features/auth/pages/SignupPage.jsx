@@ -127,7 +127,7 @@ export function SignupPage() {
       }
     }
 
-    if ((!pending?.userId && !pending?.email) && fromAuth) {
+    if (!pending?.userId && !pending?.email && fromAuth) {
       pending = buildOnboardingPendingFromUser(user);
       persistOnboardingPending(pending);
     }
@@ -290,7 +290,9 @@ export function SignupPage() {
     setEmailChecking(true);
     setEmailCanRecheck(false);
     try {
-      const result = await apiClient.checkEmail(normalizedEmail, { confirm: true });
+      const result = await apiClient.checkEmail(normalizedEmail, {
+        confirm: true,
+      });
       setEmailAvailable(Boolean(result?.available));
       setEmailMessage(result?.message ?? "");
       setEmailCanRecheck(Boolean(result?.canRecheck));
@@ -308,7 +310,9 @@ export function SignupPage() {
     setUsernameChecking(true);
     setUsernameCanRecheck(false);
     try {
-      const result = await apiClient.checkUsername(normalizedVibelyId, { confirm: true });
+      const result = await apiClient.checkUsername(normalizedVibelyId, {
+        confirm: true,
+      });
       setUsernameAvailable(Boolean(result?.available));
       setUsernameSuggestion(result?.suggestion ?? "");
       setUsernameMessage(result?.message ?? "");
@@ -394,8 +398,12 @@ export function SignupPage() {
     try {
       // Cookie có thể thuộc tài khoản cũ (apex vs www) — khớp email trước khi lưu.
       const me = await apiClient.me();
-      const sessionEmail = String(me?.email ?? "").trim().toLowerCase();
-      const pendingEmail = String(oauthPending?.email ?? "").trim().toLowerCase();
+      const sessionEmail = String(me?.email ?? "")
+        .trim()
+        .toLowerCase();
+      const pendingEmail = String(oauthPending?.email ?? "")
+        .trim()
+        .toLowerCase();
       if (pendingEmail && sessionEmail && sessionEmail !== pendingEmail) {
         clearOnboardingSession();
         try {
@@ -478,16 +486,12 @@ export function SignupPage() {
       setResendSeconds(cooldown);
       setVerifiedCodeSnapshot("");
       setVerifiedEmailSnapshot("");
-      if (result?.demoCode) {
-        setStatus(
-          result?.emailSent
-            ? `Đã gửi mã 6 số tới ${normalizedEmail}. (dev) Mã xác minh: ${result.demoCode}`
-            : `Chưa bật gửi email (dev). Mã xác minh: ${result.demoCode}`,
-        );
-      } else if (result?.emailSent) {
+      if (result?.emailSent) {
         setStatus(
           `Đã gửi mã 6 số tới ${normalizedEmail}. Kiểm tra hộp thư đến (và cả thư rác/quảng cáo).`,
         );
+      } else if (result?.demoCode) {
+        setStatus(`Chưa bật gửi email (dev). Mã xác minh: ${result.demoCode}`);
       } else {
         setStatus(
           "Không gửi được email xác minh. Liên hệ quản trị hoặc thử lại sau.",
@@ -697,7 +701,9 @@ export function SignupPage() {
                       setView("credentials");
                       setStatus("");
                     }}
-                    icon={<FaUser className="text-xl text-zinc-100" aria-hidden />}
+                    icon={
+                      <FaUser className="text-xl text-zinc-100" aria-hidden />
+                    }
                   />
                   <LoginMethodButton
                     label="Tiếp tục với Google"
@@ -711,7 +717,10 @@ export function SignupPage() {
                     onClick={() => startOAuth("facebook")}
                     icon={
                       <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877F2]">
-                        <FaFacebook className="text-[22px] text-white" aria-hidden />
+                        <FaFacebook
+                          className="text-[22px] text-white"
+                          aria-hidden
+                        />
                       </span>
                     }
                   />
@@ -721,7 +730,10 @@ export function SignupPage() {
                     onClick={() => startOAuth("line")}
                     icon={
                       <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#06C755]">
-                        <SiLine className="text-[22px] text-white" aria-hidden />
+                        <SiLine
+                          className="text-[22px] text-white"
+                          aria-hidden
+                        />
                       </span>
                     }
                   />
@@ -769,10 +781,7 @@ export function SignupPage() {
                     monthOptions={monthOptions}
                   />
 
-                  {!isBirthDateValid &&
-                  birthMonth &&
-                  birthDay &&
-                  birthYear ? (
+                  {!isBirthDateValid && birthMonth && birthDay && birthYear ? (
                     <p className="text-[12px] text-red-400">
                       {birthDateValidation.message}
                     </p>
@@ -974,10 +983,7 @@ export function SignupPage() {
                     onYearChange={setBirthYear}
                     monthOptions={monthOptions}
                   />
-                  {!isBirthDateValid &&
-                  birthMonth &&
-                  birthDay &&
-                  birthYear ? (
+                  {!isBirthDateValid && birthMonth && birthDay && birthYear ? (
                     <p className="text-[12px] text-red-400">
                       {birthDateValidation.message}
                     </p>
@@ -1022,10 +1028,7 @@ export function SignupPage() {
                   Đăng ký
                 </h2>
                 <p className="text-[13px] text-zinc-100">Tạo Vibely ID</p>
-                <form
-                  className="space-y-2.5"
-                  onSubmit={submitOAuthOnboarding}
-                >
+                <form className="space-y-2.5" onSubmit={submitOAuthOnboarding}>
                   <div className="relative">
                     <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-zinc-400">
                       @
@@ -1245,7 +1248,6 @@ export function SignupPage() {
           </p>
         </div>
       </div>
-
     </section>
   );
 }

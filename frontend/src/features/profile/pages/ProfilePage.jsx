@@ -26,6 +26,10 @@ import { ProfileFollowListModal } from '@/features/profile/components/ProfileFol
 import { ProfileShareModal } from '@/features/profile/components/ProfileShareModal.jsx'
 import { ProfileEmbedModal } from '@/features/profile/components/ProfileEmbedModal.jsx'
 import {
+  ProfilePageSkeleton,
+  ProfileVideoGridSkeleton,
+} from '@/features/profile/components/ProfilePageSkeleton.jsx'
+import {
   IoAlbumsOutline,
   IoArrowBack,
   IoArrowRedo,
@@ -558,6 +562,9 @@ export function ProfilePage() {
     }
   }, [username, publicProfile, user, ownPublicProfile])
   const isPublicProfileLoading = Boolean(username) && (!authReady || (!publicProfile && !status))
+  /** Own /admin profile waits for auth; public profile waits for API. */
+  const isProfilePageLoading =
+    !authReady || isPublicProfileLoading || (!username && Boolean(token) && !user)
   const normalizeUsername = (value) => String(value ?? '').trim().replace(/^@/, '').toLowerCase()
   const isOwnProfile =
     Boolean(token) &&
@@ -1115,11 +1122,7 @@ export function ProfilePage() {
     ? `Khám phá hồ sơ và video của ${seoUsername} trên Vibely.`
     : 'Khám phá hồ sơ và video của người dùng trên Vibely.'
   const profileImage = seoProfile?.avatarUrl || DEFAULT_USER_AVATAR_URL
-  const profileSeoTitle = seoUsername
-    ? `${seoUsername} | Vibely`
-    : isPublicProfileLoading
-      ? 'Đang tải hồ sơ | Vibely'
-      : 'Hồ sơ | Vibely'
+  const profileSeoTitle = seoUsername ? `${seoUsername} | Vibely` : 'Hồ sơ | Vibely'
 
   const menuItems = [
     { id: 'latest', label: 'Đề xuất', icon: IoHome },
@@ -1349,7 +1352,7 @@ export function ProfilePage() {
     }
   }, [avatarNaturalSize, avatarEditorZoom, avatarEditorOffset])
 
-  if (mobileLayout && !username && !token) {
+  if (mobileLayout && !username && authReady && !token) {
     return (
       <section className="flex h-dvh max-h-dvh min-h-0 flex-col bg-black text-zinc-100 lg:hidden">
         <Seo title="Hồ sơ | Vibely" description="Đăng nhập để quản lý hồ sơ và video của bạn trên Vibely." canonical="/profile" />
@@ -1458,15 +1461,13 @@ export function ProfilePage() {
         ) : null}
 
         <div className="flex flex-1 flex-col overflow-visible">
-        {!username && !token ? (
+        {!username && authReady && !token ? (
           <section className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
             <h2 className="text-xl font-semibold">Hồ sơ</h2>
             <p className="mt-2 text-zinc-300">Vui lòng đăng nhập để xem hồ sơ.</p>
           </section>
-        ) : isPublicProfileLoading ? (
-          <section className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-            <p className="text-sm text-zinc-300">Đang tải hồ sơ...</p>
-          </section>
+        ) : isProfilePageLoading ? (
+          <ProfilePageSkeleton />
         ) : (
           <section className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col bg-black px-1 py-4 md:px-8 lg:py-6">
             {mobileLayout ? (
@@ -1868,7 +1869,7 @@ export function ProfilePage() {
                 ) : isPrivateProfileLocked ? (
                   <PrivateProfileLockedState />
                 ) : isPublicProfileLoading || (profileVideosLoading && profileVideos.length === 0) ? (
-                  <p className="py-10 text-center text-sm text-zinc-500">Đang tải video…</p>
+                  <ProfileVideoGridSkeleton />
                 ) : profileVideos.length > 0 ? (
                   renderProfileVideoGrid(sortedProfileVideos)
                 ) : (
@@ -1908,7 +1909,7 @@ export function ProfilePage() {
                       <p className="py-8 text-center text-sm text-red-400">{libraryError}</p>
                     ) : null}
                     {bookmarkLoading && bookmarkItems.length === 0 ? (
-                      <p className="py-8 text-center text-sm text-zinc-500">Đang tải…</p>
+                      <ProfileVideoGridSkeleton />
                     ) : null}
                     {!bookmarkLoading && bookmarkItems.length > 0 ? (
                       renderProfileVideoGrid(bookmarkItems)
@@ -1958,7 +1959,7 @@ export function ProfilePage() {
                       <p className="py-8 text-center text-sm text-red-400">{libraryError}</p>
                     ) : null}
                     {likedLoading && likedItems.length === 0 ? (
-                      <p className="py-8 text-center text-sm text-zinc-500">Đang tải…</p>
+                      <ProfileVideoGridSkeleton />
                     ) : null}
                     {!likedLoading && likedItems.length > 0 ? (
                       renderProfileVideoGrid(likedItems)
@@ -1992,7 +1993,7 @@ export function ProfilePage() {
                       <p className="py-8 text-center text-sm text-red-400">{libraryError}</p>
                     ) : null}
                     {repostLoading && repostItems.length === 0 ? (
-                      <p className="py-8 text-center text-sm text-zinc-500">Đang tải…</p>
+                      <ProfileVideoGridSkeleton />
                     ) : null}
                     {!repostLoading && repostItems.length > 0 ? (
                       renderProfileVideoGrid(repostItems)
@@ -2402,7 +2403,9 @@ export function ProfilePage() {
               ) : (
                 <div className="flex min-h-[280px] flex-1 flex-col">
                   {bookmarkLoading ? (
-                    <p className="flex flex-1 items-center justify-center py-12 text-sm text-zinc-500">Đang tải…</p>
+                    <div className="flex flex-1 flex-col px-3 py-4">
+                      <ProfileVideoGridSkeleton count={8} />
+                    </div>
                   ) : bookmarkItems.length === 0 ? (
                     <div className="flex flex-1 flex-col px-4 pb-4 pt-2">
                       <div className="flex flex-1 flex-col items-center justify-center px-2 py-8 text-center">

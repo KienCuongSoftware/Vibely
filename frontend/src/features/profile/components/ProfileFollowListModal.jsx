@@ -7,6 +7,7 @@ import {
   IoSparklesOutline,
 } from "react-icons/io5";
 import { apiClient } from "@/shared/api/client";
+import { ProfileFollowListSkeleton } from "@/features/profile/components/ProfilePageSkeleton.jsx";
 
 const DEFAULT_AVATAR_URL = "/images/users/default-avatar.jpeg";
 const FOLLOW_LIST_PAGE_SIZE = 20;
@@ -454,9 +455,7 @@ export function ProfileFollowListModal({
 
         <div className="min-h-0 flex-1 overflow-y-auto px-2 py-3">
           {activeList.loading ? (
-            <div className="flex h-full items-center justify-center px-4 py-12 text-sm text-zinc-400">
-              Đang tải danh sách...
-            </div>
+            <ProfileFollowListSkeleton />
           ) : activeList.error ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 px-4 py-12 text-center">
               <p className="text-sm text-zinc-300">{activeList.error}</p>
