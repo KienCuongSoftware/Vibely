@@ -198,7 +198,7 @@ export function SearchModal({ open, onClose }) {
       className="flex h-full min-h-0 w-[min(calc(100vw-72px),348px)] shrink-0 flex-col overflow-hidden border-r border-zinc-900 bg-[#121212] text-zinc-100"
     >
       <header className="shrink-0 px-4 pb-3 pt-4 sm:px-5 sm:pt-5">
-        <div className="mb-3 flex items-center gap-2">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <h2
             id="vibely-search-title"
             className="text-[22px] font-bold leading-none tracking-tight text-white"
@@ -209,9 +209,9 @@ export function SearchModal({ open, onClose }) {
             type="button"
             onClick={onClose}
             aria-label="Đóng"
-            className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-400 transition hover:bg-zinc-800 hover:text-white"
+            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-zinc-500 bg-zinc-800/80 text-zinc-200 transition hover:border-zinc-400 hover:bg-zinc-700 hover:text-white"
           >
-            <IoClose className="text-xl" aria-hidden />
+            <IoClose className="text-lg" aria-hidden />
           </button>
         </div>
         <form

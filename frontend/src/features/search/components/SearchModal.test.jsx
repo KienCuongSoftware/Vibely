@@ -73,7 +73,7 @@ describe('SearchModal', () => {
     expect(screen.getByPlaceholderText('Tìm kiếm')).toBeInTheDocument()
   })
 
-  it('shows you-might-like section from suggest payload', () => {
+  it('shows recent and you-might-like sections from suggest payload', () => {
     renderModal()
     expect(screen.getByText('dance')).toBeInTheDocument()
     expect(screen.getByText('Bạn có thể thích')).toBeInTheDocument()

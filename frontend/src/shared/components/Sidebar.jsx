@@ -168,6 +168,7 @@ export function Sidebar({
               showActivityBadge ? unreadCount : chatInboxBadgeCount,
             );
             const showNavBadge = showActivityBadge || showMessagesBadge;
+            const isUpload = item.id === "upload";
             return (
               <button
                 key={item.id}
@@ -196,6 +197,17 @@ export function Sidebar({
                       e.currentTarget.src = "/images/users/default-avatar.jpeg";
                     }}
                   />
+                ) : isUpload ? (
+                  <span
+                    className={`inline-flex shrink-0 items-center justify-center rounded-[6px] border border-zinc-100 text-zinc-100 ${
+                      collapsed ? "h-7 w-7" : "h-6 w-6"
+                    }`}
+                    aria-hidden
+                  >
+                    <span className="text-[18px] font-semibold leading-none">
+                      +
+                    </span>
+                  </span>
                 ) : (
                   <span className="relative inline-flex shrink-0">
                     <Icon className="text-base" />
