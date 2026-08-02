@@ -5,6 +5,7 @@ import { useActivityModal } from "@/features/notification/store/ActivityModalCon
 import { useChatInboxBadge } from "@/features/chat/store/ChatInboxBadgeContext.jsx";
 import { useNotificationUnread } from "@/features/notification/store/NotificationUnreadContext.jsx";
 import { formatNotificationBadgeCount } from "@/features/notification/utils/notificationBadge.js";
+import { SearchModal } from "@/features/search/components/SearchModal.jsx";
 import { useSearchModal } from "@/features/search/store/SearchModalContext.jsx";
 import {
   IoBagHandleOutline,
@@ -49,11 +50,20 @@ export function Sidebar({
       : "/images/users/default-avatar.jpeg";
 
   const activityOpen = Boolean(activityModal?.open);
-  const collapsed = forceCollapsed || moreOpen || activityOpen;
+  const searchOpen = Boolean(searchModal?.open);
+  const collapsed =
+    forceCollapsed || moreOpen || activityOpen || searchOpen;
+
+  const handleOpenSearch = () => {
+    if (moreOpen) setMoreOpen(false);
+    activityModal?.closeActivity?.();
+    openSearch?.();
+  };
 
   const handleNavClick = (item) => {
     if (item.id === "more") {
       activityModal?.closeActivity?.();
+      searchModal?.closeSearch?.();
       setMoreOpen((prev) => !prev);
       return;
     }
@@ -65,6 +75,7 @@ export function Sidebar({
     }
     if (moreOpen) setMoreOpen(false);
     if (activityModal?.open) activityModal.closeActivity?.();
+    if (searchOpen) searchModal?.closeSearch?.();
     onSelectMenu?.(item.id);
   };
 
@@ -114,11 +125,13 @@ export function Sidebar({
           collapsed ? (
             <button
               type="button"
-              onClick={() => {
-                activityModal?.closeActivity?.();
-                openSearch?.();
-              }}
-              className="mb-4 flex h-10 w-full cursor-pointer items-center justify-center rounded-full bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+              onClick={handleOpenSearch}
+              aria-pressed={searchOpen}
+              className={`mb-4 flex h-10 w-full cursor-pointer items-center justify-center rounded-full ${
+                searchOpen
+                  ? "bg-zinc-900 text-red-500 ring-1 ring-zinc-800/80"
+                  : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+              }`}
               aria-label="Tìm kiếm"
             >
               <IoSearchOutline className="text-lg" />
@@ -126,10 +139,8 @@ export function Sidebar({
           ) : (
             <button
               type="button"
-              onClick={() => {
-                activityModal?.closeActivity?.();
-                openSearch?.();
-              }}
+              onClick={handleOpenSearch}
+              aria-pressed={searchOpen}
               className="mb-4 flex h-10 w-full cursor-pointer items-center gap-2 rounded-full bg-zinc-900 px-4 text-left text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
             >
               <IoSearchOutline
@@ -236,6 +247,10 @@ export function Sidebar({
           </div>
         ) : null}
       </aside>
+
+      {searchOpen ? (
+        <SearchModal open onClose={() => searchModal?.closeSearch?.()} />
+      ) : null}
 
       {activityOpen ? (
         <ActivityPanel onClose={() => activityModal?.closeActivity?.()} />

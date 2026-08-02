@@ -1,5 +1,4 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react'
-import { SearchModal } from '@/features/search/components/SearchModal'
 
 const SearchModalContext = createContext(null)
 
@@ -21,7 +20,6 @@ export function SearchModalProvider({ children }) {
   return (
     <SearchModalContext.Provider value={value}>
       {children}
-      <SearchModal open={open} onClose={closeSearch} />
     </SearchModalContext.Provider>
   )
 }

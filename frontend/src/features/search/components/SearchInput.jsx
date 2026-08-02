@@ -1,5 +1,5 @@
-import React, { forwardRef } from 'react'
-import { IoCloseCircle, IoSearchOutline } from 'react-icons/io5'
+import React, { forwardRef } from "react";
+import { IoCloseCircle, IoSearchOutline } from "react-icons/io5";
 
 export const SearchInput = forwardRef(function SearchInput(
   {
@@ -7,9 +7,9 @@ export const SearchInput = forwardRef(function SearchInput(
     onChange,
     onClear,
     onKeyDown,
-    placeholder = 'Tìm kiếm',
+    placeholder = "Tìm kiếm",
     autoFocus = true,
-    id = 'vibely-search-input',
+    id = "vibely-search-input",
   },
   ref,
 ) {
@@ -43,5 +43,5 @@ export const SearchInput = forwardRef(function SearchInput(
         </button>
       ) : null}
     </div>
-  )
-})
+  );
+});
