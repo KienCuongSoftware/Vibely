@@ -1,5 +1,5 @@
 import React, { forwardRef } from "react";
-import { IoCloseCircle, IoSearchOutline } from "react-icons/io5";
+import { IoCloseCircle } from "react-icons/io5";
 
 export const SearchInput = forwardRef(function SearchInput(
   {
@@ -15,10 +15,6 @@ export const SearchInput = forwardRef(function SearchInput(
 ) {
   return (
     <div className="relative">
-      <IoSearchOutline
-        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg text-zinc-500"
-        aria-hidden
-      />
       <input
         ref={ref}
         id={id}
@@ -30,7 +26,7 @@ export const SearchInput = forwardRef(function SearchInput(
         autoFocus={autoFocus}
         autoComplete="off"
         enterKeyHint="search"
-        className="h-11 w-full rounded-full border-0 bg-[#2f2f2f] py-0 pl-11 pr-10 text-[15px] text-zinc-100 outline-none ring-0 placeholder:text-zinc-500 focus:bg-[#383838]"
+        className="h-11 w-full rounded-full border-0 bg-[#2f2f2f] py-0 pl-4 pr-10 text-[15px] text-zinc-100 outline-none ring-0 placeholder:text-zinc-500 focus:bg-[#383838]"
       />
       {value ? (
         <button
