@@ -26,7 +26,9 @@ export const SearchInput = forwardRef(function SearchInput(
         autoFocus={autoFocus}
         autoComplete="off"
         enterKeyHint="search"
-        className="h-11 w-full rounded-full border-0 bg-[#2f2f2f] py-0 pl-4 pr-10 text-[15px] text-zinc-100 outline-none ring-0 placeholder:text-zinc-500 focus:bg-[#383838]"
+        className={`h-11 w-full rounded-full border-0 bg-[#2f2f2f] py-0 pl-4 text-[15px] text-zinc-100 outline-none ring-0 placeholder:text-zinc-500 focus:bg-[#383838] ${
+          value ? "pr-10" : "pr-4"
+        }`}
       />
       {value ? (
         <button
