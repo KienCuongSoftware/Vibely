@@ -210,7 +210,7 @@ export function Sidebar({
                   </span>
                 ) : (
                   <span className="relative inline-flex shrink-0">
-                    <Icon className="text-base" />
+                    <Icon className="text-[22px]" />
                     {showNavBadge && collapsed ? (
                       <span
                         className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FE2C55] px-0.5 text-[9px] font-bold leading-none text-white"

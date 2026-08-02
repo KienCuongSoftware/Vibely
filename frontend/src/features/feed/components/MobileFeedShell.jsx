@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   IoClose,
-  IoCompass,
-  IoHome,
+  IoCompassOutline,
+  IoHomeOutline,
   IoMenu,
-  IoPaperPlane,
-  IoPeople,
-  IoPerson,
-  IoSearch,
+  IoPaperPlaneOutline,
+  IoPeopleOutline,
+  IoPersonOutline,
+  IoSearchOutline,
 } from "react-icons/io5";
 import { apiClient } from "@/shared/api/client.js";
 import { useChatInboxBadge } from "@/features/chat/store/ChatInboxBadgeContext.jsx";
@@ -107,7 +107,7 @@ export function MobileFeedTopBar({
               aria-label="Tìm kiếm"
               onClick={onSearchTap}
             >
-              <IoSearch aria-hidden />
+              <IoSearchOutline aria-hidden />
             </button>
           ) : (
             <Link
@@ -115,7 +115,7 @@ export function MobileFeedTopBar({
               className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-xl text-white"
               aria-label="Tìm kiếm"
             >
-              <IoSearch aria-hidden />
+              <IoSearchOutline aria-hidden />
             </Link>
           )}
         </div>
@@ -196,7 +196,7 @@ export function MobileFeedBottomNav({
         className={itemClass("latest")}
         onClick={() => go("latest")}
       >
-        <IoHome className="text-[22px]" aria-hidden />
+        <IoHomeOutline className="text-[22px]" aria-hidden />
         <span>Trang chủ</span>
       </button>
       <button
@@ -204,7 +204,7 @@ export function MobileFeedBottomNav({
         className={itemClass("explore")}
         onClick={() => (token ? go("explore") : navigate("/login"))}
       >
-        <IoCompass className="text-[22px]" aria-hidden />
+        <IoCompassOutline className="text-[22px]" aria-hidden />
         <span>Khám phá</span>
       </button>
       <button
@@ -229,7 +229,7 @@ export function MobileFeedBottomNav({
         onClick={() => (token ? go("messages") : navigate("/login"))}
       >
         <span className="relative inline-flex">
-          <IoPaperPlane className="text-[22px]" aria-hidden />
+          <IoPaperPlaneOutline className="text-[22px]" aria-hidden />
           {token && chatInboxBadgeCount > 0 ? (
             <span
               className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FE2C55] px-0.5 text-[9px] font-bold leading-none text-white"
@@ -246,7 +246,7 @@ export function MobileFeedBottomNav({
         className={itemClass("profile")}
         onClick={() => (token ? go("profile") : navigate("/login"))}
       >
-        <IoPerson className="text-[22px]" aria-hidden />
+        <IoPersonOutline className="text-[22px]" aria-hidden />
         <span>Hồ sơ</span>
       </button>
     </nav>
@@ -352,7 +352,7 @@ export function MobileFeedMenuDrawer({
             }`}
             onClick={goForYou}
           >
-            <IoHome
+            <IoHomeOutline
               className={`text-[22px] ${activeFeedTab === "for-you" ? "text-[#fe2c55]" : "text-zinc-100"}`}
               aria-hidden
             />
@@ -367,7 +367,7 @@ export function MobileFeedMenuDrawer({
             }`}
             onClick={goFollowing}
           >
-            <IoPeople
+            <IoPeopleOutline
               className={`text-[22px] ${activeFeedTab === "following" ? "text-[#fe2c55]" : "text-zinc-100"}`}
               aria-hidden
             />

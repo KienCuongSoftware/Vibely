@@ -6,7 +6,7 @@ import {
   IoCashOutline,
   IoChatboxEllipsesOutline,
   IoCutOutline,
-  IoHome,
+  IoHomeOutline,
   IoMailOutline,
   IoMusicalNotesOutline,
   IoSchoolOutline,
@@ -134,7 +134,7 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
       </button>
 
       <NavSection title="Quản lý" light={light}>
-        <NavLink to="/vibelystudio/home" icon={IoHome} label="Trang chủ" active={active === 'home'} light={light} onNavigate={onNavigate} />
+        <NavLink to="/vibelystudio/home" icon={IoHomeOutline} label="Trang chủ" active={active === 'home'} light={light} onNavigate={onNavigate} />
         <NavLink
           to="/vibelystudio/posts"
           icon={IoVideocamOutline}

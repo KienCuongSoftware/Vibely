@@ -1,19 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import {
-  IoCompass,
-  IoEllipsisHorizontal,
-  IoHome,
-  IoNotifications,
-  IoPaperPlane,
-  IoPeople,
-  IoPerson,
-  IoVideocam,
-} from 'react-icons/io5'
-import { MdOutlineFileUpload } from 'react-icons/md'
 import { useNavigate, useParams } from 'react-router-dom'
 import { apiClient } from '@/shared/api/client'
 import { Sidebar } from '@/shared/components/Sidebar'
 import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
+import { buildMainSidebarMenuItems } from '@/shared/utils/mainSidebarMenuItems.js'
 import { DEFAULT_COVER, SoundGridVideoCard } from '@/features/post/pages/SoundPage.jsx'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Seo } from '@/shared/seo/Seo.jsx'
@@ -34,25 +24,7 @@ export function HashtagPage() {
   const [items, setItems] = useState([])
   const [hashtagGridPlayingId, setHashtagGridPlayingId] = useState(null)
 
-  const menuItems = useMemo(
-    () => [
-      { id: 'latest', label: 'Đề xuất', icon: IoHome },
-      { id: 'explore', label: 'Khám phá', icon: IoCompass },
-      { id: 'following', label: 'Đã follow', icon: IoPeople },
-      ...(token
-        ? [
-            { id: 'friends', label: 'Bạn bè', icon: IoPeople },
-            { id: 'messages', label: 'Tin nhắn', icon: IoPaperPlane },
-            { id: 'activity', label: 'Hoạt động', icon: IoNotifications },
-          ]
-        : []),
-      { id: 'live', label: 'LIVE', icon: IoVideocam },
-      { id: 'upload', label: 'Tải lên', icon: MdOutlineFileUpload },
-      { id: 'profile', label: 'Hồ sơ', icon: IoPerson },
-      { id: 'more', label: 'Thêm', icon: IoEllipsisHorizontal },
-    ],
-    [token],
-  )
+  const menuItems = useMemo(() => buildMainSidebarMenuItems(token), [token])
 
   const handleSelectMenu = (id) => {
     handleSidebarMenuSelect(navigate, id, {
