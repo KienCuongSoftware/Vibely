@@ -5,6 +5,8 @@ import java.util.Locale;
 
 public final class SearchTextNormalizer {
 
+    public static final int MAX_QUERY_LENGTH = 200;
+
     private static final String VI_FROM =
         "àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵ"
             + "ÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴ";
@@ -15,11 +17,37 @@ public final class SearchTextNormalizer {
     private SearchTextNormalizer() {
     }
 
+    /**
+     * Canonical user search text for history/URL display:
+     * trim, collapse spaces, strip controls / markup chars, lowercase, length cap.
+     * Keeps Vietnamese accents (folding is {@link #foldForSearch}).
+     */
     public static String normalizeQuery(String raw) {
         if (raw == null) {
             return "";
         }
-        return raw.trim().replaceAll("\\s+", " ");
+        StringBuilder cleaned = new StringBuilder(raw.length());
+        for (int i = 0; i < raw.length(); i++) {
+            char c = raw.charAt(i);
+            if (c == '<' || c == '>' || c == '"' || c == '\'' || c == '`') {
+                continue;
+            }
+            if (Character.isISOControl(c)) {
+                if (c == '\n' || c == '\r' || c == '\t') {
+                    cleaned.append(' ');
+                }
+                continue;
+            }
+            cleaned.append(c);
+        }
+        String normalized = cleaned.toString().trim().replaceAll("\\s+", " ");
+        if (normalized.startsWith("#")) {
+            normalized = normalized.substring(1).trim();
+        }
+        if (normalized.length() > MAX_QUERY_LENGTH) {
+            normalized = normalized.substring(0, MAX_QUERY_LENGTH).trim();
+        }
+        return normalized.toLowerCase(Locale.ROOT);
     }
 
     /**
@@ -50,8 +78,8 @@ public final class SearchTextNormalizer {
 
     public static String normalizeTrendKeyword(String query) {
         String normalized = foldForSearch(query);
-        if (normalized.length() > 200) {
-            return normalized.substring(0, 200);
+        if (normalized.length() > MAX_QUERY_LENGTH) {
+            return normalized.substring(0, MAX_QUERY_LENGTH);
         }
         return normalized;
     }

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 
 public record SearchHistoryCreateRequest(
     @NotBlank(message = "query is required")
-    @Size(max = 500, message = "query must be at most 500 characters")
+    @Size(max = 200, message = "query must be at most 200 characters")
     String query
 ) {
 }

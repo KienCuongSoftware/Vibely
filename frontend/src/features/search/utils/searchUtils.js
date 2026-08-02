@@ -2,12 +2,28 @@ export const DEFAULT_AVATAR_URL = '/images/users/default-avatar.jpeg'
 
 export const SEARCH_DEBOUNCE_MS = 300
 
+/** Max length stored/sent for search queries (defense in depth). */
+export const SEARCH_QUERY_MAX_LENGTH = 200
+
+/**
+ * Canonical search text: trim, collapse spaces, strip # / controls / markup,
+ * lowercase, length cap. Keeps Vietnamese accents.
+ */
 export function normalizeSearchQuery(raw) {
-  const trimmed = String(raw ?? '').trim().replace(/\s+/g, ' ')
-  if (trimmed.startsWith('#')) {
-    return trimmed.slice(1).trim()
+  let text = String(raw ?? '')
+  // Strip control chars; map newlines/tabs to space
+  text = text.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+  text = text.replace(/[\n\r\t]+/g, ' ')
+  // Strip characters that are useless in search and risky when reflected in HTML/URLs
+  text = text.replace(/[<>"'`]/g, '')
+  text = text.trim().replace(/\s+/g, ' ')
+  if (text.startsWith('#')) {
+    text = text.slice(1).trim()
   }
-  return trimmed
+  if (text.length > SEARCH_QUERY_MAX_LENGTH) {
+    text = text.slice(0, SEARCH_QUERY_MAX_LENGTH).trim()
+  }
+  return text.toLocaleLowerCase('vi')
 }
 
 export function buildProfileHref(username) {

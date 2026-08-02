@@ -246,7 +246,12 @@ public class SearchService {
         return searchHistoryRepository
             .findByUser_IdOrderByCreatedAtDesc(user.getId(), PageRequest.of(0, capped))
             .stream()
-            .map(row -> new SearchHistoryItemDto(row.getId(), row.getQuery(), row.getCreatedAt()))
+            .map(row -> new SearchHistoryItemDto(
+                row.getId(),
+                SearchTextNormalizer.normalizeQuery(row.getQuery()),
+                row.getCreatedAt()
+            ))
+            .filter(item -> !item.query().isBlank())
             .toList();
     }
 

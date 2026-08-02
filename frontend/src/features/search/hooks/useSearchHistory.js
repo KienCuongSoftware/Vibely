@@ -6,10 +6,10 @@ function dedupeHistoryItems(rows) {
   const seen = new Set()
   const out = []
   for (const row of rows) {
-    const key = String(row?.query ?? '').trim().toLowerCase()
-    if (!key || seen.has(key)) continue
-    seen.add(key)
-    out.push(row)
+    const query = normalizeSearchQuery(row?.query)
+    if (!query || seen.has(query)) continue
+    seen.add(query)
+    out.push({ ...row, query })
   }
   return out
 }
@@ -55,12 +55,15 @@ export function useSearchHistory({ token, enabled = true, authReady = true, limi
       try {
         const saved = await apiClient.recordSearchHistory(token, query)
         setItems((prev) => {
+          const savedQuery = normalizeSearchQuery(saved?.query ?? query)
           const withoutDup = prev.filter(
-            (row) => String(row?.query ?? '').toLowerCase() !== query.toLowerCase(),
+            (row) => normalizeSearchQuery(row?.query) !== savedQuery,
           )
-          return saved ? [saved, ...withoutDup] : withoutDup
+          return saved
+            ? [{ ...saved, query: savedQuery }, ...withoutDup]
+            : withoutDup
         })
-        return saved
+        return saved ? { ...saved, query: normalizeSearchQuery(saved.query ?? query) } : null
       } catch {
         return null
       }

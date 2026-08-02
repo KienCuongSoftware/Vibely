@@ -10,9 +10,18 @@ import {
 } from '@/features/search/utils/searchUtils'
 
 describe('searchUtils', () => {
-  it('normalizes whitespace and strips hashtag prefix', () => {
+  it('normalizes whitespace, strips hashtag, and lowercases', () => {
     expect(normalizeSearchQuery('  #dance  ')).toBe('dance')
     expect(normalizeSearchQuery('hello   world')).toBe('hello world')
+    expect(normalizeSearchQuery('Music')).toBe('music')
+    expect(normalizeSearchQuery('Hình Nền Động')).toBe('hình nền động')
+  })
+
+  it('sanitizes unsafe characters and caps length', () => {
+    expect(normalizeSearchQuery('hello<script>')).toBe('helloscript')
+    expect(normalizeSearchQuery("a\"b'c`d")).toBe('abcd')
+    expect(normalizeSearchQuery('a\nb\tc')).toBe('a b c')
+    expect(normalizeSearchQuery('x'.repeat(250))).toHaveLength(200)
   })
 
   it('prefers description over auto-generated file titles', () => {
