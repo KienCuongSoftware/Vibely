@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest'
 import { buildSearchNavItems } from '@/features/search/components/SearchSuggestionList'
 
 describe('buildSearchNavItems', () => {
-  it('prioritizes history items when showHistory is true', () => {
+  it('lists history then trending when showHistory is true', () => {
     const items = buildSearchNavItems({
       showHistory: true,
       historyItems: [{ id: 1, query: 'dance' }],
       suggest: { trending: [{ keyword: 'vibely' }], users: [], hashtags: [], videos: [] },
     })
-    expect(items).toHaveLength(1)
+    expect(items.map((row) => row.type)).toEqual(['history', 'trending'])
     expect(items[0].type).toBe('history')
   })
 

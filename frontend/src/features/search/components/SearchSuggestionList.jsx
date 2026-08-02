@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 import { IoSearchOutline } from 'react-icons/io5'
 import { SearchHashtagSection } from '@/features/search/components/SearchHashtagSection'
-import { SearchHistorySection } from '@/features/search/components/SearchHistorySection'
 import { SearchTrendingSection } from '@/features/search/components/SearchTrendingSection'
 import { SearchUserSection } from '@/features/search/components/SearchUserSection'
 import { SearchVideoSection } from '@/features/search/components/SearchVideoSection'
+import { SearchYouMightLikeSection } from '@/features/search/components/SearchYouMightLikeSection'
 
 export function buildSearchNavItems({
   showHistory,
@@ -17,6 +17,13 @@ export function buildSearchNavItems({
       items.push({
         key: `history-${row?.id ?? row?.query}`,
         type: 'history',
+        payload: row,
+      })
+    }
+    for (const [index, row] of (suggest?.trending ?? []).entries()) {
+      items.push({
+        key: `trend-${row?.keyword ?? index}`,
+        type: 'trending',
         payload: row,
       })
     }
@@ -78,22 +85,42 @@ export function SearchSuggestionList({
   useEffect(() => {
     if (!activeKey || !listRef.current) return
     const node = listRef.current.querySelector(`[data-search-nav-key="${activeKey}"]`)
-    node?.scrollIntoView({ block: 'nearest' })
+    if (typeof node?.scrollIntoView === 'function') {
+      node.scrollIntoView({ block: 'nearest' })
+    }
   }, [activeKey])
 
   const sectionLabel = useMemo(() => {
-    if (showHistory) return 'Lịch sử và gợi ý'
+    if (showHistory) return 'Bạn có thể thích'
     return 'Kết quả gợi ý'
   }, [showHistory])
 
+  if (showHistory) {
+    return (
+      <div
+        ref={listRef}
+        className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain pb-4"
+        aria-label={sectionLabel}
+      >
+        <SearchYouMightLikeSection
+          historyItems={historyItems}
+          historyLoading={historyLoading || loading}
+          onHistorySelect={onHistorySelect}
+          onRemoveHistory={onRemoveHistory}
+          removingHistoryId={removingHistoryId}
+          trendingItems={suggest?.trending ?? []}
+          onTrendingSelect={onTrendingSelect}
+          activeKey={activeKey}
+        />
+      </div>
+    )
+  }
+
   if (loading) {
     return (
-      <div className="flex flex-col gap-3 px-4 py-6" aria-live="polite" aria-busy="true">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <div
-            key={index}
-            className="h-11 animate-pulse rounded-lg bg-zinc-900"
-          />
+      <div className="flex flex-col gap-1 px-2 py-3" aria-live="polite" aria-busy="true">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <div key={index} className="h-10 animate-pulse rounded-md bg-zinc-900/80" />
         ))}
       </div>
     )
@@ -119,73 +146,50 @@ export function SearchSuggestionList({
   return (
     <div
       ref={listRef}
-      className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain pb-6"
+      className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain pb-4"
       aria-label={sectionLabel}
     >
-      {showHistory ? (
-        <SearchHistorySection
-          items={historyItems}
-          loading={historyLoading}
-          onSelect={onHistorySelect}
-          onRemove={onRemoveHistory}
-          removingId={removingHistoryId}
-          activeKey={activeKey}
-        />
+      {searchAllQuery ? (
+        <div className="px-1 pb-0.5 pt-1">
+          <button
+            type="button"
+            data-search-nav-key={`search-all-${searchAllQuery}`}
+            onClick={() => onSearchAllSelect?.(searchAllQuery)}
+            className={`flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-left transition ${
+              activeKey === `search-all-${searchAllQuery}`
+                ? 'bg-zinc-800/90'
+                : 'hover:bg-zinc-900/80'
+            }`}
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-zinc-300">
+              <IoSearchOutline className="text-lg" aria-hidden />
+            </span>
+            <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-white">
+              Tìm kiếm &quot;{searchAllQuery}&quot;
+            </span>
+          </button>
+        </div>
       ) : null}
-
-      {!showHistory ? (
-        <>
-          {searchAllQuery ? (
-            <div className="px-2 pb-1 pt-2">
-              <button
-                type="button"
-                data-search-nav-key={`search-all-${searchAllQuery}`}
-                onClick={() => onSearchAllSelect?.(searchAllQuery)}
-                className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left transition ${
-                  activeKey === `search-all-${searchAllQuery}`
-                    ? 'bg-zinc-800'
-                    : 'hover:bg-zinc-900'
-                }`}
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-zinc-300">
-                  <IoSearchOutline className="text-lg" aria-hidden />
-                </span>
-                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-white">
-                  Tìm kiếm &quot;{searchAllQuery}&quot;
-                </span>
-              </button>
-            </div>
-          ) : null}
-          <SearchTrendingSection
-            items={suggest?.trending ?? []}
-            activeKey={activeKey}
-            onSelect={onTrendingSelect}
-          />
-          <SearchUserSection
-            items={suggest?.users ?? []}
-            activeKey={activeKey}
-            onSelect={onUserSelect}
-          />
-          <SearchHashtagSection
-            items={suggest?.hashtags ?? []}
-            activeKey={activeKey}
-            onSelect={onHashtagSelect}
-          />
-          <SearchVideoSection
-            items={suggest?.videos ?? []}
-            activeKey={activeKey}
-            onSelect={onVideoSelect}
-          />
-        </>
-      ) : null}
-
-      {showHistory && (suggest?.trending?.length ?? 0) > 0 ? (
-        <SearchTrendingSection
-          items={suggest.trending}
-          activeKey={activeKey}
-          onSelect={onTrendingSelect}
-        />
-      ) : null}
+      <SearchTrendingSection
+        items={suggest?.trending ?? []}
+        activeKey={activeKey}
+        onSelect={onTrendingSelect}
+      />
+      <SearchUserSection
+        items={suggest?.users ?? []}
+        activeKey={activeKey}
+        onSelect={onUserSelect}
+      />
+      <SearchHashtagSection
+        items={suggest?.hashtags ?? []}
+        activeKey={activeKey}
+        onSelect={onHashtagSelect}
+      />
+      <SearchVideoSection
+        items={suggest?.videos ?? []}
+        activeKey={activeKey}
+        onSelect={onVideoSelect}
+      />
     </div>
   )
 }

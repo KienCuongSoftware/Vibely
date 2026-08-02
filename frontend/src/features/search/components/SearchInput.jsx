@@ -30,7 +30,7 @@ export const SearchInput = forwardRef(function SearchInput(
         autoFocus={autoFocus}
         autoComplete="off"
         enterKeyHint="search"
-        className="h-11 w-full rounded-full border border-zinc-800 bg-zinc-900/90 py-0 pl-11 pr-10 text-sm text-zinc-100 outline-none ring-0 placeholder:text-zinc-500 focus:border-zinc-600 focus:bg-zinc-900"
+        className="h-11 w-full rounded-full border-0 bg-[#2f2f2f] py-0 pl-11 pr-10 text-[15px] text-zinc-100 outline-none ring-0 placeholder:text-zinc-500 focus:bg-[#383838]"
       />
       {value ? (
         <button

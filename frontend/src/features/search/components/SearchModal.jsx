@@ -51,8 +51,8 @@ export function SearchModal({ open, onClose }) {
 
   const navItems = useMemo(() => {
     const base = buildSearchNavItems({
-      showHistory: showHistory && canUseHistory,
-      historyItems,
+      showHistory,
+      historyItems: canUseHistory ? historyItems : [],
       suggest,
     })
     const q = normalizeSearchQuery(debouncedQuery)
@@ -198,21 +198,24 @@ export function SearchModal({ open, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="vibely-search-title"
-        className="relative z-10 flex h-full w-full max-w-full flex-col border-r border-zinc-800/80 bg-zinc-950 text-zinc-100 shadow-2xl sm:max-w-[min(100%,420px)] md:max-w-[400px]"
+        className="relative z-10 flex h-full w-full max-w-full flex-col border-r border-white/5 bg-[#121212] text-zinc-100 shadow-2xl sm:max-w-[min(100%,380px)] md:max-w-[348px]"
         onClick={(event) => event.stopPropagation()}
       >
-        <header className="shrink-0 border-b border-zinc-800/80 px-4 pb-3 pt-4 sm:px-5 sm:pt-5">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 id="vibely-search-title" className="text-lg font-bold text-white sm:text-xl">
+        <header className="shrink-0 px-4 pb-3 pt-4 sm:px-5 sm:pt-5">
+          <div className="mb-3 flex items-center gap-2">
+            <h2
+              id="vibely-search-title"
+              className="text-[22px] font-bold leading-none tracking-tight text-white"
+            >
               Tìm kiếm
             </h2>
             <button
               type="button"
               onClick={onClose}
               aria-label="Đóng"
-              className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+              className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-400 transition hover:bg-zinc-800 hover:text-white"
             >
-              <IoClose className="text-2xl" aria-hidden />
+              <IoClose className="text-xl" aria-hidden />
             </button>
           </div>
           <form
@@ -246,8 +249,8 @@ export function SearchModal({ open, onClose }) {
           </div>
         ) : (
           <SearchSuggestionList
-            showHistory={showHistory && canUseHistory}
-            historyItems={historyItems}
+            showHistory={showHistory}
+            historyItems={canUseHistory ? historyItems : []}
             historyLoading={historyLoading}
             onHistorySelect={(row) => void goToSearchResults(row?.query ?? '')}
             onRemoveHistory={(row) => void removeHistoryItem(row)}
@@ -276,7 +279,7 @@ export function SearchModal({ open, onClose }) {
         )}
 
         {showHistory && !canUseHistory ? (
-          <p className="px-5 pb-6 text-center text-xs text-zinc-500">
+          <p className="px-5 pb-4 text-center text-xs text-zinc-500">
             Đăng nhập để lưu lịch sử tìm kiếm
           </p>
         ) : null}

@@ -73,10 +73,10 @@ describe('SearchModal', () => {
     expect(screen.getByPlaceholderText('Tìm kiếm')).toBeInTheDocument()
   })
 
-  it('shows trending section from suggest payload', () => {
+  it('shows you-might-like section from suggest payload', () => {
     renderModal()
     expect(screen.getByText('dance')).toBeInTheDocument()
-    expect(screen.getByText('Trending')).toBeInTheDocument()
+    expect(screen.getByText('Bạn có thể thích')).toBeInTheDocument()
   })
 
   it('calls onClose when escape is pressed', async () => {

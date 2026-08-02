@@ -436,8 +436,8 @@ export function SearchResultsPage() {
         <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto">
           {mobileSearchMode ? (
             <SearchSuggestionList
-              showHistory={showHistory && canUseHistory}
-              historyItems={historyItems}
+              showHistory={showHistory}
+              historyItems={canUseHistory ? historyItems : []}
               historyLoading={historyLoading}
               onHistorySelect={(row) => submitSearch(row?.query ?? '')}
               onRemoveHistory={(row) => void removeHistoryItem(row)}
