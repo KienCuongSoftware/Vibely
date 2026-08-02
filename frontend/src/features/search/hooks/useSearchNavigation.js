@@ -48,7 +48,10 @@ export function useSearchNavigation({ token, onBeforeNavigate } = {}) {
     (item, { fallbackQuery = '' } = {}) => {
       if (!item) return
       if (item.type === 'history') {
-        return { action: 'fill', query: item.payload?.query ?? '' }
+        return {
+          action: 'fill',
+          query: normalizeSearchQuery(item.payload?.query ?? ''),
+        }
       }
       if (item.type === 'search') {
         void goToSearchResults(item.payload?.query ?? fallbackQuery)

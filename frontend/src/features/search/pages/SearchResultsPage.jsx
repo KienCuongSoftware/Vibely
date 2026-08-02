@@ -249,6 +249,18 @@ export function SearchResultsPage() {
       : 'Tìm kiếm | Vibely'
   }, [qFromUrl])
 
+  /** Rewrite URL if q still has uppercase / unsafe chars from old links. */
+  useEffect(() => {
+    const raw = searchParams.get('q')
+    if (raw == null || raw === '') return
+    const normalized = normalizeSearchQuery(raw)
+    if (normalized === raw) return
+    const params = {}
+    if (normalized) params.q = normalized
+    if (fromExplore) params.from = 'explore'
+    setSearchParams(params, { replace: true })
+  }, [fromExplore, searchParams, setSearchParams])
+
   useEffect(() => {
     setInputQuery(qFromUrl)
     if (!qFromUrl) setSuggestQuery('')

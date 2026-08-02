@@ -1,5 +1,6 @@
 import React from 'react'
 import { IoClose, IoTimeOutline } from 'react-icons/io5'
+import { normalizeSearchQuery } from '@/features/search/utils/searchUtils'
 
 export function SearchHistorySection({
   items = [],
@@ -53,11 +54,13 @@ export function SearchHistorySection({
                 }`}
               >
                 <IoTimeOutline className="shrink-0 text-lg text-zinc-500" aria-hidden />
-                <span className="min-w-0 flex-1 truncate">{item.query}</span>
+                <span className="min-w-0 flex-1 truncate">
+                  {normalizeSearchQuery(item.query)}
+                </span>
               </button>
               <button
                 type="button"
-                aria-label={`Xóa "${item.query}"`}
+                aria-label={`Xóa "${normalizeSearchQuery(item.query)}"`}
                 disabled={removing}
                 onClick={(event) => {
                   event.stopPropagation()
