@@ -12,6 +12,12 @@ architecture/
 ├── CDN_AND_MEDIA.md
 ├── WEBSOCKET_REALTIME.md
 ├── Vibely-Originality-Detection-TDD.md
+├── ai-enhancement/
+│   ├── 00-INDEX.md
+│   ├── 01-SERVICE-ARCHITECTURE.md
+│   ├── 02-PIPELINE-AND-ENGINES.md
+│   ├── 03-OPS-RETRY-METRICS.md
+│   └── 04-GPU-WORKER.md
 ├── content-understanding/
 │   ├── 00-INDEX.md
 │   ├── 01-VISION-AND-PRINCIPLES.md
@@ -33,4 +39,4 @@ Feed platform detail lives under [`docs/feed/`](../feed/) (not duplicated here).
 2. [REQUEST_LIFECYCLE.md](REQUEST_LIFECYCLE.md)
 3. [SERVICE_BOUNDARIES.md](SERVICE_BOUNDARIES.md)
 4. Domain: CDN, WebSocket; feed → [`docs/feed/`](../feed/)
-5. AI: [content-understanding/00-INDEX.md](content-understanding/00-INDEX.md) · [Originality TDD](Vibely-Originality-Detection-TDD.md) · [content-moderation/00-INDEX.md](content-moderation/00-INDEX.md)
+5. AI: [content-understanding/00-INDEX.md](content-understanding/00-INDEX.md) · [Originality TDD](Vibely-Originality-Detection-TDD.md) · [content-moderation/00-INDEX.md](content-moderation/00-INDEX.md) · [ai-enhancement/00-INDEX.md](ai-enhancement/00-INDEX.md)
