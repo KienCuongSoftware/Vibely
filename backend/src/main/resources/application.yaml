@@ -140,6 +140,24 @@ app:
     recovery:
       enabled: ${APP_CU_RECOVERY_ENABLED:true}
       interval-ms: ${APP_CU_RECOVERY_INTERVAL_MS:60000}
+  enhancement:
+    enabled: ${APP_ENHANCEMENT_ENABLED:true}
+    rabbitmq-enabled: ${APP_ENHANCEMENT_RABBITMQ_ENABLED:false}
+    internal-token: ${APP_ENHANCEMENT_INTERNAL_TOKEN:vibely-dev-enhance-token}
+    max-job-attempts: ${APP_ENHANCEMENT_MAX_ATTEMPTS:5}
+    lease-minutes: ${APP_ENHANCEMENT_LEASE_MINUTES:30}
+    exchange: ${APP_ENHANCEMENT_EXCHANGE:enhance.topic}
+    routing-key: ${APP_ENHANCEMENT_ROUTING:enhance.job.requested}
+    queue: ${APP_ENHANCEMENT_QUEUE:ai.enhance.work}
+    outbox-publish-interval-ms: ${APP_ENHANCEMENT_OUTBOX_INTERVAL_MS:5000}
+    default-engine: ${APP_ENHANCEMENT_ENGINE:noop}
+    default-level: ${APP_ENHANCEMENT_LEVEL:MEDIUM}
+    enqueue-on-ready: ${APP_ENHANCEMENT_ENQUEUE_ON_READY:false}
+    prefer-ai-playback: ${APP_ENHANCEMENT_PREFER_AI_PLAYBACK:true}
+    rule-eval-enabled: ${APP_ENHANCEMENT_RULE_EVAL_ENABLED:true}
+    rule-eval-interval-ms: ${APP_ENHANCEMENT_RULE_EVAL_INTERVAL_MS:120000}
+    lease-recovery-enabled: ${APP_ENHANCEMENT_LEASE_RECOVERY_ENABLED:true}
+    lease-recovery-interval-ms: ${APP_ENHANCEMENT_LEASE_RECOVERY_INTERVAL_MS:60000}
   discovery:
     enabled: ${DISCOVERY_ENABLED:true}
     open-ai-enabled: ${DISCOVERY_OPENAI_ENABLED:true}

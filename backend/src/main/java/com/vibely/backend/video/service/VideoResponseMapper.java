@@ -1,6 +1,9 @@
 package com.vibely.backend.video.service;
 
 import com.vibely.backend.auth.service.UserAvatarResolver;
+import com.vibely.backend.enhancement.EnhancementProperties;
+import com.vibely.backend.enhancement.VideoVersionEntity;
+import com.vibely.backend.enhancement.VideoVersionRepository;
 import com.vibely.backend.feed.dto.FeedPageResponse;
 import com.vibely.backend.interaction.repository.CommentRepository;
 import com.vibely.backend.interaction.repository.FollowRepository;
@@ -52,6 +55,8 @@ public class VideoResponseMapper {
     private final VideoRepository videoRepository;
     private final ModerationDecisionRepository moderationDecisionRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final VideoVersionRepository videoVersionRepository;
+    private final EnhancementProperties enhancementProperties;
 
     public VideoResponseMapper(
         LikeRepository likeRepository,
@@ -64,7 +69,9 @@ public class VideoResponseMapper {
         UserRepository userRepository,
         VideoRepository videoRepository,
         ModerationDecisionRepository moderationDecisionRepository,
-        JdbcTemplate jdbcTemplate
+        JdbcTemplate jdbcTemplate,
+        VideoVersionRepository videoVersionRepository,
+        EnhancementProperties enhancementProperties
     ) {
         this.likeRepository = likeRepository;
         this.commentRepository = commentRepository;
@@ -77,14 +84,18 @@ public class VideoResponseMapper {
         this.videoRepository = videoRepository;
         this.moderationDecisionRepository = moderationDecisionRepository;
         this.jdbcTemplate = jdbcTemplate;
+        this.videoVersionRepository = videoVersionRepository;
+        this.enhancementProperties = enhancementProperties;
     }
 
     public VideoResponse toResponse(Video video) {
-        return toResponse(video, null, false, null, null, false, null, Set.of());
+        Map<Long, VideoVersionEntity> aiVersions = resolveBestAiVersions(List.of(video.getId()));
+        return toResponse(video, null, false, null, null, false, null, Set.of(), aiVersions);
     }
 
     public VideoResponse toResponse(Video video, boolean followedByViewer) {
-        return toResponse(video, null, followedByViewer, null, null, false, null, Set.of());
+        Map<Long, VideoVersionEntity> aiVersions = resolveBestAiVersions(List.of(video.getId()));
+        return toResponse(video, null, followedByViewer, null, null, false, null, Set.of(), aiVersions);
     }
 
     /** Single-video response with follow + comment-audience flags for the viewer. */
@@ -105,7 +116,18 @@ public class VideoResponseMapper {
         }
         boolean reviewRequired = resolveReviewRequiredFlags(List.of(video.getId()))
             .getOrDefault(video.getId(), false);
-        return toResponse(video, null, followed, null, null, reviewRequired, viewerId, authorsFollowingViewer);
+        Map<Long, VideoVersionEntity> aiVersions = resolveBestAiVersions(List.of(video.getId()));
+        return toResponse(
+            video,
+            null,
+            followed,
+            null,
+            null,
+            reviewRequired,
+            viewerId,
+            authorsFollowingViewer,
+            aiVersions
+        );
     }
 
     public List<VideoResponse> toFeedResponses(List<Video> videos, Long viewerId) {
@@ -122,6 +144,7 @@ public class VideoResponseMapper {
         Map<Long, Boolean> reviewFlags = resolveReviewRequiredFlags(ids);
         Set<Long> followedAuthorIds = resolveFollowedAuthorIds(viewerId, videos);
         Set<Long> authorsFollowingViewer = resolveAuthorsFollowingViewer(viewerId, videos);
+        Map<Long, VideoVersionEntity> aiVersions = resolveBestAiVersions(ids);
         return videos.stream()
             .map(v -> toResponse(
                 v,
@@ -131,7 +154,8 @@ public class VideoResponseMapper {
                 null,
                 reviewFlags.getOrDefault(v.getId(), false),
                 viewerId,
-                authorsFollowingViewer
+                authorsFollowingViewer,
+                aiVersions
             ))
             .toList();
     }
@@ -162,6 +186,7 @@ public class VideoResponseMapper {
         Set<Long> followedAuthorIds = resolveFollowedAuthorIds(viewerId, videosForFollow);
         Set<Long> authorsFollowingViewer = resolveAuthorsFollowingViewer(viewerId, videosForFollow);
         Map<Long, Boolean> reviewFlags = resolveReviewRequiredFlags(videoIds);
+        Map<Long, VideoVersionEntity> aiVersions = resolveBestAiVersions(videoIds);
         List<VideoResponse> out = new ArrayList<>(rows.size());
         for (FollowingFeedRowView row : rows) {
             Video video = videosById.get(row.getVideoId());
@@ -181,7 +206,8 @@ public class VideoResponseMapper {
                 row.getFeedAt(),
                 reviewFlags.getOrDefault(video.getId(), false),
                 viewerId,
-                authorsFollowingViewer
+                authorsFollowingViewer,
+                aiVersions
             ));
         }
         return out;
@@ -223,12 +249,6 @@ public class VideoResponseMapper {
         return followRepository.existsAcceptedByFollowerAndFollowing(viewer, video.getAuthor());
     }
 
-    private VideoResponse toResponse(Video video, FeedInteractionCounts batch, boolean followedByViewer) {
-        boolean reviewRequired = resolveReviewRequiredFlags(List.of(video.getId()))
-            .getOrDefault(video.getId(), false);
-        return toResponse(video, batch, followedByViewer, null, null, reviewRequired, null, Set.of());
-    }
-
     private VideoResponse toResponse(
         Video video,
         FeedInteractionCounts batch,
@@ -237,7 +257,8 @@ public class VideoResponseMapper {
         LocalDateTime repostedAt,
         boolean reviewRequired,
         Long viewerId,
-        Set<Long> authorsFollowingViewer
+        Set<Long> authorsFollowingViewer,
+        Map<Long, VideoVersionEntity> aiVersions
     ) {
         Long videoId = video.getId();
         long likeCount = batch != null
@@ -257,7 +278,24 @@ public class VideoResponseMapper {
         String videoUrl = presignPlaybackUrlIfConfigured(video.getVideoUrl());
         String thumbUrl = presignPlaybackUrlIfConfigured(video.getThumbnailUrl());
         String audioUrl = presignPlaybackUrlIfConfigured(video.getAudioUrl());
-        String masterPlaylistUrl = presignPlaybackUrlIfConfigured(video.getMasterPlaylistUrl());
+        String standardMaster = presignPlaybackUrlIfConfigured(video.getMasterPlaylistUrl());
+        String masterPlaylistUrl = standardMaster;
+        boolean aiEnhanced = false;
+        String aiEnhancedLabel = null;
+        String standardMasterPlaylistUrl = null;
+        VideoVersionEntity aiVersion = aiVersions == null ? null : aiVersions.get(videoId);
+        if (enhancementProperties.isPreferAiPlayback()
+            && aiVersion != null
+            && aiVersion.getMasterPlaylistUrl() != null
+            && !aiVersion.getMasterPlaylistUrl().isBlank()) {
+            String aiMaster = presignPlaybackUrlIfConfigured(aiVersion.getMasterPlaylistUrl());
+            if (aiMaster != null && !aiMaster.isBlank()) {
+                masterPlaylistUrl = aiMaster;
+                aiEnhanced = true;
+                aiEnhancedLabel = aiVersion.getLabel();
+                standardMasterPlaylistUrl = standardMaster;
+            }
+        }
         Long repostedByUserId = null;
         String repostedByUsername = null;
         String repostedByDisplayName = null;
@@ -316,7 +354,10 @@ public class VideoResponseMapper {
             repostedByAvatarUrl,
             repostedAtValue,
             reviewRequired,
-            video.getDescriptionLang()
+            video.getDescriptionLang(),
+            aiEnhanced,
+            aiEnhancedLabel,
+            standardMasterPlaylistUrl
         );
     }
 
@@ -340,6 +381,28 @@ public class VideoResponseMapper {
             return viewerId != null && viewerFollowsAuthor && authorFollowsViewer;
         }
         return false;
+    }
+
+    private Map<Long, VideoVersionEntity> resolveBestAiVersions(Collection<Long> videoIds) {
+        Map<Long, VideoVersionEntity> out = new HashMap<>();
+        if (!enhancementProperties.isEnabled()
+            || !enhancementProperties.isPreferAiPlayback()
+            || videoIds == null
+            || videoIds.isEmpty()) {
+            return out;
+        }
+        List<Long> ids = videoIds.stream().filter(Objects::nonNull).distinct().toList();
+        if (ids.isEmpty()) {
+            return out;
+        }
+        for (VideoVersionEntity version : videoVersionRepository.findActiveAiByVideoIds(ids)) {
+            Long vid = version.getVideo() == null ? null : version.getVideo().getId();
+            if (vid == null || out.containsKey(vid)) {
+                continue;
+            }
+            out.put(vid, version);
+        }
+        return out;
     }
 
     private Map<Long, Boolean> resolveReviewRequiredFlags(Collection<Long> videoIds) {

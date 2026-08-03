@@ -1,9 +1,11 @@
 package com.vibely.backend.processing;
 
+import com.vibely.backend.enhancement.VideoBecameReadyEvent;
 import com.vibely.backend.moderation.ModerationPublicationHoldService;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,15 +16,18 @@ public class VideoProcessingStateService {
     private final VideoRepository videoRepository;
     private final VideoProcessingJobRepository jobRepository;
     private final ModerationPublicationHoldService publicationHoldService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public VideoProcessingStateService(
         VideoRepository videoRepository,
         VideoProcessingJobRepository jobRepository,
-        ModerationPublicationHoldService publicationHoldService
+        ModerationPublicationHoldService publicationHoldService,
+        ApplicationEventPublisher eventPublisher
     ) {
         this.videoRepository = videoRepository;
         this.jobRepository = jobRepository;
         this.publicationHoldService = publicationHoldService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -62,6 +67,7 @@ public class VideoProcessingStateService {
         jobRepository.save(job);
         videoRepository.save(video);
         publicationHoldService.holdIfPendingModeration(video);
+        eventPublisher.publishEvent(new VideoBecameReadyEvent(videoId));
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

@@ -183,7 +183,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/videos/*/description-translation").permitAll()
                 .requestMatchers("/api/internal/originality/**").permitAll()
                 .requestMatchers("/api/internal/content-understanding/**").permitAll()
+                .requestMatchers("/api/internal/enhancement/**").permitAll()
                 .requestMatchers("/api/internal/moderation/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/videos/*/versions").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*").permitAll()
                 .anyRequest().authenticated();
             })

@@ -43,6 +43,12 @@ public record VideoResponse(
     /** True when AI/admin has flagged the video for human review (Studio warning). */
     boolean reviewRequired,
     /** ISO language of description when known (translation). */
-    String descriptionLang
+    String descriptionLang,
+    /** True when masterPlaylistUrl is an AI Enhanced ladder. */
+    boolean aiEnhanced,
+    /** Display label e.g. "AI Enhanced" / "1080p AI". */
+    String aiEnhancedLabel,
+    /** Original FFmpeg ladder when playback prefers AI. */
+    String standardMasterPlaylistUrl
 ) {
 }
