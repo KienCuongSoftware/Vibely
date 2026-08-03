@@ -512,6 +512,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
           sourceWidthPx: fresh.sourceWidthPx,
           durationSeconds: fresh.durationSeconds,
           status: fresh.status,
+          aiEnhanced: Boolean(fresh.aiEnhanced),
+          aiEnhancedLabel: fresh.aiEnhancedLabel ?? null,
+          standardMasterPlaylistUrl: fresh.standardMasterPlaylistUrl ?? null,
         });
       } catch {
         /* noop */

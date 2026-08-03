@@ -1174,6 +1174,12 @@ export function FeedPhoneStage({
                         : undefined
                     }
                   />
+                  {video?.aiEnhanced ? (
+                    <div className="pointer-events-none absolute top-3 left-3 z-20 rounded-md bg-black/55 px-2 py-1 text-[11px] font-medium tracking-wide text-white/95 backdrop-blur-[2px]">
+                      {String(video.aiEnhancedLabel ?? "AI Enhanced").trim() ||
+                        "AI Enhanced"}
+                    </div>
+                  ) : null}
                   <div
                     className="pointer-events-none absolute inset-x-0 top-0 z-9 h-[42%] max-h-56 bg-linear-to-b from-black/60 via-black/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                     aria-hidden
