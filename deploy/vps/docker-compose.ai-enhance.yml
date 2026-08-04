@@ -1,24 +1,15 @@
-# AI Enhancement worker — production companion to Vibely backend
-# Usage on VPS:
+# AI Enhancement worker — place next to /opt/vibely/vibely.env
+# Usage:
 #   cd /opt/vibely
-#   docker compose -f docker-compose.ai-enhance.yml up -d --build
+#   docker compose -f docker-compose.ai-enhance.yml pull
+#   docker compose -f docker-compose.ai-enhance.yml up -d
 #
-# Required in vibely.env (same file as main stack):
-#   APP_ENHANCEMENT_INTERNAL_TOKEN=<strong secret matching backend>
-#   AWS_S3_BUCKET / AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_REGION
-#   APP_S3_PUBLIC_URL_BASE=https://cdn.vibely.sbs   # or your CDN
-#
-# Optional:
-#   APP_ENHANCEMENT_RABBITMQ_ENABLED=true
-#   RABBITMQ_USERNAME / RABBITMQ_PASSWORD
-#   ENHANCE_ENGINE=noop|realesrgan
-#   ENHANCE_REALESRGAN_BIN=/usr/local/bin/realesrgan-ncnn-vulkan
+# Do NOT use ${VAR} for secrets here — empty host/.env overrides env_file.
+# Tokens and AWS keys come from vibely.env (APP_ENHANCEMENT_*, AWS_*).
 
 services:
   ai-enhance-worker:
     image: kiencuongsoftware/vibely-ai-enhance:latest
-    build:
-      context: ../../ai-workers/ai-enhance
     container_name: vibely-ai-enhance-worker
     restart: unless-stopped
     extra_hosts:
@@ -26,22 +17,13 @@ services:
     env_file:
       - vibely.env
     environment:
-      VIBELY_API_BASE: ${VIBELY_API_BASE:-http://host.docker.internal:8080}
-      ENHANCE_INTERNAL_TOKEN: ${APP_ENHANCEMENT_INTERNAL_TOKEN:-vibely-dev-enhance-token}
-      ENHANCE_RABBITMQ_ENABLED: ${APP_ENHANCEMENT_RABBITMQ_ENABLED:-false}
-      RABBITMQ_URL: amqp://${RABBITMQ_USERNAME:-vibely}:${RABBITMQ_PASSWORD:-vibely}@host.docker.internal:5672/%2F
-      ENHANCE_QUEUE: ${APP_ENHANCEMENT_QUEUE:-ai.enhance.work}
-      ENHANCE_POLL_SECONDS: ${ENHANCE_POLL_SECONDS:-5}
+      VIBELY_API_BASE: http://host.docker.internal:8080
+      ENHANCE_RABBITMQ_ENABLED: "false"
+      ENHANCE_POLL_SECONDS: "5"
       ENHANCE_WORK_DIR: /var/lib/vibely-enhance/workspace
-      ENHANCE_ENGINE: ${APP_ENHANCEMENT_ENGINE:-noop}
-      ENHANCE_MIN_FREE_GB: ${ENHANCE_MIN_FREE_GB:-5}
-      ENHANCE_KEEP_WORKSPACE: ${ENHANCE_KEEP_WORKSPACE:-false}
-      AWS_REGION: ${AWS_REGION:-ap-southeast-2}
-      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      APP_S3_PUBLIC_URL_BASE: ${APP_S3_PUBLIC_URL_BASE:-}
-      LOG_LEVEL: ${ENHANCE_LOG_LEVEL:-INFO}
+      ENHANCE_MIN_FREE_GB: "5"
+      ENHANCE_KEEP_WORKSPACE: "false"
+      LOG_LEVEL: INFO
     volumes:
       - ai_enhance_workspace:/var/lib/vibely-enhance/workspace
     healthcheck:
