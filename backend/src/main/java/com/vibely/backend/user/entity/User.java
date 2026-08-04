@@ -28,6 +28,9 @@ public class User {
     @Column(name = "display_name", nullable = false, length = 80)
     private String displayName;
 
+    @Column(name = "display_name_changed_at")
+    private LocalDateTime displayNameChangedAt;
+
     @Column(nullable = false, unique = true, length = 120)
     private String email;
 
@@ -128,6 +131,14 @@ public class User {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public LocalDateTime getDisplayNameChangedAt() {
+        return displayNameChangedAt;
+    }
+
+    public void setDisplayNameChangedAt(LocalDateTime displayNameChangedAt) {
+        this.displayNameChangedAt = displayNameChangedAt;
     }
 
     public String getEmail() {

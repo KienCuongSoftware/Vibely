@@ -24,6 +24,8 @@ import com.vibely.backend.storage.MediaUrlPresigner;
 import com.vibely.backend.storage.S3OwnedMediaValidator;
 import com.vibely.backend.explore.service.ExploreCacheService;
 import com.vibely.backend.video.VideoStatus;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -40,6 +42,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
+
+    private static final int DISPLAY_NAME_CHANGE_COOLDOWN_DAYS = 7;
 
     private final UserRepository userRepository;
     private final UsernameService usernameService;
@@ -124,7 +128,20 @@ public class UserService {
         }
 
         user.setUsername(normalizedUsername);
-        user.setDisplayName(request.displayName().trim());
+        String nextDisplayName = request.displayName().trim();
+        String currentDisplayName = user.getDisplayName() == null ? "" : user.getDisplayName().trim();
+        if (!currentDisplayName.equals(nextDisplayName)) {
+            LocalDateTime availableAt = displayNameChangeAvailableAt(user);
+            if (availableAt != null && LocalDateTime.now().isBefore(availableAt)) {
+                throw new BadRequestException(
+                    "Bạn chỉ có thể thay đổi biệt danh 7 ngày một lần. Thử lại sau "
+                        + availableAt.toLocalDate()
+                        + "."
+                );
+            }
+            user.setDisplayName(nextDisplayName);
+            user.setDisplayNameChangedAt(LocalDateTime.now());
+        }
         user.setBio(request.bio() == null || request.bio().isBlank() ? "" : request.bio().trim());
         String previousAvatar = user.getAvatarUrl();
         String avatarUrl = request.avatarUrl() == null || request.avatarUrl().isBlank()
@@ -248,7 +265,9 @@ public class UserService {
             false,
             false,
             false,
-            "BANNED"
+            "BANNED",
+            true,
+            null
         );
     }
 
@@ -267,6 +286,9 @@ public class UserService {
                 && followRepository.existsPendingByFollowerAndFollowing(viewer, user);
         }
         boolean contentVisible = profileVisibilityService.canViewProfileContent(user, viewer);
+        boolean isOwner = viewer != null && viewer.getId().equals(uid);
+        LocalDateTime availableAt = isOwner ? displayNameChangeAvailableAt(user) : null;
+        boolean canChangeDisplayName = !isOwner || availableAt == null || !LocalDateTime.now().isBefore(availableAt);
         return new PublicUserProfileResponse(
             user.getId(),
             user.getUsername(),
@@ -281,8 +303,19 @@ public class UserService {
             contentVisible,
             followedByViewer,
             followRequestPending,
-            "ACTIVE"
+            "ACTIVE",
+            canChangeDisplayName,
+            availableAt == null || canChangeDisplayName ? null : availableAt.toString()
         );
+    }
+
+    /** Null when change is allowed now. */
+    private static LocalDateTime displayNameChangeAvailableAt(User user) {
+        LocalDateTime last = user.getDisplayNameChangedAt();
+        if (last == null) {
+            return null;
+        }
+        return last.plus(DISPLAY_NAME_CHANGE_COOLDOWN_DAYS, ChronoUnit.DAYS);
     }
 
     private UserFollowListResponse toUserFollowListResponse(

@@ -2125,14 +2125,20 @@ export function ProfilePage() {
                   <div className="space-y-2">
                     <input
                       id="edit-profile-display-name"
-                      className="w-full rounded bg-zinc-900 px-3 py-2 text-zinc-100 outline-none ring-red-500/30 placeholder:text-zinc-500 focus:ring-2"
+                      className="w-full rounded bg-zinc-900 px-3 py-2 text-zinc-100 outline-none ring-red-500/30 placeholder:text-zinc-500 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60"
                       value={editForm.displayName}
                       onChange={(e) => setEditForm((prev) => ({ ...prev, displayName: e.target.value }))}
                       placeholder="Tên hiển thị"
                       required
                       maxLength={80}
+                      disabled={profile?.canChangeDisplayName === false}
+                      readOnly={profile?.canChangeDisplayName === false}
                     />
-                    <p className="text-xs text-zinc-500">Bạn chỉ có thể thay đổi biệt danh 7 ngày một lần.</p>
+                    <p className="text-xs text-zinc-500">
+                      {profile?.canChangeDisplayName === false && profile?.displayNameChangeAvailableAt
+                        ? `Bạn chỉ có thể thay đổi biệt danh 7 ngày một lần. Thử lại sau ${String(profile.displayNameChangeAvailableAt).slice(0, 10)}.`
+                        : 'Bạn chỉ có thể thay đổi biệt danh 7 ngày một lần.'}
+                    </p>
                   </div>
                 </div>
 

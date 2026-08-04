@@ -15,6 +15,10 @@ public record PublicUserProfileResponse(
     boolean followedByViewer,
     boolean followRequestPending,
     /** ACTIVE | BANNED — public shell profiles use BANNED to drive TikTok-like empty state. */
-    String accountStatus
+    String accountStatus,
+    /** For the profile owner: whether display name can be changed now. */
+    boolean canChangeDisplayName,
+    /** ISO-8601 local datetime when next change is allowed; null if already allowed. */
+    String displayNameChangeAvailableAt
 ) {
 }
