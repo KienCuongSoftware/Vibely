@@ -25,6 +25,7 @@ import com.vibely.backend.storage.S3OwnedMediaValidator;
 import com.vibely.backend.explore.service.ExploreCacheService;
 import com.vibely.backend.video.VideoStatus;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private static final int DISPLAY_NAME_CHANGE_COOLDOWN_DAYS = 7;
+    private static final DateTimeFormatter VN_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final UserRepository userRepository;
     private final UsernameService usernameService;
@@ -135,7 +137,7 @@ public class UserService {
             if (availableAt != null && LocalDateTime.now().isBefore(availableAt)) {
                 throw new BadRequestException(
                     "Bạn chỉ có thể thay đổi biệt danh 7 ngày một lần. Thử lại sau "
-                        + availableAt.toLocalDate()
+                        + availableAt.format(VN_DATE)
                         + "."
                 );
             }

@@ -58,6 +58,20 @@ import { absoluteUrl } from '@/shared/seo/seoConfig.js'
 
 const DEFAULT_USER_AVATAR_URL = '/images/users/default-avatar.jpeg'
 
+/** Format ISO / LocalDateTime string as dd/MM/yyyy (VN). */
+function formatVietnameseDate(raw) {
+  const text = String(raw ?? '').trim()
+  if (!text) return ''
+  const m = text.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (m) return `${m[3]}/${m[2]}/${m[1]}`
+  const d = new Date(text)
+  if (Number.isNaN(d.getTime())) return text
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const yyyy = d.getFullYear()
+  return `${dd}/${mm}/${yyyy}`
+}
+
 function formatCompactCount(value) {
   const count = Number(value ?? 0)
   if (count >= 1_000_000) {
@@ -2136,7 +2150,7 @@ export function ProfilePage() {
                     />
                     <p className="text-xs text-zinc-500">
                       {profile?.canChangeDisplayName === false && profile?.displayNameChangeAvailableAt
-                        ? `Bạn chỉ có thể thay đổi biệt danh 7 ngày một lần. Thử lại sau ${String(profile.displayNameChangeAvailableAt).slice(0, 10)}.`
+                        ? `Bạn chỉ có thể thay đổi biệt danh 7 ngày một lần. Thử lại sau ${formatVietnameseDate(profile.displayNameChangeAvailableAt)}.`
                         : 'Bạn chỉ có thể thay đổi biệt danh 7 ngày một lần.'}
                     </p>
                   </div>
