@@ -131,7 +131,12 @@ public class UserService {
             ? null
             : request.avatarUrl().trim();
         if (avatarUrl != null) {
-            ownedMediaValidator.requireAllowedAvatarUrl(avatarUrl, user.getId());
+            // API returns /api/users/oauth-avatar/{id} for display; re-submit must not overwrite DB.
+            if (UserAvatarResolver.oauthAvatarProxyPath(user.getId()).equals(avatarUrl)) {
+                avatarUrl = previousAvatar;
+            } else {
+                ownedMediaValidator.requireAllowedAvatarUrl(avatarUrl, user.getId());
+            }
         }
         user.setAvatarUrl(avatarUrl);
         User saved = userRepository.save(user);

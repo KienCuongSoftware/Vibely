@@ -27,14 +27,15 @@ public class S3OwnedMediaValidator {
         if (trimmed.startsWith("data:")) {
             throw new BadRequestException("Avatar phải được tải lên qua kho lưu trữ.");
         }
+        // Display path for Google/Facebook photos — allow before generic "/" reject.
+        if (UserAvatarResolver.oauthAvatarProxyPath(userId).equals(trimmed)) {
+            return;
+        }
         if (trimmed.startsWith("/") && !trimmed.contains("://")) {
             if (trimmed.startsWith("/images/")) {
                 return;
             }
             throw new BadRequestException("URL avatar không hợp lệ.");
-        }
-        if (UserAvatarResolver.oauthAvatarProxyPath(userId).equals(trimmed)) {
-            return;
         }
         if (UserAvatarResolver.isOAuthCdnUrl(trimmed) || isGoogleAvatarUrl(trimmed)) {
             return;
