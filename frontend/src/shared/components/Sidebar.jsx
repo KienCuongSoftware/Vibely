@@ -199,12 +199,13 @@ export function Sidebar({
                   />
                 ) : isUpload ? (
                   <span
-                    className={`inline-flex shrink-0 items-center justify-center rounded-[6px] border border-zinc-100 text-zinc-100 ${
+                    className={`inline-grid shrink-0 place-items-center rounded-[6px] border border-zinc-100 text-zinc-100 ${
                       collapsed ? "h-7 w-7" : "h-6 w-6"
                     }`}
                     aria-hidden
                   >
-                    <span className="text-[18px] font-semibold leading-none">
+                    {/* Text "+" sits low on the baseline — nudge up for optical center */}
+                    <span className="-translate-y-[1.5px] text-[18px] font-semibold leading-none">
                       +
                     </span>
                   </span>
