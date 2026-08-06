@@ -2,17 +2,21 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import { IoChevronBack, IoChevronForward, IoClose, IoCloudUploadOutline } from 'react-icons/io5'
 import { uploadThumbnailToStorage } from '@/shared/api/client'
 import {
-  THUMBNAIL_JPEG_QUALITY,
   THUMBNAIL_MAX_WIDTH,
   canvasToJpegBlob,
   drawVideoFrameToCanvas,
 } from '@/features/post/utils/videoThumbnail.js'
 
 const FRAME_COUNT = 10
-/** Khung nhỏ cho dải cuộn ngang — không dùng làm preview lớn. */
-const FILMSTRIP_CAPTURE_WIDTH = 256
-/** Preview lớn: tối đa bề ngang này (giữ tỉ lệ gốc, không upscale vượt video). */
-const PREVIEW_MAX_WIDTH = THUMBNAIL_MAX_WIDTH
+/** Filmstrip capture — sharp enough for small thumbs + interim large preview. */
+const FILMSTRIP_CAPTURE_WIDTH = 480
+const FILMSTRIP_JPEG_QUALITY = 0.9
+/** Large modal preview capture (display is smaller; keep retina-sharp). */
+const PREVIEW_MAX_WIDTH = 960
+const PREVIEW_JPEG_QUALITY = 0.96
+/** Final cover upload quality. */
+const COVER_EXPORT_JPEG_QUALITY = 0.97
+const COVER_EXPORT_MAX_WIDTH = Math.max(THUMBNAIL_MAX_WIDTH, 1440)
 
 function waitSeeked(video) {
   return new Promise((resolve) => {
@@ -72,7 +76,7 @@ async function extractVideoFilmstrip(videoSource, frameCount = FRAME_COUNT) {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
     frames.push({
       time: t,
-      dataUrl: canvas.toDataURL('image/jpeg', THUMBNAIL_JPEG_QUALITY),
+      dataUrl: canvas.toDataURL('image/jpeg', FILMSTRIP_JPEG_QUALITY),
     })
   }
   cleanup()
@@ -107,7 +111,7 @@ async function extractPreviewFrame(videoSource, timeSeconds, maxWidth = PREVIEW_
   ctx.imageSmoothingQuality = 'high'
   ctx.drawImage(video, 0, 0, targetW, targetH)
 
-  const blob = await canvasToJpegBlob(canvas, THUMBNAIL_JPEG_QUALITY)
+  const blob = await canvasToJpegBlob(canvas, PREVIEW_JPEG_QUALITY)
 
   cleanup()
   return URL.createObjectURL(blob)
@@ -123,9 +127,9 @@ async function extractOriginalResolutionFrame(videoSource, timeSeconds) {
   await waitSeeked(video)
 
   const canvas = document.createElement('canvas')
-  drawVideoFrameToCanvas(video, canvas, THUMBNAIL_MAX_WIDTH)
+  drawVideoFrameToCanvas(video, canvas, COVER_EXPORT_MAX_WIDTH)
 
-  const blob = await canvasToJpegBlob(canvas, 0.96)
+  const blob = await canvasToJpegBlob(canvas, COVER_EXPORT_JPEG_QUALITY)
 
   cleanup()
   return blob
@@ -229,6 +233,9 @@ export function CoverPickerModal({
       return undefined
     }
 
+    // Show sharp filmstrip frame immediately, then upgrade to HD extract.
+    setDisplayPreviewUrl(frame.dataUrl)
+
     let cancelled = false
 
     const loadHdPreview = (targetFrame, updateDisplay) => {
@@ -250,7 +257,7 @@ export function CoverPickerModal({
           }
         })
         .catch(() => {
-          /* giữ preview hiện tại, không hiện overlay lỗi */
+          /* giữ preview filmstrip */
         })
     }
 
@@ -377,7 +384,7 @@ export function CoverPickerModal({
         )
         return
       }
-      onConfirm(url)
+      onConfirm(url, blob)
       onClose()
     } catch (e) {
       setError(e.message ?? 'Không lưu được ảnh bìa.')
@@ -407,8 +414,8 @@ export function CoverPickerModal({
       aria-modal="true"
       aria-labelledby="cover-modal-title"
     >
-      <div className="flex max-h-[90vh] w-full min-w-0 max-w-lg flex-col overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-900 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
+      <div className="flex max-h-[min(90vh,640px)] w-full min-w-0 max-w-md flex-col overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-900 shadow-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-4 py-2.5">
           <h2 id="cover-modal-title" className="text-base font-bold text-white">
             Ảnh bìa
           </h2>
@@ -449,7 +456,7 @@ export function CoverPickerModal({
           </button>
         </div>
 
-        <div className="scrollbar-none min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain p-4">
+        <div className="scrollbar-none min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain px-3 py-3">
           {tab === 'video' ? (
             <>
               {!canUseVideoTab ? (
@@ -458,40 +465,40 @@ export function CoverPickerModal({
                   tính&quot; hoặc tải lại video trong phiên này.
                 </p>
               ) : stripLoading ? (
-                <p className="py-12 text-center text-sm text-zinc-400">Đang tạo khung hình từ video…</p>
+                <p className="py-8 text-center text-sm text-zinc-400">Đang tạo khung hình từ video…</p>
               ) : stripError ? (
                 <p className="rounded-lg border border-red-900/50 bg-red-950/40 p-3 text-sm text-red-300">
                   {stripError}
                 </p>
               ) : (
                 <>
-                  <div className="relative mx-auto flex max-w-[280px] justify-center overflow-hidden rounded-xl border-2 border-sky-500/80 bg-black ring-2 ring-sky-500/30">
+                  <div className="relative mx-auto flex h-[168px] w-[94px] items-center justify-center overflow-hidden rounded-lg border-2 border-sky-500/80 bg-black ring-2 ring-sky-500/30">
                     {previewSrc ? (
                       <img
                         key={previewSrc}
                         src={previewSrc}
                         alt=""
-                        className="aspect-9/16 w-full object-cover transition-opacity duration-200"
+                        className="h-full w-full object-contain transition-opacity duration-200"
                         decoding="async"
                       />
                     ) : (
                       <div
-                        className="aspect-9/16 w-full animate-pulse bg-zinc-900/90"
+                        className="h-full w-full animate-pulse bg-zinc-900/90"
                         aria-hidden
                       />
                     )}
                   </div>
-                  <div className="mt-3 flex min-w-0 w-full items-center gap-2">
+                  <div className="mt-2.5 flex min-w-0 w-full items-center gap-1.5">
                     <button
                       type="button"
                       aria-label="Cuộn dải ảnh sang trái"
                       aria-disabled={filmstripAtStart}
                       onClick={() => scrollFilmstrip(-1)}
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800/95 text-zinc-100 shadow-md transition hover:border-zinc-500 hover:bg-zinc-700 hover:text-white ${
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800/95 text-zinc-100 shadow-md transition hover:border-zinc-500 hover:bg-zinc-700 hover:text-white ${
                         filmstripAtStart ? 'cursor-default opacity-40' : ''
                       }`}
                     >
-                      <IoChevronBack className="text-xl" aria-hidden />
+                      <IoChevronBack className="text-lg" aria-hidden />
                     </button>
                     <div
                       ref={filmstripRef}
@@ -508,15 +515,15 @@ export function CoverPickerModal({
                           scrollFilmstrip(1)
                         }
                       }}
-                      className="min-h-24 min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain pb-1 scrollbar-none touch-pan-x"
+                      className="min-h-[4.5rem] min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain pb-0.5 scrollbar-none touch-pan-x"
                     >
-                      <div ref={filmstripTrackRef} className="flex w-max gap-1.5 pr-0.5">
+                      <div ref={filmstripTrackRef} className="flex w-max gap-1 pr-0.5">
                         {frames.map((f, i) => (
                           <button
                             key={`${f.time}-${i}`}
                             type="button"
                             onClick={() => setSelectedIdx(i)}
-                            className={`h-24 w-14 shrink-0 overflow-hidden rounded-md border-2 transition ${
+                            className={`h-[4.5rem] w-10 shrink-0 overflow-hidden rounded-md border-2 transition ${
                               selectedIdx === i
                                 ? 'border-sky-500 ring-1 ring-sky-400'
                                 : 'border-zinc-700 opacity-80 hover:opacity-100'
@@ -539,11 +546,11 @@ export function CoverPickerModal({
                       aria-label="Cuộn dải ảnh sang phải"
                       aria-disabled={filmstripAtEnd}
                       onClick={() => scrollFilmstrip(1)}
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800/95 text-zinc-100 shadow-md transition hover:border-zinc-500 hover:bg-zinc-700 hover:text-white ${
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800/95 text-zinc-100 shadow-md transition hover:border-zinc-500 hover:bg-zinc-700 hover:text-white ${
                         filmstripAtEnd ? 'cursor-default opacity-40' : ''
                       }`}
                     >
-                      <IoChevronForward className="text-xl" aria-hidden />
+                      <IoChevronForward className="text-lg" aria-hidden />
                     </button>
                   </div>
                 </>
@@ -583,11 +590,11 @@ export function CoverPickerModal({
                 </p>
               </button>
               {uploadPreviewUrl ? (
-                <div className="mt-4 flex justify-center">
+                <div className="mt-3 flex justify-center">
                   <img
                     src={uploadPreviewUrl}
                     alt=""
-                    className="max-h-64 max-w-full rounded-lg border border-zinc-700 object-contain"
+                    className="max-h-40 max-w-full rounded-lg border border-zinc-700 object-contain"
                   />
                 </div>
               ) : null}
@@ -597,7 +604,7 @@ export function CoverPickerModal({
           {error ? <p className="mt-3 text-sm text-amber-400">{error}</p> : null}
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-zinc-800 px-4 py-3">
+        <div className="flex shrink-0 justify-end gap-2 border-t border-zinc-800 px-4 py-2.5">
           <button
             type="button"
             className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800"
