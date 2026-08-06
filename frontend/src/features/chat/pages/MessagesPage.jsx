@@ -17,7 +17,7 @@ import {
   IoVolumeMuteOutline,
 } from "react-icons/io5";
 import { LuPin, LuPinOff } from "react-icons/lu";
-import { apiClient, uploadThumbnailToStorage, uploadToPresignedPutUrl } from "@/shared/api/client";
+import { apiClient, uploadThumbnailToStorage, uploadVideoFile } from "@/shared/api/client";
 import { CreatorGridShell, GridLoadingState, GridLoginPrompt } from "@/features/feed/components/CreatorGridShell.jsx";
 import { isMobileFeedLayout } from "@/features/feed/components/MobileFeedShell.jsx";
 import { MobileLoginPrompt, MobilePageShell } from "@/features/feed/components/MobilePageShell.jsx";
@@ -539,13 +539,12 @@ export function MessagesPage() {
       for (const item of orderedToSend) {
         let messageContent;
         if (item.kind === "video") {
-          const presign = await apiClient.presignVideoUpload(token, {
+          const uploaded = await uploadVideoFile({
+            token,
+            file: item.file,
             contentType: item.file.type || "video/mp4",
-            fileName: item.file.name || "chat-video.mp4",
-            fileSizeBytes: item.file.size,
           });
-          await uploadToPresignedPutUrl(presign.uploadUrl, item.file, presign.contentType);
-          messageContent = `${VIDEO_MESSAGE_PREFIX}${presign.playbackUrl}`;
+          messageContent = `${VIDEO_MESSAGE_PREFIX}${uploaded.playbackUrl}`;
         } else {
           const imageUrl = await uploadThumbnailToStorage(
             token,

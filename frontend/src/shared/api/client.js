@@ -9,6 +9,7 @@ import { postApi } from "@/features/post/api/postApi.js";
 import { exploreApi } from "@/features/explore/api/exploreApi.js";
 import { searchApi } from "@/features/search/api/searchApi.js";
 import { uploadApi, uploadThumbnailToStorage } from "@/features/upload/api/uploadApi.js";
+import { uploadVideoFile } from "@/features/upload/utils/multipartVideoUpload.js";
 import { reactionApi } from "@/features/reaction/api/reactionApi.js";
 import { bookmarkApi } from "@/features/bookmark/api/bookmarkApi.js";
 import { commentApi } from "@/features/comment/api/commentApi.js";
@@ -19,7 +20,7 @@ import { notificationApi } from "@/features/notification/api/notificationApi.js"
 import { moderationApi } from "@/features/moderation/api/moderationApi.js";
 
 export { uploadToPresignedPutUrl } from "@/shared/api/http.js";
-export { uploadThumbnailToStorage };
+export { uploadThumbnailToStorage, uploadVideoFile };
 
 /**
  * Facade giữ tương thích ngược: mọi chỗ cũ `apiClient.xxx` vẫn chạy.

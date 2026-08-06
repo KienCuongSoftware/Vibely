@@ -12,7 +12,7 @@ Universal playback on web/mobile browsers via hls.js / native HLS.
 
 ```mermaid
 flowchart LR
-  A[Presign PUT] --> B[S3 raw]
+  A[Presign or Multipart] --> B[S3 raw]
   B --> C[ProcessingJob]
   C --> D[FfmpegHlsPipelineRunner]
   D --> E[S3 hls/ playlist + segments]
@@ -25,6 +25,7 @@ flowchart LR
 - `FfmpegHlsPipelineRunner` — download, transcode, upload, cleanup temp
 - Audio pipeline: `processing/audio/*` + optional Lambda (`infra/lambda-audio-extract`)
 - Thumbnails: separate presign `presign-thumbnail`
+- Large videos (≥16MB): S3 multipart via `/api/videos/upload/multipart/*` (16MiB parts, parallel PUTs)
 
 ## 5. Data Flow
 

@@ -23,9 +23,27 @@ flowchart LR
 
 ## 4. System Design
 
-- **Upload:** `POST /api/videos/upload/presign` → client PUT to S3
+- **Upload:** `POST /api/videos/upload/presign` (single PUT) or multipart (`/upload/multipart/*`: initiate → presign-parts → complete) → client PUT(s) to S3
 - **Transcode:** `FfmpegHlsPipelineRunner` — download source, multi-bitrate HLS, upload playlist + `.ts` segments
 - **Playback:** `S3PresignedUploadService` / `S3ObjectUrlBuilder` — CloudFront URL or time-limited presign (`app.s3.playback-presign-expiry-hours`)
+
+### Multipart upload (Studio / chat video ≥ 16MB)
+
+- Part size **16 MiB**, client concurrency **4**, part URL batches of ~20
+- Bucket **CORS** must allow `PUT` from app origins and **`ExposeHeaders: ETag`** (browser needs ETag to call complete)
+- IAM on `uploads/*`: `s3:PutObject`, `s3:AbortMultipartUpload` (and usual multipart complete via PutObject)
+
+Example CORS rule fragment:
+
+```json
+{
+  "AllowedOrigins": ["https://vibely.sbs", "https://www.vibely.sbs", "http://localhost:5173"],
+  "AllowedMethods": ["GET", "PUT", "HEAD"],
+  "AllowedHeaders": ["*"],
+  "ExposeHeaders": ["ETag", "x-amz-request-id"],
+  "MaxAgeSeconds": 3000
+}
+```
 
 ## 5. Data Flow
 

@@ -9,6 +9,30 @@ export const uploadApi = {
       body,
       token,
     }),
+  initiateMultipartVideoUpload: (token, body) =>
+    request("/api/videos/upload/multipart/initiate", {
+      method: "POST",
+      body,
+      token,
+    }),
+  presignMultipartVideoParts: (token, body) =>
+    request("/api/videos/upload/multipart/presign-parts", {
+      method: "POST",
+      body,
+      token,
+    }),
+  completeMultipartVideoUpload: (token, body) =>
+    request("/api/videos/upload/multipart/complete", {
+      method: "POST",
+      body,
+      token,
+    }),
+  abortMultipartVideoUpload: (token, body) =>
+    request("/api/videos/upload/multipart/abort", {
+      method: "POST",
+      body,
+      token,
+    }),
 };
 
 /** Tải blob ảnh bìa lên S3 qua presign, trả về URL công khai. */

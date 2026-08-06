@@ -1,7 +1,7 @@
 import React from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { apiClient, uploadThumbnailToStorage, uploadToPresignedPutUrl } from '@/shared/api/client'
+import { apiClient, uploadThumbnailToStorage, uploadVideoFile } from '@/shared/api/client'
 import { CoverPickerModal } from '@/features/upload/components/CoverPickerModal'
 import { CuHashtagSuggestions } from '@/features/upload/components/CuHashtagSuggestions'
 import { StudioLayout } from '@/features/studio/components/StudioLayout'
@@ -1162,27 +1162,21 @@ export function UploadPage() {
       setUploadStartedAt(Date.now())
 
       const contentType = resolveUploadContentType(file)
-      const presign = await apiClient.presignVideoUpload(token, {
-        contentType,
-        fileName: file.name,
-        fileSizeBytes: file.size,
-      })
-
       const abortController = new AbortController()
       uploadAbortRef.current = abortController
-      await uploadToPresignedPutUrl(
-        presign.uploadUrl,
+      const uploaded = await uploadVideoFile({
+        token,
         file,
-        presign.contentType,
-        (percent, metaProgress) => {
+        contentType,
+        signal: abortController.signal,
+        onProgress: (percent, metaProgress) => {
           setUploadProgress(percent)
           if (metaProgress?.loaded != null) setUploadLoadedBytes(metaProgress.loaded)
           if (metaProgress?.total != null) setUploadTotalBytes(metaProgress.total)
         },
-        { signal: abortController.signal },
-      )
+      })
       uploadAbortRef.current = null
-      const playbackUrl = presign.playbackUrl
+      const playbackUrl = uploaded.playbackUrl
       const audioUrl = deriveAudioUrlFromVideoUrl(playbackUrl)
       const audioTitle = `âm thanh gốc - ${user?.displayName || user?.username || 'Vibely'}`
       let autoThumbUrl = ''

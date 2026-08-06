@@ -3,6 +3,12 @@ package com.vibely.backend.video;
 import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.feed.dto.FeedPageResponse;
+import com.vibely.backend.storage.MultipartAbortRequest;
+import com.vibely.backend.storage.MultipartCompleteRequest;
+import com.vibely.backend.storage.MultipartCompleteResponse;
+import com.vibely.backend.storage.MultipartInitiateResponse;
+import com.vibely.backend.storage.MultipartPresignPartsRequest;
+import com.vibely.backend.storage.MultipartPresignPartsResponse;
 import com.vibely.backend.storage.PresignedUploadResponse;
 import com.vibely.backend.storage.S3PresignedUploadService;
 import com.vibely.backend.storage.VideoPresignRequest;
@@ -132,13 +138,9 @@ public class VideoController {
         Authentication authentication,
         @Valid @RequestBody VideoPresignRequest request
     ) {
-        S3PresignedUploadService svc = presignedUploadService.getIfAvailable();
-        if (svc == null) {
-            throw new ResponseStatusException(
-                HttpStatus.SERVICE_UNAVAILABLE,
-                "Tải video qua S3 chưa được bật. Đặt APP_S3_ENABLED=true và AWS_S3_BUCKET."
-            );
-        }
+        S3PresignedUploadService svc = requireS3UploadService(
+            "Tải video qua S3 chưa được bật. Đặt APP_S3_ENABLED=true và AWS_S3_BUCKET."
+        );
         return ApiResponse.success(svc.presign(authentication.getName(), request));
     }
 
@@ -148,14 +150,67 @@ public class VideoController {
         Authentication authentication,
         @Valid @RequestBody VideoPresignRequest request
     ) {
+        S3PresignedUploadService svc = requireS3UploadService(
+            "Tải ảnh qua S3 chưa được bật. Đặt APP_S3_ENABLED=true và AWS_S3_BUCKET."
+        );
+        return ApiResponse.success(svc.presignThumbnail(authentication.getName(), request));
+    }
+
+    @PostMapping("/upload/multipart/initiate")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<MultipartInitiateResponse> initiateMultipartUpload(
+        Authentication authentication,
+        @Valid @RequestBody VideoPresignRequest request
+    ) {
+        S3PresignedUploadService svc = requireS3UploadService(
+            "Tải video qua S3 chưa được bật. Đặt APP_S3_ENABLED=true và AWS_S3_BUCKET."
+        );
+        return ApiResponse.success(svc.initiateMultipart(authentication.getName(), request));
+    }
+
+    @PostMapping("/upload/multipart/presign-parts")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<MultipartPresignPartsResponse> presignMultipartParts(
+        Authentication authentication,
+        @Valid @RequestBody MultipartPresignPartsRequest request
+    ) {
+        S3PresignedUploadService svc = requireS3UploadService(
+            "Tải video qua S3 chưa được bật. Đặt APP_S3_ENABLED=true và AWS_S3_BUCKET."
+        );
+        return ApiResponse.success(svc.presignMultipartParts(authentication.getName(), request));
+    }
+
+    @PostMapping("/upload/multipart/complete")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<MultipartCompleteResponse> completeMultipartUpload(
+        Authentication authentication,
+        @Valid @RequestBody MultipartCompleteRequest request
+    ) {
+        S3PresignedUploadService svc = requireS3UploadService(
+            "Tải video qua S3 chưa được bật. Đặt APP_S3_ENABLED=true và AWS_S3_BUCKET."
+        );
+        return ApiResponse.success(svc.completeMultipart(authentication.getName(), request));
+    }
+
+    @PostMapping("/upload/multipart/abort")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<Void> abortMultipartUpload(
+        Authentication authentication,
+        @Valid @RequestBody MultipartAbortRequest request
+    ) {
+        S3PresignedUploadService svc = requireS3UploadService(
+            "Tải video qua S3 chưa được bật. Đặt APP_S3_ENABLED=true và AWS_S3_BUCKET."
+        );
+        svc.abortMultipart(authentication.getName(), request);
+        return ApiResponse.success(null);
+    }
+
+    private S3PresignedUploadService requireS3UploadService(String unavailableMessage) {
         S3PresignedUploadService svc = presignedUploadService.getIfAvailable();
         if (svc == null) {
-            throw new ResponseStatusException(
-                HttpStatus.SERVICE_UNAVAILABLE,
-                "Tải ảnh qua S3 chưa được bật. Đặt APP_S3_ENABLED=true và AWS_S3_BUCKET."
-            );
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, unavailableMessage);
         }
-        return ApiResponse.success(svc.presignThumbnail(authentication.getName(), request));
+        return svc;
     }
 
     @PostMapping("/{publicId}/views")

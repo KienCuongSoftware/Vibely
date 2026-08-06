@@ -34,7 +34,12 @@
 | GET | `/api/feed/following` | Bearer |
 | GET | `/api/videos/{id}` | No |
 | POST | `/api/videos` | Bearer |
-| POST | `/api/videos/upload/presign` | Bearer |
+| POST | `/api/videos/upload/presign` | Bearer; single PUT (&lt;16MB client path) |
+| POST | `/api/videos/upload/presign-thumbnail` | Bearer |
+| POST | `/api/videos/upload/multipart/initiate` | Bearer; CreateMultipartUpload |
+| POST | `/api/videos/upload/multipart/presign-parts` | Bearer; batch UploadPart URLs (max 50) |
+| POST | `/api/videos/upload/multipart/complete` | Bearer |
+| POST | `/api/videos/upload/multipart/abort` | Bearer |
 | POST | `/api/videos/{id}/views` | No |
 
 ## Users, profile, follows
