@@ -324,8 +324,8 @@ export function StudioPostsPage() {
   return (
     <StudioLayout
       active="posts"
-      title="Bài đăng"
-      subtitle="Quản lý video đã đăng và bản nháp"
+      hidePageHeader
+      hideTopBrand
     >
       <section className="rounded-xl border border-zinc-800 bg-zinc-950/40 p-4 sm:p-5">
         {successMessage ? (

@@ -6,6 +6,8 @@ import { StudioAccountMenu } from "@/features/studio/components/StudioAccountMen
 
 /**
  * @param {'dark' | 'light'} [theme='dark']
+ * @param {boolean} [hidePageHeader] Ẩn khối title/subtitle (kiểu TikTok Content: chỉ tabs).
+ * @param {boolean} [hideTopBrand] Ẩn chữ "Vibely Studio" trên thanh top (logo chỉ ở sidebar).
  */
 export function StudioLayout({
   active,
@@ -13,6 +15,7 @@ export function StudioLayout({
   subtitle,
   children,
   hidePageHeader = false,
+  hideTopBrand = false,
   theme = "dark",
 }) {
   const isLight = theme === "light";
@@ -83,9 +86,11 @@ export function StudioLayout({
             </button>
             <span
               className={
-                isLight
-                  ? "min-w-0 truncate text-base font-bold text-slate-900 sm:text-lg lg:text-xl"
-                  : "min-w-0 truncate text-base font-bold text-white sm:text-lg lg:text-xl"
+                hideTopBrand
+                  ? "sr-only"
+                  : isLight
+                    ? "min-w-0 truncate text-base font-bold text-slate-900 sm:text-lg lg:text-xl"
+                    : "min-w-0 truncate text-base font-bold text-white sm:text-lg lg:text-xl"
               }
             >
               Vibely Studio
