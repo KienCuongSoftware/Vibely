@@ -18,6 +18,12 @@ public class VideoUpdateRequest {
     /** everyone | friends | onlyYou | PUBLIC | FRIENDS | PRIVATE */
     private String privacy;
 
+    /**
+     * When {@code true}, keep as Studio draft. When {@code false} or omitted, publish
+     * ({@code studioDraft=false}) — matches existing Studio "Đăng" behavior.
+     */
+    private Boolean studioDraft;
+
     public String getTitle() {
         return title;
     }
@@ -48,5 +54,13 @@ public class VideoUpdateRequest {
 
     public void setPrivacy(String privacy) {
         this.privacy = privacy;
+    }
+
+    public Boolean getStudioDraft() {
+        return studioDraft;
+    }
+
+    public void setStudioDraft(Boolean studioDraft) {
+        this.studioDraft = studioDraft;
     }
 }

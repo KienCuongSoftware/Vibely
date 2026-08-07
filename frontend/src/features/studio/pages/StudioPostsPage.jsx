@@ -57,6 +57,10 @@ export function StudioPostsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const successMessage = location.state?.successMessage;
+  const listTab =
+    new URLSearchParams(location.search).get("tab") === "drafts"
+      ? "drafts"
+      : "posts";
 
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
@@ -200,6 +204,16 @@ export function StudioPostsPage() {
     }
   };
 
+  const publishedItems = useMemo(
+    () => items.filter((v) => !v?.studioDraft),
+    [items],
+  );
+  const draftItems = useMemo(
+    () => items.filter((v) => Boolean(v?.studioDraft)),
+    [items],
+  );
+  const visibleItems = listTab === "drafts" ? draftItems : publishedItems;
+
   const changePrivacy = async (video, nextPrivacy) => {
     if (!token || !video?.publicId) return;
     const current = normalizePrivacy(video.privacy);
@@ -219,6 +233,7 @@ export function StudioPostsPage() {
           description: video.description ?? "",
           thumbnailUrl: video.thumbnailUrl || undefined,
           privacy: option.ui,
+          studioDraft: Boolean(video.studioDraft),
         },
         token,
       );
@@ -260,36 +275,74 @@ export function StudioPostsPage() {
           </p>
         ) : null}
 
-        <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
-          <span className="rounded-full border border-zinc-700 px-3 py-1.5">
-            Lượt xem
-          </span>
-          <span className="rounded-full border border-zinc-700 px-3 py-1.5">
-            Lượt thích
-          </span>
-          <span className="rounded-full border border-zinc-700 px-3 py-1.5">
-            Bình luận
-          </span>
-          <span className="rounded-full border border-zinc-700 px-3 py-1.5">
-            Quyền riêng tư
-          </span>
+        <div className="mb-4 flex gap-1 border-b border-zinc-800">
+          <button
+            type="button"
+            className={`cursor-pointer px-4 py-2.5 text-sm font-semibold transition ${
+              listTab === "posts"
+                ? "border-b-2 border-zinc-100 text-zinc-100"
+                : "text-zinc-500 hover:text-zinc-300"
+            }`}
+            onClick={() => navigate("/vibelystudio/posts", { replace: true })}
+          >
+            Bài đăng {publishedItems.length}
+          </button>
+          <button
+            type="button"
+            className={`cursor-pointer px-4 py-2.5 text-sm font-semibold transition ${
+              listTab === "drafts"
+                ? "border-b-2 border-zinc-100 text-zinc-100"
+                : "text-zinc-500 hover:text-zinc-300"
+            }`}
+            onClick={() =>
+              navigate("/vibelystudio/posts?tab=drafts", { replace: true })
+            }
+          >
+            Bản nháp {draftItems.length}
+          </button>
         </div>
+
+        {listTab === "drafts" ? (
+          <p className="mb-3 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs leading-relaxed text-zinc-400">
+            Bạn có thể lưu tối đa nhiều bản nháp. Bản nháp chỉ bạn thấy được. Dùng Loại bỏ trên
+            trang tải lên hoặc thùng rác bên dưới để xóa hẳn (kể cả trên kho lưu trữ).
+          </p>
+        ) : (
+          <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+            <span className="rounded-full border border-zinc-700 px-3 py-1.5">
+              Lượt xem
+            </span>
+            <span className="rounded-full border border-zinc-700 px-3 py-1.5">
+              Lượt thích
+            </span>
+            <span className="rounded-full border border-zinc-700 px-3 py-1.5">
+              Bình luận
+            </span>
+            <span className="rounded-full border border-zinc-700 px-3 py-1.5">
+              Quyền riêng tư
+            </span>
+          </div>
+        )}
 
         {loading ? (
           <p className="mt-8 text-center text-sm text-zinc-500">
-            Đang tải bài đăng…
+            Đang tải {listTab === "drafts" ? "bản nháp" : "bài đăng"}…
           </p>
-        ) : items.length === 0 ? (
+        ) : visibleItems.length === 0 ? (
           <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-16 text-center">
-            <p className="text-2xl font-bold text-zinc-100">Chưa có bài đăng</p>
+            <p className="text-2xl font-bold text-zinc-100">
+              {listTab === "drafts" ? "Chưa có bản nháp" : "Chưa có bài đăng"}
+            </p>
             <p className="mt-2 text-sm text-zinc-500">
-              Video đã đăng sẽ xuất hiện ở đây.
+              {listTab === "drafts"
+                ? "Video lưu nháp từ Studio Upload sẽ xuất hiện ở đây."
+                : "Video đã đăng sẽ xuất hiện ở đây."}
             </p>
             <Link
               to="/vibelystudio/upload"
               className="mt-6 inline-block cursor-pointer rounded-md bg-pink-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-pink-500"
             >
-              Tải video đầu tiên
+              {listTab === "drafts" ? "Tải video lên" : "Tải video đầu tiên"}
             </Link>
           </div>
         ) : (
@@ -297,7 +350,9 @@ export function StudioPostsPage() {
             <table className="w-full min-w-[920px] border-collapse text-left text-sm text-zinc-200">
               <thead>
                 <tr className="border-b border-zinc-800 text-xs text-zinc-500">
-                  <th className="py-3 pr-3 font-medium">Bài đăng</th>
+                  <th className="py-3 pr-3 font-medium">
+                    {listTab === "drafts" ? "Bản nháp" : "Bài đăng"}
+                  </th>
                   <th className="whitespace-nowrap px-3 py-3 text-left font-medium">
                     Quyền riêng tư
                   </th>
@@ -308,7 +363,7 @@ export function StudioPostsPage() {
                     Bình luận
                   </th>
                   <th className="w-[1%] whitespace-nowrap px-2 py-3 text-center font-medium">
-                    Ngày tạo
+                    {listTab === "drafts" ? "Cập nhật" : "Ngày tạo"}
                   </th>
                   <th className="w-[1%] whitespace-nowrap px-2 py-3 text-center font-medium">
                     Thao tác
@@ -316,7 +371,7 @@ export function StudioPostsPage() {
                 </tr>
               </thead>
               <tbody>
-                {items.map((v) => {
+                {visibleItems.map((v) => {
                   const hasThumb =
                     v.thumbnailUrl && String(v.thumbnailUrl).trim();
                   const desc =
@@ -589,10 +644,11 @@ export function StudioPostsPage() {
       {deleteTarget ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4">
           <div className="w-full max-w-md rounded-xl border border-zinc-700 bg-zinc-900 p-5 shadow-xl">
-            <h2 className="text-lg font-semibold text-zinc-100">Xóa bài đăng?</h2>
+            <h2 className="text-lg font-semibold text-zinc-100">
+              {deleteTarget.studioDraft ? "Xóa bản nháp?" : "Xóa bài đăng?"}
+            </h2>
             <p className="mt-2 text-sm text-zinc-400">
-              Video sẽ được gỡ khỏi Vibely. Thao tác này không thể hoàn tác từ
-              Studio.
+              Video, ảnh bìa và file trên kho lưu trữ sẽ bị xóa. Thao tác này không thể hoàn tác.
             </p>
             <div className="mt-5 flex justify-end gap-2">
               <button

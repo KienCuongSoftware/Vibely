@@ -239,7 +239,6 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         select v from Video v
         where v.author.id = :authorId
           and v.status <> :excludedStatus
-          and v.studioDraft = false
         order by v.createdAt desc
         """)
     Page<Video> findByAuthorIdExcludingStatus(

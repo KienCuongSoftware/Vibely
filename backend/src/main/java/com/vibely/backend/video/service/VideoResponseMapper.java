@@ -357,7 +357,8 @@ public class VideoResponseMapper {
             video.getDescriptionLang(),
             aiEnhanced,
             aiEnhancedLabel,
-            standardMasterPlaylistUrl
+            standardMasterPlaylistUrl,
+            video.isStudioDraft()
         );
     }
 

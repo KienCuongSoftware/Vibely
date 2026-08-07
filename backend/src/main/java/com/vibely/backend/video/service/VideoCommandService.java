@@ -190,6 +190,7 @@ public class VideoCommandService {
         String nextTitle = request.getTitle().trim();
         String nextDesc = request.getDescription();
         nextDesc = nextDesc == null || nextDesc.isBlank() ? null : nextDesc.trim();
+        boolean keepAsDraft = Boolean.TRUE.equals(request.getStudioDraft());
 
         UpdateGateProbe probe = tx.execute(status -> {
             User user = userRepository.findByEmail(email)
@@ -209,18 +210,20 @@ public class VideoCommandService {
             );
         });
 
-        // Outside write TX — ban commits; client receives clean ACCOUNT_BANNED (403).
-        captionGateService.assertPublishAllowed(
-            probe.authorId(),
-            probe.authorEmail(),
-            probe.videoId(),
-            nextTitle,
-            nextDesc
-        );
+        // Caption gate only when publishing — draft saves must not ban for caption.
+        if (!keepAsDraft) {
+            captionGateService.assertPublishAllowed(
+                probe.authorId(),
+                probe.authorEmail(),
+                probe.videoId(),
+                nextTitle,
+                nextDesc
+            );
+        }
 
         final String title = nextTitle;
         final String desc = nextDesc;
-        return tx.execute(status -> applyVideoUpdate(email, probe, request, title, desc));
+        return tx.execute(status -> applyVideoUpdate(email, probe, request, title, desc, keepAsDraft));
     }
 
     private VideoResponse applyVideoUpdate(
@@ -228,7 +231,8 @@ public class VideoCommandService {
         UpdateGateProbe probe,
         VideoUpdateRequest request,
         String nextTitle,
-        String nextDesc
+        String nextDesc,
+        boolean keepAsDraft
     ) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
@@ -249,23 +253,29 @@ public class VideoCommandService {
             }
             video.setThumbnailUrl(request.getThumbnailUrl());
         }
-        // Studio "Đăng" publishes the draft into the creator's post list.
-        video.setStudioDraft(false);
+        if (keepAsDraft) {
+            video.setStudioDraft(true);
+        } else {
+            // Studio "Đăng" (or omit studioDraft) publishes into the creator's post list.
+            video.setStudioDraft(false);
+        }
         if (request.getPrivacy() != null && !request.getPrivacy().isBlank()) {
             video.setPrivacy(resolvePrivacy(request.getPrivacy()));
         }
         Video saved = videoRepository.save(video);
         // Hashtags / Explore signals follow description text on every metadata save.
         exploreSyncService.syncExploreSignals(saved);
-        if (wasDraft) {
-            originalityEnqueueService.enqueueAfterVideoPersisted(saved);
-            contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "publish");
-        } else {
-            contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "metadata_updated");
+        if (!keepAsDraft) {
+            if (wasDraft) {
+                originalityEnqueueService.enqueueAfterVideoPersisted(saved);
+                contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "publish");
+            } else {
+                contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "metadata_updated");
+            }
+            // AI-first: keep off For You until moderation ALLOW/LIMIT; enqueue if CU+orig already done.
+            publicationHoldService.holdIfPendingModeration(saved);
+            moderationJoinService.tryEnqueue(saved.getId(), false);
         }
-        // AI-first: keep off For You until moderation ALLOW/LIMIT; enqueue if CU+orig already done.
-        publicationHoldService.holdIfPendingModeration(saved);
-        moderationJoinService.tryEnqueue(saved.getId(), false);
         return responseMapper.toResponse(saved);
     }
 
@@ -304,7 +314,15 @@ public class VideoCommandService {
             return;
         }
         cancelProcessingJob(video.getId());
-        // Soft-remove only: keep S3 media for admin review / avoid broken thumbnails.
+        S3MediaDeletionService deletionService = s3MediaDeletionService.getIfAvailable();
+        if (deletionService != null) {
+            try {
+                deletionService.deleteVideoArtifacts(video);
+            } catch (Exception ignored) {
+                // Soft-remove still proceeds if S3 cleanup fails.
+            }
+        }
+        // Soft-remove row; S3 objects above are deleted best-effort.
         video.setStatus(VideoStatus.REMOVED);
         videoRepository.save(video);
         notificationService.purgeForRemovedVideo(video.getId());

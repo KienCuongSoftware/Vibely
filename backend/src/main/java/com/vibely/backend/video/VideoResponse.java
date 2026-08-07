@@ -49,6 +49,8 @@ public record VideoResponse(
     /** Display label e.g. "AI Enhanced" / "1080p AI". */
     String aiEnhancedLabel,
     /** Original FFmpeg ladder when playback prefers AI. */
-    String standardMasterPlaylistUrl
+    String standardMasterPlaylistUrl,
+    /** Studio draft — not yet published to feed / profile lists. */
+    boolean studioDraft
 ) {
 }

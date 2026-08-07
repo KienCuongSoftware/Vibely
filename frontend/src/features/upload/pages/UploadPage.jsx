@@ -2,10 +2,11 @@ import React from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient, uploadThumbnailToStorage, uploadVideoFile } from '@/shared/api/client'
+import { loadStudioSettings, saveStudioSettings } from '@/features/studio/utils/studioSettings.js'
 import { CoverPickerModal } from '@/features/upload/components/CoverPickerModal'
 import { CuHashtagSuggestions } from '@/features/upload/components/CuHashtagSuggestions'
+import { UploadChecksPanel } from '@/features/upload/components/UploadChecksPanel'
 import { StudioLayout } from '@/features/studio/components/StudioLayout'
-import { loadStudioSettings } from '@/features/studio/utils/studioSettings.js'
 import { extractThumbnailBlobFromFile } from '@/features/post/utils/videoThumbnail.js'
 import {
   deleteUploadDraftKeepalive,
@@ -271,6 +272,7 @@ export function UploadPage() {
   const [originalityWaitStartedAt, setOriginalityWaitStartedAt] = useState(null)
   const [nowTick, setNowTick] = useState(() => Date.now())
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false)
+  const [discardConfirmOpen, setDiscardConfirmOpen] = useState(false)
   /** { reason } when publish returns ACCOUNT_BANNED */
   const [banNoticeOpen, setBanNoticeOpen] = useState(false)
   const [banNoticeReason, setBanNoticeReason] = useState('')
@@ -287,44 +289,53 @@ export function UploadPage() {
     if (!originalityStatus || !jobState || jobState === 'PENDING' || jobState === 'PROCESSING') {
       return {
         tone: 'pending',
-        title: 'Kiểm tra nội dung',
         detail:
-          'Đang quét video… Nút Đăng mở khi kiểm tra xong. Nếu quá 5 phút, hệ thống sẽ kết thúc kiểm tra tự động.',
+          'Đang tiến hành kiểm tra. Quá trình này sẽ mất khoảng vài phút. Video dài hơn có thể mất nhiều thời gian hơn.',
         showDetails: false,
       }
     }
     if (jobState === 'FAILED') {
       return {
         tone: 'warn',
-        title: 'Kiểm tra nội dung',
         detail:
-          'Kiểm tra nguyên gốc chưa hoàn tất. Bạn vẫn có thể đăng; video sẽ ẩn khỏi For You đến khi kiểm duyệt nội dung xong.',
+          'Kiểm tra chưa hoàn tất. Bạn vẫn có thể đăng; video có thể ẩn khỏi Đề xuất đến khi kiểm duyệt xong.',
         showDetails: false,
       }
     }
     if (decision === 'BLOCK') {
       return {
         tone: 'danger',
-        title: 'Kiểm tra nội dung',
         detail: 'Nội dung bị chặn vì nghi ngờ không nguyên gốc. Hãy tải video khác.',
         showDetails: true,
       }
     }
     if (decision === 'LIMIT_DISTRIBUTION' || decision === 'REVIEW') {
       return {
-        tone: 'danger',
-        title: 'Kiểm tra nội dung',
+        tone: 'warn',
         detail: 'Nội dung có thể bị hạn chế phân phối. Bạn vẫn có thể đăng.',
         showDetails: true,
       }
     }
     return {
       tone: 'ok',
-      title: 'Kiểm tra nội dung',
-      detail: 'Không phát hiện vấn đề.',
+      detail:
+        'Không phát hiện vấn đề. Tuy nhiên, video của bạn vẫn có thể bị gỡ bỏ sau này nếu vi phạm Nguyên tắc Cộng đồng của chúng tôi.',
       showDetails: false,
     }
   }, [uploadedVideo?.publicId, originalityStatus, studioSettings.contentCheckLite])
+
+  const studioSettingsUserKey = user?.id ?? user?.username ?? 'guest'
+
+  const updateStudioCheckSetting = useCallback(
+    (key, value) => {
+      setStudioSettings((prev) => {
+        const next = { ...prev, [key]: Boolean(value) }
+        saveStudioSettings(studioSettingsUserKey, next)
+        return next
+      })
+    },
+    [studioSettingsUserKey],
+  )
 
   const originalityViolationCopy = useMemo(
     () => buildOriginalityViolationCopy(originalityStatus),
@@ -1370,6 +1381,7 @@ export function UploadPage() {
             description: desc || null,
             thumbnailUrl: thumbnailUrl.trim() || undefined,
             privacy,
+            studioDraft: false,
           },
           token,
         )
@@ -1416,6 +1428,92 @@ export function UploadPage() {
         setStatus(msg)
       }
     } finally {
+      setBusy(false)
+    }
+  }
+
+  const saveDraftVideo = async () => {
+    if (!token || !uploadedVideo) return
+    if (!uploadedVideo.playbackUrl || uploadProgress != null) {
+      setStatus('Vui lòng đợi video tải lên xong rồi lưu bản nháp.')
+      return
+    }
+    if (isInvalidApiVideoPlaybackUrl(uploadedVideo.playbackUrl)) {
+      setStatus('URL video không hợp lệ. Vui lòng tải lại video rồi thử lại.')
+      return
+    }
+    if (!uploadedVideo.publicId) {
+      setStatus('Đang đăng ký video… Thử lại sau vài giây.')
+      return
+    }
+    if (description.length > DESC_MAX) {
+      setStatus(`Mô tả không quá ${DESC_MAX} ký tự.`)
+      return
+    }
+    setBusy(true)
+    try {
+      const desc = description.trim().slice(0, 1000)
+      const title = (desc.split('\n')[0] || 'Video').trim().slice(0, 120) || 'Video'
+      await apiClient.updateVideo(
+        uploadedVideo.publicId,
+        {
+          title,
+          description: desc || null,
+          thumbnailUrl: thumbnailUrl.trim() || undefined,
+          privacy,
+          studioDraft: true,
+        },
+        token,
+      )
+      untrackUploadDraftPublicId(uploadedVideo.publicId)
+      draftPublicIdRef.current = null
+      publishingRef.current = true
+      processingPollRef.current += 1
+      navigate('/vibelystudio/posts?tab=drafts', {
+        state: { successMessage: 'Đã lưu bản nháp.' },
+      })
+    } catch (error) {
+      publishingRef.current = false
+      if (error?.code === 'ACCOUNT_BANNED') {
+        const reason = String(error?.data?.reason ?? '').trim()
+        setBanNoticeReason(reason || 'chính sách cộng đồng của Vibely')
+        setBanNoticeOpen(true)
+        setStatus('')
+        return
+      }
+      setStatus(error.message ?? 'Không thể lưu bản nháp.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const confirmDiscardUpload = async () => {
+    setDiscardConfirmOpen(false)
+    setBusy(true)
+    discardingLeaveRef.current = true
+    try {
+      processingPollRef.current += 1
+      if (uploadAbortRef.current) {
+        uploadAbortRef.current.abort()
+        uploadAbortRef.current = null
+      }
+      await discardDraftVideo()
+      setVideoFile(null)
+      setUploadedVideo(null)
+      setThumbnailUrl('')
+      setUploadProgress(null)
+      setUploadLoadedBytes(0)
+      setUploadTotalBytes(0)
+      setUploadStartedAt(null)
+      setDescription('')
+      setCoverModalOpen(false)
+      setOriginalityStatus(null)
+      setOriginalityDetailsOpen(false)
+      setOriginalityWaitStartedAt(null)
+      setStatus('')
+      resetFileInput()
+    } finally {
+      discardingLeaveRef.current = false
       setBusy(false)
     }
   }
@@ -1657,6 +1755,49 @@ export function UploadPage() {
                 onClick={() => void confirmLeaveAndDiscard()}
               >
                 Rời đi
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {discardConfirmOpen ? (
+        <div
+          className="fixed inset-0 z-[140] flex items-center justify-center bg-black/70 px-4 py-6"
+          role="presentation"
+          onClick={() => setDiscardConfirmOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="upload-discard-title"
+            className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-5 pt-5 pb-2">
+              <h2 id="upload-discard-title" className="text-lg font-bold text-zinc-50">
+                Loại bỏ video này?
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+                Video, ảnh bìa và dữ liệu liên quan sẽ bị xóa khỏi Vibely và kho lưu trữ. Hành động này
+                không hoàn tác được.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2 px-5 py-4">
+              <button
+                type="button"
+                className="cursor-pointer rounded-lg px-4 py-2.5 text-sm font-semibold text-zinc-300 hover:bg-zinc-800"
+                onClick={() => setDiscardConfirmOpen(false)}
+                disabled={busy}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                className="cursor-pointer rounded-lg bg-[#fe2c55] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e62a4d] disabled:opacity-50"
+                onClick={() => void confirmDiscardUpload()}
+                disabled={busy}
+              >
+                Loại bỏ
               </button>
             </div>
           </div>
@@ -2172,82 +2313,14 @@ export function UploadPage() {
                     )}
                   </div>
 
-                  <div className="mt-8 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-100">Kiểm tra</h3>
-                    <div className="mt-3 space-y-3">
-                      {studioSettings.musicCopyrightCheck ? (
-                        <div className="flex items-start gap-3">
-                          <IoCheckmarkCircle className="mt-0.5 shrink-0 text-lg text-emerald-400" aria-hidden />
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-zinc-200">Kiểm tra bản quyền nhạc</p>
-                            <p className="mt-0.5 text-xs text-zinc-500">Không phát hiện vấn đề.</p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-start gap-3">
-                          <span className="mt-1 inline-block h-4 w-4 shrink-0 rounded-full bg-zinc-600" aria-hidden />
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-zinc-400">Kiểm tra bản quyền nhạc</p>
-                            <p className="mt-0.5 text-xs text-zinc-500">
-                              Đã tắt kiểm tra tự động — không chạy kiểm tra bản quyền nhạc.
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      {studioSettings.contentCheckLite ? (
-                        originalityCheck ? (
-                          <div className="flex items-start gap-3">
-                            {originalityCheck.tone === 'ok' ? (
-                              <IoCheckmarkCircle className="mt-0.5 shrink-0 text-lg text-emerald-400" aria-hidden />
-                            ) : originalityCheck.tone === 'pending' ? (
-                              <span
-                                className="mt-1 inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-200"
-                                aria-hidden
-                              />
-                            ) : (
-                              <IoWarningOutline className="mt-0.5 shrink-0 text-lg text-orange-400" aria-hidden />
-                            )}
-                            <div className="min-w-0">
-                              <p className="text-sm font-medium text-zinc-200">{originalityCheck.title}</p>
-                              <p
-                                className={`mt-0.5 text-xs leading-relaxed ${
-                                  originalityCheck.tone === 'danger'
-                                    ? 'text-orange-300'
-                                    : originalityCheck.tone === 'warn'
-                                      ? 'text-amber-300'
-                                      : 'text-zinc-500'
-                                }`}
-                              >
-                                {originalityCheck.detail}
-                                {originalityCheck.showDetails ? (
-                                  <>
-                                    {' '}
-                                    <button
-                                      type="button"
-                                      className="cursor-pointer font-semibold text-[#fe2c55] hover:underline"
-                                      onClick={() => setOriginalityDetailsOpen(true)}
-                                    >
-                                      Xem chi tiết
-                                    </button>
-                                  </>
-                                ) : null}
-                              </p>
-                            </div>
-                          </div>
-                        ) : null
-                      ) : (
-                        <div className="flex items-start gap-3">
-                          <span className="mt-1 inline-block h-4 w-4 shrink-0 rounded-full bg-zinc-600" aria-hidden />
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-zinc-400">Kiểm tra nội dung</p>
-                            <p className="mt-0.5 text-xs text-zinc-500">
-                              Đã tắt kiểm tra tự động — không chạy kiểm tra nội dung.
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <UploadChecksPanel
+                    musicCopyrightCheck={studioSettings.musicCopyrightCheck}
+                    contentCheckLite={studioSettings.contentCheckLite}
+                    onToggleMusic={(value) => updateStudioCheckSetting('musicCopyrightCheck', value)}
+                    onToggleContent={(value) => updateStudioCheckSetting('contentCheckLite', value)}
+                    originalityCheck={originalityCheck}
+                    onOpenDetails={() => setOriginalityDetailsOpen(true)}
+                  />
 
                   <div className="mt-6 flex flex-wrap items-center gap-3">
                     <button
@@ -2263,6 +2336,29 @@ export function UploadPage() {
                       title={postButtonTitle}
                     >
                       {postButtonLabel}
+                    </button>
+                    <button
+                      type="button"
+                      className="cursor-pointer rounded-lg bg-zinc-700 px-6 py-2.5 text-sm font-semibold text-zinc-100 hover:bg-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+                      onClick={() => void saveDraftVideo()}
+                      disabled={
+                        busy ||
+                        uploadProgress != null ||
+                        !uploadedVideo.playbackUrl ||
+                        !uploadedVideo.publicId
+                      }
+                      title="Lưu video dưới dạng bản nháp (chưa đăng công khai)"
+                    >
+                      Lưu bản nháp
+                    </button>
+                    <button
+                      type="button"
+                      className="cursor-pointer rounded-lg bg-zinc-700 px-6 py-2.5 text-sm font-semibold text-zinc-100 hover:bg-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+                      onClick={() => setDiscardConfirmOpen(true)}
+                      disabled={busy}
+                      title="Xóa video này khỏi Studio và kho lưu trữ"
+                    >
+                      Loại bỏ
                     </button>
                     {status && !banNoticeOpen ? (
                       <p className="text-sm text-zinc-400">{status}</p>
