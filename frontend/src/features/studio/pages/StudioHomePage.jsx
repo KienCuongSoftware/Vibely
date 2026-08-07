@@ -4,6 +4,8 @@ import { IoChevronForward } from "react-icons/io5";
 import { apiClient } from "@/shared/api/client";
 import { profileApi } from "@/features/profile/api/profileApi";
 import { StudioLayout } from "@/features/studio/components/StudioLayout";
+import { StudioHoverTip } from "@/features/studio/components/StudioHoverTip";
+import { StudioTrendChart } from "@/features/studio/components/StudioTrendChart";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { AvatarImage } from "@/shared/components/AvatarImage.jsx";
 import {
@@ -183,65 +185,50 @@ export function StudioHomePage() {
         id: "views",
         label: "Lượt xem video",
         value: overview.totalViews,
+        tip: "Số lần người xem đã xem video của bạn trong khoảng thời gian đã chọn.",
       },
       {
         id: "profileViews",
         label: "Lượt xem hồ sơ",
         value: Number(profile?.totalViewCount ?? 0),
-        hint: "Tổng lượt xem kênh (không theo khoảng ngày)",
+        tip: "Số lần hồ sơ của bạn được xem. Hiện hiển thị tổng lượt xem kênh.",
       },
       {
         id: "likes",
         label: "Lượt thích",
         value: overview.totalLikes,
+        tip: "Số lượt thích video của bạn nhận được trong khoảng thời gian đã chọn.",
       },
       {
         id: "comments",
         label: "Bình luận",
         value: overview.totalComments,
+        tip: "Số bình luận trên video của bạn trong khoảng thời gian đã chọn.",
       },
       {
         id: "shares",
         label: "Chia sẻ",
         value: 0,
+        tip: "Số lần video của bạn được chia sẻ trong khoảng thời gian đã chọn.",
       },
       {
         id: "rewards",
         label: "Ước tính thưởng",
         value: "$0.00",
         raw: true,
+        tip: "Do khác biệt tỷ giá và múi giờ, một số số liệu có thể hơi khác các báo cáo khác.",
       },
     ],
     [overview, profile?.totalViewCount],
   );
 
-  const chartMeta = useMemo(() => {
-    const points = overview.points ?? [];
-    if (!points.length) return { path: "", area: "", labels: [] };
+  const chartPoints = useMemo(() => {
     const chartMetric =
       metric === "likes" || metric === "comments" ? metric : "views";
-    const maxY = Math.max(
-      ...points.map((p) => pointValue(p, chartMetric)),
-      1,
-    );
-    const width = 680;
-    const height = 180;
-    const pad = 16;
-    const stepX =
-      points.length > 1 ? (width - pad * 2) / (points.length - 1) : 0;
-    const coords = points.map((p, idx) => {
-      const x = pad + idx * stepX;
-      const y =
-        height -
-        pad -
-        (pointValue(p, chartMetric) / maxY) * (height - pad * 2);
-      return { x, y, day: p.day };
-    });
-    const path = coords
-      .map((c, idx) => `${idx === 0 ? "M" : "L"} ${c.x} ${c.y}`)
-      .join(" ");
-    const area = `${path} L ${coords[coords.length - 1].x} ${height - pad} L ${coords[0].x} ${height - pad} Z`;
-    return { path, area, labels: coords };
+    return (overview.points ?? []).map((p) => ({
+      day: p.day,
+      value: pointValue(p, chartMetric),
+    }));
   }, [overview.points, metric]);
 
   const periodLabel =
@@ -286,7 +273,7 @@ export function StudioHomePage() {
       </section>
 
       {/* Chỉ số chính */}
-      <section className="rounded-xl border border-zinc-800 bg-zinc-950/50">
+      <section className="overflow-visible rounded-xl border border-zinc-800 bg-zinc-950/50">
         <div className="flex items-center justify-between gap-3 border-b border-zinc-800/80 px-4 py-3 sm:px-5">
           <h2 className="inline-flex items-center gap-0.5 text-base font-bold text-zinc-100">
             Chỉ số chính
@@ -326,15 +313,14 @@ export function StudioHomePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 border-b border-zinc-800/80 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 overflow-visible border-b border-zinc-800/80 sm:grid-cols-3 lg:grid-cols-6">
           {metricTabs.map((tab) => {
             const active = metric === tab.id;
             return (
               <button
                 key={tab.id}
                 type="button"
-                title={tab.hint}
-                className={`relative cursor-pointer px-3 py-3 text-left transition hover:bg-zinc-900/60 ${
+                className={`relative cursor-pointer overflow-visible px-3 py-3 text-left transition hover:bg-zinc-900/60 ${
                   active ? "bg-zinc-900/40" : ""
                 }`}
                 onClick={() => setMetric(tab.id)}
@@ -342,7 +328,9 @@ export function StudioHomePage() {
                 {active ? (
                   <span className="absolute inset-x-0 top-0 h-0.5 bg-sky-400" />
                 ) : null}
-                <p className="text-[11px] text-zinc-500 sm:text-xs">{tab.label}</p>
+                <p className="text-[11px] text-zinc-500 sm:text-xs">
+                  <StudioHoverTip text={tab.tip}>{tab.label}</StudioHoverTip>
+                </p>
                 <p
                   className={`mt-1 text-xl font-bold sm:text-2xl ${
                     active ? "text-sky-300" : "text-zinc-100"
@@ -360,32 +348,14 @@ export function StudioHomePage() {
           {loading ? (
             <p className="mb-2 text-sm text-zinc-500">Đang tải thống kê…</p>
           ) : null}
-          <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-3">
-            <svg
-              viewBox="0 0 680 180"
-              preserveAspectRatio="none"
-              className="h-48 w-full"
-            >
-              {chartMeta.area ? (
-                <path d={chartMeta.area} fill="rgba(56,189,248,0.12)" />
-              ) : null}
-              <path
-                d={chartMeta.path}
-                fill="none"
-                stroke="#38bdf8"
-                strokeWidth="3"
-              />
-            </svg>
-            <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-500">
-              {chartMeta.labels.map((pt, idx) => (
-                <span
-                  key={`${pt.day}-${idx}`}
-                  className={idx % 2 === 0 ? "" : "opacity-0 sm:opacity-100"}
-                >
-                  {String(pt.day).slice(5)}
-                </span>
-              ))}
-            </div>
+          <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-3 pt-10">
+            <StudioTrendChart
+              points={chartPoints}
+              formatValue={
+                metric === "rewards" ? () => "$0.00" : formatCompact
+              }
+              emptyHint="0 trong khoảng thời gian này"
+            />
           </div>
         </div>
       </section>

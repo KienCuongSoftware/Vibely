@@ -14,6 +14,8 @@ import {
 } from 'react-icons/io5'
 import { apiClient } from '@/shared/api/client'
 import { StudioLayout } from '@/features/studio/components/StudioLayout'
+import { StudioHoverTip } from '@/features/studio/components/StudioHoverTip'
+import { StudioTrendChart } from '@/features/studio/components/StudioTrendChart'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { buildProfileVideoUrl, isVideoPublicId, normalizeVideoPublicId } from '@/features/post/utils/videoPublicId.js'
 import {
@@ -97,29 +99,6 @@ function retentionDropHint(retention, durationSeconds) {
     return `Nhiều phiên rời sớm quanh mốc ${t} (${atProgress}% thời lượng).`
   }
   return `Nhiều phiên rời sớm quanh ${atProgress}% thời lượng video.`
-}
-
-function buildViewsChartMeta(points) {
-  if (!points.length) return { path: '', areaPath: '', labels: [] }
-  const maxY = Math.max(...points.map((p) => Number(p.views ?? 0)), 1)
-  const width = 680
-  const height = 200
-  const pad = 20
-  const bottomY = height - pad
-  const stepX = points.length > 1 ? (width - pad * 2) / (points.length - 1) : 0
-  const coords = points.map((p, idx) => {
-    const x = pad + idx * stepX
-    const y = bottomY - (Number(p.views ?? 0) / maxY) * (bottomY - pad)
-    return { x, y, day: p.day }
-  })
-  const path = coords.map((c, idx) => `${idx === 0 ? 'M' : 'L'} ${c.x} ${c.y}`).join(' ')
-  const first = coords[0]
-  const last = coords[coords.length - 1]
-  const areaPath =
-    first && last
-      ? `M ${first.x} ${bottomY} L ${coords.map((c) => `${c.x} ${c.y}`).join(' L ')} L ${last.x} ${bottomY} Z`
-      : ''
-  return { path, areaPath, labels: coords }
 }
 
 function formatClockFromSeconds(totalSec) {
@@ -340,7 +319,6 @@ export function StudioVideoAnalyticsPage() {
   const searchKeywords = payload?.searchKeywords ?? []
   const topSemanticTags = payload?.topSemanticTags ?? []
 
-  const viewsChart = useMemo(() => buildViewsChartMeta(points), [points])
   const retentionChart = useMemo(() => buildRetentionChartMeta(retention), [retention])
   const engagementChart = useMemo(() => buildEngagementChartMeta(points), [points])
 
@@ -387,7 +365,6 @@ export function StudioVideoAnalyticsPage() {
 
   const svgIds = useMemo(
     () => ({
-      va: `st-va-fill-${publicId ?? 'invalid'}`,
       ret: `st-ret-fill-${publicId ?? 'invalid'}`,
     }),
     [publicId],
@@ -520,13 +497,13 @@ export function StudioVideoAnalyticsPage() {
   )
 
   const metricCards = (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="grid gap-3 overflow-visible sm:grid-cols-2 lg:grid-cols-5">
       {[
         {
           label: 'Lượt xem (giai đoạn)',
           value: payload?.periodViews ?? 0,
           accent: true,
-          hint: null,
+          tip: 'Số lần video này được xem trong khoảng thời gian đã chọn.',
         },
         {
           label: 'Tổng thời gian xem',
@@ -534,13 +511,13 @@ export function StudioVideoAnalyticsPage() {
             (payload?.periodViews ?? 0) > 0
               ? formatTotalWatch(payload?.periodTotalWatchMs ?? 0)
               : '—',
-          hint: null,
+          tip: 'Tổng thời lượng người xem đã xem video trong khoảng thời gian đã chọn.',
         },
         {
           label: 'Thời gian xem TB',
           value:
             (payload?.periodViews ?? 0) > 0 ? formatAvgWatchSeconds(payload?.periodAvgWatchMs ?? 0) : '—',
-          hint: null,
+          tip: 'Thời lượng xem trung bình mỗi phiên trong khoảng thời gian đã chọn.',
         },
         {
           label: 'Xem hết video',
@@ -548,12 +525,12 @@ export function StudioVideoAnalyticsPage() {
             (payload?.periodViews ?? 0) > 0
               ? formatPercent(payload?.periodFullWatchPercent)
               : '—',
-          hint: null,
+          tip: 'Tỷ lệ phiên xem đạt gần hết thời lượng video.',
         },
         {
           label: 'Follower mới (kênh)',
           value: String(payload?.periodNewFollowers ?? 0),
-          hint: null,
+          tip: 'Số người theo dõi mới của kênh trong khoảng thời gian đã chọn.',
         },
       ].map((m) => (
         <article
@@ -562,9 +539,10 @@ export function StudioVideoAnalyticsPage() {
             m.accent ? 'border-sky-500/50 ring-1 ring-sky-500/20' : 'border-zinc-800'
           }`}
         >
-          <p className="text-xs text-zinc-500">{m.label}</p>
+          <p className="text-xs text-zinc-500">
+            <StudioHoverTip text={m.tip}>{m.label}</StudioHoverTip>
+          </p>
           <p className="mt-2 text-xl font-bold text-zinc-100">{m.value}</p>
-          {m.hint ? <p className="mt-1 text-[11px] text-zinc-600">{m.hint}</p> : null}
         </article>
       ))}
     </div>
@@ -573,33 +551,16 @@ export function StudioVideoAnalyticsPage() {
   const viewsSection = (
     <section className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
       <h2 className="text-base font-semibold text-white">Lượt xem theo ngày</h2>
-      <div className="mt-4 rounded-lg border border-zinc-800 bg-black/40 p-3">
+      <div className="mt-4 rounded-lg border border-zinc-800 bg-black/40 p-3 pt-10">
         {loading ? <p className="py-8 text-center text-sm text-zinc-500">Đang tải...</p> : null}
         {!loading ? (
-          <svg viewBox="0 0 680 200" preserveAspectRatio="none" className="h-52 w-full">
-            <defs>
-              <linearGradient id={svgIds.va} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.35" />
-                <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            {viewsChart.areaPath ? (
-              <path d={viewsChart.areaPath} fill={`url(#${svgIds.va})`} stroke="none" />
-            ) : null}
-            <path d={viewsChart.path} fill="none" stroke="#38bdf8" strokeWidth="2.5" />
-          </svg>
-        ) : null}
-        {!loading ? (
-          <div className="mt-1 flex items-center justify-between text-[11px] text-zinc-500">
-            {viewsChart.labels.map((pt, idx) => (
-              <span key={`${pt.day}-${idx}`} className={idx % 2 === 0 ? '' : 'opacity-0 sm:opacity-100'}>
-                {String(pt.day).slice(5)}
-              </span>
-            ))}
-          </div>
-        ) : null}
-        {!loading && points.every((p) => Number(p.views ?? 0) === 0) ? (
-          <p className="mt-2 text-center text-xs text-zinc-500">Chưa có lượt xem trong giai đoạn này</p>
+          <StudioTrendChart
+            points={(points ?? []).map((p) => ({
+              day: p.day,
+              value: Number(p.views ?? 0),
+            }))}
+            emptyHint="Chưa có lượt xem trong giai đoạn này"
+          />
         ) : null}
       </div>
     </section>
@@ -733,12 +694,14 @@ export function StudioVideoAnalyticsPage() {
         <header className="border-b border-zinc-800 px-4 py-3.5 sm:px-5">
           <div className="flex items-center gap-1.5">
             <h2 className="text-base font-bold tracking-tight text-white sm:text-[17px]">Tỷ lệ giữ chân</h2>
-            <span
-              className="inline-flex text-zinc-500"
-              title="Tỷ lệ phiên xem còn đạt tới từng mốc % thời lượng video (dựa trên watchedMs / durationMs từ client)."
+            <StudioHoverTip
+              underline={false}
+              text="Tỷ lệ phiên xem còn đạt tới từng mốc % thời lượng video (dựa trên watchedMs / durationMs từ client)."
             >
-              <IoInformationCircleOutline className="h-5 w-5" aria-hidden />
-            </span>
+              <span className="inline-flex text-zinc-500">
+                <IoInformationCircleOutline className="h-5 w-5" aria-hidden />
+              </span>
+            </StudioHoverTip>
           </div>
         </header>
 
@@ -992,7 +955,17 @@ export function StudioVideoAnalyticsPage() {
 
   const trafficBlock = (
     <section className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
-      <h2 className="text-base font-semibold text-white">Nguồn traffic</h2>
+      <h2 className="inline-flex items-center gap-1.5 text-base font-semibold text-white">
+        Nguồn traffic
+        <StudioHoverTip
+          underline={false}
+          text="Nơi người xem phát hiện video của bạn (For You, hồ sơ, tìm kiếm, …)."
+        >
+          <span className="inline-flex text-zinc-500">
+            <IoInformationCircleOutline className="h-4 w-4" aria-hidden />
+          </span>
+        </StudioHoverTip>
+      </h2>
       <p className="mt-2 text-sm text-zinc-500">Phân tích nguồn (For You, hồ sơ, tìm kiếm) sắp có.</p>
       <ul className="mt-4 space-y-2.5">
         {(trafficSources.length ? trafficSources : [{ id: 'x', label: '—', percent: null }]).map((row) => {
@@ -1019,7 +992,17 @@ export function StudioVideoAnalyticsPage() {
 
   const searchBlock = (
     <section className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
-      <h2 className="text-base font-semibold text-white">Từ khóa tìm kiếm</h2>
+      <h2 className="inline-flex items-center gap-1.5 text-base font-semibold text-white">
+        Từ khóa tìm kiếm
+        <StudioHoverTip
+          underline={false}
+          text="Các truy vấn tìm kiếm dẫn người xem tới video của bạn trong khoảng thời gian đã chọn."
+        >
+          <span className="inline-flex text-zinc-500">
+            <IoInformationCircleOutline className="h-4 w-4" aria-hidden />
+          </span>
+        </StudioHoverTip>
+      </h2>
       {searchKeywords.length === 0 ? (
         <p className="mt-2 text-sm text-zinc-500">Chưa có dữ liệu từ khóa.</p>
       ) : (
