@@ -5,7 +5,7 @@ import { apiClient } from "@/shared/api/client";
 import { profileApi } from "@/features/profile/api/profileApi";
 import { StudioLayout } from "@/features/studio/components/StudioLayout";
 import { StudioHoverTip } from "@/features/studio/components/StudioHoverTip";
-import { StudioTrendChart } from "@/features/studio/components/StudioTrendChart";
+import { StudioTrendChart, formatStudioMoney } from "@/features/studio/components/StudioTrendChart";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { AvatarImage } from "@/shared/components/AvatarImage.jsx";
 import {
@@ -223,9 +223,17 @@ export function StudioHomePage() {
   );
 
   const chartPoints = useMemo(() => {
+    const rows = overview.points ?? [];
+    if (metric === "rewards" || metric === "shares") {
+      return rows.map((p) => ({ day: p.day, value: 0 }));
+    }
+    if (metric === "profileViews") {
+      // Chưa có chuỗi theo ngày — giữ flat 0 trên trục thời gian
+      return rows.map((p) => ({ day: p.day, value: 0 }));
+    }
     const chartMetric =
       metric === "likes" || metric === "comments" ? metric : "views";
-    return (overview.points ?? []).map((p) => ({
+    return rows.map((p) => ({
       day: p.day,
       value: pointValue(p, chartMetric),
     }));
@@ -352,9 +360,12 @@ export function StudioHomePage() {
             <StudioTrendChart
               points={chartPoints}
               formatValue={
-                metric === "rewards" ? () => "$0.00" : formatCompact
+                metric === "rewards" ? formatStudioMoney : formatCompact
               }
-              emptyHint="0 trong khoảng thời gian này"
+              yMax={metric === "rewards" ? 1.2 : undefined}
+              emptyHint={
+                metric === "rewards" ? null : "0 trong khoảng thời gian này"
+              }
             />
           </div>
         </div>

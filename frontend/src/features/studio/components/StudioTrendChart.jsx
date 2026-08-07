@@ -3,7 +3,7 @@ import React, { useMemo, useState } from "react";
 const WIDTH = 680;
 const HEIGHT = 200;
 const PAD_L = 8;
-const PAD_R = 40;
+const PAD_R = 52;
 const PAD_T = 16;
 const PAD_B = 16;
 
@@ -14,6 +14,13 @@ function defaultFormat(n) {
     return `${(v / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
   if (v >= 1_000) return `${(v / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
   return String(Math.round(v));
+}
+
+/** Định dạng tiền kiểu TikTok: $0.00, $0.30, $1.20 */
+export function formatStudioMoney(n) {
+  const v = Number(n ?? 0);
+  if (!Number.isFinite(v)) return "$0.00";
+  return `$${v.toFixed(2)}`;
 }
 
 function formatDayLabel(day) {
@@ -33,12 +40,14 @@ function formatDayLabel(day) {
  * @param {{
  *   points: Array<{ day: string, value: number }>,
  *   formatValue?: (n: number) => string,
- *   emptyHint?: string,
+ *   yMax?: number,
+ *   emptyHint?: string | null,
  * }} props
  */
 export function StudioTrendChart({
   points = [],
   formatValue = defaultFormat,
+  yMax,
   emptyHint = "Chưa có dữ liệu trong khoảng này",
 }) {
   const [hoverIdx, setHoverIdx] = useState(null);
@@ -50,11 +59,16 @@ export function StudioTrendChart({
         path: "",
         area: "",
         coords: [],
-        maxY: 1,
-        gridTs: [],
+        maxY: Math.max(Number(yMax) || 0, 1),
+        gridTs: [0, 0.25, 0.5, 0.75, 1],
       };
     }
-    const maxY = Math.max(...rows.map((p) => Number(p.value ?? 0)), 1);
+    const dataMax = Math.max(...rows.map((p) => Number(p.value ?? 0)), 0);
+    const maxY = Math.max(
+      dataMax,
+      Number(yMax) || 0,
+      dataMax > 0 ? dataMax : 1,
+    );
     const innerW = WIDTH - PAD_L - PAD_R;
     const innerH = HEIGHT - PAD_T - PAD_B;
     const stepX = rows.length > 1 ? innerW / (rows.length - 1) : 0;
@@ -69,7 +83,7 @@ export function StudioTrendChart({
     const area = `${path} L ${coords[coords.length - 1].x} ${PAD_T + innerH} L ${coords[0].x} ${PAD_T + innerH} Z`;
     const gridTs = [0, 0.25, 0.5, 0.75, 1];
     return { path, area, coords, maxY, gridTs, innerH };
-  }, [points]);
+  }, [points, yMax]);
 
   const onMove = (e) => {
     const { coords } = chart;
@@ -101,7 +115,11 @@ export function StudioTrendChart({
           style={{ left: `${tipLeftPct}%`, top: 0 }}
         >
           <p className="text-[11px] text-zinc-400">{formatDayLabel(hover.day)}</p>
-          <p className="text-xs font-semibold text-sky-300">
+          <p className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-sky-300">
+            <span
+              aria-hidden
+              className="inline-block h-2 w-2 rounded-full bg-sky-400"
+            />
             {formatValue(hover.value)}
           </p>
         </div>
@@ -118,6 +136,20 @@ export function StudioTrendChart({
       >
         {chart.gridTs.map((t, i) => {
           const y = PAD_T + innerH * (1 - t);
+          if (t === 0) {
+            return (
+              <line
+                key={`g-${i}`}
+                x1={PAD_L}
+                y1={y}
+                x2={WIDTH - PAD_R}
+                y2={y}
+                stroke="#3f3f46"
+                strokeWidth="1"
+                strokeDasharray="4 4"
+              />
+            );
+          }
           return (
             <g key={`g-${i}`}>
               <line
@@ -130,7 +162,7 @@ export function StudioTrendChart({
                 strokeDasharray="4 4"
               />
               <text
-                x={WIDTH - 6}
+                x={WIDTH - 4}
                 y={y + 3}
                 textAnchor="end"
                 fill="#71717a"
@@ -197,8 +229,9 @@ export function StudioTrendChart({
         ))}
       </div>
 
-      {!chart.coords.length ||
-      chart.coords.every((p) => p.value === 0) ? (
+      {emptyHint &&
+      (!chart.coords.length ||
+        chart.coords.every((p) => p.value === 0)) ? (
         <p className="mt-2 text-center text-xs text-zinc-500">{emptyHint}</p>
       ) : null}
     </div>
