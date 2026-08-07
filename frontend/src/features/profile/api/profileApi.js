@@ -14,6 +14,12 @@ export const profileApi = {
       `/api/users/${encodeURIComponent(username)}`,
       token ? { token } : {},
     ),
+  recordProfileView: (username, { token, viewerKey } = {}) =>
+    request(`/api/users/${encodeURIComponent(normalizeUsername(username))}/profile-views`, {
+      method: "POST",
+      token,
+      body: viewerKey ? { viewerKey } : {},
+    }),
   getVideosByUsername: (username, { page = 0, size = 48, token } = {}) => {
     const u = normalizeUsername(username);
     return request(

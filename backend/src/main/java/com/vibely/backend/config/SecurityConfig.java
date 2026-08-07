@@ -166,6 +166,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/search/trending").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/me/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/users/*/profile-views").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*/me").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*/comments").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/videos/sound").permitAll()

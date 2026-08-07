@@ -35,12 +35,63 @@ function formatDayLabel(day) {
   }
 }
 
+/** Làm tròn trần theo bậc “đẹp” (1,2,5 × 10^n). */
+function niceCeil(value) {
+  const v = Math.max(Number(value) || 0, 0);
+  if (v <= 0) return 1;
+  const exp = Math.floor(Math.log10(v));
+  const mag = 10 ** exp;
+  const n = v / mag;
+  let nice;
+  if (n <= 1) nice = 1;
+  else if (n <= 2) nice = 2;
+  else if (n <= 5) nice = 5;
+  else nice = 10;
+  return nice * mag;
+}
+
+/**
+ * @returns {{ ratio: number, value: number, showLabel: boolean }[]}
+ */
+function buildAxisTicks(dataMax, yMaxProp, scale) {
+  if (scale === "money") {
+    const maxY = Math.max(Number(yMaxProp) || 1.2, 1.2);
+    return [0.25, 0.5, 0.75, 1].map((ratio) => ({
+      ratio,
+      value: maxY * ratio,
+      showLabel: true,
+    }));
+  }
+
+  if (dataMax <= 0) {
+    // TikTok khi trống: chỉ một mốc "1" ở đỉnh
+    return [{ ratio: 1, value: 1, showLabel: true }];
+  }
+
+  const maxY = niceCeil(Math.max(dataMax, Number(yMaxProp) || 0));
+  const roughStep = maxY / 4;
+  const step = niceCeil(roughStep);
+  const ticks = [];
+  for (let value = step; value <= maxY + 1e-9; value += step) {
+    ticks.push({
+      ratio: value / maxY,
+      value,
+      showLabel: true,
+    });
+  }
+  if (!ticks.length) {
+    ticks.push({ ratio: 1, value: maxY, showLabel: true });
+  }
+  return ticks;
+}
+
 /**
  * Biểu đồ đường có đường nét đứt dọc + tooltip khi hover (kiểu TikTok Studio).
  * @param {{
  *   points: Array<{ day: string, value: number }>,
  *   formatValue?: (n: number) => string,
  *   yMax?: number,
+ *   scale?: 'count' | 'money',
  *   emptyHint?: string | null,
  * }} props
  */
@@ -48,27 +99,29 @@ export function StudioTrendChart({
   points = [],
   formatValue = defaultFormat,
   yMax,
+  scale = "count",
   emptyHint = "Chưa có dữ liệu trong khoảng này",
 }) {
   const [hoverIdx, setHoverIdx] = useState(null);
 
   const chart = useMemo(() => {
     const rows = Array.isArray(points) ? points : [];
+    const dataMax = rows.length
+      ? Math.max(...rows.map((p) => Number(p.value ?? 0)), 0)
+      : 0;
+
+    const ticks = buildAxisTicks(dataMax, yMax, scale);
+    const maxY =
+      scale === "money"
+        ? Math.max(Number(yMax) || 1.2, 1.2)
+        : dataMax <= 0
+          ? 1
+          : niceCeil(Math.max(dataMax, Number(yMax) || 0));
+
     if (!rows.length) {
-      return {
-        path: "",
-        area: "",
-        coords: [],
-        maxY: Math.max(Number(yMax) || 0, 1),
-        gridTs: [0, 0.25, 0.5, 0.75, 1],
-      };
+      return { path: "", area: "", coords: [], maxY, ticks };
     }
-    const dataMax = Math.max(...rows.map((p) => Number(p.value ?? 0)), 0);
-    const maxY = Math.max(
-      dataMax,
-      Number(yMax) || 0,
-      dataMax > 0 ? dataMax : 1,
-    );
+
     const innerW = WIDTH - PAD_L - PAD_R;
     const innerH = HEIGHT - PAD_T - PAD_B;
     const stepX = rows.length > 1 ? innerW / (rows.length - 1) : 0;
@@ -81,9 +134,8 @@ export function StudioTrendChart({
       .map((c, idx) => `${idx === 0 ? "M" : "L"} ${c.x} ${c.y}`)
       .join(" ");
     const area = `${path} L ${coords[coords.length - 1].x} ${PAD_T + innerH} L ${coords[0].x} ${PAD_T + innerH} Z`;
-    const gridTs = [0, 0.25, 0.5, 0.75, 1];
-    return { path, area, coords, maxY, gridTs, innerH };
-  }, [points, yMax]);
+    return { path, area, coords, maxY, ticks };
+  }, [points, yMax, scale]);
 
   const onMove = (e) => {
     const { coords } = chart;
@@ -134,22 +186,19 @@ export function StudioTrendChart({
         role="img"
         aria-label="Biểu đồ xu hướng"
       >
-        {chart.gridTs.map((t, i) => {
-          const y = PAD_T + innerH * (1 - t);
-          if (t === 0) {
-            return (
-              <line
-                key={`g-${i}`}
-                x1={PAD_L}
-                y1={y}
-                x2={WIDTH - PAD_R}
-                y2={y}
-                stroke="#3f3f46"
-                strokeWidth="1"
-                strokeDasharray="4 4"
-              />
-            );
-          }
+        {/* Đáy chart (không nhãn) */}
+        <line
+          x1={PAD_L}
+          y1={PAD_T + innerH}
+          x2={WIDTH - PAD_R}
+          y2={PAD_T + innerH}
+          stroke="#3f3f46"
+          strokeWidth="1"
+          strokeDasharray="4 4"
+        />
+
+        {chart.ticks.map((tick, i) => {
+          const y = PAD_T + innerH * (1 - tick.ratio);
           return (
             <g key={`g-${i}`}>
               <line
@@ -161,16 +210,18 @@ export function StudioTrendChart({
                 strokeWidth="1"
                 strokeDasharray="4 4"
               />
-              <text
-                x={WIDTH - 4}
-                y={y + 3}
-                textAnchor="end"
-                fill="#71717a"
-                fontSize="10"
-                fontFamily="system-ui, sans-serif"
-              >
-                {formatValue(chart.maxY * t)}
-              </text>
+              {tick.showLabel ? (
+                <text
+                  x={WIDTH - 4}
+                  y={y + 3}
+                  textAnchor="end"
+                  fill="#71717a"
+                  fontSize="10"
+                  fontFamily="system-ui, sans-serif"
+                >
+                  {formatValue(tick.value)}
+                </text>
+              ) : null}
             </g>
           );
         })}

@@ -8,6 +8,7 @@ import com.vibely.backend.interaction.repository.FollowRepository;
 import com.vibely.backend.interaction.repository.LikeRepository;
 import com.vibely.backend.interaction.repository.VideoBookmarkRepository;
 import com.vibely.backend.interaction.dto.PlaybackSample;
+import com.vibely.backend.interaction.repository.ProfileViewRepository;
 import com.vibely.backend.interaction.repository.VideoViewRepository;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
@@ -63,6 +64,7 @@ public class StudioAnalyticsService {
     private final VideoService videoService;
     private final FollowRepository followRepository;
     private final VideoSemanticTagRepository videoSemanticTagRepository;
+    private final ProfileViewRepository profileViewRepository;
 
     public StudioAnalyticsService(
         UserRepository userRepository,
@@ -72,7 +74,8 @@ public class StudioAnalyticsService {
         VideoBookmarkRepository videoBookmarkRepository,
         VideoService videoService,
         FollowRepository followRepository,
-        VideoSemanticTagRepository videoSemanticTagRepository
+        VideoSemanticTagRepository videoSemanticTagRepository,
+        ProfileViewRepository profileViewRepository
     ) {
         this.userRepository = userRepository;
         this.videoViewRepository = videoViewRepository;
@@ -82,6 +85,7 @@ public class StudioAnalyticsService {
         this.videoService = videoService;
         this.followRepository = followRepository;
         this.videoSemanticTagRepository = videoSemanticTagRepository;
+        this.profileViewRepository = profileViewRepository;
     }
 
     @Transactional(readOnly = true)
@@ -111,10 +115,14 @@ public class StudioAnalyticsService {
             STUDIO_VIDEO_METRICS_STATUSES,
             from
         );
+        long totalProfileViews = profileViewRepository.countByProfileUser_IdAndCreatedAtGreaterThanEqual(
+            me.getId(),
+            from
+        );
 
         Map<LocalDate, long[]> dayToMetrics = new LinkedHashMap<>();
         for (int i = 0; i < days; i++) {
-            dayToMetrics.put(startDay.plusDays(i), new long[] { 0L, 0L, 0L });
+            dayToMetrics.put(startDay.plusDays(i), new long[] { 0L, 0L, 0L, 0L });
         }
 
         for (DailyCountProjection row : videoViewRepository.countDailyViewsForAuthorVideoStatusesSince(
@@ -141,13 +149,18 @@ public class StudioAnalyticsService {
             long[] bucket = dayToMetrics.get(row.getDay());
             if (bucket != null) bucket[2] = row.getTotal();
         }
+        for (DailyCountProjection row : profileViewRepository.countDailyForProfileSince(me.getId(), from)) {
+            long[] bucket = dayToMetrics.get(row.getDay());
+            if (bucket != null) bucket[3] = row.getTotal();
+        }
 
         List<StudioAnalyticsPointResponse> points = dayToMetrics.entrySet().stream()
             .map((entry) -> new StudioAnalyticsPointResponse(
                 entry.getKey(),
                 entry.getValue()[0],
                 entry.getValue()[1],
-                entry.getValue()[2]
+                entry.getValue()[2],
+                entry.getValue()[3]
             ))
             .toList();
 
@@ -164,7 +177,8 @@ public class StudioAnalyticsService {
             ))
             .toList();
 
-        return new StudioAnalyticsOverviewResponse(days, totalViews, totalLikes, totalComments, points, latestComments);
+        return new StudioAnalyticsOverviewResponse(
+            days, totalViews, totalLikes, totalComments, totalProfileViews, points, latestComments);
     }
 
     @Transactional(readOnly = true)
@@ -220,7 +234,8 @@ public class StudioAnalyticsService {
                 entry.getKey(),
                 entry.getValue()[0],
                 entry.getValue()[1],
-                entry.getValue()[2]
+                entry.getValue()[2],
+                0L
             ))
             .toList();
 

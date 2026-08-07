@@ -8,6 +8,7 @@ import com.vibely.backend.user.dto.EmailCheckResponse;
 import com.vibely.backend.user.dto.PrivacySettingsResponse;
 import com.vibely.backend.user.dto.UpdateAccountRegionRequest;
 import com.vibely.backend.user.dto.UpdatePrivacySettingsRequest;
+import com.vibely.backend.user.dto.RecordProfileViewRequest;
 import com.vibely.backend.user.dto.SuggestedCreatorsResponse;
 import com.vibely.backend.user.dto.PublicUserProfileResponse;
 import com.vibely.backend.user.dto.UpdateProfileRequest;
@@ -19,10 +20,14 @@ import com.vibely.backend.user.service.UserDiscoveryService;
 import com.vibely.backend.user.service.UserService;
 import com.vibely.backend.user.service.UsernameService;
 import com.vibely.backend.feed.dto.FeedPageResponse;
+import com.vibely.backend.interaction.service.ProfileViewService;
 import com.vibely.backend.video.service.VideoService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,6 +50,7 @@ public class UserController {
     private final VideoService videoService;
     private final UserDiscoveryService userDiscoveryService;
     private final UserDataExportService userDataExportService;
+    private final ProfileViewService profileViewService;
 
     public UserController(
         UserService userService,
@@ -52,7 +58,8 @@ public class UserController {
         EmailAvailabilityService emailAvailabilityService,
         VideoService videoService,
         UserDiscoveryService userDiscoveryService,
-        UserDataExportService userDataExportService
+        UserDataExportService userDataExportService,
+        ProfileViewService profileViewService
     ) {
         this.userService = userService;
         this.usernameService = usernameService;
@@ -60,6 +67,7 @@ public class UserController {
         this.videoService = videoService;
         this.userDiscoveryService = userDiscoveryService;
         this.userDataExportService = userDataExportService;
+        this.profileViewService = profileViewService;
     }
 
     @GetMapping("/check-username")
@@ -224,5 +232,32 @@ public class UserController {
         Authentication authentication
     ) {
         return ApiResponse.success(userService.getPublicProfile(username, authentication));
+    }
+
+    @PostMapping("/{username}/profile-views")
+    public ApiResponse<Map<String, Boolean>> recordProfileView(
+        @PathVariable("username") String username,
+        @RequestBody(required = false) RecordProfileViewRequest body,
+        Authentication authentication,
+        HttpServletRequest request
+    ) {
+        String viewerEmail = null;
+        if (authentication != null
+            && authentication.isAuthenticated()
+            && !(authentication instanceof AnonymousAuthenticationToken)) {
+            viewerEmail = authentication.getName();
+        }
+        String viewerKey = body != null ? body.viewerKey() : null;
+        String ip = clientIp(request);
+        boolean recorded = profileViewService.recordView(username, viewerEmail, viewerKey, ip);
+        return ApiResponse.success(Map.of("recorded", recorded));
+    }
+
+    private static String clientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

@@ -51,6 +51,7 @@ function buildZeroPoints(days) {
       views: 0,
       likes: 0,
       comments: 0,
+      profileViews: 0,
     });
   }
   return rows;
@@ -67,6 +68,7 @@ function formatCompact(n) {
 function pointValue(p, metric) {
   if (metric === "likes") return Number(p.likes ?? 0);
   if (metric === "comments") return Number(p.comments ?? 0);
+  if (metric === "profileViews") return Number(p.profileViews ?? 0);
   return Number(p.views ?? 0);
 }
 
@@ -83,6 +85,7 @@ export function StudioHomePage() {
     totalViews: 0,
     totalLikes: 0,
     totalComments: 0,
+    totalProfileViews: 0,
     points: buildZeroPoints(7),
     latestComments: [],
   });
@@ -145,6 +148,7 @@ export function StudioHomePage() {
             totalViews: Number(data?.totalViews ?? 0),
             totalLikes: Number(data?.totalLikes ?? 0),
             totalComments: Number(data?.totalComments ?? 0),
+            totalProfileViews: Number(data?.totalProfileViews ?? 0),
             points:
               Array.isArray(data?.points) && data.points.length
                 ? data.points
@@ -165,6 +169,7 @@ export function StudioHomePage() {
               totalViews: 0,
               totalLikes: 0,
               totalComments: 0,
+              totalProfileViews: 0,
               points: buildZeroPoints(days),
               latestComments: [],
             });
@@ -190,8 +195,8 @@ export function StudioHomePage() {
       {
         id: "profileViews",
         label: "Lượt xem hồ sơ",
-        value: Number(profile?.totalViewCount ?? 0),
-        tip: "Số lần hồ sơ của bạn được xem. Hiện hiển thị tổng lượt xem kênh.",
+        value: overview.totalProfileViews,
+        tip: "Số lần hồ sơ của bạn được xem trong khoảng thời gian đã chọn.",
       },
       {
         id: "likes",
@@ -219,7 +224,7 @@ export function StudioHomePage() {
         tip: "Do khác biệt tỷ giá và múi giờ, một số số liệu có thể hơi khác các báo cáo khác.",
       },
     ],
-    [overview, profile?.totalViewCount],
+    [overview],
   );
 
   const chartPoints = useMemo(() => {
@@ -227,12 +232,10 @@ export function StudioHomePage() {
     if (metric === "rewards" || metric === "shares") {
       return rows.map((p) => ({ day: p.day, value: 0 }));
     }
-    if (metric === "profileViews") {
-      // Chưa có chuỗi theo ngày — giữ flat 0 trên trục thời gian
-      return rows.map((p) => ({ day: p.day, value: 0 }));
-    }
     const chartMetric =
-      metric === "likes" || metric === "comments" ? metric : "views";
+      metric === "likes" || metric === "comments" || metric === "profileViews"
+        ? metric
+        : "views";
     return rows.map((p) => ({
       day: p.day,
       value: pointValue(p, chartMetric),
@@ -362,6 +365,7 @@ export function StudioHomePage() {
               formatValue={
                 metric === "rewards" ? formatStudioMoney : formatCompact
               }
+              scale={metric === "rewards" ? "money" : "count"}
               yMax={metric === "rewards" ? 1.2 : undefined}
               emptyHint={
                 metric === "rewards" ? null : "0 trong khoảng thời gian này"

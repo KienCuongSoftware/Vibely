@@ -7,6 +7,7 @@ public record StudioAnalyticsOverviewResponse(
     long totalViews,
     long totalLikes,
     long totalComments,
+    long totalProfileViews,
     List<StudioAnalyticsPointResponse> points,
     List<StudioLatestCommentResponse> latestComments
 ) {}

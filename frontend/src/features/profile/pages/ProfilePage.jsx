@@ -494,6 +494,52 @@ export function ProfilePage() {
     return undefined
   }, [token, refreshProfile, username, authReady])
 
+  // Đếm lượt xem hồ sơ (Studio analytics) — không đếm khi xem hồ sơ của chính mình
+  useEffect(() => {
+    if (!username || !publicProfile?.username) return undefined
+    const profileName = String(publicProfile.username).replace(/^@/, '')
+    const me = String(user?.username || '').replace(/^@/, '')
+    if (me && me.toLowerCase() === profileName.toLowerCase()) return undefined
+
+    const storageKey = `vibely:pv:${profileName.toLowerCase()}:${new Date().toISOString().slice(0, 10)}`
+    try {
+      if (sessionStorage.getItem(storageKey)) return undefined
+    } catch {
+      /* ignore */
+    }
+
+    let cancelled = false
+    let viewerKey = null
+    try {
+      viewerKey = localStorage.getItem('vibely:viewer-key')
+      if (!viewerKey) {
+        viewerKey =
+          typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `vk-${Date.now()}-${Math.random().toString(36).slice(2)}`
+        localStorage.setItem('vibely:viewer-key', viewerKey)
+      }
+    } catch {
+      viewerKey = null
+    }
+
+    apiClient
+      .recordProfileView(profileName, { token, viewerKey })
+      .then(() => {
+        if (cancelled) return
+        try {
+          sessionStorage.setItem(storageKey, '1')
+        } catch {
+          /* ignore */
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+    }
+  }, [username, publicProfile?.username, user?.username, token])
+
   useEffect(() => {
     if (username || !token || !user?.username) {
       setOwnPublicProfile(null)
