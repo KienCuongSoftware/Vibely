@@ -7,7 +7,7 @@ import {
   drawVideoFrameToCanvas,
 } from '@/features/post/utils/videoThumbnail.js'
 
-const FRAME_COUNT = 48
+const FRAME_COUNT = 96
 /** Filmstrip capture — sharp enough for small thumbs + interim large preview. */
 const FILMSTRIP_CAPTURE_WIDTH = 480
 const FILMSTRIP_JPEG_QUALITY = 0.9
