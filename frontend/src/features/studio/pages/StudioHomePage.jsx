@@ -7,11 +7,6 @@ import { StudioLayout } from "@/features/studio/components/StudioLayout";
 import { StudioHoverTip } from "@/features/studio/components/StudioHoverTip";
 import { StudioTrendChart, formatStudioMoney } from "@/features/studio/components/StudioTrendChart";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { AvatarImage } from "@/shared/components/AvatarImage.jsx";
-import {
-  DEFAULT_AVATAR_URL,
-  sanitizeAvatarUrl,
-} from "@/features/profile/utils/avatarUrl.js";
 
 const PERIOD_OPTIONS = [
   { days: 7, label: "7 ngày qua" },
@@ -73,13 +68,12 @@ function pointValue(p, metric) {
 }
 
 export function StudioHomePage() {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const navigate = useNavigate();
   const [days, setDays] = useState(7);
   const [periodOpen, setPeriodOpen] = useState(false);
   const [metric, setMetric] = useState("views");
   const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState(null);
   const [recentPosts, setRecentPosts] = useState([]);
   const [overview, setOverview] = useState({
     totalViews: 0,
@@ -90,28 +84,14 @@ export function StudioHomePage() {
     latestComments: [],
   });
 
-  const avatarSrc = sanitizeAvatarUrl(
-    user?.avatarUrl || profile?.avatarUrl,
-    DEFAULT_AVATAR_URL,
-    user?.id || profile?.id,
-  );
-  const displayName =
-    user?.username || profile?.username || user?.displayName || "Bạn";
-
   useEffect(() => {
     document.title = "VibelyStudio | Home";
   }, []);
 
   useEffect(() => {
-    if (!token || !user?.username) return;
+    if (!token) return;
     let cancelled = false;
     (async () => {
-      try {
-        const data = await profileApi.getPublicProfile(user.username, token);
-        if (!cancelled) setProfile(data);
-      } catch {
-        if (!cancelled) setProfile(null);
-      }
       try {
         const page = await profileApi.getMyUploadedVideos(token, {
           page: 0,
@@ -130,7 +110,7 @@ export function StudioHomePage() {
     return () => {
       cancelled = true;
     };
-  }, [token, user?.username]);
+  }, [token]);
 
   useEffect(() => {
     if (!token) return;
@@ -245,45 +225,9 @@ export function StudioHomePage() {
   const periodLabel =
     PERIOD_OPTIONS.find((o) => o.days === days)?.label ?? `${days} ngày qua`;
 
-  const likesTotal = Number(
-    profile?.totalLikeCount ?? overview.totalLikes ?? 0,
-  );
-  const followers = Number(profile?.followerCount ?? 0);
-  const following = Number(profile?.followingCount ?? 0);
-
   return (
     <StudioLayout active="home" hidePageHeader hideTopBrand>
-      {/* Hồ sơ — avatar ngang với tên + thống kê */}
-      <section className="mb-5 flex items-center gap-4">
-        <AvatarImage
-          src={avatarSrc}
-          alt=""
-          className="h-16 w-16 shrink-0 rounded-full border border-zinc-700 object-cover sm:h-[72px] sm:w-[72px]"
-        />
-        <div className="min-w-0">
-          <p className="truncate text-lg font-bold text-zinc-100 sm:text-xl">
-            {displayName}
-          </p>
-          <p className="mt-1 text-sm text-zinc-400">
-            Thích{" "}
-            <span className="font-semibold text-zinc-200">
-              {formatCompact(likesTotal)}
-            </span>
-            <span className="mx-1.5 text-zinc-600">·</span>
-            Người theo dõi{" "}
-            <span className="font-semibold text-zinc-200">
-              {formatCompact(followers)}
-            </span>
-            <span className="mx-1.5 text-zinc-600">·</span>
-            Đang theo dõi{" "}
-            <span className="font-semibold text-zinc-200">
-              {formatCompact(following)}
-            </span>
-          </p>
-        </div>
-      </section>
-
-      {/* Chỉ số chính */}
+      {/* Chỉ số chính — không có khối avatar/follower (khớp TikTok Analytics Overview) */}
       <section className="overflow-visible rounded-xl border border-zinc-800 bg-zinc-950/50">
         <div className="flex items-center justify-between gap-3 border-b border-zinc-800/80 px-4 py-3 sm:px-5">
           <h2 className="inline-flex items-center gap-0.5 text-base font-bold text-zinc-100">
