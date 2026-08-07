@@ -6,8 +6,9 @@ import { StudioAccountMenu } from "@/features/studio/components/StudioAccountMen
 
 /**
  * @param {'dark' | 'light'} [theme='dark']
- * @param {boolean} [hidePageHeader] Ẩn khối title/subtitle (kiểu TikTok Content: chỉ tabs).
- * @param {boolean} [hideTopBrand] Ẩn chữ "Vibely Studio" trên thanh top (logo chỉ ở sidebar).
+ * @param {boolean} [hidePageHeader] Ẩn khối title/subtitle.
+ * @param {boolean} [hideTopBrand] Ẩn chữ "Vibely Studio" trên thanh top.
+ * @param {boolean} [hideTopBar] Ẩn cả thanh top (avatar đặt trong trang, ngang với tabs).
  */
 export function StudioLayout({
   active,
@@ -16,6 +17,7 @@ export function StudioLayout({
   children,
   hidePageHeader = false,
   hideTopBrand = false,
+  hideTopBar = false,
   theme = "dark",
 }) {
   const isLight = theme === "light";
@@ -23,6 +25,21 @@ export function StudioLayout({
   const navigate = useNavigate();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const onUploadRoute = /^\/vibelystudio\/upload/.test(location.pathname);
+
+  const menuButton = (
+    <button
+      type="button"
+      className={
+        isLight
+          ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl text-slate-700 hover:bg-slate-100 lg:hidden"
+          : "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl text-zinc-200 hover:bg-zinc-900 lg:hidden"
+      }
+      aria-label={onUploadRoute ? "Quay lại feed" : "Menu Studio"}
+      onClick={() => (onUploadRoute ? navigate("/") : setMobileNavOpen(true))}
+    >
+      {onUploadRoute ? <IoChevronBack aria-hidden /> : <IoMenu aria-hidden />}
+    </button>
+  );
 
   return (
     <section
@@ -58,46 +75,33 @@ export function StudioLayout({
             : "flex h-dvh min-w-0 flex-1 flex-col overflow-hidden bg-black p-3 sm:p-6 lg:p-8"
         }
       >
-        <div
-          className={
-            isLight
-              ? "mb-4 flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 pb-3 sm:mb-6 sm:gap-4 sm:pb-4"
-              : "mb-4 flex shrink-0 items-center justify-between gap-3 border-b border-zinc-800/80 pb-3 sm:mb-6 sm:gap-4 sm:pb-4"
-          }
-        >
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <button
-              type="button"
-              className={
-                isLight
-                  ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl text-slate-700 hover:bg-slate-100 lg:hidden"
-                  : "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl text-zinc-200 hover:bg-zinc-900 lg:hidden"
-              }
-              aria-label={onUploadRoute ? "Quay lại feed" : "Menu Studio"}
-              onClick={() =>
-                onUploadRoute ? navigate("/") : setMobileNavOpen(true)
-              }
-            >
-              {onUploadRoute ? (
-                <IoChevronBack aria-hidden />
-              ) : (
-                <IoMenu aria-hidden />
-              )}
-            </button>
-            <span
-              className={
-                hideTopBrand
-                  ? "sr-only"
-                  : isLight
-                    ? "min-w-0 truncate text-base font-bold text-slate-900 sm:text-lg lg:text-xl"
-                    : "min-w-0 truncate text-base font-bold text-white sm:text-lg lg:text-xl"
-              }
-            >
-              Vibely Studio
-            </span>
+        {hideTopBar ? (
+          <div className="mb-2 flex shrink-0 items-center lg:hidden">{menuButton}</div>
+        ) : (
+          <div
+            className={
+              isLight
+                ? "mb-4 flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 pb-3 sm:mb-6 sm:gap-4 sm:pb-4"
+                : "mb-4 flex shrink-0 items-center justify-between gap-3 border-b border-zinc-800/80 pb-3 sm:mb-6 sm:gap-4 sm:pb-4"
+            }
+          >
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              {menuButton}
+              <span
+                className={
+                  hideTopBrand
+                    ? "sr-only"
+                    : isLight
+                      ? "min-w-0 truncate text-base font-bold text-slate-900 sm:text-lg lg:text-xl"
+                      : "min-w-0 truncate text-base font-bold text-white sm:text-lg lg:text-xl"
+                }
+              >
+                Vibely Studio
+              </span>
+            </div>
+            <StudioAccountMenu theme={theme} />
           </div>
-          <StudioAccountMenu theme={theme} />
-        </div>
+        )}
         {!hidePageHeader ? (
           <header
             className={

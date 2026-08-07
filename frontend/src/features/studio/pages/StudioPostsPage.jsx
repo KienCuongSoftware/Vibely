@@ -16,6 +16,7 @@ import {
 } from "react-icons/io5";
 import { apiClient } from "@/shared/api/client";
 import { StudioLayout } from "@/features/studio/components/StudioLayout";
+import { StudioAccountMenu } from "@/features/studio/components/StudioAccountMenu";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { buildProfileVideoUrl } from "@/features/post/utils/videoPublicId.js";
 import { formatApiDateTimeVi } from "@/shared/utils/relativeTimeVi.js";
@@ -322,30 +323,27 @@ export function StudioPostsPage() {
   const username = user?.username;
 
   return (
-    <StudioLayout
-      active="posts"
-      hidePageHeader
-      hideTopBrand
-    >
-      <section className="rounded-xl border border-zinc-800 bg-zinc-950/40 p-4 sm:p-5">
-        {successMessage ? (
-          <p className="mb-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
-            {successMessage}
-          </p>
-        ) : null}
-        {error ? (
-          <p className="mb-3 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
-            {error}
-          </p>
-        ) : null}
+    <StudioLayout active="posts" hidePageHeader hideTopBar>
+      {successMessage ? (
+        <p className="mb-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
+          {successMessage}
+        </p>
+      ) : null}
+      {error ? (
+        <p className="mb-3 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
+          {error}
+        </p>
+      ) : null}
 
-        <div className="mb-4 flex gap-1 border-b border-zinc-800">
+      {/* TikTok: tabs trái + avatar phải cùng một hàng ngang */}
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-end gap-1 border-b border-zinc-800">
           <button
             type="button"
             className={`cursor-pointer px-4 py-2.5 text-sm font-semibold transition ${
               listTab === "posts"
                 ? "border-b-2 border-zinc-100 text-zinc-100"
-                : "text-zinc-500 hover:text-zinc-300"
+                : "border-b-2 border-transparent text-zinc-500 hover:text-zinc-300"
             }`}
             onClick={() => navigate("/vibelystudio/posts", { replace: true })}
           >
@@ -356,7 +354,7 @@ export function StudioPostsPage() {
             className={`cursor-pointer px-4 py-2.5 text-sm font-semibold transition ${
               listTab === "drafts"
                 ? "border-b-2 border-zinc-100 text-zinc-100"
-                : "text-zinc-500 hover:text-zinc-300"
+                : "border-b-2 border-transparent text-zinc-500 hover:text-zinc-300"
             }`}
             onClick={() =>
               navigate("/vibelystudio/posts?tab=drafts", { replace: true })
@@ -365,7 +363,10 @@ export function StudioPostsPage() {
             Bản nháp {draftItems.length}
           </button>
         </div>
+        <StudioAccountMenu />
+      </div>
 
+      <section className="rounded-xl border border-zinc-800 bg-zinc-950/40 p-4 sm:p-5">
         {listTab === "drafts" ? (
           <div className="mb-3 flex items-start gap-2 rounded-lg border border-zinc-800 bg-zinc-900/70 px-3 py-2.5 text-xs leading-relaxed text-zinc-400">
             <IoInformationCircleOutline
