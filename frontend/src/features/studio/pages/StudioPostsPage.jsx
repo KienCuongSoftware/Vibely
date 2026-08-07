@@ -8,6 +8,7 @@ import {
   IoChevronDown,
   IoEllipsisHorizontal,
   IoEarthOutline,
+  IoInformationCircleOutline,
   IoLockClosedOutline,
   IoPeopleOutline,
   IoPencil,
@@ -45,6 +46,66 @@ function normalizePrivacy(raw) {
   if (key === "FRIENDS") return "FRIENDS";
   if (key === "PRIVATE") return "PRIVATE";
   return "PUBLIC";
+}
+
+function formatDurationLabel(seconds) {
+  const n = Number(seconds);
+  if (!Number.isFinite(n) || n < 0) return null;
+  const total = Math.floor(n);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+/** Empty illustration for Posts tab — brand asset. */
+function PostsEmptyIllustration() {
+  return (
+    <img
+      src="/images/no-video.png"
+      alt=""
+      className="mx-auto h-28 w-auto max-w-[200px] object-contain"
+      decoding="async"
+    />
+  );
+}
+
+/** TikTok-style document “frame” empty state for Drafts. */
+function DraftsEmptyFrame() {
+  return (
+    <div className="relative mx-auto h-[56px] w-[168px]" aria-hidden>
+      <div className="absolute top-1.5 left-1.5 h-[52px] w-[160px] rounded border border-zinc-700 bg-zinc-950" />
+      <div className="absolute top-0 left-0 flex h-[52px] w-[160px] flex-col justify-center gap-1.5 rounded border border-zinc-500 bg-zinc-900 px-2.5 py-1.5 shadow-md">
+        <div className="h-1 w-[68%] rounded-sm bg-zinc-500" />
+        <div className="h-1 w-full rounded-sm bg-zinc-600" />
+        <div className="h-1 w-[52%] rounded-sm bg-zinc-600" />
+      </div>
+    </div>
+  );
+}
+
+function StudioListEmptyState({ variant }) {
+  const isDrafts = variant === "drafts";
+  return (
+    <div className="mt-2 flex min-h-[320px] flex-col items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950/50 px-4 py-16 text-center">
+      {isDrafts ? <DraftsEmptyFrame /> : <PostsEmptyIllustration />}
+      <p className="mt-6 text-xl font-bold text-zinc-100">
+        {isDrafts ? "Chưa có bản nháp nào" : "Chưa có bài đăng nào"}
+      </p>
+      <p className="mt-2 max-w-sm text-sm text-zinc-500">
+        {isDrafts
+          ? "Bản nháp của bạn sẽ xuất hiện ở đây và chỉ bạn mới nhìn thấy."
+          : "Video đã đăng và video lên lịch sẽ xuất hiện ở đây."}
+      </p>
+      {!isDrafts ? (
+        <Link
+          to="/vibelystudio/upload"
+          className="mt-6 inline-block cursor-pointer rounded-lg bg-[#fe2c55] px-8 py-2.5 text-sm font-semibold text-white hover:bg-[#e62a4d]"
+        >
+          Đăng video đầu tiên
+        </Link>
+      ) : null}
+    </div>
+  );
 }
 
 function privacyMeta(raw) {
@@ -148,10 +209,13 @@ export function StudioPostsPage() {
     if (!successMessage) return;
     void load();
     const t = setTimeout(() => {
-      navigate(location.pathname, { replace: true, state: null });
+      navigate(`${location.pathname}${location.search}`, {
+        replace: true,
+        state: null,
+      });
     }, 3000);
     return () => clearTimeout(t);
-  }, [successMessage, load, navigate, location.pathname]);
+  }, [successMessage, load, navigate, location.pathname, location.search]);
 
   useEffect(() => {
     if (moreMenu == null && privacyMenu == null) return undefined;
@@ -303,23 +367,33 @@ export function StudioPostsPage() {
         </div>
 
         {listTab === "drafts" ? (
-          <p className="mb-3 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs leading-relaxed text-zinc-400">
-            Bạn có thể lưu tối đa nhiều bản nháp. Bản nháp chỉ bạn thấy được. Dùng Loại bỏ trên
-            trang tải lên hoặc thùng rác bên dưới để xóa hẳn (kể cả trên kho lưu trữ).
-          </p>
+          <div className="mb-3 flex items-start gap-2 rounded-lg border border-zinc-800 bg-zinc-900/70 px-3 py-2.5 text-xs leading-relaxed text-zinc-400">
+            <IoInformationCircleOutline
+              className="mt-0.5 shrink-0 text-base text-zinc-500"
+              aria-hidden
+            />
+            <p>
+              Bạn có thể lưu tối đa 30 bản nháp. Bản nháp chỉ bạn nhìn thấy và dùng được trên mọi
+              thiết bị. Bản nháp hết hạn sau 60 ngày và sẽ bị xóa vĩnh viễn.
+            </p>
+          </div>
         ) : (
-          <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
-            <span className="rounded-full border border-zinc-700 px-3 py-1.5">
+          <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+            <span className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-1.5">
               Lượt xem
+              <IoChevronDown className="text-zinc-600" aria-hidden />
             </span>
-            <span className="rounded-full border border-zinc-700 px-3 py-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-1.5">
               Lượt thích
+              <IoChevronDown className="text-zinc-600" aria-hidden />
             </span>
-            <span className="rounded-full border border-zinc-700 px-3 py-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-1.5">
               Bình luận
+              <IoChevronDown className="text-zinc-600" aria-hidden />
             </span>
-            <span className="rounded-full border border-zinc-700 px-3 py-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-1.5">
               Quyền riêng tư
+              <IoChevronDown className="text-zinc-600" aria-hidden />
             </span>
           </div>
         )}
@@ -329,30 +403,101 @@ export function StudioPostsPage() {
             Đang tải {listTab === "drafts" ? "bản nháp" : "bài đăng"}…
           </p>
         ) : visibleItems.length === 0 ? (
-          <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-16 text-center">
-            <p className="text-2xl font-bold text-zinc-100">
-              {listTab === "drafts" ? "Chưa có bản nháp" : "Chưa có bài đăng"}
-            </p>
-            <p className="mt-2 text-sm text-zinc-500">
-              {listTab === "drafts"
-                ? "Video lưu nháp từ Studio Upload sẽ xuất hiện ở đây."
-                : "Video đã đăng sẽ xuất hiện ở đây."}
-            </p>
-            <Link
-              to="/vibelystudio/upload"
-              className="mt-6 inline-block cursor-pointer rounded-md bg-pink-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-pink-500"
-            >
-              {listTab === "drafts" ? "Tải video lên" : "Tải video đầu tiên"}
-            </Link>
+          <StudioListEmptyState variant={listTab === "drafts" ? "drafts" : "posts"} />
+        ) : listTab === "drafts" ? (
+          <div className="mt-1 overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950/40">
+            <table className="w-full min-w-[640px] border-collapse text-left text-sm text-zinc-200">
+              <thead>
+                <tr className="border-b border-zinc-800 bg-zinc-900/50 text-xs text-zinc-500">
+                  <th className="px-4 py-3 font-medium">Bản nháp</th>
+                  <th className="w-[28%] whitespace-nowrap px-4 py-3 text-center font-medium">
+                    Cập nhật lần cuối
+                  </th>
+                  <th className="w-[18%] whitespace-nowrap px-4 py-3 text-right font-medium">
+                    Thao tác
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibleItems.map((v) => {
+                  const hasThumb =
+                    v.thumbnailUrl && String(v.thumbnailUrl).trim();
+                  const title =
+                    (v.description && String(v.description).trim()) ||
+                    v.title ||
+                    "Video";
+                  const updated = formatApiDateTimeVi(v.updatedAt || v.createdAt);
+                  const duration = formatDurationLabel(v.durationSeconds);
+                  return (
+                    <tr key={v.publicId} className="border-b border-zinc-800/80 last:border-b-0">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="relative h-[72px] w-[52px] shrink-0 overflow-hidden rounded-md bg-zinc-800">
+                            {hasThumb ? (
+                              <img
+                                src={v.thumbnailUrl}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            ) : v.videoUrl ? (
+                              <video
+                                src={v.videoUrl}
+                                muted
+                                playsInline
+                                className="h-full w-full object-cover"
+                                preload="metadata"
+                              />
+                            ) : null}
+                            {duration ? (
+                              <span className="absolute bottom-1 left-1 rounded bg-black/80 px-1 py-0.5 text-[10px] font-medium tabular-nums text-white">
+                                {duration}
+                              </span>
+                            ) : null}
+                          </div>
+                          <p className="line-clamp-2 min-w-0 font-medium text-zinc-100">
+                            {title}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-center text-xs text-zinc-400">
+                        {updated}
+                      </td>
+                      <td className="px-4 py-3 text-right align-middle">
+                        <div className="inline-flex items-center justify-end gap-0.5">
+                          <button
+                            type="button"
+                            className="cursor-pointer rounded-md p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100"
+                            title="Chỉnh sửa bản nháp"
+                            aria-label="Chỉnh sửa bản nháp"
+                            onClick={() =>
+                              navigate(`/vibelystudio/upload/post/${v.publicId}`)
+                            }
+                          >
+                            <IoPencil className="h-5 w-5" aria-hidden />
+                          </button>
+                          <button
+                            type="button"
+                            className="cursor-pointer rounded-md p-2 text-[#fe2c55] transition hover:bg-zinc-800"
+                            title="Xóa bản nháp"
+                            aria-label="Xóa bản nháp"
+                            onClick={() => setDeleteTarget(v)}
+                          >
+                            <IoTrashOutline className="h-5 w-5" aria-hidden />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         ) : (
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-1 overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950/40">
             <table className="w-full min-w-[920px] border-collapse text-left text-sm text-zinc-200">
               <thead>
-                <tr className="border-b border-zinc-800 text-xs text-zinc-500">
-                  <th className="py-3 pr-3 font-medium">
-                    {listTab === "drafts" ? "Bản nháp" : "Bài đăng"}
-                  </th>
+                <tr className="border-b border-zinc-800 bg-zinc-900/50 text-xs text-zinc-500">
+                  <th className="px-4 py-3 font-medium">Bài đăng</th>
                   <th className="whitespace-nowrap px-3 py-3 text-left font-medium">
                     Quyền riêng tư
                   </th>
@@ -363,7 +508,7 @@ export function StudioPostsPage() {
                     Bình luận
                   </th>
                   <th className="w-[1%] whitespace-nowrap px-2 py-3 text-center font-medium">
-                    {listTab === "drafts" ? "Cập nhật" : "Ngày tạo"}
+                    Ngày tạo
                   </th>
                   <th className="w-[1%] whitespace-nowrap px-2 py-3 text-center font-medium">
                     Thao tác
@@ -388,9 +533,9 @@ export function StudioPostsPage() {
                   return (
                     <tr
                       key={v.publicId}
-                      className="border-b border-zinc-800/80"
+                      className="border-b border-zinc-800/80 last:border-b-0"
                     >
-                      <td className="max-w-xs py-3 pr-3 sm:max-w-sm lg:max-w-md">
+                      <td className="max-w-xs px-4 py-3 sm:max-w-sm lg:max-w-md">
                         <div className="flex items-center gap-3">
                           <Link
                             to={detailUrl}
@@ -421,14 +566,11 @@ export function StudioPostsPage() {
                             >
                               {desc}
                             </Link>
-                            <p className="mt-0.5 text-xs text-zinc-500">
-                              Mã #{v.publicId}
-                            </p>
-                            {String(v.status || '').toUpperCase() === 'REMOVED' ? (
+                            {String(v.status || "").toUpperCase() === "REMOVED" ? (
                               <p className="mt-0.5 text-xs font-medium text-rose-400">
                                 Đã gỡ khỏi hồ sơ (vi phạm)
                               </p>
-                            ) : String(v.status || '').toUpperCase() === 'HIDDEN' ? (
+                            ) : String(v.status || "").toUpperCase() === "HIDDEN" ? (
                               <p className="mt-0.5 text-xs font-medium text-amber-400">
                                 Đã ẩn / đang kiểm duyệt — chưa lên For You
                               </p>
@@ -446,7 +588,7 @@ export function StudioPostsPage() {
                           data-studio-privacy-trigger
                           disabled={
                             busyPrivacy ||
-                            String(v.status || '').toUpperCase() === 'REMOVED'
+                            String(v.status || "").toUpperCase() === "REMOVED"
                           }
                           className="inline-flex w-max shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg border border-zinc-700 bg-zinc-900 px-2.5 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-60"
                           title="Chỉnh quyền riêng tư"
