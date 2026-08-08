@@ -514,37 +514,37 @@ export function CoverPickerModal({
         </div>
 
         <div className="flex min-h-0 flex-1">
-          {/* Cột trái: Sticker / Text */}
-          <aside className="hidden w-[200px] shrink-0 flex-col border-r border-zinc-200 bg-zinc-50 sm:flex">
-            <div className="flex border-b border-zinc-200">
+          {/* Cột trái: rail dọc Sticker/Text + panel (kiểu TikTok) */}
+          <aside className="hidden shrink-0 border-r border-zinc-200 bg-zinc-50 sm:flex">
+            <nav className="flex w-14 shrink-0 flex-col border-r border-zinc-200 bg-white py-2">
               <button
                 type="button"
-                className={`relative flex flex-1 cursor-pointer flex-col items-center gap-1 py-3 text-xs font-semibold transition ${
-                  toolTab === 'sticker' ? 'bg-white text-zinc-900' : 'text-zinc-500 hover:text-zinc-800'
+                className={`mx-1.5 flex cursor-pointer flex-col items-center gap-0.5 rounded-lg px-1 py-2.5 text-[10px] font-semibold transition ${
+                  toolTab === 'sticker'
+                    ? 'bg-zinc-100 text-zinc-900'
+                    : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-800'
                 }`}
                 onClick={() => setToolTab('sticker')}
+                aria-pressed={toolTab === 'sticker'}
               >
-                {toolTab === 'sticker' ? (
-                  <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-[#fe2c55]" />
-                ) : null}
-                <IoHappyOutline className="text-lg" aria-hidden />
+                <IoHappyOutline className="text-xl" aria-hidden />
                 Sticker
               </button>
               <button
                 type="button"
-                className={`relative flex flex-1 cursor-pointer flex-col items-center gap-1 py-3 text-xs font-semibold transition ${
-                  toolTab === 'text' ? 'bg-white text-zinc-900' : 'text-zinc-500 hover:text-zinc-800'
+                className={`mx-1.5 mt-1 flex cursor-pointer flex-col items-center gap-0.5 rounded-lg px-1 py-2.5 text-[10px] font-semibold transition ${
+                  toolTab === 'text'
+                    ? 'bg-zinc-100 text-zinc-900'
+                    : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-800'
                 }`}
                 onClick={() => setToolTab('text')}
+                aria-pressed={toolTab === 'text'}
               >
-                {toolTab === 'text' ? (
-                  <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-[#fe2c55]" />
-                ) : null}
-                <IoTextOutline className="text-lg" aria-hidden />
+                <IoTextOutline className="text-xl" aria-hidden />
                 Text
               </button>
-            </div>
-            <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto p-3">
+            </nav>
+            <div className="scrollbar-none flex w-[180px] min-h-0 flex-col overflow-y-auto p-3 xl:w-[200px]">
               {toolTab === 'sticker' ? (
                 <div className="grid grid-cols-3 gap-2">
                   {STICKER_PRESETS.map((emoji) => (
@@ -567,7 +567,7 @@ export function CoverPickerModal({
             </div>
           </aside>
 
-          {/* Cột giữa: canvas + scale + filmstrip */}
+          {/* Cột giữa: canvas ngang + scale + filmstrip */}
           <div className="flex min-w-0 flex-1 flex-col bg-zinc-100">
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-3 sm:px-6">
               {!canUseVideoTab && tab === 'video' ? (
@@ -581,28 +581,27 @@ export function CoverPickerModal({
                   {stripError}
                 </p>
               ) : (
-                <div className="relative flex max-h-full w-full max-w-[340px] items-center justify-center">
-                  {/* Khung chỉnh — viền trắng + guide dọc kiểu TikTok */}
-                  <div className="relative aspect-9/16 w-full overflow-hidden rounded-sm bg-black shadow-lg ring-1 ring-zinc-300">
+                <div className="relative flex max-h-full w-full max-w-[640px] items-center justify-center">
+                  {/* Canvas ngang — guide dọc = vùng crop dọc trên feed */}
+                  <div className="relative aspect-video w-full overflow-hidden rounded-sm bg-black shadow-lg ring-1 ring-zinc-300">
                     {previewSrc ? (
                       <img
                         key={previewSrc}
                         src={previewSrc}
                         alt=""
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-100"
+                        className="absolute inset-0 h-full w-full object-contain transition-transform duration-100"
                         style={{ transform: `scale(${scale})` }}
                         decoding="async"
                       />
                     ) : (
                       <div className="absolute inset-0 animate-pulse bg-zinc-800" aria-hidden />
                     )}
-                    {/* Guide crop 9:16 */}
                     <div
-                      className="pointer-events-none absolute inset-y-0 left-[8%] w-px bg-white/90"
+                      className="pointer-events-none absolute inset-y-0 left-[18%] w-px bg-white/95"
                       aria-hidden
                     />
                     <div
-                      className="pointer-events-none absolute inset-y-0 right-[8%] w-px bg-white/90"
+                      className="pointer-events-none absolute inset-y-0 right-[18%] w-px bg-white/95"
                       aria-hidden
                     />
                   </div>
@@ -611,23 +610,37 @@ export function CoverPickerModal({
             </div>
 
             {/* Scale */}
-            <div className="flex shrink-0 items-center justify-end gap-3 px-4 pb-2 sm:px-6">
-              <label className="flex items-center gap-2 text-xs font-medium text-zinc-600">
-                Scale
-                <input
-                  type="range"
-                  min={1}
-                  max={2}
-                  step={0.01}
-                  value={scale}
-                  onChange={(e) => setScale(Number(e.target.value))}
-                  className="h-1.5 w-28 cursor-pointer accent-[#20d5ec] sm:w-40"
-                  aria-label="Phóng to ảnh bìa"
-                />
-              </label>
+            <div className="flex shrink-0 items-center justify-end gap-2 px-4 pb-2 sm:px-6">
+              <span className="text-xs font-medium text-zinc-600">Scale</span>
+              <button
+                type="button"
+                className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-lg leading-none text-zinc-500 hover:bg-zinc-200"
+                aria-label="Thu nhỏ"
+                onClick={() => setScale((s) => Math.max(1, Number((s - 0.05).toFixed(2))))}
+              >
+                −
+              </button>
+              <input
+                type="range"
+                min={1}
+                max={2}
+                step={0.01}
+                value={scale}
+                onChange={(e) => setScale(Number(e.target.value))}
+                className="h-1.5 w-28 cursor-pointer accent-[#20d5ec] sm:w-40"
+                aria-label="Phóng to ảnh bìa"
+              />
+              <button
+                type="button"
+                className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-lg leading-none text-zinc-500 hover:bg-zinc-200"
+                aria-label="Phóng to"
+                onClick={() => setScale((s) => Math.min(2, Number((s + 0.05).toFixed(2))))}
+              >
+                +
+              </button>
             </div>
 
-            {/* Filmstrip + Upload cover */}
+            {/* Filmstrip ngang + Upload cover */}
             <div className="flex shrink-0 items-center gap-2 border-t border-zinc-200 bg-white px-2 py-3 sm:gap-3 sm:px-4">
               <input
                 ref={coverImageInputRef}
@@ -639,7 +652,7 @@ export function CoverPickerModal({
               <button
                 type="button"
                 onClick={() => coverImageInputRef.current?.click()}
-                className={`flex h-[72px] w-16 shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border text-[10px] font-semibold leading-tight transition sm:w-[72px] sm:text-[11px] ${
+                className={`flex h-14 w-[88px] shrink-0 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-md border text-[10px] font-semibold leading-tight transition sm:text-[11px] ${
                   tab === 'upload'
                     ? 'border-sky-500 bg-sky-50 text-sky-700 ring-1 ring-sky-400'
                     : 'border-zinc-300 bg-zinc-50 text-zinc-700 hover:bg-zinc-100'
@@ -676,7 +689,7 @@ export function CoverPickerModal({
                     scrollFilmstrip(1)
                   }
                 }}
-                className="min-h-[72px] min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain scrollbar-none touch-pan-x"
+                className="min-h-14 min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain scrollbar-none touch-pan-x"
               >
                 <div ref={filmstripTrackRef} className="flex w-max gap-1.5 pr-0.5">
                   {frames.map((f, i) => (
@@ -687,7 +700,7 @@ export function CoverPickerModal({
                         setTab('video')
                         setSelectedIdx(i)
                       }}
-                      className={`h-[72px] w-[52px] shrink-0 cursor-pointer overflow-hidden rounded-md border-2 transition ${
+                      className={`h-14 w-24 shrink-0 cursor-pointer overflow-hidden rounded-md border-2 transition ${
                         tab === 'video' && selectedIdx === i
                           ? 'border-sky-500 ring-1 ring-sky-400'
                           : 'border-transparent opacity-85 hover:opacity-100'
@@ -762,7 +775,7 @@ export function CoverPickerModal({
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-px bg-zinc-200 p-px">
-                  <div className="relative aspect-3/4 overflow-hidden bg-zinc-100">
+                  <div className="relative aspect-4/3 overflow-hidden bg-zinc-100">
                     {previewSrc ? (
                       <img
                         src={previewSrc}
@@ -774,8 +787,8 @@ export function CoverPickerModal({
                       <div className="h-full w-full bg-zinc-200" />
                     )}
                   </div>
-                  <div className="aspect-3/4 bg-zinc-100" />
-                  <div className="aspect-3/4 bg-zinc-100" />
+                  <div className="aspect-4/3 bg-zinc-100" />
+                  <div className="aspect-4/3 bg-zinc-100" />
                 </div>
               </div>
               <p className="mt-3 text-center text-xs text-zinc-500">
