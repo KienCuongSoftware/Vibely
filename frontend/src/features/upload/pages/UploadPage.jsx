@@ -1581,6 +1581,7 @@ export function UploadPage() {
         open={coverModalOpen && Boolean(uploadedVideo)}
         onClose={() => setCoverModalOpen(false)}
         videoFile={videoFile}
+        videoUrl={uploadedVideo?.playbackUrl}
         token={token}
         onConfirm={(url) => setThumbnailUrl(url)}
       />

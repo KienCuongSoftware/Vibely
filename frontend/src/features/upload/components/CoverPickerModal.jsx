@@ -1,6 +1,20 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { IoChevronBack, IoChevronForward, IoClose, IoCloudUploadOutline } from 'react-icons/io5'
+import {
+  IoAdd,
+  IoArrowBack,
+  IoChevronBack,
+  IoChevronForward,
+  IoHappyOutline,
+  IoTextOutline,
+} from 'react-icons/io5'
 import { uploadThumbnailToStorage } from '@/shared/api/client'
+import { profileApi } from '@/features/profile/api/profileApi'
+import { useAuth } from '@/features/auth/hooks/useAuth'
+import { AvatarImage } from '@/shared/components/AvatarImage.jsx'
+import {
+  DEFAULT_AVATAR_URL,
+  sanitizeAvatarUrl,
+} from '@/features/profile/utils/avatarUrl.js'
 import {
   THUMBNAIL_MAX_WIDTH,
   canvasToJpegBlob,
@@ -17,6 +31,10 @@ const PREVIEW_JPEG_QUALITY = 0.96
 /** Final cover upload quality. */
 const COVER_EXPORT_JPEG_QUALITY = 0.97
 const COVER_EXPORT_MAX_WIDTH = Math.max(THUMBNAIL_MAX_WIDTH, 1440)
+
+const STICKER_PRESETS = [
+  '🔥', '✨', '❤️', '😂', '🎵', '⭐', '💯', '👀', '🙌',
+]
 
 function waitSeeked(video) {
   return new Promise((resolve) => {
@@ -135,6 +153,17 @@ async function extractOriginalResolutionFrame(videoSource, timeSeconds) {
   return blob
 }
 
+function formatCompact(n) {
+  const v = Number(n ?? 0)
+  if (!Number.isFinite(v)) return '0'
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`
+  if (v >= 1_000) return `${(v / 1_000).toFixed(1).replace(/\.0$/, '')}K`
+  return String(Math.round(v))
+}
+
+/**
+ * Modal chỉnh ảnh bìa kiểu TikTok Studio: Sticker/Text | canvas | preview hồ sơ.
+ */
 export function CoverPickerModal({
   open,
   onClose,
@@ -143,8 +172,11 @@ export function CoverPickerModal({
   token,
   onConfirm,
 }) {
+  const { user } = useAuth()
   const videoSource = videoFile ?? (String(videoUrl ?? '').trim() || null)
+  /** @type {['video' | 'upload', Function]} */
   const [tab, setTab] = useState('video')
+  const [toolTab, setToolTab] = useState('sticker')
   const [frames, setFrames] = useState([])
   const [selectedIdx, setSelectedIdx] = useState(0)
   const [stripLoading, setStripLoading] = useState(false)
@@ -154,6 +186,8 @@ export function CoverPickerModal({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [displayPreviewUrl, setDisplayPreviewUrl] = useState('')
+  const [scale, setScale] = useState(1)
+  const [profile, setProfile] = useState(null)
   const previewCacheRef = useRef(new Map())
   const selectedIdxRef = useRef(0)
   const coverImageInputRef = useRef(null)
@@ -161,6 +195,17 @@ export function CoverPickerModal({
   const filmstripTrackRef = useRef(null)
   const [filmstripAtStart, setFilmstripAtStart] = useState(true)
   const [filmstripAtEnd, setFilmstripAtEnd] = useState(true)
+
+  const avatarSrc = sanitizeAvatarUrl(
+    user?.avatarUrl || profile?.avatarUrl,
+    DEFAULT_AVATAR_URL,
+    user?.id || profile?.id,
+  )
+  const displayName =
+    user?.displayName || profile?.displayName || user?.username || 'Bạn'
+  const likesTotal = Number(profile?.totalLikeCount ?? 0)
+  const followers = Number(profile?.followerCount ?? 0)
+  const following = Number(profile?.followingCount ?? 0)
 
   const syncFilmstripScrollState = useCallback(() => {
     const el = filmstripRef.current
@@ -202,12 +247,14 @@ export function CoverPickerModal({
   useEffect(() => {
     if (!open) return
     setTab('video')
+    setToolTab('sticker')
     setSelectedIdx(0)
     selectedIdxRef.current = 0
     setFrames([])
     setStripError('')
     setUploadFile(null)
     setError('')
+    setScale(1)
     setDisplayPreviewUrl('')
     previewCacheRef.current.forEach((cachedUrl) => URL.revokeObjectURL(cachedUrl))
     previewCacheRef.current.clear()
@@ -218,8 +265,24 @@ export function CoverPickerModal({
   }, [open])
 
   useEffect(() => {
+    if (!open || !token || !user?.username) return
+    let cancelled = false
+    profileApi
+      .getPublicProfile(user.username, token)
+      .then((data) => {
+        if (!cancelled) setProfile(data)
+      })
+      .catch(() => {
+        if (!cancelled) setProfile(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [open, token, user?.username])
+
+  useEffect(() => {
     if (!open || tab !== 'video' || !videoSource || !frames.length) {
-      setDisplayPreviewUrl('')
+      if (tab !== 'upload') setDisplayPreviewUrl('')
       return undefined
     }
 
@@ -233,7 +296,6 @@ export function CoverPickerModal({
       return undefined
     }
 
-    // Show sharp filmstrip frame immediately, then upgrade to HD extract.
     setDisplayPreviewUrl(frame.dataUrl)
 
     let cancelled = false
@@ -333,6 +395,7 @@ export function CoverPickerModal({
     }
     setError('')
     setUploadFile(file)
+    setTab('upload')
     setUploadPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev)
       return URL.createObjectURL(file)
@@ -361,7 +424,6 @@ export function CoverPickerModal({
 
       if (tab === 'video') {
         const frame = frames[selectedIdx]
-        // Filmstrip dùng bản nhẹ để chọn nhanh, nhưng lúc xác nhận sẽ trích frame gốc.
         if (videoSource) {
           blob = await extractOriginalResolutionFrame(videoSource, frame.time)
         } else {
@@ -409,155 +471,164 @@ export function CoverPickerModal({
 
   return (
     <div
-      className="fixed inset-0 z-100 flex items-center justify-center bg-black/75 p-4"
+      className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 p-2 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="cover-modal-title"
     >
-      <div className="flex max-h-[90vh] w-full min-w-0 max-w-lg flex-col overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-900 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
-          <h2 id="cover-modal-title" className="text-base font-bold text-white">
-            Ảnh bìa
-          </h2>
-          <button
-            type="button"
-            className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-white"
-            onClick={onClose}
-            aria-label="Đóng"
-          >
-            <IoClose className="text-2xl" />
-          </button>
+      <div className="flex h-[min(920px,96vh)] w-full max-w-[1180px] flex-col overflow-hidden rounded-xl bg-white text-zinc-900 shadow-2xl">
+        {/* Header kiểu TikTok */}
+        <div className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-3 py-2.5 sm:px-4">
+          <div className="flex min-w-0 items-center gap-1">
+            <button
+              type="button"
+              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-700 hover:bg-zinc-100"
+              onClick={onClose}
+              aria-label="Quay lại"
+              disabled={busy}
+            >
+              <IoArrowBack className="text-xl" aria-hidden />
+            </button>
+            <h2 id="cover-modal-title" className="truncate text-base font-bold text-zinc-900">
+              Chỉnh ảnh bìa
+            </h2>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              className="cursor-pointer rounded-lg px-3 py-1.5 text-sm font-semibold text-zinc-600 hover:bg-zinc-100 disabled:opacity-50 sm:px-4"
+              onClick={onClose}
+              disabled={busy}
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              className="cursor-pointer rounded-lg bg-[#fe2c55] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[#e62a4d] disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500"
+              onClick={() => void handleConfirm()}
+              disabled={!canConfirm}
+            >
+              {busy ? 'Đang lưu…' : 'Lưu'}
+            </button>
+          </div>
         </div>
 
-        <div className="flex border-b border-zinc-800 px-2">
-          <button
-            type="button"
-            className={`relative flex-1 py-3 text-sm font-medium transition ${
-              tab === 'video' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-            onClick={() => setTab('video')}
-          >
-            Chọn từ video
-            {tab === 'video' ? (
-              <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-[#fe2c55]" />
-            ) : null}
-          </button>
-          <button
-            type="button"
-            className={`relative flex-1 py-3 text-sm font-medium transition ${
-              tab === 'upload' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-            onClick={() => setTab('upload')}
-          >
-            Tải lên từ máy tính
-            {tab === 'upload' ? (
-              <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-[#fe2c55]" />
-            ) : null}
-          </button>
-        </div>
-
-        <div className="scrollbar-none min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain p-4">
-          {tab === 'video' ? (
-            <>
-              {!canUseVideoTab ? (
-                <p className="rounded-lg border border-amber-900/60 bg-amber-950/40 p-3 text-sm text-amber-200">
-                  Không có tệp video cục bộ để trích khung hình. Hãy dùng tab &quot;Tải lên từ máy
-                  tính&quot; hoặc tải lại video trong phiên này.
+        <div className="flex min-h-0 flex-1">
+          {/* Cột trái: Sticker / Text */}
+          <aside className="hidden w-[200px] shrink-0 flex-col border-r border-zinc-200 bg-zinc-50 sm:flex">
+            <div className="flex border-b border-zinc-200">
+              <button
+                type="button"
+                className={`relative flex flex-1 cursor-pointer flex-col items-center gap-1 py-3 text-xs font-semibold transition ${
+                  toolTab === 'sticker' ? 'bg-white text-zinc-900' : 'text-zinc-500 hover:text-zinc-800'
+                }`}
+                onClick={() => setToolTab('sticker')}
+              >
+                {toolTab === 'sticker' ? (
+                  <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-[#fe2c55]" />
+                ) : null}
+                <IoHappyOutline className="text-lg" aria-hidden />
+                Sticker
+              </button>
+              <button
+                type="button"
+                className={`relative flex flex-1 cursor-pointer flex-col items-center gap-1 py-3 text-xs font-semibold transition ${
+                  toolTab === 'text' ? 'bg-white text-zinc-900' : 'text-zinc-500 hover:text-zinc-800'
+                }`}
+                onClick={() => setToolTab('text')}
+              >
+                {toolTab === 'text' ? (
+                  <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-[#fe2c55]" />
+                ) : null}
+                <IoTextOutline className="text-lg" aria-hidden />
+                Text
+              </button>
+            </div>
+            <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto p-3">
+              {toolTab === 'sticker' ? (
+                <div className="grid grid-cols-3 gap-2">
+                  {STICKER_PRESETS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      title="Sticker (sắp có)"
+                      className="flex aspect-square cursor-default items-center justify-center rounded-lg border border-zinc-200 bg-white text-2xl opacity-80"
+                      disabled
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs leading-relaxed text-zinc-500">
+                  Thêm chữ lên ảnh bìa sẽ sớm có. Hiện bạn có thể chọn khung hình hoặc tải ảnh lên.
                 </p>
-              ) : stripLoading ? (
-                <p className="py-12 text-center text-sm text-zinc-400">Đang tạo khung hình từ video…</p>
-              ) : stripError ? (
-                <p className="rounded-lg border border-red-900/50 bg-red-950/40 p-3 text-sm text-red-300">
+              )}
+            </div>
+          </aside>
+
+          {/* Cột giữa: canvas + scale + filmstrip */}
+          <div className="flex min-w-0 flex-1 flex-col bg-zinc-100">
+            <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-3 sm:px-6">
+              {!canUseVideoTab && tab === 'video' ? (
+                <p className="max-w-sm rounded-lg border border-amber-200 bg-amber-50 p-3 text-center text-sm text-amber-800">
+                  Không có video để trích khung hình. Hãy dùng nút tải ảnh bìa bên dưới.
+                </p>
+              ) : stripLoading && tab === 'video' ? (
+                <p className="text-sm text-zinc-500">Đang tạo khung hình từ video…</p>
+              ) : stripError && tab === 'video' ? (
+                <p className="max-w-sm rounded-lg border border-rose-200 bg-rose-50 p-3 text-center text-sm text-rose-700">
                   {stripError}
                 </p>
               ) : (
-                <>
-                  <div className="relative mx-auto flex max-w-[280px] justify-center overflow-hidden rounded-xl border-2 border-sky-500/80 bg-black ring-2 ring-sky-500/30">
+                <div className="relative flex max-h-full w-full max-w-[340px] items-center justify-center">
+                  {/* Khung chỉnh — viền trắng + guide dọc kiểu TikTok */}
+                  <div className="relative aspect-9/16 w-full overflow-hidden rounded-sm bg-black shadow-lg ring-1 ring-zinc-300">
                     {previewSrc ? (
                       <img
                         key={previewSrc}
                         src={previewSrc}
                         alt=""
-                        className="aspect-9/16 w-full object-cover transition-opacity duration-200"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-100"
+                        style={{ transform: `scale(${scale})` }}
                         decoding="async"
                       />
                     ) : (
-                      <div
-                        className="aspect-9/16 w-full animate-pulse bg-zinc-900/90"
-                        aria-hidden
-                      />
+                      <div className="absolute inset-0 animate-pulse bg-zinc-800" aria-hidden />
                     )}
-                  </div>
-                  <div className="mt-3 flex min-w-0 w-full items-center gap-2">
-                    <button
-                      type="button"
-                      aria-label="Cuộn dải ảnh sang trái"
-                      aria-disabled={filmstripAtStart}
-                      onClick={() => scrollFilmstrip(-1)}
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800/95 text-zinc-100 shadow-md transition hover:border-zinc-500 hover:bg-zinc-700 hover:text-white ${
-                        filmstripAtStart ? 'cursor-default opacity-40' : ''
-                      }`}
-                    >
-                      <IoChevronBack className="text-xl" aria-hidden />
-                    </button>
+                    {/* Guide crop 9:16 */}
                     <div
-                      ref={filmstripRef}
-                      role="region"
-                      aria-label="Dải khung hình"
-                      tabIndex={0}
-                      onScroll={syncFilmstripScrollState}
-                      onKeyDown={(e) => {
-                        if (e.key === 'ArrowLeft') {
-                          e.preventDefault()
-                          scrollFilmstrip(-1)
-                        } else if (e.key === 'ArrowRight') {
-                          e.preventDefault()
-                          scrollFilmstrip(1)
-                        }
-                      }}
-                      className="min-h-24 min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain pb-1 scrollbar-none touch-pan-x"
-                    >
-                      <div ref={filmstripTrackRef} className="flex w-max gap-1.5 pr-0.5">
-                        {frames.map((f, i) => (
-                          <button
-                            key={`${f.time}-${i}`}
-                            type="button"
-                            onClick={() => setSelectedIdx(i)}
-                            className={`h-24 w-14 shrink-0 overflow-hidden rounded-md border-2 transition ${
-                              selectedIdx === i
-                                ? 'border-sky-500 ring-1 ring-sky-400'
-                                : 'border-zinc-700 opacity-80 hover:opacity-100'
-                            }`}
-                          >
-                            <img
-                              src={f.dataUrl}
-                              alt=""
-                              className="h-full w-full object-cover"
-                              loading="eager"
-                              decoding="async"
-                              onLoad={syncFilmstripScrollState}
-                            />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      aria-label="Cuộn dải ảnh sang phải"
-                      aria-disabled={filmstripAtEnd}
-                      onClick={() => scrollFilmstrip(1)}
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800/95 text-zinc-100 shadow-md transition hover:border-zinc-500 hover:bg-zinc-700 hover:text-white ${
-                        filmstripAtEnd ? 'cursor-default opacity-40' : ''
-                      }`}
-                    >
-                      <IoChevronForward className="text-xl" aria-hidden />
-                    </button>
+                      className="pointer-events-none absolute inset-y-0 left-[8%] w-px bg-white/90"
+                      aria-hidden
+                    />
+                    <div
+                      className="pointer-events-none absolute inset-y-0 right-[8%] w-px bg-white/90"
+                      aria-hidden
+                    />
                   </div>
-                </>
+                </div>
               )}
-            </>
-          ) : (
-            <>
+            </div>
+
+            {/* Scale */}
+            <div className="flex shrink-0 items-center justify-end gap-3 px-4 pb-2 sm:px-6">
+              <label className="flex items-center gap-2 text-xs font-medium text-zinc-600">
+                Scale
+                <input
+                  type="range"
+                  min={1}
+                  max={2}
+                  step={0.01}
+                  value={scale}
+                  onChange={(e) => setScale(Number(e.target.value))}
+                  className="h-1.5 w-28 cursor-pointer accent-[#20d5ec] sm:w-40"
+                  aria-label="Phóng to ảnh bìa"
+                />
+              </label>
+            </div>
+
+            {/* Filmstrip + Upload cover */}
+            <div className="flex shrink-0 items-center gap-2 border-t border-zinc-200 bg-white px-2 py-3 sm:gap-3 sm:px-4">
               <input
                 ref={coverImageInputRef}
                 type="file"
@@ -568,60 +639,150 @@ export function CoverPickerModal({
               <button
                 type="button"
                 onClick={() => coverImageInputRef.current?.click()}
-                onDragOver={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                }}
-                onDrop={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  onPickImageFile(e.dataTransfer?.files?.[0] ?? null)
-                }}
-                className="flex w-full flex-col items-center rounded-xl border border-dashed border-zinc-600 bg-zinc-950/80 px-4 py-12 text-center transition hover:border-zinc-500"
+                className={`flex h-[72px] w-16 shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border text-[10px] font-semibold leading-tight transition sm:w-[72px] sm:text-[11px] ${
+                  tab === 'upload'
+                    ? 'border-sky-500 bg-sky-50 text-sky-700 ring-1 ring-sky-400'
+                    : 'border-zinc-300 bg-zinc-50 text-zinc-700 hover:bg-zinc-100'
+                }`}
               >
-                <IoCloudUploadOutline className="text-4xl text-zinc-500" aria-hidden />
-                <p className="mt-3 text-sm font-semibold text-zinc-200">Kéo và thả tệp vào đây</p>
-                <p className="mt-1 text-sm text-zinc-500">
-                  Hoặc{' '}
-                  <span className="font-medium text-sky-400 underline">chọn tệp</span>
-                </p>
-                <p className="mt-4 text-xs text-zinc-600">
-                  Định dạng hỗ trợ: JPG, JPEG, PNG và WebP.
-                </p>
+                <IoAdd className="text-xl" aria-hidden />
+                Tải ảnh bìa
               </button>
-              {uploadPreviewUrl ? (
-                <div className="mt-4 flex justify-center">
-                  <img
-                    src={uploadPreviewUrl}
-                    alt=""
-                    className="max-h-64 max-w-full rounded-lg border border-zinc-700 object-contain"
-                  />
+
+              <button
+                type="button"
+                aria-label="Cuộn dải ảnh sang trái"
+                aria-disabled={filmstripAtStart}
+                onClick={() => scrollFilmstrip(-1)}
+                className={`hidden h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 sm:flex ${
+                  filmstripAtStart ? 'cursor-default opacity-40' : ''
+                }`}
+              >
+                <IoChevronBack className="text-lg" aria-hidden />
+              </button>
+
+              <div
+                ref={filmstripRef}
+                role="region"
+                aria-label="Dải khung hình"
+                tabIndex={0}
+                onScroll={syncFilmstripScrollState}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowLeft') {
+                    e.preventDefault()
+                    scrollFilmstrip(-1)
+                  } else if (e.key === 'ArrowRight') {
+                    e.preventDefault()
+                    scrollFilmstrip(1)
+                  }
+                }}
+                className="min-h-[72px] min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain scrollbar-none touch-pan-x"
+              >
+                <div ref={filmstripTrackRef} className="flex w-max gap-1.5 pr-0.5">
+                  {frames.map((f, i) => (
+                    <button
+                      key={`${f.time}-${i}`}
+                      type="button"
+                      onClick={() => {
+                        setTab('video')
+                        setSelectedIdx(i)
+                      }}
+                      className={`h-[72px] w-[52px] shrink-0 cursor-pointer overflow-hidden rounded-md border-2 transition ${
+                        tab === 'video' && selectedIdx === i
+                          ? 'border-sky-500 ring-1 ring-sky-400'
+                          : 'border-transparent opacity-85 hover:opacity-100'
+                      }`}
+                    >
+                      <img
+                        src={f.dataUrl}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        loading="eager"
+                        decoding="async"
+                        onLoad={syncFilmstripScrollState}
+                      />
+                    </button>
+                  ))}
                 </div>
-              ) : null}
-            </>
-          )}
+              </div>
 
-          {error ? <p className="mt-3 text-sm text-amber-400">{error}</p> : null}
-        </div>
+              <button
+                type="button"
+                aria-label="Cuộn dải ảnh sang phải"
+                aria-disabled={filmstripAtEnd}
+                onClick={() => scrollFilmstrip(1)}
+                className={`hidden h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 sm:flex ${
+                  filmstripAtEnd ? 'cursor-default opacity-40' : ''
+                }`}
+              >
+                <IoChevronForward className="text-lg" aria-hidden />
+              </button>
+            </div>
 
-        <div className="flex justify-end gap-2 border-t border-zinc-800 px-4 py-3">
-          <button
-            type="button"
-            className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800"
-            onClick={onClose}
-            disabled={busy}
-          >
-            Hủy
-          </button>
-          <button
-            type="button"
-            className="rounded-lg bg-[#fe2c55] px-5 py-2 text-sm font-semibold text-white hover:bg-[#e62a4d] disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400 disabled:opacity-100"
-            onClick={() => void handleConfirm()}
-            disabled={!canConfirm}
-            aria-disabled={!canConfirm}
-          >
-            {busy ? 'Đang lưu…' : 'Xác nhận'}
-          </button>
+            {error ? (
+              <p className="shrink-0 border-t border-amber-100 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+                {error}
+              </p>
+            ) : null}
+          </div>
+
+          {/* Cột phải: Preview in profile (4:3) */}
+          <aside className="hidden w-[240px] shrink-0 flex-col border-l border-zinc-200 bg-zinc-50 lg:flex xl:w-[280px]">
+            <div className="flex min-h-0 flex-1 flex-col items-center justify-center p-4">
+              <div className="w-full max-w-[220px] overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-md">
+                <div className="flex items-center justify-between px-3 pt-2.5 text-[10px] font-semibold tabular-nums text-zinc-900">
+                  <span>8:00</span>
+                  <div className="flex items-center gap-1 text-zinc-700" aria-hidden>
+                    <span className="h-1.5 w-3 rounded-sm bg-zinc-700" />
+                    <span className="h-2 w-3 rounded-[2px] border border-zinc-700" />
+                  </div>
+                </div>
+                <div className="flex flex-col items-center px-3 pb-2 pt-3">
+                  <AvatarImage
+                    src={avatarSrc}
+                    alt=""
+                    className="h-14 w-14 rounded-full object-cover ring-1 ring-zinc-200"
+                  />
+                  <p className="mt-2 max-w-full truncate text-center text-[13px] font-bold text-zinc-900">
+                    {displayName}
+                  </p>
+                  <div className="mt-3 grid w-full grid-cols-3 gap-1 text-center">
+                    <div>
+                      <p className="text-sm font-bold text-zinc-900">{formatCompact(following)}</p>
+                      <p className="text-[10px] text-zinc-500">Following</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-zinc-900">{formatCompact(followers)}</p>
+                      <p className="text-[10px] text-zinc-500">Followers</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-zinc-900">{formatCompact(likesTotal)}</p>
+                      <p className="text-[10px] text-zinc-500">Likes</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-px bg-zinc-200 p-px">
+                  <div className="relative aspect-3/4 overflow-hidden bg-zinc-100">
+                    {previewSrc ? (
+                      <img
+                        src={previewSrc}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        style={{ transform: `scale(${scale})` }}
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-zinc-200" />
+                    )}
+                  </div>
+                  <div className="aspect-3/4 bg-zinc-100" />
+                  <div className="aspect-3/4 bg-zinc-100" />
+                </div>
+              </div>
+              <p className="mt-3 text-center text-xs text-zinc-500">
+                Preview in profile (4:3)
+              </p>
+            </div>
+          </aside>
         </div>
       </div>
     </div>
