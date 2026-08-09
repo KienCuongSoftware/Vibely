@@ -596,32 +596,32 @@ export function CoverPickerModal({
 
   return (
     <div
-      className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 p-2 sm:p-4"
+      className="fixed inset-0 z-100 flex items-center justify-center bg-black/70 p-2 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="cover-modal-title"
     >
-      <div className="flex h-[min(920px,96vh)] w-full max-w-[1180px] flex-col overflow-hidden rounded-xl bg-white text-zinc-900 shadow-2xl">
+      <div className="flex h-[min(920px,96vh)] w-full max-w-[1180px] flex-col overflow-hidden rounded-xl bg-[#121212] text-zinc-100 shadow-2xl ring-1 ring-white/10">
         {/* Header kiểu TikTok */}
-        <div className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-3 py-2.5 sm:px-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-3 py-2.5 sm:px-4">
           <div className="flex min-w-0 items-center gap-1">
             <button
               type="button"
-              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-700 hover:bg-zinc-100"
+              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-200 hover:bg-white/10"
               onClick={onClose}
               aria-label="Quay lại"
               disabled={busy}
             >
               <IoArrowBack className="text-xl" aria-hidden />
             </button>
-            <h2 id="cover-modal-title" className="truncate text-base font-bold text-zinc-900">
+            <h2 id="cover-modal-title" className="truncate text-base font-bold text-white">
               Chỉnh ảnh bìa
             </h2>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
-              className="cursor-pointer rounded-lg px-3 py-1.5 text-sm font-semibold text-zinc-600 hover:bg-zinc-100 disabled:opacity-50 sm:px-4"
+              className="cursor-pointer rounded-lg px-3 py-1.5 text-sm font-semibold text-zinc-300 hover:bg-white/10 disabled:opacity-50 sm:px-4"
               onClick={onClose}
               disabled={busy}
             >
@@ -629,7 +629,7 @@ export function CoverPickerModal({
             </button>
             <button
               type="button"
-              className="cursor-pointer rounded-lg bg-[#fe2c55] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[#e62a4d] disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500"
+              className="cursor-pointer rounded-lg bg-[#fe2c55] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[#e62a4d] disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
               onClick={() => void handleConfirm()}
               disabled={!canConfirm}
             >
@@ -640,14 +640,14 @@ export function CoverPickerModal({
 
         <div className="flex min-h-0 flex-1">
           {/* Cột trái: rail dọc Sticker/Text + panel (kiểu TikTok) */}
-          <aside className="hidden shrink-0 border-r border-zinc-200 bg-zinc-50 sm:flex">
-            <nav className="flex w-14 shrink-0 flex-col border-r border-zinc-200 bg-white py-2">
+          <aside className="hidden shrink-0 border-r border-white/10 bg-[#1a1a1a] sm:flex">
+            <nav className="flex w-14 shrink-0 flex-col border-r border-white/10 bg-[#121212] py-2">
               <button
                 type="button"
                 className={`mx-1.5 flex cursor-pointer flex-col items-center gap-0.5 rounded-lg px-1 py-2.5 text-[10px] font-semibold transition ${
                   toolTab === 'sticker'
-                    ? 'bg-zinc-100 text-zinc-900'
-                    : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-800'
+                    ? 'bg-white/10 text-white'
+                    : 'text-zinc-400 hover:bg-white/5 hover:text-zinc-200'
                 }`}
                 onClick={() => setToolTab('sticker')}
                 aria-pressed={toolTab === 'sticker'}
@@ -659,8 +659,8 @@ export function CoverPickerModal({
                 type="button"
                 className={`mx-1.5 mt-1 flex cursor-pointer flex-col items-center gap-0.5 rounded-lg px-1 py-2.5 text-[10px] font-semibold transition ${
                   toolTab === 'text'
-                    ? 'bg-zinc-100 text-zinc-900'
-                    : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-800'
+                    ? 'bg-white/10 text-white'
+                    : 'text-zinc-400 hover:bg-white/5 hover:text-zinc-200'
                 }`}
                 onClick={() => setToolTab('text')}
                 aria-pressed={toolTab === 'text'}
@@ -681,10 +681,10 @@ export function CoverPickerModal({
                         title="Thêm sticker lên ảnh bìa"
                         aria-pressed={selected}
                         onClick={() => placeSticker(preset)}
-                        className={`relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden rounded-lg border bg-zinc-900/90 p-1.5 transition ${
+                        className={`relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden rounded-lg border bg-black p-1.5 transition ${
                           selected
-                            ? 'border-sky-500 ring-2 ring-sky-400/80'
-                            : 'border-zinc-200 hover:border-zinc-400'
+                            ? 'border-[#20d5ec] ring-2 ring-[#20d5ec]/50'
+                            : 'border-white/10 hover:border-white/30'
                         }`}
                       >
                         <img
@@ -700,7 +700,7 @@ export function CoverPickerModal({
                   })}
                 </div>
               ) : (
-                <p className="text-xs leading-relaxed text-zinc-500">
+                <p className="text-xs leading-relaxed text-zinc-400">
                   Thêm chữ lên ảnh bìa sẽ sớm có. Hiện bạn có thể chọn sticker, khung hình hoặc tải ảnh lên.
                 </p>
               )}
@@ -708,16 +708,16 @@ export function CoverPickerModal({
           </aside>
 
           {/* Cột giữa: canvas ngang + scale + filmstrip */}
-          <div className="flex min-w-0 flex-1 flex-col bg-zinc-100">
+          <div className="flex min-w-0 flex-1 flex-col bg-[#0a0a0a]">
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-3 sm:px-6">
               {!canUseVideoTab && tab === 'video' ? (
-                <p className="max-w-sm rounded-lg border border-amber-200 bg-amber-50 p-3 text-center text-sm text-amber-800">
+                <p className="max-w-sm rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-center text-sm text-amber-200">
                   Không có video để trích khung hình. Hãy dùng nút tải ảnh bìa bên dưới.
                 </p>
               ) : stripLoading && tab === 'video' ? (
-                <p className="text-sm text-zinc-500">Đang tạo khung hình từ video…</p>
+                <p className="text-sm text-zinc-400">Đang tạo khung hình từ video…</p>
               ) : stripError && tab === 'video' ? (
-                <p className="max-w-sm rounded-lg border border-rose-200 bg-rose-50 p-3 text-center text-sm text-rose-700">
+                <p className="max-w-sm rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-center text-sm text-rose-300">
                   {stripError}
                 </p>
               ) : (
@@ -725,7 +725,7 @@ export function CoverPickerModal({
                   {/* Canvas ngang — guide dọc = vùng crop dọc trên feed */}
                   <div
                     ref={canvasStageRef}
-                    className="relative aspect-video w-full overflow-hidden rounded-sm bg-black shadow-lg ring-1 ring-zinc-300"
+                    className="relative aspect-video w-full overflow-hidden rounded-sm bg-black shadow-lg ring-1 ring-white/15"
                     onPointerDown={() => setStickerSelected(false)}
                   >
                     {previewSrc ? (
@@ -766,7 +766,7 @@ export function CoverPickerModal({
                       >
                         <div
                           className={`relative ${
-                            stickerSelected ? 'ring-2 ring-sky-400 ring-offset-2 ring-offset-transparent' : ''
+                            stickerSelected ? 'ring-2 ring-[#20d5ec] ring-offset-2 ring-offset-transparent' : ''
                           }`}
                         >
                           <img
@@ -781,7 +781,7 @@ export function CoverPickerModal({
                               <button
                                 type="button"
                                 aria-label="Xóa sticker"
-                                className="absolute -right-2 -top-2 z-20 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-zinc-900 text-[11px] font-bold text-white shadow"
+                                className="absolute -right-2 -top-2 z-20 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-zinc-900 text-[11px] font-bold text-white shadow ring-1 ring-white/20"
                                 onPointerDown={(e) => e.stopPropagation()}
                                 onClick={(e) => {
                                   e.stopPropagation()
@@ -792,19 +792,19 @@ export function CoverPickerModal({
                               </button>
                               <span
                                 aria-hidden
-                                className="absolute -left-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-sky-400 bg-white shadow"
+                                className="absolute -left-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
                               />
                               <span
                                 aria-hidden
-                                className="absolute -right-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-sky-400 bg-white shadow"
+                                className="absolute -right-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
                               />
                               <span
                                 aria-hidden
-                                className="absolute -bottom-1.5 -left-1.5 h-3 w-3 rounded-full border-2 border-sky-400 bg-white shadow"
+                                className="absolute -bottom-1.5 -left-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
                               />
                               <span
                                 aria-hidden
-                                className="absolute -bottom-1.5 -right-1.5 h-3 w-3 cursor-nwse-resize rounded-full border-2 border-sky-400 bg-white shadow"
+                                className="absolute -bottom-1.5 -right-1.5 h-3 w-3 cursor-nwse-resize rounded-full border-2 border-[#20d5ec] bg-white shadow"
                                 onPointerDown={onStickerResizePointerDown}
                               />
                             </>
@@ -828,10 +828,10 @@ export function CoverPickerModal({
 
             {/* Scale */}
             <div className="flex shrink-0 items-center justify-end gap-2 px-4 pb-2 sm:px-6">
-              <span className="text-xs font-medium text-zinc-600">Scale</span>
+              <span className="text-xs font-medium text-zinc-400">Scale</span>
               <button
                 type="button"
-                className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-lg leading-none text-zinc-500 hover:bg-zinc-200"
+                className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-lg leading-none text-zinc-400 hover:bg-white/10"
                 aria-label="Thu nhỏ"
                 onClick={() => setScale((s) => Math.max(1, Number((s - 0.05).toFixed(2))))}
               >
@@ -849,7 +849,7 @@ export function CoverPickerModal({
               />
               <button
                 type="button"
-                className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-lg leading-none text-zinc-500 hover:bg-zinc-200"
+                className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-lg leading-none text-zinc-400 hover:bg-white/10"
                 aria-label="Phóng to"
                 onClick={() => setScale((s) => Math.min(2, Number((s + 0.05).toFixed(2))))}
               >
@@ -858,7 +858,7 @@ export function CoverPickerModal({
             </div>
 
             {/* Filmstrip ngang + Upload cover */}
-            <div className="flex shrink-0 items-center gap-2 border-t border-zinc-200 bg-white px-2 py-3 sm:gap-3 sm:px-4">
+            <div className="flex shrink-0 items-center gap-2 border-t border-white/10 bg-[#121212] px-2 py-3 sm:gap-3 sm:px-4">
               <input
                 ref={coverImageInputRef}
                 type="file"
@@ -871,8 +871,8 @@ export function CoverPickerModal({
                 onClick={() => coverImageInputRef.current?.click()}
                 className={`flex h-14 w-[88px] shrink-0 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-md border text-[10px] font-semibold leading-tight transition sm:text-[11px] ${
                   tab === 'upload'
-                    ? 'border-sky-500 bg-sky-50 text-sky-700 ring-1 ring-sky-400'
-                    : 'border-zinc-300 bg-zinc-50 text-zinc-700 hover:bg-zinc-100'
+                    ? 'border-[#20d5ec] bg-[#20d5ec]/10 text-[#20d5ec] ring-1 ring-[#20d5ec]/40'
+                    : 'border-white/15 bg-white/5 text-zinc-200 hover:bg-white/10'
                 }`}
               >
                 <IoAdd className="text-xl" aria-hidden />
@@ -884,7 +884,7 @@ export function CoverPickerModal({
                 aria-label="Cuộn dải ảnh sang trái"
                 aria-disabled={filmstripAtStart}
                 onClick={() => scrollFilmstrip(-1)}
-                className={`hidden h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 sm:flex ${
+                className={`hidden h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-white/5 text-zinc-200 hover:bg-white/10 sm:flex ${
                   filmstripAtStart ? 'cursor-default opacity-40' : ''
                 }`}
               >
@@ -919,7 +919,7 @@ export function CoverPickerModal({
                       }}
                       className={`h-14 w-24 shrink-0 cursor-pointer overflow-hidden rounded-md border-2 transition ${
                         tab === 'video' && selectedIdx === i
-                          ? 'border-sky-500 ring-1 ring-sky-400'
+                          ? 'border-[#20d5ec] ring-1 ring-[#20d5ec]/50'
                           : 'border-transparent opacity-85 hover:opacity-100'
                       }`}
                     >
@@ -941,7 +941,7 @@ export function CoverPickerModal({
                 aria-label="Cuộn dải ảnh sang phải"
                 aria-disabled={filmstripAtEnd}
                 onClick={() => scrollFilmstrip(1)}
-                className={`hidden h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 sm:flex ${
+                className={`hidden h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-white/5 text-zinc-200 hover:bg-white/10 sm:flex ${
                   filmstripAtEnd ? 'cursor-default opacity-40' : ''
                 }`}
               >
@@ -950,16 +950,16 @@ export function CoverPickerModal({
             </div>
 
             {error ? (
-              <p className="shrink-0 border-t border-amber-100 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+              <p className="shrink-0 border-t border-amber-500/20 bg-amber-500/10 px-4 py-2 text-sm text-amber-200">
                 {error}
               </p>
             ) : null}
           </div>
 
           {/* Cột phải: phone dọc — Preview in profile (4:3) */}
-          <aside className="hidden w-[260px] shrink-0 flex-col border-l border-zinc-200 bg-zinc-50 lg:flex xl:w-[300px]">
+          <aside className="hidden w-[260px] shrink-0 flex-col border-l border-white/10 bg-[#1a1a1a] lg:flex xl:w-[300px]">
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-4">
-              <div className="flex aspect-9/16 w-[220px] max-h-[min(560px,70vh)] flex-col overflow-hidden rounded-[32px] border border-zinc-300 bg-white shadow-lg ring-1 ring-zinc-200/80">
+              <div className="flex aspect-9/16 w-[220px] max-h-[min(560px,70vh)] flex-col overflow-hidden rounded-[32px] border border-zinc-300 bg-white shadow-lg ring-1 ring-black/20">
                 {/* Thanh trên điện thoại — asset + fallback CSS */}
                 <div className="relative w-full shrink-0 overflow-hidden bg-white">
                   <div className="flex items-center justify-between px-3 py-1.5 text-[10px] font-semibold tabular-nums text-zinc-900">
@@ -1053,7 +1053,7 @@ export function CoverPickerModal({
                   <div className="aspect-4/3 bg-zinc-50" />
                 </div>
               </div>
-              <p className="mt-3 text-center text-xs text-zinc-500">
+              <p className="mt-3 text-center text-xs text-zinc-400">
                 Preview in profile (4:3)
               </p>
             </div>
