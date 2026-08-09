@@ -129,20 +129,20 @@ function buildOriginalityViolationCopy(originalityStatus) {
   if (Number(originalityStatus?.visualSimilarity || 0) >= 0.55) {
     reasons.push('nội dung trùng khớp cao với video đã có trên Vibely')
   }
-  if (reasons.length === 0) {
-    reasons.push('nội dung không nguyên gốc hoặc chất lượng thấp')
-  }
 
+  // TikTok-style title: "Unoriginal, low-quality, and QR code content"
   const reasonTitle =
     decision === 'BLOCK'
-      ? 'Nội dung không nguyên gốc — bị chặn đăng'
-      : 'Nội dung không nguyên gốc, chất lượng thấp hoặc dấu hiệu tái tải'
+      ? 'Nội dung không nguyên gốc, chất lượng thấp hoặc mã QR — bị chặn đăng'
+      : 'Nội dung không nguyên gốc, chất lượng thấp và nội dung mã QR'
 
   const reasonBody =
-    'Nội dung không nguyên gốc gồm video nhập/sao chép mà không có chỉnh sửa sáng tạo rõ ràng, ' +
-    'video mang watermark/logo nền tảng khác, hoặc tệp đến từ công cụ tải bên thứ ba. ' +
-    'Nội dung chất lượng thấp gồm video quá ngắn, ảnh tĩnh hoặc nội dung gần như không đổi cảnh. ' +
-    `(Phát hiện: ${reasons.join('; ')}.)`
+    'Để duy trì trải nghiệm tích cực mà người dùng mong đợi trên nền tảng Vibely, ' +
+    'nội dung không nguyên gốc và chất lượng thấp không đủ điều kiện được đề xuất. ' +
+    'Nội dung không nguyên gốc là nội dung chỉ được nhập hoặc sao chép từ nguồn khác mà không có chỉnh sửa sáng tạo mới. ' +
+    'Video có thể không nguyên gốc nếu có watermark hoặc logo. ' +
+    'Nội dung chất lượng thấp gồm video rất ngắn, ảnh tĩnh và video chỉ gồm GIF.' +
+    (reasons.length > 0 ? ` (Phát hiện: ${reasons.join('; ')}.)` : '')
 
   return { reasonTitle, reasonBody }
 }
@@ -290,7 +290,7 @@ export function UploadPage() {
       return {
         tone: 'pending',
         detail:
-          'Đang tiến hành kiểm tra. Quá trình này sẽ mất khoảng vài phút. Video dài hơn có thể mất nhiều thời gian hơn.',
+          'Đang kiểm tra. Việc này sẽ mất khoảng 10 phút. Video dài hơn có thể mất nhiều thời gian hơn.',
         showDetails: false,
       }
     }
@@ -298,7 +298,7 @@ export function UploadPage() {
       return {
         tone: 'warn',
         detail:
-          'Kiểm tra chưa hoàn tất. Bạn vẫn có thể đăng; video có thể ẩn khỏi Đề xuất đến khi kiểm duyệt xong.',
+          'Kiểm tra chưa hoàn tất. Bạn vẫn có thể đăng; video có thể bị hạn chế hiển thị đến khi kiểm duyệt xong.',
         showDetails: false,
       }
     }
@@ -312,14 +312,14 @@ export function UploadPage() {
     if (decision === 'LIMIT_DISTRIBUTION' || decision === 'REVIEW') {
       return {
         tone: 'warn',
-        detail: 'Nội dung có thể bị hạn chế phân phối. Bạn vẫn có thể đăng.',
+        detail:
+          'Nội dung có thể bị hạn chế. Bạn vẫn có thể đăng nhưng việc sửa đổi nó để tuân theo nguyên tắc của chúng tôi có thể cải thiện khả năng hiển thị.',
         showDetails: true,
       }
     }
     return {
       tone: 'ok',
-      detail:
-        'Không phát hiện vấn đề. Tuy nhiên, video của bạn vẫn có thể bị gỡ bỏ sau này nếu vi phạm Nguyên tắc Cộng đồng của chúng tôi.',
+      detail: 'Không phát hiện vấn đề.',
       showDetails: false,
     }
   }, [uploadedVideo?.publicId, originalityStatus, studioSettings.contentCheckLite])
@@ -1609,7 +1609,7 @@ export function UploadPage() {
                 <p className="mt-1 text-sm text-zinc-400">
                   {String(originalityStatus?.decision || '') === 'BLOCK'
                     ? 'Video này không thể đăng vì nghi ngờ không nguyên gốc. Hãy thay thế bằng video khác.'
-                    : 'Bạn vẫn có thể đăng, nhưng chỉnh sửa để tuân thủ nguyên tắc có thể cải thiện khả năng hiển thị.'}
+                    : 'Bạn vẫn có thể đăng nhưng việc sửa đổi nó để tuân theo nguyên tắc của chúng tôi có thể cải thiện khả năng hiển thị.'}
                 </p>
               </div>
               <button
@@ -1635,7 +1635,7 @@ export function UploadPage() {
 
               <section>
                 <h3 className="text-sm font-bold text-zinc-100">Chi tiết vi phạm</h3>
-                <p className="mt-2 text-sm text-zinc-400">Một số dấu hiệu tiềm ẩn đã được phát hiện.</p>
+                <p className="mt-2 text-sm text-zinc-400">Một số vi phạm tiềm ẩn đã được tìm thấy.</p>
                 <div className="mt-3 inline-block overflow-hidden rounded-lg bg-zinc-900 ring-1 ring-zinc-700">
                   {thumbnailUrl || uploadedVideo?.playbackUrl ? (
                     <div className="relative h-28 w-28">
@@ -1673,7 +1673,7 @@ export function UploadPage() {
             <div className="flex justify-end border-t border-zinc-800 px-5 py-4">
               <button
                 type="button"
-                className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#fe2c55] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e62a4d]"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-600 bg-zinc-800 px-4 py-2.5 text-sm font-semibold text-zinc-100 hover:bg-zinc-700"
                 onClick={() => {
                   setOriginalityDetailsOpen(false)
                   void onPickFile()

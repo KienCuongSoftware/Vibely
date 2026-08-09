@@ -52,7 +52,7 @@ function CheckStatusRow({ tone, children }) {
       : tone === 'pending'
         ? 'text-zinc-400'
         : tone === 'warn' || tone === 'danger'
-          ? 'text-orange-400'
+          ? 'text-red-400'
           : 'text-zinc-500'
 
   return (
@@ -65,7 +65,7 @@ function CheckStatusRow({ tone, children }) {
           aria-hidden
         />
       ) : tone === 'warn' || tone === 'danger' ? (
-        <IoWarningOutline className="mt-0.5 shrink-0 text-base text-orange-400" aria-hidden />
+        <IoWarningOutline className="mt-0.5 shrink-0 text-base text-red-500" aria-hidden />
       ) : null}
       <p className="min-w-0">{children}</p>
     </div>
@@ -130,7 +130,7 @@ export function UploadChecksPanel({
                       {' '}
                       <button
                         type="button"
-                        className="cursor-pointer font-semibold text-orange-300 underline decoration-orange-400/80 underline-offset-2 hover:text-orange-200"
+                        className="cursor-pointer font-semibold text-sky-400 underline decoration-sky-400/80 underline-offset-2 hover:text-sky-300"
                         onClick={onOpenDetails}
                       >
                         Xem chi tiết
