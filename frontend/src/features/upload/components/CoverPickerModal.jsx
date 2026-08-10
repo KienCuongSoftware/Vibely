@@ -31,44 +31,236 @@ const COVER_PREVIEW_AVATAR = '/images/video-peview/avatar-user-preview.png'
 const COVER_PREVIEW_TOP_PHONE = '/images/video-peview/top-phone.png'
 const COVER_PREVIEW_DISPLAY_NAME = 'Người Ổn Bất Tỉnh'
 
-/** Stickers chữ/banner kiểu TikTok Studio (ảnh nền trong suốt). */
+/** Stickers chữ kiểu TikTok: thumbnail PNG + template CSS/canvas có thể sửa text. */
 const COVER_STICKERS = [
-  '4c79db00-268d-48e2-b9fe-7c3b7bc2707d.png',
-  '7f474bee-88ce-461c-a347-843cea4145f4.png',
-  '41dd55c0-fe15-47dd-b954-fd9ca564ee68.png',
-  '565d8583-44a3-477d-95e1-25a681de7d89.png',
-  '8105a2c6-de42-4a3b-8dc7-86ba50be90b1.png',
-  'a2f22926-b7ce-4170-bd54-0835a000cfb2.png',
-  'bf540eca-2aa4-4fb2-a0c3-324cf115c51c.png',
-  'a9ab0427-53f6-4f35-9755-08facadb1286.png',
-  'd3569db3-e6b1-4995-8d64-b2282aecdcab.png',
-  'e6bd373d-b3f5-45fb-944d-1fa4d1b07add.png',
-].map((file) => ({
-  id: file.replace(/\.png$/i, ''),
-  src: `/images/text-preview/${file}`,
-}))
+  {
+    id: 'note-white',
+    thumb: '/images/text-preview/4c79db00-268d-48e2-b9fe-7c3b7bc2707d.png',
+    defaultText: 'Text',
+    styleKey: 'noteWhite',
+  },
+  {
+    id: 'badge-dark',
+    thumb: '/images/text-preview/7f474bee-88ce-461c-a347-843cea4145f4.png',
+    defaultText: 'Text',
+    styleKey: 'badgeDark',
+  },
+  {
+    id: 'frame-glitch',
+    thumb: '/images/text-preview/41dd55c0-fe15-47dd-b954-fd9ca564ee68.png',
+    defaultText: 'Text',
+    styleKey: 'frameGlitch',
+  },
+  {
+    id: 'box-cyan',
+    thumb: '/images/text-preview/565d8583-44a3-477d-95e1-25a681de7d89.png',
+    defaultText: 'Text',
+    styleKey: 'boxCyan',
+  },
+  {
+    id: 'pink-glitch',
+    thumb: '/images/text-preview/8105a2c6-de42-4a3b-8dc7-86ba50be90b1.png',
+    defaultText: 'Text',
+    styleKey: 'pinkGlitch',
+  },
+  {
+    id: 'pink-sticker',
+    thumb: '/images/text-preview/a2f22926-b7ce-4170-bd54-0835a000cfb2.png',
+    defaultText: 'Text',
+    styleKey: 'pinkSticker',
+  },
+  {
+    id: 'yellow-outline',
+    thumb: '/images/text-preview/bf540eca-2aa4-4fb2-a0c3-324cf115c51c.png',
+    defaultText: 'Text',
+    styleKey: 'yellowOutline',
+  },
+  {
+    id: 'bubble-teal',
+    thumb: '/images/text-preview/a9ab0427-53f6-4f35-9755-08facadb1286.png',
+    defaultText: 'Text',
+    styleKey: 'bubbleTeal',
+  },
+  {
+    id: 'window-stack',
+    thumb: '/images/text-preview/d3569db3-e6b1-4995-8d64-b2282aecdcab.png',
+    defaultText: 'Text',
+    styleKey: 'windowStack',
+  },
+  {
+    id: 'pill-lavender',
+    thumb: '/images/text-preview/e6bd373d-b3f5-45fb-944d-1fa4d1b07add.png',
+    defaultText: 'Text',
+    styleKey: 'pillLavender',
+  },
+]
 
-const DEFAULT_STICKER_WIDTH_PCT = 46
+const STICKER_STYLE_UI = {
+  noteWhite:
+    'inline-flex max-w-full items-center justify-center rounded-md bg-white px-3 py-1.5 text-[clamp(14px,2.8vw,28px)] font-extrabold leading-tight text-black shadow-[4px_4px_0_#00f2ea,-3px_-2px_0_#fe2c55]',
+  badgeDark:
+    'inline-flex max-w-full items-center justify-center rounded-full border-2 border-white bg-black px-4 py-1.5 text-[clamp(14px,2.8vw,28px)] font-extrabold leading-tight text-white shadow-[0_-2px_0_#00f2ea,0_2px_0_#fe2c55]',
+  frameGlitch:
+    'inline-flex max-w-full items-center justify-center border-y-4 border-l-4 border-r-4 border-y-[#00f2ea] border-l-[#00f2ea] border-r-[#fe2c55] bg-transparent px-3 py-1 text-[clamp(14px,2.8vw,28px)] font-extrabold leading-tight text-white [text-shadow:2px_0_0_#00f2ea,-2px_0_0_#fe2c55]',
+  boxCyan:
+    'inline-flex max-w-full items-center justify-center rounded-sm border-4 border-[#00c8e0] bg-white px-3 py-1.5 text-[clamp(14px,2.8vw,28px)] font-extrabold leading-tight text-black',
+  pinkGlitch:
+    'inline-flex max-w-full items-center justify-center bg-[#ff2d55] px-3 py-1.5 text-[clamp(14px,2.8vw,28px)] font-extrabold leading-tight text-white shadow-[3px_3px_0_#fff,-2px_-2px_0_#000]',
+  pinkSticker:
+    'inline-flex max-w-full items-center justify-center text-[clamp(16px,3.2vw,32px)] font-extrabold leading-none text-[#ff2d55] [text-shadow:0_0_0_#fff,2px_2px_0_#fff,-2px_-2px_0_#fff,2px_-2px_0_#fff,-2px_2px_0_#fff,3px_4px_0_#111]',
+  yellowOutline:
+    'inline-flex max-w-full rotate-[-6deg] items-center justify-center text-[clamp(16px,3.2vw,32px)] font-extrabold leading-none text-[#ffe600] [text-shadow:0_0_0_#111,2px_2px_0_#111,-2px_-2px_0_#111,2px_-2px_0_#111,-2px_2px_0_#111]',
+  bubbleTeal:
+    'inline-flex max-w-full items-center justify-center rounded-2xl border-[5px] border-white bg-[#54b8a0] px-4 py-2 text-[clamp(14px,2.8vw,28px)] font-extrabold leading-tight text-white',
+  windowStack:
+    'inline-flex max-w-full items-center justify-center rounded-md border-2 border-[#5b6cff] bg-white px-3 py-2 text-[clamp(14px,2.8vw,28px)] font-extrabold leading-tight text-[#3d4fd8] shadow-[6px_-6px_0_#5b6cff]',
+  pillLavender:
+    'inline-flex max-w-full items-center justify-center rounded-full bg-[#838cef] px-5 py-2 text-[clamp(14px,2.8vw,28px)] font-extrabold leading-tight text-white',
+  plainText:
+    'inline-flex max-w-full items-center justify-center text-[clamp(16px,3.2vw,32px)] font-extrabold leading-tight text-white [text-shadow:1px_1px_2px_rgba(0,0,0,.8)]',
+}
+
+const DEFAULT_STICKER_WIDTH_PCT = 42
 
 function loadHtmlImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.decoding = 'async'
     img.onload = () => resolve(img)
-    img.onerror = () => reject(new Error('Không tải được sticker.'))
+    img.onerror = () => reject(new Error('Không tải được ảnh.'))
     img.src = src
   })
 }
 
-/** Ghép sticker lên ảnh bìa trước khi upload (tọa độ % theo khung canvas). */
+/** Vẽ sticker chữ lên canvas export (không cần html2canvas). */
+function drawTextStickerOnCanvas(ctx, sticker, canvasW, canvasH) {
+  const text = String(sticker.text ?? 'Text').trim() || 'Text'
+  const wPct = Math.min(90, Math.max(12, Number(sticker.wPct) || DEFAULT_STICKER_WIDTH_PCT))
+  const maxW = (wPct / 100) * canvasW
+  const cx = ((Number(sticker.xPct) || 50) / 100) * canvasW
+  const cy = ((Number(sticker.yPct) || 50) / 100) * canvasH
+  const styleKey = sticker.styleKey || 'bubbleTeal'
+  const fontSize = Math.max(18, Math.round(maxW * 0.22))
+  ctx.save()
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.font = `800 ${fontSize}px Arial, Helvetica, sans-serif`
+
+  const padX = fontSize * 0.55
+  const padY = fontSize * 0.4
+  const metrics = ctx.measureText(text)
+  const textW = Math.min(maxW - padX * 2, metrics.width)
+  const boxW = Math.min(maxW, textW + padX * 2)
+  const boxH = fontSize + padY * 2
+  const x0 = cx - boxW / 2
+  const y0 = cy - boxH / 2
+  const r = Math.min(boxH / 2, fontSize * 0.45)
+
+  const roundRect = (x, y, w, h, radius) => {
+    const rr = Math.min(radius, w / 2, h / 2)
+    ctx.beginPath()
+    ctx.moveTo(x + rr, y)
+    ctx.arcTo(x + w, y, x + w, y + h, rr)
+    ctx.arcTo(x + w, y + h, x, y + h, rr)
+    ctx.arcTo(x, y + h, x, y, rr)
+    ctx.arcTo(x, y, x + w, y, rr)
+    ctx.closePath()
+  }
+
+  switch (styleKey) {
+    case 'noteWhite':
+      ctx.fillStyle = '#fff'
+      roundRect(x0, y0, boxW, boxH, 8)
+      ctx.fill()
+      ctx.fillStyle = '#000'
+      break
+    case 'badgeDark':
+      ctx.fillStyle = '#000'
+      roundRect(x0, y0, boxW, boxH, boxH / 2)
+      ctx.fill()
+      ctx.strokeStyle = '#fff'
+      ctx.lineWidth = Math.max(2, fontSize * 0.08)
+      ctx.stroke()
+      ctx.fillStyle = '#fff'
+      break
+    case 'frameGlitch':
+      ctx.strokeStyle = '#00f2ea'
+      ctx.lineWidth = Math.max(3, fontSize * 0.1)
+      ctx.strokeRect(x0, y0, boxW, boxH)
+      ctx.fillStyle = '#fff'
+      break
+    case 'boxCyan':
+      ctx.fillStyle = '#fff'
+      roundRect(x0, y0, boxW, boxH, 4)
+      ctx.fill()
+      ctx.strokeStyle = '#00c8e0'
+      ctx.lineWidth = Math.max(4, fontSize * 0.12)
+      ctx.stroke()
+      ctx.fillStyle = '#000'
+      break
+    case 'pinkGlitch':
+      ctx.fillStyle = '#ff2d55'
+      ctx.fillRect(x0, y0, boxW, boxH)
+      ctx.fillStyle = '#fff'
+      break
+    case 'pinkSticker':
+      ctx.lineWidth = Math.max(4, fontSize * 0.14)
+      ctx.strokeStyle = '#fff'
+      ctx.strokeText(text, cx, cy)
+      ctx.fillStyle = '#ff2d55'
+      ctx.fillText(text, cx, cy)
+      ctx.restore()
+      return
+    case 'yellowOutline':
+      ctx.translate(cx, cy)
+      ctx.rotate((-6 * Math.PI) / 180)
+      ctx.lineWidth = Math.max(5, fontSize * 0.16)
+      ctx.strokeStyle = '#111'
+      ctx.strokeText(text, 0, 0)
+      ctx.fillStyle = '#ffe600'
+      ctx.fillText(text, 0, 0)
+      ctx.restore()
+      return
+    case 'bubbleTeal':
+      ctx.fillStyle = '#54b8a0'
+      roundRect(x0, y0, boxW, boxH, 18)
+      ctx.fill()
+      ctx.strokeStyle = '#fff'
+      ctx.lineWidth = Math.max(5, fontSize * 0.14)
+      ctx.stroke()
+      ctx.fillStyle = '#fff'
+      break
+    case 'windowStack':
+      ctx.fillStyle = '#5b6cff'
+      ctx.fillRect(x0 + 8, y0 - 8, boxW, boxH)
+      ctx.fillStyle = '#fff'
+      roundRect(x0, y0, boxW, boxH, 6)
+      ctx.fill()
+      ctx.strokeStyle = '#5b6cff'
+      ctx.lineWidth = 3
+      ctx.stroke()
+      ctx.fillStyle = '#3d4fd8'
+      break
+    case 'pillLavender':
+      ctx.fillStyle = '#838cef'
+      roundRect(x0, y0, boxW, boxH, boxH / 2)
+      ctx.fill()
+      ctx.fillStyle = '#fff'
+      break
+    default:
+      ctx.fillStyle = '#fff'
+      break
+  }
+
+  ctx.fillText(text, cx, cy)
+  ctx.restore()
+}
+
 async function compositeCoverWithSticker(baseBlob, sticker) {
-  if (!sticker?.src) return baseBlob
+  if (!sticker) return baseBlob
   const baseUrl = URL.createObjectURL(baseBlob)
   try {
-    const [baseImg, stickerImg] = await Promise.all([
-      loadHtmlImage(baseUrl),
-      loadHtmlImage(sticker.src),
-    ])
+    const baseImg = await loadHtmlImage(baseUrl)
     const canvas = document.createElement('canvas')
     canvas.width = Math.max(1, baseImg.naturalWidth || baseImg.width)
     canvas.height = Math.max(1, baseImg.naturalHeight || baseImg.height)
@@ -76,19 +268,8 @@ async function compositeCoverWithSticker(baseBlob, sticker) {
     ctx.imageSmoothingEnabled = true
     ctx.imageSmoothingQuality = 'high'
     ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height)
-
-    const wPct = Math.min(90, Math.max(12, Number(sticker.wPct) || DEFAULT_STICKER_WIDTH_PCT))
-    const drawW = (wPct / 100) * canvas.width
-    const aspect =
-      (stickerImg.naturalHeight || stickerImg.height) /
-      Math.max(1, stickerImg.naturalWidth || stickerImg.width)
-    const drawH = drawW * aspect
-    const cx = ((Number(sticker.xPct) || 50) / 100) * canvas.width
-    const cy = ((Number(sticker.yPct) || 50) / 100) * canvas.height
-    ctx.drawImage(stickerImg, cx - drawW / 2, cy - drawH / 2, drawW, drawH)
-
-    const out = await canvasToJpegBlob(canvas, COVER_EXPORT_JPEG_QUALITY)
-    return out
+    drawTextStickerOnCanvas(ctx, sticker, canvas.width, canvas.height)
+    return canvasToJpegBlob(canvas, COVER_EXPORT_JPEG_QUALITY)
   } finally {
     URL.revokeObjectURL(baseUrl)
   }
@@ -236,9 +417,11 @@ export function CoverPickerModal({
   const [error, setError] = useState('')
   const [displayPreviewUrl, setDisplayPreviewUrl] = useState('')
   const [scale, setScale] = useState(1)
-  /** @type {[null | { id: string, src: string, xPct: number, yPct: number, wPct: number }, Function]} */
+  /** @type {[null | { id: string, styleKey: string, text: string, xPct: number, yPct: number, wPct: number }, Function]} */
   const [activeSticker, setActiveSticker] = useState(null)
   const [stickerSelected, setStickerSelected] = useState(true)
+  const [stickerEditing, setStickerEditing] = useState(false)
+  const stickerTextRef = useRef(null)
   const previewCacheRef = useRef(new Map())
   const selectedIdxRef = useRef(0)
   const coverImageInputRef = useRef(null)
@@ -299,6 +482,7 @@ export function CoverPickerModal({
     setScale(1)
     setActiveSticker(null)
     setStickerSelected(true)
+    setStickerEditing(false)
     setDisplayPreviewUrl('')
     previewCacheRef.current.forEach((cachedUrl) => URL.revokeObjectURL(cachedUrl))
     previewCacheRef.current.clear()
@@ -437,16 +621,53 @@ export function CoverPickerModal({
       if (prev?.id === preset.id) return prev
       return {
         id: preset.id,
-        src: preset.src,
+        styleKey: preset.styleKey,
+        text: prev?.text && prev.text !== 'Text' ? prev.text : preset.defaultText || 'Text',
         xPct: prev?.xPct ?? 50,
         yPct: prev?.yPct ?? 48,
         wPct: prev?.wPct ?? DEFAULT_STICKER_WIDTH_PCT,
       }
     })
+    setStickerEditing(true)
   }, [])
 
+  const placePlainText = useCallback(() => {
+    setToolTab('text')
+    setStickerSelected(true)
+    setStickerEditing(true)
+    setActiveSticker({
+      id: `text-${Date.now()}`,
+      styleKey: 'plainText',
+      text: 'Text',
+      xPct: 50,
+      yPct: 48,
+      wPct: DEFAULT_STICKER_WIDTH_PCT,
+    })
+  }, [])
+
+  const beginEditSticker = useCallback(() => {
+    setStickerSelected(true)
+    setStickerEditing(true)
+  }, [])
+
+  useEffect(() => {
+    if (!stickerEditing) return undefined
+    const id = window.setTimeout(() => {
+      const el = stickerTextRef.current
+      if (!el) return
+      if (!el.textContent) el.textContent = activeSticker?.text || 'Text'
+      el.focus()
+      const range = document.createRange()
+      range.selectNodeContents(el)
+      const sel = window.getSelection()
+      sel?.removeAllRanges()
+      sel?.addRange(range)
+    }, 0)
+    return () => window.clearTimeout(id)
+  }, [stickerEditing, activeSticker?.id])
+
   const onStickerPointerDown = useCallback((e) => {
-    if (!activeSticker || busy) return
+    if (!activeSticker || busy || stickerEditing) return
     e.preventDefault()
     e.stopPropagation()
     const stage = canvasStageRef.current
@@ -466,10 +687,10 @@ export function CoverPickerModal({
       stageH: Math.max(1, rect.height),
     }
     setStickerSelected(true)
-  }, [activeSticker, busy])
+  }, [activeSticker, busy, stickerEditing])
 
   const onStickerResizePointerDown = useCallback((e) => {
-    if (!activeSticker || busy) return
+    if (!activeSticker || busy || stickerEditing) return
     e.preventDefault()
     e.stopPropagation()
     const stage = canvasStageRef.current
@@ -489,7 +710,7 @@ export function CoverPickerModal({
       stageH: Math.max(1, rect.height),
     }
     setStickerSelected(true)
-  }, [activeSticker, busy])
+  }, [activeSticker, busy, stickerEditing])
 
   useEffect(() => {
     const onMove = (e) => {
@@ -553,7 +774,7 @@ export function CoverPickerModal({
         fname = uploadFile.name || 'cover.jpg'
       }
 
-      if (activeSticker?.src) {
+      if (activeSticker) {
         blob = await compositeCoverWithSticker(blob, activeSticker)
         fname = 'cover.jpg'
       }
@@ -592,101 +813,161 @@ export function CoverPickerModal({
   const hasUploadCover = tab === 'upload' && Boolean(uploadFile)
   const canConfirm = !busy && (hasVideoCover || hasUploadCover)
 
-  /** Nội dung stage giống TikTok: ảnh bìa + sticker (cùng tọa độ % cho canvas & preview). */
-  const renderStageLayers = ({ interactive }) => (
-    <>
-      {previewSrc ? (
-        <img
-          key={previewSrc}
-          src={previewSrc}
-          alt=""
-          className="absolute inset-0 h-full w-full object-contain transition-transform duration-100"
-          style={{ transform: `scale(${scale})` }}
-          decoding="async"
-          draggable={false}
-        />
-      ) : (
-        <div className="absolute inset-0 animate-pulse bg-zinc-800" aria-hidden />
-      )}
+  /** Nội dung stage giống TikTok: ảnh bìa + sticker chữ có thể sửa. */
+  const renderStageLayers = ({ interactive }) => {
+    const styleClass =
+      STICKER_STYLE_UI[activeSticker?.styleKey] || STICKER_STYLE_UI.bubbleTeal
+    return (
+      <>
+        {previewSrc ? (
+          <img
+            key={previewSrc}
+            src={previewSrc}
+            alt=""
+            className="absolute inset-0 h-full w-full object-contain transition-transform duration-100"
+            style={{ transform: `scale(${scale})` }}
+            decoding="async"
+            draggable={false}
+          />
+        ) : (
+          <div className="absolute inset-0 animate-pulse bg-zinc-800" aria-hidden />
+        )}
 
-      {activeSticker ? (
-        <div
-          role={interactive ? 'button' : undefined}
-          tabIndex={interactive ? 0 : undefined}
-          aria-label={interactive ? 'Sticker trên ảnh bìa' : undefined}
-          className={`absolute z-10 touch-none select-none ${
-            interactive ? (stickerSelected ? 'cursor-move' : 'cursor-pointer') : 'pointer-events-none'
-          }`}
-          style={{
-            left: `${activeSticker.xPct}%`,
-            top: `${activeSticker.yPct}%`,
-            width: `${activeSticker.wPct}%`,
-            transform: 'translate(-50%, -50%)',
-          }}
-          onPointerDown={interactive ? onStickerPointerDown : undefined}
-          onKeyDown={
-            interactive
-              ? (e) => {
-                  if (e.key === 'Delete' || e.key === 'Backspace') {
-                    e.preventDefault()
-                    setActiveSticker(null)
-                  }
-                }
-              : undefined
-          }
-        >
+        {activeSticker ? (
           <div
-            className={`relative ${
-              interactive && stickerSelected
-                ? 'ring-2 ring-[#20d5ec] ring-offset-2 ring-offset-transparent'
-                : ''
-            }`}
-          >
-            <img
-              src={activeSticker.src}
-              alt=""
-              className="pointer-events-none block h-auto w-full object-contain drop-shadow-md"
-              draggable={false}
-              decoding="async"
-            />
-            {interactive && stickerSelected ? (
-              <>
-                <button
-                  type="button"
-                  aria-label="Xóa sticker"
-                  className="absolute -right-2 -top-2 z-20 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-zinc-900 text-[11px] font-bold text-white shadow ring-1 ring-white/20"
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={(e) => {
+            role={interactive ? 'button' : undefined}
+            tabIndex={interactive ? 0 : undefined}
+            aria-label={interactive ? 'Sticker chữ trên ảnh bìa' : undefined}
+            className={`absolute z-10 select-none ${
+              interactive
+                ? stickerEditing
+                  ? 'cursor-text'
+                  : stickerSelected
+                    ? 'cursor-move'
+                    : 'cursor-pointer'
+                : 'pointer-events-none'
+            } ${interactive && !stickerEditing ? 'touch-none' : ''}`}
+            style={{
+              left: `${activeSticker.xPct}%`,
+              top: `${activeSticker.yPct}%`,
+              width: `${activeSticker.wPct}%`,
+              transform: 'translate(-50%, -50%)',
+            }}
+            onPointerDown={interactive && !stickerEditing ? onStickerPointerDown : undefined}
+            onDoubleClick={
+              interactive
+                ? (e) => {
                     e.stopPropagation()
-                    setActiveSticker(null)
-                  }}
-                >
-                  ×
-                </button>
-                <span
-                  aria-hidden
-                  className="absolute -left-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
-                />
-                <span
-                  aria-hidden
-                  className="absolute -right-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
-                />
-                <span
-                  aria-hidden
-                  className="absolute -bottom-1.5 -left-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
-                />
-                <span
-                  aria-hidden
-                  className="absolute -bottom-1.5 -right-1.5 h-3 w-3 cursor-nwse-resize rounded-full border-2 border-[#20d5ec] bg-white shadow"
-                  onPointerDown={onStickerResizePointerDown}
-                />
-              </>
-            ) : null}
+                    beginEditSticker()
+                  }
+                : undefined
+            }
+            onKeyDown={
+              interactive
+                ? (e) => {
+                    if (stickerEditing) return
+                    if (e.key === 'Delete' || e.key === 'Backspace') {
+                      e.preventDefault()
+                      setActiveSticker(null)
+                      setStickerEditing(false)
+                    } else if (e.key === 'Enter') {
+                      e.preventDefault()
+                      beginEditSticker()
+                    }
+                  }
+                : undefined
+            }
+          >
+            <div
+              className={`relative inline-flex max-w-full justify-center ${
+                interactive && stickerSelected
+                  ? 'ring-2 ring-[#20d5ec] ring-offset-2 ring-offset-transparent'
+                  : ''
+              }`}
+            >
+              <div
+                ref={interactive ? stickerTextRef : undefined}
+                contentEditable={Boolean(interactive && stickerEditing)}
+                suppressContentEditableWarning
+                spellCheck={false}
+                className={`${styleClass} outline-none`}
+                onPointerDown={
+                  interactive && stickerEditing
+                    ? (e) => e.stopPropagation()
+                    : undefined
+                }
+                onInput={
+                  interactive
+                    ? (e) => {
+                        const next = e.currentTarget.textContent ?? ''
+                        setActiveSticker((prev) => (prev ? { ...prev, text: next } : prev))
+                      }
+                    : undefined
+                }
+                onBlur={
+                  interactive
+                    ? (e) => {
+                        const next = (e.currentTarget.textContent ?? '').trim() || 'Text'
+                        e.currentTarget.textContent = next
+                        setActiveSticker((prev) => (prev ? { ...prev, text: next } : prev))
+                        setStickerEditing(false)
+                      }
+                    : undefined
+                }
+                onKeyDown={
+                  interactive && stickerEditing
+                    ? (e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          e.currentTarget.blur()
+                        }
+                        e.stopPropagation()
+                      }
+                    : undefined
+                }
+              >
+                {interactive && stickerEditing ? null : activeSticker.text || 'Text'}
+              </div>
+              {interactive && stickerSelected && !stickerEditing ? (
+                <>
+                  <button
+                    type="button"
+                    aria-label="Xóa sticker"
+                    className="absolute -right-2 -top-2 z-20 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-zinc-900 text-[11px] font-bold text-white shadow ring-1 ring-white/20"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setActiveSticker(null)
+                      setStickerEditing(false)
+                    }}
+                  >
+                    ×
+                  </button>
+                  <span
+                    aria-hidden
+                    className="absolute -left-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
+                  />
+                  <span
+                    aria-hidden
+                    className="absolute -right-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
+                  />
+                  <span
+                    aria-hidden
+                    className="absolute -bottom-1.5 -left-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
+                  />
+                  <span
+                    aria-hidden
+                    className="absolute -bottom-1.5 -right-1.5 h-3 w-3 cursor-nwse-resize rounded-full border-2 border-[#20d5ec] bg-white shadow"
+                    onPointerDown={onStickerResizePointerDown}
+                  />
+                </>
+              ) : null}
+            </div>
           </div>
-        </div>
-      ) : null}
-    </>
-  )
+        ) : null}
+      </>
+    )
+  }
 
   return (
     <div
@@ -772,7 +1053,7 @@ export function CoverPickerModal({
                       <button
                         key={preset.id}
                         type="button"
-                        title="Thêm sticker lên ảnh bìa"
+                        title="Thêm sticker chữ (double-click trên canvas để sửa)"
                         aria-pressed={selected}
                         onClick={() => placeSticker(preset)}
                         className={`relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden rounded-lg border bg-black p-1.5 transition ${
@@ -782,7 +1063,7 @@ export function CoverPickerModal({
                         }`}
                       >
                         <img
-                          src={preset.src}
+                          src={preset.thumb}
                           alt=""
                           className="max-h-full max-w-full object-contain"
                           draggable={false}
@@ -794,9 +1075,18 @@ export function CoverPickerModal({
                   })}
                 </div>
               ) : (
-                <p className="text-xs leading-relaxed text-zinc-400">
-                  Thêm chữ lên ảnh bìa sẽ sớm có. Hiện bạn có thể chọn sticker, khung hình hoặc tải ảnh lên.
-                </p>
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs leading-relaxed text-zinc-400">
+                    Thêm chữ lên ảnh bìa. Double-click chữ trên canvas để sửa nội dung.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={placePlainText}
+                    className="cursor-pointer rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-left text-sm font-semibold text-white hover:bg-white/10"
+                  >
+                    + Thêm chữ
+                  </button>
+                </div>
               )}
             </div>
           </aside>
@@ -820,7 +1110,10 @@ export function CoverPickerModal({
                   <div
                     ref={canvasStageRef}
                     className="relative aspect-video w-full overflow-hidden rounded-sm bg-black shadow-lg ring-1 ring-white/15"
-                    onPointerDown={() => setStickerSelected(false)}
+                    onPointerDown={() => {
+                      setStickerSelected(false)
+                      setStickerEditing(false)
+                    }}
                   >
                     {renderStageLayers({ interactive: true })}
 
