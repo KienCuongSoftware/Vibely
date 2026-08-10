@@ -2,14 +2,12 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import {
   IoAdd,
   IoArrowBack,
-  IoBatteryFullOutline,
   IoChevronBack,
   IoChevronForward,
   IoEllipsisHorizontal,
   IoHappyOutline,
   IoTextOutline,
 } from 'react-icons/io5'
-import { LuWifi } from 'react-icons/lu'
 import { uploadThumbnailToStorage } from '@/shared/api/client'
 import {
   THUMBNAIL_MAX_WIDTH,
@@ -959,71 +957,51 @@ export function CoverPickerModal({
           {/* Cột phải: phone dọc — Preview in profile (4:3) */}
           <aside className="hidden w-[260px] shrink-0 flex-col border-l border-white/10 bg-[#1a1a1a] lg:flex xl:w-[300px]">
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-4">
-              <div className="flex aspect-9/16 w-[220px] max-h-[min(560px,70vh)] flex-col overflow-hidden rounded-[32px] border border-zinc-300 bg-white shadow-lg ring-1 ring-black/20">
-                {/* Thanh trên điện thoại — asset + fallback CSS */}
-                <div className="relative w-full shrink-0 overflow-hidden bg-white">
-                  <div className="flex items-center justify-between px-3 py-1.5 text-[10px] font-semibold tabular-nums text-zinc-900">
-                    <span>8:00</span>
-                    <div className="flex items-center gap-1 text-zinc-800" aria-hidden>
-                      <div className="flex items-end gap-px pb-0.5">
-                        <span className="h-1 w-[3px] rounded-[1px] bg-zinc-700" />
-                        <span className="h-1.5 w-[3px] rounded-[1px] bg-zinc-700" />
-                        <span className="h-2 w-[3px] rounded-[1px] bg-zinc-700" />
-                        <span className="h-2.5 w-[3px] rounded-[1px] bg-zinc-700" />
-                      </div>
-                      <LuWifi className="text-[13px]" strokeWidth={2.25} />
-                      <IoBatteryFullOutline className="text-[15px]" />
-                    </div>
-                  </div>
+              <div className="flex aspect-9/16 w-[220px] max-h-[min(560px,70vh)] flex-col overflow-hidden rounded-[32px] border border-zinc-700 bg-black shadow-lg ring-1 ring-white/10">
+                {/* Thanh trên — chỉ dùng asset, không vẽ thêm giờ/pin (tránh đè) */}
+                <div className="relative w-full shrink-0 overflow-hidden bg-black">
                   <img
                     src={COVER_PREVIEW_TOP_PHONE}
                     alt=""
-                    className="pointer-events-none absolute inset-0 h-full w-full object-cover object-top opacity-0"
-                    onLoad={(e) => {
-                      // Chỉ phủ asset nếu ảnh có nội dung thực (không phải tấm đen gần trống)
-                      const img = e.currentTarget
-                      if (img.naturalWidth > 8 && img.naturalHeight > 4) {
-                        img.classList.remove('opacity-0')
-                      }
-                    }}
+                    className="block h-auto w-full object-cover object-top"
                   />
                 </div>
 
                 <div className="flex shrink-0 items-center justify-between px-2.5 pb-1 pt-0.5">
-                  <IoChevronBack className="text-xl text-zinc-900" aria-hidden />
-                  <IoEllipsisHorizontal className="text-lg text-zinc-900" aria-hidden />
+                  <IoChevronBack className="text-xl text-white" aria-hidden />
+                  <IoEllipsisHorizontal className="text-lg text-white" aria-hidden />
                 </div>
 
                 <div className="flex shrink-0 flex-col items-center px-3 pb-3">
                   <img
                     src={COVER_PREVIEW_AVATAR}
                     alt=""
-                    className="h-[72px] w-[72px] rounded-full bg-sky-100 object-cover"
+                    className="h-[72px] w-[72px] rounded-full bg-zinc-800 object-cover ring-1 ring-white/10"
                   />
-                  <p className="mt-2.5 max-w-full truncate px-1 text-center text-[15px] font-bold text-zinc-900">
+                  <p className="mt-2.5 max-w-full truncate px-1 text-center text-[15px] font-bold text-white">
                     {COVER_PREVIEW_DISPLAY_NAME}
                   </p>
                   <div className="mt-3 flex w-full items-stretch justify-center gap-0 text-center">
                     <div className="min-w-0 flex-1 px-1">
-                      <p className="text-[15px] font-semibold text-zinc-900">−</p>
-                      <p className="text-[11px] text-zinc-500">Following</p>
+                      <p className="text-[15px] font-semibold text-white">−</p>
+                      <p className="text-[11px] text-zinc-400">Following</p>
                     </div>
-                    <div className="w-px self-stretch bg-zinc-200" aria-hidden />
+                    <div className="w-px self-stretch bg-zinc-700" aria-hidden />
                     <div className="min-w-0 flex-1 px-1">
-                      <p className="text-[15px] font-semibold text-zinc-900">−</p>
-                      <p className="text-[11px] text-zinc-500">Followers</p>
+                      <p className="text-[15px] font-semibold text-white">−</p>
+                      <p className="text-[11px] text-zinc-400">Followers</p>
                     </div>
-                    <div className="w-px self-stretch bg-zinc-200" aria-hidden />
+                    <div className="w-px self-stretch bg-zinc-700" aria-hidden />
                     <div className="min-w-0 flex-1 px-1">
-                      <p className="text-[15px] font-semibold text-zinc-900">−</p>
-                      <p className="text-[11px] text-zinc-500">Likes</p>
+                      <p className="text-[15px] font-semibold text-white">−</p>
+                      <p className="text-[11px] text-zinc-400">Likes</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Lưới video — ô đầu 4:3 là ảnh bìa đang chọn */}
-                <div className="mt-auto grid grid-cols-3 gap-px border-t border-zinc-100 bg-zinc-200">
-                  <div className="relative aspect-4/3 overflow-hidden bg-zinc-100">
+                <div className="mt-auto grid grid-cols-3 gap-px border-t border-zinc-800 bg-zinc-900">
+                  <div className="relative aspect-4/3 overflow-hidden bg-zinc-950">
                     {previewSrc ? (
                       <img
                         src={previewSrc}
@@ -1032,7 +1010,7 @@ export function CoverPickerModal({
                         style={{ transform: `scale(${scale})` }}
                       />
                     ) : (
-                      <div className="h-full w-full bg-zinc-200" />
+                      <div className="h-full w-full bg-zinc-900" />
                     )}
                     {activeSticker ? (
                       <img
@@ -1049,8 +1027,8 @@ export function CoverPickerModal({
                       />
                     ) : null}
                   </div>
-                  <div className="aspect-4/3 bg-zinc-50" />
-                  <div className="aspect-4/3 bg-zinc-50" />
+                  <div className="aspect-4/3 bg-zinc-950" />
+                  <div className="aspect-4/3 bg-zinc-950" />
                 </div>
               </div>
               <p className="mt-3 text-center text-xs text-zinc-400">
