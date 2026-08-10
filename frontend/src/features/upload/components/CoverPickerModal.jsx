@@ -592,6 +592,102 @@ export function CoverPickerModal({
   const hasUploadCover = tab === 'upload' && Boolean(uploadFile)
   const canConfirm = !busy && (hasVideoCover || hasUploadCover)
 
+  /** Nội dung stage giống TikTok: ảnh bìa + sticker (cùng tọa độ % cho canvas & preview). */
+  const renderStageLayers = ({ interactive }) => (
+    <>
+      {previewSrc ? (
+        <img
+          key={previewSrc}
+          src={previewSrc}
+          alt=""
+          className="absolute inset-0 h-full w-full object-contain transition-transform duration-100"
+          style={{ transform: `scale(${scale})` }}
+          decoding="async"
+          draggable={false}
+        />
+      ) : (
+        <div className="absolute inset-0 animate-pulse bg-zinc-800" aria-hidden />
+      )}
+
+      {activeSticker ? (
+        <div
+          role={interactive ? 'button' : undefined}
+          tabIndex={interactive ? 0 : undefined}
+          aria-label={interactive ? 'Sticker trên ảnh bìa' : undefined}
+          className={`absolute z-10 touch-none select-none ${
+            interactive ? (stickerSelected ? 'cursor-move' : 'cursor-pointer') : 'pointer-events-none'
+          }`}
+          style={{
+            left: `${activeSticker.xPct}%`,
+            top: `${activeSticker.yPct}%`,
+            width: `${activeSticker.wPct}%`,
+            transform: 'translate(-50%, -50%)',
+          }}
+          onPointerDown={interactive ? onStickerPointerDown : undefined}
+          onKeyDown={
+            interactive
+              ? (e) => {
+                  if (e.key === 'Delete' || e.key === 'Backspace') {
+                    e.preventDefault()
+                    setActiveSticker(null)
+                  }
+                }
+              : undefined
+          }
+        >
+          <div
+            className={`relative ${
+              interactive && stickerSelected
+                ? 'ring-2 ring-[#20d5ec] ring-offset-2 ring-offset-transparent'
+                : ''
+            }`}
+          >
+            <img
+              src={activeSticker.src}
+              alt=""
+              className="pointer-events-none block h-auto w-full object-contain drop-shadow-md"
+              draggable={false}
+              decoding="async"
+            />
+            {interactive && stickerSelected ? (
+              <>
+                <button
+                  type="button"
+                  aria-label="Xóa sticker"
+                  className="absolute -right-2 -top-2 z-20 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-zinc-900 text-[11px] font-bold text-white shadow ring-1 ring-white/20"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setActiveSticker(null)
+                  }}
+                >
+                  ×
+                </button>
+                <span
+                  aria-hidden
+                  className="absolute -left-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
+                />
+                <span
+                  aria-hidden
+                  className="absolute -right-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
+                />
+                <span
+                  aria-hidden
+                  className="absolute -bottom-1.5 -left-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
+                />
+                <span
+                  aria-hidden
+                  className="absolute -bottom-1.5 -right-1.5 h-3 w-3 cursor-nwse-resize rounded-full border-2 border-[#20d5ec] bg-white shadow"
+                  onPointerDown={onStickerResizePointerDown}
+                />
+              </>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </>
+  )
+
   return (
     <div
       className="fixed inset-0 z-100 flex items-center justify-center bg-black/70 p-2 sm:p-4"
@@ -720,96 +816,13 @@ export function CoverPickerModal({
                 </p>
               ) : (
                 <div className="relative flex max-h-full w-full max-w-[640px] items-center justify-center">
-                  {/* Canvas ngang — guide dọc = vùng crop dọc trên feed */}
+                  {/* Canvas ngang — guide dọc = vùng crop hiện trên preview hồ sơ */}
                   <div
                     ref={canvasStageRef}
                     className="relative aspect-video w-full overflow-hidden rounded-sm bg-black shadow-lg ring-1 ring-white/15"
                     onPointerDown={() => setStickerSelected(false)}
                   >
-                    {previewSrc ? (
-                      <img
-                        key={previewSrc}
-                        src={previewSrc}
-                        alt=""
-                        className="absolute inset-0 h-full w-full object-contain transition-transform duration-100"
-                        style={{ transform: `scale(${scale})` }}
-                        decoding="async"
-                        draggable={false}
-                      />
-                    ) : (
-                      <div className="absolute inset-0 animate-pulse bg-zinc-800" aria-hidden />
-                    )}
-
-                    {activeSticker ? (
-                      <div
-                        role="button"
-                        tabIndex={0}
-                        aria-label="Sticker trên ảnh bìa"
-                        className={`absolute z-10 touch-none select-none ${
-                          stickerSelected ? 'cursor-move' : 'cursor-pointer'
-                        }`}
-                        style={{
-                          left: `${activeSticker.xPct}%`,
-                          top: `${activeSticker.yPct}%`,
-                          width: `${activeSticker.wPct}%`,
-                          transform: 'translate(-50%, -50%)',
-                        }}
-                        onPointerDown={onStickerPointerDown}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Delete' || e.key === 'Backspace') {
-                            e.preventDefault()
-                            setActiveSticker(null)
-                          }
-                        }}
-                      >
-                        <div
-                          className={`relative ${
-                            stickerSelected ? 'ring-2 ring-[#20d5ec] ring-offset-2 ring-offset-transparent' : ''
-                          }`}
-                        >
-                          <img
-                            src={activeSticker.src}
-                            alt=""
-                            className="pointer-events-none block h-auto w-full object-contain drop-shadow-md"
-                            draggable={false}
-                            decoding="async"
-                          />
-                          {stickerSelected ? (
-                            <>
-                              <button
-                                type="button"
-                                aria-label="Xóa sticker"
-                                className="absolute -right-2 -top-2 z-20 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-zinc-900 text-[11px] font-bold text-white shadow ring-1 ring-white/20"
-                                onPointerDown={(e) => e.stopPropagation()}
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setActiveSticker(null)
-                                }}
-                              >
-                                ×
-                              </button>
-                              <span
-                                aria-hidden
-                                className="absolute -left-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
-                              />
-                              <span
-                                aria-hidden
-                                className="absolute -right-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
-                              />
-                              <span
-                                aria-hidden
-                                className="absolute -bottom-1.5 -left-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
-                              />
-                              <span
-                                aria-hidden
-                                className="absolute -bottom-1.5 -right-1.5 h-3 w-3 cursor-nwse-resize rounded-full border-2 border-[#20d5ec] bg-white shadow"
-                                onPointerDown={onStickerResizePointerDown}
-                              />
-                            </>
-                          ) : null}
-                        </div>
-                      </div>
-                    ) : null}
+                    {renderStageLayers({ interactive: true })}
 
                     <div
                       className="pointer-events-none absolute inset-y-0 left-[18%] w-px bg-white/95"
@@ -999,33 +1012,20 @@ export function CoverPickerModal({
                   </div>
                 </div>
 
-                {/* Lưới video — ô đầu 4:3 là ảnh bìa đang chọn */}
+                {/* Lưới video — ô đầu 4:3 = crop giữa 2 guide của stage (giống TikTok) */}
                 <div className="mt-auto grid grid-cols-3 gap-px border-t border-zinc-800 bg-zinc-900">
-                  <div className="relative aspect-4/3 overflow-hidden bg-zinc-950">
-                    {previewSrc ? (
-                      <img
-                        src={previewSrc}
-                        alt=""
-                        className="h-full w-full object-cover"
-                        style={{ transform: `scale(${scale})` }}
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-zinc-900" />
-                    )}
-                    {activeSticker ? (
-                      <img
-                        src={activeSticker.src}
-                        alt=""
-                        className="pointer-events-none absolute object-contain drop-shadow"
-                        style={{
-                          left: `${activeSticker.xPct}%`,
-                          top: `${activeSticker.yPct}%`,
-                          width: `${activeSticker.wPct}%`,
-                          transform: 'translate(-50%, -50%)',
-                        }}
-                        draggable={false}
-                      />
-                    ) : null}
+                  <div className="relative aspect-4/3 overflow-hidden bg-black">
+                    {/*
+                      Guide ở 18%–82% (rộng 64% stage 16:9).
+                      Preview phóng stage lên 100/0.64 ≈ 156.25% bề rộng ô và căn giữa
+                      → cùng khung hình + sticker như canvas giữa.
+                    */}
+                    <div
+                      className="absolute left-1/2 top-1/2 aspect-video w-[156.25%] -translate-x-1/2 -translate-y-1/2 overflow-hidden bg-black"
+                      aria-hidden={!previewSrc}
+                    >
+                      {renderStageLayers({ interactive: false })}
+                    </div>
                   </div>
                   <div className="aspect-4/3 bg-zinc-950" />
                   <div className="aspect-4/3 bg-zinc-950" />
