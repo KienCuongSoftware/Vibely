@@ -31,7 +31,7 @@ const COVER_PREVIEW_AVATAR = '/images/video-peview/avatar-user-preview.png'
 const COVER_PREVIEW_TOP_PHONE = '/images/video-peview/top-phone.png'
 const COVER_PREVIEW_DISPLAY_NAME = 'Người Ổn Bất Tỉnh'
 
-/** Stickers: thumbnail = ảnh thật. Đặt lên canvas hiện đúng PNG; double-click để sửa chữ. */
+/** Stickers: gallery = PNG mẫu. Canvas = widget HTML (đổi chữ vẫn giữ icon/khung). */
 const COVER_STICKERS = [
   {
     id: 'note-white',
@@ -95,33 +95,151 @@ const COVER_STICKERS = [
   },
 ]
 
-/** Font theo bề rộng sticker (@container), không dùng vw — để preview 4:3 khớp canvas. */
-const STICKER_STYLE_UI = {
-  noteWhite:
-    'inline-flex max-w-full items-center justify-center rounded-md bg-white px-[0.55em] py-[0.35em] text-[length:clamp(12px,22cqw,36px)] font-extrabold leading-tight text-black shadow-[0.12em_0.12em_0_#00f2ea,-0.1em_-0.08em_0_#fe2c55]',
-  badgeDark:
-    'inline-flex max-w-full items-center justify-center rounded-full border-2 border-white bg-black px-[0.65em] py-[0.35em] text-[length:clamp(12px,22cqw,36px)] font-extrabold leading-tight text-white shadow-[0_-0.08em_0_#00f2ea,0_0.08em_0_#fe2c55]',
-  frameGlitch:
-    'inline-flex max-w-full items-center justify-center border-[0.12em] border-[#00f2ea] border-r-[#fe2c55] bg-black/80 px-[0.5em] py-[0.3em] text-[length:clamp(12px,22cqw,36px)] font-extrabold leading-tight text-white [text-shadow:0.06em_0_0_#00f2ea,-0.06em_0_0_#fe2c55]',
-  boxCyan:
-    'inline-flex max-w-full items-center justify-center rounded-sm border-[0.14em] border-[#00c8e0] bg-white px-[0.55em] py-[0.35em] text-[length:clamp(12px,22cqw,36px)] font-extrabold leading-tight text-black',
-  pinkGlitch:
-    'inline-flex max-w-full items-center justify-center bg-[#ff2d55] px-[0.55em] py-[0.35em] text-[length:clamp(12px,22cqw,36px)] font-extrabold leading-tight text-white shadow-[0.1em_0.1em_0_#fff,-0.08em_-0.08em_0_#000]',
-  pinkSticker:
-    'inline-flex max-w-full items-center justify-center text-[length:clamp(14px,26cqw,40px)] font-extrabold leading-none text-[#ff2d55] [text-shadow:0.06em_0.06em_0_#fff,-0.06em_-0.06em_0_#fff,0.06em_-0.06em_0_#fff,-0.06em_0.06em_0_#fff,0.1em_0.14em_0_#111]',
-  yellowOutline:
-    'inline-flex max-w-full rotate-[-6deg] items-center justify-center text-[length:clamp(14px,26cqw,40px)] font-extrabold leading-none text-[#ffe600] [text-shadow:0.08em_0.08em_0_#111,-0.08em_-0.08em_0_#111,0.08em_-0.08em_0_#111,-0.08em_0.08em_0_#111]',
-  bubbleTeal:
-    'inline-flex max-w-full items-center justify-center rounded-2xl border-[0.18em] border-white bg-[#54b8a0] px-[0.65em] py-[0.4em] text-[length:clamp(12px,22cqw,36px)] font-extrabold leading-tight text-white',
-  windowStack:
-    'inline-flex max-w-full items-center justify-center rounded-md border-2 border-[#5b6cff] bg-white px-[0.55em] py-[0.4em] text-[length:clamp(12px,22cqw,36px)] font-extrabold leading-tight text-[#3d4fd8] shadow-[0.2em_-0.2em_0_#5b6cff]',
-  pillLavender:
-    'inline-flex max-w-full items-center justify-center rounded-full bg-[#838cef] px-[0.75em] py-[0.4em] text-[length:clamp(12px,22cqw,36px)] font-extrabold leading-tight text-white',
-  plainText:
-    'inline-flex max-w-full items-center justify-center text-[length:clamp(14px,26cqw,40px)] font-extrabold leading-tight text-white [text-shadow:0.04em_0.04em_0.08em_rgba(0,0,0,.85)]',
-}
-
+const VIBELY_NOTE_ICON = '/favicon-192x192.png'
 const DEFAULT_STICKER_WIDTH_PCT = 42
+
+/** Widget sticker nhiều lớp (icon + khung + chữ) — đổi text vẫn giữ style như ảnh mẫu. */
+function StickerBody({
+  styleKey,
+  text,
+  editing,
+  interactive,
+  textRef,
+  onTextInput,
+  onTextBlur,
+  onTextKeyDown,
+  onTextPointerDown,
+}) {
+  const editable = Boolean(interactive && editing)
+  const label = text || 'Text'
+  const textNode = (
+    <span
+      ref={interactive ? textRef : undefined}
+      contentEditable={editable}
+      suppressContentEditableWarning
+      spellCheck={false}
+      className="relative z-[1] outline-none"
+      onPointerDown={onTextPointerDown}
+      onInput={onTextInput}
+      onBlur={onTextBlur}
+      onKeyDown={onTextKeyDown}
+    >
+      {editable ? null : label}
+    </span>
+  )
+
+  const shell = (children, extra = '') => (
+    <div className={`@container flex w-full justify-center ${extra}`}>{children}</div>
+  )
+
+  switch (styleKey) {
+    case 'badgeDark':
+      return shell(
+        <div className="relative flex w-max max-w-full items-center text-[length:clamp(11px,17cqw,30px)]">
+          <div className="relative z-10 flex h-[2.15em] w-[2.15em] shrink-0 items-center justify-center rounded-full border-[0.1em] border-white bg-black shadow-[0.06em_-0.06em_0_#00f2ea,-0.06em_0.06em_0_#fe2c55]">
+            <img
+              src={VIBELY_NOTE_ICON}
+              alt=""
+              className="h-[1.4em] w-[1.4em] rounded-full object-cover"
+              draggable={false}
+            />
+          </div>
+          <div className="relative -ml-[0.4em] flex min-h-[1.75em] max-w-full items-center rounded-r-[999px] border-[0.1em] border-l-0 border-white bg-black py-[0.28em] pl-[0.6em] pr-[0.85em]">
+            <span className="pointer-events-none absolute inset-x-[0.5em] top-[0.14em] h-[0.11em] rounded-full bg-[#00f2ea]" />
+            <span className="pointer-events-none absolute inset-x-[0.5em] bottom-[0.14em] h-[0.11em] rounded-full bg-[#fe2c55]" />
+            <span className="font-extrabold leading-none text-white">{textNode}</span>
+          </div>
+        </div>,
+      )
+    case 'noteWhite':
+      return shell(
+        <div className="relative w-max max-w-full pt-[0.55em] text-[length:clamp(11px,17cqw,30px)]">
+          <div className="absolute left-[0.15em] top-0 z-10 flex h-[1.35em] w-[1.35em] items-center justify-center rounded-[0.2em] border-[0.08em] border-white bg-black shadow-[0.05em_-0.05em_0_#00f2ea,-0.05em_0.05em_0_#fe2c55]">
+            <img
+              src={VIBELY_NOTE_ICON}
+              alt=""
+              className="h-[0.95em] w-[0.95em] object-cover"
+              draggable={false}
+            />
+          </div>
+          <div className="inline-flex max-w-full -skew-x-6 items-center bg-white px-[0.7em] py-[0.38em] font-extrabold leading-none text-black shadow-[0.12em_0.12em_0_#00f2ea,-0.1em_-0.08em_0_#fe2c55]">
+            <span className="skew-x-6">{textNode}</span>
+          </div>
+        </div>,
+      )
+    case 'frameGlitch':
+      return shell(
+        <div className="relative inline-flex w-max max-w-full items-center border-[0.14em] border-[#00f2ea] border-r-[#fe2c55] bg-black px-[0.55em] py-[0.32em] text-[length:clamp(11px,17cqw,30px)] font-extrabold leading-none text-white [text-shadow:0.07em_0_0_#00f2ea,-0.07em_0_0_#fe2c55]">
+          {textNode}
+        </div>,
+      )
+    case 'boxCyan':
+      return shell(
+        <div className="inline-flex w-max max-w-full items-center border-[0.16em] border-[#00c8e0] bg-white px-[0.6em] py-[0.35em] text-[length:clamp(11px,17cqw,30px)] font-extrabold leading-none text-black">
+          {textNode}
+        </div>,
+      )
+    case 'pinkGlitch':
+      return shell(
+        <div className="relative inline-flex w-max max-w-full items-center bg-[#ff2d55] px-[0.6em] py-[0.35em] text-[length:clamp(11px,17cqw,30px)] font-extrabold leading-none text-white shadow-[0.12em_0.12em_0_#fff,-0.1em_-0.1em_0_#111]">
+          {textNode}
+        </div>,
+      )
+    case 'pinkSticker':
+      return shell(
+        <div className="inline-flex w-max max-w-full items-center text-[length:clamp(13px,22cqw,36px)] font-extrabold leading-none text-[#ff2d55] [text-shadow:0.07em_0.07em_0_#fff,-0.07em_-0.07em_0_#fff,0.07em_-0.07em_0_#fff,-0.07em_0.07em_0_#fff,0.12em_0.16em_0_#111]">
+          {textNode}
+        </div>,
+      )
+    case 'yellowOutline':
+      return shell(
+        <div className="inline-flex w-max max-w-full -rotate-6 items-center text-[length:clamp(13px,22cqw,36px)] font-extrabold leading-none text-[#ffe600] [text-shadow:0.09em_0.09em_0_#111,-0.09em_-0.09em_0_#111,0.09em_-0.09em_0_#111,-0.09em_0.09em_0_#111]">
+          {textNode}
+        </div>,
+      )
+    case 'bubbleTeal':
+      return shell(
+        <div className="relative inline-flex w-max max-w-full items-center rounded-[0.85em] border-[0.2em] border-white bg-[#54b8a0] px-[0.7em] py-[0.42em] text-[length:clamp(11px,17cqw,30px)] font-extrabold leading-none text-white">
+          {textNode}
+          <span className="absolute -bottom-[0.35em] left-[0.85em] h-0 w-0 border-l-[0.28em] border-r-[0.28em] border-t-[0.4em] border-l-transparent border-r-transparent border-t-white" />
+          <span className="absolute -bottom-[0.18em] left-[0.95em] h-0 w-0 border-l-[0.2em] border-r-[0.2em] border-t-[0.28em] border-l-transparent border-r-transparent border-t-[#54b8a0]" />
+        </div>,
+      )
+    case 'windowStack':
+      return shell(
+        <div className="relative w-max max-w-full text-[length:clamp(11px,17cqw,30px)]">
+          <div className="absolute -right-[0.25em] -top-[0.25em] h-full w-full rounded-[0.25em] border-2 border-[#5b6cff] bg-white" />
+          <div className="absolute -right-[0.12em] -top-[0.12em] h-full w-full rounded-[0.25em] border-2 border-[#5b6cff] bg-white" />
+          <div className="relative inline-flex items-center rounded-[0.25em] border-2 border-[#5b6cff] bg-white px-[0.6em] py-[0.4em] font-extrabold leading-none text-[#3d4fd8]">
+            <span className="pointer-events-none absolute inset-x-0 top-0 h-[0.45em] bg-[#5b6cff]" />
+            <span className="relative mt-[0.35em]">{textNode}</span>
+          </div>
+        </div>,
+      )
+    case 'pillLavender':
+      return shell(
+        <div className="relative w-max max-w-full pt-[0.45em] text-[length:clamp(11px,17cqw,30px)]">
+          <div className="inline-flex items-center rounded-full bg-[#838cef] px-[0.85em] py-[0.42em] font-extrabold leading-none text-white">
+            {textNode}
+          </div>
+          <div className="absolute -right-[0.1em] top-0 flex h-[1.25em] w-[1.25em] items-center justify-center rounded-full border-[0.08em] border-white bg-black">
+            <img
+              src={VIBELY_NOTE_ICON}
+              alt=""
+              className="h-[0.85em] w-[0.85em] rounded-full object-cover"
+              draggable={false}
+            />
+          </div>
+        </div>,
+      )
+    default:
+      return shell(
+        <div className="inline-flex w-max max-w-full items-center text-[length:clamp(13px,22cqw,36px)] font-extrabold leading-none text-white [text-shadow:0.05em_0.05em_0.1em_rgba(0,0,0,.85)]">
+          {textNode}
+        </div>,
+      )
+  }
+}
 
 function loadHtmlImage(src) {
   return new Promise((resolve, reject) => {
@@ -133,15 +251,15 @@ function loadHtmlImage(src) {
   })
 }
 
-/** Vẽ sticker chữ lên canvas export (không cần html2canvas). */
-function drawTextStickerOnCanvas(ctx, sticker, canvasW, canvasH) {
+/** Vẽ sticker chữ (+ icon/khung) lên canvas export. */
+async function drawTextStickerOnCanvas(ctx, sticker, canvasW, canvasH) {
   const text = String(sticker.text ?? 'Text').trim() || 'Text'
   const wPct = Math.min(90, Math.max(12, Number(sticker.wPct) || DEFAULT_STICKER_WIDTH_PCT))
   const maxW = (wPct / 100) * canvasW
   const cx = ((Number(sticker.xPct) || 50) / 100) * canvasW
   const cy = ((Number(sticker.yPct) || 50) / 100) * canvasH
   const styleKey = sticker.styleKey || 'bubbleTeal'
-  const fontSize = Math.max(18, Math.round(maxW * 0.22))
+  const fontSize = Math.max(18, Math.round(maxW * 0.2))
   ctx.save()
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
@@ -155,7 +273,6 @@ function drawTextStickerOnCanvas(ctx, sticker, canvasW, canvasH) {
   const boxH = fontSize + padY * 2
   const x0 = cx - boxW / 2
   const y0 = cy - boxH / 2
-  const r = Math.min(boxH / 2, fontSize * 0.45)
 
   const roundRect = (x, y, w, h, radius) => {
     const rr = Math.min(radius, w / 2, h / 2)
@@ -168,26 +285,99 @@ function drawTextStickerOnCanvas(ctx, sticker, canvasW, canvasH) {
     ctx.closePath()
   }
 
+  let noteIcon = null
+  if (styleKey === 'badgeDark' || styleKey === 'noteWhite' || styleKey === 'pillLavender') {
+    try {
+      noteIcon = await loadHtmlImage(VIBELY_NOTE_ICON)
+    } catch {
+      noteIcon = null
+    }
+  }
+
+  const drawNoteCircle = (centerX, centerY, size) => {
+    const r = size / 2
+    ctx.beginPath()
+    ctx.arc(centerX, centerY, r, 0, Math.PI * 2)
+    ctx.fillStyle = '#000'
+    ctx.fill()
+    ctx.lineWidth = Math.max(2, size * 0.06)
+    ctx.strokeStyle = '#fff'
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.arc(centerX + size * 0.04, centerY - size * 0.04, r, 0, Math.PI * 2)
+    ctx.strokeStyle = '#00f2ea'
+    ctx.lineWidth = Math.max(1, size * 0.035)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.arc(centerX - size * 0.04, centerY + size * 0.04, r, 0, Math.PI * 2)
+    ctx.strokeStyle = '#fe2c55'
+    ctx.stroke()
+    if (noteIcon) {
+      const ir = size * 0.62
+      ctx.save()
+      ctx.beginPath()
+      ctx.arc(centerX, centerY, ir / 2, 0, Math.PI * 2)
+      ctx.clip()
+      ctx.drawImage(noteIcon, centerX - ir / 2, centerY - ir / 2, ir, ir)
+      ctx.restore()
+    }
+  }
+
   switch (styleKey) {
-    case 'noteWhite':
-      ctx.fillStyle = '#fff'
-      roundRect(x0, y0, boxW, boxH, 8)
-      ctx.fill()
+    case 'badgeDark': {
+      const iconSize = boxH * 1.2
+      const overlap = iconSize * 0.22
+      const barW = boxW
+      const barH = boxH * 0.92
+      const totalW = iconSize + barW - overlap
+      const startX = cx - totalW / 2
+      const iconCx = startX + iconSize / 2
+      const barX = startX + iconSize - overlap
+      const barY = cy - barH / 2
       ctx.fillStyle = '#000'
-      break
-    case 'badgeDark':
-      ctx.fillStyle = '#000'
-      roundRect(x0, y0, boxW, boxH, boxH / 2)
+      roundRect(barX, barY, barW, barH, barH / 2)
       ctx.fill()
       ctx.strokeStyle = '#fff'
       ctx.lineWidth = Math.max(2, fontSize * 0.08)
       ctx.stroke()
+      ctx.fillStyle = '#00f2ea'
+      roundRect(barX + barW * 0.12, barY + barH * 0.12, barW * 0.7, Math.max(2, barH * 0.08), 99)
+      ctx.fill()
+      ctx.fillStyle = '#fe2c55'
+      roundRect(barX + barW * 0.12, barY + barH * 0.8, barW * 0.7, Math.max(2, barH * 0.08), 99)
+      ctx.fill()
+      drawNoteCircle(iconCx, cy, iconSize)
       ctx.fillStyle = '#fff'
-      break
+      ctx.fillText(text, barX + barW * 0.55, cy)
+      ctx.restore()
+      return
+    }
+    case 'noteWhite': {
+      const iconSize = fontSize * 1.15
+      ctx.fillStyle = '#00f2ea'
+      ctx.fillRect(x0 + 6, y0 + 6, boxW, boxH)
+      ctx.fillStyle = '#fe2c55'
+      ctx.fillRect(x0 - 4, y0 - 4, boxW, boxH)
+      ctx.fillStyle = '#fff'
+      roundRect(x0, y0, boxW, boxH, 6)
+      ctx.fill()
+      drawNoteCircle(x0 + iconSize * 0.35, y0, iconSize)
+      ctx.fillStyle = '#000'
+      ctx.fillText(text, cx, cy)
+      ctx.restore()
+      return
+    }
     case 'frameGlitch':
+      ctx.fillStyle = 'rgba(0,0,0,0.85)'
+      ctx.fillRect(x0, y0, boxW, boxH)
       ctx.strokeStyle = '#00f2ea'
       ctx.lineWidth = Math.max(3, fontSize * 0.1)
       ctx.strokeRect(x0, y0, boxW, boxH)
+      ctx.strokeStyle = '#fe2c55'
+      ctx.beginPath()
+      ctx.moveTo(x0 + boxW, y0)
+      ctx.lineTo(x0 + boxW, y0 + boxH)
+      ctx.stroke()
       ctx.fillStyle = '#fff'
       break
     case 'boxCyan':
@@ -200,6 +390,10 @@ function drawTextStickerOnCanvas(ctx, sticker, canvasW, canvasH) {
       ctx.fillStyle = '#000'
       break
     case 'pinkGlitch':
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(x0 + 5, y0 + 5, boxW, boxH)
+      ctx.fillStyle = '#111'
+      ctx.fillRect(x0 - 4, y0 - 4, boxW, boxH)
       ctx.fillStyle = '#ff2d55'
       ctx.fillRect(x0, y0, boxW, boxH)
       ctx.fillStyle = '#fff'
@@ -208,6 +402,9 @@ function drawTextStickerOnCanvas(ctx, sticker, canvasW, canvasH) {
       ctx.lineWidth = Math.max(4, fontSize * 0.14)
       ctx.strokeStyle = '#fff'
       ctx.strokeText(text, cx, cy)
+      ctx.strokeStyle = '#111'
+      ctx.lineWidth = Math.max(2, fontSize * 0.06)
+      ctx.strokeText(text, cx + 2, cy + 3)
       ctx.fillStyle = '#ff2d55'
       ctx.fillText(text, cx, cy)
       ctx.restore()
@@ -229,25 +426,38 @@ function drawTextStickerOnCanvas(ctx, sticker, canvasW, canvasH) {
       ctx.strokeStyle = '#fff'
       ctx.lineWidth = Math.max(5, fontSize * 0.14)
       ctx.stroke()
+      ctx.beginPath()
+      ctx.moveTo(x0 + boxW * 0.22, y0 + boxH)
+      ctx.lineTo(x0 + boxW * 0.22 + 10, y0 + boxH + 12)
+      ctx.lineTo(x0 + boxW * 0.22 + 20, y0 + boxH)
+      ctx.closePath()
+      ctx.fillStyle = '#54b8a0'
+      ctx.fill()
+      ctx.stroke()
       ctx.fillStyle = '#fff'
       break
     case 'windowStack':
       ctx.fillStyle = '#5b6cff'
-      ctx.fillRect(x0 + 8, y0 - 8, boxW, boxH)
+      ctx.fillRect(x0 + 10, y0 - 10, boxW, boxH)
+      ctx.fillRect(x0 + 5, y0 - 5, boxW, boxH)
       ctx.fillStyle = '#fff'
       roundRect(x0, y0, boxW, boxH, 6)
       ctx.fill()
       ctx.strokeStyle = '#5b6cff'
       ctx.lineWidth = 3
       ctx.stroke()
+      ctx.fillStyle = '#5b6cff'
+      ctx.fillRect(x0, y0, boxW, boxH * 0.22)
       ctx.fillStyle = '#3d4fd8'
       break
-    case 'pillLavender':
+    case 'pillLavender': {
       ctx.fillStyle = '#838cef'
       roundRect(x0, y0, boxW, boxH, boxH / 2)
       ctx.fill()
+      drawNoteCircle(x0 + boxW - boxH * 0.15, y0, boxH * 0.75)
       ctx.fillStyle = '#fff'
       break
+    }
     default:
       ctx.fillStyle = '#fff'
       break
@@ -269,22 +479,7 @@ async function compositeCoverWithSticker(baseBlob, sticker) {
     ctx.imageSmoothingEnabled = true
     ctx.imageSmoothingQuality = 'high'
     ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height)
-
-    const useImage = Boolean(sticker.useImage && sticker.src)
-    if (useImage) {
-      const stickerImg = await loadHtmlImage(sticker.src)
-      const wPct = Math.min(90, Math.max(12, Number(sticker.wPct) || DEFAULT_STICKER_WIDTH_PCT))
-      const drawW = (wPct / 100) * canvas.width
-      const aspect =
-        (stickerImg.naturalHeight || stickerImg.height) /
-        Math.max(1, stickerImg.naturalWidth || stickerImg.width)
-      const drawH = drawW * aspect
-      const cx = ((Number(sticker.xPct) || 50) / 100) * canvas.width
-      const cy = ((Number(sticker.yPct) || 50) / 100) * canvas.height
-      ctx.drawImage(stickerImg, cx - drawW / 2, cy - drawH / 2, drawW, drawH)
-    } else {
-      drawTextStickerOnCanvas(ctx, sticker, canvas.width, canvas.height)
-    }
+    await drawTextStickerOnCanvas(ctx, sticker, canvas.width, canvas.height)
     return canvasToJpegBlob(canvas, COVER_EXPORT_JPEG_QUALITY)
   } finally {
     URL.revokeObjectURL(baseUrl)
@@ -641,7 +836,6 @@ export function CoverPickerModal({
         src: preset.src,
         styleKey: preset.styleKey,
         text: preset.defaultText || 'Vibely',
-        useImage: Boolean(preset.src),
         xPct: prev?.xPct ?? 50,
         yPct: prev?.yPct ?? 48,
         wPct: prev?.wPct ?? DEFAULT_STICKER_WIDTH_PCT,
@@ -658,7 +852,6 @@ export function CoverPickerModal({
       src: '',
       styleKey: 'plainText',
       text: 'Text',
-      useImage: false,
       xPct: 50,
       yPct: 48,
       wPct: DEFAULT_STICKER_WIDTH_PCT,
@@ -667,7 +860,6 @@ export function CoverPickerModal({
 
   const beginEditSticker = useCallback(() => {
     setStickerSelected(true)
-    setActiveSticker((prev) => (prev ? { ...prev, useImage: false } : prev))
     setStickerEditing(true)
   }, [])
 
@@ -834,13 +1026,8 @@ export function CoverPickerModal({
   const hasUploadCover = tab === 'upload' && Boolean(uploadFile)
   const canConfirm = !busy && (hasVideoCover || hasUploadCover)
 
-  /** Stage: ảnh bìa + sticker (PNG đúng ảnh đã chọn; sửa chữ thì chuyển sang text style). */
+  /** Stage: ảnh bìa + sticker widget (đổi chữ vẫn giữ chrome như mẫu). */
   const renderStageLayers = ({ interactive }) => {
-    const styleClass =
-      STICKER_STYLE_UI[activeSticker?.styleKey] || STICKER_STYLE_UI.bubbleTeal
-    const showImage =
-      Boolean(activeSticker?.useImage && activeSticker?.src) &&
-      !(interactive && stickerEditing)
     return (
       <>
         {previewSrc ? (
@@ -903,71 +1090,53 @@ export function CoverPickerModal({
             }
           >
             <div
-              className={`relative w-full ${
+              className={`relative w-full drop-shadow-md ${
                 interactive && stickerSelected
                   ? 'ring-2 ring-[#20d5ec] ring-offset-2 ring-offset-transparent'
                   : ''
               }`}
             >
-              {showImage ? (
-                <img
-                  src={activeSticker.src}
-                  alt=""
-                  className="pointer-events-none block h-auto w-full object-contain drop-shadow-md"
-                  draggable={false}
-                  decoding="async"
-                />
-              ) : (
-                <div className="@container w-full">
-                  <div
-                    ref={interactive ? stickerTextRef : undefined}
-                    contentEditable={Boolean(interactive && stickerEditing)}
-                    suppressContentEditableWarning
-                    spellCheck={false}
-                    className={`${styleClass} outline-none`}
-                    onPointerDown={
-                      interactive && stickerEditing
-                        ? (e) => e.stopPropagation()
-                        : undefined
-                    }
-                    onInput={
-                      interactive
-                        ? (e) => {
-                            const next = e.currentTarget.textContent ?? ''
-                            setActiveSticker((prev) =>
-                              prev ? { ...prev, text: next, useImage: false } : prev,
-                            )
-                          }
-                        : undefined
-                    }
-                    onBlur={
-                      interactive
-                        ? (e) => {
-                            const next = (e.currentTarget.textContent ?? '').trim() || 'Text'
-                            e.currentTarget.textContent = next
-                            setActiveSticker((prev) =>
-                              prev ? { ...prev, text: next, useImage: false } : prev,
-                            )
-                            setStickerEditing(false)
-                          }
-                        : undefined
-                    }
-                    onKeyDown={
-                      interactive && stickerEditing
-                        ? (e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault()
-                              e.currentTarget.blur()
-                            }
-                            e.stopPropagation()
-                          }
-                        : undefined
-                    }
-                  >
-                    {interactive && stickerEditing ? null : activeSticker.text || 'Text'}
-                  </div>
-                </div>
-              )}
+              <StickerBody
+                styleKey={activeSticker.styleKey}
+                text={activeSticker.text}
+                editing={Boolean(interactive && stickerEditing)}
+                interactive={interactive}
+                textRef={stickerTextRef}
+                onTextPointerDown={
+                  interactive && stickerEditing
+                    ? (e) => e.stopPropagation()
+                    : undefined
+                }
+                onTextInput={
+                  interactive
+                    ? (e) => {
+                        const next = e.currentTarget.textContent ?? ''
+                        setActiveSticker((prev) => (prev ? { ...prev, text: next } : prev))
+                      }
+                    : undefined
+                }
+                onTextBlur={
+                  interactive
+                    ? (e) => {
+                        const next = (e.currentTarget.textContent ?? '').trim() || 'Text'
+                        e.currentTarget.textContent = next
+                        setActiveSticker((prev) => (prev ? { ...prev, text: next } : prev))
+                        setStickerEditing(false)
+                      }
+                    : undefined
+                }
+                onTextKeyDown={
+                  interactive && stickerEditing
+                    ? (e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          e.currentTarget.blur()
+                        }
+                        e.stopPropagation()
+                      }
+                    : undefined
+                }
+              />
               {interactive && stickerSelected && !stickerEditing ? (
                 <>
                   <button
