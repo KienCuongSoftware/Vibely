@@ -36,61 +36,61 @@ const COVER_STICKERS = [
   {
     id: 'note-white',
     src: '/images/text-preview/4c79db00-268d-48e2-b9fe-7c3b7bc2707d.png',
-    defaultText: 'Vibely',
+    defaultText: 'Text',
     styleKey: 'noteWhite',
   },
   {
     id: 'badge-dark',
     src: '/images/text-preview/7f474bee-88ce-461c-a347-843cea4145f4.png',
-    defaultText: 'Vibely',
+    defaultText: 'Text',
     styleKey: 'badgeDark',
   },
   {
     id: 'frame-glitch',
     src: '/images/text-preview/41dd55c0-fe15-47dd-b954-fd9ca564ee68.png',
-    defaultText: 'Vibely',
+    defaultText: 'Text',
     styleKey: 'frameGlitch',
   },
   {
     id: 'box-cyan',
     src: '/images/text-preview/565d8583-44a3-477d-95e1-25a681de7d89.png',
-    defaultText: 'Vibely',
+    defaultText: 'Text',
     styleKey: 'boxCyan',
   },
   {
     id: 'pink-glitch',
     src: '/images/text-preview/8105a2c6-de42-4a3b-8dc7-86ba50be90b1.png',
-    defaultText: 'Vibely',
+    defaultText: 'Text',
     styleKey: 'pinkGlitch',
   },
   {
     id: 'pink-sticker',
     src: '/images/text-preview/a2f22926-b7ce-4170-bd54-0835a000cfb2.png',
-    defaultText: 'Vibely',
+    defaultText: 'Text',
     styleKey: 'pinkSticker',
   },
   {
     id: 'yellow-outline',
     src: '/images/text-preview/bf540eca-2aa4-4fb2-a0c3-324cf115c51c.png',
-    defaultText: 'Vibely',
+    defaultText: 'Text',
     styleKey: 'yellowOutline',
   },
   {
     id: 'bubble-teal',
     src: '/images/text-preview/a9ab0427-53f6-4f35-9755-08facadb1286.png',
-    defaultText: 'Vibely',
+    defaultText: 'Text',
     styleKey: 'bubbleTeal',
   },
   {
     id: 'window-stack',
     src: '/images/text-preview/d3569db3-e6b1-4995-8d64-b2282aecdcab.png',
-    defaultText: 'Vibely',
+    defaultText: 'Text',
     styleKey: 'windowStack',
   },
   {
     id: 'pill-lavender',
     src: '/images/text-preview/e6bd373d-b3f5-45fb-944d-1fa4d1b07add.png',
-    defaultText: 'Vibely',
+    defaultText: 'Text',
     styleKey: 'pillLavender',
   },
 ]
@@ -835,7 +835,7 @@ export function CoverPickerModal({
         id: preset.id,
         src: preset.src,
         styleKey: preset.styleKey,
-        text: preset.defaultText || 'Vibely',
+        text: preset.defaultText || 'Text',
         xPct: prev?.xPct ?? 50,
         yPct: prev?.yPct ?? 48,
         wPct: prev?.wPct ?? DEFAULT_STICKER_WIDTH_PCT,
@@ -864,6 +864,21 @@ export function CoverPickerModal({
   }, [])
 
   useEffect(() => {
+    if (!activeSticker || !stickerSelected || stickerEditing || busy) return undefined
+    const onKeyDown = (e) => {
+      if (e.key !== 'Delete' && e.key !== 'Backspace') return
+      const tag = e.target?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return
+      e.preventDefault()
+      setActiveSticker(null)
+      setStickerEditing(false)
+      setStickerSelected(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [activeSticker, stickerSelected, stickerEditing, busy])
+
+  useEffect(() => {
     if (!stickerEditing) return undefined
     const id = window.setTimeout(() => {
       const el = stickerTextRef.current
@@ -883,6 +898,7 @@ export function CoverPickerModal({
     if (!activeSticker || busy || stickerEditing) return
     e.preventDefault()
     e.stopPropagation()
+    e.currentTarget.focus?.()
     const stage = canvasStageRef.current
     if (!stage) return
     const rect = stage.getBoundingClientRect()
@@ -1139,19 +1155,6 @@ export function CoverPickerModal({
               />
               {interactive && stickerSelected && !stickerEditing ? (
                 <>
-                  <button
-                    type="button"
-                    aria-label="Xóa sticker"
-                    className="absolute -right-2 -top-2 z-20 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-zinc-900 text-[11px] font-bold text-white shadow ring-1 ring-white/20"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setActiveSticker(null)
-                      setStickerEditing(false)
-                    }}
-                  >
-                    ×
-                  </button>
                   <span
                     aria-hidden
                     className="absolute -left-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
