@@ -12,9 +12,13 @@ import {
   IoChevronForward,
   IoEllipsisHorizontal,
   IoHappyOutline,
+  IoHeartOutline,
+  IoGridOutline,
+  IoRepeatOutline,
   IoTextOutline,
 } from "react-icons/io5";
 import { uploadThumbnailToStorage } from "@/shared/api/client";
+import { DEFAULT_AVATAR_URL } from "@/features/profile/utils/avatarUrl.js";
 import {
   THUMBNAIL_MAX_WIDTH,
   canvasToJpegBlob,
@@ -33,9 +37,8 @@ const COVER_EXPORT_JPEG_QUALITY = 0.97;
 const COVER_EXPORT_MAX_WIDTH = Math.max(THUMBNAIL_MAX_WIDTH, 1440);
 
 /** TikTok-style sample assets for cover editor profile phone mock. */
-const COVER_PREVIEW_AVATAR = "/images/video-peview/avatar-user-preview.png";
 const COVER_PREVIEW_TOP_PHONE = "/images/video-peview/top-phone.png";
-const COVER_PREVIEW_DISPLAY_NAME = "Người Ổn Bất Tỉnh";
+const COVER_PREVIEW_FALLBACK_NAME = "Vibely";
 
 /** Stickers: gallery = PNG mẫu. Canvas = widget HTML (đổi chữ vẫn giữ icon/khung). */
 const COVER_STICKERS = [
@@ -818,8 +821,14 @@ export function CoverPickerModal({
   videoUrl,
   token,
   onConfirm,
+  profileDisplayName,
+  profileAvatarUrl,
 }) {
   const videoSource = videoFile ?? (String(videoUrl ?? "").trim() || null);
+  const previewProfileName =
+    String(profileDisplayName ?? "").trim() || COVER_PREVIEW_FALLBACK_NAME;
+  const previewProfileAvatar =
+    String(profileAvatarUrl ?? "").trim() || DEFAULT_AVATAR_URL;
   /** @type {['video' | 'upload', Function]} */
   const [tab, setTab] = useState("video");
   const [toolTab, setToolTab] = useState("sticker");
@@ -1776,14 +1785,15 @@ export function CoverPickerModal({
                   />
                 </div>
 
-                <div className="flex shrink-0 flex-col items-center px-3 pb-3">
+                <div className="flex shrink-0 flex-col items-center px-3 pb-2">
                   <img
-                    src={COVER_PREVIEW_AVATAR}
+                    src={previewProfileAvatar}
                     alt=""
                     className="h-[72px] w-[72px] rounded-full bg-zinc-800 object-cover ring-1 ring-white/10"
+                    referrerPolicy="no-referrer"
                   />
                   <p className="mt-2.5 max-w-full truncate px-1 text-center text-[15px] font-bold text-white">
-                    {COVER_PREVIEW_DISPLAY_NAME}
+                    {previewProfileName}
                   </p>
                   <div className="mt-3 flex w-full items-stretch justify-center gap-0 text-center">
                     <div className="min-w-0 flex-1 px-1">
@@ -1809,23 +1819,41 @@ export function CoverPickerModal({
                   </div>
                 </div>
 
-                {/* Lưới video — ô đầu 4:3 = crop giữa 2 guide của stage (giống TikTok) */}
-                <div className="mt-auto grid grid-cols-3 gap-px border-t border-zinc-800 bg-zinc-900">
-                  <div className="relative aspect-4/3 overflow-hidden bg-black">
-                    {/*
-                      Guide ở 18%–82% (rộng 64% stage 16:9).
-                      Preview phóng stage lên 100/0.64 ≈ 156.25% bề rộng ô và căn giữa
-                      → cùng khung hình + sticker như canvas giữa.
-                    */}
-                    <div
-                      className="absolute left-1/2 top-1/2 aspect-video w-[156.25%] -translate-x-1/2 -translate-y-1/2 overflow-hidden bg-black"
-                      aria-hidden={!previewSrc}
-                    >
-                      {renderStageLayers({ interactive: false })}
-                    </div>
+                <div className="flex shrink-0 items-end justify-around border-b border-zinc-800 px-2">
+                  <div className="flex flex-1 flex-col items-center pb-0.5 pt-1 text-white">
+                    <IoGridOutline className="text-[20px]" aria-hidden />
+                    <span className="mt-1 h-[2px] w-6 rounded-full bg-white" aria-hidden />
                   </div>
-                  <div className="aspect-4/3 bg-zinc-950" />
-                  <div className="aspect-4/3 bg-zinc-950" />
+                  <div className="flex flex-1 flex-col items-center pb-2 pt-1 text-zinc-500">
+                    <IoRepeatOutline className="text-[20px]" aria-hidden />
+                  </div>
+                  <div className="flex flex-1 flex-col items-center pb-2 pt-1 text-zinc-500">
+                    <IoHeartOutline className="text-[20px]" aria-hidden />
+                  </div>
+                </div>
+
+                {/* Lưới video — ngay dưới tab (giống TikTok), không đẩy xuống đáy */}
+                <div className="min-h-0 flex-1 overflow-hidden bg-black">
+                  <div className="grid grid-cols-3 gap-px bg-zinc-900">
+                    <div className="relative aspect-4/3 overflow-hidden bg-black">
+                      {/*
+                        Guide ở 18%–82% (rộng 64% stage 16:9).
+                        Preview phóng stage lên 100/0.64 ≈ 156.25% bề rộng ô và căn giữa
+                        → cùng khung hình + sticker như canvas giữa.
+                      */}
+                      <div
+                        className="absolute left-1/2 top-1/2 aspect-video w-[156.25%] -translate-x-1/2 -translate-y-1/2 overflow-hidden bg-black"
+                        aria-hidden={!previewSrc}
+                      >
+                        {renderStageLayers({ interactive: false })}
+                      </div>
+                    </div>
+                    <div className="aspect-4/3 bg-zinc-950" />
+                    <div className="aspect-4/3 bg-zinc-950" />
+                    <div className="aspect-4/3 bg-zinc-950" />
+                    <div className="aspect-4/3 bg-zinc-950" />
+                    <div className="aspect-4/3 bg-zinc-950" />
+                  </div>
                 </div>
               </div>
               <p className="mt-3 text-center text-xs text-zinc-400">

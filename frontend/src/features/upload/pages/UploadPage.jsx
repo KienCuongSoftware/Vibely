@@ -1583,6 +1583,8 @@ export function UploadPage() {
         videoFile={videoFile}
         videoUrl={uploadedVideo?.playbackUrl}
         token={token}
+        profileDisplayName={user?.displayName || user?.username}
+        profileAvatarUrl={user?.avatarUrl}
         onConfirm={(url) => setThumbnailUrl(url)}
       />
       {originalityDetailsOpen && originalityCheck?.showDetails ? (

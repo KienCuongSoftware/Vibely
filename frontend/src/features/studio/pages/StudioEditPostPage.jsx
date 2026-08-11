@@ -583,6 +583,8 @@ export function StudioEditPostPage() {
         onClose={closeCoverModal}
         videoUrl={video?.videoUrl}
         token={token}
+        profileDisplayName={user?.displayName || user?.username}
+        profileAvatarUrl={user?.avatarUrl}
         onConfirm={(url) => setThumbnailUrl(url)}
       />
       {banNoticeOpen ? (
