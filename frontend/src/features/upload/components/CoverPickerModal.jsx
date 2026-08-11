@@ -28,6 +28,9 @@ const FRAME_COUNT = 96;
 /** Filmstrip capture — sharp enough for small thumbs + interim large preview. */
 const FILMSTRIP_CAPTURE_WIDTH = 480;
 const FILMSTRIP_JPEG_QUALITY = 0.9;
+/** Thumb dọc 9:16 trên dải chọn khung (giống TikTok). */
+const FILMSTRIP_FRAME_HEIGHT = 56;
+const FILMSTRIP_FRAME_WIDTH = Math.round((FILMSTRIP_FRAME_HEIGHT * 9) / 16);
 /** Large modal preview capture (display is smaller; keep retina-sharp). */
 const PREVIEW_MAX_WIDTH = 960;
 const PREVIEW_JPEG_QUALITY = 0.96;
@@ -1020,6 +1023,23 @@ export function CoverPickerModal({
   }, [frames.length, syncFilmstripScrollState, open]);
 
   useEffect(() => {
+    const outer = filmstripRef.current;
+    if (!outer || !frames.length) return;
+    const targetLeft = selectedIdx * FILMSTRIP_FRAME_WIDTH;
+    const targetRight = targetLeft + FILMSTRIP_FRAME_WIDTH;
+    const { scrollLeft, clientWidth } = outer;
+    if (targetLeft < scrollLeft + 4) {
+      outer.scrollTo({ left: Math.max(0, targetLeft - 12), behavior: "smooth" });
+    } else if (targetRight > scrollLeft + clientWidth - 4) {
+      outer.scrollTo({
+        left: targetRight - clientWidth + 12,
+        behavior: "smooth",
+      });
+    }
+    syncFilmstripScrollState();
+  }, [selectedIdx, frames.length, syncFilmstripScrollState]);
+
+  useEffect(() => {
     return () => {
       previewCacheRef.current.forEach((cachedUrl) =>
         URL.revokeObjectURL(cachedUrl),
@@ -1295,7 +1315,9 @@ export function CoverPickerModal({
   const canConfirm = !busy && (hasVideoCover || hasUploadCover);
 
   /** Stage: ảnh bìa + sticker widget (đổi chữ vẫn giữ chrome như mẫu). */
-  const renderStageLayers = ({ interactive }) => {
+  const renderStageLayers = ({ interactive, objectFit = "contain" }) => {
+    const imageFitClass =
+      objectFit === "cover" ? "object-cover" : "object-contain";
     return (
       <>
         {previewSrc ? (
@@ -1303,7 +1325,7 @@ export function CoverPickerModal({
             key={previewSrc}
             src={previewSrc}
             alt=""
-            className="absolute inset-0 h-full w-full object-contain transition-transform duration-100"
+            className={`absolute inset-0 h-full w-full ${imageFitClass} transition-transform duration-100`}
             style={{ transform: `scale(${scale})` }}
             decoding="async"
             draggable={false}
@@ -1702,31 +1724,34 @@ export function CoverPickerModal({
                 onKeyDown={(e) => {
                   if (e.key === "ArrowLeft") {
                     e.preventDefault();
-                    scrollFilmstrip(-1);
+                    setTab("video");
+                    setSelectedIdx((i) => Math.max(0, i - 1));
                   } else if (e.key === "ArrowRight") {
                     e.preventDefault();
-                    scrollFilmstrip(1);
+                    setTab("video");
+                    setSelectedIdx((i) =>
+                      Math.min(Math.max(0, frames.length - 1), i + 1),
+                    );
                   }
                 }}
-                className="min-h-14 min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain scrollbar-none touch-pan-x"
+                className="relative min-h-16 min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain rounded-md bg-zinc-950 scrollbar-none touch-pan-x"
               >
                 <div
                   ref={filmstripTrackRef}
-                  className="flex w-max gap-1.5 pr-0.5"
+                  className="relative flex h-14 w-max items-center"
                 >
                   {frames.map((f, i) => (
                     <button
                       key={`${f.time}-${i}`}
                       type="button"
+                      aria-label={`Khung hình ${i + 1}`}
+                      aria-pressed={tab === "video" && selectedIdx === i}
                       onClick={() => {
                         setTab("video");
                         setSelectedIdx(i);
                       }}
-                      className={`h-14 w-24 shrink-0 cursor-pointer overflow-hidden rounded-md border-2 transition ${
-                        tab === "video" && selectedIdx === i
-                          ? "border-[#20d5ec] ring-1 ring-[#20d5ec]/50"
-                          : "border-transparent opacity-85 hover:opacity-100"
-                      }`}
+                      className="h-14 shrink-0 cursor-pointer overflow-hidden border-0 bg-black p-0 opacity-90 transition hover:opacity-100"
+                      style={{ width: FILMSTRIP_FRAME_WIDTH }}
                     >
                       <img
                         src={f.dataUrl}
@@ -1734,10 +1759,22 @@ export function CoverPickerModal({
                         className="h-full w-full object-cover"
                         loading="eager"
                         decoding="async"
+                        draggable={false}
                         onLoad={syncFilmstripScrollState}
                       />
                     </button>
                   ))}
+                  {tab === "video" && frames.length > 0 ? (
+                    <div
+                      className="pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 rounded-md border-2 border-white shadow-[0_0_0_2px_rgba(32,213,236,0.9)]"
+                      style={{
+                        left: selectedIdx * FILMSTRIP_FRAME_WIDTH,
+                        width: FILMSTRIP_FRAME_WIDTH,
+                        height: FILMSTRIP_FRAME_HEIGHT + 10,
+                      }}
+                      aria-hidden
+                    />
+                  ) : null}
                 </div>
               </div>
 
@@ -1761,7 +1798,7 @@ export function CoverPickerModal({
             ) : null}
           </div>
 
-          {/* Cột phải: phone dọc — Preview in profile (4:3) */}
+          {/* Cột phải: phone dọc — Preview in profile (9:16) */}
           <aside className="hidden w-[260px] shrink-0 flex-col border-l border-white/10 bg-[#1a1a1a] lg:flex xl:w-[300px]">
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-4">
               <div className="flex aspect-9/16 w-[220px] max-h-[min(560px,70vh)] flex-col overflow-hidden rounded-[32px] border border-zinc-700 bg-black shadow-lg ring-1 ring-white/10">
@@ -1826,32 +1863,29 @@ export function CoverPickerModal({
                   </div>
                 </div>
 
-                {/* Lưới video — ngay dưới stats (không có tab icon) */}
+                {/* Lưới video dọc 9:16 — giống trang hồ sơ thật */}
                 <div className="min-h-0 flex-1 overflow-hidden bg-black">
                   <div className="grid grid-cols-3 gap-px border-t border-zinc-800 bg-zinc-900">
-                    <div className="relative aspect-4/3 overflow-hidden bg-black">
-                      {/*
-                        Guide ở 18%–82% (rộng 64% stage 16:9).
-                        Preview phóng stage lên 100/0.64 ≈ 156.25% bề rộng ô và căn giữa
-                        → cùng khung hình + sticker như canvas giữa.
-                      */}
-                      <div
-                        className="absolute left-1/2 top-1/2 aspect-video w-[156.25%] -translate-x-1/2 -translate-y-1/2 overflow-hidden bg-black"
-                        aria-hidden={!previewSrc}
-                      >
-                        {renderStageLayers({ interactive: false })}
+                    <div className="relative aspect-9/16 overflow-hidden bg-black">
+                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+                        <div className="relative aspect-video h-full w-auto max-w-none">
+                          {renderStageLayers({
+                            interactive: false,
+                            objectFit: "cover",
+                          })}
+                        </div>
                       </div>
                     </div>
-                    <div className="aspect-4/3 bg-zinc-950" />
-                    <div className="aspect-4/3 bg-zinc-950" />
-                    <div className="aspect-4/3 bg-zinc-950" />
-                    <div className="aspect-4/3 bg-zinc-950" />
-                    <div className="aspect-4/3 bg-zinc-950" />
+                    <div className="aspect-9/16 bg-zinc-950" />
+                    <div className="aspect-9/16 bg-zinc-950" />
+                    <div className="aspect-9/16 bg-zinc-950" />
+                    <div className="aspect-9/16 bg-zinc-950" />
+                    <div className="aspect-9/16 bg-zinc-950" />
                   </div>
                 </div>
               </div>
               <p className="mt-3 text-center text-xs text-zinc-400">
-                Preview in profile (4:3)
+                Preview in profile
               </p>
             </div>
           </aside>
