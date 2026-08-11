@@ -8,6 +8,7 @@ import React, {
 import {
   IoAdd,
   IoArrowBack,
+  IoBatteryFullOutline,
   IoChevronBack,
   IoChevronForward,
   IoEllipsisHorizontal,
@@ -17,6 +18,7 @@ import {
   IoRepeatOutline,
   IoTextOutline,
 } from "react-icons/io5";
+import { LuWifi } from "react-icons/lu";
 import { uploadThumbnailToStorage } from "@/shared/api/client";
 import { DEFAULT_AVATAR_URL } from "@/features/profile/utils/avatarUrl.js";
 import {
@@ -36,9 +38,27 @@ const PREVIEW_JPEG_QUALITY = 0.96;
 const COVER_EXPORT_JPEG_QUALITY = 0.97;
 const COVER_EXPORT_MAX_WIDTH = Math.max(THUMBNAIL_MAX_WIDTH, 1440);
 
-/** TikTok-style sample assets for cover editor profile phone mock. */
-const COVER_PREVIEW_TOP_PHONE = "/images/video-peview/top-phone.png";
+/** Fallback tên preview hồ sơ khi chưa có user. */
 const COVER_PREVIEW_FALLBACK_NAME = "Vibely";
+
+/** Status bar vẽ bằng CSS — giống TikTok Studio (không dùng PNG đen). */
+function ProfilePhoneStatusBar() {
+  return (
+    <div className="flex shrink-0 items-center justify-between px-3 pt-2.5 pb-0.5 text-[11px] font-semibold tabular-nums text-zinc-900">
+      <span>8:00</span>
+      <div className="flex items-center gap-1.5 text-zinc-800" aria-hidden>
+        <div className="flex items-end gap-px pb-0.5">
+          <span className="h-1 w-[3px] rounded-[1px] bg-zinc-700" />
+          <span className="h-1.5 w-[3px] rounded-[1px] bg-zinc-700" />
+          <span className="h-2 w-[3px] rounded-[1px] bg-zinc-700" />
+          <span className="h-2.5 w-[3px] rounded-[1px] bg-zinc-700" />
+        </div>
+        <LuWifi className="text-[15px]" strokeWidth={2.25} />
+        <IoBatteryFullOutline className="text-[17px]" />
+      </div>
+    </div>
+  );
+}
 
 /** Stickers: gallery = PNG mẫu. Canvas = widget HTML (đổi chữ vẫn giữ icon/khung). */
 const COVER_STICKERS = [
@@ -1767,20 +1787,13 @@ export function CoverPickerModal({
           {/* Cột phải: phone dọc — Preview in profile (4:3) */}
           <aside className="hidden w-[260px] shrink-0 flex-col border-l border-white/10 bg-[#1a1a1a] lg:flex xl:w-[300px]">
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-4">
-              <div className="flex aspect-9/16 w-[220px] max-h-[min(560px,70vh)] flex-col overflow-hidden rounded-[32px] border border-zinc-700 bg-black shadow-lg ring-1 ring-white/10">
-                {/* Thanh trên — chỉ dùng asset, không vẽ thêm giờ/pin (tránh đè) */}
-                <div className="relative w-full shrink-0 overflow-hidden bg-black">
-                  <img
-                    src={COVER_PREVIEW_TOP_PHONE}
-                    alt=""
-                    className="block h-auto w-full object-cover object-top"
-                  />
-                </div>
+              <div className="flex aspect-9/16 w-[220px] max-h-[min(560px,70vh)] flex-col overflow-hidden rounded-[32px] border-[3px] border-zinc-300 bg-white shadow-[0_8px_32px_rgba(0,0,0,0.45)] ring-1 ring-white/20">
+                <ProfilePhoneStatusBar />
 
                 <div className="flex shrink-0 items-center justify-between px-2.5 pb-1 pt-0.5">
-                  <IoChevronBack className="text-xl text-white" aria-hidden />
+                  <IoChevronBack className="text-xl text-zinc-900" aria-hidden />
                   <IoEllipsisHorizontal
-                    className="text-lg text-white"
+                    className="text-lg text-zinc-900"
                     aria-hidden
                   />
                 </div>
@@ -1789,53 +1802,53 @@ export function CoverPickerModal({
                   <img
                     src={previewProfileAvatar}
                     alt=""
-                    className="h-[72px] w-[72px] rounded-full bg-zinc-800 object-cover ring-1 ring-white/10"
+                    className="h-[72px] w-[72px] rounded-full bg-zinc-200 object-cover ring-1 ring-zinc-200/90"
                     referrerPolicy="no-referrer"
                   />
-                  <p className="mt-2.5 max-w-full truncate px-1 text-center text-[15px] font-bold text-white">
+                  <p className="mt-2.5 max-w-full truncate px-1 text-center text-[15px] font-bold text-zinc-900">
                     {previewProfileName}
                   </p>
                   <div className="mt-3 flex w-full items-stretch justify-center gap-0 text-center">
                     <div className="min-w-0 flex-1 px-1">
-                      <p className="text-[15px] font-semibold text-white">−</p>
-                      <p className="text-[11px] text-zinc-400">Following</p>
+                      <p className="text-[15px] font-semibold text-zinc-900">−</p>
+                      <p className="text-[11px] text-zinc-500">Following</p>
                     </div>
                     <div
-                      className="w-px self-stretch bg-zinc-700"
+                      className="w-px self-stretch bg-zinc-200"
                       aria-hidden
                     />
                     <div className="min-w-0 flex-1 px-1">
-                      <p className="text-[15px] font-semibold text-white">−</p>
-                      <p className="text-[11px] text-zinc-400">Followers</p>
+                      <p className="text-[15px] font-semibold text-zinc-900">−</p>
+                      <p className="text-[11px] text-zinc-500">Followers</p>
                     </div>
                     <div
-                      className="w-px self-stretch bg-zinc-700"
+                      className="w-px self-stretch bg-zinc-200"
                       aria-hidden
                     />
                     <div className="min-w-0 flex-1 px-1">
-                      <p className="text-[15px] font-semibold text-white">−</p>
-                      <p className="text-[11px] text-zinc-400">Likes</p>
+                      <p className="text-[15px] font-semibold text-zinc-900">−</p>
+                      <p className="text-[11px] text-zinc-500">Likes</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex shrink-0 items-end justify-around border-b border-zinc-800 px-2">
-                  <div className="flex flex-1 flex-col items-center pb-0.5 pt-1 text-white">
+                <div className="flex shrink-0 items-end justify-around border-b border-zinc-200 px-2">
+                  <div className="flex flex-1 flex-col items-center pb-0.5 pt-1 text-zinc-900">
                     <IoGridOutline className="text-[20px]" aria-hidden />
-                    <span className="mt-1 h-[2px] w-6 rounded-full bg-white" aria-hidden />
+                    <span className="mt-1 h-[2px] w-6 rounded-full bg-zinc-900" aria-hidden />
                   </div>
-                  <div className="flex flex-1 flex-col items-center pb-2 pt-1 text-zinc-500">
+                  <div className="flex flex-1 flex-col items-center pb-2 pt-1 text-zinc-400">
                     <IoRepeatOutline className="text-[20px]" aria-hidden />
                   </div>
-                  <div className="flex flex-1 flex-col items-center pb-2 pt-1 text-zinc-500">
+                  <div className="flex flex-1 flex-col items-center pb-2 pt-1 text-zinc-400">
                     <IoHeartOutline className="text-[20px]" aria-hidden />
                   </div>
                 </div>
 
-                {/* Lưới video — ngay dưới tab (giống TikTok), không đẩy xuống đáy */}
-                <div className="min-h-0 flex-1 overflow-hidden bg-black">
-                  <div className="grid grid-cols-3 gap-px bg-zinc-900">
-                    <div className="relative aspect-4/3 overflow-hidden bg-black">
+                {/* Lưới video — gap 1px trắng giữa ô (giống TikTok) */}
+                <div className="min-h-0 flex-1 overflow-hidden bg-white">
+                  <div className="grid grid-cols-3 gap-px bg-zinc-200 p-px">
+                    <div className="relative aspect-4/3 overflow-hidden bg-zinc-100">
                       {/*
                         Guide ở 18%–82% (rộng 64% stage 16:9).
                         Preview phóng stage lên 100/0.64 ≈ 156.25% bề rộng ô và căn giữa
@@ -1848,11 +1861,11 @@ export function CoverPickerModal({
                         {renderStageLayers({ interactive: false })}
                       </div>
                     </div>
-                    <div className="aspect-4/3 bg-zinc-950" />
-                    <div className="aspect-4/3 bg-zinc-950" />
-                    <div className="aspect-4/3 bg-zinc-950" />
-                    <div className="aspect-4/3 bg-zinc-950" />
-                    <div className="aspect-4/3 bg-zinc-950" />
+                    <div className="aspect-4/3 bg-zinc-100" />
+                    <div className="aspect-4/3 bg-zinc-100" />
+                    <div className="aspect-4/3 bg-zinc-100" />
+                    <div className="aspect-4/3 bg-zinc-100" />
+                    <div className="aspect-4/3 bg-zinc-100" />
                   </div>
                 </div>
               </div>
