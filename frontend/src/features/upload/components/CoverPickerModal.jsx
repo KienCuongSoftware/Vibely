@@ -102,6 +102,25 @@ const COVER_STICKERS = [
 ];
 
 const DEFAULT_STICKER_WIDTH_PCT = 42;
+/** Căn giữa stage + snap khi kéo sticker (TikTok-style). */
+const STAGE_CENTER_PCT = 50;
+const STAGE_ALIGN_SNAP_PCT = 1.4;
+
+function snapStagePosition(xPct, yPct) {
+  let x = xPct;
+  let y = yPct;
+  let verticalGuide = false;
+  let horizontalGuide = false;
+  if (Math.abs(x - STAGE_CENTER_PCT) <= STAGE_ALIGN_SNAP_PCT) {
+    x = STAGE_CENTER_PCT;
+    verticalGuide = true;
+  }
+  if (Math.abs(y - STAGE_CENTER_PCT) <= STAGE_ALIGN_SNAP_PCT) {
+    y = STAGE_CENTER_PCT;
+    horizontalGuide = true;
+  }
+  return { xPct: x, yPct: y, verticalGuide, horizontalGuide };
+}
 
 /** Nốt nhạc kiểu TikTok (trắng + lệch cyan/magenta). */
 function MusicNoteIcon({ className = "h-[1em] w-[1em]" }) {
@@ -826,6 +845,10 @@ export function CoverPickerModal({
   const filmstripTrackRef = useRef(null);
   const canvasStageRef = useRef(null);
   const stickerDragRef = useRef(null);
+  const [alignGuides, setAlignGuides] = useState({
+    vertical: false,
+    horizontal: false,
+  });
   const [filmstripAtStart, setFilmstripAtStart] = useState(true);
   const [filmstripAtEnd, setFilmstripAtEnd] = useState(true);
 
@@ -1152,15 +1175,24 @@ export function CoverPickerModal({
       const dx = e.clientX - drag.startX;
       const dy = e.clientY - drag.startY;
       if (drag.mode === "move") {
-        const xPct = Math.min(
+        const rawX = Math.min(
           92,
           Math.max(8, drag.origX + (dx / drag.stageW) * 100),
         );
-        const yPct = Math.min(
+        const rawY = Math.min(
           92,
           Math.max(8, drag.origY + (dy / drag.stageH) * 100),
         );
-        setActiveSticker((prev) => (prev ? { ...prev, xPct, yPct } : prev));
+        const snapped = snapStagePosition(rawX, rawY);
+        setAlignGuides({
+          vertical: snapped.verticalGuide,
+          horizontal: snapped.horizontalGuide,
+        });
+        setActiveSticker((prev) =>
+          prev
+            ? { ...prev, xPct: snapped.xPct, yPct: snapped.yPct }
+            : prev,
+        );
         return;
       }
       const delta = (dx / drag.stageW) * 100;
@@ -1169,6 +1201,7 @@ export function CoverPickerModal({
     };
     const onUp = () => {
       stickerDragRef.current = null;
+      setAlignGuides({ vertical: false, horizontal: false });
     };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
@@ -1558,6 +1591,19 @@ export function CoverPickerModal({
                     }}
                   >
                     {renderStageLayers({ interactive: true })}
+
+                    {alignGuides.vertical ? (
+                      <div
+                        className="pointer-events-none absolute inset-y-0 left-1/2 z-20 w-[2px] -translate-x-1/2 bg-[#39ff14] shadow-[0_0_6px_rgba(57,255,20,0.85)]"
+                        aria-hidden
+                      />
+                    ) : null}
+                    {alignGuides.horizontal ? (
+                      <div
+                        className="pointer-events-none absolute inset-x-0 top-1/2 z-20 h-[2px] -translate-y-1/2 bg-[#39ff14] shadow-[0_0_6px_rgba(57,255,20,0.85)]"
+                        aria-hidden
+                      />
+                    ) : null}
 
                     <div
                       className="pointer-events-none absolute inset-y-0 left-[18%] w-px bg-white/95"
