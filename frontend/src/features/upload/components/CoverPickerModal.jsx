@@ -8,12 +8,14 @@ import React, {
 import {
   IoAdd,
   IoArrowBack,
+  IoBatteryFullOutline,
   IoChevronBack,
   IoChevronForward,
   IoEllipsisHorizontal,
   IoHappyOutline,
   IoTextOutline,
 } from "react-icons/io5";
+import { LuWifi } from "react-icons/lu";
 import { uploadThumbnailToStorage } from "@/shared/api/client";
 import { DEFAULT_AVATAR_URL } from "@/features/profile/utils/avatarUrl.js";
 import {
@@ -33,8 +35,6 @@ const PREVIEW_JPEG_QUALITY = 0.96;
 const COVER_EXPORT_JPEG_QUALITY = 0.97;
 const COVER_EXPORT_MAX_WIDTH = Math.max(THUMBNAIL_MAX_WIDTH, 1440);
 
-/** Preview hồ sơ — status bar dùng PNG invert trắng trên nền tối. */
-const COVER_PREVIEW_TOP_PHONE = "/images/video-peview/top-phone.png";
 const COVER_PREVIEW_FALLBACK_NAME = "Vibely";
 
 /** Stickers: gallery = PNG mẫu. Canvas = widget HTML (đổi chữ vẫn giữ icon/khung). */
@@ -1765,15 +1765,31 @@ export function CoverPickerModal({
           <aside className="hidden w-[260px] shrink-0 flex-col border-l border-white/10 bg-[#1a1a1a] lg:flex xl:w-[300px]">
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-4">
               <div className="flex aspect-9/16 w-[220px] max-h-[min(560px,70vh)] flex-col overflow-hidden rounded-[32px] border border-zinc-700 bg-black shadow-lg ring-1 ring-white/10">
-                {/* top-phone.png: status bar (8:00, sóng, wifi, pin) + back/menu — không dùng SVG */}
-                <div className="relative w-full shrink-0 bg-black">
-                  <img
-                    src={COVER_PREVIEW_TOP_PHONE}
-                    alt=""
-                    className="block w-full h-auto"
-                    draggable={false}
-                    decoding="async"
-                  />
+                {/* Status bar + nav — vector (nét mọi DPI), giống UploadPage profile preview */}
+                <div className="flex shrink-0 flex-col bg-black">
+                  <div className="flex items-center justify-between px-3 pt-2 pb-0.5 text-[11px] font-semibold tabular-nums text-white">
+                    <span>8:00</span>
+                    <div
+                      className="flex items-center gap-1.5 text-white"
+                      aria-hidden
+                    >
+                      <div className="flex items-end gap-px pb-0.5">
+                        <span className="h-1 w-[3px] rounded-[1px] bg-white" />
+                        <span className="h-1.5 w-[3px] rounded-[1px] bg-white" />
+                        <span className="h-2 w-[3px] rounded-[1px] bg-white" />
+                        <span className="h-2.5 w-[3px] rounded-[1px] bg-white" />
+                      </div>
+                      <LuWifi className="text-[15px]" strokeWidth={2.25} />
+                      <IoBatteryFullOutline className="text-[17px]" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between px-2 pb-2 pt-0.5">
+                    <IoChevronBack className="text-2xl text-white" aria-hidden />
+                    <IoEllipsisHorizontal
+                      className="text-xl text-white"
+                      aria-hidden
+                    />
+                  </div>
                 </div>
 
                 <div className="flex shrink-0 flex-col items-center px-3 pb-3 pt-1">
