@@ -1,4 +1,5 @@
 import { VideoThumbnailImg } from '@/features/post/components/VideoThumbnailImg.jsx'
+import { DEFAULT_COVER } from '@/features/post/pages/SoundPage.jsx'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { apiClient, uploadThumbnailToStorage } from '@/shared/api/client'
@@ -213,10 +214,8 @@ function ProfileGridMedia({ item: v, playing = false }) {
     }
   }, [playing, url])
 
-  const thumbNode = thumb ? (
-    <VideoThumbnailImg src={thumb} />
-  ) : (
-    <VideoThumbnailImg src="https://picsum.photos/seed/vibely-thumb/720/1280" />
+  const thumbNode = (
+    <VideoThumbnailImg src={thumb || DEFAULT_COVER} fallback={DEFAULT_COVER} />
   )
 
   if (url && playing) {
@@ -782,19 +781,20 @@ export function ProfilePage() {
     setProfileVideosLoading(true)
     ;(async () => {
       try {
-        let data
-        if (isOwnProfile && token) {
-          data = await apiClient.getMyUploadedVideos(token, { page: 0, size: 48 })
-        } else {
-          data = await apiClient.getVideosByUsername(profile.username, { page: 0, size: 48, token })
-        }
+        const data = await apiClient.getVideosByUsername(profile.username, {
+          page: 0,
+          size: 48,
+          token,
+        })
         if (!cancelled) {
           const rows = Array.isArray(data?.items) ? data.items : []
-          const visible = rows.filter((video) =>
-            isProfileVideoVisibleToViewer(video, {
-              isOwnProfile,
-              hasViewer: Boolean(token),
-            }),
+          const visible = rows.filter(
+            (video) =>
+              !video?.studioDraft &&
+              isProfileVideoVisibleToViewer(video, {
+                isOwnProfile,
+                hasViewer: Boolean(token),
+              }),
           )
           setProfileVideos(sortVideosNewestFirst(visible))
         }
@@ -835,15 +835,20 @@ export function ProfilePage() {
     let cancelled = false
         const refreshPending = async () => {
       try {
-        // ACCOUNT_BANNED is thrown by my-uploads when banned (no extra /me poll).
-        const data = await apiClient.getMyUploadedVideos(token, { page: 0, size: 48 })
+        const data = await apiClient.getVideosByUsername(profile.username, {
+          page: 0,
+          size: 48,
+          token,
+        })
         if (cancelled) return
         const rows = Array.isArray(data?.items) ? data.items : []
-        const visible = rows.filter((video) =>
-          isProfileVideoVisibleToViewer(video, {
-            isOwnProfile: true,
-            hasViewer: true,
-          }),
+        const visible = rows.filter(
+          (video) =>
+            !video?.studioDraft &&
+            isProfileVideoVisibleToViewer(video, {
+              isOwnProfile: true,
+              hasViewer: true,
+            }),
         )
         setProfileVideos(sortVideosNewestFirst(visible))
       } catch {
@@ -862,6 +867,7 @@ export function ProfilePage() {
     authReady,
     isOwnProfile,
     token,
+    profile?.username,
     profileMainTab,
     hasPendingProfileModeration,
     isBannedProfile,
