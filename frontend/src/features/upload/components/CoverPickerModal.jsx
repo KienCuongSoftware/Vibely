@@ -1765,24 +1765,18 @@ export function CoverPickerModal({
           <aside className="hidden w-[260px] shrink-0 flex-col border-l border-white/10 bg-[#1a1a1a] lg:flex xl:w-[300px]">
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-4">
               <div className="flex aspect-9/16 w-[220px] max-h-[min(560px,70vh)] flex-col overflow-hidden rounded-[32px] border border-zinc-700 bg-black shadow-lg ring-1 ring-white/10">
-                <div className="relative w-full shrink-0 overflow-hidden bg-black">
+                {/* top-phone.png: status bar (8:00, sóng, wifi, pin) + back/menu — không dùng SVG */}
+                <div className="relative w-full shrink-0 bg-black">
                   <img
                     src={COVER_PREVIEW_TOP_PHONE}
                     alt=""
-                    className="block h-auto w-full object-cover object-top"
+                    className="block w-full h-auto"
                     draggable={false}
+                    decoding="async"
                   />
                 </div>
 
-                <div className="flex shrink-0 items-center justify-between px-2.5 pb-1 pt-0.5">
-                  <IoChevronBack className="text-xl text-white" aria-hidden />
-                  <IoEllipsisHorizontal
-                    className="text-lg text-white"
-                    aria-hidden
-                  />
-                </div>
-
-                <div className="flex shrink-0 flex-col items-center px-3 pb-3">
+                <div className="flex shrink-0 flex-col items-center px-3 pb-3 pt-1">
                   <img
                     src={previewProfileAvatar}
                     alt=""
