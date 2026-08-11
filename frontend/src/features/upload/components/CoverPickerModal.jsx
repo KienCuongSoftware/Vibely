@@ -31,6 +31,24 @@ const FILMSTRIP_JPEG_QUALITY = 0.9;
 /** Thumb dọc 9:16 trên dải chọn khung (giống TikTok). */
 const FILMSTRIP_FRAME_HEIGHT = 56;
 const FILMSTRIP_FRAME_WIDTH = Math.round((FILMSTRIP_FRAME_HEIGHT * 9) / 16);
+/** Khung chọn cao hơn thumb — padding shell tránh bị clip. */
+const FILMSTRIP_SELECTOR_OVERSHOOT = 6;
+
+function formatFilmstripTime(seconds) {
+  const total = Math.max(0, Math.floor(Number(seconds) || 0));
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+function clampFilmstripIndex(idx, frameCount) {
+  if (frameCount <= 0) return 0;
+  return Math.min(frameCount - 1, Math.max(0, idx));
+}
+
+function filmstripIndexFromScrollLeft(scrollLeft) {
+  return Math.round(scrollLeft / FILMSTRIP_FRAME_WIDTH);
+}
 /** Large modal preview capture (display is smaller; keep retina-sharp). */
 const PREVIEW_MAX_WIDTH = 960;
 const PREVIEW_JPEG_QUALITY = 0.96;
@@ -852,6 +870,9 @@ export function CoverPickerModal({
   const coverImageInputRef = useRef(null);
   const filmstripRef = useRef(null);
   const filmstripTrackRef = useRef(null);
+  const filmstripDragRef = useRef(null);
+  const filmstripProgrammaticRef = useRef(false);
+  const filmstripScrollEndRef = useRef(null);
   const canvasStageRef = useRef(null);
   const stickerDragRef = useRef(null);
   const [alignGuides, setAlignGuides] = useState({
@@ -860,6 +881,15 @@ export function CoverPickerModal({
   });
   const [filmstripAtStart, setFilmstripAtStart] = useState(true);
   const [filmstripAtEnd, setFilmstripAtEnd] = useState(true);
+  const [filmstripPadSide, setFilmstripPadSide] = useState(0);
+
+  const syncFilmstripPad = useCallback(() => {
+    const el = filmstripRef.current;
+    if (!el) return;
+    setFilmstripPadSide(
+      Math.max(0, el.clientWidth / 2 - FILMSTRIP_FRAME_WIDTH / 2),
+    );
+  }, []);
 
   const syncFilmstripScrollState = useCallback(() => {
     const el = filmstripRef.current;
@@ -880,23 +910,110 @@ export function CoverPickerModal({
     setFilmstripAtEnd(scrollLeft >= maxScroll - 2);
   }, []);
 
-  const scrollFilmstrip = useCallback(
-    (direction) => {
-      const el = filmstripRef.current;
-      if (!el) return;
-      const { scrollLeft, clientWidth, scrollWidth } = el;
-      const maxScroll = Math.max(0, scrollWidth - clientWidth);
-      if (scrollWidth <= clientWidth + 1) return;
-      const step = Math.max(120, Math.round(clientWidth * 0.55));
-      const target =
-        direction > 0
-          ? Math.min(maxScroll, scrollLeft + step)
-          : Math.max(0, scrollLeft - step);
-      el.scrollTo({ left: target, behavior: "smooth" });
+  const scrollFilmstripToIndex = useCallback((idx, behavior = "smooth") => {
+    const outer = filmstripRef.current;
+    if (!outer) return;
+    const clamped = clampFilmstripIndex(idx, frames.length);
+    const targetLeft = clamped * FILMSTRIP_FRAME_WIDTH;
+    if (Math.abs(outer.scrollLeft - targetLeft) < 1) return;
+    filmstripProgrammaticRef.current = true;
+    outer.scrollTo({
+      left: targetLeft,
+      behavior,
+    });
+    window.setTimeout(() => {
+      filmstripProgrammaticRef.current = false;
+    }, behavior === "smooth" ? 320 : 0);
+  }, [frames.length]);
+
+  const applyFilmstripScrollSelection = useCallback(
+    (snap = false) => {
+      const outer = filmstripRef.current;
+      if (!outer || !frames.length || filmstripProgrammaticRef.current) {
+        syncFilmstripScrollState();
+        return;
+      }
+      const idx = clampFilmstripIndex(
+        filmstripIndexFromScrollLeft(outer.scrollLeft),
+        frames.length,
+      );
+      if (snap) {
+        scrollFilmstripToIndex(idx);
+      }
+      if (idx !== selectedIdxRef.current) {
+        setTab("video");
+        setSelectedIdx(idx);
+      }
       syncFilmstripScrollState();
-      requestAnimationFrame(() => syncFilmstripScrollState());
     },
-    [syncFilmstripScrollState],
+    [frames.length, scrollFilmstripToIndex, syncFilmstripScrollState],
+  );
+
+  const handleFilmstripScroll = useCallback(() => {
+    applyFilmstripScrollSelection(false);
+    if (filmstripScrollEndRef.current) {
+      window.clearTimeout(filmstripScrollEndRef.current);
+    }
+    filmstripScrollEndRef.current = window.setTimeout(() => {
+      applyFilmstripScrollSelection(true);
+    }, 140);
+  }, [applyFilmstripScrollSelection]);
+
+  const onFilmstripPointerDown = useCallback(
+    (e) => {
+      if (e.button !== 0 || !frames.length) return;
+      const outer = filmstripRef.current;
+      if (!outer) return;
+      filmstripDragRef.current = {
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startScrollLeft: outer.scrollLeft,
+      };
+      outer.setPointerCapture(e.pointerId);
+      setTab("video");
+    },
+    [frames.length],
+  );
+
+  const onFilmstripPointerMove = useCallback(
+    (e) => {
+      const drag = filmstripDragRef.current;
+      const outer = filmstripRef.current;
+      if (!drag || !outer || drag.pointerId !== e.pointerId) return;
+      outer.scrollLeft =
+        drag.startScrollLeft - (e.clientX - drag.startX);
+      applyFilmstripScrollSelection(false);
+    },
+    [applyFilmstripScrollSelection],
+  );
+
+  const onFilmstripPointerUp = useCallback(
+    (e) => {
+      const drag = filmstripDragRef.current;
+      const outer = filmstripRef.current;
+      if (!drag || drag.pointerId !== e.pointerId) return;
+      filmstripDragRef.current = null;
+      if (filmstripScrollEndRef.current) {
+        window.clearTimeout(filmstripScrollEndRef.current);
+        filmstripScrollEndRef.current = null;
+      }
+      if (outer?.hasPointerCapture(e.pointerId)) {
+        outer.releasePointerCapture(e.pointerId);
+      }
+      applyFilmstripScrollSelection(true);
+    },
+    [applyFilmstripScrollSelection],
+  );
+
+  const stepFilmstripSelection = useCallback(
+    (direction) => {
+      if (!frames.length) return;
+      setTab("video");
+      setSelectedIdx((i) =>
+        clampFilmstripIndex(i + direction, frames.length),
+      );
+    },
+    [frames.length],
   );
 
   useEffect(() => {
@@ -1010,37 +1127,39 @@ export function CoverPickerModal({
 
   useLayoutEffect(() => {
     syncFilmstripScrollState();
-  }, [frames, syncFilmstripScrollState]);
+    syncFilmstripPad();
+  }, [frames, syncFilmstripScrollState, syncFilmstripPad]);
 
   useEffect(() => {
     const inner = filmstripTrackRef.current;
     const outer = filmstripRef.current;
     if (!inner || !frames.length) return;
-    const ro = new ResizeObserver(() => syncFilmstripScrollState());
+    const ro = new ResizeObserver(() => {
+      syncFilmstripScrollState();
+      syncFilmstripPad();
+    });
     ro.observe(inner);
     if (outer) ro.observe(outer);
     return () => ro.disconnect();
-  }, [frames.length, syncFilmstripScrollState, open]);
+  }, [frames.length, syncFilmstripScrollState, syncFilmstripPad, open]);
 
   useEffect(() => {
-    const outer = filmstripRef.current;
-    if (!outer || !frames.length) return;
-    const targetLeft = selectedIdx * FILMSTRIP_FRAME_WIDTH;
-    const targetRight = targetLeft + FILMSTRIP_FRAME_WIDTH;
-    const { scrollLeft, clientWidth } = outer;
-    if (targetLeft < scrollLeft + 4) {
-      outer.scrollTo({ left: Math.max(0, targetLeft - 12), behavior: "smooth" });
-    } else if (targetRight > scrollLeft + clientWidth - 4) {
-      outer.scrollTo({
-        left: targetRight - clientWidth + 12,
-        behavior: "smooth",
-      });
-    }
+    if (!frames.length || filmstripDragRef.current) return;
+    scrollFilmstripToIndex(selectedIdx, "auto");
     syncFilmstripScrollState();
-  }, [selectedIdx, frames.length, syncFilmstripScrollState]);
+  }, [
+    selectedIdx,
+    frames.length,
+    scrollFilmstripToIndex,
+    syncFilmstripScrollState,
+    filmstripPadSide,
+  ]);
 
   useEffect(() => {
     return () => {
+      if (filmstripScrollEndRef.current) {
+        window.clearTimeout(filmstripScrollEndRef.current);
+      }
       previewCacheRef.current.forEach((cachedUrl) =>
         URL.revokeObjectURL(cachedUrl),
       );
@@ -1682,7 +1801,7 @@ export function CoverPickerModal({
             </div>
 
             {/* Filmstrip ngang + Upload cover */}
-            <div className="flex shrink-0 items-center gap-2 border-t border-white/10 bg-[#121212] px-2 py-3 sm:gap-3 sm:px-4">
+            <div className="flex shrink-0 items-end gap-2 border-t border-white/10 bg-[#121212] px-2 py-3 sm:gap-3 sm:px-4">
               <input
                 ref={coverImageInputRef}
                 type="file"
@@ -1705,86 +1824,117 @@ export function CoverPickerModal({
 
               <button
                 type="button"
-                aria-label="Cuộn dải ảnh sang trái"
-                aria-disabled={filmstripAtStart}
-                onClick={() => scrollFilmstrip(-1)}
+                aria-label="Khung hình trước"
+                aria-disabled={filmstripAtStart || selectedIdx <= 0}
+                onClick={() => stepFilmstripSelection(-1)}
                 className={`hidden h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-white/5 text-zinc-200 hover:bg-white/10 sm:flex ${
-                  filmstripAtStart ? "cursor-default opacity-40" : ""
+                  filmstripAtStart || selectedIdx <= 0
+                    ? "cursor-default opacity-40"
+                    : ""
                 }`}
               >
                 <IoChevronBack className="text-lg" aria-hidden />
               </button>
 
-              <div
-                ref={filmstripRef}
-                role="region"
-                aria-label="Dải khung hình"
-                tabIndex={0}
-                onScroll={syncFilmstripScrollState}
-                onKeyDown={(e) => {
-                  if (e.key === "ArrowLeft") {
-                    e.preventDefault();
-                    setTab("video");
-                    setSelectedIdx((i) => Math.max(0, i - 1));
-                  } else if (e.key === "ArrowRight") {
-                    e.preventDefault();
-                    setTab("video");
-                    setSelectedIdx((i) =>
-                      Math.min(Math.max(0, frames.length - 1), i + 1),
-                    );
-                  }
-                }}
-                className="relative min-h-16 min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain rounded-md bg-zinc-950 scrollbar-none touch-pan-x"
-              >
+              <div className="relative min-w-0 flex-1 overflow-visible pt-7 pb-2">
+                {tab === "video" && frames[selectedIdx] ? (
+                  <div
+                    className="pointer-events-none absolute left-1/2 top-0 z-30 -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-600/95 px-2.5 py-1 text-[11px] font-semibold tabular-nums text-white shadow-md"
+                    aria-hidden
+                  >
+                    {formatFilmstripTime(frames[selectedIdx].time)}
+                    <span className="absolute left-1/2 top-full -translate-x-1/2 border-[5px] border-transparent border-t-zinc-600/95" />
+                  </div>
+                ) : null}
+
+                {tab === "video" && frames.length > 0 ? (
+                  <div
+                    className="pointer-events-none absolute bottom-2 left-1/2 z-20 -translate-x-1/2 rounded-md border-2 border-white shadow-[0_0_0_2px_rgba(32,213,236,0.9)]"
+                    style={{
+                      width: FILMSTRIP_FRAME_WIDTH,
+                      height:
+                        FILMSTRIP_FRAME_HEIGHT +
+                        FILMSTRIP_SELECTOR_OVERSHOOT * 2,
+                    }}
+                    aria-hidden
+                  />
+                ) : null}
+
                 <div
-                  ref={filmstripTrackRef}
-                  className="relative flex h-14 w-max items-center"
+                  ref={filmstripRef}
+                  role="slider"
+                  aria-label="Dải khung hình"
+                  aria-valuemin={0}
+                  aria-valuemax={Math.max(0, frames.length - 1)}
+                  aria-valuenow={selectedIdx}
+                  tabIndex={0}
+                  onScroll={handleFilmstripScroll}
+                  onPointerDown={onFilmstripPointerDown}
+                  onPointerMove={onFilmstripPointerMove}
+                  onPointerUp={onFilmstripPointerUp}
+                  onPointerCancel={onFilmstripPointerUp}
+                  onKeyDown={(e) => {
+                    if (e.key === "ArrowLeft") {
+                      e.preventDefault();
+                      stepFilmstripSelection(-1);
+                    } else if (e.key === "ArrowRight") {
+                      e.preventDefault();
+                      stepFilmstripSelection(1);
+                    }
+                  }}
+                  className="h-14 cursor-grab select-none overflow-x-auto overflow-y-visible overscroll-x-contain rounded-md bg-zinc-950 scrollbar-none touch-pan-x active:cursor-grabbing"
                 >
-                  {frames.map((f, i) => (
-                    <button
-                      key={`${f.time}-${i}`}
-                      type="button"
-                      aria-label={`Khung hình ${i + 1}`}
-                      aria-pressed={tab === "video" && selectedIdx === i}
-                      onClick={() => {
-                        setTab("video");
-                        setSelectedIdx(i);
-                      }}
-                      className="h-14 shrink-0 cursor-pointer overflow-hidden border-0 bg-black p-0 opacity-90 transition hover:opacity-100"
-                      style={{ width: FILMSTRIP_FRAME_WIDTH }}
-                    >
-                      <img
-                        src={f.dataUrl}
-                        alt=""
-                        className="h-full w-full object-cover"
-                        loading="eager"
-                        decoding="async"
-                        draggable={false}
-                        onLoad={syncFilmstripScrollState}
-                      />
-                    </button>
-                  ))}
-                  {tab === "video" && frames.length > 0 ? (
+                  <div
+                    ref={filmstripTrackRef}
+                    className="flex h-full w-max items-center"
+                  >
                     <div
-                      className="pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 rounded-md border-2 border-white shadow-[0_0_0_2px_rgba(32,213,236,0.9)]"
-                      style={{
-                        left: selectedIdx * FILMSTRIP_FRAME_WIDTH,
-                        width: FILMSTRIP_FRAME_WIDTH,
-                        height: FILMSTRIP_FRAME_HEIGHT + 10,
-                      }}
+                      className="shrink-0"
+                      style={{ width: filmstripPadSide }}
                       aria-hidden
                     />
-                  ) : null}
+                    {frames.map((f, i) => (
+                      <div
+                        key={`${f.time}-${i}`}
+                        className="h-full shrink-0 overflow-hidden bg-black"
+                        style={{ width: FILMSTRIP_FRAME_WIDTH }}
+                      >
+                        <img
+                          src={f.dataUrl}
+                          alt=""
+                          className="h-full w-full object-cover"
+                          loading="eager"
+                          decoding="async"
+                          draggable={false}
+                          onLoad={() => {
+                            syncFilmstripScrollState();
+                            syncFilmstripPad();
+                          }}
+                        />
+                      </div>
+                    ))}
+                    <div
+                      className="shrink-0"
+                      style={{ width: filmstripPadSide }}
+                      aria-hidden
+                    />
+                  </div>
                 </div>
               </div>
 
               <button
                 type="button"
-                aria-label="Cuộn dải ảnh sang phải"
-                aria-disabled={filmstripAtEnd}
-                onClick={() => scrollFilmstrip(1)}
+                aria-label="Khung hình sau"
+                aria-disabled={
+                  filmstripAtEnd ||
+                  selectedIdx >= Math.max(0, frames.length - 1)
+                }
+                onClick={() => stepFilmstripSelection(1)}
                 className={`hidden h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-white/5 text-zinc-200 hover:bg-white/10 sm:flex ${
-                  filmstripAtEnd ? "cursor-default opacity-40" : ""
+                  filmstripAtEnd ||
+                  selectedIdx >= Math.max(0, frames.length - 1)
+                    ? "cursor-default opacity-40"
+                    : ""
                 }`}
               >
                 <IoChevronForward className="text-lg" aria-hidden />
