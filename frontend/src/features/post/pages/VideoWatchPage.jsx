@@ -1234,8 +1234,9 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
         if (cancelled) return;
         const rows = Array.isArray(data?.items) ? data.items : [];
         const visible = isOwnCreatorProfile
-          ? rows
+          ? rows.filter((video) => !Boolean(video?.studioDraft))
           : rows.filter((video) => {
+              if (video?.studioDraft) return false;
               const key = String(video?.privacy || "PUBLIC").toUpperCase();
               if (key === "PRIVATE" || key === "ONLYYOU" || key === "ONLY_YOU")
                 return false;

@@ -19,6 +19,7 @@ import { StudioLayout } from "@/features/studio/components/StudioLayout";
 import { StudioAccountMenu } from "@/features/studio/components/StudioAccountMenu";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { buildProfileVideoUrl } from "@/features/post/utils/videoPublicId.js";
+import { resolveStudioListLabel } from "@/features/post/utils/videoCaption.js";
 import { formatApiDateTimeVi } from "@/shared/utils/relativeTimeVi.js";
 
 const PRIVACY_OPTIONS = [
@@ -423,10 +424,7 @@ export function StudioPostsPage() {
                 {visibleItems.map((v) => {
                   const hasThumb =
                     v.thumbnailUrl && String(v.thumbnailUrl).trim();
-                  const title =
-                    (v.description && String(v.description).trim()) ||
-                    v.title ||
-                    "Video";
+                  const title = resolveStudioListLabel(v);
                   const updated = formatApiDateTimeVi(v.updatedAt || v.createdAt);
                   const duration = formatDurationLabel(v.durationSeconds);
                   return (
@@ -520,10 +518,7 @@ export function StudioPostsPage() {
                 {visibleItems.map((v) => {
                   const hasThumb =
                     v.thumbnailUrl && String(v.thumbnailUrl).trim();
-                  const desc =
-                    (v.description && String(v.description).trim()) ||
-                    v.title ||
-                    "Không có mô tả";
+                  const desc = resolveStudioListLabel(v);
                   const created = formatApiDateTimeVi(v.createdAt);
                   const detailUrl =
                     buildProfileVideoUrl(username, v.publicId) ||

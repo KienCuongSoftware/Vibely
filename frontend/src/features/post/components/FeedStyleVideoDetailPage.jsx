@@ -37,6 +37,7 @@ import { VideoShareModal } from '@/features/post/components/VideoShareModal.jsx'
 import { usePersistedFeedPlaybackSpeed } from '@/features/feed/hooks/usePersistedFeedPlaybackSpeed.js'
 import { usePersistedFeedVideoQuality } from '@/features/feed/hooks/usePersistedFeedVideoQuality.js'
 import { markVideoNotInterested } from '@/features/feed/utils/feedNotInterestedStorage.js'
+import { resolveDisplayCaption } from '@/features/post/utils/videoCaption.js'
 import { useAuth } from '@/features/auth/hooks/useAuth.js'
 import { useActivityModal } from '@/features/notification/store/ActivityModalContext.jsx'
 import { useNotificationUnread } from '@/features/notification/store/NotificationUnreadContext.jsx'
@@ -116,9 +117,7 @@ function normalizeFeedVideo(row, followedAuthorIds) {
 }
 
 function videoDocumentTitle(video, forYouStyle) {
-  const desc =
-    String(video?.description ?? '').trim() ||
-    String(video?.title ?? '').trim()
+  const desc = resolveDisplayCaption(video)
   if (!desc) return 'Vibely'
   return forYouStyle ? desc : `${desc} | Vibely`
 }
@@ -126,10 +125,7 @@ function videoDocumentTitle(video, forYouStyle) {
 function RelatedVideoTile({ video, onSelect }) {
   const thumb = String(video?.thumbnailUrl ?? '').trim()
   const views = formatCompactCount(video?.viewCount ?? video?.views ?? 0)
-  const label =
-    String(video?.description ?? '').trim() ||
-    String(video?.title ?? '').trim() ||
-    'Video'
+  const label = resolveDisplayCaption(video) || 'Video'
   const author = String(video?.authorUsername ?? '')
     .trim()
     .replace(/^@/, '')
@@ -1056,11 +1052,7 @@ export function FeedStyleVideoDetailPage({
                     <div className="mt-1.5 text-sm leading-snug text-white/90">
                       <FeedTranslatedCaption
                         videoPublicId={feedVideo.publicId}
-                        captionText={
-                          String(feedVideo.description ?? '').trim() ||
-                          String(feedVideo.title ?? '').trim() ||
-                          ''
-                        }
+                        captionText={resolveDisplayCaption(feedVideo)}
                         descriptionLang={feedVideo.descriptionLang}
                         token={token}
                         active

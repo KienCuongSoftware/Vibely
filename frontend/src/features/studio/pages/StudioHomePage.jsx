@@ -119,10 +119,16 @@ export function StudioHomePage() {
         });
         const items = Array.isArray(page?.content)
           ? page.content
-          : Array.isArray(page)
-            ? page
-            : [];
-        if (!cancelled) setRecentPosts(items.slice(0, 6));
+          : Array.isArray(page?.items)
+            ? page.items
+            : Array.isArray(page)
+              ? page
+              : [];
+        if (!cancelled) {
+          setRecentPosts(
+            items.filter((video) => !Boolean(video?.studioDraft)).slice(0, 6),
+          );
+        }
       } catch {
         if (!cancelled) setRecentPosts([]);
       }

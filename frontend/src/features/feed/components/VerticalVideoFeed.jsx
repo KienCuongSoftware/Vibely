@@ -122,6 +122,7 @@ function mergeVideosByPublicId(prev, incoming) {
   const out = [...prev];
   for (const raw of incoming) {
     const item = normalizeVideoItem(raw);
+    if (item?.studioDraft) continue;
     const id = videoPublicIdOf(item);
     if (!id || seen.has(id)) continue;
     seen.add(id);
@@ -142,6 +143,7 @@ const FEED_ROUND_ICON_BUTTON = FEED_ROUND_ICON_BUTTON_CLASS;
 function normalizeVideoItem(item) {
   return {
     ...item,
+    studioDraft: Boolean(item?.studioDraft),
     authorId:
       item?.authorId == null || Number.isNaN(Number(item.authorId))
         ? null
@@ -156,6 +158,13 @@ function normalizeVideoItem(item) {
     shareCount: Number(item.shareCount ?? 0),
     bookmarkCount: Number(item.bookmarkCount ?? 0),
   };
+}
+
+/** Studio drafts must never appear on For You / Following feeds. */
+function filterOutStudioDrafts(items) {
+  return (Array.isArray(items) ? items : []).filter(
+    (video) => !Boolean(video?.studioDraft),
+  );
 }
 
 function FeedChevronNav({ activeIndex, videoCount, onStep, busy, className }) {
@@ -563,7 +572,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
 
   const hydrateFeedFollowState = useCallback(
     (items) =>
-      items.map((item) => {
+      filterOutStudioDrafts(items).map((item) => {
         const normalized = normalizeVideoItem(item);
         const authorId = Number(normalized?.authorId);
         if (Number.isFinite(authorId) && followedAuthorIds.has(authorId)) {
@@ -973,7 +982,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   page: 0,
                   size: 16,
                 });
-                const mineItems = Array.isArray(mine?.items) ? mine.items : [];
+                const mineItems = filterOutStudioDrafts(mine?.items);
                 if (mineItems.length > 0) {
                   normalized = hydrateFeedFollowState(mineItems);
                   if (isForYouFeed) {
@@ -1034,7 +1043,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   page: 0,
                   size: 16,
                 });
-                const mineItems = Array.isArray(mine?.items) ? mine.items : [];
+                const mineItems = filterOutStudioDrafts(mine?.items);
                 if (mineItems.length > 0) {
                   let fallback = hydrateFeedFollowState(mineItems);
                   if (isForYouFeed) {

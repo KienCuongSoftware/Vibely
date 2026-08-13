@@ -14,4 +14,18 @@ describe('shareCaption', () => {
     expect(caption).toContain('Nước Mắt Anh Rơi')
     expect(caption).not.toContain('snaptik')
   })
+
+  it('hides generic Studio placeholder title when description is empty', () => {
+    expect(isJunkCaption('Video')).toBe(true)
+    expect(pickShareCaption({ title: 'Video', description: '' })).toBe('')
+  })
+
+  it('prefers description over title', () => {
+    expect(
+      pickShareCaption({
+        title: 'Video',
+        description: 'Mô tả thật của người dùng',
+      }),
+    ).toBe('Mô tả thật của người dùng')
+  })
 })

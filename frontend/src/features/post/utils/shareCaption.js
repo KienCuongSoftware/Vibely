@@ -2,6 +2,8 @@
 export function isJunkCaption(raw) {
   const s = String(raw ?? '').trim()
   if (!s) return true
+  // Studio placeholder when user left description empty
+  if (/^video$/i.test(s)) return true
   if (/https?:\/\//i.test(s)) return true
   if (/\.(mp4|webm|mov)(\?|$)/i.test(s)) return true
   if (
@@ -14,11 +16,11 @@ export function isJunkCaption(raw) {
   return false
 }
 
-/** Giống caption trên trang watch — ưu tiên title hợp lệ, không thì mô tả. */
+/** Caption trên watch / share — ưu tiên mô tả người dùng; bỏ title placeholder. */
 export function pickShareCaption({ title = '', description = '' } = {}) {
   const ttl = String(title ?? '').trim()
   const desc = String(description ?? '').trim()
-  const pick = !isJunkCaption(ttl) ? ttl : !isJunkCaption(desc) ? desc : ''
+  const pick = !isJunkCaption(desc) ? desc : !isJunkCaption(ttl) ? ttl : ''
   if (!pick) return ''
   if (pick.length > 300) return `${pick.slice(0, 297)}…`
   return pick

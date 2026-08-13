@@ -45,6 +45,7 @@ import { FeedSubtitlesModal } from "@/features/feed/components/FeedSubtitlesModa
 import { FeedReportModal } from "@/features/report/components/FeedReportModal.jsx";
 import { FeedReportedVideoOverlay } from "@/features/feed/components/FeedReportedVideoOverlay.jsx";
 import { normalizeVideoPublicId } from "@/features/post/utils/videoPublicId.js";
+import { resolveDisplayCaption } from "@/features/post/utils/videoCaption.js";
 import { SelfRepostIndicator } from "@/features/feed/components/SelfRepostIndicator.jsx";
 import { TooltipHoverWrap } from "@/shared/components/TooltipControls.jsx";
 import {
@@ -1112,10 +1113,7 @@ export function FeedPhoneStage({
             .trim()
             .replace(/^@/, "");
           const authorProfilePath = feedAuthorProfilePath(video);
-          const captionText =
-            String(video.description ?? "").trim() ||
-            String(video.title ?? "").trim() ||
-            "";
+          const captionText = resolveDisplayCaption(video);
           const playbackUrl = resolveFeedPlaybackUrl(video);
           const hasPlayback = Boolean(playbackUrl);
           const cellPublicId = normalizeVideoPublicId(video.publicId);
