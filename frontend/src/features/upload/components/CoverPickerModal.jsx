@@ -82,6 +82,11 @@ function scrollFilmstripToTime(container, time, duration, behavior = "auto") {
   }
 }
 
+/** Pad phải đủ để khung cuối kéo vào dưới selector (mép trái). */
+function filmstripEndPadPx(containerWidth) {
+  return Math.max(0, (Number(containerWidth) || 0) - FILMSTRIP_FRAME_WIDTH);
+}
+
 function nearestFilmstripFrame(frames, time) {
   if (!frames?.length) return null;
   let best = frames[0];
@@ -933,13 +938,13 @@ export function CoverPickerModal({
     horizontal: false,
   });
   const [filmstripTimeVisible, setFilmstripTimeVisible] = useState(false);
-  const [filmstripEdgePad, setFilmstripEdgePad] = useState(0);
+  const [filmstripEndPad, setFilmstripEndPad] = useState(0);
 
-  const updateFilmstripEdgePad = useCallback(() => {
+  const updateFilmstripEndPad = useCallback(() => {
     const outer = filmstripRef.current;
     if (!outer) return;
-    const next = Math.max(0, outer.clientWidth / 2 - FILMSTRIP_FRAME_WIDTH / 2);
-    setFilmstripEdgePad((prev) => (Math.abs(prev - next) < 0.5 ? prev : next));
+    const next = filmstripEndPadPx(outer.clientWidth);
+    setFilmstripEndPad((prev) => (Math.abs(prev - next) < 0.5 ? prev : next));
   }, []);
 
   const showFilmstripTime = useCallback(() => {
@@ -1184,29 +1189,29 @@ export function CoverPickerModal({
   }, [open, videoSource]);
 
   useLayoutEffect(() => {
-    updateFilmstripEdgePad();
+    updateFilmstripEndPad();
     if (!frames.length || videoDuration <= 0) return;
     scrollFilmstripToSelectedTime(selectedTimeRef.current, "auto");
   }, [
     frames,
     videoDuration,
-    filmstripEdgePad,
+    filmstripEndPad,
     scrollFilmstripToSelectedTime,
-    updateFilmstripEdgePad,
+    updateFilmstripEndPad,
   ]);
 
   useEffect(() => {
     const outer = filmstripRef.current;
     if (!outer) return;
     const ro = new ResizeObserver(() => {
-      updateFilmstripEdgePad();
+      updateFilmstripEndPad();
       if (!filmstripDragRef.current) {
         scrollFilmstripToSelectedTime(selectedTimeRef.current, "auto");
       }
     });
     ro.observe(outer);
     return () => ro.disconnect();
-  }, [frames.length, scrollFilmstripToSelectedTime, updateFilmstripEdgePad, open]);
+  }, [frames.length, scrollFilmstripToSelectedTime, updateFilmstripEndPad, open]);
 
   useEffect(() => {
     return () => {
@@ -1887,7 +1892,10 @@ export function CoverPickerModal({
                   frames.length > 0 &&
                   filmstripTimeVisible ? (
                     <div
-                      className="pointer-events-none absolute left-1/2 top-0 z-30 -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-600/95 px-2.5 py-1 text-[11px] font-semibold tabular-nums text-white shadow-md transition-opacity duration-150"
+                      className="pointer-events-none absolute left-0 top-0 z-30 whitespace-nowrap rounded-md bg-zinc-600/95 px-2.5 py-1 text-[11px] font-semibold tabular-nums text-white shadow-md transition-opacity duration-150"
+                      style={{
+                        transform: `translateX(${Math.max(0, (FILMSTRIP_FRAME_WIDTH - 52) / 2)}px)`,
+                      }}
                       aria-hidden
                     >
                       {formatFilmstripTime(selectedTime)}
@@ -1897,7 +1905,7 @@ export function CoverPickerModal({
 
                   {tab === "video" && frames.length > 0 ? (
                     <div
-                      className="pointer-events-none absolute bottom-2 left-1/2 z-20 -translate-x-1/2 rounded-md border-2 border-white shadow-[0_0_0_2px_rgba(32,213,236,0.9)]"
+                      className="pointer-events-none absolute bottom-2 left-0 z-20 rounded-md border-2 border-white shadow-[0_0_0_2px_rgba(32,213,236,0.9)]"
                       style={{
                         width: FILMSTRIP_FRAME_WIDTH,
                         height:
@@ -1931,17 +1939,12 @@ export function CoverPickerModal({
                         stepFilmstripSelection(1);
                       }
                     }}
-                    className="h-14 cursor-grab select-none overflow-x-auto overflow-y-visible overscroll-x-contain rounded-md bg-zinc-950 scrollbar-none touch-pan-x active:cursor-grabbing"
+                    className="h-14 cursor-grab select-none overflow-x-auto overflow-y-visible overscroll-x-contain rounded-md bg-transparent scrollbar-none touch-pan-x active:cursor-grabbing"
                   >
                     <div
                       ref={filmstripTrackRef}
                       className="flex h-full w-max items-center"
                     >
-                      <div
-                        aria-hidden
-                        className="h-full shrink-0"
-                        style={{ width: filmstripEdgePad }}
-                      />
                       {frames.map((f, i) => (
                         <div
                           key={`${f.time}-${i}`}
@@ -1961,7 +1964,7 @@ export function CoverPickerModal({
                       <div
                         aria-hidden
                         className="h-full shrink-0"
-                        style={{ width: filmstripEdgePad }}
+                        style={{ width: filmstripEndPad }}
                       />
                     </div>
                   </div>
