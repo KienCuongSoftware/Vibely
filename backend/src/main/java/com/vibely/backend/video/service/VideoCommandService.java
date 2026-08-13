@@ -196,10 +196,14 @@ public class VideoCommandService {
         String nextDesc = request.getDescription();
         nextDesc = nextDesc == null || nextDesc.isBlank() ? null : nextDesc.trim();
         boolean keepAsDraft = Boolean.TRUE.equals(request.getStudioDraft());
+        // Prefer explicit presence flag; also honor a non-null value if Jackson bound the field
+        // without going through the setter (so Studio "Lên lịch" cannot silently publish now).
+        boolean scheduleFieldPresent = request.isScheduledAtPresent() || request.getScheduledAt() != null;
         Instant scheduledAt = null;
         if (keepAsDraft) {
             scheduledAt = null;
-        } else if (request.isScheduledAtPresent()) {
+            scheduleFieldPresent = true;
+        } else if (scheduleFieldPresent) {
             scheduledAt = resolveScheduledAtForPersist(request.getScheduledAt(), false);
         }
 
@@ -235,7 +239,7 @@ public class VideoCommandService {
         final String title = nextTitle;
         final String desc = nextDesc;
         final Instant schedule = scheduledAt;
-        final boolean applySchedule = keepAsDraft || request.isScheduledAtPresent();
+        final boolean applySchedule = scheduleFieldPresent;
         return tx.execute(status ->
             applyVideoUpdate(email, probe, request, title, desc, keepAsDraft, schedule, applySchedule)
         );

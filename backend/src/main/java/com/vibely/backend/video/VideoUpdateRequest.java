@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import java.time.Instant;
 
 public class VideoUpdateRequest {
@@ -33,6 +34,7 @@ public class VideoUpdateRequest {
      */
     private Instant scheduledAt;
 
+    @JsonIgnore
     private boolean scheduledAtPresent;
 
     public String getTitle() {
@@ -75,11 +77,13 @@ public class VideoUpdateRequest {
         this.studioDraft = studioDraft;
     }
 
+    @JsonProperty("scheduledAt")
     public Instant getScheduledAt() {
         return scheduledAt;
     }
 
-    @JsonProperty("scheduledAt")
+    /** {@link JsonSetter} forces mutator path so {@code scheduledAtPresent} is always set. */
+    @JsonSetter("scheduledAt")
     public void setScheduledAt(Instant scheduledAt) {
         this.scheduledAt = scheduledAt;
         this.scheduledAtPresent = true;

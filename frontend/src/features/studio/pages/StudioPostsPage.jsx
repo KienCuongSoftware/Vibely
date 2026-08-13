@@ -37,13 +37,31 @@ function formatScheduledBadge(iso) {
 
 function parseScheduleDate(raw) {
   if (raw == null || raw === "") return null;
+  if (Array.isArray(raw) && raw.length >= 3) {
+    // Rare Jackson timestamp array: [y, m, d, h, min, s, nano]
+    const [y, m, day, h = 0, min = 0, s = 0] = raw;
+    const d = new Date(Date.UTC(y, m - 1, day, h, min, s));
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
   if (typeof raw === "number" && Number.isFinite(raw)) {
     const ms = raw < 1e12 ? raw * 1000 : raw;
     const d = new Date(ms);
     return Number.isNaN(d.getTime()) ? null : d;
   }
+  if (typeof raw === "object" && raw !== null) {
+    // Some serializers nest epoch seconds
+    if (typeof raw.epochSecond === "number") {
+      const d = new Date(raw.epochSecond * 1000);
+      return Number.isNaN(d.getTime()) ? null : d;
+    }
+  }
   const d = new Date(raw);
   return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function readScheduledAt(video) {
+  if (!video || typeof video !== "object") return null;
+  return video.scheduledAt ?? video.scheduled_at ?? null;
 }
 
 function isFutureSchedule(iso) {
@@ -550,8 +568,8 @@ export function StudioPostsPage() {
                   const desc = resolveStudioListLabel(v);
                   const created = formatApiDateTimeVi(v.createdAt);
                   const duration = formatDurationLabel(v.durationSeconds);
-                  const scheduleLabel = isFutureSchedule(v.scheduledAt)
-                    ? formatScheduledBadge(v.scheduledAt)
+                  const scheduleLabel = isFutureSchedule(readScheduledAt(v))
+                    ? formatScheduledBadge(readScheduledAt(v))
                     : "";
                   const detailUrl =
                     buildProfileVideoUrl(username, v.publicId) ||
