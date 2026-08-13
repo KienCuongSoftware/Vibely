@@ -40,6 +40,7 @@ public class CuTagTrendingService {
                     WHERE v.status = 'READY'
                       AND coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
                       AND coalesce(v.studio_draft, false) = false
+                      AND (v.scheduled_at is null or v.scheduled_at <= now())
                       AND vst.confidence >= 0.45
                       AND vst.created_at >= b.recent_start
                       AND vst.created_at < b.now_ts
@@ -53,6 +54,7 @@ public class CuTagTrendingService {
                     WHERE v.status = 'READY'
                       AND coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
                       AND coalesce(v.studio_draft, false) = false
+                      AND (v.scheduled_at is null or v.scheduled_at <= now())
                       AND vst.confidence >= 0.45
                       AND vst.created_at >= b.prev_start
                       AND vst.created_at < b.recent_start

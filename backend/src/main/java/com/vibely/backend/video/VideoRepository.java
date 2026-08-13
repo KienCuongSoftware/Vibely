@@ -91,6 +91,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     @Query("""
         select v from Video v
         where v.status = :status and v.studioDraft = false
+          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
           and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
         order by v.createdAt desc
         """)
@@ -102,6 +103,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     @Query("""
         select v from Video v
         where v.author in :authors and v.status = :status and v.studioDraft = false
+          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
           and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
         order by v.createdAt desc
         """)
@@ -116,6 +118,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         join fetch v.author a
         where v.status = :status
           and v.studioDraft = false
+          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
           and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
           and a.accountStatus = com.vibely.backend.user.entity.UserAccountStatus.ACTIVE
           and a.onboardingCompleted = true
@@ -127,7 +130,9 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         select v from Video v
         join fetch v.author
         where v.status = :status
-        and v.author.id in (
+          and v.studioDraft = false
+          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
+          and v.author.id in (
             select f.following.id from FollowEntity f where f.follower.id = :followerId
         )
         order by v.createdAt desc
@@ -149,6 +154,8 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
                        CAST(NULL AS BIGINT) AS reposter_id
                 FROM videos v
                 WHERE v.status = 'READY'
+                  AND COALESCE(v.studio_draft, FALSE) = FALSE
+                  AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
                   AND v.author_id IN (
                       SELECT f.following_id FROM follows f WHERE f.follower_id = :followerId
                   )
@@ -159,6 +166,8 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
                 FROM video_reposts r
                 INNER JOIN videos v ON v.id = r.video_id
                 WHERE v.status = 'READY'
+                  AND COALESCE(v.studio_draft, FALSE) = FALSE
+                  AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
                   AND r.user_id IN (
                       SELECT f.following_id FROM follows f WHERE f.follower_id = :followerId
                   )
@@ -171,6 +180,8 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
                 SELECT v.id AS video_id
                 FROM videos v
                 WHERE v.status = 'READY'
+                  AND COALESCE(v.studio_draft, FALSE) = FALSE
+                  AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
                   AND v.author_id IN (
                       SELECT f.following_id FROM follows f WHERE f.follower_id = :followerId
                   )
@@ -179,6 +190,8 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
                 FROM video_reposts r
                 INNER JOIN videos v ON v.id = r.video_id
                 WHERE v.status = 'READY'
+                  AND COALESCE(v.studio_draft, FALSE) = FALSE
+                  AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
                   AND r.user_id IN (
                       SELECT f.following_id FROM follows f WHERE f.follower_id = :followerId
                   )
@@ -250,6 +263,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     @Query("""
         select v from Video v
         where v.author.id = :authorId and v.status = :status and v.studioDraft = false
+          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
         order by v.createdAt desc
         """)
     Page<Video> findByAuthorIdAndStatusEquals(
@@ -263,6 +277,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         select v from Video v
         where v.author.id = :authorId
           and v.studioDraft = false
+          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
           and v.status in :statuses
         order by v.createdAt desc
         """)
@@ -283,6 +298,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         where v.author.id = :authorId
           and v.status = :status
           and v.studioDraft = false
+          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
           and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
         order by v.createdAt desc
         """)
@@ -298,6 +314,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         where v.author.id = :authorId
           and v.status = :status
           and v.studioDraft = false
+          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
           and (
             v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
             or v.privacy = com.vibely.backend.video.VideoPrivacy.FRIENDS
@@ -319,6 +336,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         where v.author.id = :authorId
           and v.status = :status
           and v.studioDraft = false
+          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
           and (
             :includeAll = true
             or v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
@@ -340,6 +358,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         left join CommentEntity c on c.video = v
         where v.status = :status
           and v.studioDraft = false
+          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
           and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
         group by v
         order by (count(distinct l.id) + count(distinct c.id)) desc, v.createdAt desc
@@ -358,6 +377,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         select v from Video v join fetch v.author
         where v.status = :status
           and v.studioDraft = false
+          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
           and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
         order by v.createdAt desc, v.id desc
         """)
@@ -370,6 +390,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         select v from Video v join fetch v.author
         where v.status = :status
           and v.studioDraft = false
+          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
           and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
         and (v.createdAt < :cTime or (v.createdAt = :cTime and v.id < :cId))
         order by v.createdAt desc, v.id desc

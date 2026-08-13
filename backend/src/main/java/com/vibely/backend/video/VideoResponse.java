@@ -1,6 +1,7 @@
 package com.vibely.backend.video;
 
 import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record VideoResponse(
@@ -51,6 +52,8 @@ public record VideoResponse(
     /** Original FFmpeg ladder when playback prefers AI. */
     String standardMasterPlaylistUrl,
     /** Studio draft — not yet published to feed / profile lists. */
-    boolean studioDraft
+    boolean studioDraft,
+    /** Future publish time (ISO-8601); null when not scheduled. */
+    Instant scheduledAt
 ) {
 }

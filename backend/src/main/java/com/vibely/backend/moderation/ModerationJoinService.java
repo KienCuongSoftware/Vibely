@@ -169,6 +169,7 @@ public class ModerationJoinService {
             JOIN videos v ON v.id = aj.video_id
             WHERE aj.status = 'COMPLETED'
               AND COALESCE(v.studio_draft, FALSE) = FALSE
+              AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
               AND aj.id = (
                   SELECT aj2.id FROM analysis_jobs aj2
                   WHERE aj2.video_id = aj.video_id AND aj2.status = 'COMPLETED'

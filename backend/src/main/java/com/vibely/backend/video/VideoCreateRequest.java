@@ -4,11 +4,15 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.Instant;
 
 public class VideoCreateRequest {
 
     /** Matches Studio Upload / FFmpeg pipeline max duration (60 minutes). */
     public static final int MAX_DURATION_SECONDS = 60 * 60;
+
+    /** Minimum lead time for scheduled publish (TikTok-style). */
+    public static final int MIN_SCHEDULE_LEAD_MINUTES = 15;
 
     @NotBlank(message = "Tiêu đề là bắt buộc")
     @Size(max = 120, message = "Tiêu đề tối đa 120 ký tự")
@@ -39,6 +43,9 @@ public class VideoCreateRequest {
      * everyone | friends | onlyYou | PUBLIC | FRIENDS | PRIVATE
      */
     private String privacy;
+
+    /** Future publish instant (ISO-8601). Null = not scheduled. */
+    private Instant scheduledAt;
 
     public String getTitle() {
         return title;
@@ -110,5 +117,13 @@ public class VideoCreateRequest {
 
     public void setPrivacy(String privacy) {
         this.privacy = privacy;
+    }
+
+    public Instant getScheduledAt() {
+        return scheduledAt;
+    }
+
+    public void setScheduledAt(Instant scheduledAt) {
+        this.scheduledAt = scheduledAt;
     }
 }

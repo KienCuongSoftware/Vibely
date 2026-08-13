@@ -5,6 +5,12 @@ import { apiClient, uploadThumbnailToStorage, uploadVideoFile } from '@/shared/a
 import { loadStudioSettings, saveStudioSettings } from '@/features/studio/utils/studioSettings.js'
 import { CoverPickerModal } from '@/features/upload/components/CoverPickerModal'
 import { CuHashtagSuggestions } from '@/features/upload/components/CuHashtagSuggestions'
+import {
+  SchedulePickers,
+  SCHEDULE_MIN_LEAD_MINUTES,
+  defaultScheduleDate,
+  isScheduleAtLeastLeadAhead,
+} from '@/features/upload/components/SchedulePickers.jsx'
 import { UploadChecksPanel } from '@/features/upload/components/UploadChecksPanel'
 import { StudioLayout } from '@/features/studio/components/StudioLayout'
 import { extractThumbnailBlobFromFile } from '@/features/post/utils/videoThumbnail.js'
@@ -250,6 +256,8 @@ export function UploadPage() {
   )
   const [showMoreSettings, setShowMoreSettings] = useState(false)
   const [postTiming, setPostTiming] = useState('now')
+  const [scheduleAt, setScheduleAt] = useState(() => defaultScheduleDate())
+  const [scheduleError, setScheduleError] = useState('')
   const [privacyOpen, setPrivacyOpen] = useState(false)
   const [privacy, setPrivacy] = useState('everyone')
   const highQuality = true
@@ -399,10 +407,14 @@ export function UploadPage() {
     uploadProgress != null
       ? 'Đang tải lên…'
       : busy
-        ? 'Đang đăng…'
+        ? postTiming === 'schedule'
+          ? 'Đang lên lịch…'
+          : 'Đang đăng…'
         : originalityBlockingPost && originalityDecision !== 'BLOCK'
           ? 'Đang kiểm tra…'
-          : 'Đăng'
+          : postTiming === 'schedule'
+            ? 'Lên lịch'
+            : 'Đăng'
 
   useEffect(() => {
     if (!uploadedVideo?.publicId || !studioSettings.contentCheckLite) {
@@ -1358,6 +1370,22 @@ export function UploadPage() {
       setStatus(`Mô tả không quá ${DESC_MAX} ký tự.`)
       return
     }
+    let scheduledAtPayload = null
+    if (postTiming === 'schedule') {
+      if (!isScheduleAtLeastLeadAhead(scheduleAt)) {
+        setScheduleError(
+          `Lên lịch trước ít nhất ${SCHEDULE_MIN_LEAD_MINUTES} phút.`,
+        )
+        setStatus(
+          `Lên lịch trước ít nhất ${SCHEDULE_MIN_LEAD_MINUTES} phút.`,
+        )
+        return
+      }
+      setScheduleError('')
+      scheduledAtPayload = scheduleAt.toISOString()
+    } else {
+      setScheduleError('')
+    }
     setBusy(true)
     publishingRef.current = false
     try {
@@ -1382,6 +1410,7 @@ export function UploadPage() {
             thumbnailUrl: thumbnailUrl.trim() || undefined,
             privacy,
             studioDraft: false,
+            scheduledAt: scheduledAtPayload,
           },
           token,
         )
@@ -1399,6 +1428,7 @@ export function UploadPage() {
             durationSeconds: Math.round(durationSeconds),
             studioDraft: false,
             privacy,
+            scheduledAt: scheduledAtPayload,
           },
           token,
         )
@@ -1406,7 +1436,11 @@ export function UploadPage() {
       publishingRef.current = true
       processingPollRef.current += 1
       navigate('/vibelystudio/posts', {
-        state: { successMessage: 'Đã đăng video thành công.' },
+        state: {
+          successMessage: scheduledAtPayload
+            ? 'Đã lên lịch đăng video.'
+            : 'Đã đăng video thành công.',
+        },
       })
       return
     } catch (error) {
@@ -1462,6 +1496,7 @@ export function UploadPage() {
           thumbnailUrl: thumbnailUrl.trim() || undefined,
           privacy,
           studioDraft: true,
+          scheduledAt: null,
         },
         token,
       )
@@ -2148,7 +2183,10 @@ export function UploadPage() {
                               type="radio"
                               name="postTiming"
                               checked={postTiming === 'now'}
-                              onChange={() => setPostTiming('now')}
+                              onChange={() => {
+                                setPostTiming('now')
+                                setScheduleError('')
+                              }}
                               className="accent-[#fe2c55]"
                             />
                             Ngay bây giờ
@@ -2158,13 +2196,31 @@ export function UploadPage() {
                               type="radio"
                               name="postTiming"
                               checked={postTiming === 'schedule'}
-                              onChange={() => setPostTiming('schedule')}
+                              onChange={() => {
+                                setPostTiming('schedule')
+                                setScheduleAt(defaultScheduleDate())
+                                setScheduleError('')
+                              }}
                               className="accent-[#fe2c55]"
                             />
                             Lên lịch
                             <IoInformationCircleOutline className="text-zinc-500" aria-hidden />
                           </label>
                         </div>
+                        {postTiming === 'schedule' ? (
+                          <SchedulePickers
+                            value={scheduleAt}
+                            onChange={(d) => {
+                              setScheduleAt(d)
+                              setScheduleError(
+                                isScheduleAtLeastLeadAhead(d)
+                                  ? ''
+                                  : `Lên lịch trước ít nhất ${SCHEDULE_MIN_LEAD_MINUTES} phút.`,
+                              )
+                            }}
+                            error={scheduleError}
+                          />
+                        ) : null}
                       </div>
                       <div className="relative">
                         <p className="text-sm font-semibold text-zinc-200">Ai có thể xem video này</p>

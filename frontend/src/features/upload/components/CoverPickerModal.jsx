@@ -945,20 +945,26 @@ export function CoverPickerModal({
     setFilmstripAtEnd(scrollLeft >= maxScroll - 2);
   }, []);
 
-  const scrollFilmstripToIndex = useCallback((idx, behavior = "smooth") => {
-    const clamped = clampFilmstripIndex(idx, frames.length);
-    const frameEl = filmstripFrameRefs.current[clamped];
-    if (!frameEl) return;
-    filmstripProgrammaticRef.current = true;
-    frameEl.scrollIntoView({
-      inline: "center",
-      block: "nearest",
-      behavior,
-    });
-    window.setTimeout(() => {
-      filmstripProgrammaticRef.current = false;
-    }, behavior === "smooth" ? 320 : 0);
-  }, [frames.length]);
+  const scrollFilmstripToIndex = useCallback(
+    (idx, behavior = "smooth") => {
+      const clamped = clampFilmstripIndex(idx, frames.length);
+      const frameEl = filmstripFrameRefs.current[clamped];
+      if (!frameEl) return;
+      filmstripProgrammaticRef.current = true;
+      frameEl.scrollIntoView({
+        inline: "center",
+        block: "nearest",
+        behavior,
+      });
+      window.setTimeout(
+        () => {
+          filmstripProgrammaticRef.current = false;
+        },
+        behavior === "smooth" ? 320 : 0,
+      );
+    },
+    [frames.length],
+  );
 
   const applyFilmstripScrollSelection = useCallback(
     (snap = false) => {
@@ -980,7 +986,12 @@ export function CoverPickerModal({
       }
       syncFilmstripScrollState();
     },
-    [frames.length, readActiveFilmstripIndex, scrollFilmstripToIndex, syncFilmstripScrollState],
+    [
+      frames.length,
+      readActiveFilmstripIndex,
+      scrollFilmstripToIndex,
+      syncFilmstripScrollState,
+    ],
   );
 
   const handleFilmstripScroll = useCallback(() => {
@@ -1021,8 +1032,7 @@ export function CoverPickerModal({
       const drag = filmstripDragRef.current;
       const outer = filmstripRef.current;
       if (!drag || !outer || drag.pointerId !== e.pointerId) return;
-      outer.scrollLeft =
-        drag.startScrollLeft - (e.clientX - drag.startX);
+      outer.scrollLeft = drag.startScrollLeft - (e.clientX - drag.startX);
       showFilmstripTime();
       applyFilmstripScrollSelection(false);
     },
@@ -1053,9 +1063,7 @@ export function CoverPickerModal({
       if (!frames.length) return;
       setTab("video");
       showFilmstripTime();
-      setSelectedIdx((i) =>
-        clampFilmstripIndex(i + direction, frames.length),
-      );
+      setSelectedIdx((i) => clampFilmstripIndex(i + direction, frames.length));
       scheduleHideFilmstripTime();
     },
     [frames.length, scheduleHideFilmstripTime, showFilmstripTime],
@@ -1379,9 +1387,7 @@ export function CoverPickerModal({
           horizontal: snapped.horizontalGuide,
         });
         setActiveSticker((prev) =>
-          prev
-            ? { ...prev, xPct: snapped.xPct, yPct: snapped.yPct }
-            : prev,
+          prev ? { ...prev, xPct: snapped.xPct, yPct: snapped.yPct } : prev,
         );
         return;
       }
@@ -2014,7 +2020,10 @@ export function CoverPickerModal({
                     </div>
                   </div>
                   <div className="flex items-center justify-between px-2 pb-2 pt-0.5">
-                    <IoChevronBack className="text-2xl text-white" aria-hidden />
+                    <IoChevronBack
+                      className="text-2xl text-white"
+                      aria-hidden
+                    />
                     <IoEllipsisHorizontal
                       className="text-xl text-white"
                       aria-hidden

@@ -187,6 +187,7 @@ public class AdminCuService {
                     FROM videos v
                     WHERE v.status = 'READY'
                       AND coalesce(v.studio_draft, false) = false
+                      AND (v.scheduled_at is null or v.scheduled_at <= now())
                       AND NOT EXISTS (
                         SELECT 1 FROM analysis_jobs j
                         WHERE j.video_id = v.id AND j.status = 'COMPLETED'
@@ -203,6 +204,7 @@ public class AdminCuService {
                     SELECT v.id FROM videos v
                     WHERE v.status = 'READY'
                       AND coalesce(v.studio_draft, false) = false
+                      AND (v.scheduled_at is null or v.scheduled_at <= now())
                     ORDER BY v.created_at DESC
                     LIMIT ?
                     """,

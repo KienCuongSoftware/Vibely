@@ -26,6 +26,7 @@ public interface VideoCategoryRepository extends JpaRepository<VideoCategory, Vi
               AND v.status = 'READY'
               AND COALESCE(v.privacy, 'PUBLIC') = 'PUBLIC'
               AND COALESCE(v.studio_draft, false) = false
+              AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
               AND NOT EXISTS (
                   SELECT 1 FROM moderation_decisions md
                   WHERE md.video_id = v.id
@@ -49,6 +50,7 @@ public interface VideoCategoryRepository extends JpaRepository<VideoCategory, Vi
               AND v.status = 'READY'
               AND COALESCE(v.privacy, 'PUBLIC') = 'PUBLIC'
               AND COALESCE(v.studio_draft, false) = false
+              AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
               AND NOT EXISTS (
                   SELECT 1 FROM moderation_decisions md
                   WHERE md.video_id = v.id

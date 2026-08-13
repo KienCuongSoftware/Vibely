@@ -358,7 +358,8 @@ public class VideoResponseMapper {
             aiEnhanced,
             aiEnhancedLabel,
             standardMasterPlaylistUrl,
-            video.isStudioDraft()
+            video.isStudioDraft(),
+            video.getScheduledAt()
         );
     }
 

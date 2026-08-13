@@ -2,6 +2,9 @@ package com.vibely.backend.video;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.Instant;
 
 public class VideoUpdateRequest {
 
@@ -23,6 +26,14 @@ public class VideoUpdateRequest {
      * ({@code studioDraft=false}) — matches existing Studio "Đăng" behavior.
      */
     private Boolean studioDraft;
+
+    /**
+     * Future publish instant. When the JSON field is present (including null), update schedule;
+     * when omitted, leave the existing schedule unchanged.
+     */
+    private Instant scheduledAt;
+
+    private boolean scheduledAtPresent;
 
     public String getTitle() {
         return title;
@@ -62,5 +73,20 @@ public class VideoUpdateRequest {
 
     public void setStudioDraft(Boolean studioDraft) {
         this.studioDraft = studioDraft;
+    }
+
+    public Instant getScheduledAt() {
+        return scheduledAt;
+    }
+
+    @JsonProperty("scheduledAt")
+    public void setScheduledAt(Instant scheduledAt) {
+        this.scheduledAt = scheduledAt;
+        this.scheduledAtPresent = true;
+    }
+
+    @JsonIgnore
+    public boolean isScheduledAtPresent() {
+        return scheduledAtPresent;
     }
 }

@@ -23,6 +23,8 @@ import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoResponse;
 import com.vibely.backend.video.VideoStatus;
 import com.vibely.backend.video.VideoUpdateRequest;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.UUID;
 import org.springframework.beans.factory.ObjectProvider;
@@ -115,6 +117,7 @@ public class VideoCommandService {
         }
         // Default draft when omitted — only explicit studioDraft=false publishes into lists.
         boolean draft = !Boolean.FALSE.equals(request.getStudioDraft());
+        Instant scheduledAt = resolveScheduledAtForPersist(request.getScheduledAt(), draft);
         // Caption gate BEFORE write TX so ACCOUNT_BANNED is not swallowed by rollback wrapping.
         if (!draft) {
             captionGateService.assertPublishAllowed(
@@ -125,14 +128,15 @@ public class VideoCommandService {
                 request.getDescription()
             );
         }
-        return tx.execute(status -> persistNewVideo(author, request, draft, durationSeconds));
+        return tx.execute(status -> persistNewVideo(author, request, draft, durationSeconds, scheduledAt));
     }
 
     private VideoResponse persistNewVideo(
         User author,
         VideoCreateRequest request,
         boolean draft,
-        int durationSeconds
+        int durationSeconds,
+        Instant scheduledAt
     ) {
         User managedAuthor = userRepository.findById(author.getId())
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
@@ -155,6 +159,7 @@ public class VideoCommandService {
         video.setAudioTitle(audioTitle);
         video.setStatus(VideoStatus.RAW);
         video.setStudioDraft(draft);
+        video.setScheduledAt(scheduledAt);
         video.setPrivacy(resolvePrivacy(request.getPrivacy()));
         Video saved = videoRepository.save(video);
         if (!draft) {
@@ -191,6 +196,12 @@ public class VideoCommandService {
         String nextDesc = request.getDescription();
         nextDesc = nextDesc == null || nextDesc.isBlank() ? null : nextDesc.trim();
         boolean keepAsDraft = Boolean.TRUE.equals(request.getStudioDraft());
+        Instant scheduledAt = null;
+        if (keepAsDraft) {
+            scheduledAt = null;
+        } else if (request.isScheduledAtPresent()) {
+            scheduledAt = resolveScheduledAtForPersist(request.getScheduledAt(), false);
+        }
 
         UpdateGateProbe probe = tx.execute(status -> {
             User user = userRepository.findByEmail(email)
@@ -223,7 +234,11 @@ public class VideoCommandService {
 
         final String title = nextTitle;
         final String desc = nextDesc;
-        return tx.execute(status -> applyVideoUpdate(email, probe, request, title, desc, keepAsDraft));
+        final Instant schedule = scheduledAt;
+        final boolean applySchedule = keepAsDraft || request.isScheduledAtPresent();
+        return tx.execute(status ->
+            applyVideoUpdate(email, probe, request, title, desc, keepAsDraft, schedule, applySchedule)
+        );
     }
 
     private VideoResponse applyVideoUpdate(
@@ -232,7 +247,9 @@ public class VideoCommandService {
         VideoUpdateRequest request,
         String nextTitle,
         String nextDesc,
-        boolean keepAsDraft
+        boolean keepAsDraft,
+        Instant scheduledAt,
+        boolean applySchedule
     ) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
@@ -255,9 +272,12 @@ public class VideoCommandService {
         }
         if (keepAsDraft) {
             video.setStudioDraft(true);
+            video.setScheduledAt(null);
         } else {
-            // Studio "Đăng" (or omit studioDraft) publishes into the creator's post list.
             video.setStudioDraft(false);
+            if (applySchedule) {
+                video.setScheduledAt(scheduledAt);
+            }
         }
         if (request.getPrivacy() != null && !request.getPrivacy().isBlank()) {
             video.setPrivacy(resolvePrivacy(request.getPrivacy()));
@@ -277,6 +297,24 @@ public class VideoCommandService {
             moderationJoinService.tryEnqueue(saved.getId(), false);
         }
         return responseMapper.toResponse(saved);
+    }
+
+    /**
+     * Drafts never keep a schedule. Non-draft with a time must be at least
+     * {@link VideoCreateRequest#MIN_SCHEDULE_LEAD_MINUTES} ahead.
+     */
+    private Instant resolveScheduledAtForPersist(Instant scheduledAt, boolean draft) {
+        if (draft || scheduledAt == null) {
+            return null;
+        }
+        Instant minAllowed = Instant.now()
+            .plus(VideoCreateRequest.MIN_SCHEDULE_LEAD_MINUTES, ChronoUnit.MINUTES);
+        if (scheduledAt.isBefore(minAllowed)) {
+            throw new BadRequestException(
+                "Lên lịch trước ít nhất " + VideoCreateRequest.MIN_SCHEDULE_LEAD_MINUTES + " phút."
+            );
+        }
+        return scheduledAt;
     }
 
     private record UpdateGateProbe(long videoId, Long authorId, String authorEmail, boolean wasDraft) {

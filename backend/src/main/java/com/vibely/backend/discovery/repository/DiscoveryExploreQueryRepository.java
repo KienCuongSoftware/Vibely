@@ -34,6 +34,7 @@ public interface DiscoveryExploreQueryRepository extends Repository<com.vibely.b
             where v.status = 'READY'
               and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
               and coalesce(v.studio_draft, false) = false
+              and (v.scheduled_at is null or v.scheduled_at <= now())
               and u.account_status = 'ACTIVE'
               and not exists (
                 select 1 from moderation_decisions md
@@ -62,6 +63,7 @@ public interface DiscoveryExploreQueryRepository extends Repository<com.vibely.b
             where v.status = 'READY'
               and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
               and coalesce(v.studio_draft, false) = false
+              and (v.scheduled_at is null or v.scheduled_at <= now())
               and v.id in (
                 select vc.video_id
                 from video_categories vc
@@ -103,6 +105,9 @@ public interface DiscoveryExploreQueryRepository extends Repository<com.vibely.b
             join video_topics vt_rank on vt_rank.video_id = v.id
             join topics t_rank on t_rank.id = vt_rank.topic_id and t_rank.slug = :slug
             where v.status = 'READY'
+              and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
+              and coalesce(v.studio_draft, false) = false
+              and (v.scheduled_at is null or v.scheduled_at <= now())
               and vt_rank.score >= 0.25
               and (:cursorScore is null or (
                 (vt_rank.score * 0.35
@@ -142,6 +147,7 @@ public interface DiscoveryExploreQueryRepository extends Repository<com.vibely.b
             where v.status = 'READY'
               and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
               and coalesce(v.studio_draft, false) = false
+              and (v.scheduled_at is null or v.scheduled_at <= now())
               and u.account_status = 'ACTIVE'
               and not exists (
                 select 1 from moderation_decisions md

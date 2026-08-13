@@ -23,6 +23,7 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
             where v.status = 'READY'
               and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
               and coalesce(v.studio_draft, false) = false
+              and (v.scheduled_at is null or v.scheduled_at <= now())
               and not exists (
                   select 1 from moderation_decisions md
                   where md.video_id = v.id
@@ -58,6 +59,7 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
             where v.status = 'READY'
               and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
               and coalesce(v.studio_draft, false) = false
+              and (v.scheduled_at is null or v.scheduled_at <= now())
               and not exists (
                   select 1 from moderation_decisions md
                   where md.video_id = v.id
@@ -98,6 +100,7 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
             where v.status = 'READY'
               and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
               and coalesce(v.studio_draft, false) = false
+              and (v.scheduled_at is null or v.scheduled_at <= now())
               and not exists (
                   select 1 from moderation_decisions md
                   where md.video_id = v.id
@@ -143,6 +146,7 @@ public interface ExploreQueryRepository extends Repository<com.vibely.backend.vi
               and v2.status = 'READY'
               and coalesce(v2.privacy, 'PUBLIC') = 'PUBLIC'
               and coalesce(v2.studio_draft, false) = false
+              and (v2.scheduled_at is null or v2.scheduled_at <= now())
               and not exists (
                   select 1 from moderation_decisions md
                   where md.video_id = v2.id

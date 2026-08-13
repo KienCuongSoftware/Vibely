@@ -14,6 +14,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -97,6 +98,13 @@ public class Video {
      */
     @Column(name = "studio_draft", nullable = false)
     private boolean studioDraft;
+
+    /**
+     * Future publish time from Studio schedule. Null = publish immediately (subject to draft/moderation).
+     * Public feeds hide the video while {@code scheduledAt} is still in the future.
+     */
+    @Column(name = "scheduled_at")
+    private Instant scheduledAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "privacy", nullable = false, length = 20)
@@ -289,6 +297,14 @@ public class Video {
 
     public void setStudioDraft(boolean studioDraft) {
         this.studioDraft = studioDraft;
+    }
+
+    public Instant getScheduledAt() {
+        return scheduledAt;
+    }
+
+    public void setScheduledAt(Instant scheduledAt) {
+        this.scheduledAt = scheduledAt;
     }
 
     public VideoPrivacy getPrivacy() {

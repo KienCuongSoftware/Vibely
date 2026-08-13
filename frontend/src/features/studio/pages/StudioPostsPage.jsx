@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   IoBarChartOutline,
+  IoCalendarOutline,
   IoChatbubbleEllipsesOutline,
   IoChevronDown,
   IoEllipsisHorizontal,
@@ -21,6 +22,23 @@ import { useAuth } from "@/features/auth/hooks/useAuth";
 import { buildProfileVideoUrl } from "@/features/post/utils/videoPublicId.js";
 import { resolveStudioListLabel } from "@/features/post/utils/videoCaption.js";
 import { formatApiDateTimeVi } from "@/shared/utils/relativeTimeVi.js";
+
+function formatScheduledBadge(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+function isFutureSchedule(iso) {
+  const t = Date.parse(iso);
+  return Number.isFinite(t) && t > Date.now();
+}
 
 const PRIVACY_OPTIONS = [
   {
@@ -562,6 +580,12 @@ export function StudioPostsPage() {
                             >
                               {desc}
                             </Link>
+                            {isFutureSchedule(v.scheduledAt) ? (
+                              <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#20d5ec]/15 px-2 py-0.5 text-[11px] font-semibold text-[#7de8f5] ring-1 ring-[#20d5ec]/35">
+                                <IoCalendarOutline className="text-[12px]" aria-hidden />
+                                {formatScheduledBadge(v.scheduledAt)}
+                              </span>
+                            ) : null}
                             {String(v.status || "").toUpperCase() === "REMOVED" ? (
                               <p className="mt-0.5 text-xs font-medium text-rose-400">
                                 Đã gỡ khỏi hồ sơ (vi phạm)

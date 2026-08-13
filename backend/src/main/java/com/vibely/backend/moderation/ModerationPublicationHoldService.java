@@ -99,6 +99,7 @@ public class ModerationPublicationHoldService {
             JOIN moderation_decisions md ON md.video_id = v.id
             WHERE v.status = 'HIDDEN'
               AND COALESCE(v.studio_draft, FALSE) = FALSE
+              AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
               AND md.effective_decision IN ('ALLOW', 'LIMIT', 'REVIEW')
             LIMIT 100
             """
@@ -128,6 +129,7 @@ public class ModerationPublicationHoldService {
             FROM videos v
             WHERE v.status = 'HIDDEN'
               AND COALESCE(v.studio_draft, FALSE) = FALSE
+              AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
               AND v.created_at < NOW() - (INTERVAL '1 minute' * ?)
               AND EXISTS (
                   SELECT 1 FROM analysis_jobs aj
@@ -163,6 +165,7 @@ public class ModerationPublicationHoldService {
             FROM videos v
             WHERE v.status = 'HIDDEN'
               AND COALESCE(v.studio_draft, FALSE) = FALSE
+              AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
               AND v.created_at < NOW() - (INTERVAL '1 minute' * ?)
               AND NOT EXISTS (
                   SELECT 1 FROM analysis_jobs aj
@@ -185,6 +188,7 @@ public class ModerationPublicationHoldService {
             FROM videos v
             WHERE v.status = 'HIDDEN'
               AND COALESCE(v.studio_draft, FALSE) = FALSE
+              AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
               AND v.created_at < NOW() - (INTERVAL '1 minute' * ?)
               AND NOT EXISTS (
                   SELECT 1 FROM moderation_decisions md
