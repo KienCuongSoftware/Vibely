@@ -24,8 +24,8 @@ import { resolveStudioListLabel } from "@/features/post/utils/videoCaption.js";
 import { formatApiDateTimeVi } from "@/shared/utils/relativeTimeVi.js";
 
 function formatScheduledBadge(iso) {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
+  const d = parseScheduleDate(iso);
+  if (!d) return "";
   return d.toLocaleString("en-US", {
     month: "short",
     day: "numeric",
@@ -35,9 +35,20 @@ function formatScheduledBadge(iso) {
   });
 }
 
+function parseScheduleDate(raw) {
+  if (raw == null || raw === "") return null;
+  if (typeof raw === "number" && Number.isFinite(raw)) {
+    const ms = raw < 1e12 ? raw * 1000 : raw;
+    const d = new Date(ms);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  const d = new Date(raw);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 function isFutureSchedule(iso) {
-  const t = Date.parse(iso);
-  return Number.isFinite(t) && t > Date.now();
+  const d = parseScheduleDate(iso);
+  return Boolean(d && d.getTime() > Date.now());
 }
 
 const PRIVACY_OPTIONS = [
@@ -538,6 +549,10 @@ export function StudioPostsPage() {
                     v.thumbnailUrl && String(v.thumbnailUrl).trim();
                   const desc = resolveStudioListLabel(v);
                   const created = formatApiDateTimeVi(v.createdAt);
+                  const duration = formatDurationLabel(v.durationSeconds);
+                  const scheduleLabel = isFutureSchedule(v.scheduledAt)
+                    ? formatScheduledBadge(v.scheduledAt)
+                    : "";
                   const detailUrl =
                     buildProfileVideoUrl(username, v.publicId) ||
                     `/watch/${v.publicId}`;
@@ -553,7 +568,7 @@ export function StudioPostsPage() {
                         <div className="flex items-center gap-3">
                           <Link
                             to={detailUrl}
-                            className="relative h-16 w-12 shrink-0 cursor-pointer overflow-hidden rounded-md bg-zinc-800"
+                            className="relative h-[72px] w-[52px] shrink-0 cursor-pointer overflow-hidden rounded-md bg-zinc-800"
                             title="Xem chi tiết video"
                           >
                             {hasThumb ? (
@@ -571,6 +586,11 @@ export function StudioPostsPage() {
                                 preload="metadata"
                               />
                             ) : null}
+                            {duration ? (
+                              <span className="absolute bottom-1 left-1 rounded bg-black/80 px-1 py-0.5 text-[10px] font-medium tabular-nums text-white">
+                                {duration}
+                              </span>
+                            ) : null}
                           </Link>
                           <div className="min-w-0 overflow-hidden">
                             <Link
@@ -580,10 +600,13 @@ export function StudioPostsPage() {
                             >
                               {desc}
                             </Link>
-                            {isFutureSchedule(v.scheduledAt) ? (
-                              <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#20d5ec]/15 px-2 py-0.5 text-[11px] font-semibold text-[#7de8f5] ring-1 ring-[#20d5ec]/35">
-                                <IoCalendarOutline className="text-[12px]" aria-hidden />
-                                {formatScheduledBadge(v.scheduledAt)}
+                            {scheduleLabel ? (
+                              <span className="mt-1.5 inline-flex max-w-full items-center gap-1 rounded-full bg-[#20d5ec]/20 px-2 py-0.5 text-[11px] font-semibold text-[#20d5ec] ring-1 ring-inset ring-[#20d5ec]/40">
+                                <IoCalendarOutline
+                                  className="shrink-0 text-[12px]"
+                                  aria-hidden
+                                />
+                                <span className="truncate">{scheduleLabel}</span>
                               </span>
                             ) : null}
                             {String(v.status || "").toUpperCase() === "REMOVED" ? (
