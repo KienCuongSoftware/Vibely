@@ -24,7 +24,10 @@ import {
   drawVideoFrameToCanvas,
 } from "@/features/post/utils/videoThumbnail.js";
 
-const FRAME_COUNT = 96;
+/** Thumb trên dải ~ mỗi 2s (chỉ hiển thị). Vuốt chọn thời gian liên tục trên cả video. */
+const FILMSTRIP_THUMB_INTERVAL_SEC = 2;
+const FILMSTRIP_MAX_THUMBS = 150;
+const SCRUB_STEP_SEC = 0.1;
 /** Filmstrip capture — sharp enough for small thumbs + interim large preview. */
 const FILMSTRIP_CAPTURE_WIDTH = 480;
 const FILMSTRIP_JPEG_QUALITY = 0.9;
@@ -41,29 +44,60 @@ function formatFilmstripTime(seconds) {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-function clampFilmstripIndex(idx, frameCount) {
-  if (frameCount <= 0) return 0;
-  return Math.min(frameCount - 1, Math.max(0, idx));
+function filmstripThumbCount(durationSec) {
+  const d = Math.max(0.08, Number(durationSec) || 1);
+  return Math.max(
+    2,
+    Math.min(
+      FILMSTRIP_MAX_THUMBS,
+      Math.floor(d / FILMSTRIP_THUMB_INTERVAL_SEC) + 1,
+    ),
+  );
 }
 
-function readFilmstripCenterIndex(frameEls) {
-  const outer = frameEls.container;
-  const cells = frameEls.cells;
-  if (!outer || !cells?.length) return 0;
-  const centerX = outer.getBoundingClientRect().left + outer.clientWidth / 2;
-  let bestIdx = 0;
-  let bestDist = Number.POSITIVE_INFINITY;
-  cells.forEach((el, i) => {
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const mid = rect.left + rect.width / 2;
-    const dist = Math.abs(mid - centerX);
+function clampSelectedTime(t, duration) {
+  const maxT = Math.max(0, (Number(duration) || 0) - 0.04);
+  return Math.min(maxT, Math.max(0, Number(t) || 0));
+}
+
+function readFilmstripTimeFromScroll(container, duration) {
+  if (!container || duration <= 0) return 0;
+  const maxScroll = Math.max(0, container.scrollWidth - container.clientWidth);
+  if (maxScroll <= 0) return 0;
+  const progress = Math.min(1, Math.max(0, container.scrollLeft / maxScroll));
+  return clampSelectedTime(progress * Math.max(0.01, duration - 0.04), duration);
+}
+
+function scrollFilmstripToTime(container, time, duration, behavior = "auto") {
+  if (!container || duration <= 0) return;
+  const maxScroll = Math.max(0, container.scrollWidth - container.clientWidth);
+  if (maxScroll <= 0) return;
+  const maxT = Math.max(0.01, duration - 0.04);
+  const progress = clampSelectedTime(time, duration) / maxT;
+  const left = progress * maxScroll;
+  if (behavior === "smooth" && typeof container.scrollTo === "function") {
+    container.scrollTo({ left, behavior: "smooth" });
+  } else {
+    container.scrollLeft = left;
+  }
+}
+
+function nearestFilmstripFrame(frames, time) {
+  if (!frames?.length) return null;
+  let best = frames[0];
+  let bestDist = Math.abs(Number(best.time) - time);
+  for (let i = 1; i < frames.length; i += 1) {
+    const dist = Math.abs(Number(frames[i].time) - time);
     if (dist < bestDist) {
+      best = frames[i];
       bestDist = dist;
-      bestIdx = i;
     }
-  });
-  return bestIdx;
+  }
+  return best;
+}
+
+function previewTimeCacheKey(time) {
+  return (Math.round((Number(time) || 0) * 20) / 20).toFixed(2);
 }
 /** Large modal preview capture (display is smaller; keep retina-sharp). */
 const PREVIEW_MAX_WIDTH = 960;
@@ -757,10 +791,11 @@ async function loadVideoMetadata(
   });
 }
 
-async function extractVideoFilmstrip(videoSource, frameCount = FRAME_COUNT) {
+async function extractVideoFilmstrip(videoSource) {
   const { video, cleanup } = createVideoFromSource(videoSource);
   await loadVideoMetadata(video);
   const duration = Math.max(0.08, Number(video.duration) || 1);
+  const frameCount = filmstripThumbCount(duration);
   const canvas = document.createElement("canvas");
   const vw = video.videoWidth || 360;
   const vh = video.videoHeight || 640;
@@ -786,7 +821,7 @@ async function extractVideoFilmstrip(videoSource, frameCount = FRAME_COUNT) {
     });
   }
   cleanup();
-  return frames;
+  return { frames, duration };
 }
 
 async function dataUrlToBlob(dataUrl) {
@@ -867,7 +902,8 @@ export function CoverPickerModal({
   const [tab, setTab] = useState("video");
   const [toolTab, setToolTab] = useState("sticker");
   const [frames, setFrames] = useState([]);
-  const [selectedIdx, setSelectedIdx] = useState(0);
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [selectedTime, setSelectedTime] = useState(0);
   const [stripLoading, setStripLoading] = useState(false);
   const [stripError, setStripError] = useState("");
   const [uploadFile, setUploadFile] = useState(null);
@@ -882,11 +918,10 @@ export function CoverPickerModal({
   const [stickerEditing, setStickerEditing] = useState(false);
   const stickerTextRef = useRef(null);
   const previewCacheRef = useRef(new Map());
-  const selectedIdxRef = useRef(0);
+  const selectedTimeRef = useRef(0);
   const coverImageInputRef = useRef(null);
   const filmstripRef = useRef(null);
   const filmstripTrackRef = useRef(null);
-  const filmstripFrameRefs = useRef([]);
   const filmstripDragRef = useRef(null);
   const filmstripProgrammaticRef = useRef(false);
   const filmstripScrollEndRef = useRef(null);
@@ -897,9 +932,15 @@ export function CoverPickerModal({
     vertical: false,
     horizontal: false,
   });
-  const [filmstripAtStart, setFilmstripAtStart] = useState(true);
-  const [filmstripAtEnd, setFilmstripAtEnd] = useState(true);
   const [filmstripTimeVisible, setFilmstripTimeVisible] = useState(false);
+  const [filmstripEdgePad, setFilmstripEdgePad] = useState(0);
+
+  const updateFilmstripEdgePad = useCallback(() => {
+    const outer = filmstripRef.current;
+    if (!outer) return;
+    const next = Math.max(0, outer.clientWidth / 2 - FILMSTRIP_FRAME_WIDTH / 2);
+    setFilmstripEdgePad((prev) => (Math.abs(prev - next) < 0.5 ? prev : next));
+  }, []);
 
   const showFilmstripTime = useCallback(() => {
     setFilmstripTimeVisible(true);
@@ -919,43 +960,12 @@ export function CoverPickerModal({
     }, delayMs);
   }, []);
 
-  const readActiveFilmstripIndex = useCallback(() => {
-    return readFilmstripCenterIndex({
-      container: filmstripRef.current,
-      cells: filmstripFrameRefs.current,
-    });
-  }, []);
-
-  const syncFilmstripScrollState = useCallback(() => {
-    const el = filmstripRef.current;
-    if (!el) {
-      setFilmstripAtStart(true);
-      setFilmstripAtEnd(true);
-      return;
-    }
-    const { scrollLeft, clientWidth, scrollWidth } = el;
-    const maxScroll = Math.max(0, scrollWidth - clientWidth);
-    const hasOverflow = scrollWidth > clientWidth + 2;
-    if (!hasOverflow) {
-      setFilmstripAtStart(true);
-      setFilmstripAtEnd(true);
-      return;
-    }
-    setFilmstripAtStart(scrollLeft <= 2);
-    setFilmstripAtEnd(scrollLeft >= maxScroll - 2);
-  }, []);
-
-  const scrollFilmstripToIndex = useCallback(
-    (idx, behavior = "smooth") => {
-      const clamped = clampFilmstripIndex(idx, frames.length);
-      const frameEl = filmstripFrameRefs.current[clamped];
-      if (!frameEl) return;
+  const scrollFilmstripToSelectedTime = useCallback(
+    (time, behavior = "auto") => {
+      const outer = filmstripRef.current;
+      if (!outer || videoDuration <= 0) return;
       filmstripProgrammaticRef.current = true;
-      frameEl.scrollIntoView({
-        inline: "center",
-        block: "nearest",
-        behavior,
-      });
+      scrollFilmstripToTime(outer, time, videoDuration, behavior);
       window.setTimeout(
         () => {
           filmstripProgrammaticRef.current = false;
@@ -963,45 +973,29 @@ export function CoverPickerModal({
         behavior === "smooth" ? 320 : 0,
       );
     },
-    [frames.length],
+    [videoDuration],
   );
 
-  const applyFilmstripScrollSelection = useCallback(
-    (snap = false) => {
-      const outer = filmstripRef.current;
-      if (!outer || !frames.length || filmstripProgrammaticRef.current) {
-        syncFilmstripScrollState();
-        return;
-      }
-      const idx = clampFilmstripIndex(
-        readActiveFilmstripIndex(),
-        frames.length,
-      );
-      if (snap) {
-        scrollFilmstripToIndex(idx);
-      }
-      if (idx !== selectedIdxRef.current) {
-        setTab("video");
-        setSelectedIdx(idx);
-      }
-      syncFilmstripScrollState();
-    },
-    [
-      frames.length,
-      readActiveFilmstripIndex,
-      scrollFilmstripToIndex,
-      syncFilmstripScrollState,
-    ],
-  );
+  const applyFilmstripScrollSelection = useCallback(() => {
+    const outer = filmstripRef.current;
+    if (!outer || !frames.length || filmstripProgrammaticRef.current) {
+      return;
+    }
+    const nextTime = readFilmstripTimeFromScroll(outer, videoDuration);
+    if (Math.abs(nextTime - selectedTimeRef.current) > 0.001) {
+      setTab("video");
+      setSelectedTime(nextTime);
+      selectedTimeRef.current = nextTime;
+    }
+  }, [frames.length, videoDuration]);
 
   const handleFilmstripScroll = useCallback(() => {
     showFilmstripTime();
-    applyFilmstripScrollSelection(false);
+    applyFilmstripScrollSelection();
     if (filmstripScrollEndRef.current) {
       window.clearTimeout(filmstripScrollEndRef.current);
     }
     filmstripScrollEndRef.current = window.setTimeout(() => {
-      applyFilmstripScrollSelection(true);
       scheduleHideFilmstripTime();
     }, 140);
   }, [
@@ -1034,7 +1028,7 @@ export function CoverPickerModal({
       if (!drag || !outer || drag.pointerId !== e.pointerId) return;
       outer.scrollLeft = drag.startScrollLeft - (e.clientX - drag.startX);
       showFilmstripTime();
-      applyFilmstripScrollSelection(false);
+      applyFilmstripScrollSelection();
     },
     [applyFilmstripScrollSelection, showFilmstripTime],
   );
@@ -1052,7 +1046,7 @@ export function CoverPickerModal({
       if (outer?.hasPointerCapture(e.pointerId)) {
         outer.releasePointerCapture(e.pointerId);
       }
-      applyFilmstripScrollSelection(true);
+      applyFilmstripScrollSelection();
       scheduleHideFilmstripTime();
     },
     [applyFilmstripScrollSelection, scheduleHideFilmstripTime],
@@ -1060,25 +1054,38 @@ export function CoverPickerModal({
 
   const stepFilmstripSelection = useCallback(
     (direction) => {
-      if (!frames.length) return;
+      if (!frames.length || videoDuration <= 0) return;
       setTab("video");
       showFilmstripTime();
-      setSelectedIdx((i) => clampFilmstripIndex(i + direction, frames.length));
+      const next = clampSelectedTime(
+        selectedTimeRef.current + direction * SCRUB_STEP_SEC,
+        videoDuration,
+      );
+      setSelectedTime(next);
+      selectedTimeRef.current = next;
+      scrollFilmstripToSelectedTime(next, "auto");
       scheduleHideFilmstripTime();
     },
-    [frames.length, scheduleHideFilmstripTime, showFilmstripTime],
+    [
+      frames.length,
+      scheduleHideFilmstripTime,
+      scrollFilmstripToSelectedTime,
+      showFilmstripTime,
+      videoDuration,
+    ],
   );
 
   useEffect(() => {
-    selectedIdxRef.current = selectedIdx;
-  }, [selectedIdx]);
+    selectedTimeRef.current = selectedTime;
+  }, [selectedTime]);
 
   useEffect(() => {
     if (!open) return;
     setTab("video");
     setToolTab("sticker");
-    setSelectedIdx(0);
-    selectedIdxRef.current = 0;
+    setSelectedTime(0);
+    selectedTimeRef.current = 0;
+    setVideoDuration(0);
     setFrames([]);
     setStripError("");
     setUploadFile(null);
@@ -1089,7 +1096,6 @@ export function CoverPickerModal({
     setStickerEditing(false);
     setDisplayPreviewUrl("");
     setFilmstripTimeVisible(false);
-    filmstripFrameRefs.current = [];
     previewCacheRef.current.forEach((cachedUrl) =>
       URL.revokeObjectURL(cachedUrl),
     );
@@ -1106,66 +1112,63 @@ export function CoverPickerModal({
       return undefined;
     }
 
-    const frame = frames[selectedIdx];
-    if (!frame) return undefined;
-
-    const cacheKey = String(frame.time);
+    const time = clampSelectedTime(
+      selectedTime,
+      videoDuration || frames[frames.length - 1]?.time || 1,
+    );
+    const interim = nearestFilmstripFrame(frames, time);
+    const cacheKey = previewTimeCacheKey(time);
     const cached = previewCacheRef.current.get(cacheKey);
     if (cached) {
       setDisplayPreviewUrl(cached);
       return undefined;
     }
 
-    setDisplayPreviewUrl(frame.dataUrl);
+    if (interim?.dataUrl) {
+      setDisplayPreviewUrl(interim.dataUrl);
+    }
 
     let cancelled = false;
-
-    const loadHdPreview = (targetFrame, updateDisplay) => {
-      if (!targetFrame) return;
-      const key = String(targetFrame.time);
-      if (previewCacheRef.current.has(key)) return;
-      extractPreviewFrame(videoSource, targetFrame.time)
+    const timer = window.setTimeout(() => {
+      extractPreviewFrame(videoSource, time)
         .then((objectUrl) => {
           if (cancelled) {
             URL.revokeObjectURL(objectUrl);
             return;
           }
-          previewCacheRef.current.set(key, objectUrl);
-          if (
-            updateDisplay &&
-            frames[selectedIdxRef.current]?.time === targetFrame.time
-          ) {
+          previewCacheRef.current.set(cacheKey, objectUrl);
+          if (previewTimeCacheKey(selectedTimeRef.current) === cacheKey) {
             setDisplayPreviewUrl(objectUrl);
           }
         })
         .catch(() => {
           /* giữ preview filmstrip */
         });
-    };
-
-    loadHdPreview(frame, true);
-    loadHdPreview(frames[selectedIdx - 1], false);
-    loadHdPreview(frames[selectedIdx + 1], false);
+    }, 70);
 
     return () => {
       cancelled = true;
+      window.clearTimeout(timer);
     };
-  }, [open, tab, videoSource, frames, selectedIdx]);
+  }, [open, tab, videoSource, frames, selectedTime, videoDuration]);
 
   useEffect(() => {
     if (!open || !videoSource) {
       setFrames([]);
+      setVideoDuration(0);
       setStripLoading(false);
       return;
     }
     let cancelled = false;
     setStripLoading(true);
     setStripError("");
-    extractVideoFilmstrip(videoSource, FRAME_COUNT)
-      .then((f) => {
+    extractVideoFilmstrip(videoSource)
+      .then(({ frames: f, duration }) => {
         if (!cancelled) {
           setFrames(f);
-          setSelectedIdx(0);
+          setVideoDuration(duration);
+          setSelectedTime(0);
+          selectedTimeRef.current = 0;
         }
       })
       .catch((e) => {
@@ -1181,29 +1184,29 @@ export function CoverPickerModal({
   }, [open, videoSource]);
 
   useLayoutEffect(() => {
-    syncFilmstripScrollState();
-  }, [frames, syncFilmstripScrollState]);
-
-  useEffect(() => {
-    const inner = filmstripTrackRef.current;
-    const outer = filmstripRef.current;
-    if (!inner || !frames.length) return;
-    const ro = new ResizeObserver(() => syncFilmstripScrollState());
-    ro.observe(inner);
-    if (outer) ro.observe(outer);
-    return () => ro.disconnect();
-  }, [frames.length, syncFilmstripScrollState, open]);
-
-  useEffect(() => {
-    if (!frames.length || filmstripDragRef.current) return;
-    scrollFilmstripToIndex(selectedIdx, "auto");
-    syncFilmstripScrollState();
+    updateFilmstripEdgePad();
+    if (!frames.length || videoDuration <= 0) return;
+    scrollFilmstripToSelectedTime(selectedTimeRef.current, "auto");
   }, [
-    selectedIdx,
-    frames.length,
-    scrollFilmstripToIndex,
-    syncFilmstripScrollState,
+    frames,
+    videoDuration,
+    filmstripEdgePad,
+    scrollFilmstripToSelectedTime,
+    updateFilmstripEdgePad,
   ]);
+
+  useEffect(() => {
+    const outer = filmstripRef.current;
+    if (!outer) return;
+    const ro = new ResizeObserver(() => {
+      updateFilmstripEdgePad();
+      if (!filmstripDragRef.current) {
+        scrollFilmstripToSelectedTime(selectedTimeRef.current, "auto");
+      }
+    });
+    ro.observe(outer);
+    return () => ro.disconnect();
+  }, [frames.length, scrollFilmstripToSelectedTime, updateFilmstripEdgePad, open]);
 
   useEffect(() => {
     return () => {
@@ -1415,7 +1418,7 @@ export function CoverPickerModal({
       return;
     }
     if (tab === "video") {
-      if (stripLoading || !frames[selectedIdx]?.dataUrl) {
+      if (stripLoading || !frames.length || videoDuration <= 0) {
         setError(
           "Chưa có khung hình từ video. Đợi tạo xong hoặc chọn khung hình.",
         );
@@ -1432,11 +1435,12 @@ export function CoverPickerModal({
       let fname = "cover.jpg";
 
       if (tab === "video") {
-        const frame = frames[selectedIdx];
+        const time = clampSelectedTime(selectedTime, videoDuration);
         if (videoSource) {
-          blob = await extractOriginalResolutionFrame(videoSource, frame.time);
+          blob = await extractOriginalResolutionFrame(videoSource, time);
         } else {
-          blob = await dataUrlToBlob(frame.dataUrl);
+          const frame = nearestFilmstripFrame(frames, time);
+          blob = await dataUrlToBlob(frame?.dataUrl || frames[0].dataUrl);
           blob = new Blob([blob], { type: "image/jpeg" });
         }
       } else {
@@ -1480,7 +1484,7 @@ export function CoverPickerModal({
     !stripLoading &&
     !stripError &&
     frames.length > 0 &&
-    Boolean(frames[selectedIdx]?.dataUrl);
+    videoDuration > 0;
   const hasUploadCover = tab === "upload" && Boolean(uploadFile);
   const canConfirm = !busy && (hasVideoCover || hasUploadCover);
 
@@ -1880,13 +1884,13 @@ export function CoverPickerModal({
                   onMouseLeave={() => scheduleHideFilmstripTime(120)}
                 >
                   {tab === "video" &&
-                  frames[selectedIdx] &&
+                  frames.length > 0 &&
                   filmstripTimeVisible ? (
                     <div
                       className="pointer-events-none absolute left-1/2 top-0 z-30 -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-600/95 px-2.5 py-1 text-[11px] font-semibold tabular-nums text-white shadow-md transition-opacity duration-150"
                       aria-hidden
                     >
-                      {formatFilmstripTime(frames[selectedIdx].time)}
+                      {formatFilmstripTime(selectedTime)}
                       <span className="absolute left-1/2 top-full -translate-x-1/2 border-[5px] border-transparent border-t-zinc-600/95" />
                     </div>
                   ) : null}
@@ -1909,8 +1913,9 @@ export function CoverPickerModal({
                     role="slider"
                     aria-label="Dải khung hình"
                     aria-valuemin={0}
-                    aria-valuemax={Math.max(0, frames.length - 1)}
-                    aria-valuenow={selectedIdx}
+                    aria-valuemax={Math.max(0, videoDuration)}
+                    aria-valuenow={selectedTime}
+                    aria-valuetext={formatFilmstripTime(selectedTime)}
                     tabIndex={0}
                     onScroll={handleFilmstripScroll}
                     onPointerDown={onFilmstripPointerDown}
@@ -1926,22 +1931,21 @@ export function CoverPickerModal({
                         stepFilmstripSelection(1);
                       }
                     }}
-                    className="h-14 cursor-grab select-none overflow-x-auto overflow-y-visible overscroll-x-contain rounded-md bg-zinc-950 snap-x snap-mandatory scrollbar-none touch-pan-x active:cursor-grabbing"
-                    style={{
-                      scrollPaddingInline: `calc(50% - ${FILMSTRIP_FRAME_WIDTH / 2}px)`,
-                    }}
+                    className="h-14 cursor-grab select-none overflow-x-auto overflow-y-visible overscroll-x-contain rounded-md bg-zinc-950 scrollbar-none touch-pan-x active:cursor-grabbing"
                   >
                     <div
                       ref={filmstripTrackRef}
                       className="flex h-full w-max items-center"
                     >
+                      <div
+                        aria-hidden
+                        className="h-full shrink-0"
+                        style={{ width: filmstripEdgePad }}
+                      />
                       {frames.map((f, i) => (
                         <div
                           key={`${f.time}-${i}`}
-                          ref={(el) => {
-                            filmstripFrameRefs.current[i] = el;
-                          }}
-                          className="h-full shrink-0 snap-center overflow-hidden bg-zinc-900"
+                          className="h-full shrink-0 overflow-hidden bg-zinc-900"
                           style={{ width: FILMSTRIP_FRAME_WIDTH }}
                         >
                           <img
@@ -1951,10 +1955,14 @@ export function CoverPickerModal({
                             loading="eager"
                             decoding="async"
                             draggable={false}
-                            onLoad={syncFilmstripScrollState}
                           />
                         </div>
                       ))}
+                      <div
+                        aria-hidden
+                        className="h-full shrink-0"
+                        style={{ width: filmstripEdgePad }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -1962,24 +1970,24 @@ export function CoverPickerModal({
                 <div className="flex items-center justify-center gap-2 pb-0.5">
                   <button
                     type="button"
-                    aria-label="Khung hình trước"
-                    aria-disabled={selectedIdx <= 0}
+                    aria-label="Lùi 0.1 giây"
+                    aria-disabled={selectedTime <= 0.001}
                     onClick={() => stepFilmstripSelection(-1)}
                     className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-zinc-600/80 bg-zinc-100/95 text-zinc-700 shadow-sm transition hover:bg-white ${
-                      selectedIdx <= 0 ? "cursor-default opacity-40" : ""
+                      selectedTime <= 0.001 ? "cursor-default opacity-40" : ""
                     }`}
                   >
                     <IoChevronBack className="text-sm" aria-hidden />
                   </button>
                   <button
                     type="button"
-                    aria-label="Khung hình sau"
+                    aria-label="Tới 0.1 giây"
                     aria-disabled={
-                      selectedIdx >= Math.max(0, frames.length - 1)
+                      selectedTime >= Math.max(0, videoDuration - 0.05)
                     }
                     onClick={() => stepFilmstripSelection(1)}
                     className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-zinc-600/80 bg-zinc-100/95 text-zinc-700 shadow-sm transition hover:bg-white ${
-                      selectedIdx >= Math.max(0, frames.length - 1)
+                      selectedTime >= Math.max(0, videoDuration - 0.05)
                         ? "cursor-default opacity-40"
                         : ""
                     }`}
