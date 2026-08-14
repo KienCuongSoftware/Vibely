@@ -226,6 +226,8 @@ function StickerBody({
   onTextBlur,
   onTextKeyDown,
   onTextPointerDown,
+  frameClassName = "",
+  frameChildren = null,
 }) {
   const editable = Boolean(interactive && editing);
   const label = text || "Text";
@@ -245,16 +247,23 @@ function StickerBody({
     </span>
   );
 
+  /**
+   * Container ngoài giữ bề rộng wPct (cơ sở cho cỡ chữ theo cqw); lớp trong ôm sát
+   * nội dung thật (shrink-0 + w-max) để khung chọn luôn bọc hết chữ.
+   */
   const shell = (children, extra = "") => (
     <div className={`@container flex w-full justify-center ${extra}`}>
-      {children}
+      <div className={`relative w-max shrink-0 ${frameClassName}`}>
+        {children}
+        {frameChildren}
+      </div>
     </div>
   );
 
   switch (styleKey) {
     case "noteWhite":
       return shell(
-        <div className="relative w-max max-w-full pt-[0.85em] pl-[0.15em] text-[clamp(11px,16cqw,28px)]">
+        <div className="relative w-max max-w-full pt-[0.85em] pl-[0.15em] text-[clamp(7px,16cqw,28px)]">
           <div className="absolute left-0 top-0 z-10 -skew-x-[14deg] rounded-[0.22em] border-[0.14em] border-white bg-black px-[0.28em] py-[0.22em]">
             <span className="flex skew-x-[14deg] items-center justify-center">
               <MusicNoteIcon className="h-[0.95em] w-[0.95em]" />
@@ -268,7 +277,7 @@ function StickerBody({
 
     case "badgeDark":
       return shell(
-        <div className="relative flex w-max max-w-full items-center text-[clamp(11px,15cqw,28px)]">
+        <div className="relative flex w-max max-w-full items-center text-[clamp(7px,15cqw,28px)]">
           <div className="relative z-10 flex h-[2.35em] w-[2.35em] shrink-0 items-center justify-center rounded-full border-[0.14em] border-white bg-black">
             <span
               className="pointer-events-none absolute inset-[0.18em] rounded-full"
@@ -296,7 +305,7 @@ function StickerBody({
 
     case "frameGlitch":
       return shell(
-        <div className="relative w-max max-w-full p-[0.32em] text-[clamp(11px,16cqw,28px)]">
+        <div className="relative w-max max-w-full p-[0.32em] text-[clamp(7px,16cqw,28px)]">
           <span
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[#00f2ea]"
@@ -321,7 +330,7 @@ function StickerBody({
 
     case "boxCyan":
       return shell(
-        <div className="relative w-max max-w-full p-[0.28em] text-[clamp(11px,16cqw,28px)]">
+        <div className="relative w-max max-w-full p-[0.28em] text-[clamp(7px,16cqw,28px)]">
           <div className="pointer-events-none absolute inset-0 grid grid-rows-2">
             <div className="bg-[#00c2e6]" />
             <div className="grid grid-cols-[1.1fr_0.9fr]">
@@ -337,7 +346,7 @@ function StickerBody({
 
     case "pinkGlitch":
       return shell(
-        <div className="relative w-max max-w-full px-[0.55em] pb-[0.55em] pt-[0.28em] text-[clamp(11px,16cqw,28px)]">
+        <div className="relative w-max max-w-full px-[0.55em] pb-[0.55em] pt-[0.28em] text-[clamp(7px,16cqw,28px)]">
           <div
             className="relative inline-flex items-center bg-[#ff2d55] px-[0.75em] py-[0.42em] font-extrabold leading-none tracking-tight text-white"
             style={{
@@ -383,7 +392,7 @@ function StickerBody({
     case "pinkSticker":
       return shell(
         <div
-          className="inline-flex w-max max-w-full items-center italic text-[clamp(14px,24cqw,40px)] font-black leading-none tracking-tight text-[#ff2d55]"
+          className="inline-flex w-max max-w-full items-center italic text-[clamp(8px,24cqw,40px)] font-black leading-none tracking-tight text-[#ff2d55]"
           style={{
             WebkitTextStroke: "0.09em #fff",
             paintOrder: "stroke fill",
@@ -397,7 +406,7 @@ function StickerBody({
     case "yellowOutline":
       return shell(
         <div
-          className="inline-flex w-max max-w-full -rotate-[12deg] items-center text-[clamp(14px,24cqw,40px)] font-black leading-none tracking-tighter text-[#fde01a]"
+          className="inline-flex w-max max-w-full -rotate-[12deg] items-center text-[clamp(8px,24cqw,40px)] font-black leading-none tracking-tighter text-[#fde01a]"
           style={{
             WebkitTextStroke: "0.14em #12121d",
             paintOrder: "stroke fill",
@@ -409,7 +418,7 @@ function StickerBody({
 
     case "bubbleTeal":
       return shell(
-        <div className="relative w-max max-w-full pb-[0.5em] text-[clamp(11px,16cqw,28px)]">
+        <div className="relative w-max max-w-full pb-[0.5em] text-[clamp(7px,16cqw,28px)]">
           <div className="relative inline-flex items-center rounded-[1.05em] border-[0.22em] border-white bg-[#54b8a0] px-[0.85em] py-[0.48em] font-extrabold leading-none tracking-tight text-white">
             {textNode}
             <svg
@@ -431,7 +440,7 @@ function StickerBody({
 
     case "windowStack":
       return shell(
-        <div className="relative w-max max-w-full pb-[0.45em] pl-[0.45em] text-[clamp(11px,15cqw,28px)]">
+        <div className="relative w-max max-w-full pb-[0.45em] pl-[0.45em] text-[clamp(7px,15cqw,28px)]">
           <div className="pointer-events-none absolute bottom-0 left-0 h-[calc(100%-0.22em)] w-[calc(100%-0.22em)] overflow-hidden rounded-[0.18em] border-[0.12em] border-[#3d5bff] bg-white">
             <div className="h-[0.55em] bg-gradient-to-b from-[#6b8cff] to-[#3d5bff]" />
           </div>
@@ -460,7 +469,7 @@ function StickerBody({
 
     case "pillLavender":
       return shell(
-        <div className="relative w-max max-w-full pt-[0.55em] pr-[0.35em] text-[clamp(11px,16cqw,28px)]">
+        <div className="relative w-max max-w-full pt-[0.55em] pr-[0.35em] text-[clamp(7px,16cqw,28px)]">
           <div className="inline-flex items-center rounded-full bg-[#9397f4] px-[0.95em] py-[0.45em] font-extrabold leading-none tracking-tight text-white">
             {textNode}
           </div>
@@ -472,7 +481,7 @@ function StickerBody({
 
     default:
       return shell(
-        <div className="inline-flex w-max max-w-full items-center text-[clamp(13px,22cqw,36px)] font-extrabold leading-none text-white [text-shadow:0.05em_0.05em_0.1em_rgba(0,0,0,.85)]">
+        <div className="inline-flex w-max max-w-full items-center text-[clamp(8px,22cqw,36px)] font-extrabold leading-none text-white [text-shadow:0.05em_0.05em_0.1em_rgba(0,0,0,.85)]">
           {textNode}
         </div>,
       );
@@ -1563,19 +1572,41 @@ export function CoverPickerModal({
                 : undefined
             }
           >
-            <div
-              className={`relative w-full drop-shadow-md ${
-                interactive && stickerSelected
-                  ? "ring-2 ring-[#20d5ec] ring-offset-2 ring-offset-transparent"
-                  : ""
-              }`}
-            >
+            <div className="relative w-full drop-shadow-md">
               <StickerBody
                 styleKey={activeSticker.styleKey}
                 text={activeSticker.text}
                 editing={Boolean(interactive && stickerEditing)}
                 interactive={interactive}
                 textRef={stickerTextRef}
+                frameClassName={
+                  interactive && stickerSelected
+                    ? "ring-2 ring-[#20d5ec] ring-offset-2 ring-offset-transparent"
+                    : ""
+                }
+                frameChildren={
+                  interactive && stickerSelected && !stickerEditing ? (
+                    <>
+                      <span
+                        aria-hidden
+                        className="absolute -left-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
+                      />
+                      <span
+                        aria-hidden
+                        className="absolute -right-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
+                      />
+                      <span
+                        aria-hidden
+                        className="absolute -bottom-1.5 -left-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
+                      />
+                      <span
+                        aria-hidden
+                        className="absolute -bottom-1.5 -right-1.5 h-3 w-3 cursor-nwse-resize rounded-full border-2 border-[#20d5ec] bg-white shadow"
+                        onPointerDown={onStickerResizePointerDown}
+                      />
+                    </>
+                  ) : null
+                }
                 onTextPointerDown={
                   interactive && stickerEditing
                     ? (e) => e.stopPropagation()
@@ -1616,27 +1647,6 @@ export function CoverPickerModal({
                     : undefined
                 }
               />
-              {interactive && stickerSelected && !stickerEditing ? (
-                <>
-                  <span
-                    aria-hidden
-                    className="absolute -left-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
-                  />
-                  <span
-                    aria-hidden
-                    className="absolute -right-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
-                  />
-                  <span
-                    aria-hidden
-                    className="absolute -bottom-1.5 -left-1.5 h-3 w-3 rounded-full border-2 border-[#20d5ec] bg-white shadow"
-                  />
-                  <span
-                    aria-hidden
-                    className="absolute -bottom-1.5 -right-1.5 h-3 w-3 cursor-nwse-resize rounded-full border-2 border-[#20d5ec] bg-white shadow"
-                    onPointerDown={onStickerResizePointerDown}
-                  />
-                </>
-              ) : null}
             </div>
           </div>
         ) : null}
