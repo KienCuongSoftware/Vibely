@@ -17,6 +17,7 @@ const UploadPage = lazyNamed(() => import('@/features/upload/pages/UploadPage.js
 const StudioHomePage = lazyNamed(() => import('@/features/studio/pages/StudioHomePage.jsx'), 'StudioHomePage')
 const StudioPostsPage = lazyNamed(() => import('@/features/studio/pages/StudioPostsPage.jsx'), 'StudioPostsPage')
 const StudioEditPostPage = lazyNamed(() => import('@/features/studio/pages/StudioEditPostPage.jsx'), 'StudioEditPostPage')
+const StudioAnalyticsPage = lazyNamed(() => import('@/features/studio/pages/StudioAnalyticsPage.jsx'), 'StudioAnalyticsPage')
 const StudioVideoAnalyticsPage = lazyNamed(() => import('@/features/studio/pages/StudioVideoAnalyticsPage.jsx'), 'StudioVideoAnalyticsPage')
 const StudioPostCommentsPage = lazyNamed(() => import('@/features/studio/pages/StudioPostCommentsPage.jsx'), 'StudioPostCommentsPage')
 const ProfilePage = lazyNamed(() => import('@/features/profile/pages/ProfilePage.jsx'), 'ProfilePage')
@@ -66,6 +67,8 @@ export function GuestRoutes() {
       <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
       <Route path="/vibelystudio/home" element={<Navigate to="/login" replace />} />
       <Route path="/vibelystudio/posts" element={<Navigate to="/login" replace />} />
+      <Route path="/vibelystudio/analytics" element={<Navigate to="/login" replace />} />
+      <Route path="/vibelystudio/analytics/:publicId" element={<Navigate to="/login" replace />} />
       <Route path="/vibelystudio/upload" element={<Navigate to="/login" replace />} />
       <Route path="/vibelystudio/upload/post/:publicId" element={<Navigate to="/login" replace />} />
       <Route path="/vibelystudio/comment/:publicId" element={<Navigate to="/login" replace />} />
@@ -143,6 +146,10 @@ export function AuthenticatedRoutes({ user, isAdmin }) {
       <Route
         path="/vibelystudio/upload/post/:publicId"
         element={<UserOnlyRoute user={user}><StudioEditPostPage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/vibelystudio/analytics"
+        element={<UserOnlyRoute user={user}><StudioAnalyticsPage /></UserOnlyRoute>}
       />
       <Route
         path="/vibelystudio/analytics/:publicId"

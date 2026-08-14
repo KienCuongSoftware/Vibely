@@ -29,6 +29,17 @@ public class StudioAnalyticsController {
         return ApiResponse.success(studioAnalyticsService.getOverview(authentication.getName(), days));
     }
 
+    @GetMapping("/channel")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<StudioChannelAnalyticsResponse> channel(
+        Authentication authentication,
+        @RequestParam(defaultValue = "7") int days
+    ) {
+        return ApiResponse.success(
+            studioAnalyticsService.getChannelAnalytics(authentication.getName(), days)
+        );
+    }
+
     @GetMapping("/video/{publicId}")
     @PreAuthorize("hasRole('USER')")
     public ApiResponse<StudioVideoAnalyticsResponse> video(

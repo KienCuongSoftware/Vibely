@@ -21,6 +21,16 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
     List<Object[]> countGroupedByVideoIds(@Param("ids") Collection<Long> ids);
 
     @Query("""
+        SELECT c.video.id, COUNT(c) FROM CommentEntity c
+        WHERE c.video.id IN :ids AND c.createdAt >= :from
+        GROUP BY c.video.id
+        """)
+    List<Object[]> countGroupedByVideoIdsSince(
+        @Param("ids") Collection<Long> ids,
+        @Param("from") LocalDateTime from
+    );
+
+    @Query("""
         select count(c) from CommentEntity c
         where c.video.author.id = :authorId
           and c.video.status in :statuses

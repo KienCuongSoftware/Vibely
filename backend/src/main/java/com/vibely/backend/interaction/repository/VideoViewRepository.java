@@ -17,6 +17,16 @@ public interface VideoViewRepository extends JpaRepository<VideoViewEntity, Long
     @Query("SELECT vv.video.id, COUNT(vv) FROM VideoViewEntity vv WHERE vv.video.id IN :ids GROUP BY vv.video.id")
     List<Object[]> countGroupedByVideoIds(@Param("ids") Collection<Long> ids);
 
+    @Query("""
+        SELECT vv.video.id, COUNT(vv) FROM VideoViewEntity vv
+        WHERE vv.video.id IN :ids AND vv.createdAt >= :from
+        GROUP BY vv.video.id
+        """)
+    List<Object[]> countGroupedByVideoIdsSince(
+        @Param("ids") Collection<Long> ids,
+        @Param("from") LocalDateTime from
+    );
+
     long countByVideo_Author_IdAndVideo_Status(Long authorId, VideoStatus status);
 
     @Query("""

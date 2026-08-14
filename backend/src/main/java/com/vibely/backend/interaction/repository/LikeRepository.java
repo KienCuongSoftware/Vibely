@@ -23,6 +23,16 @@ public interface LikeRepository extends JpaRepository<LikeEntity, Long> {
     @Query("SELECT l.video.id, COUNT(l) FROM LikeEntity l WHERE l.video.id IN :ids GROUP BY l.video.id")
     List<Object[]> countGroupedByVideoIds(@Param("ids") Collection<Long> ids);
 
+    @Query("""
+        SELECT l.video.id, COUNT(l) FROM LikeEntity l
+        WHERE l.video.id IN :ids AND l.createdAt >= :from
+        GROUP BY l.video.id
+        """)
+    List<Object[]> countGroupedByVideoIdsSince(
+        @Param("ids") Collection<Long> ids,
+        @Param("from") LocalDateTime from
+    );
+
     long countByUser(User user);
     long countByVideo_Author_IdAndVideo_Status(Long authorId, VideoStatus status);
 

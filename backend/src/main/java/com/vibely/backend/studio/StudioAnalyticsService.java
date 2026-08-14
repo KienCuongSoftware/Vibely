@@ -10,16 +10,26 @@ import com.vibely.backend.interaction.repository.VideoBookmarkRepository;
 import com.vibely.backend.interaction.dto.PlaybackSample;
 import com.vibely.backend.interaction.repository.ProfileViewRepository;
 import com.vibely.backend.interaction.repository.VideoViewRepository;
+import com.vibely.backend.share.ShareAnalyticsRepository;
+import com.vibely.backend.user.AccountRegionCodes;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
+import com.vibely.backend.video.Video;
+import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.service.VideoService;
 import com.vibely.backend.video.VideoResponse;
 import com.vibely.backend.video.VideoStatus;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -47,6 +57,11 @@ public class StudioAnalyticsService {
         new StudioTrafficSourceResponse("other", "Khác", null)
     );
 
+    private static final List<String> AGE_BUCKET_LABELS =
+        List.of("13-17", "18-24", "25-34", "35-44", "45-54", "55+");
+
+    private static final Locale VI = new Locale("vi", "VN");
+
     /** Ngưỡng “gần xem hết” (tỷ lệ trên thời lượng đã chuẩn hoá). */
     private static final double FULL_WATCH_RATIO = 0.88;
     /** Clip ≤30s: nới thêm (feed hay thoát ~cuối nhưng chưa tới 88%). */
@@ -65,6 +80,8 @@ public class StudioAnalyticsService {
     private final FollowRepository followRepository;
     private final VideoSemanticTagRepository videoSemanticTagRepository;
     private final ProfileViewRepository profileViewRepository;
+    private final ShareAnalyticsRepository shareAnalyticsRepository;
+    private final VideoRepository videoRepository;
 
     public StudioAnalyticsService(
         UserRepository userRepository,
@@ -75,7 +92,9 @@ public class StudioAnalyticsService {
         VideoService videoService,
         FollowRepository followRepository,
         VideoSemanticTagRepository videoSemanticTagRepository,
-        ProfileViewRepository profileViewRepository
+        ProfileViewRepository profileViewRepository,
+        ShareAnalyticsRepository shareAnalyticsRepository,
+        VideoRepository videoRepository
     ) {
         this.userRepository = userRepository;
         this.videoViewRepository = videoViewRepository;
@@ -86,6 +105,8 @@ public class StudioAnalyticsService {
         this.followRepository = followRepository;
         this.videoSemanticTagRepository = videoSemanticTagRepository;
         this.profileViewRepository = profileViewRepository;
+        this.shareAnalyticsRepository = shareAnalyticsRepository;
+        this.videoRepository = videoRepository;
     }
 
     @Transactional(readOnly = true)
@@ -179,6 +200,228 @@ public class StudioAnalyticsService {
 
         return new StudioAnalyticsOverviewResponse(
             days, totalViews, totalLikes, totalComments, totalProfileViews, points, latestComments);
+    }
+
+    /** Phân tích cấp kênh cho trang Studio → Phân tích. */
+    @Transactional(readOnly = true)
+    public StudioChannelAnalyticsResponse getChannelAnalytics(String email, int days) {
+        if (!ALLOWED_DAYS.contains(days)) {
+            throw new BadRequestException("Khoảng ngày không hợp lệ. Chỉ chấp nhận 7, 28, 60, 90.");
+        }
+
+        User me = userRepository.findByEmail(email)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+
+        LocalDate startDay = LocalDate.now().minusDays(days - 1L);
+        LocalDateTime from = startDay.atStartOfDay();
+        OffsetDateTime fromOffset = from.atZone(ZoneId.systemDefault()).toOffsetDateTime();
+        Long meId = me.getId();
+
+        long totalViews = videoViewRepository.countViewsForAuthorVideoStatusesSince(
+            meId, STUDIO_VIDEO_METRICS_STATUSES, from);
+        long totalLikes = likeRepository.countLikesForAuthorVideoStatusesSince(
+            meId, STUDIO_VIDEO_METRICS_STATUSES, from);
+        long totalComments = commentRepository.countCommentsForAuthorVideoStatusesSince(
+            meId, STUDIO_VIDEO_METRICS_STATUSES, from);
+        long totalProfileViews =
+            profileViewRepository.countByProfileUser_IdAndCreatedAtGreaterThanEqual(meId, from);
+        long totalShares = shareAnalyticsRepository.countShareEventsForAuthorSince(meId, fromOffset);
+        long totalFollowers = followRepository.countByFollowing_Id(meId);
+        long newFollowers =
+            followRepository.countByFollowing_IdAndCreatedAtGreaterThanEqual(meId, from);
+
+        Map<LocalDate, long[]> dayToMetrics = new LinkedHashMap<>();
+        for (int i = 0; i < days; i++) {
+            dayToMetrics.put(startDay.plusDays(i), new long[] { 0L, 0L, 0L, 0L, 0L, 0L });
+        }
+        applyDaily(dayToMetrics, videoViewRepository.countDailyViewsForAuthorVideoStatusesSince(
+            meId, STUDIO_VIDEO_METRICS_STATUSES, from), 0);
+        applyDaily(dayToMetrics, profileViewRepository.countDailyForProfileSince(meId, from), 1);
+        applyDaily(dayToMetrics, likeRepository.countDailyLikesForAuthorVideoStatusesSince(
+            meId, STUDIO_VIDEO_METRICS_STATUSES, from), 2);
+        applyDaily(dayToMetrics, commentRepository.countDailyCommentsForAuthorVideoStatusesSince(
+            meId, STUDIO_VIDEO_METRICS_STATUSES, from), 3);
+        applyDaily(dayToMetrics,
+            shareAnalyticsRepository.countDailySharesForAuthorSince(meId, fromOffset), 4);
+        applyDaily(dayToMetrics, followRepository.countDailyNewFollowersSince(meId, from), 5);
+
+        List<StudioChannelPointResponse> points = dayToMetrics.entrySet().stream()
+            .map((entry) -> {
+                long[] v = entry.getValue();
+                return new StudioChannelPointResponse(
+                    entry.getKey(), v[0], v[1], v[2], v[3], v[4], v[5]);
+            })
+            .toList();
+
+        List<Video> published = videoRepository
+            .findByAuthorIdExcludingStatus(meId, VideoStatus.REMOVED, PageRequest.of(0, 200))
+            .getContent()
+            .stream()
+            .filter((v) -> !v.isStudioDraft())
+            .filter((v) -> v.getScheduledAt() == null || !v.getScheduledAt().isAfter(Instant.now()))
+            .toList();
+
+        List<Long> videoIds = published.stream().map(Video::getId).toList();
+        Map<Long, Long> viewsByVideo = videoIds.isEmpty()
+            ? Map.of()
+            : toCountMap(videoViewRepository.countGroupedByVideoIdsSince(videoIds, from));
+        Map<Long, Long> likesByVideo = videoIds.isEmpty()
+            ? Map.of()
+            : toCountMap(likeRepository.countGroupedByVideoIdsSince(videoIds, from));
+        Map<Long, Long> commentsByVideo = videoIds.isEmpty()
+            ? Map.of()
+            : toCountMap(commentRepository.countGroupedByVideoIdsSince(videoIds, from));
+        Map<Long, Long> sharesByVideo = videoIds.isEmpty()
+            ? Map.of()
+            : toCountMap(shareAnalyticsRepository.countGroupedByVideoIdsSince(videoIds, fromOffset));
+
+        List<StudioChannelVideoResponse> topVideos = published.stream()
+            .map((v) -> new StudioChannelVideoResponse(
+                v.getPublicId(),
+                v.getTitle(),
+                v.getDescription(),
+                v.getThumbnailUrl(),
+                v.getDurationSeconds(),
+                v.getCreatedAt(),
+                viewsByVideo.getOrDefault(v.getId(), 0L),
+                likesByVideo.getOrDefault(v.getId(), 0L),
+                commentsByVideo.getOrDefault(v.getId(), 0L),
+                sharesByVideo.getOrDefault(v.getId(), 0L)
+            ))
+            .sorted(Comparator
+                .comparingLong(StudioChannelVideoResponse::views).reversed()
+                .thenComparing(StudioChannelVideoResponse::createdAt,
+                    Comparator.nullsLast(Comparator.reverseOrder())))
+            .limit(10)
+            .toList();
+
+        long periodPublishedVideoCount = published.stream()
+            .filter((v) -> v.getCreatedAt() != null && !v.getCreatedAt().isBefore(from))
+            .count();
+
+        return new StudioChannelAnalyticsResponse(
+            days,
+            totalViews,
+            totalProfileViews,
+            totalLikes,
+            totalComments,
+            totalShares,
+            totalFollowers,
+            newFollowers,
+            published.size(),
+            periodPublishedVideoCount,
+            points,
+            topVideos,
+            DEFAULT_TRAFFIC_SOURCES,
+            List.of(),
+            buildFollowerRegions(meId),
+            buildFollowerAgeBuckets(meId)
+        );
+    }
+
+    private static void applyDaily(
+        Map<LocalDate, long[]> dayToMetrics,
+        List<DailyCountProjection> rows,
+        int slot
+    ) {
+        for (DailyCountProjection row : rows) {
+            long[] bucket = dayToMetrics.get(row.getDay());
+            if (bucket != null) {
+                bucket[slot] = row.getTotal();
+            }
+        }
+    }
+
+    private static Map<Long, Long> toCountMap(List<Object[]> rows) {
+        Map<Long, Long> out = new LinkedHashMap<>();
+        for (Object[] row : rows) {
+            if (row.length < 2 || !(row[0] instanceof Number id) || !(row[1] instanceof Number total)) {
+                continue;
+            }
+            out.put(id.longValue(), total.longValue());
+        }
+        return out;
+    }
+
+    private List<StudioAudienceSliceResponse> buildFollowerRegions(Long userId) {
+        List<GroupCountProjection> rows = followRepository.countFollowersByRegion(userId);
+        long total = 0L;
+        for (GroupCountProjection row : rows) {
+            total += row.getTotal();
+        }
+        if (total <= 0) {
+            return List.of();
+        }
+        List<StudioAudienceSliceResponse> out = new ArrayList<>();
+        for (GroupCountProjection row : rows) {
+            if (out.size() >= 8) {
+                break;
+            }
+            String code = AccountRegionCodes.normalize(row.getGroupKey());
+            out.add(new StudioAudienceSliceResponse(
+                code.isBlank() ? "other" : code.toLowerCase(Locale.ROOT),
+                regionLabel(code),
+                row.getTotal(),
+                (row.getTotal() * 100.0) / total
+            ));
+        }
+        return out;
+    }
+
+    private static String regionLabel(String code) {
+        if (!AccountRegionCodes.isAllowed(code)) {
+            return "Khác";
+        }
+        String label = new Locale("", code).getDisplayCountry(VI);
+        return label == null || label.isBlank() ? code : label;
+    }
+
+    private List<StudioAudienceSliceResponse> buildFollowerAgeBuckets(Long userId) {
+        List<LocalDate> birthDates =
+            followRepository.findFollowerBirthDates(userId, PageRequest.of(0, 5_000));
+        if (birthDates.isEmpty()) {
+            return List.of();
+        }
+        LocalDate today = LocalDate.now();
+        Map<String, Long> counts = new LinkedHashMap<>();
+        for (String bucket : AGE_BUCKET_LABELS) {
+            counts.put(bucket, 0L);
+        }
+        long total = 0L;
+        for (LocalDate birthDate : birthDates) {
+            if (birthDate == null || birthDate.isAfter(today)) {
+                continue;
+            }
+            int age = Period.between(birthDate, today).getYears();
+            String bucket = ageBucketOf(age);
+            if (bucket == null) {
+                continue;
+            }
+            counts.merge(bucket, 1L, Long::sum);
+            total++;
+        }
+        if (total <= 0) {
+            return List.of();
+        }
+        long finalTotal = total;
+        return counts.entrySet().stream()
+            .map((entry) -> new StudioAudienceSliceResponse(
+                entry.getKey(),
+                entry.getKey(),
+                entry.getValue(),
+                (entry.getValue() * 100.0) / finalTotal
+            ))
+            .toList();
+    }
+
+    private static String ageBucketOf(int age) {
+        if (age < 13) return null;
+        if (age <= 17) return "13-17";
+        if (age <= 24) return "18-24";
+        if (age <= 34) return "25-34";
+        if (age <= 44) return "35-44";
+        if (age <= 54) return "45-54";
+        return "55+";
     }
 
     @Transactional(readOnly = true)

@@ -87,6 +87,8 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
       /^\/vibelystudio\/posts\/?$/.test(location.pathname) ||
       /^\/vibelystudio\/(upload\/post|analytics)\//.test(location.pathname))
   const commentsNavActive = onCommentPostPath || active === 'comments'
+  const analyticsNavActive =
+    active === 'analytics' || /^\/vibelystudio\/analytics\/?$/.test(location.pathname)
 
   const handleUploadClick = () => {
     if (onUpload) return
@@ -144,10 +146,10 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
           onNavigate={onNavigate}
         />
         <NavLink
-          to="/vibelystudio/home"
+          to="/vibelystudio/analytics"
           icon={IoBarChartOutline}
           label="Phân tích"
-          active={active === 'analytics'}
+          active={analyticsNavActive}
           light={light}
           onNavigate={onNavigate}
         />

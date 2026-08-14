@@ -2,8 +2,11 @@ package com.vibely.backend.interaction.repository;
 
 import com.vibely.backend.interaction.entity.FollowEntity;
 import com.vibely.backend.interaction.entity.FollowStatus;
+import com.vibely.backend.studio.DailyCountProjection;
+import com.vibely.backend.studio.GroupCountProjection;
 import com.vibely.backend.user.entity.User;
 import java.util.Collection;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +64,40 @@ public interface FollowRepository extends JpaRepository<FollowEntity, Long> {
         @Param("followingId") Long followingId,
         @Param("from") LocalDateTime from
     );
+
+    /** Lượt follow mới theo từng ngày (dựng biểu đồ tăng trưởng trong Studio). */
+    @Query("""
+        select cast(f.createdAt as date) as day, count(f.id) as total from FollowEntity f
+        where f.following.id = :followingId
+        and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+        and f.createdAt >= :from
+        group by cast(f.createdAt as date)
+        order by cast(f.createdAt as date)
+        """)
+    List<DailyCountProjection> countDailyNewFollowersSince(
+        @Param("followingId") Long followingId,
+        @Param("from") LocalDateTime from
+    );
+
+    /** Người theo dõi nhóm theo khu vực tài khoản. */
+    @Query("""
+        select coalesce(f.follower.accountRegion, 'other') as groupKey, count(f.id) as total
+        from FollowEntity f
+        where f.following.id = :followingId
+        and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+        group by coalesce(f.follower.accountRegion, 'other')
+        order by count(f.id) desc
+        """)
+    List<GroupCountProjection> countFollowersByRegion(@Param("followingId") Long followingId);
+
+    /** Ngày sinh của người theo dõi để chia nhóm độ tuổi (chia nhóm ở tầng service). */
+    @Query("""
+        select f.follower.birthDate from FollowEntity f
+        where f.following.id = :followingId
+        and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+        and f.follower.birthDate is not null
+        """)
+    List<LocalDate> findFollowerBirthDates(@Param("followingId") Long followingId, Pageable pageable);
 
     @Query(
         value = """

@@ -291,10 +291,14 @@ export function StudioHomePage() {
 
       <section className="overflow-visible rounded-xl border border-zinc-800 bg-zinc-950/50">
         <div className="flex items-center justify-between gap-3 border-b border-zinc-800/80 px-4 py-3 sm:px-5">
-          <h2 className="inline-flex items-center gap-0.5 text-base font-bold text-zinc-100">
+          <button
+            type="button"
+            className="inline-flex cursor-pointer items-center gap-0.5 text-base font-bold text-zinc-100 hover:text-white"
+            onClick={() => navigate("/vibelystudio/analytics")}
+          >
             Chỉ số chính
             <IoChevronForward className="text-lg text-zinc-500" aria-hidden />
-          </h2>
+          </button>
           <div className="relative">
             <button
               type="button"
