@@ -2695,37 +2695,37 @@ export function UploadPage() {
                         ) : null}
                       </div>
                     ) : previewTab === 'profile' ? (
-                      <div className="flex aspect-9/16 min-h-0 flex-col overflow-hidden bg-white text-zinc-900">
-                        <div className="flex shrink-0 items-center justify-between px-3 pt-2 pb-0.5 text-[11px] font-semibold tabular-nums text-zinc-900">
+                      <div className="flex aspect-9/16 min-h-0 flex-col overflow-hidden bg-black text-white">
+                        <div className="flex shrink-0 items-center justify-between px-3 pt-2 pb-0.5 text-[11px] font-semibold tabular-nums text-white">
                           <span>8:00</span>
-                          <div className="flex items-center gap-1.5 text-zinc-800" aria-hidden>
+                          <div className="flex items-center gap-1.5 text-white" aria-hidden>
                             <div className="flex items-end gap-px pb-0.5">
-                              <span className="h-1 w-[3px] rounded-[1px] bg-zinc-700" />
-                              <span className="h-1.5 w-[3px] rounded-[1px] bg-zinc-700" />
-                              <span className="h-2 w-[3px] rounded-[1px] bg-zinc-700" />
-                              <span className="h-2.5 w-[3px] rounded-[1px] bg-zinc-700" />
+                              <span className="h-1 w-[3px] rounded-[1px] bg-white" />
+                              <span className="h-1.5 w-[3px] rounded-[1px] bg-white" />
+                              <span className="h-2 w-[3px] rounded-[1px] bg-white" />
+                              <span className="h-2.5 w-[3px] rounded-[1px] bg-white" />
                             </div>
-                            <LuWifi className="text-[15px] text-zinc-800" strokeWidth={2.25} />
+                            <LuWifi className="text-[15px] text-white" strokeWidth={2.25} />
                             <IoBatteryFullOutline className="text-[17px]" />
                           </div>
                         </div>
                         <div className="flex shrink-0 items-center justify-between px-2 pb-2 pt-0.5">
-                          <IoChevronBack className="text-2xl text-zinc-900" aria-hidden />
-                          <IoEllipsisHorizontal className="text-xl text-zinc-900" aria-hidden />
+                          <IoChevronBack className="text-2xl text-white" aria-hidden />
+                          <IoEllipsisHorizontal className="text-xl text-white" aria-hidden />
                         </div>
                         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
                           <div className="flex shrink-0 flex-col items-center px-4 pb-3">
                             <img
                               src={avatarSrc}
                               alt=""
-                              className="h-[4.5rem] w-[4.5rem] rounded-full object-cover ring-1 ring-zinc-200/90"
+                              className="h-[4.5rem] w-[4.5rem] rounded-full object-cover ring-1 ring-white/10"
                               referrerPolicy="no-referrer"
                             />
-                            <p className="mt-2.5 max-w-full px-1 text-center text-[15px] font-bold leading-snug text-zinc-900">
+                            <p className="mt-2.5 max-w-full px-1 text-center text-[15px] font-bold leading-snug text-white">
                               {user?.displayName ?? 'Người Ổn Bất Tỉnh'}
                             </p>
                             <p
-                              className="mt-1 flex max-w-full justify-center text-[13px] text-zinc-600"
+                              className="mt-1 flex max-w-full justify-center text-[13px] text-zinc-400"
                               dir="ltr"
                             >
                               <span className="inline-flex min-w-0 max-w-full items-baseline gap-0">
@@ -2733,26 +2733,26 @@ export function UploadPage() {
                                 <span className="min-w-0 truncate">{studioPreviewHandle}</span>
                               </span>
                             </p>
-                            <div className="mt-3 h-2.5 w-40 max-w-[85%] rounded-md bg-zinc-200" />
+                            <div className="mt-3 h-2.5 w-40 max-w-[85%] rounded-md bg-zinc-800" />
                             <div className="mt-2 flex w-full max-w-[10.5rem] justify-center gap-2">
-                              <div className="h-2.5 min-w-0 flex-1 rounded-md bg-zinc-200" />
-                              <div className="h-2.5 min-w-0 flex-1 rounded-md bg-zinc-200" />
+                              <div className="h-2.5 min-w-0 flex-1 rounded-md bg-zinc-800" />
+                              <div className="h-2.5 min-w-0 flex-1 rounded-md bg-zinc-800" />
                             </div>
                           </div>
-                          <div className="flex shrink-0 items-end justify-around border-b border-zinc-200 px-2">
-                            <div className="flex flex-1 flex-col items-center pb-0.5 pt-1 text-zinc-900">
+                          <div className="flex shrink-0 items-end justify-around border-b border-zinc-800 px-2">
+                            <div className="flex flex-1 flex-col items-center pb-0.5 pt-1 text-white">
                               <LuLayoutGrid className="text-[22px]" strokeWidth={2.25} aria-hidden />
-                              <span className="mt-1.5 h-[2.5px] w-7 rounded-full bg-zinc-900" aria-hidden />
+                              <span className="mt-1.5 h-[2.5px] w-7 rounded-full bg-white" aria-hidden />
                             </div>
-                            <div className="flex flex-1 flex-col items-center pb-2 pt-1 text-zinc-400">
+                            <div className="flex flex-1 flex-col items-center pb-2 pt-1 text-zinc-500">
                               <LuRepeat2 className="text-[22px]" strokeWidth={2.25} aria-hidden />
                             </div>
-                            <div className="flex flex-1 flex-col items-center pb-2 pt-1 text-zinc-400">
+                            <div className="flex flex-1 flex-col items-center pb-2 pt-1 text-zinc-500">
                               <LuHeart className="text-[22px]" strokeWidth={2.25} aria-hidden />
                             </div>
                           </div>
-                          <div className="grid min-h-0 flex-1 grid-cols-3 grid-rows-3 gap-px bg-white p-px">
-                            <div className="relative min-h-0 overflow-hidden bg-zinc-200">
+                          <div className="grid min-h-0 flex-1 grid-cols-3 grid-rows-3 gap-px bg-zinc-900 p-px">
+                            <div className="relative min-h-0 overflow-hidden bg-black">
                               <video
                                 src={uploadedVideo.playbackUrl}
                                 poster={thumbnailUrl || undefined}
@@ -2765,7 +2765,7 @@ export function UploadPage() {
                             {Array.from({ length: 8 }).map((_, i) => (
                               <div
                                 key={i}
-                                className="min-h-0 bg-zinc-200"
+                                className="min-h-0 bg-zinc-900"
                                 aria-hidden
                               />
                             ))}
