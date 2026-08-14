@@ -1768,31 +1768,34 @@ export function UploadPage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="upload-leave-title"
-            className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-2xl"
+            className="w-full max-w-[380px] rounded-2xl border border-zinc-800 bg-zinc-900 text-zinc-100 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-5 pt-5 pb-2">
-              <h2 id="upload-leave-title" className="text-lg font-bold text-zinc-50">
-                Rời khỏi trang?
+            <div className="px-6 pt-7 pb-6 text-center">
+              <h2
+                id="upload-leave-title"
+                className="text-lg font-bold leading-snug text-white"
+              >
+                Bạn có chắc muốn thoát?
               </h2>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                Bạn chưa đăng video này. Nếu rời đi, video đã tải lên sẽ bị xóa khỏi hệ thống.
+              <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+                Tiến trình và các thay đổi của bạn sẽ không được lưu.
               </p>
             </div>
-            <div className="flex justify-end gap-2 px-5 py-4">
+            <div className="flex flex-col gap-2.5 px-4 pb-4">
               <button
                 type="button"
-                className="cursor-pointer rounded-lg px-4 py-2.5 text-sm font-semibold text-zinc-300 hover:bg-zinc-800"
-                onClick={cancelLeave}
+                className="w-full cursor-pointer rounded-lg bg-[#fe2c55] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e62a4d]"
+                onClick={() => void confirmLeaveAndDiscard()}
               >
-                Ở lại
+                Thoát
               </button>
               <button
                 type="button"
-                className="cursor-pointer rounded-lg bg-[#fe2c55] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e62a4d]"
-                onClick={() => void confirmLeaveAndDiscard()}
+                className="w-full cursor-pointer rounded-lg border border-zinc-700 px-4 py-2.5 text-sm font-semibold text-zinc-200 hover:bg-zinc-800"
+                onClick={cancelLeave}
               >
-                Rời đi
+                Hủy
               </button>
             </div>
           </div>
