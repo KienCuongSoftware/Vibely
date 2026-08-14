@@ -263,7 +263,7 @@ function StickerBody({
   switch (styleKey) {
     case "noteWhite":
       return shell(
-        <div className="relative w-max max-w-full pt-[0.85em] pl-[0.15em] text-[clamp(7px,16cqw,28px)]">
+        <div className="relative w-max max-w-full pt-[0.85em] pl-[0.15em] text-[max(7px,16cqw)]">
           <div className="absolute left-0 top-0 z-10 -skew-x-[14deg] rounded-[0.22em] border-[0.14em] border-white bg-black px-[0.28em] py-[0.22em]">
             <span className="flex skew-x-[14deg] items-center justify-center">
               <MusicNoteIcon className="h-[0.95em] w-[0.95em]" />
@@ -277,7 +277,7 @@ function StickerBody({
 
     case "badgeDark":
       return shell(
-        <div className="relative flex w-max max-w-full items-center text-[clamp(7px,15cqw,28px)]">
+        <div className="relative flex w-max max-w-full items-center text-[max(7px,15cqw)]">
           <div className="relative z-10 flex h-[2.35em] w-[2.35em] shrink-0 items-center justify-center rounded-full border-[0.14em] border-white bg-black">
             <span
               className="pointer-events-none absolute inset-[0.18em] rounded-full"
@@ -305,7 +305,7 @@ function StickerBody({
 
     case "frameGlitch":
       return shell(
-        <div className="relative w-max max-w-full p-[0.32em] text-[clamp(7px,16cqw,28px)]">
+        <div className="relative w-max max-w-full p-[0.32em] text-[max(7px,16cqw)]">
           <span
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[#00f2ea]"
@@ -330,7 +330,7 @@ function StickerBody({
 
     case "boxCyan":
       return shell(
-        <div className="relative w-max max-w-full p-[0.28em] text-[clamp(7px,16cqw,28px)]">
+        <div className="relative w-max max-w-full p-[0.28em] text-[max(7px,16cqw)]">
           <div className="pointer-events-none absolute inset-0 grid grid-rows-2">
             <div className="bg-[#00c2e6]" />
             <div className="grid grid-cols-[1.1fr_0.9fr]">
@@ -346,7 +346,7 @@ function StickerBody({
 
     case "pinkGlitch":
       return shell(
-        <div className="relative w-max max-w-full px-[0.55em] pb-[0.55em] pt-[0.28em] text-[clamp(7px,16cqw,28px)]">
+        <div className="relative w-max max-w-full px-[0.55em] pb-[0.55em] pt-[0.28em] text-[max(7px,16cqw)]">
           <div
             className="relative inline-flex items-center bg-[#ff2d55] px-[0.75em] py-[0.42em] font-extrabold leading-none tracking-tight text-white"
             style={{
@@ -392,7 +392,7 @@ function StickerBody({
     case "pinkSticker":
       return shell(
         <div
-          className="inline-flex w-max max-w-full items-center italic text-[clamp(8px,24cqw,40px)] font-black leading-none tracking-tight text-[#ff2d55]"
+          className="inline-flex w-max max-w-full items-center italic text-[max(8px,24cqw)] font-black leading-none tracking-tight text-[#ff2d55]"
           style={{
             WebkitTextStroke: "0.09em #fff",
             paintOrder: "stroke fill",
@@ -406,7 +406,7 @@ function StickerBody({
     case "yellowOutline":
       return shell(
         <div
-          className="inline-flex w-max max-w-full -rotate-[12deg] items-center text-[clamp(8px,24cqw,40px)] font-black leading-none tracking-tighter text-[#fde01a]"
+          className="inline-flex w-max max-w-full -rotate-[12deg] items-center text-[max(8px,24cqw)] font-black leading-none tracking-tighter text-[#fde01a]"
           style={{
             WebkitTextStroke: "0.14em #12121d",
             paintOrder: "stroke fill",
@@ -418,7 +418,7 @@ function StickerBody({
 
     case "bubbleTeal":
       return shell(
-        <div className="relative w-max max-w-full pb-[0.5em] text-[clamp(7px,16cqw,28px)]">
+        <div className="relative w-max max-w-full pb-[0.5em] text-[max(7px,16cqw)]">
           <div className="relative inline-flex items-center rounded-[1.05em] border-[0.22em] border-white bg-[#54b8a0] px-[0.85em] py-[0.48em] font-extrabold leading-none tracking-tight text-white">
             {textNode}
             <svg
@@ -440,7 +440,7 @@ function StickerBody({
 
     case "windowStack":
       return shell(
-        <div className="relative w-max max-w-full pb-[0.45em] pl-[0.45em] text-[clamp(7px,15cqw,28px)]">
+        <div className="relative w-max max-w-full pb-[0.45em] pl-[0.45em] text-[max(7px,15cqw)]">
           <div className="pointer-events-none absolute bottom-0 left-0 h-[calc(100%-0.22em)] w-[calc(100%-0.22em)] overflow-hidden rounded-[0.18em] border-[0.12em] border-[#3d5bff] bg-white">
             <div className="h-[0.55em] bg-gradient-to-b from-[#6b8cff] to-[#3d5bff]" />
           </div>
@@ -469,7 +469,7 @@ function StickerBody({
 
     case "pillLavender":
       return shell(
-        <div className="relative w-max max-w-full pt-[0.55em] pr-[0.35em] text-[clamp(7px,16cqw,28px)]">
+        <div className="relative w-max max-w-full pt-[0.55em] pr-[0.35em] text-[max(7px,16cqw)]">
           <div className="inline-flex items-center rounded-full bg-[#9397f4] px-[0.95em] py-[0.45em] font-extrabold leading-none tracking-tight text-white">
             {textNode}
           </div>
@@ -481,7 +481,7 @@ function StickerBody({
 
     default:
       return shell(
-        <div className="inline-flex w-max max-w-full items-center text-[clamp(8px,22cqw,36px)] font-extrabold leading-none text-white [text-shadow:0.05em_0.05em_0.1em_rgba(0,0,0,.85)]">
+        <div className="inline-flex w-max max-w-full items-center text-[max(8px,22cqw)] font-extrabold leading-none text-white [text-shadow:0.05em_0.05em_0.1em_rgba(0,0,0,.85)]">
           {textNode}
         </div>,
       );
@@ -1409,7 +1409,8 @@ export function CoverPickerModal({
         return;
       }
       const delta = (dx / drag.stageW) * 100;
-      const wPct = Math.min(85, Math.max(16, drag.origW + delta));
+      // Khớp giới hạn của bản export (drawTextStickerOnCanvas).
+      const wPct = Math.min(90, Math.max(12, drag.origW + delta));
       setActiveSticker((prev) => (prev ? { ...prev, wPct } : prev));
     };
     const onUp = () => {
@@ -1506,7 +1507,7 @@ export function CoverPickerModal({
   const renderStageLayers = ({ interactive, objectFit = "contain" }) => {
     const imageFitClass =
       objectFit === "cover" ? "object-cover" : "object-contain";
-    return (
+  return (
       <>
         {previewSrc ? (
           <img
@@ -1530,7 +1531,7 @@ export function CoverPickerModal({
             role={interactive ? "button" : undefined}
             tabIndex={interactive ? 0 : undefined}
             aria-label={interactive ? "Sticker trên ảnh bìa" : undefined}
-            className={`absolute z-10 select-none ${
+            className={`absolute z-10 select-none outline-none ${
               interactive
                 ? stickerEditing
                   ? "cursor-text"
@@ -1547,6 +1548,9 @@ export function CoverPickerModal({
             }}
             onPointerDown={
               interactive && !stickerEditing ? onStickerPointerDown : undefined
+            }
+            onFocus={
+              interactive ? () => setStickerSelected(true) : undefined
             }
             onDoubleClick={
               interactive
@@ -1679,13 +1683,13 @@ export function CoverPickerModal({
               className="truncate text-base font-bold text-white"
             >
               Chỉnh ảnh bìa
-            </h2>
+          </h2>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <button
-              type="button"
+          <button
+            type="button"
               className="cursor-pointer rounded-lg px-3 py-1.5 text-sm font-semibold text-zinc-300 hover:bg-white/10 disabled:opacity-50 sm:px-4"
-              onClick={onClose}
+            onClick={onClose}
               disabled={busy}
             >
               Hủy
@@ -1697,7 +1701,7 @@ export function CoverPickerModal({
               disabled={!canConfirm}
             >
               {busy ? "Đang lưu…" : "Lưu"}
-            </button>
+          </button>
           </div>
         </div>
 
@@ -1705,8 +1709,8 @@ export function CoverPickerModal({
           {/* Cột trái: rail dọc Sticker/Text + panel (kiểu TikTok) */}
           <aside className="hidden shrink-0 border-r border-white/10 bg-[#1a1a1a] sm:flex">
             <nav className="flex w-14 shrink-0 flex-col border-r border-white/10 bg-[#121212] py-2">
-              <button
-                type="button"
+          <button
+            type="button"
                 className={`mx-1.5 flex cursor-pointer flex-col items-center gap-0.5 rounded-lg px-1 py-2.5 text-[10px] font-semibold transition ${
                   toolTab === "sticker"
                     ? "bg-white/10 text-white"
@@ -1717,9 +1721,9 @@ export function CoverPickerModal({
               >
                 <IoHappyOutline className="text-xl" aria-hidden />
                 Sticker
-              </button>
-              <button
-                type="button"
+          </button>
+          <button
+            type="button"
                 className={`mx-1.5 mt-1 flex cursor-pointer flex-col items-center gap-0.5 rounded-lg px-1 py-2.5 text-[10px] font-semibold transition ${
                   toolTab === "text"
                     ? "bg-white/10 text-white"
@@ -1730,7 +1734,7 @@ export function CoverPickerModal({
               >
                 <IoTextOutline className="text-xl" aria-hidden />
                 Text
-              </button>
+          </button>
             </nav>
             <div className="scrollbar-none flex w-[180px] min-h-0 flex-col overflow-y-auto p-3 xl:w-[200px]">
               {toolTab === "sticker" ? (
@@ -1761,7 +1765,7 @@ export function CoverPickerModal({
                       </button>
                     );
                   })}
-                </div>
+        </div>
               ) : (
                 <div className="flex flex-col gap-3">
                   <p className="text-xs leading-relaxed text-zinc-400">
@@ -1832,14 +1836,14 @@ export function CoverPickerModal({
                     />
                   </div>
                 </div>
-              )}
-            </div>
+                    )}
+                  </div>
 
             {/* Scale */}
             <div className="flex shrink-0 items-center justify-end gap-2 px-4 pb-2 sm:px-6">
               <span className="text-xs font-medium text-zinc-400">Scale</span>
-              <button
-                type="button"
+                    <button
+                      type="button"
                 className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-lg leading-none text-zinc-400 hover:bg-white/10"
                 aria-label="Thu nhỏ"
                 onClick={() =>
@@ -1890,7 +1894,7 @@ export function CoverPickerModal({
               >
                 <IoAdd className="text-xl" aria-hidden />
                 Tải ảnh bìa
-              </button>
+                    </button>
 
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <div
@@ -1926,21 +1930,21 @@ export function CoverPickerModal({
                     />
                   ) : null}
 
-                  <div
-                    ref={filmstripRef}
+                    <div
+                      ref={filmstripRef}
                     role="slider"
-                    aria-label="Dải khung hình"
+                      aria-label="Dải khung hình"
                     aria-valuemin={0}
                     aria-valuemax={Math.max(0, videoDuration)}
                     aria-valuenow={selectedTime}
                     aria-valuetext={formatFilmstripTime(selectedTime)}
-                    tabIndex={0}
+                      tabIndex={0}
                     onScroll={handleFilmstripScroll}
                     onPointerDown={onFilmstripPointerDown}
                     onPointerMove={onFilmstripPointerMove}
                     onPointerUp={onFilmstripPointerUp}
                     onPointerCancel={onFilmstripPointerUp}
-                    onKeyDown={(e) => {
+                      onKeyDown={(e) => {
                       if (e.key === "ArrowLeft") {
                         e.preventDefault();
                         stepFilmstripSelection(-1);
@@ -1955,34 +1959,34 @@ export function CoverPickerModal({
                       ref={filmstripTrackRef}
                       className="flex h-full w-max items-center"
                     >
-                      {frames.map((f, i) => (
+                        {frames.map((f, i) => (
                         <div
-                          key={`${f.time}-${i}`}
+                            key={`${f.time}-${i}`}
                           className="h-full shrink-0 overflow-hidden bg-zinc-900"
                           style={{ width: FILMSTRIP_FRAME_WIDTH }}
-                        >
-                          <img
-                            src={f.dataUrl}
-                            alt=""
-                            className="h-full w-full object-cover"
-                            loading="eager"
-                            decoding="async"
+                          >
+                            <img
+                              src={f.dataUrl}
+                              alt=""
+                              className="h-full w-full object-cover"
+                              loading="eager"
+                              decoding="async"
                             draggable={false}
-                          />
+                            />
                         </div>
-                      ))}
+                        ))}
                       <div
                         aria-hidden
                         className="h-full shrink-0"
                         style={{ width: filmstripEndPad }}
                       />
+                      </div>
                     </div>
-                  </div>
                 </div>
 
                 <div className="flex items-center justify-center gap-2 pb-0.5">
-                  <button
-                    type="button"
+                    <button
+                      type="button"
                     aria-label="Lùi 0.1 giây"
                     aria-disabled={selectedTime <= 0.001}
                     onClick={() => stepFilmstripSelection(-1)}
@@ -1991,9 +1995,9 @@ export function CoverPickerModal({
                     }`}
                   >
                     <IoChevronBack className="text-sm" aria-hidden />
-                  </button>
-                  <button
-                    type="button"
+                    </button>
+              <button
+                type="button"
                     aria-label="Tới 0.1 giây"
                     aria-disabled={
                       selectedTime >= Math.max(0, videoDuration - 0.05)
@@ -2006,7 +2010,7 @@ export function CoverPickerModal({
                     }`}
                   >
                     <IoChevronForward className="text-sm" aria-hidden />
-                  </button>
+              </button>
                 </div>
               </div>
             </div>
@@ -2066,7 +2070,7 @@ export function CoverPickerModal({
                     <div className="min-w-0 flex-1 px-1">
                       <p className="text-[15px] font-semibold text-white">−</p>
                       <p className="text-[11px] text-zinc-400">Following</p>
-                    </div>
+                </div>
                     <div
                       className="w-px self-stretch bg-zinc-700"
                       aria-hidden
@@ -2084,7 +2088,7 @@ export function CoverPickerModal({
                       <p className="text-[11px] text-zinc-400">Likes</p>
                     </div>
                   </div>
-                </div>
+        </div>
 
                 {/* Lưới video dọc 9:16 — giống trang hồ sơ thật */}
                 <div className="min-h-0 flex-1 overflow-hidden bg-black">
@@ -2096,9 +2100,9 @@ export function CoverPickerModal({
                             interactive: false,
                             objectFit: "cover",
                           })}
-                        </div>
-                      </div>
-                    </div>
+        </div>
+      </div>
+    </div>
                     <div className="aspect-9/16 bg-zinc-950" />
                     <div className="aspect-9/16 bg-zinc-950" />
                     <div className="aspect-9/16 bg-zinc-950" />
