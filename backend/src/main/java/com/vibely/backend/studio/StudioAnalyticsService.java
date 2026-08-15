@@ -42,6 +42,9 @@ public class StudioAnalyticsService {
 
     private static final List<Integer> ALLOWED_DAYS = List.of(7, 28, 60, 90);
 
+    /** Kênh còn nhận độ dài gấp đôi để client tính biến động so với kỳ liền trước. */
+    private static final List<Integer> CHANNEL_ALLOWED_DAYS = List.of(7, 14, 28, 56, 60, 90, 120, 180);
+
     /** Video của kênh còn tính vào Studio (không chỉ READY — tránh thống kê 0 khi bài đang xử lý). */
     private static final List<VideoStatus> STUDIO_VIDEO_METRICS_STATUSES = List.of(
         VideoStatus.READY,
@@ -205,7 +208,7 @@ public class StudioAnalyticsService {
     /** Phân tích cấp kênh cho trang Studio → Phân tích. */
     @Transactional(readOnly = true)
     public StudioChannelAnalyticsResponse getChannelAnalytics(String email, int days) {
-        if (!ALLOWED_DAYS.contains(days)) {
+        if (!CHANNEL_ALLOWED_DAYS.contains(days)) {
             throw new BadRequestException("Khoảng ngày không hợp lệ. Chỉ chấp nhận 7, 28, 60, 90.");
         }
 
