@@ -20,6 +20,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -159,6 +160,17 @@ public class GlobalExceptionHandler {
             : status.name();
         return ResponseEntity.status(status)
             .body(ApiResponse.failure(ApiError.of(status.value(), code, message)));
+    }
+
+    /** Không có handler cho đường dẫn: trả 404 thay vì rơi xuống nhánh 500 chung. */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoResource(NoResourceFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(ApiResponse.failure(ApiError.of(
+                HttpStatus.NOT_FOUND.value(),
+                "NOT_FOUND",
+                "Không tìm thấy tài nguyên: " + ex.getResourcePath()
+            )));
     }
 
     @ExceptionHandler(Exception.class)
