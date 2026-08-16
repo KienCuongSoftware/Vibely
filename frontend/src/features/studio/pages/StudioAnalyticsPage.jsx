@@ -264,12 +264,12 @@ function MetricCell({
   );
 }
 
-function PanelHeading({ title, tip }) {
+function PanelHeading({ title, tip, tipPlacement = "top" }) {
   return (
     <h2 className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-white">
       {title}
       {tip ? (
-        <StudioHoverTip underline={false} text={tip}>
+        <StudioHoverTip underline={false} text={tip} placement={tipPlacement}>
           <span className="inline-flex text-zinc-500">
             <IoInformationCircleOutline className="h-4 w-4" aria-hidden />
           </span>
@@ -807,7 +807,8 @@ export function StudioAnalyticsPage() {
       <div className="mb-3">
         <PanelHeading
           title="Bài đăng hàng đầu"
-          tip="Xếp hạng bài đăng theo số liệu trong khoảng thời gian đã chọn."
+          tipPlacement="bottom"
+          tip={`Những bài đăng hiệu quả nhất trong ${days} ngày qua, xếp hạng theo lượt xem, lượt thích, bình luận và chia sẻ.`}
         />
       </div>
       <section className="rounded-xl border border-zinc-800 bg-zinc-950/60">
