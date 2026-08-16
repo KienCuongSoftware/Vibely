@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.vibely.backend.interaction.repository.CommentRepository;
 import com.vibely.backend.interaction.repository.FollowRepository;
 import com.vibely.backend.video.VideoStatus;
+import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,13 +35,18 @@ class StudioChannelCommentsQueryTest {
     @Test
     void channelCommentQueriesExecute() {
         var latestPage = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
+        var from = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+        var to = LocalDate.now().plusMonths(1).withDayOfMonth(1).atStartOfDay();
 
         assertThat(commentRepository.searchChannelComments(
-            1L, STATUSES, "", "all", 0L, false, latestPage)).isNotNull();
+            1L, STATUSES, "", "all", false, false, false, false, false,
+            "all", from, to, latestPage)).isNotNull();
         assertThat(commentRepository.searchChannelComments(
-            1L, STATUSES, "xin chào", "others", 1000L, true, latestPage)).isNotNull();
+            1L, STATUSES, "xin chào", "followers", true, true, true, false, false,
+            "unreplied", from, to, latestPage)).isNotNull();
         assertThat(commentRepository.searchChannelComments(
-            1L, STATUSES, "", "me", 0L, false,
+            1L, STATUSES, "", "non_followers", true, false, false, true, true,
+            "replied", from, to,
             PageRequest.of(0, 20, Sort.by(Sort.Direction.ASC, "createdAt")))).isNotNull();
 
         assertThat(commentRepository.countRepliesGroupedByParentIds(List.of(1L, 2L))).isNotNull();

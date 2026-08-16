@@ -1,6 +1,7 @@
 package com.vibely.backend.studio;
 
 import com.vibely.backend.auth.service.UserAvatarResolver;
+import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.interaction.entity.CommentEntity;
 import com.vibely.backend.interaction.repository.CommentLikeRepository;
@@ -10,7 +11,11 @@ import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoStatus;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -36,7 +41,12 @@ public class StudioCommentsService {
     );
 
     private static final int MAX_PAGE_SIZE = 50;
-    private static final Set<String> POSTED_BY_MODES = Set.of("all", "me", "others");
+    private static final Set<String> POSTED_BY_MODES =
+        Set.of("all", "followers", "non_followers");
+    private static final Set<String> REPLY_STATUSES =
+        Set.of("all", "unreplied", "replied");
+    private static final Set<String> FOLLOWER_BANDS =
+        Set.of("lt5k", "5k10k", "10k100k", "gte100k");
 
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
@@ -65,8 +75,10 @@ public class StudioCommentsService {
         int size,
         String query,
         String postedBy,
-        boolean onlyUnreplied,
-        long minFollowers,
+        String replyStatus,
+        String followerBands,
+        String from,
+        String to,
         String sort
     ) {
         User me = userRepository.findByEmail(email)
@@ -79,6 +91,20 @@ public class StudioCommentsService {
         if (!POSTED_BY_MODES.contains(safePostedBy)) {
             safePostedBy = "all";
         }
+        String safeReplyStatus =
+            replyStatus == null ? "all" : replyStatus.trim().toLowerCase();
+        if (!REPLY_STATUSES.contains(safeReplyStatus)) {
+            safeReplyStatus = "all";
+        }
+        Set<String> bands = parseFollowerBands(followerBands);
+        LocalDateTime fromDate = parseDateOrDefault(from, LocalDate.of(1970, 1, 1))
+            .atStartOfDay();
+        LocalDateTime toExclusive = parseDateOrDefault(to, LocalDate.of(9998, 12, 31))
+            .plusDays(1)
+            .atStartOfDay();
+        if (!fromDate.isBefore(toExclusive)) {
+            throw new BadRequestException("Khoảng ngày bình luận không hợp lệ.");
+        }
         Sort order = "oldest".equalsIgnoreCase(sort)
             ? Sort.by(Sort.Direction.ASC, "createdAt")
             : Sort.by(Sort.Direction.DESC, "createdAt");
@@ -88,8 +114,14 @@ public class StudioCommentsService {
             CHANNEL_VIDEO_STATUSES,
             safeQuery,
             safePostedBy,
-            Math.max(0L, minFollowers),
-            onlyUnreplied,
+            !bands.isEmpty(),
+            bands.contains("lt5k"),
+            bands.contains("5k10k"),
+            bands.contains("10k100k"),
+            bands.contains("gte100k"),
+            safeReplyStatus,
+            fromDate,
+            toExclusive,
             PageRequest.of(safePage, safeSize, order)
         );
 
@@ -167,5 +199,25 @@ public class StudioCommentsService {
             map.put(((Number) row[0]).longValue(), ((Number) row[1]).longValue());
         }
         return map;
+    }
+
+    private Set<String> parseFollowerBands(String raw) {
+        if (raw == null || raw.isBlank()) return Set.of();
+        Set<String> parsed = new HashSet<>();
+        Arrays.stream(raw.split(","))
+            .map(String::trim)
+            .map(String::toLowerCase)
+            .filter(FOLLOWER_BANDS::contains)
+            .forEach(parsed::add);
+        return parsed;
+    }
+
+    private LocalDate parseDateOrDefault(String raw, LocalDate fallback) {
+        if (raw == null || raw.isBlank()) return fallback;
+        try {
+            return LocalDate.parse(raw.trim());
+        } catch (DateTimeParseException ex) {
+            throw new BadRequestException("Ngày bình luận phải có định dạng YYYY-MM-DD.");
+        }
     }
 }

@@ -26,8 +26,10 @@ public class StudioCommentsController {
         @RequestParam(defaultValue = "20") int size,
         @RequestParam(defaultValue = "") String query,
         @RequestParam(defaultValue = "all") String postedBy,
-        @RequestParam(defaultValue = "false") boolean onlyUnreplied,
-        @RequestParam(defaultValue = "0") long minFollowers,
+        @RequestParam(defaultValue = "all") String replyStatus,
+        @RequestParam(defaultValue = "") String followerBands,
+        @RequestParam(defaultValue = "") String from,
+        @RequestParam(defaultValue = "") String to,
         @RequestParam(defaultValue = "latest") String sort
     ) {
         return ApiResponse.success(
@@ -37,8 +39,10 @@ public class StudioCommentsController {
                 size,
                 query,
                 postedBy,
-                onlyUnreplied,
-                minFollowers,
+                replyStatus,
+                followerBands,
+                from,
+                to,
                 sort
             )
         );

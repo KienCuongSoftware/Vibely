@@ -109,27 +109,63 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
               )
               and (
                 :postedBy = 'all'
-                or (:postedBy = 'me' and u.id = :authorId)
-                or (:postedBy = 'others' and u.id <> :authorId)
+                or (:postedBy = 'followers' and exists (
+                  select f.id from FollowEntity f
+                  where f.follower.id = u.id
+                    and f.following.id = :authorId
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ))
+                or (:postedBy = 'non_followers' and not exists (
+                  select f.id from FollowEntity f
+                  where f.follower.id = u.id
+                    and f.following.id = :authorId
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ))
               )
               and (
-                :minFollowers <= 0
-                or (
+                :filterFollowerBands = false
+                or (:bandLt5k = true and (
                   select count(f.id) from FollowEntity f
                   where f.following.id = u.id
                     and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
-                ) >= :minFollowers
+                ) < 5000)
+                or (:band5k10k = true and (
+                  select count(f.id) from FollowEntity f
+                  where f.following.id = u.id
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ) >= 5000 and (
+                  select count(f.id) from FollowEntity f
+                  where f.following.id = u.id
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ) < 10000)
+                or (:band10k100k = true and (
+                  select count(f.id) from FollowEntity f
+                  where f.following.id = u.id
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ) >= 10000 and (
+                  select count(f.id) from FollowEntity f
+                  where f.following.id = u.id
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ) < 100000)
+                or (:bandGte100k = true and (
+                  select count(f.id) from FollowEntity f
+                  where f.following.id = u.id
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ) >= 100000)
               )
               and (
-                :onlyUnreplied = false
-                or (
-                  u.id <> :authorId
-                  and not exists (
-                    select r.id from CommentEntity r
-                    where r.parentComment.id = c.id and r.user.id = :authorId
-                  )
-                )
+                :replyStatus = 'all'
+                or (:replyStatus = 'unreplied' and u.id <> :authorId and not exists (
+                  select r.id from CommentEntity r
+                  where r.parentComment.id = c.id and r.user.id = :authorId
+                ))
+                or (:replyStatus = 'replied' and exists (
+                  select r.id from CommentEntity r
+                  where r.parentComment.id = c.id and r.user.id = :authorId
+                ))
               )
+              and c.createdAt >= :from
+              and c.createdAt < :toExclusive
             """,
         countQuery = """
             select count(c) from CommentEntity c
@@ -145,27 +181,63 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
               )
               and (
                 :postedBy = 'all'
-                or (:postedBy = 'me' and u.id = :authorId)
-                or (:postedBy = 'others' and u.id <> :authorId)
+                or (:postedBy = 'followers' and exists (
+                  select f.id from FollowEntity f
+                  where f.follower.id = u.id
+                    and f.following.id = :authorId
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ))
+                or (:postedBy = 'non_followers' and not exists (
+                  select f.id from FollowEntity f
+                  where f.follower.id = u.id
+                    and f.following.id = :authorId
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ))
               )
               and (
-                :minFollowers <= 0
-                or (
+                :filterFollowerBands = false
+                or (:bandLt5k = true and (
                   select count(f.id) from FollowEntity f
                   where f.following.id = u.id
                     and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
-                ) >= :minFollowers
+                ) < 5000)
+                or (:band5k10k = true and (
+                  select count(f.id) from FollowEntity f
+                  where f.following.id = u.id
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ) >= 5000 and (
+                  select count(f.id) from FollowEntity f
+                  where f.following.id = u.id
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ) < 10000)
+                or (:band10k100k = true and (
+                  select count(f.id) from FollowEntity f
+                  where f.following.id = u.id
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ) >= 10000 and (
+                  select count(f.id) from FollowEntity f
+                  where f.following.id = u.id
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ) < 100000)
+                or (:bandGte100k = true and (
+                  select count(f.id) from FollowEntity f
+                  where f.following.id = u.id
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ) >= 100000)
               )
               and (
-                :onlyUnreplied = false
-                or (
-                  u.id <> :authorId
-                  and not exists (
-                    select r.id from CommentEntity r
-                    where r.parentComment.id = c.id and r.user.id = :authorId
-                  )
-                )
+                :replyStatus = 'all'
+                or (:replyStatus = 'unreplied' and u.id <> :authorId and not exists (
+                  select r.id from CommentEntity r
+                  where r.parentComment.id = c.id and r.user.id = :authorId
+                ))
+                or (:replyStatus = 'replied' and exists (
+                  select r.id from CommentEntity r
+                  where r.parentComment.id = c.id and r.user.id = :authorId
+                ))
               )
+              and c.createdAt >= :from
+              and c.createdAt < :toExclusive
             """
     )
     Page<CommentEntity> searchChannelComments(
@@ -173,8 +245,14 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
         @Param("statuses") List<VideoStatus> statuses,
         @Param("query") String query,
         @Param("postedBy") String postedBy,
-        @Param("minFollowers") long minFollowers,
-        @Param("onlyUnreplied") boolean onlyUnreplied,
+        @Param("filterFollowerBands") boolean filterFollowerBands,
+        @Param("bandLt5k") boolean bandLt5k,
+        @Param("band5k10k") boolean band5k10k,
+        @Param("band10k100k") boolean band10k100k,
+        @Param("bandGte100k") boolean bandGte100k,
+        @Param("replyStatus") String replyStatus,
+        @Param("from") LocalDateTime from,
+        @Param("toExclusive") LocalDateTime toExclusive,
         Pageable pageable
     );
 
