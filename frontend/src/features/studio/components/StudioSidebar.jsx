@@ -86,7 +86,10 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
     (active === 'posts' ||
       /^\/vibelystudio\/posts\/?$/.test(location.pathname) ||
       /^\/vibelystudio\/(upload\/post|analytics)\//.test(location.pathname))
-  const commentsNavActive = onCommentPostPath || active === 'comments'
+  const commentsNavActive =
+    onCommentPostPath ||
+    active === 'comments' ||
+    /^\/vibelystudio\/comments\/?$/.test(location.pathname)
   const analyticsNavActive =
     active === 'analytics' || /^\/vibelystudio\/analytics\/?$/.test(location.pathname)
 
@@ -154,7 +157,7 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
           onNavigate={onNavigate}
         />
         <NavLink
-          to="/vibelystudio/posts"
+          to="/vibelystudio/comments"
           icon={IoChatboxEllipsesOutline}
           label="Bình luận"
           active={commentsNavActive}
