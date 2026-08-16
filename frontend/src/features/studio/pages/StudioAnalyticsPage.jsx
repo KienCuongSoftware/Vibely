@@ -206,21 +206,46 @@ function DeltaText({ delta }) {
   );
 }
 
-function MetricCell({ label, tip, value, raw, delta, active, onClick, hint }) {
+function MetricCell({
+  label,
+  tip,
+  tipAlign = "left",
+  value,
+  raw,
+  delta,
+  active,
+  onClick,
+  hint,
+}) {
+  const alignRight = tipAlign === "right";
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`relative cursor-pointer px-4 py-3.5 text-left transition ${
+      className={`group/cell relative cursor-pointer px-4 py-3.5 text-left transition ${
         active ? "bg-zinc-900/70" : "hover:bg-zinc-900/40"
       }`}
     >
       {active ? (
         <span className="absolute inset-x-0 top-0 h-0.5 bg-sky-400" />
       ) : null}
-      <p className="truncate text-xs text-zinc-400">
-        {tip ? <StudioHoverTip text={tip}>{label}</StudioHoverTip> : label}
-      </p>
+      {tip ? (
+        <span
+          role="tooltip"
+          className={`pointer-events-none absolute top-[calc(100%+6px)] z-40 w-max max-w-[240px] rounded-lg bg-zinc-800 px-3 py-2 text-left text-[11px] leading-snug font-normal text-white opacity-0 shadow-xl transition-opacity duration-100 group-hover/cell:opacity-100 ${
+            alignRight ? "right-3" : "left-3"
+          }`}
+        >
+          {tip}
+          <span
+            aria-hidden
+            className={`absolute bottom-full border-[5px] border-transparent border-b-zinc-800 ${
+              alignRight ? "right-4" : "left-4"
+            }`}
+          />
+        </span>
+      ) : null}
+      <p className="truncate text-xs text-zinc-400">{label}</p>
       <p
         className={`mt-1.5 text-2xl font-bold ${
           active ? "text-sky-300" : "text-zinc-100"
@@ -533,7 +558,7 @@ export function StudioAnalyticsPage() {
         value: "$0.00",
         raw: true,
         delta: null,
-        tip: "Chương trình thưởng cho nhà sáng tạo chưa mở tại khu vực của bạn.",
+        tip: "Do khác biệt về cách quy đổi tiền tệ và múi giờ, một số dữ liệu hiển thị có thể chênh lệch nhẹ so với các báo cáo khác.",
       },
     ],
     [payload, previousTotals],
@@ -702,11 +727,12 @@ export function StudioAnalyticsPage() {
     <>
       <section className="overflow-visible rounded-xl border border-zinc-800 bg-zinc-950/50">
         <div className="grid grid-cols-2 divide-x divide-zinc-800/80 overflow-visible border-b border-zinc-800/80 sm:grid-cols-3 lg:grid-cols-6">
-          {metricCells.map((cell) => (
+          {metricCells.map((cell, idx) => (
             <MetricCell
               key={cell.id}
               label={cell.label}
               tip={cell.tip}
+              tipAlign={idx >= metricCells.length - 2 ? "right" : "left"}
               value={cell.value}
               raw={cell.raw}
               delta={cell.delta}
@@ -917,6 +943,7 @@ export function StudioAnalyticsPage() {
           <MetricCell
             label="Lượt xem hồ sơ"
             tip="Số lần hồ sơ của bạn được xem trong khoảng thời gian đã chọn."
+            tipAlign="right"
             value={payload.totalProfileViews}
             delta={deltaOf(
               payload.totalProfileViews,
@@ -1044,6 +1071,7 @@ export function StudioAnalyticsPage() {
           <MetricCell
             label="Người theo dõi mới"
             tip="Số người bắt đầu theo dõi bạn trong khoảng thời gian đã chọn."
+            tipAlign="right"
             value={payload.newFollowers}
             delta={deltaOf(payload.newFollowers, previousTotals?.newFollowers)}
             active={followerMetric === "new"}
