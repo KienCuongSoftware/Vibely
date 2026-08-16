@@ -13,6 +13,7 @@ import {
 import { apiClient } from "@/shared/api/client";
 import { StudioLayout } from "@/features/studio/components/StudioLayout";
 import { StudioAccountMenu } from "@/features/studio/components/StudioAccountMenu";
+import { StudioCommentDateRangePicker } from "@/features/studio/components/StudioCommentDateRangePicker";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { formatRelativeTimeVi } from "@/shared/utils/relativeTimeVi.js";
 
@@ -22,25 +23,36 @@ const REPLY_MAX_LEN = 150;
 const STATUS_OPTIONS = [
   { id: "all", label: "Tất cả bình luận" },
   { id: "unreplied", label: "Chưa trả lời" },
+  { id: "replied", label: "Đã trả lời" },
 ];
 
 const POSTED_BY_OPTIONS = [
   { id: "all", label: "Người đăng: tất cả" },
-  { id: "others", label: "Người xem đăng" },
-  { id: "me", label: "Tôi đăng" },
+  { id: "followers", label: "Người theo dõi đăng" },
+  { id: "non_followers", label: "Người chưa theo dõi đăng" },
 ];
 
-const FOLLOWER_OPTIONS = [
-  { id: 0, label: "Số người theo dõi: tất cả" },
-  { id: 1000, label: "Từ 1K người theo dõi" },
-  { id: 10000, label: "Từ 10K người theo dõi" },
-  { id: 100000, label: "Từ 100K người theo dõi" },
+const FOLLOWER_BANDS = [
+  { id: "lt5k", label: "< 5K" },
+  { id: "5k10k", label: "5K – 10K" },
+  { id: "10k100k", label: "10K – 100K" },
+  { id: "gte100k", label: "> 100K" },
 ];
 
-const SORT_OPTIONS = [
-  { id: "latest", label: "Ngày bình luận: mới nhất" },
-  { id: "oldest", label: "Ngày bình luận: cũ nhất" },
-];
+function toLocalIso(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function defaultCommentRange() {
+  const today = new Date();
+  return {
+    from: toLocalIso(today),
+    to: toLocalIso(new Date(today.getFullYear(), today.getMonth() + 1, 0)),
+  };
+}
 
 function formatCount(n) {
   const v = Math.max(0, Number(n) || 0);
@@ -108,6 +120,88 @@ function FilterMenu({ label, options, value, onChange }) {
               {opt.id === value ? " ✓" : ""}
             </button>
           ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function FollowerBandMenu({ value, onApply }) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const wrapRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    setDraft(value);
+    const onDocClick = (e) => {
+      if (!wrapRef.current?.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open, value]);
+
+  const toggle = (id) => {
+    setDraft((current) =>
+      current.includes(id)
+        ? current.filter((band) => band !== id)
+        : [...current, id],
+    );
+  };
+
+  return (
+    <div className="relative" ref={wrapRef}>
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition ${
+          value.length
+            ? "border-zinc-500 bg-zinc-800 text-white"
+            : "border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
+        }`}
+      >
+        <IoFilterOutline className="text-sm text-zinc-400" aria-hidden />
+        Số người theo dõi
+        <IoChevronDown className="text-zinc-500" aria-hidden />
+      </button>
+      {open ? (
+        <div className="absolute left-0 z-30 mt-1 w-52 overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl">
+          <div className="space-y-0.5 p-2">
+            {FOLLOWER_BANDS.map((band) => (
+              <label
+                key={band.id}
+                className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800"
+              >
+                <input
+                  type="checkbox"
+                  checked={draft.includes(band.id)}
+                  onChange={() => toggle(band.id)}
+                  className="h-3.5 w-3.5 accent-[#fe2c55]"
+                />
+                {band.label}
+              </label>
+            ))}
+          </div>
+          <div className="flex gap-2 border-t border-zinc-800 p-2">
+            <button
+              type="button"
+              onClick={() => setDraft([])}
+              className="flex-1 cursor-pointer rounded-md border border-zinc-700 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800"
+            >
+              Xóa
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onApply(draft);
+                setOpen(false);
+              }}
+              className="flex-1 cursor-pointer rounded-md bg-[#fe2c55] py-1.5 text-xs font-semibold text-white hover:bg-[#ff506d]"
+            >
+              Áp dụng
+            </button>
+          </div>
         </div>
       ) : null}
     </div>
@@ -263,8 +357,8 @@ export function StudioCommentsPage() {
 
   const [status, setStatus] = useState("all");
   const [postedBy, setPostedBy] = useState("all");
-  const [minFollowers, setMinFollowers] = useState(0);
-  const [sort, setSort] = useState("latest");
+  const [followerBands, setFollowerBands] = useState([]);
+  const [dateRange, setDateRange] = useState(() => defaultCommentRange());
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
 
@@ -295,12 +389,14 @@ export function StudioCommentsPage() {
     () => ({
       query: search,
       postedBy,
-      onlyUnreplied: status === "unreplied",
-      minFollowers,
-      sort,
+      replyStatus: status,
+      followerBands: followerBands.join(","),
+      from: dateRange.from,
+      to: dateRange.to,
+      sort: "latest",
       size: PAGE_SIZE,
     }),
-    [search, postedBy, status, minFollowers, sort],
+    [search, postedBy, status, followerBands, dateRange],
   );
 
   const fetchPage = useCallback(
@@ -445,7 +541,12 @@ export function StudioCommentsPage() {
   };
 
   const isFiltered =
-    Boolean(search) || status !== "all" || postedBy !== "all" || minFollowers > 0;
+    Boolean(search) ||
+    status !== "all" ||
+    postedBy !== "all" ||
+    followerBands.length > 0 ||
+    dateRange.from !== defaultCommentRange().from ||
+    dateRange.to !== defaultCommentRange().to;
 
   return (
     <StudioLayout active="comments" hidePageHeader hideTopBar>
@@ -466,17 +567,17 @@ export function StudioCommentsPage() {
           value={postedBy}
           onChange={setPostedBy}
         />
-        <FilterMenu
-          label="Lọc theo số người theo dõi"
-          options={FOLLOWER_OPTIONS}
-          value={minFollowers}
-          onChange={setMinFollowers}
+        <FollowerBandMenu
+          value={followerBands}
+          onApply={setFollowerBands}
         />
-        <FilterMenu
-          label="Sắp xếp theo ngày bình luận"
-          options={SORT_OPTIONS}
-          value={sort}
-          onChange={setSort}
+        <StudioCommentDateRangePicker
+          from={dateRange.from}
+          to={dateRange.to}
+          maxDate={defaultCommentRange().to}
+          resetFrom={defaultCommentRange().from}
+          resetTo={defaultCommentRange().to}
+          onApply={setDateRange}
         />
         <div className="relative ml-auto w-full sm:w-72">
           <IoSearchOutline

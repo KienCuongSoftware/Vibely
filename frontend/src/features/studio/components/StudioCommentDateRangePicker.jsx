@@ -71,7 +71,15 @@ function buildMonthGrid(year, monthIndex) {
  * `from` / `to`: chuỗi `YYYY-MM-DD` hoặc `''`.
  * `minDate` / `maxDate`: biên (YYYY-MM-DD), không truyền `maxDate` thì mặc định là hôm nay (theo giờ máy).
  */
-export function StudioCommentDateRangePicker({ from, to, onApply, minDate = null, maxDate = null }) {
+export function StudioCommentDateRangePicker({
+  from,
+  to,
+  onApply,
+  minDate = null,
+  maxDate = null,
+  resetFrom = '',
+  resetTo = '',
+}) {
   const wrapRef = useRef(null)
   const [open, setOpen] = useState(false)
   const [view, setView] = useState(() => ({
@@ -178,11 +186,11 @@ export function StudioCommentDateRangePicker({ from, to, onApply, minDate = null
   )
 
   const handleReset = useCallback(() => {
-    setDraftStart('')
-    setDraftEnd('')
+    setDraftStart(resetFrom)
+    setDraftEnd(resetTo)
     closePicker()
-    onApply({ from: '', to: '' })
-  }, [onApply, closePicker])
+    onApply({ from: resetFrom, to: resetTo })
+  }, [onApply, closePicker, resetFrom, resetTo])
 
   const handleApply = useCallback(() => {
     const todayIso = dateToIso(new Date())
