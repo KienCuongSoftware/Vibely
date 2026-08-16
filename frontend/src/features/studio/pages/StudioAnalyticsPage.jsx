@@ -229,23 +229,25 @@ function MetricCell({
       {active ? (
         <span className="absolute inset-x-0 top-0 h-0.5 bg-sky-400" />
       ) : null}
-      {tip ? (
-        <span
-          role="tooltip"
-          className={`pointer-events-none absolute top-[calc(100%+6px)] z-40 w-max max-w-[240px] rounded-lg bg-zinc-800 px-3 py-2 text-left text-[11px] leading-snug font-normal text-white opacity-0 shadow-xl transition-opacity duration-100 group-hover/cell:opacity-100 ${
-            alignRight ? "right-3" : "left-3"
-          }`}
-        >
-          {tip}
+      <p className="relative text-xs text-zinc-400">
+        <span className="block truncate">{label}</span>
+        {tip ? (
           <span
-            aria-hidden
-            className={`absolute bottom-full border-[5px] border-transparent border-b-zinc-800 ${
-              alignRight ? "right-4" : "left-4"
+            role="tooltip"
+            className={`pointer-events-none absolute bottom-[calc(100%+8px)] z-40 w-max max-w-[240px] rounded-lg bg-zinc-800 px-3 py-2 text-left text-[11px] leading-snug font-normal text-white opacity-0 shadow-xl transition-opacity duration-100 group-hover/cell:opacity-100 ${
+              alignRight ? "right-0" : "left-0"
             }`}
-          />
-        </span>
-      ) : null}
-      <p className="truncate text-xs text-zinc-400">{label}</p>
+          >
+            {tip}
+            <span
+              aria-hidden
+              className={`absolute top-full border-[5px] border-transparent border-t-zinc-800 ${
+                alignRight ? "right-4" : "left-4"
+              }`}
+            />
+          </span>
+        ) : null}
+      </p>
       <p
         className={`mt-1.5 text-2xl font-bold ${
           active ? "text-sky-300" : "text-zinc-100"
