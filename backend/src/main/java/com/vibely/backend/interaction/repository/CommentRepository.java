@@ -7,6 +7,7 @@ import com.vibely.backend.video.VideoStatus;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -85,5 +86,111 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
         @Param("authorId") Long authorId,
         @Param("statuses") List<VideoStatus> statuses,
         Pageable pageable
+    );
+
+    /**
+     * Bình luận trên mọi video của kênh, có tìm kiếm và lọc (trang Studio → Bình luận).
+     * Tham số luôn khác null để Postgres không phải suy luận kiểu cho tham số null.
+     */
+    @Query(
+        value = """
+            select c from CommentEntity c
+            join fetch c.user u
+            join fetch c.video v
+            left join fetch c.parentComment p
+            left join fetch p.user pu
+            where v.author.id = :authorId
+              and v.status in :statuses
+              and (
+                :query = ''
+                or lower(c.content) like lower(concat('%', :query, '%'))
+                or lower(u.username) like lower(concat('%', :query, '%'))
+                or lower(u.displayName) like lower(concat('%', :query, '%'))
+              )
+              and (
+                :postedBy = 'all'
+                or (:postedBy = 'me' and u.id = :authorId)
+                or (:postedBy = 'others' and u.id <> :authorId)
+              )
+              and (
+                :minFollowers <= 0
+                or (
+                  select count(f.id) from FollowEntity f
+                  where f.following.id = u.id
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ) >= :minFollowers
+              )
+              and (
+                :onlyUnreplied = false
+                or (
+                  u.id <> :authorId
+                  and not exists (
+                    select r.id from CommentEntity r
+                    where r.parentComment.id = c.id and r.user.id = :authorId
+                  )
+                )
+              )
+            """,
+        countQuery = """
+            select count(c) from CommentEntity c
+            join c.user u
+            join c.video v
+            where v.author.id = :authorId
+              and v.status in :statuses
+              and (
+                :query = ''
+                or lower(c.content) like lower(concat('%', :query, '%'))
+                or lower(u.username) like lower(concat('%', :query, '%'))
+                or lower(u.displayName) like lower(concat('%', :query, '%'))
+              )
+              and (
+                :postedBy = 'all'
+                or (:postedBy = 'me' and u.id = :authorId)
+                or (:postedBy = 'others' and u.id <> :authorId)
+              )
+              and (
+                :minFollowers <= 0
+                or (
+                  select count(f.id) from FollowEntity f
+                  where f.following.id = u.id
+                    and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+                ) >= :minFollowers
+              )
+              and (
+                :onlyUnreplied = false
+                or (
+                  u.id <> :authorId
+                  and not exists (
+                    select r.id from CommentEntity r
+                    where r.parentComment.id = c.id and r.user.id = :authorId
+                  )
+                )
+              )
+            """
+    )
+    Page<CommentEntity> searchChannelComments(
+        @Param("authorId") Long authorId,
+        @Param("statuses") List<VideoStatus> statuses,
+        @Param("query") String query,
+        @Param("postedBy") String postedBy,
+        @Param("minFollowers") long minFollowers,
+        @Param("onlyUnreplied") boolean onlyUnreplied,
+        Pageable pageable
+    );
+
+    @Query("""
+        select c.parentComment.id, count(c) from CommentEntity c
+        where c.parentComment.id in :ids
+        group by c.parentComment.id
+        """)
+    List<Object[]> countRepliesGroupedByParentIds(@Param("ids") Collection<Long> ids);
+
+    @Query("""
+        select distinct c.parentComment.id from CommentEntity c
+        where c.parentComment.id in :ids and c.user.id = :userId
+        """)
+    List<Long> findParentIdsRepliedByUser(
+        @Param("ids") Collection<Long> ids,
+        @Param("userId") Long userId
     );
 }

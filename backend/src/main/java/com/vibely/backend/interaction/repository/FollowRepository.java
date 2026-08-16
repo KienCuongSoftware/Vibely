@@ -79,6 +79,15 @@ public interface FollowRepository extends JpaRepository<FollowEntity, Long> {
         @Param("from") LocalDateTime from
     );
 
+    /** Số người theo dõi của nhiều tài khoản cùng lúc (hiển thị cạnh tên người bình luận). */
+    @Query("""
+        select f.following.id, count(f.id) from FollowEntity f
+        where f.following.id in :userIds
+        and f.status = com.vibely.backend.interaction.entity.FollowStatus.ACCEPTED
+        group by f.following.id
+        """)
+    List<Object[]> countFollowersGroupedByUserIds(@Param("userIds") Collection<Long> userIds);
+
     /** Người theo dõi nhóm theo khu vực tài khoản. */
     @Query("""
         select coalesce(f.follower.accountRegion, 'other') as groupKey, count(f.id) as total
