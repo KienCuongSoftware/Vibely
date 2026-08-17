@@ -30,6 +30,10 @@ import {
   watchTimeQualifiesForViewRecord,
 } from "@/features/post/utils/watchQualifiesForViewRecord";
 import { useRapidStepNavigation } from "@/features/feed/hooks/useRapidStepNavigation.js";
+import {
+  isFutureSchedule,
+  readScheduledAt,
+} from "@/features/post/utils/videoSchedule.js";
 import { formatRelativeTimeVi } from "@/shared/utils/relativeTimeVi.js";
 import {
   isEnterKey,
@@ -164,6 +168,16 @@ function normalizeVideoItem(item) {
 function filterOutStudioDrafts(items) {
   return (Array.isArray(items) ? items : []).filter(
     (video) => !Boolean(video?.studioDraft),
+  );
+}
+
+/**
+ * Fallback "video của tôi" khi feed rỗng: bỏ cả video hẹn giờ chưa tới hạn,
+ * nếu không bài đăng sẽ lên feed trước thời điểm ra mắt.
+ */
+function filterOutUnpublishedOwnVideos(items) {
+  return filterOutStudioDrafts(items).filter(
+    (video) => !isFutureSchedule(readScheduledAt(video)),
   );
 }
 
@@ -982,7 +996,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   page: 0,
                   size: 16,
                 });
-                const mineItems = filterOutStudioDrafts(mine?.items);
+                const mineItems = filterOutUnpublishedOwnVideos(mine?.items);
                 if (mineItems.length > 0) {
                   normalized = hydrateFeedFollowState(mineItems);
                   if (isForYouFeed) {
@@ -1043,7 +1057,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   page: 0,
                   size: 16,
                 });
-                const mineItems = filterOutStudioDrafts(mine?.items);
+                const mineItems = filterOutUnpublishedOwnVideos(mine?.items);
                 if (mineItems.length > 0) {
                   let fallback = hydrateFeedFollowState(mineItems);
                   if (isForYouFeed) {
