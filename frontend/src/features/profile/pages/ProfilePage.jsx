@@ -13,6 +13,11 @@ import {
   videoPublicIdOf,
 } from '@/features/post/utils/videoPublicId.js'
 import {
+  formatScheduleTileLabel,
+  isFutureSchedule,
+  readScheduledAt,
+} from '@/features/post/utils/videoSchedule.js'
+import {
   loadProfileLastWatched,
   recordProfileLastWatchedFromVideo,
 } from '@/features/profile/utils/profileLastWatched.js'
@@ -50,6 +55,7 @@ import {
   IoChevronDown,
   IoChevronUp,
   IoSettingsOutline,
+  IoTimeOutline,
 } from 'react-icons/io5'
 import { LuGrid2X2, LuRepeat2 } from 'react-icons/lu'
 import { AvatarImage } from '@/shared/components/AvatarImage.jsx'
@@ -299,9 +305,15 @@ function ProfileGridVideoTile({
   isLastWatched,
   tileRef,
   onOpen,
+  showSchedule = false,
 }) {
   const privacyIcon = profilePrivacyIcon(video?.privacy)
   const pendingCheck = isProfileVideoPendingModeration(video)
+  const scheduledAt = readScheduledAt(video)
+  const scheduleLabel =
+    showSchedule && isFutureSchedule(scheduledAt)
+      ? formatScheduleTileLabel(scheduledAt)
+      : ''
   const permalink = profileVideoPermalinkForGrid(video, profileUsername)
   const tileInner = (
         <div
@@ -340,10 +352,17 @@ function ProfileGridVideoTile({
           ) : null}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-2 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
             <div className="flex items-end justify-between gap-2">
-              <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
-                <IoPlayOutline className="text-[13px]" aria-hidden />
-                <span>{formatCompactCount(video.viewCount ?? 0)}</span>
-              </div>
+              {scheduleLabel ? (
+                <div className="inline-flex min-w-0 items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
+                  <IoTimeOutline className="shrink-0 text-[13px]" aria-hidden />
+                  <span className="truncate">{scheduleLabel}</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
+                  <IoPlayOutline className="text-[13px]" aria-hidden />
+                  <span>{formatCompactCount(video.viewCount ?? 0)}</span>
+                </div>
+              )}
               {privacyIcon ? <div className="shrink-0 pb-0.5">{privacyIcon}</div> : null}
             </div>
           </div>
@@ -1150,6 +1169,7 @@ export function ProfilePage() {
           isLastWatched={videoPublicIdOf(v) === lastWatchedPublicId}
           tileRef={attachLastWatchedTileRef}
           onOpen={handleProfileVideoOpen}
+          showSchedule={isOwnProfile}
         />
       ))}
     </ul>

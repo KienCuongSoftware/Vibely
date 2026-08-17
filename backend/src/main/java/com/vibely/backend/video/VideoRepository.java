@@ -272,16 +272,18 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         Pageable pageable
     );
 
-    /** Profile grid for the author — READY + HIDDEN (pending AI moderation). */
+    /**
+     * Profile grid for the author — READY + HIDDEN (pending AI moderation). Videos whose publish
+     * time is still in the future stay in the list so the owner sees the scheduled tile.
+     */
     @Query("""
         select v from Video v
         where v.author.id = :authorId
           and v.studioDraft = false
-          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
           and v.status in :statuses
         order by v.createdAt desc
         """)
-    Page<Video> findProfileVideosForAuthorStatuses(
+    Page<Video> findProfileVideosForAuthorIncludingScheduled(
         @Param("authorId") Long authorId,
         @Param("statuses") java.util.Collection<VideoStatus> statuses,
         Pageable pageable
