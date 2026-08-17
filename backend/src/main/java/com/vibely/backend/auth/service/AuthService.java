@@ -59,6 +59,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class AuthService {
 
+    private static final long REFRESH_ROTATION_GRACE_SECONDS = 30;
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -185,15 +187,32 @@ public class AuthService {
     public AuthResponse refresh(String rawRefreshToken) {
         RefreshToken token = refreshTokenRepository.findByTokenHash(hashToken(rawRefreshToken))
             .orElseThrow(() -> new BadRequestException("Refresh token không hợp lệ"));
-        if (token.isRevoked() || token.getExpiresAt().isBefore(LocalDateTime.now())) {
+        LocalDateTime now = LocalDateTime.now();
+        if (token.getExpiresAt().isBefore(now)) {
+            throw new BadRequestException("Refresh token đã hết hạn hoặc đã bị thu hồi");
+        }
+        if (token.isRevoked() && !isWithinRotationGrace(token, now)) {
             throw new BadRequestException("Refresh token đã hết hạn hoặc đã bị thu hồi");
         }
         ensureActive(token.getUser());
-        token.setRevoked(true);
+        token.revokeAt(now);
         return issueTokens(token.getUser());
     }
 
+    /**
+     * A page load can hit {@code /auth/refresh} and {@code /auth/ws-ticket} at the same time, so both
+     * send the same cookie. Rotating it twice within this window is a race, not a stolen token.
+     */
+    private boolean isWithinRotationGrace(RefreshToken token, LocalDateTime now) {
+        LocalDateTime revokedAt = token.getRevokedAt();
+        if (revokedAt == null) {
+            return false;
+        }
+        return revokedAt.isAfter(now.minusSeconds(REFRESH_ROTATION_GRACE_SECONDS));
+    }
+
     public void logout(String rawRefreshToken) {
+        // No rotation timestamp: an explicit logout must never fall inside the reuse grace window.
         refreshTokenRepository.findByTokenHash(hashToken(rawRefreshToken))
             .ifPresent(token -> token.setRevoked(true));
     }

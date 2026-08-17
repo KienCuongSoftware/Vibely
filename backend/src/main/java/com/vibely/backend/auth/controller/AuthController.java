@@ -277,7 +277,6 @@ public class AuthController {
 
         String refreshToken = authCookieService.readRefreshToken(request).orElse(null);
         if (refreshToken == null || refreshToken.isBlank()) {
-            authCookieService.clearSessionCookies(response);
             return ResponseEntity.ok(ApiResponse.success(null));
         }
         try {
@@ -289,7 +288,8 @@ public class AuthController {
             );
             return ResponseEntity.ok(ApiResponse.success(new WsTicketResponse(refreshed.accessToken())));
         } catch (BadRequestException ex) {
-            authCookieService.clearSessionCookies(response);
+            // Only /auth/refresh owns the session: dropping cookies here would kill a session that
+            // a parallel refresh just renewed, logging the user out on reload.
             return ResponseEntity.ok(ApiResponse.success(null));
         }
     }
