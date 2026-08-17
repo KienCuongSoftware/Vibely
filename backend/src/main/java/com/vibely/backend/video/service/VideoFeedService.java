@@ -304,9 +304,16 @@ public class VideoFeedService {
         boolean mutualFriends = !isAuthor && viewer != null && privacyAccessService.isMutualFriends(viewer, author);
         Page<Video> resultPage;
         if (isAuthor) {
+            // RAW/PROCESSING stay in the author's grid so a fresh upload shows up right away
+            // (the tile renders the "đang kiểm tra" overlay until processing finishes).
             resultPage = videoRepository.findProfileVideosForAuthorIncludingScheduled(
                 author.getId(),
-                java.util.List.of(VideoStatus.READY, VideoStatus.HIDDEN),
+                java.util.List.of(
+                    VideoStatus.READY,
+                    VideoStatus.HIDDEN,
+                    VideoStatus.PROCESSING,
+                    VideoStatus.RAW
+                ),
                 pageable
             );
         } else if (mutualFriends) {
