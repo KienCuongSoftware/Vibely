@@ -83,10 +83,10 @@ function Pill({ active, children, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`shrink-0 cursor-pointer rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
+      className={`shrink-0 cursor-pointer whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition lg:text-sm ${
         active
-          ? "bg-white text-black"
-          : "bg-zinc-900 text-zinc-300 ring-1 ring-zinc-700 hover:bg-zinc-800 hover:text-white"
+          ? "border-white bg-white font-bold text-black"
+          : "border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-800 hover:text-white"
       }`}
     >
       {children}
@@ -289,7 +289,11 @@ export function StudioInspirationPage() {
     apiClient
       .getStudioInspirationCategories(token)
       .then((rows) => {
-        if (!cancelled) setCategories(Array.isArray(rows) ? rows : []);
+        if (cancelled) return;
+        const next = (Array.isArray(rows) ? rows : []).filter(
+          (c) => Number(c?.videoCount ?? 0) > 0,
+        );
+        setCategories(next);
       })
       .catch(() => {
         if (!cancelled) setCategories([]);
@@ -298,6 +302,13 @@ export function StudioInspirationPage() {
       cancelled = true;
     };
   }, [token]);
+
+  useEffect(() => {
+    if (category === "all" || categories.length === 0) return;
+    if (!categories.some((c) => c.slug === category)) {
+      patchParams({ category: "all" });
+    }
+  }, [categories, category, patchParams]);
 
   const fetchPage = useCallback(
     async (nextPage) => {
@@ -530,32 +541,34 @@ export function StudioInspirationPage() {
       ) : null}
 
       {tab === "trending" && trendingKind === "posts" ? (
-        <div className="relative mb-5">
+        <div className="mb-5 flex items-start gap-2">
           <div
             ref={catScrollRef}
-            className="flex gap-2 overflow-x-auto scrollbar-none pr-10"
+            className="scrollbar-none min-w-0 flex-1 overflow-x-auto"
           >
-            <Pill
-              active={category === "all"}
-              onClick={() => patchParams({ category: "all" })}
-            >
-              Tất cả
-            </Pill>
-            {categories.map((c) => (
+            <div className="flex w-max gap-2 py-1">
               <Pill
-                key={c.slug}
-                active={category === c.slug}
-                onClick={() => patchParams({ category: c.slug })}
+                active={category === "all"}
+                onClick={() => patchParams({ category: "all" })}
               >
-                {c.name}
+                Tất cả
               </Pill>
-            ))}
+              {categories.map((c) => (
+                <Pill
+                  key={c.slug}
+                  active={category === c.slug}
+                  onClick={() => patchParams({ category: c.slug })}
+                >
+                  {c.name}
+                </Pill>
+              ))}
+            </div>
           </div>
           <button
             type="button"
             aria-label="Cuộn danh mục"
             onClick={() => scrollCats(1)}
-            className="absolute right-0 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-zinc-900/90 text-white ring-1 ring-zinc-700 hover:bg-zinc-800"
+            className="mt-0.5 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
           >
             <IoChevronForward aria-hidden />
           </button>

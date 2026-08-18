@@ -4,6 +4,7 @@ import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.explore.CategoryRepository;
+import com.vibely.backend.explore.VideoCategoryRepository;
 import com.vibely.backend.explore.ExploreVideoProjection;
 import com.vibely.backend.interaction.repository.FollowRepository;
 import com.vibely.backend.interaction.repository.LikeRepository;
@@ -42,6 +43,7 @@ public class StudioInspirationService {
     private final LikeRepository likeRepository;
     private final VideoViewRepository videoViewRepository;
     private final CategoryRepository categoryRepository;
+    private final VideoCategoryRepository videoCategoryRepository;
     private final VideoRepository videoRepository;
     private final StudioInspirationRepository inspirationRepository;
     private final UserAvatarResolver userAvatarResolver;
@@ -53,6 +55,7 @@ public class StudioInspirationService {
         LikeRepository likeRepository,
         VideoViewRepository videoViewRepository,
         CategoryRepository categoryRepository,
+        VideoCategoryRepository videoCategoryRepository,
         VideoRepository videoRepository,
         StudioInspirationRepository inspirationRepository,
         UserAvatarResolver userAvatarResolver,
@@ -63,6 +66,7 @@ public class StudioInspirationService {
         this.likeRepository = likeRepository;
         this.videoViewRepository = videoViewRepository;
         this.categoryRepository = categoryRepository;
+        this.videoCategoryRepository = videoCategoryRepository;
         this.videoRepository = videoRepository;
         this.inspirationRepository = inspirationRepository;
         this.userAvatarResolver = userAvatarResolver;
@@ -73,7 +77,12 @@ public class StudioInspirationService {
     public List<StudioInspirationCategoryResponse> categories() {
         return categoryRepository.findByEnabledTrueOrderByNameAsc().stream()
             .filter(c -> c.getSlug() != null && !"all".equalsIgnoreCase(c.getSlug()))
-            .map(c -> new StudioInspirationCategoryResponse(c.getSlug(), c.getName()))
+            .map(c -> new StudioInspirationCategoryResponse(
+                c.getSlug(),
+                c.getName(),
+                videoCategoryRepository.countByCategoryId(c.getId())
+            ))
+            .filter(c -> c.videoCount() > 0)
             .toList();
     }
 
