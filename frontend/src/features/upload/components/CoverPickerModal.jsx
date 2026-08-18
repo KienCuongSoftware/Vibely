@@ -1018,6 +1018,47 @@ export function CoverPickerModal({
     showFilmstripTime,
   ]);
 
+  const selectFilmstripFrameAtClientX = useCallback(
+    (clientX) => {
+      const outer = filmstripRef.current;
+      if (!outer || !frames.length || videoDuration <= 0) return;
+      const xOnTrack = outer.scrollLeft + (clientX - outer.getBoundingClientRect().left);
+      const index = Math.max(
+        0,
+        Math.min(
+          frames.length - 1,
+          Math.floor(xOnTrack / FILMSTRIP_FRAME_WIDTH),
+        ),
+      );
+      const frame = frames[index];
+      if (!frame) return;
+      const nextTime = clampSelectedTime(Number(frame.time) || 0, videoDuration);
+      setTab("video");
+      setSelectedTime(nextTime);
+      selectedTimeRef.current = nextTime;
+      filmstripProgrammaticRef.current = true;
+      if (typeof outer.scrollTo === "function") {
+        outer.scrollTo({
+          left: index * FILMSTRIP_FRAME_WIDTH,
+          behavior: "smooth",
+        });
+      } else {
+        outer.scrollLeft = index * FILMSTRIP_FRAME_WIDTH;
+      }
+      window.setTimeout(() => {
+        filmstripProgrammaticRef.current = false;
+      }, 320);
+      showFilmstripTime();
+      scheduleHideFilmstripTime();
+    },
+    [
+      frames,
+      scheduleHideFilmstripTime,
+      showFilmstripTime,
+      videoDuration,
+    ],
+  );
+
   const onFilmstripPointerDown = useCallback(
     (e) => {
       if (e.button !== 0 || !frames.length) return;
@@ -1027,6 +1068,7 @@ export function CoverPickerModal({
         pointerId: e.pointerId,
         startX: e.clientX,
         startScrollLeft: outer.scrollLeft,
+        moved: false,
       };
       outer.setPointerCapture(e.pointerId);
       setTab("video");
@@ -1040,7 +1082,10 @@ export function CoverPickerModal({
       const drag = filmstripDragRef.current;
       const outer = filmstripRef.current;
       if (!drag || !outer || drag.pointerId !== e.pointerId) return;
-      outer.scrollLeft = drag.startScrollLeft - (e.clientX - drag.startX);
+      const dx = e.clientX - drag.startX;
+      if (Math.abs(dx) > 6) drag.moved = true;
+      if (!drag.moved) return;
+      outer.scrollLeft = drag.startScrollLeft - dx;
       showFilmstripTime();
       applyFilmstripScrollSelection();
     },
@@ -1052,6 +1097,7 @@ export function CoverPickerModal({
       const drag = filmstripDragRef.current;
       const outer = filmstripRef.current;
       if (!drag || drag.pointerId !== e.pointerId) return;
+      const wasClick = !drag.moved && Math.abs(e.clientX - drag.startX) <= 6;
       filmstripDragRef.current = null;
       if (filmstripScrollEndRef.current) {
         window.clearTimeout(filmstripScrollEndRef.current);
@@ -1060,10 +1106,18 @@ export function CoverPickerModal({
       if (outer?.hasPointerCapture(e.pointerId)) {
         outer.releasePointerCapture(e.pointerId);
       }
+      if (wasClick) {
+        selectFilmstripFrameAtClientX(e.clientX);
+        return;
+      }
       applyFilmstripScrollSelection();
       scheduleHideFilmstripTime();
     },
-    [applyFilmstripScrollSelection, scheduleHideFilmstripTime],
+    [
+      applyFilmstripScrollSelection,
+      scheduleHideFilmstripTime,
+      selectFilmstripFrameAtClientX,
+    ],
   );
 
   const stepFilmstripSelection = useCallback(
@@ -1962,8 +2016,9 @@ export function CoverPickerModal({
                         {frames.map((f, i) => (
                         <div
                             key={`${f.time}-${i}`}
-                          className="h-full shrink-0 overflow-hidden bg-zinc-900"
+                          className="h-full shrink-0 cursor-pointer overflow-hidden bg-zinc-900"
                           style={{ width: FILMSTRIP_FRAME_WIDTH }}
+                          title={`Chọn khung ${formatFilmstripTime(f.time)}`}
                           >
                             <img
                               src={f.dataUrl}
