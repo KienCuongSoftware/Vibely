@@ -92,6 +92,8 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
     /^\/vibelystudio\/comments\/?$/.test(location.pathname)
   const analyticsNavActive =
     active === 'analytics' || /^\/vibelystudio\/analytics\/?$/.test(location.pathname)
+  const inspirationNavActive =
+    active === 'inspiration' || /^\/vibelystudio\/inspiration\/?$/.test(location.pathname)
 
   const handleUploadClick = () => {
     if (onUpload) return
@@ -167,7 +169,14 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
       </NavSection>
 
       <NavSection title="Phát triển" light={light}>
-        <ToolRow icon={IoBulbOutline} label="Cảm hứng" light={light} />
+        <NavLink
+          to="/vibelystudio/inspiration"
+          icon={IoBulbOutline}
+          label="Cảm hứng"
+          active={inspirationNavActive}
+          light={light}
+          onNavigate={onNavigate}
+        />
         <ToolRow icon={IoSchoolOutline} label="Học viện sáng tạo" light={light} />
       </NavSection>
 

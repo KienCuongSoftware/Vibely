@@ -21,6 +21,7 @@ const StudioAnalyticsPage = lazyNamed(() => import('@/features/studio/pages/Stud
 const StudioVideoAnalyticsPage = lazyNamed(() => import('@/features/studio/pages/StudioVideoAnalyticsPage.jsx'), 'StudioVideoAnalyticsPage')
 const StudioPostCommentsPage = lazyNamed(() => import('@/features/studio/pages/StudioPostCommentsPage.jsx'), 'StudioPostCommentsPage')
 const StudioCommentsPage = lazyNamed(() => import('@/features/studio/pages/StudioCommentsPage.jsx'), 'StudioCommentsPage')
+const StudioInspirationPage = lazyNamed(() => import('@/features/studio/pages/StudioInspirationPage.jsx'), 'StudioInspirationPage')
 const ProfilePage = lazyNamed(() => import('@/features/profile/pages/ProfilePage.jsx'), 'ProfilePage')
 const ProfileEmbedPage = lazyNamed(() => import('@/features/profile/pages/ProfileEmbedPage.jsx'), 'ProfileEmbedPage')
 const SettingsPage = lazyNamed(() => import('@/features/settings/pages/SettingsPage.jsx'), 'SettingsPage')
@@ -74,6 +75,7 @@ export function GuestRoutes() {
       <Route path="/vibelystudio/upload/post/:publicId" element={<Navigate to="/login" replace />} />
       <Route path="/vibelystudio/comment/:publicId" element={<Navigate to="/login" replace />} />
       <Route path="/vibelystudio/comments" element={<Navigate to="/login" replace />} />
+      <Route path="/vibelystudio/inspiration" element={<Navigate to="/login" replace />} />
       <Route path="/admin" element={<Navigate to="/login" replace />} />
       <Route path="/admin/users" element={<Navigate to="/login" replace />} />
       <Route path="/admin/posts" element={<Navigate to="/login" replace />} />
@@ -164,6 +166,10 @@ export function AuthenticatedRoutes({ user, isAdmin }) {
       <Route
         path="/vibelystudio/comments"
         element={<UserOnlyRoute user={user}><StudioCommentsPage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/vibelystudio/inspiration"
+        element={<UserOnlyRoute user={user}><StudioInspirationPage /></UserOnlyRoute>}
       />
       <Route
         path="/explore"

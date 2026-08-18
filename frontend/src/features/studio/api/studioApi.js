@@ -37,4 +37,34 @@ export const studioApi = {
       })}`,
       { token },
     ),
+  getStudioInspirationCategories: (token) =>
+    request("/api/studio/inspiration/categories", { token }),
+  getStudioInspirationTrending: (
+    token,
+    { kind = "posts", category = "all", region = "all", page = 0, size = 20 } = {},
+  ) =>
+    request(
+      `/api/studio/inspiration/trending${toQuery({ kind, category, region, page, size })}`,
+      { token },
+    ),
+  getStudioInspirationRecommended: (
+    token,
+    { kind = "similar_posts", page = 0, size = 20 } = {},
+  ) =>
+    request(
+      `/api/studio/inspiration/recommended${toQuery({ kind, page, size })}`,
+      { token },
+    ),
+  getStudioInspirationSaved: (token, { page = 0, size = 20 } = {}) =>
+    request(`/api/studio/inspiration/saved${toQuery({ page, size })}`, { token }),
+  saveStudioInspiration: (token, publicId) =>
+    request(`/api/studio/inspiration/saved/${encodeURIComponent(publicId)}`, {
+      method: "POST",
+      token,
+    }),
+  unsaveStudioInspiration: (token, publicId) =>
+    request(`/api/studio/inspiration/saved/${encodeURIComponent(publicId)}`, {
+      method: "DELETE",
+      token,
+    }),
 };
