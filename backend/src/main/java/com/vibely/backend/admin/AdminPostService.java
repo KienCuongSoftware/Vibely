@@ -16,6 +16,7 @@ import com.vibely.backend.studio.StudioInspirationRepository;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
+import jakarta.persistence.EntityManager;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
@@ -46,6 +47,7 @@ public class AdminPostService {
     private final NotificationService notificationService;
     private final ModerationReviewQueueCleanupService reviewQueueCleanupService;
     private final StudioInspirationRepository studioInspirationRepository;
+    private final EntityManager entityManager;
 
     public AdminPostService(
         VideoRepository videoRepository,
@@ -57,7 +59,8 @@ public class AdminPostService {
         ObjectProvider<S3MediaDeletionService> s3MediaDeletionService,
         NotificationService notificationService,
         ModerationReviewQueueCleanupService reviewQueueCleanupService,
-        StudioInspirationRepository studioInspirationRepository
+        StudioInspirationRepository studioInspirationRepository,
+        EntityManager entityManager
     ) {
         this.videoRepository = videoRepository;
         this.likeRepository = likeRepository;
@@ -69,6 +72,7 @@ public class AdminPostService {
         this.notificationService = notificationService;
         this.reviewQueueCleanupService = reviewQueueCleanupService;
         this.studioInspirationRepository = studioInspirationRepository;
+        this.entityManager = entityManager;
     }
 
     @Transactional(readOnly = true)
@@ -134,8 +138,16 @@ public class AdminPostService {
             }
         }
         try {
-            videoRepository.delete(video);
-            videoRepository.flush();
+            // Flush all pending changes (notifications purge, etc.) then clear the
+            // first-level cache so no other managed entity holds a reference to
+            // this Video when Hibernate cascades the DELETE.
+            entityManager.flush();
+            entityManager.clear();
+            Video managed = entityManager.find(Video.class, video.getId());
+            if (managed != null) {
+                entityManager.remove(managed);
+                entityManager.flush();
+            }
         } catch (DataIntegrityViolationException ex) {
             throw new BadRequestException(
                 "Không xóa vĩnh viễn được bài đăng vì còn dữ liệu liên quan. Thử lại hoặc liên hệ kỹ thuật."
