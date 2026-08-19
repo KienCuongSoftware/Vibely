@@ -1,9 +1,16 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
-import vi from './vi.json'
-import en from './en.json'
 
 const LOCALE_KEY = 'vibely:locale'
+
+const localeModules = import.meta.glob('./*.json', { eager: true })
+
+const resources = Object.fromEntries(
+  Object.entries(localeModules).map(([path, module]) => {
+    const code = path.match(/\/([^/]+)\.json$/)?.[1]
+    return [code, { translation: module.default }]
+  }).filter(([code]) => Boolean(code)),
+)
 
 export function getSavedLocale() {
   try {
@@ -22,12 +29,11 @@ export function saveLocale(lang) {
 }
 
 i18n.use(initReactI18next).init({
-  resources: {
-    vi: { translation: vi },
-    en: { translation: en },
-  },
+  resources,
   lng: getSavedLocale(),
-  fallbackLng: 'vi',
+  fallbackLng: 'en',
+  supportedLngs: Object.keys(resources),
+  nonExplicitSupportedLngs: true,
   interpolation: {
     escapeValue: false,
   },
