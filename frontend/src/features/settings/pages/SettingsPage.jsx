@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/shared/api/client'
 import { AccountRegionModal } from '@/features/settings/components/AccountRegionModal'
@@ -19,19 +19,33 @@ import {
 } from '@/features/settings/utils/accountRegions'
 import { collectLoginContext } from '@/security/loginContext'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { useLocale, SUPPORTED_LANGUAGES } from '@/i18n/useLocale'
+import { useLocale } from '@/i18n/useLocale'
+import { useNotificationUnread } from '@/features/notification/store/NotificationUnreadContext'
+import { useChatInboxBadge } from '@/features/chat/store/ChatInboxBadgeContext'
+import { useSearchModal } from '@/features/search/store/SearchModalContext'
+import { ActivityPanel } from '@/features/notification/components/ActivityPanel'
+import { AvatarImage } from '@/shared/components/AvatarImage'
 import {
   IoArrowBack,
   IoBriefcaseOutline,
+  IoCashOutline,
   IoCheckmark,
+  IoChatbubbleOutline,
+  IoChevronBack,
   IoChevronForward,
+  IoCloudUploadOutline,
   IoGlobeOutline,
+  IoHelpCircleOutline,
+  IoLogOutOutline,
   IoLockClosedOutline,
+  IoMoonOutline,
   IoNotificationsOutline,
+  IoPerson,
+  IoRocketOutline,
   IoSearchOutline,
+  IoSettingsOutline,
   IoShieldCheckmarkOutline,
   IoTimeOutline,
-  IoPerson,
 } from 'react-icons/io5'
 
 const SETTINGS_NAV_IDS = [
@@ -163,7 +177,16 @@ export function SettingsPage() {
   const navigate = useNavigate()
   const { token, user, logout, refreshProfile } = useAuth()
   const { t } = useTranslation()
-  const { locale, changeLanguage } = useLocale()
+  const { locale, changeLanguage, languages } = useLocale()
+  const { unreadCount } = useNotificationUnread()
+  const { chatInboxBadgeCount } = useChatInboxBadge()
+  const searchModal = useSearchModal()
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false)
+  const [avatarLangOpen, setAvatarLangOpen] = useState(false)
+  const avatarMenuRef = useRef(null)
+  const [notifOpen, setNotifOpen] = useState(false)
+  const notifRef = useRef(null)
+  const [darkModeOn, setDarkModeOn] = useState(true)
   const SETTINGS_NAV = SETTINGS_NAV_IDS.map((item) => ({ ...item, label: t(item.labelKey) }))
   const [privateAccount, setPrivateAccount] = useState(false)
   const [privacySaving, setPrivacySaving] = useState(false)
@@ -214,6 +237,29 @@ export function SettingsPage() {
   useEffect(() => {
     document.title = `${t('settings.title')} | Vibely`
   }, [t])
+
+  useEffect(() => {
+    if (!avatarMenuOpen) return
+    const handler = (e) => {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target)) {
+        setAvatarMenuOpen(false)
+        setAvatarLangOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [avatarMenuOpen])
+
+  useEffect(() => {
+    if (!notifOpen) return
+    const handler = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [notifOpen])
 
   useEffect(() => {
     setPrivateAccount(Boolean(user?.privateAccount))
@@ -549,6 +595,9 @@ export function SettingsPage() {
   }
 
   const contentRef = useRef(null)
+  const avatarSrc = String(
+    user?.avatarUrl || user?.avatar || user?.profileImageUrl || '/images/users/default-avatar.jpeg',
+  ).trim()
 
   const scrollToSection = (id) => {
     const el = contentRef.current?.querySelector(`[data-section="${id}"]`)
@@ -558,7 +607,187 @@ export function SettingsPage() {
   }
 
   return (
-    <section className="flex h-dvh overflow-hidden bg-black text-zinc-100">
+    <section className="flex h-dvh flex-col overflow-hidden bg-black text-zinc-100">
+      {/* ── TikTok-style top header ── */}
+      <header className="relative z-50 flex h-14 shrink-0 items-center gap-3 border-b border-zinc-900 bg-black px-4">
+        {/* Logo */}
+        <Link to="/" className="flex shrink-0 items-center gap-2 text-white">
+          <img src="/vibely-icon.svg" alt="Vibely" className="h-8 w-8" />
+          <span className="hidden text-lg font-bold sm:block">Vibely</span>
+        </Link>
+
+        {/* Search bar */}
+        <button
+          type="button"
+          onClick={() => searchModal?.openSearch?.()}
+          className="mx-auto flex h-9 w-full max-w-sm items-center gap-2 rounded-full bg-zinc-900 px-4 text-sm text-zinc-500 ring-1 ring-zinc-800 hover:ring-zinc-600"
+        >
+          <IoSearchOutline className="shrink-0 text-base" />
+          <span>{t('settings.title') === 'Settings' ? 'Search' : 'Tìm kiếm'}</span>
+        </button>
+
+        {/* Right actions */}
+        <div className="flex shrink-0 items-center gap-1">
+          {/* Upload */}
+          <Link
+            to="/upload"
+            className="flex items-center gap-1.5 rounded-full border border-zinc-700 px-3 py-1.5 text-sm font-medium text-zinc-200 hover:bg-zinc-900"
+          >
+            <IoCloudUploadOutline className="text-base" />
+            <span className="hidden sm:block">{t('settings.title') === 'Settings' ? 'Upload' : 'Tải lên'}</span>
+          </Link>
+
+          {/* Messages */}
+          <Link
+            to="/messages"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-900"
+          >
+            <IoChatbubbleOutline className="text-xl" />
+            {chatInboxBadgeCount > 0 && (
+              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                {chatInboxBadgeCount > 99 ? '99+' : chatInboxBadgeCount}
+              </span>
+            )}
+          </Link>
+
+          {/* Notifications */}
+          <div className="relative" ref={notifRef}>
+            <button
+              type="button"
+              onClick={() => { setNotifOpen((v) => !v); setAvatarMenuOpen(false) }}
+              className="relative flex h-9 w-9 items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-900"
+            >
+              <IoNotificationsOutline className="text-xl" />
+              {unreadCount > 0 && (
+                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </button>
+            {notifOpen && (
+              <div className="absolute right-0 top-11 z-50 h-[520px] w-80 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl">
+                <ActivityPanel onClose={() => setNotifOpen(false)} />
+              </div>
+            )}
+          </div>
+
+          {/* Avatar + dropdown */}
+          <div className="relative" ref={avatarMenuRef}>
+            <button
+              type="button"
+              onClick={() => { setAvatarMenuOpen((v) => !v); setNotifOpen(false); setAvatarLangOpen(false) }}
+              className="h-9 w-9 overflow-hidden rounded-full ring-2 ring-transparent hover:ring-zinc-600"
+            >
+              <AvatarImage src={avatarSrc} alt={user?.displayName || 'avatar'} className="h-full w-full object-cover" />
+            </button>
+
+            {avatarMenuOpen && (
+              <div className="absolute right-0 top-11 z-50 w-[280px] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl">
+                {avatarLangOpen ? (
+                  /* ── Language submenu ── */
+                  <>
+                    <div className="flex items-center gap-2 border-b border-zinc-800 px-2 py-3">
+                      <button
+                        type="button"
+                        onClick={() => setAvatarLangOpen(false)}
+                        className="rounded-full p-2 text-zinc-300 hover:bg-zinc-800"
+                      >
+                        <IoChevronBack className="text-lg" />
+                      </button>
+                      <span className="font-bold text-zinc-100">{t('settings.language')}</span>
+                    </div>
+                    <div className="py-1">
+                      {languages.map((lang) => (
+                        <button
+                          key={lang.code}
+                          type="button"
+                          onClick={() => { changeLanguage(lang.code); setAvatarLangOpen(false); setAvatarMenuOpen(false) }}
+                          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
+                        >
+                          <span>{lang.nativeLabel}</span>
+                          {locale === lang.code && <IoCheckmark className="text-red-500" />}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  /* ── Main menu ── */
+                  <>
+                    {/* Menu items */}
+                    <div className="py-1">
+                      <Link
+                        to={`/@${user?.vibelyId}`}
+                        onClick={() => setAvatarMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
+                      >
+                        <IoPerson className="shrink-0 text-lg text-zinc-300" />
+                        <span>Xem hồ sơ</span>
+                      </Link>
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
+                      >
+                        <IoCashOutline className="shrink-0 text-lg text-zinc-300" />
+                        <span>Nhận Xu</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
+                      >
+                        <IoRocketOutline className="shrink-0 text-lg text-zinc-300" />
+                        <span className="whitespace-nowrap">Công cụ dành cho nhà sáng tạo</span>
+                      </button>
+                      <Link
+                        to="/settings"
+                        onClick={() => setAvatarMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
+                      >
+                        <IoSettingsOutline className="shrink-0 text-lg text-zinc-300" />
+                        <span>{t('settings.title')}</span>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setAvatarLangOpen(true)}
+                        className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
+                      >
+                        <IoGlobeOutline className="shrink-0 text-lg text-zinc-300" />
+                        <span>
+                          {languages.find((l) => l.code === locale)?.nativeLabel ?? t('settings.language')}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
+                      >
+                        <IoHelpCircleOutline className="shrink-0 text-lg text-zinc-300" />
+                        <span>Phản hồi và trợ giúp</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDarkModeOn((v) => !v)}
+                        className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
+                      >
+                        <IoMoonOutline className="shrink-0 text-lg text-zinc-300" />
+                        <span>Chế độ tối</span>
+                      </button>
+                      <div className="mx-4 my-1 border-t border-zinc-800" />
+                      <button
+                        type="button"
+                        onClick={() => { setAvatarMenuOpen(false); logout() }}
+                        className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
+                      >
+                        <IoLogOutOutline className="shrink-0 text-lg text-zinc-300" />
+                        <span>{t('settings.logout')}</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
       <main className="scrollbar-none min-w-0 flex-1 overflow-y-auto" ref={contentRef}>
         <div className="mx-auto flex w-full max-w-5xl gap-5 px-4 py-6 sm:px-6 lg:px-8">
           <aside className="sticky top-6 hidden h-[calc(100dvh-48px)] w-64 shrink-0 overflow-y-auto rounded-xl bg-zinc-950 p-2 ring-1 ring-zinc-900 lg:block [scrollbar-width:none]">
@@ -1177,7 +1406,7 @@ export function SettingsPage() {
             <div data-section="language" className="scroll-mt-4">
             <SettingsSection title={t('settings.language')}>
               <div>
-                {SUPPORTED_LANGUAGES.map((lang) => (
+                {languages.map((lang) => (
                   <button
                     key={lang.code}
                     type="button"
