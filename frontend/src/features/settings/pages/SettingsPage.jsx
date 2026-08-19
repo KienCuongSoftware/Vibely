@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/shared/api/client'
@@ -548,11 +548,20 @@ export function SettingsPage() {
     }
   }
 
+  const contentRef = useRef(null)
+
+  const scrollToSection = (id) => {
+    const el = contentRef.current?.querySelector(`[data-section="${id}"]`)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   return (
     <section className="flex h-dvh overflow-hidden bg-black text-zinc-100">
-      <main className="scrollbar-none min-w-0 flex-1 overflow-y-auto">
+      <main className="scrollbar-none min-w-0 flex-1 overflow-y-auto" ref={contentRef}>
         <div className="mx-auto flex w-full max-w-5xl gap-5 px-4 py-6 sm:px-6 lg:px-8">
-          <aside className="sticky top-6 hidden h-[calc(100dvh-48px)] w-64 shrink-0 rounded-xl bg-zinc-950 p-2 ring-1 ring-zinc-900 lg:block">
+          <aside className="sticky top-6 hidden h-[calc(100dvh-48px)] w-64 shrink-0 overflow-y-auto rounded-xl bg-zinc-950 p-2 ring-1 ring-zinc-900 lg:block [scrollbar-width:none]">
             <button
               type="button"
               onClick={() => navigate(-1)}
@@ -561,44 +570,43 @@ export function SettingsPage() {
             >
               <IoArrowBack className="text-xl" aria-hidden />
             </button>
-            <nav className="space-y-1">
+            <nav className="space-y-0.5">
               {SETTINGS_NAV.map((item) => {
                 const Icon = item.icon
                 const active = activeSetting === item.id
                 return (
-                  <a
+                  <button
                     key={item.id}
-                    href={`#${item.id}`}
+                    type="button"
                     onClick={() => {
                       setAccountView('main')
                       setPrivacyView('main')
                       setActiveSetting(item.id)
+                      scrollToSection(item.id)
                     }}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition ${
                       active
                         ? 'bg-zinc-900 text-red-500'
                         : 'text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100'
                     }`}
                   >
-                    <Icon className="text-lg" aria-hidden />
+                    <Icon className="shrink-0 text-lg" aria-hidden />
                     <span>{item.label}</span>
-                  </a>
+                  </button>
                 )
               })}
             </nav>
           </aside>
 
-          <div id="account" className="min-w-0 flex-1 scroll-mt-6 rounded-xl bg-zinc-950 px-5 py-6 ring-1 ring-zinc-900 sm:px-8">
+          <div className="min-w-0 flex-1 rounded-xl bg-zinc-950 px-5 py-6 ring-1 ring-zinc-900 sm:px-8">
             {privacyView !== 'direct-messages' && privacyView !== 'download-data' && accountView === 'main' && (
-              <div className="mb-5">
-                <div className="flex h-10 items-center gap-2 rounded-full bg-zinc-900 px-4 text-sm text-zinc-400 ring-1 ring-zinc-800">
-                  <IoSearchOutline className="shrink-0 text-base" aria-hidden />
+              <div className="mb-6">
+                <div className="flex h-11 items-center gap-2 rounded-full bg-zinc-900 px-4 ring-1 ring-zinc-800 focus-within:ring-zinc-600">
+                  <IoSearchOutline className="shrink-0 text-base text-zinc-500" aria-hidden />
                   <input
                     type="search"
                     placeholder={t('settings.title') === 'Settings' ? 'Search settings' : 'Tìm kiếm cài đặt'}
-                    className="min-w-0 flex-1 bg-transparent text-zinc-200 outline-none placeholder:text-zinc-500"
-                    readOnly
-                    onClick={() => {}}
+                    className="min-w-0 flex-1 bg-transparent text-sm text-zinc-200 outline-none placeholder:text-zinc-500"
                   />
                 </div>
               </div>
@@ -1003,6 +1011,7 @@ export function SettingsPage() {
               </div>
             ) : (
               <>
+            <div data-section="account" className="scroll-mt-4">
             <h1 className="text-2xl font-bold text-zinc-100">Quản lý tài khoản</h1>
 
             <SettingsSection title="Kiểm soát tài khoản">
@@ -1011,7 +1020,7 @@ export function SettingsPage() {
                 onClick={() => {
                   setAccountView('removal')
                   setActiveSetting('account')
-                  document.getElementById('account')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  scrollToSection('account')
                 }}
               />
             </SettingsSection>
@@ -1026,9 +1035,11 @@ export function SettingsPage() {
                 }}
               />
             </SettingsSection>
+            </div>
 
+            <div data-section="privacy" className="scroll-mt-4">
             <SettingsSection title="Quyền riêng tư">
-              <div id="privacy" className="scroll-mt-6">
+              <div>
                 <div className="flex items-center justify-between gap-4 border-b border-zinc-800/70 py-4">
                   <div>
                     <p className="text-sm font-medium text-zinc-100">Tài khoản riêng tư</p>
@@ -1080,9 +1091,11 @@ export function SettingsPage() {
                 />
               </div>
             </SettingsSection>
+            </div>
 
+            <div data-section="push" className="scroll-mt-4">
             <SettingsSection title="Thông báo đẩy">
-              <div id="push" className="scroll-mt-6">
+              <div>
                 <div className="flex items-center justify-between gap-4 border-b border-zinc-800/70 py-4">
                   <div>
                     <p className="text-sm font-medium text-zinc-100">Thông báo trên máy tính để bàn</p>
@@ -1095,9 +1108,11 @@ export function SettingsPage() {
                 <SettingsRow title="Thông báo trong ứng dụng" />
               </div>
             </SettingsSection>
+            </div>
 
+            <div data-section="business" className="scroll-mt-4">
             <SettingsSection title="Xác minh doanh nghiệp">
-              <div id="business" className="flex scroll-mt-6 items-center justify-between gap-4 py-4">
+              <div className="flex items-center justify-between gap-4 py-4">
                 <div>
                   <p className="text-sm font-medium text-zinc-100">Xác minh doanh nghiệp</p>
                   <p className="mt-1 text-xs leading-relaxed text-zinc-500">Tăng độ tin cậy và hiển thị thông tin doanh nghiệp trên hồ sơ.</p>
@@ -1105,9 +1120,11 @@ export function SettingsPage() {
                 <SettingsSwitch checked={profileViews} onChange={setProfileViews} label="Xác minh doanh nghiệp" />
               </div>
             </SettingsSection>
+            </div>
 
+            <div data-section="ads" className="scroll-mt-4">
             <SettingsSection title="Quảng cáo">
-              <div id="ads" className="scroll-mt-6">
+              <div>
                 <SettingsRow title="Quản lý quảng cáo bạn nhìn thấy" description="Điều chỉnh chủ đề quảng cáo và nhà quảng cáo bạn đã tương tác." />
                 <SettingsRow title="Tải xuống dữ liệu quảng cáo" />
                 <SettingsRow title="Chỉnh sửa thông tin đối tượng" />
@@ -1127,9 +1144,11 @@ export function SettingsPage() {
                 </div>
               </div>
             </SettingsSection>
+            </div>
 
+            <div data-section="screen-time" className="scroll-mt-4">
             <SettingsSection title="Thời gian sử dụng màn hình">
-              <div id="screen-time" className="scroll-mt-6">
+              <div>
                 <SettingsRow title="Thời gian sử dụng mỗi ngày" trailing="Tắt" />
                 <SettingsRow title="Nghỉ giải lao sau thời gian sử dụng màn hình" trailing="Tắt" />
                 <SettingsRow title="Giờ ngủ" trailing="Tắt" />
@@ -1144,16 +1163,20 @@ export function SettingsPage() {
                 <SettingsRow title="Trợ giúp và tài nguyên" danger />
               </div>
             </SettingsSection>
+            </div>
 
+            <div data-section="content" className="scroll-mt-4">
             <SettingsSection title="Tùy chọn nội dung">
-              <div id="content" className="scroll-mt-6">
+              <div>
                 <SettingsRow title="Lọc từ khóa" description="Ẩn nội dung chứa từ khóa bạn không muốn nhìn thấy." />
                 <SettingsRow title="Ngôn ngữ nội dung" trailing="Tiếng Việt" />
               </div>
             </SettingsSection>
+            </div>
 
+            <div data-section="language" className="scroll-mt-4">
             <SettingsSection title={t('settings.language')}>
-              <div id="language" className="scroll-mt-6">
+              <div>
                 {SUPPORTED_LANGUAGES.map((lang) => (
                   <button
                     key={lang.code}
@@ -1171,6 +1194,7 @@ export function SettingsPage() {
                 ))}
               </div>
             </SettingsSection>
+            </div>
               </>
             )}
           </div>
