@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { FaFacebook, FaUser } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { SiLine } from "react-icons/si";
@@ -50,6 +51,7 @@ function normalizeVibelyId(value) {
 
 export function SignupPage() {
   const { register, refreshProfile, user, token } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [view, setView] = useState("methods");
@@ -103,8 +105,8 @@ export function SignupPage() {
   const normalizedVibelyId = normalizeVibelyId(vibelyId);
 
   useEffect(() => {
-    document.title = "Đăng ký | Vibely";
-  }, []);
+    document.title = `${t('auth.signupShort')} | Vibely`;
+  }, [t]);
 
   useEffect(() => {
     const isOAuthOnboarding = searchParams.get("onboarding") === "oauth";
@@ -204,20 +206,7 @@ export function SignupPage() {
     !sendingCode &&
     !loading &&
     resendSeconds === 0;
-  const monthOptions = [
-    "Tháng Một",
-    "Tháng Hai",
-    "Tháng Ba",
-    "Tháng Tư",
-    "Tháng Năm",
-    "Tháng Sáu",
-    "Tháng Bảy",
-    "Tháng Tám",
-    "Tháng Chín",
-    "Tháng Mười",
-    "Tháng Mười Một",
-    "Tháng Mười Hai",
-  ];
+  const monthOptions = [1,2,3,4,5,6,7,8,9,10,11,12].map((m) => t(`months.${m}`));
   useEffect(() => {
     if (resendSeconds <= 0) {
       return undefined;
@@ -683,13 +672,13 @@ export function SignupPage() {
               </div>
               <div className="mx-auto w-full max-w-[380px] space-y-4 px-5 pb-7 text-sm">
                 <h2 className="text-center text-3xl font-bold leading-tight">
-                  Đăng ký Vibely
+                  {t('auth.signupTitle')}
                 </h2>
                 <div className="mx-auto h-1 w-11/12 rounded-full bg-zinc-800" />
 
                 <div className="space-y-3">
                   <LoginMethodButton
-                    label="Sử dụng email"
+                    label={t('auth.useEmailOnly')}
                     recentlyUsed={lastLoginMethod === "email"}
                     onClick={() => {
                       setView("credentials");
@@ -698,13 +687,13 @@ export function SignupPage() {
                     icon={<FaUser className="text-xl text-zinc-100" aria-hidden />}
                   />
                   <LoginMethodButton
-                    label="Tiếp tục với Google"
+                    label={t('auth.continueWithGoogle')}
                     recentlyUsed={lastLoginMethod === "google"}
                     onClick={() => startOAuth("google")}
                     icon={<FcGoogle className="text-[28px]" aria-hidden />}
                   />
                   <LoginMethodButton
-                    label="Tiếp tục với Facebook"
+                    label={t('auth.continueWithFacebook')}
                     recentlyUsed={lastLoginMethod === "facebook"}
                     onClick={() => startOAuth("facebook")}
                     icon={
@@ -714,7 +703,7 @@ export function SignupPage() {
                     }
                   />
                   <LoginMethodButton
-                    label="Tiếp tục với LINE"
+                    label={t('auth.continueWithLine')}
                     recentlyUsed={lastLoginMethod === "line"}
                     onClick={() => startOAuth("line")}
                     icon={
@@ -1215,30 +1204,30 @@ export function SignupPage() {
 
         <div className="rounded-b-2xl border-t border-zinc-800 bg-zinc-900/70 px-5 py-4 text-center">
           <p className="mx-auto max-w-[380px] text-[11px] leading-relaxed text-zinc-400">
-            Bằng việc tiếp tục với một tài khoản tại Việt Nam, bạn đồng ý với{" "}
+            {t('auth.termsText')}{" "}
             <a
               className="text-zinc-200 underline hover:text-white"
               href="/legal/page/row/terms-of-service"
               target="_blank"
               rel="noreferrer"
             >
-              Điều Khoản Dịch Vụ
+              {t('auth.termsLink')}
             </a>{" "}
-            và xác nhận rằng bạn đã đọc{" "}
+            {t('auth.privacyText')}{" "}
             <a
               className="text-zinc-200 underline hover:text-white"
               href="/legal/page/row/privacy-policy"
               target="_blank"
               rel="noreferrer"
             >
-              Chính Sách Quyền Riêng Tư
+              {t('auth.privacyLink')}
             </a>
             .
           </p>
           <p className="mt-3 text-[13px] text-zinc-300">
-            Bạn đã có tài khoản?{" "}
+            {t('auth.hasAccount')}{" "}
             <Link className="font-semibold text-red-500" to="/login">
-              Đăng nhập
+              {t('auth.loginLink')}
             </Link>
           </p>
         </div>

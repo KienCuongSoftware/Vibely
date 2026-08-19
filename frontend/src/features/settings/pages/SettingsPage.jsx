@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/shared/api/client'
 import { AccountRegionModal } from '@/features/settings/components/AccountRegionModal'
 import {
@@ -18,9 +19,11 @@ import {
 } from '@/features/settings/utils/accountRegions'
 import { collectLoginContext } from '@/security/loginContext'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useLocale, SUPPORTED_LANGUAGES } from '@/i18n/useLocale'
 import {
   IoArrowBack,
   IoBriefcaseOutline,
+  IoCheckmark,
   IoChevronForward,
   IoGlobeOutline,
   IoLockClosedOutline,
@@ -30,14 +33,15 @@ import {
   IoPerson,
 } from 'react-icons/io5'
 
-const SETTINGS_NAV = [
-  { id: 'account', label: 'Quản lý tài khoản', icon: IoPerson },
-  { id: 'privacy', label: 'Quyền riêng tư', icon: IoLockClosedOutline },
-  { id: 'push', label: 'Thông báo đẩy', icon: IoNotificationsOutline },
-  { id: 'business', label: 'Tài khoản doanh nghiệp', icon: IoBriefcaseOutline },
-  { id: 'ads', label: 'Quảng cáo', icon: IoShieldCheckmarkOutline },
-  { id: 'screen-time', label: 'Thời gian sử dụng màn hình', icon: IoTimeOutline },
-  { id: 'content', label: 'Tùy chọn nội dung', icon: IoGlobeOutline },
+const SETTINGS_NAV_IDS = [
+  { id: 'account', labelKey: 'settings.account', icon: IoPerson },
+  { id: 'privacy', labelKey: 'settings.privacy', icon: IoLockClosedOutline },
+  { id: 'push', labelKey: 'settings.push', icon: IoNotificationsOutline },
+  { id: 'business', labelKey: 'settings.business', icon: IoBriefcaseOutline },
+  { id: 'ads', labelKey: 'settings.ads', icon: IoShieldCheckmarkOutline },
+  { id: 'screen-time', labelKey: 'settings.screenTime', icon: IoTimeOutline },
+  { id: 'content', labelKey: 'settings.content', icon: IoGlobeOutline },
+  { id: 'language', labelKey: 'settings.language', icon: IoGlobeOutline },
 ]
 
 const DELETE_REASONS = [
@@ -157,6 +161,9 @@ function SettingsGroupLabel({ title }) {
 export function SettingsPage() {
   const navigate = useNavigate()
   const { token, user, logout, refreshProfile } = useAuth()
+  const { t } = useTranslation()
+  const { locale, changeLanguage } = useLocale()
+  const SETTINGS_NAV = SETTINGS_NAV_IDS.map((item) => ({ ...item, label: t(item.labelKey) }))
   const [privateAccount, setPrivateAccount] = useState(false)
   const [privacySaving, setPrivacySaving] = useState(false)
   const [privacyError, setPrivacyError] = useState('')
@@ -204,8 +211,8 @@ export function SettingsPage() {
   const [dataExportError, setDataExportError] = useState('')
 
   useEffect(() => {
-    document.title = 'Cài đặt | Vibely'
-  }, [])
+    document.title = `${t('settings.title')} | Vibely`
+  }, [t])
 
   useEffect(() => {
     setPrivateAccount(Boolean(user?.privateAccount))
@@ -1127,6 +1134,26 @@ export function SettingsPage() {
               <div id="content" className="scroll-mt-6">
                 <SettingsRow title="Lọc từ khóa" description="Ẩn nội dung chứa từ khóa bạn không muốn nhìn thấy." />
                 <SettingsRow title="Ngôn ngữ nội dung" trailing="Tiếng Việt" />
+              </div>
+            </SettingsSection>
+
+            <SettingsSection title={t('settings.language')}>
+              <div id="language" className="scroll-mt-6">
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <button
+                    key={lang.code}
+                    type="button"
+                    onClick={() => changeLanguage(lang.code)}
+                    className="group flex w-full items-center justify-between gap-4 rounded-lg border-b border-zinc-800/70 px-3 py-4 text-left transition hover:bg-zinc-800/70 last:border-b-0"
+                  >
+                    <span className="text-sm font-medium text-zinc-100 group-hover:text-white">
+                      {lang.nativeLabel}
+                    </span>
+                    {locale === lang.code ? (
+                      <IoCheckmark className="text-lg text-red-500" aria-hidden />
+                    ) : null}
+                  </button>
+                ))}
               </div>
             </SettingsSection>
               </>

@@ -1,5 +1,6 @@
 import React from "react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { apiClient } from "@/shared/api/client";
@@ -74,6 +75,7 @@ function clearStoredBannedAppealEmail() {
 
 export function LoginPage() {
   const { token, user, login, reactivateAccount, completeOAuthLogin, refreshProfile, authReady } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const oauthInFlightRef = useRef(false);
@@ -183,8 +185,8 @@ export function LoginPage() {
 
   useEffect(() => {
     document.title =
-      view === "forgot" ? "Đặt lại mật khẩu | Vibely" : "Đăng nhập | Vibely";
-  }, [view]);
+      view === "forgot" ? `${t('auth.resetPasswordTitle')} | Vibely` : `${t('auth.loginShort')} | Vibely`;
+  }, [view, t]);
 
   useEffect(() => {
     if (resendSeconds <= 0) {
@@ -945,13 +947,13 @@ export function LoginPage() {
             </div>
             <div className="mx-auto w-full max-w-[380px] space-y-4 px-5 pb-7 text-sm">
               <h2 className="text-center text-3xl font-bold leading-tight">
-                Đăng nhập vào Vibely
+                {t('auth.loginTitle')}
               </h2>
               <div className="mx-auto h-1 w-11/12 rounded-full bg-zinc-800" />
 
               <div className="space-y-3">
                 <LoginMethodButton
-                  label="Dùng email / VibelyID"
+                  label={t('auth.useEmail')}
                   recentlyUsed={lastLoginMethod === "email"}
                   onClick={() => {
                     setView("credentials");
@@ -960,13 +962,13 @@ export function LoginPage() {
                   icon={<FaUser className="text-xl text-zinc-100" aria-hidden />}
                 />
                 <LoginMethodButton
-                  label="Tiếp tục với Google"
+                  label={t('auth.continueWithGoogle')}
                   recentlyUsed={lastLoginMethod === "google"}
                   onClick={() => startOAuth("google")}
                   icon={<FcGoogle className="text-[28px]" aria-hidden />}
                 />
                 <LoginMethodButton
-                  label="Tiếp tục với Facebook"
+                  label={t('auth.continueWithFacebook')}
                   recentlyUsed={lastLoginMethod === "facebook"}
                   onClick={() => startOAuth("facebook")}
                   icon={
@@ -976,7 +978,7 @@ export function LoginPage() {
                   }
                 />
                 <LoginMethodButton
-                  label="Tiếp tục với LINE"
+                  label={t('auth.continueWithLine')}
                   recentlyUsed={lastLoginMethod === "line"}
                   onClick={() => startOAuth("line")}
                   icon={
@@ -1018,22 +1020,22 @@ export function LoginPage() {
             </div>
             <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
               <h2 className="text-center text-3xl font-bold leading-tight">
-                Đăng nhập
+                {t('auth.loginShort')}
               </h2>
               <div className="text-[13px] font-medium text-zinc-100">
-                Email hoặc VibelyID
+                {t('auth.emailOrId')}
               </div>
               <form className="space-y-2.5" onSubmit={submitWithCredentials}>
                 <input
                   className={AUTH_FIELD}
-                  placeholder="Email hoặc VibelyID"
+                  placeholder={t('auth.emailOrId')}
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                 />
                 <div className="relative">
                   <input
                     className={AUTH_FIELD_WITH_ICON}
-                    placeholder="Mật khẩu"
+                    placeholder={t('auth.password')}
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -1052,7 +1054,7 @@ export function LoginPage() {
                   className="text-[12px] text-zinc-200 hover:text-white"
                   onClick={openForgotPassword}
                 >
-                  Quên mật khẩu?
+                  {t('auth.forgotPassword')}
                 </button>
                 <button
                   className={`h-10 w-full rounded px-3 text-xl font-medium leading-none transition ${
@@ -1063,7 +1065,7 @@ export function LoginPage() {
                   type="submit"
                   disabled={!canSubmit}
                 >
-                  Đăng nhập
+                  {t('auth.loginShort')}
                 </button>
               </form>
               {oauthErrorMessage || status ? (
@@ -1098,7 +1100,7 @@ export function LoginPage() {
             </div>
             <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
               <h2 className="text-center text-3xl font-bold leading-tight">
-                Đặt lại mật khẩu
+                {t('auth.resetPasswordTitle')}
               </h2>
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[13px] font-semibold text-zinc-100">
@@ -1227,30 +1229,30 @@ export function LoginPage() {
         </div>
         <div className="rounded-b-2xl border-t border-zinc-800 bg-zinc-900/70 px-5 py-4 text-center">
           <p className="mx-auto max-w-[380px] text-[11px] leading-relaxed text-zinc-400">
-            Bằng việc tiếp tục với một tài khoản tại Việt Nam, bạn đồng ý với{" "}
+            {t('auth.termsText')}{" "}
             <a
               className="text-zinc-200 underline hover:text-white"
               href="/legal/page/row/terms-of-service"
               target="_blank"
               rel="noreferrer"
             >
-              Điều Khoản Dịch Vụ
+              {t('auth.termsLink')}
             </a>{" "}
-            và xác nhận rằng bạn đã đọc{" "}
+            {t('auth.privacyText')}{" "}
             <a
               className="text-zinc-200 underline hover:text-white"
               href="/legal/page/row/privacy-policy"
               target="_blank"
               rel="noreferrer"
             >
-              Chính Sách Quyền Riêng Tư
+              {t('auth.privacyLink')}
             </a>
             .
           </p>
           <p className="mt-3 text-[13px] text-zinc-300">
-            Chưa có tài khoản?{" "}
+            {t('auth.noAccount')}{" "}
             <Link className="font-semibold text-red-500" to="/signup">
-              Đăng ký
+              {t('auth.signupLink')}
             </Link>
           </p>
         </div>
