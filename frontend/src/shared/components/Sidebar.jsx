@@ -7,9 +7,12 @@ import { useNotificationUnread } from "@/features/notification/store/Notificatio
 import { formatNotificationBadgeCount } from "@/features/notification/utils/notificationBadge.js";
 import { SearchModal } from "@/features/search/components/SearchModal.jsx";
 import { useSearchModal } from "@/features/search/store/SearchModalContext.jsx";
+import { useLocale, SUPPORTED_LANGUAGES } from "@/i18n/useLocale.js";
 import {
   IoBagHandleOutline,
   IoCashOutline,
+  IoCheckmark,
+  IoChevronBack,
   IoChevronForward,
   IoClose,
   IoColorWandOutline,
@@ -42,7 +45,10 @@ export function Sidebar({
   const { chatInboxBadgeCount } = useChatInboxBadge();
   const openSearch = onOpenSearch ?? searchModal?.openSearch;
   const [moreOpen, setMoreOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const [darkModeOn, setDarkModeOn] = useState(true);
+  const { locale, changeLanguage } = useLocale();
+  const currentLangLabel = SUPPORTED_LANGUAGES.find((l) => l.code === locale)?.nativeLabel ?? locale;
 
   const avatarSrc =
     user?.avatarUrl && user.avatarUrl.trim()
@@ -79,7 +85,7 @@ export function Sidebar({
     onSelectMenu?.(item.id);
   };
 
-  const closeMore = () => setMoreOpen(false);
+  const closeMore = () => { setMoreOpen(false); setLangOpen(false); };
 
   const vibelyMark = (
     <img
@@ -271,6 +277,37 @@ export function Sidebar({
 
       {moreOpen ? (
         <div className="flex h-full min-h-0 w-[min(calc(100vw-72px),340px)] shrink-0 flex-col overflow-hidden border-r border-zinc-900 bg-zinc-950 text-zinc-100">
+          {langOpen ? (
+            <>
+              <div className="flex shrink-0 items-center gap-2 border-b border-zinc-800 px-2 py-3">
+                <button
+                  type="button"
+                  aria-label="Quay lại"
+                  className="cursor-pointer rounded-full p-2 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                  onClick={() => setLangOpen(false)}
+                >
+                  <IoChevronBack className="text-xl" />
+                </button>
+                <h2 className="text-base font-bold">Ngôn ngữ</h2>
+              </div>
+              <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-2 py-2">
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <button
+                    key={lang.code}
+                    type="button"
+                    className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-3 text-left text-sm text-zinc-100 hover:bg-zinc-800/90"
+                    onClick={() => { changeLanguage(lang.code); setLangOpen(false); }}
+                  >
+                    <span>{lang.nativeLabel}</span>
+                    {locale === lang.code ? (
+                      <IoCheckmark className="text-lg text-red-500" aria-hidden />
+                    ) : null}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+          <>
           <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-4 py-3">
             <h2 className="text-lg font-bold">Thêm</h2>
             <button
@@ -292,9 +329,9 @@ export function Sidebar({
               />
               <MoreRow
                 icon={IoGlobeOutline}
-                label="Tiếng Việt"
+                label={currentLangLabel}
                 trailing={<IoChevronForward className="text-zinc-500" />}
-                onClick={() => {}}
+                onClick={() => setLangOpen(true)}
               />
               <div className="flex w-full items-center gap-3 rounded-lg px-3 py-3 hover:bg-zinc-800/90">
                 <IoMoonOutline className="shrink-0 text-lg text-zinc-300" />
@@ -388,6 +425,8 @@ export function Sidebar({
               ) : null}
             </MoreSection>
           </div>
+          </>
+          )}
         </div>
       ) : null}
     </div>

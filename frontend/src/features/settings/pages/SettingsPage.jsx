@@ -28,6 +28,7 @@ import {
   IoGlobeOutline,
   IoLockClosedOutline,
   IoNotificationsOutline,
+  IoSearchOutline,
   IoShieldCheckmarkOutline,
   IoTimeOutline,
   IoPerson,
@@ -588,6 +589,20 @@ export function SettingsPage() {
           </aside>
 
           <div id="account" className="min-w-0 flex-1 scroll-mt-6 rounded-xl bg-zinc-950 px-5 py-6 ring-1 ring-zinc-900 sm:px-8">
+            {privacyView !== 'direct-messages' && privacyView !== 'download-data' && accountView === 'main' && (
+              <div className="mb-5">
+                <div className="flex h-10 items-center gap-2 rounded-full bg-zinc-900 px-4 text-sm text-zinc-400 ring-1 ring-zinc-800">
+                  <IoSearchOutline className="shrink-0 text-base" aria-hidden />
+                  <input
+                    type="search"
+                    placeholder={t('settings.title') === 'Settings' ? 'Search settings' : 'Tìm kiếm cài đặt'}
+                    className="min-w-0 flex-1 bg-transparent text-zinc-200 outline-none placeholder:text-zinc-500"
+                    readOnly
+                    onClick={() => {}}
+                  />
+                </div>
+              </div>
+            )}
             {privacyView === 'direct-messages' ? (
               <div className="min-h-[520px]">
                 <button
