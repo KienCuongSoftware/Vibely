@@ -19,6 +19,8 @@ public interface StudioInspirationRepository extends JpaRepository<StudioInspira
 
     void deleteByUser_IdAndVideo_Id(Long userId, Long videoId);
 
+    void deleteByVideo_Id(Long videoId);
+
     long countByUser_Id(Long userId);
 
     @Query("""

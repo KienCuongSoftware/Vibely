@@ -12,6 +12,7 @@ import com.vibely.backend.moderation.ModerationReviewQueueCleanupService;
 import com.vibely.backend.processing.VideoProcessingJobRepository;
 import com.vibely.backend.processing.VideoProcessingJobState;
 import com.vibely.backend.storage.S3MediaDeletionService;
+import com.vibely.backend.studio.StudioInspirationRepository;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
@@ -44,6 +45,7 @@ public class AdminPostService {
     private final ObjectProvider<S3MediaDeletionService> s3MediaDeletionService;
     private final NotificationService notificationService;
     private final ModerationReviewQueueCleanupService reviewQueueCleanupService;
+    private final StudioInspirationRepository studioInspirationRepository;
 
     public AdminPostService(
         VideoRepository videoRepository,
@@ -54,7 +56,8 @@ public class AdminPostService {
         VideoProcessingJobRepository videoProcessingJobRepository,
         ObjectProvider<S3MediaDeletionService> s3MediaDeletionService,
         NotificationService notificationService,
-        ModerationReviewQueueCleanupService reviewQueueCleanupService
+        ModerationReviewQueueCleanupService reviewQueueCleanupService,
+        StudioInspirationRepository studioInspirationRepository
     ) {
         this.videoRepository = videoRepository;
         this.likeRepository = likeRepository;
@@ -65,6 +68,7 @@ public class AdminPostService {
         this.s3MediaDeletionService = s3MediaDeletionService;
         this.notificationService = notificationService;
         this.reviewQueueCleanupService = reviewQueueCleanupService;
+        this.studioInspirationRepository = studioInspirationRepository;
     }
 
     @Transactional(readOnly = true)
@@ -116,6 +120,7 @@ public class AdminPostService {
         cancelProcessingJob(video.getId());
         reviewQueueCleanupService.purgeForVideo(video.getId());
         notificationService.purgeForRemovedVideo(video.getId());
+        studioInspirationRepository.deleteByVideo_Id(video.getId());
         S3MediaDeletionService deletionService = s3MediaDeletionService.getIfAvailable();
         if (deletionService != null) {
             try {
