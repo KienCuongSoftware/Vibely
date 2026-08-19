@@ -19,7 +19,9 @@ public interface StudioInspirationRepository extends JpaRepository<StudioInspira
 
     void deleteByUser_IdAndVideo_Id(Long userId, Long videoId);
 
-    void deleteByVideo_Id(Long videoId);
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("delete from StudioInspiration i where i.video.id = :videoId")
+    void deleteAllByVideoId(@Param("videoId") Long videoId);
 
     long countByUser_Id(Long userId);
 

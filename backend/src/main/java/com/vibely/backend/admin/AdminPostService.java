@@ -120,7 +120,7 @@ public class AdminPostService {
         cancelProcessingJob(video.getId());
         reviewQueueCleanupService.purgeForVideo(video.getId());
         notificationService.purgeForRemovedVideo(video.getId());
-        studioInspirationRepository.deleteByVideo_Id(video.getId());
+        studioInspirationRepository.deleteAllByVideoId(video.getId());
         S3MediaDeletionService deletionService = s3MediaDeletionService.getIfAvailable();
         if (deletionService != null) {
             try {
