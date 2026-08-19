@@ -682,7 +682,7 @@ export function SettingsPage() {
             </button>
 
             {avatarMenuOpen && (
-              <div className="absolute right-0 top-11 z-50 w-[280px] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl">
+              <div className="absolute right-0 top-11 z-50 flex max-h-[calc(100dvh-72px)] w-[280px] flex-col overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl">
                 {avatarLangOpen ? (
                   /* ── Language submenu ── */
                   <>
@@ -696,7 +696,7 @@ export function SettingsPage() {
                       </button>
                       <span className="font-bold text-zinc-100">{t('settings.language')}</span>
                     </div>
-                    <div className="py-1">
+                    <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto py-1">
                       {languages.map((lang) => (
                         <button
                           key={lang.code}

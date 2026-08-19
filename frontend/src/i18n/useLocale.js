@@ -2,8 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { saveLocale } from './i18n.js'
 
 export const SUPPORTED_LANGUAGES = [
-  { code: 'af', label: 'Afrikaans', nativeLabel: 'Afrikaans' },
-  { code: 'az', label: 'Azerbaijani', nativeLabel: 'Azərbayacan' },
+  { code: 'az', label: 'Azerbaijani', nativeLabel: 'Azərbaycan' },
   { code: 'id', label: 'Indonesian', nativeLabel: 'Bahasa Indonesia' },
   { code: 'ms', label: 'Malay', nativeLabel: 'Bahasa Melayu' },
   { code: 'jv', label: 'Javanese', nativeLabel: 'Basa Jawa' },
@@ -14,7 +13,6 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'de', label: 'German', nativeLabel: 'Deutsch' },
   { code: 'et', label: 'Estonian', nativeLabel: 'Eesti' },
   { code: 'en-GB', label: 'English (UK)', nativeLabel: 'English (UK)' },
-  { code: 'vi', label: 'Tiếng Việt', nativeLabel: 'Tiếng Việt' },
   { code: 'en', label: 'English', nativeLabel: 'English (US)' },
   { code: 'es', label: 'Spanish', nativeLabel: 'Español' },
   { code: 'es-419', label: 'Spanish (Latin America)', nativeLabel: 'Español (Latinoamérica)' },
@@ -31,7 +29,7 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'hu', label: 'Hungarian', nativeLabel: 'Magyar' },
   { code: 'nl', label: 'Dutch', nativeLabel: 'Nederlands' },
   { code: 'nb', label: 'Norwegian Bokmål', nativeLabel: 'norsk (bokmål)' },
-  { code: 'uz', label: 'Uzbek', nativeLabel: 'O‘zbek' },
+  { code: 'uz', label: 'Uzbek', nativeLabel: 'Oʻzbek' },
   { code: 'pl', label: 'Polish', nativeLabel: 'Polski' },
   { code: 'pt', label: 'Portuguese', nativeLabel: 'Português' },
   { code: 'pt-BR', label: 'Portuguese (Brazil)', nativeLabel: 'Português (Brasil)' },
@@ -41,6 +39,7 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'sl', label: 'Slovenian', nativeLabel: 'Slovenščina' },
   { code: 'fi', label: 'Finnish', nativeLabel: 'Suomi' },
   { code: 'sv', label: 'Swedish', nativeLabel: 'Svenska' },
+  { code: 'vi', label: 'Tiếng Việt', nativeLabel: 'Tiếng Việt' },
   { code: 'tr', label: 'Turkish', nativeLabel: 'Türkçe' },
   { code: 'el', label: 'Greek', nativeLabel: 'Ελληνικά' },
   { code: 'bg', label: 'Bulgarian', nativeLabel: 'Български' },
@@ -65,17 +64,16 @@ export function useLocale() {
   const { i18n } = useTranslation()
   const locale = i18n.language
   const normalizedLocale = String(locale || 'vi').toLowerCase()
-  const languages = [...SUPPORTED_LANGUAGES]
-    .sort((a, b) => a.nativeLabel.localeCompare(b.nativeLabel, 'en', { sensitivity: 'base' }))
-    .sort((a, b) => {
-      const aCode = a.code.toLowerCase()
-      const bCode = b.code.toLowerCase()
-      const aSelected = normalizedLocale === aCode || normalizedLocale.startsWith(`${aCode}-`)
-      const bSelected = normalizedLocale === bCode || normalizedLocale.startsWith(`${bCode}-`)
-      if (aSelected && !bSelected) return -1
-      if (!aSelected && bSelected) return 1
-      return 0
-    })
+  const selected = SUPPORTED_LANGUAGES.find((lang) => {
+    const code = lang.code.toLowerCase()
+    return normalizedLocale === code || normalizedLocale.startsWith(`${code}-`)
+  })
+  const languages = selected
+    ? [
+        selected,
+        ...SUPPORTED_LANGUAGES.filter((lang) => lang.code !== selected.code),
+      ]
+    : [...SUPPORTED_LANGUAGES]
 
   const changeLanguage = (lang) => {
     saveLocale(lang)
