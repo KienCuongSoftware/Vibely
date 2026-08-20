@@ -200,5 +200,40 @@
     "zh-Hant": "中文 (繁體)",
     "zh-Hans": "中文 (简体)",
     "ko": "한국어"
+  },
+  "nav": {
+    "search": "Suchen",
+    "forYou": "Für dich",
+    "explore": "Entdecken",
+    "following": "Folgend",
+    "friends": "Freunde",
+    "live": "LIVE",
+    "messages": "Nachrichten",
+    "activity": "Aktivität",
+    "upload": "Hochladen",
+    "profile": "Profil",
+    "more": "Mehr",
+    "loginPrompt": "Melde dich an, um zu liken, zu kommentieren und Creators zu folgen.",
+    "login": "Anmelden",
+    "company": "Unternehmen",
+    "program": "Programm",
+    "termsAndPolicies": "Bedingungen und Richtlinien",
+    "copyright": "© 2026 Vibely",
+    "language": "Sprache",
+    "darkMode": "Dunkelmodus",
+    "settings": "Einstellungen",
+    "general": "Allgemein",
+    "tools": "Tools",
+    "back": "Zurück",
+    "close": "Schließen"
+  },
+  "forYou": {
+    "emptyTitle": "Noch keine Videos auf Für dich",
+    "emptyDescription": "Hier siehst du Videos, die von der Vibely-Community empfohlen werden. Öffentliche Beiträge erscheinen hier — du kannst auch ein Video hochladen und teilen.",
+    "uploadVideo": "Video hochladen",
+    "emptyGuestTitle": "Noch keine Videos im Feed",
+    "emptyGuestDescription": "Melde dich an, um Inhalte zu sehen und dein erstes Video auf Vibely zu posten.",
+    "emptyFollowingTitle": "Keine Videos von Personen, denen du folgst",
+    "emptyFollowingDescription": "Wenn Creator, denen du folgst, Videos posten, erscheinen sie hier in zufälliger Reihenfolge."
   }
 }

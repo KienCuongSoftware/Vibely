@@ -200,5 +200,40 @@
     "zh-Hant": "中文 (繁體)",
     "zh-Hans": "中文 (简体)",
     "ko": "한국어"
+  },
+  "nav": {
+    "search": "Ara",
+    "forYou": "Sizin için",
+    "explore": "Keşfet",
+    "following": "Takip edilenler",
+    "friends": "Arkadaşlar",
+    "live": "LIVE",
+    "messages": "Mesajlar",
+    "activity": "Etkinlik",
+    "upload": "Yükle",
+    "profile": "Profil",
+    "more": "Daha fazla",
+    "loginPrompt": "Beğenmek, yorum yapmak ve içerik üreticilerini takip etmek için giriş yapın.",
+    "login": "Giriş yap",
+    "company": "Şirket",
+    "program": "Program",
+    "termsAndPolicies": "Şartlar ve politikalar",
+    "copyright": "© 2026 Vibely",
+    "language": "Dil",
+    "darkMode": "Karanlık mod",
+    "settings": "Ayarlar",
+    "general": "Genel",
+    "tools": "Araçlar",
+    "back": "Geri",
+    "close": "Kapat"
+  },
+  "forYou": {
+    "emptyTitle": "Sizin için sayfasında henüz video yok",
+    "emptyDescription": "Burası Vibely topluluğundan önerilen videoları izlediğiniz yerdir. Herkese açık gönderiler olduğunda burada görünür — herkesle paylaşmak için video da yükleyebilirsiniz.",
+    "uploadVideo": "Video yükle",
+    "emptyGuestTitle": "Akışta henüz video yok",
+    "emptyGuestDescription": "İçerik izlemek ve Vibely'de ilk videonuzu paylaşmak için giriş yapın.",
+    "emptyFollowingTitle": "Takip ettiklerinizden video yok",
+    "emptyFollowingDescription": "Takip ettiğiniz içerik üreticileri video paylaştığında burada rastgele sırayla görünür."
   }
 }

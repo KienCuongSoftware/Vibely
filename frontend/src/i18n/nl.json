@@ -200,5 +200,40 @@
     "zh-Hant": "中文 (繁體)",
     "zh-Hans": "中文 (简体)",
     "ko": "한국어"
+  },
+  "nav": {
+    "search": "Zoeken",
+    "forYou": "Voor jou",
+    "explore": "Ontdekken",
+    "following": "Volgend",
+    "friends": "Vrienden",
+    "live": "LIVE",
+    "messages": "Berichten",
+    "activity": "Activiteit",
+    "upload": "Uploaden",
+    "profile": "Profiel",
+    "more": "Meer",
+    "loginPrompt": "Log in om te liken, reageren en creators te volgen.",
+    "login": "Inloggen",
+    "company": "Bedrijf",
+    "program": "Programma",
+    "termsAndPolicies": "Voorwaarden en beleid",
+    "copyright": "© 2026 Vibely",
+    "language": "Taal",
+    "darkMode": "Donkere modus",
+    "settings": "Instellingen",
+    "general": "Algemeen",
+    "tools": "Tools",
+    "back": "Terug",
+    "close": "Sluiten"
+  },
+  "forYou": {
+    "emptyTitle": "Nog geen video’s op Voor jou",
+    "emptyDescription": "Hier bekijk je video’s die de Vibely-community aanbeveelt. Als er openbare posts zijn, verschijnen ze hier — je kunt ook een video uploaden om te delen.",
+    "uploadVideo": "Video uploaden",
+    "emptyGuestTitle": "Nog geen video’s in de feed",
+    "emptyGuestDescription": "Log in om content te bekijken en je eerste video op Vibely te plaatsen.",
+    "emptyFollowingTitle": "Geen video’s van mensen die je volgt",
+    "emptyFollowingDescription": "Wanneer creators die je volgt video’s plaatsen, verschijnen ze hier in willekeurige volgorde."
   }
 }

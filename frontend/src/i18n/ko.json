@@ -200,5 +200,40 @@
     "zh-Hant": "中文 (繁體)",
     "zh-Hans": "中文 (简体)",
     "ko": "한국어"
+  },
+  "nav": {
+    "search": "검색",
+    "forYou": "추천",
+    "explore": "탐색",
+    "following": "팔로잉",
+    "friends": "친구",
+    "live": "LIVE",
+    "messages": "메시지",
+    "activity": "활동",
+    "upload": "업로드",
+    "profile": "프로필",
+    "more": "더보기",
+    "loginPrompt": "로그인하여 좋아요, 댓글, 크리에이터 팔로우를 이용하세요.",
+    "login": "로그인",
+    "company": "회사",
+    "program": "프로그램",
+    "termsAndPolicies": "약관 및 정책",
+    "copyright": "© 2026 Vibely",
+    "language": "언어",
+    "darkMode": "다크 모드",
+    "settings": "설정",
+    "general": "일반",
+    "tools": "도구",
+    "back": "뒤로",
+    "close": "닫기"
+  },
+  "forYou": {
+    "emptyTitle": "For You에 아직 영상이 없습니다",
+    "emptyDescription": "여기는 Vibely 커뮤니티에서 추천한 영상을 시청하는 곳입니다. 공개 게시물이 있으면 여기에 표시됩니다. 영상을 업로드해 사람들과 공유할 수도 있습니다.",
+    "uploadVideo": "영상 업로드",
+    "emptyGuestTitle": "피드에 아직 영상이 없습니다",
+    "emptyGuestDescription": "로그인하여 콘텐츠를 시청하고 Vibely에 첫 영상을 올려보세요.",
+    "emptyFollowingTitle": "팔로우한 사람의 영상이 없습니다",
+    "emptyFollowingDescription": "팔로우한 크리에이터가 영상을 올리면 여기에 무작위로 표시됩니다."
   }
 }

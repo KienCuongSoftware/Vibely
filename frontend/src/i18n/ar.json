@@ -200,5 +200,40 @@
     "zh-Hant": "中文 (繁體)",
     "zh-Hans": "中文 (简体)",
     "ko": "한국어"
+  },
+  "nav": {
+    "search": "بحث",
+    "forYou": "لك",
+    "explore": "استكشاف",
+    "following": "متابعة",
+    "friends": "الأصدقاء",
+    "live": "LIVE",
+    "messages": "الرسائل",
+    "activity": "النشاط",
+    "upload": "رفع",
+    "profile": "الملف الشخصي",
+    "more": "المزيد",
+    "loginPrompt": "سجّل الدخول للإعجاب والتعليق ومتابعة المبدعين.",
+    "login": "تسجيل الدخول",
+    "company": "الشركة",
+    "program": "البرامج",
+    "termsAndPolicies": "الشروط والسياسات",
+    "copyright": "© 2026 Vibely",
+    "language": "اللغة",
+    "darkMode": "الوضع الداكن",
+    "settings": "الإعدادات",
+    "general": "عام",
+    "tools": "الأدوات",
+    "back": "رجوع",
+    "close": "إغلاق"
+  },
+  "forYou": {
+    "emptyTitle": "لا توجد فيديوهات في لك بعد",
+    "emptyDescription": "هنا تشاهد الفيديوهات المقترحة من مجتمع Vibely. عند وجود منشورات عامة ستظهر هنا — يمكنك أيضاً رفع فيديو لمشاركته مع الجميع.",
+    "uploadVideo": "رفع فيديو",
+    "emptyGuestTitle": "لا توجد فيديوهات في الخلاصة بعد",
+    "emptyGuestDescription": "سجّل الدخول لمشاهدة المحتوى ونشر أول فيديو لك على Vibely.",
+    "emptyFollowingTitle": "لا توجد فيديوهات ممن تتابعهم",
+    "emptyFollowingDescription": "عندما ينشر المبدعون الذين تتابعهم فيديوهات، ستظهر هنا بترتيب عشوائي."
   }
 }

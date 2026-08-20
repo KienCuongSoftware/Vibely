@@ -200,5 +200,40 @@
     "zh-Hant": "中文 (繁體)",
     "zh-Hans": "中文 (简体)",
     "ko": "한국어"
+  },
+  "nav": {
+    "search": "検索",
+    "forYou": "おすすめ",
+    "explore": "発見",
+    "following": "フォロー中",
+    "friends": "友達",
+    "live": "LIVE",
+    "messages": "メッセージ",
+    "activity": "アクティビティ",
+    "upload": "アップロード",
+    "profile": "プロフィール",
+    "more": "もっと見る",
+    "loginPrompt": "ログインしていいね、コメント、クリエイターのフォローをしましょう。",
+    "login": "ログイン",
+    "company": "会社概要",
+    "program": "プログラム",
+    "termsAndPolicies": "利用規約とポリシー",
+    "copyright": "© 2026 Vibely",
+    "language": "言語",
+    "darkMode": "ダークモード",
+    "settings": "設定",
+    "general": "一般",
+    "tools": "ツール",
+    "back": "戻る",
+    "close": "閉じる"
+  },
+  "forYou": {
+    "emptyTitle": "For You にまだ動画がありません",
+    "emptyDescription": "ここは Vibely コミュニティからおすすめされた動画を視聴する場所です。公開投稿があるとここに表示されます。動画をアップロードしてみんなとシェアすることもできます。",
+    "uploadVideo": "動画をアップロード",
+    "emptyGuestTitle": "フィードにまだ動画がありません",
+    "emptyGuestDescription": "ログインしてコンテンツを視聴し、Vibely に最初の動画を投稿しましょう。",
+    "emptyFollowingTitle": "フォロー中の人の動画がありません",
+    "emptyFollowingDescription": "フォローしているクリエイターが動画を投稿すると、ここにランダムな順で表示されます。"
   }
 }

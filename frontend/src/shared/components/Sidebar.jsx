@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ActivityPanel } from "@/features/notification/components/ActivityPanel.jsx";
 import { useActivityModal } from "@/features/notification/store/ActivityModalContext.jsx";
 import { useChatInboxBadge } from "@/features/chat/store/ChatInboxBadgeContext.jsx";
@@ -39,6 +40,7 @@ export function Sidebar({
   hideSearch = false,
   onOpenSearch,
 }) {
+  const { t } = useTranslation();
   const searchModal = useSearchModal();
   const activityModal = useActivityModal();
   const { unreadCount } = useNotificationUnread();
@@ -138,7 +140,7 @@ export function Sidebar({
                   ? "bg-zinc-900 text-red-500 ring-1 ring-zinc-800/80"
                   : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
               }`}
-              aria-label="Tìm kiếm"
+              aria-label={t("nav.search")}
             >
               <IoSearchOutline className="text-lg" />
             </button>
@@ -153,13 +155,14 @@ export function Sidebar({
                 className="shrink-0 text-lg opacity-70"
                 aria-hidden
               />
-              Tìm kiếm
+              {t("nav.search")}
             </button>
           )
         ) : null}
 
         <nav className="space-y-1">
           {menuItems.map((item) => {
+            const label = t(item.labelKey || item.label);
             const isActive =
               activeMenu === item.id ||
               (item.id === "activity" && activityOpen) ||
@@ -179,7 +182,8 @@ export function Sidebar({
               <button
                 key={item.id}
                 type="button"
-                title={collapsed ? item.label : undefined}
+                title={collapsed ? label : undefined}
+                aria-label={label}
                 aria-current={isActive ? "page" : undefined}
                 className={`flex w-full cursor-pointer items-center rounded-lg ${
                   collapsed
@@ -230,7 +234,7 @@ export function Sidebar({
                 )}
                 {!collapsed ? (
                   <>
-                    <span className="min-w-0 flex-1">{item.label}</span>
+                    <span className="min-w-0 flex-1">{label}</span>
                     {showNavBadge ? (
                       <span className="inline-flex min-w-5 shrink-0 items-center justify-center rounded-full bg-[#FE2C55] px-1.5 text-[10px] font-bold text-white">
                         {navBadgeLabel}
@@ -246,23 +250,23 @@ export function Sidebar({
         {!token && !collapsed ? (
           <div className="my-5 border-t border-zinc-900 pt-4">
             <p className="mb-3 text-sm text-zinc-400">
-              Đăng nhập để thích, bình luận và theo dõi nhà sáng tạo.
+              {t("nav.loginPrompt")}
             </p>
             <Link
               to="/login"
               className="block rounded-md bg-red-600 px-3 py-2 text-center font-semibold text-white hover:bg-red-500"
             >
-              Đăng nhập
+              {t("nav.login")}
             </Link>
           </div>
         ) : null}
 
         {!collapsed ? (
           <div className="mt-auto space-y-2 text-xs text-zinc-500">
-            <p>Công ty</p>
-            <p>Chương trình</p>
-            <p>Điều khoản và chính sách</p>
-            <p>© 2026 Vibely</p>
+            <p>{t("nav.company")}</p>
+            <p>{t("nav.program")}</p>
+            <p>{t("nav.termsAndPolicies")}</p>
+            <p>{t("nav.copyright")}</p>
           </div>
         ) : null}
       </aside>
@@ -282,13 +286,13 @@ export function Sidebar({
               <div className="flex shrink-0 items-center gap-2 border-b border-zinc-800 px-2 py-3">
                 <button
                   type="button"
-                  aria-label="Quay lại"
+                  aria-label={t("nav.back")}
                   className="cursor-pointer rounded-full p-2 text-zinc-300 hover:bg-zinc-800 hover:text-white"
                   onClick={() => setLangOpen(false)}
                 >
                   <IoChevronBack className="text-xl" />
                 </button>
-                <h2 className="text-base font-bold">Ngôn ngữ</h2>
+                <h2 className="text-base font-bold">{t("nav.language")}</h2>
               </div>
               <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-2 py-2">
                 {SUPPORTED_LANGUAGES.map((lang) => (
@@ -309,10 +313,10 @@ export function Sidebar({
           ) : (
           <>
           <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-4 py-3">
-            <h2 className="text-lg font-bold">Thêm</h2>
+            <h2 className="text-lg font-bold">{t("nav.more")}</h2>
             <button
               type="button"
-              aria-label="Đóng"
+              aria-label={t("nav.close")}
               className="cursor-pointer rounded-full p-2 text-zinc-300 hover:bg-zinc-800 hover:text-white"
               onClick={closeMore}
             >
@@ -321,10 +325,10 @@ export function Sidebar({
           </div>
 
           <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-2 py-3">
-            <MoreSection title="Cài đặt">
+            <MoreSection title={t("nav.settings")}>
               <MoreRow
                 icon={IoSettingsOutline}
-                label="Chung"
+                label={t("nav.general")}
                 onClick={() => {}}
               />
               <MoreRow
@@ -335,7 +339,7 @@ export function Sidebar({
               />
               <div className="flex w-full items-center gap-3 rounded-lg px-3 py-3 hover:bg-zinc-800/90">
                 <IoMoonOutline className="shrink-0 text-lg text-zinc-300" />
-                <span className="flex-1 text-left text-sm">Chế độ tối</span>
+                <span className="flex-1 text-left text-sm">{t("nav.darkMode")}</span>
                 <button
                   type="button"
                   role="switch"
@@ -358,7 +362,7 @@ export function Sidebar({
               </div>
             </MoreSection>
 
-            <MoreSection title="Công cụ">
+            <MoreSection title={t("nav.tools")}>
               <MoreRow
                 icon={IoRocketOutline}
                 label="Vibaly Studio"

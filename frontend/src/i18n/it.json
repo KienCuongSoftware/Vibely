@@ -200,5 +200,40 @@
     "zh-Hant": "中文 (繁體)",
     "zh-Hans": "中文 (简体)",
     "ko": "한국어"
+  },
+  "nav": {
+    "search": "Cerca",
+    "forYou": "Per te",
+    "explore": "Esplora",
+    "following": "Seguiti",
+    "friends": "Amici",
+    "live": "LIVE",
+    "messages": "Messaggi",
+    "activity": "Attività",
+    "upload": "Carica",
+    "profile": "Profilo",
+    "more": "Altro",
+    "loginPrompt": "Accedi per mettere mi piace, commentare e seguire i creator.",
+    "login": "Accedi",
+    "company": "Azienda",
+    "program": "Programma",
+    "termsAndPolicies": "Termini e criteri",
+    "copyright": "© 2026 Vibely",
+    "language": "Lingua",
+    "darkMode": "Modalità scura",
+    "settings": "Impostazioni",
+    "general": "Generale",
+    "tools": "Strumenti",
+    "back": "Indietro",
+    "close": "Chiudi"
+  },
+  "forYou": {
+    "emptyTitle": "Nessun video in Per te",
+    "emptyDescription": "Qui guardi i video consigliati dalla community di Vibely. Quando ci sono post pubblici, appariranno qui — puoi anche caricare un video da condividere.",
+    "uploadVideo": "Carica video",
+    "emptyGuestTitle": "Nessun video nel feed",
+    "emptyGuestDescription": "Accedi per guardare i contenuti e pubblicare il tuo primo video su Vibely.",
+    "emptyFollowingTitle": "Nessun video da chi segui",
+    "emptyFollowingDescription": "Quando i creator che segui pubblicano video, compaiono qui in ordine casuale."
   }
 }

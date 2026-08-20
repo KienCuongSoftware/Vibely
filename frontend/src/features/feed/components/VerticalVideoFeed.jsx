@@ -1,6 +1,7 @@
 import React from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { apiClient } from "@/shared/api/client";
 import {
   FeedPhoneStage,
@@ -212,6 +213,7 @@ function FeedChevronNav({ activeIndex, videoCount, onStep, busy, className }) {
 }
 
 export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode = "latest", activeMenuId = "latest" }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const isFollowingFeed = feedMode === "following";
@@ -1782,44 +1784,41 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               {!token ? (
                 <>
                   <p className="text-lg font-semibold text-zinc-100">
-                    Chưa có video trên feed
+                    {t("forYou.emptyGuestTitle")}
                   </p>
                   <p className="mt-2 max-w-xs text-sm leading-relaxed text-zinc-400">
-                    Đăng nhập để xem nội dung và đẩy lên video đầu tiên của bạn
-                    trên Vibely.
+                    {t("forYou.emptyGuestDescription")}
                   </p>
                   <Link
                     to="/login"
                     className="mt-6 inline-flex items-center justify-center rounded-full bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-red-500"
                   >
-                    Đăng nhập
+                    {t("nav.login")}
                   </Link>
                 </>
               ) : isFollowingFeed ? (
                 <>
                   <p className="text-lg font-semibold text-zinc-100">
-                    Chưa có video từ người bạn follow
+                    {t("forYou.emptyFollowingTitle")}
                   </p>
                   <p className="mt-2 max-w-sm text-sm leading-relaxed text-zinc-400">
-                    Khi nhà sáng tạo bạn theo dõi đăng video, chúng sẽ hiện tại đây theo thứ tự ngẫu nhiên.
+                    {t("forYou.emptyFollowingDescription")}
                   </p>
                 </>
               ) : (
                 <>
                   <p className="text-lg font-semibold text-zinc-100">
-                    For You chưa có video
+                    {t("forYou.emptyTitle")}
                   </p>
                   <p className="mt-2 max-w-sm text-sm leading-relaxed text-zinc-400">
-                    Đây là nơi bạn xem video được gợi ý từ cộng đồng Vibely. Khi
-                    có bài đăng công khai, chúng sẽ hiện tại đây — bạn cũng có thể
-                    tải video lên để chia sẻ với mọi người.
+                    {t("forYou.emptyDescription")}
                   </p>
                   <Link
                     to="/vibelystudio/upload"
                     className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-red-500"
                   >
                     <MdOutlineFileUpload className="text-lg" aria-hidden />
-                    Tải lên video
+                    {t("forYou.uploadVideo")}
                   </Link>
                 </>
               )}

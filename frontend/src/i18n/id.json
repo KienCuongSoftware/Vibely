@@ -200,5 +200,40 @@
     "zh-Hant": "中文 (繁體)",
     "zh-Hans": "中文 (简体)",
     "ko": "한국어"
+  },
+  "nav": {
+    "search": "Cari",
+    "forYou": "Untuk Anda",
+    "explore": "Jelajahi",
+    "following": "Mengikuti",
+    "friends": "Teman",
+    "live": "LIVE",
+    "messages": "Pesan",
+    "activity": "Aktivitas",
+    "upload": "Unggah",
+    "profile": "Profil",
+    "more": "Lainnya",
+    "loginPrompt": "Masuk untuk menyukai, berkomentar, dan mengikuti kreator.",
+    "login": "Masuk",
+    "company": "Perusahaan",
+    "program": "Program",
+    "termsAndPolicies": "Ketentuan & Kebijakan",
+    "copyright": "© 2026 Vibely",
+    "language": "Bahasa",
+    "darkMode": "Mode gelap",
+    "settings": "Pengaturan",
+    "general": "Umum",
+    "tools": "Alat",
+    "back": "Kembali",
+    "close": "Tutup"
+  },
+  "forYou": {
+    "emptyTitle": "Belum ada video di For You",
+    "emptyDescription": "Di sini Anda menonton video yang disarankan dari komunitas Vibely. Saat ada postingan publik, video akan muncul di sini — Anda juga bisa mengunggah video untuk dibagikan.",
+    "uploadVideo": "Unggah video",
+    "emptyGuestTitle": "Belum ada video di feed",
+    "emptyGuestDescription": "Masuk untuk menonton konten dan mengunggah video pertama Anda di Vibely.",
+    "emptyFollowingTitle": "Belum ada video dari yang Anda ikuti",
+    "emptyFollowingDescription": "Saat kreator yang Anda ikuti mengunggah video, video akan muncul di sini secara acak."
   }
 }

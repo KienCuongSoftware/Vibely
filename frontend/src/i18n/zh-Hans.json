@@ -200,5 +200,40 @@
     "zh-Hant": "中文 (繁體)",
     "zh-Hans": "中文 (简体)",
     "ko": "한국어"
+  },
+  "nav": {
+    "search": "搜索",
+    "forYou": "推荐",
+    "explore": "发现",
+    "following": "已关注",
+    "friends": "朋友",
+    "live": "LIVE",
+    "messages": "私信",
+    "activity": "动态",
+    "upload": "上传",
+    "profile": "主页",
+    "more": "更多",
+    "loginPrompt": "登录后即可点赞、评论并关注创作者。",
+    "login": "登录",
+    "company": "公司",
+    "program": "计划",
+    "termsAndPolicies": "条款与政策",
+    "copyright": "© 2026 Vibely",
+    "language": "语言",
+    "darkMode": "深色模式",
+    "settings": "设置",
+    "general": "通用",
+    "tools": "工具",
+    "back": "返回",
+    "close": "关闭"
+  },
+  "forYou": {
+    "emptyTitle": "推荐页暂无视频",
+    "emptyDescription": "这里展示 Vibely 社区推荐的视频。有公开作品时会出现在这里——你也可以上传视频与大家分享。",
+    "uploadVideo": "上传视频",
+    "emptyGuestTitle": "信息流暂无视频",
+    "emptyGuestDescription": "登录后即可观看内容，并在 Vibely 发布你的第一条视频。",
+    "emptyFollowingTitle": "关注的人暂无视频",
+    "emptyFollowingDescription": "你关注的创作者发布视频后，会以随机顺序显示在这里。"
   }
 }

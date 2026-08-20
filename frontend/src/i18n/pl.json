@@ -200,5 +200,40 @@
     "zh-Hant": "中文 (繁體)",
     "zh-Hans": "中文 (简体)",
     "ko": "한국어"
+  },
+  "nav": {
+    "search": "Szukaj",
+    "forYou": "Dla Ciebie",
+    "explore": "Odkrywaj",
+    "following": "Obserwowani",
+    "friends": "Znajomi",
+    "live": "LIVE",
+    "messages": "Wiadomości",
+    "activity": "Aktywność",
+    "upload": "Prześlij",
+    "profile": "Profil",
+    "more": "Więcej",
+    "loginPrompt": "Zaloguj się, aby polubić, komentować i obserwować twórców.",
+    "login": "Zaloguj się",
+    "company": "Firma",
+    "program": "Program",
+    "termsAndPolicies": "Warunki i zasady",
+    "copyright": "© 2026 Vibely",
+    "language": "Język",
+    "darkMode": "Tryb ciemny",
+    "settings": "Ustawienia",
+    "general": "Ogólne",
+    "tools": "Narzędzia",
+    "back": "Wstecz",
+    "close": "Zamknij"
+  },
+  "forYou": {
+    "emptyTitle": "Brak filmów na Dla Ciebie",
+    "emptyDescription": "Tu oglądasz filmy sugerowane przez społeczność Vibely. Publiczne posty pojawią się tutaj — możesz też przesłać film, by się podzielić.",
+    "uploadVideo": "Prześlij film",
+    "emptyGuestTitle": "Brak filmów w feedzie",
+    "emptyGuestDescription": "Zaloguj się, aby oglądać treści i opublikować swój pierwszy film na Vibely.",
+    "emptyFollowingTitle": "Brak filmów od obserwowanych",
+    "emptyFollowingDescription": "Gdy twórcy, których obserwujesz, opublikują filmy, pojawią się tu w losowej kolejności."
   }
 }

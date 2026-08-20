@@ -200,5 +200,40 @@
     "zh-Hant": "中文 (繁體)",
     "zh-Hans": "中文 (简体)",
     "ko": "한국어"
+  },
+  "nav": {
+    "search": "搜尋",
+    "forYou": "推薦",
+    "explore": "探索",
+    "following": "已追蹤",
+    "friends": "朋友",
+    "live": "LIVE",
+    "messages": "訊息",
+    "activity": "活動",
+    "upload": "上傳",
+    "profile": "個人檔案",
+    "more": "更多",
+    "loginPrompt": "登入後即可按讚、留言並追蹤創作者。",
+    "login": "登入",
+    "company": "公司",
+    "program": "計畫",
+    "termsAndPolicies": "條款與政策",
+    "copyright": "© 2026 Vibely",
+    "language": "語言",
+    "darkMode": "深色模式",
+    "settings": "設定",
+    "general": "一般",
+    "tools": "工具",
+    "back": "返回",
+    "close": "關閉"
+  },
+  "forYou": {
+    "emptyTitle": "推薦頁尚無影片",
+    "emptyDescription": "這裡會顯示 Vibely 社群推薦的影片。有公開貼文時會出現在這裡——你也可以上傳影片與大家分享。",
+    "uploadVideo": "上傳影片",
+    "emptyGuestTitle": "動態尚無影片",
+    "emptyGuestDescription": "登入後即可觀看內容，並在 Vibely 發布你的第一支影片。",
+    "emptyFollowingTitle": "追蹤對象尚無影片",
+    "emptyFollowingDescription": "你追蹤的創作者發布影片後，會以隨機順序顯示在這裡。"
   }
 }
