@@ -10,11 +10,11 @@
   },
   "auth": {
     "loginTitle": "Vibely میں لاگ ان کریں",
-    "signupTitle": "__KEEP__0__ کے لئے سائن اپ کریں",
+    "signupTitle": "Vibely کے لیے سائن اپ کریں",
     "loginShort": "لاگ ان کریں۔",
     "signupShort": "سائن اپ کریں۔",
     "resetPasswordTitle": "پاس ورڈ دوبارہ ترتیب دیں۔",
-    "useEmail": "ای میل / VibelyID استعمال کریں۔",
+    "useEmail": "ای میل استعمال کریں / VibelyID",
     "useEmailOnly": "ای میل استعمال کریں۔",
     "continueWithGoogle": "Google کے ساتھ جاری رکھیں",
     "continueWithFacebook": "Facebook کے ساتھ جاری رکھیں",
@@ -28,8 +28,8 @@
     "enterOtp": "6 ہندسوں کا کوڈ درج کریں۔",
     "sendCode": "کوڈ بھیجیں۔",
     "resendCode": "دوبارہ بھیجیں: {{seconds}}s",
-    "sending": "Sending...",
-    "processing": "Processing...",
+    "sending": "بھیج رہا ہے...",
+    "processing": "پروسیسنگ...",
     "loggingIn": "لاگ ان ہو رہا ہے...",
     "passwordRequirements": "آپ کے پاس ورڈ میں شامل ہونا چاہیے:",
     "passwordLength": "8 سے 20 حروف",
@@ -48,7 +48,7 @@
     "vibelyIdPlaceholder": "your.id",
     "vibelyIdHint": "آپ اسے بعد میں ہمیشہ تبدیل کر سکتے ہیں۔",
     "vibelyIdEnter": "چیک کرنے کے لیے ایک Vibely ID درج کریں۔",
-    "vibelyIdChecking": "Vibely ID چیک کر رہا ہے...",
+    "vibelyIdChecking": "Vibely ID چیک کیا جا رہا ہے...",
     "checkingEmail": "ای میل چیک کر رہا ہے...",
     "registerByPhone": "فون نمبر کے ساتھ سائن اپ کریں۔",
     "emailInvalid": "ایک درست ای میل ایڈریس درج کریں۔",
@@ -61,7 +61,7 @@
     "banned": {
       "title": "آپ کے اکاؤنٹ پر پابندی لگا دی گئی ہے۔",
       "reason": "آپ کے اکاؤنٹ پر پابندی لگا دی گئی تھی۔",
-      "defaultReason": "Vibely کی کمیونٹی رہنما خطوط کی خلاف ورزی کرنا",
+      "defaultReason": "Vibely کی کمیونٹی گائیڈ لائنز کی خلاف ورزی کرنا",
       "suggestion": "اگر آپ کو لگتا ہے کہ یہ غلطی ہے، تو آپ اپیل جمع کرا سکتے ہیں۔",
       "appeal": "اپیل",
       "ignore": "برطرف کرنا"
@@ -74,11 +74,11 @@
       "emailLabel": "ای میل",
       "emailHint": "ہم آپ کی اپیل کا نتیجہ آپ کو اس ای میل پتے پر بھیجیں گے۔",
       "submit": "جمع کروائیں۔",
-      "submitting": "Submitting..."
+      "submitting": "جمع کر رہا ہے..."
     },
     "reactivate": {
       "title": "اپنا Vibely اکاؤنٹ دوبارہ فعال کریں۔",
-      "description": "آپ ایک غیر فعال اکاؤنٹ میں لاگ ان کر رہے ہیں۔Vibely کا استعمال جاری رکھنے اور اپنے مواد کو بحال کرنے کے لیے اپنا اکاؤنٹ دوبارہ فعال کریں۔",
+      "description": "آپ ایک غیر فعال اکاؤنٹ میں لاگ ان کر رہے ہیں۔Vibely کا استعمال جاری رکھنے اور اپنے مواد کو بحال کرنے کے لیے اپنے اکاؤنٹ کو دوبارہ فعال کریں۔",
       "otpLabel": "6 ہندسوں کا تصدیقی کوڈ درج کریں۔",
       "otpPlaceholder": "تصدیقی کوڈ",
       "resend": "کوڈ دوبارہ بھیجیں۔",
