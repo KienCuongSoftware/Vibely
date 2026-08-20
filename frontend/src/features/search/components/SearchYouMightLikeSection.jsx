@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { IoClose, IoEllipse, IoTimeOutline } from 'react-icons/io5'
 import { MdOutlineTrendingUp } from 'react-icons/md'
 import { normalizeSearchQuery } from '@/features/search/utils/searchUtils'
@@ -13,7 +14,7 @@ function SectionLabel({ children }) {
 
 /**
  * TikTok-style idle search list:
- * "Tìm kiếm gần đây" + "Bạn có thể thích".
+ * recent searches + you may like.
  */
 export function SearchYouMightLikeSection({
   historyItems = [],
@@ -25,6 +26,7 @@ export function SearchYouMightLikeSection({
   onTrendingSelect,
   activeKey,
 }) {
+  const { t } = useTranslation()
   const hasHistory = historyItems.length > 0
   const hasTrending = trendingItems.length > 0
 
@@ -49,8 +51,8 @@ export function SearchYouMightLikeSection({
   return (
     <div className="px-1 pb-2">
       {hasHistory ? (
-        <section aria-label="Tìm kiếm gần đây">
-          <SectionLabel>Tìm kiếm gần đây</SectionLabel>
+        <section aria-label={t('searchUi.recent')}>
+          <SectionLabel>{t('searchUi.recent')}</SectionLabel>
           <ul>
             {historyItems.map((item) => {
               const query = normalizeSearchQuery(item?.query)
@@ -100,8 +102,8 @@ export function SearchYouMightLikeSection({
       ) : null}
 
       {hasTrending ? (
-        <section aria-label="Bạn có thể thích">
-          <SectionLabel>Bạn có thể thích</SectionLabel>
+        <section aria-label={t('searchUi.youMightLike')}>
+          <SectionLabel>{t('searchUi.youMightLike')}</SectionLabel>
           <ul>
             {trendingItems.map((item, index) => {
               const keyword = normalizeSearchQuery(item?.keyword)

@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -41,24 +42,9 @@ function formatScheduledBadge(iso) {
 }
 
 const PRIVACY_OPTIONS = [
-  {
-    value: "PUBLIC",
-    ui: "everyone",
-    label: "Mọi người",
-    Icon: IoEarthOutline,
-  },
-  {
-    value: "FRIENDS",
-    ui: "friends",
-    label: "Bạn bè",
-    Icon: IoPeopleOutline,
-  },
-  {
-    value: "PRIVATE",
-    ui: "onlyYou",
-    label: "Chỉ mình tôi",
-    Icon: IoLockClosedOutline,
-  },
+  { value: "PUBLIC", ui: "everyone", labelKey: "studio.privacy.everyone", Icon: IoEarthOutline },
+  { value: "FRIENDS", ui: "friends", labelKey: "studio.privacy.friends", Icon: IoPeopleOutline },
+  { value: "PRIVATE", ui: "onlyYou", labelKey: "studio.privacy.onlyYou", Icon: IoLockClosedOutline },
 ];
 
 function normalizePrivacy(raw) {
@@ -103,25 +89,25 @@ function DraftsEmptyFrame() {
   );
 }
 
-function StudioListEmptyState({ variant }) {
+function StudioListEmptyState({ variant, t }) {
   const isDrafts = variant === "drafts";
   return (
     <div className="mt-2 flex min-h-[320px] flex-col items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950/50 px-4 py-16 text-center">
       {isDrafts ? <DraftsEmptyFrame /> : <PostsEmptyIllustration />}
       <p className="mt-6 text-xl font-bold text-zinc-100">
-        {isDrafts ? "Chưa có bản nháp nào" : "Chưa có bài đăng nào"}
+        {isDrafts ? t("studio.posts.emptyDraftsTitle") : t("studio.posts.emptyPostsTitle")}
       </p>
       <p className="mt-2 max-w-sm text-sm text-zinc-500">
         {isDrafts
-          ? "Bản nháp của bạn sẽ xuất hiện ở đây và chỉ bạn mới nhìn thấy."
-          : "Video đã đăng và video lên lịch sẽ xuất hiện ở đây."}
+          ? t("studio.posts.emptyDraftsSubtitle")
+          : t("studio.posts.emptyPostsSubtitle")}
       </p>
       {!isDrafts ? (
         <Link
           to="/vibelystudio/upload"
           className="mt-6 inline-block cursor-pointer rounded-lg bg-[#fe2c55] px-8 py-2.5 text-sm font-semibold text-white hover:bg-[#e62a4d]"
         >
-          Đăng video đầu tiên
+          {t("studio.posts.firstUpload")}
         </Link>
       ) : null}
     </div>
@@ -134,6 +120,7 @@ function privacyMeta(raw) {
 }
 
 export function StudioPostsPage() {
+  const { t } = useTranslation();
   const { token, authReady, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -172,7 +159,7 @@ export function StudioPostsPage() {
       setItems(Array.isArray(data?.items) ? data.items : []);
       setTotal(Number(data?.total ?? 0));
     } catch (e) {
-      setError(e.message ?? "Không tải được danh sách bài đăng.");
+      setError(e.message ?? t("studio.posts.loadFailed"));
       setItems([]);
       setTotal(0);
     } finally {
@@ -181,8 +168,8 @@ export function StudioPostsPage() {
   }, [authReady, token]);
 
   useEffect(() => {
-    document.title = "VibelyStudio | Bài đăng";
-  }, []);
+    document.title = t("studio.docTitle.posts");
+  }, [t]);
 
   useEffect(() => {
     void load();
@@ -282,7 +269,7 @@ export function StudioPostsPage() {
       setDeleteTarget(null);
       await load();
     } catch (e) {
-      setError(e.message ?? "Không xóa được bài đăng.");
+      setError(e.message ?? t("studio.posts.deleteFailed"));
     } finally {
       setDeleteBusy(false);
     }
@@ -333,7 +320,7 @@ export function StudioPostsPage() {
         // api client emits ban → AuthContext force logout / login ban modal
         return;
       }
-      setError(e.message ?? "Không cập nhật được quyền riêng tư.");
+      setError(e.message ?? t("studio.posts.privacyFailed"));
     } finally {
       setPrivacyBusyId(null);
     }
@@ -366,7 +353,7 @@ export function StudioPostsPage() {
             }`}
             onClick={() => navigate("/vibelystudio/posts", { replace: true })}
           >
-            Bài đăng {publishedItems.length}
+            {t("studio.posts.tabPosts")} {publishedItems.length}
           </button>
           <button
             type="button"
@@ -379,7 +366,7 @@ export function StudioPostsPage() {
               navigate("/vibelystudio/posts?tab=drafts", { replace: true })
             }
           >
-            Bản nháp {draftItems.length}
+            {t("studio.posts.tabDrafts")} {draftItems.length}
           </button>
         </div>
         <StudioAccountMenu />
@@ -393,8 +380,7 @@ export function StudioPostsPage() {
               aria-hidden
             />
             <p>
-              Bạn có thể lưu tối đa 30 bản nháp. Bản nháp chỉ bạn nhìn thấy và dùng được trên mọi
-              thiết bị. Bản nháp hết hạn sau 60 ngày và sẽ bị xóa vĩnh viễn.
+              {t("studio.posts.draftTip")}
             </p>
           </div>
         ) : (
@@ -420,16 +406,16 @@ export function StudioPostsPage() {
 
         {loading ? (
           <p className="mt-8 text-center text-sm text-zinc-500">
-            Đang tải {listTab === "drafts" ? "bản nháp" : "bài đăng"}…
+            {listTab === "drafts" ? t("studio.posts.loadingDrafts") : t("studio.posts.loadingPosts")}
           </p>
         ) : visibleItems.length === 0 ? (
-          <StudioListEmptyState variant={listTab === "drafts" ? "drafts" : "posts"} />
+          <StudioListEmptyState variant={listTab === "drafts" ? "drafts" : "posts"} t={t} />
         ) : listTab === "drafts" ? (
           <div className="mt-1 overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950/40">
             <table className="w-full min-w-[640px] border-collapse text-left text-sm text-zinc-200">
               <thead>
                 <tr className="border-b border-zinc-800 bg-zinc-900/50 text-xs text-zinc-500">
-                  <th className="px-4 py-3 font-medium">Bản nháp</th>
+                  <th className="px-4 py-3 font-medium">{t("studio.posts.tabDrafts")}</th>
                   <th className="w-[28%] whitespace-nowrap px-4 py-3 text-center font-medium">
                     Cập nhật lần cuối
                   </th>
@@ -484,8 +470,8 @@ export function StudioPostsPage() {
                           <button
                             type="button"
                             className="cursor-pointer rounded-md p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100"
-                            title="Chỉnh sửa bản nháp"
-                            aria-label="Chỉnh sửa bản nháp"
+                            title={t("studio.posts.editDraft")}
+                            aria-label={t("studio.posts.editDraft")}
                             onClick={() =>
                               navigate(`/vibelystudio/upload/post/${v.publicId}`)
                             }
@@ -495,8 +481,8 @@ export function StudioPostsPage() {
                           <button
                             type="button"
                             className="cursor-pointer rounded-md p-2 text-[#fe2c55] transition hover:bg-zinc-800"
-                            title="Xóa bản nháp"
-                            aria-label="Xóa bản nháp"
+                            title={t("studio.posts.deleteDraft")}
+                            aria-label={t("studio.posts.deleteDraft")}
                             onClick={() => setDeleteTarget(v)}
                           >
                             <IoTrashOutline className="h-5 w-5" aria-hidden />
@@ -514,7 +500,7 @@ export function StudioPostsPage() {
             <table className="w-full min-w-[920px] border-collapse text-left text-sm text-zinc-200">
               <thead>
                 <tr className="border-b border-zinc-800 bg-zinc-900/50 text-xs text-zinc-500">
-                  <th className="px-4 py-3 font-medium">Bài đăng</th>
+                  <th className="px-4 py-3 font-medium">{t("studio.posts.tabPosts")}</th>
                   <th className="whitespace-nowrap px-3 py-3 text-left font-medium">
                     Quyền riêng tư
                   </th>
@@ -558,7 +544,7 @@ export function StudioPostsPage() {
                           <Link
                             to={detailUrl}
                             className="relative h-[72px] w-[52px] shrink-0 cursor-pointer overflow-hidden rounded-md bg-zinc-800"
-                            title="Xem chi tiết video"
+                            title={t("studio.posts.viewVideo")}
                           >
                             {hasThumb ? (
                               <img
@@ -585,7 +571,7 @@ export function StudioPostsPage() {
                             <Link
                               to={detailUrl}
                               className="line-clamp-2 cursor-pointer font-medium text-zinc-100 hover:text-white hover:underline"
-                              title="Xem chi tiết video"
+                              title={t("studio.posts.viewVideo")}
                             >
                               {desc}
                             </Link>
@@ -600,15 +586,15 @@ export function StudioPostsPage() {
                             ) : null}
                             {String(v.status || "").toUpperCase() === "REMOVED" ? (
                               <p className="mt-0.5 text-xs font-medium text-rose-400">
-                                Đã gỡ khỏi hồ sơ (vi phạm)
+                                {t("studio.posts.removedViolation")}
                               </p>
                             ) : String(v.status || "").toUpperCase() === "HIDDEN" ? (
                               <p className="mt-0.5 text-xs font-medium text-amber-400">
-                                Đã ẩn / đang kiểm duyệt — chưa lên For You
+                                {t("studio.posts.hiddenModeration")}
                               </p>
                             ) : v.reviewRequired ? (
                               <p className="mt-0.5 text-xs font-medium text-amber-400">
-                                Đang kiểm duyệt — đội ngũ Vibely đang xem xét
+                                {t("studio.posts.reviewingTeam")}
                               </p>
                             ) : null}
                           </div>
@@ -623,7 +609,7 @@ export function StudioPostsPage() {
                             String(v.status || "").toUpperCase() === "REMOVED"
                           }
                           className="inline-flex w-max shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg border border-zinc-700 bg-zinc-900 px-2.5 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-60"
-                          title="Chỉnh quyền riêng tư"
+                          title={t("studio.posts.editPrivacy")}
                           aria-expanded={
                             privacyMenu?.video?.publicId === v.publicId
                           }
@@ -644,7 +630,7 @@ export function StudioPostsPage() {
                           }}
                         >
                           <PrivacyIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                          <span className="whitespace-nowrap">{privacy.label}</span>
+                          <span className="whitespace-nowrap">{t(privacy.labelKey)}</span>
                           <IoChevronDown className="h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
                         </button>
                       </td>
@@ -662,8 +648,8 @@ export function StudioPostsPage() {
                           <button
                             type="button"
                             className="cursor-pointer rounded-md p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-pink-400"
-                            title="Chỉnh sửa bài đăng"
-                            aria-label="Chỉnh sửa bài đăng"
+                            title={t("studio.posts.editPost")}
+                            aria-label={t("studio.posts.editPost")}
                             onClick={() => {
                               setMoreMenu(null);
                               navigate(
@@ -676,8 +662,8 @@ export function StudioPostsPage() {
                           <button
                             type="button"
                             className="cursor-pointer rounded-md p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-pink-400"
-                            title="Thống kê bài đăng"
-                            aria-label="Thống kê bài đăng"
+                            title={t("studio.posts.postStats")}
+                            aria-label={t("studio.posts.postStats")}
                             onClick={() => {
                               setMoreMenu(null);
                               navigate(`/vibelystudio/analytics/${v.publicId}`);
@@ -691,8 +677,8 @@ export function StudioPostsPage() {
                           <button
                             type="button"
                             className="cursor-pointer rounded-md p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-pink-400"
-                            title="Mở bình luận"
-                            aria-label="Xem bình luận"
+                            title={t("studio.posts.openComments")}
+                            aria-label={t("studio.posts.viewComments")}
                             onClick={() => {
                               setMoreMenu(null);
                               navigate(`/vibelystudio/comment/${v.publicId}`);
@@ -707,8 +693,8 @@ export function StudioPostsPage() {
                             type="button"
                             data-studio-posts-more
                             className="cursor-pointer rounded-md p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-pink-400"
-                            title="Thêm"
-                            aria-label="Thêm thao tác"
+                            title={t("studio.posts.more")}
+                            aria-label={t("studio.posts.moreActions")}
                             aria-expanded={
                               moreMenu?.video?.publicId === v.publicId
                             }
@@ -745,7 +731,7 @@ export function StudioPostsPage() {
             </table>
             {total > items.length ? (
               <p className="mt-2 text-center text-xs text-zinc-500">
-                Hiển thị {items.length} / {total} bài
+                {t("studio.posts.showing", { shown: items.length, total })}
               </p>
             ) : null}
           </div>
@@ -775,7 +761,7 @@ export function StudioPostsPage() {
                     }
                   >
                     <Icon className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
-                    <span className="flex-1">{opt.label}</span>
+                    <span className="flex-1">{t(opt.labelKey)}</span>
                     {selected ? (
                       <span className="text-[#fe2c55]" aria-hidden>
                         ✓
@@ -819,10 +805,10 @@ export function StudioPostsPage() {
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4">
           <div className="w-full max-w-md rounded-xl border border-zinc-700 bg-zinc-900 p-5 shadow-xl">
             <h2 className="text-lg font-semibold text-zinc-100">
-              {deleteTarget.studioDraft ? "Xóa bản nháp?" : "Xóa bài đăng?"}
+              {deleteTarget.studioDraft ? t("studio.posts.confirmDeleteDraft") : t("studio.posts.confirmDeletePost")}
             </h2>
             <p className="mt-2 text-sm text-zinc-400">
-              Video, ảnh bìa và file trên kho lưu trữ sẽ bị xóa. Thao tác này không thể hoàn tác.
+              {t("studio.posts.deleteHint")}
             </p>
             <div className="mt-5 flex justify-end gap-2">
               <button
@@ -839,7 +825,7 @@ export function StudioPostsPage() {
                 disabled={deleteBusy}
                 onClick={() => void confirmDelete()}
               >
-                {deleteBusy ? "Đang xóa…" : "Xóa"}
+                {deleteBusy ? t("studio.posts.deleting") : t("common.delete")}
               </button>
             </div>
           </div>

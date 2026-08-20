@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
   IoChatbubbleEllipsesOutline,
@@ -21,15 +22,15 @@ const PAGE_SIZE = 20;
 const REPLY_MAX_LEN = 150;
 
 const STATUS_OPTIONS = [
-  { id: "all", label: "Tất cả bình luận" },
-  { id: "unreplied", label: "Chưa trả lời" },
-  { id: "replied", label: "Đã trả lời" },
+  { id: "all", labelKey: "studio.comments.statusAll" },
+  { id: "unreplied", labelKey: "studio.comments.statusUnreplied" },
+  { id: "replied", labelKey: "studio.comments.statusReplied" },
 ];
 
 const POSTED_BY_OPTIONS = [
-  { id: "all", label: "Người đăng: tất cả" },
-  { id: "followers", label: "Người theo dõi đăng" },
-  { id: "non_followers", label: "Người chưa theo dõi đăng" },
+  { id: "all", labelKey: "studio.comments.postedByAll" },
+  { id: "followers", labelKey: "studio.comments.postedByFollowers" },
+  { id: "non_followers", labelKey: "studio.comments.postedByNonFollowers" },
 ];
 
 const FOLLOWER_BANDS = [
@@ -69,6 +70,7 @@ function videoLabel(comment) {
 }
 
 function FilterMenu({ label, options, value, onChange }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
 
@@ -97,7 +99,7 @@ function FilterMenu({ label, options, value, onChange }) {
         }`}
       >
         <IoFilterOutline className="text-sm text-zinc-400" aria-hidden />
-        {current.label}
+        {t(current.labelKey)}
         <IoChevronDown className="text-zinc-500" aria-hidden />
       </button>
       {open ? (
@@ -116,7 +118,7 @@ function FilterMenu({ label, options, value, onChange }) {
                   : "text-zinc-300 hover:bg-zinc-800"
               }`}
             >
-              {opt.label}
+              {t(opt.labelKey)}
               {opt.id === value ? " ✓" : ""}
             </button>
           ))}
@@ -220,8 +222,8 @@ function EmptyState({ filtered }) {
       </div>
       <p className="mt-6 text-sm text-zinc-500">
         {filtered
-          ? "Không có bình luận nào khớp bộ lọc"
-          : "Chưa có bình luận nào"}
+          ? t("studio.comments.emptyFiltered")
+          : t("studio.comments.empty")}
       </p>
     </div>
   );
@@ -264,7 +266,7 @@ function CommentRow({
             </span>
           ) : null}
           <span className="text-xs text-zinc-500">
-            {formatCount(comment.followerCount)} người theo dõi
+            {t("studio.comments.followers", { count: formatCount(comment.followerCount) })}
           </span>
           {comment.repliedByCreator ? (
             <span className="rounded border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-px text-[11px] font-medium text-emerald-300">
@@ -275,7 +277,7 @@ function CommentRow({
 
         {comment.parentCommentId ? (
           <p className="mt-1 text-xs text-zinc-500">
-            Trả lời @{String(comment.parentUsername ?? "user").replace(/^@/, "")}
+            {t("studio.comments.replyTo", { username: String(comment.parentUsername ?? "user").replace(/^@/, "") })}
           </p>
         ) : null}
 
@@ -314,7 +316,7 @@ function CommentRow({
           </button>
           {comment.replyCount > 0 ? (
             <span className="text-zinc-500">
-              {formatCount(comment.replyCount)} trả lời
+              {t("studio.comments.replies", { count: formatCount(comment.replyCount) })}
             </span>
           ) : null}
           <button
@@ -352,6 +354,7 @@ function CommentRow({
 }
 
 export function StudioCommentsPage() {
+  const { t } = useTranslation();
   const { token } = useAuth();
   const navigate = useNavigate();
 
@@ -377,8 +380,8 @@ export function StudioCommentsPage() {
   const [busyId, setBusyId] = useState(null);
 
   useEffect(() => {
-    document.title = "VibelyStudio | Bình luận";
-  }, []);
+    document.title = t("studio.docTitle.comments");
+  }, [t]);
 
   useEffect(() => {
     const timer = setTimeout(() => setSearch(searchInput.trim()), 400);
@@ -420,7 +423,7 @@ export function StudioCommentsPage() {
         setTotal(Number(data?.total ?? 0));
       } catch (e) {
         if (cancelled) return;
-        setError(e instanceof Error ? e.message : "Không tải được bình luận.");
+        setError(e instanceof Error ? e.message : t("studio.comments.loadFailed"));
         setItems([]);
         setHasNext(false);
         setTotal(0);
@@ -455,7 +458,7 @@ export function StudioCommentsPage() {
       setPage(next);
       setHasNext(Boolean(data?.hasNext));
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Không tải thêm được bình luận.");
+      setError(e instanceof Error ? e.message : t("studio.comments.loadMoreFailed"));
     } finally {
       setLoadingMore(false);
     }
@@ -478,7 +481,7 @@ export function StudioCommentsPage() {
       setReplyDraft("");
       await reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Không gửi được trả lời.");
+      setError(e instanceof Error ? e.message : t("studio.comments.replyFailed"));
     } finally {
       setReplyBusy(false);
     }
@@ -496,7 +499,7 @@ export function StudioCommentsPage() {
       setDeleteTarget(null);
       await reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Không xóa được bình luận.");
+      setError(e instanceof Error ? e.message : t("studio.comments.deleteFailed"));
     } finally {
       setBusyId(null);
     }
@@ -556,13 +559,13 @@ export function StudioCommentsPage() {
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <FilterMenu
-          label="Lọc theo trạng thái trả lời"
+          label={t("studio.comments.filterReplyStatus")}
           options={STATUS_OPTIONS}
           value={status}
           onChange={setStatus}
         />
         <FilterMenu
-          label="Lọc theo người đăng"
+          label={t("studio.comments.filterPoster")}
           options={POSTED_BY_OPTIONS}
           value={postedBy}
           onChange={setPostedBy}
@@ -588,7 +591,7 @@ export function StudioCommentsPage() {
             type="search"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Tìm bình luận hoặc tên người dùng"
+            placeholder={t("studio.comments.searchPlaceholder")}
             className="w-full rounded-md border border-zinc-700 bg-zinc-900 py-1.5 pr-3 pl-9 text-xs text-zinc-200 outline-none transition placeholder:text-zinc-600 focus:border-zinc-500"
           />
         </div>
@@ -603,14 +606,14 @@ export function StudioCommentsPage() {
       <section className="rounded-xl border border-zinc-800 bg-zinc-950/60">
         {loading ? (
           <p className="px-4 py-24 text-center text-sm text-zinc-500">
-            Đang tải bình luận…
+            {t("studio.comments.loading")}
           </p>
         ) : items.length === 0 ? (
           <EmptyState filtered={isFiltered} />
         ) : (
           <>
             <div className="flex items-center justify-between border-b border-zinc-800/80 px-4 py-2.5 text-xs text-zinc-500 sm:px-5">
-              <span>{formatCount(total)} bình luận</span>
+              <span>{t("studio.comments.commentCount", { count: formatCount(total) })}</span>
             </div>
             <div className="divide-y divide-zinc-800/70">
               {items.map((comment) => (
@@ -634,7 +637,7 @@ export function StudioCommentsPage() {
                         rows={2}
                         autoFocus
                         onChange={(e) => setReplyDraft(e.target.value)}
-                        placeholder={`Trả lời @${String(comment.username ?? "").replace(/^@/, "")}`}
+                        placeholder={t("studio.comments.replyPlaceholder", { username: String(comment.username ?? "").replace(/^@/, "") })}
                         className="w-full resize-none rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-500"
                       />
                       <div className="mt-2 flex items-center justify-end gap-2">
@@ -657,7 +660,7 @@ export function StudioCommentsPage() {
                           className="cursor-pointer rounded-md bg-[#fe2c55] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#ff506d] disabled:cursor-not-allowed disabled:opacity-50"
                           onClick={submitReply}
                         >
-                          {replyBusy ? "Đang gửi…" : "Trả lời"}
+                          {replyBusy ? t("studio.comments.sending") : t("studio.comments.reply")}
                         </button>
                       </div>
                     </div>
@@ -673,7 +676,7 @@ export function StudioCommentsPage() {
                   disabled={loadingMore}
                   className="cursor-pointer rounded-md border border-zinc-700 bg-zinc-900 px-4 py-1.5 text-xs font-medium text-zinc-200 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {loadingMore ? "Đang tải…" : "Tải thêm"}
+                  {loadingMore ? t("studio.comments.loading") : t("common.seeMore")}
                 </button>
               </div>
             ) : null}
@@ -684,9 +687,9 @@ export function StudioCommentsPage() {
       {deleteTarget ? (
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-[340px] rounded-xl border border-zinc-800 bg-zinc-900 p-5 text-center shadow-2xl">
-            <p className="text-base font-semibold text-white">Xóa bình luận?</p>
+            <p className="text-base font-semibold text-white">{t("studio.comments.confirmDelete")}</p>
             <p className="mt-2 text-sm text-zinc-400">
-              Bình luận và các trả lời của nó sẽ bị xóa vĩnh viễn.
+              {t("studio.comments.confirmDeleteHint")}
             </p>
             <div className="mt-5 space-y-2">
               <button
@@ -695,7 +698,7 @@ export function StudioCommentsPage() {
                 onClick={confirmDelete}
                 className="w-full cursor-pointer rounded-md bg-[#fe2c55] py-2 text-sm font-semibold text-white transition hover:bg-[#ff506d] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {busyId === deleteTarget.id ? "Đang xóa…" : "Xóa"}
+                {busyId === deleteTarget.id ? t("studio.comments.deleting") : t("common.delete")}
               </button>
               <button
                 type="button"

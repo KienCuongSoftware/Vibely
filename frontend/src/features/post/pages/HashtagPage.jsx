@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { apiClient } from '@/shared/api/client'
 import { Sidebar } from '@/shared/components/Sidebar'
@@ -15,6 +16,7 @@ function normalizeHashtag(raw) {
 }
 
 export function HashtagPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { token, user, logout } = useAuth()
   const { tag } = useParams()
@@ -75,10 +77,12 @@ export function HashtagPage() {
   }, [items])
 
   const postCount = items.length
-  const hashtagTitle = hashtag ? `#${hashtag} | Vibely` : 'Hashtag | Vibely'
+  const hashtagTitle = hashtag
+    ? t('hashtagPage.pageTitleWithTag', { tag: hashtag })
+    : t('hashtagPage.pageTitle')
   const hashtagDescription = hashtag
-    ? `Khám phá các video liên quan đến #${hashtag}.`
-    : 'Khám phá các video theo hashtag trên Vibely.'
+    ? t('hashtagPage.seoDescription', { tag: hashtag })
+    : t('hashtagPage.seoDescriptionGuest')
   const hashtagCanonical = hashtag ? `/tag/${encodeURIComponent(hashtag)}` : '/foryou'
 
   const hashtagVideoIds = useMemo(

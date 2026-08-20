@@ -341,31 +341,31 @@ export function SignupPage() {
     setVibelyId(suggestion);
     sessionStorage.setItem(OAUTH_ONBOARDING_STEP_KEY, "username");
     setView("oauth-username");
-    setStatus("Chọn Vibely ID để hoàn tất đăng ký.");
+    setStatus(t('auth.chooseVibelyId'));
   };
 
   const finishOAuthOnboarding = async (usernameToSubmit) => {
     if (!oauthPending?.userId && !oauthPending?.email) {
-      setStatus("Phiên đăng ký đã hết hạn, vui lòng đăng nhập lại");
+      setStatus(t('auth.sessionExpired'));
       navigate("/login", { replace: true });
       return;
     }
     const normalizedUsername = normalizeVibelyId(usernameToSubmit);
     if (!normalizedUsername) {
-      setStatus("Vui lòng nhập Vibely ID");
+      setStatus(t('auth.enterVibelyId'));
       return;
     }
     if (isPendingUsername(normalizedUsername)) {
       if (!usernameAvailable) {
         const suggestionText = usernameSuggestion
-          ? ` Gợi ý: @${usernameSuggestion}`
+          ? t('auth.vibelyIdSuggestion', { suggestion: usernameSuggestion })
           : "";
-        setStatus(`Vibely ID chưa hợp lệ hoặc đã tồn tại.${suggestionText}`);
+        setStatus(t('auth.vibelyIdInvalid', { suggestion: suggestionText }));
         return;
       }
     }
     if (!birthMonth || !birthDay || !birthYear) {
-      setStatus("Vui lòng chọn ngày sinh");
+      setStatus(t('auth.chooseBirthDate'));
       setView("oauth-birth");
       return;
     }
@@ -379,7 +379,7 @@ export function SignupPage() {
     const birthDate = `${birthYear}-${String(birthMonth).padStart(2, "0")}-${String(birthDay).padStart(2, "0")}`;
 
     setLoading(true);
-    setStatus("Đang hoàn tất đăng ký...");
+    setStatus(t('auth.completingSignup'));
     try {
       // Cookie có thể thuộc tài khoản cũ (apex vs www) — khớp email trước khi lưu.
       const me = await apiClient.me();
@@ -393,13 +393,13 @@ export function SignupPage() {
           /* ignore */
         }
         setStatus(
-          "Phiên đăng nhập không khớp tài khoản LINE. Đăng xuất rồi đăng nhập lại bằng LINE trên www.vibely.sbs.",
+          t('auth.lineSessionMismatch'),
         );
         navigate("/login", { replace: true });
         return;
       }
       if (pendingEmail && !sessionEmail) {
-        setStatus("Chưa có phiên đăng nhập. Vui lòng đăng nhập LINE lại.");
+        setStatus(t('auth.noLoginSession'));
         navigate("/login", { replace: true });
         return;
       }
@@ -414,7 +414,7 @@ export function SignupPage() {
         persistLastLoginMethod(provider);
       }
       await refreshProfile();
-      setStatus("Đăng ký thành công");
+      setStatus(t('auth.signupSuccess'));
       navigate("/", { replace: true });
     } catch (error) {
       const message = String(error?.message ?? "");
@@ -428,7 +428,7 @@ export function SignupPage() {
         navigate("/", { replace: true });
         return;
       }
-      setStatus(message || "Không hoàn tất được đăng ký");
+      setStatus(message || t('auth.sessionExpired'));
     } finally {
       setLoading(false);
     }
@@ -437,14 +437,14 @@ export function SignupPage() {
   const submitOAuthOnboarding = async (event) => {
     event.preventDefault();
     if (!normalizedVibelyId) {
-      setStatus("Vui lòng nhập Vibely ID");
+      setStatus(t('auth.enterVibelyId'));
       return;
     }
     if (!usernameAvailable) {
       const suggestionText = usernameSuggestion
-        ? ` Gợi ý: @${usernameSuggestion}`
+        ? t('auth.vibelyIdSuggestion', { suggestion: usernameSuggestion })
         : "";
-      setStatus(`Vibely ID chưa hợp lệ hoặc đã tồn tại.${suggestionText}`);
+      setStatus(t('auth.vibelyIdInvalid', { suggestion: suggestionText }));
       return;
     }
     await finishOAuthOnboarding(normalizedVibelyId);
@@ -469,15 +469,15 @@ export function SignupPage() {
       setVerifiedEmailSnapshot("");
       if (result?.emailSent) {
         setStatus(
-          `Đã gửi mã 6 số tới ${normalizedEmail}. Kiểm tra hộp thư đến (và cả thư rác/quảng cáo).`,
+          t('auth.otpSent', { email: normalizedEmail }),
         );
       } else if (result?.demoCode) {
         setStatus(
-          `Chưa bật gửi email (dev). Mã xác minh: ${result.demoCode}`,
+          t('auth.otpDemo', { code: result.demoCode }),
         );
       } else {
         setStatus(
-          "Không gửi được email xác minh. Liên hệ quản trị hoặc thử lại sau.",
+          t('auth.otpSendFailed'),
         );
       }
     } catch (error) {
@@ -518,7 +518,7 @@ export function SignupPage() {
       !password.trim() ||
       verificationCode.trim().length !== 6
     ) {
-      setStatus("Vui lòng nhập đầy đủ thông tin");
+      setStatus(t('auth.fillAllFields'));
       return;
     }
     const birthCheck = validateBirthDateParts(birthMonth, birthDay, birthYear);
@@ -527,11 +527,11 @@ export function SignupPage() {
       return;
     }
     if (!isEmailValid) {
-      setStatus("Vui lòng nhập email hợp lệ để đăng ký tài khoản.");
+      setStatus(t('auth.enterValidEmailSignup'));
       return;
     }
     if (!emailAvailable) {
-      setStatus(emailMessage || "Email đã được sử dụng hoặc chưa hợp lệ.");
+      setStatus(emailMessage || t('auth.emailUsedOrInvalid'));
       return;
     }
 
@@ -559,29 +559,29 @@ export function SignupPage() {
     setUsernameChecking(true);
     setVibelyId(suggestion);
     setView("username");
-    setStatus("Mã OTP hợp lệ. Hãy chọn Vibely ID để hoàn tất đăng ký.");
+    setStatus(t('auth.otpValidChooseId'));
   };
 
   const submitRegisterWithUsername = async (event) => {
     event.preventDefault();
     if (!otpVerified) {
-      setStatus("Vui lòng hoàn tất bước xác minh OTP trước");
+      setStatus(t('auth.completeOtpFirst'));
       return;
     }
     if (!normalizedVibelyId) {
-      setStatus("Vui lòng nhập Vibely ID");
+      setStatus(t('auth.enterVibelyId'));
       return;
     }
     if (!usernameAvailable) {
       const suggestionText = usernameSuggestion
-        ? ` Gợi ý: @${usernameSuggestion}`
+        ? t('auth.vibelyIdSuggestion', { suggestion: usernameSuggestion })
         : "";
-      setStatus(`Vibely ID chưa hợp lệ hoặc đã tồn tại.${suggestionText}`);
+      setStatus(t('auth.vibelyIdInvalid', { suggestion: suggestionText }));
       return;
     }
 
     if (!birthMonth || !birthDay || !birthYear) {
-      setStatus("Vui lòng chọn ngày sinh");
+      setStatus(t('auth.chooseBirthDate'));
       setView("credentials");
       return;
     }
@@ -595,12 +595,12 @@ export function SignupPage() {
     const birthDate = `${birthYear}-${String(birthMonth).padStart(2, "0")}-${String(birthDay).padStart(2, "0")}`;
 
     setLoading(true);
-    setStatus("Đang tạo tài khoản...");
+    setStatus(t('auth.creatingAccount'));
     try {
       pendingCaptchaActionRef.current = "register";
       const human = await ensureHuman();
       if (!human.verified) {
-        setStatus("Vui lòng hoàn thành xác minh bảo mật");
+        setStatus(t('auth.completeCaptcha'));
         setLoading(false);
         return;
       }
@@ -617,11 +617,11 @@ export function SignupPage() {
         buildAntiBotHeaders(),
       );
       clearVerificationToken();
-      setStatus("Đăng ký thành công");
+      setStatus(t('auth.signupSuccess'));
     } catch (error) {
       if (error.status === 428 && error.captchaRequired) {
         handleCaptchaRequired(error.captchaRequired);
-        setStatus("Vui lòng hoàn thành xác minh bảo mật");
+        setStatus(t('auth.completeCaptcha'));
         return;
       }
       if (
@@ -630,7 +630,7 @@ export function SignupPage() {
       ) {
         clearVerificationToken();
         handleCaptchaRequired({ challengeLevel: "ROTATE" });
-        setStatus("Captcha đã hết hạn, vui lòng xác minh lại");
+        setStatus(t('auth.captchaExpired'));
         return;
       }
       setStatus(error.message);
@@ -665,7 +665,7 @@ export function SignupPage() {
                 <Link
                   to="/"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                  aria-label="Đóng"
+                  aria-label={t('common.close')}
                 >
                   <IoClose className="text-2xl" />
                 </Link>
@@ -726,24 +726,24 @@ export function SignupPage() {
                   type="button"
                   onClick={() => setView("methods")}
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                  aria-label="Quay lại"
+                  aria-label={t('common.back')}
                 >
                   <IoArrowBack className="text-2xl" />
                 </button>
                 <Link
                   to="/"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                  aria-label="Đóng"
+                  aria-label={t('common.close')}
                 >
                   <IoClose className="text-2xl" />
                 </Link>
               </div>
               <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
                 <h2 className="text-center text-3xl font-bold leading-tight">
-                  Đăng ký
+                  {t('auth.signupShort')}
                 </h2>
                 <p className="text-[13px] text-zinc-100">
-                  Vui lòng cho biết ngày sinh của bạn.
+                  {t('auth.birthDate')}
                 </p>
                 <form className="space-y-2.5" onSubmit={continueToUsernameStep}>
                   <BirthDateFields
@@ -765,7 +765,7 @@ export function SignupPage() {
                     </p>
                   ) : null}
                   <p className="text-[12px] text-zinc-500">
-                    Ngày sinh của bạn sẽ không được hiển thị công khai.
+                    {t('auth.birthPrivate')}
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-[13px] font-semibold text-zinc-100">
@@ -775,7 +775,7 @@ export function SignupPage() {
                       type="button"
                       className="text-[12px] text-zinc-100 hover:text-zinc-300"
                     >
-                      Đăng ký bằng số điện thoại
+                      {t('auth.registerByPhone')}
                     </button>
                   </div>
                   <div className="relative">
@@ -783,7 +783,7 @@ export function SignupPage() {
                       className={
                         showEmailError ? AUTH_FIELD_ERROR : AUTH_FIELD_WITH_ICON
                       }
-                      placeholder="Địa chỉ email"
+                      placeholder={t('auth.emailPlaceholder')}
                       value={identifier}
                       onChange={(e) => {
                         setIdentifier(e.target.value);
@@ -802,7 +802,7 @@ export function SignupPage() {
                   </div>
                   {showEmailError ? (
                     <p className="text-[12px] text-red-500">
-                      Nhập địa chỉ email hợp lệ
+                      {t('auth.emailInvalid')}
                     </p>
                   ) : null}
                   {isEmailValid ? (
@@ -812,7 +812,7 @@ export function SignupPage() {
                       }`}
                     >
                       {emailChecking
-                        ? "Đang kiểm tra email..."
+                        ? t('auth.checkingEmail')
                         : emailMessage || " "}
                     </p>
                   ) : null}
@@ -822,13 +822,13 @@ export function SignupPage() {
                       className="text-[12px] text-zinc-300 underline hover:text-white"
                       onClick={() => void recheckEmailAvailability()}
                     >
-                      Kiểm tra lại email với cơ sở dữ liệu
+                      {t('auth.emailRecheck')}
                     </button>
                   ) : null}
                   <div className="relative">
                     <input
                       className={AUTH_FIELD_WITH_ICON}
-                      placeholder="Mật khẩu"
+                      placeholder={t('auth.password')}
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -844,7 +844,7 @@ export function SignupPage() {
                         setIsPasswordFocused(true);
                       }}
                       aria-label={
-                        showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
+                        showPassword ? t('auth.hidePassword') : t('auth.showPassword')
                       }
                     >
                       {showPassword ? <IoEyeOutline /> : <IoEyeOffOutline />}
@@ -853,7 +853,7 @@ export function SignupPage() {
                   {isPasswordFocused ? (
                     <div className="space-y-0.5 text-[12px] text-zinc-300">
                       <p className="font-medium text-zinc-200">
-                        Mật khẩu của bạn phải gồm:
+                        {t('auth.passwordRequirements')}
                       </p>
                       <p
                         className={`pl-3 ${
@@ -864,7 +864,7 @@ export function SignupPage() {
                               : "text-red-400"
                         }`}
                       >
-                        {passwordHasValidLength ? "✓" : "·"} 8 đến 20 ký tự
+                        {passwordHasValidLength ? "✓" : "·"} {t('auth.passwordLength')}
                       </p>
                       <p
                         className={`pl-3 ${
@@ -875,15 +875,14 @@ export function SignupPage() {
                               : "text-red-400"
                         }`}
                       >
-                        {passwordHasRequiredCharacters ? "✓" : "·"} Các chữ cái,
-                        số và ký tự đặc biệt
+                        {passwordHasRequiredCharacters ? "✓" : "·"} {t('auth.passwordChars')}
                       </p>
                     </div>
                   ) : null}
                   <div className="flex">
                     <input
                       className={AUTH_FIELD_OTP}
-                      placeholder="Nhập mã gồm 6 chữ số"
+                      placeholder={t('auth.enterOtp')}
                       value={verificationCode}
                       maxLength={6}
                       onChange={(e) => {
@@ -903,10 +902,10 @@ export function SignupPage() {
                       disabled={!canSendVerificationCode || sendingCode}
                     >
                       {sendingCode
-                        ? "Đang gửi..."
+                        ? t('auth.sending')
                         : resendSeconds > 0
-                          ? `Gửi lại mã: ${resendSeconds}s`
-                          : "Gửi mã"}
+                          ? t('auth.resendCode', { seconds: resendSeconds })
+                          : t('auth.sendCode')}
                     </button>
                   </div>
                   {sendCodeError ? (
@@ -920,8 +919,7 @@ export function SignupPage() {
                       onChange={(e) => setAcceptMarketing(e.target.checked)}
                     />
                     <span>
-                      Nhận nội dung thịnh hành, bản tin, khuyến mại, đề xuất và
-                      thông tin cập nhật tài khoản được gửi đến email của bạn
+                      {t('auth.marketing')}
                     </span>
                   </label>
                   <button
@@ -933,7 +931,7 @@ export function SignupPage() {
                     type="submit"
                     disabled={!canContinueToUsername}
                   >
-                    Tiếp
+                    {t('auth.next')}
                   </button>
                 </form>
                 {status ? (
@@ -946,10 +944,10 @@ export function SignupPage() {
               <div className="p-4" />
               <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
                 <h2 className="text-center text-3xl font-bold leading-tight">
-                  Đăng ký
+                  {t('auth.signupShort')}
                 </h2>
                 <p className="text-[13px] text-zinc-100">
-                  Vui lòng cho biết ngày sinh của bạn.
+                  {t('auth.birthDate')}
                 </p>
                 <form className="space-y-2.5" onSubmit={continueOAuthBirthStep}>
                   <BirthDateFields
@@ -970,7 +968,7 @@ export function SignupPage() {
                     </p>
                   ) : null}
                   <p className="text-[12px] text-zinc-500">
-                    Ngày sinh của bạn sẽ không được hiển thị công khai.
+                    {t('auth.birthPrivate')}
                   </p>
                   <button
                     className={`h-10 w-full rounded px-3 text-xl font-medium leading-none transition ${
@@ -981,7 +979,7 @@ export function SignupPage() {
                     type="submit"
                     disabled={!canContinueOAuthBirth}
                   >
-                    Tiếp
+                    {t('auth.next')}
                   </button>
                 </form>
                 {status ? (
@@ -999,16 +997,16 @@ export function SignupPage() {
                     setView("oauth-birth");
                   }}
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                  aria-label="Quay lại"
+                  aria-label={t('common.back')}
                 >
                   <IoArrowBack className="text-2xl" />
                 </button>
               </div>
               <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
                 <h2 className="text-center text-3xl font-bold leading-tight">
-                  Đăng ký
+                  {t('auth.signupShort')}
                 </h2>
-                <p className="text-[13px] text-zinc-100">Tạo Vibely ID</p>
+                <p className="text-[13px] text-zinc-100">{t('auth.createVibelyId')}</p>
                 <form
                   className="space-y-2.5"
                   onSubmit={submitOAuthOnboarding}
@@ -1044,10 +1042,10 @@ export function SignupPage() {
                     }`}
                   >
                     {usernameChecking
-                      ? "Đang kiểm tra Vibely ID..."
+                      ? t('auth.vibelyIdChecking')
                       : normalizedVibelyId
-                        ? usernameMessage || "Bạn luôn có thể thay đổi sau"
-                        : "Nhập Vibely ID để kiểm tra"}
+                        ? usernameMessage || t('auth.vibelyIdHint')
+                        : t('auth.vibelyIdEnter')}
                   </p>
                   {usernameCanRecheck && !usernameChecking ? (
                     <button
@@ -1055,7 +1053,7 @@ export function SignupPage() {
                       className="text-[12px] text-zinc-300 underline hover:text-white"
                       onClick={() => void recheckUsernameAvailability()}
                     >
-                      Kiểm tra lại Vibely ID với cơ sở dữ liệu
+                      {t('auth.vibelyIdRecheck')}
                     </button>
                   ) : null}
                   {usernameSuggestion && !usernameAvailable ? (
@@ -1067,7 +1065,7 @@ export function SignupPage() {
                         setVibelyId(usernameSuggestion);
                       }}
                     >
-                      Dùng gợi ý: @{usernameSuggestion}
+                      {t('auth.useSuggestion', { suggestion: usernameSuggestion })}
                     </button>
                   ) : null}
                   <button
@@ -1079,7 +1077,7 @@ export function SignupPage() {
                     type="submit"
                     disabled={!canSubmitOAuthUsername}
                   >
-                    Hoàn tất
+                    {t('auth.done')}
                   </button>
                 </form>
                 {status ? (
@@ -1094,23 +1092,23 @@ export function SignupPage() {
                   type="button"
                   onClick={() => setView("credentials")}
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                  aria-label="Quay lại"
+                  aria-label={t('common.back')}
                 >
                   <IoArrowBack className="text-2xl" />
                 </button>
                 <Link
                   to="/"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                  aria-label="Đóng"
+                  aria-label={t('common.close')}
                 >
                   <IoClose className="text-2xl" />
                 </Link>
               </div>
               <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
                 <h2 className="text-center text-3xl font-bold leading-tight">
-                  Đăng ký
+                  {t('auth.signupShort')}
                 </h2>
-                <p className="text-[13px] text-zinc-100">Tạo Vibely ID</p>
+                <p className="text-[13px] text-zinc-100">{t('auth.createVibelyId')}</p>
                 <form
                   className="space-y-2.5"
                   onSubmit={submitRegisterWithUsername}
@@ -1146,10 +1144,10 @@ export function SignupPage() {
                     }`}
                   >
                     {usernameChecking
-                      ? "Đang kiểm tra Vibely ID..."
+                      ? t('auth.vibelyIdChecking')
                       : normalizedVibelyId
-                        ? usernameMessage || "Bạn luôn có thể thay đổi sau"
-                        : "Nhập Vibely ID để kiểm tra"}
+                        ? usernameMessage || t('auth.vibelyIdHint')
+                        : t('auth.vibelyIdEnter')}
                   </p>
                   {usernameCanRecheck && !usernameChecking ? (
                     <button
@@ -1157,7 +1155,7 @@ export function SignupPage() {
                       className="text-[12px] text-zinc-300 underline hover:text-white"
                       onClick={() => void recheckUsernameAvailability()}
                     >
-                      Kiểm tra lại Vibely ID với cơ sở dữ liệu
+                      {t('auth.vibelyIdRecheck')}
                     </button>
                   ) : null}
                   {usernameSuggestion && !usernameAvailable ? (
@@ -1169,7 +1167,7 @@ export function SignupPage() {
                         setVibelyId(usernameSuggestion);
                       }}
                     >
-                      Dùng gợi ý: @{usernameSuggestion}
+                      {t('auth.useSuggestion', { suggestion: usernameSuggestion })}
                     </button>
                   ) : null}
                   <button
@@ -1181,7 +1179,7 @@ export function SignupPage() {
                     type="submit"
                     disabled={!canSubmitUsername}
                   >
-                    Đăng ký
+                    {t('auth.signupShort')}
                   </button>
                 </form>
                 <button
@@ -1192,7 +1190,7 @@ export function SignupPage() {
                     setVibelyId(buildSuggestedUsername());
                   }}
                 >
-                  Bỏ qua
+                  {t('auth.skip')}
                 </button>
                 {status ? (
                   <p className="text-center text-xs text-zinc-400">{status}</p>

@@ -62,38 +62,38 @@ const SETTINGS_NAV_IDS = [
 const DELETE_REASONS = [
   {
     id: 'temporary',
-    label: 'Tôi chỉ tạm thời ngừng sử dụng',
-    help: 'Nếu bạn có ý định quay lại sử dụng, hãy cân nhắc hủy kích hoạt tài khoản. Việc này sẽ tạm ẩn hồ sơ và nội dung của bạn cho đến khi bạn đăng nhập lại.',
-    actions: ['Hủy kích hoạt tài khoản'],
+    labelKey: 'settings.delete.reasonTemporary',
+    helpKey: 'settings.delete.reasonTemporaryHelp',
+    actionKeys: ['settings.delete.reasonTemporaryAction'],
   },
   {
     id: 'too-much',
-    label: 'Tôi dùng Vibely quá nhiều',
-    help: 'Những biện pháp sau đây có thể giúp ích cho bạn:',
-    actions: ['Đặt giới hạn về thời gian xem của bạn'],
+    labelKey: 'settings.delete.reasonTooMuch',
+    helpKey: 'settings.delete.reasonHelpLead',
+    actionKeys: ['settings.delete.reasonTooMuchAction'],
   },
   {
     id: 'privacy',
-    label: 'Lo ngại về sự an toàn hoặc quyền riêng tư',
-    help: 'Những biện pháp sau đây có thể giúp ích cho bạn:',
-    actions: [
-      'Giữ an toàn cho tài khoản của bạn',
-      'Chuyển sang tài khoản riêng tư và quản lý cài đặt quyền riêng tư',
-      'Chặn người dùng',
-      'Báo cáo vấn đề',
+    labelKey: 'settings.delete.reasonPrivacy',
+    helpKey: 'settings.delete.reasonHelpLead',
+    actionKeys: [
+      'settings.delete.reasonPrivacyAction1',
+      'settings.delete.reasonPrivacyAction2',
+      'settings.delete.reasonPrivacyAction3',
+      'settings.delete.reasonPrivacyAction4',
     ],
   },
   {
     id: 'ads',
-    label: 'Quá nhiều quảng cáo không phù hợp',
-    help: 'Những biện pháp sau đây có thể giúp ích cho bạn:',
-    actions: ['Quản lý cá nhân hóa quảng cáo của bạn'],
+    labelKey: 'settings.delete.reasonAds',
+    helpKey: 'settings.delete.reasonHelpLead',
+    actionKeys: ['settings.delete.reasonAdsAction'],
   },
   {
     id: 'trouble',
-    label: 'Gặp sự cố khi bắt đầu',
-    help: 'Những biện pháp sau đây có thể giúp ích cho bạn:',
-    actions: ['Thiết lập hồ sơ của bạn'],
+    labelKey: 'settings.delete.reasonTrouble',
+    helpKey: 'settings.delete.reasonHelpLead',
+    actionKeys: ['settings.delete.reasonTroubleAction'],
   },
 ]
 
@@ -296,7 +296,7 @@ export function SettingsPage() {
       await refreshProfile()
     } catch (error) {
       setPrivateAccount(previous)
-      setPrivacyError(error?.message || 'Không thể cập nhật quyền riêng tư.')
+      setPrivacyError(error?.message || t('settings.errors.privacyUpdate'))
     } finally {
       setPrivacySaving(false)
     }
@@ -365,7 +365,7 @@ export function SettingsPage() {
 
   const sendDeactivationCode = async () => {
     if (!token) {
-      setDeactivationError('Bạn cần đăng nhập để tiếp tục.')
+      setDeactivationError(t('settings.loginRequired'))
       return
     }
     setSendingDeactivationCode(true)
@@ -376,7 +376,7 @@ export function SettingsPage() {
       setDeactivationCooldown(result?.resendAfterSeconds ?? 60)
       setDeactivationStep('code')
     } catch (error) {
-      setDeactivationError(error?.message || 'Không thể gửi mã xác minh.')
+      setDeactivationError(error?.message || t('settings.errors.sendCode'))
     } finally {
       setSendingDeactivationCode(false)
     }
@@ -384,7 +384,7 @@ export function SettingsPage() {
 
   const deactivateAccount = async () => {
     if (!token) {
-      setDeactivationError('Bạn cần đăng nhập để tiếp tục.')
+      setDeactivationError(t('settings.loginRequired'))
       return
     }
     setDeactivatingAccount(true)
@@ -395,7 +395,7 @@ export function SettingsPage() {
       navigate('/login', { replace: true })
     } catch (error) {
       setConfirmDeactivateOpen(false)
-      setDeactivationError(error?.message || 'Không thể hủy kích hoạt tài khoản.')
+      setDeactivationError(error?.message || t('settings.errors.deactivate'))
     } finally {
       setDeactivatingAccount(false)
     }
@@ -403,7 +403,7 @@ export function SettingsPage() {
 
   const sendDeletionCode = async () => {
     if (!token) {
-      setDeletionError('Bạn cần đăng nhập để tiếp tục.')
+      setDeletionError(t('settings.loginRequired'))
       return
     }
     setSendingDeletionCode(true)
@@ -414,7 +414,7 @@ export function SettingsPage() {
       setDeletionCooldown(result?.resendAfterSeconds ?? 60)
       setDeletionStep('code')
     } catch (error) {
-      setDeletionError(error?.message || 'Không thể gửi mã xác minh.')
+      setDeletionError(error?.message || t('settings.errors.sendCode'))
     } finally {
       setSendingDeletionCode(false)
     }
@@ -422,7 +422,7 @@ export function SettingsPage() {
 
   const deleteAccount = async () => {
     if (!token) {
-      setDeletionError('Bạn cần đăng nhập để tiếp tục.')
+      setDeletionError(t('settings.loginRequired'))
       return
     }
     setDeletingAccount(true)
@@ -433,7 +433,7 @@ export function SettingsPage() {
       navigate('/signup', { replace: true })
     } catch (error) {
       setConfirmDeleteOpen(false)
-      setDeletionError(error?.message || 'Không thể xóa tài khoản.')
+      setDeletionError(error?.message || t('settings.errors.delete'))
     } finally {
       setDeletingAccount(false)
     }
@@ -454,7 +454,7 @@ export function SettingsPage() {
       setAccountRegionModalOpen(false)
     } catch (error) {
       setAccountRegionCode(previous)
-      setAccountRegionError(error?.message || 'Không thể cập nhật khu vực tài khoản.')
+      setAccountRegionError(error?.message || t('settings.errors.regionUpdate'))
     } finally {
       setAccountRegionSaving(false)
     }
@@ -474,7 +474,7 @@ export function SettingsPage() {
       await refreshProfile()
     } catch (error) {
       setCommentAudience(previous)
-      setCommentPrivacyError(error?.message || 'Không thể cập nhật cài đặt bình luận.')
+      setCommentPrivacyError(error?.message || t('settings.errors.commentUpdate'))
     } finally {
       setCommentPrivacySaving(false)
     }
@@ -513,7 +513,7 @@ export function SettingsPage() {
     } catch (error) {
       if (isPotential) setDmPotentialAudience(previous)
       else setDmOthersAudience(previous)
-      setDmError(error?.message || 'Không thể cập nhật cài đặt tin nhắn.')
+      setDmError(error?.message || t('settings.errors.dmUpdate'))
     } finally {
       setDmSaving(false)
     }
@@ -540,7 +540,7 @@ export function SettingsPage() {
     } catch (error) {
       setDmPotentialAudience(previousPotential)
       setDmOthersAudience(previousOthers)
-      setDmError(error?.message || 'Không thể cập nhật cài đặt tin nhắn.')
+      setDmError(error?.message || t('settings.errors.dmUpdate'))
     } finally {
       setDmSaving(false)
     }
@@ -554,7 +554,7 @@ export function SettingsPage() {
       const rows = await apiClient.listDataExports(token)
       setDataExportRequests(Array.isArray(rows) ? rows : [])
     } catch (error) {
-      setDataExportError(error?.message || 'Không thể tải danh sách yêu cầu dữ liệu.')
+      setDataExportError(error?.message || t('settings.errors.dataExportList'))
     } finally {
       setDataExportLoading(false)
     }
@@ -571,7 +571,7 @@ export function SettingsPage() {
       await apiClient.createDataExport(token, { format, categories })
       await loadDataExportRequests()
     } catch (error) {
-      setDataExportError(error?.message || 'Không thể tạo yêu cầu dữ liệu.')
+      setDataExportError(error?.message || t('settings.errors.dataExportCreate'))
     } finally {
       setDataExportSubmitting(false)
     }
@@ -588,7 +588,7 @@ export function SettingsPage() {
       await apiClient.cancelDataExport(token, requestId)
       await loadDataExportRequests()
     } catch (error) {
-      setDataExportError(error?.message || 'Không thể hủy yêu cầu dữ liệu.')
+      setDataExportError(error?.message || t('settings.errors.dataExportCancel'))
     } finally {
       setDataExportSubmitting(false)
     }
@@ -623,7 +623,7 @@ export function SettingsPage() {
           className="mx-auto flex h-9 w-full max-w-sm items-center gap-2 rounded-full bg-zinc-900 px-4 text-sm text-zinc-500 ring-1 ring-zinc-800 hover:ring-zinc-600"
         >
           <IoSearchOutline className="shrink-0 text-base" />
-          <span>{t('settings.title') === 'Settings' ? 'Search' : 'Tìm kiếm'}</span>
+          <span>{t('nav.search')}</span>
         </button>
 
         {/* Right actions */}
@@ -634,7 +634,7 @@ export function SettingsPage() {
             className="flex items-center gap-1.5 rounded-full border border-zinc-700 px-3 py-1.5 text-sm font-medium text-zinc-200 hover:bg-zinc-900"
           >
             <IoCloudUploadOutline className="text-base" />
-            <span className="hidden sm:block">{t('settings.title') === 'Settings' ? 'Upload' : 'Tải lên'}</span>
+            <span className="hidden sm:block">{t('nav.upload')}</span>
           </Link>
 
           {/* Messages */}
@@ -721,21 +721,21 @@ export function SettingsPage() {
                         className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
                       >
                         <IoPerson className="shrink-0 text-lg text-zinc-300" />
-                        <span>Xem hồ sơ</span>
+                        <span>{t('settings.menu.viewProfile')}</span>
                       </Link>
                       <button
                         type="button"
                         className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
                       >
                         <IoCashOutline className="shrink-0 text-lg text-zinc-300" />
-                        <span>Nhận Xu</span>
+                        <span>{t('settings.menu.getCoins')}</span>
                       </button>
                       <button
                         type="button"
                         className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
                       >
                         <IoRocketOutline className="shrink-0 text-lg text-zinc-300" />
-                        <span className="whitespace-nowrap">Công cụ dành cho nhà sáng tạo</span>
+                        <span className="whitespace-nowrap">{t('settings.menu.creatorTools')}</span>
                       </button>
                       <Link
                         to="/settings"
@@ -760,7 +760,7 @@ export function SettingsPage() {
                         className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
                       >
                         <IoHelpCircleOutline className="shrink-0 text-lg text-zinc-300" />
-                        <span>Phản hồi và trợ giúp</span>
+                        <span>{t('settings.menu.feedbackHelp')}</span>
                       </button>
                       <button
                         type="button"
@@ -768,7 +768,7 @@ export function SettingsPage() {
                         className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
                       >
                         <IoMoonOutline className="shrink-0 text-lg text-zinc-300" />
-                        <span>Chế độ tối</span>
+                        <span>{t('settings.menu.darkMode')}</span>
                       </button>
                       <div className="mx-4 my-1 border-t border-zinc-800" />
                       <button
@@ -795,7 +795,7 @@ export function SettingsPage() {
               type="button"
               onClick={() => navigate(-1)}
               className="mb-3 flex h-10 w-10 items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-900 hover:text-white"
-              aria-label="Quay lại"
+              aria-label={t('common.back')}
             >
               <IoArrowBack className="text-xl" aria-hidden />
             </button>
@@ -834,7 +834,7 @@ export function SettingsPage() {
                   <IoSearchOutline className="shrink-0 text-base text-zinc-500" aria-hidden />
                   <input
                     type="search"
-                    placeholder={t('settings.title') === 'Settings' ? 'Search settings' : 'Tìm kiếm cài đặt'}
+                    placeholder={t('settings.searchPlaceholder')}
                     className="min-w-0 flex-1 bg-transparent text-sm text-zinc-200 outline-none placeholder:text-zinc-500"
                   />
                 </div>
@@ -846,24 +846,24 @@ export function SettingsPage() {
                   type="button"
                   onClick={() => setPrivacyView('main')}
                   className="mb-5 flex h-10 w-10 items-center justify-center rounded-full text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
-                  aria-label="Quay lại"
+                  aria-label={t('common.back')}
                 >
                   <IoArrowBack className="text-xl" aria-hidden />
                 </button>
-                <h1 className="text-2xl font-bold text-zinc-100">Tin nhắn trực tiếp</h1>
-                <p className="mt-6 text-sm font-semibold text-zinc-100">Người có thể gửi tin nhắn cho bạn</p>
+                <h1 className="text-2xl font-bold text-zinc-100">{t('settings.dm.title')}</h1>
+                <p className="mt-6 text-sm font-semibold text-zinc-100">{t('settings.dm.whoCanMessage')}</p>
                 <div className="mt-2">
                   <SettingsRow
-                    title="Kết nối tiềm năng"
-                    trailing={dmAudienceLabel(dmPotentialAudience)}
+                    title={t('settings.dm.potentialConnections')}
+                    trailing={dmAudienceLabel(dmPotentialAudience, t)}
                     onClick={() => {
                       setDmError('')
                       setDmModalKind('potential')
                     }}
                   />
                   <SettingsRow
-                    title="Người khác trên Vibely"
-                    trailing={dmAudienceLabel(dmOthersAudience)}
+                    title={t('settings.dm.othersOnVibely')}
+                    trailing={dmAudienceLabel(dmOthersAudience, t)}
                     onClick={() => {
                       setDmError('')
                       setDmModalKind('others')
@@ -871,9 +871,7 @@ export function SettingsPage() {
                   />
                 </div>
                 <p className="mt-4 text-xs leading-relaxed text-zinc-500">
-                  Bạn bè (các follower mà bạn follow lại), tài khoản bạn follow và những người bạn biết có thể
-                  nhắn tin cho bạn, trừ khi bạn chặn họ. Khi người khác nhắn tin cho bạn, bạn có thể chọn nhận
-                  tin nhắn dưới dạng yêu cầu trò chuyện.
+                  {t('settings.dm.footerHint')}
                 </p>
               </div>
             ) : privacyView === 'download-data' ? (
@@ -895,27 +893,26 @@ export function SettingsPage() {
                   type="button"
                   onClick={() => setAccountView('main')}
                   className="mb-5 flex h-9 w-9 items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-900 hover:text-white"
-                  aria-label="Quay lại quản lý tài khoản"
+                  aria-label={t('settings.deactivate.backToAccountAria')}
                 >
                   <IoArrowBack className="text-lg" aria-hidden />
                 </button>
 
                 <section className="rounded-xl border border-zinc-900 bg-zinc-900/40 p-5">
-                  <h1 className="text-2xl font-bold text-zinc-100">Xóa hoặc hủy kích hoạt?</h1>
+                  <h1 className="text-2xl font-bold text-zinc-100">{t('settings.deactivate.removalTitle')}</h1>
                   <p className="mt-4 max-w-xl text-sm leading-relaxed text-zinc-400">
-                    Nếu bạn muốn tạm ngừng sử dụng Vibely, bạn chỉ cần hủy kích hoạt tài khoản.
-                    Tuy nhiên, nếu bạn chọn xóa tài khoản, bạn sẽ không thể khôi phục tài khoản đó sau 30 ngày.
+                    {t('settings.deactivate.removalHint')}
                   </p>
 
                   <div className="mt-5 space-y-3">
                     <AccountRemovalChoice
-                      title="Hủy kích hoạt tài khoản"
-                      description="Không ai có thể nhìn thấy tài khoản của bạn, bao gồm nội dung đã đăng, bình luận và hồ sơ. Bạn có thể kích hoạt lại bất cứ khi nào đăng nhập lại."
+                      title={t('settings.deactivate.deactivateTitle')}
+                      description={t('settings.deactivate.deactivateDescription')}
                       onClick={startDeactivationFlow}
                     />
                     <AccountRemovalChoice
-                      title="Xóa tài khoản vĩnh viễn"
-                      description="Tài khoản và nội dung của bạn sẽ bị xóa vĩnh viễn. Sau khi xác nhận xóa, bạn không thể khôi phục tài khoản này."
+                      title={t('settings.deactivate.deleteTitle')}
+                      description={t('settings.deactivate.deleteDescription')}
                       onClick={startDeletionFlow}
                     />
                   </div>
@@ -934,7 +931,7 @@ export function SettingsPage() {
                     setAccountView('removal')
                   }}
                   className="mb-5 flex h-9 w-9 items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-900 hover:text-white"
-                  aria-label="Quay lại"
+                  aria-label={t('common.back')}
                 >
                   <IoArrowBack className="text-lg" aria-hidden />
                 </button>
@@ -943,14 +940,14 @@ export function SettingsPage() {
                   <section className="flex min-h-[460px] flex-col rounded-xl border border-zinc-900 bg-zinc-900/40 p-5">
                     <div>
                       <h1 className="text-lg font-bold text-zinc-100">
-                        {user?.username}: Hủy kích hoạt tài khoản này?
+                        {t('settings.deactivate.confirmTitle', { username: user?.username })}
                       </h1>
-                      <p className="mt-4 text-sm text-zinc-400">Nếu bạn hủy kích hoạt tài khoản của mình:</p>
+                      <p className="mt-4 text-sm text-zinc-400">{t('settings.deactivate.confirmLead')}</p>
                       <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-zinc-400">
-                        <li>Không ai có thể tìm thấy tài khoản và nội dung của bạn.</li>
-                        <li>Người khác vẫn có thể xem được những tương tác trong tài khoản của họ, chẳng hạn như tin nhắn.</li>
-                        <li>Vibely sẽ tiếp tục lưu trữ dữ liệu để bạn có thể khôi phục khi đăng nhập lại.</li>
-                        <li>Bạn có thể kích hoạt lại bằng cách đăng nhập và xác minh tài khoản.</li>
+                        <li>{t('settings.deactivate.bullet1')}</li>
+                        <li>{t('settings.deactivate.bullet2')}</li>
+                        <li>{t('settings.deactivate.bullet3')}</li>
+                        <li>{t('settings.deactivate.bullet4')}</li>
                       </ul>
                     </div>
 
@@ -964,15 +961,18 @@ export function SettingsPage() {
                       disabled={sendingDeactivationCode}
                       className="mt-auto w-full rounded-md bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-500/90 disabled:cursor-not-allowed disabled:bg-red-500/45"
                     >
-                      {sendingDeactivationCode ? 'Đang gửi mã...' : 'Hủy kích hoạt'}
+                      {sendingDeactivationCode ? t('settings.sendingCode') : t('settings.deactivate.action')}
                     </button>
                   </section>
                 ) : (
                   <section className="flex min-h-[460px] flex-col rounded-xl border border-zinc-900 bg-zinc-900/40 p-5">
                     <div>
-                      <h1 className="text-lg font-bold text-zinc-100">Hãy giúp chúng tôi xác nhận đó là bạn</h1>
+                      <h1 className="text-lg font-bold text-zinc-100">{t('settings.confirmIdentityTitle')}</h1>
                       <p className="mt-4 text-sm leading-relaxed text-zinc-400">
-                        Để hủy kích hoạt {user?.username}, hãy nhập mã chúng tôi gửi tới email {maskEmail(user?.email)} của bạn.
+                        {t('settings.deactivate.confirmCodeLead', {
+                          username: user?.username,
+                          email: maskEmail(user?.email),
+                        })}
                       </p>
 
                       <div className="mt-5 flex max-w-sm overflow-hidden rounded-lg bg-zinc-800">
@@ -983,7 +983,7 @@ export function SettingsPage() {
                             setDeactivationError('')
                           }}
                           inputMode="numeric"
-                          placeholder="Nhập mã gồm 6 chữ số"
+                          placeholder={t('settings.enterCodePlaceholder')}
                           className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
                         />
                         <button
@@ -992,7 +992,9 @@ export function SettingsPage() {
                           disabled={sendingDeactivationCode || deactivationCooldown > 0}
                           className="shrink-0 px-4 text-xs font-medium text-zinc-300 transition hover:text-white disabled:cursor-not-allowed disabled:text-zinc-500"
                         >
-                          {deactivationCooldown > 0 ? `Gửi lại mã ${deactivationCooldown}s` : 'Gửi lại mã'}
+                          {deactivationCooldown > 0
+                            ? t('settings.resendCodeIn', { seconds: deactivationCooldown })
+                            : t('settings.resendCode')}
                         </button>
                       </div>
                     </div>
@@ -1007,7 +1009,7 @@ export function SettingsPage() {
                       disabled={deactivationCode.length !== 6}
                       className="mt-auto w-full rounded-md bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-500/90 disabled:cursor-not-allowed disabled:bg-red-500/35"
                     >
-                      Hủy kích hoạt tài khoản
+                      {t('settings.deactivate.deactivateAccount')}
                     </button>
                   </section>
                 )}
@@ -1016,7 +1018,7 @@ export function SettingsPage() {
                   <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/70 px-4">
                     <div className="w-full max-w-xs overflow-hidden rounded-xl bg-zinc-900 text-center shadow-2xl ring-1 ring-zinc-800">
                       <div className="px-5 py-5">
-                        <h2 className="text-sm font-semibold text-zinc-100">Hủy kích hoạt</h2>
+                        <h2 className="text-sm font-semibold text-zinc-100">{t('settings.deactivate.confirmModalTitle')}</h2>
                         <p className="mt-1 text-sm text-zinc-200">{user?.username}?</p>
                       </div>
                       <div className="grid grid-cols-2 border-t border-zinc-800">
@@ -1026,7 +1028,7 @@ export function SettingsPage() {
                           disabled={deactivatingAccount}
                           className="px-4 py-3 text-sm text-zinc-100 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:text-zinc-500"
                         >
-                          Hủy
+                          {t('common.cancel')}
                         </button>
                         <button
                           type="button"
@@ -1034,7 +1036,7 @@ export function SettingsPage() {
                           disabled={deactivatingAccount}
                           className="border-l border-zinc-800 px-4 py-3 text-sm font-semibold text-red-400 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:text-red-400/50"
                         >
-                          {deactivatingAccount ? 'Đang xử lý...' : 'Hủy kích hoạt'}
+                          {deactivatingAccount ? t('settings.processing') : t('settings.deactivate.action')}
                         </button>
                       </div>
                     </div>
@@ -1064,16 +1066,16 @@ export function SettingsPage() {
                     setAccountView('removal')
                   }}
                   className="mb-5 flex h-9 w-9 items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-900 hover:text-white"
-                  aria-label="Quay lại"
+                  aria-label={t('common.back')}
                 >
                   <IoArrowBack className="text-lg" aria-hidden />
                 </button>
 
                 {deletionStep === 'reason' ? (
                   <section className="flex min-h-[460px] flex-col rounded-xl border border-zinc-900 bg-zinc-900/40 p-5">
-                    <h1 className="text-lg font-bold text-zinc-100">Trước khi bạn thoát, chúng tôi có thể giúp gì cho bạn?</h1>
+                    <h1 className="text-lg font-bold text-zinc-100">{t('settings.delete.reasonTitle')}</h1>
                     <p className="mt-4 text-sm leading-relaxed text-zinc-400">
-                      Hãy cho chúng tôi biết lý do bạn muốn xóa tài khoản để chúng tôi có thể giúp giải quyết vấn đề thường gặp.
+                      {t('settings.delete.reasonHint')}
                     </p>
                     <div className="mt-5 space-y-3">
                       {DELETE_REASONS.map((reason) => {
@@ -1086,16 +1088,16 @@ export function SettingsPage() {
                             className="w-full text-left"
                           >
                             <span className="flex items-center justify-between gap-4 text-sm text-zinc-100">
-                              {reason.label}
+                              {t(reason.labelKey)}
                               <span className={`h-4 w-4 rounded-full border ${selected ? 'border-red-500 bg-red-500 shadow-[inset_0_0_0_4px_#27272a]' : 'border-zinc-600'}`} />
                             </span>
                             {selected ? (
                               <span className="mt-3 block rounded-lg bg-zinc-800 px-4 py-3 text-xs leading-relaxed text-zinc-400">
-                                {reason.help}
+                                {t(reason.helpKey)}
                                 <span className="mt-2 block space-y-1">
-                                  {reason.actions.map((action) => (
-                                    <span key={action} className="block font-semibold text-zinc-100">
-                                      {action} ›
+                                  {reason.actionKeys.map((actionKey) => (
+                                    <span key={actionKey} className="block font-semibold text-zinc-100">
+                                      {t(actionKey)} ›
                                     </span>
                                   ))}
                                 </span>
@@ -1111,20 +1113,20 @@ export function SettingsPage() {
                       disabled={!deletionReason}
                       className="mt-auto w-full rounded-md bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-500/90 disabled:cursor-not-allowed disabled:bg-red-500/35"
                     >
-                      Tiếp tục
+                      {t('settings.continue')}
                     </button>
                     <button type="button" onClick={() => setAccountView('removal')} className="mt-4 text-sm text-zinc-300 hover:text-white">
-                      Bỏ qua
+                      {t('settings.skip')}
                     </button>
                   </section>
                 ) : deletionStep === 'data' ? (
                   <section className="flex min-h-[460px] flex-col rounded-xl border border-zinc-900 bg-zinc-900/40 p-5">
-                    <h1 className="text-lg font-bold text-zinc-100">Tải về dữ liệu Vibely của bạn</h1>
+                    <h1 className="text-lg font-bold text-zinc-100">{t('settings.delete.dataTitle')}</h1>
                     <p className="mt-4 text-sm leading-relaxed text-zinc-400">
-                      Chúng tôi khuyên bạn tải dữ liệu trước khi xóa tài khoản. Sau khi tài khoản bị xóa, bạn có thể không truy cập được hồ sơ, video, bình luận và dữ liệu liên quan.
+                      {t('settings.delete.dataHint')}
                     </p>
                     <button type="button" className="mt-5 w-fit text-sm font-semibold text-sky-400 hover:text-sky-300">
-                      Yêu cầu tải về
+                      {t('settings.delete.requestDownload')}
                     </button>
                     <label className="mt-auto flex items-start gap-3 text-xs leading-relaxed text-zinc-400">
                       <input
@@ -1133,7 +1135,7 @@ export function SettingsPage() {
                         onChange={(event) => setDeletionDataAcknowledged(event.target.checked)}
                         className="mt-0.5 h-4 w-4 rounded border-zinc-600 bg-zinc-900 accent-red-500"
                       />
-                      Việc bỏ qua bước này có nghĩa là bạn đã xét duyệt yêu cầu dữ liệu của mình và muốn tiếp tục xóa tài khoản.
+                      {t('settings.delete.dataAck')}
                     </label>
                     <button
                       type="button"
@@ -1141,19 +1143,21 @@ export function SettingsPage() {
                       disabled={!deletionDataAcknowledged}
                       className="mt-5 w-full rounded-md bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-500/90 disabled:cursor-not-allowed disabled:bg-red-500/35"
                     >
-                      Tiếp tục
+                      {t('settings.continue')}
                     </button>
                   </section>
                 ) : deletionStep === 'confirm' ? (
                   <section className="flex min-h-[460px] flex-col rounded-xl border border-zinc-900 bg-zinc-900/40 p-5">
-                    <h1 className="text-lg font-bold text-zinc-100">{user?.username}: Xóa tài khoản này?</h1>
+                    <h1 className="text-lg font-bold text-zinc-100">
+                      {t('settings.delete.confirmTitle', { username: user?.username })}
+                    </h1>
                     <p className="mt-4 text-sm leading-relaxed text-zinc-400">
-                      Sau khi xác nhận, tài khoản của bạn sẽ bị xóa khỏi Vibely và bạn sẽ bị đăng xuất khỏi tất cả thiết bị.
+                      {t('settings.delete.confirmLead')}
                     </p>
                     <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed text-zinc-400">
-                      <li>Bạn sẽ không thể đăng nhập bằng tài khoản này sau khi xóa.</li>
-                      <li>Video, hồ sơ, lượt thích, bình luận và quan hệ follow liên quan sẽ bị xóa theo dữ liệu tài khoản.</li>
-                      <li>Một số dữ liệu pháp lý hoặc bảo mật có thể được giữ lại theo yêu cầu hệ thống.</li>
+                      <li>{t('settings.delete.bullet1')}</li>
+                      <li>{t('settings.delete.bullet2')}</li>
+                      <li>{t('settings.delete.bullet3')}</li>
                     </ul>
                     {deletionError ? (
                       <p className="mt-5 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-300">{deletionError}</p>
@@ -1164,15 +1168,18 @@ export function SettingsPage() {
                       disabled={sendingDeletionCode}
                       className="mt-auto w-full rounded-md bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-500/90 disabled:cursor-not-allowed disabled:bg-red-500/45"
                     >
-                      {sendingDeletionCode ? 'Đang gửi mã...' : 'Tiếp tục'}
+                      {sendingDeletionCode ? t('settings.sendingCode') : t('settings.continue')}
                     </button>
                   </section>
                 ) : (
                   <section className="flex min-h-[460px] flex-col rounded-xl border border-zinc-900 bg-zinc-900/40 p-5">
                     <div>
-                      <h1 className="text-lg font-bold text-zinc-100">Hãy giúp chúng tôi xác nhận đó là bạn</h1>
+                      <h1 className="text-lg font-bold text-zinc-100">{t('settings.confirmIdentityTitle')}</h1>
                       <p className="mt-4 text-sm leading-relaxed text-zinc-400">
-                        Để xóa {user?.username}, hãy nhập mã chúng tôi gửi tới email {maskEmail(user?.email)} của bạn.
+                        {t('settings.delete.confirmCodeLead', {
+                          username: user?.username,
+                          email: maskEmail(user?.email),
+                        })}
                       </p>
                       <div className="mt-5 flex max-w-sm overflow-hidden rounded-lg bg-zinc-800">
                         <input
@@ -1182,7 +1189,7 @@ export function SettingsPage() {
                             setDeletionError('')
                           }}
                           inputMode="numeric"
-                          placeholder="Nhập mã gồm 6 chữ số"
+                          placeholder={t('settings.enterCodePlaceholder')}
                           className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
                         />
                         <button
@@ -1191,7 +1198,9 @@ export function SettingsPage() {
                           disabled={sendingDeletionCode || deletionCooldown > 0}
                           className="shrink-0 px-4 text-xs font-medium text-zinc-300 transition hover:text-white disabled:cursor-not-allowed disabled:text-zinc-500"
                         >
-                          {deletionCooldown > 0 ? `Gửi lại mã ${deletionCooldown}s` : 'Gửi lại mã'}
+                          {deletionCooldown > 0
+                            ? t('settings.resendCodeIn', { seconds: deletionCooldown })
+                            : t('settings.resendCode')}
                         </button>
                       </div>
                     </div>
@@ -1204,7 +1213,7 @@ export function SettingsPage() {
                       disabled={deletionCode.length !== 6}
                       className="mt-auto w-full rounded-md bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-500/90 disabled:cursor-not-allowed disabled:bg-red-500/35"
                     >
-                      Xóa tài khoản
+                      {t('settings.delete.deleteAccount')}
                     </button>
                   </section>
                 )}
@@ -1213,7 +1222,7 @@ export function SettingsPage() {
                   <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/80 px-4">
                     <div className="w-full max-w-xs overflow-hidden rounded-xl bg-zinc-900 text-center shadow-2xl ring-1 ring-zinc-800">
                       <div className="px-5 py-5">
-                        <h2 className="text-sm font-semibold text-zinc-100">Xóa</h2>
+                        <h2 className="text-sm font-semibold text-zinc-100">{t('settings.delete.confirmModalTitle')}</h2>
                         <p className="mt-1 text-sm font-semibold text-zinc-100">{user?.username}?</p>
                       </div>
                       <div className="grid grid-cols-2 border-t border-zinc-800">
@@ -1223,7 +1232,7 @@ export function SettingsPage() {
                           disabled={deletingAccount}
                           className="px-4 py-3 text-sm text-zinc-100 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:text-zinc-500"
                         >
-                          Hủy
+                          {t('common.cancel')}
                         </button>
                         <button
                           type="button"
@@ -1231,7 +1240,7 @@ export function SettingsPage() {
                           disabled={deletingAccount}
                           className="border-l border-zinc-800 px-4 py-3 text-sm font-semibold text-red-400 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:text-red-400/50"
                         >
-                          {deletingAccount ? 'Đang xóa...' : 'Xóa'}
+                          {deletingAccount ? t('settings.delete.deleting') : t('common.delete')}
                         </button>
                       </div>
                     </div>
@@ -1241,11 +1250,11 @@ export function SettingsPage() {
             ) : (
               <>
             <div data-section="account" className="scroll-mt-4">
-            <h1 className="text-2xl font-bold text-zinc-100">Quản lý tài khoản</h1>
+            <h1 className="text-2xl font-bold text-zinc-100">{t('settings.accountSection.title')}</h1>
 
-            <SettingsSection title="Kiểm soát tài khoản">
+            <SettingsSection title={t('settings.accountSection.control')}>
               <SettingsRow
-                title="Hủy kích hoạt hoặc xóa tài khoản"
+                title={t('settings.accountSection.deactivateOrDelete')}
                 onClick={() => {
                   setAccountView('removal')
                   setActiveSetting('account')
@@ -1254,10 +1263,10 @@ export function SettingsPage() {
               />
             </SettingsSection>
 
-            <SettingsSection title="Thông tin tài khoản">
+            <SettingsSection title={t('settings.accountSection.info')}>
               <SettingsRow
-                title="Khu vực tài khoản"
-                trailing={getRegionLabel(accountRegionCode, 'vi')}
+                title={t('settings.accountSection.region')}
+                trailing={getRegionLabel(accountRegionCode, locale?.startsWith('vi') ? 'vi' : 'en')}
                 onClick={() => {
                   setAccountRegionError('')
                   setAccountRegionModalOpen(true)
@@ -1267,19 +1276,19 @@ export function SettingsPage() {
             </div>
 
             <div data-section="privacy" className="scroll-mt-4">
-            <SettingsSection title="Quyền riêng tư">
+            <SettingsSection title={t('settings.privacySection.title')}>
               <div>
                 <div className="flex items-center justify-between gap-4 border-b border-zinc-800/70 py-4">
                   <div>
-                    <p className="text-sm font-medium text-zinc-100">Tài khoản riêng tư</p>
+                    <p className="text-sm font-medium text-zinc-100">{t('settings.privacySection.privateAccount')}</p>
                     <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                      Khi bật, chỉ người bạn phê duyệt mới có thể follow và xem nội dung của bạn.
+                      {t('settings.privacySection.privateAccountHintShort')}
                     </p>
                   </div>
                   <SettingsSwitch
                     checked={privateAccount}
                     onChange={(next) => void handlePrivateAccountToggle(next)}
-                    label="Tài khoản riêng tư"
+                    label={t('settings.privacySection.privateAccount')}
                     disabled={privacySaving}
                   />
                 </div>
@@ -1287,31 +1296,31 @@ export function SettingsPage() {
                   <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-300">{privacyError}</p>
                 ) : null}
                 {privacySaving ? (
-                  <p className="text-xs text-zinc-500">Đang lưu cài đặt quyền riêng tư…</p>
+                  <p className="text-xs text-zinc-500">{t('settings.savingPrivacy')}</p>
                 ) : null}
-                <SettingsGroupLabel title="Tương tác" />
+                <SettingsGroupLabel title={t('settings.privacySection.interactions')} />
                 <SettingsRow
-                  title="Bình luận"
-                  description="Người có thể bình luận bài đăng của bạn"
-                  trailing={commentAudienceLabel(commentAudience)}
+                  title={t('settings.privacySection.comments')}
+                  description={t('settings.privacySection.commentsHint')}
+                  trailing={commentAudienceLabel(commentAudience, t)}
                   onClick={() => {
                     setCommentPrivacyError('')
                     setCommentPrivacyModalOpen(true)
                   }}
                 />
                 <SettingsRow
-                  title="Tin nhắn trực tiếp"
-                  description="Người có thể gửi tin nhắn cho bạn"
-                  trailing="Bạn bè"
+                  title={t('settings.privacySection.dm')}
+                  description={t('settings.privacySection.dmHint')}
+                  trailing={t('settings.friends')}
                   onClick={() => {
                     setPrivacyView('direct-messages')
                     setActiveSetting('privacy')
                   }}
                 />
-                <SettingsGroupLabel title="Dữ liệu" />
+                <SettingsGroupLabel title={t('settings.privacySection.data')} />
                 <SettingsRow
-                  title="Tải dữ liệu của bạn"
-                  description="Lấy bản sao dữ liệu Vibely của bạn"
+                  title={t('settings.privacySection.downloadData')}
+                  description={t('settings.privacySection.downloadDataHint')}
                   onClick={() => {
                     setPrivacyView('download-data')
                     setActiveSetting('privacy')
@@ -1323,82 +1332,82 @@ export function SettingsPage() {
             </div>
 
             <div data-section="push" className="scroll-mt-4">
-            <SettingsSection title="Thông báo đẩy">
+            <SettingsSection title={t('settings.pushSection.title')}>
               <div>
                 <div className="flex items-center justify-between gap-4 border-b border-zinc-800/70 py-4">
                   <div>
-                    <p className="text-sm font-medium text-zinc-100">Thông báo trên máy tính để bàn</p>
-                    <p className="mt-1 text-xs leading-relaxed text-zinc-500">Nhận thông báo hoạt động tài khoản trên trình duyệt.</p>
+                    <p className="text-sm font-medium text-zinc-100">{t('settings.pushSection.desktopLong')}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-zinc-500">{t('settings.pushSection.desktopHint')}</p>
                   </div>
-                  <SettingsSwitch checked={suggestAccount} onChange={setSuggestAccount} label="Thông báo trên máy tính" />
+                  <SettingsSwitch checked={suggestAccount} onChange={setSuggestAccount} label={t('settings.pushSection.desktop')} />
                 </div>
-                <SettingsRow title="Tùy chọn của bạn" description="Lượt thích, bình luận, follower và tin nhắn." />
-                <SettingsRow title="Tương tác" />
-                <SettingsRow title="Thông báo trong ứng dụng" />
+                <SettingsRow title={t('settings.pushSection.yourPreferences')} description={t('settings.pushSection.yourPreferencesHint')} />
+                <SettingsRow title={t('settings.pushSection.interactions')} />
+                <SettingsRow title={t('settings.pushSection.inApp')} />
               </div>
             </SettingsSection>
             </div>
 
             <div data-section="business" className="scroll-mt-4">
-            <SettingsSection title="Xác minh doanh nghiệp">
+            <SettingsSection title={t('settings.businessSection.title')}>
               <div className="flex items-center justify-between gap-4 py-4">
                 <div>
-                  <p className="text-sm font-medium text-zinc-100">Xác minh doanh nghiệp</p>
-                  <p className="mt-1 text-xs leading-relaxed text-zinc-500">Tăng độ tin cậy và hiển thị thông tin doanh nghiệp trên hồ sơ.</p>
+                  <p className="text-sm font-medium text-zinc-100">{t('settings.businessSection.title')}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-zinc-500">{t('settings.businessSection.hint')}</p>
                 </div>
-                <SettingsSwitch checked={profileViews} onChange={setProfileViews} label="Xác minh doanh nghiệp" />
+                <SettingsSwitch checked={profileViews} onChange={setProfileViews} label={t('settings.businessSection.title')} />
               </div>
             </SettingsSection>
             </div>
 
             <div data-section="ads" className="scroll-mt-4">
-            <SettingsSection title="Quảng cáo">
+            <SettingsSection title={t('settings.adsSection.title')}>
               <div>
-                <SettingsRow title="Quản lý quảng cáo bạn nhìn thấy" description="Điều chỉnh chủ đề quảng cáo và nhà quảng cáo bạn đã tương tác." />
-                <SettingsRow title="Tải xuống dữ liệu quảng cáo" />
-                <SettingsRow title="Chỉnh sửa thông tin đối tượng" />
+                <SettingsRow title={t('settings.adsSection.manageAds')} description={t('settings.adsSection.manageAdsHint')} />
+                <SettingsRow title={t('settings.adsSection.downloadAdsData')} />
+                <SettingsRow title={t('settings.adsSection.editAudienceInfo')} />
                 <div className="flex items-center justify-between gap-4 border-b border-zinc-800/70 py-4">
                   <div>
-                    <p className="text-sm font-medium text-zinc-100">Quảng cáo được cá nhân hóa</p>
-                    <p className="mt-1 text-xs leading-relaxed text-zinc-500">Sử dụng hoạt động của bạn để cá nhân hóa quảng cáo trong Vibely.</p>
+                    <p className="text-sm font-medium text-zinc-100">{t('settings.adsSection.personalized')}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-zinc-500">{t('settings.adsSection.personalizedHint')}</p>
                   </div>
-                  <SettingsSwitch checked={adPersonalization} onChange={setAdPersonalization} label="Quảng cáo cá nhân hóa" />
+                  <SettingsSwitch checked={adPersonalization} onChange={setAdPersonalization} label={t('settings.adsSection.personalizedSwitch')} />
                 </div>
                 <div className="flex items-center justify-between gap-4 py-4">
                   <div>
-                    <p className="text-sm font-medium text-zinc-100">Sử dụng hoạt động ngoài Vibely</p>
-                    <p className="mt-1 text-xs leading-relaxed text-zinc-500">Cho phép dùng dữ liệu đối tác để cải thiện trải nghiệm quảng cáo.</p>
+                    <p className="text-sm font-medium text-zinc-100">{t('settings.adsSection.offVibelyActivity')}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-zinc-500">{t('settings.adsSection.offVibelyActivityHint')}</p>
                   </div>
-                  <SettingsSwitch checked={browserActivity} onChange={setBrowserActivity} label="Hoạt động ngoài Vibely" />
+                  <SettingsSwitch checked={browserActivity} onChange={setBrowserActivity} label={t('settings.adsSection.offVibelySwitch')} />
                 </div>
               </div>
             </SettingsSection>
             </div>
 
             <div data-section="screen-time" className="scroll-mt-4">
-            <SettingsSection title="Thời gian sử dụng màn hình">
+            <SettingsSection title={t('settings.screenTimeSection.title')}>
               <div>
-                <SettingsRow title="Thời gian sử dụng mỗi ngày" trailing="Tắt" />
-                <SettingsRow title="Nghỉ giải lao sau thời gian sử dụng màn hình" trailing="Tắt" />
-                <SettingsRow title="Giờ ngủ" trailing="Tắt" />
+                <SettingsRow title={t('settings.screenTimeSection.dailyLimit')} trailing={t('settings.off')} />
+                <SettingsRow title={t('settings.screenTimeSection.breakReminder')} trailing={t('settings.off')} />
+                <SettingsRow title={t('settings.screenTimeSection.sleepHours')} trailing={t('settings.off')} />
                 <div className="flex items-center justify-between gap-4 border-b border-zinc-800/70 py-4">
                   <div>
-                    <p className="text-sm font-medium text-zinc-100">Cập nhật thời gian sử dụng hằng tuần</p>
-                    <p className="mt-1 text-xs leading-relaxed text-zinc-500">Nhận báo cáo thói quen sử dụng tài khoản của bạn.</p>
+                    <p className="text-sm font-medium text-zinc-100">{t('settings.screenTimeSection.weeklyUpdate')}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-zinc-500">{t('settings.screenTimeSection.weeklyUpdateHint')}</p>
                   </div>
-                  <SettingsSwitch checked={weeklyScreenReport} onChange={setWeeklyScreenReport} label="Báo cáo hằng tuần" />
+                  <SettingsSwitch checked={weeklyScreenReport} onChange={setWeeklyScreenReport} label={t('settings.screenTimeSection.weeklyReport')} />
                 </div>
-                <SettingsRow title="Tóm tắt" />
-                <SettingsRow title="Trợ giúp và tài nguyên" danger />
+                <SettingsRow title={t('settings.screenTimeSection.summary')} />
+                <SettingsRow title={t('settings.screenTimeSection.helpResources')} danger />
               </div>
             </SettingsSection>
             </div>
 
             <div data-section="content" className="scroll-mt-4">
-            <SettingsSection title="Tùy chọn nội dung">
+            <SettingsSection title={t('settings.contentSection.title')}>
               <div>
-                <SettingsRow title="Lọc từ khóa" description="Ẩn nội dung chứa từ khóa bạn không muốn nhìn thấy." />
-                <SettingsRow title="Ngôn ngữ nội dung" trailing="Tiếng Việt" />
+                <SettingsRow title={t('settings.contentSection.filterKeywords')} description={t('settings.contentSection.filterKeywordsHint')} />
+                <SettingsRow title={t('settings.contentSection.contentLanguage')} trailing={t('languages.vi')} />
               </div>
             </SettingsSection>
             </div>
@@ -1459,8 +1468,8 @@ export function SettingsPage() {
         value={dmModalKind === 'others' ? dmOthersAudience : dmPotentialAudience}
         helpText={
           dmModalKind === 'others'
-            ? 'Bạn sẽ nhận yêu cầu trò chuyện từ người lướt trên Vibely trong yêu cầu trò chuyện của mình, trừ khi bạn chọn không nhận.'
-            : 'Kết nối tiềm năng là những follower của bạn. Bạn sẽ nhận được tin nhắn kết nối tiềm năng trong mục yêu cầu trò chuyện, trừ khi bạn không muốn nhận tin nhắn nào cả.'
+            ? t('settings.dm.othersHelp')
+            : t('settings.dm.potentialHelp')
         }
         saving={dmSaving}
         error={dmError}

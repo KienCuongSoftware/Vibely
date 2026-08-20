@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { IoChevronBack, IoMenu } from "react-icons/io5";
 import { StudioSidebar } from "@/features/studio/components/StudioSidebar";
 import { StudioAccountMenu } from "@/features/studio/components/StudioAccountMenu";
@@ -20,6 +21,7 @@ export function StudioLayout({
   hideTopBar = false,
   theme = "dark",
 }) {
+  const { t } = useTranslation();
   const isLight = theme === "light";
   const location = useLocation();
   const navigate = useNavigate();
@@ -34,7 +36,7 @@ export function StudioLayout({
           ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl text-slate-700 hover:bg-slate-100 lg:hidden"
           : "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl text-zinc-200 hover:bg-zinc-900 lg:hidden"
       }
-      aria-label={onUploadRoute ? "Quay lại feed" : "Menu Studio"}
+      aria-label={onUploadRoute ? t("studio.backToFeed") : t("studio.menuStudio")}
       onClick={() => (onUploadRoute ? navigate("/") : setMobileNavOpen(true))}
     >
       {onUploadRoute ? <IoChevronBack aria-hidden /> : <IoMenu aria-hidden />}
@@ -56,7 +58,7 @@ export function StudioLayout({
           <button
             type="button"
             className="fixed inset-0 z-[200] bg-black/50 lg:hidden"
-            aria-label="Đóng menu"
+            aria-label={t("studio.closeMenu")}
             onClick={() => setMobileNavOpen(false)}
           />
           <StudioSidebar
@@ -96,7 +98,7 @@ export function StudioLayout({
                       : "min-w-0 truncate text-base font-bold text-white sm:text-lg lg:text-xl"
                 }
               >
-                Vibely Studio
+                {t("studio.brand")}
               </span>
             </div>
             <StudioAccountMenu theme={theme} />

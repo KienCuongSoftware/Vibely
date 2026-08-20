@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { IoCalendarOutline, IoChevronBack, IoChevronForward } from 'react-icons/io5'
-
-const WEEKDAYS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
 
 function pad2(n) {
   return String(n).padStart(2, '0')
@@ -80,6 +79,19 @@ export function StudioCommentDateRangePicker({
   resetFrom = '',
   resetTo = '',
 }) {
+  const { t, i18n } = useTranslation()
+  const WEEKDAYS = useMemo(
+    () => [
+      t('studio.dateRange.weekdays.sun'),
+      t('studio.dateRange.weekdays.mon'),
+      t('studio.dateRange.weekdays.tue'),
+      t('studio.dateRange.weekdays.wed'),
+      t('studio.dateRange.weekdays.thu'),
+      t('studio.dateRange.weekdays.fri'),
+      t('studio.dateRange.weekdays.sat'),
+    ],
+    [t],
+  )
   const wrapRef = useRef(null)
   const [open, setOpen] = useState(false)
   const [view, setView] = useState(() => ({
@@ -144,11 +156,11 @@ export function StudioCommentDateRangePicker({
   const grid = useMemo(() => buildMonthGrid(view.y, view.m), [view.y, view.m])
 
   const monthTitle = useMemo(() => {
-    return new Date(view.y, view.m, 1).toLocaleDateString('vi-VN', {
+    return new Date(view.y, view.m, 1).toLocaleDateString(i18n.language || 'en', {
       month: 'long',
       year: 'numeric',
     })
-  }, [view.y, view.m])
+  }, [view.y, view.m, i18n.language])
 
   const goPrevMonth = useCallback(() => {
     setView((v) => (v.m <= 0 ? { y: v.y - 1, m: 11 } : { y: v.y, m: v.m - 1 }))
@@ -199,28 +211,28 @@ export function StudioCommentDateRangePicker({
     if (minI && cmpIso(minI, maxI) > 0) minI = maxI
 
     let f = draftStart || ''
-    let t = draftEnd || ''
-    if (f && !t) t = f
-    if (!f && t) f = t
+    let end = draftEnd || ''
+    if (f && !end) end = f
+    if (!f && end) f = end
     if (minI || maxI) {
       if (f) f = clampIso(f, minI, maxI)
-      if (t) t = clampIso(t, minI, maxI)
-      if (f && t && cmpIso(f, t) > 0) {
+      if (end) end = clampIso(end, minI, maxI)
+      if (f && end && cmpIso(f, end) > 0) {
         const z = f
-        f = t
-        t = z
+        f = end
+        end = z
       }
     }
-    onApply({ from: f, to: t })
+    onApply({ from: f, to: end })
     setOpen(false)
   }, [draftStart, draftEnd, onApply, minDate, maxDate])
 
   const triggerLabel = useMemo(() => {
-    if (!from && !to) return 'Chọn ngày'
+    if (!from && !to) return t('studio.dateRange.pickDate')
     if (from && to) return `${formatDisplay(from)} – ${formatDisplay(to)}`
     if (from) return `${formatDisplay(from)} – …`
     return `… – ${formatDisplay(to)}`
-  }, [from, to])
+  }, [from, to, t])
 
   return (
     <div ref={wrapRef} className="relative inline-flex min-w-0">
@@ -233,7 +245,7 @@ export function StudioCommentDateRangePicker({
       >
         <IoCalendarOutline className="h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
         <span className="min-w-0 truncate">
-          <span className="text-zinc-500">Ngày BL</span>{' '}
+          <span className="text-zinc-500">{t('studio.dateRange.commentDate')}</span>{' '}
           <span className="text-zinc-200">{triggerLabel}</span>
         </span>
       </button>
@@ -243,7 +255,7 @@ export function StudioCommentDateRangePicker({
           className="absolute right-0 top-[calc(100%+0.35rem)] z-[200] w-[min(calc(100vw-1.25rem),15rem)] rounded-xl border border-zinc-700 bg-zinc-900 p-2 shadow-2xl sm:left-0 sm:right-auto"
           role="dialog"
           aria-modal="true"
-          aria-label="Chọn khoảng ngày bình luận"
+          aria-label={t('studio.dateRange.dialogAria')}
           onMouseDown={(e) => e.stopPropagation()}
         >
           <div className="mb-1 flex items-center justify-between gap-1 px-0.5">
@@ -251,7 +263,7 @@ export function StudioCommentDateRangePicker({
               type="button"
               onClick={goPrevMonth}
               className="rounded-md p-1 text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100"
-              aria-label="Tháng trước"
+              aria-label={t('studio.dateRange.prevMonth')}
             >
               <IoChevronBack className="h-4 w-4" aria-hidden />
             </button>
@@ -262,7 +274,7 @@ export function StudioCommentDateRangePicker({
               type="button"
               onClick={goNextMonth}
               className="rounded-md p-1 text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100"
-              aria-label="Tháng sau"
+              aria-label={t('studio.dateRange.nextMonth')}
             >
               <IoChevronForward className="h-4 w-4" aria-hidden />
             </button>
@@ -342,7 +354,7 @@ export function StudioCommentDateRangePicker({
               }}
               className="min-h-0 flex-1 rounded-lg bg-[#fe2c55] py-1.5 text-[11px] font-bold text-white transition hover:bg-[#e62a4d]"
             >
-              Đồng ý
+              {t('studio.dateRange.apply')}
             </button>
             <button
               type="button"
@@ -352,7 +364,7 @@ export function StudioCommentDateRangePicker({
               }}
               className="min-h-0 flex-1 rounded-lg border border-zinc-600 bg-zinc-950 py-1.5 text-[11px] font-semibold text-zinc-100 transition hover:bg-zinc-800"
             >
-              Đặt lại
+              {t('studio.dateRange.reset')}
             </button>
           </div>
         </div>

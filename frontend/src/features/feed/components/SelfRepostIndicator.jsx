@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { LuRepeat2 } from 'react-icons/lu'
@@ -40,7 +41,7 @@ function clampLeft(left, width, margin = 8) {
 
 /**
  * TikTok-style: pill avatar + tên + icon đăng lại.
- * Hover pill → popover hồ sơ; hover icon → tooltip "Xóa video đăng lại".
+ * Hover pill → popover hồ sơ; hover icon → tooltip "{t('feed.unrepost')}".
  */
 export function SelfRepostIndicator({
   avatarUrl,
@@ -51,6 +52,7 @@ export function SelfRepostIndicator({
   busy = false,
   theme = 'overlay',
 }) {
+  const { t } = useTranslation()
   const styles = THEMES[theme] ?? THEMES.overlay
   const pillRef = useRef(null)
   const iconRef = useRef(null)
@@ -67,7 +69,7 @@ export function SelfRepostIndicator({
   const nameLabel =
     String(displayName ?? '').trim() ||
     String(username ?? '').trim() ||
-    'Bạn'
+    t('common.you')
 
   const profilePopoverHeightPx = theme === 'overlay' ? 52 : 68
 
@@ -181,7 +183,7 @@ export function SelfRepostIndicator({
         {theme === 'sidebar' ? (
           <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-zinc-300">
             <LuRepeat2 className="shrink-0 text-sm text-[#FACE15]" aria-hidden />
-            <span>Bạn đã đăng lại</span>
+            <span>{t('feed.youReposted')}</span>
           </p>
         ) : null}
       </div>
@@ -237,7 +239,7 @@ export function SelfRepostIndicator({
               zIndex: FLOATING_Z,
             }}
           >
-            Xóa video đăng lại
+            {t('feed.unrepost')}
             <span
               aria-hidden
               className="absolute left-1/2 top-full -translate-x-1/2 border-[5px] border-transparent border-t-[#545454]"
@@ -263,7 +265,7 @@ export function SelfRepostIndicator({
         >
           <div
             className={styles.pill}
-            aria-label={theme === 'overlay' ? nameLabel : `${nameLabel} đã đăng lại`}
+            aria-label={theme === 'overlay' ? nameLabel : t('feed.nameReposted', { name: nameLabel })}
           >
             <img
               src={resolvedAvatar}
@@ -289,7 +291,7 @@ export function SelfRepostIndicator({
           <button
             type="button"
             className={styles.iconBtn}
-            aria-label="Xóa video đăng lại"
+            aria-label={t('feed.unrepost')}
             disabled={busy}
             onClick={handleUnrepostClick}
           >

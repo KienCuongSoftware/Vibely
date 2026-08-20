@@ -1,3 +1,5 @@
+import i18n from '@/i18n/i18n.js'
+
 /** @typedef {'auto' | string} FeedVideoQualityMode */
 
 /**
@@ -133,9 +135,9 @@ function snapQualityHeightForLabel(height) {
  * @param {FeedVideoQualityMode} mode
  */
 export function formatQualityLabel(mode) {
-  if (mode === 'auto') return 'Tự động'
+  if (mode === 'auto') return i18n.t('feed.autoQuality')
   const height = Number(mode)
-  if (!Number.isFinite(height) || height <= 0) return 'Tự động'
+  if (!Number.isFinite(height) || height <= 0) return i18n.t('feed.autoQuality')
   const snapped = snapQualityHeightForLabel(height)
   if (snapped >= 2160) return '4K'
   if (snapped >= 1440) return '1440P'

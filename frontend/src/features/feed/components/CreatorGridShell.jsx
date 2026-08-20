@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { IoLogOutOutline, IoPerson } from 'react-icons/io5'
 import { Sidebar } from '@/shared/components/Sidebar'
 import { AccountActionsPill } from '@/features/profile/components/AccountActionsPill'
@@ -12,6 +13,7 @@ import { FEED_STAGE_OUTER_WIDTH_CLASS } from '@/features/feed/components/FeedPho
 const DEFAULT_USER_AVATAR_URL = '/images/users/default-avatar.jpeg'
 
 export function GridLoginPrompt({ title, description }) {
+  const { t } = useTranslation()
   return (
     <div
       className={`relative mx-auto flex ${FEED_STAGE_OUTER_WIDTH_CLASS} flex-col items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-zinc-950 px-6 py-16 text-center shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl`}
@@ -24,20 +26,21 @@ export function GridLoginPrompt({ title, description }) {
         to="/login"
         className="mt-6 inline-flex items-center justify-center rounded-full bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-red-500"
       >
-        Đăng nhập
+        {t('nav.login')}
       </Link>
     </div>
   )
 }
 
 export function GridLoadingState() {
+  const { t } = useTranslation()
   return (
     <div className="flex flex-1 flex-col items-center justify-center py-16">
       <div
         className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-700 border-t-rose-500"
         aria-hidden
       />
-      <p className="mt-4 text-sm text-zinc-500">Đang tải…</p>
+      <p className="mt-4 text-sm text-zinc-500">{t('feed.loadingEllipsis')}</p>
     </div>
   )
 }
@@ -51,6 +54,7 @@ export function CreatorGridShell({
   contentFullBleed = false,
   children,
 }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const accountMenuRef = useRef(null)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
@@ -130,19 +134,19 @@ export function CreatorGridShell({
               to="/login"
               className="ml-0.5 cursor-pointer rounded-full bg-red-600 px-3 py-1 text-xs font-semibold leading-none text-white hover:bg-red-500"
             >
-              Đăng nhập
+              {t('nav.login')}
             </Link>
           ) : (
             <div className="relative" ref={accountMenuRef}>
               <TooltipHoverWrap
-                tip="Tài khoản"
+                tip={t('common.account')}
                 tipHidden={showAccountMenu}
                 hoverOnly
               >
                 <button
                   type="button"
                   className="flex cursor-pointer rounded-full p-0.5 ring-1 ring-zinc-700 transition hover:ring-zinc-500"
-                  aria-label="Menu tài khoản"
+                  aria-label={t('common.accountMenu')}
                   onClick={() => setShowAccountMenu((prev) => !prev)}
                 >
                   <img
@@ -152,7 +156,7 @@ export function CreatorGridShell({
                         ? user.avatarUrl
                         : DEFAULT_USER_AVATAR_URL
                     }
-                    alt="avatar người dùng"
+                    alt={t('common.userAvatar')}
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       e.currentTarget.src = DEFAULT_USER_AVATAR_URL
@@ -168,7 +172,7 @@ export function CreatorGridShell({
                     onClick={() => setShowAccountMenu(false)}
                   >
                     <IoPerson className="text-base" />
-                    Xem hồ sơ
+                    {t('common.viewProfile')}
                   </Link>
                   <button
                     type="button"
@@ -179,7 +183,7 @@ export function CreatorGridShell({
                     }}
                   >
                     <IoLogOutOutline className="text-base" />
-                    Đăng xuất
+                    {t('common.logout')}
                   </button>
                 </div>
               ) : null}
@@ -196,7 +200,7 @@ export function CreatorGridShell({
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/55 px-4">
           <div className="w-full max-w-sm rounded-xl bg-zinc-800 p-6 text-center shadow-2xl">
             <p className="text-2xl font-bold leading-snug">
-              Bạn có chắc chắn muốn đăng xuất?
+              {t('common.logoutConfirm')}
             </p>
             <div className="mt-5 grid grid-cols-2 gap-3 text-base">
               <button
@@ -204,7 +208,7 @@ export function CreatorGridShell({
                 className="rounded-md bg-zinc-700 py-2 font-semibold text-zinc-200 hover:bg-zinc-600"
                 onClick={() => setShowLogoutConfirm(false)}
               >
-                Hủy
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
@@ -214,7 +218,7 @@ export function CreatorGridShell({
                   onLogout?.()
                 }}
               >
-                Đăng xuất
+                {t('common.logout')}
               </button>
             </div>
           </div>

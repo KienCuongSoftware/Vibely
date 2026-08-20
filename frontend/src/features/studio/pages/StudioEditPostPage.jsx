@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   IoAddCircleOutline,
@@ -35,6 +36,7 @@ function formatPreviewTime(seconds) {
 }
 
 export function StudioEditPostPage() {
+  const { t } = useTranslation()
   const { publicId: publicIdParam } = useParams()
   const navigate = useNavigate()
   const { token, user } = useAuth()
@@ -92,21 +94,21 @@ export function StudioEditPostPage() {
   const validId = isVideoPublicId(publicId)
 
   const privacyLabels = {
-    everyone: 'Mọi người',
-    friends: 'Bạn bè',
-    onlyYou: 'Chỉ mình tôi',
+    everyone: t('studio.privacy.everyone'),
+    friends: t('studio.privacy.friends'),
+    onlyYou: t('studio.privacy.onlyYou'),
   }
 
   useEffect(() => {
-    document.title = 'VibelyStudio | Chỉnh sửa bài đăng'
-  }, [])
+    document.title = t('studio.docTitle.editPost')
+  }, [t])
 
   useEffect(() => {
     if (!token || !validId) {
       setLoading(false)
       setVideo(null)
       setSavedSnapshot(null)
-      if (!validId) setLoadError('Liên kết bài đăng không hợp lệ.')
+      if (!validId) setLoadError(t('studio.editPost.invalidLink'))
       return
     }
     let cancelled = false
@@ -138,7 +140,7 @@ export function StudioEditPostPage() {
         if (!cancelled) {
           setVideo(null)
           setSavedSnapshot(null)
-          setLoadError(e instanceof Error ? e.message : 'Không tải được bài đăng.')
+          setLoadError(e instanceof Error ? e.message : t('studio.editPost.loadFailed'))
         }
       })
       .finally(() => {
@@ -492,7 +494,7 @@ export function StudioEditPostPage() {
   const musicLine = useMemo(() => {
     const a = String(video?.audioTitle ?? '').trim()
     if (a) return `♫ ${a}`
-    return `♫ nhạc gốc - ${user?.displayName || user?.username || 'Vibely'}`
+    return t('studio.editPost.originalSound', { name: user?.displayName || user?.username || 'Vibely' })
   }, [video?.audioTitle, user?.displayName, user?.username])
 
   const avatarSrc =
@@ -513,7 +515,7 @@ export function StudioEditPostPage() {
     const preservedTitle =
       String(video?.title ?? savedSnapshot?.title ?? 'Video').trim() || 'Video'
     if (String(description).length > DESC_MAX) {
-      setStatus(`Mô tả không quá ${DESC_MAX} ký tự.`)
+      setStatus(t('studio.editPost.descTooLong', { max: DESC_MAX }))
       return
     }
     setBusy(true)
@@ -531,17 +533,17 @@ export function StudioEditPostPage() {
       )
       navigate('/vibelystudio/posts', {
         replace: true,
-        state: { successMessage: 'Đã cập nhật bài đăng.' },
+        state: { successMessage: t('studio.editPost.updated') },
       })
     } catch (e) {
       if (e?.code === 'ACCOUNT_BANNED') {
         const reason = String(e?.data?.reason ?? '').trim()
-        setBanNoticeReason(reason || 'chính sách cộng đồng của Vibely')
+        setBanNoticeReason(reason || t('studio.editPost.communityPolicy'))
         setBanNoticeOpen(true)
         setStatus('')
         return
       }
-      setStatus(e instanceof Error ? e.message : 'Không lưu được thay đổi.')
+      setStatus(e instanceof Error ? e.message : t('studio.editPost.saveFailed'))
     } finally {
       setBusy(false)
     }
@@ -597,14 +599,14 @@ export function StudioEditPostPage() {
           >
             <div className="px-6 py-6">
               <h2 id="studio-edit-ban-title" className="text-xl font-bold text-zinc-100">
-                Tài khoản của bạn đã bị cấm
+                {t('studio.editPost.bannedTitle')}
               </h2>
               <p className="mt-4 text-[13px] leading-relaxed text-zinc-300">
-                Tài khoản bạn đã bị cấm vì{' '}
+                {t('studio.editPost.bannedBecause')}{' '}
                 <span className="font-semibold text-zinc-100">{banNoticeReason}</span>.
               </p>
               <p className="mt-3 text-[13px] leading-relaxed text-zinc-400">
-                Bạn có thể gửi khiếu nại từ trang đăng nhập nếu cho rằng đây là nhầm lẫn.
+                {t('studio.editPost.bannedAppealHint')}
               </p>
             </div>
             <div className="border-t border-zinc-800">
@@ -616,7 +618,7 @@ export function StudioEditPostPage() {
                   navigate('/login', { replace: true })
                 }}
               >
-                Đã hiểu
+                {t('studio.editPost.gotIt')}
               </button>
             </div>
           </div>
@@ -628,11 +630,11 @@ export function StudioEditPostPage() {
           to="/vibelystudio/posts"
           className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-200 transition hover:bg-zinc-800"
         >
-          ← Bài đăng
+          {t('studio.editPost.backPosts')}
         </Link>
         {validId ? (
           <span className="text-xs text-zinc-500">
-            Mã <span className="font-mono text-zinc-400">#{publicId}</span>
+            {t('studio.editPost.code')} <span className="font-mono text-zinc-400">#{publicId}</span>
           </span>
         ) : null}
       </div>
@@ -640,7 +642,7 @@ export function StudioEditPostPage() {
       <div className="flex min-h-0 flex-col">
         <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4 sm:p-6">
           {loading ? (
-            <p className="py-16 text-center text-sm text-zinc-500">Đang tải bài đăng…</p>
+            <p className="py-16 text-center text-sm text-zinc-500">{t('studio.editPost.loading')}</p>
           ) : loadError ? (
             <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 px-4 py-12 text-center">
               <p className="text-sm text-amber-400">{loadError}</p>
@@ -648,7 +650,7 @@ export function StudioEditPostPage() {
                 to="/vibelystudio/posts"
                 className="mt-4 inline-block text-sm font-medium text-[#fe2c55] hover:underline"
               >
-                Về danh sách bài đăng
+                {t('studio.editPost.backToList')}
               </Link>
             </div>
           ) : (
@@ -660,19 +662,19 @@ export function StudioEditPostPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="truncate font-medium text-zinc-100">{postHeaderLabel}</p>
                         <span className="shrink-0 rounded bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold text-zinc-300">
-                          Đã đăng
+                          {t('studio.editPost.published')}
                         </span>
                       </div>
                       <p className="mt-2 flex items-center gap-1.5 text-sm text-emerald-400">
                         <IoCheckmarkCircle className="text-lg" aria-hidden />
-                        Chỉnh sửa nội dung hiển thị (mô tả, ảnh bìa)
+                        {t('studio.editPost.editVisibleContent')}
                       </p>
                     </div>
                     <Link
                       to="/vibelystudio/upload"
                       className="flex shrink-0 items-center gap-2 rounded-lg border border-zinc-600 bg-zinc-900 px-3 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-800"
                     >
-                      Tải video mới
+                      {t('studio.editPost.uploadNewVideo')}
                     </Link>
                   </div>
                   <div className="h-1 w-full bg-emerald-600" aria-hidden />
@@ -680,31 +682,31 @@ export function StudioEditPostPage() {
 
                 {modStatus && modStatus.statusLabel && modStatus.statusLabel !== 'NONE' ? (
                   <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-100">Kiểm duyệt nội dung</h3>
+                    <h3 className="text-sm font-semibold text-zinc-100">{t('studio.editPost.moderationTitle')}</h3>
                     <p className="mt-1 text-sm text-zinc-400">{modStatus.messageVi}</p>
                     <p className="mt-2 text-xs text-zinc-500">
-                      Trạng thái:{' '}
+                      {t('studio.editPost.status')}{' '}
                       <span className="text-zinc-300">
                         {modStatus.statusLabel === 'NORMAL'
-                          ? 'Bình thường'
+                          ? t('studio.editPost.statusNormal')
                           : modStatus.statusLabel === 'LIMITED'
-                            ? 'Hạn chế phân phối'
+                            ? t('studio.editPost.statusLimited')
                             : modStatus.statusLabel === 'UNDER_REVIEW'
-                              ? 'Đang xem lại'
+                              ? t('studio.editPost.statusReviewing')
                               : modStatus.statusLabel === 'REMOVED'
-                                ? 'Đã gỡ'
+                                ? t('studio.editPost.statusRemoved')
                                 : modStatus.statusLabel}
                       </span>
                       {modStatus.trustScore != null ? (
                         <>
                           {' '}
-                          · Điểm tin cậy creator: {Number(modStatus.trustScore).toFixed(2)}
+                          {t('studio.editPost.trustScore', { score: Number(modStatus.trustScore).toFixed(2) })}
                         </>
                       ) : null}
                     </p>
                     {modStatus.hasOpenAppeal ? (
                       <p className="mt-2 text-xs text-amber-300">
-                        Khiếu nại đang chờ xử lý ({modStatus.appealState}).
+                        {t('studio.editPost.appealPending', { state: modStatus.appealState })}
                       </p>
                     ) : null}
                     {modStatus.appealable ? (
@@ -713,7 +715,7 @@ export function StudioEditPostPage() {
                           value={modAppealText}
                           onChange={(e) => setModAppealText(e.target.value)}
                           rows={3}
-                          placeholder="Giải thích vì sao bạn khiếu nại quyết định này (tối thiểu 10 ký tự)…"
+                          placeholder={t('studio.editPost.appealPlaceholder')}
                           className="w-full rounded-lg border border-zinc-700 bg-black px-3 py-2 text-sm text-zinc-100"
                         />
                         {modAppealMsg ? (
@@ -729,19 +731,19 @@ export function StudioEditPostPage() {
                               await apiClient.createVideoModerationAppeal(token, publicId, {
                                 appealText: modAppealText.trim(),
                               })
-                              setModAppealMsg('Đã gửi khiếu nại. Admin sẽ xem xét.')
+                              setModAppealMsg(t('studio.editPost.appealSent'))
                               setModAppealText('')
                               const next = await apiClient.getVideoModerationStatus(token, publicId)
                               setModStatus(next)
                             } catch (e) {
-                              setModAppealMsg(e.message ?? 'Không gửi được khiếu nại.')
+                              setModAppealMsg(e.message ?? t('studio.editPost.appealFailed'))
                             } finally {
                               setModAppealBusy(false)
                             }
                           }}
                           className="rounded-lg bg-[#fe2c55] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
                         >
-                          {modAppealBusy ? 'Đang gửi…' : 'Gửi khiếu nại'}
+                          {modAppealBusy ? t('studio.editPost.sending') : t('studio.editPost.sendAppeal')}
                         </button>
                       </div>
                     ) : null}
@@ -749,10 +751,10 @@ export function StudioEditPostPage() {
                 ) : null}
 
                 <div>
-                  <h2 className="text-xl font-bold text-white">Chi tiết</h2>
+                  <h2 className="text-xl font-bold text-white">{t('studio.editPost.details')}</h2>
 
                   <div className="mt-4">
-                    <label className="mb-2 block text-sm font-medium text-zinc-300">Mô tả</label>
+                    <label className="mb-2 block text-sm font-medium text-zinc-300">{t('studio.editPost.description')}</label>
                     <div
                       ref={descriptionWrapRef}
                       className="relative overflow-visible rounded-xl border border-zinc-700/80 bg-black"
@@ -800,7 +802,7 @@ export function StudioEditPostPage() {
                             if (picked?.username) replaceMentionAtCaret(picked.username)
                           }
                         }}
-                        placeholder="Thêm mô tả cho video của bạn…"
+                        placeholder={t('studio.editPost.descriptionPlaceholder')}
                       />
 
                       {mentionAtCaret != null ? (
@@ -813,9 +815,9 @@ export function StudioEditPostPage() {
                           }}
                         >
                           {mentionAtCaret.query.length === 0 && loadingFriends ? (
-                            <div className="px-3 py-2 text-xs text-zinc-400">Đang tải danh sách bạn bè…</div>
+                            <div className="px-3 py-2 text-xs text-zinc-400">{t('studio.editPost.loadingFriends')}</div>
                           ) : loadingMentionSuggestions ? (
-                            <div className="px-3 py-2 text-xs text-zinc-400">Đang tìm người dùng…</div>
+                            <div className="px-3 py-2 text-xs text-zinc-400">{t('studio.editPost.searchingUsers')}</div>
                           ) : mentionSuggestions.length > 0 ? (
                             <div className="max-h-[240px] overflow-auto">
                               {mentionSuggestions.map((friend, idx) => {
@@ -845,7 +847,7 @@ export function StudioEditPostPage() {
                               })}
                             </div>
                           ) : (
-                            <div className="px-3 py-2 text-xs text-zinc-400">Không có kết quả</div>
+                            <div className="px-3 py-2 text-xs text-zinc-400">{t('studio.editPost.noResults')}</div>
                           )}
                         </div>
                       ) : null}
@@ -857,14 +859,14 @@ export function StudioEditPostPage() {
                             className="font-medium text-[#fe2c55] hover:underline"
                             onClick={() => setDescription((p) => `${p}#`.trim())}
                           >
-                            # Thẻ hashtag
+                            {t('studio.editPost.hashtags')}
                           </button>
                           <button
                             type="button"
                             className="font-medium text-[#fe2c55] hover:underline"
                             onClick={() => insertAtCaret('@')}
                           >
-                            @ Nhắc đến
+                            {t('studio.editPost.mentions')}
                           </button>
                         </div>
                         <span className="text-xs text-zinc-500">
@@ -873,7 +875,7 @@ export function StudioEditPostPage() {
                       </div>
                     </div>
                     {loadingFriends ? (
-                      <p className="mt-2 text-xs text-zinc-500">Đang tải danh sách bạn bè có thể tag…</p>
+                      <p className="mt-2 text-xs text-zinc-500">{t('studio.editPost.loadingTaggable')}</p>
                     ) : null}
                     <CuHashtagSuggestions
                       publicId={publicId}
@@ -889,14 +891,14 @@ export function StudioEditPostPage() {
                     />
                     {mentionAtCaret == null ? (
                       <p className="mt-2 text-xs text-zinc-500">
-                        Gõ <span className="font-semibold text-zinc-300">@</span> để nhắc đến bất kỳ người dùng nào.
+                        {t('studio.editPost.mentionHint')}
                       </p>
                     ) : null}
                   </div>
 
                   <div className="mt-6">
                     <div className="mb-2 flex items-center gap-1">
-                      <span className="text-sm font-medium text-zinc-300">Ảnh bìa</span>
+                      <span className="text-sm font-medium text-zinc-300">{t('studio.editPost.cover')}</span>
                       <IoInformationCircleOutline className="text-zinc-500" aria-hidden />
                     </div>
                     <div className="relative inline-block max-w-[200px] overflow-hidden rounded-lg border border-zinc-700 bg-black">
@@ -921,21 +923,21 @@ export function StudioEditPostPage() {
                         className="absolute inset-x-0 bottom-0 bg-black/70 py-2 text-center text-xs font-medium text-white backdrop-blur-sm hover:bg-black/80"
                         onClick={openCoverModal}
                       >
-                        Chỉnh sửa ảnh bìa
+                        {t('studio.editPost.editCover')}
                       </button>
                     </div>
                   </div>
 
                   <div className="mt-6">
                     <div className="mb-2 flex items-center gap-1">
-                      <span className="text-sm font-medium text-zinc-300">Vị trí</span>
+                      <span className="text-sm font-medium text-zinc-300">{t('studio.editPost.location')}</span>
                       <IoInformationCircleOutline className="text-zinc-500" aria-hidden />
                     </div>
                     <input
                       type="text"
                       value={locationText}
                       onChange={(e) => setLocationText(e.target.value)}
-                      placeholder="Thêm vị trí (chưa lưu server — giao diện giống bước đăng)"
+                      placeholder={t('studio.editPost.locationPlaceholder')}
                       className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600"
                     />
                   </div>
@@ -945,7 +947,7 @@ export function StudioEditPostPage() {
                       <>
                         <div className="space-y-4">
                           <div>
-                            <p className="text-sm font-semibold text-zinc-200">Thời điểm đăng</p>
+                            <p className="text-sm font-semibold text-zinc-200">{t('studio.editPost.postTiming')}</p>
                             <div className="mt-2 flex flex-wrap gap-4">
                               <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-300">
                                 <input
@@ -955,18 +957,18 @@ export function StudioEditPostPage() {
                                   onChange={() => setPostTiming('now')}
                                   className="accent-[#fe2c55]"
                                 />
-                                Đã đăng
+                                {t('studio.editPost.published')}
                               </label>
                               <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-300 opacity-60">
                                 <input type="radio" name="edit-postTiming" disabled className="accent-[#fe2c55]" />
-                                Lên lịch
+                                {t('studio.editPost.schedule')}
                                 <IoInformationCircleOutline className="text-zinc-500" aria-hidden />
                               </label>
                             </div>
-                            <p className="mt-1 text-[11px] text-zinc-600">Lên lịch sẽ khả dụng trong bản sau.</p>
+                            <p className="mt-1 text-[11px] text-zinc-600">{t('studio.editPost.scheduleSoon')}</p>
                           </div>
                           <div className="relative">
-                            <p className="text-sm font-semibold text-zinc-200">Ai có thể xem video này</p>
+                            <p className="text-sm font-semibold text-zinc-200">{t('studio.editPost.whoCanWatch')}</p>
                             <button
                               type="button"
                               onClick={() => setPrivacyOpen((o) => !o)}
@@ -978,9 +980,9 @@ export function StudioEditPostPage() {
                             {privacyOpen ? (
                               <div className="absolute z-10 mt-1 w-full max-w-md rounded-lg border border-zinc-700 bg-zinc-900 py-1 shadow-xl">
                                 {[
-                                  ['everyone', 'Mọi người', null],
-                                  ['friends', 'Bạn bè', 'Người theo dõi mà bạn cũng theo dõi'],
-                                  ['onlyYou', 'Chỉ mình tôi', null],
+                                  ['everyone', t('studio.editPost.everyone'), null],
+                                  ['friends', t('studio.editPost.friends'), t('studio.editPost.friendsHint')],
+                                  ['onlyYou', t('studio.editPost.onlyYou'), null],
                                 ].map(([key, label, sub]) => (
                                   <button
                                     key={key}
@@ -1007,7 +1009,7 @@ export function StudioEditPostPage() {
                               </div>
                             ) : null}
                             <p className="mt-1 text-[11px] text-zinc-600">
-                              Mọi người · Bạn bè (theo dõi lẫn nhau) · Chỉ mình tôi.
+                              {t('studio.editPost.privacyHint')}
                             </p>
                           </div>
                         </div>
@@ -1016,29 +1018,29 @@ export function StudioEditPostPage() {
                           className="mt-4 flex w-full items-center justify-center gap-1 border-t border-zinc-800 pt-4 text-sm font-medium text-zinc-400 hover:text-zinc-200"
                           onClick={() => setShowMoreSettings(true)}
                         >
-                          Xem thêm <span aria-hidden>▼</span>
+                          {t('studio.editPost.seeMore')} <span aria-hidden>▼</span>
                         </button>
                       </>
                     ) : (
                       <>
                         <div className="space-y-5">
                           <div>
-                            <p className="text-sm font-semibold text-zinc-200">Ai có thể xem video này</p>
+                            <p className="text-sm font-semibold text-zinc-200">{t('studio.editPost.whoCanWatch')}</p>
                             <select
                               value={privacy}
                               onChange={(e) => setPrivacy(e.target.value)}
                               className="mt-2 w-full max-w-md rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-100"
                             >
-                              <option value="everyone">Mọi người</option>
-                              <option value="friends">Bạn bè</option>
-                              <option value="onlyYou">Chỉ mình tôi</option>
+                              <option value="everyone">{t('studio.editPost.everyone')}</option>
+                              <option value="friends">{t('studio.editPost.friends')}</option>
+                              <option value="onlyYou">{t('studio.editPost.onlyYou')}</option>
                             </select>
                           </div>
                           <div className="flex items-start justify-between gap-4">
                             <div>
-                              <p className="text-sm font-semibold text-zinc-200">Tải lên chất lượng cao</p>
+                              <p className="text-sm font-semibold text-zinc-200">{t('studio.editPost.hdUpload')}</p>
                               <p className="mt-1 text-xs text-zinc-500">
-                                Mặc định ở chế độ HD khi bạn đăng từ Web Studio
+                                {t('studio.editPost.hdHint')}
                               </p>
                             </div>
                             <button
@@ -1054,7 +1056,7 @@ export function StudioEditPostPage() {
                             </button>
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-zinc-200">Cho phép người dùng:</p>
+                            <p className="text-sm font-semibold text-zinc-200">{t('studio.editPost.allowUsers')}</p>
                             <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-zinc-300">
                               <input
                                 type="checkbox"
@@ -1062,7 +1064,7 @@ export function StudioEditPostPage() {
                                 onChange={(e) => setAllowComment(e.target.checked)}
                                 className="rounded border-zinc-600 accent-[#fe2c55]"
                               />
-                              Bình luận
+                              {t('studio.editPost.comments')}
                             </label>
                             <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-zinc-300">
                               <input
@@ -1071,15 +1073,15 @@ export function StudioEditPostPage() {
                                 onChange={(e) => setAllowReuse(e.target.checked)}
                                 className="rounded border-zinc-600 accent-[#fe2c55]"
                               />
-                              Sử dụng lại nội dung
+                              {t('studio.editPost.reuse')}
                               <IoInformationCircleOutline className="text-zinc-500" aria-hidden />
                             </label>
                           </div>
                           <div className="flex items-start justify-between gap-4">
                             <div>
-                              <p className="text-sm font-semibold text-zinc-200">Tiết lộ nội dung bài đăng</p>
+                              <p className="text-sm font-semibold text-zinc-200">{t('studio.editPost.disclose')}</p>
                               <p className="mt-1 text-xs text-zinc-500">
-                                Cho người khác biết bài đăng này quảng bá cho một thương hiệu, sản phẩm hoặc dịch vụ.
+                                {t('studio.editPost.discloseHint')}
                               </p>
                             </div>
                             <button
@@ -1096,10 +1098,10 @@ export function StudioEditPostPage() {
                           </div>
                           <div className="flex items-start justify-between gap-4">
                             <div>
-                              <p className="text-sm font-semibold text-zinc-200">Nội dung do AI tạo ra</p>
+                              <p className="text-sm font-semibold text-zinc-200">{t('studio.editPost.aiGenerated')}</p>
                               <p className="mt-1 text-xs text-zinc-500">
                                 Thêm nhãn này cho nội dung do AI tạo ra.{' '}
-                                <span className="text-[#fe2c55]">Tìm hiểu thêm</span>
+                                <span className="text-[#fe2c55]">{t('studio.editPost.learnMore')}</span>
                               </p>
                             </div>
                             <button
@@ -1133,7 +1135,7 @@ export function StudioEditPostPage() {
                       onClick={() => void save()}
                       disabled={busy || !hasUnsavedChanges}
                     >
-                      {busy ? 'Đang lưu…' : 'Lưu'}
+                      {busy ? t('studio.editPost.saving') : t('common.save')}
                     </button>
                     <button
                       type="button"
@@ -1141,7 +1143,7 @@ export function StudioEditPostPage() {
                       onClick={() => navigate('/vibelystudio/posts')}
                       disabled={busy}
                     >
-                      Hủy
+                      {t('studio.editPost.cancel')}
                     </button>
                     {status ? <p className="text-sm text-amber-400">{status}</p> : null}
                   </div>
@@ -1151,9 +1153,9 @@ export function StudioEditPostPage() {
               <aside className="w-full shrink-0 lg:sticky lg:top-6 lg:w-[340px]">
                 <div className="mb-3 flex gap-1 rounded-lg bg-zinc-900/90 p-1 ring-1 ring-zinc-800">
                   {[
-                    ['feed', 'Bảng tin'],
-                    ['profile', 'Hồ sơ'],
-                    ['web', 'Web'],
+                    ['feed', t('studio.editPost.previewFeed')],
+                    ['profile', t('studio.editPost.previewProfile')],
+                    ['web', t('studio.editPost.previewWeb')],
                   ].map(([id, label]) => (
                     <button
                       key={id}
@@ -1252,7 +1254,7 @@ export function StudioEditPostPage() {
                                     <IoHomeOutline className="text-[11px]" /> Home
                                   </span>
                                   <span className="flex items-center gap-1">
-                                    <IoPeopleOutline className="text-[11px]" /> Bạn bè
+                                    <IoPeopleOutline className="text-[11px]" /> {t("studio.privacy.friends")}
                                   </span>
                                   <span className="flex items-center gap-1">
                                     <IoAddCircleOutline className="text-[11px]" /> +
@@ -1261,7 +1263,7 @@ export function StudioEditPostPage() {
                                     <IoMailOutline className="text-[11px]" /> Inbox
                                   </span>
                                   <span className="flex items-center gap-1">
-                                    <IoPersonOutline className="text-[11px]" /> Tôi
+                                    <IoPersonOutline className="text-[11px]" /> {t("studio.privacy.onlyYou")}
                                   </span>
                                 </div>
                               </div>
@@ -1276,7 +1278,7 @@ export function StudioEditPostPage() {
                               ? 'top-4 right-4 opacity-100'
                               : 'right-3 bottom-11 opacity-0 group-hover/preview:opacity-100'
                           }`}
-                          aria-label="Thu/phóng màn hình"
+                          aria-label={t('studio.editPost.toggleFullscreen')}
                         >
                           <IoExpandOutline className="text-sm" />
                         </button>
@@ -1288,7 +1290,7 @@ export function StudioEditPostPage() {
                               ? 'top-4 right-14 opacity-100'
                               : 'right-11 bottom-11 opacity-0 group-hover/preview:opacity-100'
                           }`}
-                          aria-label={isPreviewMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+                          aria-label={isPreviewMuted ? t('studio.editPost.unmute') : t('studio.editPost.mute')}
                         >
                           {isPreviewMuted ? (
                             <IoVolumeMuteOutline className="text-sm" />
@@ -1311,7 +1313,7 @@ export function StudioEditPostPage() {
                             referrerPolicy="no-referrer"
                           />
                           <p className="mt-1 text-xs font-semibold">
-                            {user?.displayName ?? 'Người dùng'}
+                            {user?.displayName ?? t('common.user')}
                           </p>
                           <p className="mt-0.5 text-[11px] text-zinc-600">@{user?.username ?? 'vibely.user'}</p>
                           <div className="mt-2 h-3 w-24 rounded bg-zinc-200" />
@@ -1356,16 +1358,16 @@ export function StudioEditPostPage() {
                       </div>
                     ) : (
                       <div className="flex aspect-9/16 items-center justify-center px-4 text-center text-sm text-zinc-500">
-                        Không có video để xem trước
+                        {t('studio.editPost.noPreview')}
                       </div>
                     )}
                   </div>
 
                   <div className="mt-4 grid grid-cols-3 gap-2">
                     {[
-                      ['Chỉnh sửa', '✂'],
-                      ['Âm thanh', '♪'],
-                      ['Chữ', 'Aa'],
+                      [t('studio.editPost.toolEdit'), '✂'],
+                      [t('studio.editPost.toolSound'), '♪'],
+                      [t('studio.editPost.toolText'), 'Aa'],
                     ].map(([label, sym]) => (
                       <button
                         key={label}

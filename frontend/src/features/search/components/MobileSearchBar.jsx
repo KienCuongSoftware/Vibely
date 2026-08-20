@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { IoChevronBack, IoSearchOutline } from 'react-icons/io5'
 
 export function MobileSearchBar({
@@ -6,16 +7,19 @@ export function MobileSearchBar({
   onChange,
   onSubmit,
   onBack,
-  placeholder = 'Tìm kiếm',
+  placeholder,
   autoFocus = true,
   inputId = 'vibely-mobile-search-input',
 }) {
+  const { t } = useTranslation()
+  const resolvedPlaceholder = placeholder ?? t('searchPage.placeholder')
+
   return (
     <header className="sticky top-0 z-30 flex shrink-0 items-center gap-1.5 border-b border-zinc-800/90 bg-black px-2 py-2.5">
       <button
         type="button"
         className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-2xl text-white"
-        aria-label="Quay lại"
+        aria-label={t('searchPage.back')}
         onClick={onBack}
       >
         <IoChevronBack aria-hidden />
@@ -37,7 +41,7 @@ export function MobileSearchBar({
             type="search"
             value={value}
             onChange={(event) => onChange?.(event.target.value)}
-            placeholder={placeholder}
+            placeholder={resolvedPlaceholder}
             autoFocus={autoFocus}
             autoComplete="off"
             enterKeyHint="search"
@@ -49,7 +53,7 @@ export function MobileSearchBar({
           className="shrink-0 cursor-pointer px-1 text-[15px] font-semibold text-[#fe2c55] disabled:cursor-not-allowed disabled:opacity-40"
           disabled={!String(value ?? '').trim()}
         >
-          Tìm kiếm
+          {t('searchPage.placeholder')}
         </button>
       </form>
     </header>

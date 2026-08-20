@@ -2,6 +2,7 @@ import React from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import i18n from "@/i18n/i18n.js";
 import { apiClient } from "@/shared/api/client";
 import {
   FeedPhoneStage,
@@ -112,7 +113,7 @@ function resolveFeedAuthorDisplayName(video) {
   const fallback = String(video?.authorUsername ?? "")
     .trim()
     .replace(/^@/, "");
-  return fallback || "Nhà sáng tạo";
+  return fallback || i18n.t('common.creator');
 }
 
 function feedAuthorProfilePath(video) {
@@ -183,6 +184,7 @@ function filterOutUnpublishedOwnVideos(items) {
 }
 
 function FeedChevronNav({ activeIndex, videoCount, onStep, busy, className }) {
+  const { t } = useTranslation();
   return (
     <div
       className={
@@ -192,7 +194,7 @@ function FeedChevronNav({ activeIndex, videoCount, onStep, busy, className }) {
     >
       <button
         type="button"
-        aria-label="Video trước"
+        aria-label={t('feed.prevVideo')}
         className={FEED_ROUND_ICON_BUTTON}
         disabled={busy || activeIndex === 0}
         onClick={() => onStep(-1)}
@@ -201,7 +203,7 @@ function FeedChevronNav({ activeIndex, videoCount, onStep, busy, className }) {
       </button>
       <button
         type="button"
-        aria-label="Video tiếp theo"
+        aria-label={t('feed.nextVideo')}
         className={FEED_ROUND_ICON_BUTTON}
         disabled={busy || activeIndex >= videoCount - 1}
         onClick={() => onStep(1)}
@@ -1246,7 +1248,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
       .catch((e) => {
         if (!cancelled) {
           setFeedCommentsError(
-            e instanceof Error ? e.message : "Không tải được bình luận.",
+            e instanceof Error ? e.message : t('feed.loadCommentsFailed'),
           );
           setFeedComments([]);
         }
@@ -1681,15 +1683,15 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               to="/login"
               className="ml-0.5 cursor-pointer rounded-full bg-red-600 px-3 py-1 text-xs font-semibold leading-none text-white hover:bg-red-500"
             >
-              Đăng nhập
+              {t('nav.login')}
             </Link>
           ) : (
             <div className="relative" ref={accountMenuRef}>
-              <TooltipHoverWrap tip="Tài khoản" tipHidden={showAccountMenu} hoverOnly>
+              <TooltipHoverWrap tip={t('common.account')} tipHidden={showAccountMenu} hoverOnly>
                 <button
                   type="button"
                   className="flex cursor-pointer rounded-full p-0.5 ring-1 ring-zinc-700 transition hover:ring-zinc-500"
-                  aria-label="Menu tài khoản"
+                  aria-label={t('common.accountMenu')}
                   onClick={() => setShowAccountMenu((prev) => !prev)}
                 >
                   <AvatarImage
@@ -1699,7 +1701,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                         ? user.avatarUrl
                         : DEFAULT_USER_AVATAR_URL
                     }
-                    alt="avatar người dùng"
+                    alt={t('common.userAvatar')}
                     fallbackSrc={DEFAULT_USER_AVATAR_URL}
                   />
                 </button>
@@ -1712,7 +1714,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     onClick={() => setShowAccountMenu(false)}
                   >
                     <IoPerson className="text-base" />
-                    Xem hồ sơ
+                    {t('common.viewProfile')}
                   </Link>
                   <button
                     className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-100 hover:bg-zinc-700"
@@ -1722,7 +1724,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     }}
                   >
                     <IoLogOutOutline className="text-base" />
-                    Đăng xuất
+                    {t('common.logout')}
                   </button>
                 </div>
               ) : null}
@@ -1756,13 +1758,13 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               }
               style={mobileLayout ? undefined : { height: feedSlotHeightPx }}
               aria-busy="true"
-              aria-label="Đang tải feed"
+              aria-label={t('feed.loadingFeed')}
             >
               <div
                 className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-700 border-t-rose-500"
                 aria-hidden
               />
-              <p className="mt-4 text-sm text-zinc-500">Đang tải…</p>
+              <p className="mt-4 text-sm text-zinc-500">{t('feed.loadingEllipsis')}</p>
             </div>
           ) : videos.length === 0 ? (
             isFollowingFeed && mobileLayout ? (
@@ -1933,7 +1935,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     role="status"
                   >
                     <span className="rounded-md bg-black/80 px-4 py-2 text-sm font-semibold text-white shadow-lg backdrop-blur-sm">
-                      Đã đăng lại
+                      {t('watch.repostedToast')}
                     </span>
                   </div>
                 ) : null}
@@ -1972,7 +1974,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 <div className="relative h-12 w-12">
                   <Link
                     to={activeAuthorProfilePath || "#"}
-                    aria-label={`Xem hồ sơ ${activeVideo?.authorUsername ?? "user"}`}
+                    aria-label={t('feed.viewProfileOf', { user: activeVideo?.authorUsername ?? 'user' })}
                     className={`block h-12 w-12 rounded-full ${
                       activeAuthorProfilePath ? "cursor-pointer" : "pointer-events-none"
                     }`}
@@ -1986,7 +1988,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   </Link>
                   {showActiveAuthorFollowSuccess ? (
                     <span
-                      aria-label={`Đã theo dõi ${activeVideo?.authorUsername ?? "user"}`}
+                      aria-label={t('feed.followingUser', { user: activeVideo?.authorUsername ?? 'user' })}
                       className="absolute bottom-0 left-1/2 flex h-6 w-6 -translate-x-1/2 translate-y-[38%] items-center justify-center rounded-full border border-zinc-500 bg-zinc-200 text-sm text-red-500 shadow-[0_3px_10px_rgba(0,0,0,0.45)]"
                     >
                       <IoCheckmark aria-hidden />
@@ -1995,7 +1997,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   {showActiveAuthorFollowBadge && !showActiveAuthorFollowSuccess ? (
                     <button
                       type="button"
-                      aria-label={`Theo dõi ${activeVideo?.authorUsername ?? "user"}`}
+                      aria-label={t('feed.followUser', { user: activeVideo?.authorUsername ?? 'user' })}
                       className="absolute bottom-0 left-1/2 flex h-6 w-6 -translate-x-1/2 translate-y-[38%] cursor-pointer items-center justify-center rounded-full border-2 border-black bg-red-500 text-base leading-none text-white shadow-[0_3px_10px_rgba(0,0,0,0.45)] disabled:cursor-wait disabled:opacity-75"
                       onClick={handleActiveAuthorFollow}
                       disabled={followBusyAuthorId === Number(activeVideo?.authorId)}
@@ -2009,7 +2011,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   type="button"
                   className={FEED_ROUND_ICON_BUTTON}
                   aria-pressed={liked}
-                  aria-label={liked ? "Bỏ thích" : "Thích"}
+                  aria-label={liked ? t('feed.unlike') : t('feed.like')}
                   onClick={handleFeedLikeToggle}
                 >
                   <IoHeart
@@ -2026,7 +2028,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   type="button"
                   data-testid="feed-comment-button"
                   className={`${FEED_ROUND_ICON_BUTTON} ${feedCommentsOpen ? "ring-2 ring-white/35 ring-offset-2 ring-offset-black" : ""}`}
-                  aria-label="Bình luận"
+                  aria-label={t('feed.comment')}
                   aria-expanded={feedCommentsOpen}
                   onClick={toggleFeedComments}
                 >
@@ -2042,7 +2044,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   type="button"
                   className={FEED_ROUND_ICON_BUTTON}
                   aria-pressed={bookmarked}
-                  aria-label={bookmarked ? "Bỏ lưu yêu thích" : "Lưu yêu thích"}
+                  aria-label={bookmarked ? t('feed.unbookmark') : t('feed.bookmark')}
                   onClick={handleBookmarkToggle}
                 >
                   <IoBookmark
@@ -2063,7 +2065,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     type="button"
                     className={FEED_ROUND_ICON_BUTTON}
                     aria-pressed={reposted}
-                    aria-label={reposted ? "Xóa video đăng lại" : "Đăng lại"}
+                    aria-label={reposted ? t('feed.unrepost') : t('feed.repost')}
                     disabled={repostBusy}
                     onClick={handleRepostToggle}
                   >
@@ -2082,7 +2084,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 <button
                   type="button"
                   className={FEED_ROUND_ICON_BUTTON}
-                  aria-label="Chia sẻ"
+                  aria-label={t('feed.share')}
                   aria-expanded={shareModalOpen}
                   onClick={openShareModal}
                 >
@@ -2094,7 +2096,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 </div>
                 <button
                   type="button"
-                  aria-label="Âm thanh đang phát"
+                  aria-label={t('feed.soundPlaying')}
                   className="relative mt-1 flex h-11 w-11 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-white/35 bg-zinc-950 shadow-lg"
                   onClick={handleSoundNavigate}
                 >
@@ -2155,14 +2157,14 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/55 px-4">
           <div className="w-full max-w-sm rounded-xl bg-zinc-800 p-6 text-center shadow-2xl">
             <p className="text-2xl font-bold leading-snug">
-              Bạn có chắc chắn muốn đăng xuất?
+              {t('common.logoutConfirm')}
             </p>
             <div className="mt-5 grid grid-cols-2 gap-3 text-base">
               <button
                 className="rounded-md bg-zinc-700 py-2 font-semibold text-zinc-200 hover:bg-zinc-600"
                 onClick={() => setShowLogoutConfirm(false)}
               >
-                Hủy
+                {t('common.cancel')}
               </button>
               <button
                 className="rounded-md border border-red-500 py-2 font-semibold text-red-400 hover:bg-red-500/10"
@@ -2171,7 +2173,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   onLogout();
                 }}
               >
-                Đăng xuất
+                {t('common.logout')}
               </button>
             </div>
           </div>

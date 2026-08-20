@@ -5,6 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { IoClose } from "react-icons/io5";
 import { useSearch } from "@/features/search/hooks/useSearch";
 import { useSearchHistory } from "@/features/search/hooks/useSearchHistory";
@@ -23,6 +24,7 @@ import {
 } from "@/features/search/utils/searchUtils";
 
 export function SearchModal({ open, onClose }) {
+  const { t } = useTranslation();
   const { token, authReady } = useAuth();
   const inputRef = useRef(null);
   const [activeKey, setActiveKey] = useState(null);
@@ -203,12 +205,12 @@ export function SearchModal({ open, onClose }) {
             id="vibely-search-title"
             className="text-[22px] font-bold leading-none tracking-tight text-white"
           >
-            Tìm kiếm
+            {t("searchUi.title")}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Đóng"
+            aria-label={t("common.close")}
             className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-zinc-500 bg-zinc-800/80 text-zinc-200 transition hover:border-zinc-400 hover:bg-zinc-700 hover:text-white"
           >
             <IoClose className="text-lg" aria-hidden />
@@ -233,14 +235,14 @@ export function SearchModal({ open, onClose }) {
       {isEmpty && normalizedQuery ? (
         <div className="flex flex-1 flex-col px-4 py-6">
           <p className="text-center text-sm text-zinc-500">
-            Không có gợi ý nhanh cho &quot;{normalizedQuery}&quot;
+            {t("searchUi.noQuickSuggestions", { query: normalizedQuery })}
           </p>
           <button
             type="button"
             onClick={() => void commitSearch(normalizedQuery)}
             className="mt-4 w-full cursor-pointer rounded-lg bg-zinc-900 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
           >
-            Xem tất cả kết quả
+            {t("searchUi.seeAllResults")}
           </button>
         </div>
       ) : (
@@ -278,7 +280,7 @@ export function SearchModal({ open, onClose }) {
 
       {showHistory && !canUseHistory ? (
         <p className="px-5 pb-4 text-center text-xs text-zinc-500">
-          Đăng nhập để lưu lịch sử tìm kiếm
+          {t("searchUi.loginToSaveHistory")}
         </p>
       ) : null}
 
@@ -289,7 +291,7 @@ export function SearchModal({ open, onClose }) {
             onClick={() => void refresh()}
             className="w-full cursor-pointer rounded-full bg-zinc-800 py-2 text-sm font-semibold text-white hover:bg-zinc-700"
           >
-            Thử lại
+            {t("common.retry")}
           </button>
         </div>
       ) : null}

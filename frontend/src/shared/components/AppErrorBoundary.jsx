@@ -1,4 +1,5 @@
 import React from 'react'
+import i18n from '@/i18n/i18n'
 
 export class AppErrorBoundary extends React.Component {
   constructor(props) {
@@ -9,7 +10,10 @@ export class AppErrorBoundary extends React.Component {
   static getDerivedStateFromError(error) {
     return {
       hasError: true,
-      message: error instanceof Error ? error.message : 'Ứng dụng gặp lỗi không xác định',
+      message:
+        error instanceof Error
+          ? error.message
+          : i18n.t('appError.unknown'),
     }
   }
 
@@ -23,14 +27,14 @@ export class AppErrorBoundary extends React.Component {
       return (
         <section className="flex min-h-screen items-center justify-center bg-black px-4 text-zinc-100">
           <div className="w-full max-w-lg rounded-xl border border-zinc-800 bg-zinc-950 p-6 text-center">
-            <h1 className="text-2xl font-semibold">Đã xảy ra lỗi hiển thị</h1>
+            <h1 className="text-2xl font-semibold">{i18n.t('appError.title')}</h1>
             <p className="mt-3 text-sm text-zinc-300">{this.state.message}</p>
             <button
               type="button"
               className="mt-5 rounded-md bg-red-600 px-4 py-2 font-medium hover:bg-red-500"
               onClick={() => window.location.assign('/login')}
             >
-              Tải lại trang đăng nhập
+              {i18n.t('appError.reloadLogin')}
             </button>
           </div>
         </section>

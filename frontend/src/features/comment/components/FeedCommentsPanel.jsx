@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   IoArrowUp,
   IoChevronDown,
@@ -49,6 +50,7 @@ function FeedInlineReplyInput({
   inputRef,
   token,
 }) {
+  const { t } = useTranslation();
   const accessoryRef = useRef(null);
 
   const handleDraftChange = useCallback((e) => {
@@ -74,7 +76,7 @@ function FeedInlineReplyInput({
           type="text"
           value={draft}
           onChange={handleDraftChange}
-          placeholder="Thêm câu trả lời..."
+          placeholder={t("comments.addReply")}
           disabled={disabled}
           className="w-full rounded-full border border-transparent bg-[#252525] py-2 pl-4 pr-[4.5rem] text-sm text-zinc-100 placeholder:text-zinc-500 outline-none transition focus:border-zinc-600 disabled:opacity-50"
           onKeyDown={(e) => {
@@ -98,7 +100,7 @@ function FeedInlineReplyInput({
       <button
         type="button"
         className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#fe2c55] text-white transition hover:bg-[#ff4d6d] disabled:cursor-not-allowed disabled:opacity-35"
-        aria-label="Gửi trả lời"
+        aria-label={t("comments.sendReply")}
         disabled={!draft.trim() || disabled}
         onClick={() => void onSubmit()}
       >
@@ -107,7 +109,7 @@ function FeedInlineReplyInput({
       <button
         type="button"
         className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-400 transition hover:bg-white/10 hover:text-white"
-        aria-label="Hủy trả lời"
+        aria-label={t("comments.cancelReply")}
         onClick={onCancel}
       >
         <IoClose className="text-xl" aria-hidden />
@@ -125,6 +127,7 @@ function FeedCommentRow({
   likeBusy,
   formatRelativeTimeVi,
 }) {
+  const { t } = useTranslation();
   const isCreator =
     comment.userId != null &&
     videoAuthorId != null &&
@@ -134,7 +137,7 @@ function FeedCommentRow({
   const profileHref = comment.username
     ? buildProfileHref(comment.username)
     : null;
-  const displayName = comment.username ?? "Người dùng";
+  const displayName = comment.username ?? t("common.user");
   const avatarSrc =
     comment.authorAvatarUrl && String(comment.authorAvatarUrl).trim()
       ? String(comment.authorAvatarUrl).trim()
@@ -152,7 +155,7 @@ function FeedCommentRow({
         <Link
           to={profileHref}
           className="shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#69C9D0]"
-          aria-label={`Xem trang cá nhân ${displayName}`}
+          aria-label={t("comments.viewProfile", { name: displayName })}
         >
           <img
             src={avatarSrc}
@@ -224,7 +227,7 @@ function FeedCommentRow({
               className="cursor-pointer font-semibold text-zinc-500 transition hover:text-zinc-300"
               onClick={() => onReply?.(comment)}
             >
-              Trả lời
+              {t("comments.reply")}
             </button>
           </div>
           <button
@@ -233,7 +236,7 @@ function FeedCommentRow({
             className={`flex shrink-0 items-center gap-1 px-1 transition disabled:opacity-50 ${
               liked ? "text-[#fe2c55]" : "text-zinc-500 hover:text-zinc-300"
             }`}
-            aria-label={liked ? "Bỏ thích bình luận" : "Thích bình luận"}
+            aria-label={liked ? t("comments.unlike") : t("comments.like")}
             aria-pressed={liked}
             onClick={() => onToggleLike?.(comment)}
           >
@@ -275,6 +278,7 @@ export function FeedCommentsPanel({
   mobileSheet = false,
   mobileSheetHeightPx,
 }) {
+  const { t } = useTranslation();
   const inputRef = useRef(null);
   const commentAccessoryRef = useRef(null);
   const replyInputRef = useRef(null);
@@ -391,7 +395,7 @@ export function FeedCommentsPanel({
       onCommentCountChange?.(1);
     } catch (e) {
       setCommentPostError(
-        e instanceof Error ? e.message : "Không gửi được bình luận.",
+        e instanceof Error ? e.message : t("comments.sendFailed"),
       );
     }
   }, [
@@ -439,7 +443,7 @@ export function FeedCommentsPanel({
       }
     } catch (e) {
       setReplyPostError(
-        e instanceof Error ? e.message : "Không gửi được trả lời.",
+        e instanceof Error ? e.message : t("comments.replyFailed"),
       );
     }
   }, [
@@ -479,7 +483,7 @@ export function FeedCommentsPanel({
             top: MOBILE_FEED_TOP_BAR_PX,
             bottom: mobileSheetHeightPx ?? "58vh",
           }}
-          aria-label="Đóng bình luận"
+          aria-label={t("comments.close")}
           onClick={onClose}
         />
       ) : null}
@@ -499,7 +503,7 @@ export function FeedCommentsPanel({
               }
             : { width: feedCommentsPanelWidthCss() }
         }
-        aria-label="Bình luận"
+        aria-label={t("comments.title")}
       >
       <div
         className={`relative z-10 flex shrink-0 flex-col border-b border-white/[0.08] ${
@@ -514,7 +518,7 @@ export function FeedCommentsPanel({
         ) : null}
         <div className="flex items-center justify-between">
         <h2 className="min-w-0 text-[16px] font-bold tracking-tight text-white">
-          Bình luận
+          {t("comments.title")}
           <span className="ml-1.5 font-semibold text-zinc-400">
             {formatCompactCount(activeVideo?.commentCount)}
           </span>
@@ -522,7 +526,7 @@ export function FeedCommentsPanel({
         <button
           type="button"
           className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white"
-          aria-label="Đóng bình luận"
+          aria-label={t("comments.close")}
           onClick={onClose}
         >
           <IoClose className="text-2xl" aria-hidden />
@@ -539,11 +543,11 @@ export function FeedCommentsPanel({
       >
         {!isVideoPublicId(activeVideo?.publicId) ? (
           <p className="px-5 py-12 text-center text-sm leading-relaxed text-zinc-500">
-            Bình luận chỉ khả dụng cho video trên Vibely (đã đăng nhập).
+            {t("comments.unavailable")}
           </p>
         ) : loading ? (
           <p className="px-5 py-12 text-center text-sm text-zinc-500">
-            Đang tải bình luận…
+            {t("comments.loading")}
           </p>
         ) : error ? (
           <p className="px-5 py-12 text-center text-sm text-red-400">{error}</p>
@@ -624,7 +628,7 @@ export function FeedCommentsPanel({
                       }
                     >
                       <IoChevronDown className="text-sm" aria-hidden />
-                      Xem thêm {hiddenCount} phản hồi
+                      {t("comments.viewMoreReplies", { count: hiddenCount })}
                     </button>
                   ) : null}
                   {expanded && replies.length > FEED_REPLY_PREVIEW_COUNT ? (
@@ -652,7 +656,7 @@ export function FeedCommentsPanel({
       <div className="flex shrink-0 flex-col gap-1.5 border-t border-white/[0.08] bg-[#121212] px-4 pt-3 pb-4">
         {commentRestricted ? (
           <p className="py-3 text-center text-sm leading-relaxed text-zinc-400">
-            Nhà sáng tạo này đã giới hạn quyền truy cập bình luận
+            {t("comments.restricted")}
           </p>
         ) : (
           <>
@@ -682,8 +686,8 @@ export function FeedCommentsPanel({
                   onChange={handleCommentDraftChange}
                   placeholder={
                     token
-                      ? "Thêm bình luận..."
-                      : "Đăng nhập để bình luận..."
+                      ? t("comments.add")
+                      : t("comments.loginToComment")
                   }
                   disabled={!token || !isVideoPublicId(activeVideo?.publicId)}
                   className="w-full rounded-lg border border-transparent bg-[#252525] py-2.5 pl-3.5 pr-[4.75rem] text-[15px] text-zinc-100 placeholder:text-zinc-500 outline-none transition focus:border-zinc-600 disabled:opacity-50"
@@ -707,7 +711,7 @@ export function FeedCommentsPanel({
                 type="button"
                 data-testid="feed-comment-send"
                 className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#fe2c55] text-white transition hover:bg-[#ff4d6d] disabled:cursor-not-allowed disabled:opacity-35"
-                aria-label="Gửi bình luận"
+                aria-label={t("comments.sendComment")}
                 disabled={
                   !commentDraft.trim() ||
                   !token ||

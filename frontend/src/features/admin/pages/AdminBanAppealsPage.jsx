@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from "react-i18next";
 import {
   IoClose,
   IoMailOutline,
@@ -12,23 +13,23 @@ import { useAuth } from '@/features/auth/hooks/useAuth.js'
 const PAGE_SIZE = 20
 
 const STATUS_FILTERS = [
-  { value: '', label: 'Tất cả' },
-  { value: 'PENDING', label: 'Chờ xử lý' },
-  { value: 'IN_REVIEW', label: 'Đang xem xét' },
+  { value: '', labelKey: 'admin.appeals.all' },
+  { value: 'PENDING', labelKey: 'admin.appeals.pending' },
+  { value: 'IN_REVIEW', labelKey: 'admin.appeals.reviewing' },
 ]
 
 const DECISION_STATUS_OPTIONS = [
-  { value: 'PENDING', label: 'Chờ xử lý' },
-  { value: 'IN_REVIEW', label: 'Đang xem xét' },
-  { value: 'APPROVED', label: 'Chấp nhận (gỡ cấm & xóa khiếu nại)' },
-  { value: 'REJECTED', label: 'Từ chối (xóa khiếu nại)' },
+  { value: 'PENDING', labelKey: 'admin.appeals.pending' },
+  { value: 'IN_REVIEW', labelKey: 'admin.appeals.reviewing' },
+  { value: 'APPROVED', labelKey: 'admin.appeals.acceptAction' },
+  { value: 'REJECTED', labelKey: 'admin.appeals.rejectAction' },
 ]
 
-const STATUS_LABELS = {
-  PENDING: 'Chờ xử lý',
-  IN_REVIEW: 'Đang xem xét',
-  APPROVED: 'Chấp nhận',
-  REJECTED: 'Từ chối',
+const STATUS_LABEL_KEYS = {
+  PENDING: 'admin.appeals.pending',
+  IN_REVIEW: 'admin.appeals.reviewing',
+  APPROVED: 'admin.appeals.accept',
+  REJECTED: 'admin.appeals.reject',
 }
 
 const STATUS_BADGE_CLASS = {
@@ -52,6 +53,7 @@ function formatDateTime(value) {
 }
 
 function StatusBadge({ status }) {
+  const { t } = useTranslation()
   const normalized = String(status ?? 'PENDING').toUpperCase()
   return (
     <span
@@ -59,12 +61,13 @@ function StatusBadge({ status }) {
         STATUS_BADGE_CLASS[normalized] ?? STATUS_BADGE_CLASS.PENDING
       }`}
     >
-      {STATUS_LABELS[normalized] ?? normalized}
+      {t(STATUS_LABEL_KEYS[normalized] ?? 'admin.appeals.pending')}
     </span>
   )
 }
 
 function AppealDetailModal({ appeal, submitting, error, onClose, onUpdateStatus }) {
+  const { t } = useTranslation()
   const [status, setStatus] = useState(appeal?.status ?? 'PENDING')
   const [adminNotes, setAdminNotes] = useState(appeal?.adminNotes ?? '')
 
@@ -81,18 +84,18 @@ function AppealDetailModal({ appeal, submitting, error, onClose, onUpdateStatus 
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-zinc-100">Khiếu nại #{appeal.id}</h2>
+              <h2 className="text-lg font-bold text-zinc-100">{t('admin.appeals.appealTitle', { id: appeal.id })}</h2>
               <StatusBadge status={appeal.status} />
             </div>
             <p className="mt-1 text-sm text-zinc-500">
-              Gửi lúc {formatDateTime(appeal.createdAt)}
+              {t('admin.appeals.sentAt', { time: formatDateTime(appeal.createdAt) })}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="rounded-full p-2 text-zinc-500 transition hover:bg-zinc-900 hover:text-zinc-100"
-            aria-label="Đóng"
+            aria-label={t("admin.close")}
           >
             <IoClose className="text-xl" aria-hidden />
           </button>
@@ -100,12 +103,12 @@ function AppealDetailModal({ appeal, submitting, error, onClose, onUpdateStatus 
 
         <div className="mt-5 space-y-4">
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Email liên hệ</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">{t('admin.appeals.contactEmail')}</p>
             <p className="mt-2 break-all text-sm text-zinc-100">{appeal.contactEmail}</p>
           </div>
 
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Mô tả</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">{t('admin.appeals.description')}</p>
             <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-zinc-200">
               {appeal.description}
             </p>
@@ -114,28 +117,28 @@ function AppealDetailModal({ appeal, submitting, error, onClose, onUpdateStatus 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Email tài khoản (ẩn)
+                {t('admin.appeals.accountEmailHidden')}
               </p>
               <p className="mt-2 text-sm text-zinc-200">{appeal.maskedAccountEmail || '—'}</p>
             </div>
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Tài khoản liên kết
+                {t('admin.appeals.linkedAccount')}
               </p>
               {appeal.userId ? (
                 <p className="mt-2 text-sm text-zinc-200">
-                  {appeal.displayName || 'Người dùng Vibely'}{' '}
+                  {appeal.displayName || t("admin.vibelyUser")}{' '}
                   <span className="text-zinc-500">(@{appeal.username || 'unknown'})</span>
                 </p>
               ) : (
-                <p className="mt-2 text-sm text-zinc-500">Chưa xác định</p>
+                <p className="mt-2 text-sm text-zinc-500">{t('admin.appeals.unknown')}</p>
               )}
             </div>
           </div>
 
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Lý do cấm (nội bộ)
+              {t('admin.appeals.banReasonInternal')}
             </p>
             <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-300">
               {appeal.banReason || '—'}
@@ -144,7 +147,7 @@ function AppealDetailModal({ appeal, submitting, error, onClose, onUpdateStatus 
 
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
             <label className="block text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Trạng thái xử lý
+              {t('admin.appeals.processingStatus')}
             </label>
             <select
               value={status}
@@ -154,7 +157,7 @@ function AppealDetailModal({ appeal, submitting, error, onClose, onUpdateStatus 
             >
               {DECISION_STATUS_OPTIONS.map((item) => (
                 <option key={item.value} value={item.value}>
-                  {item.label}
+                  {t(item.labelKey)}
                 </option>
               ))}
             </select>
@@ -162,7 +165,7 @@ function AppealDetailModal({ appeal, submitting, error, onClose, onUpdateStatus 
 
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
             <label className="block text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Ghi chú admin
+              {t('admin.appeals.adminNote')}
             </label>
             <textarea
               value={adminNotes}
@@ -171,13 +174,13 @@ function AppealDetailModal({ appeal, submitting, error, onClose, onUpdateStatus 
               maxLength={1000}
               rows={4}
               className="mt-2 w-full resize-none rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none focus:border-red-500"
-              placeholder="Ghi chú nội bộ khi xử lý khiếu nại..."
+              placeholder={t("admin.appeals.notePlaceholder")}
             />
           </div>
 
           {appeal.reviewedAt ? (
             <p className="text-xs text-zinc-500">
-              Cập nhật lần cuối: {formatDateTime(appeal.reviewedAt)}
+              {t('admin.appeals.lastUpdated', { time: formatDateTime(appeal.reviewedAt) })}
             </p>
           ) : null}
         </div>
@@ -193,7 +196,7 @@ function AppealDetailModal({ appeal, submitting, error, onClose, onUpdateStatus 
             disabled={submitting}
             className="rounded-xl border border-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-300 transition hover:bg-zinc-900 disabled:opacity-50"
           >
-            Đóng
+            {t('admin.appeals.close')}
           </button>
           <button
             type="button"
@@ -201,7 +204,7 @@ function AppealDetailModal({ appeal, submitting, error, onClose, onUpdateStatus 
             disabled={submitting}
             className="rounded-xl border border-zinc-800 bg-black px-5 py-3 text-sm font-bold text-zinc-100 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {submitting ? 'Đang lưu...' : 'Lưu trạng thái'}
+            {submitting ? t("admin.saving") : t('admin.appeals.saveStatus')}
           </button>
         </div>
       </div>
@@ -210,6 +213,7 @@ function AppealDetailModal({ appeal, submitting, error, onClose, onUpdateStatus 
 }
 
 export function AdminBanAppealsPage() {
+  const { t } = useTranslation()
   const { token, user, authReady } = useAuth()
   const isAdmin = String(user?.role ?? '').toUpperCase() === 'ADMIN'
   const [page, setPage] = useState(0)
@@ -225,7 +229,7 @@ export function AdminBanAppealsPage() {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    document.title = 'Vibely Admin | Khiếu nại cấm'
+    document.title = t("admin.docTitle.appeals")
   }, [])
 
   const loadAppeals = useCallback(async () => {
@@ -249,7 +253,7 @@ export function AdminBanAppealsPage() {
       setAppeals([])
       setTotal(0)
       setHasNext(false)
-      setError(e.message ?? 'Không tải được danh sách khiếu nại.')
+      setError(e.message ?? t('admin.appeals.loadFailed'))
     } finally {
       setLoading(false)
     }
@@ -305,7 +309,7 @@ export function AdminBanAppealsPage() {
       }
       await loadAppeals()
     } catch (e) {
-      setModalError(e.message ?? 'Không cập nhật được trạng thái khiếu nại.')
+      setModalError(e.message ?? t('admin.appeals.updateFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -314,16 +318,16 @@ export function AdminBanAppealsPage() {
   return (
     <AdminLayout
       active="appeals"
-      title="Khiếu nại cấm tài khoản"
-      subtitle="Theo dõi và xử lý khiếu nại từ người dùng bị cấm."
+      title={t("admin.appeals.title")}
+      subtitle={t("admin.appeals.subtitle")}
     >
       {!authReady || loading ? (
         <AdminBanAppealsPageSkeleton />
       ) : !isAdmin ? (
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center">
-          <p className="text-lg font-semibold text-zinc-100">Bạn không có quyền truy cập Admin</p>
+          <p className="text-lg font-semibold text-zinc-100">{t('admin.noAccess')}</p>
           <p className="mt-2 text-sm text-zinc-400">
-            Tài khoản hiện tại cần vai trò Quản trị viên để xem khu vực quản trị.
+            {t('admin.noAccessHint')}
           </p>
         </section>
       ) : (
@@ -332,7 +336,7 @@ export function AdminBanAppealsPage() {
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="min-w-0">
                 <p className="text-sm font-bold uppercase tracking-wide text-zinc-200">
-                  Tổng khiếu nại: {total}
+                  {t('admin.appeals.total', { count: total })}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -349,7 +353,7 @@ export function AdminBanAppealsPage() {
                           : 'border-zinc-700 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200'
                       }`}
                     >
-                      {item.label}
+                      {t(item.labelKey)}
                     </button>
                   )
                 })}
@@ -360,7 +364,7 @@ export function AdminBanAppealsPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="mt-4 h-12 w-full rounded-full border border-zinc-700 bg-zinc-950 px-5 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-500 focus:border-red-500"
-              placeholder="Tìm theo email, mô tả, lý do cấm hoặc mã khiếu nại..."
+              placeholder={t("admin.appeals.searchPlaceholder")}
             />
 
             {error ? <p className="mt-4 text-sm text-amber-400">{error}</p> : null}
@@ -369,12 +373,12 @@ export function AdminBanAppealsPage() {
               <table className="w-full min-w-[980px] border-collapse text-left text-sm text-zinc-200">
                 <thead>
                   <tr className="border-b border-zinc-800 text-xs text-zinc-500">
-                    <th className="py-3 pr-4 font-medium">Mã</th>
-                    <th className="px-3 py-3 font-medium">Email liên hệ</th>
-                    <th className="px-3 py-3 font-medium">Mô tả</th>
-                    <th className="px-3 py-3 font-medium">Trạng thái</th>
-                    <th className="px-3 py-3 font-medium">Thời gian</th>
-                    <th className="px-3 py-3 text-right font-medium">Thao tác</th>
+                    <th className="py-3 pr-4 font-medium">{t('admin.table.id')}</th>
+                    <th className="px-3 py-3 font-medium">{t('admin.appeals.contactEmail')}</th>
+                    <th className="px-3 py-3 font-medium">{t('admin.appeals.description')}</th>
+                    <th className="px-3 py-3 font-medium">{t('admin.table.status')}</th>
+                    <th className="px-3 py-3 font-medium">{t('admin.table.time')}</th>
+                    <th className="px-3 py-3 text-right font-medium">{t('admin.table.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -402,7 +406,7 @@ export function AdminBanAppealsPage() {
                             className="inline-flex h-9 items-center gap-2 rounded-full border border-zinc-700 px-4 text-xs font-semibold text-zinc-200 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200"
                           >
                             <IoMailOutline className="text-base" aria-hidden />
-                            Xem chi tiết
+                            {t('admin.appeals.viewDetail')}
                           </button>
                         </div>
                       </td>
@@ -414,7 +418,7 @@ export function AdminBanAppealsPage() {
 
             {filteredAppeals.length === 0 ? (
               <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-12 text-center text-sm text-zinc-500">
-                Chưa có khiếu nại phù hợp.
+                {t('admin.appeals.empty')}
               </div>
             ) : null}
 

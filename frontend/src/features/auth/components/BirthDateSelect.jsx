@@ -1,5 +1,6 @@
 import React, { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import { IoCheckmark, IoChevronDown } from "react-icons/io5";
 import {
   buildBirthDayOptions,
@@ -173,6 +174,7 @@ export function BirthDateFields({
   onYearChange,
   monthOptions,
 }) {
+  const { t } = useTranslation();
   const [openField, setOpenField] = useState(null);
 
   const yearSelectOptions = useMemo(
@@ -205,8 +207,8 @@ export function BirthDateFields({
         value={birthMonth}
         onChange={onMonthChange}
         options={monthSelectOptions}
-        placeholder="Tháng"
-        ariaLabel="Chọn tháng sinh"
+        placeholder={t('auth.month')}
+        ariaLabel={t('auth.selectMonth')}
         open={openField === "month"}
         onOpenChange={(isOpen) => setOpenField(isOpen ? "month" : null)}
       />
@@ -214,8 +216,8 @@ export function BirthDateFields({
         value={birthDay}
         onChange={onDayChange}
         options={daySelectOptions}
-        placeholder="Ngày"
-        ariaLabel="Chọn ngày sinh"
+        placeholder={t('auth.day')}
+        ariaLabel={t('auth.selectDay')}
         open={openField === "day"}
         onOpenChange={(isOpen) => setOpenField(isOpen ? "day" : null)}
       />
@@ -223,8 +225,8 @@ export function BirthDateFields({
         value={birthYear}
         onChange={onYearChange}
         options={yearSelectOptions}
-        placeholder="Năm"
-        ariaLabel="Chọn năm sinh"
+        placeholder={t('auth.year')}
+        ariaLabel={t('auth.selectYear')}
         open={openField === "year"}
         onOpenChange={(isOpen) => setOpenField(isOpen ? "year" : null)}
       />

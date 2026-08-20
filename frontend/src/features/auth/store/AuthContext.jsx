@@ -11,6 +11,7 @@ import { isPendingOAuthBrowserCallback } from "@/features/auth/utils/oauthCallba
 import { collectLoginContext } from "@/security/loginContext.js";
 import { DEFAULT_AVATAR_URL, sanitizeAvatarUrl } from "@/features/profile/utils/avatarUrl.js";
 import { AuthContext } from "@/features/auth/store/auth-context";
+import i18n from "@/i18n/i18n.js";
 
 const USER_CACHE_KEY = "vibely_user_cache";
 const LEGACY_TOKEN_KEY = "vibely_token";
@@ -222,7 +223,7 @@ export function AuthProvider({ children }) {
 
   const updateProfile = async (payload) => {
     if (!token) {
-      throw new Error("Bạn cần đăng nhập để cập nhật hồ sơ");
+      throw new Error(i18n.t("auth.loginRequiredProfile"));
     }
     await apiClient.updateMyProfile(COOKIE_SESSION_MARKER, payload);
     return refreshProfile();

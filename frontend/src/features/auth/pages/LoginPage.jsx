@@ -163,23 +163,23 @@ export function LoginPage() {
     if (searchParams.get("oauth") !== "error") return "";
     const reason = searchParams.get("reason");
     if (reason === "clock_skew") {
-      return "Đồng hồ máy tính lệch so với Google. Vào Cài đặt → Thời gian và ngôn ngữ → bật Đặt giờ tự động, rồi thử đăng nhập lại.";
+      return t('auth.oauthClockSkew');
     }
     if (reason === "redirect_mismatch") {
-      return "Redirect URI OAuth không khớp. Kiểm tra Callback URL trên LINE/Google console và restart backend.";
+      return t('auth.oauthRedirectMismatch');
     }
     if (reason === "session_lost") {
-      return "Phiên OAuth bị mất (thường do cookie). Thử lại trên cùng trình duyệt, không mở tab ẩn danh.";
+      return t('auth.oauthSessionLost');
     }
     if (reason === "invalid_grant") {
-      return "Mã xác thực OAuth hết hạn hoặc đã dùng. Vui lòng thử đăng nhập lại.";
+      return t('auth.oauthCodeExpired');
     }
     if (reason === "invalid_client") {
-      return "Client ID hoặc Client Secret Google không hợp lệ. Vào Google Cloud Console → Credentials → OAuth client (Web) → tạo lại Client Secret, cập nhật application-local.yaml rồi restart backend.";
+      return t('auth.oauthGoogleSecretInvalid');
     }
     return (
       searchParams.get("message") ??
-      "Đăng nhập bằng tài khoản liên kết thất bại, vui lòng thử lại"
+      t('auth.oauthFailed')
     );
   })();
 
@@ -296,7 +296,7 @@ export function LoginPage() {
           }
           navigate(
             `/login?oauth=error&message=${encodeURIComponent(
-              "Phiên đăng nhập cũ còn sót (thường do admin/www). Xóa cookie vibely.sbs rồi đăng nhập LINE lại trên https://www.vibely.sbs",
+              t('auth.oauthStaleSession'),
             )}`,
             { replace: true },
           );
@@ -358,7 +358,7 @@ export function LoginPage() {
           return;
         }
         navigate(
-          `/login?oauth=error&message=${encodeURIComponent(error.message || "Đăng nhập bằng tài khoản liên kết thất bại, vui lòng thử lại")}`,
+          `/login?oauth=error&message=${encodeURIComponent(error.message || t('auth.oauthFailed'))}`,
           { replace: true },
         );
       });
@@ -478,7 +478,7 @@ export function LoginPage() {
       });
       closeBannedModal();
       setStatus(
-        "Đã gửi khiếu nại thành công. Chúng tôi sẽ phản hồi qua email của bạn.",
+        t('auth.appealSentToast'),
       );
     } catch (error) {
       setAppealError(error.message);
@@ -499,7 +499,7 @@ export function LoginPage() {
 
   const sendReactivationCode = async () => {
     if (!reactivationToken.trim()) {
-      setReactivationError("Phiên kích hoạt lại tài khoản không hợp lệ, vui lòng đăng nhập lại");
+      setReactivationError(t('auth.reactivateInvalidSession'));
       return;
     }
     setReactivationLoading(true);
@@ -512,7 +512,7 @@ export function LoginPage() {
       });
       setReactivationCodeSent(true);
       if (result?.demoCode) {
-        setReactivationError(`Chưa bật gửi email (dev). Mã kích hoạt lại: ${result.demoCode}`);
+        setReactivationError(t('auth.reactivateDemo', { code: result.demoCode }));
       }
     } catch (error) {
       setReactivationError(error.message);
@@ -534,7 +534,7 @@ export function LoginPage() {
         persistLastLoginMethod(reactivationProvider);
       }
       setReactivationOpen(false);
-      setStatus("Tài khoản đã được kích hoạt lại");
+      setStatus(t('auth.reactivateSuccess'));
       navigate(String(result?.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/", {
         replace: true,
       });
@@ -551,12 +551,12 @@ export function LoginPage() {
       persistBannedAppealEmail(attemptedIdentifier);
     }
     setLoading(true);
-    setStatus("Đang đăng nhập...");
+    setStatus(t('auth.loggingIn'));
     try {
       const result = await login(identifier, password, buildAntiBotHeaders());
       clearVerificationToken();
       persistLastLoginMethod("email");
-      setStatus("Đăng nhập thành công");
+      setStatus(t('auth.loginSuccess'));
       if (result?.needsOnboarding) {
         persistOnboardingPending({
           userId: Number(result.userId),
@@ -583,7 +583,7 @@ export function LoginPage() {
       }
       if (error.captchaRequired || error.code === "CAPTCHA_REQUIRED") {
         handleCaptchaRequired(error.captchaRequired ?? { challengeLevel: "ROTATE" });
-        setStatus("Vui lòng hoàn thành xác minh bảo mật");
+        setStatus(t('auth.completeCaptcha'));
         return;
       }
       if (
@@ -592,7 +592,7 @@ export function LoginPage() {
       ) {
         clearVerificationToken();
         handleCaptchaRequired({ challengeLevel: "ROTATE" });
-        setStatus("Captcha đã hết hạn, vui lòng xác minh lại");
+        setStatus(t('auth.captchaExpired'));
         return;
       }
       setStatus(error.message);
@@ -619,13 +619,13 @@ export function LoginPage() {
       clearVerificationToken();
       if (result?.emailSent) {
         setStatus(
-          `Nếu tài khoản tồn tại, mã 6 số đã được gửi tới ${normalizedResetEmail}. Kiểm tra hộp thư đến và thư rác.`,
+          t('auth.resetOtpSent', { email: normalizedResetEmail }),
         );
       } else if (result?.demoCode) {
-        setStatus(`Chưa bật gửi email (dev). Mã đặt lại mật khẩu: ${result.demoCode}`);
+        setStatus(t('auth.resetOtpDemo', { code: result.demoCode }));
       } else {
         setStatus(
-          "Nếu email đã đăng ký, mã sẽ được gửi. Kiểm tra hộp thư hoặc thử lại sau.",
+          t('auth.resetOtpGeneric'),
         );
       }
     } catch (error) {
@@ -636,7 +636,7 @@ export function LoginPage() {
         clearVerificationToken();
         pendingCaptchaActionRef.current = "sendResetCode";
         handleCaptchaRequired({ challengeLevel: "ROTATE" });
-        setSendResetError("Captcha đã hết hạn, vui lòng xác minh lại");
+        setSendResetError(t('auth.captchaExpired'));
         return;
       }
       setSendResetError(error.message);
@@ -664,18 +664,18 @@ export function LoginPage() {
   const submitResetPassword = async (event) => {
     event.preventDefault();
     if (!canResetPassword) {
-      setStatus("Vui lòng nhập đầy đủ email, mã 6 số và mật khẩu hợp lệ");
+      setStatus(t('auth.resetFillAll'));
       return;
     }
     setResetLoading(true);
-    setStatus("Đang đặt lại mật khẩu...");
+    setStatus(t('auth.resettingPassword'));
     try {
       await apiClient.resetPassword({
         email: normalizedResetEmail,
         code: resetCode.trim(),
         newPassword: resetPassword,
       });
-      setStatus("Đặt lại mật khẩu thành công. Bạn có thể đăng nhập.");
+      setStatus(t('auth.resetSuccess'));
       setIdentifier(normalizedResetEmail);
       setPassword("");
       setResetCode("");
@@ -701,13 +701,13 @@ export function LoginPage() {
   const submitWithCredentials = async (event) => {
     event.preventDefault();
     if (!identifier.trim() || !password.trim()) {
-      setStatus("Vui lòng nhập email/VibelyID và mật khẩu");
+      setStatus(t('auth.enterCredentials'));
       return;
     }
     try {
       const human = await ensureHuman();
       if (!human.verified) {
-        setStatus("Vui lòng hoàn thành xác minh bảo mật");
+        setStatus(t('auth.completeCaptcha'));
         return;
       }
       await performLogin();
@@ -739,19 +739,19 @@ export function LoginPage() {
           <div className="w-full max-w-[340px] overflow-hidden rounded-sm border border-zinc-800 bg-[#121212] text-center shadow-2xl">
             <div className="px-6 py-6">
               <h2 className="text-xl font-bold text-zinc-100">
-                Tài khoản của bạn đã bị cấm
+                {t('auth.banned.title')}
               </h2>
               <p className="mt-4 text-[13px] leading-relaxed text-zinc-300">
-                Tài khoản bạn đã bị cấm vì{" "}
+                {t('auth.banned.reason')}{" "}
                 <span className="font-semibold text-zinc-100">
                   {bannedReason.trim()
                     ? bannedReason.trim()
-                    : "vi phạm chính sách cộng đồng của Vibely"}
+                    : t('auth.banned.defaultReason')}
                 </span>
                 .
               </p>
               <p className="mt-3 text-[13px] leading-relaxed text-zinc-400">
-                Nếu bạn cho rằng đây là một sự nhầm lẫn, bạn có thể gửi khiếu nại
+                {t('auth.banned.suggestion')}
               </p>
             </div>
             <div className="border-t border-zinc-800">
@@ -760,14 +760,14 @@ export function LoginPage() {
                 className="flex h-12 w-full items-center justify-center text-[15px] font-semibold text-white transition hover:bg-zinc-900"
                 onClick={openBannedAppealModal}
               >
-                Khiếu nại
+                {t('auth.banned.appeal')}
               </button>
               <button
                 type="button"
                 className="h-12 w-full border-t border-zinc-800 text-[15px] font-medium text-zinc-200 hover:bg-zinc-900"
                 onClick={closeBannedModal}
               >
-                Bỏ qua
+                {t('auth.banned.ignore')}
               </button>
             </div>
           </div>
@@ -782,26 +782,24 @@ export function LoginPage() {
                 className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-zinc-200 hover:bg-zinc-900"
                 onClick={closeBannedAppealModal}
                 disabled={appealLoading}
-                aria-label="Quay lại"
+                aria-label={t('common.back')}
               >
                 <IoArrowBack className="h-5 w-5" />
               </button>
               <h2 className="text-center text-[17px] font-bold text-zinc-100">
-                Gửi khiếu nại
+                {t('auth.appeal.title')}
               </h2>
             </div>
             <div className="scrollbar-none max-h-[min(70vh,560px)] overflow-y-auto px-5 py-4">
               <p className="text-[13px] leading-relaxed text-zinc-400">
-                Tiêu chuẩn cộng đồng Vibely áp dụng cho mọi tài khoản và nội dung.
-                Nếu bạn cho rằng tài khoản bị hạn chế do nhầm lẫn, hãy gửi khiếu nại
-                để chúng tôi xem xét.
+                {t('auth.appeal.description')}
               </p>
               <div className="mt-4 rounded-md border border-zinc-800 bg-zinc-950/70 p-4">
                 <label className="block text-[13px] font-semibold text-zinc-100">
-                  Mô tả <span className="text-red-500">*</span>
+                  {t('auth.appeal.descLabel')} <span className="text-red-500">*</span>
                 </label>
                 <p className="mt-1 text-[12px] text-zinc-500">
-                  Cung cấp thêm thông tin để chúng tôi đánh giá trường hợp của bạn.
+                  {t('auth.appeal.descHint')}
                 </p>
                 <div className="relative mt-3">
                   <textarea
@@ -821,8 +819,8 @@ export function LoginPage() {
                   Email <span className="text-red-500">*</span>
                 </label>
                 <p className="mt-1 text-[12px] text-zinc-500">
-                  Chúng tôi sẽ gửi cho bạn kết quả của khiếu nại qua địa chỉ email này.
-                  {bannedAccountEmail ? " Bạn có thể đổi sang email khác nếu muốn." : ""}
+                  {t('auth.appeal.emailHint')}
+                  {bannedAccountEmail ? t('auth.appealEmailChangeHint') : ""}
                 </p>
                 <input
                   type="email"
@@ -845,7 +843,7 @@ export function LoginPage() {
                 onClick={submitBanAppeal}
                 disabled={!canSubmitBanAppeal}
               >
-                {appealLoading ? "Đang gửi..." : "Gửi"}
+                {appealLoading ? t('auth.appeal.submitting') : t('auth.appeal.submit')}
               </button>
             </div>
           </div>
@@ -856,11 +854,10 @@ export function LoginPage() {
           <div className="w-full max-w-[340px] overflow-hidden rounded-sm border border-zinc-800 bg-[#121212] text-center shadow-2xl">
             <div className="px-6 py-6">
               <h2 className="text-xl font-bold text-zinc-100">
-                Kích hoạt lại tài khoản Vibely
+                {t('auth.reactivate.title')}
               </h2>
               <p className="mt-4 text-[13px] leading-relaxed text-zinc-300">
-                Bạn đang đăng nhập vào tài khoản đã bị hủy kích hoạt. Kích hoạt lại
-                tài khoản để tiếp tục sử dụng Vibely và khôi phục nội dung của bạn.
+                {t('auth.reactivate.description')}
               </p>
               {reactivationMaskedEmail ? (
                 <p className="mt-3 break-all text-[12px] text-zinc-500">
@@ -870,13 +867,13 @@ export function LoginPage() {
               {reactivationCodeSent ? (
                 <div className="mt-4 text-left">
                   <label className="mb-1 block text-[12px] font-medium text-zinc-300">
-                    Nhập mã xác minh 6 chữ số
+                    {t('auth.reactivate.otpLabel')}
                   </label>
                   <input
                     className={AUTH_FIELD}
                     inputMode="numeric"
                     maxLength={6}
-                    placeholder="Mã xác minh"
+                    placeholder={t('auth.reactivate.otpPlaceholder')}
                     value={reactivationCode}
                     onChange={(event) =>
                       setReactivationCode(event.target.value.replace(/\D/g, ""))
@@ -889,7 +886,7 @@ export function LoginPage() {
                     onClick={sendReactivationCode}
                     disabled={reactivationLoading}
                   >
-                    Gửi lại mã
+                    {t('auth.reactivate.resend')}
                   </button>
                 </div>
               ) : null}
@@ -916,17 +913,17 @@ export function LoginPage() {
                 }
               >
                 {reactivationLoading
-                  ? "Đang xử lý..."
+                  ? t('auth.processing')
                   : reactivationCodeSent
-                    ? "Kích hoạt lại"
-                    : "Gửi mã xác minh"}
+                    ? t('auth.reactivate.activate')
+                    : t('auth.reactivate.sendOtp')}
               </button>
               <button
                 type="button"
                 className="h-12 w-full border-t border-zinc-800 text-[15px] font-medium text-zinc-200 hover:bg-zinc-900"
                 onClick={closeReactivationModal}
               >
-                Hủy
+                {t('common.cancel')}
               </button>
             </div>
           </div>
@@ -940,7 +937,7 @@ export function LoginPage() {
               <Link
                 to="/"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                aria-label="Đóng"
+                aria-label={t('common.close')}
               >
                 <IoClose className="text-2xl" />
               </Link>
@@ -1006,14 +1003,14 @@ export function LoginPage() {
                   setStatus("");
                 }}
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                aria-label="Quay lại"
+                aria-label={t('common.back')}
               >
                 <IoArrowBack className="text-2xl" />
               </button>
               <Link
                 to="/"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                aria-label="Đóng"
+                aria-label={t('common.close')}
               >
                 <IoClose className="text-2xl" />
               </Link>
@@ -1044,7 +1041,7 @@ export function LoginPage() {
                     type="button"
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-2xl text-zinc-400 hover:text-zinc-200"
                     onClick={() => setShowPassword((prev) => !prev)}
-                    aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                    aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                   >
                     {showPassword ? <IoEyeOutline /> : <IoEyeOffOutline />}
                   </button>
@@ -1086,14 +1083,14 @@ export function LoginPage() {
                   setSendResetError("");
                 }}
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                aria-label="Quay lại"
+                aria-label={t('common.back')}
               >
                 <IoArrowBack className="text-2xl" />
               </button>
               <Link
                 to="/"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                aria-label="Đóng"
+                aria-label={t('common.close')}
               >
                 <IoClose className="text-2xl" />
               </Link>
@@ -1104,22 +1101,22 @@ export function LoginPage() {
               </h2>
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[13px] font-semibold text-zinc-100">
-                  Nhập địa chỉ email
+                  {t('auth.enterEmail')}
                 </span>
                 <button
                   type="button"
                   className="shrink-0 text-[12px] text-zinc-400 hover:text-zinc-200"
                   onClick={() =>
-                    setStatus("Đặt lại bằng số điện thoại sẽ được bổ sung sau")
+                    setStatus(t('auth.resetPhoneLater'))
                   }
                 >
-                  Đặt lại bằng số điện thoại
+                  {t('auth.resetByPhone')}
                 </button>
               </div>
               <form className="space-y-2.5" onSubmit={submitResetPassword}>
                 <input
                   className={AUTH_FIELD}
-                  placeholder="Địa chỉ email"
+                  placeholder={t('auth.emailPlaceholder')}
                   type="email"
                   autoComplete="email"
                   value={resetEmail}
@@ -1128,7 +1125,7 @@ export function LoginPage() {
                 <div className="flex">
                   <input
                     className={AUTH_FIELD_OTP}
-                    placeholder="Nhập mã gồm 6 chữ số"
+                    placeholder={t('auth.enterOtp')}
                     inputMode="numeric"
                     maxLength={6}
                     value={resetCode}
@@ -1147,10 +1144,10 @@ export function LoginPage() {
                     disabled={!canSendResetCode || sendingResetCode}
                   >
                     {sendingResetCode
-                      ? "Đang gửi..."
+                      ? t('auth.sending')
                       : resendSeconds > 0
-                        ? `Gửi lại mã: ${resendSeconds}s`
-                        : "Gửi mã"}
+                        ? t('auth.resendCode', { seconds: resendSeconds })
+                        : t('auth.sendCode')}
                   </button>
                 </div>
                 {sendResetError ? (
@@ -1159,7 +1156,7 @@ export function LoginPage() {
                 <div className="relative">
                   <input
                     className={AUTH_FIELD_WITH_ICON}
-                    placeholder="Mật khẩu"
+                    placeholder={t('auth.password')}
                     type={showResetPassword ? "text" : "password"}
                     autoComplete="new-password"
                     value={resetPassword}
@@ -1172,7 +1169,7 @@ export function LoginPage() {
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-2xl text-zinc-400 hover:text-zinc-200"
                     onClick={() => setShowResetPassword((prev) => !prev)}
                     aria-label={
-                      showResetPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
+                      showResetPassword ? t('auth.hidePassword') : t('auth.showPassword')
                     }
                   >
                     {showResetPassword ? <IoEyeOutline /> : <IoEyeOffOutline />}
@@ -1181,7 +1178,7 @@ export function LoginPage() {
                 {isResetPasswordFocused ? (
                   <div className="space-y-0.5 text-[12px] text-zinc-300">
                     <p className="font-medium text-zinc-200">
-                      Mật khẩu của bạn phải gồm:
+                      {t('auth.passwordRequirements')}
                     </p>
                     <p
                       className={`pl-3 ${
@@ -1192,7 +1189,7 @@ export function LoginPage() {
                             : "text-red-400"
                       }`}
                     >
-                      {resetPasswordHasValidLength ? "✓" : "·"} 8 đến 20 ký tự
+                      {resetPasswordHasValidLength ? "✓" : "·"} {t('auth.passwordLength')}
                     </p>
                     <p
                       className={`pl-3 ${
@@ -1203,8 +1200,7 @@ export function LoginPage() {
                             : "text-red-400"
                       }`}
                     >
-                      {resetPasswordHasRequiredCharacters ? "✓" : "·"} Các chữ
-                      cái, số và ký tự đặc biệt
+                      {resetPasswordHasRequiredCharacters ? "✓" : "·"} {t('auth.passwordChars')}
                     </p>
                   </div>
                 ) : null}
@@ -1217,7 +1213,7 @@ export function LoginPage() {
                   type="submit"
                   disabled={!canResetPassword}
                 >
-                  {resetLoading ? "Đang xử lý..." : "Đặt lại mật khẩu"}
+                  {resetLoading ? t('auth.processing') : t('auth.resetPasswordTitle')}
                 </button>
               </form>
               {status ? (

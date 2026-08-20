@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
   IoChevronDown,
@@ -17,32 +18,38 @@ import {
 import { useAuth } from "@/features/auth/hooks/useAuth";
 
 const PERIOD_OPTIONS = [
-  { days: 7, label: "7 ngày qua" },
-  { days: 28, label: "28 ngày qua" },
-  { days: 60, label: "60 ngày qua" },
-  { days: 90, label: "90 ngày qua" },
+  { days: 7, labelKey: "studio.period.d7" },
+  { days: 28, labelKey: "studio.period.d28" },
+  { days: 60, labelKey: "studio.period.d60" },
+  { days: 90, labelKey: "studio.period.d90" },
 ];
 
 const TABS = [
-  { id: "overview", label: "Tổng quan" },
-  { id: "content", label: "Nội dung" },
-  { id: "viewers", label: "Người xem" },
-  { id: "followers", label: "Người theo dõi" },
+  { id: "overview", labelKey: "studio.analytics.tabs.overview" },
+  { id: "content", labelKey: "studio.analytics.tabs.content" },
+  { id: "viewers", labelKey: "studio.analytics.tabs.viewers" },
+  { id: "followers", labelKey: "studio.analytics.tabs.followers" },
 ];
 
 const CONTENT_SORTS = [
-  { id: "views", label: "Lượt xem nhiều nhất" },
-  { id: "likes", label: "Lượt thích nhiều nhất" },
-  { id: "comments", label: "Bình luận nhiều nhất" },
-  { id: "shares", label: "Chia sẻ nhiều nhất" },
+  { id: "views", labelKey: "studio.analytics.sorts.views" },
+  { id: "likes", labelKey: "studio.analytics.sorts.likes" },
+  { id: "comments", labelKey: "studio.analytics.sorts.comments" },
+  { id: "shares", labelKey: "studio.analytics.sorts.shares" },
 ];
 
-const WEEKDAY_LABELS = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+const WEEKDAY_KEYS = [
+  "studio.analytics.weekdays.sun",
+  "studio.analytics.weekdays.mon",
+  "studio.analytics.weekdays.tue",
+  "studio.analytics.weekdays.wed",
+  "studio.analytics.weekdays.thu",
+  "studio.analytics.weekdays.fri",
+  "studio.analytics.weekdays.sat",
+];
 
-const VIEWER_INSIGHT_HINT =
-  "Dữ liệu sẽ hiển thị khi bài đăng của bạn đạt 100 người xem.";
-const FOLLOWER_INSIGHT_HINT =
-  "Nhận thêm thông tin chi tiết khi bạn đạt 100 người theo dõi.";
+const VIEWER_INSIGHT_HINT_KEY = "studio.analytics.viewerInsightHint";
+const FOLLOWER_INSIGHT_HINT_KEY = "studio.analytics.followerInsightHint";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -420,6 +427,7 @@ function ColumnBars({ items, emptyHint }) {
 }
 
 export function StudioAnalyticsPage() {
+  const { t } = useTranslation();
   const { token } = useAuth();
   const navigate = useNavigate();
   const [days, setDays] = useState(7);
@@ -436,8 +444,8 @@ export function StudioAnalyticsPage() {
   const [previous, setPrevious] = useState(null);
 
   useEffect(() => {
-    document.title = "VibelyStudio | Phân tích";
-  }, []);
+    document.title = t("studio.docTitle.analytics");
+  }, [t]);
 
   useEffect(() => {
     if (!token) return undefined;
@@ -464,7 +472,7 @@ export function StudioAnalyticsPage() {
           }
           if (!cancelled) {
             setError(
-              e instanceof Error ? e.message : "Không tải được thống kê.",
+              e instanceof Error ? e.message : t("studio.analytics.loadFailed"),
             );
             setPayload(EMPTY_PAYLOAD(days));
             setLoading(false);
@@ -518,49 +526,49 @@ export function StudioAnalyticsPage() {
     () => [
       {
         id: "views",
-        label: "Lượt xem video",
+        label: t("studio.metrics.videoViews"),
         value: payload.totalViews,
         delta: deltaOf(payload.totalViews, previousTotals?.totalViews),
-        tip: "Số lần người xem đã xem video của bạn trong khoảng thời gian đã chọn.",
+        tip: t("studio.metrics.videoViewsTip"),
       },
       {
         id: "profileViews",
-        label: "Lượt xem hồ sơ",
+        label: t("studio.metrics.profileViews"),
         value: payload.totalProfileViews,
         delta: deltaOf(
           payload.totalProfileViews,
           previousTotals?.totalProfileViews,
         ),
-        tip: "Số lần hồ sơ của bạn được xem trong khoảng thời gian đã chọn.",
+        tip: t("studio.metrics.profileViewsTip"),
       },
       {
         id: "likes",
-        label: "Lượt thích",
+        label: t("studio.metrics.likes"),
         value: payload.totalLikes,
         delta: deltaOf(payload.totalLikes, previousTotals?.totalLikes),
-        tip: "Số lượt thích video của bạn nhận được trong khoảng thời gian đã chọn.",
+        tip: t("studio.metrics.likesTip"),
       },
       {
         id: "comments",
-        label: "Bình luận",
+        label: t("studio.metrics.comments"),
         value: payload.totalComments,
         delta: deltaOf(payload.totalComments, previousTotals?.totalComments),
-        tip: "Số bình luận trên video của bạn trong khoảng thời gian đã chọn.",
+        tip: t("studio.metrics.commentsTip"),
       },
       {
         id: "shares",
-        label: "Chia sẻ",
+        label: t("studio.metrics.shares"),
         value: payload.totalShares,
         delta: deltaOf(payload.totalShares, previousTotals?.totalShares),
-        tip: "Số lần video của bạn được chia sẻ trong khoảng thời gian đã chọn.",
+        tip: t("studio.metrics.sharesTip"),
       },
       {
         id: "rewards",
-        label: "Ước tính thưởng",
+        label: t("studio.metrics.rewards"),
         value: "$0.00",
         raw: true,
         delta: null,
-        tip: "Do khác biệt về cách quy đổi tiền tệ và múi giờ, một số dữ liệu hiển thị có thể chênh lệch nhẹ so với các báo cáo khác.",
+        tip: t("studio.metrics.rewardsTipLong"),
       },
     ],
     [payload, previousTotals],
@@ -611,7 +619,7 @@ export function StudioAnalyticsPage() {
       if (Number.isNaN(d.getTime())) continue;
       totals[d.getDay()] += Number(p.views ?? 0);
     }
-    return WEEKDAY_LABELS.map((label, idx) => ({ label, value: totals[idx] }));
+    return WEEKDAY_KEYS.map((k) => t(k)).map((label, idx) => ({ label, value: totals[idx] }));
   }, [points]);
 
   const sortedTopVideos = useMemo(() => {
@@ -623,19 +631,20 @@ export function StudioAnalyticsPage() {
   }, [payload.topVideos, contentSort]);
 
   const periodLabel =
-    PERIOD_OPTIONS.find((o) => o.days === days)?.label ?? `${days} ngày qua`;
+    (PERIOD_OPTIONS.find((o) => o.days === days) ? t(PERIOD_OPTIONS.find((o) => o.days === days).labelKey) : null) ??
+    t('studio.editPost.daysAgo', { days });
 
   const bestViewDay = useMemo(() => peakDay(points, "views"), [points]);
 
   const downloadCsv = useCallback(() => {
     const header = [
-      "Ngày",
-      "Lượt xem video",
-      "Lượt xem hồ sơ",
-      "Lượt thích",
-      "Bình luận",
-      "Chia sẻ",
-      "Người theo dõi mới",
+      t("studio.analytics.day"),
+      t("studio.metrics.videoViews"),
+      t("studio.metrics.profileViews"),
+      t("studio.metrics.likes"),
+      t("studio.metrics.comments"),
+      t("studio.metrics.shares"),
+      t("studio.analytics.newFollowers"),
     ];
     const rows = points.map((p) => [
       p.day,
@@ -663,18 +672,18 @@ export function StudioAnalyticsPage() {
   const topBar = (
     <div className="mb-5 flex items-center justify-between gap-3">
       <nav className="flex min-w-0 flex-1 items-end gap-1 overflow-x-auto border-b border-zinc-800">
-        {TABS.map((t) => (
+        {TABS.map((tabItem) => (
           <button
-            key={t.id}
+            key={tabItem.id}
             type="button"
-            onClick={() => setTab(t.id)}
+            onClick={() => setTab(tabItem.id)}
             className={`shrink-0 cursor-pointer px-3 py-2.5 text-sm font-semibold transition sm:px-4 ${
-              tab === t.id
+              tab === tabItem.id
                 ? "border-b-2 border-zinc-100 text-zinc-100"
                 : "border-b-2 border-transparent text-zinc-500 hover:text-zinc-300"
             }`}
           >
-            {t.label}
+            {t(tabItem.labelKey)}
           </button>
         ))}
       </nav>
@@ -705,7 +714,7 @@ export function StudioAnalyticsPage() {
                     setPeriodOpen(false);
                   }}
                 >
-                  {opt.label}
+                  {t(opt.labelKey)}
                   {days === opt.days ? " ✓" : ""}
                 </button>
               ))}
@@ -758,11 +767,11 @@ export function StudioAnalyticsPage() {
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Panel
-          title="Nguồn traffic"
-          tip="Nơi người xem phát hiện video của bạn (For You, hồ sơ, tìm kiếm, …)."
+          title={t("studio.analytics.trafficSources")}
+          tip={t("studio.analytics.trafficSourcesTip")}
         >
           <p className="mt-2 text-xs text-zinc-500">
-            Bạn sẽ xem được thông tin này khi có đủ dữ liệu để phân tích.
+            {t("studio.analytics.needMoreData")}
           </p>
           <BarRows
             rows={
@@ -777,13 +786,12 @@ export function StudioAnalyticsPage() {
           />
         </Panel>
         <Panel
-          title="Truy vấn tìm kiếm"
-          tip="Các từ khóa tìm kiếm dẫn người xem tới video của bạn trong khoảng thời gian đã chọn."
+          title={t("studio.analytics.searchQueries")}
+          tip={t("studio.analytics.searchTip")}
         >
           {payload.searchKeywords.length === 0 ? (
             <p className="mt-2 text-xs text-zinc-500">
-              Mỗi truy vấn tìm kiếm hiện có lưu lượng thấp. Thông tin sẽ hiển
-              thị khi có ít nhất 1 truy vấn đủ lưu lượng.
+              {t("studio.analytics.searchLowTraffic")}
             </p>
           ) : (
             <ul className="mt-3 divide-y divide-zinc-800">
@@ -806,9 +814,9 @@ export function StudioAnalyticsPage() {
     <>
       <div className="mb-3">
         <PanelHeading
-          title="Bài đăng hàng đầu"
+          title={t("studio.analytics.topPosts")}
           tipPlacement="bottom"
-          tip={`Những bài đăng hiệu quả nhất trong ${days} ngày qua, xếp hạng theo lượt xem, lượt thích, bình luận và chia sẻ.`}
+          tip={t("studio.analytics.topPostsTip", { days })}
         />
       </div>
       <section className="rounded-xl border border-zinc-800 bg-zinc-950/60">
@@ -824,7 +832,7 @@ export function StudioAnalyticsPage() {
                   : "border-b-2 border-transparent text-zinc-500 hover:text-zinc-300"
               }`}
             >
-              {opt.label}
+              {t(opt.labelKey)}
             </button>
           ))}
         </div>
@@ -833,15 +841,15 @@ export function StudioAnalyticsPage() {
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead>
               <tr className="border-b border-zinc-800/80 text-xs font-normal text-zinc-500">
-                <th className="px-4 py-3 font-normal">Bài đăng</th>
+                <th className="px-4 py-3 font-normal">{t("studio.analytics.post")}</th>
                 <th className="px-4 py-3 text-right font-normal">
-                  Lượt xem trong {days} ngày qua
+                  {t("studio.analytics.viewsInDays", { days })}
                 </th>
-                <th className="px-4 py-3 text-right font-normal">Lượt thích</th>
-                <th className="px-4 py-3 text-right font-normal">Bình luận</th>
-                <th className="px-4 py-3 text-right font-normal">Chia sẻ</th>
-                <th className="px-4 py-3 text-right font-normal">Ngày đăng</th>
-                <th className="px-4 py-3 text-right font-normal">Hành động</th>
+                <th className="px-4 py-3 text-right font-normal">{t("studio.analytics.likes")}</th>
+                <th className="px-4 py-3 text-right font-normal">{t("studio.analytics.comments")}</th>
+                <th className="px-4 py-3 text-right font-normal">{t("studio.analytics.shares")}</th>
+                <th className="px-4 py-3 text-right font-normal">{t("studio.analytics.postedDate")}</th>
+                <th className="px-4 py-3 text-right font-normal">{t("studio.analytics.action")}</th>
               </tr>
             </thead>
             <tbody>
@@ -851,7 +859,7 @@ export function StudioAnalyticsPage() {
                     colSpan={7}
                     className="px-4 py-24 text-center text-sm text-zinc-500"
                   >
-                    Không có bài đăng hàng đầu
+                    {t("studio.analytics.noTopPosts")}
                   </td>
                 </tr>
               ) : (
@@ -917,7 +925,7 @@ export function StudioAnalyticsPage() {
                             navigate(`/vibelystudio/analytics/${v.publicId}`)
                           }
                         >
-                          Xem phân tích
+                          {t("studio.analytics.viewAnalytics")}
                         </button>
                       </td>
                     </tr>
@@ -936,16 +944,16 @@ export function StudioAnalyticsPage() {
       <section className="overflow-visible rounded-xl border border-zinc-800 bg-zinc-950/50">
         <div className="grid grid-cols-2 divide-x divide-zinc-800/80 border-b border-zinc-800/80">
           <MetricCell
-            label="Lượt xem video"
-            tip="Số lần video của bạn được xem trong khoảng thời gian đã chọn."
+            label={t("studio.metrics.videoViews")}
+            tip={t("studio.analytics.videoViewsTip")}
             value={payload.totalViews}
             delta={deltaOf(payload.totalViews, previousTotals?.totalViews)}
             active={viewerMetric === "views"}
             onClick={() => setViewerMetric("views")}
           />
           <MetricCell
-            label="Lượt xem hồ sơ"
-            tip="Số lần hồ sơ của bạn được xem trong khoảng thời gian đã chọn."
+            label={t("studio.metrics.profileViews")}
+            tip={t("studio.metrics.profileViewsTip")}
             tipAlign="right"
             value={payload.totalProfileViews}
             delta={deltaOf(
@@ -968,13 +976,13 @@ export function StudioAnalyticsPage() {
       <div className="mt-4 grid items-start gap-4 lg:grid-cols-2">
         <div className="space-y-4">
           <Panel
-            title="Thời điểm hoạt động nhiều nhất"
-            tip="Khung giờ và ngày mà người xem của bạn hoạt động nhiều nhất."
+            title={t("studio.analytics.peakActivity")}
+            tip={t("studio.analytics.peakTip")}
           >
             <div className="mt-3 inline-flex rounded-md border border-zinc-800 bg-zinc-900/60 p-0.5 text-xs">
               {[
-                { id: "hour", label: "Giờ" },
-                { id: "day", label: "Ngày" },
+                { id: "hour", labelKey: "studio.analytics.hour" },
+                { id: "day", label: t("studio.analytics.day") },
               ].map((opt) => (
                 <button
                   key={opt.id}
@@ -986,15 +994,14 @@ export function StudioAnalyticsPage() {
                       : "text-zinc-500 hover:text-zinc-300"
                   }`}
                 >
-                  {opt.label}
+                  {t(opt.labelKey)}
                 </button>
               ))}
             </div>
             {activeTimeMode === "hour" ? (
               <>
                 <p className="mt-3 text-xs text-zinc-500">
-                  Thống kê theo khung giờ sẽ hiển thị khi bài đăng của bạn đạt
-                  100 người xem.
+                  {t("studio.analytics.peakHourHint")}
                 </p>
                 <ColumnBars
                   items={Array.from({ length: 12 }, (_, i) => ({
@@ -1006,48 +1013,48 @@ export function StudioAnalyticsPage() {
             ) : (
               <>
                 <p className="mt-3 text-xs text-zinc-500">
-                  Lượt xem theo thứ trong {periodLabel.toLowerCase()}.
+                  {t("studio.analytics.viewsByWeekday", { period: periodLabel.toLowerCase() })}
                 </p>
                 <ColumnBars
                   items={weekdayItems}
-                  emptyHint="Chưa có lượt xem trong khoảng thời gian này."
+                  emptyHint={t("studio.analytics.noViewsInPeriod")}
                 />
               </>
             )}
           </Panel>
 
           <Panel
-            title="Bài đăng người xem cũng đã xem"
-            tip="Những bài đăng khác mà người xem của bạn cũng xem."
+            title={t("studio.analytics.alsoWatchedPosts")}
+            tip={t("studio.analytics.alsoWatchedPostsTip")}
           >
-            <p className="mt-2 text-xs text-zinc-500">{VIEWER_INSIGHT_HINT}</p>
+            <p className="mt-2 text-xs text-zinc-500">{t(VIEWER_INSIGHT_HINT_KEY)}</p>
           </Panel>
         </div>
 
         <div className="space-y-4">
           <Panel
-            title="Nhà sáng tạo người xem cũng đã xem"
-            tip="Những nhà sáng tạo khác mà người xem của bạn quan tâm."
+            title={t("studio.analytics.alsoWatchedCreators")}
+            tip={t("studio.analytics.alsoWatchedCreatorsTip")}
           >
-            <p className="mt-2 text-xs text-zinc-500">{VIEWER_INSIGHT_HINT}</p>
+            <p className="mt-2 text-xs text-zinc-500">{t(VIEWER_INSIGHT_HINT_KEY)}</p>
           </Panel>
-          <Panel title="Giới tính">
-            <GenderDonut hint={VIEWER_INSIGHT_HINT} />
+          <Panel title={t("studio.analytics.gender")}>
+            <GenderDonut hint={t(VIEWER_INSIGHT_HINT_KEY)} />
           </Panel>
-          <Panel title="Độ tuổi">
-            <LockedBars hint={VIEWER_INSIGHT_HINT} />
+          <Panel title={t("studio.analytics.age")}>
+            <LockedBars hint={t(VIEWER_INSIGHT_HINT_KEY)} />
           </Panel>
-          <Panel title="Vị trí" tip="Khu vực của những người đã xem video.">
-            <LockedBars hint={VIEWER_INSIGHT_HINT} />
+          <Panel title={t("studio.analytics.location")} tip={t("studio.analytics.locationTip")}>
+            <LockedBars hint={t(VIEWER_INSIGHT_HINT_KEY)} />
           </Panel>
         </div>
       </div>
 
       <p className="mt-4 text-xs text-zinc-600">
-        Ngày nhiều lượt xem nhất:{" "}
+        {t("studio.analytics.bestViewDay")}{" "}
         {bestViewDay && bestViewDay.value > 0
-          ? `${formatDay(bestViewDay.day)} · ${formatCompact(bestViewDay.value)} lượt xem`
-          : "chưa có dữ liệu"}
+          ? t("studio.analytics.bestViewDayValue", { day: formatDay(bestViewDay.day), count: formatCompact(bestViewDay.value) })
+          : t("studio.analytics.noData")}
       </p>
     </>
   );
@@ -1057,23 +1064,23 @@ export function StudioAnalyticsPage() {
       {payload.totalFollowers < 100 ? (
         <div className="mb-4 flex items-center gap-2 rounded-lg border border-amber-500/25 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-200/90">
           <IoInformationCircleOutline className="shrink-0 text-base" aria-hidden />
-          {FOLLOWER_INSIGHT_HINT}
+          {t(FOLLOWER_INSIGHT_HINT_KEY)}
         </div>
       ) : null}
 
       <section className="overflow-visible rounded-xl border border-zinc-800 bg-zinc-950/50">
         <div className="grid grid-cols-2 divide-x divide-zinc-800/80 border-b border-zinc-800/80">
           <MetricCell
-            label="Tổng người theo dõi"
-            tip="Số người đang theo dõi bạn tính tới hiện tại."
+            label={t("studio.analytics.totalFollowers")}
+            tip={t("studio.analytics.totalFollowersTip")}
             value={payload.totalFollowers}
-            hint="Toàn thời gian"
+            hint={t("studio.analytics.allTime")}
             active={followerMetric === "total"}
             onClick={() => setFollowerMetric("total")}
           />
           <MetricCell
-            label="Người theo dõi mới"
-            tip="Số người bắt đầu theo dõi bạn trong khoảng thời gian đã chọn."
+            label={t("studio.analytics.newFollowers")}
+            tip={t("studio.analytics.newFollowersTip")}
             tipAlign="right"
             value={payload.newFollowers}
             delta={deltaOf(payload.newFollowers, previousTotals?.newFollowers)}
@@ -1092,36 +1099,36 @@ export function StudioAnalyticsPage() {
 
       <div className="mt-4 grid items-start gap-4 lg:grid-cols-2">
         <div className="space-y-4">
-          <Panel title="Giới tính">
-            <GenderDonut hint={FOLLOWER_INSIGHT_HINT} />
+          <Panel title={t("studio.analytics.gender")}>
+            <GenderDonut hint={t(FOLLOWER_INSIGHT_HINT_KEY)} />
           </Panel>
           <Panel
-            title="Độ tuổi"
-            tip="Tính theo ngày sinh mà người theo dõi đã khai báo."
+            title={t("studio.analytics.age")}
+            tip={t("studio.analytics.ageTip")}
           >
             {payload.followerAgeBuckets.length ? (
               <BarRows rows={payload.followerAgeBuckets} />
             ) : (
-              <LockedBars hint={FOLLOWER_INSIGHT_HINT} />
+              <LockedBars hint={t(FOLLOWER_INSIGHT_HINT_KEY)} />
             )}
           </Panel>
           <Panel
-            title="Vị trí"
-            tip="Khu vực tài khoản của những người đang theo dõi bạn."
+            title={t("studio.analytics.location")}
+            tip={t("studio.analytics.locationTip")}
           >
             {payload.followerRegions.length ? (
               <BarRows rows={payload.followerRegions} />
             ) : (
-              <LockedBars hint={FOLLOWER_INSIGHT_HINT} />
+              <LockedBars hint={t(FOLLOWER_INSIGHT_HINT_KEY)} />
             )}
           </Panel>
         </div>
 
         <Panel
-          title="Thời điểm hoạt động nhiều nhất"
-          tip="Khung giờ người theo dõi của bạn hoạt động nhiều nhất."
+          title={t("studio.analytics.peakActivity")}
+          tip={t("studio.analytics.followerPeakTip")}
         >
-          <p className="mt-2 text-xs text-zinc-500">{FOLLOWER_INSIGHT_HINT}</p>
+          <p className="mt-2 text-xs text-zinc-500">{t(FOLLOWER_INSIGHT_HINT_KEY)}</p>
           <ColumnBars
             items={Array.from({ length: 12 }, (_, i) => ({
               label: `${i * 2}h`,
@@ -1143,7 +1150,7 @@ export function StudioAnalyticsPage() {
         </div>
       ) : null}
       {loading ? (
-        <p className="mb-3 text-sm text-zinc-500">Đang tải thống kê…</p>
+        <p className="mb-3 text-sm text-zinc-500">{t("studio.analytics.loading")}</p>
       ) : null}
 
       {tab === "overview" ? overviewTab : null}

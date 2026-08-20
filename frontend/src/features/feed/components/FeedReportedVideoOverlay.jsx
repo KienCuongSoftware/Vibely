@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { IoCheckmarkCircle } from 'react-icons/io5'
 
 /**
@@ -10,6 +11,7 @@ import { IoCheckmarkCircle } from 'react-icons/io5'
  * }} props
  */
 export function FeedReportedVideoOverlay({ onShowVideo, className = '' }) {
+  const { t } = useTranslation()
   return (
     <div
       className={`absolute inset-0 z-40 flex flex-col items-center justify-center bg-black px-8 text-center ${className}`}
@@ -21,18 +23,17 @@ export function FeedReportedVideoOverlay({ onShowVideo, className = '' }) {
         aria-hidden
       />
       <p className="text-[22px] font-bold leading-tight text-white">
-        Cảm ơn bạn đã báo cáo
+        {t('feed.reportedTitle')}
       </p>
       <p className="mt-3 max-w-[280px] text-[15px] leading-snug text-white/70">
-        Để nâng cao trải nghiệm của bạn, video này đã được ẩn đi. Chúng tôi sẽ
-        hiển thị cho bạn ít video như thế này hơn.
+        {t('feed.reportedBody')}
       </p>
       <button
         type="button"
         className="mt-8 cursor-pointer rounded-md bg-[#2f2f2f] px-8 py-2.5 text-[15px] font-semibold text-white transition hover:bg-[#3a3a3a]"
         onClick={() => onShowVideo?.()}
       >
-        Hiển thị video
+        {t('feed.showVideo')}
       </button>
     </div>
   )

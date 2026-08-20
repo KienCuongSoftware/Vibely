@@ -1,6 +1,8 @@
 import { VideoThumbnailImg } from '@/features/post/components/VideoThumbnailImg.jsx'
 import { DEFAULT_COVER } from '@/features/post/pages/SoundPage.jsx'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import i18n from '@/i18n/i18n.js'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { apiClient, uploadThumbnailToStorage } from '@/shared/api/client'
 import {
@@ -171,6 +173,7 @@ function profileVideoPermalinkForGrid(video, fallbackUsernameRaw) {
 
 /** Ô lưới hồ sơ: chỉ phát khi `playing`; tắt tiếng, loop. */
 function PrivateProfileLockedState() {
+  const { t } = useTranslation()
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
       <div className="mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-zinc-800 text-zinc-400">
@@ -179,9 +182,9 @@ function PrivateProfileLockedState() {
           <IoLockClosed className="absolute -bottom-1 -right-1 rounded-full bg-zinc-800 p-1 text-lg text-zinc-300" aria-hidden />
         </span>
       </div>
-      <p className="text-xl font-bold text-zinc-100">Đây là tài khoản riêng tư</p>
+      <p className="text-xl font-bold text-zinc-100">{t('profilePage.privateTitle')}</p>
       <p className="mt-2 max-w-sm text-sm leading-relaxed text-zinc-400">
-        Hãy Follow tài khoản này để xem nội dung và các lượt thích của họ
+        {t('profilePage.privateDescription')}
       </p>
     </div>
   )
@@ -253,10 +256,10 @@ function ProfileGridMedia({ item: v, playing = false }) {
 function profilePrivacyIcon(privacy) {
   const key = String(privacy || 'PUBLIC').toUpperCase()
   if (key === 'FRIENDS') {
-    return <IoPeople className="text-[14px] text-white drop-shadow-md" aria-label="Bạn bè" />
+    return <IoPeople className="text-[14px] text-white drop-shadow-md" aria-label={i18n.t('profileChrome.privacyFriends')} />
   }
   if (key === 'PRIVATE') {
-    return <IoLockClosed className="text-[14px] text-white drop-shadow-md" aria-label="Chỉ mình tôi" />
+    return <IoLockClosed className="text-[14px] text-white drop-shadow-md" aria-label={i18n.t('profileChrome.privacyOnlyMe')} />
   }
   return null
 }
@@ -338,7 +341,7 @@ function ProfileGridVideoTile({
           {pendingCheck ? (
             <div className="pointer-events-none absolute inset-0 z-4 flex items-center justify-center bg-black/55 px-2">
               <span className="text-center text-[12px] font-semibold leading-snug text-white drop-shadow-md sm:text-[13px]">
-                Đang kiểm tra...
+                {i18n.t('profileChrome.checking')}
               </span>
             </div>
           ) : null}
@@ -346,7 +349,7 @@ function ProfileGridVideoTile({
             <div className="pointer-events-none absolute inset-0 z-3 flex items-center justify-center bg-black/50">
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white drop-shadow-md">
                 <IoPlay className="text-base" aria-hidden />
-                Vừa xem
+                {i18n.t('profileChrome.justWatched')}
               </span>
             </div>
           ) : null}
@@ -377,8 +380,8 @@ function ProfileGridVideoTile({
         <div
           className="block cursor-not-allowed"
           role="status"
-          aria-label="Video đang được kiểm tra, chưa thể xem"
-          title="Đang kiểm tra — chưa thể xem"
+          aria-label={i18n.t('profileChrome.pendingVideoAria')}
+          title={i18n.t('profileChrome.checkingShort')}
         >
           {tileInner}
         </div>
@@ -396,6 +399,7 @@ function ProfileGridVideoTile({
 }
 
 export function ProfilePage() {
+  const { t } = useTranslation()
   const { username } = useParams()
   const { token, user, authReady, refreshProfile, updateProfile, logout } = useAuth()
   const navigate = useNavigate()
@@ -507,7 +511,7 @@ export function ProfilePage() {
 
     if (!token || !authReady) return undefined
     refreshProfile()
-      .then(() => setStatus('Đã tải hồ sơ'))
+      .then(() => setStatus(t('profileChrome.profileLoaded')))
       .catch((error) => setStatus(error.message))
     return undefined
   }, [token, refreshProfile, username, authReady])
@@ -657,12 +661,12 @@ export function ProfilePage() {
     !isFollowingProfile
 
   const followButtonLabel = followBusy
-    ? 'Đang lưu...'
+    ? t('profilePage.followSaving')
     : isFollowingProfile
-      ? 'Đã follow'
+      ? t('profilePage.following')
       : isFollowRequestPending
-        ? 'Đã yêu cầu'
-        : 'Follow'
+        ? t('profilePage.followRequested')
+        : t('profilePage.follow')
 
   useEffect(() => {
     setProfileActionNotice('')
@@ -707,7 +711,7 @@ export function ProfilePage() {
         })
       }
     } catch (error) {
-      setProfileActionNotice(error?.message || 'Không thể cập nhật trạng thái theo dõi.')
+      setProfileActionNotice(error?.message || t('profileChrome.followUpdateFailed'))
     } finally {
       setFollowBusy(false)
     }
@@ -723,7 +727,7 @@ export function ProfilePage() {
       return
     }
     if (!profile?.id) {
-      setProfileActionNotice('Đang tải hồ sơ, thử lại sau giây lát.')
+      setProfileActionNotice(t('profileChrome.profileStillLoading'))
       return
     }
     setProfileActionNotice('')
@@ -731,25 +735,25 @@ export function ProfilePage() {
       const convo = await apiClient.createOrGetDirectConversation(profile.id, token)
       const conversationId = convo?.id
       if (conversationId == null || conversationId === '') {
-        setProfileActionNotice('Không thể mở hội thoại lúc này.')
+        setProfileActionNotice(t('profileChrome.openChatFailed'))
         return
       }
       navigate(`/messages?c=${encodeURIComponent(String(conversationId))}`)
     } catch (error) {
-      setProfileActionNotice(error?.message || 'Không thể mở hội thoại lúc này.')
+      setProfileActionNotice(error?.message || t('profileChrome.openChatFailed'))
     }
   }, [token, profile?.id, isOwnProfile, navigate])
 
   const handleProfileShareClick = useCallback(() => {
     if (!profile?.username) {
-      setProfileActionNotice('Không tìm thấy hồ sơ để chia sẻ.')
+      setProfileActionNotice(t('profileChrome.shareProfileMissing'))
       return
     }
     setProfileShareOpen(true)
   }, [profile?.username])
 
   const handleProfileMoreClick = useCallback(() => {
-    setProfileActionNotice('Thêm tuỳ chọn hồ sơ sẽ sớm có mặt.')
+    setProfileActionNotice(t('profileChrome.moreOptionsSoon'))
   }, [])
 
   const openFollowListModal = useCallback((tab) => {
@@ -1186,7 +1190,7 @@ export function ProfilePage() {
     JSON.stringify(normalizeEditForm(editForm)) !== JSON.stringify(normalizeEditForm(initialEditForm))
   const normalizedEditUsername = normalizeUsername(editForm.username)
   const usernameValidationMessage =
-    normalizedEditUsername.length < 2 ? 'Vibely ID phải gồm ít nhất 2 ký tự' : ''
+    normalizedEditUsername.length < 2 ? t('profileChrome.usernameTooShort') : ''
   const canSubmitEditForm =
     hasEditChanges &&
     !savingEdit &&
@@ -1200,10 +1204,12 @@ export function ProfilePage() {
     .replace(/^@/, '')
   const profileCanonical = seoUsername ? `/@${encodeURIComponent(seoUsername)}` : '/profile'
   const profileDescription = seoUsername
-    ? `Khám phá hồ sơ và video của ${seoUsername} trên Vibely.`
-    : 'Khám phá hồ sơ và video của người dùng trên Vibely.'
+    ? t('profilePage.seoDescription', { username: seoUsername })
+    : t('profilePage.seoDescriptionGuest')
   const profileImage = seoProfile?.avatarUrl || DEFAULT_USER_AVATAR_URL
-  const profileSeoTitle = seoUsername ? `${seoUsername} | Vibely` : 'Hồ sơ | Vibely'
+  const profileSeoTitle = seoUsername
+    ? t('profilePage.pageTitleWithUser', { username: seoUsername })
+    : t('profilePage.pageTitle')
 
   const menuItems = useMemo(() => buildMainSidebarMenuItems(token), [token])
 
@@ -1250,7 +1256,7 @@ export function ProfilePage() {
         bio: editForm.bio.trim(),
         avatarUrl: editForm.avatarUrl.trim(),
       })
-      setStatus('Cập nhật hồ sơ thành công')
+      setStatus(t('profileChrome.profileUpdated'))
       setIsEditModalOpen(false)
     } catch (error) {
       setEditError(error.message)
@@ -1268,13 +1274,13 @@ export function ProfilePage() {
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
-      setEditError('Vui lòng chọn file ảnh hợp lệ')
+      setEditError(t('profileChrome.pickValidImage'))
       event.target.value = ''
       return
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setEditError('Ảnh đại diện tối đa 5MB')
+      setEditError(t('profileChrome.avatarMaxSize'))
       event.target.value = ''
       return
     }
@@ -1290,7 +1296,7 @@ export function ProfilePage() {
         setEditError('')
       }
     }
-    reader.onerror = () => setEditError('Không thể đọc ảnh, vui lòng thử lại')
+    reader.onerror = () => setEditError(t('profileChrome.readImageFailed'))
     reader.readAsDataURL(file)
     event.target.value = ''
   }
@@ -1349,7 +1355,7 @@ export function ProfilePage() {
       canvas.height = size
       const context = canvas.getContext('2d')
       if (!context) {
-        setEditError('Không thể xử lý ảnh, vui lòng thử lại')
+        setEditError(t('profileChrome.processImageFailed'))
         return
       }
       const { dw, dh, dx, dy } = avatarCoverLayout(
@@ -1388,13 +1394,13 @@ export function ProfilePage() {
         setAvatarEditorOffset({ x: 0, y: 0 })
         setAvatarNaturalSize({ w: 0, h: 0 })
       } catch (error) {
-        setEditError(error?.message ?? 'Không tải được ảnh lên. Vui lòng thử lại.')
+        setEditError(error?.message ?? t('profileChrome.uploadImageFailed'))
       } finally {
         setAvatarEditorBusy(false)
       }
     }
     image.onerror = () => {
-      setEditError('Không thể xử lý ảnh, vui lòng thử lại')
+      setEditError(t('profileChrome.processImageFailed'))
     }
     image.src = avatarEditorSrc
   }
@@ -1421,10 +1427,14 @@ export function ProfilePage() {
   if (mobileLayout && !username && authReady && !token) {
     return (
       <section className="flex h-dvh max-h-dvh min-h-0 flex-col bg-black text-zinc-100 lg:hidden">
-        <Seo title="Hồ sơ | Vibely" description="Đăng nhập để quản lý hồ sơ và video của bạn trên Vibely." canonical="/profile" />
+        <Seo
+          title={t('profilePage.pageTitle')}
+          description={t('profilePage.loginSeoDescription')}
+          canonical="/profile"
+        />
         <MobileLoginPrompt
-          title="Đăng nhập để xem hồ sơ"
-          description="Tạo tài khoản hoặc đăng nhập để quản lý video và hồ sơ của bạn."
+          title={t('profilePage.loginTitle')}
+          description={t('profilePage.loginDescription')}
         />
         <MobileFeedBottomNav token={token} user={user} activeId="profile" onSelectMenu={handleSelectMenu} />
       </section>
@@ -1470,11 +1480,11 @@ export function ProfilePage() {
         {token ? (
           <AccountActionsPill className="absolute right-3 top-3 z-10 lg:right-8 lg:top-5" tone="profile">
             <div className="relative" ref={accountMenuRef}>
-              <TooltipHoverWrap tip="Tài khoản" tipHidden={showAccountMenu} hoverOnly>
+              <TooltipHoverWrap tip={t('common.account')} tipHidden={showAccountMenu} hoverOnly>
                 <button
                   type="button"
                   className="flex cursor-pointer rounded-full p-0.5 ring-1 ring-zinc-700 transition hover:ring-zinc-500"
-                  aria-label="Menu tài khoản"
+                  aria-label={t('common.accountMenu')}
                   aria-expanded={showAccountMenu}
                   aria-haspopup="menu"
                   onClick={() => setShowAccountMenu((prev) => !prev)}
@@ -1506,7 +1516,7 @@ export function ProfilePage() {
                     onClick={() => setShowAccountMenu(false)}
                   >
                     <IoPerson className="text-base" />
-                    Xem hồ sơ
+                    {t('common.viewProfile')}
                   </Link>
                   <button
                     type="button"
@@ -1518,7 +1528,7 @@ export function ProfilePage() {
                     }}
                   >
                     <IoLogOutOutline className="text-base" />
-                    Đăng xuất
+                    {t('common.logout')}
                   </button>
                 </div>
               ) : null}
@@ -1529,8 +1539,8 @@ export function ProfilePage() {
         <div className="flex flex-1 flex-col overflow-visible">
         {!username && authReady && !token ? (
           <section className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-            <h2 className="text-xl font-semibold">Hồ sơ</h2>
-            <p className="mt-2 text-zinc-300">Vui lòng đăng nhập để xem hồ sơ.</p>
+            <h2 className="text-xl font-semibold">{t('profilePage.heading')}</h2>
+            <p className="mt-2 text-zinc-300">{t('profilePage.loginToView')}</p>
           </section>
         ) : isProfilePageLoading ? (
           <ProfilePageSkeleton />
@@ -1540,9 +1550,9 @@ export function ProfilePage() {
               <div className="mb-6 flex flex-col items-center text-center lg:hidden">
                 <h2 className="mb-4 max-w-full truncate text-[17px] font-bold text-white">
                   <span className="inline-flex items-center gap-1.5">
-                    {profile?.displayName ?? 'Người dùng Vibely'}
+                    {profile?.displayName ?? t('profileChrome.vibelyUserFallback')}
                     {profile?.privateAccount ? (
-                      <IoLockClosed className="shrink-0 text-sm text-zinc-400" aria-label="Tài khoản riêng tư" />
+                      <IoLockClosed className="shrink-0 text-sm text-zinc-400" aria-label={t('profileChrome.privateAccount')} />
                     ) : null}
                   </span>
                 </h2>
@@ -1550,7 +1560,7 @@ export function ProfilePage() {
                   className="h-24 w-24 rounded-full border border-zinc-800 object-cover"
                   src={profile?.avatarUrl}
                   fallbackSrc={DEFAULT_USER_AVATAR_URL}
-                  alt="avatar hồ sơ"
+                  alt={t('profileChrome.profileAvatarAlt')}
                 />
                 <p className="mt-3 text-[17px] font-bold text-white">
                   @{profile?.username ?? '-'}
@@ -1558,7 +1568,7 @@ export function ProfilePage() {
                 <div className="mt-4 flex items-center gap-5 text-[13px] text-zinc-300">
                   <button type="button" className="cursor-pointer" onClick={() => openFollowListModal('following')}>
                     <span className="block font-bold text-white">{formatCompactCount(profile?.followingCount ?? 0)}</span>
-                    <span>Đã follow</span>
+                    <span>{t('profilePage.followingStat')}</span>
                   </button>
                   <button type="button" className="cursor-pointer" onClick={() => openFollowListModal('followers')}>
                     <span className="block font-bold text-white">{formatCompactCount(profile?.followerCount ?? 0)}</span>
@@ -1566,7 +1576,7 @@ export function ProfilePage() {
                   </button>
                   <span>
                     <span className="block font-bold text-white">{formatCompactCount(profile?.totalLikeCount ?? 0)}</span>
-                    <span>Lượt thích</span>
+                    <span>{t('profilePage.likesStat')}</span>
                   </span>
                 </div>
                 {isOwnProfile ? (
@@ -1576,11 +1586,11 @@ export function ProfilePage() {
                       className="cursor-pointer rounded-md border border-zinc-700 px-4 py-1.5 text-sm font-semibold text-zinc-100"
                       onClick={openEditProfileModal}
                     >
-                      Sửa hồ sơ
+                      {t('profileChrome.editProfile')}
                     </button>
                     <button
                       type="button"
-                      aria-label="Chia sẻ hồ sơ"
+                      aria-label={t('profileChrome.shareProfile')}
                       className="cursor-pointer rounded-md border border-zinc-700 p-2 text-zinc-100"
                       onClick={handleProfileShareClick}
                     >
@@ -1607,12 +1617,12 @@ export function ProfilePage() {
                       className="cursor-pointer rounded-md border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-100"
                       onClick={handleProfileMessageClick}
                     >
-                      Tin nhắn
+                      {t('profilePage.message')}
                     </button>
                   </div>
                 )}
                 <p className="mt-3 max-w-sm text-sm text-zinc-400">
-                  {resolveProfileBio(profile?.bio) ?? 'Chưa có tiểu sử.'}
+                  {resolveProfileBio(profile?.bio) ?? t('profilePage.noBio')}
                 </p>
               </div>
             ) : null}
@@ -1623,15 +1633,15 @@ export function ProfilePage() {
                   className="h-28 w-28 rounded-full border border-zinc-800 object-cover md:h-32 md:w-32"
                   src={profile?.avatarUrl}
                   fallbackSrc={DEFAULT_USER_AVATAR_URL}
-                  alt="avatar hồ sơ"
+                  alt={t('profileChrome.profileAvatarAlt')}
                 />
                 <div className="min-w-0 flex-1 space-y-3">
                   <div className="flex flex-wrap items-end gap-x-4 gap-y-1">
                     <h2 className="text-3xl font-bold leading-none">
                       <span className="inline-flex items-center gap-2">
-                        {profile?.displayName ?? 'Người dùng Vibely'}
+                        {profile?.displayName ?? t('profileChrome.vibelyUserFallback')}
                         {profile?.privateAccount ? (
-                          <IoLockClosed className="shrink-0 text-lg text-zinc-400" aria-label="Tài khoản riêng tư" />
+                          <IoLockClosed className="shrink-0 text-lg text-zinc-400" aria-label={t('profileChrome.privateAccount')} />
                         ) : null}
                       </span>
                     </h2>
@@ -1643,18 +1653,18 @@ export function ProfilePage() {
                     <button
                       type="button"
                       className="cursor-pointer rounded-full transition hover:text-zinc-100"
-                      aria-label="Mở danh sách đã follow"
+                      aria-label={t('profileChrome.openFollowingList')}
                       onClick={() => openFollowListModal('following')}
                     >
                       <span className="font-semibold text-zinc-100">
                         {formatCompactCount(profile?.followingCount ?? 0)}
                       </span>{' '}
-                      Đã follow
+                      {t('profilePage.followingStat')}
                     </button>
                     <button
                       type="button"
                       className="cursor-pointer rounded-full transition hover:text-zinc-100"
-                      aria-label="Mở danh sách follower"
+                      aria-label={t('profileChrome.openFollowersList')}
                       onClick={() => openFollowListModal('followers')}
                     >
                       <span className="font-semibold text-zinc-100">
@@ -1666,7 +1676,7 @@ export function ProfilePage() {
                       <span className="font-semibold text-zinc-100">
                         {formatCompactCount(profile?.totalLikeCount ?? 0)}
                       </span>{' '}
-                      Lượt thích
+                      {t('profilePage.likesStat')}
                     </span>
                   </div>
 
@@ -1677,19 +1687,19 @@ export function ProfilePage() {
                         className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"
                         onClick={openEditProfileModal}
                       >
-                        Sửa hồ sơ
+                        {t('profileChrome.editProfile')}
                       </button>
                       {isAdminOwnProfile ? null : (
                         <button
                           type="button"
                           className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"
                         >
-                          Quảng bá bài đăng
+                          {t('moreMenu.promotePost')}
                         </button>
                       )}
                       <button
                         type="button"
-                        aria-label="Cài đặt hồ sơ"
+                        aria-label={t('profileChrome.profileSettings')}
                         className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
                         onClick={() => navigate('/settings')}
                       >
@@ -1697,7 +1707,7 @@ export function ProfilePage() {
                       </button>
                       <button
                         type="button"
-                        aria-label="Chia sẻ hồ sơ"
+                        aria-label={t('profileChrome.shareProfile')}
                         className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
                         onClick={handleProfileShareClick}
                       >
@@ -1724,11 +1734,11 @@ export function ProfilePage() {
                         className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"
                         onClick={handleProfileMessageClick}
                       >
-                        Tin nhắn
+                        {t('profilePage.message')}
                       </button>
                       <button
                         type="button"
-                        aria-label="Bạn chung"
+                        aria-label={t('profileChrome.mutualFriends')}
                         className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
                         onClick={handleProfileMoreClick}
                       >
@@ -1736,7 +1746,7 @@ export function ProfilePage() {
                       </button>
                       <button
                         type="button"
-                        aria-label="Chia sẻ hồ sơ"
+                        aria-label={t('profileChrome.shareProfile')}
                         className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
                         onClick={handleProfileShareClick}
                       >
@@ -1744,7 +1754,7 @@ export function ProfilePage() {
                       </button>
                       <button
                         type="button"
-                        aria-label="Thêm tuỳ chọn hồ sơ"
+                        aria-label={t('profileChrome.moreProfileOptions')}
                         className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
                         onClick={handleProfileMoreClick}
                       >
@@ -1758,7 +1768,7 @@ export function ProfilePage() {
                   ) : null}
 
                   <p className="text-sm text-zinc-300">
-                    {resolveProfileBio(profile?.bio) ?? 'Chưa có tiểu sử'}
+                    {resolveProfileBio(profile?.bio) ?? t('profilePage.noBio')}
                   </p>
                 </div>
               </div>
@@ -1783,7 +1793,7 @@ export function ProfilePage() {
                   >
                     <span className="inline-flex items-center gap-2">
                       <LuGrid2X2 className="text-lg" aria-hidden />
-                      <span className="hidden lg:inline">Video</span>
+                      <span className="hidden lg:inline">{t('profileChrome.videos')}</span>
                     </span>
                   </button>
                   {isOwnProfile && repostTotal > 0 ? (
@@ -1800,7 +1810,7 @@ export function ProfilePage() {
                   >
                     <span className="inline-flex items-center gap-2">
                       <LuRepeat2 className="text-base" aria-hidden />
-                      Bài đăng lại
+                      {t('profileChrome.reposts')}
                     </span>
                   </button>
                   ) : null}
@@ -1817,7 +1827,7 @@ export function ProfilePage() {
                   >
                     <span className="inline-flex items-center gap-2">
                       <IoBookmarkOutline className="text-lg" aria-hidden />
-                      Yêu thích
+                      {t('profileChrome.favorites')}
                     </span>
                   </button>
                   <button
@@ -1833,7 +1843,7 @@ export function ProfilePage() {
                   >
                     <span className="inline-flex items-center gap-2">
                       <IoHeartOutline className="text-lg" aria-hidden />
-                      <span className="hidden lg:inline">Đã thích</span>
+                      <span className="hidden lg:inline">{t('profileChrome.liked')}</span>
                     </span>
                   </button>
                 </div>
@@ -1850,7 +1860,7 @@ export function ProfilePage() {
                       }`}
                       onClick={() => setVideosSortMode('newest')}
                     >
-                      Mới nhất
+                      {t('profileChrome.sortNewest')}
                     </button>
                     <button
                       type="button"
@@ -1862,7 +1872,7 @@ export function ProfilePage() {
                       }`}
                       onClick={() => setVideosSortMode('trending')}
                     >
-                      Thịnh hành
+                      {t('profileChrome.sortTrending')}
                     </button>
                     <button
                       type="button"
@@ -1874,7 +1884,7 @@ export function ProfilePage() {
                       }`}
                       onClick={() => setVideosSortMode('oldest')}
                     >
-                      Cũ nhất
+                      {t('profileChrome.sortOldest')}
                     </button>
                   </div>
                 ) : null}
@@ -1890,7 +1900,7 @@ export function ProfilePage() {
                       }`}
                       onClick={() => setFavoritesSubTab('posts')}
                     >
-                      {isOwnProfile ? `Bài đăng ${bookmarkTotal}` : 'Bài đăng 0'}
+                      {isOwnProfile ? t('profileChrome.postsCount', { count: bookmarkTotal }) : t('profileChrome.postsZero')}
                     </button>
                     <button
                       type="button"
@@ -1901,7 +1911,7 @@ export function ProfilePage() {
                       }`}
                       onClick={() => setFavoritesSubTab('collections')}
                     >
-                      Bộ sưu tập {collectionTotal}
+                      {t('profileChrome.collectionsCount', { count: collectionTotal })}
                     </button>
                   </div>
                   {isOwnProfile ? (
@@ -1916,7 +1926,7 @@ export function ProfilePage() {
                         setCollectionPickIds(new Set())
                       }}
                     >
-                      + Tạo bộ sưu tập mới
+                      {t('profileChrome.createCollection')}
                     </button>
                   ) : null}
                 </div>
@@ -1927,9 +1937,9 @@ export function ProfilePage() {
               <div className="min-h-[320px] px-2 py-4 sm:px-4 sm:py-5">
                 {isBannedProfile ? (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <p className="text-xl font-bold text-zinc-100 sm:text-2xl">Tài khoản đã bị cấm</p>
+                    <p className="text-xl font-bold text-zinc-100 sm:text-2xl">{t('profileChrome.accountBannedTitle')}</p>
                     <p className="mt-2 max-w-md text-sm text-zinc-400 sm:text-base">
-                      Tài khoản {profile?.username || 'này'} không còn có sẵn nữa
+                      {profile?.username ? t('profileChrome.accountBannedBody', { username: profile.username }) : t('profileChrome.accountBannedBodyThis')}
                     </p>
                   </div>
                 ) : isPrivateProfileLocked ? (
@@ -1944,12 +1954,14 @@ export function ProfilePage() {
                       <LuGrid2X2 className="text-3xl" aria-hidden />
                     </div>
                     <p className="text-3xl font-bold">
-                      {isOwnProfile ? 'Tải video đầu tiên của bạn lên' : 'Chưa có video công khai'}
+                      {isOwnProfile
+                        ? t('profilePage.emptyVideosOwnTitle')
+                        : t('profilePage.emptyVideosOtherTitle')}
                     </p>
                     <p className="mt-1 text-base text-zinc-400">
                       {isOwnProfile
-                        ? 'Video của bạn sẽ xuất hiện tại đây'
-                        : 'Người dùng này chưa có video hiển thị trên hồ sơ.'}
+                        ? t('profilePage.emptyVideosOwnDescription')
+                        : t('profilePage.emptyVideosOtherDescription')}
                     </p>
                   </div>
                 )}
@@ -1964,9 +1976,9 @@ export function ProfilePage() {
                       className="mb-4 h-28 w-28 shrink-0 text-zinc-100"
                       aria-hidden
                     />
-                    <p className="text-lg font-semibold text-zinc-100">Bài đăng yêu thích</p>
+                    <p className="text-lg font-semibold text-zinc-100">{t('profileChrome.favoritePostsTitle')}</p>
                     <p className="mt-2 max-w-sm text-sm text-zinc-400">
-                      Bài đăng yêu thích của người này ở chế độ riêng tư.
+                      {t('profileChrome.favoritePostsPrivate')}
                     </p>
                   </div>
                 ) : favoritesSubTab === 'posts' ? (
@@ -1985,9 +1997,9 @@ export function ProfilePage() {
                           className="mb-4 h-28 w-28 shrink-0 text-zinc-100"
                           aria-hidden
                         />
-                        <p className="text-lg font-semibold text-zinc-100">Bài đăng yêu thích</p>
+                        <p className="text-lg font-semibold text-zinc-100">{t('profileChrome.favoritePostsTitle')}</p>
                         <p className="mt-2 max-w-sm text-sm text-zinc-400">
-                          Bài đăng bạn yêu thích sẽ xuất hiện tại đây.
+                          {t('profileChrome.favoritePostsEmpty')}
                         </p>
                       </div>
                     ) : null}
@@ -1998,9 +2010,9 @@ export function ProfilePage() {
                       className="mb-3 h-20 w-20 shrink-0 text-zinc-100 sm:h-24 sm:w-24"
                       aria-hidden
                     />
-                    <p className="text-base font-semibold text-zinc-100 sm:text-lg">Bộ sưu tập của bạn</p>
+                    <p className="text-base font-semibold text-zinc-100 sm:text-lg">{t('profileChrome.yourCollections')}</p>
                     <p className="mt-2 text-xs leading-snug text-zinc-400 sm:text-sm sm:leading-snug">
-                      Chỉ thêm được video từ Yêu thích. Hãy yêu thích vài video trước, rồi quay lại tạo bộ sưu tập.
+                      {t('profileChrome.collectionsHint')}
                     </p>
                   </div>
                 )}
@@ -2014,9 +2026,9 @@ export function ProfilePage() {
                 ) : !isOwnProfile ? (
                   <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
                     <IoHeartOutline className="mb-4 h-28 w-28 shrink-0 text-zinc-100" aria-hidden />
-                    <p className="text-lg font-semibold text-zinc-100">Video đã thích</p>
+                    <p className="text-lg font-semibold text-zinc-100">{t('profileChrome.likedTitle')}</p>
                     <p className="mt-2 max-w-sm text-sm text-zinc-400">
-                      Video đã thích của người này ở chế độ riêng tư.
+                      {t('profileChrome.likedPrivate')}
                     </p>
                   </div>
                 ) : (
@@ -2032,9 +2044,9 @@ export function ProfilePage() {
                     ) : !likedLoading && likedItems.length === 0 ? (
                       <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
                         <IoHeartOutline className="mb-4 h-28 w-28 shrink-0 text-zinc-100" aria-hidden />
-                        <p className="text-lg font-semibold text-zinc-100">Video đã thích</p>
+                        <p className="text-lg font-semibold text-zinc-100">{t('profileChrome.likedTitle')}</p>
                         <p className="mt-2 max-w-sm text-sm text-zinc-400">
-                          Các video bạn thích sẽ xuất hiện tại đây.
+                          {t('profilePage.likedEmpty')}
                         </p>
                       </div>
                     ) : null}
@@ -2048,9 +2060,9 @@ export function ProfilePage() {
                 {!isOwnProfile ? (
                   <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
                     <LuRepeat2 className="mb-4 h-28 w-28 shrink-0 text-zinc-100" aria-hidden />
-                    <p className="text-lg font-semibold text-zinc-100">Bài đăng lại</p>
+                    <p className="text-lg font-semibold text-zinc-100">{t('profileChrome.reposts')}</p>
                     <p className="mt-2 max-w-sm text-sm text-zinc-400">
-                      Bài đăng lại của người này ở chế độ riêng tư.
+                      {t('profileChrome.repostsPrivate')}
                     </p>
                   </div>
                 ) : (
@@ -2066,9 +2078,9 @@ export function ProfilePage() {
                     ) : !repostLoading && repostItems.length === 0 ? (
                       <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
                         <LuRepeat2 className="mb-4 h-28 w-28 shrink-0 text-zinc-100" aria-hidden />
-                        <p className="text-lg font-semibold text-zinc-100">Bài đăng lại</p>
+                        <p className="text-lg font-semibold text-zinc-100">{t('profileChrome.reposts')}</p>
                         <p className="mt-2 max-w-sm text-sm text-zinc-400">
-                          Video bạn đăng lại sẽ xuất hiện tại đây.
+                          {t('profileChrome.repostsEmpty')}
                         </p>
                       </div>
                     ) : null}
@@ -2086,9 +2098,9 @@ export function ProfilePage() {
             type="button"
             onClick={scrollToLastWatched}
             className="fixed bottom-19 right-4 z-100 inline-flex cursor-pointer items-center gap-1 rounded-full bg-[#fe2c55] px-3 py-3.5 text-[13px] font-semibold leading-none text-white shadow-lg shadow-black/40 transition hover:bg-[#e0264b] active:scale-[0.98] lg:bottom-8 lg:right-8 lg:gap-1.5 lg:px-4 lg:py-2.5 lg:text-sm"
-            aria-label="Cuộn đến video vừa xem"
+            aria-label={t('profileChrome.scrollToLastWatched')}
           >
-            Vừa xem
+            {t('profileChrome.justWatched')}
             {lastWatchedScrollDir === 'down' ? (
               <IoChevronDown className="text-base" aria-hidden />
             ) : (
@@ -2129,10 +2141,10 @@ export function ProfilePage() {
           <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
             <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl">
               <div className="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
-                <h3 className="text-2xl font-semibold">Sửa hồ sơ</h3>
+                <h3 className="text-2xl font-semibold">{t('profileChrome.editProfile')}</h3>
                 <button
                   type="button"
-                  aria-label="Đóng"
+                  aria-label={t('common.close')}
                   className="cursor-pointer rounded-full p-2 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
                   onClick={() => setIsEditModalOpen(false)}
                 >
@@ -2142,18 +2154,18 @@ export function ProfilePage() {
 
               <form className="space-y-0 px-5 py-4" onSubmit={handleSubmitProfileEdit}>
                 <div className="border-b border-zinc-800 pb-4">
-                  <div className="mb-3 text-sm font-semibold text-zinc-100">Ảnh hồ sơ</div>
+                  <div className="mb-3 text-sm font-semibold text-zinc-100">{t('profileChrome.profilePhoto')}</div>
                   <div className="flex justify-center">
                     <button
                       type="button"
                       onClick={handlePickAvatarFromDevice}
                       className="group relative cursor-pointer rounded-full"
-                      aria-label="Đổi ảnh hồ sơ"
+                      aria-label={t('profileChrome.changeProfilePhoto')}
                     >
                       <img
                         className="h-16 w-16 rounded-full object-cover ring-2 ring-zinc-700"
                         src={editForm.avatarUrl || profile?.avatarUrl || DEFAULT_USER_AVATAR_URL}
-                        alt="Ảnh hồ sơ"
+                        alt={t('profileChrome.profilePhotoAlt')}
                         onError={(e) => {
                           e.currentTarget.src = DEFAULT_USER_AVATAR_URL
                         }}
@@ -2199,14 +2211,14 @@ export function ProfilePage() {
                       /@{editForm.username || 'vibely.id'}
                     </p>
                     <p className="text-xs leading-relaxed text-zinc-500">
-                      Vibely ID chỉ có thể bao gồm chữ cái, chữ số, dấu gạch dưới và dấu chấm. Khi thay đổi TikTok ID, liên kết hồ sơ của bạn cũng sẽ thay đổi.
+                      {t('profileChrome.usernameHint')}
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-[96px_1fr] items-start gap-3 border-b border-zinc-800 py-4">
                   <label htmlFor="edit-profile-display-name" className="pt-2 text-sm font-semibold text-zinc-100">
-                    Tên
+                    {t('profileChrome.nameLabel')}
                   </label>
                   <div className="space-y-2">
                     <input
@@ -2214,7 +2226,7 @@ export function ProfilePage() {
                       className="w-full rounded bg-zinc-900 px-3 py-2 text-zinc-100 outline-none ring-red-500/30 placeholder:text-zinc-500 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60"
                       value={editForm.displayName}
                       onChange={(e) => setEditForm((prev) => ({ ...prev, displayName: e.target.value }))}
-                      placeholder="Tên hiển thị"
+                      placeholder={t('profileChrome.displayName')}
                       required
                       maxLength={80}
                       disabled={profile?.canChangeDisplayName === false}
@@ -2222,15 +2234,15 @@ export function ProfilePage() {
                     />
                     <p className="text-xs text-zinc-500">
                       {profile?.canChangeDisplayName === false && profile?.displayNameChangeAvailableAt
-                        ? `Bạn chỉ có thể thay đổi biệt danh 7 ngày một lần. Thử lại sau ${formatVietnameseDate(profile.displayNameChangeAvailableAt)}.`
-                        : 'Bạn chỉ có thể thay đổi biệt danh 7 ngày một lần.'}
+                        ? t('profileChrome.displayNameCooldownUntil', { date: formatVietnameseDate(profile.displayNameChangeAvailableAt) })
+                        : t('profileChrome.displayNameCooldown')}
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-[96px_1fr] items-start gap-3 py-4">
                   <label htmlFor="edit-profile-bio" className="pt-2 text-sm font-semibold text-zinc-100">
-                    Tiểu sử
+                    {t('profileChrome.bio')}
                   </label>
                   <div className="space-y-2">
                     <textarea
@@ -2238,7 +2250,7 @@ export function ProfilePage() {
                       className="h-24 w-full resize-none rounded bg-zinc-900 px-3 py-2 text-zinc-100 outline-none ring-red-500/30 placeholder:text-zinc-500 focus:ring-2"
                       value={editForm.bio}
                       onChange={(e) => setEditForm((prev) => ({ ...prev, bio: e.target.value.slice(0, 300) }))}
-                      placeholder="Tiểu sử"
+                      placeholder={t('profileChrome.bio')}
                       maxLength={300}
                     />
                     <p className="text-xs text-zinc-500">{bioDraftLength}/300</p>
@@ -2253,9 +2265,7 @@ export function ProfilePage() {
                     className="cursor-pointer rounded-md bg-zinc-800 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-700"
                     onClick={() => setIsEditModalOpen(false)}
                     disabled={savingEdit}
-                  >
-                    Hủy
-                  </button>
+                  >{t('common.cancel')}</button>
                   <button
                     type="submit"
                     className={`rounded-md px-5 py-2 text-sm font-semibold transition ${
@@ -2265,7 +2275,7 @@ export function ProfilePage() {
                     }`}
                     disabled={!canSubmitEditForm}
                   >
-                    {savingEdit ? 'Đang lưu...' : 'Lưu'}
+                    {savingEdit ? t('profileChrome.saving') : t('common.save')}
                   </button>
                 </div>
               </form>
@@ -2283,11 +2293,11 @@ export function ProfilePage() {
                   onClick={closeAvatarEditor}
                 >
                   <IoArrowBack className="text-xl" />
-                  <span className="text-2xl font-semibold">Chỉnh sửa ảnh</span>
+                  <span className="text-2xl font-semibold">{t('profileChrome.editPhoto')}</span>
                 </button>
                 <button
                   type="button"
-                  aria-label="Đóng"
+                  aria-label={t('common.close')}
                   className="cursor-pointer rounded-full p-2 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 disabled:opacity-50"
                   disabled={avatarEditorBusy}
                   onClick={closeAvatarEditor}
@@ -2345,11 +2355,11 @@ export function ProfilePage() {
                 </div>
 
                 <p className="text-center text-xs text-zinc-500">
-                  Kéo để chọn vùng trong khung tròn · thu phóng để phóng to/thu nhỏ
+                  {t('profilePage.cropHint')}
                 </p>
 
                 <div className="mx-auto flex w-full max-w-[400px] items-center gap-4 px-2">
-                  <span className="w-24 whitespace-nowrap text-sm text-zinc-200">Thu phóng</span>
+                  <span className="w-24 whitespace-nowrap text-sm text-zinc-200">{t('profilePage.zoom')}</span>
                   <input
                     type="range"
                     min="1"
@@ -2369,16 +2379,14 @@ export function ProfilePage() {
                   className="cursor-pointer rounded-md bg-zinc-800 px-6 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-700 disabled:opacity-50"
                   disabled={avatarEditorBusy}
                   onClick={closeAvatarEditor}
-                >
-                  Hủy
-                </button>
+                >{t('common.cancel')}</button>
                 <button
                   type="button"
                   className="cursor-pointer rounded-md bg-red-500 px-6 py-2 text-sm font-semibold text-white hover:bg-red-400 disabled:cursor-wait disabled:opacity-70"
                   disabled={avatarEditorBusy}
                   onClick={applyAvatarEditor}
                 >
-                  {avatarEditorBusy ? 'Đang tải lên…' : 'Áp dụng'}
+                  {avatarEditorBusy ? t('profileChrome.uploading') : t('profileChrome.apply')}
                 </button>
               </div>
             </div>
@@ -2401,7 +2409,7 @@ export function ProfilePage() {
                 {newCollectionStep === 'pick' ? (
                   <button
                     type="button"
-                    aria-label="Quay lại"
+                    aria-label={t('common.back')}
                     className="absolute left-2 rounded-full p-2 text-zinc-200 hover:bg-zinc-800"
                     onClick={() => setNewCollectionStep('form')}
                   >
@@ -2409,11 +2417,11 @@ export function ProfilePage() {
                   </button>
                 ) : null}
                 <h2 className="text-center text-lg font-semibold text-zinc-100">
-                  {newCollectionStep === 'form' ? 'Bộ sưu tập mới' : 'Chọn video'}
+                  {newCollectionStep === 'form' ? t('profileChrome.newCollection') : t('profileChrome.pickVideos')}
                 </h2>
                 <button
                   type="button"
-                  aria-label="Đóng"
+                  aria-label={t('common.close')}
                   className="absolute right-2 rounded-full p-2 text-zinc-200 hover:bg-zinc-800"
                   onClick={closeNewCollectionModal}
                 >
@@ -2425,7 +2433,7 @@ export function ProfilePage() {
                 <div className="flex flex-col gap-4 px-4 pb-5 pt-3">
                   <div>
                     <label htmlFor="new-collection-name" className="text-sm font-medium text-zinc-100">
-                      Tên ({Math.min(collectionDraftName.length, COLLECTION_NAME_MAX)}/{COLLECTION_NAME_MAX})
+                      {t('profileChrome.collectionNameLabel', { current: Math.min(collectionDraftName.length, COLLECTION_NAME_MAX), max: COLLECTION_NAME_MAX })}
                     </label>
                     <input
                       id="new-collection-name"
@@ -2435,16 +2443,15 @@ export function ProfilePage() {
                       onChange={(e) =>
                         setCollectionDraftName(e.target.value.slice(0, COLLECTION_NAME_MAX))
                       }
-                      placeholder="Nhập tên bộ sưu tập"
+                      placeholder={t('profileChrome.collectionName')}
                       className="mt-1.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-zinc-500"
                     />
                   </div>
                   <div className="flex items-start justify-between gap-3 border-t border-zinc-800/80 pt-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-zinc-100">Đặt ở chế độ công khai</p>
+                      <p className="text-sm font-medium text-zinc-100">{t('profileChrome.makePublic')}</p>
                       <p className="mt-1 text-xs leading-relaxed text-zinc-400">
-                        Những bộ sưu tập ở chế độ công khai sẽ hiển thị trên hồ sơ của bạn và có thể được chia sẻ với
-                        bạn bè.
+                        {t('profileChrome.makePublicHint')}
                       </p>
                     </div>
                     <button
@@ -2469,7 +2476,7 @@ export function ProfilePage() {
                     onClick={() => setNewCollectionStep('pick')}
                     className="mt-1 w-full rounded-xl py-3 text-sm font-semibold text-white transition enabled:cursor-pointer enabled:bg-[#FE2C55] enabled:hover:bg-[#f02850] disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    Tiếp
+                    {t('profilePage.next')}
                   </button>
                 </div>
               ) : (
@@ -2483,10 +2490,10 @@ export function ProfilePage() {
                       <div className="flex flex-1 flex-col items-center justify-center px-2 py-8 text-center">
                         <IoBookmarkOutline className="mb-4 h-24 w-24 shrink-0 text-zinc-100" aria-hidden />
                         <p className="text-lg font-semibold text-zinc-100">
-                          Không có video yêu thích để thêm vào
+                          {t('profilePage.noFavoriteVideos')}
                         </p>
                         <p className="mt-2 max-w-sm text-sm text-zinc-400">
-                          Toàn bộ video yêu thích của bạn hiện đã có trong bộ sưu tập.
+                          {t('profilePage.allFavoritesInCollection')}
                         </p>
                       </div>
                       <button
@@ -2552,16 +2559,14 @@ export function ProfilePage() {
           <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/55 px-4">
             <div className="w-full max-w-sm rounded-xl bg-zinc-800 p-6 text-center shadow-2xl">
               <p className="text-2xl font-bold leading-snug">
-                Bạn có chắc chắn muốn đăng xuất?
+                {t('common.logoutConfirm')}
               </p>
               <div className="mt-5 grid grid-cols-2 gap-3 text-base">
                 <button
                   type="button"
                   className="rounded-md bg-zinc-700 py-2 font-semibold text-zinc-200 hover:bg-zinc-600"
                   onClick={() => setShowLogoutConfirm(false)}
-                >
-                  Hủy
-                </button>
+                >{t('common.cancel')}</button>
                 <button
                   type="button"
                   className="rounded-md border border-red-500 py-2 font-semibold text-red-400 hover:bg-red-500/10"
@@ -2569,9 +2574,7 @@ export function ProfilePage() {
                     setShowLogoutConfirm(false)
                     logout()
                   }}
-                >
-                  Đăng xuất
-                </button>
+                >{t('common.logout')}</button>
               </div>
             </div>
           </div>

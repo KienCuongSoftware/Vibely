@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 const sections = [
@@ -112,9 +113,10 @@ const sections = [
 ]
 
 export function TermsOfServicePage() {
+  const { t } = useTranslation()
   useEffect(() => {
-    document.title = 'Điều khoản dịch vụ | Vibely'
-  }, [])
+    document.title = t('legalPage.termsTitle')
+  }, [t])
 
   return (
     <section className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -122,14 +124,14 @@ export function TermsOfServicePage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <h1 className="text-3xl font-bold">Vibely</h1>
           <Link to="/login" className="rounded bg-zinc-800 px-3 py-1 text-sm hover:bg-zinc-700">
-            Quay lại đăng nhập
+            {t('legalPage.backToLogin')}
           </Link>
         </div>
       </header>
 
       <div className="mx-auto grid max-w-6xl gap-8 px-6 py-8 md:grid-cols-[280px_1fr]">
         <aside className="sticky top-4 h-fit rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-          <h2 className="mb-3 text-sm font-semibold text-zinc-300">Mục lục</h2>
+          <h2 className="mb-3 text-sm font-semibold text-zinc-300">{t('legalPage.toc')}</h2>
           <ul className="space-y-2 text-sm text-zinc-400">
             {sections.map((section) => (
               <li key={section.id}>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { IoClose } from 'react-icons/io5'
 import { getRegionLabel, listAccountRegions } from '@/features/settings/utils/accountRegions'
 
@@ -6,6 +7,7 @@ import { getRegionLabel, listAccountRegions } from '@/features/settings/utils/ac
  * Modal chọn khu vực tài khoản — layout gần TikTok (radio list + Tiếp).
  */
 export function AccountRegionModal({ open, currentCode, saving = false, error = '', onClose, onConfirm }) {
+  const { t } = useTranslation()
   const [selectedCode, setSelectedCode] = useState(currentCode)
   const regions = useMemo(() => listAccountRegions('en'), [])
 
@@ -41,24 +43,24 @@ export function AccountRegionModal({ open, currentCode, saving = false, error = 
       >
         <div className="relative border-b border-zinc-800 px-5 pb-3 pt-4">
           <h2 id="account-region-title" className="pr-10 text-center text-base font-semibold text-zinc-100">
-            Chọn quốc gia hoặc khu vực
+            {t('settings.region.selectTitle')}
           </h2>
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
             className="absolute right-3 top-3 rounded-full p-1.5 text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="Đóng"
+            aria-label={t('common.close')}
           >
             <IoClose className="text-xl" />
           </button>
           <p className="mt-3 text-center text-xs leading-relaxed text-zinc-500">
-            Khu vực hiện tại của bạn được đặt thành {currentLabel}, hãy chọn khu vực khác để cập nhật.
+            {t('settings.region.currentHint', { region: currentLabel })}
           </p>
         </div>
 
         <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto px-2 py-1">
-          <ul className="py-1" role="radiogroup" aria-label="Quốc gia hoặc khu vực">
+          <ul className="py-1" role="radiogroup" aria-label={t('settings.region.aria')}>
             {regions.map((region) => {
               const checked = selectedCode === region.code
               return (
@@ -104,7 +106,7 @@ export function AccountRegionModal({ open, currentCode, saving = false, error = 
               onClick={() => onConfirm?.(selectedCode)}
               className="rounded-md bg-zinc-700 px-8 py-2 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-600 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
             >
-              {saving ? 'Đang lưu…' : 'Tiếp'}
+              {saving ? t('settings.saving') : t('settings.next')}
             </button>
           </div>
         </div>

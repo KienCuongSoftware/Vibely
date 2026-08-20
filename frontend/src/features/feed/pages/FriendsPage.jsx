@@ -70,8 +70,8 @@ export function FriendsPage() {
     >
       {!token ? (
         <GridLoginPrompt
-          title="Đăng nhập để xem Bạn bè"
-          description="Kết nối với người bạn follow lẫn nhau trên Vibely."
+          title={t('friendsPage.loginTitle')}
+          description={t('friendsPage.loginDescription')}
         />
       ) : !hydrated ? (
         <GridLoadingState />
@@ -88,10 +88,10 @@ export function FriendsPage() {
         >
           <IoPeople className="mb-4 h-14 w-14 text-zinc-600" aria-hidden />
           <p className="text-lg font-semibold text-zinc-100">
-            Bạn có {friendCount} bạn bè
+            {t('friendsPage.friendCount', { count: friendCount })}
           </p>
           <p className="mt-2 max-w-sm text-sm leading-relaxed text-zinc-400">
-            Video từ bạn bè (người bạn follow lẫn nhau) sẽ hiển thị tại đây.
+            {t('friendsPage.friendVideosHint')}
           </p>
         </div>
       )}

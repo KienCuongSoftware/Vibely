@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import i18n from '@/i18n/i18n.js'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   IoArrowRedo,
@@ -94,7 +96,7 @@ function resolveFeedAuthorDisplayName(video) {
   const fallback = String(video?.authorUsername ?? '')
     .trim()
     .replace(/^@/, '')
-  return fallback || 'Nhà sáng tạo'
+  return fallback || i18n.t('common.creator')
 }
 
 function normalizeFeedVideo(row, followedAuthorIds) {
@@ -166,6 +168,7 @@ function RelatedVideoTile({ video, onSelect }) {
 }
 
 function SuggestedGridVideoTile({ video, isPlaying, onSelect }) {
+  const { t } = useTranslation()
   const thumb = String(video?.thumbnailUrl ?? '').trim()
   const id = videoPublicIdOf(video)
   return (
@@ -174,7 +177,7 @@ function SuggestedGridVideoTile({ video, isPlaying, onSelect }) {
       disabled={!id}
       onClick={() => onSelect(video)}
       className="group relative aspect-[9/16] w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600 disabled:cursor-not-allowed"
-      aria-label={isPlaying ? 'Hiện đang phát' : 'Xem video'}
+      aria-label={isPlaying ? t('watch.nowPlaying') : t('watch.watchVideo')}
       aria-current={isPlaying ? 'true' : undefined}
     >
       {thumb ? (
@@ -193,7 +196,7 @@ function SuggestedGridVideoTile({ video, isPlaying, onSelect }) {
       {isPlaying ? (
         <div className="absolute inset-0 z-[2] flex items-center justify-center bg-black/55 px-2 text-center">
           <span className="text-[11px] font-semibold leading-tight text-white">
-            Hiện đang phát
+            {t('watch.nowPlaying')}
           </span>
         </div>
       ) : null}
@@ -214,6 +217,7 @@ export function FeedStyleVideoDetailPage({
   relatedLayout = 'list',
   useActivitySidebar = false,
 }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const { username: routeUsername, publicId: routePublicId } = useParams()
@@ -507,7 +511,7 @@ export function FeedStyleVideoDetailPage({
   }, [])
 
   const videoSeoTitle = videoDocumentTitle(video, false)
-  const videoSeoDescription = 'Xem video trên Vibely.'
+  const videoSeoDescription = t('watchPage.seoDescription')
   const videoSeoCanonical =
     buildDetailVideoUrl(video?.authorUsername ?? routeUsername, videoPublicIdOf(video) ?? publicId) ||
     (publicId ? `/watch/${publicId}` : '/foryou')
@@ -542,7 +546,7 @@ export function FeedStyleVideoDetailPage({
 
   useEffect(() => {
     if (!publicId) {
-      setLoadError('Liên kết video không hợp lệ.')
+      setLoadError(t('watch.invalidLink'))
       setVideo(null)
       setLoading(false)
       return undefined
@@ -571,7 +575,7 @@ export function FeedStyleVideoDetailPage({
       .catch((err) => {
         if (cancelled) return
         setVideo(null)
-        setLoadError(err instanceof Error ? err.message : 'Không tải được video.')
+        setLoadError(err instanceof Error ? err.message : t('watch.loadFailed'))
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -610,7 +614,7 @@ export function FeedStyleVideoDetailPage({
       })
       .catch((err) => {
         if (!cancelled) {
-          setCommentsError(err instanceof Error ? err.message : 'Không tải được bình luận.')
+          setCommentsError(err instanceof Error ? err.message : t('watch.loadCommentsFailed'))
         }
       })
       .finally(() => {
@@ -786,7 +790,7 @@ export function FeedStyleVideoDetailPage({
       setComments((prev) => [created, ...prev])
       patchVideo({ commentCount: Number(video?.commentCount ?? 0) + 1 })
     } catch (err) {
-      setCommentPostError(err instanceof Error ? err.message : 'Không gửi được bình luận.')
+      setCommentPostError(err instanceof Error ? err.message : t('watch.sendCommentFailed'))
     }
   }
 
@@ -861,15 +865,15 @@ export function FeedStyleVideoDetailPage({
               to="/login"
               className="ml-0.5 cursor-pointer rounded-full bg-red-600 px-3 py-1 text-xs font-semibold leading-none text-white hover:bg-red-500"
             >
-              Đăng nhập
+              {t('nav.login')}
             </Link>
           ) : (
             <div className="relative" ref={accountMenuRef}>
-              <TooltipHoverWrap tip="Tài khoản" tipHidden={showAccountMenu} hoverOnly>
+              <TooltipHoverWrap tip={t('common.account')} tipHidden={showAccountMenu} hoverOnly>
                 <button
                   type="button"
                   className="flex cursor-pointer rounded-full p-0.5 ring-1 ring-zinc-700 transition hover:ring-zinc-500"
-                  aria-label="Menu tài khoản"
+                  aria-label={t('common.accountMenu')}
                   onClick={() => setShowAccountMenu((prev) => !prev)}
                 >
                   <img
@@ -891,7 +895,7 @@ export function FeedStyleVideoDetailPage({
                     onClick={() => setShowAccountMenu(false)}
                   >
                     <IoPerson className="text-base" />
-                    Xem hồ sơ
+                    {t('common.viewProfile')}
                   </Link>
                   <button
                     type="button"
@@ -902,7 +906,7 @@ export function FeedStyleVideoDetailPage({
                     }}
                   >
                     <IoLogOutOutline className="text-base" />
-                    Đăng xuất
+                    {t('common.logout')}
                   </button>
                 </div>
               ) : null}
@@ -923,19 +927,19 @@ export function FeedStyleVideoDetailPage({
           ) : loading && !feedVideo ? (
             <div
               className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-700 border-t-rose-500"
-              aria-label="Đang tải"
+              aria-label={t('common.loading')}
             />
           ) : feedVideo && pendingModeration ? (
             <div className="flex max-w-sm flex-col items-center gap-3 px-6 text-center">
-              <p className="text-base font-semibold text-white">Đang kiểm tra...</p>
+              <p className="text-base font-semibold text-white">{t('watch.checking')}</p>
               <p className="text-sm text-zinc-400">
-                Video chưa được phép xem công khai cho đến khi kiểm duyệt AI xong.
+                {t('watch.pendingModeration')}
               </p>
               <Link
                 to={authorProfilePath}
                 className="mt-1 text-sm font-medium text-rose-400 hover:text-rose-300"
               >
-                Quay lại hồ sơ
+                {t('watch.backToProfile')}
               </Link>
             </div>
           ) : feedVideo ? (
@@ -1022,8 +1026,8 @@ export function FeedStyleVideoDetailPage({
                   <div className="pointer-events-auto fixed top-4 left-6 z-80 flex items-center gap-2">
                     <button
                       type="button"
-                      aria-label="Quay lại For You"
-                      title="Quay lại For You"
+                      aria-label={t('watch.backToForYou')}
+                      title={t('watch.backToForYou')}
                       className={`cursor-pointer ${FEED_VIDEO_OVERLAY_BTN_CLASS}`}
                       onClick={exitWatchToForYou}
                     >
@@ -1069,7 +1073,7 @@ export function FeedStyleVideoDetailPage({
                     role="status"
                   >
                     <span className="rounded-md bg-black/80 px-4 py-2 text-sm font-semibold text-white shadow-lg backdrop-blur-sm">
-                      Đã đăng lại
+                      {t('watch.repostedToast')}
                     </span>
                   </div>
                 ) : null}
@@ -1095,7 +1099,7 @@ export function FeedStyleVideoDetailPage({
                 <div className="relative h-12 w-12">
                   <Link
                     to={authorProfilePath}
-                    aria-label={`Xem hồ sơ ${feedVideo.authorUsername ?? 'user'}`}
+                    aria-label={t('feed.viewProfileOf', { user: feedVideo.authorUsername ?? 'user' })}
                     className="block h-12 w-12 rounded-full"
                   >
                     {forYouStyle ? (
@@ -1119,7 +1123,7 @@ export function FeedStyleVideoDetailPage({
                   </Link>
                   {forYouStyle && showActiveAuthorFollowSuccess ? (
                     <span
-                      aria-label={`Đã theo dõi ${feedVideo.authorUsername ?? 'user'}`}
+                      aria-label={t('feed.followingUser', { user: feedVideo.authorUsername ?? 'user' })}
                       className="absolute bottom-0 left-1/2 flex h-6 w-6 -translate-x-1/2 translate-y-[38%] items-center justify-center rounded-full border border-zinc-500 bg-zinc-200 text-sm text-red-500 shadow-[0_3px_10px_rgba(0,0,0,0.45)]"
                     >
                       <IoCheckmark aria-hidden />
@@ -1128,7 +1132,7 @@ export function FeedStyleVideoDetailPage({
                   {forYouStyle && showActiveAuthorFollowBadge && !showActiveAuthorFollowSuccess ? (
                     <button
                       type="button"
-                      aria-label={`Theo dõi ${feedVideo.authorUsername ?? 'user'}`}
+                      aria-label={t('feed.followUser', { user: feedVideo.authorUsername ?? 'user' })}
                       className="absolute bottom-0 left-1/2 flex h-6 w-6 -translate-x-1/2 translate-y-[38%] cursor-pointer items-center justify-center rounded-full border-2 border-black bg-red-500 text-base leading-none text-white shadow-[0_3px_10px_rgba(0,0,0,0.45)] disabled:cursor-wait disabled:opacity-75"
                       onClick={() => void handleActiveAuthorFollow()}
                       disabled={followBusyAuthorId === Number(feedVideo?.authorId)}
@@ -1142,7 +1146,7 @@ export function FeedStyleVideoDetailPage({
                   type="button"
                   className={FEED_ROUND_ICON_BUTTON}
                   aria-pressed={liked}
-                  aria-label={liked ? 'Bỏ thích' : 'Thích'}
+                  aria-label={liked ? t('feed.unlike') : t('feed.like')}
                   onClick={toggleLike}
                 >
                   <IoHeart
@@ -1162,7 +1166,7 @@ export function FeedStyleVideoDetailPage({
                       ? 'ring-2 ring-white/35 ring-offset-2 ring-offset-black'
                       : ''
                   }`}
-                  aria-label="Bình luận"
+                  aria-label={t('feed.comment')}
                   aria-expanded={sidebarTab === 'comments' || mobilePanelOpen}
                   onClick={() => openSidePanel('comments')}
                 >
@@ -1178,7 +1182,7 @@ export function FeedStyleVideoDetailPage({
                   type="button"
                   className={FEED_ROUND_ICON_BUTTON}
                   aria-pressed={bookmarked}
-                  aria-label={bookmarked ? 'Bỏ lưu yêu thích' : 'Lưu yêu thích'}
+                  aria-label={bookmarked ? t('feed.unbookmark') : t('feed.bookmark')}
                   onClick={toggleBookmark}
                 >
                   <IoBookmark
@@ -1196,7 +1200,7 @@ export function FeedStyleVideoDetailPage({
                 <button
                   type="button"
                   className={FEED_ROUND_ICON_BUTTON}
-                  aria-label="Chia sẻ"
+                  aria-label={t('feed.share')}
                   onClick={() => setShareOpen(true)}
                 >
                   <IoArrowRedo aria-hidden />
@@ -1208,7 +1212,7 @@ export function FeedStyleVideoDetailPage({
                 {forYouStyle ? (
                   <button
                     type="button"
-                    aria-label="Âm thanh đang phát"
+                    aria-label={t('feed.soundPlaying')}
                     className="relative flex h-11 w-11 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-white/35 bg-zinc-950 shadow-lg"
                     onClick={() => {
                       const rawAudioUrl = String(feedVideo?.audioUrl ?? '').trim()
@@ -1249,7 +1253,7 @@ export function FeedStyleVideoDetailPage({
           <button
             type="button"
             className={`fixed inset-0 z-[80] bg-black/60 ${watchChrome ? '' : 'lg:hidden'}`}
-            aria-label="Đóng bình luận"
+            aria-label={t('watch.closeComments')}
             onClick={() => setMobilePanelOpen(false)}
           />
         ) : null}
@@ -1264,7 +1268,7 @@ export function FeedStyleVideoDetailPage({
                 : 'lg:hidden'
               : 'lg:flex lg:border-l lg:pt-[4.5rem] lg:w-[clamp(380px,34vw,420px)]'
           }`}
-          aria-label="Bình luận và gợi ý"
+          aria-label={t('watch.commentsAndSuggestions')}
         >
           <div
             className={`flex shrink-0 items-center justify-end border-b border-white/[0.08] px-3 py-2 ${
@@ -1274,7 +1278,7 @@ export function FeedStyleVideoDetailPage({
             <button
               type="button"
               className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-zinc-200 transition hover:bg-white/10"
-              aria-label="Đóng"
+              aria-label={t('common.close')}
               onClick={() => setMobilePanelOpen(false)}
             >
               <IoClose className="text-2xl" aria-hidden />
@@ -1292,7 +1296,7 @@ export function FeedStyleVideoDetailPage({
               }`}
               onClick={() => openSidePanel('comments')}
             >
-              Bình luận
+              {t('watch.commentsPanel')}
               <span className="ml-1 font-normal text-zinc-400">
                 ({formatCompactCount(video?.commentCount ?? comments.length)})
               </span>
@@ -1308,7 +1312,7 @@ export function FeedStyleVideoDetailPage({
               }`}
               onClick={() => openSidePanel('related')}
             >
-              Bạn có thể thích
+              {t('watch.youMayLike')}
             </button>
           </div>
 
@@ -1316,14 +1320,14 @@ export function FeedStyleVideoDetailPage({
             {sidebarTab === 'comments' ? (
               commentsLoading ? (
                 <p className="px-3 py-12 text-center text-sm text-zinc-500">
-                  Đang tải bình luận…
+                  {t('watch.loadingComments')}
                 </p>
               ) : commentsError ? (
                 <p className="px-3 py-12 text-center text-sm text-red-400">{commentsError}</p>
               ) : comments.length === 0 ? (
                 <div className="flex flex-col items-center px-3 py-12 text-center text-sm text-zinc-500">
-                  <p>Chưa có bình luận.</p>
-                  <p className="mt-1 text-xs">Hãy mở đầu cuộc trò chuyện.</p>
+                  <p>{t('watch.noComments')}</p>
+                  <p className="mt-1 text-xs">{t('watch.startConversation')}</p>
                 </div>
               ) : (
                 <ul className="space-y-4 px-1">
@@ -1341,7 +1345,7 @@ export function FeedStyleVideoDetailPage({
                           <Link
                             to={profileHref}
                             className="shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#69C9D0]"
-                            aria-label={`Xem trang cá nhân ${displayName}`}
+                            aria-label={t('comments.viewProfile', { name: displayName })}
                           >
                             <img
                               src={avatarSrc}
@@ -1390,9 +1394,9 @@ export function FeedStyleVideoDetailPage({
                 </ul>
               )
             ) : relatedLoading ? (
-              <p className="px-3 py-12 text-center text-sm text-zinc-500">Đang tải gợi ý…</p>
+              <p className="px-3 py-12 text-center text-sm text-zinc-500">{t('watch.loadingSuggestions')}</p>
             ) : related.length === 0 ? (
-              <p className="px-3 py-12 text-center text-sm text-zinc-500">Chưa có gợi ý.</p>
+              <p className="px-3 py-12 text-center text-sm text-zinc-500">{t('watch.noSuggestions')}</p>
             ) : relatedLayout === 'grid' ? (
               <ul className="grid grid-cols-2 gap-2 px-1">
                 {related.map((row) => {
@@ -1426,7 +1430,7 @@ export function FeedStyleVideoDetailPage({
             <div className="shrink-0 border-t border-white/[0.08] px-3 py-3">
               {token && video?.viewerCanComment === false ? (
                 <p className="py-3 text-center text-sm leading-relaxed text-zinc-400">
-                  Nhà sáng tạo này đã giới hạn quyền truy cập bình luận
+                  {t('comments.restricted')}
                 </p>
               ) : (
                 <>
@@ -1468,7 +1472,7 @@ export function FeedStyleVideoDetailPage({
                         e.target.selectionStart,
                       )
                     }}
-                    placeholder={token ? 'Thêm bình luận...' : 'Đăng nhập để bình luận...'}
+                    placeholder={token ? t('comments.add') : t('comments.loginToComment')}
                     disabled={!token || !isVideoPublicId(publicId)}
                     className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-[4.75rem] text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-zinc-600 disabled:opacity-50"
                     onKeyDown={(e) => {
@@ -1488,7 +1492,7 @@ export function FeedStyleVideoDetailPage({
                 </div>
                 <button
                   type="button"
-                  aria-label="Gửi bình luận"
+                  aria-label={t('comments.sendComment')}
                   disabled={!commentDraft.trim() || !token || !isVideoPublicId(publicId)}
                   onClick={() => void submitComment()}
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600 text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
@@ -1545,7 +1549,7 @@ export function FeedStyleVideoDetailPage({
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/55 px-4">
           <div className="w-full max-w-sm rounded-xl bg-zinc-800 p-6 text-center shadow-2xl">
             <p className="text-2xl font-bold leading-snug">
-              Bạn có chắc chắn muốn đăng xuất?
+              {t('common.logoutConfirm')}
             </p>
             <div className="mt-6 flex justify-center gap-3">
               <button
@@ -1553,7 +1557,7 @@ export function FeedStyleVideoDetailPage({
                 className="rounded-lg bg-zinc-700 px-5 py-2 text-sm font-semibold text-white hover:bg-zinc-600"
                 onClick={() => setShowLogoutConfirm(false)}
               >
-                Hủy
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
@@ -1563,7 +1567,7 @@ export function FeedStyleVideoDetailPage({
                   logout?.()
                 }}
               >
-                Đăng xuất
+                {t('common.logout')}
               </button>
             </div>
           </div>

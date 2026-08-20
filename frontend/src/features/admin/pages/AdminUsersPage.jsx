@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   IoAdd,
   IoChevronDown,
@@ -23,18 +24,18 @@ import {
 const PAGE_SIZE = 20;
 const DEFAULT_AVATAR = DEFAULT_AVATAR_URL;
 const BIRTH_MONTH_OPTIONS = [
-  "Tháng Một",
-  "Tháng Hai",
-  "Tháng Ba",
-  "Tháng Tư",
-  "Tháng Năm",
-  "Tháng Sáu",
-  "Tháng Bảy",
-  "Tháng Tám",
-  "Tháng Chín",
-  "Tháng Mười",
-  "Tháng Mười Một",
-  "Tháng Mười Hai",
+  t('admin.users.months.m1'),
+  t('admin.users.months.m2'),
+  t('admin.users.months.m3'),
+  t('admin.users.months.m4'),
+  t('admin.users.months.m5'),
+  t('admin.users.months.m6'),
+  t('admin.users.months.m7'),
+  t('admin.users.months.m8'),
+  t('admin.users.months.m9'),
+  t('admin.users.months.m10'),
+  t('admin.users.months.m11'),
+  t('admin.users.months.m12'),
 ];
 const EMPTY_FORM = {
   email: "",
@@ -53,8 +54,8 @@ function normalizeVibelyId(value) {
 
 function roleLabel(role) {
   return String(role ?? "").toUpperCase() === "ADMIN"
-    ? "Quản trị viên"
-    : "Người dùng";
+    ? t("admin.users.roleAdmin")
+    : t("admin.users.roleUser");
 }
 
 function resolveAdminAvatarUrl(avatarUrl, userId) {
@@ -90,6 +91,7 @@ function RoleBadge({ role }) {
 }
 
 function OnboardingBadge({ completed }) {
+  const { t } = useTranslation()
   return (
     <span
       className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
@@ -98,30 +100,31 @@ function OnboardingBadge({ completed }) {
           : "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30"
       }`}
     >
-      {completed ? "Đã hoàn tất" : "Chưa hoàn tất"}
+      {completed ? t('admin.users.onboardingDone') : t('admin.users.onboardingPending')}
     </span>
   );
 }
 
 function AccountStatusBadge({ accountStatus }) {
+  const { t } = useTranslation();
   const status = String(accountStatus ?? "ACTIVE").toUpperCase();
   if (status === "BANNED") {
     return (
       <span className="inline-flex rounded-full bg-red-500/15 px-2.5 py-1 text-xs font-semibold text-red-300 ring-1 ring-red-500/30">
-        Bị cấm
+        {t("admin.users.statusBanned")}
       </span>
     );
   }
   if (status === "DEACTIVATED") {
     return (
       <span className="inline-flex rounded-full bg-zinc-500/15 px-2.5 py-1 text-xs font-semibold text-zinc-300 ring-1 ring-zinc-500/30">
-        Đã hủy kích hoạt
+        {t("admin.users.statusDeactivated")}
       </span>
     );
   }
   return (
     <span className="inline-flex rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300 ring-1 ring-emerald-500/30">
-      Hoạt động
+      {t("admin.users.statusActive")}
     </span>
   );
 }
@@ -309,7 +312,7 @@ function UserFormModal({
         })
         .catch((err) => {
           setEmailAvailable(false);
-          setEmailMessage(err.message ?? "Không kiểm tra được email");
+          setEmailMessage(err.message ?? t("admin.users.emailCheckFailed"));
           setEmailCanRecheck(false);
         })
         .finally(() => setEmailChecking(false));
@@ -331,7 +334,7 @@ function UserFormModal({
       normalizedUsername === normalizeVibelyId(initialSnapshot.username)
     ) {
       setUsernameAvailable(true);
-      setUsernameMessage("Vibely ID hiện tại");
+      setUsernameMessage(t("admin.users.vibelyIdCurrent"));
       setUsernameChecking(false);
       return undefined;
     }
@@ -347,7 +350,7 @@ function UserFormModal({
         })
         .catch((err) => {
           setUsernameAvailable(false);
-          setUsernameMessage(err.message ?? "Không kiểm tra được Vibely ID");
+          setUsernameMessage(err.message ?? t("admin.users.vibelyIdCheckFailed"));
           setUsernameCanRecheck(false);
         })
         .finally(() => setUsernameChecking(false));
@@ -369,7 +372,7 @@ function UserFormModal({
       setEmailCanRecheck(Boolean(result?.canRecheck));
     } catch (err) {
       setEmailAvailable(false);
-      setEmailMessage(err.message ?? "Không kiểm tra được email");
+      setEmailMessage(err.message ?? t("admin.users.emailCheckFailed"));
       setEmailCanRecheck(false);
     } finally {
       setEmailChecking(false);
@@ -389,7 +392,7 @@ function UserFormModal({
       setUsernameCanRecheck(Boolean(result?.canRecheck));
     } catch (err) {
       setUsernameAvailable(false);
-      setUsernameMessage(err.message ?? "Không kiểm tra được Vibely ID");
+      setUsernameMessage(err.message ?? t("admin.users.vibelyIdCheckFailed"));
       setUsernameCanRecheck(false);
     } finally {
       setUsernameChecking(false);
@@ -421,19 +424,19 @@ function UserFormModal({
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold text-zinc-100">
-              {isEdit ? "Sửa người dùng" : "Thêm người dùng"}
+              {isEdit ? t("admin.users.editUser") : t("admin.users.addUser")}
             </h2>
             <p className="mt-1 text-sm text-zinc-500">
               {isEdit
-                ? "Email đã xác minh nên không thể sửa. Bỏ trống mật khẩu nếu muốn giữ mật khẩu hiện tại."
-                : "Điền đầy đủ thông tin để tạo tài khoản Vibely mới."}
+                ? t("admin.users.editHint")
+                : t("admin.users.addHint")}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="rounded-full p-2 text-zinc-500 transition hover:bg-zinc-900 hover:text-zinc-100"
-            aria-label="Đóng"
+            aria-label={t("admin.close")}
           >
             <IoClose className="text-xl" aria-hidden />
           </button>
@@ -456,7 +459,7 @@ function UserFormModal({
                 <p
                   className={`text-xs ${emailAvailable ? "text-emerald-400" : "text-amber-400"}`}
                 >
-                  {emailChecking ? "Đang kiểm tra email..." : emailMessage}
+                  {emailChecking ? t('admin.users.checkingEmail') : emailMessage}
                 </p>
                 {emailCanRecheck && !emailChecking ? (
                   <button
@@ -464,7 +467,7 @@ function UserFormModal({
                     className="text-xs text-zinc-300 underline hover:text-white"
                     onClick={() => void recheckEmailAvailability()}
                   >
-                    Kiểm tra lại email với cơ sở dữ liệu
+                    {t("admin.users.recheckEmail")}
                   </button>
                 ) : null}
               </div>
@@ -485,7 +488,7 @@ function UserFormModal({
                   className={`text-xs ${usernameAvailable ? "text-emerald-400" : "text-amber-400"}`}
                 >
                   {usernameChecking
-                    ? "Đang kiểm tra Vibely ID..."
+                    ? t('admin.users.checkingVibelyId')
                     : usernameMessage}
                 </p>
                 {usernameCanRecheck && !usernameChecking ? (
@@ -494,38 +497,38 @@ function UserFormModal({
                     className="text-xs text-zinc-300 underline hover:text-white"
                     onClick={() => void recheckUsernameAvailability()}
                   >
-                    Kiểm tra lại Vibely ID với cơ sở dữ liệu
+                    {t("admin.users.recheckVibelyId")}
                   </button>
                 ) : null}
               </div>
             ) : null}
           </div>
           <div className="space-y-1.5">
-            <FieldLabel>Tên hiển thị</FieldLabel>
+            <FieldLabel>{t("admin.users.displayName")}</FieldLabel>
             <input
               required
               value={form.displayName}
               onChange={(e) => updateField("displayName", e.target.value)}
               className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-red-500"
-              placeholder="Tên người dùng"
+              placeholder={t('admin.users.username')}
             />
           </div>
           <div className="space-y-1.5">
-            <FieldLabel>Vai trò</FieldLabel>
+            <FieldLabel>{t("admin.users.role")}</FieldLabel>
             <RoleDropdown
               value={form.role}
               onChange={(role) => updateField("role", role)}
               options={[
-                { value: "USER", label: "Người dùng" },
-                { value: "ADMIN", label: "Quản trị viên" },
+                { value: "USER", label: t("admin.users.roleUser") },
+                { value: "ADMIN", label: t("admin.users.roleAdmin") },
               ]}
-              ariaLabel="Chọn vai trò"
+              ariaLabel={t('admin.users.selectRole')}
               buttonClassName="w-full rounded-xl px-4 py-3"
             />
           </div>
           {isEdit ? (
             <div className="space-y-1.5">
-              <FieldLabel>Trạng thái</FieldLabel>
+              <FieldLabel>{t("admin.users.status")}</FieldLabel>
               <div className="flex min-h-[48px] items-center rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-3">
                 <AccountStatusBadge
                   accountStatus={initialUser?.accountStatus}
@@ -534,14 +537,14 @@ function UserFormModal({
             </div>
           ) : null}
           <div className="space-y-1.5">
-            <FieldLabel>Hồ sơ</FieldLabel>
+            <FieldLabel>{t("admin.users.profile")}</FieldLabel>
             <div className="flex min-h-[48px] items-center rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-3">
               <OnboardingBadge completed={profileCompletedPreview} />
             </div>
           </div>
           {!isEdit ? (
             <div className="space-y-1.5 sm:col-span-2">
-              <FieldLabel>Ngày sinh</FieldLabel>
+              <FieldLabel>{t("admin.users.birthDate")}</FieldLabel>
               <BirthDateFields
                 birthMonth={birthMonth}
                 birthDay={birthDay}
@@ -557,13 +560,13 @@ function UserFormModal({
                 </p>
               ) : (
                 <p className="text-xs text-zinc-500">
-                  Người dùng phải đủ 18 tuổi.
+                  {t("admin.users.mustBe18")}
                 </p>
               )}
             </div>
           ) : null}
           <div className="space-y-1.5 sm:col-span-2">
-            <FieldLabel>Mật khẩu</FieldLabel>
+            <FieldLabel>{t("admin.users.password")}</FieldLabel>
             <input
               type="password"
               required={!isEdit}
@@ -572,8 +575,8 @@ function UserFormModal({
               className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-red-500"
               placeholder={
                 isEdit
-                  ? "Bỏ trống để giữ mật khẩu hiện tại"
-                  : "Nhập mật khẩu (tối thiểu 6 ký tự)"
+                  ? t('admin.users.passwordKeep')
+                  : t('admin.users.passwordNew')
               }
             />
           </div>
@@ -592,7 +595,7 @@ function UserFormModal({
             disabled={submitting}
             className="rounded-xl border border-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-300 transition hover:bg-zinc-900 disabled:opacity-50"
           >
-            Hủy
+            {t("admin.cancel")}
           </button>
           <button
             type="submit"
@@ -604,12 +607,12 @@ function UserFormModal({
             className="rounded-xl border border-zinc-800 bg-black px-5 py-3 text-sm font-bold text-zinc-100 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting
-              ? "Đang lưu..."
+              ? t("admin.saving")
               : isEdit
-                ? "Lưu thay đổi"
+                ? t("admin.users.saveChanges")
                 : canCompleteCreate
-                  ? "Hoàn tất"
-                  : "Thêm người dùng"}
+                  ? t("admin.users.finish")
+                  : t("admin.users.addUser")}
           </button>
         </div>
       </form>
@@ -618,6 +621,7 @@ function UserFormModal({
 }
 
 function BanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
+  const { t } = useTranslation()
   const [reason, setReason] = useState("");
   const trimmedReason = reason.trim();
   const canSubmit =
@@ -637,9 +641,9 @@ function BanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-bold text-zinc-100">Cấm tài khoản</h2>
+            <h2 className="text-lg font-bold text-zinc-100">{t("admin.users.banTitle")}</h2>
             <p className="mt-1 text-sm text-zinc-500">
-              Người dùng sẽ không thể đăng nhập. Lý do cấm sẽ được gửi qua
+              {t("admin.users.banHint")}
               email.
             </p>
           </div>
@@ -647,7 +651,7 @@ function BanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
             type="button"
             onClick={onClose}
             className="rounded-full p-2 text-zinc-500 transition hover:bg-zinc-900 hover:text-zinc-100"
-            aria-label="Đóng"
+            aria-label={t("admin.close")}
           >
             <IoClose className="text-xl" aria-hidden />
           </button>
@@ -655,17 +659,17 @@ function BanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
 
         <div className="mt-5 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
           <p>
-            Bạn sắp cấm{" "}
-            <strong>{user?.displayName || "Người dùng Vibely"}</strong> (@
+            {t("admin.users.banAbout")}{" "}
+            <strong>{user?.displayName || t("admin.vibelyUser")}</strong> (@
             {user?.username || "unknown"}).
           </p>
           <p className="mt-2 break-all text-red-200/90">
-            Email nhận thông báo: {user?.email || "Không có email"}
+            {t("admin.users.notifyEmail", { email: user?.email || t("admin.noEmail") })}
           </p>
         </div>
 
         <div className="mt-4 space-y-1.5">
-          <FieldLabel>Lý do cấm</FieldLabel>
+          <FieldLabel>{t("admin.users.banReason")}</FieldLabel>
           <textarea
             required
             rows={4}
@@ -673,7 +677,7 @@ function BanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
             onChange={(e) => setReason(e.target.value)}
             maxLength={500}
             className="w-full resize-y rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-red-500"
-            placeholder="Nhập lý do cấm tài khoản (5–500 ký tự)..."
+            placeholder={t("admin.users.banReasonPlaceholder")}
           />
           <p className="text-right text-xs text-zinc-500">
             {trimmedReason.length}/500
@@ -693,14 +697,14 @@ function BanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
             disabled={submitting}
             className="rounded-xl border border-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-300 transition hover:bg-zinc-900 disabled:opacity-50"
           >
-            Hủy
+            {t("admin.cancel")}
           </button>
           <button
             type="submit"
             disabled={!canSubmit}
             className="rounded-xl border border-zinc-800 bg-black px-5 py-3 text-sm font-bold text-zinc-100 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {submitting ? "Đang cấm..." : "Cấm tài khoản"}
+            {submitting ? t("admin.users.banning") : t("admin.users.banAccount")}
           </button>
         </div>
       </form>
@@ -709,24 +713,24 @@ function BanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
 }
 
 function DeleteConfirmModal({ user, submitting, error, onClose, onConfirm }) {
+  const { t } = useTranslation()
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">
       <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/60">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold text-zinc-100">
-              Xác nhận xóa tài khoản
+              {t("admin.users.deleteTitle")}
             </h2>
             <p className="mt-1 text-sm text-zinc-500">
-              Hành động này sẽ xóa tài khoản và dữ liệu liên quan, không thể
-              hoàn tác.
+              {t("admin.users.deleteHint")}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="rounded-full p-2 text-zinc-500 transition hover:bg-zinc-900 hover:text-zinc-100"
-            aria-label="Đóng"
+            aria-label={t("admin.close")}
           >
             <IoClose className="text-xl" aria-hidden />
           </button>
@@ -734,16 +738,15 @@ function DeleteConfirmModal({ user, submitting, error, onClose, onConfirm }) {
 
         <div className="mt-5 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
           <p>
-            Bạn sắp xóa{" "}
-            <strong>{user?.displayName || "Người dùng Vibely"}</strong> (@
+            {t("admin.users.deleteAbout")}{" "}
+            <strong>{user?.displayName || t("admin.vibelyUser")}</strong> (@
             {user?.username || "unknown"}).
           </p>
           <p className="mt-2 break-all text-red-200/90">
-            Email nhận thông báo: {user?.email || "Không có email"}
+            {t("admin.users.notifyEmail", { email: user?.email || t("admin.noEmail") })}
           </p>
           <p className="mt-3 text-red-200/90">
-            Video, follow, lượt thích, bookmark, repost, bình luận, thông báo và
-            dữ liệu phụ liên quan sẽ bị xóa theo giao dịch.
+            {t("admin.users.deleteDataHint")}
           </p>
         </div>
 
@@ -760,7 +763,7 @@ function DeleteConfirmModal({ user, submitting, error, onClose, onConfirm }) {
             disabled={submitting}
             className="rounded-xl border border-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-300 transition hover:bg-zinc-900 disabled:opacity-50"
           >
-            Hủy
+            {t("admin.cancel")}
           </button>
           <button
             type="button"
@@ -768,7 +771,7 @@ function DeleteConfirmModal({ user, submitting, error, onClose, onConfirm }) {
             disabled={submitting}
             className="rounded-xl border border-zinc-800 bg-black px-5 py-3 text-sm font-bold text-zinc-100 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {submitting ? "Đang xóa..." : "Xóa tài khoản"}
+            {submitting ? t("admin.deleting") : t("admin.users.deleteAccount")}
           </button>
         </div>
       </div>
@@ -777,6 +780,7 @@ function DeleteConfirmModal({ user, submitting, error, onClose, onConfirm }) {
 }
 
 export function AdminUsersPage() {
+  const { t } = useTranslation()
   const { token, user, authReady } = useAuth();
   const isAdmin = String(user?.role ?? "").toUpperCase() === "ADMIN";
   const [page, setPage] = useState(0);
@@ -795,8 +799,8 @@ export function AdminUsersPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    document.title = "Vibely Admin | Quản lý tài khoản";
-  }, []);
+    document.title = t("admin.docTitle.users");
+  }, [t]);
 
   const loadUsers = useCallback(async () => {
     if (!authReady) return;
@@ -818,7 +822,7 @@ export function AdminUsersPage() {
       setUsers([]);
       setTotal(0);
       setHasNext(false);
-      setError(e.message ?? "Không tải được danh sách tài khoản.");
+      setError(e.message ?? t("admin.users.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -854,7 +858,7 @@ export function AdminUsersPage() {
 
   const roleFilterOptions = useMemo(
     () => [
-      { value: "ALL", label: "Tất cả vai trò" },
+      { value: "ALL", label: t("admin.users.allRoles") },
       ...availableRoles.map((role) => ({
         value: role,
         label: roleLabel(role),
@@ -918,7 +922,7 @@ export function AdminUsersPage() {
       setModalError("");
       await loadUsers();
     } catch (e) {
-      setModalError(e.message ?? "Không lưu được người dùng.");
+      setModalError(e.message ?? t("admin.users.saveFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -938,7 +942,7 @@ export function AdminUsersPage() {
         await loadUsers();
       }
     } catch (e) {
-      setModalError(e.message ?? "Không xóa được người dùng.");
+      setModalError(e.message ?? t("admin.users.deleteFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -954,7 +958,7 @@ export function AdminUsersPage() {
       setModalError("");
       await loadUsers();
     } catch (e) {
-      setModalError(e.message ?? "Không cấm được người dùng.");
+      setModalError(e.message ?? t("admin.users.banFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -963,19 +967,18 @@ export function AdminUsersPage() {
   return (
     <AdminLayout
       active="users"
-      title="Quản lý tài khoản người dùng"
-      subtitle="Theo dõi danh sách tài khoản, vai trò và trạng thái hoạt động."
+      title={t("admin.users.title")}
+      subtitle={t("admin.users.subtitle")}
     >
       {!authReady || loading ? (
         <AdminUsersPageSkeleton />
       ) : !isAdmin ? (
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center">
           <p className="text-lg font-semibold text-zinc-100">
-            Bạn không có quyền truy cập Admin
+            {t("admin.noAccess")}
           </p>
           <p className="mt-2 text-sm text-zinc-400">
-            Tài khoản hiện tại cần vai trò Quản trị viên để xem khu vực quản
-            trị.
+            {t("admin.noAccessHint")}
           </p>
         </section>
       ) : (
@@ -984,21 +987,21 @@ export function AdminUsersPage() {
             <div className="grid gap-3 xl:grid-cols-[minmax(160px,220px)_minmax(320px,1fr)_auto] xl:items-center">
               <div className="min-w-0">
                 <p className="text-sm font-bold uppercase tracking-wide text-zinc-200">
-                  Tổng tài khoản: {total}
+                  {t("admin.users.total", { count: total })}
                 </p>
               </div>
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="h-12 w-full rounded-full border border-zinc-700 bg-zinc-950 px-5 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-500 focus:border-red-500"
-                placeholder="Tìm theo tên, email, Vibely ID hoặc vai trò..."
+                placeholder={t("admin.users.searchPlaceholder")}
               />
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center xl:justify-end">
                 <RoleDropdown
                   value={selectedRole}
                   onChange={setSelectedRole}
                   options={roleFilterOptions}
-                  ariaLabel="Lọc theo vai trò"
+                  ariaLabel={t("admin.users.filterRoleAria")}
                   buttonClassName="h-12 min-w-44 rounded-full px-5"
                 />
                 <button
@@ -1007,7 +1010,7 @@ export function AdminUsersPage() {
                   className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-zinc-700 bg-zinc-950 px-5 text-sm font-bold text-zinc-100 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200"
                 >
                   <IoAdd className="text-lg" aria-hidden />
-                  Thêm người dùng
+                  {t("admin.users.addUser")}
                 </button>
               </div>
             </div>
@@ -1021,23 +1024,23 @@ export function AdminUsersPage() {
                 <thead>
                   <tr className="border-b border-zinc-800 text-xs text-zinc-500">
                     <th className="py-3 pr-4 text-center font-medium">
-                      Người dùng
+                      {t("admin.table.user")}
                     </th>
                     <th className="px-3 py-3 text-center font-medium">Email</th>
                     <th className="px-3 py-3 text-center font-medium">
-                      Vai trò
+                      {t("admin.table.role")}
                     </th>
                     <th className="px-3 py-3 text-center font-medium">
-                      Trạng thái
+                      {t("admin.table.status")}
                     </th>
                     <th className="px-3 py-3 text-center font-medium">
-                      Ngày tạo
+                      {t("admin.table.created")}
                     </th>
                     <th className="px-3 py-3 text-center font-medium">
-                      Cập nhật
+                      {t("admin.table.updated")}
                     </th>
                     <th className="px-3 py-3 text-center font-medium">
-                      Thao tác
+                      {t("admin.table.actions")}
                     </th>
                   </tr>
                 </thead>
@@ -1067,7 +1070,7 @@ export function AdminUsersPage() {
                             />
                             <div className="min-w-0">
                               <p className="truncate font-semibold text-zinc-100">
-                                {item.displayName || "Người dùng Vibely"}
+                                {item.displayName || t("admin.vibelyUser")}
                               </p>
                               <p className="mt-0.5 truncate text-xs text-zinc-500">
                                 @{item.username || "unknown"}
@@ -1103,7 +1106,7 @@ export function AdminUsersPage() {
                               type="button"
                               onClick={() => openEditModal(item)}
                               className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-700 text-zinc-200 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-300"
-                              aria-label={`Sửa ${item.username}`}
+                              aria-label={t("admin.users.editAria", { username: item.username })}
                             >
                               <IoPencil className="text-base" aria-hidden />
                             </button>
@@ -1113,11 +1116,11 @@ export function AdminUsersPage() {
                               disabled={cannotBan}
                               title={
                                 cannotBan
-                                  ? "Không thể cấm chính mình, tài khoản ADMIN hoặc tài khoản đã bị cấm"
-                                  : "Cấm tài khoản"
+                                  ? t("admin.users.cannotBanSelf")
+                                  : t("admin.users.banAccount")
                               }
                               className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-700 text-zinc-200 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-35"
-                              aria-label={`Cấm ${item.username}`}
+                              aria-label={t("admin.users.banAria", { username: item.username })}
                             >
                               <IoLockClosedOutline
                                 className="text-base"
@@ -1130,11 +1133,11 @@ export function AdminUsersPage() {
                               disabled={cannotDelete}
                               title={
                                 cannotDelete
-                                  ? "Không thể xóa chính mình hoặc tài khoản ADMIN"
-                                  : "Xóa người dùng"
+                                  ? t("admin.users.cannotDeleteSelf")
+                                  : t("admin.users.deleteUser")
                               }
                               className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-700 text-zinc-200 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-35"
-                              aria-label={`Xóa ${item.username}`}
+                              aria-label={t("admin.users.deleteAria", { username: item.username })}
                             >
                               <IoTrash className="text-base" aria-hidden />
                             </button>
@@ -1149,7 +1152,7 @@ export function AdminUsersPage() {
 
             {filteredUsers.length === 0 ? (
               <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-12 text-center text-sm text-zinc-500">
-                Không có tài khoản phù hợp.
+                {t("admin.users.empty")}
               </div>
             ) : null}
 

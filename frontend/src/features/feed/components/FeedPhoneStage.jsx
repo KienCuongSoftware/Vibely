@@ -6,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { VirtualizedFeed } from "@/features/feed/components/VirtualizedFeed";
 import { FeedVideoPlayer } from "@/features/feed/components/FeedVideoPlayer";
 import {
@@ -124,6 +125,7 @@ const CAPTION_TEXT_CLASS =
 
 /** Mô tả dài: 1 dòng + «thêm» sát chữ (kiểu TikTok); «ẩn bớt» khi mở rộng. */
 export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
+  const { t } = useTranslation();
   const text = String(caption ?? "").trim();
   const [expanded, setExpanded] = useState(false);
   const [overflowsOneLine, setOverflowsOneLine] = useState(false);
@@ -200,7 +202,7 @@ export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
                 setExpanded(false);
               }}
             >
-              ẩn bớt
+              {t('feed.collapse')}
             </button>
           </>
         </p>
@@ -225,7 +227,7 @@ export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
             setExpanded(true);
           }}
         >
-          thêm
+          {t('feed.expand')}
         </button>
       ) : null}
     </div>
@@ -245,13 +247,14 @@ function formatSpeedPillLabel(rate) {
 }
 
 function FeedMoreSubpageHeader({ title, onBack }) {
+  const { t } = useTranslation();
   return (
     <div className="relative flex items-center border-b border-white/10 px-2 py-2.5">
       <button
         type="button"
         className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-white transition-colors hover:bg-white/6"
         onClick={onBack}
-        aria-label="Quay lại"
+        aria-label={t('common.back')}
       >
         <IoChevronBack className="h-4 w-4" aria-hidden />
       </button>
@@ -313,6 +316,7 @@ function FeedSlideAuthorMeta({
   onSelfUnrepost,
   selfRepostBusy = false,
 }) {
+  const { t } = useTranslation();
   const [captionWash, setCaptionWash] = useState("none");
   const nameClass =
     "inline-block max-w-full truncate text-[15px] font-bold leading-snug text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]";
@@ -374,7 +378,7 @@ function FeedSlideAuthorMeta({
               className="shrink-0 text-sm text-[#FACE15]"
               aria-hidden
             />
-            <span className="truncate">{repostLabel} đã đăng lại</span>
+            <span className="truncate">{t('feed.nameReposted', { name: repostLabel })}</span>
           </p>
         ) : null}
         <div className="inline-flex max-w-full">{nameEl}</div>
@@ -444,6 +448,7 @@ export function FeedVolumeControl({
   /** Theater chrome ngoài video — luôn hiện icon (không phụ thuộc hover khung video). */
   alwaysVisible = false,
 }) {
+  const { t } = useTranslation();
   const [pinned, setPinned] = useState(false);
   const isMuted = !soundOn || volume <= 0;
 
@@ -507,7 +512,7 @@ export function FeedVolumeControl({
       >
         <button
           type="button"
-          aria-label={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
+          aria-label={isMuted ? t('feed.unmute') : t('feed.mute')}
           className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center text-white transition-opacity hover:opacity-90"
           onPointerDown={stopFeedPointer}
           onClick={toggleSound}
@@ -538,7 +543,7 @@ export function FeedVolumeControl({
             max={1}
             step={0.01}
             value={volume}
-            aria-label="Âm lượng"
+            aria-label={t('feed.volume')}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={Math.round(volume * 100)}
@@ -622,6 +627,7 @@ export function FeedPhoneStage({
   onSelfUnrepost,
   selfRepostBusy = false,
 }) {
+  const { t } = useTranslation();
   /** Khung rộng từ trình duyệt (videoWidth/Height sau decode). */
   const [clientWideForLandscape, setClientWideForLandscape] = useState(false);
   /** Fallback: suy luận ngang từ thumbnail natural size. */
@@ -705,7 +711,7 @@ export function FeedPhoneStage({
       });
     } catch (error) {
       window.alert(
-        error instanceof Error ? error.message : "Không tải được video.",
+        error instanceof Error ? error.message : t('feed.loadVideoFailed'),
       );
     } finally {
       setVideoDownloadBusy(false);
@@ -1207,7 +1213,7 @@ export function FeedPhoneStage({
                   {feedMoreMenuOpen ? (
                     <button
                       type="button"
-                      aria-label="Đóng menu"
+                      aria-label={t('feed.closeMenu')}
                       className="absolute inset-0 z-35 cursor-default rounded-xl bg-black/45 transition-colors sm:rounded-2xl"
                       onMouseDown={(e) => {
                         e.preventDefault();
@@ -1240,7 +1246,7 @@ export function FeedPhoneStage({
                           !theaterMode &&
                           (onEnterFullscreen || onTheaterModeChange) ? (
                             <TooltipHoverWrap
-                              tip="Vào chế độ toàn màn hình"
+                              tip={t('feed.fullscreen')}
                               placement="bottom"
                               hoverOnly
                               className={`transition-opacity duration-200 ${
@@ -1251,7 +1257,7 @@ export function FeedPhoneStage({
                             >
                               <button
                                 type="button"
-                                aria-label="Vào chế độ toàn màn hình"
+                                aria-label={t('feed.fullscreen')}
                                 className={`cursor-pointer focus-visible:opacity-100 ${FEED_VIDEO_OVERLAY_BTN_CLASS}`}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -1310,7 +1316,7 @@ export function FeedPhoneStage({
                           {feedMoreMenuSubpage === "quality" ? (
                             <>
                               <FeedMoreSubpageHeader
-                                title="Chất lượng"
+                                title={t('feedMenu.quality')}
                                 onBack={() => setFeedMoreMenuSubpage("main")}
                               />
                               {qualityMenuOptions.map((q) => {
@@ -1350,11 +1356,11 @@ export function FeedPhoneStage({
                                   className={FEED_MORE_MENU_INLINE_ICON_CLASS}
                                   aria-hidden
                                 />
-                                <span className="shrink-0">Tốc độ</span>
+                                <span className="shrink-0">{t('feedMenu.speed')}</span>
                                 <div
                                   className={FEED_MORE_SPEED_TRACK_CLASS}
                                   role="group"
-                                  aria-label="Tốc độ phát"
+                                  aria-label={t('feedMenu.speedGroup')}
                                 >
                                   {FEED_PLAYBACK_SPEEDS.map((rate) => {
                                     const selected =
@@ -1388,7 +1394,7 @@ export function FeedPhoneStage({
                                 }
                               >
                                 <span className="min-w-0 flex-1">
-                                  Chất lượng
+                                  {t('feedMenu.quality')}
                                 </span>
                                 <span className={FEED_MORE_MENU_VALUE_CLASS}>
                                   {feedQualityLabel(feedVideoQuality)}
@@ -1401,7 +1407,7 @@ export function FeedPhoneStage({
 
                               <div className={FEED_MORE_MENU_ROW_CLASS}>
                                 <span className="min-w-0 flex-1">
-                                  Cuộn tự động
+                                  {t('feedMenu.autoScroll')}
                                 </span>
                                 <button
                                   type="button"
@@ -1430,7 +1436,7 @@ export function FeedPhoneStage({
                                   className={FEED_MORE_MENU_INLINE_ICON_CLASS}
                                   aria-hidden
                                 />
-                                <span className="flex-1">Trình phát nổi</span>
+                                <span className="flex-1">{t('feedMenu.pip')}</span>
                               </button>
 
                               <button
@@ -1447,7 +1453,7 @@ export function FeedPhoneStage({
                                 >
                                   Aa
                                 </span>
-                                <span className="flex-1">Phụ đề</span>
+                                <span className="flex-1">{t('feedMenu.subtitles')}</span>
                               </button>
 
                               <div
@@ -1468,7 +1474,7 @@ export function FeedPhoneStage({
                                   className={FEED_MORE_MENU_INLINE_ICON_CLASS}
                                   aria-hidden
                                 />
-                                <span className="flex-1">Không quan tâm</span>
+                                <span className="flex-1">{t('feedMenu.notInterested')}</span>
                               </button>
 
                               <button
@@ -1484,7 +1490,7 @@ export function FeedPhoneStage({
                                   className={FEED_MORE_MENU_INLINE_ICON_CLASS}
                                   aria-hidden
                                 />
-                                <span className="flex-1">Báo cáo</span>
+                                <span className="flex-1">{t('feedMenu.report')}</span>
                               </button>
                             </>
                           )}
@@ -1596,7 +1602,7 @@ export function FeedPhoneStage({
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={0}
-          aria-label="Tiến độ phát"
+          aria-label={t('feed.progress')}
           onMouseDown={(e) => {
             e.preventDefault();
             e.stopPropagation();

@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 
 function buildPageItems(current, totalPages) {
@@ -51,6 +52,7 @@ export function AdminPagination({
   hasNext = false,
   className = "",
 }) {
+  const { t } = useTranslation();
   const totalPages = useMemo(() => {
     const size = Math.max(1, Number(pageSize) || 1);
     const fromTotal = Math.ceil(Math.max(0, Number(total) || 0) / size);
@@ -74,13 +76,13 @@ export function AdminPagination({
   return (
     <nav
       className={`mt-4 flex flex-wrap items-center justify-end gap-1.5 ${className}`}
-      aria-label="Phân trang"
+      aria-label={t("admin.pagination.aria")}
     >
       <button
         type="button"
         disabled={current <= 1}
         className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-700 text-zinc-200 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
-        aria-label="Trang trước"
+        aria-label={t("admin.pagination.prev")}
         onClick={() => goTo(page - 1)}
       >
         <IoChevronBack className="text-lg" aria-hidden />
@@ -99,7 +101,7 @@ export function AdminPagination({
           <button
             key={item}
             type="button"
-            aria-label={`Trang ${item}`}
+            aria-label={t("admin.pagination.page", { page: item })}
             aria-current={item === current ? "page" : undefined}
             onClick={() => goTo(item - 1)}
             className={
@@ -117,7 +119,7 @@ export function AdminPagination({
         type="button"
         disabled={current >= totalPages && !hasNext}
         className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-700 text-zinc-200 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
-        aria-label="Trang sau"
+        aria-label={t("admin.pagination.next")}
         onClick={() => {
           if (current < totalPages) goTo(page + 1);
           else if (hasNext) onPageChange(page + 1);

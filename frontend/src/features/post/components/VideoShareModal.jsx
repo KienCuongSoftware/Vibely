@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FaFacebookF,
   FaLinkedinIn,
@@ -31,6 +32,7 @@ const SCROLL_ARROW =
   "share-modal-scroll-arrow pointer-events-none absolute top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-[#3a3a3a]/95 text-2xl text-white shadow-lg opacity-0 transition-all duration-200 group-hover/share-modal:pointer-events-auto group-hover/share-modal:opacity-100 hover:bg-[#505050] hover:brightness-110";
 
 function ShareModalScrollRow({ children, className = "" }) {
+  const { t } = useTranslation();
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -69,7 +71,7 @@ function ShareModalScrollRow({ children, className = "" }) {
       {canScrollLeft ? (
         <button
           type="button"
-          aria-label="Cuộn trái"
+          aria-label={t('share.scrollLeft')}
           className={`${SCROLL_ARROW} left-1`}
           onClick={() => scrollBy(-1)}
         >
@@ -79,7 +81,7 @@ function ShareModalScrollRow({ children, className = "" }) {
       {canScrollRight ? (
         <button
           type="button"
-          aria-label="Cuộn phải"
+          aria-label={t('share.scrollRight')}
           className={`${SCROLL_ARROW} right-1`}
           onClick={() => scrollBy(1)}
         >
@@ -117,9 +119,10 @@ function ShareCircleButton({ label, bgClass, icon, onClick, disabled }) {
 }
 
 function FriendChip({ friend, onClick }) {
+  const { t } = useTranslation();
   const name =
-    String(friend?.displayName ?? friend?.username ?? "Bạn bè").trim() ||
-    "Bạn bè";
+    String(friend?.displayName ?? friend?.username ?? t('share.friendFallback')).trim() ||
+    t('share.friendFallback');
   const avatar = String(friend?.avatarUrl ?? "").trim() || DEFAULT_AVATAR;
   return (
     <button
@@ -138,7 +141,8 @@ function FriendChip({ friend, onClick }) {
 }
 
 function ConversationRecipientChip({ row, selected, onToggle, disabled = false }) {
-  const name = String(row?.peerDisplayName ?? row?.peerUsername ?? "Người dùng").trim() || "Người dùng";
+  const { t } = useTranslation();
+  const name = String(row?.peerDisplayName ?? row?.peerUsername ?? t('share.userFallback')).trim() || t('share.userFallback');
   const avatar = String(row?.peerAvatarUrl ?? "").trim() || DEFAULT_AVATAR;
   return (
     <button
@@ -176,6 +180,7 @@ export function VideoShareModal({
   token,
   onShareCountChange,
 }) {
+  const { t } = useTranslation();
   const videoId = videoPublicId ?? legacyVideoId;
   const [friends, setFriends] = useState([]);
   const [chatRecipients, setChatRecipients] = useState([]);
@@ -302,9 +307,9 @@ export function VideoShareModal({
       try {
         await navigator.clipboard.writeText(value);
         await recordShare(channel);
-        showToast("Đã sao chép liên kết");
+        showToast(t('share.linkCopied'));
       } catch {
-        showToast("Không sao chép được liên kết");
+        showToast(t('share.linkCopyFailed'));
       }
     },
     [recordShare, showToast],
@@ -355,12 +360,12 @@ export function VideoShareModal({
       );
       const successCount = results.filter((item) => item.status === "fulfilled").length;
       if (successCount === 0) {
-        throw new Error("Không gửi được vào tin nhắn");
+        throw new Error(t('share.sendFailed'));
       }
       const toastMessage =
         successCount === selectedConversationIds.length
-          ? "Đã gửi vào tin nhắn"
-          : `Đã gửi ${successCount}/${selectedConversationIds.length} cuộc trò chuyện`;
+          ? t('share.sentToMessages')
+          : t('share.sentPartial', { success: successCount, total: selectedConversationIds.length });
       setSelectedConversationIds([]);
       setDirectNote("");
       onClose?.();
@@ -371,7 +376,7 @@ export function VideoShareModal({
         /* chat sent — share count is best-effort */
       }
     } catch {
-      showToast("Không gửi được vào tin nhắn");
+      showToast(t('share.sendFailed'));
     } finally {
       setBusy(false);
     }
@@ -396,18 +401,18 @@ export function VideoShareModal({
           <button
             type="button"
             className="absolute left-4 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10"
-            aria-label="Tìm bạn bè"
+            aria-label={t('share.searchFriends')}
           >
             <IoSearchOutline className="text-[22px]" aria-hidden />
           </button>
           <h2 id="share-modal-title" className="text-lg font-semibold">
-            Chia sẻ
+            {t('share.title')}
           </h2>
           <button
             type="button"
             onClick={onClose}
             className="absolute right-4 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10"
-            aria-label="Đóng"
+            aria-label={t('common.close')}
           >
             <IoClose className="text-[22px]" aria-hidden />
           </button>
@@ -428,7 +433,7 @@ export function VideoShareModal({
                     disabled={!canSend}
                     onToggle={() => {
                       if (!canSend) {
-                        showToast("Cuộc trò chuyện này hiện chưa thể gửi");
+                        showToast(t('share.conversationUnavailable'));
                         return;
                       }
                       setSelectedConversationIds((prev) =>
@@ -460,7 +465,7 @@ export function VideoShareModal({
               ) : null}
               <ShareModalScrollRow className="px-1">
                 <ShareCircleButton
-                  label="Sao chép"
+                  label={t('share.copy')}
                   bgClass="bg-[#0075DC]"
                   icon={<IoLink className="text-[30px]" aria-hidden />}
                   disabled={busy}
@@ -509,7 +514,7 @@ export function VideoShareModal({
                   onClick={() => void openPlatform("email")}
                 />
                 <ShareCircleButton
-                  label="Nhúng"
+                  label={t('share.embed')}
                   bgClass="bg-[#20D5EC]"
                   icon={<IoCodeSlash className="text-[30px] text-black" aria-hidden />}
                   disabled={busy}
@@ -522,7 +527,7 @@ export function VideoShareModal({
               <input
                 value={directNote}
                 onChange={(e) => setDirectNote(e.target.value)}
-                placeholder="Viết một tin nhắn..."
+                placeholder={t('share.writeMessage')}
                 className="h-11 w-full rounded-none border-0 bg-transparent px-0 text-sm text-zinc-200 placeholder:text-zinc-500 outline-none"
               />
               <div className="mt-auto flex justify-end pt-3">
@@ -532,7 +537,7 @@ export function VideoShareModal({
                   disabled={busy}
                   className="h-10 min-w-[56px] cursor-pointer rounded-md bg-[#fe2c55] px-3 text-sm font-semibold text-white transition hover:bg-[#db2449] disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  Gửi
+                  {t('share.send')}
                 </button>
               </div>
             </div>

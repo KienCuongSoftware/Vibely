@@ -83,9 +83,9 @@ import {
 import { Seo } from "@/shared/seo/Seo.jsx";
 import { videoObjectJsonLd } from "@/shared/seo/jsonLd.js";
 import { absoluteUrl } from "@/shared/seo/seoConfig.js";
+import { useTranslation } from "react-i18next";
 
 const DEFAULT_USER_AVATAR_URL = "/images/users/default-avatar.jpeg";
-const EXPLORE_PAGE_TITLE = "Khám phá - Tìm video bạn thích trên Vibely";
 
 function formatCompactCount(value) {
   const count = Number(value ?? 0);
@@ -208,6 +208,7 @@ function WatchPlaybackBar({
   onMutedChange,
   onTogglePip,
 }) {
+  const { t } = useTranslation();
   const trackRef = useRef(null);
   const scrubbingRef = useRef(false);
   const [videoFrame, setVideoFrame] = useState(null);
@@ -301,7 +302,7 @@ function WatchPlaybackBar({
         <div
           ref={trackRef}
           role="slider"
-          aria-label="Tiến độ phát"
+          aria-label={t('feed.progress')}
           aria-valuemin={0}
           aria-valuemax={Math.floor(duration) || 0}
           aria-valuenow={Math.floor(current)}
@@ -343,11 +344,11 @@ function WatchPlaybackBar({
           {formatWatchClock(current)}/{formatWatchClock(duration)}
         </span>
         <div className="flex shrink-0 items-center gap-0.5">
-          <TooltipHoverWrap tip="Trình phát nổi" placement="top" hoverOnly>
+          <TooltipHoverWrap tip={t('feedMenu.pip')} placement="top" hoverOnly>
             <button
               type="button"
               className={WATCH_BAR_ICON_BTN}
-              aria-label="Trình phát nổi"
+              aria-label={t('feedMenu.pip')}
               onClick={(e) => {
                 e.stopPropagation();
                 onTogglePip();
@@ -394,6 +395,7 @@ function WatchVolumeControl({
   onMutedChange,
   compact = false,
 }) {
+  const { t } = useTranslation();
   const onSlider = (e) => {
     e.stopPropagation();
     const v = Number(e.target.value);
@@ -436,7 +438,7 @@ function WatchVolumeControl({
           max={1}
           step={0.01}
           value={volume}
-          aria-label="Âm lượng"
+          aria-label={t('feed.volume')}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(volume * 100)}
@@ -453,7 +455,7 @@ function WatchVolumeControl({
             ? WATCH_BAR_ICON_BTN
             : `${WATCH_CHROME_BTN} bg-black/55 hover:bg-black/75`
         }
-        aria-label={muted ? "Bật âm thanh" : "Tắt âm thanh"}
+        aria-label={muted ? t('feed.unmute') : t('feed.mute')}
         aria-pressed={!muted}
         onClick={toggleMute}
       >
@@ -605,6 +607,7 @@ function WatchCreatorGridMedia({ item, playing = false }) {
 }
 
 function WatchCreatorVideoTile({ video, isPlaying, onSelect }) {
+  const { t } = useTranslation();
   const [hovering, setHovering] = useState(false);
   const previewPlaying = !isPlaying && hovering;
   const id = videoPublicIdOf(video);
@@ -619,7 +622,7 @@ function WatchCreatorVideoTile({ video, isPlaying, onSelect }) {
       }}
       onMouseLeave={() => setHovering(false)}
       className="group relative aspect-9/16 w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600 disabled:cursor-not-allowed"
-      aria-label={isPlaying ? "Hiện đang phát" : "Xem video"}
+      aria-label={isPlaying ? t('watch.nowPlaying') : t('watch.watchVideo')}
       aria-current={isPlaying ? "true" : undefined}
     >
       <div className="absolute inset-0">
@@ -629,7 +632,7 @@ function WatchCreatorVideoTile({ video, isPlaying, onSelect }) {
         <div className="absolute inset-0 z-2 flex flex-col items-center justify-center bg-black/55 px-2 text-center">
           <WatchNowPlayingWave />
           <span className="text-[11px] font-semibold leading-tight text-white">
-            Hiện đang phát
+            {t('watch.nowPlaying')}
           </span>
         </div>
       ) : null}
@@ -667,6 +670,7 @@ function orderCreatorGridWithPlayingFirst(queue, playingPublicId) {
 }
 
 export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
+  const { t } = useTranslation();
   const useSuggestedSidebar = sidebarVariant === "suggested";
   const { username: usernameParam, publicId: publicIdParam } = useParams();
   const location = useLocation();
@@ -1010,7 +1014,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
       await downloadWatermarkedVideo(publicId, username, { token });
     } catch (error) {
       window.alert(
-        error instanceof Error ? error.message : "Không tải được video.",
+        error instanceof Error ? error.message : t('watch.loadFailed'),
       );
     } finally {
       setVideoDownloadBusy(false);
@@ -1286,7 +1290,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
   useEffect(() => {
     if (!publicIdFromRoute) {
       setLoading(false);
-      setLoadError("Liên kết video không hợp lệ.");
+      setLoadError(t('watch.invalidLink'));
       setVideo(null);
       return;
     }
@@ -1334,7 +1338,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
         if (!optimistic) {
           setVideo(null);
           setLoadError(
-            e instanceof Error ? e.message : "Không tải được video.",
+            e instanceof Error ? e.message : t('watch.loadFailed'),
           );
         }
       })
@@ -1445,7 +1449,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
       .catch((e) => {
         if (!cancelled) {
           setCommentsError(
-            e instanceof Error ? e.message : "Không tải bình luận.",
+            e instanceof Error ? e.message : t('watch.loadCommentsFailed'),
           );
           setComments([]);
         }
@@ -1480,7 +1484,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
       patchVideo({ commentCount: prevCc + 1 });
     } catch (e) {
       setCommentPostError(
-        e instanceof Error ? e.message : "Không gửi được bình luận.",
+        e instanceof Error ? e.message : t('watch.sendCommentFailed'),
       );
     }
   }, [commentDraft, panelVideo, patchVideo, token]);
@@ -1490,7 +1494,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
   const seoVideoTitleSource =
     String(panelVideo?.title ?? "").trim() ||
     watchPageCaption(panelVideo) ||
-    (isFromExplore ? EXPLORE_PAGE_TITLE : "Video trên Vibely");
+    (isFromExplore ? t("watchPage.explorePageTitle") : t("watchPage.pageTitle"));
   const seoVideoTitle = seoVideoTitleSource.endsWith("| Vibely")
     ? seoVideoTitleSource
     : `${seoVideoTitleSource} | Vibely`;
@@ -1908,7 +1912,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
     req
       .then(() => {
         if (next) {
-          setRepostToast("Đã đăng lại");
+          setRepostToast(t('watch.repostedToast'));
           window.setTimeout(() => setRepostToast(""), 2500);
         }
       })
@@ -1940,7 +1944,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
     >
       <Seo
         title={seoVideoTitle}
-        description="Xem video trên Vibely."
+        description={t('watch.seoDescription')}
         canonical={seoVideoCanonical}
         image={seoVideoImage}
         type="video.other"
@@ -1976,7 +1980,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                       to={backPath}
                       className="mt-4 inline-block rounded-full border border-zinc-600 px-4 py-2 text-sm font-semibold text-zinc-200 hover:bg-zinc-900"
                     >
-                      Quay lại
+                      {t('common.back')}
                     </Link>
                   </div>
                 </div>
@@ -2102,14 +2106,14 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                   {pipActive ? (
                     <div className="absolute inset-0 z-25 flex flex-col items-center justify-center gap-4 bg-black px-6 text-center">
                       <p className="text-lg font-semibold text-white">
-                        Đã bật Trình phát nổi
+                        {t('watch.pipEnabled')}
                       </p>
                       <button
                         type="button"
                         className="rounded-lg bg-zinc-800 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-700"
                         onClick={() => void exitWatchPictureInPicture()}
                       >
-                        Tắt
+                        {t('watch.turnOff')}
                       </button>
                     </div>
                   ) : null}
@@ -2139,7 +2143,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
               ) : !loading ? (
                 <div className="flex h-full items-center justify-center">
                   <p className="text-sm text-zinc-500">
-                    Video chưa sẵn sàng phát.
+                    {t('watch.videoNotReady')}
                   </p>
                 </div>
               ) : null}
@@ -2149,7 +2153,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                   className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
                   aria-busy="true"
                   aria-label={
-                    loading ? "Đang tải video" : "Đang tải dữ liệu phát"
+                    loading ? t('watch.loadingVideo') : t('watch.loadingPlayback')
                   }
                 >
                   <WatchSpinner />
@@ -2159,11 +2163,11 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
 
             <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex h-16 items-center bg-linear-to-b from-black/70 via-black/30 to-transparent px-6 sm:h-18 sm:px-10">
               <div className="pointer-events-auto flex w-11 shrink-0 justify-start sm:w-12">
-                <TooltipHoverWrap tip="Đóng" hoverOnly>
+                <TooltipHoverWrap tip={t('common.close')} hoverOnly>
                   <button
                     type="button"
                     className={WATCH_CHROME_BTN}
-                    aria-label="Đóng"
+                    aria-label={t('common.close')}
                     onClick={() => navigate(backPath)}
                   >
                     <IoClose />
@@ -2186,7 +2190,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                 <button
                   type="button"
                   className={`${WATCH_CHROME_BTN} pointer-events-auto ${hasPrevWatch && !exploreNavBusy ? "" : "cursor-not-allowed opacity-45"}`}
-                  aria-label="Video trước"
+                  aria-label={t('feed.prevVideo')}
                   disabled={!hasPrevWatch || exploreNavBusy}
                   onClick={() => moveWatchVideo("prev")}
                 >
@@ -2244,7 +2248,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                           >
                             {String(
                               panelVideo.authorDisplayName ?? "",
-                            ).trim() || "Nhà sáng tạo"}
+                            ).trim() || t('common.creator')}
                           </Link>
                           <span className="shrink-0 text-xs text-zinc-500">
                             {formatRelativeTimeVi(panelVideo.createdAt)}
@@ -2268,7 +2272,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                           {followBusy
                             ? "…"
                             : authorFollowed
-                              ? "Đã follow"
+                              ? t('watch.followed')
                               : "Follow"}
                         </button>
                       ) : null}
@@ -2310,19 +2314,19 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                         aria-hidden
                       />
                       <span className="truncate">
-                        nhạc nền - @{authorVibelyId}
+                        {t('watch.bgMusic', { id: authorVibelyId })}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex shrink-0 flex-nowrap items-center gap-x-4 overflow-visible border-b border-zinc-800 px-4 py-3">
-                  <WatchActionTip tip="Thích">
+                  <WatchActionTip tip={t('feed.like')}>
                     <button
                       type="button"
                       className={`${ACTION_ROW} shrink-0`}
                       aria-pressed={liked}
-                      aria-label={liked ? "Bỏ thích" : "Thích"}
+                      aria-label={liked ? t('feed.unlike') : t('feed.like')}
                       onClick={() => {
                         if (!token || !isWatchableVideo(panelVideo)) {
                           if (!token) navigate("/login");
@@ -2352,11 +2356,11 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                       </span>
                     </button>
                   </WatchActionTip>
-                  <WatchActionTip tip="Bình luận">
+                  <WatchActionTip tip={t('feed.comment')}>
                     <button
                       type="button"
                       className={`${ACTION_ROW} shrink-0`}
-                      aria-label="Bình luận"
+                      aria-label={t('feed.comment')}
                       onClick={focusCommentField}
                     >
                       <IoChatbubbleEllipses
@@ -2368,17 +2372,17 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                       </span>
                     </button>
                   </WatchActionTip>
-                  <WatchActionTip tip="Lưu">
+                  <WatchActionTip tip={t('watch.saveTip')}>
                     <button
                       type="button"
                       className={`${ACTION_ROW} shrink-0`}
                       aria-pressed={bookmarked}
                       title={
                         bookmarked
-                          ? "Đã lưu. Xem tại Hồ sơ → Yêu thích → Bài đăng."
-                          : "Lưu vào Yêu thích"
+                          ? t('watch.savedTip')
+                          : t('watch.saveToFavorites')
                       }
-                      aria-label={bookmarked ? "Bỏ lưu" : "Lưu"}
+                      aria-label={bookmarked ? t('watch.unsave') : t('watch.save')}
                       onClick={() => {
                         if (!token || !isWatchableVideo(panelVideo)) {
                           if (!token) navigate("/login");
@@ -2438,7 +2442,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                       onClick={() => void copyShareLink()}
                       className="shrink-0 rounded-md bg-zinc-800 px-2 py-1 text-xs font-semibold text-zinc-100 hover:bg-zinc-700"
                     >
-                      {shareCopied ? "Đã chép" : "Sao chép"}
+                      {shareCopied ? t('share.copied') : t('share.copyLink')}
                     </button>
                   </div>
                 </div>
@@ -2458,7 +2462,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                     }`}
                     onClick={() => setWatchSidebarTab("comments")}
                   >
-                    Bình luận{" "}
+                    {t('watch.commentsPanel')}{" "}
                     <span className="font-normal text-zinc-400">
                       ({formatCompactCount(panelVideo.commentCount ?? 0)})
                     </span>
@@ -2488,8 +2492,8 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                     }
                   >
                     {useSuggestedSidebar
-                      ? "Bạn có thể thích"
-                      : "Video của nhà sáng tạo"}
+                      ? t('watch.youMayLike')
+                      : t('watch.creatorVideos')}
                   </button>
                 </div>
 
@@ -2509,11 +2513,11 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                   {watchSidebarTab === "suggested" ? (
                     suggestedLoading ? (
                       <p className="py-10 text-center text-sm text-zinc-500">
-                        Đang tải gợi ý…
+                        {t('watch.loadingSuggestions')}
                       </p>
                     ) : suggestedVideos.length === 0 ? (
                       <p className="py-10 text-center text-sm text-zinc-500">
-                        Chưa có gợi ý.
+                        {t('watch.noSuggestions')}
                       </p>
                     ) : (
                       <ul className="grid grid-cols-2 gap-2">
@@ -2534,16 +2538,16 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                   ) : watchSidebarTab === "creator" ? (
                     creatorQueueLoading ? (
                       <p className="py-10 text-center text-sm text-zinc-500">
-                        Đang tải video…
+                        {t('watch.loadingVideos')}
                       </p>
                     ) : creatorQueue.length === 0 ? (
                       <div className="flex flex-col items-center py-10 text-center text-sm text-zinc-500">
-                        <p>Chưa có video công khai.</p>
+                        <p>{t('watch.noPublicVideos')}</p>
                         <Link
                           to={authorProfilePath}
                           className="mt-3 text-xs font-semibold text-zinc-300 hover:text-white hover:underline"
                         >
-                          Xem hồ sơ
+                          {t('common.viewProfile')}
                         </Link>
                       </div>
                     ) : (
@@ -2566,7 +2570,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                     )
                   ) : commentsLoading ? (
                     <p className="py-6 text-center text-sm text-zinc-500">
-                      Đang tải bình luận…
+                      {t('watch.loadingComments')}
                     </p>
                   ) : commentsError ? (
                     <p className="py-6 text-center text-sm text-red-400">
@@ -2574,9 +2578,9 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                     </p>
                   ) : comments.length === 0 ? (
                     <div className="flex flex-col items-center py-10 text-center text-sm text-zinc-500">
-                      <p>Chưa có bình luận.</p>
+                      <p>{t('watch.noComments')}</p>
                       <p className="mt-1 text-xs">
-                        Hãy mở đầu cuộc trò chuyện.
+                        {t('watch.startConversation')}
                       </p>
                     </div>
                   ) : (
@@ -2614,7 +2618,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                   <div className="shrink-0 border-t border-zinc-800 px-3 pt-2 pb-3">
                     {token && panelVideo?.viewerCanComment === false ? (
                       <p className="py-3 text-center text-sm leading-relaxed text-zinc-400">
-                        Nhà sáng tạo này đã giới hạn quyền truy cập bình luận
+                        {t('comments.restricted')}
                       </p>
                     ) : (
                       <>
@@ -2664,8 +2668,8 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                               }}
                               placeholder={
                                 token
-                                  ? "Thêm bình luận..."
-                                  : "Đăng nhập để bình luận..."
+                                  ? t('comments.add')
+                                  : t('comments.loginToComment')
                               }
                               disabled={!token || !isWatchableVideo(panelVideo)}
                               className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-[4.75rem] text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-zinc-600 disabled:opacity-50"
@@ -2692,7 +2696,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                           <button
                             type="button"
                             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600 text-white shadow-md transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
-                            aria-label="Gửi bình luận"
+                            aria-label={t('comments.sendComment')}
                             disabled={
                               !commentDraft.trim() ||
                               !token ||

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from "react-i18next";
 import {
   IoClose,
   IoShieldCheckmarkOutline,
@@ -42,27 +43,28 @@ function formatBanReasonDisplay(raw) {
     text.includes('(?:') ||
     /caption spam/i.test(text)
   ) {
-    return 'ngôn từ tục tĩu / nội dung tình dục trong caption hoặc mô tả video'
+    return t('admin.banned.sampleReason')
   }
   return text
 }
 
 function UnbanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
+  const { t } = useTranslation()
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">
       <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/60">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-bold text-zinc-100">Bỏ cấm tài khoản</h2>
+            <h2 className="text-lg font-bold text-zinc-100">{t('admin.banned.unban')}</h2>
             <p className="mt-1 text-sm text-zinc-500">
-              Người dùng sẽ có thể đăng nhập lại sau khi bỏ cấm.
+              {t('admin.banned.unbanHint')}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="rounded-full p-2 text-zinc-500 transition hover:bg-zinc-900 hover:text-zinc-100"
-            aria-label="Đóng"
+            aria-label={t("admin.close")}
           >
             <IoClose className="text-xl" aria-hidden />
           </button>
@@ -70,13 +72,13 @@ function UnbanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
 
         <div className="mt-5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
           <p>
-            Bạn sắp bỏ cấm <strong>{user?.displayName || 'Người dùng Vibely'}</strong> (@
+            {t('admin.banned.unbanAbout')} <strong>{user?.displayName || t("admin.vibelyUser")}</strong> (@
             {user?.username || 'unknown'}).
           </p>
-          <p className="mt-2 break-all text-emerald-200/90">Email: {user?.email || 'Không có email'}</p>
+          <p className="mt-2 break-all text-emerald-200/90">Email: {user?.email || t("admin.noEmail")}</p>
           {user?.banReason ? (
             <p className="mt-3 text-emerald-200/90">
-              Lý do cấm trước đó:{' '}
+              {t('admin.banned.previousReason')}{' '}
               <span className="text-emerald-50">{formatBanReasonDisplay(user.banReason)}</span>
             </p>
           ) : null}
@@ -91,7 +93,7 @@ function UnbanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
             disabled={submitting}
             className="rounded-xl border border-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-300 transition hover:bg-zinc-900 disabled:opacity-50"
           >
-            Hủy
+            {t("admin.cancel")}
           </button>
           <button
             type="button"
@@ -99,7 +101,7 @@ function UnbanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
             disabled={submitting}
             className="rounded-xl border border-zinc-800 bg-black px-5 py-3 text-sm font-bold text-zinc-100 transition hover:border-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {submitting ? 'Đang xử lý...' : 'Bỏ cấm tài khoản'}
+            {submitting ? t("admin.banned.processing") : t('admin.banned.unban')}
           </button>
         </div>
       </div>
@@ -108,6 +110,7 @@ function UnbanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
 }
 
 export function AdminBannedUsersPage() {
+  const { t } = useTranslation()
   const { token, user, authReady } = useAuth()
   const isAdmin = String(user?.role ?? '').toUpperCase() === 'ADMIN'
   const [page, setPage] = useState(0)
@@ -122,7 +125,7 @@ export function AdminBannedUsersPage() {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    document.title = 'Vibely Admin | Tài khoản bị cấm'
+    document.title = t("admin.docTitle.banned")
   }, [])
 
   const loadBannedUsers = useCallback(async () => {
@@ -142,7 +145,7 @@ export function AdminBannedUsersPage() {
       setUsers([])
       setTotal(0)
       setHasNext(false)
-      setError(e.message ?? 'Không tải được danh sách tài khoản bị cấm.')
+      setError(e.message ?? t('admin.banned.loadFailed'))
     } finally {
       setLoading(false)
     }
@@ -181,7 +184,7 @@ export function AdminBannedUsersPage() {
         await loadBannedUsers()
       }
     } catch (e) {
-      setModalError(e.message ?? 'Không bỏ cấm được tài khoản.')
+      setModalError(e.message ?? t('admin.banned.unbanFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -190,18 +193,18 @@ export function AdminBannedUsersPage() {
   return (
     <AdminLayout
       active="banned"
-      title="Danh sách tài khoản bị cấm"
-      subtitle="Theo dõi tài khoản đã bị cấm, lý do cấm và thời điểm thực hiện."
+      title={t("admin.banned.title")}
+      subtitle={t("admin.banned.subtitle")}
     >
       {!authReady || loading ? (
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center text-sm text-zinc-400">
-          Đang tải danh sách tài khoản bị cấm...
+          {t('admin.banned.loading')}
         </section>
       ) : !isAdmin ? (
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center">
-          <p className="text-lg font-semibold text-zinc-100">Bạn không có quyền truy cập Admin</p>
+          <p className="text-lg font-semibold text-zinc-100">{t('admin.noAccess')}</p>
           <p className="mt-2 text-sm text-zinc-400">
-            Tài khoản hiện tại cần vai trò Quản trị viên để xem khu vực quản trị.
+            {t('admin.noAccessHint')}
           </p>
         </section>
       ) : (
@@ -210,14 +213,14 @@ export function AdminBannedUsersPage() {
             <div className="grid gap-3 xl:grid-cols-[minmax(160px,220px)_minmax(320px,1fr)] xl:items-center">
               <div className="min-w-0">
                 <p className="text-sm font-bold uppercase tracking-wide text-zinc-200">
-                  Tổng tài khoản bị cấm: {total}
+                  {t('admin.banned.total', { count: total })}
                 </p>
               </div>
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="h-12 w-full rounded-full border border-zinc-700 bg-zinc-950 px-5 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-500 focus:border-red-500"
-                placeholder="Tìm theo tên, email, Vibely ID hoặc lý do cấm..."
+                placeholder={t("admin.banned.searchPlaceholder")}
               />
             </div>
 
@@ -227,11 +230,11 @@ export function AdminBannedUsersPage() {
               <table className="w-full min-w-[1080px] border-collapse text-left text-sm text-zinc-200">
                 <thead>
                   <tr className="border-b border-zinc-800 text-xs text-zinc-500">
-                    <th className="py-3 pr-4 font-medium">Người dùng</th>
+                    <th className="py-3 pr-4 font-medium">{t('admin.table.user')}</th>
                     <th className="px-3 py-3 font-medium">Email</th>
-                    <th className="px-3 py-3 font-medium">Lý do cấm</th>
-                    <th className="px-3 py-3 font-medium">Thời điểm cấm</th>
-                    <th className="px-3 py-3 text-right font-medium">Thao tác</th>
+                    <th className="px-3 py-3 font-medium">{t('admin.table.banReason')}</th>
+                    <th className="px-3 py-3 font-medium">{t('admin.table.bannedAt')}</th>
+                    <th className="px-3 py-3 text-right font-medium">{t('admin.table.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -252,7 +255,7 @@ export function AdminBannedUsersPage() {
                             />
                             <div className="min-w-0">
                               <p className="truncate font-semibold text-zinc-100">
-                                {item.displayName || 'Người dùng Vibely'}
+                                {item.displayName || t("admin.vibelyUser")}
                               </p>
                               <p className="mt-0.5 truncate text-xs text-zinc-500">@{item.username || 'unknown'}</p>
                             </div>
@@ -282,7 +285,7 @@ export function AdminBannedUsersPage() {
                               className="inline-flex h-9 items-center gap-2 rounded-full border border-zinc-700 px-4 text-xs font-semibold text-zinc-200 transition hover:border-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-300"
                             >
                               <IoShieldCheckmarkOutline className="text-base" aria-hidden />
-                              Bỏ cấm
+                              {t("admin.banned.unban")}
                             </button>
                           </div>
                         </td>
@@ -295,7 +298,7 @@ export function AdminBannedUsersPage() {
 
             {filteredUsers.length === 0 ? (
               <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-12 text-center text-sm text-zinc-500">
-                Không có tài khoản bị cấm phù hợp.
+                {t('admin.banned.empty')}
               </div>
             ) : null}
 

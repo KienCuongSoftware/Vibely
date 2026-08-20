@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   IoClose,
   IoCompassOutline,
@@ -65,6 +66,7 @@ export function MobileFeedTopBar({
   hideLive = false,
   hideSearch = false,
 }) {
+  const { t } = useTranslation();
   const feedTabClass = (tab) =>
     `cursor-pointer pb-0.5 ${
       activeFeedTab === tab
@@ -79,7 +81,7 @@ export function MobileFeedTopBar({
           <button
             type="button"
             className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-2xl text-white"
-            aria-label="Quay lại"
+            aria-label={t("nav.back")}
             onClick={onBack}
           >
             <IoClose aria-hidden />
@@ -88,7 +90,7 @@ export function MobileFeedTopBar({
           <button
             type="button"
             className="flex h-9 w-11 cursor-pointer items-center justify-center"
-            aria-label="Live"
+            aria-label={t("nav.live")}
             onClick={onLiveTap}
           >
             <span className="flex h-5 w-7 items-center justify-center rounded border-[1.5px] border-white text-[8px] font-extrabold leading-none tracking-wide">
@@ -104,7 +106,7 @@ export function MobileFeedTopBar({
             <button
               type="button"
               className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-xl text-white"
-              aria-label="Tìm kiếm"
+              aria-label={t("nav.search")}
               onClick={onSearchTap}
             >
               <IoSearchOutline aria-hidden />
@@ -113,7 +115,7 @@ export function MobileFeedTopBar({
             <Link
               to="/search"
               className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-xl text-white"
-              aria-label="Tìm kiếm"
+              aria-label={t("nav.search")}
             >
               <IoSearchOutline aria-hidden />
             </Link>
@@ -128,21 +130,21 @@ export function MobileFeedTopBar({
             className={feedTabClass("friends")}
             onClick={() => onFeedTabChange?.("friends")}
           >
-            Bạn bè
+            {t("nav.friends")}
           </button>
           <button
             type="button"
             className={feedTabClass("following")}
             onClick={() => onFeedTabChange?.("following")}
           >
-            Đã follow
+            {t("nav.following")}
           </button>
           <button
             type="button"
             className={feedTabClass("for-you")}
             onClick={() => onFeedTabChange?.("for-you")}
           >
-            Đề xuất
+            {t("nav.forYou")}
           </button>
         </div>
       ) : (
@@ -165,6 +167,7 @@ export function MobileFeedBottomNav({
   onSelectMenu,
   activeId = "latest",
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const profilePath = buildProfilePath(token, user);
   const { chatInboxBadgeCount } = useChatInboxBadge();
@@ -189,7 +192,7 @@ export function MobileFeedBottomNav({
   return (
     <nav
       className="relative z-40 flex h-14 shrink-0 items-stretch border-t border-white/10 bg-black px-1 text-[10px] text-zinc-300"
-      aria-label="Điều hướng chính"
+      aria-label={t("mobileNav.mainNav")}
     >
       <button
         type="button"
@@ -197,7 +200,7 @@ export function MobileFeedBottomNav({
         onClick={() => go("latest")}
       >
         <IoHomeOutline className="text-[22px]" aria-hidden />
-        <span>Trang chủ</span>
+        <span>{t("mobileNav.home")}</span>
       </button>
       <button
         type="button"
@@ -205,13 +208,13 @@ export function MobileFeedBottomNav({
         onClick={() => (token ? go("explore") : navigate("/login"))}
       >
         <IoCompassOutline className="text-[22px]" aria-hidden />
-        <span>Khám phá</span>
+        <span>{t("nav.explore")}</span>
       </button>
       <button
         type="button"
         className="flex flex-1 cursor-pointer flex-col items-center justify-center gap-0.5"
         onClick={() => (token ? go("upload") : navigate("/login"))}
-        aria-label="Tải lên"
+        aria-label={t("nav.upload")}
       >
         <span className="relative flex h-9 w-10 items-center justify-center">
           <span
@@ -239,7 +242,7 @@ export function MobileFeedBottomNav({
             </span>
           ) : null}
         </span>
-        <span>Hộp thư</span>
+        <span>{t("mobileNav.inbox")}</span>
       </button>
       <button
         type="button"
@@ -247,7 +250,7 @@ export function MobileFeedBottomNav({
         onClick={() => (token ? go("profile") : navigate("/login"))}
       >
         <IoPersonOutline className="text-[22px]" aria-hidden />
-        <span>Hồ sơ</span>
+        <span>{t("nav.profile")}</span>
       </button>
     </nav>
   );
@@ -267,6 +270,7 @@ export function MobileFeedMenuDrawer({
   user,
   activeFeedTab = "for-you",
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [following, setFollowing] = useState([]);
   const [followingLoading, setFollowingLoading] = useState(false);
@@ -320,7 +324,7 @@ export function MobileFeedMenuDrawer({
       <button
         type="button"
         className="fixed inset-0 z-200 bg-black/45"
-        aria-label="Đóng menu"
+        aria-label={t("nav.close")}
         onClick={onClose}
       />
       <aside className="fixed inset-y-0 left-0 z-210 flex w-[min(320px,78vw)] flex-col overflow-y-auto bg-zinc-950 py-3 text-zinc-100 shadow-2xl">
@@ -328,7 +332,7 @@ export function MobileFeedMenuDrawer({
           <button
             type="button"
             className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-[22px] text-white"
-            aria-label="Đóng menu"
+            aria-label={t("nav.close")}
             onClick={onClose}
           >
             <IoMenu aria-hidden />
@@ -356,7 +360,7 @@ export function MobileFeedMenuDrawer({
               className={`text-[22px] ${activeFeedTab === "for-you" ? "text-[#fe2c55]" : "text-zinc-100"}`}
               aria-hidden
             />
-            Đề xuất
+            {t("nav.forYou")}
           </button>
           <button
             type="button"
@@ -371,7 +375,7 @@ export function MobileFeedMenuDrawer({
               className={`text-[22px] ${activeFeedTab === "following" ? "text-[#fe2c55]" : "text-zinc-100"}`}
               aria-hidden
             />
-            Đã follow
+            {t("nav.following")}
           </button>
         </nav>
 
@@ -379,20 +383,20 @@ export function MobileFeedMenuDrawer({
 
         <div className="px-4 pb-2">
           <h2 className="text-[15px] font-bold text-white">
-            Các tài khoản Đã follow
+            {t("followingPage.accountsTitle")}
           </h2>
         </div>
 
         <div className="min-h-0 flex-1 px-2 pb-6">
           {!token ? (
             <p className="px-3 py-4 text-[14px] leading-relaxed text-zinc-500">
-              Đăng nhập để xem các tài khoản bạn follow.
+              {t("followingPage.loginAccountsHint")}
             </p>
           ) : followingLoading ? (
-            <p className="px-3 py-4 text-[14px] text-zinc-500">Đang tải…</p>
+            <p className="px-3 py-4 text-[14px] text-zinc-500">{t("followingPage.loading")}</p>
           ) : following.length === 0 ? (
             <p className="px-3 py-4 text-[14px] leading-relaxed text-zinc-500">
-              Những tài khoản bạn follow sẽ xuất hiện tại đây
+              {t("followingPage.emptyAccounts")}
             </p>
           ) : (
             <ul className="space-y-0.5">

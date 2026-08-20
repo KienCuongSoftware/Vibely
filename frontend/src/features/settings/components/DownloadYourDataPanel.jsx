@@ -1,28 +1,29 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { IoArrowBack, IoDownloadOutline } from 'react-icons/io5'
 
 export const DATA_EXPORT_CATEGORIES = [
-  { id: 'reviews', label: 'Bài đánh giá vị trí' },
-  { id: 'posts', label: 'Bài đăng' },
-  { id: 'comments', label: 'Bình luận' },
+  { id: 'reviews', labelKey: 'settings.dataExport.categories.reviews' },
+  { id: 'posts', labelKey: 'settings.dataExport.categories.posts' },
+  { id: 'comments', labelKey: 'settings.dataExport.categories.comments' },
   {
     id: 'activity',
-    label: 'Hoạt động của bạn',
-    description: 'Bao gồm lịch sử xem và tìm kiếm, mức quan tâm về quảng cáo và hoạt động người Vibely cũng như hoạt động khác trên Vibely',
+    labelKey: 'settings.dataExport.categories.activity',
+    descriptionKey: 'settings.dataExport.categories.activityDesc',
   },
-  { id: 'profile', label: 'Hồ sơ và cài đặt' },
-  { id: 'likes', label: 'Lượt thích và mục Yêu thích' },
-  { id: 'live', label: 'Vibely LIVE' },
-  { id: 'shop', label: 'Vibely Shop' },
-  { id: 'direct_messages', label: 'Tin nhắn trực tiếp' },
-  { id: 'income', label: 'Ví Income+' },
+  { id: 'profile', labelKey: 'settings.dataExport.categories.profile' },
+  { id: 'likes', labelKey: 'settings.dataExport.categories.likes' },
+  { id: 'live', labelKey: 'settings.dataExport.categories.live' },
+  { id: 'shop', labelKey: 'settings.dataExport.categories.shop' },
+  { id: 'direct_messages', labelKey: 'settings.dataExport.categories.direct_messages' },
+  { id: 'income', labelKey: 'settings.dataExport.categories.income' },
 ]
 
-function formatExportDate(value) {
+function formatExportDate(value, locale) {
   if (!value) return ''
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return String(value)
-  return date.toLocaleDateString('vi-VN', {
+  return date.toLocaleDateString(locale || undefined, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -41,6 +42,7 @@ export function DownloadYourDataPanel({
   onSubmit,
   onCancel,
 }) {
+  const { t, i18n } = useTranslation()
   const [tab, setTab] = useState('request')
   const [format, setFormat] = useState('TXT')
   const [selected, setSelected] = useState(() => new Set())
@@ -55,6 +57,10 @@ export function DownloadYourDataPanel({
   )
 
   const allSelected = selected.size === DATA_EXPORT_CATEGORIES.length
+  const formats = [
+    { id: 'TXT', label: 'TXT', helpKey: 'settings.dataExport.formatTxtHelp' },
+    { id: 'JSON', label: 'JSON', helpKey: 'settings.dataExport.formatJsonHelp' },
+  ]
 
   const toggleCategory = (id) => {
     setSelected((prev) => {
@@ -75,22 +81,48 @@ export function DownloadYourDataPanel({
 
   const canSubmit = selected.size > 0 && !submitting && !processing
 
+  const currentRequestBlock = processing ? (
+    <div className="rounded-xl bg-zinc-900/80 px-4 py-4">
+      <p className="text-sm font-semibold text-zinc-100">{t('settings.dataExport.currentRequest')}</p>
+      <div className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-zinc-950/80 px-3 py-3">
+        <div>
+          <p className="text-sm text-zinc-100">
+            {t('settings.dataExport.requestedOn', {
+              date: formatExportDate(processing.createdAt, i18n.language),
+            })}
+          </p>
+          <p className="mt-1 text-xs text-zinc-500">{t('settings.dataExport.allData')}</p>
+        </div>
+        <button
+          type="button"
+          disabled={submitting}
+          onClick={() => onCancel?.(processing.id)}
+          className="rounded-full border border-zinc-700 px-4 py-1.5 text-sm text-zinc-200 transition hover:bg-zinc-800 disabled:opacity-50"
+        >
+          {t('common.cancel')}
+        </button>
+      </div>
+      {tab === 'request' && pastRequests.length > 0 ? (
+        <p className="mt-4 text-sm font-semibold text-zinc-100">
+          {t('settings.dataExport.previousRequests')}
+        </p>
+      ) : null}
+    </div>
+  ) : null
+
   return (
     <div className="flex min-h-[520px] flex-col">
       <button
         type="button"
         onClick={onBack}
         className="mb-5 flex h-10 w-10 items-center justify-center rounded-full text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
-        aria-label="Quay lại"
+        aria-label={t('common.back')}
       >
         <IoArrowBack className="text-xl" aria-hidden />
       </button>
 
-      <h1 className="text-2xl font-bold text-zinc-100">Tải về dữ liệu Vibely</h1>
-      <p className="mt-2 text-sm leading-relaxed text-zinc-500">
-        Bạn có thể yêu cầu cung cấp bản sao dữ liệu của mình bất kỳ lúc nào để sao lưu tài khoản
-        hoặc xuất dữ liệu đó sang các dịch vụ khác.
-      </p>
+      <h1 className="text-2xl font-bold text-zinc-100">{t('settings.dataExport.title')}</h1>
+      <p className="mt-2 text-sm leading-relaxed text-zinc-500">{t('settings.dataExport.intro')}</p>
 
       <div className="mt-6 flex border-b border-zinc-800">
         <button
@@ -102,7 +134,7 @@ export function DownloadYourDataPanel({
               : 'text-zinc-500 hover:text-zinc-300'
           }`}
         >
-          Yêu cầu dữ liệu
+          {t('settings.dataExport.tabRequest')}
         </button>
         <button
           type="button"
@@ -113,7 +145,7 @@ export function DownloadYourDataPanel({
               : 'text-zinc-500 hover:text-zinc-300'
           }`}
         >
-          Tải dữ liệu về
+          {t('settings.dataExport.tabDownloads')}
         </button>
       </div>
 
@@ -124,38 +156,12 @@ export function DownloadYourDataPanel({
       {tab === 'request' ? (
         <div className="mt-5 flex min-h-0 flex-1 flex-col">
           {processing ? (
-            <div className="rounded-xl bg-zinc-900/80 px-4 py-4">
-              <p className="text-sm font-semibold text-zinc-100">Yêu cầu hiện tại</p>
-              <div className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-zinc-950/80 px-3 py-3">
-                <div>
-                  <p className="text-sm text-zinc-100">
-                    Đã yêu cầu vào {formatExportDate(processing.createdAt)}
-                  </p>
-                  <p className="mt-1 text-xs text-zinc-500">
-                    Tất cả dữ liệu hiện có trên Vibely
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => onCancel?.(processing.id)}
-                  className="rounded-full border border-zinc-700 px-4 py-1.5 text-sm text-zinc-200 transition hover:bg-zinc-800 disabled:opacity-50"
-                >
-                  Hủy
-                </button>
-              </div>
-              {pastRequests.length > 0 ? (
-                <p className="mt-4 text-sm font-semibold text-zinc-100">Yêu cầu trước đó</p>
-              ) : null}
-            </div>
+            currentRequestBlock
           ) : (
             <>
-              <p className="text-sm font-semibold text-zinc-100">Chọn định dạng tập tin</p>
+              <p className="text-sm font-semibold text-zinc-100">{t('settings.dataExport.chooseFormat')}</p>
               <div className="mt-2 space-y-1">
-                {[
-                  { id: 'TXT', label: 'TXT', help: 'Tập tin văn bản dễ đọc' },
-                  { id: 'JSON', label: 'JSON', help: 'Cho phép các dịch vụ khác nhập tin của bạn' },
-                ].map((item) => {
+                {formats.map((item) => {
                   const checked = format === item.id
                   return (
                     <button
@@ -166,7 +172,7 @@ export function DownloadYourDataPanel({
                     >
                       <span>
                         <span className="block text-sm font-medium text-zinc-100">{item.label}</span>
-                        <span className="mt-0.5 block text-xs text-zinc-500">{item.help}</span>
+                        <span className="mt-0.5 block text-xs text-zinc-500">{t(item.helpKey)}</span>
                       </span>
                       <span
                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
@@ -183,10 +189,8 @@ export function DownloadYourDataPanel({
 
               <div className="mt-5 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-zinc-100">Chọn dữ liệu cần tải về</p>
-                  <p className="mt-0.5 text-xs text-zinc-500">
-                    Chọn ứng dụng và dữ liệu bạn muốn đưa vào tập tin.
-                  </p>
+                  <p className="text-sm font-semibold text-zinc-100">{t('settings.dataExport.chooseData')}</p>
+                  <p className="mt-0.5 text-xs text-zinc-500">{t('settings.dataExport.chooseDataHint')}</p>
                 </div>
               </div>
 
@@ -195,7 +199,10 @@ export function DownloadYourDataPanel({
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-zinc-100">Vibely</span>
                     <span className="text-xs text-zinc-500">
-                      {selected.size}/{DATA_EXPORT_CATEGORIES.length} đã chọn
+                      {t('settings.dataExport.selectedCount', {
+                        selected: selected.size,
+                        total: DATA_EXPORT_CATEGORIES.length,
+                      })}
                     </span>
                   </div>
                   <button
@@ -203,7 +210,9 @@ export function DownloadYourDataPanel({
                     onClick={toggleAll}
                     className="text-sm font-semibold text-red-400 transition hover:text-red-300"
                   >
-                    {allSelected ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+                    {allSelected
+                      ? t('settings.dataExport.deselectAll')
+                      : t('settings.dataExport.selectAll')}
                   </button>
                 </div>
                 <ul className="max-h-[320px] space-y-1 overflow-y-auto scrollbar-none">
@@ -213,10 +222,10 @@ export function DownloadYourDataPanel({
                       <li key={item.id}>
                         <label className="flex cursor-pointer items-start justify-between gap-3 rounded-lg px-2 py-2.5 transition hover:bg-zinc-800/70">
                           <span className="min-w-0">
-                            <span className="block text-sm text-zinc-100">{item.label}</span>
-                            {item.description ? (
+                            <span className="block text-sm text-zinc-100">{t(item.labelKey)}</span>
+                            {item.descriptionKey ? (
                               <span className="mt-0.5 block text-xs leading-relaxed text-zinc-500">
-                                {item.description}
+                                {t(item.descriptionKey)}
                               </span>
                             ) : null}
                           </span>
@@ -251,48 +260,32 @@ export function DownloadYourDataPanel({
                   : 'cursor-not-allowed bg-red-500/35 text-white/70'
             }`}
           >
-            {processing ? 'Đang xử lý yêu cầu' : submitting ? 'Đang gửi…' : 'Yêu cầu dữ liệu'}
+            {processing
+              ? t('settings.dataExport.processingRequest')
+              : submitting
+                ? t('settings.dataExport.submitting')
+                : t('settings.dataExport.requestData')}
           </button>
         </div>
       ) : (
         <div className="mt-8 flex flex-1 flex-col">
           {loading ? (
-            <p className="text-center text-sm text-zinc-500">Đang tải…</p>
+            <p className="text-center text-sm text-zinc-500">{t('common.loading')}</p>
           ) : processing ? (
-            <div className="rounded-xl bg-zinc-900/80 px-4 py-4">
-              <p className="text-sm font-semibold text-zinc-100">Yêu cầu hiện tại</p>
-              <div className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-zinc-950/80 px-3 py-3">
-                <div>
-                  <p className="text-sm text-zinc-100">
-                    Đã yêu cầu vào {formatExportDate(processing.createdAt)}
-                  </p>
-                  <p className="mt-1 text-xs text-zinc-500">
-                    Tất cả dữ liệu hiện có trên Vibely
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => onCancel?.(processing.id)}
-                  className="rounded-full border border-zinc-700 px-4 py-1.5 text-sm text-zinc-200 transition hover:bg-zinc-800 disabled:opacity-50"
-                >
-                  Hủy
-                </button>
-              </div>
-            </div>
+            currentRequestBlock
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center px-4 text-center">
               <IoDownloadOutline className="text-5xl text-zinc-600" aria-hidden />
-              <p className="mt-4 text-base font-semibold text-zinc-100">Chưa có yêu cầu nào</p>
-              <p className="mt-1 text-sm text-zinc-500">
-                Bắt đầu gửi yêu cầu tải dữ liệu của bạn về.
+              <p className="mt-4 text-base font-semibold text-zinc-100">
+                {t('settings.dataExport.emptyTitle')}
               </p>
+              <p className="mt-1 text-sm text-zinc-500">{t('settings.dataExport.emptyHint')}</p>
               <button
                 type="button"
                 onClick={() => setTab('request')}
                 className="mt-8 rounded-md bg-red-500 px-8 py-3 text-sm font-semibold text-white transition hover:bg-red-500/90"
               >
-                Yêu cầu dữ liệu
+                {t('settings.dataExport.requestData')}
               </button>
             </div>
           )}
@@ -303,7 +296,7 @@ export function DownloadYourDataPanel({
               disabled
               className="mt-auto w-full cursor-not-allowed rounded-md bg-red-500/40 px-4 py-3 text-sm font-semibold text-white/80"
             >
-              Đang xử lý yêu cầu
+              {t('settings.dataExport.processingRequest')}
             </button>
           ) : null}
         </div>

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/shared/api/client'
 import { Sidebar } from '@/shared/components/Sidebar'
 import {
@@ -24,13 +25,14 @@ import { buildProfileVideoUrl, videoPublicIdOf } from '@/features/post/utils/vid
 import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
 import { buildMainSidebarMenuItems } from '@/shared/utils/mainSidebarMenuItems.js'
 
-const SEARCH_TABS = [
-  { id: 'top', label: 'Top' },
-  { id: 'users', label: 'Người dùng' },
-  { id: 'videos', label: 'Video' },
+const SEARCH_TAB_IDS = [
+  { id: 'top', labelKey: 'searchPage.tabTop' },
+  { id: 'users', labelKey: 'searchPage.tabUsers' },
+  { id: 'videos', labelKey: 'searchPage.tabVideos' },
 ]
 
 function SearchUserRow({ row, token, currentUserId }) {
+  const { t } = useTranslation()
   const avatar = row.avatarUrl?.trim() || DEFAULT_AVATAR_URL
   const isSelf =
     currentUserId != null && row.id != null && Number(row.id) === Number(currentUserId)
@@ -64,14 +66,14 @@ function SearchUserRow({ row, token, currentUserId }) {
           to={buildProfileHref(row.username)}
           className="shrink-0 rounded-full bg-[#fe2c55] px-6 py-1.5 text-[15px] font-semibold text-white transition hover:bg-[#ff4d70]"
         >
-          Theo dõi
+          {t('searchPage.follow')}
         </Link>
       ) : (
         <Link
           to={buildProfileHref(row.username)}
           className="shrink-0 rounded-full border border-zinc-600 px-5 py-1.5 text-[14px] font-semibold text-zinc-200 transition hover:border-zinc-400"
         >
-          Xem hồ sơ
+          {t('searchPage.viewProfile')}
         </Link>
       )}
     </li>
@@ -94,11 +96,12 @@ function SearchResultsBody({
   openVideo,
   mobileLayout = false,
 }) {
+  const { t } = useTranslation()
   if (!qFromUrl) {
     if (mobileLayout) return null
     return (
       <p className="py-20 text-center text-[15px] text-zinc-500">
-        Dùng ô tìm kiếm ở thanh bên trái để tìm người dùng và video.
+        {t('searchUi.sidebarHint')}
       </p>
     )
   }
@@ -114,9 +117,9 @@ function SearchResultsBody({
   if (!hasResults) {
     return (
       <div className="py-20 text-center">
-        <p className="text-[15px] font-medium text-zinc-300">Không có kết quả</p>
+        <p className="text-[15px] font-medium text-zinc-300">{t('searchUi.noResults')}</p>
         <p className="mt-2 text-sm text-zinc-500">
-          Thử từ khóa khác hoặc kiểm tra chính tả cho &quot;{qFromUrl}&quot;
+          {t('searchUi.tryOtherQuery', { query: qFromUrl })}
         </p>
       </div>
     )
@@ -126,7 +129,7 @@ function SearchResultsBody({
     <>
       {matchedTags.length > 0 && showVideos ? (
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <span className="text-[12px] font-medium text-zinc-500">Liên quan:</span>
+          <span className="text-[12px] font-medium text-zinc-500">{t('searchUi.related')}</span>
           {matchedTags.slice(0, 8).map((slug) => (
             <Link
               key={slug}
@@ -142,7 +145,7 @@ function SearchResultsBody({
       {showUsers ? (
         <section>
           {userPreview.length === 0 ? (
-            <p className="text-sm text-zinc-500">Không tìm thấy người dùng.</p>
+            <p className="text-sm text-zinc-500">{t('searchUi.noUsers')}</p>
           ) : (
             <ul className="space-y-0.5">
               {userPreview.map((row) => (
@@ -161,7 +164,7 @@ function SearchResultsBody({
       {showVideos ? (
         <section>
           {videoList.length === 0 ? (
-            <p className="text-sm text-zinc-500">Không tìm thấy video.</p>
+            <p className="text-sm text-zinc-500">{t('searchUi.noVideos')}</p>
           ) : (
             <ul className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
               {videoList.map((v) => {
@@ -181,6 +184,7 @@ function SearchResultsBody({
 }
 
 export function SearchResultsPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const { token, user, logout, authReady } = useAuth()
@@ -245,9 +249,9 @@ export function SearchResultsPage() {
 
   useEffect(() => {
     document.title = qFromUrl
-      ? `${qFromUrl} | Tìm kiếm trên Vibely`
-      : 'Tìm kiếm | Vibely'
-  }, [qFromUrl])
+      ? t('searchPage.pageTitleWithQuery', { query: qFromUrl })
+      : t('searchPage.pageTitle')
+  }, [qFromUrl, t])
 
   /** Rewrite URL if q still has uppercase / unsafe chars from old links. */
   useEffect(() => {
@@ -414,7 +418,7 @@ export function SearchResultsPage() {
             role="tablist"
             className="flex shrink-0 gap-6 border-b border-zinc-800 px-4"
           >
-            {SEARCH_TABS.map((tab) => (
+            {SEARCH_TAB_IDS.map((tab) => (
               <button
                 key={tab.id}
                 type="button"
@@ -427,7 +431,7 @@ export function SearchResultsPage() {
                 }`}
                 onClick={() => setActiveTab(tab.id)}
               >
-                {tab.label}
+                {t(tab.labelKey)}
               </button>
             ))}
           </div>
@@ -489,7 +493,7 @@ export function SearchResultsPage() {
         {qFromUrl ? (
           <header className="sticky top-0 z-20 border-b border-zinc-800/90 bg-black/95 px-6 pt-3 backdrop-blur-md">
             <div role="tablist" className="flex w-full gap-8">
-              {SEARCH_TABS.map((tab) => (
+              {SEARCH_TAB_IDS.map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
@@ -502,7 +506,7 @@ export function SearchResultsPage() {
                   }`}
                   onClick={() => setActiveTab(tab.id)}
                 >
-                  {tab.label}
+                  {t(tab.labelKey)}
                 </button>
               ))}
             </div>

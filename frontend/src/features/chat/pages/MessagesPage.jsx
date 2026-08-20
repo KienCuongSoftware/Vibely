@@ -146,7 +146,7 @@ export function MessagesPage() {
 
   useEffect(() => {
     const hasTooLongVideo = pendingMediaItems.some((item) => item.kind === "video" && item.tooLong);
-    setPendingMediaNotice(hasTooLongVideo ? "Vui lòng bỏ chọn tập tin dài hơn 15 giây" : "");
+    setPendingMediaNotice(hasTooLongVideo ? t("messagesThread.videoTooLong") : "");
   }, [pendingMediaItems]);
 
   useEffect(() => {
@@ -470,7 +470,7 @@ export function MessagesPage() {
       setDraft("");
       await syncActiveConversationMeta(activeConversationId);
     } catch (error) {
-      setComposerNotice(error?.message || "Không thể gửi tin nhắn lúc này.");
+      setComposerNotice(error?.message || t("messagesThread.sendFailed"));
     } finally {
       setSendBusy(false);
     }
@@ -515,7 +515,7 @@ export function MessagesPage() {
       picked.push(built);
     }
     if (picked.length === 0) {
-      setComposerNotice("Vui lòng chọn file ảnh hoặc video.");
+      setComposerNotice(t("messagesThread.pickImageOrVideo"));
       return;
     }
     setPendingMediaItems((prev) =>
@@ -527,7 +527,7 @@ export function MessagesPage() {
   const sendPendingImage = async () => {
     if (pendingMediaItems.length === 0 || !token || !activeConversationId || sendBusy || imageBusy || !canSendActiveMessage) return;
     if (pendingMediaItems.some((item) => item.kind === "video" && item.tooLong)) {
-      setPendingMediaNotice("Vui lòng bỏ chọn tập tin dài hơn 15 giây");
+      setPendingMediaNotice(t("messagesThread.videoTooLong"));
       return;
     }
     setImageBusy(true);
@@ -570,7 +570,7 @@ export function MessagesPage() {
       closePendingMediaComposer();
       await syncActiveConversationMeta(activeConversationId);
     } catch (error) {
-      setComposerNotice(error?.message || "Không thể gửi tập tin lúc này.");
+      setComposerNotice(error?.message || t("messagesThread.sendFileFailed"));
     } finally {
       setImageBusy(false);
     }
@@ -598,7 +598,7 @@ export function MessagesPage() {
         setListMode("normal");
       }
     } catch (error) {
-      setComposerNotice(error?.message || "Không thể chấp nhận yêu cầu lúc này.");
+      setComposerNotice(error?.message || t("messagesThread.acceptFailed"));
     } finally {
       setSendBusy(false);
     }
@@ -638,7 +638,7 @@ export function MessagesPage() {
         return next;
       }, { replace: true });
     } catch (error) {
-      setComposerNotice(error?.message || "Không thể xóa yêu cầu lúc này.");
+      setComposerNotice(error?.message || t("messagesThread.deleteRequestFailed"));
     } finally {
       setDeleteBusy(false);
     }
@@ -663,7 +663,7 @@ export function MessagesPage() {
         ),
       );
     } catch (error) {
-      setComposerNotice(error?.message || "Không thể ghim hội thoại lúc này.");
+      setComposerNotice(error?.message || t("messagesThread.pinFailed"));
     }
   };
 
@@ -684,7 +684,7 @@ export function MessagesPage() {
         ),
       );
     } catch (error) {
-      setComposerNotice(error?.message || "Không thể tắt tiếng hội thoại lúc này.");
+      setComposerNotice(error?.message || t("messagesThread.muteFailed"));
     }
   };
 
@@ -784,7 +784,7 @@ export function MessagesPage() {
                 <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-zinc-800 text-zinc-300">
                   <IoChevronBack className="h-4 w-4" aria-hidden />
                 </span>
-                Yêu cầu tin nhắn
+                {t("messagesThread.messageRequests")}
               </button>
             ) : mobileLayout ? null : (
               <h1 className="text-[20px] font-semibold text-zinc-100">{t("messagesPage.title")}</h1>
@@ -804,9 +804,9 @@ export function MessagesPage() {
                   <IoChatbubbleOutline className="h-4 w-4 text-zinc-100" aria-hidden />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-zinc-100">Yêu cầu tin nhắn</p>
+                  <p className="truncate text-sm font-semibold text-zinc-100">{t("messagesThread.messageRequests")}</p>
                   <p className="truncate text-xs text-zinc-400">
-                    Bạn nhận được {requestConversations.length} yêu cầu
+                    {t("messagesThread.requestsCount", { count: requestConversations.length })}
                   </p>
                 </div>
               </button>
@@ -860,18 +860,18 @@ export function MessagesPage() {
                         <div className="relative flex items-center justify-between gap-3">
                           <div className="flex min-w-0 items-center gap-1">
                             <p className="truncate text-sm font-semibold text-zinc-100">
-                              {conv.peerDisplayName || conv.peerUsername || "Người dùng"}
+                              {conv.peerDisplayName || conv.peerUsername || t("messagesThread.userFallback")}
                             </p>
                             {conv.pinned ? (
                               <LuPin
                                 className="h-3 w-3 shrink-0 -rotate-45 text-zinc-500"
-                                aria-label="Đã ghim"
+                                aria-label={t("messagesThread.pinnedAria")}
                               />
                             ) : null}
                             {conv.muted ? (
                               <IoVolumeMuteOutline
                                 className="h-3.5 w-3.5 shrink-0 text-zinc-500"
-                                aria-label="Đã tắt tiếng"
+                                aria-label={t("messagesThread.mutedAria")}
                               />
                             ) : null}
                           </div>
@@ -882,7 +882,7 @@ export function MessagesPage() {
                               setMenuConversationId((prev) => (Number(prev) === Number(conv.id) ? null : conv.id));
                             }}
                             className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full text-zinc-200 transition hover:bg-zinc-800 hover:text-white"
-                            aria-label="Mở menu hội thoại"
+                            aria-label={t("messagesThread.openMenuAria")}
                           >
                             <IoEllipsisHorizontal
                               className="mt-[-2px] h-5 w-5 text-zinc-200"
@@ -904,7 +904,7 @@ export function MessagesPage() {
                                     <IoVolumeMuteOutline className={CHAT_MENU_ICON_CLASS} aria-hidden />
                                   )
                                 }
-                                label={conv.muted ? "Bỏ tắt tiếng" : "Tắt tiếng"}
+                                label={conv.muted ? t("messagesThread.unmute") : t("messagesThread.mute")}
                                 onClick={() => toggleMuteConversation(conv)}
                               />
                               <ChatConversationMenuItem
@@ -915,22 +915,22 @@ export function MessagesPage() {
                                     <LuPin className={`${CHAT_MENU_ICON_CLASS} -rotate-45`} aria-hidden />
                                   )
                                 }
-                                label={conv.pinned ? "Bỏ ghim" : "Ghim lên đầu"}
+                                label={conv.pinned ? t("messagesThread.unpin") : t("messagesThread.pin")}
                                 onClick={() => togglePinConversation(conv)}
                               />
                               <ChatConversationMenuItem
                                 icon={<IoFlagOutline className={CHAT_MENU_ICON_CLASS} aria-hidden />}
-                                label="Báo cáo"
+                                label={t("messagesThread.report")}
                                 disabled
                               />
                               <ChatConversationMenuItem
                                 icon={<IoBanOutline className={CHAT_MENU_ICON_CLASS} aria-hidden />}
-                                label="Chặn"
+                                label={t("messagesThread.block")}
                                 disabled
                               />
                               <ChatConversationMenuItem
                                 icon={<IoTrashOutline className={CHAT_MENU_ICON_CLASS} aria-hidden />}
-                                label="Xóa"
+                                label={t("messagesThread.delete")}
                                 danger
                                 onClick={() => {
                                   setDeleteTargetConversationId(conv.id);
@@ -989,7 +989,7 @@ export function MessagesPage() {
                       type="button"
                       onClick={() => setActiveConversationId(null)}
                       className="mr-1 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-xl text-zinc-100"
-                      aria-label="Quay lại danh sách"
+                      aria-label={t("messagesThread.backToList")}
                     >
                       <IoChevronBack aria-hidden />
                     </button>
@@ -1020,7 +1020,7 @@ export function MessagesPage() {
               </div>
               <div ref={messageScrollRef} className="scrollbar-none min-h-0 flex-1 overflow-y-auto bg-black px-4 py-4">
                 {messagesLoading ? (
-                  <p className="text-sm text-zinc-500">Đang tải tin nhắn…</p>
+                  <p className="text-sm text-zinc-500">{t("messagesThread.loadingMessages")}</p>
                 ) : messages.length === 0 ? (
                   <div className="flex h-full flex-col items-center justify-center gap-3 text-zinc-500">
                     <IoChatbubbleOutline className="h-14 w-14 text-zinc-800" aria-hidden />
@@ -1082,7 +1082,7 @@ export function MessagesPage() {
                                     type="button"
                                     onClick={() => setActiveVideoViewerUrl(videoUrl)}
                                     className="relative block cursor-pointer overflow-hidden rounded-xl bg-black"
-                                    aria-label="Mở video"
+                                    aria-label={t("messagesThread.openVideoAria")}
                                   >
                                     <video
                                       src={videoUrl}
@@ -1105,7 +1105,7 @@ export function MessagesPage() {
                                       if (target) navigate(target);
                                     }}
                                     className="relative block cursor-pointer overflow-hidden rounded-xl bg-black"
-                                    aria-label="Mở video đã chia sẻ"
+                                    aria-label={t("messagesThread.openSharedVideoAria")}
                                   >
                                     <img
                                       src={sharedPreviewUrl}
@@ -1121,7 +1121,7 @@ export function MessagesPage() {
                                   </button>
                                 ) : (
                                   <div className="rounded-xl bg-zinc-900 px-3 py-2 text-xs text-zinc-300">
-                                    Đang tải preview video...
+                                    {t("messagesThread.loadingVideoPreview")}
                                   </div>
                                 )}
                                 {videoCaption ? (
@@ -1147,7 +1147,7 @@ export function MessagesPage() {
                                 {imageUrl ? (
                                   <img
                                     src={imageUrl}
-                                    alt="Ảnh đã gửi"
+                                    alt={t("messagesThread.sentImageAlt")}
                                     className="max-h-72 w-full max-w-72 rounded-xl object-cover"
                                     referrerPolicy="no-referrer"
                                     loading="lazy"
@@ -1181,10 +1181,10 @@ export function MessagesPage() {
                 <div className="border-t border-zinc-900 bg-zinc-950">
                   <div className="border-b border-zinc-900 px-4 py-3 text-center">
                     <p className="text-sm font-semibold text-zinc-100">
-                      {activeConversation.peerDisplayName || activeConversation.peerUsername} muốn gửi tin nhắn cho bạn
+                      {t("messagesThread.wantsToMessage", { name: activeConversation.peerDisplayName || activeConversation.peerUsername })}
                     </p>
                     <p className="mt-1 text-xs text-zinc-400">
-                      Nếu bạn chấp nhận, bạn có thể trò chuyện với người dùng này. Nếu bỏ qua, người này chỉ có thể gửi 1 tin nhắn.
+                      {t("messagesThread.requestHint")}
                     </p>
                   </div>
                   <div className="flex items-center justify-center gap-10 px-4 py-3">
@@ -1194,7 +1194,7 @@ export function MessagesPage() {
                       disabled={sendBusy}
                       className="cursor-pointer text-sm text-zinc-400 transition hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      Xóa
+                      {t("messagesThread.delete")}
                     </button>
                     <button
                       type="button"
@@ -1202,7 +1202,7 @@ export function MessagesPage() {
                       disabled={sendBusy}
                       className="cursor-pointer text-sm font-semibold text-zinc-100 transition hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      Chấp nhận
+                      {t("messagesThread.accept")}
                     </button>
                   </div>
                 </div>
@@ -1226,7 +1226,7 @@ export function MessagesPage() {
                         setDraft(e.target.value);
                         if (composerNotice) setComposerNotice("");
                       }}
-                      placeholder="Nhập tin nhắn..."
+                      placeholder={t("messagesThread.placeholder")}
                       disabled={!canSendActiveMessage}
                       className="h-10 flex-1 rounded-full border border-zinc-800 bg-zinc-900 px-4 text-sm text-zinc-100 outline-none ring-0 placeholder:text-zinc-500 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-60"
                       onKeyDown={(e) => {
@@ -1240,7 +1240,7 @@ export function MessagesPage() {
                       onClick={() => fileInputRef.current?.click()}
                       disabled={!canSendActiveMessage || imageBusy || sendBusy}
                       className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-zinc-400 transition hover:bg-zinc-900 hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
-                      aria-label="Chèn ảnh"
+                      aria-label={t("messagesThread.insertImageAria")}
                     >
                       <IoImageOutline className="h-5 w-5" aria-hidden />
                     </button>
@@ -1248,7 +1248,7 @@ export function MessagesPage() {
                       type="button"
                       disabled={!canSendActiveMessage}
                       className="inline-flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 transition hover:bg-zinc-900 hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
-                      aria-label="Biểu tượng cảm xúc"
+                      aria-label={t("messagesThread.emojiAria")}
                     >
                       <IoHappyOutline className="h-5 w-5" aria-hidden />
                     </button>
@@ -1279,9 +1279,9 @@ export function MessagesPage() {
         {deleteTargetConversationId ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-[380px] rounded-xl bg-zinc-900 p-6 shadow-2xl shadow-black/60">
-            <h3 className="text-center text-[30px] font-bold text-zinc-100">Xóa tin nhắn này?</h3>
+            <h3 className="text-center text-[30px] font-bold text-zinc-100">{t("messagesThread.deleteMessageTitle")}</h3>
             <p className="mt-3 text-center text-sm text-zinc-400">
-              Bạn sẽ không còn nhận được tin nhắn từ tài khoản này trong tương lai.
+              {t("messagesThread.deleteMessageHint")}
             </p>
             <div className="mt-6 flex items-center gap-2">
               <button
@@ -1290,7 +1290,7 @@ export function MessagesPage() {
                 disabled={deleteBusy}
                 className="h-11 flex-1 cursor-pointer rounded-md bg-zinc-800 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Hủy
+                {t("messagesThread.cancel")}
               </button>
               <button
                 type="button"
@@ -1298,7 +1298,7 @@ export function MessagesPage() {
                 disabled={deleteBusy}
                 className="h-11 flex-1 cursor-pointer rounded-md bg-[#fe2c55] text-sm font-semibold text-white transition hover:bg-[#da2448] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {deleteBusy ? "Đang xóa..." : "Xóa"}
+                {deleteBusy ? t("messagesThread.deleting") : t("messagesThread.delete")}
               </button>
             </div>
           </div>
@@ -1308,13 +1308,13 @@ export function MessagesPage() {
         <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/70 px-4">
           <div className={`w-full ${pendingModalMaxWidthClass} rounded-xl border border-zinc-700 bg-zinc-800/95 p-3 shadow-2xl shadow-black/70`}>
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-[32px] font-bold leading-none text-zinc-100">Gửi tập tin</h3>
+              <h3 className="text-[32px] font-bold leading-none text-zinc-100">{t("messagesThread.sendFiles")}</h3>
               <button
                 type="button"
                 onClick={closePendingMediaComposer}
                 disabled={imageBusy}
                 className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-zinc-700 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                aria-label="Đóng gửi tập tin"
+                aria-label={t("messagesThread.closeFileSend")}
               >
                 <IoClose className="h-5 w-5" aria-hidden />
               </button>
@@ -1342,7 +1342,7 @@ export function MessagesPage() {
                     ) : (
                       <img
                         src={item.previewUrl}
-                        alt="Ảnh chờ gửi"
+                        alt={t("messagesThread.pendingImageAlt")}
                         className="h-32 w-28 rounded-md object-cover"
                       />
                     )}
@@ -1356,7 +1356,7 @@ export function MessagesPage() {
                       onClick={() => removePendingMediaAt(index)}
                       disabled={imageBusy}
                       className="absolute bottom-1 right-1 inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-black/55 text-zinc-100 transition hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-60"
-                      aria-label="Xóa tập tin đã chọn"
+                      aria-label={t("messagesThread.removeSelectedFile")}
                     >
                       <IoTrashOutline className="h-3.5 w-3.5" aria-hidden />
                     </button>
@@ -1371,7 +1371,7 @@ export function MessagesPage() {
                 disabled={imageBusy}
                 className="h-9 min-w-[86px] cursor-pointer rounded border border-zinc-600 bg-zinc-700/70 px-3 text-sm text-zinc-100 transition hover:bg-zinc-600 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                + Thêm
+                {t("messagesThread.addMore")}
               </button>
               <button
                 type="button"
@@ -1379,7 +1379,9 @@ export function MessagesPage() {
                 disabled={imageBusy || pendingMediaItems.length === 0 || pendingMediaItems.some((item) => item.kind === "video" && item.tooLong)}
                 className="h-9 min-w-[86px] cursor-pointer rounded bg-[#fe2c55] px-3 text-sm font-semibold text-white transition hover:bg-[#da2448] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {imageBusy ? "Đang gửi..." : `Gửi (${pendingMediaItems.length})`}
+                {imageBusy
+                  ? t("messagesThread.sending")
+                  : t("messagesThread.sendCount", { count: pendingMediaItems.length })}
               </button>
             </div>
           </div>
@@ -1398,7 +1400,7 @@ export function MessagesPage() {
               type="button"
               onClick={() => setActiveVideoViewerUrl("")}
               className="absolute -top-11 right-0 inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-zinc-900/90 text-zinc-100 transition hover:bg-zinc-800"
-              aria-label="Đóng xem video"
+              aria-label={t("messagesThread.closeVideoView")}
             >
               <IoClose className="h-5 w-5" aria-hidden />
             </button>
@@ -1406,7 +1408,7 @@ export function MessagesPage() {
               {!videoViewerReady || videoViewerBuffering ? (
                 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-xl bg-[#070911]">
                   <div className="h-10 w-10 rounded-full border-2 border-white/20 border-t-[#fe2c55] animate-spin" />
-                  <p className="text-sm font-medium text-zinc-300">Đang tải...</p>
+                  <p className="text-sm font-medium text-zinc-300">{t("messagesThread.loading")}</p>
                 </div>
               ) : null}
               <video
@@ -1446,9 +1448,9 @@ export function MessagesPage() {
       {deleteTargetConversationId ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-[380px] rounded-xl bg-zinc-900 p-6 shadow-2xl shadow-black/60">
-            <h3 className="text-center text-[30px] font-bold text-zinc-100">Xóa tin nhắn này?</h3>
+            <h3 className="text-center text-[30px] font-bold text-zinc-100">{t("messagesThread.deleteMessageTitle")}</h3>
             <p className="mt-3 text-center text-sm text-zinc-400">
-              Bạn sẽ không còn nhận được tin nhắn từ tài khoản này trong tương lai.
+              {t("messagesThread.deleteMessageHint")}
             </p>
             <div className="mt-6 flex items-center gap-2">
               <button
@@ -1457,7 +1459,7 @@ export function MessagesPage() {
                 disabled={deleteBusy}
                 className="h-11 flex-1 cursor-pointer rounded-md bg-zinc-800 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Hủy
+                {t("messagesThread.cancel")}
               </button>
               <button
                 type="button"
@@ -1465,7 +1467,7 @@ export function MessagesPage() {
                 disabled={deleteBusy}
                 className="h-11 flex-1 cursor-pointer rounded-md bg-[#fe2c55] text-sm font-semibold text-white transition hover:bg-[#da2448] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {deleteBusy ? "Đang xóa..." : "Xóa"}
+                {deleteBusy ? t("messagesThread.deleting") : t("messagesThread.delete")}
               </button>
             </div>
           </div>
@@ -1475,13 +1477,13 @@ export function MessagesPage() {
         <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/70 px-4">
           <div className={`w-full ${pendingModalMaxWidthClass} rounded-xl border border-zinc-700 bg-zinc-800/95 p-3 shadow-2xl shadow-black/70`}>
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-[32px] font-bold leading-none text-zinc-100">Gửi tập tin</h3>
+              <h3 className="text-[32px] font-bold leading-none text-zinc-100">{t("messagesThread.sendFiles")}</h3>
               <button
                 type="button"
                 onClick={closePendingMediaComposer}
                 disabled={imageBusy}
                 className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-zinc-700 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                aria-label="Đóng gửi tập tin"
+                aria-label={t("messagesThread.closeFileSend")}
               >
                 <IoClose className="h-5 w-5" aria-hidden />
               </button>
@@ -1509,7 +1511,7 @@ export function MessagesPage() {
                     ) : (
                       <img
                         src={item.previewUrl}
-                        alt="Ảnh chờ gửi"
+                        alt={t("messagesThread.pendingImageAlt")}
                         className="h-32 w-28 rounded-md object-cover"
                       />
                     )}
@@ -1523,7 +1525,7 @@ export function MessagesPage() {
                       onClick={() => removePendingMediaAt(index)}
                       disabled={imageBusy}
                       className="absolute bottom-1 right-1 inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-black/55 text-zinc-100 transition hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-60"
-                      aria-label="Xóa tập tin đã chọn"
+                      aria-label={t("messagesThread.removeSelectedFile")}
                     >
                       <IoTrashOutline className="h-3.5 w-3.5" aria-hidden />
                     </button>
@@ -1538,7 +1540,7 @@ export function MessagesPage() {
                 disabled={imageBusy}
                 className="h-9 min-w-[86px] cursor-pointer rounded border border-zinc-600 bg-zinc-700/70 px-3 text-sm text-zinc-100 transition hover:bg-zinc-600 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                + Thêm
+                {t("messagesThread.addMore")}
               </button>
               <button
                 type="button"
@@ -1546,7 +1548,9 @@ export function MessagesPage() {
                 disabled={imageBusy || pendingMediaItems.length === 0 || pendingMediaItems.some((item) => item.kind === "video" && item.tooLong)}
                 className="h-9 min-w-[86px] cursor-pointer rounded bg-[#fe2c55] px-3 text-sm font-semibold text-white transition hover:bg-[#da2448] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {imageBusy ? "Đang gửi..." : `Gửi (${pendingMediaItems.length})`}
+                {imageBusy
+                  ? t("messagesThread.sending")
+                  : t("messagesThread.sendCount", { count: pendingMediaItems.length })}
               </button>
             </div>
           </div>
@@ -1565,7 +1569,7 @@ export function MessagesPage() {
               type="button"
               onClick={() => setActiveVideoViewerUrl("")}
               className="absolute -top-11 right-0 inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-zinc-900/90 text-zinc-100 transition hover:bg-zinc-800"
-              aria-label="Đóng xem video"
+              aria-label={t("messagesThread.closeVideoView")}
             >
               <IoClose className="h-5 w-5" aria-hidden />
             </button>
@@ -1573,7 +1577,7 @@ export function MessagesPage() {
               {!videoViewerReady || videoViewerBuffering ? (
                 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-xl bg-[#070911]">
                   <div className="h-10 w-10 rounded-full border-2 border-white/20 border-t-[#fe2c55] animate-spin" />
-                  <p className="text-sm font-medium text-zinc-300">Đang tải...</p>
+                  <p className="text-sm font-medium text-zinc-300">{t("messagesThread.loading")}</p>
                 </div>
               ) : null}
               <video

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   IoLogOutOutline,
   IoOpenOutline,
@@ -16,6 +17,7 @@ import {
 
 /** @param {'dark' | 'light'} [theme='dark'] */
 export function StudioAccountMenu({ theme = 'dark' }) {
+  const { t } = useTranslation()
   const light = theme === 'light'
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -59,7 +61,7 @@ export function StudioAccountMenu({ theme = 'dark' }) {
               ? 'flex cursor-pointer rounded-full p-0.5 ring-1 ring-slate-300 transition hover:ring-slate-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fe2c55]'
               : 'flex cursor-pointer rounded-full p-0.5 ring-1 ring-zinc-600 transition hover:ring-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fe2c55]'
           }
-          aria-label="Menu tài khoản"
+          aria-label={t('studio.account.menuAria')}
           aria-expanded={open}
           aria-haspopup="menu"
           onClick={() => setOpen((o) => !o)}
@@ -77,7 +79,7 @@ export function StudioAccountMenu({ theme = 'dark' }) {
         {open ? (
           <div
             role="menu"
-            aria-label="Tài khoản"
+            aria-label={t('studio.account.menuLabel')}
             className={
               light
                 ? 'absolute right-0 z-50 mt-2 min-w-55 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 text-slate-900 shadow-[0_12px_40px_rgba(15,23,42,0.12)]'
@@ -94,7 +96,7 @@ export function StudioAccountMenu({ theme = 'dark' }) {
               }}
             >
               <IoPersonOutline className={iconClass} aria-hidden />
-              <span className="min-w-0 flex-1">Hồ sơ</span>
+              <span className="min-w-0 flex-1">{t('studio.account.profile')}</span>
               <IoOpenOutline
                 className={light ? 'text-base text-slate-400' : 'text-base text-zinc-500'}
                 aria-hidden
@@ -110,7 +112,7 @@ export function StudioAccountMenu({ theme = 'dark' }) {
               }}
             >
               <IoSettingsOutline className={iconClass} aria-hidden />
-              Cài đặt
+              {t('studio.account.settings')}
             </button>
             <div
               className={light ? 'my-1 border-t border-slate-100' : 'my-1 border-t border-zinc-800'}
@@ -127,7 +129,7 @@ export function StudioAccountMenu({ theme = 'dark' }) {
               }}
             >
               <IoLogOutOutline className={iconClass} aria-hidden />
-              Đăng xuất
+              {t('studio.account.logout')}
             </button>
           </div>
         ) : null}

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   IoChevronDown,
   IoClose,
@@ -16,22 +17,21 @@ import { useAuth } from "@/features/auth/hooks/useAuth.js";
 const PAGE_SIZE = 20;
 
 const STATUS_OPTIONS = [
-  { value: "ALL", label: "Tất cả trạng thái" },
-  { value: "RAW", label: "Bản nháp" },
-  { value: "PROCESSING", label: "Đang xử lý" },
-  { value: "READY", label: "Đã đăng" },
-  { value: "FAILED", label: "Lỗi xử lý" },
-  { value: "REPORTED", label: "Bị báo cáo" },
-  { value: "HIDDEN", label: "Đã ẩn" },
-  { value: "REMOVED", label: "Ẩn khỏi hồ sơ" },
+  { value: "", labelKey: "admin.posts.allStatuses" },
+  { value: "RAW", labelKey: "admin.status.draft" },
+  { value: "PROCESSING", labelKey: "admin.status.processing" },
+  { value: "READY", labelKey: "admin.status.published" },
+  { value: "FAILED", labelKey: "admin.status.failed" },
+  { value: "REPORTED", labelKey: "admin.status.reported" },
+  { value: "HIDDEN", labelKey: "admin.status.hidden" },
 ];
 
-function statusLabel(status) {
-  return (
-    STATUS_OPTIONS.find(
-      (item) => item.value === String(status ?? "").toUpperCase(),
-    )?.label ?? "Không rõ"
+function statusLabel(status, t) {
+  const opt = STATUS_OPTIONS.find(
+    (item) => item.value === String(status ?? "").toUpperCase(),
   );
+  if (opt?.labelKey) return t(opt.labelKey);
+  return t("admin.posts.unknown");
 }
 
 function formatDateTime(value) {
@@ -55,6 +55,7 @@ function compactNumber(value) {
 }
 
 function StatusBadge({ status }) {
+  const { t } = useTranslation();
   const value = String(status ?? "").toUpperCase();
   const palette = {
     READY: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30",
@@ -69,12 +70,13 @@ function StatusBadge({ status }) {
     <span
       className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${palette[value] ?? palette.RAW}`}
     >
-      {statusLabel(value)}
+      {statusLabel(value, t)}
     </span>
   );
 }
 
 function StatusDropdown({ value, onChange }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const selected =
     STATUS_OPTIONS.find((item) => item.value === value) ?? STATUS_OPTIONS[0];
@@ -89,12 +91,12 @@ function StatusDropdown({ value, onChange }) {
     >
       <button
         type="button"
-        aria-label="Lọc theo trạng thái"
+        aria-label={t("admin.posts.filterStatus")}
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
         className="flex h-12 min-w-48 items-center justify-between gap-3 rounded-full border border-zinc-700 bg-zinc-950 px-5 text-sm font-semibold text-zinc-100 outline-none transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200 focus:border-red-500"
       >
-        <span className="truncate">{selected.label}</span>
+        <span className="truncate">{t(selected.labelKey)}</span>
         <IoChevronDown
           className={`shrink-0 text-base transition ${open ? "rotate-180 text-red-300" : ""}`}
           aria-hidden
@@ -117,7 +119,7 @@ function StatusDropdown({ value, onChange }) {
                   : "text-zinc-200 hover:bg-red-500/10 hover:text-red-200"
               }`}
             >
-              {item.label}
+              {t(item.labelKey)}
             </button>
           ))}
         </div>
@@ -127,7 +129,8 @@ function StatusDropdown({ value, onChange }) {
 }
 
 function DeletePostModal({ post, busy, error, onClose, onConfirm }) {
-  const title = post?.description || post?.title || "Bài đăng không có mô tả";
+  const { t } = useTranslation();
+  const title = post?.description || post?.title || t("admin.posts.noDescription");
   const alreadyHidden =
     String(post?.status || "").toUpperCase() === "REMOVED";
   return (
@@ -137,20 +140,20 @@ function DeletePostModal({ post, busy, error, onClose, onConfirm }) {
           <div>
             <h2 className="text-lg font-bold text-zinc-100">
               {alreadyHidden
-                ? "Xóa vĩnh viễn khỏi admin"
-                : "Xác nhận ẩn bài đăng"}
+                ? t("admin.posts.permanentDelete")
+                : t("admin.posts.confirmHideTitle")}
             </h2>
             <p className="mt-1 text-sm text-zinc-500">
               {alreadyHidden
-                ? "Bài đã ẩn khỏi hồ sơ. Xác nhận sẽ xóa hẳn khỏi danh sách admin (file S3 nếu còn sẽ được dọn)."
-                : "Bài sẽ ẩn khỏi hồ sơ và URL công khai. File được giữ để admin xem lại; bấm xóa lần nữa để gỡ vĩnh viễn."}
+                ? t("admin.posts.confirmPermanent")
+                : t("admin.posts.confirmHide")}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="rounded-full p-2 text-zinc-500 transition hover:bg-zinc-900 hover:text-zinc-100"
-            aria-label="Đóng"
+            aria-label={t("admin.close")}
           >
             <IoClose className="text-xl" aria-hidden />
           </button>
@@ -159,8 +162,8 @@ function DeletePostModal({ post, busy, error, onClose, onConfirm }) {
         <div className="mt-5 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
           <p className="line-clamp-2 font-semibold">{title}</p>
           <p className="mt-2 text-red-200/90">
-            Tác giả: @{post?.authorUsername || "unknown"} •{" "}
-            {post?.authorEmail || "Không có email"}
+            {t("admin.posts.authorLine", { username: post?.authorUsername || t("admin.posts.unknown") })}{" "}
+            {post?.authorEmail || t("admin.noEmail")}
           </p>
         </div>
 
@@ -177,7 +180,7 @@ function DeletePostModal({ post, busy, error, onClose, onConfirm }) {
             disabled={busy}
             className="rounded-xl border border-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-300 transition hover:bg-zinc-900 disabled:opacity-50"
           >
-            Hủy
+            {t("admin.cancel")}
           </button>
           <button
             type="button"
@@ -186,10 +189,10 @@ function DeletePostModal({ post, busy, error, onClose, onConfirm }) {
             className="rounded-xl border border-zinc-800 bg-black px-5 py-3 text-sm font-bold text-zinc-100 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {busy
-              ? "Đang xóa..."
+              ? t("admin.deleting")
               : alreadyHidden
-                ? "Xóa vĩnh viễn"
-                : "Ẩn khỏi hồ sơ"}
+                ? t("admin.posts.deletePermanent")
+                : t("admin.posts.hiddenFromProfile")}
           </button>
         </div>
       </div>
@@ -198,6 +201,7 @@ function DeletePostModal({ post, busy, error, onClose, onConfirm }) {
 }
 
 export function AdminPostsPage() {
+  const { t } = useTranslation()
   const { token, user, authReady } = useAuth();
   const isAdmin = String(user?.role ?? "").toUpperCase() === "ADMIN";
   const [page, setPage] = useState(0);
@@ -214,8 +218,8 @@ export function AdminPostsPage() {
   const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
-    document.title = "Vibely Admin | Quản lý bài đăng";
-  }, []);
+    document.title = t("admin.docTitle.posts");
+  }, [t]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -247,7 +251,7 @@ export function AdminPostsPage() {
       setItems([]);
       setTotal(0);
       setHasNext(false);
-      setError(e.message ?? "Không tải được danh sách bài đăng.");
+      setError(e.message ?? t("admin.posts.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -278,7 +282,7 @@ export function AdminPostsPage() {
         await loadPosts();
       }
     } catch (e) {
-      setDeleteError(e.message ?? "Không xóa được bài đăng.");
+      setDeleteError(e.message ?? t("admin.posts.deleteFailed"));
     } finally {
       setDeleteBusy(false);
     }
@@ -287,18 +291,18 @@ export function AdminPostsPage() {
   return (
     <AdminLayout
       active="posts"
-      title="Quản lý bài đăng"
-      subtitle="Theo dõi bài đăng của người dùng, trạng thái xử lý và thao tác gỡ bài khi cần."
+      title={t("admin.posts.title")}
+      subtitle={t("admin.posts.subtitle")}
     >
       {!authReady || loading ? (
         <AdminPostsPageSkeleton />
       ) : !isAdmin ? (
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center">
           <p className="text-lg font-semibold text-zinc-100">
-            Bạn không có quyền truy cập Admin
+            {t("admin.noAccess")}
           </p>
           <p className="mt-2 text-sm text-zinc-400">
-            Tài khoản hiện tại cần vai trò Quản trị viên.
+            {t("admin.noAccessHintShort")}
           </p>
         </section>
       ) : (
@@ -307,16 +311,16 @@ export function AdminPostsPage() {
             <div className="grid gap-3 xl:grid-cols-[minmax(160px,220px)_minmax(320px,1fr)_auto] xl:items-center">
               <div className="min-w-0">
                 <p className="text-sm font-bold uppercase tracking-wide text-zinc-200">
-                  Tổng bài đăng: {total}
+                  {t("admin.posts.total", { count: total })}
                 </p>
                 <p className="mt-1 flex items-center gap-3 text-xs text-zinc-500">
                   <span className="inline-flex items-center gap-1">
                     <IoEyeOutline aria-hidden /> {compactNumber(totals.views)}{" "}
-                    lượt xem
+                    {t("admin.posts.viewsUnit")}
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <IoHeartOutline aria-hidden /> {compactNumber(totals.likes)}{" "}
-                    lượt thích
+                    {t("admin.posts.likesUnit")}
                   </span>
                 </p>
               </div>
@@ -324,7 +328,7 @@ export function AdminPostsPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="h-12 w-full rounded-full border border-zinc-700 bg-zinc-950 px-5 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-500 focus:border-red-500"
-                placeholder="Tìm theo mô tả, tiêu đề, tác giả hoặc email..."
+                placeholder={t("admin.posts.searchPlaceholder")}
               />
               <div className="flex justify-end">
                 <StatusDropdown
@@ -345,18 +349,18 @@ export function AdminPostsPage() {
               <table className="w-full min-w-[1080px] border-collapse text-left text-sm text-zinc-200">
                 <thead>
                   <tr className="border-b border-zinc-800 text-xs text-zinc-500">
-                    <th className="py-3 pr-4 font-medium">Bài đăng</th>
-                    <th className="px-3 py-3 font-medium">Tác giả</th>
-                    <th className="px-3 py-3 font-medium">Trạng thái</th>
+                    <th className="py-3 pr-4 font-medium">{t("admin.table.post")}</th>
+                    <th className="px-3 py-3 font-medium">{t("admin.table.author")}</th>
+                    <th className="px-3 py-3 font-medium">{t("admin.table.status")}</th>
                     <th className="px-3 py-3 text-center font-medium">Xem</th>
-                    <th className="px-3 py-3 text-center font-medium">Thích</th>
+                    <th className="px-3 py-3 text-center font-medium">{t("admin.table.likes")}</th>
                     <th className="px-3 py-3 text-center font-medium">
-                      Bình luận
+                      {t("admin.table.comments")}
                     </th>
-                    <th className="px-3 py-3 text-center font-medium">Lưu</th>
-                    <th className="px-3 py-3 font-medium">Ngày tạo</th>
+                    <th className="px-3 py-3 text-center font-medium">{t("admin.table.saves")}</th>
+                    <th className="px-3 py-3 font-medium">{t("admin.table.created")}</th>
                     <th className="px-3 py-3 text-right font-medium">
-                      Thao tác
+                      {t("admin.table.actions")}
                     </th>
                   </tr>
                 </thead>
@@ -365,7 +369,7 @@ export function AdminPostsPage() {
                     const title =
                       item.description ||
                       item.title ||
-                      "Bài đăng không có mô tả";
+                      t("admin.posts.noDescription");
                     const hasThumb =
                       item.thumbnailUrl && String(item.thumbnailUrl).trim();
                     return (
@@ -403,14 +407,14 @@ export function AdminPostsPage() {
                                 {title}
                               </p>
                               <p className="mt-0.5 truncate text-xs text-zinc-500">
-                                Mã #{item.publicId}
+                                {t("admin.posts.idCode", { id: item.publicId })}
                               </p>
                             </div>
                           </div>
                         </td>
                         <td className="px-3 py-3">
                           <p className="font-medium text-zinc-100">
-                            {item.authorDisplayName || "Người dùng Vibely"}
+                            {item.authorDisplayName || t("admin.vibelyUser")}
                           </p>
                           <p className="mt-0.5 text-xs text-zinc-500">
                             @{item.authorUsername || "unknown"}
@@ -449,7 +453,7 @@ export function AdminPostsPage() {
                                 setDeleteTarget(item);
                               }}
                               className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-700 text-zinc-200 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-300"
-                              aria-label={`Xóa bài ${item.publicId}`}
+                              aria-label={t("admin.posts.deleteAria", { publicId: item.publicId })}
                             >
                               <IoTrash className="text-base" aria-hidden />
                             </button>
@@ -464,7 +468,7 @@ export function AdminPostsPage() {
 
             {items.length === 0 ? (
               <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-12 text-center text-sm text-zinc-500">
-                Không có bài đăng phù hợp.
+                {t("admin.posts.empty")}
               </div>
             ) : null}
 

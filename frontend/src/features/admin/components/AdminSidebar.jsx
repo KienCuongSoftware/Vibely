@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   IoChatbubbleEllipsesOutline,
   IoPeopleOutline,
@@ -12,31 +13,31 @@ const ADMIN_NAV_ITEMS = [
   {
     id: "users",
     to: "/admin/users",
-    label: "Quản lý tài khoản",
+    labelKey: "admin.nav.users",
     icon: IoPeopleOutline,
   },
   {
     id: "posts",
     to: "/admin/posts",
-    label: "Quản lý bài đăng",
+    labelKey: "admin.nav.posts",
     icon: IoVideocamOutline,
   },
   {
     id: "moderation",
     to: "/admin/moderation",
-    label: "Kiểm duyệt nội dung",
+    labelKey: "admin.nav.moderation",
     icon: IoShieldCheckmarkOutline,
   },
   {
     id: "banned",
     to: "/admin/banned-users",
-    label: "Tài khoản bị cấm",
+    labelKey: "admin.nav.banned",
     icon: IoShieldOutline,
   },
   {
     id: "appeals",
     to: "/admin/ban-appeals",
-    label: "Khiếu nại cấm",
+    labelKey: "admin.nav.appeals",
     icon: IoChatbubbleEllipsesOutline,
   },
 ];
@@ -69,6 +70,7 @@ function VibelyMark() {
 }
 
 export function AdminSidebar({ active = "users", className = "", onNavigate }) {
+  const { t } = useTranslation();
   const location = useLocation();
   const asideClass =
     "relative z-20 flex h-dvh w-[260px] shrink-0 flex-col overflow-y-auto overflow-x-hidden border-r border-zinc-900 bg-black px-3 py-4 scrollbar-none";
@@ -81,7 +83,7 @@ export function AdminSidebar({ active = "users", className = "", onNavigate }) {
         className="flex items-center gap-1.5 px-2 text-xl font-black tracking-tight text-white hover:text-zinc-100"
       >
         <VibelyMark />
-        <span>Vibely Admin</span>
+        <span>{t("admin.brand")}</span>
       </Link>
 
       <nav className="mt-6 space-y-1">
@@ -105,7 +107,7 @@ export function AdminSidebar({ active = "users", className = "", onNavigate }) {
                 className={`shrink-0 text-lg ${isActive ? "text-red-500" : ""}`}
                 aria-hidden
               />
-              <span className="min-w-0 truncate">{item.label}</span>
+              <span className="min-w-0 truncate">{t(item.labelKey)}</span>
             </Link>
           );
         })}

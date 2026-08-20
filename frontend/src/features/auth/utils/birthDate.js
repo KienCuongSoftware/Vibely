@@ -1,3 +1,5 @@
+import i18n from '@/i18n/i18n.js'
+
 const MIN_BIRTH_YEAR = 1900;
 export const MIN_SIGNUP_AGE_YEARS = 18;
 
@@ -66,12 +68,12 @@ export function buildBirthDayOptions(year, month) {
 
 export function validateBirthDateParts(month, day, year, today = getToday()) {
   if (!month || !day || !year) {
-    return { valid: false, message: "Vui lòng chọn ngày sinh" };
+    return { valid: false, message: i18n.t('auth.birthRequired') };
   }
 
   const birthDate = toBirthDate(month, day, year);
   if (!birthDate) {
-    return { valid: false, message: "Ngày sinh không hợp lệ" };
+    return { valid: false, message: i18n.t('auth.birthInvalid') };
   }
 
   const maxDate = today;
@@ -79,16 +81,16 @@ export function validateBirthDateParts(month, day, year, today = getToday()) {
   const minDate = getMinBirthDate();
 
   if (compareDateOnly(birthDate, maxDate) > 0) {
-    return { valid: false, message: "Ngày sinh không thể sau ngày hiện tại" };
+    return { valid: false, message: i18n.t('auth.birthFuture') };
   }
   if (compareDateOnly(birthDate, latestAllowed) > 0) {
     return {
       valid: false,
-      message: `Bạn phải đủ ${MIN_SIGNUP_AGE_YEARS} tuổi để sử dụng Vibely`,
+      message: i18n.t('auth.birthMinAge', { age: MIN_SIGNUP_AGE_YEARS }),
     };
   }
   if (compareDateOnly(birthDate, minDate) < 0) {
-    return { valid: false, message: "Ngày sinh không hợp lệ" };
+    return { valid: false, message: i18n.t('auth.birthInvalid') };
   }
 
   return { valid: true, message: "" };

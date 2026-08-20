@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { IoArrowBack } from "react-icons/io5";
 import { apiClient } from "@/shared/api/client";
 
@@ -45,6 +46,7 @@ function resolveBannedAccountEmail(payload = {}) {
 
 /** Global ban modal — shown on any route when session receives ACCOUNT_BANNED. */
 export function AccountBannedOverlay({ payload, onClose }) {
+  const { t } = useTranslation();
   const open = Boolean(payload);
   const [appealOpen, setAppealOpen] = useState(false);
   const [appealDescription, setAppealDescription] = useState("");
@@ -109,7 +111,7 @@ export function AccountBannedOverlay({ payload, onClose }) {
       setAppealOpen(false);
     } catch (error) {
       setAppealError(
-        error instanceof Error ? error.message : "Không gửi được khiếu nại.",
+        error instanceof Error ? error.message : t('auth.appealSendFailed'),
       );
     } finally {
       setAppealLoading(false);
@@ -126,17 +128,17 @@ export function AccountBannedOverlay({ payload, onClose }) {
               className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-zinc-200 hover:bg-zinc-900"
               onClick={() => setAppealOpen(false)}
               disabled={appealLoading}
-              aria-label="Quay lại"
+              aria-label={t('common.back')}
             >
               <IoArrowBack className="h-5 w-5" />
             </button>
             <h2 className="text-center text-[17px] font-bold text-zinc-100">
-              Gửi khiếu nại
+              {t('auth.appeal.title')}
             </h2>
           </div>
           <div className="scrollbar-none max-h-[min(70vh,560px)] overflow-y-auto px-5 py-4">
             <label className="block text-[13px] font-semibold text-zinc-100">
-              Email tài khoản
+              {t('auth.appealAccountEmail')}
             </label>
             <input
               type="email"
@@ -147,14 +149,14 @@ export function AccountBannedOverlay({ payload, onClose }) {
               disabled={appealLoading}
             />
             <label className="mt-4 block text-[13px] font-semibold text-zinc-100">
-              Mô tả
+              {t('auth.appeal.descLabel')}
             </label>
             <textarea
               value={appealDescription}
               onChange={(e) => setAppealDescription(e.target.value)}
               rows={5}
               className="mt-2 w-full resize-none rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-zinc-500"
-              placeholder="Giải thích vì sao bạn cho rằng đây là nhầm lẫn…"
+              placeholder={t('auth.appealPlaceholder')}
               disabled={appealLoading}
             />
             {appealError ? (
@@ -168,7 +170,7 @@ export function AccountBannedOverlay({ payload, onClose }) {
               onClick={() => void submitAppeal()}
               className="flex h-11 w-full items-center justify-center rounded-md bg-rose-600 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {appealLoading ? "Đang gửi…" : "Gửi khiếu nại"}
+              {appealLoading ? t('auth.appeal.submitting') : t('auth.appealSubmitFull')}
             </button>
           </div>
         </div>
@@ -181,24 +183,23 @@ export function AccountBannedOverlay({ payload, onClose }) {
       <div className="w-full max-w-[340px] overflow-hidden rounded-sm border border-zinc-800 bg-[#121212] text-center shadow-2xl">
         <div className="px-6 py-6">
           <h2 className="text-xl font-bold text-zinc-100">
-            Tài khoản của bạn đã bị cấm
+            {t('auth.banned.title')}
           </h2>
           {appealSent ? (
             <p className="mt-4 text-[13px] leading-relaxed text-emerald-400">
-              Đã gửi khiếu nại. Chúng tôi sẽ xem xét và phản hồi qua email.
+              {t('auth.appealSentBanner')}
             </p>
           ) : (
             <>
               <p className="mt-4 text-[13px] leading-relaxed text-zinc-300">
-                Tài khoản bạn đã bị cấm vì{" "}
+                {t('auth.banned.reason')}{" "}
                 <span className="font-semibold text-zinc-100">
-                  {bannedReason || "vi phạm chính sách cộng đồng của Vibely"}
+                  {bannedReason || t('auth.banned.defaultReason')}
                 </span>
                 .
               </p>
               <p className="mt-3 text-[13px] leading-relaxed text-zinc-400">
-                Nếu bạn cho rằng đây là một sự nhầm lẫn, bạn có thể gửi khiếu
-                nại.
+                {t('auth.banned.suggestion')}
               </p>
             </>
           )}
@@ -210,7 +211,7 @@ export function AccountBannedOverlay({ payload, onClose }) {
               className="flex h-12 w-full items-center justify-center text-[15px] font-semibold text-white transition hover:bg-zinc-900"
               onClick={() => setAppealOpen(true)}
             >
-              Khiếu nại
+              {t('auth.banned.appeal')}
             </button>
           ) : null}
           <button
@@ -218,7 +219,7 @@ export function AccountBannedOverlay({ payload, onClose }) {
             className="h-12 w-full border-t border-zinc-800 text-[15px] font-medium text-zinc-200 hover:bg-zinc-900"
             onClick={handleDismiss}
           >
-            {appealSent ? "Đóng" : "Bỏ qua"}
+            {appealSent ? t('common.close') : t('auth.banned.ignore')}
           </button>
         </div>
       </div>

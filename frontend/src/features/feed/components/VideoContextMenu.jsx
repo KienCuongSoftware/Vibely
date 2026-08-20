@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 import {
   IoDownloadOutline,
   IoLinkOutline,
@@ -66,6 +67,7 @@ export function VideoContextMenu({
   onCopyLink,
   downloading = false,
 }) {
+  const { t } = useTranslation()
   const panelRef = useRef(null)
   const [position, setPosition] = useState({ left: x, top: y })
 
@@ -106,7 +108,7 @@ export function VideoContextMenu({
     <div
       ref={panelRef}
       role="menu"
-      aria-label="Tùy chọn video"
+      aria-label={t('feedMenu.menuAria')}
       className={`fixed z-[200] ${FEED_MORE_PANEL_SURFACE_CLASS}`}
       style={{ left: position.left, top: position.top, minWidth: MENU_MIN_WIDTH_PX }}
       onContextMenu={(event) => event.preventDefault()}
@@ -117,11 +119,11 @@ export function VideoContextMenu({
           className={FEED_MORE_MENU_INLINE_ICON_CLASS}
           aria-hidden
         />
-        <span className="shrink-0">Tốc độ</span>
+        <span className="shrink-0">{t('feedMenu.speed')}</span>
         <div
           className={FEED_MORE_SPEED_TRACK_CLASS}
           role="group"
-          aria-label="Tốc độ phát"
+          aria-label={t('feedMenu.speedGroup')}
         >
           {FEED_PLAYBACK_SPEEDS.map((rate) => {
             const selected = playbackSpeed === rate
@@ -152,7 +154,7 @@ export function VideoContextMenu({
             className={FEED_MORE_MENU_INLINE_ICON_CLASS}
             aria-hidden
           />
-          <span className="min-w-0 flex-1">Cuộn tự động</span>
+          <span className="min-w-0 flex-1">{t('feedMenu.autoScroll')}</span>
           <button
             type="button"
             role="switch"
@@ -185,7 +187,7 @@ export function VideoContextMenu({
           className={FEED_MORE_MENU_INLINE_ICON_CLASS}
           aria-hidden
         />
-        <span className="flex-1">Trình phát nổi</span>
+        <span className="flex-1">{t('feedMenu.pip')}</span>
       </button>
 
       <button
@@ -200,7 +202,7 @@ export function VideoContextMenu({
         <span className={FEED_MORE_MENU_BADGE_ICON_CLASS} aria-hidden>
           Aa
         </span>
-        <span className="flex-1">Phụ đề</span>
+        <span className="flex-1">{t('feedMenu.subtitles')}</span>
       </button>
 
       <div className="mx-3 my-1 border-t border-white/10" aria-hidden />
@@ -216,7 +218,7 @@ export function VideoContextMenu({
       >
         <IoDownloadOutline className={FEED_MORE_MENU_INLINE_ICON_CLASS} aria-hidden />
         <span className="flex-1">
-          {downloading ? 'Đang chuẩn bị tải về…' : 'Tải về video'}
+          {downloading ? t('feedMenu.preparingDownload') : t('feedMenu.download')}
         </span>
       </button>
 
@@ -230,7 +232,7 @@ export function VideoContextMenu({
         }}
       >
         <IoShareSocialOutline className={FEED_MORE_MENU_INLINE_ICON_CLASS} aria-hidden />
-        <span className="flex-1">Chia sẻ</span>
+        <span className="flex-1">{t('feedMenu.share')}</span>
       </button>
 
       <button
@@ -243,7 +245,7 @@ export function VideoContextMenu({
         }}
       >
         <IoLinkOutline className={FEED_MORE_MENU_INLINE_ICON_CLASS} aria-hidden />
-        <span className="flex-1">Sao chép liên kết</span>
+        <span className="flex-1">{t('feedMenu.copyLink')}</span>
       </button>
     </div>,
     document.body,

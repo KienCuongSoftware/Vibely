@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import {
   IoChevronBack,
@@ -220,6 +221,7 @@ function formatExcludeSummary(langs) {
  * View: main | exclude (Không dịch) | translateTo (Dịch sang)
  */
 export function FeedSubtitlesModal({ open, onClose }) {
+  const { t } = useTranslation();
   const [prefs, setPrefs] = useState(DEFAULT_PREFS);
   /** 'main' | 'exclude' | 'translateTo' */
   const [view, setView] = useState("main");
@@ -289,7 +291,7 @@ export function FeedSubtitlesModal({ open, onClose }) {
   if (!open || typeof document === "undefined") return null;
 
   const isPicker = view === "exclude" || view === "translateTo";
-  const pickerTitle = view === "exclude" ? "Không dịch" : "Dịch sang";
+  const pickerTitle = view === "exclude" ? t('captions.doNotTranslate') : t('captions.translateTo');
   /** Không dịch: multi + đưa đã chọn lên đầu. Dịch sang: single, giữ thứ tự list. */
   const pickerLanguages =
     view === "exclude" ? excludeListOrdered : SUBTITLE_LANGUAGES;
@@ -298,14 +300,14 @@ export function FeedSubtitlesModal({ open, onClose }) {
     <div className="fixed inset-0 z-[220] flex items-center justify-center px-4">
       <button
         type="button"
-        aria-label="Đóng phụ đề"
+        aria-label={t('captions.closeAria')}
         className="absolute inset-0 cursor-default bg-black/55"
         onClick={onClose}
       />
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={isPicker ? pickerTitle : "Phụ đề"}
+        aria-label={isPicker ? pickerTitle : t('captions.title')}
         className={`relative z-10 flex w-full flex-col overflow-hidden rounded-2xl bg-[#1e1e1e] shadow-[0_16px_48px_rgba(0,0,0,0.55)] ${
           isPicker
             ? "max-h-[min(78vh,640px)] max-w-[420px]"
@@ -316,10 +318,10 @@ export function FeedSubtitlesModal({ open, onClose }) {
         {view === "main" ? (
           <>
             <div className="relative flex shrink-0 items-center justify-center px-4 pb-2 pt-4">
-              <h2 className="text-[17px] font-semibold text-white">Phụ đề</h2>
+              <h2 className="text-[17px] font-semibold text-white">{t('captions.title')}</h2>
               <button
                 type="button"
-                aria-label="Đóng"
+                aria-label={t('common.close')}
                 className="absolute right-3 top-3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/15"
                 onClick={onClose}
               >
@@ -330,29 +332,28 @@ export function FeedSubtitlesModal({ open, onClose }) {
             <div className="px-4 pb-5 pt-2">
               <div className="flex items-center justify-between gap-4 py-3.5">
                 <span className="min-w-0 text-[15px] leading-snug text-white">
-                  Chú thích (được tạo tự động)
+                  {t('captions.autoCaptions')}
                 </span>
                 <CyanToggle
                   checked={prefs.captionsEnabled}
                   onChange={(v) => patchPrefs({ captionsEnabled: v })}
-                  ariaLabel="Bật chú thích tự động"
+                  ariaLabel={t('captions.autoCaptionsAria')}
                 />
               </div>
 
               <div className="flex items-start justify-between gap-4 py-3.5">
                 <div className="min-w-0 flex-1">
                   <p className="text-[15px] leading-snug text-white">
-                    Luôn dịch bài đăng
+                    {t('captions.alwaysTranslate')}
                   </p>
                   <p className="mt-1 text-[13px] leading-snug text-white/45">
-                    Mô tả và phụ đề sẽ được dịch, trừ những ngôn ngữ bạn đã loại
-                    trừ.
+                    {t('captions.alwaysTranslateHint')}
                   </p>
                 </div>
                 <CyanToggle
                   checked={prefs.alwaysTranslate}
                   onChange={(v) => patchPrefs({ alwaysTranslate: v })}
-                  ariaLabel="Luôn dịch bài đăng"
+                  ariaLabel={t('captions.alwaysTranslateAria')}
                 />
               </div>
 
@@ -364,7 +365,7 @@ export function FeedSubtitlesModal({ open, onClose }) {
                   setView("exclude");
                 }}
               >
-                <span className="text-[15px] text-white">Không dịch</span>
+                <span className="text-[15px] text-white">{t('captions.doNotTranslate')}</span>
                 <span
                   className={`flex min-w-0 max-w-[58%] shrink-0 cursor-pointer items-center gap-1 text-[15px] ${
                     excludeSummary ? "text-white/55" : ""
@@ -372,7 +373,7 @@ export function FeedSubtitlesModal({ open, onClose }) {
                   style={excludeSummary ? undefined : { color: ACCENT }}
                 >
                   <span className="truncate">
-                    {excludeSummary ?? "Chọn ngôn ngữ"}
+                    {excludeSummary ?? t('captions.chooseLanguage')}
                   </span>
                   <IoChevronForward
                     className="h-4 w-4 shrink-0 text-white/40"
@@ -389,7 +390,7 @@ export function FeedSubtitlesModal({ open, onClose }) {
                   setView("translateTo");
                 }}
               >
-                <span className="text-[15px] text-white">Dịch sang</span>
+                <span className="text-[15px] text-white">{t('captions.translateTo')}</span>
                 <span className="flex shrink-0 items-center gap-1 text-[15px] text-white/55">
                   {prefs.translateTo}
                   <IoChevronForward
@@ -405,7 +406,7 @@ export function FeedSubtitlesModal({ open, onClose }) {
             <div className="relative flex shrink-0 items-center px-2 pb-2 pt-3">
               <button
                 type="button"
-                aria-label="Quay lại"
+                aria-label={t('common.back')}
                 className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-white transition hover:bg-white/10"
                 onClick={() => setView("main")}
               >
@@ -416,7 +417,7 @@ export function FeedSubtitlesModal({ open, onClose }) {
               </h2>
               <button
                 type="button"
-                aria-label="Đóng"
+                aria-label={t('common.close')}
                 className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/15"
                 onClick={onClose}
               >
@@ -460,7 +461,7 @@ export function FeedSubtitlesModal({ open, onClose }) {
                   else confirmTranslateTo();
                 }}
               >
-                Xong
+                {t('common.done')}
               </button>
             </div>
           </>

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { IoMenu } from "react-icons/io5";
 import { AdminSidebar } from "@/features/admin/components/AdminSidebar.jsx";
 import { StudioAccountMenu } from "@/features/studio/components/StudioAccountMenu.jsx";
 
 export function AdminLayout({ active = "users", title, subtitle, children }) {
+  const { t } = useTranslation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
@@ -15,7 +17,7 @@ export function AdminLayout({ active = "users", title, subtitle, children }) {
           <button
             type="button"
             className="fixed inset-0 z-200 bg-black/50 lg:hidden"
-            aria-label="Đóng menu"
+            aria-label={t("admin.closeMenu")}
             onClick={() => setMobileNavOpen(false)}
           />
           <AdminSidebar
@@ -32,13 +34,13 @@ export function AdminLayout({ active = "users", title, subtitle, children }) {
             <button
               type="button"
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl text-zinc-200 hover:bg-zinc-900 lg:hidden"
-              aria-label="Menu Admin"
+              aria-label={t("admin.menuAdmin")}
               onClick={() => setMobileNavOpen(true)}
             >
               <IoMenu aria-hidden />
             </button>
             <span className="min-w-0 truncate text-base font-bold text-white sm:text-lg lg:text-xl">
-              Vibely Admin
+              {t("admin.brand")}
             </span>
           </div>
           <StudioAccountMenu />

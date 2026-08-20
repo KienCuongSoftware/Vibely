@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   IoBarChartOutline,
   IoBulbOutline,
@@ -76,6 +77,7 @@ const OPEN_UPLOAD_PICKER_KEY = 'vibely-studio-open-upload-picker'
 
 /** @param {'dark' | 'light'} [theme='dark'] */
 export function StudioSidebar({ active = 'home', theme = 'dark', className = '', onNavigate }) {
+  const { t } = useTranslation()
   const light = theme === 'light'
   const location = useLocation()
   const navigate = useNavigate()
@@ -121,14 +123,14 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
             : 'px-2 text-lg font-black tracking-tight text-white sm:text-xl'
         }
       >
-        Vibely Studio
+        {t('studio.brand')}
       </Link>
 
       <button
         type="button"
         disabled={onUpload}
         onClick={handleUploadClick}
-        title={onUpload ? 'Bạn đang ở trang tải lên' : undefined}
+        title={onUpload ? t('studio.uploadDisabledTitle') : undefined}
         className={`mt-5 w-full rounded-lg px-3 py-2.5 text-center text-sm font-semibold shadow-sm transition ${
           onUpload
             ? light
@@ -137,15 +139,15 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
             : 'bg-[#fe2c55] text-white hover:bg-[#e62a4d]'
         }`}
       >
-        + Tải lên
+        {t('studio.upload')}
       </button>
 
-      <NavSection title="Quản lý" light={light}>
-        <NavLink to="/vibelystudio/home" icon={IoHomeOutline} label="Trang chủ" active={active === 'home'} light={light} onNavigate={onNavigate} />
+      <NavSection title={t('studio.nav.manage')} light={light}>
+        <NavLink to="/vibelystudio/home" icon={IoHomeOutline} label={t('studio.nav.home')} active={active === 'home'} light={light} onNavigate={onNavigate} />
         <NavLink
           to="/vibelystudio/posts"
           icon={IoVideocamOutline}
-          label="Bài đăng"
+          label={t('studio.nav.posts')}
           active={postsNavActive}
           light={light}
           onNavigate={onNavigate}
@@ -153,7 +155,7 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
         <NavLink
           to="/vibelystudio/analytics"
           icon={IoBarChartOutline}
-          label="Phân tích"
+          label={t('studio.nav.analytics')}
           active={analyticsNavActive}
           light={light}
           onNavigate={onNavigate}
@@ -161,33 +163,33 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
         <NavLink
           to="/vibelystudio/comments"
           icon={IoChatboxEllipsesOutline}
-          label="Bình luận"
+          label={t('studio.nav.comments')}
           active={commentsNavActive}
           light={light}
           onNavigate={onNavigate}
         />
       </NavSection>
 
-      <NavSection title="Phát triển" light={light}>
+      <NavSection title={t('studio.nav.grow')} light={light}>
         <NavLink
           to="/vibelystudio/inspiration"
           icon={IoBulbOutline}
-          label="Cảm hứng"
+          label={t('studio.nav.inspiration')}
           active={inspirationNavActive}
           light={light}
           onNavigate={onNavigate}
         />
-        <ToolRow icon={IoSchoolOutline} label="Học viện sáng tạo" light={light} />
+        <ToolRow icon={IoSchoolOutline} label={t('studio.nav.academy')} light={light} />
       </NavSection>
 
-      <NavSection title="Công cụ" light={light}>
-        <ToolRow icon={IoCashOutline} label="Kiếm tiền" dot light={light} />
-        <ToolRow icon={IoMusicalNotesOutline} label="Âm thanh không giới hạn" light={light} />
-        <ToolRow icon={IoCutOutline} label="Chia nhỏ thông minh" dot light={light} />
+      <NavSection title={t('studio.nav.tools')} light={light}>
+        <ToolRow icon={IoCashOutline} label={t('studio.nav.monetize')} dot light={light} />
+        <ToolRow icon={IoMusicalNotesOutline} label={t('studio.nav.unlimitedAudio')} light={light} />
+        <ToolRow icon={IoCutOutline} label={t('studio.nav.smartSplit')} dot light={light} />
       </NavSection>
 
-      <NavSection title="Khác" light={light}>
-        <ToolRow icon={IoMailOutline} label="Phản hồi" light={light} />
+      <NavSection title={t('studio.nav.other')} light={light}>
+        <ToolRow icon={IoMailOutline} label={t('studio.nav.feedback')} light={light} />
       </NavSection>
     </aside>
   )

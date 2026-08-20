@@ -1,11 +1,15 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 /** Empty state panel bình luận — giống TikTok web. */
 export function FeedCommentsEmptyState({
-  message = 'Bắt đầu cuộc trò chuyện',
+  message,
   /** Mobile bottom sheet: căn cao hơn, không chiếm min-height lớn. */
   compact = false,
 }) {
+  const { t } = useTranslation()
+  const resolvedMessage = message ?? t('comments.empty')
+
   return (
     <div
       className={
@@ -46,7 +50,7 @@ export function FeedCommentsEmptyState({
         />
       </svg>
       <p className="max-w-[220px] text-[15px] font-semibold leading-snug text-zinc-400">
-        {message}
+        {resolvedMessage}
       </p>
     </div>
   )

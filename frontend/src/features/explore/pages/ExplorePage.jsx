@@ -21,6 +21,7 @@ import {
   ExplorePageSkeleton,
   ExploreTabsSkeleton,
 } from '@/features/explore/components/ExplorePageSkeleton.jsx'
+import { localizeExploreTabName } from '@/features/explore/utils/localizeExploreTab.js'
 
 const ALL_TAB_BASE = { slug: 'all', kind: 'category', videoCount: 0 }
 
@@ -360,7 +361,7 @@ export function ExplorePage() {
                             : 'border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-800'
                         }`}
                       >
-                        {tab.name}
+                        {localizeExploreTabName(tab, t)}
                       </button>
                     ))
                   )}

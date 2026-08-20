@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { IoChevronForward } from "react-icons/io5";
 import { apiClient } from "@/shared/api/client";
@@ -14,28 +15,16 @@ import {
 } from "@/features/profile/utils/avatarUrl.js";
 
 const PERIOD_OPTIONS = [
-  { days: 7, label: "7 ngày qua" },
-  { days: 28, label: "28 ngày qua" },
-  { days: 60, label: "60 ngày qua" },
-  { days: 90, label: "90 ngày qua" },
+  { days: 7, labelKey: "studio.period.d7" },
+  { days: 28, labelKey: "studio.period.d28" },
+  { days: 60, labelKey: "studio.period.d60" },
+  { days: 90, labelKey: "studio.period.d90" },
 ];
 
 const KNOWLEDGE_ITEMS = [
-  {
-    id: "hooks",
-    title: "Mở đầu video trong 3 giây",
-    desc: "Giữ người xem bằng hook rõ ràng ngay khung hình đầu.",
-  },
-  {
-    id: "consistency",
-    title: "Đăng đều để tăng đề xuất",
-    desc: "Lịch đăng ổn định giúp thuật toán hiểu kênh của bạn hơn.",
-  },
-  {
-    id: "caption",
-    title: "Mô tả và hashtag gọn",
-    desc: "Viết ngắn, có từ khóa chính; tránh spam tag không liên quan.",
-  },
+  { id: "hooks", titleKey: "studio.home.knowledge.hooksTitle", descKey: "studio.home.knowledge.hooksDesc" },
+  { id: "consistency", titleKey: "studio.home.knowledge.consistencyTitle", descKey: "studio.home.knowledge.consistencyDesc" },
+  { id: "caption", titleKey: "studio.home.knowledge.captionTitle", descKey: "studio.home.knowledge.captionDesc" },
 ];
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -73,6 +62,7 @@ function pointValue(p, metric) {
 }
 
 export function StudioHomePage() {
+  const { t } = useTranslation();
   const { token, user } = useAuth();
   const navigate = useNavigate();
   const [days, setDays] = useState(7);
@@ -96,11 +86,11 @@ export function StudioHomePage() {
     user?.id || profile?.id,
   );
   const displayName =
-    user?.username || profile?.username || user?.displayName || "Bạn";
+    user?.username || profile?.username || user?.displayName || t("studio.home.you");
 
   useEffect(() => {
-    document.title = "VibelyStudio | Home";
-  }, []);
+    document.title = t("studio.docTitle.home");
+  }, [t]);
 
   useEffect(() => {
     if (!token || !user?.username) return;
@@ -194,43 +184,43 @@ export function StudioHomePage() {
     () => [
       {
         id: "views",
-        label: "Lượt xem video",
+        label: t("studio.metrics.videoViews"),
         value: overview.totalViews,
-        tip: "Số lần người xem đã xem video của bạn trong khoảng thời gian đã chọn.",
+        tip: t("studio.metrics.videoViewsTip"),
       },
       {
         id: "profileViews",
-        label: "Lượt xem hồ sơ",
+        label: t("studio.metrics.profileViews"),
         value: overview.totalProfileViews,
-        tip: "Số lần hồ sơ của bạn được xem trong khoảng thời gian đã chọn.",
+        tip: t("studio.metrics.profileViewsTip"),
       },
       {
         id: "likes",
-        label: "Lượt thích",
+        label: t("studio.metrics.likes"),
         value: overview.totalLikes,
-        tip: "Số lượt thích video của bạn nhận được trong khoảng thời gian đã chọn.",
+        tip: t("studio.metrics.likesTip"),
       },
       {
         id: "comments",
-        label: "Bình luận",
+        label: t("studio.metrics.comments"),
         value: overview.totalComments,
-        tip: "Số bình luận trên video của bạn trong khoảng thời gian đã chọn.",
+        tip: t("studio.metrics.commentsTip"),
       },
       {
         id: "shares",
-        label: "Chia sẻ",
+        label: t("studio.metrics.shares"),
         value: 0,
-        tip: "Số lần video của bạn được chia sẻ trong khoảng thời gian đã chọn.",
+        tip: t("studio.metrics.sharesTip"),
       },
       {
         id: "rewards",
-        label: "Ước tính thưởng",
+        label: t("studio.metrics.rewards"),
         value: "$0.00",
         raw: true,
-        tip: "Do khác biệt tỷ giá và múi giờ, một số số liệu có thể hơi khác các báo cáo khác.",
+        tip: t("studio.metrics.rewardsTip"),
       },
     ],
-    [overview],
+    [overview, t],
   );
 
   const chartPoints = useMemo(() => {
@@ -248,8 +238,8 @@ export function StudioHomePage() {
     }));
   }, [overview.points, metric]);
 
-  const periodLabel =
-    PERIOD_OPTIONS.find((o) => o.days === days)?.label ?? `${days} ngày qua`;
+  const periodOpt = PERIOD_OPTIONS.find((o) => o.days === days);
+  const periodLabel = periodOpt ? t(periodOpt.labelKey) : String(days);
 
   const likesTotal = Number(
     profile?.totalLikeCount ?? overview.totalLikes ?? 0,
@@ -296,7 +286,7 @@ export function StudioHomePage() {
             className="inline-flex cursor-pointer items-center gap-0.5 text-base font-bold text-zinc-100 hover:text-white"
             onClick={() => navigate("/vibelystudio/analytics")}
           >
-            Chỉ số chính
+            {t("studio.home.keyMetrics")}
             <IoChevronForward className="text-lg text-zinc-500" aria-hidden />
           </button>
           <div className="relative">
@@ -324,7 +314,7 @@ export function StudioHomePage() {
                       setPeriodOpen(false);
                     }}
                   >
-                    {opt.label}
+                    {t(opt.labelKey)}
                     {days === opt.days ? " ✓" : ""}
                   </button>
                 ))}
@@ -377,7 +367,7 @@ export function StudioHomePage() {
               scale={metric === "rewards" ? "money" : "count"}
               yMax={metric === "rewards" ? 1.2 : undefined}
               emptyHint={
-                metric === "rewards" ? null : "0 trong khoảng thời gian này"
+                metric === "rewards" ? null : t("studio.home.zeroInPeriod")
               }
             />
           </div>
@@ -393,7 +383,7 @@ export function StudioHomePage() {
               className="mb-3 inline-flex cursor-pointer items-center gap-0.5 text-base font-bold text-zinc-100 hover:text-white"
               onClick={() => navigate("/vibelystudio/posts")}
             >
-              Bài đăng gần đây
+              {t("studio.home.recentPosts")}
               <IoChevronForward className="text-lg text-zinc-500" aria-hidden />
             </button>
             <div className="min-h-[140px] rounded-xl border border-zinc-800 bg-zinc-950/50">
@@ -484,7 +474,7 @@ export function StudioHomePage() {
 
         <section>
           <h2 className="mb-3 inline-flex items-center gap-0.5 text-base font-bold text-zinc-100">
-            Kiến thức dành cho bạn
+            {t("studio.home.knowledgeForYou")}
             <IoChevronForward className="text-lg text-zinc-500" aria-hidden />
           </h2>
           <div className="space-y-3">
@@ -494,10 +484,10 @@ export function StudioHomePage() {
                 className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-3"
               >
                 <p className="text-sm font-semibold text-zinc-100">
-                  {item.title}
+                  {t(item.titleKey)}
                 </p>
                 <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                  {item.desc}
+                  {t(item.descKey)}
                 </p>
               </article>
             ))}

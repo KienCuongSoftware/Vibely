@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   IoArrowBack,
@@ -15,17 +16,19 @@ import { postApi } from '@/features/post/api'
 import { AdminLayout } from '@/features/admin/components/AdminLayout.jsx'
 import { useAuth } from '@/features/auth/hooks/useAuth.js'
 
-function statusLabel(status) {
-  const labels = {
-    RAW: 'Bản nháp',
-    PROCESSING: 'Đang xử lý',
-    READY: 'Đã đăng',
-    FAILED: 'Lỗi xử lý',
-    REPORTED: 'Bị báo cáo',
-    HIDDEN: 'Đã ẩn',
-    REMOVED: 'Đã gỡ',
-  }
-  return labels[String(status ?? '').toUpperCase()] ?? 'Không rõ'
+const STATUS_LABEL_KEYS = {
+  RAW: 'admin.status.draft',
+  PROCESSING: 'admin.status.processing',
+  READY: 'admin.status.published',
+  FAILED: 'admin.status.failed',
+  REPORTED: 'admin.status.reported',
+  HIDDEN: 'admin.status.hidden',
+  REMOVED: 'admin.status.removed',
+}
+
+function statusLabel(status, t) {
+  const key = STATUS_LABEL_KEYS[String(status ?? '').toUpperCase()]
+  return key ? t(key) : t('admin.status.unknown')
 }
 
 function formatDateTime(value) {
@@ -45,61 +48,61 @@ function compactNumber(value) {
   return new Intl.NumberFormat('vi-VN', { notation: 'compact', maximumFractionDigits: 1 }).format(Number(value ?? 0))
 }
 
-const CU_JOB_STATUS_VI = {
-  NONE: 'Chưa có',
-  PENDING: 'Đang chờ',
-  RUNNING: 'Đang chạy',
-  COMPLETED: 'Hoàn tất',
-  FAILED_RETRYABLE: 'Lỗi (thử lại)',
-  FAILED_TERMINAL: 'Thất bại',
+const CU_JOB_STATUS_KEYS = {
+  NONE: 'admin.postDetail.cuNone',
+  PENDING: 'admin.postDetail.cuPending',
+  RUNNING: 'admin.postDetail.cuRunning',
+  COMPLETED: 'admin.postDetail.cuCompleted',
+  FAILED_RETRYABLE: 'admin.postDetail.cuFailedRetry',
+  FAILED_TERMINAL: 'admin.postDetail.cuFailedTerminal',
 }
 
-const CU_SOURCE_VI = {
-  metadata: 'siêu dữ liệu',
-  ocr: 'OCR khung hình',
-  speech: 'lời thoại',
-  visual: 'hình ảnh',
-  object: 'đối tượng',
-  scene: 'cảnh',
-  fusion: 'kết hợp đa nguồn',
+const CU_SOURCE_KEYS = {
+  metadata: 'admin.postDetail.srcMetadata',
+  ocr: 'admin.postDetail.srcOcr',
+  speech: 'admin.postDetail.srcSpeech',
+  visual: 'admin.postDetail.srcVisual',
+  object: 'admin.postDetail.srcObject',
+  scene: 'admin.postDetail.srcScene',
+  fusion: 'admin.postDetail.srcFusion',
 }
 
-const CU_MODALITY_VI = {
-  hasContentSha: 'Mã nội dung',
-  ocr: 'OCR',
-  visual: 'Hình ảnh',
-  speech: 'Lời thoại',
-  audio: 'Âm thanh',
-  object: 'Đối tượng',
-  scene: 'Cảnh',
+const CU_MODALITY_KEYS = {
+  hasContentSha: 'admin.postDetail.modContentId',
+  visual: 'admin.postDetail.modVisual',
+  speech: 'admin.postDetail.modSpeech',
+  audio: 'admin.postDetail.modAudio',
+  object: 'admin.postDetail.modObject',
+  scene: 'admin.postDetail.modScene',
 }
 
-function cuJobStatusLabel(status) {
+function cuJobStatusLabel(status, t) {
   const key = String(status ?? 'NONE').toUpperCase()
-  return CU_JOB_STATUS_VI[key] ?? key
+  return t(CU_JOB_STATUS_KEYS[key] || 'admin.postDetail.cuNone')
 }
 
-function cuSourceLabel(source) {
+function cuSourceLabel(source, t) {
   const key = String(source ?? '').toLowerCase()
-  return CU_SOURCE_VI[key] ?? (key || 'không rõ')
+  return t(CU_SOURCE_KEYS[key] || 'admin.postDetail.unknown')
 }
 
-function cuModalityLabel(key) {
-  return CU_MODALITY_VI[key] ?? key
+function cuModalityLabel(key, t) {
+  return t(CU_MODALITY_KEYS[key] || key)
 }
 
-function localizeCuReason(reason) {
+function localizeCuReason(reason, t) {
   let text = String(reason ?? '').trim()
   if (!text) return '—'
-  text = text.replace(/\bkeyword hit:/gi, 'Khớp từ khóa:')
-  text = text.replace(/\bhashtag\s+#/gi, 'thẻ #')
-  text = text.replace(/\byolo scene heuristic\b/gi, 'gợi ý cảnh YOLO')
+  text = text.replace(/\bkeyword hit:/gi, t('admin.postDetail.keywordMatch'))
+  text = text.replace(/\bhashtag\s+#/gi, t('admin.postDetail.hashtag'))
+  text = text.replace(/\byolo scene heuristic\b/gi, t('admin.postDetail.yoloHint'))
   text = text.replace(/\byolo:/gi, 'YOLO:')
   text = text.replace(/\bclip\b/gi, 'CLIP')
   return text
 }
 
 function StatusBadge({ status }) {
+  const { t } = useTranslation()
   const value = String(status ?? '').toUpperCase()
   const palette = {
     READY: 'bg-emerald-500/15 text-emerald-300 ring-emerald-500/30',
@@ -111,7 +114,7 @@ function StatusBadge({ status }) {
   }
   return (
     <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${palette[value] ?? palette.RAW}`}>
-      {statusLabel(value)}
+      {statusLabel(value, t)}
     </span>
   )
 }
@@ -129,19 +132,20 @@ function StatCard({ icon: Icon, label, value }) {
 }
 
 function DeleteConfirmModal({ busy, error, onClose, onConfirm }) {
+  const { t } = useTranslation()
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">
       <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/60">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-bold text-zinc-100">Xác nhận xóa bài đăng</h2>
-            <p className="mt-1 text-sm text-zinc-500">Bài đăng sẽ bị gỡ khỏi hệ thống Admin và người dùng.</p>
+            <h2 className="text-lg font-bold text-zinc-100">{t('admin.postDetail.confirmDeleteTitle')}</h2>
+            <p className="mt-1 text-sm text-zinc-500">{t('admin.postDetail.confirmDeleteHint')}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="rounded-full p-2 text-zinc-500 transition hover:bg-zinc-900 hover:text-zinc-100"
-            aria-label="Đóng"
+            aria-label={t("admin.close")}
           >
             <IoClose className="text-xl" aria-hidden />
           </button>
@@ -154,7 +158,7 @@ function DeleteConfirmModal({ busy, error, onClose, onConfirm }) {
             disabled={busy}
             className="rounded-xl border border-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-300 transition hover:bg-zinc-900 disabled:opacity-50"
           >
-            Hủy
+            {t('admin.cancel')}
           </button>
           <button
             type="button"
@@ -162,7 +166,7 @@ function DeleteConfirmModal({ busy, error, onClose, onConfirm }) {
             disabled={busy}
             className="rounded-xl border border-zinc-800 bg-black px-5 py-3 text-sm font-bold text-zinc-100 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {busy ? 'Đang xóa...' : 'Xóa bài đăng'}
+            {busy ? t("admin.deleting") : t('admin.postDetail.deletePost')}
           </button>
         </div>
       </div>
@@ -171,6 +175,7 @@ function DeleteConfirmModal({ busy, error, onClose, onConfirm }) {
 }
 
 export function AdminPostDetailPage() {
+  const { t } = useTranslation()
   const { publicId } = useParams()
   const navigate = useNavigate()
   const { token, user, authReady } = useAuth()
@@ -190,11 +195,11 @@ export function AdminPostDetailPage() {
   const [hlsReprocessBusy, setHlsReprocessBusy] = useState(false)
   const [hlsReprocessMsg, setHlsReprocessMsg] = useState('')
 
-  const title = post?.description || post?.title || 'Bài đăng không có mô tả'
+  const title = post?.description || post?.title || t('admin.postDetail.noDescription')
   const playbackUrl = post?.masterPlaylistUrl || post?.videoUrl
 
   useEffect(() => {
-    document.title = 'Vibely Admin | Chi tiết bài đăng'
+    document.title = t("admin.docTitle.postDetail")
   }, [])
 
   const loadPost = useCallback(async () => {
@@ -209,7 +214,7 @@ export function AdminPostDetailPage() {
       setPost(await adminApi.getAdminPost(token, publicId))
     } catch (e) {
       setPost(null)
-      setError(e.message ?? 'Không tải được chi tiết bài đăng.')
+      setError(e.message ?? t('admin.postDetail.loadFailed'))
     } finally {
       setLoading(false)
     }
@@ -229,7 +234,7 @@ export function AdminPostDetailPage() {
     } catch (e) {
       setCuAnalysis(null)
       setCuTags([])
-      setCuError(e.message ?? 'Không tải được dữ liệu hiểu nội dung.')
+      setCuError(e.message ?? t('admin.postDetail.understandingFailed'))
     } finally {
       setCuLoading(false)
     }
@@ -245,13 +250,13 @@ export function AdminPostDetailPage() {
 
   const stats = useMemo(
     () => [
-      { icon: IoEyeOutline, label: 'Lượt xem', value: post?.viewCount },
-      { icon: IoHeartOutline, label: 'Lượt thích', value: post?.likeCount },
-      { icon: IoChatbubbleOutline, label: 'Bình luận', value: post?.commentCount },
-      { icon: IoBookmarkOutline, label: 'Lượt lưu', value: post?.bookmarkCount },
-      { icon: IoShareSocialOutline, label: 'Chia sẻ', value: post?.shareCount },
+      { icon: IoEyeOutline, label: t('admin.postDetail.views'), value: post?.viewCount },
+      { icon: IoHeartOutline, label: t('admin.postDetail.likes'), value: post?.likeCount },
+      { icon: IoChatbubbleOutline, label: t('admin.postDetail.comments'), value: post?.commentCount },
+      { icon: IoBookmarkOutline, label: t('admin.postDetail.saves'), value: post?.bookmarkCount },
+      { icon: IoShareSocialOutline, label: t('admin.postDetail.shares'), value: post?.shareCount },
     ],
-    [post],
+    [post, t],
   )
 
   const handleDelete = async () => {
@@ -262,7 +267,7 @@ export function AdminPostDetailPage() {
       await adminApi.deleteAdminPost(token, post.publicId)
       navigate('/admin/posts', { replace: true })
     } catch (e) {
-      setDeleteError(e.message ?? 'Không xóa được bài đăng.')
+      setDeleteError(e.message ?? t('admin.postDetail.deleteFailed'))
     } finally {
       setDeleteBusy(false)
     }
@@ -279,12 +284,12 @@ export function AdminPostDetailPage() {
       })
       setReanalyzeMsg(
         result?.jobIds?.[0]
-          ? `Đã đưa job ${result.jobIds[0]} vào hàng chờ phân tích.`
-          : 'Đã gửi yêu cầu phân tích lại.',
+          ? t('admin.postDetail.reanalyzeQueuedJob', { id: result.jobIds[0] })
+          : t('admin.postDetail.reanalyzeQueued'),
       )
       await loadCu()
     } catch (e) {
-      setReanalyzeMsg(e.message ?? 'Không đưa được job phân tích vào hàng chờ.')
+      setReanalyzeMsg(e.message ?? t('admin.postDetail.reanalyzeFailed'))
     } finally {
       setReanalyzeBusy(false)
     }
@@ -299,12 +304,12 @@ export function AdminPostDetailPage() {
       const n = Number(result?.queued ?? 0)
       setHlsReprocessMsg(
         n > 0
-          ? 'Đã đưa video vào hàng chờ encode lại HLS (nhiều chất lượng). Đợi vài phút rồi hard-refresh feed.'
-          : result?.skippedDetails?.[0] || 'Không xếp hàng được.',
+          ? t('admin.postDetail.reencodeQueued')
+          : result?.skippedDetails?.[0] || t('admin.postDetail.queueFailed'),
       )
       await loadPost()
     } catch (e) {
-      setHlsReprocessMsg(e.message ?? 'Không encode lại được HLS.')
+      setHlsReprocessMsg(e.message ?? t('admin.postDetail.reencodeFailed'))
     } finally {
       setHlsReprocessBusy(false)
     }
@@ -313,16 +318,16 @@ export function AdminPostDetailPage() {
   return (
     <AdminLayout
       active="posts"
-      title="Chi tiết bài đăng"
-      subtitle="Trang xem và kiểm tra bài đăng dành riêng cho quản trị viên."
+      title={t("admin.postDetail.title")}
+      subtitle={t("admin.postDetail.subtitle")}
     >
       {!authReady || loading ? (
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center text-sm text-zinc-400">
-          Đang tải chi tiết bài đăng...
+          {t('admin.postDetail.loading')}
         </section>
       ) : !isAdmin ? (
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center">
-          <p className="text-lg font-semibold text-zinc-100">Bạn không có quyền truy cập Admin</p>
+          <p className="text-lg font-semibold text-zinc-100">{t('admin.noAccess')}</p>
         </section>
       ) : error ? (
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-16 text-center text-sm text-amber-400">
@@ -336,7 +341,7 @@ export function AdminPostDetailPage() {
               className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200"
             >
               <IoArrowBack aria-hidden />
-              Quay lại danh sách
+              {t('admin.postDetail.backToList')}
             </Link>
             <button
               type="button"
@@ -344,7 +349,7 @@ export function AdminPostDetailPage() {
               className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-200"
             >
               <IoTrash aria-hidden />
-              Xóa bài đăng
+              {t('admin.postDetail.deletePost')}
             </button>
           </div>
 
@@ -364,7 +369,7 @@ export function AdminPostDetailPage() {
                   <img src={post.thumbnailUrl} alt="" className="mx-auto max-h-[68vh] w-full object-contain" />
                 ) : (
                   <div className="flex aspect-video items-center justify-center text-sm text-zinc-500">
-                    Không có file video để phát.
+                    {t('admin.postDetail.noVideoFile')}
                   </div>
                 )}
               </div>
@@ -374,28 +379,28 @@ export function AdminPostDetailPage() {
               <section className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Nội dung</p>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">{t('admin.postDetail.content')}</p>
                     <h2 className="mt-2 line-clamp-4 text-lg font-bold text-zinc-100">{title}</h2>
                   </div>
                   <StatusBadge status={post.status} />
                 </div>
                 <dl className="mt-4 space-y-3 text-sm">
                   <div>
-                    <dt className="text-zinc-500">Mã bài đăng</dt>
+                    <dt className="text-zinc-500">{t('admin.postDetail.postId')}</dt>
                     <dd className="mt-1 break-all text-zinc-200">{post.publicId}</dd>
                   </div>
                   <div>
-                    <dt className="text-zinc-500">Ngày tạo</dt>
+                    <dt className="text-zinc-500">{t('admin.postDetail.createdAt')}</dt>
                     <dd className="mt-1 text-zinc-200">{formatDateTime(post.createdAt)}</dd>
                   </div>
                 </dl>
               </section>
 
               <section className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Tác giả</p>
-                <p className="mt-2 font-bold text-zinc-100">{post.authorDisplayName || 'Người dùng Vibely'}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">{t('admin.postDetail.author')}</p>
+                <p className="mt-2 font-bold text-zinc-100">{post.authorDisplayName || t("admin.vibelyUser")}</p>
                 <p className="mt-1 text-sm text-zinc-500">@{post.authorUsername || 'unknown'}</p>
-                <p className="mt-1 text-sm text-zinc-400">{post.authorEmail || 'Không có email'}</p>
+                <p className="mt-1 text-sm text-zinc-400">{post.authorEmail || t("admin.noEmail")}</p>
               </section>
             </aside>
           </section>
@@ -410,17 +415,17 @@ export function AdminPostDetailPage() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  Hiểu nội dung (CU)
+                  {t('admin.postDetail.understandingTitle')}
                 </p>
                 <p className="mt-1 text-sm text-zinc-400">
-                  Nhãn ngữ nghĩa kèm độ tin cậy và nguồn (có thể giải thích). Trạng thái job:{' '}
+                  {t('admin.postDetail.understandingHint')}{' '}
                   <span className="font-semibold text-zinc-200">
                     {cuLoading
                       ? '…'
-                      : cuJobStatusLabel(cuAnalysis?.jobStatus ?? 'NONE')}
+                      : cuJobStatusLabel(cuAnalysis?.jobStatus ?? 'NONE', t)}
                   </span>
                   {cuAnalysis?.featureVersion
-                    ? ` · phiên bản ${cuAnalysis.featureVersion}`
+                    ? t('admin.postDetail.version', { version: cuAnalysis.featureVersion })
                     : null}
                 </p>
               </div>
@@ -431,7 +436,7 @@ export function AdminPostDetailPage() {
                   disabled={reanalyzeBusy || cuLoading}
                   className="rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-semibold text-zinc-100 transition hover:border-emerald-500/50 hover:bg-emerald-500/10 disabled:opacity-50"
                 >
-                  {reanalyzeBusy ? 'Đang gửi yêu cầu…' : 'Phân tích lại'}
+                  {reanalyzeBusy ? t("admin.postDetail.reanalyzing") : t('admin.postDetail.reanalyze')}
                 </button>
                 <button
                   type="button"
@@ -439,7 +444,7 @@ export function AdminPostDetailPage() {
                   disabled={hlsReprocessBusy}
                   className="rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-semibold text-zinc-100 transition hover:border-sky-500/50 hover:bg-sky-500/10 disabled:opacity-50"
                 >
-                  {hlsReprocessBusy ? 'Đang xếp hàng…' : 'Encode lại HLS'}
+                  {hlsReprocessBusy ? t("admin.postDetail.queuing") : t('admin.postDetail.reencodeHls')}
                 </button>
               </div>
             </div>
@@ -453,9 +458,9 @@ export function AdminPostDetailPage() {
               <p className="mt-3 text-sm text-amber-400">{cuError}</p>
             ) : null}
             {cuLoading ? (
-              <p className="mt-3 text-sm text-zinc-500">Đang tải nhãn ngữ nghĩa…</p>
+              <p className="mt-3 text-sm text-zinc-500">{t('admin.postDetail.loadingLabels')}</p>
             ) : cuTags.length === 0 ? (
-              <p className="mt-3 text-sm text-zinc-500">Chưa có nhãn ngữ nghĩa cho video này.</p>
+              <p className="mt-3 text-sm text-zinc-500">{t('admin.postDetail.noLabels')}</p>
             ) : (
               <ul className="mt-4 divide-y divide-zinc-800/80">
                 {cuTags.map((tag) => (
@@ -465,11 +470,11 @@ export function AdminPostDetailPage() {
                         {tag.slug}
                       </span>
                       <span className="text-xs text-zinc-500">
-                        {(Number(tag.confidence) * 100).toFixed(0)}% · {cuSourceLabel(tag.source)}
+                        {(Number(tag.confidence) * 100).toFixed(0)}% · {cuSourceLabel(tag.source, t)}
                       </span>
                     </div>
                     <p className="mt-1 text-sm text-zinc-300">
-                      {localizeCuReason(tag.reason) || tag.name || '—'}
+                      {localizeCuReason(tag.reason, t) || tag.name || '—'}
                     </p>
                   </li>
                 ))}
@@ -488,7 +493,7 @@ export function AdminPostDetailPage() {
                           : 'border-zinc-800 text-zinc-600'
                       }`}
                     >
-                      {cuModalityLabel(k)}: {v ? 'có' : 'không'}
+                      {cuModalityLabel(k, t)}: {v ? t('admin.postDetail.yes') : t('admin.postDetail.no')}
                     </span>
                   ))}
               </div>

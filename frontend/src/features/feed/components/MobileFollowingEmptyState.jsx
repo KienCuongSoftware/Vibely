@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/shared/api/client.js'
 import { SuggestedCreatorCard } from '@/features/feed/components/SuggestedCreatorsPanel.jsx'
 
@@ -8,6 +9,7 @@ const MOBILE_SKELETON_CLASS =
   'aspect-[2/3] w-full animate-pulse overflow-hidden rounded-xl bg-zinc-900'
 
 function MobileSuggestedCreatorsGrid({ token }) {
+  const { t } = useTranslation()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(Boolean(token))
   const [previewCreatorId, setPreviewCreatorId] = useState(null)
@@ -38,7 +40,7 @@ function MobileSuggestedCreatorsGrid({ token }) {
   return (
     <section className="mt-8 w-full sm:max-w-[420px]">
       <h2 className="mb-3 px-1 text-center text-[15px] font-bold text-white">
-        Tài khoản được đề xuất
+        {t('feed.suggestedAccounts')}
       </h2>
       {loading ? (
         <div className={MOBILE_GRID_CLASS}>
@@ -64,27 +66,28 @@ function MobileSuggestedCreatorsGrid({ token }) {
 }
 
 export function MobileFollowingEmptyState({ token }) {
+  const { t } = useTranslation()
   return (
     <div className="scrollbar-none flex h-full min-h-0 w-full flex-1 flex-col items-center overflow-y-auto overscroll-y-contain px-4 pb-6 pt-10">
       {!token ? (
         <div className="mx-auto max-w-sm text-center">
           <p className="text-[17px] font-semibold leading-snug text-white">
-            Follow các tác giả để xem video của họ
+            {t('feed.followToSeeVideos')}
           </p>
           <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-            Đăng nhập để thích, bình luận và theo dõi nhà sáng tạo trên Vibely.
+            {t('feed.loginToEngage')}
           </p>
           <Link
             to="/login"
             className="mt-6 inline-flex items-center justify-center rounded-md bg-[#fe2c55] px-8 py-2.5 text-[15px] font-semibold text-white transition hover:bg-[#ff4d70]"
           >
-            Đăng nhập
+            {t('nav.login')}
           </Link>
         </div>
       ) : (
         <>
           <p className="mx-auto max-w-sm text-center text-[17px] font-semibold leading-snug text-white">
-            Follow các tác giả để xem video của họ
+            {t('feed.followToSeeVideos')}
           </p>
           <MobileSuggestedCreatorsGrid token={token} />
         </>

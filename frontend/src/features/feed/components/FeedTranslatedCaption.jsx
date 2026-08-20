@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDescriptionTranslation } from "@/features/feed/hooks/useDescriptionTranslation.js";
 import { useFeedSubtitlesPrefs } from "@/features/feed/hooks/useFeedSubtitlesPrefs.js";
 import {
@@ -22,6 +23,7 @@ export function FeedTranslatedCaption({
   active = true,
   renderCaption,
 }) {
+  const { t } = useTranslation();
   const { prefs, targetLangIso, isExcludedSource } = useFeedSubtitlesPrefs();
   const original = String(captionText ?? "").trim();
   const [showOriginal, setShowOriginal] = useState(false);
@@ -176,19 +178,19 @@ export function FeedTranslatedCaption({
   let linkLabel = null;
   if (canTranslate) {
     if (showingAlt) {
-      linkLabel = "Xem bản gốc";
+      linkLabel = t('captions.viewOriginal');
     } else if (hasTranslation) {
-      linkLabel = "Xem bản dịch";
+      linkLabel = t('captions.viewTranslation');
     } else if (tx.status === "failed") {
-      linkLabel = "Thử dịch lại";
+      linkLabel = t('captions.retryTranslate');
     }
   } else if (canDiacritic) {
     if (showingAlt) {
-      linkLabel = "Xem bản gốc";
+      linkLabel = t('captions.viewOriginal');
     } else if (hasDiacritic) {
-      linkLabel = "Xem bản có dấu";
+      linkLabel = t('captions.viewWithDiacritics');
     } else if (diacriticTx.status === "failed") {
-      linkLabel = "Thử lại";
+      linkLabel = t('captions.retry');
     } else if (
       diacriticTx.status === "skipped" ||
       (diacriticTx.status === "ready" && !hasDiacritic)
@@ -200,7 +202,7 @@ export function FeedTranslatedCaption({
     }
   }
 
-  const busyLabel = canTranslate ? "Đang dịch…" : "Đang thêm dấu…";
+  const busyLabel = canTranslate ? t('captions.translating') : t('captions.addingDiacritics');
 
   return (
     <div className="min-w-0">

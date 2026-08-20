@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { IoClose, IoInformationCircleOutline } from 'react-icons/io5'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import {
@@ -9,36 +10,11 @@ import {
 
 const DEFAULT_SETTINGS = STUDIO_SETTINGS_DEFAULTS
 
-const SETTINGS_ROWS = [
-  {
-    key: 'musicCopyrightCheck',
-    title: 'Tự động kiểm tra bản quyền âm nhạc',
-    description:
-      'Chúng tôi sẽ tự động kiểm tra xem video của bạn có nhạc chưa được cấp phép có thể khiến video bị tắt tiếng hay không.',
-    infoTooltip:
-      'Chúng tôi sẽ kiểm tra video của bạn để tìm các vi phạm bản quyền tiềm ẩn đối với âm thanh được sử dụng. Nếu phát hiện vi phạm, bạn có thể chỉnh sửa video trước khi đăng.',
-    learnMore: 'copyright',
-  },
-  {
-    key: 'contentCheckLite',
-    title: 'Tự động kiểm tra nội dung rút gọn',
-    description:
-      'Chúng tôi sẽ tự động kiểm tra nội dung của bạn để đánh giá khả năng đủ điều kiện xuất hiện trên trang Đề xuất.',
-    infoTooltip:
-      'Chúng tôi sẽ kiểm tra nhanh video của bạn theo Nguyên tắc Cộng đồng để đảm bảo đủ điều kiện được đề xuất trên trang Đề xuất. Bạn sẽ có cơ hội sửa các vấn đề trước khi đăng. Tuy nhiên, đây chỉ là kiểm tra sơ bộ và không đảm bảo tuân thủ đầy đủ điều khoản và nguyên tắc của chúng tôi.',
-  },
-  {
-    key: 'allowVideoInsights',
-    title: 'Cho phép thông tin chi tiết về video của tôi',
-    description:
-      'Vibely sẽ dùng AI để tóm tắt và phân loại bình luận thành các nhóm: Chủ đề, Cảm hứng, Yêu thích và Câu hỏi.',
-  },
-  {
-    key: 'includeCommentsForInsights',
-    title: 'Bao gồm các bình luận của tôi để phân tích',
-    description:
-      'Vibely sẽ đưa bình luận của bạn vào khi dùng AI để tóm tắt và lọc bình luận trên các video khác.',
-  },
+const SETTINGS_ROW_KEYS = [
+  { key: 'musicCopyrightCheck', learnMore: 'copyright' },
+  { key: 'contentCheckLite' },
+  { key: 'allowVideoInsights' },
+  { key: 'includeCommentsForInsights' },
 ]
 
 function SettingsSwitch({ checked, onChange, label, light }) {
@@ -62,13 +38,13 @@ function SettingsSwitch({ checked, onChange, label, light }) {
   )
 }
 
-function InfoHoverTip({ text, onLearnMore }) {
+function InfoHoverTip({ text, onLearnMore, viewExplainLabel, learnMoreLabel }) {
   return (
     <span className="group/infotip relative inline-flex shrink-0">
       <button
         type="button"
         className="rounded-full text-zinc-500 transition hover:text-zinc-300 group-hover/infotip:text-zinc-300"
-        aria-label="Xem giải thích"
+        aria-label={viewExplainLabel}
       >
         <IoInformationCircleOutline className="text-base" aria-hidden />
       </button>
@@ -89,7 +65,7 @@ function InfoHoverTip({ text, onLearnMore }) {
                   onLearnMore()
                 }}
               >
-                Tìm hiểu thêm
+                {learnMoreLabel}
               </button>
             </>
           ) : null}
@@ -99,7 +75,7 @@ function InfoHoverTip({ text, onLearnMore }) {
   )
 }
 
-function CopyrightCheckInfoModal({ open, light, onClose }) {
+function CopyrightCheckInfoModal({ open, light, onClose, t }) {
   if (!open) return null
 
   return (
@@ -128,7 +104,7 @@ function CopyrightCheckInfoModal({ open, light, onClose }) {
                 : 'text-lg font-bold text-zinc-100'
             }
           >
-            Cách kiểm tra bản quyền hoạt động
+            {t('studio.settings.copyrightHowTitle')}
           </h2>
         </div>
 
@@ -139,22 +115,13 @@ function CopyrightCheckInfoModal({ open, light, onClose }) {
               : 'space-y-4 px-6 py-2 text-sm leading-relaxed text-zinc-300'
           }
         >
-          <p>
-            Hãy chạy kiểm tra bản quyền đối với các âm thanh bạn đã sử dụng trước khi đăng video
-            để xác định các vi phạm bản quyền tiềm ẩn. Nếu phát hiện thấy vấn đề, bạn có thể chỉnh
-            sửa video của mình trước khi đăng.
-          </p>
-          <p>
-            Bạn vẫn có thể đăng video đã bị gắn cờ vi phạm bản quyền. Tuy nhiên, video sẽ bị tắt
-            tiếng để bảo vệ quyền lợi của những âm thanh chưa được cấp phép.
-          </p>
+          <p>{t('studio.settings.copyrightHowP1')}</p>
+          <p>{t('studio.settings.copyrightHowP2')}</p>
           <p>
             <span className={light ? 'font-semibold text-slate-900' : 'font-semibold text-zinc-100'}>
-              Lưu ý:
+              {t('studio.settings.copyrightHowNoteLabel')}
             </span>{' '}
-            Kết quả kiểm tra bản quyền không phải là kết quả cuối cùng. Ví dụ: những thay đổi trong
-            tương lai về sự cho phép của chủ sở hữu bản quyền đối với âm thanh có thể ảnh hưởng đến
-            video của bạn.
+            {t('studio.settings.copyrightHowP3')}
           </p>
         </div>
 
@@ -164,7 +131,7 @@ function CopyrightCheckInfoModal({ open, light, onClose }) {
             onClick={onClose}
             className="cursor-pointer rounded-lg bg-[#FE2C55] px-6 py-2 text-sm font-semibold text-white transition hover:bg-[#e6284c]"
           >
-            OK
+            {t('studio.settings.ok')}
           </button>
         </div>
       </div>
@@ -173,12 +140,13 @@ function CopyrightCheckInfoModal({ open, light, onClose }) {
 }
 
 /**
- * Modal Cài đặt kiểu TikTok Studio — sidebar Thỏa thuận + toggle, nhãn tiếng Việt.
+ * Modal Cài đặt kiểu TikTok Studio — sidebar Thỏa thuận + toggle.
  * @param {boolean} open
  * @param {'dark' | 'light'} [theme='dark']
  * @param {() => void} onClose
  */
 export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
+  const { t } = useTranslation()
   const light = theme === 'light'
   const { user } = useAuth()
   const userId = user?.id ?? user?.username ?? 'guest'
@@ -186,6 +154,19 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
   const [draft, setDraft] = useState(saved)
   const [activeNav, setActiveNav] = useState('agreement')
   const [learnMoreKind, setLearnMoreKind] = useState(null)
+
+  const settingsRows = useMemo(
+    () =>
+      SETTINGS_ROW_KEYS.map((row) => ({
+        ...row,
+        title: t(`studio.settings.rows.${row.key}.title`),
+        description: t(`studio.settings.rows.${row.key}.description`),
+        infoTooltip: t(`studio.settings.rows.${row.key}.infoTooltip`, {
+          defaultValue: '',
+        }),
+      })),
+    [t],
+  )
 
   useEffect(() => {
     if (!open) return undefined
@@ -210,7 +191,7 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
 
   if (!open) return null
 
-  const dirty = SETTINGS_ROWS.some((row) => draft[row.key] !== saved[row.key])
+  const dirty = settingsRows.some((row) => draft[row.key] !== saved[row.key])
 
   const handleCancel = () => {
     setDraft(saved)
@@ -263,7 +244,7 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
                 : 'pr-10 text-lg font-bold text-zinc-100'
             }
           >
-            Cài đặt
+            {t('studio.settings.title')}
           </h2>
           <button
             type="button"
@@ -273,7 +254,7 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
                 ? 'absolute right-3 top-3 rounded-full p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900'
                 : 'absolute right-3 top-3 rounded-full p-1.5 text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100'
             }
-            aria-label="Đóng"
+            aria-label={t('studio.settings.close')}
           >
             <IoClose className="text-xl" />
           </button>
@@ -286,7 +267,7 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
                 ? 'hidden w-44 shrink-0 border-r border-slate-200 p-3 sm:block'
                 : 'hidden w-44 shrink-0 border-r border-zinc-800 p-3 sm:block'
             }
-            aria-label="Mục cài đặt"
+            aria-label={t('studio.settings.navAria')}
           >
             <button
               type="button"
@@ -301,7 +282,7 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
                     : 'w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-zinc-400 hover:bg-zinc-900'
               }
             >
-              Thỏa thuận
+              {t('studio.settings.agreement')}
             </button>
           </nav>
 
@@ -313,10 +294,10 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
                   : 'mb-3 text-sm font-semibold text-zinc-100 sm:hidden'
               }
             >
-              Thỏa thuận
+              {t('studio.settings.agreement')}
             </p>
             <ul className="space-y-5">
-              {SETTINGS_ROWS.map((row) => (
+              {settingsRows.map((row) => (
                 <li key={row.key} className="flex items-start gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
@@ -332,6 +313,8 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
                       {row.infoTooltip ? (
                         <InfoHoverTip
                           text={row.infoTooltip}
+                          viewExplainLabel={t('studio.settings.viewExplain')}
+                          learnMoreLabel={t('studio.settings.learnMore')}
                           onLearnMore={
                             row.learnMore
                               ? () => setLearnMoreKind(row.learnMore)
@@ -378,7 +361,7 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
                 : 'cursor-pointer rounded-lg bg-zinc-800 px-5 py-2 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700'
             }
           >
-            Hủy
+            {t('studio.settings.cancel')}
           </button>
           <button
             type="button"
@@ -388,7 +371,7 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
               dirty ? 'bg-[#FE2C55] hover:bg-[#e6284c]' : 'cursor-not-allowed bg-[#FE2C55]/50'
             }`}
           >
-            Lưu
+            {t('studio.settings.save')}
           </button>
         </div>
       </div>
@@ -397,6 +380,7 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
       open={learnMoreKind === 'copyright'}
       light={light}
       onClose={() => setLearnMoreKind(null)}
+      t={t}
     />
     </>
   )

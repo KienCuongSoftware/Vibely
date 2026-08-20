@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   FaFacebookF,
   FaLinkedinIn,
@@ -80,6 +81,7 @@ export function WatchShareStrip({
   repostBusy = false,
   onRepostToggle,
 }) {
+  const { t } = useTranslation()
   const shareCaption = useMemo(
     () =>
       pickShareCaption({ title: videoTitle, description: videoDescription }) ||
@@ -168,7 +170,7 @@ export function WatchShareStrip({
     <div className="flex shrink-0 items-center gap-1">
       <WatchShareCircleButton
         className={`bg-[#FACE15] text-black ${reposted ? 'ring-2 ring-[#FACE15]/60 ring-offset-1 ring-offset-black' : ''}`}
-        tip={reposted ? 'Xóa video đăng lại' : 'Đăng lại'}
+        tip={reposted ? t('feed.unrepost') : t('feed.repost')}
         disabled={disabled || repostBusy}
         onClick={handleRepost}
       >
@@ -176,7 +178,7 @@ export function WatchShareStrip({
       </WatchShareCircleButton>
       <WatchShareCircleButton
         className="bg-zinc-600"
-        tip="Nhúng"
+        tip={t('share.embed')}
         disabled={disabled}
         onClick={handleEmbed}
       >
@@ -211,7 +213,7 @@ export function WatchShareStrip({
         <button
           type="button"
           className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center text-xl text-white transition hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
-          aria-label="Thêm tùy chọn chia sẻ"
+          aria-label={t('share.moreShareOptions')}
           aria-haspopup="menu"
           disabled={disabled}
         >
@@ -238,7 +240,7 @@ export function WatchShareStrip({
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-white">
                   <Icon className={iconClass} aria-hidden />
                 </span>
-                <span>{`Chia sẻ lên ${label}`}</span>
+                <span>{t('share.shareTo', { label })}</span>
               </button>
             ))}
           </div>

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   IoBookmark,
@@ -19,18 +20,18 @@ import { getRegionLabel } from "@/features/settings/utils/accountRegions";
 
 const PAGE_SIZE = 20;
 const TABS = [
-  { id: "trending", label: "Thịnh hành" },
-  { id: "recommended", label: "Đề xuất" },
-  { id: "saved", label: "Cảm hứng của tôi" },
+  { id: "trending", labelKey: "studio.inspiration.tabs.trending" },
+  { id: "recommended", labelKey: "studio.inspiration.tabs.recommended" },
+  { id: "saved", labelKey: "studio.inspiration.tabs.saved" },
 ];
 const TRENDING_KINDS = [
-  { id: "posts", label: "Bài đăng" },
-  { id: "creators", label: "Nhà sáng tạo" },
+  { id: "posts", labelKey: "studio.inspiration.kinds.posts" },
+  { id: "creators", labelKey: "studio.inspiration.kinds.creators" },
 ];
 const RECOMMENDED_KINDS = [
-  { id: "similar_posts", label: "Bài đăng tương tự" },
-  { id: "followers_viewed", label: "Người theo dõi đã xem" },
-  { id: "similar_creators", label: "Nhà sáng tạo tương tự" },
+  { id: "similar_posts", labelKey: "studio.inspiration.kinds.similarPosts" },
+  { id: "followers_viewed", labelKey: "studio.inspiration.kinds.followersViewed" },
+  { id: "similar_creators", labelKey: "studio.inspiration.kinds.similarCreators" },
 ];
 const REGION_CODES = [
   "VN",
@@ -114,7 +115,7 @@ function VideoCard({ item, onToggleSave, busy }) {
         <RankBadge rank={item.rank} />
         <button
           type="button"
-          aria-label={item.saved ? "Bỏ khỏi Cảm hứng của tôi" : "Thêm vào Cảm hứng của tôi"}
+          aria-label={item.saved ? t("studio.inspiration.removeSaved") : t("studio.inspiration.addSaved")}
           disabled={busy}
           onClick={(e) => {
             e.preventDefault();
@@ -150,12 +151,13 @@ function VideoCard({ item, onToggleSave, busy }) {
 }
 
 function CreatorCard({ creator, token, playing, onHover }) {
+  const { t } = useTranslation();
   const [followed, setFollowed] = useState(Boolean(creator?.followedByViewer));
   const [busy, setBusy] = useState(false);
   const username = String(creator?.username ?? "").trim();
   const profilePath = username ? `/@${encodeURIComponent(username)}` : "/foryou";
   const displayName =
-    String(creator?.displayName ?? "").trim() || username || "Nhà sáng tạo";
+    String(creator?.displayName ?? "").trim() || username || t("studio.inspiration.creatorFallback");
 
   useEffect(() => {
     setFollowed(Boolean(creator?.followedByViewer));
@@ -203,7 +205,7 @@ function CreatorCard({ creator, token, playing, onHover }) {
           />
           <p className="mt-1.5 truncate text-sm font-semibold text-white">{displayName}</p>
           <p className="truncate text-[11px] text-zinc-400">
-            {formatCompact(creator.followerCount)} người theo dõi
+            {t("studio.inspiration.followers", { count: formatCompact(creator.followerCount) })}
           </p>
           <button
             type="button"
@@ -215,7 +217,7 @@ function CreatorCard({ creator, token, playing, onHover }) {
                 : "bg-[#fe2c55] text-white hover:bg-[#e62a4d]"
             }`}
           >
-            {followed ? "Đã follow" : "Follow"}
+            {followed ? t("studio.inspiration.following") : "Follow"}
           </button>
         </div>
       </div>
@@ -224,6 +226,10 @@ function CreatorCard({ creator, token, playing, onHover }) {
 }
 
 export function StudioInspirationPage() {
+  const { t } = useTranslation();
+  useEffect(() => {
+    document.title = t("studio.docTitle.inspiration");
+  }, [t]);
   const { token } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = TABS.some((t) => t.id === searchParams.get("tab"))
@@ -354,7 +360,7 @@ export function StudioInspirationPage() {
         setMinFollowers(Number(data?.minFollowers ?? 1000));
       } catch (e) {
         if (cancelled) return;
-        setError(e instanceof Error ? e.message : "Không tải được cảm hứng.");
+        setError(e instanceof Error ? e.message : t("studio.inspiration.loadFailed"));
         setItems([]);
         setCreators([]);
         setHasNext(false);
@@ -425,32 +431,32 @@ export function StudioInspirationPage() {
   };
 
   const regionLabel =
-    region === "all" ? "Tất cả khu vực" : getRegionLabel(region, "vi") || region;
+    region === "all" ? t("studio.inspiration.allRegions") : getRegionLabel(region, "vi") || region;
 
   const showingCreators =
     (tab === "trending" && trendingKind === "creators") ||
     (tab === "recommended" && recKind === "similar_creators");
 
   const emptyTitle = useMemo(() => {
-    if (tab === "saved") return "Chưa có bài viết nào được thêm";
-    if (tab === "recommended" && locked) return "Chưa có đề xuất nào";
-    if (tab === "recommended") return "Chưa có đề xuất nào";
+    if (tab === "saved") return t("studio.inspiration.emptySavedTitle");
+    if (tab === "recommended" && locked) return t("studio.inspiration.emptyRecommendedTitle");
+    if (tab === "recommended") return t("studio.inspiration.emptyRecommendedTitle");
     return showingCreators
-      ? "Chưa có nhà sáng tạo thịnh hành"
-      : "Chưa có bài đăng thịnh hành";
+      ? t("studio.inspiration.emptyTrendingCreatorsTitle")
+      : t("studio.inspiration.emptyTrendingPostsTitle");
   }, [tab, locked, showingCreators]);
 
   const emptySubtitle = useMemo(() => {
     if (tab === "saved") {
-      return "Bài đăng bạn thêm vào Cảm hứng của tôi sẽ xuất hiện tại đây.";
+      return t("studio.inspiration.emptySavedSubtitle");
     }
     if (tab === "recommended" && locked) {
-      return `Tab này chỉ dành cho những nhà sáng tạo có ít nhất ${formatCompact(minFollowers)} người theo dõi.`;
+      return t("studio.inspiration.tabMinFollowers", { count: formatCompact(minFollowers) });
     }
     if (tab === "recommended") {
-      return "Đăng video và tương tác thêm để Vibely gợi ý nội dung phù hợp với kênh của bạn.";
+      return t("studio.inspiration.emptyRecommendedSubtitle");
     }
-    return "Hãy quay lại sau khi có thêm video công khai trên Vibely.";
+    return t("studio.inspiration.emptyTrendingSubtitle");
   }, [tab, locked, minFollowers]);
 
   const scrollCats = (dir) => {
@@ -463,18 +469,18 @@ export function StudioInspirationPage() {
     <StudioLayout active="inspiration" hidePageHeader hideTopBar>
       <div className="mb-4 flex items-center justify-between gap-3">
         <nav className="flex min-w-0 flex-1 items-end gap-1 overflow-x-auto border-b border-zinc-800">
-          {TABS.map((t) => (
+          {TABS.map((tabItem) => (
             <button
-              key={t.id}
+              key={tabItem.id}
               type="button"
-              onClick={() => patchParams({ tab: t.id })}
+              onClick={() => patchParams({ tab: tabItem.id })}
               className={`shrink-0 cursor-pointer px-3 py-2.5 text-sm font-semibold transition sm:px-4 ${
-                tab === t.id
+                tab === tabItem.id
                   ? "border-b-2 border-zinc-100 text-zinc-100"
                   : "border-b-2 border-transparent text-zinc-500 hover:text-zinc-300"
               }`}
             >
-              {t.label}
+              {t(tabItem.labelKey)}
             </button>
           ))}
         </nav>
@@ -515,7 +521,7 @@ export function StudioInspirationPage() {
                     setRegionOpen(false);
                   }}
                 >
-                  Tất cả khu vực
+                  {t("studio.inspiration.allRegions")}
                 </button>
                 {REGION_CODES.map((code) => (
                   <button
@@ -566,7 +572,7 @@ export function StudioInspirationPage() {
           </div>
           <button
             type="button"
-            aria-label="Cuộn danh mục"
+            aria-label={t("studio.inspiration.scrollCategories")}
             onClick={() => scrollCats(1)}
             className="mt-0.5 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
           >
@@ -596,7 +602,7 @@ export function StudioInspirationPage() {
       ) : null}
 
       {loading ? (
-        <p className="py-16 text-center text-sm text-zinc-500">Đang tải cảm hứng…</p>
+        <p className="py-16 text-center text-sm text-zinc-500">{t("studio.inspiration.loading")}</p>
       ) : showingCreators ? (
         creators.length === 0 ? (
           <EmptyState title={emptyTitle} subtitle={emptySubtitle} />
@@ -625,7 +631,7 @@ export function StudioInspirationPage() {
                 onClick={() => patchParams({ tab: "trending" })}
                 className="mt-4 cursor-pointer rounded-md bg-[#fe2c55] px-4 py-2 text-sm font-semibold text-white hover:bg-[#e62a4d]"
               >
-                Khám phá thịnh hành
+                {t("studio.inspiration.exploreTrending")}
               </button>
             ) : null
           }
@@ -652,7 +658,7 @@ export function StudioInspirationPage() {
             onClick={loadMore}
             className="cursor-pointer rounded-md border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-900 disabled:opacity-60"
           >
-            {loadingMore ? "Đang tải…" : "Tải thêm"}
+            {loadingMore ? t("studio.inspiration.loading") : t("common.seeMore")}
           </button>
         </div>
       ) : null}

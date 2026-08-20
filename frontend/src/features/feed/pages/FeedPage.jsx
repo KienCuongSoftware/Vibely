@@ -1,13 +1,15 @@
 import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { VerticalVideoFeed } from "@/features/feed/components/VerticalVideoFeed.jsx";
 
 export function FeedPage() {
+  const { t } = useTranslation();
   const { token, user, logout, authReady } = useAuth();
 
   useEffect(() => {
-      document.title = "Xem các video thịnh hành dành cho bạn | Vibely";
-  }, []);
+    document.title = t("forYou.pageTitle");
+  }, [t]);
 
   return (
     <VerticalVideoFeed

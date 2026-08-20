@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
@@ -174,7 +175,7 @@ function StudioCommentRow({
           </button>
           <span
             className="inline-flex cursor-not-allowed items-center gap-1 text-zinc-600"
-            title="Sắp có"
+            title={t('studio.postComments.comingSoon')}
             aria-disabled="true"
           >
             <IoHeartOutline className="h-4 w-4" aria-hidden />
@@ -199,6 +200,7 @@ function StudioCommentRow({
 
 /** Trang bình luận theo video — layout theo TikTok Studio (theme tối). */
 export function StudioPostCommentsPage() {
+  const { t } = useTranslation()
   const { publicId: publicIdParam } = useParams()
   const navigate = useNavigate()
   const { token, user } = useAuth()
@@ -238,7 +240,7 @@ export function StudioPostCommentsPage() {
       const data = await apiClient.getMyUploadedVideos(token, { page: 0, size: 100 })
       setPostPickerVideos(Array.isArray(data?.items) ? data.items : [])
     } catch (e) {
-      setPostPickerError(e.message ?? 'Không tải được danh sách bài đăng.')
+      setPostPickerError(e.message ?? t('studio.postComments.loadPostsFailed'))
       setPostPickerVideos([])
     } finally {
       setPostPickerLoading(false)
@@ -271,14 +273,14 @@ export function StudioPostCommentsPage() {
       const v = await apiClient.getVideo(publicId, { token })
       setVideo(v)
       if (Number(v?.authorId) !== Number(user.id)) {
-        setError('Bạn chỉ xem được bình luận của bài đăng của chính mình.')
+        setError(t('studio.postComments.ownOnly'))
         setComments([])
         return
       }
       const list = await apiClient.getComments(publicId, { token })
       setComments(Array.isArray(list) ? list : [])
     } catch (e) {
-      setError(e.message ?? 'Không tải được dữ liệu.')
+      setError(e.message ?? t('studio.postComments.loadFailed'))
       setVideo(null)
       setComments([])
     } finally {
@@ -287,8 +289,8 @@ export function StudioPostCommentsPage() {
   }, [token, publicId, user?.id])
 
   useEffect(() => {
-    document.title = 'VibelyStudio | Bình luận'
-  }, [])
+    document.title = t('studio.docTitle.comments')
+  }, [t])
 
   useEffect(() => {
     void loadAll()
@@ -384,7 +386,7 @@ export function StudioPostCommentsPage() {
   const postTitle =
     (video?.description && String(video.description).trim()) ||
     (video?.title && String(video.title).trim()) ||
-    'Bài đăng'
+    t('studio.postComments.posts')
 
   const submitReply = async () => {
     if (!token || !publicId || submitBusy) return
@@ -402,7 +404,7 @@ export function StudioPostCommentsPage() {
       setReplyingTo(null)
       await loadAll()
     } catch (e) {
-      setError(e.message ?? 'Không gửi được bình luận.')
+      setError(e.message ?? t('studio.postComments.sendFailed'))
     } finally {
       setSubmitBusy(false)
     }
@@ -428,7 +430,7 @@ export function StudioPostCommentsPage() {
       setDeleteTarget(null)
       await loadAll()
     } catch (e) {
-      setError(e.message ?? 'Không xóa được bình luận.')
+      setError(e.message ?? t('studio.postComments.deleteFailed'))
     } finally {
       setDeletingId(null)
     }
@@ -490,14 +492,14 @@ export function StudioPostCommentsPage() {
 
   if (!publicId) {
     return (
-      <StudioLayout active="comments" title="Bình luận" subtitle="Mã video không hợp lệ">
-        <p className="text-sm text-amber-400">Đường dẫn không hợp lệ.</p>
+      <StudioLayout active="comments" title={t('studio.postComments.title')} subtitle={t('studio.postComments.invalidId')}>
+        <p className="text-sm text-amber-400">{t('studio.postComments.invalidPath')}</p>
         <Link
           to="/vibelystudio/posts"
           className="mt-4 inline-flex items-center gap-2 text-sm text-pink-400 hover:text-pink-300"
         >
           <IoArrowBack className="h-4 w-4" aria-hidden />
-          Về danh sách bài đăng
+          {t('studio.postComments.backToPosts')}
         </Link>
       </StudioLayout>
     )
@@ -505,7 +507,7 @@ export function StudioPostCommentsPage() {
 
   return (
     <>
-    <StudioLayout active="comments" hidePageHeader title="Bình luận" subtitle="">
+    <StudioLayout active="comments" hidePageHeader title={t('studio.postComments.title')} subtitle="">
       <div className="mx-auto max-w-5xl px-0 sm:px-1">
         <div
           className="rounded-2xl border border-zinc-800/90 bg-zinc-900/95 shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
@@ -519,24 +521,24 @@ export function StudioPostCommentsPage() {
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-300 transition hover:text-white"
               >
                 <IoArrowBack className="h-4 w-4 shrink-0" aria-hidden />
-                Về danh sách bài đăng
+                {t('studio.postComments.backToPosts')}
               </button>
               <button
                 type="button"
                 onClick={openPostPicker}
                 className="rounded-full border border-[#fe2c55] bg-transparent px-4 py-1.5 text-sm font-semibold text-[#fe2c55] transition hover:bg-[#fe2c55]/10"
               >
-                Chọn bài khác
+                {t('studio.postComments.pickOther')}
               </button>
             </div>
           </div>
 
           <div className="px-4 py-5 sm:px-6 sm:py-6">
             {loading ? (
-              <p className="py-16 text-center text-sm text-zinc-500">Đang tải…</p>
+              <p className="py-16 text-center text-sm text-zinc-500">{t('studio.postComments.loading')}</p>
             ) : !video ? (
               <p className="py-16 text-center text-sm text-amber-400">
-                {error || 'Không tìm thấy video.'}
+                {error || t('studio.postComments.notFound')}
               </p>
             ) : (
               <>
@@ -569,19 +571,19 @@ export function StudioPostCommentsPage() {
                     </h1>
                     <p className="mt-1 truncate text-xs text-zinc-500 font-mono">{video.publicId}</p>
                     <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-zinc-800/80 pt-4 text-[13px] text-zinc-400">
-                      <span className="inline-flex items-center gap-1.5" title="Lượt xem">
+                      <span className="inline-flex items-center gap-1.5" title={t('studio.postComments.views')}>
                         <IoVideocamOutline className="h-[18px] w-[18px] text-zinc-500" aria-hidden />
                         <span className="tabular-nums text-zinc-200">
                           {formatCount(video.viewCount)}
                         </span>
                       </span>
-                      <span className="inline-flex items-center gap-1.5" title="Thích">
+                      <span className="inline-flex items-center gap-1.5" title={t('studio.postComments.like')}>
                         <IoHeartOutline className="h-[18px] w-[18px] text-zinc-500" aria-hidden />
                         <span className="tabular-nums text-zinc-200">
                           {formatCount(video.likeCount)}
                         </span>
                       </span>
-                      <span className="inline-flex items-center gap-1.5" title="Bình luận">
+                      <span className="inline-flex items-center gap-1.5" title={t('studio.postComments.comments')}>
                         <IoChatbubbleEllipsesOutline
                           className="h-[18px] w-[18px] text-zinc-500"
                           aria-hidden
@@ -590,7 +592,7 @@ export function StudioPostCommentsPage() {
                           {formatCount(video.commentCount)}
                         </span>
                       </span>
-                      <span className="inline-flex items-center gap-1.5" title="Chia sẻ">
+                      <span className="inline-flex items-center gap-1.5" title={t('studio.postComments.share')}>
                         <IoShareSocialOutline
                           className="h-[18px] w-[18px] text-zinc-500"
                           aria-hidden
@@ -599,7 +601,7 @@ export function StudioPostCommentsPage() {
                           {formatCount(video.shareCount)}
                         </span>
                       </span>
-                      <span className="inline-flex items-center gap-1.5" title="Lưu">
+                      <span className="inline-flex items-center gap-1.5" title={t('studio.postComments.save')}>
                         <IoBookmarkOutline
                           className="h-[18px] w-[18px] text-zinc-500"
                           aria-hidden
@@ -624,7 +626,7 @@ export function StudioPostCommentsPage() {
                     {replyingTo ? (
                       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-700/90 bg-zinc-950/90 px-3 py-2.5 text-sm text-zinc-300">
                         <p className="min-w-0">
-                          Đang trả lời{' '}
+                          {t('studio.postComments.replyingTo')}{' '}
                           <span className="font-semibold text-zinc-100">
                             @
                             {String(replyingTo.username ?? 'user')
@@ -643,7 +645,7 @@ export function StudioPostCommentsPage() {
                     ) : null}
                     <div className="mt-6">
                       <label htmlFor="studio-post-reply" className="sr-only">
-                        Trả lời bình luận
+                        {t('studio.postComments.replyComment')}
                       </label>
                       <div className="rounded-xl border border-zinc-700 bg-zinc-950/80 focus-within:border-pink-500/50 focus-within:ring-1 focus-within:ring-pink-500/25">
                         <textarea
@@ -653,7 +655,7 @@ export function StudioPostCommentsPage() {
                           maxLength={STUDIO_REPLY_MAX_LEN}
                           value={draft}
                           onChange={(e) => setDraft(e.target.value)}
-                          placeholder="Trả lời bình luận"
+                          placeholder={t('studio.postComments.replyPlaceholder')}
                           className="w-full resize-y border-0 bg-transparent px-3 py-3 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none"
                         />
                         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-zinc-800/90 px-2 py-2">
@@ -664,8 +666,8 @@ export function StudioPostCommentsPage() {
                             <button
                               type="button"
                               className="rounded-lg p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100"
-                              title="Chèn @"
-                              aria-label="Chèn @"
+                              title={t('studio.postComments.insertAt')}
+                              aria-label={t('studio.postComments.insertAt')}
                               onClick={() => insertAtCursor('@')}
                             >
                               <IoAt className="h-5 w-5" aria-hidden />
@@ -674,9 +676,9 @@ export function StudioPostCommentsPage() {
                               <button
                                 type="button"
                                 className="rounded-lg p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100"
-                                title="Biểu tượng cảm xúc"
+                                title={t('studio.postComments.emoji')}
                                 aria-expanded={emojiOpen}
-                                aria-label="Chèn emoji"
+                                aria-label={t('studio.postComments.insertEmoji')}
                                 onClick={() => setEmojiOpen((o) => !o)}
                               >
                                 <IoHappyOutline className="h-5 w-5" aria-hidden />
@@ -708,7 +710,7 @@ export function StudioPostCommentsPage() {
                               onClick={() => void submitReply()}
                               className="ml-1 rounded-full bg-[#fe2c55] px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-white transition hover:bg-[#e62a4d] disabled:cursor-not-allowed disabled:opacity-40"
                             >
-                              {submitBusy ? '…' : 'Đăng'}
+                              {submitBusy ? '…' : t('studio.postComments.post')}
                             </button>
                           </div>
                         </div>
@@ -724,7 +726,7 @@ export function StudioPostCommentsPage() {
                         type="search"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Tìm theo bình luận hoặc tên người dùng"
+                        placeholder={t('studio.postComments.searchPlaceholder')}
                         className="w-full rounded-full border border-zinc-700 bg-zinc-950 py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-pink-500/50 focus:outline-none focus:ring-1 focus:ring-pink-500/25"
                       />
                     </div>
@@ -735,10 +737,10 @@ export function StudioPostCommentsPage() {
                           className={selectPillClass}
                           value={sortOrder}
                           onChange={(e) => setSortOrder(e.target.value)}
-                          aria-label="Sắp xếp"
+                          aria-label={t('studio.postComments.sort')}
                         >
-                          <option value="latest">Mới nhất trước</option>
-                          <option value="oldest">Cũ nhất trước</option>
+                          <option value="latest">{t('studio.postComments.sortLatest')}</option>
+                          <option value="oldest">{t('studio.postComments.sortOldest')}</option>
                         </select>
                         <IoChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500" />
                       </div>
@@ -747,10 +749,10 @@ export function StudioPostCommentsPage() {
                           className={selectPillClass}
                           value={commentScope}
                           onChange={(e) => setCommentScope(e.target.value)}
-                          aria-label="Loại bình luận"
+                          aria-label={t('studio.postComments.commentType')}
                         >
-                          <option value="all">Tất cả bình luận</option>
-                          <option value="question">Có dấu hỏi</option>
+                          <option value="all">{t('studio.postComments.typeAll')}</option>
+                          <option value="question">{t('studio.postComments.typeQuestion')}</option>
                         </select>
                         <IoChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500" />
                       </div>
@@ -759,10 +761,10 @@ export function StudioPostCommentsPage() {
                           className={selectPillClass}
                           value={postedBy}
                           onChange={(e) => setPostedBy(e.target.value)}
-                          aria-label="Người đăng"
+                          aria-label={t('studio.postComments.poster')}
                         >
-                          <option value="all">Mọi người đăng</option>
-                          <option value="me">Bình luận của tôi</option>
+                          <option value="all">{t('studio.postComments.posterAll')}</option>
+                          <option value="me">{t('studio.postComments.posterMe')}</option>
                         </select>
                         <IoChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500" />
                       </div>
@@ -770,11 +772,11 @@ export function StudioPostCommentsPage() {
                         <select
                           className={`${selectPillClass} text-zinc-500`}
                           disabled
-                          aria-label="Số follower (sắp có)"
-                          title="Sắp có: lọc theo số follower người bình luận"
+                          aria-label={t('studio.postComments.followerCountSoon')}
+                          title={t('studio.postComments.followerFilterSoon')}
                           defaultValue="all"
                         >
-                          <option value="all">Mọi mức follower</option>
+                          <option value="all">{t('studio.postComments.followerAll')}</option>
                         </select>
                         <IoChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-600" />
                       </div>
@@ -794,8 +796,8 @@ export function StudioPostCommentsPage() {
                         <div className="flex flex-col items-center justify-center py-16 text-center">
                           <p className="text-sm font-medium text-zinc-400">
                             {comments.length === 0 && !hasActiveFilters
-                              ? 'Chưa có bình luận'
-                              : 'Không tìm thấy kết quả'}
+                              ? t('studio.postComments.empty')
+                              : t('studio.postComments.noResults')}
                           </p>
                           {comments.length > 0 && hasActiveFilters ? (
                             <button
@@ -803,7 +805,7 @@ export function StudioPostCommentsPage() {
                               onClick={clearAllFilters}
                               className="mt-5 rounded-full border border-[#fe2c55] bg-transparent px-6 py-2 text-sm font-semibold text-[#fe2c55] transition hover:bg-[#fe2c55]/10"
                             >
-                              Xóa tất cả bộ lọc
+                              {t('studio.postComments.clearFilters')}
                             </button>
                           ) : null}
                         </div>
@@ -868,10 +870,10 @@ export function StudioPostCommentsPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <h2 id="delete-comment-dialog-title" className="text-lg font-bold text-zinc-50">
-              Xóa bình luận?
+              {t('studio.postComments.confirmDelete')}
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-              Bạn sẽ không thể khôi phục lại.
+              {t('studio.postComments.confirmDeleteHint')}
             </p>
             <div className="mt-6 flex flex-col gap-3">
               <button
@@ -880,7 +882,7 @@ export function StudioPostCommentsPage() {
                 onClick={() => void confirmDeleteComment()}
                 className="w-full rounded-xl bg-[#fe2c55] py-3 text-sm font-bold text-white transition hover:bg-[#e62a4d] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {deletingId != null ? 'Đang xóa…' : 'Xóa'}
+                {deletingId != null ? t('studio.postComments.deleting') : t('common.delete')}
               </button>
               <button
                 type="button"
@@ -902,7 +904,7 @@ export function StudioPostCommentsPage() {
             <button
               type="button"
               className="absolute inset-0 bg-black/60"
-              aria-label="Đóng"
+              aria-label={t('studio.postComments.close')}
               onClick={closePostPicker}
             />
             <aside
@@ -916,21 +918,21 @@ export function StudioPostCommentsPage() {
                   type="button"
                   onClick={closePostPicker}
                   className="rounded-lg p-1.5 text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100"
-                  aria-label="Đóng"
+                  aria-label={t('studio.postComments.close')}
                 >
                   <IoCloseOutline className="h-5 w-5" aria-hidden />
                 </button>
                 <h2 id="studio-post-picker-title" className="min-w-0 flex-1 text-sm font-bold text-zinc-100 sm:text-base">
-                  Chọn bài khác
+                  {t('studio.postComments.pickOther')}
                 </h2>
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2 sm:px-3">
                 {postPickerLoading ? (
-                  <p className="py-10 text-center text-sm text-zinc-500">Đang tải…</p>
+                  <p className="py-10 text-center text-sm text-zinc-500">{t('studio.postComments.loading')}</p>
                 ) : postPickerError ? (
                   <p className="py-6 text-center text-sm text-amber-400">{postPickerError}</p>
                 ) : postPickerVideos.length === 0 ? (
-                  <p className="py-10 text-center text-sm text-zinc-500">Chưa có bài đăng.</p>
+                  <p className="py-10 text-center text-sm text-zinc-500">{t('studio.postComments.noPosts')}</p>
                 ) : (
                   <ul className="divide-y divide-zinc-800/90">
                     {postPickerVideos.map((v) => {
@@ -938,7 +940,7 @@ export function StudioPostCommentsPage() {
                       const line =
                         (v.description && String(v.description).trim()) ||
                         (v.title && String(v.title).trim()) ||
-                        'Bài đăng'
+                        t('studio.postComments.posts')
                       const posted = formatApiDateTimeVi(v.createdAt)
                       const isCurrent = v.publicId === publicId
                       return (
@@ -979,31 +981,31 @@ export function StudioPostCommentsPage() {
                                 {line}
                               </p>
                               <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-zinc-500">
-                                <span className="inline-flex items-center gap-0.5 tabular-nums" title="Lượt xem">
+                                <span className="inline-flex items-center gap-0.5 tabular-nums" title={t('studio.postComments.views')}>
                                   <IoVideocamOutline className="h-3.5 w-3.5" aria-hidden />
                                   {formatCount(v.viewCount)}
                                 </span>
-                                <span className="inline-flex items-center gap-0.5 tabular-nums" title="Thích">
+                                <span className="inline-flex items-center gap-0.5 tabular-nums" title={t('studio.postComments.like')}>
                                   <IoHeartOutline className="h-3.5 w-3.5" aria-hidden />
                                   {formatCount(v.likeCount)}
                                 </span>
-                                <span className="inline-flex items-center gap-0.5 tabular-nums" title="Bình luận">
+                                <span className="inline-flex items-center gap-0.5 tabular-nums" title={t('studio.postComments.comments')}>
                                   <IoChatbubbleEllipsesOutline className="h-3.5 w-3.5" aria-hidden />
                                   {formatCount(v.commentCount)}
                                 </span>
-                                <span className="inline-flex items-center gap-0.5 tabular-nums" title="Chia sẻ">
+                                <span className="inline-flex items-center gap-0.5 tabular-nums" title={t('studio.postComments.share')}>
                                   <IoShareSocialOutline className="h-3.5 w-3.5" aria-hidden />
                                   {formatCount(v.shareCount)}
                                 </span>
-                                <span className="inline-flex items-center gap-0.5 tabular-nums" title="Lưu">
+                                <span className="inline-flex items-center gap-0.5 tabular-nums" title={t('studio.postComments.save')}>
                                   <IoBookmarkOutline className="h-3.5 w-3.5" aria-hidden />
                                   {formatCount(v.bookmarkCount)}
                                 </span>
                               </div>
                               <p className="mt-1.5 text-[11px] text-zinc-500">
-                                Đăng: {posted}
+                                {t('studio.postComments.posted', { date: posted })}
                                 {isCurrent ? (
-                                  <span className="ml-2 font-semibold text-[#fe2c55]">· Đang mở</span>
+                                  <span className="ml-2 font-semibold text-[#fe2c55]">{t('studio.postComments.openNow')}</span>
                                 ) : null}
                               </p>
                             </div>

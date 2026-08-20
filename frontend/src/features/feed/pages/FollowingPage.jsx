@@ -106,8 +106,8 @@ export function FollowingPage() {
         onLogout={logout}
       >
         <GridLoginPrompt
-          title="Đăng nhập để xem Đã follow"
-          description="Khám phá và theo dõi nhà sáng tạo bạn thích trên Vibely."
+          title={t('followingPage.loginTitle')}
+          description={t('followingPage.loginDescription')}
         />
       </CreatorGridShell>
     )

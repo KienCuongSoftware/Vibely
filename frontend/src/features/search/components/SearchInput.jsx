@@ -1,4 +1,5 @@
 import React, { forwardRef } from "react";
+import { useTranslation } from "react-i18next";
 import { IoCloseCircle } from "react-icons/io5";
 
 export const SearchInput = forwardRef(function SearchInput(
@@ -7,12 +8,15 @@ export const SearchInput = forwardRef(function SearchInput(
     onChange,
     onClear,
     onKeyDown,
-    placeholder = "Tìm kiếm",
+    placeholder,
     autoFocus = true,
     id = "vibely-search-input",
   },
   ref,
 ) {
+  const { t } = useTranslation();
+  const resolvedPlaceholder = placeholder ?? t("searchPage.placeholder");
+
   return (
     <div className="relative">
       <input
@@ -22,7 +26,7 @@ export const SearchInput = forwardRef(function SearchInput(
         value={value}
         onChange={(event) => onChange?.(event.target.value)}
         onKeyDown={onKeyDown}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         autoFocus={autoFocus}
         autoComplete="off"
         enterKeyHint="search"
@@ -34,7 +38,7 @@ export const SearchInput = forwardRef(function SearchInput(
         <button
           type="button"
           onClick={onClear}
-          aria-label="Xóa từ khóa"
+          aria-label={t("searchPage.clearQuery")}
           className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-200"
         >
           <IoCloseCircle className="text-xl" aria-hidden />

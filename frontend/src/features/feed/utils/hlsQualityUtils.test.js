@@ -55,8 +55,11 @@ describe('hlsQualityUtils', () => {
     expect(getAvailableQualitiesFromSourceHeight(0)).toEqual(['auto'])
   })
 
-  it('formats labels including full ladder', () => {
-    expect(formatQualityLabel('auto')).toBe('Tự động')
+  it('formats labels including full ladder', async () => {
+    const { default: i18n } = await import('@/i18n/i18n.js')
+    await i18n.changeLanguage('en')
+    expect(formatQualityLabel('auto')).toBe(i18n.t('feed.autoQuality'))
+    expect(formatQualityLabel('auto')).toBe('Auto')
     expect(formatQualityLabel('2160')).toBe('4K')
     expect(formatQualityLabel('1440')).toBe('1440P')
     expect(formatQualityLabel('1080')).toBe('1080P')
@@ -67,6 +70,10 @@ describe('hlsQualityUtils', () => {
     expect(formatQualityLabel('360')).toBe('360P')
     expect(formatQualityLabel('240')).toBe('240P')
     expect(formatQualityLabel('144')).toBe('144P')
+
+    await i18n.changeLanguage('vi')
+    expect(formatQualityLabel('auto')).toBe(i18n.t('feed.autoQuality'))
+    expect(formatQualityLabel('auto')).toBe('Tự động')
   })
 
   it('keeps distinct ladder labels without collapsing 480 into 540', () => {

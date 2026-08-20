@@ -2,6 +2,8 @@
  * Parse API date/time values. Java {@code LocalDateTime} is serialized without offset;
  * production stores UTC wall-clock — append {@code Z} so browsers in VN (+7) show correct relative time.
  */
+import i18n from '@/i18n/i18n.js'
+
 export function parseApiDateTime(isoOrMs) {
   if (isoOrMs == null) return null
   if (isoOrMs instanceof Date) {
@@ -30,14 +32,15 @@ export function formatRelativeTimeVi(isoOrMs) {
   if (!d) return ''
 
   const sec = Math.floor((Date.now() - d.getTime()) / 1000)
-  if (sec < 45) return 'Vừa xong'
+  if (sec < 45) return i18n.t('relativeTime.justNow')
   const min = Math.floor(sec / 60)
-  if (min < 60) return `${min} phút trước`
+  if (min < 60) return i18n.t('relativeTime.minutesAgo', { count: min })
   const hr = Math.floor(min / 60)
-  if (hr < 24) return `${hr} giờ trước`
+  if (hr < 24) return i18n.t('relativeTime.hoursAgo', { count: hr })
   const day = Math.floor(hr / 24)
-  if (day < 14) return `${day} ngày trước`
-  return d.toLocaleDateString('vi-VN')
+  if (day < 14) return i18n.t('relativeTime.daysAgo', { count: day })
+  const locale = String(i18n.language || 'en').replace('_', '-')
+  return d.toLocaleDateString(locale)
 }
 
 /** Absolute date/time in Vietnam (UTC wall-clock from API → ICT). */

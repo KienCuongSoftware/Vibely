@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient, uploadThumbnailToStorage, uploadVideoFile } from '@/shared/api/client'
@@ -75,14 +76,14 @@ function formatDurationTikTok(totalSeconds) {
   return `${m}m${String(s).padStart(2, '0')}s`
 }
 
-function formatEtaLabel(etaMs) {
+function formatEtaLabel(etaMs, tEta = (k, v) => k) {
   if (!Number.isFinite(etaMs) || etaMs <= 0) return ''
   const sec = Math.max(1, Math.ceil(etaMs / 1000))
-  if (sec < 60) return `${sec} giây còn lại`
+  if (sec < 60) return tEta('upload.etaSeconds', { sec })
   const m = Math.floor(sec / 60)
   const s = sec % 60
-  if (m < 60) return s > 0 ? `${m} phút ${s} giây còn lại` : `${m} phút còn lại`
-  return `${m} phút còn lại`
+  if (m < 60) return s > 0 ? tEta('upload.etaMinutesSeconds', { m, s }) : tEta('upload.etaMinutes', { m })
+  return tEta('upload.etaMinutes', { m })
 }
 
 function formatResolutionLabel(width, height) {
@@ -118,7 +119,7 @@ function parseOriginalityExplain(raw) {
   }
 }
 
-function buildOriginalityViolationCopy(originalityStatus) {
+function buildOriginalityViolationCopy(originalityStatus, t) {
   const decision = String(originalityStatus?.decision || '')
   const explain = parseOriginalityExplain(originalityStatus?.explainJson)
   const wmLabels = Array.isArray(explain?.watermark?.labels) ? explain.watermark.labels : []
@@ -127,28 +128,24 @@ function buildOriginalityViolationCopy(originalityStatus) {
     : []
   const reasons = []
   if (downloaderHints.length > 0) {
-    reasons.push('nội dung tải từ nền tảng khác (có dấu hiệu công cụ tải)')
+    reasons.push(t('upload.originality.reasonCrossPlatform'))
   }
   if (wmLabels.length > 0) {
-    reasons.push('có dấu hiệu watermark/logo nền tảng khác')
+    reasons.push(t('upload.originality.reasonWatermark'))
   }
   if (Number(originalityStatus?.visualSimilarity || 0) >= 0.55) {
-    reasons.push('nội dung trùng khớp cao với video đã có trên Vibely')
+    reasons.push(t('upload.originality.reasonDuplicate'))
   }
 
   // TikTok-style title: "Unoriginal, low-quality, and QR code content"
   const reasonTitle =
     decision === 'BLOCK'
-      ? 'Nội dung không nguyên gốc, chất lượng thấp hoặc mã QR — bị chặn đăng'
-      : 'Nội dung không nguyên gốc, chất lượng thấp và nội dung mã QR'
+      ? t('upload.originality.titleBlock')
+      : t('upload.originality.titleWarn')
 
   const reasonBody =
-    'Để duy trì trải nghiệm tích cực mà người dùng mong đợi trên nền tảng Vibely, ' +
-    'nội dung không nguyên gốc và chất lượng thấp không đủ điều kiện được đề xuất. ' +
-    'Nội dung không nguyên gốc là nội dung chỉ được nhập hoặc sao chép từ nguồn khác mà không có chỉnh sửa sáng tạo mới. ' +
-    'Video có thể không nguyên gốc nếu có watermark hoặc logo. ' +
-    'Nội dung chất lượng thấp gồm video rất ngắn, ảnh tĩnh và video chỉ gồm GIF.' +
-    (reasons.length > 0 ? ` (Phát hiện: ${reasons.join('; ')}.)` : '')
+    t('upload.originality.body') +
+    (reasons.length > 0 ? t('upload.originality.detected', { reasons: reasons.join('; ') }) : '')
 
   return { reasonTitle, reasonBody }
 }
@@ -171,7 +168,7 @@ function readVideoMetadata(file, timeoutMs = 25000) {
       fn(arg)
     }
     const watchdog = setTimeout(() => {
-      done(reject, new Error('Hết thời gian đọc thông tin video.'))
+      done(reject, new Error(tRead('upload.readTimeout')))
     }, timeoutMs)
     v.preload = 'metadata'
     v.onloadedmetadata = () => {
@@ -182,7 +179,7 @@ function readVideoMetadata(file, timeoutMs = 25000) {
       })
     }
     v.onerror = () => {
-      done(reject, new Error('Không thể đọc thông tin video.'))
+      done(reject, new Error(tRead('upload.readFailed')))
     }
     v.src = url
     v.load()
@@ -218,6 +215,7 @@ function isInvalidApiVideoPlaybackUrl(url) {
 }
 
 export function UploadPage() {
+  const { t } = useTranslation()
   const { token, user } = useAuth()
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
@@ -298,7 +296,7 @@ export function UploadPage() {
       return {
         tone: 'pending',
         detail:
-          'Đang kiểm tra. Việc này sẽ mất khoảng 10 phút. Video dài hơn có thể mất nhiều thời gian hơn.',
+          t('upload.originality.checking'),
         showDetails: false,
       }
     }
@@ -306,14 +304,14 @@ export function UploadPage() {
       return {
         tone: 'warn',
         detail:
-          'Kiểm tra chưa hoàn tất. Bạn vẫn có thể đăng; video có thể bị hạn chế hiển thị đến khi kiểm duyệt xong.',
+          t('upload.originality.incomplete'),
         showDetails: false,
       }
     }
     if (decision === 'BLOCK') {
       return {
         tone: 'danger',
-        detail: 'Nội dung bị chặn vì nghi ngờ không nguyên gốc. Hãy tải video khác.',
+        detail: t('upload.originality.blocked'),
         showDetails: true,
       }
     }
@@ -321,13 +319,13 @@ export function UploadPage() {
       return {
         tone: 'warn',
         detail:
-          'Nội dung có thể bị hạn chế. Bạn vẫn có thể đăng nhưng việc sửa đổi nó để tuân theo nguyên tắc của chúng tôi có thể cải thiện khả năng hiển thị.',
+          t('upload.originality.limited'),
         showDetails: true,
       }
     }
     return {
       tone: 'ok',
-      detail: 'Không phát hiện vấn đề.',
+      detail: t('upload.originality.ok'),
       showDetails: false,
     }
   }, [uploadedVideo?.publicId, originalityStatus, studioSettings.contentCheckLite])
@@ -346,7 +344,7 @@ export function UploadPage() {
   )
 
   const originalityViolationCopy = useMemo(
-    () => buildOriginalityViolationCopy(originalityStatus),
+    () => buildOriginalityViolationCopy(originalityStatus, t),
     [originalityStatus],
   )
 
@@ -398,23 +396,23 @@ export function UploadPage() {
 
   const postButtonTitle =
     originalityDecision === 'BLOCK'
-      ? 'Nội dung bị chặn — không thể đăng'
+      ? t('upload.postBlockedTitle')
       : originalityBlockingPost
-        ? 'Đợi kiểm tra nội dung hoàn tất'
+        ? t('upload.postWaitTitle')
         : undefined
 
   const postButtonLabel =
     uploadProgress != null
-      ? 'Đang tải lên…'
+      ? t('upload.uploading')
       : busy
         ? postTiming === 'schedule'
-          ? 'Đang lên lịch…'
-          : 'Đang đăng…'
+          ? t('upload.scheduling')
+          : t('upload.posting')
         : originalityBlockingPost && originalityDecision !== 'BLOCK'
-          ? 'Đang kiểm tra…'
+          ? t('upload.checking')
           : postTiming === 'schedule'
-            ? 'Lên lịch'
-            : 'Đăng'
+            ? t('upload.schedule')
+            : t('upload.post')
 
   useEffect(() => {
     if (!uploadedVideo?.publicId || !studioSettings.contentCheckLite) {
@@ -433,7 +431,7 @@ export function UploadPage() {
   }, [originalityBlockingPost, uploadProgress])
 
   useEffect(() => {
-    document.title = 'VibelyStudio | Upload'
+    document.title = t('upload.docTitle')
   }, [])
 
   useEffect(() => {
@@ -471,30 +469,30 @@ export function UploadPage() {
   const uploadGuides = [
     {
       key: 'size',
-      title: 'Kích thước và thời lượng',
-      detail: 'Tối đa 30 GB, thời lượng video không quá 60 phút.',
+      title: t('upload.guide.sizeTitle'),
+      detail: t('upload.guide.sizeDetail'),
     },
     {
       key: 'format',
-      title: 'Định dạng tệp',
-      detail: 'Khuyến nghị dùng .mp4. Cũng hỗ trợ .mov và .webm.',
+      title: t('upload.guide.formatTitle'),
+      detail: t('upload.guide.formatDetail'),
     },
     {
       key: 'resolution',
-      title: 'Độ phân giải',
-      detail: 'Nên dùng video chất lượng cao: 1080p, 1440p hoặc 4K.',
+      title: t('upload.guide.resolutionTitle'),
+      detail: t('upload.guide.resolutionDetail'),
     },
     {
       key: 'ratio',
-      title: 'Tỷ lệ khung hình',
-      detail: 'Khuyến nghị 16:9 cho ngang và 9:16 cho dọc.',
+      title: t('upload.guide.aspectTitle'),
+      detail: t('upload.guide.aspectDetail'),
     },
   ]
 
   const privacyLabels = {
-    everyone: 'Mọi người',
-    friends: 'Bạn bè',
-    onlyYou: 'Chỉ mình tôi',
+    everyone: t('upload.privacy.everyone'),
+    friends: t('upload.privacy.friends'),
+    onlyYou: t('upload.privacy.onlyYou'),
   }
 
   useEffect(() => {
@@ -844,12 +842,12 @@ export function UploadPage() {
   }, [])
 
   const showUploadRejected = useCallback((message) => {
-    const text = String(message || 'Video không đúng yêu cầu tải lên.')
+    const text = String(message || t('upload.invalidVideo'))
     setStatus(text)
     setUploadErrorToast(text)
     if (uploadErrorTimerRef.current) clearTimeout(uploadErrorTimerRef.current)
     uploadErrorTimerRef.current = setTimeout(() => setUploadErrorToast(''), 8000)
-  }, [])
+  }, [t])
 
   const resetFileInput = useCallback(() => {
     if (fileInputRef.current) fileInputRef.current.value = ''
@@ -957,8 +955,7 @@ export function UploadPage() {
       const id = draftPublicIdRef.current || uploadedVideo?.publicId
       if (!id && !uploadedVideo?.playbackUrl) return
       event.preventDefault()
-      event.returnValue =
-        'Bạn chưa đăng video này. Nếu rời trang, video đã tải lên sẽ bị xóa.'
+      event.returnValue = t('upload.leaveConfirm')
       return event.returnValue
     }
     const onPageHide = () => {
@@ -974,7 +971,7 @@ export function UploadPage() {
       window.removeEventListener('beforeunload', onBeforeUnload)
       window.removeEventListener('pagehide', onPageHide)
     }
-  }, [token, uploadedVideo?.publicId, uploadedVideo?.playbackUrl])
+  }, [token, uploadedVideo?.publicId, uploadedVideo?.playbackUrl, t])
 
   // BrowserRouter không hỗ trợ useBlocker — chặn click link nội bộ + nút Back.
   useEffect(() => {
@@ -1065,12 +1062,12 @@ export function UploadPage() {
           if (video?.status === 'FAILED') {
             const msg =
               video.processingError ||
-              'Video bị từ chối. Vui lòng chọn video khác.'
+              t('upload.rejectedPickOther')
             resetUploadSession()
             showUploadRejected(
               isDurationLimitRejectMessage(msg)
                 ? msg
-                : 'Video không đạt yêu cầu và đã bị gỡ. Vui lòng tải video khác lên.',
+                : t('upload.rejectedRemoved'),
             )
             return
           }
@@ -1093,9 +1090,9 @@ export function UploadPage() {
             if (decision === 'BLOCK') {
               resetUploadSession()
               showUploadRejected(
-                `Video bị chặn vì nghi ngờ không nguyên gốc. ` +
-                  `Originality ${Number(originality.originalityScore ?? 0).toFixed(1)}. ` +
-                  'Vui lòng tải video khác lên.',
+                t('upload.blockedOriginalityScore', {
+                  score: Number(originality.originalityScore ?? 0).toFixed(1),
+                }),
               )
               return
             }
@@ -1111,14 +1108,14 @@ export function UploadPage() {
         }
       }
     },
-    [token, resetUploadSession, showUploadRejected],
+    [token, resetUploadSession, showUploadRejected, t],
   )
 
   const handleSelectedFile = async (file) => {
     if (!file) return
 
     if (!token) {
-      showUploadRejected('Bạn cần đăng nhập trước khi đăng tải.')
+      showUploadRejected(t('upload.needLogin'))
       resetFileInput()
       return
     }
@@ -1169,7 +1166,9 @@ export function UploadPage() {
         title: 'Video',
         playbackUrl: '',
         audioUrl: '',
-        audioTitle: `âm thanh gốc - ${user?.displayName || user?.username || 'Vibely'}`,
+        audioTitle: t('upload.originalAudio', {
+          name: user?.displayName || user?.username || 'Vibely',
+        }),
         resolutionLabel: formatResolutionLabel(meta.width, meta.height),
         durationSeconds,
         publicId: null,
@@ -1201,7 +1200,9 @@ export function UploadPage() {
       uploadAbortRef.current = null
       const playbackUrl = uploaded.playbackUrl
       const audioUrl = deriveAudioUrlFromVideoUrl(playbackUrl)
-      const audioTitle = `âm thanh gốc - ${user?.displayName || user?.username || 'Vibely'}`
+      const audioTitle = t('upload.originalAudio', {
+        name: user?.displayName || user?.username || 'Vibely',
+      })
       let autoThumbUrl = ''
       try {
         const thumbBlob = await extractThumbnailBlob(file, 1)
@@ -1233,12 +1234,12 @@ export function UploadPage() {
           token,
         )
       } catch (createErr) {
-        const msg = createErr?.message ?? 'Không thể đăng ký video sau khi tải lên.'
+        const msg = createErr?.message ?? t('upload.registerFailed')
         resetUploadSession()
         showUploadRejected(
           isDurationLimitRejectMessage(msg)
             ? msg
-            : `${msg} Vui lòng chọn video khác.`,
+            : t('upload.pickOtherSuffix', { msg }),
         )
         return
       }
@@ -1276,7 +1277,7 @@ export function UploadPage() {
         return
       }
       resetUploadSession()
-      showUploadRejected(error.message ?? 'Đăng tải thất bại.')
+      showUploadRejected(error.message ?? t('upload.uploadFailed'))
     } finally {
       uploadAbortRef.current = null
       setBusy(false)
@@ -1341,17 +1342,17 @@ export function UploadPage() {
     if (originalityBlockingPost) {
       setStatus(
         originalityDecision === 'BLOCK'
-          ? 'Nội dung bị chặn — không thể đăng.'
-          : 'Đang kiểm tra nội dung — vui lòng đợi xong rồi đăng.',
+          ? t('upload.blockedCannotPost')
+          : t('upload.waitCheckThenPost'),
       )
       return
     }
     if (!uploadedVideo.playbackUrl || uploadProgress != null) {
-      setStatus('Vui lòng đợi video tải lên xong rồi đăng.')
+      setStatus(t('upload.waitUploadThenPost'))
       return
     }
     if (isInvalidApiVideoPlaybackUrl(uploadedVideo.playbackUrl)) {
-      setStatus('URL video không hợp lệ. Vui lòng tải lại video rồi thử đăng lại.')
+      setStatus(t('upload.invalidUrl'))
       return
     }
     const durationSeconds = Number(uploadedVideo.durationSeconds)
@@ -1361,23 +1362,21 @@ export function UploadPage() {
       durationSeconds > MAX_VIDEO_DURATION_SECONDS
     ) {
       resetUploadSession()
-      showUploadRejected(
-        'Video vượt quá thời lượng tối đa 60 phút. Vui lòng chọn video khác.',
-      )
+      showUploadRejected(t('upload.tooLong'))
       return
     }
     if (description.length > DESC_MAX) {
-      setStatus(`Mô tả không quá ${DESC_MAX} ký tự.`)
+      setStatus(t('upload.descTooLong', { max: DESC_MAX }))
       return
     }
     let scheduledAtPayload = null
     if (postTiming === 'schedule') {
       if (!isScheduleAtLeastLeadAhead(scheduleAt)) {
         setScheduleError(
-          `Lên lịch trước ít nhất ${SCHEDULE_MIN_LEAD_MINUTES} phút.`,
+          t('upload.scheduleLead', { minutes: SCHEDULE_MIN_LEAD_MINUTES }),
         )
         setStatus(
-          `Lên lịch trước ít nhất ${SCHEDULE_MIN_LEAD_MINUTES} phút.`,
+          t('upload.scheduleLead', { minutes: SCHEDULE_MIN_LEAD_MINUTES }),
         )
         return
       }
@@ -1397,7 +1396,7 @@ export function UploadPage() {
         if (latest?.status === 'FAILED') {
           const msg =
             latest.processingError ||
-            'Video bị từ chối. Vui lòng chọn video khác.'
+            t('upload.rejectedPickOther')
           resetUploadSession()
           showUploadRejected(msg)
           return
@@ -1438,8 +1437,8 @@ export function UploadPage() {
       navigate('/vibelystudio/posts', {
         state: {
           successMessage: scheduledAtPayload
-            ? 'Đã lên lịch đăng video.'
-            : 'Đã đăng video thành công.',
+            ? t('upload.scheduledOk')
+            : t('upload.postedOk'),
         },
       })
       return
@@ -1448,13 +1447,13 @@ export function UploadPage() {
       if (error?.code === 'ACCOUNT_BANNED') {
         const reason = String(error?.data?.reason ?? '').trim()
         setBanNoticeReason(
-          reason || 'chính sách cộng đồng của Vibely',
+          reason || t('upload.communityPolicy'),
         )
         setBanNoticeOpen(true)
         setStatus('')
         return
       }
-      const msg = error.message ?? 'Không thể lưu video.'
+      const msg = error.message ?? t('upload.saveFailed')
       if (isDurationLimitRejectMessage(msg)) {
         resetUploadSession()
         showUploadRejected(msg)
@@ -1469,19 +1468,19 @@ export function UploadPage() {
   const saveDraftVideo = async () => {
     if (!token || !uploadedVideo) return
     if (!uploadedVideo.playbackUrl || uploadProgress != null) {
-      setStatus('Vui lòng đợi video tải lên xong rồi lưu bản nháp.')
+      setStatus(t('upload.waitUploadThenDraft'))
       return
     }
     if (isInvalidApiVideoPlaybackUrl(uploadedVideo.playbackUrl)) {
-      setStatus('URL video không hợp lệ. Vui lòng tải lại video rồi thử lại.')
+      setStatus(t('upload.invalidUrlRetry'))
       return
     }
     if (!uploadedVideo.publicId) {
-      setStatus('Đang đăng ký video… Thử lại sau vài giây.')
+      setStatus(t('upload.registering'))
       return
     }
     if (description.length > DESC_MAX) {
-      setStatus(`Mô tả không quá ${DESC_MAX} ký tự.`)
+      setStatus(t('upload.descTooLong', { max: DESC_MAX }))
       return
     }
     setBusy(true)
@@ -1505,18 +1504,18 @@ export function UploadPage() {
       publishingRef.current = true
       processingPollRef.current += 1
       navigate('/vibelystudio/posts?tab=drafts', {
-        state: { successMessage: 'Đã lưu bản nháp.' },
+        state: { successMessage: t('upload.draftSaved') },
       })
     } catch (error) {
       publishingRef.current = false
       if (error?.code === 'ACCOUNT_BANNED') {
         const reason = String(error?.data?.reason ?? '').trim()
-        setBanNoticeReason(reason || 'chính sách cộng đồng của Vibely')
+        setBanNoticeReason(reason || t('upload.communityPolicy'))
         setBanNoticeOpen(true)
         setStatus('')
         return
       }
-      setStatus(error.message ?? 'Không thể lưu bản nháp.')
+      setStatus(error.message ?? t('upload.draftSaveFailed'))
     } finally {
       setBusy(false)
     }
@@ -1607,9 +1606,9 @@ export function UploadPage() {
           role="alert"
           className="fixed top-4 right-4 left-4 z-[120] mx-auto max-w-lg rounded-xl border border-rose-500/40 bg-zinc-950/95 px-4 py-3 text-sm text-rose-100 shadow-xl backdrop-blur sm:left-auto"
         >
-          <p className="font-semibold text-rose-300">Không thể tải lên</p>
+          <p className="font-semibold text-rose-300">{t('upload.cannotUpload')}</p>
           <p className="mt-1 text-pretty text-rose-100/90">{uploadErrorToast}</p>
-          <p className="mt-2 text-xs text-rose-200/80">Vui lòng chọn một video khác đạt yêu cầu.</p>
+          <p className="mt-2 text-xs text-rose-200/80">{t('upload.pickValidVideo')}</p>
         </div>
       ) : null}
       <CoverPickerModal
@@ -1640,19 +1639,19 @@ export function UploadPage() {
               <div className="min-w-0 flex-1">
                 <h2 id="originality-details-title" className="text-lg font-bold text-zinc-50">
                   {String(originalityStatus?.decision || '') === 'BLOCK'
-                    ? 'Nội dung bị chặn'
-                    : 'Nội dung có thể bị hạn chế'}
+                    ? t('upload.originality.blockedTitle')
+                    : t('upload.originality.limitedTitle')}
                 </h2>
                 <p className="mt-1 text-sm text-zinc-400">
                   {String(originalityStatus?.decision || '') === 'BLOCK'
-                    ? 'Video này không thể đăng vì nghi ngờ không nguyên gốc. Hãy thay thế bằng video khác.'
-                    : 'Bạn vẫn có thể đăng nhưng việc sửa đổi nó để tuân theo nguyên tắc của chúng tôi có thể cải thiện khả năng hiển thị.'}
+                    ? t('upload.originality.blockedDetail')
+                    : t('upload.originality.limitedDetail')}
                 </p>
               </div>
               <button
                 type="button"
                 className="shrink-0 rounded-full p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 cursor-pointer"
-                aria-label="Đóng"
+                aria-label={t('upload.close')}
                 onClick={() => setOriginalityDetailsOpen(false)}
               >
                 <IoClose className="text-xl" aria-hidden />
@@ -1661,7 +1660,7 @@ export function UploadPage() {
 
             <div className="space-y-5 px-5 py-4">
               <section>
-                <h3 className="text-sm font-bold text-zinc-100">Lý do vi phạm</h3>
+                <h3 className="text-sm font-bold text-zinc-100">{t('upload.originality.violationReason')}</h3>
                 <p className="mt-2 text-sm font-semibold text-zinc-200">
                   {originalityViolationCopy.reasonTitle}
                 </p>
@@ -1671,15 +1670,15 @@ export function UploadPage() {
               </section>
 
               <section>
-                <h3 className="text-sm font-bold text-zinc-100">Chi tiết vi phạm</h3>
-                <p className="mt-2 text-sm text-zinc-400">Một số vi phạm tiềm ẩn đã được tìm thấy.</p>
+                <h3 className="text-sm font-bold text-zinc-100">{t('upload.originality.violationDetails')}</h3>
+                <p className="mt-2 text-sm text-zinc-400">{t('upload.originality.potentialFound')}</p>
                 <div className="mt-3 inline-block overflow-hidden rounded-lg bg-zinc-900 ring-1 ring-zinc-700">
                   {thumbnailUrl || uploadedVideo?.playbackUrl ? (
                     <div className="relative h-28 w-28">
                       {thumbnailUrl ? (
                         <img
                           src={thumbnailUrl}
-                          alt="Đoạn video bị gắn cờ"
+                          alt={t('upload.originality.flaggedClip')}
                           className="h-full w-full object-cover"
                         />
                       ) : (
@@ -1776,10 +1775,10 @@ export function UploadPage() {
                 id="upload-leave-title"
                 className="text-lg font-bold leading-snug text-white"
               >
-                Bạn có chắc muốn thoát?
+                {t('upload.leaveTitle')}
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-                Tiến trình và các thay đổi của bạn sẽ không được lưu.
+                {t('upload.leaveHint')}
               </p>
             </div>
             <div className="flex flex-col gap-2.5 px-4 pb-4">
@@ -1788,14 +1787,14 @@ export function UploadPage() {
                 className="w-full cursor-pointer rounded-lg bg-[#fe2c55] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e62a4d]"
                 onClick={() => void confirmLeaveAndDiscard()}
               >
-                Thoát
+                {t('upload.leaveExit')}
               </button>
               <button
                 type="button"
                 className="w-full cursor-pointer rounded-lg border border-zinc-700 px-4 py-2.5 text-sm font-semibold text-zinc-200 hover:bg-zinc-800"
                 onClick={cancelLeave}
               >
-                Hủy
+                {t('upload.cancel')}
               </button>
             </div>
           </div>
@@ -2035,7 +2034,7 @@ export function UploadPage() {
                             if (picked?.username) replaceMentionAtCaret(picked.username)
                           }
                         }}
-                        placeholder="Thêm mô tả cho video của bạn…"
+                        placeholder={t('upload.descPlaceholder')}
                       />
 
                       {mentionAtCaret != null ? (
@@ -2157,21 +2156,21 @@ export function UploadPage() {
                         className="absolute inset-x-0 bottom-0 cursor-pointer bg-black/70 py-2 text-center text-xs font-medium text-white backdrop-blur-sm hover:bg-black/80"
                         onClick={() => setCoverModalOpen(true)}
                       >
-                        Chỉnh sửa ảnh bìa
+                        {t('upload.editCover')}
                       </button>
                     </div>
                   </div>
 
                   <div className="mt-6">
                     <div className="mb-2 flex items-center gap-1">
-                      <span className="text-sm font-medium text-zinc-300">Vị trí</span>
+                      <span className="text-sm font-medium text-zinc-300">{t('upload.location')}</span>
                       <IoInformationCircleOutline className="text-zinc-500" aria-hidden />
                     </div>
                     <input
                       type="text"
                       value={locationText}
                       onChange={(e) => setLocationText(e.target.value)}
-                      placeholder="Thêm vị trí"
+                      placeholder={t('upload.locationPlaceholder')}
                       className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600"
                     />
                   </div>
@@ -2218,7 +2217,7 @@ export function UploadPage() {
                               setScheduleError(
                                 isScheduleAtLeastLeadAhead(d)
                                   ? ''
-                                  : `Lên lịch trước ít nhất ${SCHEDULE_MIN_LEAD_MINUTES} phút.`,
+                                  : t('upload.scheduleLead', { minutes: SCHEDULE_MIN_LEAD_MINUTES }),
                               )
                             }}
                             error={scheduleError}
@@ -2226,7 +2225,7 @@ export function UploadPage() {
                         ) : null}
                       </div>
                       <div className="relative">
-                        <p className="text-sm font-semibold text-zinc-200">Ai có thể xem video này</p>
+                        <p className="text-sm font-semibold text-zinc-200">{t("studio.editPost.whoCanWatch")}</p>
                         <button
                           type="button"
                           onClick={() => setPrivacyOpen((o) => !o)}
@@ -2238,9 +2237,9 @@ export function UploadPage() {
                         {privacyOpen ? (
                           <div className="absolute z-10 mt-1 w-full max-w-md rounded-lg border border-zinc-700 bg-zinc-900 py-1 shadow-xl">
                             {[
-                              ['everyone', 'Mọi người', null],
-                              ['friends', 'Bạn bè', 'Người theo dõi mà bạn cũng theo dõi'],
-                              ['onlyYou', 'Chỉ mình tôi', null],
+                              ['everyone', t('upload.privacy.everyone'), null],
+                              ['friends', t('upload.privacy.friends'), t('studio.editPost.friendsHint')],
+                              ['onlyYou', t('upload.privacy.onlyYou'), null],
                             ].map(([key, label, sub]) => (
                               <button
                                 key={key}
@@ -2283,7 +2282,7 @@ export function UploadPage() {
                           aria-checked={highQuality}
                           aria-disabled="true"
                           disabled
-                          title="Luôn bật khi đăng từ Web Studio"
+                          title={t('upload.alwaysOnWebStudio')}
                           className="relative h-7 w-12 shrink-0 cursor-not-allowed rounded-full bg-sky-400/45"
                         >
                           <span className="absolute top-0.5 left-0.5 h-6 w-6 translate-x-5 rounded-full bg-white/90 shadow" />
@@ -2409,7 +2408,7 @@ export function UploadPage() {
                         !uploadedVideo.playbackUrl ||
                         !uploadedVideo.publicId
                       }
-                      title="Lưu video dưới dạng bản nháp (chưa đăng công khai)"
+                      title={t('upload.saveDraftTitle')}
                     >
                       Lưu bản nháp
                     </button>
@@ -2418,7 +2417,7 @@ export function UploadPage() {
                       className="cursor-pointer rounded-lg bg-zinc-700 px-6 py-2.5 text-sm font-semibold text-zinc-100 hover:bg-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={() => setDiscardConfirmOpen(true)}
                       disabled={busy}
-                      title="Xóa video này khỏi Studio và kho lưu trữ"
+                      title={t('upload.deleteVideoTitle')}
                     >
                       Loại bỏ
                     </button>
@@ -2433,9 +2432,9 @@ export function UploadPage() {
                 <div className="mb-3 flex items-center gap-1">
                   <div className="flex min-w-0 flex-1 gap-1 rounded-lg bg-zinc-900/90 p-1 ring-1 ring-zinc-800">
                     {[
-                      ['feed', 'Bảng tin'],
-                      ['profile', 'Hồ sơ'],
-                      ['web', 'Web'],
+                      ['feed', t('studio.editPost.previewFeed')],
+                      ['profile', t('studio.editPost.previewProfile')],
+                      ['web', t('studio.editPost.previewWeb')],
                     ].map(([id, label]) => (
                       <button
                         key={id}
@@ -2456,8 +2455,8 @@ export function UploadPage() {
                       type="button"
                       onClick={() => setPreviewTab('feed')}
                       className="shrink-0 rounded-md border border-zinc-600 bg-zinc-800 p-2 text-white shadow-sm transition hover:bg-zinc-700"
-                      title="Preview trên điện thoại"
-                      aria-label="Chuyển sang preview điện thoại"
+                      title={t('upload.previewPhoneTitle')}
+                      aria-label={t('upload.previewPhoneAria')}
                     >
                       <LuSmartphone className="text-base" strokeWidth={2} aria-hidden />
                     </button>
@@ -2573,7 +2572,7 @@ export function UploadPage() {
                                     <button
                                       type="button"
                                       className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25"
-                                      aria-label={previewUiPlaying ? 'Tạm dừng' : 'Phát'}
+                                      aria-label={previewUiPlaying ? t('upload.pause') : t('upload.play')}
                                       onClick={(e) => {
                                         e.stopPropagation()
                                         togglePreviewPlayback()
@@ -2594,7 +2593,7 @@ export function UploadPage() {
                                     <button
                                       type="button"
                                       className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25"
-                                      aria-label={isPreviewMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+                                      aria-label={isPreviewMuted ? t('upload.unmute') : t('upload.mute')}
                                       onClick={(e) => {
                                         e.stopPropagation()
                                         togglePreviewMuted(e)
@@ -2609,7 +2608,7 @@ export function UploadPage() {
                                     <button
                                       type="button"
                                       className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25"
-                                      aria-label="Toàn màn hình"
+                                      aria-label={t('upload.fullscreen')}
                                       onClick={(e) => {
                                         e.stopPropagation()
                                         void togglePreviewFullscreen(e)
@@ -2678,7 +2677,7 @@ export function UploadPage() {
                               type="button"
                               onClick={togglePreviewFullscreen}
                               className="absolute top-4 right-4 z-20 rounded bg-black/60 p-1 text-zinc-100 opacity-100 transition-opacity duration-150 hover:bg-black/80"
-                              aria-label="Thu/phóng màn hình"
+                              aria-label={t('upload.zoomScreen')}
                             >
                               <IoExpandOutline className="text-sm" />
                             </button>
@@ -2686,7 +2685,7 @@ export function UploadPage() {
                               type="button"
                               onClick={togglePreviewMuted}
                               className="absolute top-4 right-14 z-20 rounded bg-black/60 p-1 text-zinc-100 opacity-100 transition-opacity duration-150 hover:bg-black/80"
-                              aria-label={isPreviewMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+                              aria-label={isPreviewMuted ? t('upload.unmute') : t('upload.mute')}
                             >
                               {isPreviewMuted ? (
                                 <IoVolumeMuteOutline className="text-sm" />
@@ -2725,7 +2724,7 @@ export function UploadPage() {
                               referrerPolicy="no-referrer"
                             />
                             <p className="mt-2.5 max-w-full px-1 text-center text-[15px] font-bold leading-snug text-white">
-                              {user?.displayName ?? 'Người Ổn Bất Tỉnh'}
+                              {user?.displayName ?? t('common.user')}
                             </p>
                             <p
                               className="mt-1 flex max-w-full justify-center text-[13px] text-zinc-400"
@@ -2819,7 +2818,7 @@ export function UploadPage() {
                               <button
                                 type="button"
                                 className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
-                                aria-label={previewUiPlaying ? 'Tạm dừng' : 'Phát'}
+                                aria-label={previewUiPlaying ? t('upload.pause') : t('upload.play')}
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   togglePreviewPlayback()
@@ -2835,7 +2834,7 @@ export function UploadPage() {
                                 <button
                                   type="button"
                                   className="flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
-                                  aria-label={isPreviewMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+                                  aria-label={isPreviewMuted ? t('upload.unmute') : t('upload.mute')}
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     togglePreviewMuted(e)
@@ -2850,7 +2849,7 @@ export function UploadPage() {
                                 <button
                                   type="button"
                                   className="flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
-                                  aria-label="Toàn màn hình"
+                                  aria-label={t('upload.fullscreen')}
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     void togglePreviewFullscreen(e)
@@ -2887,7 +2886,7 @@ export function UploadPage() {
                               <button
                                 type="button"
                                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
-                                aria-label={previewUiPlaying ? 'Tạm dừng' : 'Phát'}
+                                aria-label={previewUiPlaying ? t('upload.pause') : t('upload.play')}
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   togglePreviewPlayback()
@@ -2908,7 +2907,7 @@ export function UploadPage() {
                               <button
                                 type="button"
                                 className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
-                                aria-label={isPreviewMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+                                aria-label={isPreviewMuted ? t('upload.unmute') : t('upload.mute')}
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   togglePreviewMuted(e)
@@ -2923,7 +2922,7 @@ export function UploadPage() {
                               <button
                                 type="button"
                                 className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
-                                aria-label="Thoát toàn màn hình"
+                                aria-label={t('upload.exitFullscreen')}
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   void togglePreviewFullscreen(e)
@@ -2940,9 +2939,9 @@ export function UploadPage() {
 
                   <div className="mt-4 grid grid-cols-3 gap-2">
                     {[
-                      ['Chỉnh sửa', '✂'],
-                      ['Âm thanh', '♪'],
-                      ['Chữ', 'Aa'],
+                      [t('upload.toolEdit'), '✂'],
+                      [t('upload.toolSound'), '♪'],
+                      [t('upload.toolText'), 'Aa'],
                     ].map(([label, sym]) => (
                       <button
                         key={label}

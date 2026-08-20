@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
@@ -96,9 +97,9 @@ function retentionDropHint(retention, durationSeconds) {
     const mm = Math.floor(sec / 60)
     const ss = sec % 60
     const t = mm > 0 ? `${mm}:${String(ss).padStart(2, '0')}` : `0:${String(ss).padStart(2, '0')}`
-    return `Nhiều phiên rời sớm quanh mốc ${t} (${atProgress}% thời lượng).`
+    return t('studio.videoAnalytics.leaveEarlyAt', { time: t, pct: atProgress })
   }
-  return `Nhiều phiên rời sớm quanh ${atProgress}% thời lượng video.`
+  return tr('studio.videoAnalytics.leaveEarlyPct', { pct: atProgress })
 }
 
 function formatClockFromSeconds(totalSec) {
@@ -213,6 +214,7 @@ function buildEngagementChartMeta(points) {
 }
 
 export function StudioVideoAnalyticsPage() {
+  const { t } = useTranslation()
   const { publicId: publicIdParam } = useParams()
   const publicId = useMemo(
     () => normalizeVideoPublicId(publicIdParam),
@@ -245,9 +247,9 @@ export function StudioVideoAnalyticsPage() {
 
   useEffect(() => {
     document.title = validPublicId
-      ? 'VibelyStudio | Thống kê'
-      : 'VibelyStudio | Thống kê'
-  }, [validPublicId])
+      ? `VibelyStudio | ${validPublicId}`
+      : t('studio.videoAnalytics.docTitleFallback')
+  }, [validPublicId, t])
 
   useEffect(() => {
     if (!token || !validPublicId || !publicId) return
@@ -299,7 +301,7 @@ export function StudioVideoAnalyticsPage() {
             continue
           }
           if (!cancelled) {
-            setError(e instanceof Error ? e.message : 'Không tải được thống kê.')
+            setError(e instanceof Error ? e.message : t('studio.videoAnalytics.loadFailed'))
             setPayload(null)
           }
         } finally {
@@ -334,10 +336,10 @@ export function StudioVideoAnalyticsPage() {
 
   const retentionInsight = useMemo(() => {
     if (retentionTip) {
-      return `${retentionTip} Phát video bên dưới và kéo thanh thời gian để xem mức giữ chân tại từng thời điểm.`
+      return t('studio.videoAnalytics.retentionWithHint', { tip: retentionTip })
     }
     if (retention.length > 0) {
-      return 'Phát video bên dưới và kéo thanh thời gian để xem tỷ lệ giữ chân tại từng thời điểm.'
+      return t("studio.videoAnalytics.retentionHint")
     }
     return null
   }, [retentionTip, retention.length])
@@ -359,7 +361,7 @@ export function StudioVideoAnalyticsPage() {
     })
   }, [video?.createdAt])
 
-  const title = (video?.title && String(video.title).trim()) || 'Không có tiêu đề'
+  const title = (video?.title && String(video.title).trim()) || t('studio.videoAnalytics.noTitle')
   const hasThumb = Boolean(video?.thumbnailUrl)
   const desc = (video?.description && String(video.description).trim()) || title
 
@@ -372,8 +374,8 @@ export function StudioVideoAnalyticsPage() {
 
   if (!validPublicId || !publicId) {
     return (
-      <StudioLayout active="posts" title="Thống kê" subtitle="Mã video không hợp lệ">
-        <p className="text-sm text-zinc-500">Đường dẫn không hợp lệ.</p>
+      <StudioLayout active="posts" title={t("studio.videoAnalytics.title")} subtitle={t("studio.videoAnalytics.invalidId")}>
+        <p className="text-sm text-zinc-500">{t('studio.videoAnalytics.invalidPath')}</p>
       </StudioLayout>
     )
   }
@@ -381,20 +383,20 @@ export function StudioVideoAnalyticsPage() {
   const tabBar = (
     <nav className="flex gap-8 border-b border-zinc-800/80 text-sm font-semibold">
       {[
-        { id: 'overview', label: 'Tổng quan' },
-        { id: 'viewers', label: 'Người xem' },
-        { id: 'engagement', label: 'Tương tác' },
-      ].map((t) => (
+        { id: 'overview', labelKey: 'studio.videoAnalytics.tabs.overview' },
+        { id: 'viewers', labelKey: 'studio.videoAnalytics.tabs.viewers' },
+        { id: 'engagement', labelKey: 'studio.videoAnalytics.tabs.engagement' },
+      ].map((tabItem) => (
         <button
-          key={t.id}
+          key={tabItem.id}
           type="button"
-          onClick={() => setTab(t.id)}
+          onClick={() => setTab(tabItem.id)}
           className={`relative -mb-px cursor-pointer pb-3 transition ${
-            tab === t.id ? 'text-sky-400' : 'text-zinc-500 hover:text-zinc-200'
+            tab === tabItem.id ? 'text-sky-400' : 'text-zinc-500 hover:text-zinc-200'
           }`}
         >
-          {t.label}
-          {tab === t.id ? (
+          {t(tabItem.labelKey || tabItem.label)}
+          {tab === tabItem.id ? (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-sky-400" />
           ) : null}
         </button>
@@ -426,7 +428,7 @@ export function StudioVideoAnalyticsPage() {
           <div className="min-w-0">
             <h1 className="text-lg font-semibold text-white sm:text-xl">{desc}</h1>
             <p className="mt-1 text-xs text-zinc-500">
-              Đăng ngày {postedLabel}
+              {t('studio.videoAnalytics.postedOn', { date: postedLabel })}
               {video?.publicId ? (
                 <span className="text-zinc-600 font-mono text-xs"> · {video.publicId}</span>
               ) : null}
@@ -443,36 +445,35 @@ export function StudioVideoAnalyticsPage() {
                   : 'pointer-events-none text-zinc-600'
               }`}
             >
-              Mở trên feed
+              {t('studio.videoAnalytics.openOnFeed')}
             </Link>
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-4 text-zinc-400 sm:gap-5">
-          <span className="inline-flex items-center gap-1.5 text-sm tabular-nums" title="Lượt xem (tổng)">
+          <span className="inline-flex items-center gap-1.5 text-sm tabular-nums" title={t("studio.videoAnalytics.totalViews")}>
             <IoPlayOutline className="h-5 w-5 shrink-0 text-zinc-300" aria-hidden />
             {video?.viewCount ?? 0}
           </span>
-          <span className="inline-flex items-center gap-1.5 text-sm tabular-nums" title="Lượt thích">
+          <span className="inline-flex items-center gap-1.5 text-sm tabular-nums" title={t("studio.videoAnalytics.likes")}>
             <IoHeartOutline className="h-5 w-5 shrink-0 text-zinc-300" aria-hidden />
             {video?.likeCount ?? 0}
           </span>
-          <span className="inline-flex items-center gap-1.5 text-sm tabular-nums" title="Bình luận">
+          <span className="inline-flex items-center gap-1.5 text-sm tabular-nums" title={t("studio.videoAnalytics.comments")}>
             <IoChatbubbleEllipsesOutline className="h-5 w-5 shrink-0 text-zinc-300" aria-hidden />
             {video?.commentCount ?? 0}
           </span>
-          <span className="inline-flex items-center gap-1.5 text-sm tabular-nums" title="Chia sẻ">
+          <span className="inline-flex items-center gap-1.5 text-sm tabular-nums" title={t("studio.videoAnalytics.shares")}>
             <IoShareSocialOutline className="h-5 w-5 shrink-0 text-zinc-300" aria-hidden />
             {video?.shareCount ?? 0}
           </span>
-          <span className="inline-flex items-center gap-1.5 text-sm tabular-nums" title="Đã lưu">
+          <span className="inline-flex items-center gap-1.5 text-sm tabular-nums" title={t("studio.videoAnalytics.saved")}>
             <IoBookmarkOutline className="h-5 w-5 shrink-0 text-zinc-300" aria-hidden />
             {video?.bookmarkCount ?? 0}
           </span>
         </div>
       </div>
       <p className="mt-4 text-xs text-zinc-500">
-        Các số trong khối chỉ số dưới đây là trong <strong className="text-zinc-300">{days} ngày</strong> gần nhất
-        (khác với hàng icon tổng cộng).
+        <span dangerouslySetInnerHTML={{ __html: t('studio.videoAnalytics.metricsPeriodNote', { days }) }} />
       </p>
     </section>
   )
@@ -489,7 +490,7 @@ export function StudioVideoAnalyticsPage() {
             }`}
             onClick={() => setDays(option)}
           >
-            {option} ngày
+            {t('studio.videoAnalytics.daysOption', { count: option })}
           </button>
         ))}
       </div>
@@ -500,37 +501,37 @@ export function StudioVideoAnalyticsPage() {
     <div className="grid gap-3 overflow-visible sm:grid-cols-2 lg:grid-cols-5">
       {[
         {
-          label: 'Lượt xem (giai đoạn)',
+          label: t('studio.videoAnalytics.periodViews'),
           value: payload?.periodViews ?? 0,
           accent: true,
-          tip: 'Số lần video này được xem trong khoảng thời gian đã chọn.',
+          tip: t('studio.videoAnalytics.periodViewsTip'),
         },
         {
-          label: 'Tổng thời gian xem',
+          label: t('studio.videoAnalytics.totalWatchTime'),
           value:
             (payload?.periodViews ?? 0) > 0
               ? formatTotalWatch(payload?.periodTotalWatchMs ?? 0)
               : '—',
-          tip: 'Tổng thời lượng người xem đã xem video trong khoảng thời gian đã chọn.',
+          tip: t('studio.videoAnalytics.totalWatchTimeTip'),
         },
         {
-          label: 'Thời gian xem TB',
+          label: t('studio.videoAnalytics.avgWatchTime'),
           value:
             (payload?.periodViews ?? 0) > 0 ? formatAvgWatchSeconds(payload?.periodAvgWatchMs ?? 0) : '—',
-          tip: 'Thời lượng xem trung bình mỗi phiên trong khoảng thời gian đã chọn.',
+          tip: t('studio.videoAnalytics.avgWatchTimeTip'),
         },
         {
-          label: 'Xem hết video',
+          label: t('studio.videoAnalytics.completed'),
           value:
             (payload?.periodViews ?? 0) > 0
               ? formatPercent(payload?.periodFullWatchPercent)
               : '—',
-          tip: 'Tỷ lệ phiên xem đạt gần hết thời lượng video.',
+          tip: t('studio.videoAnalytics.completedTip'),
         },
         {
-          label: 'Follower mới (kênh)',
+          label: t('studio.videoAnalytics.newFollowers'),
           value: String(payload?.periodNewFollowers ?? 0),
-          tip: 'Số người theo dõi mới của kênh trong khoảng thời gian đã chọn.',
+          tip: t('studio.videoAnalytics.newFollowersTip'),
         },
       ].map((m) => (
         <article
@@ -550,16 +551,16 @@ export function StudioVideoAnalyticsPage() {
 
   const viewsSection = (
     <section className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
-      <h2 className="text-base font-semibold text-white">Lượt xem theo ngày</h2>
+      <h2 className="text-base font-semibold text-white">{t('studio.videoAnalytics.viewsByDay')}</h2>
       <div className="mt-4 rounded-lg border border-zinc-800 bg-black/40 p-3 pt-10">
-        {loading ? <p className="py-8 text-center text-sm text-zinc-500">Đang tải...</p> : null}
+        {loading ? <p className="py-8 text-center text-sm text-zinc-500">{t('studio.videoAnalytics.loading')}</p> : null}
         {!loading ? (
           <StudioTrendChart
             points={(points ?? []).map((p) => ({
               day: p.day,
               value: Number(p.views ?? 0),
             }))}
-            emptyHint="Chưa có lượt xem trong giai đoạn này"
+            emptyHint={t("studio.videoAnalytics.noViewsStage")}
           />
         ) : null}
       </div>
@@ -677,7 +678,7 @@ export function StudioVideoAnalyticsPage() {
               }}
               className="retention-scrub retention-scrub--dark"
               style={{ ['--ret-fill']: `${scrubProgress}%` }}
-              aria-label="Tua video"
+              aria-label={t("studio.videoAnalytics.seekAria")}
             />
             <div className="mt-2 flex justify-between text-xs tabular-nums text-zinc-400">
               <span>{formatClockFromSeconds((scrubProgress / 100) * effectiveVideoDuration)}</span>
@@ -693,10 +694,10 @@ export function StudioVideoAnalyticsPage() {
       <section className="rounded-2xl border border-zinc-800 bg-zinc-950/90 shadow-none ring-1 ring-white/5">
         <header className="border-b border-zinc-800 px-4 py-3.5 sm:px-5">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-base font-bold tracking-tight text-white sm:text-[17px]">Tỷ lệ giữ chân</h2>
+            <h2 className="text-base font-bold tracking-tight text-white sm:text-[17px]">{t('studio.videoAnalytics.retentionTitle')}</h2>
             <StudioHoverTip
               underline={false}
-              text="Tỷ lệ phiên xem còn đạt tới từng mốc % thời lượng video (dựa trên watchedMs / durationMs từ client)."
+              text={t('studio.videoAnalytics.retentionCurveTip')}
             >
               <span className="inline-flex text-zinc-500">
                 <IoInformationCircleOutline className="h-5 w-5" aria-hidden />
@@ -707,7 +708,7 @@ export function StudioVideoAnalyticsPage() {
 
         <div className={`space-y-5 px-4 py-5 sm:px-6 ${compact ? 'sm:space-y-4 sm:py-4' : ''}`}>
           <p className="text-sm leading-relaxed text-zinc-400">
-            Phần trăm phiên xem trong kỳ còn đạt tới từng mốc trên trục thời lượng (watchedMs / durationMs).
+            {t('studio.videoAnalytics.retentionSub')}
           </p>
           {retentionInsight ? (
             <p className="text-sm leading-relaxed text-zinc-200">{retentionInsight}</p>
@@ -793,7 +794,7 @@ export function StudioVideoAnalyticsPage() {
                       e.stopPropagation()
                       retentionVideoRef.current?.pause()
                     }}
-                    aria-label="Tạm dừng"
+                    aria-label={t("studio.videoAnalytics.pause")}
                   >
                     <IoPauseOutline
                       className="h-11 w-11 drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] sm:h-12 sm:w-12"
@@ -804,22 +805,22 @@ export function StudioVideoAnalyticsPage() {
               </>
             ) : (
               <div className="flex min-h-[200px] items-center justify-center px-4 py-16 text-center text-sm text-zinc-500">
-                Chưa có video
+                {t('studio.videoAnalytics.noVideo')}
               </div>
             )}
           </div>
 
           {loading ? (
-            <p className="py-2 text-center text-sm text-zinc-500">Đang tải biểu đồ...</p>
+            <p className="py-2 text-center text-sm text-zinc-500">{t('studio.videoAnalytics.loading')}</p>
           ) : null}
 
           {!loading && retention.length === 0 && (payload?.periodViews ?? 0) === 0
-            ? renderEmptyChartShell('Chưa có lượt xem trong giai đoạn này — đường mảnh là minh họa, chưa có dữ liệu thật.')
+            ? renderEmptyChartShell(t('studio.videoAnalytics.retentionEmptyHint'))
             : null}
 
           {!loading && retention.length === 0 && (payload?.periodViews ?? 0) > 0 && (payload?.playbackSampleSize ?? 0) === 0
             ? renderEmptyChartShell(
-                'Chưa có mẫu phát trong kỳ (watchedMs/duration) — xem video ở trên ít nhất ~2s để ghi nhận, hoặc chờ dữ liệu từ feed. Bạn vẫn có thể tua bằng thanh bên dưới.',
+                t('studio.videoAnalytics.retentionNoSamples'),
               )
             : null}
 
@@ -836,7 +837,7 @@ export function StudioVideoAnalyticsPage() {
                     </p>
                     <p className="mt-0.5 flex items-center justify-center gap-1 text-[11px] tabular-nums text-zinc-400">
                       <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-sky-400" aria-hidden />
-                      Giữ chân ~{scrubRetention.toFixed(0)}%
+                      {t('studio.videoAnalytics.retentionApprox', { pct: scrubRetention.toFixed(0) })}
                     </p>
                   </div>
                 ) : null}
@@ -931,20 +932,20 @@ export function StudioVideoAnalyticsPage() {
                   }}
                   className="retention-scrub retention-scrub--dark"
                   style={{ ['--ret-fill']: `${scrubProgress}%` }}
-                  aria-label="Vị trí trên video để xem tỷ lệ giữ chân"
+                  aria-label={t("studio.videoAnalytics.scrubberAria")}
                 />
                 <div className="mt-2 flex justify-between text-xs tabular-nums text-zinc-400">
                   <span>
                     {formatClockFromSeconds((scrubProgress / 100) * effectiveVideoDuration)}
-                    {scrubRetention != null ? ` · giữ chân ~${scrubRetention.toFixed(0)}%` : ''}
+                    {scrubRetention != null ? t('studio.videoAnalytics.retentionApproxInline', { pct: scrubRetention.toFixed(0) }) : ''}
                   </span>
                   <span>{formatClockFromSeconds(effectiveVideoDuration)}</span>
                 </div>
               </div>
 
               <div className="flex justify-between px-0.5 text-[10px] text-zinc-500">
-                <span>Đầu video (0% thời lượng)</span>
-                <span>Cuối video (100% thời lượng)</span>
+                <span>{t('studio.videoAnalytics.start')}</span>
+                <span>{t('studio.videoAnalytics.end')}</span>
               </div>
             </div>
           ) : null}
@@ -959,14 +960,14 @@ export function StudioVideoAnalyticsPage() {
         Nguồn traffic
         <StudioHoverTip
           underline={false}
-          text="Nơi người xem phát hiện video của bạn (For You, hồ sơ, tìm kiếm, …)."
+          text={t('studio.videoAnalytics.trafficTip')}
         >
           <span className="inline-flex text-zinc-500">
             <IoInformationCircleOutline className="h-4 w-4" aria-hidden />
           </span>
         </StudioHoverTip>
       </h2>
-      <p className="mt-2 text-sm text-zinc-500">Phân tích nguồn (For You, hồ sơ, tìm kiếm) sắp có.</p>
+      <p className="mt-2 text-sm text-zinc-500">{t('studio.videoAnalytics.trafficSoon')}</p>
       <ul className="mt-4 space-y-2.5">
         {(trafficSources.length ? trafficSources : [{ id: 'x', label: '—', percent: null }]).map((row) => {
           const pct = row.percent != null ? Math.min(100, Math.max(0, Number(row.percent))) : null
@@ -996,7 +997,7 @@ export function StudioVideoAnalyticsPage() {
         Từ khóa tìm kiếm
         <StudioHoverTip
           underline={false}
-          text="Các truy vấn tìm kiếm dẫn người xem tới video của bạn trong khoảng thời gian đã chọn."
+          text={t('studio.videoAnalytics.searchTip')}
         >
           <span className="inline-flex text-zinc-500">
             <IoInformationCircleOutline className="h-4 w-4" aria-hidden />
@@ -1004,7 +1005,7 @@ export function StudioVideoAnalyticsPage() {
         </StudioHoverTip>
       </h2>
       {searchKeywords.length === 0 ? (
-        <p className="mt-2 text-sm text-zinc-500">Chưa có dữ liệu từ khóa.</p>
+        <p className="mt-2 text-sm text-zinc-500">{t('studio.videoAnalytics.noKeywords')}</p>
       ) : (
         <ul className="mt-3 divide-y divide-zinc-800">
           {searchKeywords.map((kw) => (
@@ -1020,10 +1021,10 @@ export function StudioVideoAnalyticsPage() {
 
   const semanticTagsBlock = (
     <section className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
-      <h2 className="text-base font-semibold text-white">Thẻ ngữ nghĩa (CU)</h2>
-      <p className="mt-1 text-sm text-zinc-500">Tag do Content Understanding gắn cho video này.</p>
+      <h2 className="text-base font-semibold text-white">{t('studio.videoAnalytics.semanticTags')}</h2>
+      <p className="mt-1 text-sm text-zinc-500">{t('studio.videoAnalytics.semanticHint')}</p>
       {topSemanticTags.length === 0 ? (
-        <p className="mt-3 text-sm text-zinc-500">Chưa có thẻ ngữ nghĩa.</p>
+        <p className="mt-3 text-sm text-zinc-500">{t('studio.videoAnalytics.noSemantic')}</p>
       ) : (
         <ul className="mt-3 divide-y divide-zinc-800">
           {topSemanticTags.map((tag) => (
@@ -1050,22 +1051,22 @@ export function StudioVideoAnalyticsPage() {
       {periodSelector}
       <div className="grid gap-3 sm:grid-cols-3">
         <article className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
-          <p className="text-xs text-zinc-500">Thích (kỳ)</p>
+          <p className="text-xs text-zinc-500">{t('studio.videoAnalytics.likesPeriod')}</p>
           <p className="mt-2 text-2xl font-bold text-pink-400">{payload?.periodLikes ?? 0}</p>
         </article>
         <article className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
-          <p className="text-xs text-zinc-500">Bình luận (kỳ)</p>
+          <p className="text-xs text-zinc-500">{t('studio.videoAnalytics.commentsPeriod')}</p>
           <p className="mt-2 text-2xl font-bold text-sky-400">{payload?.periodComments ?? 0}</p>
         </article>
         <article className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
-          <p className="text-xs text-zinc-500">Đã lưu (kỳ)</p>
+          <p className="text-xs text-zinc-500">{t('studio.videoAnalytics.savesPeriod')}</p>
           <p className="mt-2 text-2xl font-bold text-amber-300">{payload?.periodBookmarks ?? 0}</p>
         </article>
       </div>
       <section className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
-        <h2 className="text-base font-semibold text-white">Thích & bình luận theo ngày</h2>
+        <h2 className="text-base font-semibold text-white">{t('studio.videoAnalytics.likesCommentsByDay')}</h2>
         <div className="mt-4 rounded-lg border border-zinc-800 bg-black/40 p-3">
-          {loading ? <p className="py-8 text-center text-sm text-zinc-500">Đang tải...</p> : null}
+          {loading ? <p className="py-8 text-center text-sm text-zinc-500">{t('studio.videoAnalytics.loading')}</p> : null}
           {!loading ? (
             <svg viewBox="0 0 680 200" preserveAspectRatio="none" className="h-52 w-full">
               <path d={engagementChart.likesPath} fill="none" stroke="#f472b6" strokeWidth="2.5" />
@@ -1106,12 +1107,12 @@ export function StudioVideoAnalyticsPage() {
       {retentionBlock(false)}
       <div className="grid gap-4 sm:grid-cols-2">
         <section className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
-          <h3 className="text-sm font-semibold text-zinc-200">Độ tuổi</h3>
-          <p className="mt-3 text-sm text-zinc-500">Sắp có — cần dữ liệu hồ sơ người xem theo chính sách riêng tư.</p>
+          <h3 className="text-sm font-semibold text-zinc-200">{t('studio.videoAnalytics.age')}</h3>
+          <p className="mt-3 text-sm text-zinc-500">{t('studio.videoAnalytics.ageSoon')}</p>
         </section>
         <section className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
-          <h3 className="text-sm font-semibold text-zinc-200">Giới tính</h3>
-          <p className="mt-3 text-sm text-zinc-500">Sắp có.</p>
+          <h3 className="text-sm font-semibold text-zinc-200">{t('studio.videoAnalytics.gender')}</h3>
+          <p className="mt-3 text-sm text-zinc-500">{t('studio.videoAnalytics.genderSoon')}</p>
         </section>
       </div>
     </div>

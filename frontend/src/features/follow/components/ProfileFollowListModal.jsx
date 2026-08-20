@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   IoClose,
   IoPeopleOutline,
@@ -24,10 +25,10 @@ const EMPTY_LIST_STATE = Object.freeze({
 });
 
 const FOLLOW_TABS = Object.freeze([
-  { id: "following", label: "Đã follow" },
-  { id: "followers", label: "Follower" },
-  { id: "friends", label: "Bạn bè" },
-  { id: "suggested", label: "Được đề xuất" },
+  { id: "following", labelKey: "followList.tabs.following" },
+  { id: "followers", labelKey: "followList.tabs.followers" },
+  { id: "friends", labelKey: "followList.tabs.friends" },
+  { id: "suggested", labelKey: "followList.tabs.suggested" },
 ]);
 
 function normalizeUsernameKey(value) {
@@ -103,45 +104,48 @@ function buildDerivedList(baseList, items, overrides = {}) {
   };
 }
 
-function emptyStateContent(tab, isOwnProfile) {
-  const subject = isOwnProfile ? "bạn" : "người dùng này";
+function emptyStateContent(tab, isOwnProfile, t) {
+  const subject = isOwnProfile
+    ? t("followList.empty.subjectYou")
+    : t("followList.empty.subjectThem");
   switch (tab) {
     case "followers":
       return {
         icon: IoPeopleOutline,
-        title: "Follower",
-        description: `Khi ai đó follow ${subject}, bạn sẽ thấy họ ở đây.`,
+        title: t("followList.empty.followersTitle"),
+        description: t("followList.empty.followersDesc", { subject }),
       };
     case "friends":
       return {
         icon: IoPeopleOutline,
-        title: "Bạn bè",
+        title: t("followList.empty.friendsTitle"),
         description: isOwnProfile
-          ? "Khi bạn có follower follow lại bạn, bạn sẽ thấy họ ở đây."
-          : "Khi người dùng này có các kết nối follow lẫn nhau, bạn sẽ thấy họ ở đây.",
+          ? t("followList.empty.friendsOwn")
+          : t("followList.empty.friendsOther"),
       };
     case "suggested":
       return {
         icon: IoSparklesOutline,
-        title: "Được đề xuất",
+        title: t("followList.empty.suggestedTitle"),
         description: isOwnProfile
-          ? "Các tài khoản mà chúng tôi thấy phù hợp với bạn sẽ xuất hiện ở đây."
-          : "Các tài khoản nên follow sẽ xuất hiện ở đây.",
+          ? t("followList.empty.suggestedOwn")
+          : t("followList.empty.suggestedOther"),
       };
     case "following":
     default:
       return {
         icon: IoPersonOutline,
-        title: "Đã follow",
+        title: t("followList.empty.followingTitle"),
         description: isOwnProfile
-          ? "Khi bạn bắt đầu follow người khác, bạn sẽ nhìn thấy họ ở đây."
-          : "Khi người dùng này bắt đầu follow người khác, bạn sẽ nhìn thấy họ ở đây.",
+          ? t("followList.empty.followingOwn")
+          : t("followList.empty.followingOther"),
       };
   }
 }
 
 function FollowEmptyState({ tab, isOwnProfile }) {
-  const { icon: Icon, title, description } = emptyStateContent(tab, isOwnProfile);
+  const { t } = useTranslation();
+  const { icon: Icon, title, description } = emptyStateContent(tab, isOwnProfile, t);
   return (
     <div className="flex h-full flex-col items-center justify-center px-6 py-12 text-center">
       <span className="mb-5 flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-white/3 text-zinc-200">
@@ -161,9 +165,10 @@ function FollowListRow({
   onToggleFollow,
   onClose,
 }) {
+  const { t } = useTranslation();
   const name =
-    String(item?.displayName ?? item?.username ?? "Người dùng Vibely").trim() ||
-    "Người dùng Vibely";
+    String(item?.displayName ?? item?.username ?? t("followList.defaultUser")).trim() ||
+    t("followList.defaultUser");
   const handleFollowClick = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -200,12 +205,12 @@ function FollowListRow({
           } ${busy ? "cursor-wait opacity-70" : "cursor-pointer"}`}
         >
           {busy
-            ? "Đang lưu..."
+            ? t("followList.saving")
             : item?.followedByViewer
-              ? "Đã follow"
+              ? t("followList.following")
               : activeTab === "followers" || activeTab === "suggested"
-                ? "Follow lại"
-                : "Follow"}
+                ? t("followList.followBack")
+                : t("followList.follow")}
         </button>
       ) : null}
     </Link>
@@ -225,6 +230,7 @@ export function ProfileFollowListModal({
   onRequireLogin,
   isOwnProfile = false,
 }) {
+  const { t } = useTranslation();
   const usernameKey = useMemo(() => normalizeUsernameKey(username), [username]);
   const [lists, setLists] = useState(() => ({
     followers: createListState(),
@@ -350,13 +356,13 @@ export function ProfileFollowListModal({
             ...prev[tab],
             loading: false,
             loadingMore: false,
-            error: error?.message || "Không thể tải danh sách follow.",
+            error: error?.message || t("followList.loadError"),
             usernameKey,
           },
         }));
       }
     },
-    [token, usernameKey],
+    [t, token, usernameKey],
   );
 
   useEffect(() => {
@@ -429,7 +435,7 @@ export function ProfileFollowListModal({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Đóng danh sách follow"
+            aria-label={t("followList.closeAria")}
             className="absolute right-4 top-4 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white"
           >
             <IoClose className="text-2xl" aria-hidden />
@@ -446,7 +452,7 @@ export function ProfileFollowListModal({
                     : "hover:text-zinc-200"
                 }`}
               >
-                <span className="truncate max-w-full whitespace-nowrap">{tab.label}</span>
+                <span className="truncate max-w-full whitespace-nowrap">{t(tab.labelKey)}</span>
                 {tab.id !== "suggested" ? <span className="whitespace-nowrap">{tabCounts[tab.id] ?? 0}</span> : null}
               </button>
             ))}
@@ -464,7 +470,7 @@ export function ProfileFollowListModal({
                 onClick={() => void fetchListPage(activeTab, 0, false)}
                 className="rounded-full bg-zinc-800 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700"
               >
-                Thử lại
+                {t("common.retry")}
               </button>
             </div>
           ) : activeList.items.length === 0 ? (
@@ -496,10 +502,10 @@ export function ProfileFollowListModal({
                 disabled={activeList.loadingMore}
                 className="w-full rounded-full bg-zinc-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-zinc-700 disabled:cursor-wait disabled:opacity-70"
               >
-                {activeList.loadingMore ? "Đang tải thêm..." : "Tải thêm"}
+                {activeList.loadingMore ? t("followList.loadingMore") : t("followList.loadMore")}
               </button>
             ) : (
-              <p className="text-center text-xs text-zinc-500">Đã hiển thị hết danh sách.</p>
+              <p className="text-center text-xs text-zinc-500">{t("followList.endOfList")}</p>
             )}
           </div>
         ) : null}
