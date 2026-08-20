@@ -136,6 +136,64 @@
     "emptyFollowingTitle": "No videos from people you follow",
     "emptyFollowingDescription": "When creators you follow post videos, they'll appear here in random order."
   },
+  "moreMenu": {
+    "other": "Other",
+    "studio": "Vibely Studio",
+    "createEffects": "Create Vibely effects",
+    "promotePost": "Promote post",
+    "liveTools": "LIVE tools",
+    "getCoins": "Get Coins",
+    "shop": "Sell on Vibely Shop",
+    "support": "Support"
+  },
+  "explorePage": {
+    "title": "Explore",
+    "pageTitle": "Explore - Find videos you like on Vibely",
+    "all": "All",
+    "searchOnVibely": "Search on Vibely"
+  },
+  "messagesPage": {
+    "title": "Messages",
+    "pageTitle": "Messages | Vibely",
+    "emptyList": "No messages yet",
+    "selectConversation": "Select a conversation to start messaging.",
+    "emptyThread": "No messages yet. Say hello!",
+    "loginTitle": "Log in to use Messages",
+    "loginDescription": "Connect and chat in realtime with friends on Vibely.",
+    "notifications": "Notifications"
+  },
+  "activityPage": {
+    "title": "Notifications",
+    "all": "All activity",
+    "likes": "Likes",
+    "comments": "Comments",
+    "mentions": "Mentions and tags",
+    "followers": "Followers",
+    "today": "Today",
+    "earlier": "Earlier",
+    "loginPrompt": "Log in to see activity",
+    "loading": "Loading…",
+    "loadError": "Couldn't load notifications",
+    "retry": "Try again",
+    "emptyTitle": "No activity yet",
+    "emptyDescription": "When you get likes, comments, or new followers, you'll see them here.",
+    "system": "System notification",
+    "transaction": "Transaction assistant",
+    "followBack": "Follow back"
+  },
+  "suggestions": {
+    "emptyTitle": "No suggestions yet",
+    "emptyDescription": "When more creators post videos, we'll suggest them here.",
+    "retry": "Try again",
+    "seeMore": "See more",
+    "loading": "Loading…"
+  },
+  "friendsPage": {
+    "pageTitle": "Friends | Vibely"
+  },
+  "followingPage": {
+    "pageTitle": "Following | Vibely"
+  },
   "settings": {
     "title": "Settings",
     "account": "Manage account",

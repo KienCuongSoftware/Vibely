@@ -136,6 +136,64 @@
     "emptyFollowingTitle": "Chưa có video từ người bạn follow",
     "emptyFollowingDescription": "Khi nhà sáng tạo bạn theo dõi đăng video, chúng sẽ hiện tại đây theo thứ tự ngẫu nhiên."
   },
+  "moreMenu": {
+    "other": "Khác",
+    "studio": "Vibely Studio",
+    "createEffects": "Tạo hiệu ứng Vibely",
+    "promotePost": "Quảng bá bài đăng",
+    "liveTools": "Công cụ phát LIVE",
+    "getCoins": "Nhận Xu",
+    "shop": "Bán hàng trên Vibely Shop",
+    "support": "Hỗ trợ"
+  },
+  "explorePage": {
+    "title": "Khám phá",
+    "pageTitle": "Khám phá - Tìm video bạn thích trên Vibely",
+    "all": "Tất cả",
+    "searchOnVibely": "Tìm kiếm trên Vibely"
+  },
+  "messagesPage": {
+    "title": "Tin nhắn",
+    "pageTitle": "Tin nhắn | Vibely",
+    "emptyList": "Chưa có tin nhắn nào",
+    "selectConversation": "Chọn một hội thoại để bắt đầu nhắn tin.",
+    "emptyThread": "Chưa có tin nhắn nào. Hãy gửi lời chào đầu tiên.",
+    "loginTitle": "Đăng nhập để dùng Tin nhắn",
+    "loginDescription": "Kết nối và trò chuyện realtime với bạn bè trên Vibely.",
+    "notifications": "Thông báo"
+  },
+  "activityPage": {
+    "title": "Thông báo",
+    "all": "Tất cả hoạt động",
+    "likes": "Thích",
+    "comments": "Bình luận",
+    "mentions": "Lượt nhắc đến và lượt gắn thẻ",
+    "followers": "Follower",
+    "today": "Hôm nay",
+    "earlier": "Trước đây",
+    "loginPrompt": "Đăng nhập để xem hoạt động",
+    "loading": "Đang tải…",
+    "loadError": "Không tải được thông báo",
+    "retry": "Thử lại",
+    "emptyTitle": "Chưa có hoạt động nào",
+    "emptyDescription": "Khi có lượt thích, bình luận hoặc follower mới, bạn sẽ thấy tại đây.",
+    "system": "Thông báo hệ thống",
+    "transaction": "Trợ lý giao dịch",
+    "followBack": "Follow lại"
+  },
+  "suggestions": {
+    "emptyTitle": "Chưa có gợi ý",
+    "emptyDescription": "Khi có thêm nhà sáng tạo đăng video, chúng tôi sẽ gợi ý tại đây.",
+    "retry": "Thử lại",
+    "seeMore": "Xem thêm",
+    "loading": "Đang tải…"
+  },
+  "friendsPage": {
+    "pageTitle": "Bạn bè | Vibely"
+  },
+  "followingPage": {
+    "pageTitle": "Đang follow | Vibely"
+  },
   "settings": {
     "title": "Cài đặt",
     "account": "Quản lý tài khoản",

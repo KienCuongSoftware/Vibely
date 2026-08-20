@@ -365,62 +365,62 @@ export function Sidebar({
             <MoreSection title={t("nav.tools")}>
               <MoreRow
                 icon={IoRocketOutline}
-                label="Vibaly Studio"
+                label={t("moreMenu.studio")}
                 trailing={<IoChevronForward className="text-zinc-500" />}
                 onClick={() => {}}
               />
               <MoreRow
                 icon={IoColorWandOutline}
-                label="Tạo hiệu ứng Vibaly"
+                label={t("moreMenu.createEffects")}
                 trailing={<IoChevronForward className="text-zinc-500" />}
                 onClick={() => {}}
               />
               <MoreRow
                 icon={IoTrendingUpOutline}
-                label="Quảng bá bài đăng"
+                label={t("moreMenu.promotePost")}
                 trailing={<IoChevronForward className="text-zinc-500" />}
                 onClick={() => {}}
               />
               <MoreRow
                 icon={IoRadioOutline}
-                label="Công cụ phát LIVE"
+                label={t("moreMenu.liveTools")}
                 trailing={<IoChevronForward className="text-zinc-500" />}
                 onClick={() => {}}
               />
               <MoreRow
                 icon={IoCashOutline}
-                label="Nhận Xu"
+                label={t("moreMenu.getCoins")}
                 trailing={<IoChevronForward className="text-zinc-500" />}
                 onClick={() => {}}
               />
               <MoreRow
                 icon={IoBagHandleOutline}
-                label="Bán hàng trên Vibaly Shop"
+                label={t("moreMenu.shop")}
                 trailing={<IoChevronForward className="text-zinc-500" />}
                 onClick={() => {}}
               />
             </MoreSection>
 
-            <MoreSection title="Khác">
+            <MoreSection title={t("moreMenu.other")}>
               {!token ? (
                 <Link
                   to="/login"
                   onClick={closeMore}
                   className="flex w-full cursor-pointer items-center justify-center rounded-lg px-3 py-3 text-sm font-semibold text-red-400 hover:bg-zinc-800/90"
                 >
-                  Đăng nhập
+                  {t("nav.login")}
                 </Link>
               ) : null}
               <MoreRow
                 icon={IoDocumentTextOutline}
-                label="Hỗ trợ"
+                label={t("moreMenu.support")}
                 trailing={<IoChevronForward className="text-zinc-500" />}
                 onClick={() => {}}
               />
               {token && onLogout ? (
                 <MoreRow
                   icon={IoLogOutOutline}
-                  label="Đăng xuất"
+                  label={t("settings.logout")}
                   onClick={() => {
                     closeMore();
                     onLogout();

@@ -235,5 +235,63 @@
     "emptyGuestDescription": "登入後即可觀看內容，並在 Vibely 發布你的第一支影片。",
     "emptyFollowingTitle": "追蹤對象尚無影片",
     "emptyFollowingDescription": "你追蹤的創作者發布影片後，會以隨機順序顯示在這裡。"
+  },
+  "moreMenu": {
+    "other": "其他",
+    "studio": "Vibely Studio",
+    "createEffects": "建立 Vibely 特效",
+    "promotePost": "推廣貼文",
+    "liveTools": "直播工具",
+    "getCoins": "領取金幣",
+    "shop": "在 Vibely Shop 開店",
+    "support": "支援"
+  },
+  "explorePage": {
+    "title": "探索",
+    "pageTitle": "探索 - 在 Vibely 找到你喜歡的影片",
+    "all": "全部",
+    "searchOnVibely": "在 Vibely 搜尋"
+  },
+  "messagesPage": {
+    "title": "訊息",
+    "pageTitle": "訊息 | Vibely",
+    "emptyList": "尚無訊息",
+    "selectConversation": "選擇一個對話開始聊天。",
+    "emptyThread": "尚無訊息。打個招呼吧！",
+    "loginTitle": "登入後使用訊息",
+    "loginDescription": "在 Vibely 與朋友即時聊天。",
+    "notifications": "通知"
+  },
+  "activityPage": {
+    "title": "通知",
+    "all": "全部動態",
+    "likes": "讚",
+    "comments": "留言",
+    "mentions": "提及與標記",
+    "followers": "追蹤者",
+    "today": "今天",
+    "earlier": "稍早",
+    "loginPrompt": "登入後查看動態",
+    "loading": "載入中…",
+    "loadError": "無法載入通知",
+    "retry": "重試",
+    "emptyTitle": "尚無動態",
+    "emptyDescription": "有讚、留言或新追蹤者時會顯示在這裡。",
+    "system": "系統通知",
+    "transaction": "交易助理",
+    "followBack": "回追"
+  },
+  "suggestions": {
+    "emptyTitle": "尚無推薦",
+    "emptyDescription": "有更多創作者發布影片時，我們會在這裡推薦。",
+    "retry": "重試",
+    "seeMore": "查看更多",
+    "loading": "載入中…"
+  },
+  "friendsPage": {
+    "pageTitle": "朋友 | Vibely"
+  },
+  "followingPage": {
+    "pageTitle": "追蹤中 | Vibely"
   }
 }

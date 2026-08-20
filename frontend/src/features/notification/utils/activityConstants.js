@@ -1,19 +1,19 @@
 export const ACTIVITY_FILTERS = [
-  { id: 'all', label: 'Tất cả hoạt động' },
-  { id: 'likes', label: 'Thích' },
-  { id: 'comments', label: 'Bình luận' },
-  { id: 'mentions', label: 'Lượt nhắc đến và lượt gắn thẻ' },
-  { id: 'followers', label: 'Follower' },
+  { id: 'all', labelKey: 'activityPage.all' },
+  { id: 'likes', labelKey: 'activityPage.likes' },
+  { id: 'comments', labelKey: 'activityPage.comments' },
+  { id: 'mentions', labelKey: 'activityPage.mentions' },
+  { id: 'followers', labelKey: 'activityPage.followers' },
 ]
 
 export const ACTIVITY_SECTIONS = [
-  { id: 'today', label: 'Hôm nay' },
-  { id: 'earlier', label: 'Trước đây' },
+  { id: 'today', labelKey: 'activityPage.today' },
+  { id: 'earlier', labelKey: 'activityPage.earlier' },
 ]
 
 export const SYSTEM_NOTIFICATION_FILTERS = [
-  { id: 'all', label: 'Tất cả hoạt động' },
-  { id: 'live', label: 'LIVE' },
-  { id: 'transaction', label: 'Trợ lý giao dịch' },
-  { id: 'system', label: 'Thông báo Hệ thống' },
+  { id: 'all', labelKey: 'activityPage.all' },
+  { id: 'live', labelKey: 'nav.live' },
+  { id: 'transaction', labelKey: 'activityPage.transaction' },
+  { id: 'system', labelKey: 'activityPage.system' },
 ]

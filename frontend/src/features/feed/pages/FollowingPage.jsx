@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { SuggestedCreatorsPanel } from '@/features/feed/components/SuggestedCreatorsPanel.jsx'
 import { VerticalVideoFeed } from '@/features/feed/components/VerticalVideoFeed.jsx'
@@ -16,10 +17,11 @@ import {
   resolveFollowingViewMode,
 } from '@/features/feed/utils/followingPageView.js'
 
-const PAGE_TITLE = 'Đang follow | Vibely'
+const PAGE_TITLE_KEY = 'followingPage.pageTitle'
 
 /** null = đang xác định; grid = lưới; feed = video (sidebar quay lại / F5 khi đã có video từ người follow). */
 export function FollowingPage() {
+  const { t } = useTranslation()
   const { token, user, logout, authReady } = useAuth()
   const location = useLocation()
   const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout())
@@ -31,8 +33,8 @@ export function FollowingPage() {
   } = useSuggestedCreatorFollow(token)
 
   useEffect(() => {
-    document.title = PAGE_TITLE
-  }, [])
+    document.title = t(PAGE_TITLE_KEY)
+  }, [t])
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 1023px)')

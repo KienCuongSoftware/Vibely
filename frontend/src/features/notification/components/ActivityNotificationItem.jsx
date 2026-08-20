@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { IoChevronForward, IoShieldCheckmark } from 'react-icons/io5'
 import { apiClient } from '@/shared/api/client.js'
 import { useAuth } from '@/features/auth/hooks/useAuth.js'
@@ -90,6 +91,7 @@ function FollowRequestActions({ actorId, onResolved }) {
 }
 
 function FollowBackButton({ actorId, initialFollowing, onFollowed }) {
+  const { t } = useTranslation()
   const { token } = useAuth()
   const [following, setFollowing] = useState(Boolean(initialFollowing))
   const [busy, setBusy] = useState(false)
@@ -125,7 +127,7 @@ function FollowBackButton({ actorId, initialFollowing, onFollowed }) {
         busy ? 'cursor-wait opacity-80' : 'cursor-pointer'
       }`}
     >
-      {busy ? 'Đang lưu...' : 'Follow lại'}
+      {busy ? t('suggestions.loading') : t('activityPage.followBack')}
     </button>
   )
 }

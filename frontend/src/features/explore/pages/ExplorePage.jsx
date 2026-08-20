@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { IoChevronBack, IoChevronForward, IoHeart, IoPlay, IoPlayOutline, IoSearch } from 'react-icons/io5'
 import { apiClient } from '@/shared/api/client'
 import { Sidebar } from '@/shared/components/Sidebar'
@@ -21,19 +22,21 @@ import {
   ExploreTabsSkeleton,
 } from '@/features/explore/components/ExplorePageSkeleton.jsx'
 
-const EXPLORE_PAGE_TITLE = 'Khám phá - Tìm video bạn thích trên Vibely'
-const ALL_TAB = { slug: 'all', name: 'Tất cả', kind: 'category', videoCount: 0 }
+const ALL_TAB_BASE = { slug: 'all', kind: 'category', videoCount: 0 }
 
-function normalizeExploreTabs(rows) {
+function normalizeExploreTabs(rows, allLabel) {
+  const allTabFallback = { ...ALL_TAB_BASE, name: allLabel }
   const filtered = rows.filter((tab) => {
     const kind = tab.kind ?? 'category'
     if (tab.slug === 'all') return true
     if (kind === 'for_you' || kind === 'topic') return true
     return Number(tab.videoCount ?? 0) > 0
   })
-  const allTab = filtered.find((tab) => tab.slug === 'all') ?? ALL_TAB
+  const allTab = filtered.find((tab) => tab.slug === 'all') ?? allTabFallback
   const rest = filtered.filter((tab) => tab.slug !== 'all')
-  return [allTab, ...rest]
+  const normalizedAll =
+    allTab.slug === 'all' ? { ...allTab, name: allLabel } : allTab
+  return [normalizedAll, ...rest]
 }
 
 function formatCompactCount(value) {
@@ -114,8 +117,11 @@ function ExploreMobileVideoCard({ video, coverFallback, onOpen }) {
 }
 
 export function ExplorePage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { token, user, logout } = useAuth()
+  const allLabel = t('explorePage.all')
+  const allTab = useMemo(() => ({ ...ALL_TAB_BASE, name: allLabel }), [allLabel])
   const [tabs, setTabs] = useState([])
   const [activeTab, setActiveTab] = useState({ slug: 'all', kind: 'category' })
   const [items, setItems] = useState([])
@@ -135,8 +141,8 @@ export function ExplorePage() {
   const menuItems = useMemo(() => buildMainSidebarMenuItems(token), [token])
 
   useEffect(() => {
-    document.title = EXPLORE_PAGE_TITLE
-  }, [])
+    document.title = t('explorePage.pageTitle')
+  }, [t])
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 1023px)')
@@ -148,14 +154,14 @@ export function ExplorePage() {
 
   useEffect(() => {
     apiClient.getExploreTabs({ token }).then((res) => {
-      const rows = normalizeExploreTabs(Array.isArray(res) ? res : [])
+      const rows = normalizeExploreTabs(Array.isArray(res) ? res : [], allLabel)
       setTabs(rows)
       setActiveTab({ slug: 'all', kind: 'category' })
     }).catch(() => {
-      setTabs([ALL_TAB])
+      setTabs([allTab])
       setActiveTab({ slug: 'all', kind: 'category' })
     })
-  }, [token])
+  }, [token, allLabel, allTab])
 
   const updateCategoryScrollState = React.useCallback(() => {
     const el = categoryScrollRef.current
@@ -315,13 +321,13 @@ export function ExplorePage() {
             className="flex h-10 items-center gap-2.5 rounded-full bg-zinc-800/95 px-3.5 text-zinc-400 transition hover:bg-zinc-800"
           >
             <IoSearch className="shrink-0 text-lg" aria-hidden />
-            <span className="truncate text-[15px]">Tìm kiếm trên Vibely</span>
+            <span className="truncate text-[15px]">{t('explorePage.searchOnVibely')}</span>
           </Link>
         </div>
 
         <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-3 py-3 lg:px-6 lg:py-5">
           <div className="mx-auto w-full max-w-[1240px]">
-            <h1 className="hidden text-3xl font-extrabold lg:block">Khám phá</h1>
+            <h1 className="hidden text-3xl font-extrabold lg:block">{t('explorePage.title')}</h1>
 
             <div className="mt-0 flex items-start gap-2 lg:mt-3">
               <button

@@ -235,5 +235,63 @@
     "emptyGuestDescription": "로그인하여 콘텐츠를 시청하고 Vibely에 첫 영상을 올려보세요.",
     "emptyFollowingTitle": "팔로우한 사람의 영상이 없습니다",
     "emptyFollowingDescription": "팔로우한 크리에이터가 영상을 올리면 여기에 무작위로 표시됩니다."
+  },
+  "moreMenu": {
+    "other": "기타",
+    "studio": "Vibely Studio",
+    "createEffects": "Vibely 효과 만들기",
+    "promotePost": "게시물 홍보",
+    "liveTools": "LIVE 도구",
+    "getCoins": "코인 받기",
+    "shop": "Vibely Shop에서 판매",
+    "support": "지원"
+  },
+  "explorePage": {
+    "title": "탐색",
+    "pageTitle": "탐색 - Vibely에서 좋아하는 영상 찾기",
+    "all": "전체",
+    "searchOnVibely": "Vibely에서 검색"
+  },
+  "messagesPage": {
+    "title": "메시지",
+    "pageTitle": "메시지 | Vibely",
+    "emptyList": "아직 메시지가 없습니다",
+    "selectConversation": "대화를 선택해 메시지를 시작하세요.",
+    "emptyThread": "아직 메시지가 없습니다. 인사해 보세요!",
+    "loginTitle": "메시지를 사용하려면 로그인",
+    "loginDescription": "Vibely에서 친구와 실시간으로 채팅하세요.",
+    "notifications": "알림"
+  },
+  "activityPage": {
+    "title": "알림",
+    "all": "모든 활동",
+    "likes": "좋아요",
+    "comments": "댓글",
+    "mentions": "멘션 및 태그",
+    "followers": "팔로워",
+    "today": "오늘",
+    "earlier": "이전",
+    "loginPrompt": "활동을 보려면 로그인하세요",
+    "loading": "로딩 중…",
+    "loadError": "알림을 불러올 수 없습니다",
+    "retry": "다시 시도",
+    "emptyTitle": "아직 활동이 없습니다",
+    "emptyDescription": "좋아요, 댓글, 새 팔로워가 있으면 여기에 표시됩니다.",
+    "system": "시스템 알림",
+    "transaction": "거래 도우미",
+    "followBack": "맞팔로우"
+  },
+  "suggestions": {
+    "emptyTitle": "아직 추천이 없습니다",
+    "emptyDescription": "더 많은 크리에이터가 영상을 올리면 여기에 추천합니다.",
+    "retry": "다시 시도",
+    "seeMore": "더 보기",
+    "loading": "로딩 중…"
+  },
+  "friendsPage": {
+    "pageTitle": "친구 | Vibely"
+  },
+  "followingPage": {
+    "pageTitle": "팔로잉 | Vibely"
   }
 }

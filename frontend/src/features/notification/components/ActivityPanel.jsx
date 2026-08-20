@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { IoClose } from 'react-icons/io5'
 import { apiClient } from '@/shared/api/client.js'
 import { useActivityNotifications } from '@/features/notification/hooks/useActivityNotifications.js'
@@ -12,6 +13,7 @@ import { ActivitySystemInboxRow } from '@/features/notification/components/Activ
 import { ActivitySystemPanel } from '@/features/notification/components/ActivitySystemPanel.jsx'
 
 export function ActivityPanel({ onClose, fullPage = false }) {
+  const { t } = useTranslation()
   const { token } = useAuth()
   const { refreshUnreadCount, decrementUnreadCount } = useNotificationUnread()
   const [view, setView] = useState('inbox')
@@ -94,13 +96,13 @@ export function ActivityPanel({ onClose, fullPage = false }) {
       <header className={`shrink-0 border-b border-zinc-800/80 px-3 pb-2.5 ${fullPage ? 'pt-3' : 'pt-3'}`}>
         <div className={`mb-3 flex items-center ${fullPage ? 'justify-center' : 'justify-between'} gap-2`}>
           <h2 id="vibely-activity-title" className={`font-bold text-white ${fullPage ? 'text-[17px]' : 'text-base'}`}>
-            Thông báo
+            {t('activityPage.title')}
           </h2>
           {!fullPage ? (
             <button
               type="button"
               onClick={onClose}
-              aria-label="Đóng"
+              aria-label={t('nav.close')}
               className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
             >
               <IoClose className="text-xl" aria-hidden />
@@ -124,7 +126,7 @@ export function ActivityPanel({ onClose, fullPage = false }) {
                       : 'bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white'
                 }`}
               >
-                {filter.label}
+                {t(filter.labelKey)}
               </button>
             )
           })}
@@ -134,7 +136,7 @@ export function ActivityPanel({ onClose, fullPage = false }) {
       <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-1.5 py-1.5">
         {!token ? (
           <div className="flex flex-col items-center justify-center px-3 py-12 text-center">
-            <p className="text-xs font-medium text-zinc-400">Đăng nhập để xem hoạt động</p>
+            <p className="text-xs font-medium text-zinc-400">{t('activityPage.loginPrompt')}</p>
           </div>
         ) : loading ? (
           <div className="flex flex-col items-center justify-center px-3 py-12 text-center">
@@ -142,24 +144,24 @@ export function ActivityPanel({ onClose, fullPage = false }) {
               className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-rose-500"
               aria-hidden
             />
-            <p className="mt-3 text-xs text-zinc-500">Đang tải…</p>
+            <p className="mt-3 text-xs text-zinc-500">{t('activityPage.loading')}</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center px-3 py-12 text-center">
-            <p className="text-xs font-medium text-zinc-400">Không tải được thông báo</p>
+            <p className="text-xs font-medium text-zinc-400">{t('activityPage.loadError')}</p>
             <button
               type="button"
               onClick={() => void refresh()}
               className="mt-3 cursor-pointer rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800"
             >
-              Thử lại
+              {t('activityPage.retry')}
             </button>
           </div>
         ) : isEmpty ? (
           <div className="flex flex-col items-center justify-center px-3 py-12 text-center">
-            <p className="text-xs font-medium text-zinc-400">Chưa có hoạt động nào</p>
+            <p className="text-xs font-medium text-zinc-400">{t('activityPage.emptyTitle')}</p>
             <p className="mt-1 max-w-[220px] text-[11px] text-zinc-600">
-              Khi có lượt thích, bình luận hoặc follower mới, bạn sẽ thấy tại đây.
+              {t('activityPage.emptyDescription')}
             </p>
           </div>
         ) : (
@@ -167,7 +169,7 @@ export function ActivityPanel({ onClose, fullPage = false }) {
             {showSystemHub || todaySection ? (
               <section className="mb-3">
                 <h3 className="px-2 py-1.5 text-xs font-semibold text-zinc-500">
-                  Hôm nay
+                  {t('activityPage.today')}
                 </h3>
                 {showSystemHub ? (
                   <ActivitySystemInboxRow
@@ -192,7 +194,7 @@ export function ActivityPanel({ onClose, fullPage = false }) {
             {otherSections.map((section) => (
               <section key={section.id} className="mb-3">
                 <h3 className="px-2 py-1.5 text-xs font-semibold text-zinc-500">
-                  {section.label}
+                  {t(section.labelKey || section.label)}
                 </h3>
                 <div className="space-y-0.5">
                   {section.items.map((item) => (

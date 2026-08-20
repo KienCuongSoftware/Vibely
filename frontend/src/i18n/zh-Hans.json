@@ -235,5 +235,63 @@
     "emptyGuestDescription": "登录后即可观看内容，并在 Vibely 发布你的第一条视频。",
     "emptyFollowingTitle": "关注的人暂无视频",
     "emptyFollowingDescription": "你关注的创作者发布视频后，会以随机顺序显示在这里。"
+  },
+  "moreMenu": {
+    "other": "其他",
+    "studio": "Vibely Studio",
+    "createEffects": "创建 Vibely 特效",
+    "promotePost": "推广帖子",
+    "liveTools": "直播工具",
+    "getCoins": "领取金币",
+    "shop": "在 Vibely Shop 开店",
+    "support": "帮助"
+  },
+  "explorePage": {
+    "title": "发现",
+    "pageTitle": "发现 - 在 Vibely 找到你喜欢的视频",
+    "all": "全部",
+    "searchOnVibely": "在 Vibely 搜索"
+  },
+  "messagesPage": {
+    "title": "私信",
+    "pageTitle": "私信 | Vibely",
+    "emptyList": "暂无私信",
+    "selectConversation": "选择一个对话开始聊天。",
+    "emptyThread": "暂无消息。打个招呼吧！",
+    "loginTitle": "登录后使用私信",
+    "loginDescription": "在 Vibely 与朋友实时聊天。",
+    "notifications": "通知"
+  },
+  "activityPage": {
+    "title": "通知",
+    "all": "全部动态",
+    "likes": "点赞",
+    "comments": "评论",
+    "mentions": "提及与标记",
+    "followers": "粉丝",
+    "today": "今天",
+    "earlier": "更早",
+    "loginPrompt": "登录后查看动态",
+    "loading": "加载中…",
+    "loadError": "无法加载通知",
+    "retry": "重试",
+    "emptyTitle": "暂无动态",
+    "emptyDescription": "有点赞、评论或新粉丝时会显示在这里。",
+    "system": "系统通知",
+    "transaction": "交易助手",
+    "followBack": "回关"
+  },
+  "suggestions": {
+    "emptyTitle": "暂无推荐",
+    "emptyDescription": "有更多创作者发布视频时，我们会在这里推荐。",
+    "retry": "重试",
+    "seeMore": "查看更多",
+    "loading": "加载中…"
+  },
+  "friendsPage": {
+    "pageTitle": "朋友 | Vibely"
+  },
+  "followingPage": {
+    "pageTitle": "已关注 | Vibely"
   }
 }

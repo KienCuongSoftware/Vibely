@@ -1,7 +1,9 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { IoChevronForward, IoMegaphoneOutline } from 'react-icons/io5'
 
 export function ActivitySystemInboxRow({ preview, onOpen }) {
+  const { t } = useTranslation()
   return (
     <button
       type="button"
@@ -13,7 +15,7 @@ export function ActivitySystemInboxRow({ preview, onOpen }) {
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-[13px] font-semibold leading-tight text-white">
-          Thông báo hệ thống
+          {t('activityPage.system')}
         </p>
         {preview ? (
           <p className="mt-0.5 truncate text-[11px] leading-snug text-zinc-500">

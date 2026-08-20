@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { IoPeople } from 'react-icons/io5'
 import { apiClient } from '@/shared/api/client'
 import { useAuth } from '@/features/auth/hooks/useAuth'
@@ -11,9 +12,10 @@ import {
 import { useSuggestedCreatorFollow } from '@/features/follow/hooks/useSuggestedCreatorFollow.js'
 import { FEED_STAGE_OUTER_WIDTH_CLASS } from '@/features/feed/components/FeedPhoneStage'
 
-const PAGE_TITLE = 'Bạn bè | Vibely'
+const PAGE_TITLE_KEY = 'friendsPage.pageTitle'
 
 export function FriendsPage() {
+  const { t } = useTranslation()
   const { token, user, logout, authReady } = useAuth()
   const [friendCount, setFriendCount] = useState(null)
   const [hydrated, setHydrated] = useState(false)
@@ -24,8 +26,8 @@ export function FriendsPage() {
   } = useSuggestedCreatorFollow(token)
 
   useEffect(() => {
-    document.title = PAGE_TITLE
-  }, [])
+    document.title = t(PAGE_TITLE_KEY)
+  }, [t])
 
   useEffect(() => {
     if (!authReady) return undefined

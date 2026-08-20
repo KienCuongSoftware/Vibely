@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { IoChevronBack, IoClose } from 'react-icons/io5'
 import { useSystemNotifications } from '@/features/notification/hooks/useActivityNotifications.js'
 import { SYSTEM_NOTIFICATION_FILTERS } from '@/features/notification/utils/activityConstants.js'
@@ -7,6 +8,7 @@ import { ActivitySystemNotificationCard } from '@/features/notification/componen
 import { ACTIVITY_PANEL_SHELL_CLASS } from '@/features/notification/utils/activityPanelShell.js'
 
 export function ActivitySystemPanel({ token, onBack, onClose }) {
+  const { t } = useTranslation()
   const [activeFilter, setActiveFilter] = useState('all')
 
   const { items, loading, error, refresh } = useSystemNotifications({
@@ -42,7 +44,7 @@ export function ActivitySystemPanel({ token, onBack, onClose }) {
           <button
             type="button"
             onClick={onBack}
-            aria-label="Quay lại"
+            aria-label={t('nav.back')}
             className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
           >
             <IoChevronBack className="text-xl" aria-hidden />
@@ -51,12 +53,12 @@ export function ActivitySystemPanel({ token, onBack, onClose }) {
             id="vibely-system-activity-title"
             className="min-w-0 flex-1 truncate text-base font-bold text-white"
           >
-            Thông báo hệ thống
+            {t('activityPage.system')}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Đóng"
+            aria-label={t('nav.close')}
             className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
           >
             <IoClose className="text-xl" aria-hidden />
@@ -77,7 +79,7 @@ export function ActivitySystemPanel({ token, onBack, onClose }) {
                     : 'bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white'
                 }`}
               >
-                {filter.label}
+                {t(filter.labelKey)}
               </button>
             )
           })}
@@ -94,18 +96,18 @@ export function ActivitySystemPanel({ token, onBack, onClose }) {
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center px-3 py-12 text-center">
-            <p className="text-xs font-medium text-zinc-400">Không tải được thông báo hệ thống</p>
+            <p className="text-xs font-medium text-zinc-400">{t('activityPage.loadError')}</p>
             <button
               type="button"
               onClick={() => void refresh()}
               className="mt-3 cursor-pointer rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800"
             >
-              Thử lại
+              {t('activityPage.retry')}
             </button>
           </div>
         ) : visibleItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-3 py-12 text-center">
-            <p className="text-xs font-medium text-zinc-400">Chưa có thông báo</p>
+            <p className="text-xs font-medium text-zinc-400">{t('activityPage.emptyTitle')}</p>
           </div>
         ) : (
           <div className="space-y-2">

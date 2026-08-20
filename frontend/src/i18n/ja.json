@@ -235,5 +235,63 @@
     "emptyGuestDescription": "ログインしてコンテンツを視聴し、Vibely に最初の動画を投稿しましょう。",
     "emptyFollowingTitle": "フォロー中の人の動画がありません",
     "emptyFollowingDescription": "フォローしているクリエイターが動画を投稿すると、ここにランダムな順で表示されます。"
+  },
+  "moreMenu": {
+    "other": "その他",
+    "studio": "Vibely Studio",
+    "createEffects": "Vibely エフェクトを作成",
+    "promotePost": "投稿を宣伝",
+    "liveTools": "LIVE ツール",
+    "getCoins": "コインを受け取る",
+    "shop": "Vibely Shop で販売",
+    "support": "サポート"
+  },
+  "explorePage": {
+    "title": "発見",
+    "pageTitle": "発見 - Vibelyで好きな動画を見つけよう",
+    "all": "すべて",
+    "searchOnVibely": "Vibelyで検索"
+  },
+  "messagesPage": {
+    "title": "メッセージ",
+    "pageTitle": "メッセージ | Vibely",
+    "emptyList": "まだメッセージはありません",
+    "selectConversation": "会話を選択してメッセージを始めましょう。",
+    "emptyThread": "まだメッセージはありません。挨拶してみましょう！",
+    "loginTitle": "メッセージを使うにはログイン",
+    "loginDescription": "Vibelyで友達とリアルタイムにチャットしましょう。",
+    "notifications": "お知らせ"
+  },
+  "activityPage": {
+    "title": "お知らせ",
+    "all": "すべてのアクティビティ",
+    "likes": "いいね",
+    "comments": "コメント",
+    "mentions": "メンションとタグ",
+    "followers": "フォロワー",
+    "today": "今日",
+    "earlier": "以前",
+    "loginPrompt": "アクティビティを見るにはログイン",
+    "loading": "読み込み中…",
+    "loadError": "お知らせを読み込めませんでした",
+    "retry": "再試行",
+    "emptyTitle": "まだアクティビティがありません",
+    "emptyDescription": "いいね、コメント、新しいフォロワーがあるとここに表示されます。",
+    "system": "システム通知",
+    "transaction": "取引アシスタント",
+    "followBack": "フォローバック"
+  },
+  "suggestions": {
+    "emptyTitle": "まだおすすめがありません",
+    "emptyDescription": "さらに多くのクリエイターが動画を投稿すると、ここに提案します。",
+    "retry": "再試行",
+    "seeMore": "もっと見る",
+    "loading": "読み込み中…"
+  },
+  "friendsPage": {
+    "pageTitle": "友達 | Vibely"
+  },
+  "followingPage": {
+    "pageTitle": "フォロー中 | Vibely"
   }
 }

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/shared/api/client'
 import { GridHoverVideoMedia } from '@/features/post/components/GridHoverVideoMedia.jsx'
 
@@ -108,6 +109,7 @@ export function SuggestedCreatorsPanel({
   onCreatorUnfollowed,
   onMetaLoaded,
 }) {
+  const { t } = useTranslation()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -204,7 +206,7 @@ export function SuggestedCreatorsPanel({
           onClick={() => void loadPage(0, false)}
           className="mt-4 rounded-full border border-zinc-600 px-4 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-900"
         >
-          Thử lại
+          {t('suggestions.retry')}
         </button>
       </div>
     )
@@ -213,9 +215,9 @@ export function SuggestedCreatorsPanel({
   if (!items.length) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
-        <p className="text-lg font-semibold text-zinc-100">Chưa có gợi ý</p>
+        <p className="text-lg font-semibold text-zinc-100">{t('suggestions.emptyTitle')}</p>
         <p className="mt-2 max-w-sm text-sm text-zinc-400">
-          Khi có thêm nhà sáng tạo đăng video, chúng tôi sẽ gợi ý tại đây.
+          {t('suggestions.emptyDescription')}
         </p>
       </div>
     )
@@ -244,7 +246,7 @@ export function SuggestedCreatorsPanel({
             onClick={() => void loadPage(page + 1, true)}
             className="mx-auto mt-8 block rounded-lg border border-zinc-700 px-5 py-2.5 text-sm font-semibold text-zinc-100 hover:bg-zinc-900 disabled:opacity-50"
           >
-            {loadingMore ? 'Đang tải…' : 'Xem thêm'}
+            {loadingMore ? t('suggestions.loading') : t('suggestions.seeMore')}
           </button>
         ) : null}
       </div>

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   IoBanOutline,
   IoChatbubbleOutline,
@@ -54,10 +55,10 @@ import {
   CHAT_MENU_ICON_CLASS,
 } from "@/features/chat/components/ChatConversationMenuItem.jsx";
 
-const PAGE_TITLE = "Tin nhắn | Vibely";
 const DEFAULT_AVATAR = "/images/users/default-avatar.jpeg";
 
 export function MessagesPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { token, user, logout, authReady } = useAuth();
   const { syncChatInboxBadgeFromConversations, setActiveChatConversationId } = useChatInboxBadge();
@@ -95,8 +96,8 @@ export function MessagesPage() {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    document.title = PAGE_TITLE;
-  }, []);
+    document.title = t("messagesPage.pageTitle");
+  }, [t]);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 1023px)");
@@ -692,8 +693,8 @@ export function MessagesPage() {
       return (
         <MobilePageShell token={token} user={user} activeNavId="messages" onSelectMenu={handleSelectMenu}>
           <MobileLoginPrompt
-            title="Đăng nhập để dùng Hộp thư"
-            description="Kết nối và trò chuyện realtime với bạn bè trên Vibely."
+            title={t("messagesPage.loginTitle")}
+            description={t("messagesPage.loginDescription")}
           />
         </MobilePageShell>
       );
@@ -701,8 +702,8 @@ export function MessagesPage() {
     return (
       <CreatorGridShell activeMenu="messages" token={token} user={user} onLogout={logout} sidebarCollapsed contentFullBleed>
         <GridLoginPrompt
-          title="Đăng nhập để dùng Tin nhắn"
-          description="Kết nối và trò chuyện realtime với bạn bè trên Vibely."
+          title={t("messagesPage.loginTitle")}
+          description={t("messagesPage.loginDescription")}
         />
       </CreatorGridShell>
     );
@@ -740,7 +741,7 @@ export function MessagesPage() {
                 inboxTab === "activity" ? "border-b-2 border-white text-white" : "text-zinc-500"
               }`}
             >
-              Thông báo
+              {t("messagesPage.notifications")}
             </button>
             <button
               type="button"
@@ -752,7 +753,7 @@ export function MessagesPage() {
                 inboxTab === "messages" ? "border-b-2 border-white text-white" : "text-zinc-500"
               }`}
             >
-              Tin nhắn
+              {t("messagesPage.title")}
             </button>
           </div>
         ) : null}
@@ -786,7 +787,7 @@ export function MessagesPage() {
                 Yêu cầu tin nhắn
               </button>
             ) : mobileLayout ? null : (
-              <h1 className="text-[20px] font-semibold text-zinc-100">Tin nhắn</h1>
+              <h1 className="text-[20px] font-semibold text-zinc-100">{t("messagesPage.title")}</h1>
             )}
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto">
@@ -818,7 +819,7 @@ export function MessagesPage() {
                       <IoPersonOutline className="h-5 w-5" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium leading-5 text-zinc-200">Chưa có tin nhắn nào</p>
+                      <p className="truncate text-sm font-medium leading-5 text-zinc-200">{t("messagesPage.emptyList")}</p>
                     </div>
                   </div>
                 </div>
@@ -829,7 +830,7 @@ export function MessagesPage() {
                       <IoPersonOutline className="h-5 w-5" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium leading-5 text-zinc-200">Chưa có tin nhắn nào</p>
+                      <p className="truncate text-sm font-medium leading-5 text-zinc-200">{t("messagesPage.emptyList")}</p>
                     </div>
                   </div>
                 </div>
@@ -975,7 +976,7 @@ export function MessagesPage() {
             <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center text-zinc-500">
               <IoChatbubbleOutline className="h-16 w-16 text-zinc-800" aria-hidden />
               {listMode !== "requests" ? (
-                <p>Chọn một hội thoại để bắt đầu nhắn tin.</p>
+                <p>{t("messagesPage.selectConversation")}</p>
               ) : null}
             </div>
             ) : null
@@ -1023,7 +1024,7 @@ export function MessagesPage() {
                 ) : messages.length === 0 ? (
                   <div className="flex h-full flex-col items-center justify-center gap-3 text-zinc-500">
                     <IoChatbubbleOutline className="h-14 w-14 text-zinc-800" aria-hidden />
-                    <p className="text-sm">Chưa có tin nhắn nào. Hãy gửi lời chào đầu tiên.</p>
+                    <p className="text-sm">{t("messagesPage.emptyThread")}</p>
                   </div>
                 ) : (
                   <div className="flex min-h-full flex-col justify-end">
