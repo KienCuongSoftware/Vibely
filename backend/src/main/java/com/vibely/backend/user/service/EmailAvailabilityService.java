@@ -29,10 +29,10 @@ public class EmailAvailabilityService {
     public EmailCheckResponse checkAvailability(String rawEmail, boolean confirm) {
         String normalized = normalizeEmail(rawEmail);
         if (normalized.isBlank()) {
-            return new EmailCheckResponse(false, "", "Vui lòng nhập email");
+            return new EmailCheckResponse(false, "", "Please enter an email");
         }
         if (!EMAIL_PATTERN.matcher(normalized).matches()) {
-            return new EmailCheckResponse(false, normalized, "Email không hợp lệ");
+            return new EmailCheckResponse(false, normalized, "Invalid email");
         }
 
         boolean bloomHint = bloomFilterService.mightContainEmail(normalized);
@@ -40,16 +40,16 @@ public class EmailAvailabilityService {
 
         if (available) {
             String message = confirm
-                ? "Email có thể sử dụng (đã xác minh lại với cơ sở dữ liệu)"
-                : "Email có thể sử dụng";
+                ? "Email is available (re-verified against the database)"
+                : "Email is available";
             return new EmailCheckResponse(available, normalized, message, bloomHint, false);
         }
 
         String message = confirm
-            ? "Email đã được sử dụng (đã xác minh lại với cơ sở dữ liệu)"
+            ? "Email is already in use (re-verified against the database)"
             : bloomHint
-                ? "Email có thể đã được sử dụng. Nhấn Kiểm tra lại để xác minh chính xác."
-                : "Email đã được sử dụng";
+                ? "Email may already be in use. Tap Check again to verify."
+                : "Email is already in use";
         return new EmailCheckResponse(false, normalized, message, bloomHint, !confirm);
     }
 

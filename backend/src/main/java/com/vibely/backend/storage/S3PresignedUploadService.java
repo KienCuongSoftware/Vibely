@@ -87,7 +87,7 @@ public class S3PresignedUploadService {
         requireBucketConfigured();
         String contentType = normalizeContentType(request.getContentType());
         if (!ALLOWED_CONTENT_TYPES.contains(contentType)) {
-            throw new BadRequestException("Chỉ chấp nhận video MP4, WebM hoặc MOV.");
+            throw new BadRequestException("Only MP4, WebM, or MOV videos are accepted.");
         }
         long fileSizeBytes = requireValidVideoFileSize(request.getFileSizeBytes());
         String extension = resolveExtension(request.getFileName(), contentType);
@@ -124,7 +124,7 @@ public class S3PresignedUploadService {
         requireBucketConfigured();
         String contentType = normalizeContentType(request.getContentType());
         if (!ALLOWED_CONTENT_TYPES.contains(contentType)) {
-            throw new BadRequestException("Chỉ chấp nhận video MP4, WebM hoặc MOV.");
+            throw new BadRequestException("Only MP4, WebM, or MOV videos are accepted.");
         }
         requireValidVideoFileSize(request.getFileSizeBytes());
         String extension = resolveExtension(request.getFileName(), contentType);
@@ -159,10 +159,10 @@ public class S3PresignedUploadService {
         String uploadId = requireNonBlank(request.getUploadId(), "uploadId");
         List<Integer> partNumbers = request.getPartNumbers();
         if (partNumbers == null || partNumbers.isEmpty()) {
-            throw new BadRequestException("Danh sách partNumbers không được rỗng.");
+            throw new BadRequestException("partNumbers list cannot be empty.");
         }
         if (partNumbers.size() > MAX_PRESIGN_PARTS_PER_REQUEST) {
-            throw new BadRequestException("Tối đa " + MAX_PRESIGN_PARTS_PER_REQUEST + " part mỗi lần ký.");
+            throw new BadRequestException("Maximum " + MAX_PRESIGN_PARTS_PER_REQUEST + " parts per signing request.");
         }
 
         Set<Integer> seen = new HashSet<>();
@@ -170,14 +170,14 @@ public class S3PresignedUploadService {
         List<MultipartPresignedPart> parts = new ArrayList<>(partNumbers.size());
         for (Integer rawPart : partNumbers) {
             if (rawPart == null) {
-                throw new BadRequestException("partNumber không hợp lệ.");
+                throw new BadRequestException("Invalid partNumber");
             }
             int partNumber = rawPart;
             if (partNumber < 1 || partNumber > MAX_S3_PART_NUMBER) {
-                throw new BadRequestException("partNumber phải từ 1 đến " + MAX_S3_PART_NUMBER + ".");
+                throw new BadRequestException("partNumber must be between 1 and " + MAX_S3_PART_NUMBER + ".");
             }
             if (!seen.add(partNumber)) {
-                throw new BadRequestException("partNumber bị trùng: " + partNumber);
+                throw new BadRequestException("Duplicate partNumber: " + partNumber);
             }
             UploadPartRequest uploadPart = UploadPartRequest.builder()
                 .bucket(properties.getBucket())
@@ -201,25 +201,25 @@ public class S3PresignedUploadService {
         String uploadId = requireNonBlank(request.getUploadId(), "uploadId");
         List<MultipartCompletedPartDto> dtoParts = request.getParts();
         if (dtoParts == null || dtoParts.isEmpty()) {
-            throw new BadRequestException("Danh sách parts không được rỗng.");
+            throw new BadRequestException("Parts list cannot be empty.");
         }
 
         Set<Integer> seen = new HashSet<>();
         List<CompletedPart> completedParts = new ArrayList<>(dtoParts.size());
         for (MultipartCompletedPartDto dto : dtoParts) {
             if (dto == null) {
-                throw new BadRequestException("Part không hợp lệ.");
+                throw new BadRequestException("Invalid Part");
             }
             int partNumber = dto.getPartNumber();
             if (partNumber < 1 || partNumber > MAX_S3_PART_NUMBER) {
-                throw new BadRequestException("partNumber phải từ 1 đến " + MAX_S3_PART_NUMBER + ".");
+                throw new BadRequestException("partNumber must be between 1 and " + MAX_S3_PART_NUMBER + ".");
             }
             if (!seen.add(partNumber)) {
-                throw new BadRequestException("partNumber bị trùng: " + partNumber);
+                throw new BadRequestException("Duplicate partNumber: " + partNumber);
             }
             String etag = normalizeEtag(dto.getEtag());
             if (etag.isEmpty()) {
-                throw new BadRequestException("etag là bắt buộc.");
+                throw new BadRequestException("etag is required.");
             }
             completedParts.add(
                 CompletedPart.builder()
@@ -273,7 +273,7 @@ public class S3PresignedUploadService {
             contentType = "image/jpeg";
         }
         if (!THUMB_CONTENT_TYPES.contains(contentType)) {
-            throw new BadRequestException("Chỉ chấp nhận ảnh JPG, PNG hoặc WebP.");
+            throw new BadRequestException("Only JPG, PNG, or WebP images are accepted.");
         }
         String extension = resolveThumbExtension(request.getFileName(), contentType);
         long authorId = resolveAuthorId(userEmail);
@@ -336,32 +336,32 @@ public class S3PresignedUploadService {
 
     private void requireBucketConfigured() {
         if (properties.getBucket() == null || properties.getBucket().isBlank()) {
-            throw new BadRequestException("Chưa cấu hình AWS_S3_BUCKET.");
+            throw new BadRequestException("AWS_S3_BUCKET is not configured.");
         }
     }
 
     private long resolveAuthorId(String userEmail) {
         return userRepository.findByEmail(userEmail)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"))
+            .orElseThrow(() -> new NotFoundException("User not found"))
             .getId();
     }
 
     private String requireOwnedUploadKey(String userEmail, String objectKey) {
         String key = requireNonBlank(objectKey, "objectKey");
         if (key.contains("..") || key.startsWith("/") || key.contains("//")) {
-            throw new BadRequestException("objectKey không hợp lệ.");
+            throw new BadRequestException("Invalid objectKey");
         }
         long authorId = resolveAuthorId(userEmail);
         String prefix = "uploads/" + authorId + "/";
         if (!key.startsWith(prefix)) {
-            throw new BadRequestException("objectKey không thuộc phiên tải lên của bạn.");
+            throw new BadRequestException("objectKey does not belong to your upload session.");
         }
         return key;
     }
 
     private static String requireNonBlank(String value, String field) {
         if (value == null || value.isBlank()) {
-            throw new BadRequestException(field + " là bắt buộc.");
+            throw new BadRequestException(field + " is required.");
         }
         return value.trim();
     }
@@ -424,10 +424,10 @@ public class S3PresignedUploadService {
 
     private static long requireValidVideoFileSize(Long fileSizeBytes) {
         if (fileSizeBytes == null || fileSizeBytes <= 0L) {
-            throw new BadRequestException("Thiếu kích thước tệp video.");
+            throw new BadRequestException("Missing video file size.");
         }
         if (fileSizeBytes > MAX_VIDEO_UPLOAD_BYTES) {
-            throw new BadRequestException("Video vượt quá giới hạn 30 GB.");
+            throw new BadRequestException("Video exceeds the 30 GB limit.");
         }
         return fileSizeBytes;
     }

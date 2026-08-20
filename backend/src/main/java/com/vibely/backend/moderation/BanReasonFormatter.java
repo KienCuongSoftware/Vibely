@@ -36,8 +36,9 @@ public final class BanReasonFormatter {
         "(?i)\\b(?:snaptik(?:\\.vn)?[_-]\\d+|tiktok[_-]?\\d+|[\\p{L}\\p{N}]+(?:[_-][\\p{L}\\p{N}]+){1,})\\b"
     );
 
+    /** Matches legacy Vietnamese and current English ban-reason caption quotes. */
     private static final Pattern CAPTION_QUOTE = Pattern.compile(
-        "trong caption:\\s*\"([^\"]*)\"",
+        "(?:trong caption|in caption):\\s*\"([^\"]*)\"",
         Pattern.CASE_INSENSITIVE
     );
 
@@ -56,29 +57,30 @@ public final class BanReasonFormatter {
     public static String forCaptionViolation(String title, String description) {
         String desc = normalizeSpace(description);
         String kind = looksViolent(null, description, desc)
-            ? "nội dung bạo lực"
-            : "ngôn từ tục tĩu / nội dung tình dục";
+            ? "violent content"
+            : "profanity / sexual content";
 
         String caption = cleanCaption(null, description);
         if (StringUtils.hasText(caption) && !looksLikeFillerCaption(caption)) {
-            return kind + " trong caption: \"" + caption + "\"";
+            return kind + " in caption: \"" + caption + "\"";
         }
-        return kind + " trong caption video";
+        return kind + " in video caption";
     }
 
     /** Soften historical rows that stored regex patterns as ban_reason. */
     public static String forDisplay(String raw) {
         if (!StringUtils.hasText(raw)) {
-            return "Vi phạm chính sách cộng đồng";
+            return "Community policy violation";
         }
         String trimmed = raw.trim();
         if (looksLikeRegexLeak(trimmed)) {
-            return "vi phạm chính sách cộng đồng trong caption hoặc mô tả video";
+            return "community policy violation in caption or video description";
         }
         String lower = trimmed.toLowerCase(Locale.ROOT);
-        if (lower.startsWith("vi phạm chính sách nội dung (caption")
+        if (lower.startsWith("content policy violation (caption")
+            || lower.startsWith("vi phạm chính sách nội dung (caption")
             || lower.contains("caption spam")) {
-            return "vi phạm chính sách cộng đồng trong caption hoặc mô tả video";
+            return "community policy violation in caption or video description";
         }
         Matcher quote = CAPTION_QUOTE.matcher(trimmed);
         if (quote.find()) {
@@ -86,24 +88,29 @@ public final class BanReasonFormatter {
             String cleaned = stripFileNoise(quoted);
             // Old bans wrongly blamed filler captions after a filename title hit.
             if (looksLikeFillerCaption(cleaned) || looksLikeFillerCaption(quoted)) {
-                return "vi phạm chính sách cộng đồng (đã cập nhật: chỉ xét caption + nội dung video)";
+                return "community policy violation (updated: only caption + video content are reviewed)";
             }
             if (StringUtils.hasText(cleaned) && !cleaned.equals(quoted)) {
                 return trimmed.substring(0, quote.start(1)) + cleaned + trimmed.substring(quote.end(1));
             }
             if (!StringUtils.hasText(cleaned)) {
-                String without = trimmed.replaceFirst("(?i)\\s*trong caption:\\s*\"[^\"]*\"", "").trim();
+                String without = trimmed
+                    .replaceFirst("(?i)\\s*(?:trong caption|in caption):\\s*\"[^\"]*\"", "")
+                    .trim();
                 if (without.toLowerCase(Locale.ROOT).contains("tình dục")
-                    || without.toLowerCase(Locale.ROOT).contains("bạo lực")) {
+                    || without.toLowerCase(Locale.ROOT).contains("bạo lực")
+                    || without.toLowerCase(Locale.ROOT).contains("sexual")
+                    || without.toLowerCase(Locale.ROOT).contains("violent")) {
                     return without.endsWith("vì") || without.endsWith("vì ")
+                        || without.endsWith("because") || without.endsWith("because ")
                         ? without
                         : (StringUtils.hasText(without)
                             ? without
-                            : "ngôn từ tục tĩu / nội dung tình dục trong tiêu đề video (tên tệp tải lên)");
+                            : "profanity / sexual content in video title (uploaded file name)");
                 }
                 return StringUtils.hasText(without)
                     ? without
-                    : "vi phạm chính sách cộng đồng trong tiêu đề video (tên tệp tải lên)";
+                    : "community policy violation in video title (uploaded file name)";
             }
         }
         return stripFileNoise(trimmed);
@@ -128,7 +135,7 @@ public final class BanReasonFormatter {
             || text.contains("\\s")
             || text.contains("(?:")
             || text.contains("nudes?\\b")
-            || text.contains("caption spam/tình dục):");
+            || text.contains("spam/sexual caption):");
     }
 
     /**

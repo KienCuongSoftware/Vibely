@@ -32,7 +32,7 @@ public class AdminVideoProcessingService {
     @Transactional
     public EnqueueResponse reprocess(ReprocessRequest body) {
         if (body == null || body.publicIds() == null || body.publicIds().isEmpty()) {
-            throw new BadRequestException("Cần ít nhất một publicId");
+            throw new BadRequestException("At least one publicId is required");
         }
         List<String> queued = new ArrayList<>();
         List<String> skipped = new ArrayList<>();
@@ -41,16 +41,16 @@ public class AdminVideoProcessingService {
             try {
                 id = VideoPublicIds.parse(raw);
             } catch (RuntimeException ex) {
-                skipped.add(raw + " (id không hợp lệ)");
+                skipped.add(raw + " (invalid id)");
                 continue;
             }
             Video video = videoRepository.findByPublicId(id).orElse(null);
             if (video == null) {
-                skipped.add(raw + " (không tìm thấy)");
+                skipped.add(raw + " (not found)");
                 continue;
             }
             if (video.getStatus() == VideoStatus.REMOVED) {
-                skipped.add(raw + " (đã gỡ)");
+                skipped.add(raw + " (removed)");
                 continue;
             }
             queueHlsReprocess(video);

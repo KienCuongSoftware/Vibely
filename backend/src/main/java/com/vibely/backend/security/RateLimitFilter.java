@@ -130,7 +130,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             ApiError.of(
                 HttpStatus.TOO_MANY_REQUESTS.value(),
                 "RATE_LIMITED",
-                "Bạn thao tác quá nhanh, vui lòng thử lại sau"
+                "You are acting too quickly, please try again later"
             )
         );
         response.getWriter().write(objectMapper.writeValueAsString(payload));

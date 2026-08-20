@@ -6,7 +6,7 @@ public class AccountBannedException extends RuntimeException {
     private final String reason;
 
     public AccountBannedException(String email, String reason) {
-        super("Tài khoản của bạn đã bị cấm");
+        super("Your account has been banned");
         this.email = email;
         this.reason = reason == null ? "" : reason.trim();
     }

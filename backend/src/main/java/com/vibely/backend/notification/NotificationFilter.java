@@ -27,7 +27,7 @@ public enum NotificationFilter {
         try {
             return NotificationFilter.valueOf(raw.trim().toLowerCase());
         } catch (IllegalArgumentException ex) {
-            throw new BadRequestException("Bộ lọc thông báo không hợp lệ.");
+            throw new BadRequestException("Invalid notification filter");
         }
     }
 }

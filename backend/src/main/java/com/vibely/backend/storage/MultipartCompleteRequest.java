@@ -9,14 +9,14 @@ import java.util.List;
 
 public class MultipartCompleteRequest {
 
-    @NotBlank(message = "uploadId là bắt buộc")
+    @NotBlank(message = "uploadId is required")
     private String uploadId;
 
-    @NotBlank(message = "objectKey là bắt buộc")
+    @NotBlank(message = "objectKey is required")
     @Size(max = 512)
     private String objectKey;
 
-    @NotEmpty(message = "Danh sách parts không được rỗng")
+    @NotEmpty(message = "Parts list cannot be empty")
     @Size(max = 10000)
     @Valid
     private List<MultipartCompletedPartDto> parts = new ArrayList<>();

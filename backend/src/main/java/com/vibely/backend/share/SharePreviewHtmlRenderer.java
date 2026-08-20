@@ -54,7 +54,7 @@ final class SharePreviewHtmlRenderer {
             </head>
             <body>
               <p>%s</p>
-              <p><a href="%s">Xem trên Vibely</a></p>
+              <p><a href="%s">Watch on Vibely</a></p>
               <script>window.location.replace("%s");</script>
             </body>
             </html>
@@ -147,7 +147,7 @@ final class SharePreviewHtmlRenderer {
     }
 
     static String buildPageTitle(String videoTitle, String authorLabel) {
-        String title = videoTitle == null || videoTitle.isBlank() ? "Video trên Vibely" : videoTitle.trim();
+        String title = videoTitle == null || videoTitle.isBlank() ? "Video on Vibely" : videoTitle.trim();
         if (authorLabel == null || authorLabel.isBlank()) {
             return title + " | Vibely";
         }
@@ -177,7 +177,7 @@ final class SharePreviewHtmlRenderer {
         if (!isJunkCaption(desc)) {
             return desc;
         }
-        return "Video trên Vibely · @" + author;
+        return "Video on Vibely · @" + author;
     }
 
     static boolean isJunkCaption(String raw) {

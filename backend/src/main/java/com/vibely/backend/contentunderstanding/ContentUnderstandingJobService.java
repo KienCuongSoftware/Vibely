@@ -64,7 +64,7 @@ public class ContentUnderstandingJobService {
     public Optional<CuClaimResponse> claimById(UUID jobId, String workerId) {
         AnalysisJobEntity job = jobRepository
             .findWithVideoAndAuthorById(jobId)
-            .orElseThrow(() -> new NotFoundException("Analysis job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Analysis job not found"));
         if (job.getStatus() != AnalysisJobStatus.PENDING
             && job.getStatus() != AnalysisJobStatus.FAILED_RETRYABLE) {
             return Optional.empty();
@@ -75,7 +75,7 @@ public class ContentUnderstandingJobService {
     private Optional<CuClaimResponse> markRunning(UUID jobId, String workerId) {
         AnalysisJobEntity job = jobRepository
             .findWithVideoAndAuthorById(jobId)
-            .orElseThrow(() -> new NotFoundException("Analysis job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Analysis job not found"));
         Video video = job.getVideo();
         LocalDateTime now = LocalDateTime.now();
         job.setStatus(AnalysisJobStatus.RUNNING);
@@ -107,9 +107,9 @@ public class ContentUnderstandingJobService {
     public void complete(UUID jobId, CuCompleteRequest request) {
         AnalysisJobEntity job = jobRepository
             .findWithVideoAndAuthorById(jobId)
-            .orElseThrow(() -> new NotFoundException("Analysis job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Analysis job not found"));
         if (job.getStatus() != AnalysisJobStatus.RUNNING && job.getStatus() != AnalysisJobStatus.PENDING) {
-            throw new BadRequestException("Job không ở trạng thái có thể complete.");
+            throw new BadRequestException("Job is not in a state that can be completed.");
         }
         Video video = job.getVideo();
         Long videoId = video.getId();
@@ -214,7 +214,7 @@ public class ContentUnderstandingJobService {
     public void fail(UUID jobId, String errorMessage) {
         AnalysisJobEntity job = jobRepository
             .findById(jobId)
-            .orElseThrow(() -> new NotFoundException("Analysis job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Analysis job not found"));
         String msg = errorMessage == null ? "unknown" : errorMessage;
         job.setErrorMessage(msg.substring(0, Math.min(1900, msg.length())));
         if (job.getAttempts() >= properties.getMaxJobAttempts()) {

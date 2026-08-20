@@ -5,8 +5,8 @@ import jakarta.validation.constraints.Size;
 
 public class ReportVideoRequest {
 
-    @NotBlank(message = "Lý do báo cáo là bắt buộc")
-    @Size(max = 500, message = "Lý do báo cáo tối đa 500 ký tự")
+    @NotBlank(message = "Report reason is required")
+    @Size(max = 500, message = "Report reason must be at most 500 characters")
     private String reason;
 
     public String getReason() {

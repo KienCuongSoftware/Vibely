@@ -196,9 +196,9 @@ public class InteractionService {
         if (parentCommentId != null) {
             CommentEntity parent = commentRepository
                 .findById(parentCommentId)
-                .orElseThrow(() -> new NotFoundException("Không tìm thấy bình luận gốc"));
+                .orElseThrow(() -> new NotFoundException("Parent comment not found"));
             if (!parent.getVideo().getId().equals(video.getId())) {
-                throw new BadRequestException("Bình luận gốc không thuộc video này.");
+                throw new BadRequestException("Parent comment does not belong to this video.");
             }
             comment.setParentComment(parent);
         }
@@ -218,9 +218,9 @@ public class InteractionService {
         requireEngagementAllowed(video, user);
         CommentEntity comment = commentRepository
             .findById(commentId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy bình luận"));
+            .orElseThrow(() -> new NotFoundException("Comment not found"));
         if (!comment.getVideo().getId().equals(video.getId())) {
-            throw new BadRequestException("Bình luận không thuộc video này.");
+            throw new BadRequestException("Comment does not belong to this video.");
         }
         if (commentLikeRepository.existsByUserAndComment(user, comment)) {
             return;
@@ -238,9 +238,9 @@ public class InteractionService {
         requireEngagementAllowed(video, user);
         CommentEntity comment = commentRepository
             .findById(commentId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy bình luận"));
+            .orElseThrow(() -> new NotFoundException("Comment not found"));
         if (!comment.getVideo().getId().equals(video.getId())) {
-            throw new BadRequestException("Bình luận không thuộc video này.");
+            throw new BadRequestException("Comment does not belong to this video.");
         }
         commentLikeRepository.deleteByUserAndComment(user, comment);
         notificationService.onCommentUnlike(user, comment);
@@ -256,15 +256,15 @@ public class InteractionService {
         requireEngagementAllowed(video, user);
         CommentEntity comment = commentRepository
             .findById(commentId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy bình luận"));
+            .orElseThrow(() -> new NotFoundException("Comment not found"));
         if (!comment.getVideo().getId().equals(video.getId())) {
-            throw new BadRequestException("Bình luận không thuộc video này.");
+            throw new BadRequestException("Comment does not belong to this video.");
         }
         Long authorId = video.getAuthor() != null ? video.getAuthor().getId() : null;
         boolean isVideoAuthor = authorId != null && authorId.equals(user.getId());
         boolean isCommentAuthor = comment.getUser().getId().equals(user.getId());
         if (!isVideoAuthor && !isCommentAuthor) {
-            throw new BadRequestException("Bạn không thể xóa bình luận này.");
+            throw new BadRequestException("You cannot delete this comment.");
         }
         commentRepository.delete(comment);
         refreshExploreFor(video);
@@ -309,9 +309,9 @@ public class InteractionService {
     public void follow(String email, Long followingUserId) {
         User follower = getUser(email);
         User following = userRepository.findById(followingUserId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng cần theo dõi"));
+            .orElseThrow(() -> new NotFoundException("User to follow not found"));
         if (follower.getId().equals(following.getId())) {
-            throw new BadRequestException("Bạn không thể tự theo dõi chính mình");
+            throw new BadRequestException("You cannot follow yourself");
         }
         if (followRepository.existsAcceptedByFollowerAndFollowing(follower, following)) {
             return;
@@ -334,7 +334,7 @@ public class InteractionService {
     public void unfollow(String email, Long followingUserId) {
         User follower = getUser(email);
         User following = userRepository.findById(followingUserId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng cần bỏ theo dõi"));
+            .orElseThrow(() -> new NotFoundException("User to unfollow not found"));
         FollowEntity existing = followRepository.findByFollowerAndFollowing(follower, following).orElse(null);
         if (existing == null) {
             return;
@@ -350,11 +350,11 @@ public class InteractionService {
     public void acceptFollowRequest(String email, Long followerUserId) {
         User owner = getUser(email);
         User follower = userRepository.findById(followerUserId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         FollowEntity follow = followRepository.findByFollowerAndFollowing(follower, owner)
-            .orElseThrow(() -> new BadRequestException("Không tìm thấy yêu cầu follow"));
+            .orElseThrow(() -> new BadRequestException("Follow request not found"));
         if (follow.getStatus() != FollowStatus.PENDING) {
-            throw new BadRequestException("Yêu cầu follow không còn hiệu lực");
+            throw new BadRequestException("Follow request is no longer valid");
         }
         follow.setStatus(FollowStatus.ACCEPTED);
         followRepository.save(follow);
@@ -371,11 +371,11 @@ public class InteractionService {
     public void rejectFollowRequest(String email, Long followerUserId) {
         User owner = getUser(email);
         User follower = userRepository.findById(followerUserId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         FollowEntity follow = followRepository.findByFollowerAndFollowing(follower, owner)
-            .orElseThrow(() -> new BadRequestException("Không tìm thấy yêu cầu follow"));
+            .orElseThrow(() -> new BadRequestException("Follow request not found"));
         if (follow.getStatus() != FollowStatus.PENDING) {
-            throw new BadRequestException("Yêu cầu follow không còn hiệu lực");
+            throw new BadRequestException("Follow request is no longer valid");
         }
         followRepository.delete(follow);
         notificationService.onFollowRequestCancelled(follower, owner);
@@ -407,10 +407,10 @@ public class InteractionService {
         User reporter = getUser(email);
         Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
         if (video.getStatus() == VideoStatus.HIDDEN) {
-            throw new BadRequestException("Video đã bị ẩn trước đó");
+            throw new BadRequestException("Video was already hidden");
         }
         if (video.getStatus() != VideoStatus.READY && video.getStatus() != VideoStatus.REPORTED) {
-            throw new BadRequestException("Chỉ có thể báo cáo video đang công khai.");
+            throw new BadRequestException("You can only report publicly available videos.");
         }
         video.setStatus(VideoStatus.REPORTED);
         video.setReportReason(reason);
@@ -420,7 +420,7 @@ public class InteractionService {
             UserReportModerationService enqueue = userReportModerationService.getIfAvailable();
             if (enqueue == null) {
                 throw new BadRequestException(
-                    "Hệ thống kiểm duyệt chưa sẵn sàng. Thử lại sau."
+                    "Moderation system is not ready. Try again later."
                 );
             }
             enqueue.enqueueUserReport(video, reporter, reason);
@@ -429,7 +429,7 @@ public class InteractionService {
         } catch (Exception ex) {
             log.error("Failed to enqueue user report videoId={}: {}", video.getId(), ex.getMessage(), ex);
             throw new BadRequestException(
-                "Không đưa được báo cáo vào hàng đợi kiểm duyệt. Thử lại sau."
+                "Could not enqueue the report for moderation. Try again later."
             );
         }
         refreshExploreFor(video);
@@ -437,7 +437,7 @@ public class InteractionService {
 
     private User getUser(String email) {
         return userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     private void requireCommentAudienceAllowed(Video video, User commenter) {
@@ -457,11 +457,11 @@ public class InteractionService {
                 followRepository.existsAcceptedByFollowerAndFollowing(commenter, author)
                     && followRepository.existsAcceptedByFollowerAndFollowing(author, commenter);
             if (!mutual) {
-                throw new BadRequestException("Nhà sáng tạo này đã giới hạn quyền truy cập bình luận");
+                throw new BadRequestException("This creator has restricted comment access");
             }
             return;
         }
-        throw new BadRequestException("Nhà sáng tạo này đã giới hạn quyền truy cập bình luận");
+        throw new BadRequestException("This creator has restricted comment access");
     }
 
     /**
@@ -471,13 +471,13 @@ public class InteractionService {
     private static void requireEngagementAllowed(Video video, User actor) {
         VideoStatus s = video.getStatus();
         if (s == VideoStatus.REMOVED || s == VideoStatus.FAILED) {
-            throw new BadRequestException("Video không khả dụng.");
+            throw new BadRequestException("Video is unavailable.");
         }
         Long authorId = video.getAuthor() != null ? video.getAuthor().getId() : null;
         boolean isAuthor = authorId != null && Objects.equals(authorId, actor.getId());
         if (s == VideoStatus.HIDDEN || s == VideoStatus.REPORTED) {
             if (!isAuthor) {
-                throw new BadRequestException("Video không khả dụng.");
+                throw new BadRequestException("Video is unavailable.");
             }
             return;
         }
@@ -485,7 +485,7 @@ public class InteractionService {
             return;
         }
         if (!isAuthor) {
-            throw new BadRequestException("Video chưa sẵn sàng hoặc không khả dụng.");
+            throw new BadRequestException("Video is not ready or unavailable.");
         }
     }
 

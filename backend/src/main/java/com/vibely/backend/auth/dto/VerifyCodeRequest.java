@@ -6,12 +6,12 @@ import jakarta.validation.constraints.Pattern;
 
 public class VerifyCodeRequest {
 
-    @Email(message = "Email không hợp lệ")
-    @NotBlank(message = "Email là bắt buộc")
+    @Email(message = "Invalid email")
+    @NotBlank(message = "Email is required")
     private String email;
 
-    @NotBlank(message = "Mã xác minh là bắt buộc")
-    @Pattern(regexp = "\\d{6}", message = "Mã xác minh phải gồm 6 chữ số")
+    @NotBlank(message = "Verification code is required")
+    @Pattern(regexp = "\\d{6}", message = "Verification code must be 6 digits")
     private String code;
 
     /** REGISTER (mặc định) hoặc PASSWORD_RESET */

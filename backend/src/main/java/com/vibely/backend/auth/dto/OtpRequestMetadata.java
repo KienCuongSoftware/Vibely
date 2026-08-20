@@ -6,6 +6,6 @@ public record OtpRequestMetadata(
     String ipAddress
 ) {
     public static OtpRequestMetadata unknown() {
-        return new OtpRequestMetadata("Trình duyệt", "Không xác định", "Không xác định");
+        return new OtpRequestMetadata("Browser", "Unknown", "Unknown");
     }
 }

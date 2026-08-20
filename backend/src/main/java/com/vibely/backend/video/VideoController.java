@@ -139,7 +139,7 @@ public class VideoController {
         @Valid @RequestBody VideoPresignRequest request
     ) {
         S3PresignedUploadService svc = requireS3UploadService(
-            "Tải video qua S3 chưa được bật. Đặt APP_S3_ENABLED=true và AWS_S3_BUCKET."
+            "S3 video upload is not enabled. Set APP_S3_ENABLED=true and AWS_S3_BUCKET."
         );
         return ApiResponse.success(svc.presign(authentication.getName(), request));
     }
@@ -151,7 +151,7 @@ public class VideoController {
         @Valid @RequestBody VideoPresignRequest request
     ) {
         S3PresignedUploadService svc = requireS3UploadService(
-            "Tải ảnh qua S3 chưa được bật. Đặt APP_S3_ENABLED=true và AWS_S3_BUCKET."
+            "S3 image upload is not enabled. Set APP_S3_ENABLED=true and AWS_S3_BUCKET."
         );
         return ApiResponse.success(svc.presignThumbnail(authentication.getName(), request));
     }
@@ -163,7 +163,7 @@ public class VideoController {
         @Valid @RequestBody VideoPresignRequest request
     ) {
         S3PresignedUploadService svc = requireS3UploadService(
-            "Tải video qua S3 chưa được bật. Đặt APP_S3_ENABLED=true và AWS_S3_BUCKET."
+            "S3 video upload is not enabled. Set APP_S3_ENABLED=true and AWS_S3_BUCKET."
         );
         return ApiResponse.success(svc.initiateMultipart(authentication.getName(), request));
     }
@@ -175,7 +175,7 @@ public class VideoController {
         @Valid @RequestBody MultipartPresignPartsRequest request
     ) {
         S3PresignedUploadService svc = requireS3UploadService(
-            "Tải video qua S3 chưa được bật. Đặt APP_S3_ENABLED=true và AWS_S3_BUCKET."
+            "S3 video upload is not enabled. Set APP_S3_ENABLED=true and AWS_S3_BUCKET."
         );
         return ApiResponse.success(svc.presignMultipartParts(authentication.getName(), request));
     }
@@ -187,7 +187,7 @@ public class VideoController {
         @Valid @RequestBody MultipartCompleteRequest request
     ) {
         S3PresignedUploadService svc = requireS3UploadService(
-            "Tải video qua S3 chưa được bật. Đặt APP_S3_ENABLED=true và AWS_S3_BUCKET."
+            "S3 video upload is not enabled. Set APP_S3_ENABLED=true and AWS_S3_BUCKET."
         );
         return ApiResponse.success(svc.completeMultipart(authentication.getName(), request));
     }
@@ -199,7 +199,7 @@ public class VideoController {
         @Valid @RequestBody MultipartAbortRequest request
     ) {
         S3PresignedUploadService svc = requireS3UploadService(
-            "Tải video qua S3 chưa được bật. Đặt APP_S3_ENABLED=true và AWS_S3_BUCKET."
+            "S3 video upload is not enabled. Set APP_S3_ENABLED=true and AWS_S3_BUCKET."
         );
         svc.abortMultipart(authentication.getName(), request);
         return ApiResponse.success(null);
@@ -250,7 +250,7 @@ public class VideoController {
         if (svc == null) {
             throw new ResponseStatusException(
                 HttpStatus.SERVICE_UNAVAILABLE,
-                "Tải video chưa được bật trên môi trường này."
+                "Video upload is not enabled in this environment."
             );
         }
         UUID videoPublicId = VideoPublicIds.parse(publicId);
@@ -268,7 +268,7 @@ public class VideoController {
         } catch (Exception e) {
             throw new ResponseStatusException(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                e.getMessage() != null ? e.getMessage() : "Không tạo được video tải về."
+                e.getMessage() != null ? e.getMessage() : "Could not create a downloadable video."
             );
         }
         Path workRoot = artifact.workRoot();

@@ -24,7 +24,7 @@ public enum SystemNotificationFilter {
         try {
             return SystemNotificationFilter.valueOf(raw.trim().toLowerCase());
         } catch (IllegalArgumentException ex) {
-            throw new BadRequestException("Bộ lọc thông báo hệ thống không hợp lệ.");
+            throw new BadRequestException("Invalid system notification filter");
         }
     }
 }

@@ -79,7 +79,7 @@ public class ProcessingPipelineDiagnostics {
             }
             if (!workerProp && !dryRun) {
                 log.warn(
-                    "Worker tắt và dry-run-promote-when-worker-disabled=false: video mới ở trạng thái RAW có thể không lên feed cho đến khi bật worker hoặc bật lại dry-run."
+                    "Worker is disabled and dry-run-promote-when-worker-disabled=false: new RAW videos may not appear in the feed until the worker is enabled or dry-run is turned back on."
                 );
             }
             if (pipeline) {

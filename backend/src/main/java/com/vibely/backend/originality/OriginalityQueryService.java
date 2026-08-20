@@ -36,9 +36,9 @@ public class OriginalityQueryService {
         Video video = videoQueryService.getVideoByPublicIdOrThrow(publicId);
         User author = userRepository
             .findByEmail(authorEmail)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         if (!Objects.equals(video.getAuthor().getId(), author.getId())) {
-            throw new NotFoundException("Không tìm thấy video");
+            throw new NotFoundException("Video not found");
         }
         Optional<OriginalityJobEntity> job = jobRepository.findByVideo_Id(video.getId());
         Optional<OriginalityReportEntity> report = reportRepository.findDetailedByVideoId(video.getId());

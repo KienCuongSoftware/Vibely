@@ -55,7 +55,7 @@ public class SecurityLoginEmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
             helper.setFrom(resolveFromAddress(), mailProperties.getFromName());
             helper.setTo(user.getEmail());
-            helper.setSubject("Cảnh báo đăng nhập Vibely");
+            helper.setSubject("Vibely login alert");
             helper.setText(plainBody(context, risk), htmlBody(user, context, risk));
             mailSender.send(message);
         } catch (Exception ex) {
@@ -65,29 +65,29 @@ public class SecurityLoginEmailService {
 
     private String htmlBody(User user, LoginContext context, LoginRiskResult risk) {
         String time = TIME_FORMATTER.format(LocalDateTime.now().atOffset(ZoneOffset.UTC));
-        String device = escape(context.getBrowser() + " trên " + context.getOperatingSystem());
+        String device = escape(context.getBrowser() + " on " + context.getOperatingSystem());
         String location = escape(displayLocation(context)).replace("\n", "<br />");
         String reasons = escape(String.join(", ", risk.reasons()));
-        String bodyRows = VibelyEmailLayout.headingRow("Phát hiện đăng nhập mới") + """
+        String bodyRows = VibelyEmailLayout.headingRow("New login detected") + """
             <tr>
               <td style="padding:0 56px 8px;font-size:15px;line-height:1.7;color:#161823;">
-                <p style="margin:0 0 18px;">Xin chào <strong>%s</strong>, chúng tôi phát hiện một lần đăng nhập có dấu hiệu mới: <strong>%s</strong>.</p>
+                <p style="margin:0 0 18px;">Hello <strong>%s</strong>, we detected a login with new signals: <strong>%s</strong>.</p>
               </td>
             </tr>
             <tr>
               <td style="padding:0 56px 24px;">
                 <div style="background:#f7f7f8;border-radius:10px;padding:18px 20px;font-size:14px;line-height:1.7;color:#4b5563;">
-                  <div>Thời gian: <strong style="color:#161823;">%s</strong></div>
-                  <div>Vị trí: <strong style="color:#161823;">%s</strong></div>
-                  <div>Thiết bị: <strong style="color:#161823;">%s</strong></div>
+                  <div>Time: <strong style="color:#161823;">%s</strong></div>
+                  <div>Location: <strong style="color:#161823;">%s</strong></div>
+                  <div>Device: <strong style="color:#161823;">%s</strong></div>
                 </div>
               </td>
             </tr>
             <tr>
               <td style="padding:0 56px 28px;font-size:14px;line-height:1.65;color:#161823;">
-                <p style="margin:0 0 16px;">Nếu đây là bạn, bạn có thể bỏ qua email này. Nếu không phải bạn, hãy đổi mật khẩu ngay và kiểm tra hoạt động tài khoản.</p>
-                <p style="margin:0 0 8px;"><a href="%s/settings" style="color:#2563eb;text-decoration:none;">Mở cài đặt bảo mật Vibely</a></p>
-                <p style="margin:0;">Liên hệ hỗ trợ: %s</p>
+                <p style="margin:0 0 16px;">If this was you, you can ignore this email. If it was not you, change your password immediately and review account activity.</p>
+                <p style="margin:0 0 8px;"><a href="%s/settings" style="color:#2563eb;text-decoration:none;">Open Vibely security settings</a></p>
+                <p style="margin:0;">Contact support: %s</p>
               </td>
             </tr>
             """.formatted(
@@ -99,20 +99,20 @@ public class SecurityLoginEmailService {
                 frontendBaseUrl,
                 VibelyEmailLayout.supportEmailLink()
             );
-        return VibelyEmailLayout.document("Cảnh báo đăng nhập Vibely", bodyRows, user.getUsername());
+        return VibelyEmailLayout.document("Vibely login alert", bodyRows, user.getUsername());
     }
 
     private String plainBody(LoginContext context, LoginRiskResult risk) {
         return """
-            Phát hiện đăng nhập mới trên Vibely
+            New login detected on Vibely
 
-            Lý do: %s
-            Thời gian: %s
-            Thiết bị: %s trên %s
-            Vị trí:
+            Reason: %s
+            Time: %s
+            Device: %s on %s
+            Location:
             %s
 
-            Nếu đây không phải bạn, hãy đổi mật khẩu ngay.
+            If this was not you, change your password immediately.
             """.formatted(
                 String.join(", ", risk.reasons()),
                 TIME_FORMATTER.format(LocalDateTime.now().atOffset(ZoneOffset.UTC)),
@@ -129,11 +129,13 @@ public class SecurityLoginEmailService {
         append(builder, context.getCity());
         append(builder, context.getProvince());
         append(builder, context.getCountry());
-        return builder.isEmpty() ? "Không xác định" : builder.toString();
+        return builder.isEmpty() ? "Unknown" : builder.toString();
     }
 
     private void append(StringBuilder builder, String value) {
-        if (value == null || value.isBlank() || "Không xác định".equals(value)) {
+        if (value == null || value.isBlank()
+            || "Unknown".equals(value)
+            || "Không xác định".equals(value)) {
             return;
         }
         if (builder.indexOf(value) >= 0) {
@@ -157,7 +159,7 @@ public class SecurityLoginEmailService {
 
     private String escape(String raw) {
         if (raw == null || raw.isBlank()) {
-            return "Không xác định";
+            return "Unknown";
         }
         return raw.replace("&", "&amp;")
             .replace("<", "&lt;")

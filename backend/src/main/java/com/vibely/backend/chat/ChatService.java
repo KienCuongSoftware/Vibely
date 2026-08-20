@@ -52,16 +52,16 @@ public class ChatService {
     @Transactional
     public ChatConversationResponse createOrGetDirectConversation(String email, Long peerUserId) {
         if (peerUserId == null) {
-            throw new BadRequestException("Không tìm thấy người dùng để nhắn tin");
+            throw new BadRequestException("User to message not found");
         }
         User me = findUserByEmail(email);
         User peer = userRepository.findById(peerUserId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng để nhắn tin"));
+            .orElseThrow(() -> new NotFoundException("User to message not found"));
         long meId = requireUserId(me);
         long peerId = requireUserId(peer);
 
         if (meId == peerId) {
-            throw new BadRequestException("Bạn không thể tự nhắn tin với chính mình");
+            throw new BadRequestException("You cannot message yourself");
         }
 
         ConversationEntity conversation = conversationRepository
@@ -131,10 +131,10 @@ public class ChatService {
 
         String normalized = String.valueOf(content).trim();
         if (normalized.isBlank()) {
-            throw new BadRequestException("Nội dung tin nhắn là bắt buộc");
+            throw new BadRequestException("Message content is required");
         }
         if (!requestState.canSendMessage()) {
-            throw new BadRequestException("Bạn chỉ có thể gửi 1 tin nhắn khi yêu cầu chưa được chấp nhận");
+            throw new BadRequestException("You can only send 1 message while the request is not yet accepted");
         }
 
         if (conversation.isDirect()) {
@@ -161,7 +161,7 @@ public class ChatService {
 
         ConversationParticipantEntity mine = participantRepository
             .findByConversationAndUser(conversation, me)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy thành viên hội thoại"));
+            .orElseThrow(() -> new NotFoundException("Conversation member not found"));
         mine.setLastReadAt(now);
         participantRepository.save(mine);
 
@@ -259,7 +259,7 @@ public class ChatService {
         ConversationEntity conversation = findMemberConversation(conversationId, me);
         ConversationParticipantEntity mine = participantRepository
             .findByConversationAndUser(conversation, me)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy thành viên hội thoại"));
+            .orElseThrow(() -> new NotFoundException("Conversation member not found"));
         mine.setLastReadAt(LocalDateTime.now());
         participantRepository.save(mine);
     }
@@ -331,24 +331,24 @@ public class ChatService {
 
     private User findUserByEmail(String email) {
         return userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     private ConversationEntity findMemberConversation(Long conversationId, User me) {
         if (conversationId == null) {
-            throw new NotFoundException("Không tìm thấy hội thoại");
+            throw new NotFoundException("Conversation not found");
         }
         ConversationEntity conversation = conversationRepository.findById(conversationId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy hội thoại"));
+            .orElseThrow(() -> new NotFoundException("Conversation not found"));
         participantRepository.findByConversationAndUser(conversation, me)
-            .orElseThrow(() -> new NotFoundException("Bạn không thuộc hội thoại này"));
+            .orElseThrow(() -> new NotFoundException("You are not a member of this conversation"));
         return conversation;
     }
 
     private ConversationParticipantEntity requireParticipant(ConversationEntity conversation, User user) {
         return participantRepository
             .findByConversationAndUser(conversation, user)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy thành viên hội thoại"));
+            .orElseThrow(() -> new NotFoundException("Conversation member not found"));
     }
 
     private ChatConversationResponse toConversationResponse(ConversationEntity conversation, User me) {
@@ -410,7 +410,7 @@ public class ChatService {
     }
 
     /**
-     * Bạn bè (follow lẫn nhau) và tài khoản bạn follow luôn nhắn được.
+     * Bạn bè (follow lẫn nhau) và accounts you follow luôn nhắn được.
      * Kết nối tiềm năng = follower của bạn; người khác = không có quan hệ follow.
      */
     private void requireRecipientAllowsInboundDm(User sender, User recipient) {
@@ -420,12 +420,12 @@ public class ChatService {
         boolean senderFollowsRecipient = followRepository.existsAcceptedByFollowerAndFollowing(sender, recipient);
         if (senderFollowsRecipient) {
             if (!MessageDmAudience.allowsMessaging(recipient.getDmPotentialAudience())) {
-                throw new BadRequestException("Người này không nhận tin nhắn từ kết nối tiềm năng.");
+                throw new BadRequestException("This person does not accept messages from potential connections.");
             }
             return;
         }
         if (!MessageDmAudience.allowsMessaging(recipient.getDmOthersAudience())) {
-            throw new BadRequestException("Người này không nhận tin nhắn từ người lạ.");
+            throw new BadRequestException("This person does not accept messages from strangers.");
         }
     }
 
@@ -446,7 +446,7 @@ public class ChatService {
     private boolean isAlwaysAllowedDm(User sender, User recipient) {
         boolean senderFollowsRecipient = followRepository.existsAcceptedByFollowerAndFollowing(sender, recipient);
         boolean recipientFollowsSender = followRepository.existsAcceptedByFollowerAndFollowing(recipient, sender);
-        // Bạn bè (mutual) hoặc người nhận đang follow người gửi ("tài khoản bạn follow")
+        // Bạn bè (mutual) hoặc người nhận đang follow người gửi ("accounts you follow")
         return (senderFollowsRecipient && recipientFollowsSender) || recipientFollowsSender;
     }
 
@@ -497,7 +497,7 @@ public class ChatService {
     private long requireUserId(User user) {
         Long id = user.getId();
         if (id == null) {
-            throw new NotFoundException("Không tìm thấy người dùng");
+            throw new NotFoundException("User not found");
         }
         return id;
     }

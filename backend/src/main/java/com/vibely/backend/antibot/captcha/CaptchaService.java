@@ -144,17 +144,17 @@ public class CaptchaService {
             sessionExpiresMs(request),
             request.signedToken()
         )) {
-            throw new BadRequestException("Captcha token không hợp lệ hoặc đã hết hạn");
+            throw new BadRequestException("Captcha token is invalid or expired");
         }
 
         CaptchaSession session = sessionStore.find(request.challengeId())
-            .orElseThrow(() -> new BadRequestException("Captcha không tồn tại hoặc đã hết hạn"));
+            .orElseThrow(() -> new BadRequestException("Captcha not found or has expired"));
 
         if (session.consumed()) {
-            throw new BadRequestException("Captcha đã được sử dụng");
+            throw new BadRequestException("Captcha has already been used");
         }
         if (session.attempts() >= 5) {
-            throw new BadRequestException("Vượt quá số lần thử captcha");
+            throw new BadRequestException("Too many captcha attempts");
         }
 
         validateSolveDuration(request);
@@ -180,7 +180,7 @@ public class CaptchaService {
         }
 
         if (!sessionStore.consume(request.challengeId())) {
-            throw new BadRequestException("Captcha đã được sử dụng");
+            throw new BadRequestException("Captcha has already been used");
         }
 
         String purpose = request.purpose() == null
@@ -225,10 +225,10 @@ public class CaptchaService {
                 "reason", "instant_solve",
                 "challengeId", request.challengeId()
             ));
-            throw new BadRequestException("Hoàn thành captcha quá nhanh");
+            throw new BadRequestException("Captcha completed too quickly");
         }
         if (solveDuration > properties.getMaxSolveTimeMs()) {
-            throw new BadRequestException("Captcha đã hết hạn");
+            throw new BadRequestException("Captcha has expired");
         }
     }
 
@@ -243,7 +243,7 @@ public class CaptchaService {
         var behavior = behaviorAnalysisService.analyze(request.behaviorSamples());
         if (behavior.suspicious()) {
             sessionStore.incrementAttempts(request.challengeId());
-            throw new BadRequestException("Hành vi không giống người dùng thật");
+            throw new BadRequestException("Behavior does not look like a real user");
         }
         return behavior.behaviorConfidence();
     }

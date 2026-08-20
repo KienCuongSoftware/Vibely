@@ -38,7 +38,7 @@ public class AdminAccountBanEmailService {
         }
         sendAdminAccountEmail(
             bannedUser.email(),
-            "Tài khoản Vibely của bạn đã bị cấm",
+            "Your Vibely account has been banned",
             plainBanBody(bannedUser),
             htmlBanBody(bannedUser),
             "Admin account ban email"
@@ -51,7 +51,7 @@ public class AdminAccountBanEmailService {
         }
         sendAdminAccountEmail(
             unbannedUser.email(),
-            "Tài khoản Vibely của bạn đã được mở khóa",
+            "Your Vibely account has been unlocked",
             plainUnbanBody(unbannedUser),
             htmlUnbanBody(unbannedUser),
             "Admin account unban email"
@@ -95,31 +95,31 @@ public class AdminAccountBanEmailService {
 
     private String plainBanBody(AdminBannedUserInfo user) {
         return """
-            Xin chào %s,
+            Hello %s,
 
-            Tài khoản Vibely @%s của bạn đã bị cấm.
+            Your Vibely account @%s has been banned.
 
-            Lý do:
+            Reason:
             %s
 
-            Bạn sẽ không thể đăng nhập hoặc sử dụng Vibely cho đến khi tài khoản được gỡ cấm.
+            You will not be able to log in or use Vibely until the account is unbanned.
 
-            Nếu bạn cho rằng đây là nhầm lẫn, bạn có thể gửi khiếu nại tới %s.
+            If you believe this is a mistake, you can submit an appeal to %s.
 
             Vibely
             """.formatted(displayName(user), user.username(), reasonText(user), VibelyEmailLayout.SUPPORT_EMAIL);
     }
 
     private String htmlBanBody(AdminBannedUserInfo user) {
-        String bodyRows = VibelyEmailLayout.headingRow("Tài khoản của bạn đã bị cấm") + """
+        String bodyRows = VibelyEmailLayout.headingRow("Your account has been banned") + """
             <tr>
               <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
-                <p style="margin:0 0 16px;">Xin chào <strong>%s</strong>,</p>
-                <p style="margin:0 0 16px;">Tài khoản Vibely <strong>@%s</strong> của bạn đã bị cấm.</p>
-                <p style="margin:0 0 8px;"><strong>Lý do:</strong></p>
+                <p style="margin:0 0 16px;">Hello <strong>%s</strong>,</p>
+                <p style="margin:0 0 16px;">Your Vibely account <strong>@%s</strong> has been banned.</p>
+                <p style="margin:0 0 8px;"><strong>Reason:</strong></p>
                 <p style="margin:0 0 18px;white-space:pre-wrap;background:#f7f7f8;border-radius:10px;padding:16px 18px;color:#4b5563;">%s</p>
-                <p style="margin:0 0 16px;">Bạn sẽ không thể đăng nhập hoặc sử dụng Vibely cho đến khi tài khoản được gỡ cấm.</p>
-                <p style="margin:0;">Nếu bạn cho rằng đây là nhầm lẫn, bạn có thể gửi khiếu nại tới %s.</p>
+                <p style="margin:0 0 16px;">You will not be able to log in or use Vibely until the account is unbanned.</p>
+                <p style="margin:0;">If you believe this is a mistake, you can submit an appeal to %s.</p>
               </td>
             </tr>
             """.formatted(
@@ -128,18 +128,18 @@ public class AdminAccountBanEmailService {
             VibelyEmailLayout.escapeHtml(reasonText(user)),
             VibelyEmailLayout.supportEmailLink()
         );
-        return VibelyEmailLayout.document("Tài khoản Vibely của bạn đã bị cấm", bodyRows, user.username());
+        return VibelyEmailLayout.document("Your Vibely account has been banned", bodyRows, user.username());
     }
 
     private String plainUnbanBody(AdminUnbannedUserInfo user) {
         return """
-            Xin chào %s,
+            Hello %s,
 
-            Tài khoản Vibely @%s của bạn đã được mở khóa bởi quản trị viên.
+            Your Vibely account @%s has been unlocked by an administrator.
 
-            Bạn có thể đăng nhập và sử dụng Vibely bình thường.
+            You can log in and use Vibely as usual.
 
-            Nếu bạn có thắc mắc, vui lòng liên hệ %s.
+            If you have questions, please contact %s.
 
             Vibely
             """.formatted(
@@ -150,13 +150,13 @@ public class AdminAccountBanEmailService {
     }
 
     private String htmlUnbanBody(AdminUnbannedUserInfo user) {
-        String bodyRows = VibelyEmailLayout.headingRow("Tài khoản của bạn đã được mở khóa") + """
+        String bodyRows = VibelyEmailLayout.headingRow("Your account has been unlocked") + """
             <tr>
               <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
-                <p style="margin:0 0 16px;">Xin chào <strong>%s</strong>,</p>
-                <p style="margin:0 0 16px;">Tài khoản Vibely <strong>@%s</strong> của bạn đã được mở khóa bởi quản trị viên.</p>
-                <p style="margin:0 0 16px;">Bạn có thể đăng nhập và sử dụng Vibely bình thường.</p>
-                <p style="margin:0;">Nếu bạn có thắc mắc, vui lòng liên hệ %s.</p>
+                <p style="margin:0 0 16px;">Hello <strong>%s</strong>,</p>
+                <p style="margin:0 0 16px;">Your Vibely account <strong>@%s</strong> has been unlocked by an administrator.</p>
+                <p style="margin:0 0 16px;">You can log in and use Vibely as usual.</p>
+                <p style="margin:0;">If you have questions, please contact %s.</p>
               </td>
             </tr>
             """.formatted(
@@ -164,21 +164,21 @@ public class AdminAccountBanEmailService {
             VibelyEmailLayout.escapeHtml(user.username()),
             VibelyEmailLayout.supportEmailLink()
         );
-        return VibelyEmailLayout.document("Tài khoản Vibely của bạn đã được mở khóa", bodyRows, user.username());
+        return VibelyEmailLayout.document("Your Vibely account has been unlocked", bodyRows, user.username());
     }
 
     private String displayName(AdminBannedUserInfo user) {
-        return StringUtils.hasText(user.displayName()) ? user.displayName().trim() : "bạn";
+        return StringUtils.hasText(user.displayName()) ? user.displayName().trim() : "you";
     }
 
     private String displayName(AdminUnbannedUserInfo user) {
-        return StringUtils.hasText(user.displayName()) ? user.displayName().trim() : "bạn";
+        return StringUtils.hasText(user.displayName()) ? user.displayName().trim() : "you";
     }
 
     private String reasonText(AdminBannedUserInfo user) {
         String raw = user == null ? null : user.banReason();
         String cleaned = com.vibely.backend.moderation.BanReasonFormatter.forDisplay(raw);
-        return StringUtils.hasText(cleaned) ? cleaned : "Không có lý do cụ thể";
+        return StringUtils.hasText(cleaned) ? cleaned : "No specific reason";
     }
 
     private String resolveFromAddress() {

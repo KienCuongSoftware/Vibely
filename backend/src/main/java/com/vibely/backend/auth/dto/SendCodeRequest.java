@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 
 public class SendCodeRequest {
 
-    @Email(message = "Email không hợp lệ")
-    @NotBlank(message = "Email là bắt buộc")
+    @Email(message = "Invalid email")
+    @NotBlank(message = "Email is required")
     private String email;
 
     private boolean challengePassed;

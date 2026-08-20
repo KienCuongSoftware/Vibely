@@ -96,7 +96,7 @@ public class BanAppealService {
 
     public AdminBanAppealResponse getForAdmin(Long id) {
         BanAppeal appeal = banAppealRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy khiếu nại"));
+            .orElseThrow(() -> new NotFoundException("Appeal not found"));
         User user = appeal.getUserId() == null
             ? null
             : userRepository.findById(appeal.getUserId()).orElse(null);
@@ -110,7 +110,7 @@ public class BanAppealService {
         Long adminUserId
     ) {
         BanAppeal appeal = banAppealRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy khiếu nại"));
+            .orElseThrow(() -> new NotFoundException("Appeal not found"));
         BanAppealStatus previousStatus = appeal.getStatus();
         BanAppealStatus nextStatus = request.status();
 
@@ -152,7 +152,7 @@ public class BanAppealService {
         if (StringUtils.hasText(fallbackEmail) && fallbackEmail.contains("@")) {
             return fallbackEmail.substring(0, fallbackEmail.indexOf('@')).trim();
         }
-        return "bạn";
+        return "you";
     }
 
     private User resolveLinkedUserEntity(BanAppeal appeal) {
@@ -240,7 +240,7 @@ public class BanAppealService {
     private static String normalizeEmail(String email) {
         String normalized = String.valueOf(email == null ? "" : email).trim().toLowerCase(Locale.ROOT);
         if (!StringUtils.hasText(normalized)) {
-            throw new BadRequestException("Email là bắt buộc");
+            throw new BadRequestException("Email is required");
         }
         return normalized;
     }

@@ -29,7 +29,7 @@ public class OAuthLoginCodeStore {
         cleanupIfNeeded();
         StoredAuthResponse stored = pendingLogins.remove(code);
         if (stored == null || stored.expiresAt().isBefore(Instant.now())) {
-            throw new BadRequestException("Mã đăng nhập Google không hợp lệ hoặc đã hết hạn");
+            throw new BadRequestException("Google login code is invalid or expired");
         }
         return stored.authResponse();
     }

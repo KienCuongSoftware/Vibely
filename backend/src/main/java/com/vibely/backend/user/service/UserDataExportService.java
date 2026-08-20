@@ -68,12 +68,12 @@ public class UserDataExportService {
     public DataExportRequestResponse create(String email, CreateDataExportRequest request) {
         User user = requireUser(email);
         if (exportRequestRepository.existsByUserAndStatus(user, STATUS_PROCESSING)) {
-            throw new BadRequestException("Bạn đã có một yêu cầu dữ liệu đang được xử lý.");
+            throw new BadRequestException("You already have a data request being processed.");
         }
         String format = normalizeFormat(request == null ? null : request.format());
         List<String> categories = normalizeCategories(request == null ? null : request.categories());
         if (categories.isEmpty()) {
-            throw new BadRequestException("Hãy chọn ít nhất một loại dữ liệu để tải về.");
+            throw new BadRequestException("Please select at least one data type to download.");
         }
 
         UserDataExportRequest entity = new UserDataExportRequest();
@@ -88,9 +88,9 @@ public class UserDataExportService {
     public DataExportRequestResponse cancel(String email, Long requestId) {
         User user = requireUser(email);
         UserDataExportRequest entity = exportRequestRepository.findByIdAndUser(requestId, user)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy yêu cầu dữ liệu"));
+            .orElseThrow(() -> new NotFoundException("Data request not found"));
         if (!STATUS_PROCESSING.equals(entity.getStatus())) {
-            throw new BadRequestException("Chỉ có thể hủy yêu cầu đang được xử lý.");
+            throw new BadRequestException("Only requests that are being processed can be cancelled.");
         }
         entity.setStatus(STATUS_CANCELLED);
         entity.setCancelledAt(LocalDateTime.now());
@@ -99,13 +99,13 @@ public class UserDataExportService {
 
     private User requireUser(String email) {
         return userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     private String normalizeFormat(String raw) {
         String format = StringUtils.hasText(raw) ? raw.trim().toUpperCase(Locale.ROOT) : "TXT";
         if (!ALLOWED_FORMATS.contains(format)) {
-            throw new BadRequestException("Định dạng tập tin không hợp lệ");
+            throw new BadRequestException("Invalid file format");
         }
         return format;
     }
@@ -121,7 +121,7 @@ public class UserDataExportService {
             }
             String code = item.trim().toLowerCase(Locale.ROOT);
             if (!ALLOWED_CATEGORIES.contains(code)) {
-                throw new BadRequestException("Loại dữ liệu không hợp lệ: " + item);
+                throw new BadRequestException("Invalid data type: " + item);
             }
             out.add(code);
         }
@@ -132,7 +132,7 @@ public class UserDataExportService {
         try {
             return objectMapper.writeValueAsString(categories);
         } catch (JsonProcessingException ex) {
-            throw new BadRequestException("Không thể lưu danh mục dữ liệu");
+            throw new BadRequestException("Could not save data categories");
         }
     }
 

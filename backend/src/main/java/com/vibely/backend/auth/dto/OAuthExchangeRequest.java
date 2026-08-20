@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public class OAuthExchangeRequest {
 
-    @NotBlank(message = "Mã đăng nhập không được để trống")
+    @NotBlank(message = "Login code cannot be empty")
     private String code;
 
     public String getCode() {

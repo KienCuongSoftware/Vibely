@@ -46,7 +46,7 @@ public class UserDiscoveryService {
     @Transactional(readOnly = true)
     public SuggestedCreatorsResponse getSuggestedCreators(String email, int page, int size) {
         User viewer = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         long viewerFollowingCount = followRepository.countByFollower_Id(viewer.getId());
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 48));
         Page<SuggestedCreatorProjection> result =

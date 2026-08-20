@@ -64,11 +64,11 @@ public final class SqlSafe {
      */
     public static String requireIdentifierSlug(String raw) {
         if (raw == null) {
-            throw new BadRequestException("Slug không hợp lệ");
+            throw new BadRequestException("Invalid Slug");
         }
         String normalized = stripControlCharacters(raw.trim().toLowerCase(Locale.ROOT));
         if (!IDENTIFIER_SLUG.matcher(normalized).matches()) {
-            throw new BadRequestException("Slug không hợp lệ");
+            throw new BadRequestException("Invalid Slug");
         }
         return normalized;
     }
@@ -103,7 +103,7 @@ public final class SqlSafe {
      */
     public static void requireAllowedSortProperty(String property) {
         if (property == null || !property.matches("[a-zA-Z][a-zA-Z0-9_.]{0,63}")) {
-            throw new BadRequestException("Trường sắp xếp không hợp lệ");
+            throw new BadRequestException("Invalid sort field");
         }
     }
 

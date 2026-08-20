@@ -45,16 +45,16 @@ public class NativeOAuthService {
         return switch (provider) {
             case "google" -> authenticateGoogle(request.getIdToken());
             case "facebook" -> authenticateFacebook(request.getAccessToken());
-            default -> throw new BadRequestException("Nhà cung cấp OAuth không được hỗ trợ");
+            default -> throw new BadRequestException("OAuth provider is not supported");
         };
     }
 
     private AuthResponse authenticateGoogle(String idToken) {
         if (!StringUtils.hasText(idToken)) {
-            throw new BadRequestException("Thiếu Google ID token");
+            throw new BadRequestException("Missing Google ID token");
         }
         if (!StringUtils.hasText(googleClientId)) {
-            throw new BadRequestException("Google OAuth chưa được cấu hình trên máy chủ");
+            throw new BadRequestException("Google OAuth is not configured on the server");
         }
 
         URI uri = UriComponentsBuilder
@@ -66,12 +66,12 @@ public class NativeOAuthService {
 
         JsonNode payload = fetchJson(uri, "Google");
         if (payload == null || payload.has("error")) {
-            throw new BadRequestException("Google token không hợp lệ hoặc đã hết hạn");
+            throw new BadRequestException("Google token is invalid or expired");
         }
 
         String audience = text(payload, "aud");
         if (!googleClientId.equals(audience)) {
-            throw new BadRequestException("Google token không khớp ứng dụng Vibely");
+            throw new BadRequestException("Google token does not match the Vibely app");
         }
 
         String email = text(payload, "email");
@@ -83,10 +83,10 @@ public class NativeOAuthService {
 
     private AuthResponse authenticateFacebook(String accessToken) {
         if (!StringUtils.hasText(accessToken)) {
-            throw new BadRequestException("Thiếu Facebook access token");
+            throw new BadRequestException("Missing Facebook access token");
         }
         if (!StringUtils.hasText(facebookAppId) || !StringUtils.hasText(facebookAppSecret)) {
-            throw new BadRequestException("Facebook OAuth chưa được cấu hình trên máy chủ");
+            throw new BadRequestException("Facebook OAuth is not configured on the server");
         }
 
         URI debugUri = UriComponentsBuilder
@@ -103,12 +103,12 @@ public class NativeOAuthService {
             String message = text(error, "message");
             if (isFacebookAppCredentialError(message)) {
                 throw new BadRequestException(
-                    "Facebook App Secret trên máy chủ không đúng. "
-                        + "Kiểm tra FACEBOOK_APP_SECRET trong /opt/vibely/config/application-local.yaml"
+                    "Facebook App Secret on the server is incorrect. "
+                        + "Check FACEBOOK_APP_SECRET in /opt/vibely/config/application-local.yaml"
                 );
             }
             throw new BadRequestException(
-                message.isBlank() ? "Facebook token không hợp lệ hoặc đã hết hạn" : message
+                message.isBlank() ? "Facebook token is invalid or expired" : message
             );
         }
         JsonNode data = debug == null ? null : debug.get("data");
@@ -116,12 +116,12 @@ public class NativeOAuthService {
             JsonNode dataError = data == null ? null : data.get("error");
             String message = dataError == null ? "" : text(dataError, "message");
             throw new BadRequestException(
-                message.isBlank() ? "Facebook token không hợp lệ hoặc đã hết hạn" : message
+                message.isBlank() ? "Facebook token is invalid or expired" : message
             );
         }
         String appId = data.path("app_id").asText("");
         if (!facebookAppId.equals(appId)) {
-            throw new BadRequestException("Facebook token không thuộc ứng dụng Vibely");
+            throw new BadRequestException("Facebook token does not belong to the Vibely app");
         }
 
         URI profileUri = UriComponentsBuilder
@@ -134,7 +134,7 @@ public class NativeOAuthService {
 
         JsonNode profile = fetchJson(profileUri, "Facebook");
         if (profile == null) {
-            throw new BadRequestException("Không lấy được thông tin Facebook");
+            throw new BadRequestException("Could not fetch Facebook profile");
         }
 
         String fbId = profile.path("id").asText("");
@@ -156,31 +156,31 @@ public class NativeOAuthService {
                     try (InputStream body = response.getBody()) {
                         if (body == null) {
                             throw new BadRequestException(
-                                "Không xác minh được token " + providerLabel
+                                "Could not verify token " + providerLabel
                             );
                         }
                         try {
                             return objectMapper.readTree(body);
                         } catch (IOException parseEx) {
                             throw new BadRequestException(
-                                "Không xác minh được token " + providerLabel
+                                "Could not verify token " + providerLabel
                             );
                         }
                     } catch (IOException ex) {
                         throw new BadRequestException(
-                            "Không kết nối được tới " + providerLabel + ". Kiểm tra mạng máy chủ."
+                            "Could not connect to " + providerLabel + ". Check server network connectivity."
                         );
                     }
                 });
         } catch (BadRequestException ex) {
             throw ex;
         } catch (RestClientException ex) {
-            throw new BadRequestException("Không xác minh được token " + providerLabel);
+            throw new BadRequestException("Could not verify token " + providerLabel);
         } catch (RuntimeException ex) {
             if (ex.getCause() instanceof BadRequestException badRequest) {
                 throw badRequest;
             }
-            throw new BadRequestException("Không xác minh được token " + providerLabel);
+            throw new BadRequestException("Could not verify token " + providerLabel);
         }
     }
 

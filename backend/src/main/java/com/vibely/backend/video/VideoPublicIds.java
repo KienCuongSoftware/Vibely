@@ -13,16 +13,16 @@ public final class VideoPublicIds {
 
     public static UUID parse(String raw) {
         if (raw == null || raw.isBlank()) {
-            throw new BadRequestException("Thiếu mã video");
+            throw new BadRequestException("Missing video ID");
         }
         String trimmed = raw.trim();
         if (NUMERIC_ONLY.matcher(trimmed).matches()) {
-            throw new BadRequestException("Mã video không hợp lệ");
+            throw new BadRequestException("Invalid video code");
         }
         try {
             return UUID.fromString(trimmed);
         } catch (IllegalArgumentException ex) {
-            throw new BadRequestException("Mã video không hợp lệ");
+            throw new BadRequestException("Invalid video code");
         }
     }
 }

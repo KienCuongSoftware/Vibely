@@ -8,7 +8,7 @@ public record LocationInfo(
     String ward
 ) {
     public static LocationInfo unknown() {
-        return new LocationInfo("Không xác định", null, null, null, null);
+        return new LocationInfo("Unknown", null, null, null, null);
     }
 
     public boolean hasPreciseLocation() {
@@ -22,7 +22,7 @@ public record LocationInfo(
         append(builder, city);
         append(builder, province);
         append(builder, country);
-        return builder.isEmpty() ? "Không xác định" : builder.toString();
+        return builder.isEmpty() ? "Unknown" : builder.toString();
     }
 
     private static void append(StringBuilder builder, String value) {

@@ -37,7 +37,7 @@ public class ProfileViewService {
     public boolean recordView(String username, String viewerEmail, String clientViewerKey, String clientIp) {
         String normalized = usernameService.normalize(username);
         User profile = userRepository.findByUsername(normalized)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
 
         User viewer = null;
         if (StringUtils.hasText(viewerEmail)) {

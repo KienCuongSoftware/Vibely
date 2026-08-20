@@ -125,11 +125,11 @@ public class AuthService {
         String normalizedUsername = usernameService.validateForRegistration(request.getUsername());
         UsernameCheckResponse usernameCheck = usernameService.checkAvailability(normalizedUsername);
         if (!usernameCheck.available()) {
-            String suffix = usernameCheck.suggestion() != null ? " Gợi ý: @" + usernameCheck.suggestion() : "";
-            throw new BadRequestException("Vibely ID đã tồn tại." + suffix);
+            String suffix = usernameCheck.suggestion() != null ? " Suggestion: @" + usernameCheck.suggestion() : "";
+            throw new BadRequestException("Vibely ID already exists." + suffix);
         }
         if (bloomFilterService.mightContainEmail(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
-            throw new BadRequestException("Email đã được sử dụng");
+            throw new BadRequestException("Email is already in use");
         }
         User user = new User();
         user.setUsername(normalizedUsername);
@@ -173,10 +173,10 @@ public class AuthService {
                     }
                     throw new AccountDeactivatedException(user.getEmail());
                 });
-            throw new BadRequestException("Thông tin đăng nhập không chính xác");
+            throw new BadRequestException("Incorrect login credentials");
         }
         User user = findUserForLoginIdentifier(request.getEmail())
-            .orElseThrow(() -> new BadRequestException("Thông tin đăng nhập không chính xác"));
+            .orElseThrow(() -> new BadRequestException("Incorrect login credentials"));
         ensureActive(user);
         authProtectionService.consumeLoginVerification(httpRequest);
         authProtectionService.onLoginSuccess(request.getEmail(), httpRequest);
@@ -186,13 +186,13 @@ public class AuthService {
 
     public AuthResponse refresh(String rawRefreshToken) {
         RefreshToken token = refreshTokenRepository.findByTokenHash(hashToken(rawRefreshToken))
-            .orElseThrow(() -> new BadRequestException("Refresh token không hợp lệ"));
+            .orElseThrow(() -> new BadRequestException("Invalid Refresh token"));
         LocalDateTime now = LocalDateTime.now();
         if (token.getExpiresAt().isBefore(now)) {
-            throw new BadRequestException("Refresh token đã hết hạn hoặc đã bị thu hồi");
+            throw new BadRequestException("Refresh token has expired or been revoked");
         }
         if (token.isRevoked() && !isWithinRotationGrace(token, now)) {
-            throw new BadRequestException("Refresh token đã hết hạn hoặc đã bị thu hồi");
+            throw new BadRequestException("Refresh token has expired or been revoked");
         }
         ensureActive(token.getUser());
         token.revokeAt(now);
@@ -231,7 +231,7 @@ public class AuthService {
         String providerLabel = oauthProviderLabel(registrationId);
 
         if (email == null || email.isBlank()) {
-            throw new BadRequestException("Tài khoản " + providerLabel + " chưa cung cấp email hợp lệ");
+            throw new BadRequestException("Account " + providerLabel + " has not provided a valid email");
         }
 
         var existingUser = userRepository.findByEmail(email);
@@ -280,12 +280,12 @@ public class AuthService {
     ) {
         String email = reactivationTokenStore.resolveEmail(request.getReactivationToken()).trim().toLowerCase();
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new BadRequestException("Không tìm thấy tài khoản với email này"));
+            .orElseThrow(() -> new BadRequestException("No account found with this email"));
         if (user.isActive()) {
-            throw new BadRequestException("Tài khoản này đang hoạt động");
+            throw new BadRequestException("This account is active");
         }
         if (user.isBanned()) {
-            throw new BadRequestException("Tài khoản đã bị cấm và không thể tự kích hoạt lại");
+            throw new BadRequestException("Account is banned and cannot be self-reactivated");
         }
 
         SendCodeRequest sendCodeRequest = new SendCodeRequest();
@@ -298,12 +298,12 @@ public class AuthService {
     public AuthResponse reactivateAccount(ReactivateAccountRequest request, HttpServletRequest httpRequest) {
         String email = reactivationTokenStore.resolveEmail(request.getReactivationToken()).trim().toLowerCase();
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new BadRequestException("Không tìm thấy tài khoản với email này"));
+            .orElseThrow(() -> new BadRequestException("No account found with this email"));
         if (user.isActive()) {
-            throw new BadRequestException("Tài khoản này đang hoạt động");
+            throw new BadRequestException("This account is active");
         }
         if (user.isBanned()) {
-            throw new BadRequestException("Tài khoản đã bị cấm và không thể tự kích hoạt lại");
+            throw new BadRequestException("Account is banned and cannot be self-reactivated");
         }
 
         otpVerificationService.consumeAccountReactivationCode(user.getEmail(), request.getCode());
@@ -321,7 +321,7 @@ public class AuthService {
 
     public MeResponse getMe(String email) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         ensureActive(user);
         return new MeResponse(
             user.getId(),
@@ -342,7 +342,7 @@ public class AuthService {
 
     public AuthResponse completeOnboarding(String email, CompleteOnboardingRequest request) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new BadRequestException("User not found"));
         if (!userRequiresOnboardingCheck(user)) {
             // Idempotent: double-submit / wrong-host cookie race after success.
             return issueTokens(user);
@@ -357,8 +357,8 @@ public class AuthService {
                     && !normalizedUsername.equals(user.getUsername());
             if (takenByOther) {
                 UsernameCheckResponse usernameCheck = usernameService.checkAvailability(normalizedUsername);
-                String suffix = usernameCheck.suggestion() != null ? " Gợi ý: @" + usernameCheck.suggestion() : "";
-                throw new BadRequestException("Vibely ID đã tồn tại." + suffix);
+                String suffix = usernameCheck.suggestion() != null ? " Suggestion: @" + usernameCheck.suggestion() : "";
+                throw new BadRequestException("Vibely ID already exists." + suffix);
             }
             user.setUsername(normalizedUsername);
             if (user.getDisplayName() == null || user.getDisplayName().isBlank()) {
@@ -468,11 +468,11 @@ public class AuthService {
             .map(this::displayLoginHistoryLocation)
             .filter(location -> !isUnknown(location))
             .findFirst()
-            .orElse("Không xác định");
+            .orElse("Unknown");
         return new OtpRequestMetadata(
-            metadata == null ? "Trình duyệt" : metadata.browser(),
+            metadata == null ? "Browser" : metadata.browser(),
             fallbackLocation,
-            metadata == null ? "Không xác định" : metadata.ipAddress()
+            metadata == null ? "Unknown" : metadata.ipAddress()
         );
     }
 
@@ -483,11 +483,11 @@ public class AuthService {
         appendLocationPart(location, history.getCity());
         appendLocationPart(location, history.getProvince());
         appendLocationPart(location, history.getCountry());
-        return location.isEmpty() ? "Không xác định" : location.toString();
+        return location.isEmpty() ? "Unknown" : location.toString();
     }
 
     private void appendLocationPart(StringBuilder builder, String value) {
-        if (value == null || value.isBlank() || "Không xác định".equalsIgnoreCase(value.trim())) {
+        if (value == null || value.isBlank() || isUnknown(value)) {
             return;
         }
         String normalized = value.trim().replace('+', ' ');
@@ -501,7 +501,11 @@ public class AuthService {
     }
 
     private boolean isUnknown(String value) {
-        return value == null || value.isBlank() || "Không xác định".equalsIgnoreCase(value.trim());
+        if (value == null || value.isBlank()) {
+            return true;
+        }
+        String trimmed = value.trim();
+        return "Unknown".equalsIgnoreCase(trimmed) || "Không xác định".equalsIgnoreCase(trimmed);
     }
 
     private static String oauthProviderLabel(String registrationId) {

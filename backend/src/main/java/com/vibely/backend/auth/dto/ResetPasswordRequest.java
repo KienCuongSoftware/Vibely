@@ -7,19 +7,19 @@ import jakarta.validation.constraints.Size;
 
 public class ResetPasswordRequest {
 
-    @Email(message = "Email không hợp lệ")
-    @NotBlank(message = "Email là bắt buộc")
+    @Email(message = "Invalid email")
+    @NotBlank(message = "Email is required")
     private String email;
 
-    @NotBlank(message = "Mã xác minh là bắt buộc")
-    @Pattern(regexp = "\\d{6}", message = "Mã xác minh phải gồm 6 chữ số")
+    @NotBlank(message = "Verification code is required")
+    @Pattern(regexp = "\\d{6}", message = "Verification code must be 6 digits")
     private String code;
 
-    @NotBlank(message = "Mật khẩu là bắt buộc")
-    @Size(min = 8, max = 20, message = "Mật khẩu phải từ 8 đến 20 ký tự")
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, max = 20, message = "Password must be between 8 and 20 characters")
     @Pattern(
         regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z0-9]).+$",
-        message = "Mật khẩu phải gồm chữ cái, số và ký tự đặc biệt"
+        message = "Password must include letters, numbers, and special characters"
     )
     private String newPassword;
 

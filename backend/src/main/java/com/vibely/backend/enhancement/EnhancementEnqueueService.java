@@ -41,13 +41,13 @@ public class EnhancementEnqueueService {
     @Transactional
     public UUID enqueueManual(Long videoId, String profile, String level, String triggerReason) {
         if (!properties.isEnabled()) {
-            throw new BadRequestException("AI Enhancement đang tắt.");
+            throw new BadRequestException("AI Enhancement is disabled.");
         }
         Video video = videoRepository
             .findById(videoId)
-            .orElseThrow(() -> new NotFoundException("Video không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
         if (video.getStatus() != VideoStatus.READY) {
-            throw new BadRequestException("Chỉ enhance video đã READY.");
+            throw new BadRequestException("Only READY videos can be enhanced.");
         }
         String targetProfile = (profile == null || profile.isBlank()) ? "ENHANCE_NATIVE" : profile.trim();
         String enhancementLevel =

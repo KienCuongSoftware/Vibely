@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public class SendReactivationCodeRequest {
 
-    @NotBlank(message = "Phiên kích hoạt lại tài khoản là bắt buộc")
+    @NotBlank(message = "Account reactivation session is required")
     private String reactivationToken;
 
     private LoginContextRequest loginContext;

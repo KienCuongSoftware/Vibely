@@ -81,13 +81,13 @@ public class ShareService {
         HttpServletRequest httpRequest
     ) {
         Video video = videoRepository.findByPublicId(videoPublicId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
         if (video.getStatus() != VideoStatus.READY) {
-            throw new BadRequestException("Video chưa sẵn sàng để chia sẻ");
+            throw new BadRequestException("Video is not ready to share");
         }
 
         User user = userRepository.findByEmail(userEmail)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
 
         ShareChannel channel = ShareChannel.from(request == null ? null : request.channel());
         String idempotencyKey = request == null ? null : normalizeBlank(request.idempotencyKey());
@@ -139,13 +139,13 @@ public class ShareService {
     @Transactional(readOnly = true)
     public ShareAnalyticsResponse getAnalytics(UUID videoPublicId, String requesterEmail, int days) {
         Video video = videoRepository.findByPublicId(videoPublicId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
         User requester = userRepository.findByEmail(requesterEmail)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         Long authorId = videoRepository.findAuthorIdByPublicId(videoPublicId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
         if (!authorId.equals(requester.getId())) {
-            throw new BadRequestException("Bạn không có quyền xem analytics video này");
+            throw new BadRequestException("You do not have permission to view this video's analytics");
         }
 
         int windowDays = Math.max(1, Math.min(days, 90));

@@ -55,9 +55,9 @@ public class StudioAnalyticsService {
 
     private static final List<StudioTrafficSourceResponse> DEFAULT_TRAFFIC_SOURCES = List.of(
         new StudioTrafficSourceResponse("foryou", "For You", null),
-        new StudioTrafficSourceResponse("profile", "Hồ sơ", null),
-        new StudioTrafficSourceResponse("search", "Tìm kiếm", null),
-        new StudioTrafficSourceResponse("other", "Khác", null)
+        new StudioTrafficSourceResponse("profile", "Profile", null),
+        new StudioTrafficSourceResponse("search", "Search", null),
+        new StudioTrafficSourceResponse("other", "Other", null)
     );
 
     private static final List<String> AGE_BUCKET_LABELS =
@@ -115,11 +115,11 @@ public class StudioAnalyticsService {
     @Transactional(readOnly = true)
     public StudioAnalyticsOverviewResponse getOverview(String email, int days) {
         if (!ALLOWED_DAYS.contains(days)) {
-            throw new BadRequestException("Khoảng ngày không hợp lệ. Chỉ chấp nhận 7, 28, 60, 90.");
+            throw new BadRequestException("Invalid date range. Only 7, 28, 60, or 90 days are allowed.");
         }
 
         User me = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
 
         LocalDate startDay = LocalDate.now().minusDays(days - 1L);
         LocalDateTime from = startDay.atStartOfDay();
@@ -209,11 +209,11 @@ public class StudioAnalyticsService {
     @Transactional(readOnly = true)
     public StudioChannelAnalyticsResponse getChannelAnalytics(String email, int days) {
         if (!CHANNEL_ALLOWED_DAYS.contains(days)) {
-            throw new BadRequestException("Khoảng ngày không hợp lệ. Chỉ chấp nhận 7, 28, 60, 90.");
+            throw new BadRequestException("Invalid date range. Only 7, 28, 60, or 90 days are allowed.");
         }
 
         User me = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
 
         LocalDate startDay = LocalDate.now().minusDays(days - 1L);
         LocalDateTime from = startDay.atStartOfDay();
@@ -373,7 +373,7 @@ public class StudioAnalyticsService {
 
     private static String regionLabel(String code) {
         if (!AccountRegionCodes.isAllowed(code)) {
-            return "Khác";
+            return "Other";
         }
         String label = new Locale("", code).getDisplayCountry(VI);
         return label == null || label.isBlank() ? code : label;
@@ -430,15 +430,15 @@ public class StudioAnalyticsService {
     @Transactional(readOnly = true)
     public StudioVideoAnalyticsResponse getVideoAnalytics(String email, UUID videoPublicId, int days) {
         if (!ALLOWED_DAYS.contains(days)) {
-            throw new BadRequestException("Khoảng ngày không hợp lệ. Chỉ chấp nhận 7, 28, 60, 90.");
+            throw new BadRequestException("Invalid date range. Only 7, 28, 60, or 90 days are allowed.");
         }
 
         User me = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
 
         VideoResponse video = videoService.getVideoByPublicIdForViewer(videoPublicId, email);
         if (!Objects.equals(video.authorId(), me.getId())) {
-            throw new BadRequestException("Bạn không có quyền xem thống kê video này.");
+            throw new BadRequestException("You do not have permission to view this video's analytics.");
         }
 
         long videoId = videoService.getVideoByPublicIdOrThrow(videoPublicId).getId();

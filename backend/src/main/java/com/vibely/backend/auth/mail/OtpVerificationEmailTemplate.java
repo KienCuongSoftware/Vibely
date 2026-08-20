@@ -15,19 +15,19 @@ final class OtpVerificationEmailTemplate {
     }
 
     static String subject(String code) {
-        return code + " là mã xác minh của bạn";
+        return code + " is your verification code";
     }
 
     static String accountDeactivationSubject(String code) {
-        return code + " là mã 6 chữ số của bạn";
+        return code + " is your 6-digit code";
     }
 
     static String accountReactivationSubject(String code) {
-        return code + " là mã kích hoạt lại tài khoản Vibely";
+        return code + " is your Vibely account reactivation code";
     }
 
     static String accountDeletionSubject(String code) {
-        return code + " là mã xóa tài khoản Vibely";
+        return code + " is your Vibely account deletion code";
     }
 
     static String accountDeactivationHtmlBody(
@@ -41,30 +41,30 @@ final class OtpVerificationEmailTemplate {
         String browser = escapeHtml(metadata.browser());
         String location = escapeHtml(metadata.approximateLocation());
         String generatedAt = EMAIL_TIME_FORMATTER.format(OffsetDateTime.now(ZoneOffset.UTC));
-        String bodyRows = VibelyEmailLayout.headingRow("Mã 6 chữ số Vibely") + """
+        String bodyRows = VibelyEmailLayout.headingRow("Vibely 6-digit code") + """
             <tr>
               <td style="padding:0 56px 8px;font-size:15px;line-height:1.7;color:#161823;">
-                <p style="margin:0 0 16px;">Xin chào <strong>%s</strong>,</p>
-                <p style="margin:0 0 16px;">Mã 6 chữ số của bạn là: <strong style="font-size:18px;letter-spacing:0.5px;">%s</strong></p>
-                <p style="margin:0 0 18px;">Hãy dùng mã này để xác minh rằng <strong>@%s</strong> là tài khoản Vibely của bạn trước khi hủy kích hoạt.</p>
-                <p style="margin:0 0 24px;text-align:center;color:#6b7280;">Mã này có hiệu lực trong %s.</p>
+                <p style="margin:0 0 16px;">Hello <strong>%s</strong>,</p>
+                <p style="margin:0 0 16px;">Your 6-digit code is: <strong style="font-size:18px;letter-spacing:0.5px;">%s</strong></p>
+                <p style="margin:0 0 18px;">Use this code to verify that <strong>@%s</strong> is your Vibely account before deactivating.</p>
+                <p style="margin:0 0 24px;text-align:center;color:#6b7280;">This code is valid for %s.</p>
               </td>
             </tr>
             <tr>
               <td style="padding:0 56px 24px;">
                 <div style="background:#f7f7f8;border-radius:10px;padding:18px 20px;font-size:14px;line-height:1.7;color:#4b5563;">
-                  <div>Thời gian: <strong style="color:#161823;">%s</strong></div>
-                  <div>Vị trí: <strong style="color:#161823;">%s</strong></div>
-                  <div>Thiết bị: <strong style="color:#161823;">%s</strong></div>
+                  <div>Time: <strong style="color:#161823;">%s</strong></div>
+                  <div>Location: <strong style="color:#161823;">%s</strong></div>
+                  <div>Device: <strong style="color:#161823;">%s</strong></div>
                 </div>
               </td>
             </tr>
             <tr>
               <td style="padding:0 56px 28px;font-size:14px;line-height:1.65;color:#161823;">
-                <p style="margin:0 0 14px;"><strong>Chỉ nhập mã này trên ứng dụng hoặc website chính thức của Vibely.</strong> Không chia sẻ mã này với bất kỳ ai.</p>
-                <p style="margin:0 0 14px;">Việc chia sẻ mã có thể cho phép người khác truy cập tài khoản Vibely của bạn cùng với thông tin cá nhân và nội dung liên quan.</p>
-                <p style="margin:0 0 14px;">Nếu bạn không yêu cầu mã này, có thể có người đang cố truy cập tài khoản của bạn. Hãy đổi mật khẩu ngay trong Vibely.</p>
-                <p style="margin:0;">Vì sự an toàn của bạn:<br />• Cẩn thận với đường link hoặc tin nhắn đáng ngờ yêu cầu thông tin đăng nhập.<br />• Liên hệ hỗ trợ Vibely qua %s nếu cần trợ giúp.</p>
+                <p style="margin:0 0 14px;"><strong>Only enter this code on the official Vibely app or website.</strong> Do not share this code with anyone.</p>
+                <p style="margin:0 0 14px;">Sharing this code may allow others to access your Vibely account along with related personal information and content.</p>
+                <p style="margin:0 0 14px;">If you did not request this code, someone may be trying to access your account. Change your password in Vibely now.</p>
+                <p style="margin:0;">For your safety:<br />• Be careful with suspicious links or messages asking for login details.<br />• Contact Vibely support at %s if you need help.</p>
               </td>
             </tr>
             """.formatted(
@@ -77,7 +77,7 @@ final class OtpVerificationEmailTemplate {
                 browser,
                 VibelyEmailLayout.supportEmailLink()
             );
-        return VibelyEmailLayout.document("Mã hủy kích hoạt tài khoản Vibely", bodyRows, username);
+        return VibelyEmailLayout.document("Vibely account deactivation code", bodyRows, username);
     }
 
     static String accountDeactivationPlainBody(
@@ -87,21 +87,21 @@ final class OtpVerificationEmailTemplate {
         OtpRequestMetadata metadata
     ) {
         return """
-            Mã 6 chữ số Vibely
+            Vibely 6-digit code
 
-            Xin chào %s,
+            Hello %s,
 
-            Mã 6 chữ số của bạn là: %s
+            Your 6-digit code is: %s
 
-            Hãy dùng mã này để xác minh rằng @%s là tài khoản Vibely của bạn trước khi hủy kích hoạt.
-            Mã này có hiệu lực trong %s.
+            Use this code to verify that @%s is your Vibely account before deactivating.
+            This code is valid for %s.
 
-            Thời gian: %s
-            Vị trí: %s
-            Thiết bị: %s
+            Time: %s
+            Location: %s
+            Device: %s
 
-            Chỉ nhập mã này trên ứng dụng hoặc website chính thức của Vibely. Không chia sẻ mã này với bất kỳ ai.
-            Nếu bạn không yêu cầu mã này, hãy đổi mật khẩu ngay trong Vibely.
+            Only enter this code on the official Vibely app or website. Do not share this code with anyone.
+            If you did not request this code, change your password in Vibely now.
             """.formatted(
                 username,
                 code,
@@ -121,16 +121,16 @@ final class OtpVerificationEmailTemplate {
         OtpRequestMetadata metadata
     ) {
         return accountDeactivationHtmlBody(username, code, expiryLabel, helpUrl, metadata)
-            .replace("<title>Mã hủy kích hoạt tài khoản Vibely</title>", "<title>Mã kích hoạt lại tài khoản Vibely</title>")
+            .replace("<title>Vibely account deactivation code</title>", "<title>Vibely account reactivation code</title>")
             .replace(
-                "Hãy dùng mã này để xác minh rằng <strong>@%s</strong> là tài khoản Vibely của bạn trước khi hủy kích hoạt."
+                "Use this code to verify that <strong>@%s</strong> is your Vibely account before deactivating."
                     .formatted(escapeHtml(username)),
-                "Hãy dùng mã này để xác minh rằng <strong>@%s</strong> là tài khoản Vibely của bạn trước khi kích hoạt lại."
+                "Use this code to verify that <strong>@%s</strong> is your Vibely account before reactivating."
                     .formatted(escapeHtml(username))
             )
             .replace(
-                "Nếu bạn không yêu cầu mã này, có thể có người đang cố truy cập tài khoản của bạn. Hãy đổi mật khẩu ngay trong Vibely.",
-                "Nếu bạn không yêu cầu kích hoạt lại tài khoản, hãy bỏ qua email này và đổi mật khẩu ngay trong Vibely."
+                "If you did not request this code, someone may be trying to access your account. Change your password in Vibely now.",
+                "If you did not request account reactivation, ignore this email and change your password in Vibely now."
             );
     }
 
@@ -142,12 +142,12 @@ final class OtpVerificationEmailTemplate {
     ) {
         return accountDeactivationPlainBody(username, code, expiryLabel, metadata)
             .replace(
-                "Hãy dùng mã này để xác minh rằng @" + username + " là tài khoản Vibely của bạn trước khi hủy kích hoạt.",
-                "Hãy dùng mã này để xác minh rằng @" + username + " là tài khoản Vibely của bạn trước khi kích hoạt lại."
+                "Use this code to verify that @" + username + " is your Vibely account before deactivating.",
+                "Use this code to verify that @" + username + " is your Vibely account before reactivating."
             )
             .replace(
-                "Nếu bạn không yêu cầu mã này, hãy đổi mật khẩu ngay trong Vibely.",
-                "Nếu bạn không yêu cầu kích hoạt lại tài khoản, hãy bỏ qua email này và đổi mật khẩu ngay trong Vibely."
+                "If you did not request this code, change your password in Vibely now.",
+                "If you did not request account reactivation, ignore this email and change your password in Vibely now."
             );
     }
 
@@ -160,16 +160,16 @@ final class OtpVerificationEmailTemplate {
     ) {
         String safeUsername = escapeHtml(username);
         return accountDeactivationHtmlBody(username, code, expiryLabel, helpUrl, metadata)
-            .replace("<title>Mã hủy kích hoạt tài khoản Vibely</title>", "<title>Mã xóa tài khoản Vibely</title>")
+            .replace("<title>Vibely account deactivation code</title>", "<title>Vibely account deletion code</title>")
             .replace(
-                "Hãy dùng mã này để xác minh rằng <strong>@%s</strong> là tài khoản Vibely của bạn trước khi hủy kích hoạt."
+                "Use this code to verify that <strong>@%s</strong> is your Vibely account before deactivating."
                     .formatted(safeUsername),
-                "Hãy dùng mã này để xác minh rằng <strong>@%s</strong> là tài khoản Vibely của bạn trước khi xóa tài khoản vĩnh viễn."
+                "Use this code to verify that <strong>@%s</strong> is your Vibely account before permanently deleting it."
                     .formatted(safeUsername)
             )
             .replace(
-                "Nếu bạn không yêu cầu mã này, có thể có người đang cố truy cập tài khoản của bạn. Hãy đổi mật khẩu ngay trong Vibely.",
-                "Nếu bạn không yêu cầu xóa tài khoản, có thể có người đang cố truy cập tài khoản của bạn. Hãy đổi mật khẩu ngay trong Vibely."
+                "If you did not request this code, someone may be trying to access your account. Change your password in Vibely now.",
+                "If you did not request account deletion, someone may be trying to access your account. Change your password immediately in Vibely."
             );
     }
 
@@ -181,90 +181,90 @@ final class OtpVerificationEmailTemplate {
     ) {
         return accountDeactivationPlainBody(username, code, expiryLabel, metadata)
             .replace(
-                "Hãy dùng mã này để xác minh rằng @" + username + " là tài khoản Vibely của bạn trước khi hủy kích hoạt.",
-                "Hãy dùng mã này để xác minh rằng @" + username + " là tài khoản Vibely của bạn trước khi xóa tài khoản vĩnh viễn."
+                "Use this code to verify that @" + username + " is your Vibely account before deactivating.",
+                "Use this code to verify that @" + username + " is your Vibely account before permanently deleting it."
             )
             .replace(
-                "Nếu bạn không yêu cầu mã này, hãy đổi mật khẩu ngay trong Vibely.",
-                "Nếu bạn không yêu cầu xóa tài khoản, hãy đổi mật khẩu ngay trong Vibely."
+                "If you did not request this code, change your password in Vibely now.",
+                "If you did not request account deletion, change your password immediately in Vibely."
             );
     }
 
     static String passwordResetHtmlBody(String code, String expiryLabel, String helpUrl) {
-        String bodyRows = VibelyEmailLayout.headingRow("Đặt lại mật khẩu") + """
+        String bodyRows = VibelyEmailLayout.headingRow("Reset password") + """
             <tr>
               <td style="padding:0 56px 8px;font-size:15px;line-height:1.7;color:#161823;">
-                <p style="margin:0 0 16px;">Nhập mã sau trên Vibely để đặt lại mật khẩu:</p>
+                <p style="margin:0 0 16px;">Enter the following code on Vibely to reset your password:</p>
                 <p style="margin:0 0 16px;text-align:center;font-size:32px;font-weight:800;letter-spacing:4px;color:#161823;">%s</p>
-                <p style="margin:0 0 24px;text-align:center;color:#6b7280;">Mã này có hiệu lực trong %s.</p>
-                <p style="margin:0;">Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này.</p>
+                <p style="margin:0 0 24px;text-align:center;color:#6b7280;">This code is valid for %s.</p>
+                <p style="margin:0;">If you did not request a password reset, ignore this email.</p>
               </td>
             </tr>
             <tr>
               <td style="padding:0 56px 28px;font-size:14px;line-height:1.65;color:#161823;">
-                <p style="margin:0;">Liên hệ hỗ trợ Vibely: %s</p>
+                <p style="margin:0;">Contact Vibely support: %s</p>
               </td>
             </tr>
             """.formatted(code, expiryLabel, VibelyEmailLayout.supportEmailLink());
-        return VibelyEmailLayout.document("Đặt lại mật khẩu Vibely", bodyRows, null);
+        return VibelyEmailLayout.document("Reset Vibely password", bodyRows, null);
     }
 
     static String passwordResetPlainBody(String code, String expiryLabel) {
         return """
-            Đặt lại mật khẩu Vibely
+            Reset Vibely password
 
-            Nhập mã sau để đặt lại mật khẩu: %s
+            Enter the following code to reset your password: %s
 
-            Mã sẽ hết hạn sau %s.
+            The code expires in %s.
 
-            Nếu bạn không yêu cầu, hãy bỏ qua email này.
+            If you did not request this, ignore this email.
             """.formatted(code, expiryLabel).trim();
     }
 
     static String htmlBody(String code, String expiryLabel, String helpUrl) {
-        String bodyRows = VibelyEmailLayout.headingRow("Mã 6 chữ số Vibely") + """
+        String bodyRows = VibelyEmailLayout.headingRow("Vibely 6-digit code") + """
             <tr>
               <td style="padding:0 56px 8px;font-size:15px;line-height:1.7;color:#161823;">
-                <p style="margin:0 0 16px;">Để xác minh tài khoản, hãy nhập mã sau trên Vibely:</p>
+                <p style="margin:0 0 16px;">To verify your account, enter the following code on Vibely:</p>
                 <p style="margin:0 0 16px;text-align:center;font-size:32px;font-weight:800;letter-spacing:4px;color:#161823;">%s</p>
-                <p style="margin:0 0 24px;text-align:center;color:#6b7280;">Mã này có hiệu lực trong %s.</p>
-                <p style="margin:0;">Nếu bạn không yêu cầu mã này, có thể bỏ qua email này.</p>
+                <p style="margin:0 0 24px;text-align:center;color:#6b7280;">This code is valid for %s.</p>
+                <p style="margin:0;">If you did not request this code, you can ignore this email.</p>
               </td>
             </tr>
             <tr>
               <td style="padding:0 56px 28px;font-size:14px;line-height:1.65;color:#161823;">
-                <p style="margin:0 0 8px;">Đội ngũ hỗ trợ Vibely · %s</p>
-                <p style="margin:0;">Có thắc mắc? Liên hệ qua email hỗ trợ hoặc báo cáo trong ứng dụng tại <strong>Cài đặt &gt; Báo cáo sự cố</strong>.</p>
+                <p style="margin:0 0 8px;">Vibely support team · %s</p>
+                <p style="margin:0;">Have questions? Contact support by email or report in the app at <strong>Settings &gt; Report a problem</strong>.</p>
               </td>
             </tr>
             """.formatted(code, expiryLabel, VibelyEmailLayout.supportEmailLink());
-        return VibelyEmailLayout.document("Mã xác minh Vibely", bodyRows, null);
+        return VibelyEmailLayout.document("Vibely verification code", bodyRows, null);
     }
 
     static String plainBody(String code, String expiryLabel) {
         return """
-            Mã xác minh Vibely
+            Vibely verification code
 
-            Để xác minh tài khoản, hãy nhập mã sau trên Vibely: %s
+            To verify your account, enter the following code on Vibely: %s
 
-            Mã sẽ hết hạn sau %s.
+            The code expires in %s.
 
-            Nếu bạn không yêu cầu mã này, hãy bỏ qua email này.
+            If you did not request this code, ignore this email.
             """.formatted(code, expiryLabel).trim();
     }
 
     static String formatExpiryLabel(int expirySeconds) {
         if (expirySeconds >= 3600 && expirySeconds % 3600 == 0) {
             int hours = expirySeconds / 3600;
-            return hours + " giờ";
+            return hours + " hours";
         }
         int minutes = Math.max(1, (int) Math.ceil(expirySeconds / 60.0));
-        return minutes + " phút";
+        return minutes + " minutes";
     }
 
     private static String escapeHtml(String raw) {
         if (raw == null || raw.isBlank()) {
-            return "người dùng Vibely";
+            return "Vibely user";
         }
         return raw.replace("&", "&amp;")
             .replace("<", "&lt;")

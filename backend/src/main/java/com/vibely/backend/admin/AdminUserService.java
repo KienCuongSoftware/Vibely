@@ -82,12 +82,12 @@ public class AdminUserService {
         Role role = parseRole(request.role());
 
         if (!emailAvailabilityService.checkAvailability(email).available()) {
-            throw new BadRequestException("Email đã được sử dụng");
+            throw new BadRequestException("Email is already in use");
         }
         UsernameCheckResponse usernameCheck = usernameService.checkAvailability(username);
         if (!usernameCheck.available()) {
-            String suffix = usernameCheck.suggestion() != null ? " Gợi ý: @" + usernameCheck.suggestion() : "";
-            throw new BadRequestException("Vibely ID đã tồn tại." + suffix);
+            String suffix = usernameCheck.suggestion() != null ? " Suggestion: @" + usernameCheck.suggestion() : "";
+            throw new BadRequestException("Vibely ID already exists." + suffix);
         }
 
         User user = new User();
@@ -106,7 +106,7 @@ public class AdminUserService {
     @Transactional
     public AdminUserUpdateResult updateUser(Long userId, AdminUpdateUserRequest request) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
 
         String username = usernameService.validateForRegistration(request.username());
         Role role = parseRole(request.role());
@@ -122,7 +122,7 @@ public class AdminUserService {
         if (StringUtils.hasText(request.password())) {
             String password = request.password().trim();
             if (password.length() < 6 || password.length() > 100) {
-                throw new BadRequestException("Mật khẩu phải từ 6 đến 100 ký tự");
+                throw new BadRequestException("Password must be between 6 and 100 characters");
             }
             user.setPasswordHash(passwordEncoder.encode(password));
             passwordChanged = true;
@@ -148,15 +148,15 @@ public class AdminUserService {
     @Transactional
     public AdminDeletedUserInfo deleteUser(Long targetUserId, String adminEmail) {
         User admin = userRepository.findByEmail(normalizeEmail(adminEmail))
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy tài khoản quản trị viên"));
+            .orElseThrow(() -> new NotFoundException("Admin account not found"));
         User target = userRepository.findById(targetUserId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
 
         if (Objects.equals(admin.getId(), target.getId())) {
-            throw new BadRequestException("Không thể xóa chính tài khoản đang đăng nhập");
+            throw new BadRequestException("You cannot delete the currently signed-in account");
         }
         if (target.getRole() == Role.ADMIN) {
-            throw new BadRequestException("Không thể xóa tài khoản ADMIN từ trang này");
+            throw new BadRequestException("Cannot delete an ADMIN account from this page");
         }
 
         AdminDeletedUserInfo deletedUser = new AdminDeletedUserInfo(
@@ -169,7 +169,7 @@ public class AdminUserService {
         cleanupRowsThatWouldOtherwiseRemain(target.getId());
         int deleted = jdbcTemplate.update("DELETE FROM users WHERE id = ?", target.getId());
         if (deleted == 0) {
-            throw new NotFoundException("Không tìm thấy người dùng");
+            throw new NotFoundException("User not found");
         }
         cleanupOrphanedChatConversations();
         return deletedUser;
@@ -178,18 +178,18 @@ public class AdminUserService {
     @Transactional
     public AdminBannedUserInfo banUser(Long targetUserId, String adminEmail, String reason) {
         User admin = userRepository.findByEmail(normalizeEmail(adminEmail))
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy tài khoản quản trị viên"));
+            .orElseThrow(() -> new NotFoundException("Admin account not found"));
         User target = userRepository.findById(targetUserId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
 
         if (Objects.equals(admin.getId(), target.getId())) {
-            throw new BadRequestException("Không thể cấm chính tài khoản đang đăng nhập");
+            throw new BadRequestException("You cannot ban the currently signed-in account");
         }
         if (target.getRole() == Role.ADMIN) {
-            throw new BadRequestException("Không thể cấm tài khoản ADMIN");
+            throw new BadRequestException("Cannot ban an ADMIN account");
         }
         if (target.isBanned()) {
-            throw new BadRequestException("Tài khoản này đã bị cấm");
+            throw new BadRequestException("This account is already banned");
         }
 
         String normalizedReason = normalizeBanReason(reason);
@@ -208,11 +208,11 @@ public class AdminUserService {
     @Transactional
     public AdminUnbanResult unbanUser(Long targetUserId, String adminEmail) {
         userRepository.findByEmail(normalizeEmail(adminEmail))
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy tài khoản quản trị viên"));
+            .orElseThrow(() -> new NotFoundException("Admin account not found"));
         User target = userRepository.findById(targetUserId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         if (!target.isBanned()) {
-            throw new BadRequestException("Tài khoản này hiện không bị cấm");
+            throw new BadRequestException("This account is not currently banned");
         }
 
         AdminUnbannedUserInfo notification = toUnbannedUserInfo(target);
@@ -245,11 +245,11 @@ public class AdminUserService {
 
     private String normalizeBanReason(String reason) {
         if (!StringUtils.hasText(reason)) {
-            throw new BadRequestException("Lý do cấm tài khoản là bắt buộc");
+            throw new BadRequestException("Ban reason is required");
         }
         String trimmed = reason.trim();
         if (trimmed.length() < 5 || trimmed.length() > 500) {
-            throw new BadRequestException("Lý do cấm phải từ 5 đến 500 ký tự");
+            throw new BadRequestException("Ban reason must be between 5 and 500 characters");
         }
         return trimmed;
     }
@@ -279,7 +279,7 @@ public class AdminUserService {
         userRepository.findByEmail(email)
             .filter(existing -> !Objects.equals(existing.getId(), currentUserId))
             .ifPresent(existing -> {
-                throw new BadRequestException("Email đã được sử dụng");
+                throw new BadRequestException("Email is already in use");
             });
     }
 
@@ -287,7 +287,7 @@ public class AdminUserService {
         userRepository.findByUsername(username)
             .filter(existing -> !Objects.equals(existing.getId(), currentUserId))
             .ifPresent(existing -> {
-                throw new BadRequestException("Vibely ID đã tồn tại");
+                throw new BadRequestException("Vibely ID already exists");
             });
     }
 
@@ -300,7 +300,7 @@ public class AdminUserService {
 
     private String normalizeDisplayName(String displayName) {
         if (!StringUtils.hasText(displayName)) {
-            throw new BadRequestException("Tên hiển thị là bắt buộc");
+            throw new BadRequestException("Display name is required");
         }
         return displayName.trim();
     }
@@ -309,7 +309,7 @@ public class AdminUserService {
         try {
             return Role.valueOf(rawRole.trim().toUpperCase(Locale.ROOT));
         } catch (Exception ex) {
-            throw new BadRequestException("Vai trò không hợp lệ");
+            throw new BadRequestException("Invalid role");
         }
     }
 }

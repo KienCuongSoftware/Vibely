@@ -172,10 +172,10 @@ public class ModerationAutoBanService {
 
     private String normalizeReason(String reason, ModerationDecision decision, long videoId) {
         String base = reason == null || reason.isBlank()
-            ? "Vi phạm chính sách nội dung (AI moderation)"
+            ? "Content policy violation (AI moderation)"
             : BanReasonFormatter.forDisplay(reason.trim());
         if (base.length() < 5) {
-            base = "Vi phạm chính sách cộng đồng";
+            base = "Community policy violation";
         }
         if (base.length() > 500) {
             return base.substring(0, 500);

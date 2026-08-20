@@ -260,7 +260,7 @@ public class SearchService {
         User user = requireUser(viewerEmail);
         String query = SearchTextNormalizer.normalizeQuery(rawQuery);
         if (query.isEmpty()) {
-            throw new BadRequestException("Từ khóa tìm kiếm không hợp lệ.");
+            throw new BadRequestException("Invalid search keyword");
         }
 
         SearchHistory row = new SearchHistory();
@@ -281,12 +281,12 @@ public class SearchService {
     @Transactional
     public void deleteHistoryItem(String viewerEmail, Long historyId) {
         if (historyId == null || historyId <= 0) {
-            throw new BadRequestException("Mã lịch sử không hợp lệ.");
+            throw new BadRequestException("Invalid history ID");
         }
         User user = requireUser(viewerEmail);
         int removed = searchHistoryRepository.deleteByIdAndUser_Id(historyId, user.getId());
         if (removed == 0) {
-            throw new NotFoundException("Không tìm thấy mục lịch sử tìm kiếm.");
+            throw new NotFoundException("Search history item not found.");
         }
     }
 
@@ -389,16 +389,16 @@ public class SearchService {
 
     private User requireUser(String email) {
         if (email == null || email.isBlank()) {
-            throw new NotFoundException("Không tìm thấy người dùng.");
+            throw new NotFoundException("User not found");
         }
         return userRepository.findByEmail(email.trim())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng."));
+            .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     private String requireSearchTerm(String rawQuery) {
         String query = normalizeSearchTerm(rawQuery);
         if (query.isEmpty()) {
-            throw new BadRequestException("Từ khóa tìm kiếm không hợp lệ.");
+            throw new BadRequestException("Invalid search keyword");
         }
         return query;
     }

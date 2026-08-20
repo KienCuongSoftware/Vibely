@@ -94,9 +94,9 @@ public class FfmpegHlsPipelineRunner {
                 stateService.markTerminalFailure(
                     item.jobId(),
                     item.videoId(),
-                    "File gốc không tồn tại trên S3 (NoSuchKey/404). "
-                        + "Kiểm tra trong console S3 đúng bucket và key (xem log HLS pipeline download). "
-                        + "Thường gặp khi PUT presign chưa thành công đã tạo video, object bị xóa, hoặc bucket/URL lệch."
+                    "Source file does not exist on S3 (NoSuchKey/404). "
+                        + "Check in the S3 console that the bucket and key are correct (see HLS pipeline download logs). "
+                        + "Common when a video is created before a successful PUT presign, the object was deleted, or the bucket/URL is mismatched."
                 );
                 return;
             }
@@ -129,9 +129,9 @@ public class FfmpegHlsPipelineRunner {
      */
     private void rejectExcessiveDuration(VideoPipelineWorkItem item, int durationSeconds) {
         String message =
-            "Video vượt quá thời lượng tối đa 60 phút (thực tế "
+            "Video exceeds the maximum duration of 60 minutes (actual "
                 + durationSeconds
-                + " giây). File đã bị từ chối và xóa.";
+                + " seconds). The file was rejected and deleted.";
         log.warn(
             "HLS pipeline reject over-duration videoId={} durationSeconds={} max={}",
             item.videoId(),
@@ -158,7 +158,7 @@ public class FfmpegHlsPipelineRunner {
         log.info("HLS pipeline start videoId={} rawUrl={}", item.videoId(), item.rawVideoUrl());
         ResolvedS3Object source = objectUrlBuilder
             .resolveObjectFromUrl(item.rawVideoUrl())
-            .orElseThrow(() -> new IllegalArgumentException("URL không map được sang object S3: " + item.rawVideoUrl()));
+            .orElseThrow(() -> new IllegalArgumentException("URL could not be mapped to an S3 object: " + item.rawVideoUrl()));
         log.info("HLS pipeline download bucket={} key={}", source.bucket(), source.key());
 
         Path workRoot = Files.createTempDirectory("vibely-hls-" + item.videoId() + "-");

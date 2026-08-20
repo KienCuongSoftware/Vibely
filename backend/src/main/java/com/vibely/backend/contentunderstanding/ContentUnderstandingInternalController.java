@@ -82,11 +82,11 @@ public class ContentUnderstandingInternalController {
         if (expected == null || expected.isBlank()) {
             throw new ResponseStatusException(
                 HttpStatus.SERVICE_UNAVAILABLE,
-                "Content understanding internal token chưa được cấu hình."
+                "Content understanding internal token is not configured."
             );
         }
         if (token == null || !expected.equals(token)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Internal token không hợp lệ.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid internal token.");
         }
     }
 

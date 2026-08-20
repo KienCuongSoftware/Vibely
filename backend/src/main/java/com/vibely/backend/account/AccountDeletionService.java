@@ -28,7 +28,7 @@ public class AccountDeletionService {
 
     public void deletePermanently(String email, String code) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new BadRequestException("User not found"));
 
         otpVerificationService.consumeAccountDeletionCode(user.getEmail(), code);
         refreshTokenRepository.revokeAllByUserId(user.getId());

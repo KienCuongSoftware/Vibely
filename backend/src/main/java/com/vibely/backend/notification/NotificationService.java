@@ -270,7 +270,7 @@ public class NotificationService {
         User recipient = getUser(email);
         UserNotificationEntity row = userNotificationRepository
             .findByIdAndRecipient_Id(notificationId, recipient.getId())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy thông báo"));
+            .orElseThrow(() -> new NotFoundException("Notification not found"));
         if (row.getReadAt() == null) {
             row.setReadAt(LocalDateTime.now());
         }
@@ -278,7 +278,7 @@ public class NotificationService {
 
     public void markReadBatch(String email, List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
-            throw new BadRequestException("Danh sách thông báo trống.");
+            throw new BadRequestException("Notification list is empty.");
         }
         User recipient = getUser(email);
         userNotificationRepository.markReadBatch(recipient.getId(), ids, LocalDateTime.now());
@@ -553,7 +553,7 @@ public class NotificationService {
 
     private User getUser(String email) {
         return userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     private static FeedCursorCodec.Decoded decodeCursor(String cursor) {

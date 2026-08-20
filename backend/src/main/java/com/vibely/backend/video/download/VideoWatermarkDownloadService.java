@@ -123,7 +123,7 @@ public class VideoWatermarkDownloadService {
         }
 
         ResolvedS3Object source = objectUrlBuilder.resolveObjectFromUrl(ctx.rawVideoUrl())
-            .orElseThrow(() -> new IllegalStateException("URL video không map được sang S3."));
+            .orElseThrow(() -> new IllegalStateException("Video URL could not be mapped to S3."));
 
         Path workRoot = Files.createTempDirectory("vibely-dl-" + publicId + "-");
         try {
@@ -152,12 +152,12 @@ public class VideoWatermarkDownloadService {
     @Transactional(readOnly = true)
     DownloadContext resolveDownloadContext(UUID publicId, String viewerEmail) {
         Video video = videoRepository.findWithAuthorByPublicId(publicId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
         assertViewable(video, viewerEmail);
 
         String rawUrl = video.getVideoUrl();
         if (rawUrl == null || rawUrl.isBlank()) {
-            throw new IllegalStateException("Video chưa có file gốc để tải.");
+            throw new IllegalStateException("Video has no source file to download.");
         }
 
         User author = video.getAuthor();
@@ -169,7 +169,7 @@ public class VideoWatermarkDownloadService {
 
     private void assertViewable(Video video, String viewerEmail) {
         if (video.getStatus() == VideoStatus.REMOVED) {
-            throw new NotFoundException("Không tìm thấy video");
+            throw new NotFoundException("Video not found");
         }
         User viewer = null;
         if (viewerEmail != null && !viewerEmail.isBlank()) {
@@ -177,12 +177,12 @@ public class VideoWatermarkDownloadService {
         }
         if (video.getStatus() == VideoStatus.READY) {
             if (!privacyAccessService.canViewerWatch(video, viewer)) {
-                throw new NotFoundException("Không tìm thấy video");
+                throw new NotFoundException("Video not found");
             }
             return;
         }
         if (viewer == null || !Objects.equals(video.getAuthor().getId(), viewer.getId())) {
-            throw new NotFoundException("Không tìm thấy video");
+            throw new NotFoundException("Video not found");
         }
     }
 
@@ -228,7 +228,7 @@ public class VideoWatermarkDownloadService {
             return;
         }
         if (!artifact.hasLocalFile()) {
-            throw new IllegalStateException("Không có file video để tải về.");
+            throw new IllegalStateException("No video file available to download.");
         }
         Files.copy(artifact.localFile(), out);
     }
@@ -239,7 +239,7 @@ public class VideoWatermarkDownloadService {
         String fontFile = FfmpegFontResolver.resolveFontFile();
         if (fontFile == null) {
             throw new IllegalStateException(
-                "Không tìm thấy font hệ thống cho watermark. Cài font TTF (Segoe UI / Arial)."
+                "System font for watermark not found. Install a TTF font (Segoe UI / Arial)."
             );
         }
         String fontArg = FfmpegFontResolver.ffmpegFontArg(fontFile);
@@ -308,7 +308,7 @@ public class VideoWatermarkDownloadService {
             boolean finished = p.waitFor(30, TimeUnit.MINUTES);
             if (!finished) {
                 p.destroyForcibly();
-                throw new IllegalStateException("ffmpeg timeout khi tạo video tải về.");
+                throw new IllegalStateException("ffmpeg timed out while creating the downloadable video.");
             }
             if (p.exitValue() != 0) {
                 String err = tailOfFile(logFile, 4000);

@@ -14,23 +14,23 @@ public class VideoCreateRequest {
     /** Minimum lead time for scheduled publish (TikTok-style). */
     public static final int MIN_SCHEDULE_LEAD_MINUTES = 15;
 
-    @NotBlank(message = "Tiêu đề là bắt buộc")
-    @Size(max = 120, message = "Tiêu đề tối đa 120 ký tự")
+    @NotBlank(message = "Title is required")
+    @Size(max = 120, message = "Title must be at most 120 characters")
     private String title;
 
-    @Size(max = 1000, message = "Mô tả tối đa 1000 ký tự")
+    @Size(max = 1000, message = "Description must be at most 1000 characters")
     private String description;
 
-    @NotBlank(message = "Đường dẫn video là bắt buộc")
+    @NotBlank(message = "Video path is required")
     private String videoUrl;
 
     private String thumbnailUrl;
     private String audioUrl;
-    @Size(max = 180, message = "Tên âm thanh tối đa 180 ký tự")
+    @Size(max = 180, message = "Sound name must be at most 180 characters")
     private String audioTitle;
 
-    @NotNull(message = "Thời lượng video là bắt buộc")
-    @Min(value = 1, message = "Thời lượng video không hợp lệ")
+    @NotNull(message = "Video duration is required")
+    @Min(value = 1, message = "Invalid video duration")
     private Integer durationSeconds;
 
     /**

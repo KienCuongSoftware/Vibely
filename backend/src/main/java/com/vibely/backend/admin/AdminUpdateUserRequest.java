@@ -5,18 +5,18 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record AdminUpdateUserRequest(
-    @NotBlank(message = "Email là bắt buộc")
-    @Email(message = "Email không hợp lệ")
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email")
     String email,
 
-    @NotBlank(message = "Vibely ID là bắt buộc")
+    @NotBlank(message = "Vibely ID is required")
     String username,
 
-    @NotBlank(message = "Tên hiển thị là bắt buộc")
-    @Size(max = 80, message = "Tên hiển thị tối đa 80 ký tự")
+    @NotBlank(message = "Display name is required")
+    @Size(max = 80, message = "Display name must be at most 80 characters")
     String displayName,
 
-    @NotBlank(message = "Vai trò là bắt buộc")
+    @NotBlank(message = "Role is required")
     String role,
 
     String password

@@ -67,11 +67,11 @@ public class OriginalityInternalController {
         if (expected == null || expected.isBlank()) {
             throw new ResponseStatusException(
                 HttpStatus.SERVICE_UNAVAILABLE,
-                "Originality internal token chưa được cấu hình."
+                "Originality internal token is not configured."
             );
         }
         if (token == null || !expected.equals(token)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Internal token không hợp lệ.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid internal token.");
         }
     }
 

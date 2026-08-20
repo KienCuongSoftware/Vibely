@@ -89,7 +89,7 @@ public class GlobalExceptionHandler {
                 "STORAGE_DELETION_FAILED",
                 ex.getMessage() != null && !ex.getMessage().isBlank()
                     ? ex.getMessage()
-                    : "Không thể xóa file trên kho lưu trữ. Vui lòng thử lại sau."
+                    : "Could not delete the file from storage. Please try again later."
             )));
     }
 
@@ -103,7 +103,7 @@ public class GlobalExceptionHandler {
                 ApiError.of(
                     HttpStatus.PRECONDITION_REQUIRED.value(),
                     "CAPTCHA_REQUIRED",
-                    "Yêu cầu xác minh captcha trước khi tiếp tục"
+                    "Captcha verification is required before continuing"
                 )
             ));
     }
@@ -123,7 +123,7 @@ public class GlobalExceptionHandler {
         String message = ex.getBindingResult().getFieldErrors().stream()
             .findFirst()
             .map(FieldError::getDefaultMessage)
-            .orElse("Dữ liệu không hợp lệ");
+            .orElse("Invalid data");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(ApiResponse.failure(ApiError.of(HttpStatus.BAD_REQUEST.value(), "VALIDATION_ERROR", message)));
     }
@@ -133,7 +133,7 @@ public class GlobalExceptionHandler {
         String message = ex.getConstraintViolations().stream()
             .findFirst()
             .map(violation -> violation.getMessage())
-            .orElse("Dữ liệu không hợp lệ");
+            .orElse("Invalid data");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(ApiResponse.failure(ApiError.of(HttpStatus.BAD_REQUEST.value(), "VALIDATION_ERROR", message)));
     }
@@ -144,7 +144,7 @@ public class GlobalExceptionHandler {
             .body(ApiResponse.failure(ApiError.of(
                 HttpStatus.FORBIDDEN.value(),
                 "ACCESS_DENIED",
-                "Bạn không có quyền thực hiện thao tác này"
+                "You do not have permission to perform this action"
             )));
     }
 
@@ -169,7 +169,7 @@ public class GlobalExceptionHandler {
             .body(ApiResponse.failure(ApiError.of(
                 HttpStatus.NOT_FOUND.value(),
                 "NOT_FOUND",
-                "Không tìm thấy tài nguyên: " + ex.getResourcePath()
+                "Resource not found: " + ex.getResourcePath()
             )));
     }
 
@@ -188,7 +188,7 @@ public class GlobalExceptionHandler {
             .body(ApiResponse.failure(ApiError.of(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "INTERNAL_SERVER_ERROR",
-                "Lỗi hệ thống, vui lòng thử lại sau"
+                "System error, please try again later"
             )));
     }
 

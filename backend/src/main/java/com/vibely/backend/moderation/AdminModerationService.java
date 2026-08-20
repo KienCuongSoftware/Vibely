@@ -156,11 +156,11 @@ public class AdminModerationService {
                 : ex.getMostSpecificCause().getMessage();
             if (msg != null && msg.toLowerCase(Locale.ROOT).contains("moderation_review_queue")) {
                 throw new BadRequestException(
-                    "Schema kiểm duyệt chưa sẵn sàng. Hãy chạy Flyway V67 rồi restart backend."
+                    "Moderation schema is not ready. Run Flyway V67 then restart the backend."
                 );
             }
             throw new BadRequestException(
-                "Không đọc được hàng đợi kiểm duyệt: " + (msg == null ? "lỗi DB" : msg)
+                "Could not read moderation queue: " + (msg == null ? "DB error" : msg)
             );
         }
     }
@@ -170,11 +170,11 @@ public class AdminModerationService {
         Map<String, Object> row = loadQueueRow(queueId);
         String state = String.valueOf(row.get("queue_state"));
         if ("RESOLVED".equals(state) || "DISMISSED".equals(state)) {
-            throw new BadRequestException("Mục hàng đợi đã đóng.");
+            throw new BadRequestException("Queue item is already closed.");
         }
         String claimedBy = (String) row.get("claimed_by");
         if ("CLAIMED".equals(state) && claimedBy != null && !claimedBy.equals(adminLabel)) {
-            throw new BadRequestException("Mục đang được claim bởi " + claimedBy);
+            throw new BadRequestException("Item is claimed by " + claimedBy);
         }
         jdbcTemplate.update(
             """
@@ -198,11 +198,11 @@ public class AdminModerationService {
         Map<String, Object> row = loadQueueRow(queueId);
         String state = String.valueOf(row.get("queue_state"));
         if ("RESOLVED".equals(state) || "DISMISSED".equals(state)) {
-            throw new BadRequestException("Mục hàng đợi đã đóng.");
+            throw new BadRequestException("Queue item is already closed.");
         }
         String claimedBy = (String) row.get("claimed_by");
         if ("CLAIMED".equals(state) && claimedBy != null && !claimedBy.equals(adminLabel)) {
-            throw new BadRequestException("Chỉ người claim mới được resolve.");
+            throw new BadRequestException("Only the claimer can resolve this item.");
         }
         if (!"CLAIMED".equals(state)) {
             jdbcTemplate.update(
@@ -220,17 +220,17 @@ public class AdminModerationService {
         try {
             decision = request.parsedDecision();
         } catch (Exception e) {
-            throw new BadRequestException("decision không hợp lệ");
+            throw new BadRequestException("Invalid decision");
         }
 
         long reportId = ((Number) row.get("report_id")).longValue();
         long videoId = ((Number) row.get("video_id")).longValue();
         ModerationReportEntity report = reportRepository
             .findById(reportId)
-            .orElseThrow(() -> new NotFoundException("Report không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Report not found"));
         Video video = videoRepository
             .findById(videoId)
-            .orElseThrow(() -> new NotFoundException("Video không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
 
         ModerationDecision fromDecision = report.getDecision();
         report.setDecision(decision);
@@ -307,7 +307,7 @@ public class AdminModerationService {
         UUID publicId = VideoPublicIds.parse(publicIdRaw);
         Video video = videoRepository
             .findByPublicId(publicId)
-            .orElseThrow(() -> new NotFoundException("Video không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
         return getDetailByVideoId(video.getId());
     }
 
@@ -316,12 +316,12 @@ public class AdminModerationService {
         UUID publicId = VideoPublicIds.parse(publicIdRaw);
         Video video = videoRepository
             .findByPublicId(publicId)
-            .orElseThrow(() -> new NotFoundException("Video không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
         try {
             Long jobId = joinService.forceReevaluate(video.getId());
             if (jobId == null) {
                 throw new BadRequestException(
-                    "Không thể enqueue moderation (thiếu CU completed / draft / moderation tắt)."
+                    "Could not enqueue moderation (missing completed CU / draft / moderation disabled)."
                 );
             }
             return Map.of(
@@ -339,7 +339,7 @@ public class AdminModerationService {
     public AdminModerationDetailResponse getDetailByVideoId(long videoId) {
         Video video = videoRepository
             .findById(videoId)
-            .orElseThrow(() -> new NotFoundException("Video không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
 
         List<Map<String, Object>> reportRows = jdbcTemplate.queryForList(
             """
@@ -461,7 +461,7 @@ public class AdminModerationService {
             queueId
         );
         if (rows.isEmpty()) {
-            throw new NotFoundException("Hàng đợi moderation không tồn tại");
+            throw new NotFoundException("Moderation queue item not found");
         }
         return rows.get(0);
     }

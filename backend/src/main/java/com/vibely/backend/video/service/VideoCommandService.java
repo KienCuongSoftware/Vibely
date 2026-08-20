@@ -94,16 +94,16 @@ public class VideoCommandService {
 
     public VideoResponse createVideo(String email, VideoCreateRequest request) {
         User author = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         long authorId = author.getId();
         Integer durationSeconds = request.getDurationSeconds();
         if (durationSeconds == null || durationSeconds <= 0) {
-            throw new BadRequestException("Thiếu thời lượng video.");
+            throw new BadRequestException("Missing video duration.");
         }
         if (durationSeconds > VideoCreateRequest.MAX_DURATION_SECONDS) {
             deleteOwnedUploadBestEffort(authorId, request.getVideoUrl(), request.getThumbnailUrl());
             throw new BadRequestException(
-                "Video vượt quá thời lượng tối đa 60 phút. Vui lòng chọn video khác."
+                "Video exceeds the maximum duration of 60 minutes. Please choose another video."
             );
         }
         ownedMediaValidator.requireOwnedUpload(request.getVideoUrl(), authorId);
@@ -139,7 +139,7 @@ public class VideoCommandService {
         Instant scheduledAt
     ) {
         User managedAuthor = userRepository.findById(author.getId())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         Video video = new Video();
         video.setAuthor(managedAuthor);
         video.setTitle(request.getTitle());
@@ -154,7 +154,7 @@ public class VideoCommandService {
         video.setAudioUrl(audioUrl);
         String audioTitle = VideoMediaUtils.normalizeText(request.getAudioTitle());
         if (audioTitle == null) {
-            audioTitle = "âm thanh gốc - " + VideoMediaUtils.resolveAuthorDisplayName(managedAuthor);
+            audioTitle = "original sound - " + VideoMediaUtils.resolveAuthorDisplayName(managedAuthor);
         }
         video.setAudioTitle(audioTitle);
         video.setStatus(VideoStatus.RAW);
@@ -197,7 +197,7 @@ public class VideoCommandService {
         nextDesc = nextDesc == null || nextDesc.isBlank() ? null : nextDesc.trim();
         boolean keepAsDraft = Boolean.TRUE.equals(request.getStudioDraft());
         // Prefer explicit presence flag; also honor a non-null value if Jackson bound the field
-        // without going through the setter (so Studio "Lên lịch" cannot silently publish now).
+        // without going through the setter (so Studio "Schedule" cannot silently publish now).
         boolean scheduleFieldPresent = request.isScheduledAtPresent() || request.getScheduledAt() != null;
         Instant scheduledAt = null;
         if (keepAsDraft) {
@@ -209,13 +209,13 @@ public class VideoCommandService {
 
         UpdateGateProbe probe = tx.execute(status -> {
             User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
             Video video = queryService.getVideoOrThrow(videoId);
             if (!Objects.equals(video.getAuthor().getId(), user.getId())) {
-                throw new BadRequestException("Bạn không có quyền sửa video này.");
+                throw new BadRequestException("You do not have permission to edit this video.");
             }
             if (video.getStatus() == VideoStatus.REMOVED) {
-                throw new BadRequestException("Video đã bị gỡ, không thể sửa.");
+                throw new BadRequestException("Video has been removed and cannot be edited.");
             }
             return new UpdateGateProbe(
                 video.getId(),
@@ -256,13 +256,13 @@ public class VideoCommandService {
         boolean applySchedule
     ) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         Video video = queryService.getVideoOrThrow(probe.videoId());
         if (!Objects.equals(video.getAuthor().getId(), user.getId())) {
-            throw new BadRequestException("Bạn không có quyền sửa video này.");
+            throw new BadRequestException("You do not have permission to edit this video.");
         }
         if (video.getStatus() == VideoStatus.REMOVED) {
-            throw new BadRequestException("Video đã bị gỡ, không thể sửa.");
+            throw new BadRequestException("Video has been removed and cannot be edited.");
         }
         boolean wasDraft = probe.wasDraft();
         video.setTitle(nextTitle);
@@ -315,7 +315,7 @@ public class VideoCommandService {
             .plus(VideoCreateRequest.MIN_SCHEDULE_LEAD_MINUTES, ChronoUnit.MINUTES);
         if (scheduledAt.isBefore(minAllowed)) {
             throw new BadRequestException(
-                "Lên lịch trước ít nhất " + VideoCreateRequest.MIN_SCHEDULE_LEAD_MINUTES + " phút."
+                "Schedule at least " + VideoCreateRequest.MIN_SCHEDULE_LEAD_MINUTES + " minutes ahead."
             );
         }
         return scheduledAt;
@@ -346,11 +346,11 @@ public class VideoCommandService {
     @Transactional
     public void deleteVideo(String email, Long videoId) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         Video video = videoRepository.findWithAuthorById(videoId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
         if (!Objects.equals(video.getAuthor().getId(), user.getId())) {
-            throw new BadRequestException("Bạn không có quyền xóa video này.");
+            throw new BadRequestException("You do not have permission to delete this video.");
         }
         if (video.getStatus() == VideoStatus.REMOVED) {
             return;
@@ -375,13 +375,13 @@ public class VideoCommandService {
     @Transactional
     public VideoResponse retryVideoProcessing(String email, UUID publicId) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         Video video = queryService.getVideoByPublicIdOrThrow(publicId);
         if (!Objects.equals(video.getAuthor().getId(), user.getId())) {
-            throw new BadRequestException("Bạn không có quyền xử lý lại video này.");
+            throw new BadRequestException("You do not have permission to reprocess this video.");
         }
         if (video.getStatus() == VideoStatus.REMOVED) {
-            throw new BadRequestException("Video đã bị gỡ.");
+            throw new BadRequestException("Video has been removed.");
         }
         // Cho phép re-encode READY để áp ladder HLS mới (144p…4K).
         video.setStatus(VideoStatus.RAW);

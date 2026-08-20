@@ -28,7 +28,7 @@ public class AccountReactivationTokenStore {
         cleanupIfNeeded();
         StoredEmail stored = pendingReactivations.get(token);
         if (stored == null || stored.expiresAt().isBefore(Instant.now())) {
-            throw new BadRequestException("Phiên kích hoạt lại tài khoản không hợp lệ hoặc đã hết hạn");
+            throw new BadRequestException("Account reactivation session is invalid or expired");
         }
         return stored.email();
     }

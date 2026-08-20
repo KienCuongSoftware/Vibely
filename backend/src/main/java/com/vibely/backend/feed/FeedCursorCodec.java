@@ -39,7 +39,7 @@ public final class FeedCursorCodec {
 
     public static Decoded decode(String raw) {
         if (raw == null || raw.isBlank()) {
-            throw new BadRequestException("Cursor không hợp lệ.");
+            throw new BadRequestException("Invalid cursor.");
         }
         try {
             byte[] bytes = Base64.getUrlDecoder().decode(raw.trim());
@@ -48,7 +48,7 @@ public final class FeedCursorCodec {
             Object idObj = map.get("id");
             Object tObj = map.get("t");
             if (!(idObj instanceof Number) || tObj == null) {
-                throw new BadRequestException("Cursor không hợp lệ.");
+                throw new BadRequestException("Invalid cursor.");
             }
             long id = ((Number) idObj).longValue();
             LocalDateTime createdAt = LocalDateTime.parse(String.valueOf(tObj), ISO);
@@ -56,7 +56,7 @@ public final class FeedCursorCodec {
         } catch (BadRequestException e) {
             throw e;
         } catch (Exception e) {
-            throw new BadRequestException("Cursor không hợp lệ.");
+            throw new BadRequestException("Invalid cursor.");
         }
     }
 }

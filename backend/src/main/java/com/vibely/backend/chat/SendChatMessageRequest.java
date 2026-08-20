@@ -5,8 +5,8 @@ import jakarta.validation.constraints.Size;
 
 public class SendChatMessageRequest {
 
-    @NotBlank(message = "Nội dung tin nhắn là bắt buộc")
-    @Size(max = 1000, message = "Tin nhắn tối đa 1000 ký tự")
+    @NotBlank(message = "Message content is required")
+    @Size(max = 1000, message = "Message must be at most 1000 characters")
     private String content;
 
     public String getContent() {

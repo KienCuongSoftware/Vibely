@@ -10,7 +10,7 @@ public class MultipartCompletedPartDto {
     @Max(10000)
     private int partNumber;
 
-    @NotBlank(message = "etag là bắt buộc")
+    @NotBlank(message = "etag is required")
     @jakarta.validation.constraints.Size(max = 200)
     private String etag;
 

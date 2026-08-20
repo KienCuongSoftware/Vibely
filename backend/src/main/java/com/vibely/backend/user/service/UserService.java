@@ -121,12 +121,12 @@ public class UserService {
         Authentication authentication
     ) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
 
         String normalizedUsername = usernameService.validateForRegistration(request.username());
         String currentNormalized = usernameService.normalize(user.getUsername());
         if (!normalizedUsername.equals(currentNormalized) && userRepository.existsByUsername(normalizedUsername)) {
-            throw new BadRequestException("Vibely ID đã tồn tại");
+            throw new BadRequestException("Vibely ID already exists");
         }
 
         user.setUsername(normalizedUsername);
@@ -136,7 +136,7 @@ public class UserService {
             LocalDateTime availableAt = displayNameChangeAvailableAt(user);
             if (availableAt != null && LocalDateTime.now().isBefore(availableAt)) {
                 throw new BadRequestException(
-                    "Bạn chỉ có thể thay đổi biệt danh 7 ngày một lần. Thử lại sau "
+                    "You can only change your nickname once every 7 days. Try again in "
                         + availableAt.format(VN_DATE)
                         + "."
                 );
@@ -178,13 +178,13 @@ public class UserService {
     @Transactional
     public PrivacySettingsResponse updatePrivacySettings(String email, UpdatePrivacySettingsRequest request) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         boolean hasPrivate = request.privateAccount() != null;
         boolean hasAudience = request.commentAudience() != null && !request.commentAudience().isBlank();
         boolean hasDmPotential = request.dmPotentialAudience() != null && !request.dmPotentialAudience().isBlank();
         boolean hasDmOthers = request.dmOthersAudience() != null && !request.dmOthersAudience().isBlank();
         if (!hasPrivate && !hasAudience && !hasDmPotential && !hasDmOthers) {
-            throw new BadRequestException("Không có cài đặt quyền riêng tư để cập nhật");
+            throw new BadRequestException("No privacy settings to update");
         }
         if (hasPrivate) {
             user.setPrivateAccount(Boolean.TRUE.equals(request.privateAccount()));
@@ -192,21 +192,21 @@ public class UserService {
         if (hasAudience) {
             String audience = CommentAudience.normalize(request.commentAudience());
             if (!CommentAudience.isAllowed(audience)) {
-                throw new BadRequestException("Cài đặt bình luận không hợp lệ");
+                throw new BadRequestException("Invalid comment privacy setting");
             }
             user.setCommentAudience(audience);
         }
         if (hasDmPotential) {
             String value = MessageDmAudience.normalize(request.dmPotentialAudience());
             if (!MessageDmAudience.isAllowed(value)) {
-                throw new BadRequestException("Cài đặt tin nhắn kết nối tiềm năng không hợp lệ");
+                throw new BadRequestException("Invalid potential connection DM setting");
             }
             user.setDmPotentialAudience(value);
         }
         if (hasDmOthers) {
             String value = MessageDmAudience.normalize(request.dmOthersAudience());
             if (!MessageDmAudience.isAllowed(value)) {
-                throw new BadRequestException("Cài đặt tin nhắn từ người khác không hợp lệ");
+                throw new BadRequestException("Invalid DM from others setting");
             }
             user.setDmOthersAudience(value);
         }
@@ -222,10 +222,10 @@ public class UserService {
     @Transactional
     public AccountRegionResponse updateAccountRegion(String email, UpdateAccountRegionRequest request) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         String code = AccountRegionCodes.normalize(request.accountRegion());
         if (!AccountRegionCodes.isAllowed(code)) {
-            throw new BadRequestException("Khu vực tài khoản không hợp lệ");
+            throw new BadRequestException("Invalid account region");
         }
         user.setAccountRegion(code);
         userRepository.save(user);
@@ -244,7 +244,7 @@ public class UserService {
     private User getUserByUsername(String username) {
         String normalized = usernameService.normalize(username);
         return userRepository.findByUsername(normalized)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     private PublicUserProfileResponse toBannedPublicProfile(User user) {

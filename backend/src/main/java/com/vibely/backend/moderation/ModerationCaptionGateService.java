@@ -129,8 +129,8 @@ public class ModerationCaptionGateService {
             throw new AccountBannedException(authorEmail, reason);
         }
         throw new BadRequestException(
-            "Caption/mô tả vi phạm chính sách cộng đồng (spam / nội dung tình dục / bạo lực). "
-                + "Bài đăng bị từ chối."
+            "Caption/description violates community policy (spam / sexual content / violence). "
+                + "Post was rejected."
         );
     }
 

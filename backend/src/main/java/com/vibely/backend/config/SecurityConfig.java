@@ -99,7 +99,7 @@ public class SecurityConfig {
                         response,
                         HttpStatus.UNAUTHORIZED,
                         "AUTH_REQUIRED",
-                        "Bạn cần đăng nhập để sử dụng chức năng này"
+                        "You need to log in to use this feature"
                     )
                 )
                 .accessDeniedHandler((request, response, accessDeniedException) ->
@@ -107,7 +107,7 @@ public class SecurityConfig {
                         response,
                         HttpStatus.FORBIDDEN,
                         "ACCESS_DENIED",
-                        "Bạn không có quyền thực hiện thao tác này"
+                        "You do not have permission to perform this action"
                     )
                 )
             )

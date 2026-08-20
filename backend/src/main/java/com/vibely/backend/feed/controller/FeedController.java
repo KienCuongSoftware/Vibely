@@ -65,7 +65,7 @@ public class FeedController {
         if (authentication == null
             || !authentication.isAuthenticated()
             || authentication instanceof AnonymousAuthenticationToken) {
-            throw new BadRequestException("Đăng nhập để xem feed Đã follow");
+            throw new BadRequestException("Log in to view the Following feed");
         }
         return ApiResponse.success(
             videoService.getFollowingFeed(authentication.getName(), page, Math.min(size, 50))

@@ -21,9 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class PersonalizedExploreTabsService {
     public static final String ALL_SLUG = "all";
-    public static final String ALL_NAME = "Tất cả";
+    public static final String ALL_NAME = "All";
     public static final String FOR_YOU_SLUG = "for-you";
-    public static final String FOR_YOU_NAME = "Dành cho bạn";
+    public static final String FOR_YOU_NAME = "For You";
 
     private final DiscoveryProperties discoveryProperties;
     private final UserRepository userRepository;

@@ -44,7 +44,7 @@ public class ModerationInternalController {
             if (jobId == null) {
                 throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Không thể enqueue moderation (thiếu CU completed / draft)."
+                    "Could not enqueue moderation (missing completed CU / draft)."
                 );
             }
             return ApiResponse.success(
@@ -93,11 +93,11 @@ public class ModerationInternalController {
         if (expected == null || expected.isBlank()) {
             throw new ResponseStatusException(
                 HttpStatus.SERVICE_UNAVAILABLE,
-                "Moderation internal token chưa được cấu hình."
+                "Moderation internal token is not configured."
             );
         }
         if (token == null || !expected.equals(token)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Internal token không hợp lệ.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid internal token.");
         }
     }
 

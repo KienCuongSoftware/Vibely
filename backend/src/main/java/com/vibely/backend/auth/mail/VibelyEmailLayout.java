@@ -39,7 +39,7 @@ public final class VibelyEmailLayout {
         String safeTitle = escapeHtml(pageTitle);
         String footerRecipient = footerUsername == null || footerUsername.isBlank()
             ? ""
-            : "<div>Email này được tạo cho @" + escapeHtml(footerUsername) + ".</div>";
+            : "<div>This email was generated for @" + escapeHtml(footerUsername) + ".</div>";
         return """
             <!DOCTYPE html>
             <html lang="vi">
@@ -68,7 +68,7 @@ public final class VibelyEmailLayout {
                         <td align="center" style="padding:8px 28px 28px;color:#a1a1aa;font-size:12px;line-height:1.6;">
                           <div style="font-size:18px;font-weight:800;color:#b4b4bb;margin-bottom:8px;">Vibely</div>
                           %s
-                          <div>Đây là email tự động, vui lòng không trả lời.</div>
+                          <div>This is an automated email, please do not reply.</div>
                         </td>
                       </tr>
                     </table>

@@ -110,7 +110,7 @@ public class AdminCuService {
         Category category = resolveCategory(body.categoryId(), body.categorySlug());
         SemanticTagEntity tag = resolveTag(body.tagId(), body.tagSlug());
         if (mappingRepository.existsByCategoryIdAndTagId(category.getId(), tag.getId())) {
-            throw new BadRequestException("Mapping category↔tag đã tồn tại.");
+            throw new BadRequestException("Category↔tag mapping already exists.");
         }
         CategoryTagMappingEntity row = new CategoryTagMappingEntity();
         row.setCategoryId(category.getId());
@@ -127,7 +127,7 @@ public class AdminCuService {
     public AdminCuMappingDto updateMapping(Long id, AdminCuMappingUpsertRequest body) {
         CategoryTagMappingEntity row = mappingRepository
             .findById(id)
-            .orElseThrow(() -> new NotFoundException("Mapping không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Mapping not found"));
         if (body.categoryId() != null || (body.categorySlug() != null && !body.categorySlug().isBlank())) {
             Category category = resolveCategory(body.categoryId(), body.categorySlug());
             row.setCategoryId(category.getId());
@@ -139,7 +139,7 @@ public class AdminCuService {
         if (mappingRepository.findByCategoryIdAndTagId(row.getCategoryId(), row.getTagId())
             .filter(other -> !other.getId().equals(id))
             .isPresent()) {
-            throw new BadRequestException("Mapping category↔tag đã tồn tại.");
+            throw new BadRequestException("Category↔tag mapping already exists.");
         }
         applyUpsertFields(row, body);
         mappingRepository.save(row);
@@ -152,7 +152,7 @@ public class AdminCuService {
     @Transactional
     public void deleteMapping(Long id) {
         if (!mappingRepository.existsById(id)) {
-            throw new NotFoundException("Mapping không tồn tại");
+            throw new NotFoundException("Mapping not found");
         }
         mappingRepository.deleteById(id);
     }
@@ -167,7 +167,7 @@ public class AdminCuService {
             body.force() == null || body.force()
         );
         if (jobId.isEmpty()) {
-            throw new BadRequestException("Không thể enqueue (job đang RUNNING hoặc CU tắt / draft).");
+            throw new BadRequestException("Could not enqueue (job is RUNNING or CU is disabled / draft).");
         }
         return new AdminCuEnqueueResponse(1, List.of(jobId.get().toString()), video.getId());
     }
@@ -234,7 +234,7 @@ public class AdminCuService {
             try {
                 st = AnalysisJobStatus.valueOf(status.trim().toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException ex) {
-                throw new BadRequestException("status không hợp lệ");
+                throw new BadRequestException("Invalid status");
             }
             result = analysisJobRepository.findByStatus(st, pr);
         } else {
@@ -278,43 +278,43 @@ public class AdminCuService {
 
     private Category resolveCategory(Long id, String slug) {
         if (id != null) {
-            return categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Category không tồn tại"));
+            return categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Category not found"));
         }
         if (slug == null || slug.isBlank()) {
-            throw new BadRequestException("categoryId hoặc categorySlug là bắt buộc");
+            throw new BadRequestException("categoryId or categorySlug is required");
         }
         return categoryRepository
             .findAll()
             .stream()
             .filter(c -> slug.equalsIgnoreCase(c.getSlug()))
             .findFirst()
-            .orElseThrow(() -> new NotFoundException("Category không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Category not found"));
     }
 
     private SemanticTagEntity resolveTag(Long id, String slug) {
         if (id != null) {
-            return semanticTagRepository.findById(id).orElseThrow(() -> new NotFoundException("Semantic tag không tồn tại"));
+            return semanticTagRepository.findById(id).orElseThrow(() -> new NotFoundException("Semantic tag not found"));
         }
         if (slug == null || slug.isBlank()) {
-            throw new BadRequestException("tagId hoặc tagSlug là bắt buộc");
+            throw new BadRequestException("tagId or tagSlug is required");
         }
         return semanticTagRepository
             .findBySlugIgnoreCase(slug.trim())
-            .orElseThrow(() -> new NotFoundException("Semantic tag không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Semantic tag not found"));
     }
 
     private Video resolveVideo(AdminCuReanalyzeRequest body) {
         if (body.videoId() != null) {
             return videoRepository
                 .findById(body.videoId())
-                .orElseThrow(() -> new NotFoundException("Video không tồn tại"));
+                .orElseThrow(() -> new NotFoundException("Video not found"));
         }
         if (body.publicId() != null && !body.publicId().isBlank()) {
             return videoRepository
                 .findByPublicId(VideoPublicIds.parse(body.publicId()))
-                .orElseThrow(() -> new NotFoundException("Video không tồn tại"));
+                .orElseThrow(() -> new NotFoundException("Video not found"));
         }
-        throw new BadRequestException("videoId hoặc publicId là bắt buộc");
+        throw new BadRequestException("videoId or publicId is required");
     }
 
     private static float clampPositive(float v, float min, float max) {

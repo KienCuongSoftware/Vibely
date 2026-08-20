@@ -8,25 +8,25 @@ import java.time.LocalDate;
 
 public class RegisterRequest {
 
-    @NotBlank(message = "Tên người dùng là bắt buộc")
-    @Size(min = 3, max = 50, message = "Tên người dùng phải từ 3 đến 50 ký tự")
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     private String username;
 
-    @Email(message = "Email không hợp lệ")
-    @NotBlank(message = "Email là bắt buộc")
+    @Email(message = "Invalid email")
+    @NotBlank(message = "Email is required")
     private String email;
 
-    @NotBlank(message = "Mật khẩu là bắt buộc")
-    @Size(min = 6, max = 100, message = "Mật khẩu phải từ 6 đến 100 ký tự")
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, max = 100, message = "Password must be between 6 and 100 characters")
     private String password;
 
-    @Size(max = 300, message = "Tiểu sử tối đa 300 ký tự")
+    @Size(max = 300, message = "Bio must be at most 300 characters")
     private String bio;
 
-    @Size(min = 2, max = 80, message = "Tên hiển thị phải từ 2 đến 80 ký tự")
+    @Size(min = 2, max = 80, message = "Display name must be between 2 and 80 characters")
     private String displayName;
 
-    @NotNull(message = "Ngày sinh là bắt buộc")
+    @NotNull(message = "Date of birth is required")
     private LocalDate birthDate;
 
     public String getUsername() {

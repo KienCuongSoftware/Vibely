@@ -175,7 +175,7 @@ public class AuthProtectionService {
                     "ipHash", hash(ip)
                 ));
                 throw new SuspiciousLoginException(
-                    "Tài khoản hoặc IP tạm thời bị khóa do nhiều lần đăng nhập thất bại"
+                    "Account or IP temporarily locked due to too many failed login attempts"
                 );
             }
 
@@ -203,7 +203,7 @@ public class AuthProtectionService {
                 ? verificationTokenStore.consume(verificationToken, purpose.name())
                 : verificationTokenStore.validateUnused(verificationToken, purpose.name());
             if (!valid) {
-                throw new BadRequestException("Captcha verification không hợp lệ hoặc đã được sử dụng");
+                throw new BadRequestException("Captcha verification is invalid or has already been used");
             }
         } catch (CaptchaRequiredException | SuspiciousLoginException | BadRequestException ex) {
             throw ex;

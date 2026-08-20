@@ -25,7 +25,7 @@ public class S3OwnedMediaValidator {
         }
         String trimmed = url.trim();
         if (trimmed.startsWith("data:")) {
-            throw new BadRequestException("Avatar phải được tải lên qua kho lưu trữ.");
+            throw new BadRequestException("Avatar must be uploaded via storage.");
         }
         // Display path for Google/Facebook photos — allow before generic "/" reject.
         if (UserAvatarResolver.oauthAvatarProxyPath(userId).equals(trimmed)) {
@@ -35,7 +35,7 @@ public class S3OwnedMediaValidator {
             if (trimmed.startsWith("/images/")) {
                 return;
             }
-            throw new BadRequestException("URL avatar không hợp lệ.");
+            throw new BadRequestException("Invalid URL avatar");
         }
         if (UserAvatarResolver.isOAuthCdnUrl(trimmed) || isGoogleAvatarUrl(trimmed)) {
             return;
@@ -77,23 +77,23 @@ public class S3OwnedMediaValidator {
         String uploadPrefix = "uploads/" + userId + "/";
         String thumbPrefix = "thumbnails/" + userId + "/";
         if (!key.startsWith(uploadPrefix) && !key.startsWith(thumbPrefix)) {
-            throw new BadRequestException("URL media chat không thuộc tài khoản của bạn.");
+            throw new BadRequestException("Chat media URL does not belong to your account.");
         }
     }
 
     private void requireKeyPrefix(String url, String requiredPrefix) {
         String key = resolveKey(url);
         if (!key.startsWith(requiredPrefix)) {
-            throw new BadRequestException("URL media không thuộc tài khoản của bạn.");
+            throw new BadRequestException("Media URL does not belong to your account.");
         }
     }
 
     private String resolveKey(String url) {
         if (url == null || url.isBlank()) {
-            throw new BadRequestException("URL media là bắt buộc.");
+            throw new BadRequestException("Media URL is required.");
         }
         return objectUrlBuilder.resolveKeyFromUrl(url.trim())
-            .orElseThrow(() -> new BadRequestException("URL media không hợp lệ hoặc không thuộc bucket ứng dụng."));
+            .orElseThrow(() -> new BadRequestException("Media URL is invalid or does not belong to the app bucket."));
     }
 
     private static boolean isGoogleAvatarUrl(String url) {

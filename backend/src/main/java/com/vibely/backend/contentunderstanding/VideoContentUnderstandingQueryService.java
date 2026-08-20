@@ -202,7 +202,7 @@ public class VideoContentUnderstandingQueryService {
     private Video requireWatchable(String publicId, Authentication authentication) {
         UUID id = VideoPublicIds.parse(publicId);
         Video video = videoRepository.findWithAuthorByPublicId(id)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
         User viewer = null;
         if (authentication != null && authentication.getName() != null) {
             viewer = userRepository.findByEmail(authentication.getName()).orElse(null);
@@ -216,12 +216,12 @@ public class VideoContentUnderstandingQueryService {
         // Draft / RAW / HIDDEN: author + admin may read analysis tags (Studio upload poll).
         if (video.getStatus() != VideoStatus.READY && video.getStatus() != VideoStatus.PROCESSING) {
             if (!admin && !author) {
-                throw new NotFoundException("Không tìm thấy video");
+                throw new NotFoundException("Video not found");
             }
             return video;
         }
         if (!admin && !privacyAccessService.canViewerWatch(video, viewer)) {
-            throw new NotFoundException("Không tìm thấy video");
+            throw new NotFoundException("Video not found");
         }
         return video;
     }

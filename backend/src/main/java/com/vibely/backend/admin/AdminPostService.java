@@ -103,7 +103,7 @@ public class AdminPostService {
     @Transactional
     public void deletePost(UUID publicId) {
         Video video = videoRepository.findWithAuthorByPublicId(publicId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy bài đăng"));
+            .orElseThrow(() -> new NotFoundException("Post not found"));
 
         // Already soft-removed: purge DB row so it disappears from admin list.
         // S3 wipe is best-effort (media may already be missing).
@@ -150,7 +150,7 @@ public class AdminPostService {
             }
         } catch (DataIntegrityViolationException ex) {
             throw new BadRequestException(
-                "Không xóa vĩnh viễn được bài đăng vì còn dữ liệu liên quan. Thử lại hoặc liên hệ kỹ thuật."
+                "Could not permanently delete the post because related data still exists. Try again or contact engineering."
             );
         }
     }
@@ -158,7 +158,7 @@ public class AdminPostService {
     @Transactional(readOnly = true)
     public AdminPostResponse getPost(UUID publicId) {
         Video video = videoRepository.findWithAuthorByPublicId(publicId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy bài đăng"));
+            .orElseThrow(() -> new NotFoundException("Post not found"));
         return toResponse(
             video,
             Map.of(video.getId(), likeRepository.countByVideoId(video.getId())),

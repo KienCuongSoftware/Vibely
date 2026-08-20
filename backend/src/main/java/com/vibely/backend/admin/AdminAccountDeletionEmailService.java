@@ -52,7 +52,7 @@ public class AdminAccountDeletionEmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
             helper.setFrom(resolveFromAddress(), mailProperties.getFromName());
             helper.setTo(deletedUser.email());
-            helper.setSubject("Tài khoản Vibely của bạn đã bị xóa");
+            helper.setSubject("Your Vibely account has been deleted");
             helper.setText(plainBody(deletedUser), htmlBody(deletedUser));
             mailSender.send(message);
             log.info("Admin account deletion email sent to {}", maskEmail(deletedUser.email()));
@@ -81,7 +81,7 @@ public class AdminAccountDeletionEmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
             helper.setFrom(resolveFromAddress(), mailProperties.getFromName());
             helper.setTo(updatedUser.email());
-            helper.setSubject("Thông tin tài khoản Vibely của bạn đã được cập nhật");
+            helper.setSubject("Your Vibely account information has been updated");
             helper.setText(updatePlainBody(updatedUser), updateHtmlBody(updatedUser));
             mailSender.send(message);
             log.info("Admin account update email sent to {}", maskEmail(updatedUser.email()));
@@ -92,25 +92,25 @@ public class AdminAccountDeletionEmailService {
 
     private String plainBody(AdminDeletedUserInfo user) {
         return """
-            Xin chào %s,
+            Hello %s,
 
-            Tài khoản Vibely @%s của bạn đã bị xóa bởi quản trị viên.
-            Toàn bộ dữ liệu liên quan đến tài khoản có thể không còn truy cập được trên Vibely.
+            Your Vibely account @%s has been deleted by an administrator.
+            All data related to the account may no longer be accessible on Vibely.
 
-            Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ đội ngũ hỗ trợ Vibely qua %s.
+            If you believe this is a mistake, please contact Vibely support at %s.
 
             Vibely
             """.formatted(displayName(user), user.username(), VibelyEmailLayout.SUPPORT_EMAIL);
     }
 
     private String htmlBody(AdminDeletedUserInfo user) {
-        String bodyRows = VibelyEmailLayout.headingRow("Tài khoản của bạn đã bị xóa") + """
+        String bodyRows = VibelyEmailLayout.headingRow("Your account has been deleted") + """
             <tr>
               <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
-                <p style="margin:0 0 16px;">Xin chào <strong>%s</strong>,</p>
-                <p style="margin:0 0 16px;">Tài khoản Vibely <strong>@%s</strong> của bạn đã bị xóa bởi quản trị viên.</p>
-                <p style="margin:0 0 16px;">Toàn bộ dữ liệu liên quan đến tài khoản có thể không còn truy cập được trên Vibely.</p>
-                <p style="margin:0;">Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ đội ngũ hỗ trợ Vibely qua %s.</p>
+                <p style="margin:0 0 16px;">Hello <strong>%s</strong>,</p>
+                <p style="margin:0 0 16px;">Your Vibely account <strong>@%s</strong> has been deleted by an administrator.</p>
+                <p style="margin:0 0 16px;">All data related to the account may no longer be accessible on Vibely.</p>
+                <p style="margin:0;">If you believe this is a mistake, please contact Vibely support at %s.</p>
               </td>
             </tr>
             """.formatted(
@@ -118,30 +118,30 @@ public class AdminAccountDeletionEmailService {
             VibelyEmailLayout.escapeHtml(user.username()),
             VibelyEmailLayout.supportEmailLink()
         );
-        return VibelyEmailLayout.document("Tài khoản Vibely của bạn đã bị xóa", bodyRows, user.username());
+        return VibelyEmailLayout.document("Your Vibely account has been deleted", bodyRows, user.username());
     }
 
     private String updatePlainBody(AdminUpdatedUserInfo user) {
         return """
-            Xin chào %s,
+            Hello %s,
 
-            Quản trị viên Vibely vừa cập nhật thông tin tài khoản của bạn:
+            A Vibely administrator has updated your account information:
             %s
 
-            Nếu bạn không nhận ra thay đổi này, vui lòng liên hệ đội ngũ hỗ trợ Vibely qua %s.
+            If you do not recognize this change, please contact Vibely support at %s.
 
             Vibely
             """.formatted(displayName(user), updateChangeLines(user), VibelyEmailLayout.SUPPORT_EMAIL);
     }
 
     private String updateHtmlBody(AdminUpdatedUserInfo user) {
-        String bodyRows = VibelyEmailLayout.headingRow("Thông tin tài khoản đã được cập nhật") + """
+        String bodyRows = VibelyEmailLayout.headingRow("Account information has been updated") + """
             <tr>
               <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
-                <p style="margin:0 0 16px;">Xin chào <strong>%s</strong>,</p>
-                <p style="margin:0 0 16px;">Quản trị viên Vibely vừa cập nhật thông tin tài khoản của bạn:</p>
+                <p style="margin:0 0 16px;">Hello <strong>%s</strong>,</p>
+                <p style="margin:0 0 16px;">A Vibely administrator has updated your account information:</p>
                 <ul style="margin:0 0 18px;padding-left:20px;">%s</ul>
-                <p style="margin:0;">Nếu bạn không nhận ra thay đổi này, vui lòng liên hệ đội ngũ hỗ trợ Vibely qua %s.</p>
+                <p style="margin:0;">If you do not recognize this change, please contact Vibely support at %s.</p>
               </td>
             </tr>
             """.formatted(
@@ -149,28 +149,28 @@ public class AdminAccountDeletionEmailService {
             updateChangeItems(user),
             VibelyEmailLayout.supportEmailLink()
         );
-        return VibelyEmailLayout.document("Thông tin tài khoản Vibely đã được cập nhật", bodyRows, user.newUsername());
+        return VibelyEmailLayout.document("Vibely account information has been updated", bodyRows, user.newUsername());
     }
 
     private String displayName(AdminDeletedUserInfo user) {
-        return StringUtils.hasText(user.displayName()) ? user.displayName().trim() : "bạn";
+        return StringUtils.hasText(user.displayName()) ? user.displayName().trim() : "you";
     }
 
     private String displayName(AdminUpdatedUserInfo user) {
-        return StringUtils.hasText(user.displayName()) ? user.displayName().trim() : "bạn";
+        return StringUtils.hasText(user.displayName()) ? user.displayName().trim() : "you";
     }
 
     private String updateChangeLines(AdminUpdatedUserInfo user) {
         StringBuilder lines = new StringBuilder();
         if (user.usernameChanged()) {
-            lines.append("- Vibely ID đổi từ @")
+            lines.append("- Vibely ID changed from @")
                 .append(user.oldUsername())
                 .append(" sang @")
                 .append(user.newUsername())
                 .append('\n');
         }
         if (user.passwordChanged()) {
-            lines.append("- Mật khẩu đăng nhập đã được thay đổi\n");
+            lines.append("- Login password has been changed\n");
         }
         return lines.toString().trim();
     }
@@ -178,14 +178,14 @@ public class AdminAccountDeletionEmailService {
     private String updateChangeItems(AdminUpdatedUserInfo user) {
         StringBuilder items = new StringBuilder();
         if (user.usernameChanged()) {
-            items.append("<li>Vibely ID đổi từ <strong>@")
+            items.append("<li>Vibely ID changed from <strong>@")
                 .append(VibelyEmailLayout.escapeHtml(user.oldUsername()))
                 .append("</strong> sang <strong>@")
                 .append(VibelyEmailLayout.escapeHtml(user.newUsername()))
                 .append("</strong></li>");
         }
         if (user.passwordChanged()) {
-            items.append("<li>Mật khẩu đăng nhập đã được thay đổi</li>");
+            items.append("<li>Login password has been changed</li>");
         }
         return items.toString();
     }

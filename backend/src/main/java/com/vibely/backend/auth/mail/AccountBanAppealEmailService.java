@@ -50,12 +50,12 @@ public class AccountBanAppealEmailService {
             helper.setTo(VibelyEmailLayout.SUPPORT_EMAIL);
             helper.setFrom(mailProperties.getFrom());
             helper.setReplyTo(request.email().trim());
-            helper.setSubject("[Vibely] Khiếu nại cấm tài khoản");
+            helper.setSubject("[Vibely] Account ban appeal");
             helper.setText(buildPlainText(request, displayName), buildHtml(request, displayName));
             mailSender.send(mimeMessage);
         } catch (Exception ex) {
             log.error("Failed to send ban appeal email", ex);
-            throw new RuntimeException("Không gửi được khiếu nại, vui lòng thử lại sau");
+            throw new RuntimeException("Could not submit appeal, please try again later");
         }
     }
 
@@ -108,20 +108,20 @@ public class AccountBanAppealEmailService {
     }
 
     private String buildDecisionSubject(BanAppealStatus status) {
-        return "[Vibely] Kết quả khiếu nại — " + statusLabel(status);
+        return "[Vibely] Appeal result — " + statusLabel(status);
     }
 
     private String buildDecisionPlainText(BanAppeal appeal, String displayName) {
         StringBuilder body = new StringBuilder();
-        body.append("Xin chào, ").append(resolveDisplayName(displayName)).append(",\n\n");
-        body.append("Chúng tôi đã cập nhật kết quả khiếu nại của bạn.\n\n");
-        body.append("Trạng thái: ").append(statusLabel(appeal.getStatus())).append('\n');
+        body.append("Hello, ").append(resolveDisplayName(displayName)).append(",\n\n");
+        body.append("We have updated your appeal result.\n\n");
+        body.append("Status: ").append(statusLabel(appeal.getStatus())).append('\n');
         body.append(statusExplanation(appeal.getStatus())).append("\n\n");
         if (StringUtils.hasText(appeal.getAdminNotes())) {
-            body.append("Ghi chú từ đội ngũ Vibely:\n");
+            body.append("Note from the Vibely team:\n");
             body.append(appeal.getAdminNotes().trim()).append("\n\n");
         }
-        body.append("Nếu bạn có thắc mắc, vui lòng liên hệ ").append(VibelyEmailLayout.SUPPORT_EMAIL).append(".\n\n");
+        body.append("If you have questions, please contact ").append(VibelyEmailLayout.SUPPORT_EMAIL).append(".\n\n");
         body.append("Vibely");
         return body.toString();
     }
@@ -129,22 +129,22 @@ public class AccountBanAppealEmailService {
     private String buildDecisionHtml(BanAppeal appeal, String displayName) {
         String notesBlock = StringUtils.hasText(appeal.getAdminNotes())
             ? """
-                <p style="margin:0 0 8px;"><strong>Ghi chú từ đội ngũ Vibely:</strong></p>
+                <p style="margin:0 0 8px;"><strong>Note from the Vibely team:</strong></p>
                 <p style="margin:0 0 16px;white-space:pre-wrap;background:#f7f7f8;border-radius:10px;padding:16px 18px;color:#4b5563;">%s</p>
                 """.formatted(VibelyEmailLayout.escapeHtml(appeal.getAdminNotes().trim()))
             : "";
 
-        String bodyRows = VibelyEmailLayout.headingRow("Kết quả khiếu nại") + """
+        String bodyRows = VibelyEmailLayout.headingRow("Appeal result") + """
             <tr>
               <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
-                <p style="margin:0 0 16px;">Xin chào, <strong>%s</strong>,</p>
-                <p style="margin:0 0 16px;">Chúng tôi đã cập nhật kết quả khiếu nại của bạn.</p>
+                <p style="margin:0 0 16px;">Hello, <strong>%s</strong>,</p>
+                <p style="margin:0 0 16px;">We have updated your appeal result.</p>
                 <div style="margin:0 0 16px;background:#f7f7f8;border-radius:10px;padding:18px 20px;font-size:14px;line-height:1.7;color:#4b5563;">
-                  <div>Trạng thái: <strong style="color:#161823;">%s</strong></div>
+                  <div>Status: <strong style="color:#161823;">%s</strong></div>
                 </div>
                 <p style="margin:0 0 16px;">%s</p>
                 %s
-                <p style="margin:0;">Nếu bạn có thắc mắc, vui lòng liên hệ %s.</p>
+                <p style="margin:0;">If you have questions, please contact %s.</p>
               </td>
             </tr>
             """.formatted(
@@ -159,17 +159,17 @@ public class AccountBanAppealEmailService {
 
     private String buildPlainText(BanAppealRequest request, String displayName) {
         StringBuilder body = new StringBuilder();
-        body.append("Xin chào, ").append(resolveDisplayName(displayName)).append(",\n\n");
-        body.append("Khiếu nại cấm tài khoản Vibely\n\n");
+        body.append("Hello, ").append(resolveDisplayName(displayName)).append(",\n\n");
+        body.append("Account ban appeal Vibely\n\n");
         body.append("Xem trong Admin: /admin/ban-appeals\n\n");
-        body.append("Email liên hệ: ").append(request.email().trim()).append('\n');
+        body.append("Contact email: ").append(request.email().trim()).append('\n');
         if (StringUtils.hasText(request.maskedAccountEmail())) {
-            body.append("Email tài khoản (ẩn): ").append(request.maskedAccountEmail().trim()).append('\n');
+            body.append("Account email (masked): ").append(request.maskedAccountEmail().trim()).append('\n');
         }
         if (StringUtils.hasText(request.banReason())) {
-            body.append("Lý do cấm được thông báo: ").append(request.banReason().trim()).append('\n');
+            body.append("Notified ban reason: ").append(request.banReason().trim()).append('\n');
         }
-        body.append("\nMô tả:\n").append(request.description().trim());
+        body.append("\nDescription:\n").append(request.description().trim());
         return body.toString();
     }
 
@@ -177,19 +177,19 @@ public class AccountBanAppealEmailService {
         String description = VibelyEmailLayout.escapeHtml(request.description().trim());
         String banReason = StringUtils.hasText(request.banReason())
             ? VibelyEmailLayout.escapeHtml(request.banReason().trim())
-            : "Không có lý do cụ thể";
+            : "No specific reason";
         String masked = StringUtils.hasText(request.maskedAccountEmail())
             ? VibelyEmailLayout.escapeHtml(request.maskedAccountEmail().trim())
             : "—";
 
-        String bodyRows = VibelyEmailLayout.headingRow("Khiếu nại cấm tài khoản") + """
+        String bodyRows = VibelyEmailLayout.headingRow("Account ban appeal") + """
             <tr>
               <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
-                <p style="margin:0 0 16px;">Xin chào, <strong>%s</strong>,</p>
-                <p style="margin:0 0 12px;">Email liên hệ: <strong>%s</strong></p>
-                <p style="margin:0 0 8px;"><strong>Email tài khoản (ẩn):</strong> %s</p>
-                <p style="margin:0 0 8px;"><strong>Lý do cấm được thông báo:</strong> %s</p>
-                <p style="margin:0 0 8px;"><strong>Mô tả:</strong></p>
+                <p style="margin:0 0 16px;">Hello, <strong>%s</strong>,</p>
+                <p style="margin:0 0 12px;">Contact email: <strong>%s</strong></p>
+                <p style="margin:0 0 8px;"><strong>Account email (masked):</strong> %s</p>
+                <p style="margin:0 0 8px;"><strong>Notified ban reason:</strong> %s</p>
+                <p style="margin:0 0 8px;"><strong>Description:</strong></p>
                 <p style="margin:0;white-space:pre-wrap;background:#f7f7f8;border-radius:10px;padding:16px 18px;color:#4b5563;">%s</p>
               </td>
             </tr>
@@ -200,18 +200,18 @@ public class AccountBanAppealEmailService {
             banReason,
             description
         );
-        return VibelyEmailLayout.document("Khiếu nại cấm tài khoản", bodyRows, "");
+        return VibelyEmailLayout.document("Account ban appeal", bodyRows, "");
     }
 
     private static String statusLabel(BanAppealStatus status) {
         if (status == null) {
-            return "Không xác định";
+            return "Unknown";
         }
         return switch (status) {
-            case PENDING -> "Chờ xử lý";
-            case IN_REVIEW -> "Đang xem xét";
-            case APPROVED -> "Chấp nhận";
-            case REJECTED -> "Từ chối";
+            case PENDING -> "Pending";
+            case IN_REVIEW -> "Under review";
+            case APPROVED -> "Approved";
+            case REJECTED -> "Rejected";
         };
     }
 
@@ -220,12 +220,12 @@ public class AccountBanAppealEmailService {
             return "";
         }
         return switch (status) {
-            case PENDING -> "Khiếu nại của bạn đang chờ được xử lý.";
-            case IN_REVIEW -> "Đội ngũ Vibely đang xem xét khiếu nại của bạn.";
+            case PENDING -> "Your appeal is pending review.";
+            case IN_REVIEW -> "The Vibely team is reviewing your appeal.";
             case APPROVED ->
-                "Khiếu nại đã được chấp nhận. Tài khoản của bạn đã được mở khóa và có thể đăng nhập lại bình thường.";
+                "Your appeal was approved. Your account has been unlocked and you can log in again.";
             case REJECTED ->
-                "Khiếu nại đã bị từ chối. Tài khoản vẫn bị hạn chế theo tiêu chuẩn cộng đồng Vibely.";
+                "Your appeal was rejected. The account remains restricted under Vibely community standards.";
         };
     }
 
@@ -233,6 +233,6 @@ public class AccountBanAppealEmailService {
         if (StringUtils.hasText(displayName)) {
             return displayName.trim();
         }
-        return "bạn";
+        return "you";
     }
 }

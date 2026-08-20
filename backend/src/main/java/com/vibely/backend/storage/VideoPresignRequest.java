@@ -6,14 +6,14 @@ import jakarta.validation.constraints.Size;
 
 public class VideoPresignRequest {
 
-    @NotBlank(message = "Content-Type là bắt buộc")
+    @NotBlank(message = "Content-Type is required")
     private String contentType;
 
     @Size(max = 220)
     private String fileName;
 
     /** Client-reported size; required for video uploads so S3 PUT is capped. */
-    @Positive(message = "Kích thước tệp phải lớn hơn 0")
+    @Positive(message = "File size must be greater than 0")
     private Long fileSizeBytes;
 
     public String getContentType() {

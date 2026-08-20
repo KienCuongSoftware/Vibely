@@ -93,7 +93,7 @@ public class EnhancementInternalController {
         if (expected == null || expected.isBlank()) {
             throw new ResponseStatusException(
                 HttpStatus.SERVICE_UNAVAILABLE,
-                "Enhancement internal token chưa được cấu hình."
+                "Enhancement internal token is not configured."
             );
         }
         if (token == null || !expected.equals(token)) {

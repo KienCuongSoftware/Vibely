@@ -29,7 +29,7 @@ public final class ExploreCursorCodec {
     }
 
     public static Decoded decode(String raw) {
-        if (raw == null || raw.isBlank()) throw new BadRequestException("Cursor không hợp lệ.");
+        if (raw == null || raw.isBlank()) throw new BadRequestException("Invalid cursor.");
         try {
             byte[] bytes = Base64.getUrlDecoder().decode(raw.trim());
             @SuppressWarnings("unchecked")
@@ -39,7 +39,7 @@ public final class ExploreCursorCodec {
             long id = ((Number) map.get("id")).longValue();
             return new Decoded(score, createdAt, id);
         } catch (Exception e) {
-            throw new BadRequestException("Cursor không hợp lệ.");
+            throw new BadRequestException("Invalid cursor.");
         }
     }
 }

@@ -249,9 +249,9 @@ public class VideoProcessingRecoveryService {
             return false;
         }
         String lower = error.toLowerCase(Locale.ROOT);
-        return lower.contains("thời lượng tối đa 60 phút")
+        return lower.contains("maximum duration 60 minutes")
             || lower.contains("nosuchkey")
-            || lower.contains("file gốc không tồn tại");
+            || lower.contains("source file does not exist");
     }
 
     private int maxAttempts() {

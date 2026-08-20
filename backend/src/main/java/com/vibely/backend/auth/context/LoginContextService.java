@@ -88,7 +88,7 @@ public class LoginContextService {
                 contextRequest.getLatitude(),
                 contextRequest.getLongitude()
             );
-            if (!"Không xác định".equals(precise.country()) || precise.hasPreciseLocation()) {
+            if (!"Unknown".equals(precise.country()) || precise.hasPreciseLocation()) {
                 return precise;
             }
         }
@@ -160,7 +160,7 @@ public class LoginContextService {
     }
 
     private String valueOrUnknown(String value) {
-        return value == null || value.isBlank() ? "Không xác định" : value;
+        return value == null || value.isBlank() ? "Unknown" : value;
     }
 
     private String safe(String value) {

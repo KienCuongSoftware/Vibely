@@ -69,7 +69,7 @@ public class ModerationJobService {
         }
         ModerationJobEntity job = jobRepository
             .findWithVideoAndAuthorById(lockedId.get())
-            .orElseThrow(() -> new NotFoundException("Moderation job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Moderation job not found"));
         job.setJobState(ModerationJobState.PROCESSING);
         job.setClaimedAt(LocalDateTime.now());
         job.setAttempts(job.getAttempts() + 1);
@@ -105,13 +105,13 @@ public class ModerationJobService {
     public void complete(long jobId, ModerationCompleteRequest request) {
         ModerationJobEntity job = jobRepository
             .findWithVideoAndAuthorById(jobId)
-            .orElseThrow(() -> new NotFoundException("Moderation job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Moderation job not found"));
         if (job.getJobState() != ModerationJobState.PROCESSING
             && job.getJobState() != ModerationJobState.PENDING) {
-            throw new BadRequestException("Job moderation không ở trạng thái có thể complete.");
+            throw new BadRequestException("Moderation job is not in a state that can be completed.");
         }
         if (reportRepository.findByJob_Id(jobId).isPresent()) {
-            throw new BadRequestException("Job moderation đã complete.");
+            throw new BadRequestException("Moderation job is already complete.");
         }
 
         ModerationDecision decision = parseDecision(request.getDecision());
@@ -182,7 +182,7 @@ public class ModerationJobService {
                 authorId,
                 job.getVideo().getId(),
                 decision,
-                "Vi phạm chính sách nội dung (bạo lực / tình dục / spam). Video #"
+                "Content policy violation (violence / sexual / spam). Video #"
                     + job.getVideo().getId()
             );
             if (bannedUser != null) {
@@ -294,7 +294,7 @@ public class ModerationJobService {
     public void fail(long jobId, String errorMessage) {
         ModerationJobEntity job = jobRepository
             .findById(jobId)
-            .orElseThrow(() -> new NotFoundException("Moderation job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Moderation job not found"));
         String truncated = truncate(errorMessage, 2000);
         job.setLastError(truncated);
         int maxAttempts = Math.max(1, properties.getMaxJobAttempts());
@@ -442,7 +442,7 @@ public class ModerationJobService {
         try {
             return ModerationDecision.valueOf(raw.trim().toUpperCase(Locale.ROOT));
         } catch (Exception e) {
-            throw new BadRequestException("decision không hợp lệ: " + raw);
+            throw new BadRequestException("Invalid decision: " + raw);
         }
     }
 

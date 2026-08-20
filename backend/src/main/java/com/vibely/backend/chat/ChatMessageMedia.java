@@ -38,12 +38,12 @@ public final class ChatMessageMedia {
         Parsed parsed = parse(rawContent);
         if (parsed.type() == Type.TEXT) {
             if (rawContent.contains(IMAGE_PREFIX) || rawContent.contains(VIDEO_PREFIX)) {
-                throw new BadRequestException("Định dạng media tin nhắn không hợp lệ.");
+                throw new BadRequestException("Invalid message media format");
             }
             return parsed;
         }
         if (parsed.mediaUrl() == null || parsed.mediaUrl().isBlank()) {
-            throw new BadRequestException("URL media tin nhắn là bắt buộc.");
+            throw new BadRequestException("Message media URL is required.");
         }
         mediaValidator.requireOwnedChatMedia(parsed.mediaUrl(), senderUserId);
         return parsed;

@@ -9,17 +9,17 @@ public final class BirthDateValidator {
 
     public static LocalDate validate(LocalDate birthDate) {
         if (birthDate == null) {
-            throw new BadRequestException("Vui lòng chọn ngày sinh");
+            throw new BadRequestException("Please select your date of birth");
         }
         LocalDate today = LocalDate.now();
         if (birthDate.isAfter(today)) {
-            throw new BadRequestException("Ngày sinh không thể sau ngày hiện tại");
+            throw new BadRequestException("Date of birth cannot be after today");
         }
         if (birthDate.isAfter(today.minusYears(18))) {
-            throw new BadRequestException("Bạn phải đủ 18 tuổi để sử dụng Vibely");
+            throw new BadRequestException("You must be at least 18 years old to use Vibely");
         }
         if (birthDate.isBefore(LocalDate.of(1900, 1, 1))) {
-            throw new BadRequestException("Ngày sinh không hợp lệ");
+            throw new BadRequestException("Invalid date of birth");
         }
         return birthDate;
     }

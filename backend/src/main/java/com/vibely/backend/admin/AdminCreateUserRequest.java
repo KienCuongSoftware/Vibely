@@ -7,25 +7,25 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
 public record AdminCreateUserRequest(
-    @NotBlank(message = "Email là bắt buộc")
-    @Email(message = "Email không hợp lệ")
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email")
     String email,
 
-    @NotBlank(message = "Vibely ID là bắt buộc")
+    @NotBlank(message = "Vibely ID is required")
     String username,
 
-    @NotBlank(message = "Tên hiển thị là bắt buộc")
-    @Size(max = 80, message = "Tên hiển thị tối đa 80 ký tự")
+    @NotBlank(message = "Display name is required")
+    @Size(max = 80, message = "Display name must be at most 80 characters")
     String displayName,
 
-    @NotBlank(message = "Vai trò là bắt buộc")
+    @NotBlank(message = "Role is required")
     String role,
 
-    @NotBlank(message = "Mật khẩu là bắt buộc")
-    @Size(min = 6, max = 100, message = "Mật khẩu phải từ 6 đến 100 ký tự")
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, max = 100, message = "Password must be between 6 and 100 characters")
     String password,
 
-    @NotNull(message = "Ngày sinh là bắt buộc")
+    @NotNull(message = "Date of birth is required")
     LocalDate birthDate
 ) {
 }

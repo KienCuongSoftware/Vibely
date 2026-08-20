@@ -5,8 +5,8 @@ import jakarta.validation.constraints.Pattern;
 
 public class DeactivateAccountRequest {
 
-    @NotBlank(message = "Mã xác minh là bắt buộc")
-    @Pattern(regexp = "\\d{6}", message = "Mã xác minh phải gồm 6 chữ số")
+    @NotBlank(message = "Verification code is required")
+    @Pattern(regexp = "\\d{6}", message = "Verification code must be 6 digits")
     private String code;
 
     public String getCode() {

@@ -245,7 +245,7 @@ public class StudioInspirationService {
             return toSingleVideo(viewer.getId(), video, true);
         }
         if (inspirationRepository.countByUser_Id(viewer.getId()) >= MAX_SAVED) {
-            throw new BadRequestException("Bạn đã lưu tối đa số bài Cảm hứng cho phép.");
+            throw new BadRequestException("You have saved the maximum number of Inspiration posts allowed.");
         }
         StudioInspiration row = new StudioInspiration();
         row.setUser(viewer);
@@ -258,23 +258,23 @@ public class StudioInspirationService {
     public void unsave(String email, UUID publicId) {
         User viewer = requireUser(email);
         Video video = videoRepository.findByPublicId(publicId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
         inspirationRepository.deleteByUser_IdAndVideo_Id(viewer.getId(), video.getId());
     }
 
     private User requireUser(String email) {
         return userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     private Video requirePublicVideo(UUID publicId) {
         Video video = videoRepository.findByPublicId(publicId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
         if (video.getStatus() != VideoStatus.READY
             || video.isStudioDraft()
             || (video.getScheduledAt() != null && video.getScheduledAt().isAfter(java.time.Instant.now()))
             || video.getPrivacy() != VideoPrivacy.PUBLIC) {
-            throw new NotFoundException("Không tìm thấy video");
+            throw new NotFoundException("Video not found");
         }
         return video;
     }

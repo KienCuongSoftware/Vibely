@@ -64,7 +64,7 @@ public class OtpVerificationEmailSender {
         } catch (Exception ex) {
             log.error("Failed to send password reset email to {}", maskEmail(toEmail), ex);
             throw new BadRequestException(
-                "Không gửi được email xác minh. Vui lòng kiểm tra cấu hình SMTP hoặc thử lại sau."
+                "Could not send verification email. Check SMTP configuration or try again later."
             );
         }
     }
@@ -110,7 +110,7 @@ public class OtpVerificationEmailSender {
         } catch (Exception ex) {
             log.error("Failed to send account deactivation email to {}", maskEmail(toEmail), ex);
             throw new BadRequestException(
-                "Không gửi được email xác minh. Vui lòng kiểm tra cấu hình SMTP hoặc thử lại sau."
+                "Could not send verification email. Check SMTP configuration or try again later."
             );
         }
     }
@@ -156,7 +156,7 @@ public class OtpVerificationEmailSender {
         } catch (Exception ex) {
             log.error("Failed to send account reactivation email to {}", maskEmail(toEmail), ex);
             throw new BadRequestException(
-                "Không gửi được email xác minh. Vui lòng kiểm tra cấu hình SMTP hoặc thử lại sau."
+                "Could not send verification email. Check SMTP configuration or try again later."
             );
         }
     }
@@ -202,7 +202,7 @@ public class OtpVerificationEmailSender {
         } catch (Exception ex) {
             log.error("Failed to send account deletion email to {}", maskEmail(toEmail), ex);
             throw new BadRequestException(
-                "Không gửi được email xác minh. Vui lòng kiểm tra cấu hình SMTP hoặc thử lại sau."
+                "Could not send verification email. Check SMTP configuration or try again later."
             );
         }
     }
@@ -236,7 +236,7 @@ public class OtpVerificationEmailSender {
         } catch (Exception ex) {
             log.error("Failed to send OTP email to {}", maskEmail(toEmail), ex);
             throw new BadRequestException(
-                "Không gửi được email xác minh. Vui lòng kiểm tra cấu hình SMTP hoặc thử lại sau."
+                "Could not send verification email. Check SMTP configuration or try again later."
             );
         }
     }

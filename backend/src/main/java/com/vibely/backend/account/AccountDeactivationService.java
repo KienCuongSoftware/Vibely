@@ -30,9 +30,9 @@ public class AccountDeactivationService {
 
     public void deactivate(String email, String code) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new BadRequestException("User not found"));
         if (!user.isActive()) {
-            throw new BadRequestException("Tài khoản đã bị hủy kích hoạt");
+            throw new BadRequestException("Account has been deactivated");
         }
 
         otpVerificationService.consumeAccountDeactivationCode(user.getEmail(), code);

@@ -80,12 +80,12 @@ public class SharePreviewService {
 
         String displayName = profile.displayName() == null ? "" : profile.displayName().trim();
         String headline = displayName.isBlank() || displayName.equalsIgnoreCase(handle)
-            ? "@" + handle + " trên Vibely"
-            : displayName + " (@" + handle + ") trên Vibely";
+            ? "@" + handle + " on Vibely"
+            : displayName + " (@" + handle + ") on Vibely";
         String bio = profile.bio() == null ? "" : profile.bio().trim();
         String description = SharePreviewHtmlRenderer.truncateDescription(
             bio.isBlank()
-                ? "Xem hồ sơ @" + handle + " trên Vibely — Make Your Day."
+                ? "View profile @" + handle + " on Vibely — Make Your Day."
                 : bio,
             300
         );

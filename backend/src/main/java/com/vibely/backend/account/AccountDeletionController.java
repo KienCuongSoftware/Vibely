@@ -70,7 +70,7 @@ public class AccountDeletionController {
 
     private OtpRequestMetadata toMetadata(LoginContext context) {
         return new OtpRequestMetadata(
-            context.getBrowser() + " trên " + context.getOperatingSystem(),
+            context.getBrowser() + " on " + context.getOperatingSystem(),
             displayLocation(context),
             context.getIpAddress()
         );
@@ -83,7 +83,7 @@ public class AccountDeletionController {
         appendLocationPart(location, context.getCity());
         appendLocationPart(location, context.getProvince());
         appendLocationPart(location, context.getCountry());
-        return location.isEmpty() ? "Không xác định" : location.toString();
+        return location.isEmpty() ? "Unknown" : location.toString();
     }
 
     private void appendLocationPart(StringBuilder builder, String value) {

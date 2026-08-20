@@ -148,7 +148,7 @@ public class VideoFeedService {
     @Transactional(readOnly = true)
     public FeedPageResponse getFollowingFeed(String email, int page, int size) {
         User follower = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         if (followRepository.countByFollower_Id(follower.getId()) == 0) {
             return new FeedPageResponse(Collections.emptyList(), page, size, 0, false, "following", null);
         }
@@ -173,7 +173,7 @@ public class VideoFeedService {
     public FeedPageResponse getVideosByAudio(String audioUrl, int page, int size) {
         String normalizedAudioUrl = VideoMediaUtils.normalizeText(audioUrl);
         if (normalizedAudioUrl == null) {
-            throw new BadRequestException("Thiếu đường dẫn âm thanh.");
+            throw new BadRequestException("Missing audio path.");
         }
         Pageable pageable = PageRequest.of(page, Math.min(size, 50));
         Optional<String> audioKey = objectUrlBuilder.resolveKeyFromUrl(normalizedAudioUrl);
@@ -197,7 +197,7 @@ public class VideoFeedService {
     public FeedPageResponse getVideosByHashtag(String tag, int page, int size) {
         String normalizedTag = VideoMediaUtils.normalizeHashtag(tag);
         if (normalizedTag == null) {
-            throw new BadRequestException("Thiếu hashtag.");
+            throw new BadRequestException("Missing hashtag.");
         }
         Pageable pageable = PageRequest.of(page, Math.min(size, 60));
         Page<Video> resultPage = videoRepository.findByHashtag(
@@ -211,7 +211,7 @@ public class VideoFeedService {
     @Transactional(readOnly = true)
     public FeedPageResponse getMyLikedVideos(String email, int page, int size) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         Pageable pageable = PageRequest.of(page, Math.min(size, 50));
         VideoStatus ready = VideoStatus.READY;
         VideoStatus removed = VideoStatus.REMOVED;
@@ -230,7 +230,7 @@ public class VideoFeedService {
     @Transactional(readOnly = true)
     public FeedPageResponse getMyBookmarkedVideos(String email, int page, int size) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         Pageable pageable = PageRequest.of(page, Math.min(size, 50));
         VideoStatus ready = VideoStatus.READY;
         VideoStatus removed = VideoStatus.REMOVED;
@@ -249,7 +249,7 @@ public class VideoFeedService {
     @Transactional(readOnly = true)
     public FeedPageResponse getMyRepostedVideos(String email, int page, int size) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         Pageable pageable = PageRequest.of(page, Math.min(size, 50));
         VideoStatus ready = VideoStatus.READY;
         VideoStatus removed = VideoStatus.REMOVED;
@@ -268,7 +268,7 @@ public class VideoFeedService {
     @Transactional(readOnly = true)
     public FeedPageResponse getMyUploadedVideos(String email, int page, int size) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         if (user.isBanned()) {
             throw new AccountBannedException(user.getEmail(), user.getBanReason());
         }
@@ -290,9 +290,9 @@ public class VideoFeedService {
     ) {
         String normalized = usernameService.normalize(rawUsername);
         User author = userRepository.findByUsername(normalized)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
         if (author.isBanned()) {
-            throw new NotFoundException("Tài khoản đã bị cấm và không còn khả dụng");
+            throw new NotFoundException("Account is banned and no longer available");
         }
         User viewer = resolveViewer(authentication);
         if (!profileVisibilityService.canViewProfileContent(author, viewer)) {
@@ -305,7 +305,7 @@ public class VideoFeedService {
         Page<Video> resultPage;
         if (isAuthor) {
             // RAW/PROCESSING stay in the author's grid so a fresh upload shows up right away
-            // (the tile renders the "đang kiểm tra" overlay until processing finishes).
+            // (the tile renders the "checking" overlay until processing finishes).
             resultPage = videoRepository.findProfileVideosForAuthorIncludingScheduled(
                 author.getId(),
                 java.util.List.of(

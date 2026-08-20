@@ -6,10 +6,10 @@ import java.time.LocalDate;
 
 public class CompleteOnboardingRequest {
 
-    @NotBlank(message = "Tên người dùng là bắt buộc")
+    @NotBlank(message = "Username is required")
     private String username;
 
-    @NotNull(message = "Ngày sinh là bắt buộc")
+    @NotNull(message = "Date of birth is required")
     private LocalDate birthDate;
 
     public String getUsername() {

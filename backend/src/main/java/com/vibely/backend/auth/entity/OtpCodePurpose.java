@@ -14,7 +14,7 @@ public enum OtpCodePurpose {
         try {
             return OtpCodePurpose.valueOf(raw.trim().toUpperCase());
         } catch (IllegalArgumentException ex) {
-            throw new com.vibely.backend.common.BadRequestException("Mục đích mã OTP không hợp lệ");
+            throw new com.vibely.backend.common.BadRequestException("Invalid OTP purpose");
         }
     }
 }

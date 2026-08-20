@@ -9,14 +9,14 @@ import java.time.Instant;
 
 public class VideoUpdateRequest {
 
-    @NotBlank(message = "Tiêu đề là bắt buộc")
-    @Size(max = 120, message = "Tiêu đề tối đa 120 ký tự")
+    @NotBlank(message = "Title is required")
+    @Size(max = 120, message = "Title must be at most 120 characters")
     private String title;
 
-    @Size(max = 1000, message = "Mô tả tối đa 1000 ký tự")
+    @Size(max = 1000, message = "Description must be at most 1000 characters")
     private String description;
 
-    @Size(max = 2048, message = "URL ảnh bìa tối đa 2048 ký tự")
+    @Size(max = 2048, message = "Cover image URL must be at most 2048 characters")
     private String thumbnailUrl;
 
     /** everyone | friends | onlyYou | PUBLIC | FRIENDS | PRIVATE */
@@ -24,7 +24,7 @@ public class VideoUpdateRequest {
 
     /**
      * When {@code true}, keep as Studio draft. When {@code false} or omitted, publish
-     * ({@code studioDraft=false}) — matches existing Studio "Đăng" behavior.
+     * ({@code studioDraft=false}) — matches existing Studio "Post" behavior.
      */
     private Boolean studioDraft;
 

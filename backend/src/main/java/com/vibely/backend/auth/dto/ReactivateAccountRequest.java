@@ -5,11 +5,11 @@ import jakarta.validation.constraints.Pattern;
 
 public class ReactivateAccountRequest {
 
-    @NotBlank(message = "Phiên kích hoạt lại tài khoản là bắt buộc")
+    @NotBlank(message = "Account reactivation session is required")
     private String reactivationToken;
 
-    @NotBlank(message = "Mã xác minh là bắt buộc")
-    @Pattern(regexp = "\\d{6}", message = "Mã xác minh phải gồm 6 chữ số")
+    @NotBlank(message = "Verification code is required")
+    @Pattern(regexp = "\\d{6}", message = "Verification code must be 6 digits")
     private String code;
 
     public String getReactivationToken() {

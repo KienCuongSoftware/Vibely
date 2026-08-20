@@ -83,7 +83,7 @@ public class S3MediaDeletionService {
         UUID publicId = video.getPublicId();
         String bucket = properties.getBucket();
         if (bucket == null || bucket.isBlank()) {
-            throw new StorageDeletionException("Bucket S3 chưa được cấu hình.");
+            throw new StorageDeletionException("S3 bucket is not configured.");
         }
 
         boolean lastActiveVideoForAuthor = videoRepository.countByAuthor_IdAndStatusNotAndIdNot(
@@ -152,7 +152,7 @@ public class S3MediaDeletionService {
     public int deleteHlsPrefix(long authorId, UUID publicId) {
         String bucket = properties.getBucket();
         if (bucket == null || bucket.isBlank()) {
-            throw new StorageDeletionException("Bucket S3 chưa được cấu hình.");
+            throw new StorageDeletionException("S3 bucket is not configured.");
         }
         return deletePrefix(bucket, hlsPrefixFor(authorId, publicId), authorHlsPrefix(authorId));
     }
@@ -237,7 +237,7 @@ public class S3MediaDeletionService {
 
     private int deletePrefix(String bucket, String prefix, String requiredRoot) {
         if (!prefix.startsWith(requiredRoot)) {
-            throw new StorageDeletionException("Prefix S3 không hợp lệ: " + prefix);
+            throw new StorageDeletionException("Invalid S3 prefix: " + prefix);
         }
         int deleted = 0;
         String continuationToken = null;
@@ -297,7 +297,7 @@ public class S3MediaDeletionService {
             if (ex.statusCode() == 404) {
                 return;
             }
-            throw new StorageDeletionException("Không thể xóa file trên kho lưu trữ.", ex);
+            throw new StorageDeletionException("Could not delete the file from storage.", ex);
         }
     }
 
@@ -327,7 +327,7 @@ public class S3MediaDeletionService {
             if (response.hasErrors() && !response.errors().isEmpty()) {
                 S3Error first = response.errors().get(0);
                 throw new StorageDeletionException(
-                    "Không thể xóa file trên kho lưu trữ: " + first.key() + " (" + first.message() + ")"
+                    "Could not delete the file from storage: " + first.key() + " (" + first.message() + ")"
                 );
             }
             deleted += batch.size();

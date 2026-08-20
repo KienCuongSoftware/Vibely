@@ -161,7 +161,7 @@ public class AuthController {
         if (purpose == OtpCodePurpose.ACCOUNT_DEACTIVATION
             || purpose == OtpCodePurpose.ACCOUNT_REACTIVATION
             || purpose == OtpCodePurpose.ACCOUNT_DELETION) {
-            throw new BadRequestException("Mục đích mã OTP không hợp lệ");
+            throw new BadRequestException("Invalid OTP purpose");
         }
         return ApiResponse.success(otpVerificationService.sendCode(request, verificationToken));
     }
@@ -172,7 +172,7 @@ public class AuthController {
         if (purpose == OtpCodePurpose.ACCOUNT_DEACTIVATION
             || purpose == OtpCodePurpose.ACCOUNT_REACTIVATION
             || purpose == OtpCodePurpose.ACCOUNT_DELETION) {
-            throw new BadRequestException("Mục đích mã OTP không hợp lệ");
+            throw new BadRequestException("Invalid OTP purpose");
         }
         return ApiResponse.success(otpVerificationService.verifyCode(request));
     }
@@ -300,7 +300,7 @@ public class AuthController {
             || !authentication.isAuthenticated()
             || authentication instanceof AnonymousAuthenticationToken) {
             if (hasBearerToken(request)) {
-                throw new UnauthorizedException("Phiên đăng nhập không hợp lệ hoặc đã hết hạn");
+                throw new UnauthorizedException("Login session is invalid or expired");
             }
             return ApiResponse.success(null);
         }
@@ -325,7 +325,7 @@ public class AuthController {
 
     private OtpRequestMetadata toMetadata(LoginContext context) {
         return new OtpRequestMetadata(
-            context.getBrowser() + " trên " + context.getOperatingSystem(),
+            context.getBrowser() + " on " + context.getOperatingSystem(),
             displayLocation(context),
             context.getIpAddress()
         );
@@ -338,7 +338,7 @@ public class AuthController {
         appendLocationPart(location, context.getCity());
         appendLocationPart(location, context.getProvince());
         appendLocationPart(location, context.getCountry());
-        return location.isEmpty() ? "Không xác định" : location.toString();
+        return location.isEmpty() ? "Unknown" : location.toString();
     }
 
     private void appendLocationPart(StringBuilder builder, String value) {

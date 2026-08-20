@@ -8,15 +8,15 @@ import java.util.List;
 
 public class MultipartPresignPartsRequest {
 
-    @NotBlank(message = "uploadId là bắt buộc")
+    @NotBlank(message = "uploadId is required")
     private String uploadId;
 
-    @NotBlank(message = "objectKey là bắt buộc")
+    @NotBlank(message = "objectKey is required")
     @Size(max = 512)
     private String objectKey;
 
-    @NotEmpty(message = "Danh sách partNumbers không được rỗng")
-    @Size(max = 50, message = "Tối đa 50 part mỗi lần ký")
+    @NotEmpty(message = "partNumbers list cannot be empty")
+    @Size(max = 50, message = "Maximum 50 parts per signing request")
     private List<Integer> partNumbers = new ArrayList<>();
 
     public String getUploadId() {

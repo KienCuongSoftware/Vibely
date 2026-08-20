@@ -24,7 +24,7 @@ public class AppUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
         User user = resolveUserForLoginIdentifier(identifier)
-            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         String[] authorities = user.getRole() == Role.ADMIN
             ? new String[] { "ROLE_ADMIN", "ROLE_USER" }
             : new String[] { "ROLE_" + user.getRole().name() };
@@ -54,6 +54,6 @@ public class AppUserDetailsService implements UserDetailsService {
 
     public User loadDomainUserByEmail(String email) {
         return userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
     }
 }

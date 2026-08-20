@@ -50,7 +50,7 @@ public class OriginalityJobService {
         }
         OriginalityJobEntity job = jobRepository
             .findWithVideoAndAuthorById(lockedId.get())
-            .orElseThrow(() -> new NotFoundException("Originality job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Originality job not found"));
         Video video = job.getVideo();
         job.setJobState(OriginalityJobState.PROCESSING);
         job.setClaimedAt(LocalDateTime.now());
@@ -78,14 +78,14 @@ public class OriginalityJobService {
     public void complete(long jobId, OriginalityCompleteRequest request) {
         OriginalityJobEntity job = jobRepository
             .findWithVideoAndAuthorById(jobId)
-            .orElseThrow(() -> new NotFoundException("Originality job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Originality job not found"));
         if (job.getJobState() == OriginalityJobState.COMPLETED) {
             log.info("Originality complete idempotent jobId={} already COMPLETED", jobId);
             return;
         }
         if (job.getJobState() != OriginalityJobState.PROCESSING
             && job.getJobState() != OriginalityJobState.PENDING) {
-            throw new BadRequestException("Job originality không ở trạng thái có thể complete.");
+            throw new BadRequestException("Originality job is not in a state that can be completed.");
         }
         Video video = job.getVideo();
         Video matched = null;
@@ -163,7 +163,7 @@ public class OriginalityJobService {
     public void fail(long jobId, String errorMessage) {
         OriginalityJobEntity job = jobRepository
             .findById(jobId)
-            .orElseThrow(() -> new NotFoundException("Originality job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Originality job not found"));
         String truncated = truncate(errorMessage, 2000);
         job.setLastError(truncated);
         int maxAttempts = Math.max(1, properties.getMaxJobAttempts());
@@ -193,7 +193,7 @@ public class OriginalityJobService {
         )) {
             if (job.getAttempts() >= properties.getMaxJobAttempts()) {
                 job.setJobState(OriginalityJobState.FAILED);
-                job.setLastError("Originality job stale PROCESSING quá hạn.");
+                job.setLastError("Originality job stale PROCESSING timed out.");
             } else {
                 job.setJobState(OriginalityJobState.PENDING);
                 job.setClaimedAt(null);
@@ -213,7 +213,7 @@ public class OriginalityJobService {
                 continue;
             }
             job.setJobState(OriginalityJobState.FAILED);
-            job.setLastError("Originality job PENDING quá hạn (worker không nhận).");
+            job.setLastError("Originality job PENDING timed out (worker did not pick it up).");
             jobRepository.save(job);
             log.warn("Failed stale PENDING originality jobId={} videoId={}", job.getId(),
                 job.getVideo() == null ? null : job.getVideo().getId());

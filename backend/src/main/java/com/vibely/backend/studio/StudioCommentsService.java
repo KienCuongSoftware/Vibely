@@ -82,7 +82,7 @@ public class StudioCommentsService {
         String sort
     ) {
         User me = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
 
         int safePage = Math.max(0, page);
         int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
@@ -103,7 +103,7 @@ public class StudioCommentsService {
             .plusDays(1)
             .atStartOfDay();
         if (!fromDate.isBefore(toExclusive)) {
-            throw new BadRequestException("Khoảng ngày bình luận không hợp lệ.");
+            throw new BadRequestException("Invalid comment date range");
         }
         Sort order = "oldest".equalsIgnoreCase(sort)
             ? Sort.by(Sort.Direction.ASC, "createdAt")
@@ -217,7 +217,7 @@ public class StudioCommentsService {
         try {
             return LocalDate.parse(raw.trim());
         } catch (DateTimeParseException ex) {
-            throw new BadRequestException("Ngày bình luận phải có định dạng YYYY-MM-DD.");
+            throw new BadRequestException("Comment date must be in YYYY-MM-DD format.");
         }
     }
 }

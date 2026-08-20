@@ -125,7 +125,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         if ("facebook".equalsIgnoreCase(registrationId)) {
             String fbId = stringValue(attributes.get("id"));
             if (fbId.isBlank()) {
-                throw new BadRequestException("Đăng nhập Facebook thiếu id người dùng, vui lòng thử lại");
+                throw new BadRequestException("Facebook login is missing the user id, please try again");
             }
             String graphEmail = stringValue(attributes.get("email"));
             return graphEmail.isBlank() ? "fb." + fbId + "@oauth.facebook.vibely" : graphEmail.trim();
@@ -140,7 +140,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 sub = stringValue(attributes.get("userId"));
             }
             if (sub.isBlank()) {
-                throw new BadRequestException("Đăng nhập LINE thiếu id người dùng, vui lòng thử lại");
+                throw new BadRequestException("LINE login is missing the user id, please try again");
             }
             return "line." + sub + "@oauth.line.vibely";
         }

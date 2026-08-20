@@ -34,12 +34,12 @@ public class VideoQueryService {
 
     public Video getVideoByPublicIdOrThrow(UUID publicId) {
         return videoRepository.findByPublicId(publicId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
     }
 
     public Video getVideoOrThrow(Long id) {
         return videoRepository.findById(Objects.requireNonNull(id, "id"))
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy video"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
     }
 
     @Transactional(readOnly = true)
@@ -54,17 +54,17 @@ public class VideoQueryService {
     public VideoResponse getVideoByIdForViewer(Long id, String viewerEmail) {
         Video video = getVideoOrThrow(id);
         if (video.getStatus() == VideoStatus.REMOVED) {
-            throw new NotFoundException("Không tìm thấy video");
+            throw new NotFoundException("Video not found");
         }
         User viewer = resolveViewer(viewerEmail);
         if (video.getStatus() == VideoStatus.READY) {
             if (!privacyAccessService.canViewerWatch(video, viewer)) {
-                throw new NotFoundException("Không tìm thấy video");
+                throw new NotFoundException("Video not found");
             }
             return responseMapper.toResponseForViewer(video, viewerEmail);
         }
         if (viewer == null || !Objects.equals(video.getAuthor().getId(), viewer.getId())) {
-            throw new NotFoundException("Không tìm thấy video");
+            throw new NotFoundException("Video not found");
         }
         return responseMapper.toResponseForViewer(video, viewerEmail);
     }

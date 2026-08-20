@@ -22,7 +22,7 @@ public class DeviceDetectionService {
             return "Edge";
         }
         if (ua.contains("coc_coc_browser") || ua.contains("coccocbrowser")) {
-            return "Cốc Cốc";
+            return "Coc Coc";
         }
         if (ua.contains("vivaldi/")) {
             return "Vivaldi";
@@ -51,7 +51,7 @@ public class DeviceDetectionService {
         if (ua.contains("safari/")) {
             return "Safari";
         }
-        return "Trình duyệt";
+        return "Browser";
     }
 
     private String normalizeBrowserHint(String browserHint) {
@@ -63,7 +63,7 @@ public class DeviceDetectionService {
             return "Chrome";
         }
         if (normalized.equalsIgnoreCase("CocCoc")) {
-            return "Cốc Cốc";
+            return "Coc Coc";
         }
         return normalized;
     }
@@ -96,7 +96,7 @@ public class DeviceDetectionService {
         if (ua.contains("linux")) {
             return "Linux";
         }
-        return "Không xác định";
+        return "Unknown";
     }
 
     private String resolveDeviceType(String ua) {

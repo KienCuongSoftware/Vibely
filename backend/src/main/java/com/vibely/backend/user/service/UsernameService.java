@@ -38,7 +38,7 @@ public class UsernameService {
     public String validateForRegistration(String rawUsername) {
         String normalized = normalize(rawUsername);
         if (!USERNAME_PATTERN.matcher(normalized).matches()) {
-            throw new BadRequestException("Vibely ID chỉ gồm chữ thường, số, dấu chấm và gạch dưới (4-24 ký tự)");
+            throw new BadRequestException("Vibely ID may only contain lowercase letters, numbers, dots, and underscores (4-24 characters)");
         }
         return normalized;
     }
@@ -50,13 +50,13 @@ public class UsernameService {
     public UsernameCheckResponse checkAvailability(String rawUsername, boolean confirm) {
         String normalized = normalize(rawUsername);
         if (normalized.isBlank()) {
-            return new UsernameCheckResponse(false, "", "Vui lòng nhập Vibely ID", null);
+            return new UsernameCheckResponse(false, "", "Please enter a Vibely ID", null);
         }
         if (!USERNAME_PATTERN.matcher(normalized).matches()) {
             return new UsernameCheckResponse(
                 false,
                 normalized,
-                "Vibely ID chỉ gồm chữ thường, số, dấu chấm và gạch dưới (4-24 ký tự)",
+                "Vibely ID may only contain lowercase letters, numbers, dots, and underscores (4-24 characters)",
                 null
             );
         }
@@ -66,16 +66,16 @@ public class UsernameService {
 
         if (available) {
             String message = confirm
-                ? "Vibely ID có thể sử dụng (đã xác minh lại với cơ sở dữ liệu)"
-                : "Vibely ID có thể sử dụng";
+                ? "Vibely ID is available (re-verified against the database)"
+                : "Vibely ID is available";
             return new UsernameCheckResponse(true, normalized, message, null, bloomHint, false);
         }
 
         String message = confirm
-            ? "Vibely ID đã tồn tại (đã xác minh lại với cơ sở dữ liệu)"
+            ? "Vibely ID already exists (re-verified against the database)"
             : bloomHint
-                ? "Vibely ID có thể đã tồn tại. Nhấn Kiểm tra lại để xác minh chính xác."
-                : "Vibely ID đã tồn tại";
+                ? "Vibely ID may already exist. Tap Check again to verify."
+                : "Vibely ID already exists";
         return new UsernameCheckResponse(
             false,
             normalized,

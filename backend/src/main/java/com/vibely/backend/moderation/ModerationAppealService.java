@@ -67,11 +67,11 @@ public class ModerationAppealService {
         User author = video.getAuthor();
         ModerationDecisionEntity decision = decisionRepository
             .findByVideo_Id(video.getId())
-            .orElseThrow(() -> new BadRequestException("Chưa có quyết định kiểm duyệt để khiếu nại."));
+            .orElseThrow(() -> new BadRequestException("There is no moderation decision to appeal."));
 
         ModerationDecision effective = decision.getEffectiveDecision();
         if (effective == ModerationDecision.ALLOW && decision.isExploreEligible()) {
-            throw new BadRequestException("Video đang được phân phối bình thường — không cần khiếu nại.");
+            throw new BadRequestException("Video is being distributed normally — no appeal is needed.");
         }
 
         List<Map<String, Object>> open = jdbcTemplate.queryForList(
@@ -83,7 +83,7 @@ public class ModerationAppealService {
             video.getId()
         );
         if (!open.isEmpty()) {
-            throw new BadRequestException("Bạn đã có khiếu nại đang chờ xử lý cho video này.");
+            throw new BadRequestException("You already have a pending appeal for this video.");
         }
 
         Long reportId = decision.getReport() == null ? null : decision.getReport().getId();
@@ -97,7 +97,7 @@ public class ModerationAppealService {
             }
         }
         if (reportId == null) {
-            throw new BadRequestException("Không tìm thấy báo cáo kiểm duyệt để khiếu nại.");
+            throw new BadRequestException("Moderation report to appeal not found.");
         }
 
         Long appealId;
@@ -119,7 +119,7 @@ public class ModerationAppealService {
                 request.getAppealText().trim()
             );
         } catch (DataIntegrityViolationException ex) {
-            throw new BadRequestException("Bạn đã có khiếu nại đang chờ xử lý cho video này.");
+            throw new BadRequestException("You already have a pending appeal for this video.");
         }
 
         Number queueIdNum = jdbcTemplate.queryForObject(
@@ -235,17 +235,17 @@ public class ModerationAppealService {
             appealId
         );
         if (rows.isEmpty()) {
-            throw new NotFoundException("Khiếu nại không tồn tại");
+            throw new NotFoundException("Appeal not found");
         }
         Map<String, Object> row = rows.get(0);
         String state = String.valueOf(row.get("appeal_state"));
         if (!"PENDING".equals(state) && !"IN_REVIEW".equals(state)) {
-            throw new BadRequestException("Khiếu nại đã được xử lý.");
+            throw new BadRequestException("Appeal has already been resolved.");
         }
 
         String outcome = request.normalizedOutcome();
         if (!List.of("UPHELD", "SOFTENED", "RESTORED", "REJECTED").contains(outcome)) {
-            throw new BadRequestException("outcome không hợp lệ");
+            throw new BadRequestException("Invalid outcome");
         }
         ModerationDecision toDecision = request.parsedDecision();
         if (("UPHELD".equals(outcome) || "REJECTED".equals(outcome))
@@ -253,7 +253,7 @@ public class ModerationAppealService {
             // still allowed if admin chooses but warn via audit — OK
         }
         if ("RESTORED".equals(outcome) && toDecision != ModerationDecision.ALLOW) {
-            throw new BadRequestException("RESTORED phải đi kèm quyết định ALLOW.");
+            throw new BadRequestException("RESTORED must be paired with an ALLOW decision.");
         }
 
         long videoId = ((Number) row.get("video_id")).longValue();
@@ -262,7 +262,7 @@ public class ModerationAppealService {
         Long queueId = row.get("queue_id") == null ? null : ((Number) row.get("queue_id")).longValue();
 
         Video video = videoRepository.findById(videoId)
-            .orElseThrow(() -> new NotFoundException("Video không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
         ModerationReportEntity report = null;
         if (reportId != null) {
             report = reportRepository.findById(reportId).orElse(null);
@@ -279,7 +279,7 @@ public class ModerationAppealService {
             }
         }
         if (report == null) {
-            throw new BadRequestException("Không tìm thấy báo cáo kiểm duyệt để áp dụng.");
+            throw new BadRequestException("Moderation report to apply not found.");
         }
 
         report.setDecision(toDecision);
@@ -347,7 +347,7 @@ public class ModerationAppealService {
             appealId
         );
         if (rows.isEmpty()) {
-            throw new NotFoundException("Khiếu nại không tồn tại");
+            throw new NotFoundException("Appeal not found");
         }
         Map<String, Object> row = rows.get(0);
         Object publicId = row.get("public_id");
@@ -395,7 +395,7 @@ public class ModerationAppealService {
                 hasOpen,
                 appealState,
                 trust,
-                "Chưa có quyết định kiểm duyệt tự động."
+                "No automatic moderation decision yet."
             );
         }
 
@@ -410,11 +410,11 @@ public class ModerationAppealService {
             case BLOCK, DELETE -> "REMOVED";
         };
         String message = switch (label) {
-            case "NORMAL" -> "Video đang được phân phối bình thường.";
-            case "LIMITED" -> "Video bị hạn chế phân phối (không vào Khám phá / Dành cho bạn).";
-            case "UNDER_REVIEW" -> "Video đang được kiểm duyệt viên xem lại.";
-            case "REMOVED" -> "Video đã bị gỡ khỏi nền tảng.";
-            default -> "Trạng thái kiểm duyệt.";
+            case "NORMAL" -> "Video is being distributed normally.";
+            case "LIMITED" -> "Video distribution is restricted (not shown in Explore / For You).";
+            case "UNDER_REVIEW" -> "Video is being reviewed by a moderator.";
+            case "REMOVED" -> "Video has been removed from the platform.";
+            default -> "Moderation status.";
         };
         return new ModerationStatusResponse(
             publicId,
@@ -432,17 +432,17 @@ public class ModerationAppealService {
 
     private Video requireAuthorVideo(String publicIdRaw, String email) {
         if (email == null || email.isBlank()) {
-            throw new UnauthorizedException("Cần đăng nhập.");
+            throw new UnauthorizedException("Login required.");
         }
         UUID publicId = VideoPublicIds.parse(publicIdRaw);
         Video video = videoRepository
             .findByPublicId(publicId)
-            .orElseThrow(() -> new NotFoundException("Video không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Video not found"));
         User author = userRepository
             .findByEmail(email)
-            .orElseThrow(() -> new UnauthorizedException("Không xác thực được người dùng."));
+            .orElseThrow(() -> new UnauthorizedException("Could not authenticate user."));
         if (video.getAuthor() == null || !author.getId().equals(video.getAuthor().getId())) {
-            throw new UnauthorizedException("Chỉ tác giả mới xem/khiếu nại được.");
+            throw new UnauthorizedException("Only the author can view or appeal.");
         }
         return video;
     }

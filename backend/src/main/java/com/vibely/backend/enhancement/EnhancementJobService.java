@@ -40,7 +40,7 @@ public class EnhancementJobService {
     public Optional<EnhanceClaimResponse> claimById(UUID jobId, String workerId) {
         EnhancementJobEntity job = jobRepository
             .findWithVideoAndAuthorById(jobId)
-            .orElseThrow(() -> new NotFoundException("Enhancement job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Enhancement job not found"));
         if (job.getState() != EnhancementJobState.PENDING
             && job.getState() != EnhancementJobState.QUEUED
             && job.getState() != EnhancementJobState.RETRYING) {
@@ -52,7 +52,7 @@ public class EnhancementJobService {
     private Optional<EnhanceClaimResponse> markClaimed(UUID jobId, String workerId) {
         EnhancementJobEntity job = jobRepository
             .findWithVideoAndAuthorById(jobId)
-            .orElseThrow(() -> new NotFoundException("Enhancement job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Enhancement job not found"));
         Video video = job.getVideo();
         Instant now = Instant.now();
         job.setState(EnhancementJobState.DOWNLOADING);
@@ -130,7 +130,7 @@ public class EnhancementJobService {
     public void updateProgress(UUID jobId, EnhanceProgressRequest request) {
         EnhancementJobEntity job = jobRepository
             .findById(jobId)
-            .orElseThrow(() -> new NotFoundException("Enhancement job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Enhancement job not found"));
         if (request.progressPct() != null) {
             job.setProgressPct(Math.max(0, Math.min(100, request.progressPct())));
         }
@@ -161,7 +161,7 @@ public class EnhancementJobService {
     public void complete(UUID jobId, EnhanceCompleteRequest request) {
         EnhancementJobEntity job = jobRepository
             .findWithVideoAndAuthorById(jobId)
-            .orElseThrow(() -> new NotFoundException("Enhancement job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Enhancement job not found"));
         if (job.getState() == EnhancementJobState.COMPLETED) {
             return;
         }
@@ -212,7 +212,7 @@ public class EnhancementJobService {
     public void fail(UUID jobId, String errorMessage, String errorCode, boolean retryable) {
         EnhancementJobEntity job = jobRepository
             .findById(jobId)
-            .orElseThrow(() -> new NotFoundException("Enhancement job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Enhancement job not found"));
         job.setLastError(errorMessage == null ? "unknown" : errorMessage.substring(0, Math.min(errorMessage.length(), 1900)));
         job.setErrorCode(errorCode);
         job.setLeaseOwner(null);
@@ -241,7 +241,7 @@ public class EnhancementJobService {
     public EnhancementJobEntity requireJob(UUID jobId) {
         return jobRepository
             .findWithVideoAndAuthorById(jobId)
-            .orElseThrow(() -> new NotFoundException("Enhancement job không tồn tại"));
+            .orElseThrow(() -> new NotFoundException("Enhancement job not found"));
     }
 
     private static String labelForProfile(String profile) {

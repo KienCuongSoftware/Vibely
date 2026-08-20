@@ -5,10 +5,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record AdminUpdateBanAppealStatusRequest(
-    @NotNull(message = "Trạng thái là bắt buộc")
+    @NotNull(message = "Status is required")
     BanAppealStatus status,
 
-    @Size(max = 1000, message = "Ghi chú tối đa 1000 ký tự")
+    @Size(max = 1000, message = "Note must be at most 1000 characters")
     String adminNotes
 ) {
 }

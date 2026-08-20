@@ -80,7 +80,7 @@ public class OtpVerificationService {
 
         if (!isHumanVerified(request, verificationToken, purpose)) {
             logChallenge(email, false, "captcha", "verification failed");
-            throw new BadRequestException("Xác minh chống spam thất bại, vui lòng thử lại");
+            throw new BadRequestException("Anti-spam verification failed, please try again");
         }
 
         if (purpose == OtpCodePurpose.PASSWORD_RESET && !userRepository.existsByEmail(email)) {
@@ -146,7 +146,7 @@ public class OtpVerificationService {
         );
 
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new BadRequestException("Không tìm thấy tài khoản với email này"));
+            .orElseThrow(() -> new BadRequestException("No account found with this email"));
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
@@ -174,14 +174,14 @@ public class OtpVerificationService {
         String email = rawEmail.trim().toLowerCase();
         OtpVerificationCode otpCode = otpVerificationCodeRepository
             .findTopByEmailAndPurposeAndConsumedFalseOrderByCreatedAtDesc(email, purpose.name())
-            .orElseThrow(() -> new BadRequestException("Mã xác minh không hợp lệ"));
+            .orElseThrow(() -> new BadRequestException("Invalid verification code"));
 
         if (otpCode.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("Mã xác minh đã hết hạn");
+            throw new BadRequestException("Verification code has expired");
         }
 
         if (!otpCode.getCodeHash().equals(hash(rawCode.trim()))) {
-            throw new BadRequestException("Mã xác minh không chính xác");
+            throw new BadRequestException("Incorrect verification code");
         }
 
         if (consume) {
@@ -217,7 +217,7 @@ public class OtpVerificationService {
 
         LocalDateTime allowedAt = latestCode.get().getCreatedAt().plusSeconds(resendCooldownSeconds);
         if (allowedAt.isAfter(LocalDateTime.now())) {
-            throw new BadRequestException("Bạn thao tác quá nhanh, vui lòng thử lại sau");
+            throw new BadRequestException("You are acting too quickly, please try again later");
         }
     }
 

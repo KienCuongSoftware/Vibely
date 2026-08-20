@@ -5,10 +5,10 @@ import jakarta.validation.constraints.Size;
 
 public class MultipartAbortRequest {
 
-    @NotBlank(message = "uploadId là bắt buộc")
+    @NotBlank(message = "uploadId is required")
     private String uploadId;
 
-    @NotBlank(message = "objectKey là bắt buộc")
+    @NotBlank(message = "objectKey is required")
     @Size(max = 512)
     private String objectKey;
 

@@ -9,12 +9,12 @@ public class AuthRequest {
      * Login identifier: email address or VibelyID (username). Kept as {@code email} in JSON
      * for API compatibility; not restricted to email format.
      */
-    @NotBlank(message = "Email hoặc VibelyID là bắt buộc")
-    @Size(max = 255, message = "Email hoặc VibelyID không hợp lệ")
+    @NotBlank(message = "Email or VibelyID is required")
+    @Size(max = 255, message = "Invalid email or VibelyID")
     private String email;
 
-    @NotBlank(message = "Mật khẩu là bắt buộc")
-    @Size(min = 6, max = 100, message = "Mật khẩu phải từ 6 đến 100 ký tự")
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, max = 100, message = "Password must be between 6 and 100 characters")
     private String password;
 
     private LoginContextRequest loginContext;
