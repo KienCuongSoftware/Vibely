@@ -1870,10 +1870,10 @@ export function UploadPage() {
                   <IoCloudUploadOutline className="text-2xl sm:text-3xl" aria-hidden />
                 </div>
                 <p className="mt-4 text-base font-semibold text-pretty text-zinc-100 sm:text-lg">
-                  Chọn video để tải lên
+                  {t('upload.dropTitle')}
                 </p>
                 <p className="mt-1 text-sm text-pretty text-zinc-500">
-                  Hoặc kéo thả video vào khu vực này
+                  {t('upload.dropHint')}
                 </p>
                 <button
                   type="button"
@@ -1881,7 +1881,7 @@ export function UploadPage() {
                   onClick={onPickFile}
                   disabled={busy}
                 >
-                  Chọn video
+                  {t('upload.pickVideo')}
                 </button>
                 {status ? (
                   <p className="mt-4 text-sm font-medium text-rose-400" role="alert">
@@ -1889,7 +1889,9 @@ export function UploadPage() {
                   </p>
                 ) : null}
                 {videoFile ? (
-                  <p className="mt-2 text-xs text-zinc-500">Đã chọn: {videoFile.name}</p>
+                  <p className="mt-2 text-xs text-zinc-500">
+                    {t('upload.selectedFile', { name: videoFile.name })}
+                  </p>
                 ) : null}
               </div>
 
@@ -1924,7 +1926,9 @@ export function UploadPage() {
                             {formatFileSize(uploadLoadedBytes)}/{formatFileSize(uploadTotalBytes || uploadedVideo.fileSize)}
                           </span>
                           <span className="text-zinc-500">
-                            Thời lượng: {formatDurationTikTok(uploadedVideo.durationSeconds)}
+                            {t('upload.durationLabel', {
+                              duration: formatDurationTikTok(uploadedVideo.durationSeconds),
+                            })}
                           </span>
                           {uploadEtaLabel ? (
                             <span className="text-zinc-500">{uploadEtaLabel}</span>

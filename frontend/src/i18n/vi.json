@@ -261,8 +261,25 @@
     "emptyTitle": "Chưa có hoạt động nào",
     "emptyDescription": "Khi có lượt thích, bình luận hoặc follower mới, bạn sẽ thấy tại đây.",
     "system": "Thông báo hệ thống",
+    "systemEmpty": "Chưa có thông báo hệ thống",
     "transaction": "Trợ lý giao dịch",
-    "followBack": "Follow lại"
+    "followBack": "Follow lại",
+    "actions": {
+      "andOthers": "và {{count}} người khác {{action}}",
+      "commentReply": "đã trả lời bình luận của bạn",
+      "commentLike": "đã thích bình luận của bạn",
+      "videoLike": "đã thích video của bạn",
+      "mention": "đã nhắc đến bạn trong bình luận",
+      "follow": "đã bắt đầu follow bạn",
+      "followRequest": "đã yêu cầu follow bạn",
+      "interacted": "đã tương tác với bạn",
+      "someone": "Ai đó"
+    },
+    "time": {
+      "justNow": "Vừa xong",
+      "minutes": "{{count}} phút",
+      "hours": "{{count}} giờ"
+    }
   },
   "suggestions": {
     "emptyTitle": "Chưa có gợi ý",
@@ -2470,6 +2487,11 @@
     "leaveTitle": "Bạn có chắc muốn thoát?",
     "leaveHint": "Tiến trình và các thay đổi của bạn sẽ không được lưu.",
     "leaveExit": "Thoát",
-    "cancel": "Hủy"
+    "cancel": "Hủy",
+    "dropTitle": "Chọn video để tải lên",
+    "dropHint": "Hoặc kéo thả video vào khu vực này",
+    "pickVideo": "Chọn video",
+    "selectedFile": "Đã chọn: {{name}}",
+    "durationLabel": "Thời lượng: {{duration}}"
   }
 }

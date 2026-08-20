@@ -61,7 +61,7 @@ export function ActivityPanel({ onClose, fullPage = false }) {
     return () => document.removeEventListener('keydown', onDocKeyDown)
   }, [onClose, view])
 
-  const showSystemHub = activeFilter === 'all'
+  const showSystemHub = activeFilter === 'all' && Boolean(String(systemInboxPreview || '').trim())
 
   const sections = useMemo(() => {
     const filtered = filterActivityItems(items, activeFilter)

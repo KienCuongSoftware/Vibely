@@ -1,7 +1,12 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
+import i18n from '@/i18n/i18n.js'
 import { buildActivityActionText } from '@/features/notification/utils/activityUtils.js'
 
 describe('buildActivityActionText', () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('vi')
+  })
+
   it('aggregates video like copy for multiple actors', () => {
     expect(
       buildActivityActionText({ type: 'video_like', actorCount: 1 }),
@@ -33,5 +38,12 @@ describe('buildActivityActionText', () => {
     expect(
       buildActivityActionText({ type: 'follow', actorCount: 5 }),
     ).toBe('và 4 người khác đã bắt đầu follow bạn')
+  })
+
+  it('uses English copy when locale is en', async () => {
+    await i18n.changeLanguage('en')
+    expect(
+      buildActivityActionText({ type: 'follow', actorCount: 1 }),
+    ).toBe('started following you')
   })
 })

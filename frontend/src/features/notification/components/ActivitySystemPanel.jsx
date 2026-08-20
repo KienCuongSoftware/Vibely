@@ -107,7 +107,7 @@ export function ActivitySystemPanel({ token, onBack, onClose }) {
           </div>
         ) : visibleItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-3 py-12 text-center">
-            <p className="text-xs font-medium text-zinc-400">{t('activityPage.emptyTitle')}</p>
+            <p className="text-xs font-medium text-zinc-400">{t('activityPage.systemEmpty')}</p>
           </div>
         ) : (
           <div className="space-y-2">

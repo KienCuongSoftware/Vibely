@@ -553,7 +553,24 @@
     "emptyDescription": "좋아요, 댓글, 새 팔로워가 있으면 여기에 표시됩니다.",
     "system": "시스템 알림",
     "transaction": "거래 도우미",
-    "followBack": "맞팔로우"
+    "followBack": "맞팔로우",
+    "systemEmpty": "No system notifications yet",
+    "actions": {
+      "andOthers": "and {{count}} others {{action}}",
+      "commentReply": "replied to your comment",
+      "commentLike": "liked your comment",
+      "videoLike": "liked your video",
+      "mention": "mentioned you in a comment",
+      "follow": "started following you",
+      "followRequest": "requested to follow you",
+      "interacted": "interacted with you",
+      "someone": "Someone"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutes": "{{count}}m",
+      "hours": "{{count}}h"
+    }
   },
   "suggestions": {
     "emptyTitle": "아직 추천이 없습니다",
@@ -2470,6 +2487,11 @@
     "leaveTitle": "Are you sure you want to leave?",
     "leaveHint": "Your progress and changes will not be saved.",
     "leaveExit": "Leave",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "dropTitle": "Select video to upload",
+    "dropHint": "Or drag and drop a video here",
+    "pickVideo": "Select video",
+    "selectedFile": "Selected: {{name}}",
+    "durationLabel": "Duration: {{duration}}"
   }
 }

@@ -553,7 +553,24 @@
     "emptyDescription": "有讚、留言或新追蹤者時會顯示在這裡。",
     "system": "系統通知",
     "transaction": "交易助理",
-    "followBack": "回追"
+    "followBack": "回追",
+    "systemEmpty": "No system notifications yet",
+    "actions": {
+      "andOthers": "and {{count}} others {{action}}",
+      "commentReply": "replied to your comment",
+      "commentLike": "liked your comment",
+      "videoLike": "liked your video",
+      "mention": "mentioned you in a comment",
+      "follow": "started following you",
+      "followRequest": "requested to follow you",
+      "interacted": "interacted with you",
+      "someone": "Someone"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutes": "{{count}}m",
+      "hours": "{{count}}h"
+    }
   },
   "suggestions": {
     "emptyTitle": "尚無推薦",
@@ -2470,6 +2487,11 @@
     "leaveTitle": "Are you sure you want to leave?",
     "leaveHint": "Your progress and changes will not be saved.",
     "leaveExit": "Leave",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "dropTitle": "Select video to upload",
+    "dropHint": "Or drag and drop a video here",
+    "pickVideo": "Select video",
+    "selectedFile": "Selected: {{name}}",
+    "durationLabel": "Duration: {{duration}}"
   }
 }

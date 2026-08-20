@@ -552,8 +552,25 @@
     "emptyTitle": "まだアクティビティがありません",
     "emptyDescription": "いいね、コメント、新しいフォロワーがあるとここに表示されます。",
     "system": "システム通知",
+    "systemEmpty": "システム通知はまだありません",
     "transaction": "取引アシスタント",
-    "followBack": "フォローバック"
+    "followBack": "フォローバック",
+    "actions": {
+      "andOthers": "他{{count}}人が{{action}}",
+      "commentReply": "あなたのコメントに返信しました",
+      "commentLike": "あなたのコメントにいいねしました",
+      "videoLike": "あなたの動画にいいねしました",
+      "mention": "コメントであなたをメンションしました",
+      "follow": "あなたをフォローし始めました",
+      "followRequest": "フォローをリクエストしました",
+      "interacted": "あなたとやり取りしました",
+      "someone": "誰か"
+    },
+    "time": {
+      "justNow": "たった今",
+      "minutes": "{{count}}分",
+      "hours": "{{count}}時間"
+    }
   },
   "suggestions": {
     "emptyTitle": "まだおすすめがありません",
@@ -1224,20 +1241,20 @@
       "inspiration": "VibelyStudio | Inspiration"
     },
     "nav": {
-      "manage": "Manage",
-      "grow": "Grow",
-      "tools": "Tools",
-      "other": "More",
-      "home": "Home",
-      "posts": "Posts",
-      "analytics": "Analytics",
-      "comments": "Comments",
-      "inspiration": "Inspiration",
-      "academy": "Creator Academy",
-      "monetize": "Monetize",
-      "unlimitedAudio": "Unlimited audio",
-      "smartSplit": "Smart split",
-      "feedback": "Feedback"
+      "manage": "管理",
+      "grow": "成長",
+      "tools": "ツール",
+      "other": "その他",
+      "home": "ホーム",
+      "posts": "投稿",
+      "analytics": "アナリティクス",
+      "comments": "コメント",
+      "inspiration": "インスピレーション",
+      "academy": "クリエイターアカデミー",
+      "monetize": "収益化",
+      "unlimitedAudio": "無制限オーディオ",
+      "smartSplit": "スマート分割",
+      "feedback": "フィードバック"
     },
     "account": {
       "menuAria": "Account menu",
@@ -2402,14 +2419,14 @@
     "schedule": "Schedule",
     "post": "Post",
     "guide": {
-      "sizeTitle": "Size and duration",
-      "sizeDetail": "Max 30 GB; video duration up to 60 minutes.",
-      "formatTitle": "File format",
-      "formatDetail": "Recommended: .mp4. Also supports .mov and .webm.",
-      "resolutionTitle": "Resolution",
-      "resolutionDetail": "Prefer high quality: 1080p, 1440p, or 4K.",
-      "aspectTitle": "Aspect ratio",
-      "aspectDetail": "Recommended 16:9 for landscape and 9:16 for portrait."
+      "sizeTitle": "サイズと長さ",
+      "sizeDetail": "最大 30 GB、動画の長さは最大 60 分。",
+      "formatTitle": "ファイル形式",
+      "formatDetail": "推奨: .mp4。.mov と .webm にも対応。",
+      "resolutionTitle": "解像度",
+      "resolutionDetail": "高画質推奨: 1080p、1440p、または 4K。",
+      "aspectTitle": "アスペクト比",
+      "aspectDetail": "横向きは 16:9、縦向きは 9:16 を推奨。"
     },
     "privacy": {
       "everyone": "Everyone",
@@ -2470,6 +2487,11 @@
     "leaveTitle": "Are you sure you want to leave?",
     "leaveHint": "Your progress and changes will not be saved.",
     "leaveExit": "Leave",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "dropTitle": "アップロードする動画を選択",
+    "dropHint": "またはここに動画をドラッグ＆ドロップ",
+    "pickVideo": "動画を選択",
+    "selectedFile": "選択済み: {{name}}",
+    "durationLabel": "長さ: {{duration}}"
   }
 }

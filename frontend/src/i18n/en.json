@@ -261,8 +261,25 @@
     "emptyTitle": "No activity yet",
     "emptyDescription": "When you get likes, comments, or new followers, you'll see them here.",
     "system": "System notification",
+    "systemEmpty": "No system notifications yet",
     "transaction": "Transaction assistant",
-    "followBack": "Follow back"
+    "followBack": "Follow back",
+    "actions": {
+      "andOthers": "and {{count}} others {{action}}",
+      "commentReply": "replied to your comment",
+      "commentLike": "liked your comment",
+      "videoLike": "liked your video",
+      "mention": "mentioned you in a comment",
+      "follow": "started following you",
+      "followRequest": "requested to follow you",
+      "interacted": "interacted with you",
+      "someone": "Someone"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutes": "{{count}}m",
+      "hours": "{{count}}h"
+    }
   },
   "suggestions": {
     "emptyTitle": "No suggestions yet",
@@ -2470,6 +2487,11 @@
     "leaveTitle": "Are you sure you want to leave?",
     "leaveHint": "Your progress and changes will not be saved.",
     "leaveExit": "Leave",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "dropTitle": "Select video to upload",
+    "dropHint": "Or drag and drop a video here",
+    "pickVideo": "Select video",
+    "selectedFile": "Selected: {{name}}",
+    "durationLabel": "Duration: {{duration}}"
   }
 }

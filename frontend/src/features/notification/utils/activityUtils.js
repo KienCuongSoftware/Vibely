@@ -1,4 +1,5 @@
 import { ACTIVITY_SECTIONS } from '@/features/notification/utils/activityConstants.js'
+import i18n from '@/i18n/i18n.js'
 
 export function filterActivityItems(items, filterId) {
   if (!filterId || filterId === 'all') return items
@@ -20,34 +21,40 @@ export function groupActivityBySection(items) {
   })).filter((section) => section.items.length > 0)
 }
 
-function aggregatedOthersAction(singularAction, count) {
+function aggregatedOthersAction(singularKey, count) {
   const total = Math.max(1, Number(count ?? 1))
-  if (total <= 1) return singularAction
-  return `và ${total - 1} người khác ${singularAction}`
+  const singular = i18n.t(singularKey)
+  if (total <= 1) return singular
+  return i18n.t('activityPage.actions.andOthers', {
+    count: total - 1,
+    action: singular,
+  })
 }
 
 export function buildActivityActionText(item) {
   switch (item.type) {
     case 'comment_reply':
-      return aggregatedOthersAction('đã trả lời bình luận của bạn', item.actorCount)
+      return aggregatedOthersAction('activityPage.actions.commentReply', item.actorCount)
     case 'comment_like':
-      return aggregatedOthersAction('đã thích bình luận của bạn', item.actorCount)
+      return aggregatedOthersAction('activityPage.actions.commentLike', item.actorCount)
     case 'video_like':
-      return aggregatedOthersAction('đã thích video của bạn', item.actorCount)
+      return aggregatedOthersAction('activityPage.actions.videoLike', item.actorCount)
     case 'mention':
-      return aggregatedOthersAction('đã nhắc đến bạn trong bình luận', item.actorCount)
+      return aggregatedOthersAction('activityPage.actions.mention', item.actorCount)
     case 'follow':
-      return aggregatedOthersAction('đã bắt đầu follow bạn', item.actorCount)
+      return aggregatedOthersAction('activityPage.actions.follow', item.actorCount)
     case 'follow_request':
-      return 'đã yêu cầu follow bạn'
+      return i18n.t('activityPage.actions.followRequest')
     default:
-      return 'đã tương tác với bạn'
+      return i18n.t('activityPage.actions.interacted')
   }
 }
 
 export function buildActivityActorName(item) {
-  if (item.type === 'system') return item.title ?? 'Thông báo hệ thống'
-  return item.actor?.displayName || item.actor?.username || 'Ai đó'
+  if (item.type === 'system') {
+    return item.title ?? i18n.t('activityPage.system')
+  }
+  return item.actor?.displayName || item.actor?.username || i18n.t('activityPage.actions.someone')
 }
 
 export function formatActivityTimestamp(iso, fallbackIso) {
@@ -59,14 +66,15 @@ export function formatActivityTimestamp(iso, fallbackIso) {
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffMin = Math.floor(diffMs / 60_000)
-  if (diffMin < 1) return 'Vừa xong'
-  if (diffMin < 60) return `${diffMin} phút`
+  if (diffMin < 1) return i18n.t('activityPage.time.justNow')
+  if (diffMin < 60) return i18n.t('activityPage.time.minutes', { count: diffMin })
 
   const diffHours = Math.floor(diffMin / 60)
-  if (diffHours < 24) return `${diffHours} giờ`
+  if (diffHours < 24) return i18n.t('activityPage.time.hours', { count: diffHours })
 
   const sameYear = date.getFullYear() === now.getFullYear()
-  return date.toLocaleDateString('vi-VN', {
+  const locale = i18n.language || 'en'
+  return date.toLocaleDateString(locale, {
     day: 'numeric',
     month: sameYear ? 'numeric' : 'short',
     ...(sameYear ? {} : { year: 'numeric' }),
