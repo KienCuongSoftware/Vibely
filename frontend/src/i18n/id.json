@@ -84,7 +84,8 @@
       "resend": "Kirim ulang kode",
       "activate": "Mengaktifkan kembali",
       "sendOtp": "Kirim kode verifikasi"
-    }
+    },
+    "recentlyUsed": "Baru saja dipakai"
   },
   "months": {
     "1": "Januari",

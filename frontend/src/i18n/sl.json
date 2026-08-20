@@ -84,7 +84,8 @@
       "resend": "Ponovno pošlji kodo",
       "activate": "Ponovno aktiviraj",
       "sendOtp": "Pošlji potrditveno kodo"
-    }
+    },
+    "recentlyUsed": "Nedavno uporabljeno"
   },
   "months": {
     "1": "januarja",

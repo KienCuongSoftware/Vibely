@@ -84,7 +84,8 @@
       "resend": "Kodni qayta yuborish",
       "activate": "Qayta faollashtirish",
       "sendOtp": "Tasdiqlash kodini yuboring"
-    }
+    },
+    "recentlyUsed": "Yaqinda ishlatilgan"
   },
   "months": {
     "1": "Yanvar",

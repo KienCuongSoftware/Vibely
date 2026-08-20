@@ -84,7 +84,8 @@
       "resend": "Torna a enviar el codi",
       "activate": "Reactivar",
       "sendOtp": "Envia el codi de verificació"
-    }
+    },
+    "recentlyUsed": "Usat recentment"
   },
   "months": {
     "1": "gener",

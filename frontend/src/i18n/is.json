@@ -84,7 +84,8 @@
       "resend": "Sendu kóða aftur",
       "activate": "Virkjaðu aftur",
       "sendOtp": "Sendu staðfestingarkóða"
-    }
+    },
+    "recentlyUsed": "Nýlega notað"
   },
   "months": {
     "1": "janúar",

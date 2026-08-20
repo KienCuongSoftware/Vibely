@@ -84,7 +84,8 @@
       "resend": "Hantar semula kod",
       "activate": "Aktifkan semula",
       "sendOtp": "Hantar kod pengesahan"
-    }
+    },
+    "recentlyUsed": "Baru digunakan"
   },
   "months": {
     "1": "Januari",

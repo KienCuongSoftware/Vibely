@@ -84,7 +84,8 @@
       "resend": "Send kode igen",
       "activate": "Genaktiver",
       "sendOtp": "Send bekræftelseskode"
-    }
+    },
+    "recentlyUsed": "Brugt for nylig"
   },
   "months": {
     "1": "januar",

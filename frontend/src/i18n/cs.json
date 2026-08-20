@@ -84,7 +84,8 @@
       "resend": "Znovu odeslat kód",
       "activate": "Znovu aktivujte",
       "sendOtp": "Odeslat ověřovací kód"
-    }
+    },
+    "recentlyUsed": "Nedávno použito"
   },
   "months": {
     "1": "ledna",

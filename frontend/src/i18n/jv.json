@@ -84,7 +84,8 @@
       "resend": "Kirim maneh kode",
       "activate": "Aktifake maneh",
       "sendOtp": "Kirim kode verifikasi"
-    }
+    },
+    "recentlyUsed": "Bubaran digunakake"
   },
   "months": {
     "1": "Januari",

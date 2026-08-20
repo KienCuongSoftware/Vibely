@@ -84,7 +84,8 @@
       "resend": "Skicka koden igen",
       "activate": "Återaktivera",
       "sendOtp": "Skicka verifieringskod"
-    }
+    },
+    "recentlyUsed": "Nyligen använt"
   },
   "months": {
     "1": "januari",

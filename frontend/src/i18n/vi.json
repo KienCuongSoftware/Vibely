@@ -84,7 +84,8 @@
       "resend": "Gửi lại mã",
       "activate": "Kích hoạt lại",
       "sendOtp": "Gửi mã xác minh"
-    }
+    },
+    "recentlyUsed": "Dùng gần đây"
   },
   "months": {
     "1": "Tháng Một",

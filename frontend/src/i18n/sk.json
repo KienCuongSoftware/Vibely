@@ -84,7 +84,8 @@
       "resend": "Znova odoslať kód",
       "activate": "Znova aktivovať",
       "sendOtp": "Odoslať overovací kód"
-    }
+    },
+    "recentlyUsed": "Nedávno použité"
   },
   "months": {
     "1": "januára",

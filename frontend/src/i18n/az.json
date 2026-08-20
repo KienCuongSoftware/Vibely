@@ -84,7 +84,8 @@
       "resend": "Kodu yenidən göndərin",
       "activate": "Yenidən aktivləşdirin",
       "sendOtp": "Doğrulama kodunu göndərin"
-    }
+    },
+    "recentlyUsed": "Son istifadə"
   },
   "months": {
     "1": "yanvar",

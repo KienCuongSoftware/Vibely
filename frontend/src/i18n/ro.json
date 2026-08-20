@@ -84,7 +84,8 @@
       "resend": "Retrimiteți codul",
       "activate": "Reactiva",
       "sendOtp": "Trimite codul de verificare"
-    }
+    },
+    "recentlyUsed": "Folosit recent"
   },
   "months": {
     "1": "ianuarie",

@@ -84,7 +84,8 @@
       "resend": "Tuma tena msimbo",
       "activate": "Anzisha tena",
       "sendOtp": "Tuma nambari ya kuthibitisha"
-    }
+    },
+    "recentlyUsed": "Imetumika hivi karibuni"
   },
   "months": {
     "1": "Januari",

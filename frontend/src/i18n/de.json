@@ -84,7 +84,8 @@
       "resend": "Code erneut senden",
       "activate": "Reaktivieren",
       "sendOtp": "Bestätigungscode senden"
-    }
+    },
+    "recentlyUsed": "Zuletzt verwendet"
   },
   "months": {
     "1": "Januar",

@@ -84,7 +84,8 @@
       "resend": "Code opnieuw verzenden",
       "activate": "Opnieuw activeren",
       "sendOtp": "Verificatiecode verzenden"
-    }
+    },
+    "recentlyUsed": "Onlangs gebruikt"
   },
   "months": {
     "1": "Januari",

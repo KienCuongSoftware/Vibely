@@ -84,7 +84,8 @@
       "resend": "Kód újraküldése",
       "activate": "Aktiválja újra",
       "sendOtp": "Ellenőrző kód küldése"
-    }
+    },
+    "recentlyUsed": "Nemrég használt"
   },
   "months": {
     "1": "január",

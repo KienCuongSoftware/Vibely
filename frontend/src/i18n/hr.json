@@ -84,7 +84,8 @@
       "resend": "Ponovno pošalji kod",
       "activate": "Ponovno aktiviranje",
       "sendOtp": "Pošalji kontrolni kod"
-    }
+    },
+    "recentlyUsed": "Nedavno korišteno"
   },
   "months": {
     "1": "siječnja",

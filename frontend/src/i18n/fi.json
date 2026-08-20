@@ -84,7 +84,8 @@
       "resend": "Lähetä koodi uudelleen",
       "activate": "Aktivoi uudelleen",
       "sendOtp": "Lähetä vahvistuskoodi"
-    }
+    },
+    "recentlyUsed": "Käytetty äskettäin"
   },
   "months": {
     "1": "tammikuu",

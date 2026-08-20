@@ -84,7 +84,8 @@
       "resend": "重新發送程式碼",
       "activate": "重新啟用",
       "sendOtp": "發送驗證碼"
-    }
+    },
+    "recentlyUsed": "最近使用"
   },
   "months": {
     "1": "一月",

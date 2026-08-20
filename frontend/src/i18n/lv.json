@@ -84,7 +84,8 @@
       "resend": "Atkārtoti nosūtīt kodu",
       "activate": "Atkārtoti aktivizēt",
       "sendOtp": "Nosūtiet verifikācijas kodu"
-    }
+    },
+    "recentlyUsed": "Nesen lietots"
   },
   "months": {
     "1": "janvārī",

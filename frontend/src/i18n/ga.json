@@ -84,7 +84,8 @@
       "resend": "Cód a athsheoladh",
       "activate": "Athghníomhachtaigh",
       "sendOtp": "Seol cód fíorúcháin"
-    }
+    },
+    "recentlyUsed": "Úsáidte le déanaí"
   },
   "months": {
     "1": "Eanáir",

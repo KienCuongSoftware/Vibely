@@ -84,7 +84,8 @@
       "resend": "코드 재전송",
       "activate": "재활성화",
       "sendOtp": "인증코드 보내기"
-    }
+    },
+    "recentlyUsed": "최근 사용"
   },
   "months": {
     "1": "1월",

@@ -84,7 +84,8 @@
       "resend": "Ridërgo kodin",
       "activate": "Riaktivizoni",
       "sendOtp": "Dërgo kodin e verifikimit"
-    }
+    },
+    "recentlyUsed": "Përdorur së fundmi"
   },
   "months": {
     "1": "janar",

@@ -84,7 +84,8 @@
       "resend": "Saada kood uuesti",
       "activate": "Aktiveerige uuesti",
       "sendOtp": "Saada kinnituskood"
-    }
+    },
+    "recentlyUsed": "Hiljuti kasutatud"
   },
   "months": {
     "1": "jaanuaril",

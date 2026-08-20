@@ -84,7 +84,8 @@
       "resend": "Ipadala pag-usab ang code",
       "activate": "Pag-aktibo pag-usab",
       "sendOtp": "Ipadala ang verification code"
-    }
+    },
+    "recentlyUsed": "Bag-gamit bag-o"
   },
   "months": {
     "1": "Enero",

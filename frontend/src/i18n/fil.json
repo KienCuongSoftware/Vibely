@@ -84,7 +84,8 @@
       "resend": "Muling ipadala ang code",
       "activate": "Muling isaaktibo",
       "sendOtp": "Magpadala ng verification code"
-    }
+    },
+    "recentlyUsed": "Kamakailang ginamit"
   },
   "months": {
     "1": "Enero",

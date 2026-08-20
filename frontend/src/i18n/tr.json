@@ -84,7 +84,8 @@
       "resend": "Kodu yeniden gönder",
       "activate": "Yeniden etkinleştir",
       "sendOtp": "Doğrulama kodunu gönder"
-    }
+    },
+    "recentlyUsed": "Son kullanılan"
   },
   "months": {
     "1": "Ocak",

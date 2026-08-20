@@ -84,7 +84,8 @@
       "resend": "Iš naujo siųsti kodą",
       "activate": "Iš naujo suaktyvinkite",
       "sendOtp": "Siųsti patvirtinimo kodą"
-    }
+    },
+    "recentlyUsed": "Neseniai naudota"
   },
   "months": {
     "1": "sausio mėn",
