@@ -27,8 +27,8 @@ import { useSearchModal } from '@/features/search/store/SearchModalContext'
 import { ActivityPanel } from '@/features/notification/components/ActivityPanel'
 import { AvatarImage } from '@/shared/components/AvatarImage'
 import {
+  IoAccessibilityOutline,
   IoArrowBack,
-  IoBriefcaseOutline,
   IoCashOutline,
   IoCheckmark,
   IoChatbubbleOutline,
@@ -37,27 +37,30 @@ import {
   IoCloudUploadOutline,
   IoGlobeOutline,
   IoHelpCircleOutline,
+  IoHourglassOutline,
   IoLogOutOutline,
   IoLockClosedOutline,
+  IoMegaphoneOutline,
   IoMoonOutline,
   IoNotificationsOutline,
   IoPerson,
   IoRocketOutline,
   IoSearchOutline,
   IoSettingsOutline,
-  IoShieldCheckmarkOutline,
-  IoTimeOutline,
+  IoStorefrontOutline,
+  IoVideocamOutline,
 } from 'react-icons/io5'
 
+/** Sidebar mirrors TikTok web settings order/icons. */
 const SETTINGS_NAV_IDS = [
   { id: 'account', labelKey: 'settings.account', icon: IoPerson },
   { id: 'privacy', labelKey: 'settings.privacy', icon: IoLockClosedOutline },
   { id: 'push', labelKey: 'settings.push', icon: IoNotificationsOutline },
-  { id: 'business', labelKey: 'settings.business', icon: IoBriefcaseOutline },
-  { id: 'ads', labelKey: 'settings.ads', icon: IoShieldCheckmarkOutline },
-  { id: 'screen-time', labelKey: 'settings.screenTime', icon: IoTimeOutline },
-  { id: 'content', labelKey: 'settings.content', icon: IoGlobeOutline },
-  { id: 'language', labelKey: 'settings.language', icon: IoGlobeOutline },
+  { id: 'business', labelKey: 'settings.business', icon: IoStorefrontOutline },
+  { id: 'ads', labelKey: 'settings.ads', icon: IoMegaphoneOutline },
+  { id: 'screen-time', labelKey: 'settings.screenTime', icon: IoHourglassOutline },
+  { id: 'content', labelKey: 'settings.content', icon: IoVideocamOutline },
+  { id: 'accessibility', labelKey: 'settings.accessibility', icon: IoAccessibilityOutline },
 ]
 
 const DELETE_REASONS = [
@@ -197,7 +200,13 @@ export function SettingsPage() {
   const [browserActivity, setBrowserActivity] = useState(true)
   const [adPersonalization, setAdPersonalization] = useState(true)
   const [weeklyScreenReport, setWeeklyScreenReport] = useState(false)
+  const [increaseColorContrast, setIncreaseColorContrast] = useState(false)
   const [activeSetting, setActiveSetting] = useState('account')
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('vibely-high-contrast', increaseColorContrast)
+    return () => document.documentElement.classList.remove('vibely-high-contrast')
+  }, [increaseColorContrast])
   const [accountView, setAccountView] = useState('main')
   const [deactivationStep, setDeactivationStep] = useState('intro')
   const [deactivationCode, setDeactivationCode] = useState('')
@@ -1408,7 +1417,29 @@ export function SettingsPage() {
             <SettingsSection title={t('settings.contentSection.title')}>
               <div>
                 <SettingsRow title={t('settings.contentSection.filterKeywords')} description={t('settings.contentSection.filterKeywordsHint')} />
-                <SettingsRow title={t('settings.contentSection.contentLanguage')} trailing={t('languages.vi')} />
+                <SettingsRow
+                  title={t('settings.contentSection.appLanguage')}
+                  trailing={languages.find((l) => l.code === locale)?.nativeLabel ?? t('settings.language')}
+                  onClick={() => scrollToSection('language')}
+                />
+              </div>
+            </SettingsSection>
+            </div>
+
+            <div data-section="accessibility" className="scroll-mt-4">
+            <SettingsSection title={t('settings.accessibilitySection.title')}>
+              <div className="flex items-center justify-between gap-4 py-4">
+                <div>
+                  <p className="text-sm font-medium text-zinc-100">{t('settings.accessibilitySection.increaseContrast')}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                    {t('settings.accessibilitySection.increaseContrastHint')}
+                  </p>
+                </div>
+                <SettingsSwitch
+                  checked={increaseColorContrast}
+                  onChange={setIncreaseColorContrast}
+                  label={t('settings.accessibilitySection.increaseContrast')}
+                />
               </div>
             </SettingsSection>
             </div>

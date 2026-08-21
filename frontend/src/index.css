@@ -329,3 +329,11 @@ body {
   display: none !important;
 }
 
+/* Settings → Accessibility: increase color contrast */
+html.vibely-high-contrast {
+  filter: contrast(1.12);
+}
+html.vibely-high-contrast body {
+  -webkit-font-smoothing: antialiased;
+}
+
