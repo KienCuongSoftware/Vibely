@@ -182,13 +182,13 @@ export function Sidebar({
               <button
                 key={item.id}
                 type="button"
-                title={collapsed ? label : undefined}
+                title={label}
                 aria-label={label}
                 aria-current={isActive ? "page" : undefined}
-                className={`flex w-full cursor-pointer items-center rounded-lg ${
+                className={`flex w-full cursor-pointer flex-nowrap items-center rounded-lg ${
                   collapsed
                     ? "h-10 justify-center px-0"
-                    : "h-10 gap-3 px-3 text-left"
+                    : "h-10 gap-2.5 px-3 text-left"
                 } ${
                   isActive
                     ? "bg-zinc-900 font-semibold text-red-500 ring-1 ring-zinc-800/80"
@@ -234,9 +234,11 @@ export function Sidebar({
                 )}
                 {!collapsed ? (
                   <>
-                    <span className="min-w-0 flex-1">{label}</span>
+                    <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-keep text-sm leading-none">
+                      {label}
+                    </span>
                     {showNavBadge ? (
-                      <span className="inline-flex min-w-5 shrink-0 items-center justify-center rounded-full bg-[#FE2C55] px-1.5 text-[10px] font-bold text-white">
+                      <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-[#FE2C55] px-1.5 text-[10px] font-bold leading-none text-white">
                         {navBadgeLabel}
                       </span>
                     ) : null}

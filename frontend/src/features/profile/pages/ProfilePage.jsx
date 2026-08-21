@@ -1572,7 +1572,7 @@ export function ProfilePage() {
                   </button>
                   <button type="button" className="cursor-pointer" onClick={() => openFollowListModal('followers')}>
                     <span className="block font-bold text-white">{formatCompactCount(profile?.followerCount ?? 0)}</span>
-                    <span>Follower</span>
+                    <span>{t('profilePage.followerStat')}</span>
                   </button>
                   <span>
                     <span className="block font-bold text-white">{formatCompactCount(profile?.totalLikeCount ?? 0)}</span>
@@ -1670,7 +1670,7 @@ export function ProfilePage() {
                       <span className="font-semibold text-zinc-100">
                         {formatCompactCount(profile?.followerCount ?? 0)}
                       </span>{' '}
-                      Follower
+                      {t('profilePage.followerStat')}
                     </button>
                     <span>
                       <span className="font-semibold text-zinc-100">
