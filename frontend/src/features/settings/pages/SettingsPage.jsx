@@ -39,7 +39,6 @@ import {
   IoHelpCircleOutline,
   IoHourglassOutline,
   IoLogOutOutline,
-  IoLockClosedOutline,
   IoMegaphoneOutline,
   IoMoonOutline,
   IoNotificationsOutline,
@@ -47,6 +46,7 @@ import {
   IoRocketOutline,
   IoSearchOutline,
   IoSettingsOutline,
+  IoShieldOutline,
   IoStorefrontOutline,
   IoVideocamOutline,
 } from 'react-icons/io5'
@@ -54,7 +54,7 @@ import {
 /** Sidebar mirrors TikTok web settings order/icons. */
 const SETTINGS_NAV_IDS = [
   { id: 'account', labelKey: 'settings.account', icon: IoPerson },
-  { id: 'privacy', labelKey: 'settings.privacy', icon: IoLockClosedOutline },
+  { id: 'privacy', labelKey: 'settings.privacy', icon: IoShieldOutline },
   { id: 'push', labelKey: 'settings.push', icon: IoNotificationsOutline },
   { id: 'business', labelKey: 'settings.business', icon: IoStorefrontOutline },
   { id: 'ads', labelKey: 'settings.ads', icon: IoMegaphoneOutline },
@@ -110,7 +110,7 @@ function SettingsSwitch({ checked, onChange, label, disabled = false }) {
       aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition ${checked ? 'bg-emerald-500' : 'bg-zinc-700'} ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition ${checked ? 'bg-[#20D5EC]' : 'bg-zinc-600'} ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
     >
       <span
         className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${
@@ -121,20 +121,39 @@ function SettingsSwitch({ checked, onChange, label, disabled = false }) {
   )
 }
 
+function SettingsToggleRow({ title, description, checked, onChange, label, disabled = false }) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-zinc-800/70 px-0 py-4 last:border-b-0">
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-zinc-100">{title}</p>
+        {description ? (
+          <p className="mt-1 max-w-xl text-xs leading-relaxed text-zinc-500">{description}</p>
+        ) : null}
+      </div>
+      <SettingsSwitch
+        checked={checked}
+        onChange={onChange}
+        label={label || title}
+        disabled={disabled}
+      />
+    </div>
+  )
+}
+
 function SettingsRow({ title, description, trailing, danger = false, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full cursor-pointer items-center justify-between gap-4 rounded-lg border-b border-zinc-800/70 px-3 py-4 text-left transition hover:bg-zinc-800/70 last:border-b-0"
+      className="group flex w-full cursor-pointer items-center justify-between gap-4 border-b border-zinc-800/70 px-0 py-4 text-left transition hover:bg-transparent last:border-b-0"
     >
       <span className="min-w-0">
         <span className={`block text-sm font-medium transition ${danger ? 'text-red-400' : 'text-zinc-100 group-hover:text-white'}`}>{title}</span>
         {description ? <span className="mt-1 block text-xs leading-relaxed text-zinc-500 transition group-hover:text-zinc-400">{description}</span> : null}
       </span>
-      <span className="flex shrink-0 items-center gap-2 text-xs text-zinc-500 transition group-hover:text-zinc-300">
+      <span className="flex shrink-0 items-center gap-2 text-sm text-zinc-500 transition group-hover:text-zinc-300">
         {trailing}
-        <IoChevronForward className="text-base transition group-hover:text-zinc-300" aria-hidden />
+        <IoChevronForward className="text-base text-zinc-500 transition group-hover:text-zinc-300" aria-hidden />
       </span>
     </button>
   )
@@ -174,7 +193,7 @@ function SettingsSection({ title, children }) {
 
 /** Nhóm con trong section — chỉ tiêu đề, không bấm chọn. */
 function SettingsGroupLabel({ title }) {
-  return <h3 className="px-3 pb-1 pt-4 text-sm font-semibold text-zinc-100">{title}</h3>
+  return <h3 className="pb-1 pt-5 text-sm font-semibold text-zinc-100 first:pt-2">{title}</h3>
 }
 
 export function SettingsPage() {
@@ -1288,20 +1307,14 @@ export function SettingsPage() {
             <div data-section="privacy" className="scroll-mt-4">
             <SettingsSection title={t('settings.privacySection.title')}>
               <div>
-                <div className="flex items-center justify-between gap-4 border-b border-zinc-800/70 py-4">
-                  <div>
-                    <p className="text-sm font-medium text-zinc-100">{t('settings.privacySection.privateAccount')}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                      {t('settings.privacySection.privateAccountHintShort')}
-                    </p>
-                  </div>
-                  <SettingsSwitch
-                    checked={privateAccount}
-                    onChange={(next) => void handlePrivateAccountToggle(next)}
-                    label={t('settings.privacySection.privateAccount')}
-                    disabled={privacySaving}
-                  />
-                </div>
+                <SettingsGroupLabel title={t('settings.privacySection.discoverability')} />
+                <SettingsToggleRow
+                  title={t('settings.privacySection.privateAccount')}
+                  description={t('settings.privacySection.privateAccountHint')}
+                  checked={privateAccount}
+                  onChange={(next) => void handlePrivateAccountToggle(next)}
+                  disabled={privacySaving}
+                />
                 {privacyError ? (
                   <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-300">{privacyError}</p>
                 ) : null}
@@ -1311,7 +1324,6 @@ export function SettingsPage() {
                 <SettingsGroupLabel title={t('settings.privacySection.interactions')} />
                 <SettingsRow
                   title={t('settings.privacySection.comments')}
-                  description={t('settings.privacySection.commentsHint')}
                   trailing={commentAudienceLabel(commentAudience, t)}
                   onClick={() => {
                     setCommentPrivacyError('')
@@ -1320,8 +1332,6 @@ export function SettingsPage() {
                 />
                 <SettingsRow
                   title={t('settings.privacySection.dm')}
-                  description={t('settings.privacySection.dmHint')}
-                  trailing={t('settings.friends')}
                   onClick={() => {
                     setPrivacyView('direct-messages')
                     setActiveSetting('privacy')
@@ -1330,7 +1340,6 @@ export function SettingsPage() {
                 <SettingsGroupLabel title={t('settings.privacySection.data')} />
                 <SettingsRow
                   title={t('settings.privacySection.downloadData')}
-                  description={t('settings.privacySection.downloadDataHint')}
                   onClick={() => {
                     setPrivacyView('download-data')
                     setActiveSetting('privacy')
@@ -1344,52 +1353,53 @@ export function SettingsPage() {
             <div data-section="push" className="scroll-mt-4">
             <SettingsSection title={t('settings.pushSection.title')}>
               <div>
-                <div className="flex items-center justify-between gap-4 border-b border-zinc-800/70 py-4">
-                  <div>
-                    <p className="text-sm font-medium text-zinc-100">{t('settings.pushSection.desktopLong')}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-zinc-500">{t('settings.pushSection.desktopHint')}</p>
-                  </div>
-                  <SettingsSwitch checked={suggestAccount} onChange={setSuggestAccount} label={t('settings.pushSection.desktop')} />
-                </div>
-                <SettingsRow title={t('settings.pushSection.yourPreferences')} description={t('settings.pushSection.yourPreferencesHint')} />
+                <SettingsGroupLabel title={t('settings.pushSection.desktopLong')} />
+                <SettingsToggleRow
+                  title={t('settings.pushSection.allowBrowser')}
+                  description={t('settings.pushSection.allowBrowserHint')}
+                  checked={suggestAccount}
+                  onChange={setSuggestAccount}
+                />
+                <SettingsGroupLabel title={t('settings.pushSection.yourPreferences')} />
                 <SettingsRow title={t('settings.pushSection.interactions')} />
-                <SettingsRow title={t('settings.pushSection.inApp')} />
+                <SettingsGroupLabel title={t('settings.pushSection.inApp')} />
               </div>
             </SettingsSection>
             </div>
 
             <div data-section="business" className="scroll-mt-4">
             <SettingsSection title={t('settings.businessSection.title')}>
-              <div className="flex items-center justify-between gap-4 py-4">
-                <div>
-                  <p className="text-sm font-medium text-zinc-100">{t('settings.businessSection.title')}</p>
-                  <p className="mt-1 text-xs leading-relaxed text-zinc-500">{t('settings.businessSection.hint')}</p>
-                </div>
-                <SettingsSwitch checked={profileViews} onChange={setProfileViews} label={t('settings.businessSection.title')} />
-              </div>
+              <SettingsToggleRow
+                title={t('settings.businessSection.title')}
+                description={t('settings.businessSection.hint')}
+                checked={profileViews}
+                onChange={setProfileViews}
+              />
             </SettingsSection>
             </div>
 
             <div data-section="ads" className="scroll-mt-4">
             <SettingsSection title={t('settings.adsSection.title')}>
               <div>
-                <SettingsRow title={t('settings.adsSection.manageAds')} description={t('settings.adsSection.manageAdsHint')} />
-                <SettingsRow title={t('settings.adsSection.downloadAdsData')} />
-                <SettingsRow title={t('settings.adsSection.editAudienceInfo')} />
-                <div className="flex items-center justify-between gap-4 border-b border-zinc-800/70 py-4">
-                  <div>
-                    <p className="text-sm font-medium text-zinc-100">{t('settings.adsSection.personalized')}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-zinc-500">{t('settings.adsSection.personalizedHint')}</p>
-                  </div>
-                  <SettingsSwitch checked={adPersonalization} onChange={setAdPersonalization} label={t('settings.adsSection.personalizedSwitch')} />
-                </div>
-                <div className="flex items-center justify-between gap-4 py-4">
-                  <div>
-                    <p className="text-sm font-medium text-zinc-100">{t('settings.adsSection.offVibelyActivity')}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-zinc-500">{t('settings.adsSection.offVibelyActivityHint')}</p>
-                  </div>
-                  <SettingsSwitch checked={browserActivity} onChange={setBrowserActivity} label={t('settings.adsSection.offVibelySwitch')} />
-                </div>
+                <SettingsGroupLabel title={t('settings.adsSection.manageAds')} />
+                <SettingsRow title={t('settings.adsSection.manageTopics')} />
+                <SettingsRow title={t('settings.adsSection.turnOffAdvertisers')} />
+                <SettingsRow title={t('settings.adsSection.editPersonalDetails')} />
+                <SettingsGroupLabel title={t('settings.adsSection.offPlatformData')} />
+                <SettingsToggleRow
+                  title={t('settings.adsSection.targetedOutside')}
+                  description={t('settings.adsSection.targetedOutsideHint')}
+                  checked={adPersonalization}
+                  onChange={setAdPersonalization}
+                />
+                <SettingsToggleRow
+                  title={t('settings.adsSection.useOffPlatform')}
+                  description={t('settings.adsSection.useOffPlatformHint')}
+                  checked={browserActivity}
+                  onChange={setBrowserActivity}
+                />
+                <SettingsRow title={t('settings.adsSection.disconnectAdvertisers')} />
+                <SettingsRow title={t('settings.adsSection.clearOffPlatformData')} />
               </div>
             </SettingsSection>
             </div>
@@ -1398,17 +1408,15 @@ export function SettingsPage() {
             <SettingsSection title={t('settings.screenTimeSection.title')}>
               <div>
                 <SettingsRow title={t('settings.screenTimeSection.dailyLimit')} trailing={t('settings.off')} />
-                <SettingsRow title={t('settings.screenTimeSection.breakReminder')} trailing={t('settings.off')} />
-                <SettingsRow title={t('settings.screenTimeSection.sleepHours')} trailing={t('settings.off')} />
-                <div className="flex items-center justify-between gap-4 border-b border-zinc-800/70 py-4">
-                  <div>
-                    <p className="text-sm font-medium text-zinc-100">{t('settings.screenTimeSection.weeklyUpdate')}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-zinc-500">{t('settings.screenTimeSection.weeklyUpdateHint')}</p>
-                  </div>
-                  <SettingsSwitch checked={weeklyScreenReport} onChange={setWeeklyScreenReport} label={t('settings.screenTimeSection.weeklyReport')} />
-                </div>
+                <SettingsRow title={t('settings.screenTimeSection.restBreak')} trailing={t('settings.off')} />
+                <SettingsToggleRow
+                  title={t('settings.screenTimeSection.weeklyUpdate')}
+                  description={t('settings.screenTimeSection.weeklyUpdateHint')}
+                  checked={weeklyScreenReport}
+                  onChange={setWeeklyScreenReport}
+                />
                 <SettingsRow title={t('settings.screenTimeSection.summary')} />
-                <SettingsRow title={t('settings.screenTimeSection.helpResources')} danger />
+                <SettingsRow title={t('settings.screenTimeSection.helpResources')} />
               </div>
             </SettingsSection>
             </div>
@@ -1416,11 +1424,9 @@ export function SettingsPage() {
             <div data-section="content" className="scroll-mt-4">
             <SettingsSection title={t('settings.contentSection.title')}>
               <div>
-                <SettingsRow title={t('settings.contentSection.filterKeywords')} description={t('settings.contentSection.filterKeywordsHint')} />
                 <SettingsRow
-                  title={t('settings.contentSection.appLanguage')}
-                  trailing={languages.find((l) => l.code === locale)?.nativeLabel ?? t('settings.language')}
-                  onClick={() => scrollToSection('language')}
+                  title={t('settings.contentSection.filterKeywords')}
+                  description={t('settings.contentSection.filterKeywordsHint')}
                 />
               </div>
             </SettingsSection>
@@ -1428,41 +1434,12 @@ export function SettingsPage() {
 
             <div data-section="accessibility" className="scroll-mt-4">
             <SettingsSection title={t('settings.accessibilitySection.title')}>
-              <div className="flex items-center justify-between gap-4 py-4">
-                <div>
-                  <p className="text-sm font-medium text-zinc-100">{t('settings.accessibilitySection.increaseContrast')}</p>
-                  <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                    {t('settings.accessibilitySection.increaseContrastHint')}
-                  </p>
-                </div>
-                <SettingsSwitch
-                  checked={increaseColorContrast}
-                  onChange={setIncreaseColorContrast}
-                  label={t('settings.accessibilitySection.increaseContrast')}
-                />
-              </div>
-            </SettingsSection>
-            </div>
-
-            <div data-section="language" className="scroll-mt-4">
-            <SettingsSection title={t('settings.language')}>
-              <div>
-                {languages.map((lang) => (
-                  <button
-                    key={lang.code}
-                    type="button"
-                    onClick={() => changeLanguage(lang.code)}
-                    className="group flex w-full items-center justify-between gap-4 rounded-lg border-b border-zinc-800/70 px-3 py-4 text-left transition hover:bg-zinc-800/70 last:border-b-0"
-                  >
-                    <span className="text-sm font-medium text-zinc-100 group-hover:text-white">
-                      {lang.nativeLabel}
-                    </span>
-                    {locale === lang.code ? (
-                      <IoCheckmark className="text-lg text-red-500" aria-hidden />
-                    ) : null}
-                  </button>
-                ))}
-              </div>
+              <SettingsToggleRow
+                title={t('settings.accessibilitySection.increaseContrast')}
+                description={t('settings.accessibilitySection.increaseContrastHint')}
+                checked={increaseColorContrast}
+                onChange={setIncreaseColorContrast}
+              />
             </SettingsSection>
             </div>
               </>
