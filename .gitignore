@@ -27,3 +27,9 @@ backend/src/main/resources/*.local.yaml
 __pycache__/
 *.py[cod]
 
+# Local one-off / audit scripts (not part of the product)
+backend/scripts/
+
+# Flutter/Dart local IDE options
+mobile/devtools_options.yaml
+
