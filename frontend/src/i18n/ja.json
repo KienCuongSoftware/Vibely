@@ -187,7 +187,7 @@
     "account": "アカウントの管理",
     "privacy": "プライバシー",
     "push": "プッシュ通知",
-    "business": "ビジネスアカウント",
+    "business": "ビジネス認証",
     "ads": "広告",
     "screenTime": "スクリーンタイム",
     "content": "コンテンツの設定",
@@ -282,10 +282,16 @@
       "helpResources": "Help and resources"
     },
     "contentSection": {
-      "title": "Content preferences",
-      "filterKeywords": "Filter keywords",
-      "filterKeywordsHint": "Hide content that contains keywords you do not want to see.",
-      "contentLanguage": "Content language"
+      "title": "コンテンツの設定",
+      "filterKeywords": "キーワードフィルター",
+      "filterKeywordsHint": "見たくないキーワードを含むコンテンツを非表示にします。",
+      "contentLanguage": "コンテンツの言語",
+      "appLanguage": "アプリの言語"
+    },
+    "accessibilitySection": {
+      "title": "アクセシビリティ",
+      "increaseContrast": "色のコントラストを上げる",
+      "increaseContrastHint": "コントラストを高くして文字や操作をより見やすくします。"
     },
     "commentsPrivacy": {
       "title": "Who can comment on your posts",

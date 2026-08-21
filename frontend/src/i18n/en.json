@@ -546,7 +546,7 @@
     "account": "Manage account",
     "privacy": "Privacy",
     "push": "Push notifications",
-    "business": "Business account",
+    "business": "Business verification",
     "ads": "Ads",
     "screenTime": "Screen time",
     "content": "Content preferences",
@@ -644,7 +644,13 @@
       "title": "Content preferences",
       "filterKeywords": "Filter keywords",
       "filterKeywordsHint": "Hide content that contains keywords you do not want to see.",
-      "contentLanguage": "Content language"
+      "contentLanguage": "Content language",
+      "appLanguage": "App language"
+    },
+    "accessibilitySection": {
+      "title": "Accessibility",
+      "increaseContrast": "Increase color contrast",
+      "increaseContrastHint": "Make text and controls easier to see with higher contrast."
     },
     "commentsPrivacy": {
       "title": "Who can comment on your posts",

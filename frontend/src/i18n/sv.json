@@ -187,7 +187,7 @@
     "account": "Hantera konto",
     "privacy": "Privatliv",
     "push": "Push-meddelanden",
-    "business": "Företagskonto",
+    "business": "Företagsverifiering",
     "ads": "Annonser",
     "screenTime": "Skärmtid",
     "content": "Innehållsinställningar",
@@ -285,7 +285,8 @@
       "title": "Content preferences",
       "filterKeywords": "Filter keywords",
       "filterKeywordsHint": "Hide content that contains keywords you do not want to see.",
-      "contentLanguage": "Content language"
+      "contentLanguage": "Content language",
+      "appLanguage": "App language"
     },
     "commentsPrivacy": {
       "title": "Who can comment on your posts",
@@ -413,6 +414,11 @@
       "dataExportList": "Could not load data export requests.",
       "dataExportCreate": "Could not create data export request.",
       "dataExportCancel": "Could not cancel data export request."
+    },
+    "accessibilitySection": {
+      "title": "Accessibility",
+      "increaseContrast": "Increase color contrast",
+      "increaseContrastHint": "Make text and controls easier to see with higher contrast."
     }
   },
   "languages": {

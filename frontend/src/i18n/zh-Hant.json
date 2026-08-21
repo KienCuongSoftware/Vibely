@@ -187,7 +187,7 @@
     "account": "管理帳戶",
     "privacy": "隱私",
     "push": "推播通知",
-    "business": "企業帳戶",
+    "business": "企業認證",
     "ads": "廣告",
     "screenTime": "螢幕時間",
     "content": "內容偏好",
@@ -285,7 +285,8 @@
       "title": "Content preferences",
       "filterKeywords": "Filter keywords",
       "filterKeywordsHint": "Hide content that contains keywords you do not want to see.",
-      "contentLanguage": "Content language"
+      "contentLanguage": "Content language",
+      "appLanguage": "App language"
     },
     "commentsPrivacy": {
       "title": "Who can comment on your posts",
@@ -413,6 +414,11 @@
       "dataExportList": "Could not load data export requests.",
       "dataExportCreate": "Could not create data export request.",
       "dataExportCancel": "Could not cancel data export request."
+    },
+    "accessibilitySection": {
+      "title": "Accessibility",
+      "increaseContrast": "Increase color contrast",
+      "increaseContrastHint": "Make text and controls easier to see with higher contrast."
     }
   },
   "languages": {

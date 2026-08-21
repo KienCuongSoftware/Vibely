@@ -546,7 +546,7 @@
     "account": "Quản lý tài khoản",
     "privacy": "Quyền riêng tư",
     "push": "Thông báo đẩy",
-    "business": "Tài khoản doanh nghiệp",
+    "business": "Xác minh doanh nghiệp",
     "ads": "Quảng cáo",
     "screenTime": "Thời gian sử dụng màn hình",
     "content": "Tùy chọn nội dung",
@@ -644,7 +644,13 @@
       "title": "Tùy chọn nội dung",
       "filterKeywords": "Lọc từ khóa",
       "filterKeywordsHint": "Ẩn nội dung chứa từ khóa bạn không muốn nhìn thấy.",
-      "contentLanguage": "Ngôn ngữ nội dung"
+      "contentLanguage": "Ngôn ngữ nội dung",
+      "appLanguage": "Ngôn ngữ ứng dụng"
+    },
+    "accessibilitySection": {
+      "title": "Trợ năng",
+      "increaseContrast": "Tăng độ tương phản màu",
+      "increaseContrastHint": "Làm cho chữ và nút dễ nhìn hơn với độ tương phản cao hơn."
     },
     "commentsPrivacy": {
       "title": "Người có thể bình luận bài đăng của bạn",
