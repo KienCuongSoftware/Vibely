@@ -19,6 +19,7 @@ import {
 } from '@/features/settings/utils/accountRegions'
 import { collectLoginContext } from '@/security/loginContext'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { buildProfilePath } from '@/features/profile/utils/buildProfilePath.js'
 import { useLocale } from '@/i18n/useLocale'
 import { useNotificationUnread } from '@/features/notification/store/NotificationUnreadContext'
 import { useChatInboxBadge } from '@/features/chat/store/ChatInboxBadgeContext'
@@ -716,7 +717,7 @@ export function SettingsPage() {
                     {/* Menu items */}
                     <div className="py-1">
                       <Link
-                        to={`/@${user?.vibelyId}`}
+                        to={buildProfilePath(token, user)}
                         onClick={() => setAvatarMenuOpen(false)}
                         className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
                       >
