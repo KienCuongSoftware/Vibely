@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { IoClose } from "react-icons/io5";
 import { ProfileEmbedPreview } from "@/features/profile/components/ProfileEmbedPreview.jsx";
 import {
@@ -9,7 +10,7 @@ import {
 } from "@/features/post/utils/shareUrl.js";
 
 /**
- * TikTok-style "Nhúng hồ sơ": left = dark embed preview page, right = code.
+ * TikTok-style profile embed: left = dark embed preview page, right = code.
  */
 export function ProfileEmbedModal({
   open,
@@ -17,6 +18,7 @@ export function ProfileEmbedModal({
   profile,
   videos = [],
 }) {
+  const { t } = useTranslation();
   const [toast, setToast] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -63,13 +65,13 @@ export function ProfileEmbedModal({
     setBusy(true);
     try {
       await navigator.clipboard.writeText(snippet);
-      showToast("Đã sao chép mã nhúng");
+      showToast(t("profileEmbed.copied"));
     } catch {
-      showToast("Không sao chép được mã nhúng");
+      showToast(t("profileEmbed.copyFailed"));
     } finally {
       setBusy(false);
     }
-  }, [snippet, showToast]);
+  }, [snippet, showToast, t]);
 
   if (!open || !username) return null;
 
@@ -88,20 +90,19 @@ export function ProfileEmbedModal({
       >
         <header className="relative flex shrink-0 items-center px-5 py-4">
           <h2 id="profile-embed-title" className="text-[17px] font-semibold">
-            Nhúng hồ sơ
+            {t("profileEmbed.title")}
           </h2>
           <button
             type="button"
             onClick={onClose}
             className="absolute right-4 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10"
-            aria-label="Đóng"
+            aria-label={t("common.close")}
           >
             <IoClose className="text-[22px]" aria-hidden />
           </button>
         </header>
 
         <div className="grid min-h-0 flex-1 gap-5 overflow-y-auto scrollbar-none px-4 pb-5 sm:px-5 lg:grid-cols-[minmax(300px,420px)_minmax(0,1fr)] lg:gap-6 lg:overflow-hidden">
-          {/* Left: standalone dark preview page (TikTok embed card) */}
           <div className="mx-auto flex w-full max-w-[420px] justify-center overflow-hidden lg:mx-0 lg:max-h-full">
             <ProfileEmbedPreview
               className="h-full max-h-[min(640px,70vh)] w-full"
@@ -117,10 +118,9 @@ export function ProfileEmbedModal({
             />
           </div>
 
-          {/* Right: embed code */}
           <section className="flex min-h-0 flex-col lg:overflow-hidden">
             <p className="text-[15px] text-zinc-200">
-              Video từ tài khoản này sẽ hiển thị
+              {t("profileEmbed.videosFromAccount")}
             </p>
             <pre className="scrollbar-none mt-3 max-h-[280px] min-h-[160px] flex-1 overflow-auto rounded-xl bg-[#1a1a1a] p-4 text-[12px] leading-relaxed whitespace-pre-wrap break-all text-zinc-400 lg:max-h-none">
               {snippet}
@@ -131,19 +131,17 @@ export function ProfileEmbedModal({
               onClick={() => void copyCode()}
               className="mt-4 h-12 w-full cursor-pointer rounded-lg bg-[#3a3a3a] text-[15px] font-semibold text-white transition hover:bg-[#4a4a4a] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {busy ? "Đang sao chép…" : "Sao chép mã"}
+              {busy ? t("profileEmbed.copying") : t("profileEmbed.copyCode")}
             </button>
             <p className="mt-4 text-[12px] leading-relaxed text-zinc-500">
-              Bằng việc tiếp tục, bạn đồng ý với Điều khoản dịch vụ và xác nhận
-              rằng bạn đã đọc{" "}
+              {t("profileEmbed.legalPrefix")}{" "}
               <a
                 href="/legal/page/row/privacy-policy"
                 className="text-zinc-300 hover:underline"
               >
-                Chính sách quyền riêng tư
+                {t("profileEmbed.privacyLink")}
               </a>{" "}
-              của chúng tôi để hiểu cách chúng tôi thu thập, sử dụng và chia sẻ
-              dữ liệu của bạn. Xem trước trang nhúng:{" "}
+              {t("profileEmbed.legalSuffix")}{" "}
               <a
                 href={embedPageUrl || profileUrl}
                 target="_blank"

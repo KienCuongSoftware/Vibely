@@ -23,7 +23,8 @@
     "logout": "Đăng xuất",
     "creator": "Nhà sáng tạo",
     "friends": "Bạn bè",
-    "you": "Bạn"
+    "you": "Bạn",
+    "downloadApp": "Tải ứng dụng"
   },
   "auth": {
     "loginTitle": "Đăng nhập vào Vibely",
@@ -281,12 +282,43 @@
       "hours": "{{count}} giờ"
     }
   },
+  "profileShare": {
+    "shareTo": "Chia sẻ đến",
+    "titleWithName": "{{name}} (@{{handle}}) trên Vibely",
+    "titleWithHandle": "@{{handle}} trên Vibely",
+    "titleFallback": "Hồ sơ Vibely",
+    "scrollLeft": "Cuộn trái",
+    "scrollRight": "Cuộn phải",
+    "linkCopied": "Đã sao chép liên kết",
+    "linkCopyFailed": "Không sao chép được liên kết",
+    "copy": "Copy",
+    "embed": "Nhúng"
+  },
+  "profileEmbed": {
+    "title": "Nhúng hồ sơ",
+    "videosFromAccount": "Video từ tài khoản này sẽ hiển thị",
+    "copyCode": "Sao chép mã",
+    "copying": "Đang sao chép…",
+    "copied": "Đã sao chép mã nhúng",
+    "copyFailed": "Không sao chép được mã nhúng",
+    "legalPrefix": "Bằng việc tiếp tục, bạn đồng ý với Điều khoản dịch vụ và xác nhận rằng bạn đã đọc",
+    "privacyLink": "Chính sách quyền riêng tư",
+    "legalSuffix": "của chúng tôi để hiểu cách chúng tôi thu thập, sử dụng và chia sẻ dữ liệu của bạn. Xem trước trang nhúng:",
+    "openVibely": "Mở Vibely",
+    "following": "Đang Follow",
+    "followers": "Follower",
+    "likes": "Thích",
+    "noPublicVideos": "Chưa có video công khai để xem trước.",
+    "viewPrivacy": "Xem Chính sách quyền riêng tư"
+  },
   "suggestions": {
     "emptyTitle": "Chưa có gợi ý",
     "emptyDescription": "Khi có thêm nhà sáng tạo đăng video, chúng tôi sẽ gợi ý tại đây.",
     "retry": "Thử lại",
     "seeMore": "Xem thêm",
-    "loading": "Đang tải…"
+    "loading": "Đang tải…",
+    "viewProfile": "Xem trang cá nhân {{name}}",
+    "loadFailed": "Không tải được gợi ý."
   },
   "friendsPage": {
     "pageTitle": "Bạn bè | Vibely",
@@ -315,7 +347,8 @@
     "follow": "Theo dõi",
     "viewProfile": "Xem hồ sơ",
     "clearQuery": "Xóa từ khóa",
-    "back": "Quay lại"
+    "back": "Quay lại",
+    "loadFailed": "Không tải được kết quả."
   },
   "profilePage": {
     "pageTitle": "Hồ sơ | Vibely",
@@ -885,6 +918,20 @@
     "VIDEO_SIZE_REQUIRED": "Thiếu kích thước tệp video.",
     "VIDEO_TOO_LARGE": "Video vượt quá giới hạn 30 GB."
   },
+  "captcha": {
+    "titleCheckbox": "Xác minh nhanh",
+    "titleRotate": "Kéo thanh trượt để ghép hình",
+    "titleSlider": "Kéo mảnh ghép vào đúng vị trí",
+    "titleMultiStep": "Xác minh bảo mật nhiều bước",
+    "loading": "Đang tải captcha…",
+    "verifying": "Đang xác minh…",
+    "refresh": "Làm mới",
+    "tickFirst": "Vui lòng tick xác minh trước khi ghép hình",
+    "verifyIncorrect": "Xác minh chưa đúng, vui lòng thử lại",
+    "verifyFailed": "Xác minh captcha thất bại",
+    "loadFailed": "Không tải được captcha",
+    "loadTimeout": "Captcha tải quá lâu. Kiểm tra kết nối rồi làm mới."
+  },
   "comments": {
     "title": "Bình luận",
     "close": "Đóng bình luận",
@@ -904,7 +951,15 @@
     "viewProfile": "Xem trang cá nhân {{name}}",
     "unavailable": "Bình luận chỉ khả dụng cho video trên Vibely (đã đăng nhập).",
     "loading": "Đang tải bình luận…",
-    "sendComment": "Gửi bình luận"
+    "sendComment": "Gửi bình luận",
+    "mentionAria": "Nhắc tên",
+    "mentionTip": "Dùng ký hiệu \"@\" để gắn thẻ một người dùng trong bình luận của bạn",
+    "mentionNoResults": "Không có kết quả",
+    "mentionHint": "Gõ tên người dùng sau @ trong ô bình luận",
+    "friends": "Bạn bè",
+    "emojiAria": "Chèn biểu tượng cảm xúc",
+    "emojiTip": "Nhấp để thêm emoji",
+    "loadingMentions": "Đang tải…"
   },
   "feedMenu": {
     "subtitles": "Phụ đề",
@@ -931,6 +986,7 @@
     "loginToSaveHistory": "Đăng nhập để lưu lịch sử tìm kiếm",
     "recent": "Tìm kiếm gần đây",
     "youMightLike": "Bạn có thể thích",
+    "removeHistory": "Xóa \"{{query}}\"",
     "noResults": "Không có kết quả",
     "noUsers": "Không tìm thấy người dùng.",
     "noVideos": "Không tìm thấy video.",
@@ -1067,7 +1123,14 @@
     "pickVideos": "Chọn video",
     "collectionNameLabel": "Tên ({{current}}/{{max}})",
     "makePublic": "Đặt ở chế độ công khai",
-    "makePublicHint": "Những bộ sưu tập ở chế độ công khai sẽ hiển thị trên hồ sơ của bạn và có thể được chia sẻ với bạn bè."
+    "makePublicHint": "Những bộ sưu tập ở chế độ công khai sẽ hiển thị trên hồ sơ của bạn và có thể được chia sẻ với bạn bè.",
+    "next": "Tiếp",
+    "noFavoriteVideos": "Không có video yêu thích để thêm vào",
+    "allFavoritesInCollection": "Toàn bộ video yêu thích của bạn hiện đã có trong bộ sưu tập.",
+    "createNewCollection": "Tạo bộ sưu tập mới",
+    "noCollectionsYet": "Chưa có bộ sưu tập nào được tạo",
+    "addedToFavorites": "Đã thêm vào Mục yêu thích",
+    "manage": "Quản lý ›"
   },
   "feed": {
     "loadingFeed": "Đang tải feed",
@@ -2492,6 +2555,58 @@
     "dropHint": "Hoặc kéo thả video vào khu vực này",
     "pickVideo": "Chọn video",
     "selectedFile": "Đã chọn: {{name}}",
-    "durationLabel": "Thời lượng: {{duration}}"
+    "durationLabel": "Thời lượng: {{duration}}",
+    "checks": {
+      "title": "Kiểm tra",
+      "viewExplain": "Xem giải thích",
+      "musicCopyright": "Kiểm tra bản quyền nhạc",
+      "musicCopyrightTip": "Chúng tôi sẽ kiểm tra video của bạn để tìm các vi phạm bản quyền tiềm ẩn đối với âm thanh được sử dụng. Nếu phát hiện vi phạm, bạn có thể chỉnh sửa video trước khi đăng.",
+      "musicCopyrightAria": "Bật kiểm tra bản quyền nhạc",
+      "noIssues": "Không phát hiện vấn đề.",
+      "musicOff": "Đã tắt — không chạy kiểm tra bản quyền nhạc tự động.",
+      "contentLite": "Kiểm tra nội dung rút gọn",
+      "contentLiteTip": "Chúng tôi sẽ kiểm tra nhanh video của bạn theo Nguyên tắc Cộng đồng để đảm bảo đủ điều kiện được đề xuất trên trang Đề xuất. Bạn sẽ có cơ hội sửa các vấn đề trước khi đăng. Tuy nhiên, đây chỉ là kiểm tra sơ bộ và không đảm bảo tuân thủ đầy đủ điều khoản và nguyên tắc của chúng tôi.",
+      "contentLiteAria": "Bật kiểm tra nội dung rút gọn",
+      "viewDetails": "Xem chi tiết",
+      "runsAfterUpload": "Kiểm tra sẽ chạy sau khi video tải lên xong.",
+      "contentOff": "Đã tắt — không chạy kiểm tra nội dung tự động."
+    },
+    "cover": {
+      "title": "Chỉnh ảnh bìa",
+      "saving": "Đang lưu…",
+      "sticker": "Sticker",
+      "text": "Text",
+      "addStickerTitle": "Thêm sticker (double-click trên canvas để sửa chữ)",
+      "textHint": "Thêm chữ lên ảnh bìa. Double-click chữ trên canvas để sửa nội dung.",
+      "addText": "+ Thêm chữ",
+      "noVideo": "Không có video để trích khung hình. Hãy dùng nút tải ảnh bìa bên dưới.",
+      "generatingFrames": "Đang tạo khung hình từ video…",
+      "pickImageFile": "Vui lòng chọn tệp ảnh (JPG, PNG, WebP).",
+      "needLogin": "Bạn cần đăng nhập.",
+      "noFramesYet": "Chưa có khung hình từ video. Đợi tạo xong hoặc chọn khung hình.",
+      "pickUploadImage": "Hãy chọn ảnh từ máy tính.",
+      "uploadFailed": "Không tải ảnh bìa lên kho lưu trữ. Kiểm tra đăng nhập và thử lại.",
+      "saveFailed": "Không lưu được ảnh bìa.",
+      "extractFramesFailed": "Không trích xuất được khung hình.",
+      "loadImageFailed": "Không tải được ảnh.",
+      "loadVideoFailed": "Không tải được video.",
+      "loadVideoPreviewFailed": "Không tải được video để xem trước ảnh bìa.",
+      "loadVideoExtractFailed": "Không tải được video gốc để trích ảnh bìa.",
+      "stickerAria": "Sticker trên ảnh bìa",
+      "zoomOut": "Thu nhỏ",
+      "zoomIn": "Phóng to",
+      "scaleAria": "Phóng to ảnh bìa",
+      "scale": "Scale",
+      "uploadCover": "Tải ảnh bìa",
+      "filmstripAria": "Dải khung hình",
+      "selectFrame": "Chọn khung {{time}}",
+      "stepBack": "Lùi 0.1 giây",
+      "stepForward": "Tới 0.1 giây",
+      "previewInProfile": "Preview in profile",
+      "following": "Following",
+      "followers": "Followers",
+      "likes": "Likes",
+      "defaultText": "Text"
+    }
   }
 }

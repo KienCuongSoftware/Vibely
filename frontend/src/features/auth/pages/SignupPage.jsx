@@ -504,7 +504,17 @@ export function SignupPage() {
   };
 
   const startOAuth = (provider) => {
-    window.location.href = `${resolveBackendOrigin()}/api/oauth2/authorization/${provider}`;
+    let origin = resolveBackendOrigin();
+    try {
+      const url = new URL(origin);
+      if (url.hostname === "vibely.sbs") {
+        url.hostname = "www.vibely.sbs";
+        origin = url.origin;
+      }
+    } catch {
+      // keep resolveBackendOrigin()
+    }
+    window.location.href = `${origin}/api/oauth2/authorization/${provider}`;
   };
 
   const continueToUsernameStep = async (event) => {

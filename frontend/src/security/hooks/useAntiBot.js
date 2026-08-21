@@ -34,14 +34,18 @@ export function useAntiBot(action = "login") {
     const existing = readVerificationToken();
     if (existing) return { verified: true, token: existing };
 
-    const evaluation = await evaluateRisk(action);
-    setRisk(evaluation);
-    if (!evaluation.challengeRequired) {
-      return { verified: true, token: null };
+    try {
+      const evaluation = await evaluateRisk(action);
+      setRisk(evaluation);
+      if (!evaluation.challengeRequired) {
+        return { verified: true, token: null };
+      }
+      openChallenge(evaluation.challengeLevel || "ROTATE");
+      return { verified: false, pendingChallenge: true };
+    } catch {
+      // Risk API outage must not block login; proceed without captcha token.
+      return { verified: true, token: null, riskDegraded: true };
     }
-
-    openChallenge(evaluation.challengeLevel || "ROTATE");
-    return { verified: false, pendingChallenge: true };
   }, [action, openChallenge]);
 
   const handleCaptchaRequired = useCallback((payload) => {

@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { IoCashOutline, IoPhonePortraitOutline } from "react-icons/io5";
 import { TooltipIconButton } from "@/shared/components/TooltipControls";
 
@@ -34,25 +35,20 @@ export function AccountActionsPill({
   density = "compact",
   showCoinAndApp = true,
 }) {
+  const { t } = useTranslation();
   const d = densityClasses[density] ?? densityClasses.compact;
+  const getCoins = t("moreMenu.getCoins");
+  const downloadApp = t("common.downloadApp");
   return (
     <div
       className={`hidden lg:inline-flex flex-row flex-nowrap items-center rounded-full border shadow-lg ${d.shell} leading-none ${toneClasses[tone] ?? toneClasses.feed} ${className}`}
     >
       {showCoinAndApp ? (
         <>
-          <TooltipIconButton
-            tip="Nhận xu"
-            ariaLabel="Nhận xu"
-            size={d.iconBtnSize}
-          >
+          <TooltipIconButton tip={getCoins} ariaLabel={getCoins} size={d.iconBtnSize}>
             <IoCashOutline className={d.icon} />
           </TooltipIconButton>
-          <TooltipIconButton
-            tip="Tải ứng dụng"
-            ariaLabel="Tải ứng dụng"
-            size={d.iconBtnSize}
-          >
+          <TooltipIconButton tip={downloadApp} ariaLabel={downloadApp} size={d.iconBtnSize}>
             <IoPhonePortraitOutline className={d.icon} />
           </TooltipIconButton>
           <div

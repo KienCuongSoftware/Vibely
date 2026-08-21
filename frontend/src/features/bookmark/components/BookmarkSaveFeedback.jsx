@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   IoArrowBack,
   IoCheckmark,
@@ -43,6 +44,7 @@ export function NewCollectionModal({
   token,
   initialPickVideoId = null,
 }) {
+  const { t } = useTranslation();
   const [step, setStep] = useState("form");
   const [draftName, setDraftName] = useState("");
   const [draftPublic, setDraftPublic] = useState(false);
@@ -127,7 +129,7 @@ export function NewCollectionModal({
           {step === "pick" ? (
             <button
               type="button"
-              aria-label="Quay lại"
+              aria-label={t("common.back")}
               className="absolute left-2 cursor-pointer rounded-full p-2 text-zinc-200 hover:bg-zinc-800"
               onClick={() => setStep("form")}
             >
@@ -135,11 +137,13 @@ export function NewCollectionModal({
             </button>
           ) : null}
           <h2 className="text-center text-lg font-semibold text-zinc-100">
-            {step === "form" ? "Bộ sưu tập mới" : "Chọn video"}
+            {step === "form"
+              ? t("profileChrome.newCollection")
+              : t("profileChrome.pickVideos")}
           </h2>
           <button
             type="button"
-            aria-label="Đóng"
+            aria-label={t("common.close")}
             className="absolute right-2 cursor-pointer rounded-full p-2 text-zinc-200 hover:bg-zinc-800"
             onClick={handleClose}
           >
@@ -154,8 +158,10 @@ export function NewCollectionModal({
                 htmlFor="new-collection-name"
                 className="text-sm font-medium text-zinc-100"
               >
-                Tên ({Math.min(draftName.length, COLLECTION_NAME_MAX)}/
-                {COLLECTION_NAME_MAX})
+                {t("profileChrome.collectionNameLabel", {
+                  current: Math.min(draftName.length, COLLECTION_NAME_MAX),
+                  max: COLLECTION_NAME_MAX,
+                })}
               </label>
               <input
                 id="new-collection-name"
@@ -165,18 +171,17 @@ export function NewCollectionModal({
                 onChange={(e) =>
                   setDraftName(e.target.value.slice(0, COLLECTION_NAME_MAX))
                 }
-                placeholder="Nhập tên bộ sưu tập"
+                placeholder={t("profileChrome.collectionName")}
                 className="mt-1.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-zinc-500"
               />
             </div>
             <div className="flex items-start justify-between gap-3 border-t border-zinc-800/80 pt-3">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-zinc-100">
-                  Đặt ở chế độ công khai
+                  {t("profileChrome.makePublic")}
                 </p>
                 <p className="mt-1 text-xs leading-relaxed text-zinc-400">
-                  Những bộ sưu tập ở chế độ công khai sẽ hiển thị trên hồ sơ
-                  của bạn và có thể được chia sẻ với bạn bè.
+                  {t("profileChrome.makePublicHint")}
                 </p>
               </div>
               <button
@@ -201,14 +206,14 @@ export function NewCollectionModal({
               onClick={() => setStep("pick")}
               className="mt-1 w-full rounded-xl py-3 text-sm font-semibold text-white transition enabled:cursor-pointer enabled:bg-[#FE2C55] enabled:hover:bg-[#f02850] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Tiếp
+              {t("profileChrome.next")}
             </button>
           </div>
         ) : (
           <div className="flex min-h-[280px] flex-1 flex-col">
             {bookmarkLoading ? (
               <p className="flex flex-1 items-center justify-center py-12 text-sm text-zinc-500">
-                Đang tải…
+                {t("common.loading")}
               </p>
             ) : bookmarkItems.length === 0 ? (
               <div className="flex flex-1 flex-col px-4 pb-4 pt-2">
@@ -218,11 +223,10 @@ export function NewCollectionModal({
                     aria-hidden
                   />
                   <p className="text-lg font-semibold text-zinc-100">
-                    Không có video yêu thích để thêm vào
+                    {t("profileChrome.noFavoriteVideos")}
                   </p>
                   <p className="mt-2 max-w-sm text-sm text-zinc-400">
-                    Toàn bộ video yêu thích của bạn hiện đã có trong bộ sưu
-                    tập.
+                    {t("profileChrome.allFavoritesInCollection")}
                   </p>
                 </div>
                 <button
@@ -230,7 +234,7 @@ export function NewCollectionModal({
                   onClick={handleClose}
                   className="w-full cursor-pointer rounded-xl bg-zinc-800 py-3 text-sm font-semibold text-zinc-100 hover:bg-zinc-700"
                 >
-                  Xong
+                  {t("common.done")}
                 </button>
               </div>
             ) : (
@@ -276,7 +280,7 @@ export function NewCollectionModal({
                   onClick={handleClose}
                   className="mt-3 w-full cursor-pointer rounded-xl bg-zinc-800 py-3 text-sm font-semibold text-zinc-100 hover:bg-zinc-700"
                 >
-                  Xong
+                  {t("common.done")}
                 </button>
               </div>
             )}
@@ -288,6 +292,8 @@ export function NewCollectionModal({
 }
 
 export function BookmarkSaveToast({ open, onManage, onDismiss }) {
+  const { t } = useTranslation();
+
   useEffect(() => {
     if (!open) return undefined;
     const timer = window.setTimeout(() => onDismiss?.(), 4500);
@@ -303,7 +309,7 @@ export function BookmarkSaveToast({ open, onManage, onDismiss }) {
     >
       <IoCheckmarkCircle className="shrink-0 text-xl text-white" aria-hidden />
       <span className="min-w-0 flex-1 truncate font-medium">
-        Đã thêm vào Mục yêu thích
+        {t("profileChrome.addedToFavorites")}
       </span>
       <button
         type="button"
@@ -313,7 +319,7 @@ export function BookmarkSaveToast({ open, onManage, onDismiss }) {
         }}
         className="relative z-10 shrink-0 cursor-pointer font-semibold text-[#20d5ec] hover:underline"
       >
-        Quản lý ›
+        {t("profileChrome.manage")}
       </button>
     </div>
   );
@@ -325,6 +331,7 @@ export function BookmarkCollectionPopover({
   onCreateCollection,
   onClose,
 }) {
+  const { t } = useTranslation();
   const popoverRef = useRef(null);
   const [pos, setPos] = useState({ top: 0, left: 0 });
 
@@ -355,10 +362,10 @@ export function BookmarkCollectionPopover({
   useEffect(() => {
     if (!open) return undefined;
     const onDown = (e) => {
-      const t = e.target;
-      if (!(t instanceof Node)) return;
-      if (popoverRef.current?.contains(t)) return;
-      if (anchorRef?.current?.contains(t)) return;
+      const target = e.target;
+      if (!(target instanceof Node)) return;
+      if (popoverRef.current?.contains(target)) return;
+      if (anchorRef?.current?.contains(target)) return;
       onClose?.();
     };
     document.addEventListener("pointerdown", onDown, true);
@@ -382,11 +389,11 @@ export function BookmarkCollectionPopover({
           +
         </span>
         <span className="text-sm font-semibold text-zinc-100">
-          Tạo bộ sưu tập mới
+          {t("profileChrome.createNewCollection")}
         </span>
       </button>
       <p className="px-2 py-3 text-center text-sm text-zinc-400">
-        Chưa có bộ sưu tập nào được tạo
+        {t("profileChrome.noCollectionsYet")}
       </p>
     </div>
   );

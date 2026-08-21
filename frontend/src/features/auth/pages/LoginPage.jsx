@@ -365,7 +365,18 @@ export function LoginPage() {
   }, [authReady, completeOAuthLogin, navigate, refreshProfile, searchParams, token, user]);
 
   const startOAuth = (provider) => {
-    window.location.href = `${resolveBackendOrigin()}/api/oauth2/authorization/${provider}`;
+    let origin = resolveBackendOrigin();
+    try {
+      const url = new URL(origin);
+      // Apex vibely.sbs redirects to www; start OAuth on www to keep session cookies consistent.
+      if (url.hostname === "vibely.sbs") {
+        url.hostname = "www.vibely.sbs";
+        origin = url.origin;
+      }
+    } catch {
+      // keep resolveBackendOrigin()
+    }
+    window.location.href = `${origin}/api/oauth2/authorization/${provider}`;
   };
 
   const openReactivationModal = (payload, provider = "") => {

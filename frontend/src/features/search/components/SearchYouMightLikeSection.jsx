@@ -84,7 +84,7 @@ export function SearchYouMightLikeSection({
                   </button>
                   <button
                     type="button"
-                    aria-label={`Xóa "${query}"`}
+                    aria-label={t('searchUi.removeHistory', { query })}
                     disabled={removing}
                     onClick={(event) => {
                       event.stopPropagation()

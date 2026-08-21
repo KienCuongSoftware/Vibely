@@ -303,7 +303,7 @@ export function SearchResultsPage() {
       .catch((err) => {
         if (cancelled) return
         setUsers([])
-        setError(err instanceof Error ? err.message : 'Không tải được kết quả.')
+        setError(err instanceof Error ? err.message : t('searchPage.loadFailed'))
       })
       .finally(() => {
         if (!cancelled) setUsersLoading(false)
@@ -320,7 +320,7 @@ export function SearchResultsPage() {
         if (cancelled) return
         setVideos([])
         setMatchedTags([])
-        setError((prev) => prev || (err instanceof Error ? err.message : 'Không tải được kết quả.'))
+        setError((prev) => prev || (err instanceof Error ? err.message : t('searchPage.loadFailed')))
       })
       .finally(() => {
         if (!cancelled) setVideosLoading(false)

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { IoClose, IoRefresh } from "react-icons/io5";
 import { BehaviorTracker } from "@/security/behavior/BehaviorTracker.js";
 import {
@@ -12,12 +13,14 @@ import { CheckboxCaptcha } from "@/security/captcha/CheckboxCaptcha.jsx";
 import { RotateCaptcha } from "@/security/captcha/RotateCaptcha.jsx";
 import { SliderCaptcha } from "@/security/captcha/SliderCaptcha.jsx";
 
-const TITLES = {
-  CHECKBOX: "Xác minh nhanh",
-  ROTATE: "Kéo thanh trượt để ghép hình",
-  SLIDER: "Kéo mảnh ghép vào đúng vị trí",
-  MULTI_STEP: "Xác minh bảo mật nhiều bước",
+const TITLE_KEYS = {
+  CHECKBOX: "captcha.titleCheckbox",
+  ROTATE: "captcha.titleRotate",
+  SLIDER: "captcha.titleSlider",
+  MULTI_STEP: "captcha.titleMultiStep",
 };
+
+const LOAD_TIMEOUT_MS = 25_000;
 
 export function ChallengeModal({
   open,
@@ -26,6 +29,7 @@ export function ChallengeModal({
   onClose,
   onVerified,
 }) {
+  const { t } = useTranslation();
   const [challenge, setChallenge] = useState(null);
   const [rotation, setRotation] = useState(0);
   const [sliderOffset, setSliderOffset] = useState(0);
@@ -37,11 +41,12 @@ export function ChallengeModal({
   const trackerRef = useRef(null);
   const submittingRef = useRef(false);
   const hasInteractedRef = useRef(false);
+  const loadSeqRef = useRef(0);
 
   const submit = useCallback(async () => {
     if (!challenge || submittingRef.current) return;
     if (challenge.multiStep && !checkboxAttested) {
-      setError("Vui lòng tick xác minh trước khi ghép hình");
+      setError(t("captcha.tickFirst"));
       return;
     }
 
@@ -66,7 +71,7 @@ export function ChallengeModal({
         behaviorSamples: samples,
       });
       if (!result.verified) {
-        setError("Xác minh chưa đúng, vui lòng thử lại");
+        setError(t("captcha.verifyIncorrect"));
         hasInteractedRef.current = false;
         await loadChallenge(challengeLevel);
         return;
@@ -75,7 +80,7 @@ export function ChallengeModal({
       onVerified?.(result.verificationToken);
       onClose?.();
     } catch (err) {
-      setError(err.message || "Xác minh captcha thất bại");
+      setError(err.message || t("captcha.verifyFailed"));
     } finally {
       submittingRef.current = false;
       setVerifying(false);
@@ -90,23 +95,38 @@ export function ChallengeModal({
     rotation,
     sliderOffset,
     startedAt,
+    t,
   ]);
 
   async function loadChallenge(level) {
+    const seq = ++loadSeqRef.current;
     setLoading(true);
     setError("");
     setCheckboxAttested(false);
     setSliderOffset(0);
     hasInteractedRef.current = false;
+    setChallenge(null);
+
+    const timeoutId = window.setTimeout(() => {
+      if (loadSeqRef.current !== seq) return;
+      setError(t("captcha.loadTimeout"));
+      setLoading(false);
+    }, LOAD_TIMEOUT_MS);
+
     try {
       const data = await fetchCaptchaChallenge(level);
+      if (loadSeqRef.current !== seq) return;
       setChallenge(data);
       setRotation(0);
       setStartedAt(Date.now());
     } catch (err) {
-      setError(err.message || "Không tải được captcha");
+      if (loadSeqRef.current !== seq) return;
+      setError(err.message || t("captcha.loadFailed"));
     } finally {
-      setLoading(false);
+      window.clearTimeout(timeoutId);
+      if (loadSeqRef.current === seq) {
+        setLoading(false);
+      }
     }
   }
 
@@ -115,8 +135,11 @@ export function ChallengeModal({
     trackerRef.current = new BehaviorTracker();
     trackerRef.current.start();
     trackerRef.current.attach();
-    loadChallenge(challengeLevel);
-    return () => trackerRef.current?.detach();
+    void loadChallenge(challengeLevel);
+    return () => {
+      loadSeqRef.current += 1;
+      trackerRef.current?.detach();
+    };
   }, [open, challengeLevel]);
 
   useEffect(() => {
@@ -143,28 +166,27 @@ export function ChallengeModal({
 
   if (!open) return null;
 
-  const title =
-    challenge?.multiStep
-      ? TITLES.MULTI_STEP
-      : TITLES[challenge?.type] || TITLES.ROTATE;
+  const titleKey = challenge?.multiStep
+    ? TITLE_KEYS.MULTI_STEP
+    : TITLE_KEYS[challenge?.type] || TITLE_KEYS.ROTATE;
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/75 p-4">
       <div className="w-full max-w-md rounded-2xl border border-zinc-700 bg-zinc-900 p-5 shadow-2xl">
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-sm font-medium text-zinc-100">{title}</p>
+          <p className="text-sm font-medium text-zinc-100">{t(titleKey)}</p>
           <button
             type="button"
             onClick={onClose}
             className="rounded-full p-1 text-zinc-400 hover:bg-zinc-800 hover:text-white"
-            aria-label="Đóng"
+            aria-label={t("common.close")}
           >
             <IoClose className="text-xl" />
           </button>
         </div>
 
         {loading && !challenge ? (
-          <p className="py-10 text-center text-sm text-zinc-400">Đang tải captcha...</p>
+          <p className="py-10 text-center text-sm text-zinc-400">{t("captcha.loading")}</p>
         ) : null}
 
         <div className={verifying ? "pointer-events-none opacity-70" : ""}>
@@ -210,7 +232,7 @@ export function ChallengeModal({
         </div>
 
         {verifying ? (
-          <p className="mt-2 text-center text-xs text-zinc-400">Đang xác minh...</p>
+          <p className="mt-2 text-center text-xs text-zinc-400">{t("captcha.verifying")}</p>
         ) : null}
 
         {error ? <p className="mt-2 text-xs text-red-400">{error}</p> : null}
@@ -219,10 +241,10 @@ export function ChallengeModal({
           <button
             type="button"
             className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-zinc-400 hover:bg-zinc-800"
-            onClick={() => loadChallenge(challengeLevel)}
+            onClick={() => void loadChallenge(challengeLevel)}
             disabled={loading || verifying}
           >
-            <IoRefresh /> Làm mới
+            <IoRefresh /> {t("captcha.refresh")}
           </button>
           {challenge?.challengeId ? (
             <span className="truncate text-[10px] text-zinc-600" title={challenge.challengeId}>

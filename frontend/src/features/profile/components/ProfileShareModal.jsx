@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FaFacebookF,
   FaTelegramPlane,
@@ -20,6 +21,7 @@ const SCROLL_ARROW =
   "share-modal-scroll-arrow pointer-events-none absolute top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-[#3a3a3a]/95 text-2xl text-white shadow-lg opacity-0 transition-all duration-200 group-hover/share-modal:pointer-events-auto group-hover/share-modal:opacity-100 hover:bg-[#505050] hover:brightness-110";
 
 function ShareModalScrollRow({ children, className = "" }) {
+  const { t } = useTranslation();
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -57,7 +59,7 @@ function ShareModalScrollRow({ children, className = "" }) {
       {canScrollLeft ? (
         <button
           type="button"
-          aria-label="Cuộn trái"
+          aria-label={t("profileShare.scrollLeft")}
           className={`${SCROLL_ARROW} left-1`}
           onClick={() => scrollBy(-1)}
         >
@@ -67,7 +69,7 @@ function ShareModalScrollRow({ children, className = "" }) {
       {canScrollRight ? (
         <button
           type="button"
-          aria-label="Cuộn phải"
+          aria-label={t("profileShare.scrollRight")}
           className={`${SCROLL_ARROW} right-1`}
           onClick={() => scrollBy(1)}
         >
@@ -114,6 +116,7 @@ export function ProfileShareModal({
   displayName = "",
   onOpenEmbed,
 }) {
+  const { t } = useTranslation();
   const [toast, setToast] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -140,10 +143,10 @@ export function ProfileShareModal({
       .trim()
       .replace(/^@+/, "");
     const name = String(displayName ?? "").trim();
-    if (name && handle) return `${name} (@${handle}) trên Vibely`;
-    if (handle) return `@${handle} trên Vibely`;
-    return "Hồ sơ Vibely";
-  }, [username, displayName]);
+    if (name && handle) return t("profileShare.titleWithName", { name, handle });
+    if (handle) return t("profileShare.titleWithHandle", { handle });
+    return t("profileShare.titleFallback");
+  }, [username, displayName, t]);
 
   useEffect(() => {
     if (!open) {
@@ -174,14 +177,14 @@ export function ProfileShareModal({
       setBusy(true);
       try {
         await navigator.clipboard.writeText(value);
-        showToast("Đã sao chép liên kết");
+        showToast(t("profileShare.linkCopied"));
       } catch {
-        showToast("Không sao chép được liên kết");
+        showToast(t("profileShare.linkCopyFailed"));
       } finally {
         setBusy(false);
       }
     },
-    [showToast],
+    [showToast, t],
   );
 
   const openPlatform = useCallback(
@@ -219,13 +222,13 @@ export function ProfileShareModal({
       >
         <header className="relative flex items-center justify-center border-b border-white/10 px-5 py-4">
           <h2 id="profile-share-modal-title" className="text-lg font-semibold">
-            Chia sẻ đến
+            {t("profileShare.shareTo")}
           </h2>
           <button
             type="button"
             onClick={onClose}
             className="absolute right-4 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10"
-            aria-label="Đóng"
+            aria-label={t("common.close")}
           >
             <IoClose className="text-[22px]" aria-hidden />
           </button>
@@ -234,7 +237,7 @@ export function ProfileShareModal({
         <div className="min-h-[188px] px-3 py-5">
           <ShareModalScrollRow className="px-1">
             <ShareCircleButton
-              label="Copy"
+              label={t("profileShare.copy")}
               bgClass="bg-[#0075DC]"
               icon={<IoLink className="text-[30px]" aria-hidden />}
               disabled={busy}
@@ -248,7 +251,7 @@ export function ProfileShareModal({
               onClick={() => openPlatform("whatsapp")}
             />
             <ShareCircleButton
-              label="Nhúng"
+              label={t("profileShare.embed")}
               bgClass="bg-[#20D5EC]"
               icon={<IoCodeSlash className="text-[30px] text-black" aria-hidden />}
               disabled={busy}

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { IoCheckmarkCircle, IoInformationCircleOutline, IoWarningOutline } from 'react-icons/io5'
 
 function CheckSwitch({ checked, onChange, label }) {
@@ -22,13 +23,13 @@ function CheckSwitch({ checked, onChange, label }) {
   )
 }
 
-function CheckInfoTip({ text }) {
+function CheckInfoTip({ text, viewExplainLabel }) {
   return (
     <span className="group/checktip relative inline-flex shrink-0">
       <button
         type="button"
         className="rounded-full text-zinc-500 transition hover:text-zinc-300 group-hover/checktip:text-zinc-300"
-        aria-label="Xem giải thích"
+        aria-label={viewExplainLabel}
       >
         <IoInformationCircleOutline className="text-base" aria-hidden />
       </button>
@@ -72,9 +73,7 @@ function CheckStatusRow({ tone, children }) {
   )
 }
 
-/**
- * TikTok Studio–style Checks block (Vietnamese, dark Studio theme).
- */
+/** TikTok Studio–style Checks block (dark Studio theme). */
 export function UploadChecksPanel({
   musicCopyrightCheck,
   contentCheckLite,
@@ -83,42 +82,53 @@ export function UploadChecksPanel({
   originalityCheck,
   onOpenDetails,
 }) {
+  const { t } = useTranslation()
+  const viewExplain = t('upload.checks.viewExplain')
+
   return (
     <div className="mt-8">
-      <h3 className="text-base font-bold text-zinc-100">Kiểm tra</h3>
+      <h3 className="text-base font-bold text-zinc-100">{t('upload.checks.title')}</h3>
       <div className="mt-3 rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-4">
         <div className="space-y-5">
           <div>
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-1.5">
-                <p className="text-sm font-semibold text-zinc-100">Kiểm tra bản quyền nhạc</p>
-                <CheckInfoTip text="Chúng tôi sẽ kiểm tra video của bạn để tìm các vi phạm bản quyền tiềm ẩn đối với âm thanh được sử dụng. Nếu phát hiện vi phạm, bạn có thể chỉnh sửa video trước khi đăng." />
+                <p className="text-sm font-semibold text-zinc-100">
+                  {t('upload.checks.musicCopyright')}
+                </p>
+                <CheckInfoTip
+                  viewExplainLabel={viewExplain}
+                  text={t('upload.checks.musicCopyrightTip')}
+                />
               </div>
               <CheckSwitch
                 checked={Boolean(musicCopyrightCheck)}
                 onChange={onToggleMusic}
-                label="Bật kiểm tra bản quyền nhạc"
+                label={t('upload.checks.musicCopyrightAria')}
               />
             </div>
             {musicCopyrightCheck ? (
-              <CheckStatusRow tone="ok">Không phát hiện vấn đề.</CheckStatusRow>
+              <CheckStatusRow tone="ok">{t('upload.checks.noIssues')}</CheckStatusRow>
             ) : (
-              <CheckStatusRow tone="off">
-                Đã tắt — không chạy kiểm tra bản quyền nhạc tự động.
-              </CheckStatusRow>
+              <CheckStatusRow tone="off">{t('upload.checks.musicOff')}</CheckStatusRow>
             )}
           </div>
 
           <div>
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-1.5">
-                <p className="text-sm font-semibold text-zinc-100">Kiểm tra nội dung rút gọn</p>
-                <CheckInfoTip text="Chúng tôi sẽ kiểm tra nhanh video của bạn theo Nguyên tắc Cộng đồng để đảm bảo đủ điều kiện được đề xuất trên trang Đề xuất. Bạn sẽ có cơ hội sửa các vấn đề trước khi đăng. Tuy nhiên, đây chỉ là kiểm tra sơ bộ và không đảm bảo tuân thủ đầy đủ điều khoản và nguyên tắc của chúng tôi." />
+                <p className="text-sm font-semibold text-zinc-100">
+                  {t('upload.checks.contentLite')}
+                </p>
+                <CheckInfoTip
+                  viewExplainLabel={viewExplain}
+                  text={t('upload.checks.contentLiteTip')}
+                />
               </div>
               <CheckSwitch
                 checked={Boolean(contentCheckLite)}
                 onChange={onToggleContent}
-                label="Bật kiểm tra nội dung rút gọn"
+                label={t('upload.checks.contentLiteAria')}
               />
             </div>
             {contentCheckLite ? (
@@ -133,20 +143,18 @@ export function UploadChecksPanel({
                         className="cursor-pointer font-semibold text-sky-400 underline decoration-sky-400/80 underline-offset-2 hover:text-sky-300"
                         onClick={onOpenDetails}
                       >
-                        Xem chi tiết
+                        {t('upload.checks.viewDetails')}
                       </button>
                     </>
                   ) : null}
                 </CheckStatusRow>
               ) : (
                 <CheckStatusRow tone="pending">
-                  Kiểm tra sẽ chạy sau khi video tải lên xong.
+                  {t('upload.checks.runsAfterUpload')}
                 </CheckStatusRow>
               )
             ) : (
-              <CheckStatusRow tone="off">
-                Đã tắt — không chạy kiểm tra nội dung tự động.
-              </CheckStatusRow>
+              <CheckStatusRow tone="off">{t('upload.checks.contentOff')}</CheckStatusRow>
             )}
           </div>
         </div>

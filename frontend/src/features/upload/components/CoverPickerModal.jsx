@@ -5,6 +5,8 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n/i18n.js";
 import {
   IoAdd,
   IoArrowBack,
@@ -493,7 +495,7 @@ function loadHtmlImage(src) {
     const img = new Image();
     img.decoding = "async";
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("Không tải được ảnh."));
+    img.onerror = () => reject(new Error(i18n.t("upload.cover.loadImageFailed")));
     img.src = src;
   });
 }
@@ -797,7 +799,7 @@ function createVideoFromSource(source) {
 
 async function loadVideoMetadata(
   video,
-  errorMessage = "Không tải được video.",
+  errorMessage = i18n.t("upload.cover.loadVideoFailed"),
 ) {
   await new Promise((resolve, reject) => {
     video.onloadedmetadata = () => resolve();
@@ -850,7 +852,7 @@ async function extractPreviewFrame(
   maxWidth = PREVIEW_MAX_WIDTH,
 ) {
   const { video, cleanup } = createVideoFromSource(videoSource);
-  await loadVideoMetadata(video, "Không tải được video để xem trước ảnh bìa.");
+  await loadVideoMetadata(video, i18n.t("upload.cover.loadVideoPreviewFailed"));
 
   const duration = Math.max(0.08, Number(video.duration) || 1);
   const t = Math.max(0, Math.min(Number(timeSeconds || 0), duration - 0.04));
@@ -878,7 +880,7 @@ async function extractPreviewFrame(
 
 async function extractOriginalResolutionFrame(videoSource, timeSeconds) {
   const { video, cleanup } = createVideoFromSource(videoSource);
-  await loadVideoMetadata(video, "Không tải được video gốc để trích ảnh bìa.");
+  await loadVideoMetadata(video, i18n.t("upload.cover.loadVideoExtractFailed"));
 
   const duration = Math.max(0.08, Number(video.duration) || 1);
   const t = Math.max(0, Math.min(Number(timeSeconds || 0), duration - 0.04));
@@ -907,6 +909,8 @@ export function CoverPickerModal({
   profileDisplayName,
   profileAvatarUrl,
 }) {
+  const { t } = useTranslation();
+
   const videoSource = videoFile ?? (String(videoUrl ?? "").trim() || null);
   const previewProfileName =
     String(profileDisplayName ?? "").trim() || COVER_PREVIEW_FALLBACK_NAME;
@@ -1241,7 +1245,7 @@ export function CoverPickerModal({
       })
       .catch((e) => {
         if (!cancelled)
-          setStripError(e.message ?? "Không trích xuất được khung hình.");
+          setStripError(e.message ?? t("upload.cover.extractFramesFailed"));
       })
       .finally(() => {
         if (!cancelled) setStripLoading(false);
@@ -1249,7 +1253,7 @@ export function CoverPickerModal({
     return () => {
       cancelled = true;
     };
-  }, [open, videoSource]);
+  }, [open, videoSource, t]);
 
   useLayoutEffect(() => {
     updateFilmstripEndPad();
@@ -1299,9 +1303,9 @@ export function CoverPickerModal({
 
   const onPickImageFile = useCallback((file) => {
     if (!file) return;
-    const t = file.type || "";
-    if (!t.startsWith("image/")) {
-      setError("Vui lòng chọn tệp ảnh (JPG, PNG, WebP).");
+    const mime = file.type || "";
+    if (!mime.startsWith("image/")) {
+      setError(t("upload.cover.pickImageFile"));
       return;
     }
     setError("");
@@ -1311,7 +1315,7 @@ export function CoverPickerModal({
       if (prev) URL.revokeObjectURL(prev);
       return URL.createObjectURL(file);
     });
-  }, []);
+  }, [t]);
 
   const placeSticker = useCallback((preset) => {
     setToolTab("sticker");
@@ -1323,13 +1327,13 @@ export function CoverPickerModal({
         id: preset.id,
         src: preset.src,
         styleKey: preset.styleKey,
-        text: preset.defaultText || "Text",
+        text: preset.defaultText || t("upload.cover.defaultText"),
         xPct: prev?.xPct ?? 50,
         yPct: prev?.yPct ?? 48,
         wPct: prev?.wPct ?? DEFAULT_STICKER_WIDTH_PCT,
       };
     });
-  }, []);
+  }, [t]);
 
   const placePlainText = useCallback(() => {
     setToolTab("text");
@@ -1339,12 +1343,12 @@ export function CoverPickerModal({
       id: `text-${Date.now()}`,
       src: "",
       styleKey: "plainText",
-      text: "Text",
+      text: t("upload.cover.defaultText"),
       xPct: 50,
       yPct: 48,
       wPct: DEFAULT_STICKER_WIDTH_PCT,
     });
-  }, []);
+  }, [t]);
 
   const beginEditSticker = useCallback(() => {
     setStickerSelected(true);
@@ -1373,7 +1377,7 @@ export function CoverPickerModal({
     const id = window.setTimeout(() => {
       const el = stickerTextRef.current;
       if (!el) return;
-      if (!el.textContent) el.textContent = activeSticker?.text || "Text";
+      if (!el.textContent) el.textContent = activeSticker?.text || t("upload.cover.defaultText");
       el.focus();
       const range = document.createRange();
       range.selectNodeContents(el);
@@ -1382,7 +1386,7 @@ export function CoverPickerModal({
       sel?.addRange(range);
     }, 0);
     return () => window.clearTimeout(id);
-  }, [stickerEditing, activeSticker?.id]);
+  }, [stickerEditing, activeSticker?.id, t]);
 
   const onStickerPointerDown = useCallback(
     (e) => {
@@ -1483,18 +1487,16 @@ export function CoverPickerModal({
 
   const handleConfirm = async () => {
     if (!token) {
-      setError("Bạn cần đăng nhập.");
+      setError(t("upload.cover.needLogin"));
       return;
     }
     if (tab === "video") {
       if (stripLoading || !frames.length || videoDuration <= 0) {
-        setError(
-          "Chưa có khung hình từ video. Đợi tạo xong hoặc chọn khung hình.",
-        );
+        setError(t("upload.cover.noFramesYet"));
         return;
       }
     } else if (!uploadFile) {
-      setError("Hãy chọn ảnh từ máy tính.");
+      setError(t("upload.cover.pickUploadImage"));
       return;
     }
     setBusy(true);
@@ -1529,14 +1531,14 @@ export function CoverPickerModal({
         setError(
           uploadErr instanceof Error
             ? uploadErr.message
-            : "Không tải ảnh bìa lên kho lưu trữ. Kiểm tra đăng nhập và thử lại.",
+            : t("upload.cover.uploadFailed"),
         );
         return;
       }
       onConfirm(url, blob);
       onClose();
     } catch (e) {
-      setError(e.message ?? "Không lưu được ảnh bìa.");
+      setError(e.message ?? t("upload.cover.saveFailed"));
     } finally {
       setBusy(false);
     }
@@ -1584,7 +1586,7 @@ export function CoverPickerModal({
           <div
             role={interactive ? "button" : undefined}
             tabIndex={interactive ? 0 : undefined}
-            aria-label={interactive ? "Sticker trên ảnh bìa" : undefined}
+            aria-label={interactive ? t("upload.cover.stickerAria") : undefined}
             className={`absolute z-10 select-none outline-none ${
               interactive
                 ? stickerEditing
@@ -1684,7 +1686,7 @@ export function CoverPickerModal({
                   interactive
                     ? (e) => {
                         const next =
-                          (e.currentTarget.textContent ?? "").trim() || "Text";
+                          (e.currentTarget.textContent ?? "").trim() || t("upload.cover.defaultText");
                         e.currentTarget.textContent = next;
                         setActiveSticker((prev) =>
                           prev ? { ...prev, text: next } : prev,
@@ -1727,7 +1729,7 @@ export function CoverPickerModal({
               type="button"
               className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-200 hover:bg-white/10"
               onClick={onClose}
-              aria-label="Quay lại"
+              aria-label={t("common.back")}
               disabled={busy}
             >
               <IoArrowBack className="text-xl" aria-hidden />
@@ -1736,7 +1738,7 @@ export function CoverPickerModal({
               id="cover-modal-title"
               className="truncate text-base font-bold text-white"
             >
-              Chỉnh ảnh bìa
+              {t("upload.cover.title")}
           </h2>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -1746,7 +1748,7 @@ export function CoverPickerModal({
             onClick={onClose}
               disabled={busy}
             >
-              Hủy
+              {t("common.cancel")}
             </button>
             <button
               type="button"
@@ -1754,7 +1756,7 @@ export function CoverPickerModal({
               onClick={() => void handleConfirm()}
               disabled={!canConfirm}
             >
-              {busy ? "Đang lưu…" : "Lưu"}
+              {busy ? t("upload.cover.saving") : t("common.save")}
           </button>
           </div>
         </div>
@@ -1774,7 +1776,7 @@ export function CoverPickerModal({
                 aria-pressed={toolTab === "sticker"}
               >
                 <IoHappyOutline className="text-xl" aria-hidden />
-                Sticker
+                {t("upload.cover.sticker")}
           </button>
           <button
             type="button"
@@ -1787,7 +1789,7 @@ export function CoverPickerModal({
                 aria-pressed={toolTab === "text"}
               >
                 <IoTextOutline className="text-xl" aria-hidden />
-                Text
+                {t("upload.cover.text")}
           </button>
             </nav>
             <div className="scrollbar-none flex w-[180px] min-h-0 flex-col overflow-y-auto p-3 xl:w-[200px]">
@@ -1799,7 +1801,7 @@ export function CoverPickerModal({
                       <button
                         key={preset.id}
                         type="button"
-                        title="Thêm sticker (double-click trên canvas để sửa chữ)"
+                        title={t("upload.cover.addStickerTitle")}
                         aria-pressed={selected}
                         onClick={() => placeSticker(preset)}
                         className={`relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden rounded-lg border bg-black p-1.5 transition ${
@@ -1823,15 +1825,14 @@ export function CoverPickerModal({
               ) : (
                 <div className="flex flex-col gap-3">
                   <p className="text-xs leading-relaxed text-zinc-400">
-                    Thêm chữ lên ảnh bìa. Double-click chữ trên canvas để sửa
-                    nội dung.
+                    {t("upload.cover.textHint")}
                   </p>
                   <button
                     type="button"
                     onClick={placePlainText}
                     className="cursor-pointer rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-left text-sm font-semibold text-white hover:bg-white/10"
                   >
-                    + Thêm chữ
+                    {t("upload.cover.addText")}
                   </button>
                 </div>
               )}
@@ -1843,12 +1844,11 @@ export function CoverPickerModal({
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-3 sm:px-6">
               {!canUseVideoTab && tab === "video" ? (
                 <p className="max-w-sm rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-center text-sm text-amber-200">
-                  Không có video để trích khung hình. Hãy dùng nút tải ảnh bìa
-                  bên dưới.
+                  {t("upload.cover.noVideo")}
                 </p>
               ) : stripLoading && tab === "video" ? (
                 <p className="text-sm text-zinc-400">
-                  Đang tạo khung hình từ video…
+                  {t("upload.cover.generatingFrames")}
                 </p>
               ) : stripError && tab === "video" ? (
                 <p className="max-w-sm rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-center text-sm text-rose-300">
@@ -1895,11 +1895,11 @@ export function CoverPickerModal({
 
             {/* Scale */}
             <div className="flex shrink-0 items-center justify-end gap-2 px-4 pb-2 sm:px-6">
-              <span className="text-xs font-medium text-zinc-400">Scale</span>
+              <span className="text-xs font-medium text-zinc-400">{t("upload.cover.scale")}</span>
                     <button
                       type="button"
                 className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-lg leading-none text-zinc-400 hover:bg-white/10"
-                aria-label="Thu nhỏ"
+                aria-label={t("upload.cover.zoomOut")}
                 onClick={() =>
                   setScale((s) => Math.max(1, Number((s - 0.05).toFixed(2))))
                 }
@@ -1914,12 +1914,12 @@ export function CoverPickerModal({
                 value={scale}
                 onChange={(e) => setScale(Number(e.target.value))}
                 className="h-1.5 w-28 cursor-pointer accent-[#20d5ec] sm:w-40"
-                aria-label="Phóng to ảnh bìa"
+                aria-label={t("upload.cover.scaleAria")}
               />
               <button
                 type="button"
                 className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-lg leading-none text-zinc-400 hover:bg-white/10"
-                aria-label="Phóng to"
+                aria-label={t("upload.cover.zoomIn")}
                 onClick={() =>
                   setScale((s) => Math.min(2, Number((s + 0.05).toFixed(2))))
                 }
@@ -1947,7 +1947,7 @@ export function CoverPickerModal({
                 }`}
               >
                 <IoAdd className="text-xl" aria-hidden />
-                Tải ảnh bìa
+                {t("upload.cover.uploadCover")}
                     </button>
 
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
@@ -1987,7 +1987,7 @@ export function CoverPickerModal({
                     <div
                       ref={filmstripRef}
                     role="slider"
-                      aria-label="Dải khung hình"
+                      aria-label={t("upload.cover.filmstripAria")}
                     aria-valuemin={0}
                     aria-valuemax={Math.max(0, videoDuration)}
                     aria-valuenow={selectedTime}
@@ -2018,7 +2018,7 @@ export function CoverPickerModal({
                             key={`${f.time}-${i}`}
                           className="h-full shrink-0 cursor-pointer overflow-hidden bg-zinc-900"
                           style={{ width: FILMSTRIP_FRAME_WIDTH }}
-                          title={`Chọn khung ${formatFilmstripTime(f.time)}`}
+                          title={t("upload.cover.selectFrame", { time: formatFilmstripTime(f.time) })}
                           >
                             <img
                               src={f.dataUrl}
@@ -2042,7 +2042,7 @@ export function CoverPickerModal({
                 <div className="flex items-center justify-center gap-2 pb-0.5">
                     <button
                       type="button"
-                    aria-label="Lùi 0.1 giây"
+                    aria-label={t("upload.cover.stepBack")}
                     aria-disabled={selectedTime <= 0.001}
                     onClick={() => stepFilmstripSelection(-1)}
                     className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-zinc-600/80 bg-zinc-100/95 text-zinc-700 shadow-sm transition hover:bg-white ${
@@ -2053,7 +2053,7 @@ export function CoverPickerModal({
                     </button>
               <button
                 type="button"
-                    aria-label="Tới 0.1 giây"
+                    aria-label={t("upload.cover.stepForward")}
                     aria-disabled={
                       selectedTime >= Math.max(0, videoDuration - 0.05)
                     }
@@ -2124,7 +2124,7 @@ export function CoverPickerModal({
                   <div className="mt-3 flex w-full items-stretch justify-center gap-0 text-center">
                     <div className="min-w-0 flex-1 px-1">
                       <p className="text-[15px] font-semibold text-white">−</p>
-                      <p className="text-[11px] text-zinc-400">Following</p>
+                      <p className="text-[11px] text-zinc-400">{t("upload.cover.following")}</p>
                 </div>
                     <div
                       className="w-px self-stretch bg-zinc-700"
@@ -2132,7 +2132,7 @@ export function CoverPickerModal({
                     />
                     <div className="min-w-0 flex-1 px-1">
                       <p className="text-[15px] font-semibold text-white">−</p>
-                      <p className="text-[11px] text-zinc-400">Followers</p>
+                      <p className="text-[11px] text-zinc-400">{t("upload.cover.followers")}</p>
                     </div>
                     <div
                       className="w-px self-stretch bg-zinc-700"
@@ -2140,7 +2140,7 @@ export function CoverPickerModal({
                     />
                     <div className="min-w-0 flex-1 px-1">
                       <p className="text-[15px] font-semibold text-white">−</p>
-                      <p className="text-[11px] text-zinc-400">Likes</p>
+                      <p className="text-[11px] text-zinc-400">{t("upload.cover.likes")}</p>
                     </div>
                   </div>
         </div>
@@ -2167,7 +2167,7 @@ export function CoverPickerModal({
                 </div>
               </div>
               <p className="mt-3 text-center text-xs text-zinc-400">
-                Preview in profile
+                {t("upload.cover.previewInProfile")}
               </p>
             </div>
           </aside>

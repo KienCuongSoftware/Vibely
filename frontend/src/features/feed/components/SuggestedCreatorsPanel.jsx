@@ -14,6 +14,7 @@ const SKELETON_CLASS = `${CARD_CLASS} animate-pulse bg-zinc-900`
 const DEFAULT_AVATAR = '/images/users/default-avatar.jpeg'
 
 export function SuggestedCreatorCard({ creator, token, playing, onHover, onFollowed, onUnfollowed }) {
+  const { t } = useTranslation()
   const [followed, setFollowed] = useState(Boolean(creator?.followedByViewer))
   const [busy, setBusy] = useState(false)
   const username = String(creator?.username ?? '').trim()
@@ -21,7 +22,7 @@ export function SuggestedCreatorCard({ creator, token, playing, onHover, onFollo
   const poster = String(creator?.previewThumbnailUrl ?? '').trim()
   const previewVideoUrl = String(creator?.previewVideoUrl ?? '').trim()
   const avatar = String(creator?.avatarUrl ?? '').trim() || DEFAULT_AVATAR
-  const displayName = String(creator?.displayName ?? '').trim() || username || 'Nhà sáng tạo'
+  const displayName = String(creator?.displayName ?? '').trim() || username || t('common.creator')
 
   useEffect(() => {
     setFollowed(Boolean(creator?.followedByViewer))
@@ -68,7 +69,7 @@ export function SuggestedCreatorCard({ creator, token, playing, onHover, onFollo
       <Link
         to={profilePath}
         className="absolute inset-0 z-[1] cursor-pointer"
-        aria-label={`Xem trang cá nhân ${displayName}`}
+        aria-label={t('suggestions.viewProfile', { name: displayName })}
       />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex flex-col items-center px-1.5 pb-3.5 pt-6 text-center sm:px-2 sm:pb-4">
         <img
@@ -96,7 +97,7 @@ export function SuggestedCreatorCard({ creator, token, playing, onHover, onFollo
               : 'cursor-pointer bg-[#FE2C55] text-white hover:bg-[#d81942] disabled:cursor-not-allowed disabled:opacity-60'
           }`}
         >
-          {busy ? 'Đang xử lý…' : followed ? 'Following' : 'Follow'}
+          {busy ? t('common.loading') : followed ? t('profilePage.following') : t('profilePage.follow')}
         </button>
       </div>
     </article>
@@ -142,12 +143,12 @@ export function SuggestedCreatorsPanel({
       setHasNext(Boolean(res?.hasNext))
     } catch (e) {
       if (!append) setItems([])
-      setError(e instanceof Error ? e.message : 'Không tải được gợi ý.')
+      setError(e instanceof Error ? e.message : t('suggestions.loadFailed'))
     } finally {
       setLoading(false)
       setLoadingMore(false)
     }
-  }, [token])
+  }, [token, t])
 
   useEffect(() => {
     void loadPage(0, false)

@@ -18,7 +18,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
  * @see <a href="https://developers.line.biz/en/docs/line-login/verify-id-token/">LINE verify id token</a>
  */
 @Configuration
-@ConditionalOnProperty(name = "app.oauth2.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "app.oauth2.enabled", havingValue = "true", matchIfMissing = true)
 public class OAuth2OidcSecurityBeans {
 
     @Bean

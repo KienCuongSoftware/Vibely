@@ -62,6 +62,28 @@ public class RiskEngine {
 
     @Transactional
     public RiskEvaluateResponse evaluate(RiskEvaluateRequest request, HttpServletRequest httpRequest) {
+        try {
+            return evaluateInternal(request, httpRequest);
+        } catch (Exception ex) {
+            // Never break login/register because risk scoring failed (Redis/HMAC/DB).
+            org.slf4j.LoggerFactory.getLogger(RiskEngine.class)
+                .warn("Risk evaluation degraded: {}", ex.toString());
+            int trust = properties.getDefaultTrustScore();
+            return new RiskEvaluateResponse(
+                0,
+                RiskLevel.LOW,
+                ChallengeLevel.NONE,
+                false,
+                null,
+                trust,
+                trust,
+                60,
+                List.of("risk_engine_degraded")
+            );
+        }
+    }
+
+    private RiskEvaluateResponse evaluateInternal(RiskEvaluateRequest request, HttpServletRequest httpRequest) {
         // Local/E2E: frontend ensureHuman() calls this before login. When auth protection is off,
         // never require a captcha challenge (Selenium would otherwise get stuck on the slider).
         if (!properties.isAuthProtectionEnabled()) {

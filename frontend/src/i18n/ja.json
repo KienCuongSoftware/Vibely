@@ -23,7 +23,8 @@
     "logout": "Log out",
     "creator": "Creator",
     "friends": "Friends",
-    "you": "You"
+    "you": "You",
+    "downloadApp": "アプリをダウンロード"
   },
   "auth": {
     "loginTitle": "Vibely にログインします",
@@ -572,12 +573,43 @@
       "hours": "{{count}}時間"
     }
   },
+  "profileShare": {
+    "shareTo": "共有先",
+    "titleWithName": "{{name}} (@{{handle}}) on Vibely",
+    "titleWithHandle": "@{{handle}} on Vibely",
+    "titleFallback": "Vibelyのプロフィール",
+    "scrollLeft": "左にスクロール",
+    "scrollRight": "右にスクロール",
+    "linkCopied": "リンクをコピーしました",
+    "linkCopyFailed": "リンクをコピーできませんでした",
+    "copy": "コピー",
+    "embed": "埋め込み"
+  },
+  "profileEmbed": {
+    "title": "プロフィールを埋め込む",
+    "videosFromAccount": "このアカウントの動画が表示されます",
+    "copyCode": "コードをコピー",
+    "copying": "コピー中…",
+    "copied": "埋め込みコードをコピーしました",
+    "copyFailed": "埋め込みコードをコピーできませんでした",
+    "legalPrefix": "続行すると、利用規約に同意し、当社の",
+    "privacyLink": "プライバシーポリシー",
+    "legalSuffix": "を読んだことを確認したものとみなされます。埋め込みページのプレビュー:",
+    "openVibely": "Vibelyを開く",
+    "following": "フォロー中",
+    "followers": "フォロワー",
+    "likes": "いいね",
+    "noPublicVideos": "プレビューできる公開動画はまだありません。",
+    "viewPrivacy": "プライバシーポリシーを見る"
+  },
   "suggestions": {
     "emptyTitle": "まだおすすめがありません",
     "emptyDescription": "さらに多くのクリエイターが動画を投稿すると、ここに提案します。",
     "retry": "再試行",
     "seeMore": "もっと見る",
-    "loading": "読み込み中…"
+    "loading": "読み込み中…",
+    "viewProfile": "{{name}}のプロフィールを見る",
+    "loadFailed": "おすすめを読み込めませんでした。"
   },
   "friendsPage": {
     "pageTitle": "友達 | Vibely",
@@ -606,7 +638,8 @@
     "follow": "Follow",
     "viewProfile": "View profile",
     "clearQuery": "Clear search",
-    "back": "Back"
+    "back": "Back",
+    "loadFailed": "Couldn't load results."
   },
   "profilePage": {
     "pageTitle": "プロフィール | Vibely",
@@ -697,15 +730,15 @@
     "apply": "Apply",
     "uploading": "Uploading…",
     "backAria": "Go back",
-    "newCollection": "New collection",
-    "chooseVideos": "Choose videos",
-    "collectionNameLabel": "Name ({{current}}/{{max}})",
-    "makePublic": "Make public",
-    "makePublicHint": "Public collections appear on your profile and can be shared with friends.",
-    "next": "Next",
-    "noFavoriteVideos": "No favorite videos to add",
-    "allFavoritesInCollection": "All of your favorite videos are already in the collection.",
-    "logoutConfirm": "Are you sure you want to log out?"
+    "newCollection": "新しいコレクション",
+    "chooseVideos": "動画を選択",
+    "collectionNameLabel": "名前 ({{current}}/{{max}})",
+    "makePublic": "公開にする",
+    "makePublicHint": "公開コレクションはプロフィールに表示され、友達と共有できます。",
+    "next": "次へ",
+    "noFavoriteVideos": "追加できるお気に入り動画がありません",
+    "allFavoritesInCollection": "お気に入り動画はすべてコレクションに含まれています。",
+    "logoutConfirm": "ログアウトしてもよろしいですか？"
   },
   "watchPage": {
     "pageTitle": "Vibelyの動画",
@@ -885,6 +918,20 @@
     "VIDEO_SIZE_REQUIRED": "Video file size is required.",
     "VIDEO_TOO_LARGE": "Video exceeds the 30 GB limit."
   },
+  "captcha": {
+    "titleCheckbox": "かんたん認証",
+    "titleRotate": "スライダーを動かして画像を合わせる",
+    "titleSlider": "パズルピースを正しい位置へドラッグ",
+    "titleMultiStep": "多段階セキュリティ認証",
+    "loading": "キャプチャを読み込み中…",
+    "verifying": "確認中…",
+    "refresh": "更新",
+    "tickFirst": "パズルの前にチェックを完了してください",
+    "verifyIncorrect": "認証に失敗しました。もう一度お試しください",
+    "verifyFailed": "キャプチャ認証に失敗しました",
+    "loadFailed": "キャプチャを読み込めませんでした",
+    "loadTimeout": "キャプチャの読み込みに時間がかかっています。接続を確認して更新してください。"
+  },
   "comments": {
     "title": "Comments",
     "close": "Close comments",
@@ -904,7 +951,15 @@
     "viewProfile": "View {{name}} profile",
     "unavailable": "Comments are only available for Vibely videos (when logged in).",
     "loading": "Loading comments…",
-    "sendComment": "Send comment"
+    "sendComment": "Send comment",
+    "mentionAria": "メンション",
+    "mentionTip": "コメントで「@」を使ってユーザーをタグ付けできます",
+    "mentionNoResults": "結果なし",
+    "mentionHint": "コメント欄で@の後にユーザー名を入力",
+    "friends": "友達",
+    "emojiAria": "絵文字を挿入",
+    "emojiTip": "クリックして絵文字を追加",
+    "loadingMentions": "読み込み中…"
   },
   "feedMenu": {
     "subtitles": "Subtitles",
@@ -937,7 +992,8 @@
     "searchFor": "Search for \"{{query}}\"",
     "sidebarHint": "Use the search box in the left sidebar to find users and videos.",
     "tryOtherQuery": "Try another keyword or check the spelling for \"{{query}}\"",
-    "related": "Related:"
+    "related": "Related:",
+    "removeHistory": "「{{query}}」を削除"
   },
   "messagesThread": {
     "placeholder": "Send a message...",
@@ -1067,7 +1123,14 @@
     "pickVideos": "Choose videos",
     "collectionNameLabel": "Name ({{current}}/{{max}})",
     "makePublic": "Make public",
-    "makePublicHint": "Public collections appear on your profile and can be shared with friends."
+    "makePublicHint": "Public collections appear on your profile and can be shared with friends.",
+    "next": "Next",
+    "noFavoriteVideos": "No favorite videos to add",
+    "allFavoritesInCollection": "All of your favorite videos are already in the collection.",
+    "createNewCollection": "Create new collection",
+    "noCollectionsYet": "No collections created yet",
+    "addedToFavorites": "Added to Favorites",
+    "manage": "Manage ›"
   },
   "feed": {
     "loadingFeed": "Loading feed",
@@ -1270,32 +1333,32 @@
       "agreement": "Agreements",
       "cancel": "Cancel",
       "save": "Save",
-      "viewExplain": "View explanation",
-      "learnMore": "Learn more",
+      "viewExplain": "説明を見る",
+      "learnMore": "詳しく見る",
       "ok": "OK",
-      "copyrightHowTitle": "How copyright check works",
-      "copyrightHowP1": "Run a copyright check on the audio you used before posting to identify potential copyright issues. If issues are found, you can edit your video before posting.",
-      "copyrightHowP2": "You can still post a video flagged for copyright issues. However, the video will be muted to protect the rights of unlicensed audio.",
-      "copyrightHowNoteLabel": "Note:",
-      "copyrightHowP3": "Copyright check results are not final. For example, future changes in the copyright owner’s permission for the audio may affect your video.",
+      "copyrightHowTitle": "著作権チェックの仕組み",
+      "copyrightHowP1": "投稿前に使用した音声の著作権チェックを実行し、潜在的な著作権の問題を特定します。問題が見つかった場合は、投稿前に動画を編集できます。",
+      "copyrightHowP2": "著作権の問題がフラグされた動画でも投稿できます。ただし、ライセンスのない音声の権利を保護するため、動画はミュートされます。",
+      "copyrightHowNoteLabel": "注意:",
+      "copyrightHowP3": "著作権チェックの結果は最終的なものではありません。たとえば、今後著作権所有者の音声利用許可が変わると、動画に影響する場合があります。",
       "rows": {
         "musicCopyrightCheck": {
-          "title": "Automatic music copyright check",
-          "description": "We will automatically check whether your video uses unlicensed music that may cause it to be muted.",
-          "infoTooltip": "We will check your video for potential copyright issues with the audio used. If issues are found, you can edit the video before posting."
+          "title": "音楽著作権の自動チェック",
+          "description": "ライセンスのない音楽を使用してミュートされる可能性があるかどうかを自動的に確認します。",
+          "infoTooltip": "使用した音声に潜在的な著作権の問題がないか動画を確認します。問題が見つかった場合は、投稿前に動画を編集できます。"
         },
         "contentCheckLite": {
-          "title": "Automatic lite content check",
-          "description": "We will automatically check your content to assess eligibility for the For You page.",
-          "infoTooltip": "We will quickly check your video against Community Guidelines to help ensure eligibility for recommendations on the For You page. You will have a chance to fix issues before posting. This is only a preliminary check and does not guarantee full compliance with our terms and guidelines."
+          "title": "簡易コンテンツの自動チェック",
+          "description": "For Youページへの掲載資格を評価するため、コンテンツを自動チェックします。",
+          "infoTooltip": "おすすめ（For You）への掲載資格を確認するため、コミュニティガイドラインに照らして動画をすばやくチェックします。投稿前に問題を修正する機会があります。これは予備チェックであり、規約・ガイドラインへの完全な準拠を保証するものではありません。"
         },
         "allowVideoInsights": {
-          "title": "Allow insights about my videos",
-          "description": "Vibely will use AI to summarize and group comments into topics: Themes, Inspiration, Favorites, and Questions."
+          "title": "自分の動画に関するインサイトを許可",
+          "description": "VibelyはAIを使ってコメントを要約し、テーマ・インスピレーション・お気に入り・質問にグループ化します。"
         },
         "includeCommentsForInsights": {
-          "title": "Include my comments in analysis",
-          "description": "Vibely will include your comments when using AI to summarize and filter comments on other videos."
+          "title": "分析に自分のコメントを含める",
+          "description": "他の動画のコメントをAIで要約・フィルタする際に、あなたのコメントも含めます。"
         }
       }
     },
@@ -2492,6 +2555,58 @@
     "dropHint": "またはここに動画をドラッグ＆ドロップ",
     "pickVideo": "動画を選択",
     "selectedFile": "選択済み: {{name}}",
-    "durationLabel": "長さ: {{duration}}"
+    "durationLabel": "長さ: {{duration}}",
+    "checks": {
+      "title": "チェック",
+      "viewExplain": "説明を見る",
+      "musicCopyright": "音楽著作権チェック",
+      "musicCopyrightTip": "使用した音声に潜在的な著作権の問題がないか動画を確認します。問題が見つかった場合は、投稿前に動画を編集できます。",
+      "musicCopyrightAria": "音楽著作権チェックを有効にする",
+      "noIssues": "問題は検出されませんでした。",
+      "musicOff": "オフ — 自動の音楽著作権チェックは実行されません。",
+      "contentLite": "簡易コンテンツチェック",
+      "contentLiteTip": "おすすめ（For You）への掲載資格を確認するため、コミュニティガイドラインに照らして動画をすばやくチェックします。投稿前に問題を修正する機会があります。これは予備チェックであり、規約・ガイドラインへの完全な準拠を保証するものではありません。",
+      "contentLiteAria": "簡易コンテンツチェックを有効にする",
+      "viewDetails": "詳細を見る",
+      "runsAfterUpload": "チェックは動画のアップロード完了後に実行されます。",
+      "contentOff": "オフ — 自動コンテンツチェックは実行されません。"
+    },
+    "cover": {
+      "title": "カバーを編集",
+      "saving": "保存中…",
+      "sticker": "ステッカー",
+      "text": "テキスト",
+      "addStickerTitle": "ステッカーを追加（キャンバスをダブルクリックして文字を編集）",
+      "textHint": "カバーに文字を追加します。キャンバス上の文字をダブルクリックして編集できます。",
+      "addText": "+ 文字を追加",
+      "noVideo": "フレームを抽出する動画がありません。下のカバーアップロードを使ってください。",
+      "generatingFrames": "動画からフレームを生成中…",
+      "pickImageFile": "画像ファイル（JPG、PNG、WebP）を選択してください。",
+      "needLogin": "ログインが必要です。",
+      "noFramesYet": "動画からのフレームがまだありません。完了を待つか、フレームを選んでください。",
+      "pickUploadImage": "パソコンから画像を選択してください。",
+      "uploadFailed": "カバーをストレージにアップロードできませんでした。ログイン状態を確認して再試行してください。",
+      "saveFailed": "カバーを保存できませんでした。",
+      "extractFramesFailed": "フレームを抽出できませんでした。",
+      "loadImageFailed": "画像を読み込めませんでした。",
+      "loadVideoFailed": "動画を読み込めませんでした。",
+      "loadVideoPreviewFailed": "カバーをプレビューするための動画を読み込めませんでした。",
+      "loadVideoExtractFailed": "カバー抽出用の元動画を読み込めませんでした。",
+      "stickerAria": "カバー上のステッカー",
+      "zoomOut": "縮小",
+      "zoomIn": "拡大",
+      "scaleAria": "カバーの拡大率",
+      "scale": "拡大率",
+      "uploadCover": "カバーをアップロード",
+      "filmstripAria": "フレームストリップ",
+      "selectFrame": "フレームを選択 {{time}}",
+      "stepBack": "0.1秒戻る",
+      "stepForward": "0.1秒進む",
+      "previewInProfile": "プロフィールでプレビュー",
+      "following": "フォロー中",
+      "followers": "フォロワー",
+      "likes": "いいね",
+      "defaultText": "テキスト"
+    }
   }
 }

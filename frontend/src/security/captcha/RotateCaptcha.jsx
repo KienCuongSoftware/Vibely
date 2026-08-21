@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const SIZE = 280;
 
@@ -10,6 +11,7 @@ export function RotateCaptcha({
   onRelease,
   onBehaviorSample,
 }) {
+  const { t } = useTranslation();
   const canvasRef = useRef(null);
   const outerRef = useRef(null);
   const innerRef = useRef(null);
@@ -142,7 +144,7 @@ export function RotateCaptcha({
         onPointerUp={() => onRelease?.()}
         onTouchEnd={() => onRelease?.()}
         className="w-full accent-red-500"
-        aria-label="Kéo thanh trượt để ghép hình"
+        aria-label={t("captcha.titleRotate")}
       />
     </div>
   );

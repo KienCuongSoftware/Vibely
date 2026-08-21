@@ -9,6 +9,7 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import { IoHappyOutline } from "react-icons/io5";
 import { apiClient } from "@/shared/api/client";
 
@@ -146,6 +147,7 @@ function CommentAccessoryPopover({
 }
 
 function CommentMentionPicker({ token, open, filterQuery = "", onPick }) {
+  const { t } = useTranslation();
   const [friends, setFriends] = useState([]);
   const [loadingFriends, setLoadingFriends] = useState(false);
   const [searchRows, setSearchRows] = useState([]);
@@ -237,7 +239,7 @@ function CommentMentionPicker({ token, open, filterQuery = "", onPick }) {
     <div className="flex max-h-[min(280px,50vh)] flex-col py-1">
       <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-contain px-1">
         {loading ? (
-          <p className="px-3 py-3 text-xs text-zinc-500">Đang tải…</p>
+          <p className="px-3 py-3 text-xs text-zinc-500">{t("comments.loadingMentions")}</p>
         ) : suggestions.length > 0 ? (
           suggestions.map((row) => {
             const username = String(row?.username ?? "").trim();
@@ -272,7 +274,7 @@ function CommentMentionPicker({ token, open, filterQuery = "", onPick }) {
                 </span>
                 {friendKeys.has(username.toLowerCase()) ? (
                   <span className="shrink-0 text-[10px] font-semibold text-[#69C9D0]">
-                    Bạn bè
+                    {t("comments.friends")}
                   </span>
                 ) : null}
               </button>
@@ -281,8 +283,8 @@ function CommentMentionPicker({ token, open, filterQuery = "", onPick }) {
         ) : (
           <p className="px-3 py-3 text-xs leading-relaxed text-zinc-500">
             {effectiveQuery
-              ? "Không có kết quả"
-              : "Gõ tên người dùng sau @ trong ô bình luận"}
+              ? t("comments.mentionNoResults")
+              : t("comments.mentionHint")}
           </p>
         )}
       </div>
@@ -306,6 +308,7 @@ export const CommentInputAccessoryButtons = forwardRef(
     },
     ref,
   ) {
+    const { t } = useTranslation();
     const mentionBtnRef = useRef(null);
     const emojiBtnRef = useRef(null);
     const mentionPopoverRef = useRef(null);
@@ -447,7 +450,7 @@ export const CommentInputAccessoryButtons = forwardRef(
               className={`${BTN_BASE} ${btnSize} font-bold leading-none ${atText} ${
                 mentionOpen ? "bg-white/10 text-white" : ""
               }`}
-              aria-label="Nhắc tên"
+              aria-label={t("comments.mentionAria")}
               aria-expanded={mentionOpen}
               onClick={openMentionPicker}
             >
@@ -458,8 +461,7 @@ export const CommentInputAccessoryButtons = forwardRef(
                 role="tooltip"
                 className={`${TIP_CLASSES} w-[min(220px,calc(100vw-2rem))] group-hover/mention:opacity-100`}
               >
-                Dùng ký hiệu &quot;@&quot; để gắn thẻ một người dùng trong bình luận của
-                bạn
+                {t("comments.mentionTip")}
               </div>
             ) : null}
           </div>
@@ -471,7 +473,7 @@ export const CommentInputAccessoryButtons = forwardRef(
               className={`${BTN_BASE} ${btnSize} ${
                 emojiOpen ? "bg-white/10 text-white" : ""
               }`}
-              aria-label="Chèn biểu tượng cảm xúc"
+              aria-label={t("comments.emojiAria")}
               aria-expanded={emojiOpen}
               onClick={() => {
                 setMentionOpen(false);
@@ -487,7 +489,7 @@ export const CommentInputAccessoryButtons = forwardRef(
                 role="tooltip"
                 className={`${TIP_CLASSES} whitespace-nowrap group-hover/emoji:opacity-100`}
               >
-                Nhấp để thêm emoji
+                {t("comments.emojiTip")}
               </div>
             ) : null}
           </div>

@@ -36,7 +36,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
  * which caused {@code invalid_grant} from exchanging the authorization code twice.
  */
 @Configuration
-@ConditionalOnProperty(name = "app.oauth2.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "app.oauth2.enabled", havingValue = "true", matchIfMissing = true)
 public class OAuth2LoginSecurityConfiguration {
 
     @Bean

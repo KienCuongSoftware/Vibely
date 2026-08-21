@@ -23,7 +23,8 @@
     "logout": "Log out",
     "creator": "Creator",
     "friends": "Friends",
-    "you": "You"
+    "you": "You",
+    "downloadApp": "Download app"
   },
   "auth": {
     "loginTitle": "Prihláste sa do Vibely",
@@ -577,7 +578,9 @@
     "emptyDescription": "When more creators post videos, we'll suggest them here.",
     "retry": "Try again",
     "seeMore": "See more",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "viewProfile": "View {{name}}'s profile",
+    "loadFailed": "Couldn't load suggestions."
   },
   "friendsPage": {
     "pageTitle": "Friends | Vibely",
@@ -606,7 +609,8 @@
     "follow": "Follow",
     "viewProfile": "View profile",
     "clearQuery": "Clear search",
-    "back": "Back"
+    "back": "Back",
+    "loadFailed": "Couldn't load results."
   },
   "profilePage": {
     "pageTitle": "Profile | Vibely",
@@ -904,7 +908,15 @@
     "viewProfile": "View {{name}} profile",
     "unavailable": "Comments are only available for Vibely videos (when logged in).",
     "loading": "Loading comments…",
-    "sendComment": "Send comment"
+    "sendComment": "Send comment",
+    "mentionAria": "Mention someone",
+    "mentionTip": "Use \"@\" to tag a user in your comment",
+    "mentionNoResults": "No results",
+    "mentionHint": "Type a username after @ in the comment box",
+    "friends": "Friends",
+    "emojiAria": "Insert emoji",
+    "emojiTip": "Click to add an emoji",
+    "loadingMentions": "Loading…"
   },
   "feedMenu": {
     "subtitles": "Subtitles",
@@ -937,7 +949,8 @@
     "searchFor": "Search for \"{{query}}\"",
     "sidebarHint": "Use the search box in the left sidebar to find users and videos.",
     "tryOtherQuery": "Try another keyword or check the spelling for \"{{query}}\"",
-    "related": "Related:"
+    "related": "Related:",
+    "removeHistory": "Remove \"{{query}}\""
   },
   "messagesThread": {
     "placeholder": "Send a message...",
@@ -1067,7 +1080,14 @@
     "pickVideos": "Choose videos",
     "collectionNameLabel": "Name ({{current}}/{{max}})",
     "makePublic": "Make public",
-    "makePublicHint": "Public collections appear on your profile and can be shared with friends."
+    "makePublicHint": "Public collections appear on your profile and can be shared with friends.",
+    "next": "Next",
+    "noFavoriteVideos": "No favorite videos to add",
+    "allFavoritesInCollection": "All of your favorite videos are already in the collection.",
+    "createNewCollection": "Create new collection",
+    "noCollectionsYet": "No collections created yet",
+    "addedToFavorites": "Added to Favorites",
+    "manage": "Manage ›"
   },
   "feed": {
     "loadingFeed": "Loading feed",
@@ -2492,6 +2512,101 @@
     "dropHint": "Or drag and drop a video here",
     "pickVideo": "Select video",
     "selectedFile": "Selected: {{name}}",
-    "durationLabel": "Duration: {{duration}}"
+    "durationLabel": "Duration: {{duration}}",
+    "checks": {
+      "title": "Checks",
+      "viewExplain": "View explanation",
+      "musicCopyright": "Music copyright check",
+      "musicCopyrightTip": "We will check your video for potential copyright issues with the audio used. If issues are found, you can edit the video before posting.",
+      "musicCopyrightAria": "Enable music copyright check",
+      "noIssues": "No issues detected.",
+      "musicOff": "Off — automatic music copyright check will not run.",
+      "contentLite": "Lite content check",
+      "contentLiteTip": "We will quickly check your video against Community Guidelines to help ensure eligibility for recommendations on the For You page. You will have a chance to fix issues before posting. This is only a preliminary check and does not guarantee full compliance with our terms and guidelines.",
+      "contentLiteAria": "Enable lite content check",
+      "viewDetails": "View details",
+      "runsAfterUpload": "Check will run after the video finishes uploading.",
+      "contentOff": "Off — automatic content check will not run."
+    },
+    "cover": {
+      "title": "Edit cover",
+      "saving": "Saving…",
+      "sticker": "Sticker",
+      "text": "Text",
+      "addStickerTitle": "Add sticker (double-click on the canvas to edit text)",
+      "textHint": "Add text to the cover. Double-click text on the canvas to edit.",
+      "addText": "+ Add text",
+      "noVideo": "No video to extract frames from. Use the upload cover button below.",
+      "generatingFrames": "Generating frames from video…",
+      "pickImageFile": "Please choose an image file (JPG, PNG, WebP).",
+      "needLogin": "You need to sign in.",
+      "noFramesYet": "No frames from the video yet. Wait for them to finish or pick a frame.",
+      "pickUploadImage": "Please choose an image from your computer.",
+      "uploadFailed": "Couldn't upload the cover to storage. Check that you're signed in and try again.",
+      "saveFailed": "Couldn't save the cover.",
+      "extractFramesFailed": "Couldn't extract frames.",
+      "loadImageFailed": "Couldn't load image.",
+      "loadVideoFailed": "Couldn't load video.",
+      "loadVideoPreviewFailed": "Couldn't load video to preview the cover.",
+      "loadVideoExtractFailed": "Couldn't load the original video to extract the cover.",
+      "stickerAria": "Sticker on cover",
+      "zoomOut": "Zoom out",
+      "zoomIn": "Zoom in",
+      "scaleAria": "Scale cover",
+      "scale": "Scale",
+      "uploadCover": "Upload cover",
+      "filmstripAria": "Frame strip",
+      "selectFrame": "Select frame {{time}}",
+      "stepBack": "Back 0.1 seconds",
+      "stepForward": "Forward 0.1 seconds",
+      "previewInProfile": "Preview in profile",
+      "following": "Following",
+      "followers": "Followers",
+      "likes": "Likes",
+      "defaultText": "Text"
+    }
+  },
+  "profileShare": {
+    "shareTo": "Share to",
+    "titleWithName": "{{name}} (@{{handle}}) on Vibely",
+    "titleWithHandle": "@{{handle}} on Vibely",
+    "titleFallback": "Vibely profile",
+    "scrollLeft": "Scroll left",
+    "scrollRight": "Scroll right",
+    "linkCopied": "Link copied",
+    "linkCopyFailed": "Couldn't copy link",
+    "copy": "Copy",
+    "embed": "Embed"
+  },
+  "profileEmbed": {
+    "title": "Embed profile",
+    "videosFromAccount": "Videos from this account will appear",
+    "copyCode": "Copy code",
+    "copying": "Copying…",
+    "copied": "Embed code copied",
+    "copyFailed": "Couldn't copy embed code",
+    "legalPrefix": "By continuing, you agree to the Terms of Service and acknowledge that you have read our",
+    "privacyLink": "Privacy Policy",
+    "legalSuffix": "to understand how we collect, use, and share your data. Embed page preview:",
+    "openVibely": "Open Vibely",
+    "following": "Following",
+    "followers": "Followers",
+    "likes": "Likes",
+    "noPublicVideos": "No public videos to preview yet.",
+    "viewPrivacy": "View Privacy Policy"
+  },
+  "captcha": {
+    "titleCheckbox": "Quick verification",
+    "titleRotate": "Drag the slider to align the image",
+    "titleSlider": "Drag the puzzle piece into place",
+    "titleMultiStep": "Multi-step security verification",
+    "loading": "Loading captcha…",
+    "verifying": "Verifying…",
+    "refresh": "Refresh",
+    "tickFirst": "Please complete the checkbox before solving the puzzle",
+    "verifyIncorrect": "Verification incorrect, please try again",
+    "verifyFailed": "Captcha verification failed",
+    "loadFailed": "Couldn't load captcha",
+    "loadTimeout": "Captcha is taking too long. Check your connection and refresh."
   }
 }

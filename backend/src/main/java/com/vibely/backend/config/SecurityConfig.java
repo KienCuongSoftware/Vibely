@@ -130,6 +130,8 @@ public class SecurityConfig {
                 }
                 chain
                 .requestMatchers("/oauth2/**", "/login/**").permitAll()
+                // Always public: OAuth handshake must never require a JWT (chain may be disabled).
+                .requestMatchers("/api/oauth2/**", "/api/login/oauth2/**").permitAll()
                 // Không dùng /api/auth/** permitAll — có thể khiến GET /api/auth/me không bắt buộc JWT.
                 .requestMatchers(
                     HttpMethod.POST,
@@ -208,6 +210,7 @@ public class SecurityConfig {
     ) {
         response.setStatus(status.value());
         response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
         ApiResponse<Void> payload = ApiResponse.failure(ApiError.of(status.value(), code, message));
         try {
             objectMapper.writeValue(response.getWriter(), payload);

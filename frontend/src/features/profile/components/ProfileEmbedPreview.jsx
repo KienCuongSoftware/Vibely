@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { IoPlay } from "react-icons/io5";
 
 const DEFAULT_AVATAR = "/images/users/default-avatar.jpeg";
 
-export function formatEmbedCompactCount(value) {
+export function formatEmbedCompactCount(value, locale) {
   const n = Number(value ?? 0);
   if (!Number.isFinite(n) || n < 0) return "0";
-  return new Intl.NumberFormat("vi-VN", {
+  return new Intl.NumberFormat(locale || undefined, {
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(n);
@@ -26,9 +27,10 @@ export function ProfileEmbedPreview({
   videos = [],
   profileHref,
   privacyHref = "/legal/page/row/privacy-policy",
-  openLabel = "Mở Vibely",
+  openLabel,
   className = "",
 }) {
+  const { t, i18n } = useTranslation();
   const [bioExpanded, setBioExpanded] = useState(false);
   const handle = String(username ?? "")
     .trim()
@@ -42,6 +44,8 @@ export function ProfileEmbedPreview({
     [videos],
   );
   const bioLong = bioText.length > 90;
+  const cta = openLabel || t("profileEmbed.openVibely");
+  const locale = i18n.resolvedLanguage || i18n.language;
 
   return (
     <article
@@ -74,21 +78,21 @@ export function ProfileEmbedPreview({
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-zinc-400">
               <span>
                 <strong className="font-semibold text-white">
-                  {formatEmbedCompactCount(followingCount)}
+                  {formatEmbedCompactCount(followingCount, locale)}
                 </strong>{" "}
-                Đang Follow
+                {t("profileEmbed.following")}
               </span>
               <span>
                 <strong className="font-semibold text-white">
-                  {formatEmbedCompactCount(followerCount)}
+                  {formatEmbedCompactCount(followerCount, locale)}
                 </strong>{" "}
-                Follower
+                {t("profileEmbed.followers")}
               </span>
               <span>
                 <strong className="font-semibold text-white">
-                  {formatEmbedCompactCount(totalLikeCount)}
+                  {formatEmbedCompactCount(totalLikeCount, locale)}
                 </strong>{" "}
-                Thích
+                {t("profileEmbed.likes")}
               </span>
             </div>
           </div>
@@ -103,7 +107,7 @@ export function ProfileEmbedPreview({
                 className="ml-1 cursor-pointer font-semibold text-zinc-100 hover:underline"
                 onClick={() => setBioExpanded((v) => !v)}
               >
-                {bioExpanded ? "Ẩn bớt" : "Xem thêm"}
+                {bioExpanded ? t("common.hideLess") : t("common.seeMore")}
               </button>
             ) : null}
           </p>
@@ -115,6 +119,7 @@ export function ProfileEmbedPreview({
               const thumb = String(video?.thumbnailUrl ?? "").trim();
               const views = formatEmbedCompactCount(
                 video?.viewCount ?? video?.views ?? 0,
+                locale,
               );
               const key = String(video?.publicId ?? video?.id ?? Math.random());
               return (
@@ -142,7 +147,7 @@ export function ProfileEmbedPreview({
           </div>
         ) : (
           <p className="mt-6 text-center text-sm text-zinc-500">
-            Chưa có video công khai để xem trước.
+            {t("profileEmbed.noPublicVideos")}
           </p>
         )}
       </div>
@@ -156,7 +161,7 @@ export function ProfileEmbedPreview({
             rel="noreferrer"
             className="mt-0.5 block truncate text-[11px] text-zinc-500 hover:text-zinc-300 hover:underline"
           >
-            Xem Chính sách quyền riêng tư
+            {t("profileEmbed.viewPrivacy")}
           </a>
         </div>
         <a
@@ -165,7 +170,7 @@ export function ProfileEmbedPreview({
           rel="noreferrer"
           className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-[#fe2c55] px-4 text-sm font-semibold text-white transition hover:bg-[#db2449]"
         >
-          {openLabel}
+          {cta}
         </a>
       </footer>
     </article>
