@@ -10,6 +10,7 @@ import { SearchModal } from "@/features/search/components/SearchModal.jsx";
 import { useSearchModal } from "@/features/search/store/SearchModalContext.jsx";
 import { useLocale, SUPPORTED_LANGUAGES } from "@/i18n/useLocale.js";
 import { useTheme } from "@/shared/theme/ThemeContext.jsx";
+import { VibelyMarkIcon, VibelyWordmark } from "@/shared/components/VibelyWordmark.jsx";
 import { APPEARANCE_OPTIONS } from "@/shared/theme/themeStorage.js";
 import {
   IoBagHandleOutline,
@@ -91,16 +92,6 @@ export function Sidebar({
 
   const closeMore = () => { setMoreOpen(false); setLangOpen(false); setThemeOpen(false); };
 
-  const vibelyMark = (
-    <img
-      src="/vibely-icon.svg"
-      alt=""
-      className="h-7 w-7 shrink-0"
-      aria-hidden
-      draggable="false"
-    />
-  );
-
   return (
     <div className="flex h-full min-h-0 shrink-0 overflow-hidden">
       <aside
@@ -118,16 +109,9 @@ export function Sidebar({
           }}
         >
           {collapsed ? (
-            <span className="inline-flex text-zinc-100" aria-hidden>
-              {vibelyMark}
-            </span>
+            <VibelyMarkIcon className="h-7 w-7 shrink-0 text-zinc-100" />
           ) : (
-            <span className="inline-flex items-baseline gap-1.5">
-              <span className="inline-flex text-zinc-100" aria-hidden>
-                {vibelyMark}
-              </span>
-              <span>Vibely</span>
-            </span>
+            <VibelyWordmark className="h-7 w-auto shrink-0 text-zinc-100" />
           )}
         </Link>
 
