@@ -2,12 +2,7 @@ import React, { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { IoArrowBack, IoCheckmark, IoMoonOutline, IoSunnyOutline } from "react-icons/io5";
 import { useTheme } from "@/shared/theme/ThemeContext.jsx";
-
-const OPTIONS = [
-  { value: "system", labelKey: "appearance.automatic" },
-  { value: "dark", labelKey: "appearance.darkMode" },
-  { value: "light", labelKey: "appearance.lightMode" },
-];
+import { APPEARANCE_OPTIONS } from "@/shared/theme/themeStorage.js";
 
 export function AuthThemeMenu() {
   const { t } = useTranslation();
@@ -67,7 +62,7 @@ export function AuthThemeMenu() {
               {t("appearance.darkMode")}
             </p>
           </div>
-          {OPTIONS.map((option) => {
+          {APPEARANCE_OPTIONS.map((option) => {
             const selected = preference === option.value;
             return (
               <button

@@ -24,6 +24,8 @@ import { useLocale } from '@/i18n/useLocale'
 import { useNotificationUnread } from '@/features/notification/store/NotificationUnreadContext'
 import { useChatInboxBadge } from '@/features/chat/store/ChatInboxBadgeContext'
 import { useSearchModal } from '@/features/search/store/SearchModalContext'
+import { useTheme } from '@/shared/theme/ThemeContext.jsx'
+import { APPEARANCE_OPTIONS } from '@/shared/theme/themeStorage.js'
 import { ActivityPanel } from '@/features/notification/components/ActivityPanel'
 import { AvatarImage } from '@/shared/components/AvatarImage'
 import {
@@ -206,10 +208,11 @@ export function SettingsPage() {
   const searchModal = useSearchModal()
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false)
   const [avatarLangOpen, setAvatarLangOpen] = useState(false)
+  const [avatarThemeOpen, setAvatarThemeOpen] = useState(false)
+  const { preference, setPreference } = useTheme()
   const avatarMenuRef = useRef(null)
   const [notifOpen, setNotifOpen] = useState(false)
   const notifRef = useRef(null)
-  const [darkModeOn, setDarkModeOn] = useState(true)
   const SETTINGS_NAV = SETTINGS_NAV_IDS.map((item) => ({ ...item, label: t(item.labelKey) }))
   const [privateAccount, setPrivateAccount] = useState(false)
   const [privacySaving, setPrivacySaving] = useState(false)
@@ -273,6 +276,7 @@ export function SettingsPage() {
       if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target)) {
         setAvatarMenuOpen(false)
         setAvatarLangOpen(false)
+        setAvatarThemeOpen(false)
       }
     }
     document.addEventListener('mousedown', handler)
@@ -704,7 +708,7 @@ export function SettingsPage() {
           <div className="relative" ref={avatarMenuRef}>
             <button
               type="button"
-              onClick={() => { setAvatarMenuOpen((v) => !v); setNotifOpen(false); setAvatarLangOpen(false) }}
+              onClick={() => { setAvatarMenuOpen((v) => !v); setNotifOpen(false); setAvatarLangOpen(false); setAvatarThemeOpen(false) }}
               className="h-9 w-9 overflow-hidden rounded-full ring-2 ring-transparent hover:ring-zinc-600"
             >
               <AvatarImage src={avatarSrc} alt={user?.displayName || 'avatar'} className="h-full w-full object-cover" />
@@ -735,6 +739,39 @@ export function SettingsPage() {
                         >
                           <span>{lang.nativeLabel}</span>
                           {locale === lang.code && <IoCheckmark className="text-red-500" />}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : avatarThemeOpen ? (
+                  <>
+                    <div className="flex items-center gap-2 border-b border-zinc-800 px-2 py-3">
+                      <button
+                        type="button"
+                        onClick={() => setAvatarThemeOpen(false)}
+                        className="rounded-full p-2 text-zinc-300 hover:bg-zinc-800"
+                        aria-label={t('common.back')}
+                      >
+                        <IoChevronBack className="text-lg" />
+                      </button>
+                      <span className="font-bold text-zinc-100">{t('appearance.darkMode')}</span>
+                    </div>
+                    <div className="py-1">
+                      {APPEARANCE_OPTIONS.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => {
+                            setPreference(option.value)
+                            setAvatarThemeOpen(false)
+                            setAvatarMenuOpen(false)
+                          }}
+                          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
+                        >
+                          <span>{t(option.labelKey)}</span>
+                          {preference === option.value ? (
+                            <IoCheckmark className="text-lg text-zinc-100" aria-hidden />
+                          ) : null}
                         </button>
                       ))}
                     </div>
@@ -793,7 +830,7 @@ export function SettingsPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setDarkModeOn((v) => !v)}
+                        onClick={() => setAvatarThemeOpen(true)}
                         className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
                       >
                         <IoMoonOutline className="shrink-0 text-lg text-zinc-300" />

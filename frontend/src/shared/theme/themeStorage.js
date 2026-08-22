@@ -2,6 +2,12 @@ export const APPEARANCE_STORAGE_KEY = "vibely:appearance";
 
 export const APPEARANCE_PREFERENCES = ["system", "dark", "light"];
 
+export const APPEARANCE_OPTIONS = [
+  { value: "system", labelKey: "appearance.automatic" },
+  { value: "dark", labelKey: "appearance.darkMode" },
+  { value: "light", labelKey: "appearance.lightMode" },
+];
+
 export function readAppearancePreference() {
   try {
     const stored = localStorage.getItem(APPEARANCE_STORAGE_KEY);

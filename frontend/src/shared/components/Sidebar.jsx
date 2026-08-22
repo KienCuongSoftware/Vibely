@@ -9,6 +9,8 @@ import { formatNotificationBadgeCount } from "@/features/notification/utils/noti
 import { SearchModal } from "@/features/search/components/SearchModal.jsx";
 import { useSearchModal } from "@/features/search/store/SearchModalContext.jsx";
 import { useLocale, SUPPORTED_LANGUAGES } from "@/i18n/useLocale.js";
+import { useTheme } from "@/shared/theme/ThemeContext.jsx";
+import { APPEARANCE_OPTIONS } from "@/shared/theme/themeStorage.js";
 import {
   IoBagHandleOutline,
   IoCashOutline,
@@ -25,7 +27,6 @@ import {
   IoRocketOutline,
   IoSearchOutline,
   IoSettingsOutline,
-  IoSunnyOutline,
   IoTrendingUpOutline,
 } from "react-icons/io5";
 
@@ -48,7 +49,8 @@ export function Sidebar({
   const openSearch = onOpenSearch ?? searchModal?.openSearch;
   const [moreOpen, setMoreOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const [darkModeOn, setDarkModeOn] = useState(true);
+  const [themeOpen, setThemeOpen] = useState(false);
+  const { preference, setPreference } = useTheme();
   const { locale, changeLanguage } = useLocale();
   const currentLangLabel = SUPPORTED_LANGUAGES.find((l) => l.code === locale)?.nativeLabel ?? locale;
 
@@ -87,7 +89,7 @@ export function Sidebar({
     onSelectMenu?.(item.id);
   };
 
-  const closeMore = () => { setMoreOpen(false); setLangOpen(false); };
+  const closeMore = () => { setMoreOpen(false); setLangOpen(false); setThemeOpen(false); };
 
   const vibelyMark = (
     <img
@@ -312,6 +314,35 @@ export function Sidebar({
                 ))}
               </div>
             </>
+          ) : themeOpen ? (
+            <>
+              <div className="flex shrink-0 items-center gap-2 border-b border-zinc-800 px-2 py-3">
+                <button
+                  type="button"
+                  aria-label={t("nav.back")}
+                  className="cursor-pointer rounded-full p-2 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                  onClick={() => setThemeOpen(false)}
+                >
+                  <IoChevronBack className="text-xl" />
+                </button>
+                <h2 className="text-base font-bold">{t("appearance.darkMode")}</h2>
+              </div>
+              <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-2 py-2">
+                {APPEARANCE_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-3 text-left text-sm text-zinc-100 hover:bg-zinc-800/90"
+                    onClick={() => { setPreference(option.value); setThemeOpen(false); }}
+                  >
+                    <span>{t(option.labelKey)}</span>
+                    {preference === option.value ? (
+                      <IoCheckmark className="text-lg text-zinc-100" aria-hidden />
+                    ) : null}
+                  </button>
+                ))}
+              </div>
+            </>
           ) : (
           <>
           <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-4 py-3">
@@ -339,29 +370,12 @@ export function Sidebar({
                 trailing={<IoChevronForward className="text-zinc-500" />}
                 onClick={() => setLangOpen(true)}
               />
-              <div className="flex w-full items-center gap-3 rounded-lg px-3 py-3 hover:bg-zinc-800/90">
-                <IoMoonOutline className="shrink-0 text-lg text-zinc-300" />
-                <span className="flex-1 text-left text-sm">{t("nav.darkMode")}</span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={darkModeOn}
-                  className="relative flex h-8 w-14 shrink-0 items-center rounded-full bg-zinc-700 px-1 transition-colors"
-                  onClick={() => setDarkModeOn((v) => !v)}
-                >
-                  <span
-                    className={`flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900 text-xs shadow transition-transform ${
-                      darkModeOn ? "translate-x-6" : "translate-x-0"
-                    }`}
-                  >
-                    {darkModeOn ? (
-                      <IoMoonOutline className="text-zinc-200" />
-                    ) : (
-                      <IoSunnyOutline className="text-amber-300" />
-                    )}
-                  </span>
-                </button>
-              </div>
+              <MoreRow
+                icon={IoMoonOutline}
+                label={t("nav.darkMode")}
+                trailing={<IoChevronForward className="text-zinc-500" />}
+                onClick={() => setThemeOpen(true)}
+              />
             </MoreSection>
 
             <MoreSection title={t("nav.tools")}>
