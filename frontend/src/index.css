@@ -60,6 +60,9 @@ html {
   scrollbar-gutter: stable;
   background-color: #000;
 }
+html[data-vibely-theme="light"] {
+  background-color: #fff;
+}
 
 .feed-playback-flash {
   animation: feed-playback-flash 0.62s ease-out forwards;
@@ -235,6 +238,9 @@ body {
   min-height: 100%;
   background-color: #000;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+html[data-vibely-theme="light"] body {
+  background-color: #fff;
 }
 
 /* Thanh kéo retention kiểu TikTok Studio (Chrome/Safari/Edge). */
@@ -431,63 +437,159 @@ html[data-vibely-theme="light"] .vibely-auth-page [scrollbar-color] {
 }
 
 /* Settings chrome: apply saved light appearance. */
-html[data-vibely-theme="light"] .vibely-chrome {
+html[data-vibely-theme="light"] {
   background-color: #fff;
   color: #161823;
 }
-html[data-vibely-theme="light"] .vibely-chrome.bg-black,
-html[data-vibely-theme="light"] .vibely-chrome .bg-black {
+html[data-vibely-theme="light"] .bg-black {
   background-color: #fff;
 }
-html[data-vibely-theme="light"] .vibely-chrome .bg-zinc-950 {
+html[data-vibely-theme="light"] .bg-\[\#121212\],
+html[data-vibely-theme="light"] .bg-\[\#0a0a0a\] {
   background-color: #fff;
 }
-html[data-vibely-theme="light"] .vibely-chrome .bg-zinc-900 {
-  background-color: #f1f1f2;
-}
-html[data-vibely-theme="light"] .vibely-chrome aside.bg-zinc-950 {
+html[data-vibely-theme="light"] .bg-\[\#1a1a1a\],
+html[data-vibely-theme="light"] .bg-\[\#1f1f1f\],
+html[data-vibely-theme="light"] .bg-\[\#1e1e1e\] {
   background-color: #f8f8f8;
 }
-html[data-vibely-theme="light"] .vibely-chrome .border-zinc-900,
-html[data-vibely-theme="light"] .vibely-chrome .border-zinc-800,
-html[data-vibely-theme="light"] .vibely-chrome .border-zinc-800\/80,
-html[data-vibely-theme="light"] .vibely-chrome .border-zinc-700 {
-  border-color: #e3e3e4;
-}
-html[data-vibely-theme="light"] .vibely-chrome .ring-zinc-900,
-html[data-vibely-theme="light"] .vibely-chrome .ring-zinc-800 {
-  --tw-ring-color: #e3e3e4;
-}
-html[data-vibely-theme="light"] .vibely-chrome .text-zinc-100,
-html[data-vibely-theme="light"] .vibely-chrome .text-zinc-200,
-html[data-vibely-theme="light"] .vibely-chrome .hover\:text-white:hover,
-html[data-vibely-theme="light"] .vibely-chrome .hover\:text-zinc-100:hover {
-  color: #161823;
-}
-html[data-vibely-theme="light"] .vibely-chrome header a.text-white,
-html[data-vibely-theme="light"] .vibely-chrome header .text-white:not(.bg-red-500) {
-  color: #161823;
-}
-html[data-vibely-theme="light"] .vibely-chrome .text-zinc-300,
-html[data-vibely-theme="light"] .vibely-chrome .text-zinc-400,
-html[data-vibely-theme="light"] .vibely-chrome .text-zinc-500 {
-  color: #8a8b91;
-}
-html[data-vibely-theme="light"] .vibely-chrome .hover\:bg-zinc-900:hover,
-html[data-vibely-theme="light"] .vibely-chrome .hover\:bg-zinc-800:hover,
-html[data-vibely-theme="light"] .vibely-chrome .hover\:bg-zinc-800\/80:hover {
+html[data-vibely-theme="light"] .bg-\[\#252525\],
+html[data-vibely-theme="light"] .bg-\[\#2f2f2f\] {
   background-color: #f1f1f2;
 }
-html[data-vibely-theme="light"] .vibely-chrome nav button.bg-zinc-900 {
-  background-color: #f1f1f2;
+html[data-vibely-theme="light"] .focus\:bg-\[\#383838\]:focus,
+html[data-vibely-theme="light"] .hover\:bg-\[\#3a3a3a\]:hover {
+  background-color: #e3e3e4;
 }
-html[data-vibely-theme="light"] .vibely-chrome .text-red-500 {
-  color: #fe2c55;
+html[data-vibely-theme="light"] .share-modal-scroll-row::before {
+  background: linear-gradient(to right, #fff 0%, transparent 100%);
 }
-html[data-vibely-theme="light"] .vibely-chrome .bg-red-500 {
+html[data-vibely-theme="light"] .share-modal-scroll-row::after {
+  background: linear-gradient(to left, #fff 0%, transparent 100%);
+}
+html[data-vibely-theme="light"] button.bg-white.text-black {
+  background-color: #161823;
   color: #fff;
 }
-html[data-vibely-theme="light"] .vibely-chrome header .rounded-full.bg-zinc-900 {
+html[data-vibely-theme="light"] .bg-zinc-950,
+html[data-vibely-theme="light"] .bg-zinc-950\/40,
+html[data-vibely-theme="light"] .bg-zinc-950\/50,
+html[data-vibely-theme="light"] .bg-zinc-950\/60,
+html[data-vibely-theme="light"] .bg-zinc-950\/70,
+html[data-vibely-theme="light"] .bg-zinc-950\/80,
+html[data-vibely-theme="light"] .bg-zinc-950\/90,
+html[data-vibely-theme="light"] .bg-zinc-950\/95 {
+  background-color: #fff;
+}
+html[data-vibely-theme="light"] .bg-zinc-900 {
   background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .bg-zinc-800\/95,
+html[data-vibely-theme="light"] .bg-zinc-900\/95 {
+  background-color: #ffffff;
+}
+html[data-vibely-theme="light"] aside.bg-zinc-950 {
+  background-color: #f8f8f8;
+}
+html[data-vibely-theme="light"] .border-zinc-900,
+html[data-vibely-theme="light"] .border-zinc-800,
+html[data-vibely-theme="light"] .border-zinc-800\/80,
+html[data-vibely-theme="light"] .border-zinc-700 {
+  border-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .ring-zinc-900,
+html[data-vibely-theme="light"] .ring-zinc-800 {
+  --tw-ring-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .text-zinc-100,
+html[data-vibely-theme="light"] .text-zinc-200,
+html[data-vibely-theme="light"] .hover\:text-white:hover,
+html[data-vibely-theme="light"] .hover\:text-zinc-100:hover {
+  color: #161823;
+}
+html[data-vibely-theme="light"] header a.text-white,
+html[data-vibely-theme="light"] header .text-white:not(.bg-red-500) {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .text-zinc-300,
+html[data-vibely-theme="light"] .text-zinc-400,
+html[data-vibely-theme="light"] .text-zinc-500 {
+  color: #8a8b91;
+}
+html[data-vibely-theme="light"] .hover\:bg-zinc-900:hover,
+html[data-vibely-theme="light"] .hover\:bg-zinc-800:hover,
+html[data-vibely-theme="light"] .hover\:bg-zinc-800\/80:hover {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] nav button.bg-zinc-900 {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .text-red-500 {
+  color: #fe2c55;
+}
+html[data-vibely-theme="light"] .bg-red-500 {
+  color: #fff;
+}
+html[data-vibely-theme="light"] header .rounded-full.bg-zinc-900 {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .text-white {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .border-white,
+html[data-vibely-theme="light"] .border-b-2.border-white {
+  border-color: #161823;
+}
+html[data-vibely-theme="light"] .bg-red-600,
+html[data-vibely-theme="light"] .bg-red-500,
+html[data-vibely-theme="light"] .bg-\[\#FE2C55\] {
+  color: #fff;
+}
+html[data-vibely-theme="light"] .border-zinc-100 {
+  border-color: #161823;
+}
+
+/* Video / empty phone stage stays dark. */
+html[data-vibely-theme="light"] .vibely-keep-dark,
+html[data-vibely-theme="light"] .vibely-keep-dark.bg-black,
+html[data-vibely-theme="light"] .vibely-keep-dark .bg-black {
+  background-color: #000 !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark.bg-zinc-950,
+html[data-vibely-theme="light"] .vibely-keep-dark .bg-zinc-950 {
+  background-color: #09090b !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark.bg-\[\#121212\],
+html[data-vibely-theme="light"] .vibely-keep-dark .bg-\[\#121212\] {
+  background-color: #121212 !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .bg-\[\#1e1e1e\],
+html[data-vibely-theme="light"] .vibely-keep-dark .bg-\[\#252525\],
+html[data-vibely-theme="light"] .vibely-keep-dark .bg-\[\#2f2f2f\] {
+  background-color: #252525 !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark.bg-\[\#0a0a0a\],
+html[data-vibely-theme="light"] .vibely-keep-dark .bg-\[\#0a0a0a\],
+html[data-vibely-theme="light"] .vibely-keep-dark .bg-\[\#1a1a1a\] {
+  background-color: #0a0a0a !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .border-white,
+html[data-vibely-theme="light"] .vibely-keep-dark .border-b-2.border-white {
+  border-color: #fff !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-zinc-100,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-zinc-200,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-white {
+  color: #f4f4f5 !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .text-zinc-300,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-zinc-400,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-zinc-500 {
+  color: #a1a1aa !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .bg-red-600,
+html[data-vibely-theme="light"] .vibely-keep-dark .bg-red-500 {
+  color: #fff !important;
 }
 

@@ -11,7 +11,7 @@ import {
 
 function App() {
   const { token, user, authReady } = useAuth()
-  const shellClass = 'min-h-screen bg-black text-zinc-100'
+  const shellClass = 'vibely-chrome min-h-screen bg-black text-zinc-100'
   const isAdmin = String(user?.role ?? '').toUpperCase() === 'ADMIN'
   const needsOnboarding = userNeedsOnboarding(user)
 

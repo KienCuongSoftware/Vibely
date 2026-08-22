@@ -27,7 +27,7 @@ export function SearchVideoThumb({ src, likeCount = 0, alt = '' }) {
   const thumb = typeof src === 'string' ? src.trim() : ''
 
   return (
-    <div className="relative aspect-3/4 overflow-hidden rounded-sm bg-[#121212]">
+    <div className="relative aspect-3/4 overflow-hidden rounded-sm bg-[#121212] vibely-keep-dark">
       {thumb ? (
         <>
           <img

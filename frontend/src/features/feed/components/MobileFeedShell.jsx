@@ -75,7 +75,7 @@ export function MobileFeedTopBar({
     }`;
 
   return (
-    <header className="relative z-40 h-12 shrink-0 bg-black text-white">
+    <header className="relative z-40 h-12 shrink-0 bg-black text-white vibely-keep-dark">
       <div className="absolute left-2 top-1/2 z-10 -translate-y-1/2">
         {showBack ? (
           <button

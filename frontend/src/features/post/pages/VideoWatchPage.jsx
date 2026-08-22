@@ -1965,7 +1965,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
           }`}
         >
           <div
-            className={`relative bg-black ${
+            className={`relative bg-black vibely-keep-dark ${
               mobileLayout
                 ? "aspect-9/16 w-full shrink-0"
                 : "min-h-0 flex-1 overflow-hidden"

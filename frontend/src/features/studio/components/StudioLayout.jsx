@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { IoChevronBack, IoMenu } from "react-icons/io5";
 import { StudioSidebar } from "@/features/studio/components/StudioSidebar";
 import { StudioAccountMenu } from "@/features/studio/components/StudioAccountMenu";
+import { useTheme } from "@/shared/theme/ThemeContext.jsx";
 
 /**
  * @param {'dark' | 'light'} [theme='dark']
@@ -19,10 +20,11 @@ export function StudioLayout({
   hidePageHeader = false,
   hideTopBrand = false,
   hideTopBar = false,
-  theme = "dark",
+  theme,
 }) {
   const { t } = useTranslation();
-  const isLight = theme === "light";
+  const { resolved } = useTheme();
+  const isLight = (theme ?? resolved) === "light";
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -51,7 +53,7 @@ export function StudioLayout({
           : "flex h-dvh overflow-hidden bg-black text-zinc-100"
       }
     >
-      <StudioSidebar active={active} theme={theme} className="hidden lg:flex" />
+      <StudioSidebar active={active} theme={isLight ? "light" : "dark"} className="hidden lg:flex" />
 
       {mobileNavOpen ? (
         <>
@@ -63,7 +65,7 @@ export function StudioLayout({
           />
           <StudioSidebar
             active={active}
-            theme={theme}
+            theme={isLight ? "light" : "dark"}
             className="fixed inset-y-0 left-0 z-[210] flex w-[min(280px,85vw)] shadow-2xl lg:hidden"
             onNavigate={() => setMobileNavOpen(false)}
           />
@@ -101,7 +103,7 @@ export function StudioLayout({
                 {t("studio.brand")}
               </span>
             </div>
-            <StudioAccountMenu theme={theme} />
+            <StudioAccountMenu theme={isLight ? "light" : "dark"} />
           </div>
         )}
         {!hidePageHeader ? (

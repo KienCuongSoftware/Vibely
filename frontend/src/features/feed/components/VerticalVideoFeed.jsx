@@ -1753,8 +1753,8 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
             <div
               className={
                 mobileLayout
-                  ? "relative flex h-full w-full flex-1 flex-col items-center justify-center bg-black px-6 text-center"
-                  : `relative flex ${FEED_STAGE_OUTER_WIDTH_CLASS} flex-col items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-zinc-950 px-6 text-center shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl`
+                  ? "relative flex h-full w-full flex-1 flex-col items-center justify-center bg-black px-6 text-center vibely-keep-dark"
+                  : `relative flex ${FEED_STAGE_OUTER_WIDTH_CLASS} flex-col items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-zinc-950 px-6 text-center shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl vibely-keep-dark`
               }
               style={mobileLayout ? undefined : { height: feedSlotHeightPx }}
               aria-busy="true"
@@ -1773,8 +1773,8 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
             <div
               className={
                 mobileLayout
-                  ? "relative flex h-full w-full flex-1 flex-col items-center justify-center bg-black px-6 text-center"
-                  : `relative flex ${FEED_STAGE_OUTER_WIDTH_CLASS} flex-col items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-zinc-950 px-6 text-center shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl`
+                  ? "relative flex h-full w-full flex-1 flex-col items-center justify-center bg-black px-6 text-center vibely-keep-dark"
+                  : `relative flex ${FEED_STAGE_OUTER_WIDTH_CLASS} flex-col items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-zinc-950 px-6 text-center shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl vibely-keep-dark`
               }
               style={mobileLayout ? undefined : { height: feedSlotHeightPx }}
               aria-live="polite"

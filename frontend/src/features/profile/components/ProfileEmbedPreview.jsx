@@ -49,7 +49,7 @@ export function ProfileEmbedPreview({
 
   return (
     <article
-      className={`flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#121212] text-zinc-100 shadow-[0_12px_40px_rgba(0,0,0,0.45)] ${className}`}
+      className={`vibely-keep-dark flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#121212] text-zinc-100 shadow-[0_12px_40px_rgba(0,0,0,0.45)] ${className}`}
     >
       <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto px-4 pb-3 pt-4 sm:px-5 sm:pt-5">
         <header className="flex items-start gap-3">

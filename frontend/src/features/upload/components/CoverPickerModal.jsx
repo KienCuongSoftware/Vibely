@@ -1840,7 +1840,7 @@ export function CoverPickerModal({
           </aside>
 
           {/* Cột giữa: canvas ngang + scale + filmstrip */}
-          <div className="flex min-w-0 flex-1 flex-col bg-[#0a0a0a]">
+          <div className="flex min-w-0 flex-1 flex-col bg-[#0a0a0a] vibely-keep-dark">
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-3 sm:px-6">
               {!canUseVideoTab && tab === "video" ? (
                 <p className="max-w-sm rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-center text-sm text-amber-200">
