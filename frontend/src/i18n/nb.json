@@ -26,6 +26,11 @@
     "you": "Deg",
     "downloadApp": "Last ned appen"
   },
+  "appearance": {
+    "darkMode": "Mørk modus",
+    "lightMode": "Lys modus",
+    "automatic": "Automatisk"
+  },
   "auth": {
     "loginTitle": "Logg inn på Vibely",
     "signupTitle": "Registrer deg for Vibely",

@@ -26,6 +26,11 @@
     "you": "Anda",
     "downloadApp": "Muat turun apl"
   },
+  "appearance": {
+    "darkMode": "Mod gelap",
+    "lightMode": "Mod cerah",
+    "automatic": "Automatik"
+  },
   "auth": {
     "loginTitle": "Log masuk ke Vibely",
     "signupTitle": "Daftar untuk Vibely",

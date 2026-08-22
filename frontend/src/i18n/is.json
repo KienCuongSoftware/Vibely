@@ -26,6 +26,11 @@
     "you": "Þú",
     "downloadApp": "Sækja appið"
   },
+  "appearance": {
+    "darkMode": "Dökkt þema",
+    "lightMode": "Ljóst þema",
+    "automatic": "Sjálfvirkt"
+  },
   "auth": {
     "loginTitle": "Skráðu þig inn á Vibely",
     "signupTitle": "Skráðu þig á Vibely",

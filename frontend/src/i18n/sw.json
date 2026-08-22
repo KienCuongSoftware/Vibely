@@ -26,6 +26,11 @@
     "you": "Wewe",
     "downloadApp": "Pakua programu"
   },
+  "appearance": {
+    "darkMode": "Hali ya giza",
+    "lightMode": "Hali ya mwanga",
+    "automatic": "Otomatiki"
+  },
   "auth": {
     "loginTitle": "Ingia kwa Vibely",
     "signupTitle": "Jisajili kwa Vibely",

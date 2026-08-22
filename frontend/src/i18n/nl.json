@@ -26,6 +26,11 @@
     "you": "Jij",
     "downloadApp": "App downloaden"
   },
+  "appearance": {
+    "darkMode": "Donkere modus",
+    "lightMode": "Lichte modus",
+    "automatic": "Automatisch"
+  },
   "auth": {
     "loginTitle": "Log in op Vibely",
     "signupTitle": "Meld u aan voor Vibely",

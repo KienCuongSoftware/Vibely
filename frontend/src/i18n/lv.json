@@ -26,6 +26,11 @@
     "you": "Tu",
     "downloadApp": "Lejupielādēt lietotni"
   },
+  "appearance": {
+    "darkMode": "Tumšais režīms",
+    "lightMode": "Gaišais režīms",
+    "automatic": "Automātiski"
+  },
   "auth": {
     "loginTitle": "Piesakieties Vibely",
     "signupTitle": "Reģistrēties Vibely",

@@ -26,6 +26,11 @@
     "you": "Te",
     "downloadApp": "App letöltése"
   },
+  "appearance": {
+    "darkMode": "Sötét mód",
+    "lightMode": "Világos mód",
+    "automatic": "Automatikus"
+  },
   "auth": {
     "loginTitle": "Jelentkezzen be a Vibely-be",
     "signupTitle": "Regisztráljon a Vibely-re",

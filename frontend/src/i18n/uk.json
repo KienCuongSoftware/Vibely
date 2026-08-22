@@ -26,6 +26,11 @@
     "you": "Ви",
     "downloadApp": "Завантажити застосунок"
   },
+  "appearance": {
+    "darkMode": "Темна тема",
+    "lightMode": "Світла тема",
+    "automatic": "Автоматично"
+  },
   "auth": {
     "loginTitle": "Увійдіть на Vibely",
     "signupTitle": "Зареєструватися на Vibely",

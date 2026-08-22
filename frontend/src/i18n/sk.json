@@ -26,6 +26,11 @@
     "you": "Ty",
     "downloadApp": "Stiahnuť aplikáciu"
   },
+  "appearance": {
+    "darkMode": "Tmavý režim",
+    "lightMode": "Svetlý režim",
+    "automatic": "Automaticky"
+  },
   "auth": {
     "loginTitle": "Prihláste sa do Vibely",
     "signupTitle": "Zaregistrujte sa na odber Vibely",

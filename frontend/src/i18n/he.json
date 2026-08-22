@@ -26,6 +26,11 @@
     "you": "אתה",
     "downloadApp": "הורד את האפליקציה"
   },
+  "appearance": {
+    "darkMode": "מצב כהה",
+    "lightMode": "מצב בהיר",
+    "automatic": "אוטומטי"
+  },
   "auth": {
     "loginTitle": "היכנס אל Vibely",
     "signupTitle": "הירשם לVibely",

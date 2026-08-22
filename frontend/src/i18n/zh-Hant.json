@@ -26,6 +26,11 @@
     "you": "你",
     "downloadApp": "下載應用程式"
   },
+  "appearance": {
+    "darkMode": "深色模式",
+    "lightMode": "淺色模式",
+    "automatic": "自動"
+  },
   "auth": {
     "loginTitle": "登入 Vibely",
     "signupTitle": "註冊 Vibely",

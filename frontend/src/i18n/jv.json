@@ -26,6 +26,11 @@
     "you": "Sampeyan",
     "downloadApp": "Undhuh aplikasi"
   },
+  "appearance": {
+    "darkMode": "Mode peteng",
+    "lightMode": "Mode padhang",
+    "automatic": "Otomatis"
+  },
   "auth": {
     "loginTitle": "Mlebu menyang Vibely",
     "signupTitle": "Ndaftar Vibely",

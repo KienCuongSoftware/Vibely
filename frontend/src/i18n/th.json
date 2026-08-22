@@ -26,6 +26,11 @@
     "you": "คุณ",
     "downloadApp": "ดาวน์โหลดแอป"
   },
+  "appearance": {
+    "darkMode": "โหมดมืด",
+    "lightMode": "โหมดสว่าง",
+    "automatic": "อัตโนมัติ"
+  },
   "auth": {
     "loginTitle": "เข้าสู่ระบบ Vibely",
     "signupTitle": "ลงทะเบียนเพื่อรับ Vibely",

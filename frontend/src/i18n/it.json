@@ -26,6 +26,11 @@
     "you": "Tu",
     "downloadApp": "Scarica l’app"
   },
+  "appearance": {
+    "darkMode": "Modalità scura",
+    "lightMode": "Modalità chiara",
+    "automatic": "Automatico"
+  },
   "auth": {
     "loginTitle": "Accedi a Vibely",
     "signupTitle": "Iscriviti a Vibely",

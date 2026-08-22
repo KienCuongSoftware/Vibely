@@ -26,6 +26,11 @@
     "you": "Siz",
     "downloadApp": "Ilovani yuklab olish"
   },
+  "appearance": {
+    "darkMode": "Qorong‘i rejim",
+    "lightMode": "Yorug‘ rejim",
+    "automatic": "Avtomatik"
+  },
   "auth": {
     "loginTitle": "Vibely tizimiga kiring",
     "signupTitle": "Vibely uchun roʻyxatdan oʻting",

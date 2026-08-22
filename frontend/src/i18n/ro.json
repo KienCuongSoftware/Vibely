@@ -26,6 +26,11 @@
     "you": "Tu",
     "downloadApp": "Descarcă aplicația"
   },
+  "appearance": {
+    "darkMode": "Mod întunecat",
+    "lightMode": "Mod luminos",
+    "automatic": "Automat"
+  },
   "auth": {
     "loginTitle": "Conectați-vă la Vibely",
     "signupTitle": "Înscrieți-vă pentru Vibely",

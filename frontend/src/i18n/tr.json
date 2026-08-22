@@ -26,6 +26,11 @@
     "you": "Sen",
     "downloadApp": "Uygulamayı indir"
   },
+  "appearance": {
+    "darkMode": "Karanlık mod",
+    "lightMode": "Aydınlık mod",
+    "automatic": "Otomatik"
+  },
   "auth": {
     "loginTitle": "Vibely'da oturum açın",
     "signupTitle": "Vibely'a kaydolun",

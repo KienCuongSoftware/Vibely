@@ -26,6 +26,11 @@
     "you": "나",
     "downloadApp": "앱 다운로드"
   },
+  "appearance": {
+    "darkMode": "다크 모드",
+    "lightMode": "라이트 모드",
+    "automatic": "자동"
+  },
   "auth": {
     "loginTitle": "Vibely에 로그인하세요",
     "signupTitle": "Vibely에 가입하세요",

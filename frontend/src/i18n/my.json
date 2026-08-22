@@ -26,6 +26,11 @@
     "you": "သင်",
     "downloadApp": "အက်ပ်ဒေါင်းလုဒ်"
   },
+  "appearance": {
+    "darkMode": "အမှောင်မုဒ်",
+    "lightMode": "အလင်းမုဒ်",
+    "automatic": "အလိုအလျောက်"
+  },
   "auth": {
     "loginTitle": "Vibely သို့ အကောင့်ဝင်ပါ",
     "signupTitle": "Vibelyအတွက် စာရင်းသွင်းပါ",

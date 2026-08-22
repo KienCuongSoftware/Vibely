@@ -26,6 +26,11 @@
     "you": "Tu",
     "downloadApp": "Atsisiųsti programėlę"
   },
+  "appearance": {
+    "darkMode": "Tamsusis režimas",
+    "lightMode": "Šviesusis režimas",
+    "automatic": "Automatiškai"
+  },
   "auth": {
     "loginTitle": "Prisijunkite prie Vibely",
     "signupTitle": "Prisiregistruokite gauti Vibely",

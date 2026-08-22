@@ -26,6 +26,11 @@
     "you": "Tusa",
     "downloadApp": "Íoslódáil an aip"
   },
+  "appearance": {
+    "darkMode": "Mód dorcha",
+    "lightMode": "Mód geal",
+    "automatic": "Uathoibríoch"
+  },
   "auth": {
     "loginTitle": "Logáil isteach go Vibely",
     "signupTitle": "Cláraigh le haghaidh Vibely",

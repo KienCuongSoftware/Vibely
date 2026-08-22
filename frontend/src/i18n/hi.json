@@ -26,6 +26,11 @@
     "you": "आप",
     "downloadApp": "ऐप डाउनलोड करें"
   },
+  "appearance": {
+    "darkMode": "डार्क मोड",
+    "lightMode": "लाइट मोड",
+    "automatic": "स्वचालित"
+  },
   "auth": {
     "loginTitle": "Vibely में लॉग इन करें",
     "signupTitle": "Vibely के लिए साइन अप करें",

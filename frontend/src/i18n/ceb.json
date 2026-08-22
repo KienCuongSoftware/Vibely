@@ -26,6 +26,11 @@
     "you": "Ikaw",
     "downloadApp": "I-download ang app"
   },
+  "appearance": {
+    "darkMode": "Dark mode",
+    "lightMode": "Light mode",
+    "automatic": "Awtomatiko"
+  },
   "auth": {
     "loginTitle": "Log in sa Vibely",
     "signupTitle": "Pag-sign up sa Vibely",

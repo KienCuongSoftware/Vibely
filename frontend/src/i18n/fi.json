@@ -26,6 +26,11 @@
     "you": "Sinä",
     "downloadApp": "Lataa sovellus"
   },
+  "appearance": {
+    "darkMode": "Tumma tila",
+    "lightMode": "Vaalea tila",
+    "automatic": "Automaattinen"
+  },
   "auth": {
     "loginTitle": "Kirjaudu sisään Vibely",
     "signupTitle": "Rekisteröidy Vibely",

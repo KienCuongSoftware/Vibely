@@ -26,6 +26,11 @@
     "you": "Εσύ",
     "downloadApp": "Λήψη εφαρμογής"
   },
+  "appearance": {
+    "darkMode": "Σκοτεινή λειτουργία",
+    "lightMode": "Φωτεινή λειτουργία",
+    "automatic": "Αυτόματα"
+  },
   "auth": {
     "loginTitle": "Συνδεθείτε στο Vibely",
     "signupTitle": "Εγγραφείτε για Vibely",

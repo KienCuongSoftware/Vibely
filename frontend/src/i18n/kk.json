@@ -26,6 +26,11 @@
     "you": "Сен",
     "downloadApp": "Қосымшаны жүктеу"
   },
+  "appearance": {
+    "darkMode": "Қараңғы режим",
+    "lightMode": "Жарық режим",
+    "automatic": "Автоматты"
+  },
   "auth": {
     "loginTitle": "Vibely жүйесіне кіріңіз",
     "signupTitle": "Vibely үшін тіркеліңіз",

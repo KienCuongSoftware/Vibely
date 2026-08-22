@@ -26,6 +26,11 @@
     "you": "Du",
     "downloadApp": "Ladda ner appen"
   },
+  "appearance": {
+    "darkMode": "Mörkt läge",
+    "lightMode": "Ljust läge",
+    "automatic": "Automatiskt"
+  },
   "auth": {
     "loginTitle": "Logga in på Vibely",
     "signupTitle": "Anmäl dig till Vibely",

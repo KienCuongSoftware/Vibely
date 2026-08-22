@@ -26,6 +26,11 @@
     "you": "Sina",
     "downloadApp": "Laadi rakendus alla"
   },
+  "appearance": {
+    "darkMode": "Tume režiim",
+    "lightMode": "Hele režiim",
+    "automatic": "Automaatne"
+  },
   "auth": {
     "loginTitle": "Logige sisse teenusesse Vibely",
     "signupTitle": "Registreeruge teenuse Vibely jaoks",

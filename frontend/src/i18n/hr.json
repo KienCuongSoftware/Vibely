@@ -26,6 +26,11 @@
     "you": "Ti",
     "downloadApp": "Preuzmi aplikaciju"
   },
+  "appearance": {
+    "darkMode": "Tamni način",
+    "lightMode": "Svijetli način",
+    "automatic": "Automatski"
+  },
   "auth": {
     "loginTitle": "Prijavite se na Vibely",
     "signupTitle": "Prijavite se za Vibely",

@@ -26,6 +26,11 @@
     "you": "Ti",
     "downloadApp": "Shkarko aplikacionin"
   },
+  "appearance": {
+    "darkMode": "Pamja e errët",
+    "lightMode": "Pamja e çelët",
+    "automatic": "Automatike"
+  },
   "auth": {
     "loginTitle": "Hyni në Vibely",
     "signupTitle": "Regjistrohu për Vibely",

@@ -26,6 +26,11 @@
     "you": "Sən",
     "downloadApp": "Tətbiqi yüklə"
   },
+  "appearance": {
+    "darkMode": "Qaranlıq rejim",
+    "lightMode": "İşıqlı rejim",
+    "automatic": "Avtomatik"
+  },
   "auth": {
     "loginTitle": "Vibely-a daxil olun",
     "signupTitle": "Vibely üçün qeydiyyatdan keçin",

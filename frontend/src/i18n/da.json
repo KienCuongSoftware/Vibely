@@ -26,6 +26,11 @@
     "you": "Dig",
     "downloadApp": "Download appen"
   },
+  "appearance": {
+    "darkMode": "Mørk tilstand",
+    "lightMode": "Lys tilstand",
+    "automatic": "Automatisk"
+  },
   "auth": {
     "loginTitle": "Log ind på Vibely",
     "signupTitle": "Tilmeld dig Vibely",
