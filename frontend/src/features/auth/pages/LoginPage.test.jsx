@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { AuthContext } from '@/features/auth/store/auth-context'
+import { ThemeProvider } from '@/shared/theme/ThemeContext.jsx'
 
 const authMock = {
   token: null,
@@ -18,11 +19,13 @@ const authMock = {
 describe('LoginPage', () => {
   it('renders Vibely login methods', () => {
     render(
-      <MemoryRouter>
-        <AuthContext.Provider value={authMock}>
-          <LoginPage />
-        </AuthContext.Provider>
-      </MemoryRouter>,
+      <ThemeProvider>
+        <MemoryRouter>
+          <AuthContext.Provider value={authMock}>
+            <LoginPage />
+          </AuthContext.Provider>
+        </MemoryRouter>
+      </ThemeProvider>,
     )
 
     expect(screen.getByRole('heading', { name: 'Đăng nhập vào Vibely' })).toBeInTheDocument()

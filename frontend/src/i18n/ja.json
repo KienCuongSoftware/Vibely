@@ -26,6 +26,11 @@
     "you": "あなた",
     "downloadApp": "アプリをダウンロード"
   },
+  "appearance": {
+    "darkMode": "ダークモード",
+    "lightMode": "ライトモード",
+    "automatic": "自動"
+  },
   "auth": {
     "loginTitle": "Vibely にログインします",
     "signupTitle": "Vibely に登録する",

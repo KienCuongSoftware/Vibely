@@ -27,6 +27,7 @@ import {
   AUTH_FIELD_WITH_ICON,
 } from "@/features/auth/components/authFieldClasses.js";
 import { LoginMethodButton } from "@/features/auth/components/LoginMethodButton.jsx";
+import { AuthThemeMenu } from "@/features/auth/components/AuthThemeMenu.jsx";
 import { ChallengeModal } from "@/security/captcha/ChallengeModal.jsx";
 import {
   buildAntiBotHeaders,
@@ -728,7 +729,7 @@ export function LoginPage() {
   };
 
   return (
-    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black/70 px-4 py-6 text-zinc-100">
+    <section className="vibely-auth-page relative flex min-h-screen items-center justify-center overflow-hidden bg-black/70 px-4 py-6 text-zinc-100">
       <ChallengeModal
         open={challengeOpen}
         challengeLevel={challengeLevel}
@@ -940,14 +941,15 @@ export function LoginPage() {
           </div>
         </div>
       ) : null}
-      <div className="flex max-h-[94vh] w-full max-w-[520px] flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
+      <div className="vibely-auth-card flex max-h-[94vh] w-full max-w-[520px] flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
         <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#27272a_transparent] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-800 [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar]:w-1.5">
         {view === "methods" ? (
           <>
-            <div className="flex justify-end p-4">
+            <div className="flex items-center justify-end gap-2 p-4">
+              <AuthThemeMenu />
               <Link
                 to="/"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+                className="vibely-auth-icon-btn flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
                 aria-label={t('common.close')}
               >
                 <IoClose className="text-2xl" />
@@ -1013,18 +1015,21 @@ export function LoginPage() {
                   setView("methods");
                   setStatus("");
                 }}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+                className="vibely-auth-icon-btn flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
                 aria-label={t('common.back')}
               >
                 <IoArrowBack className="text-2xl" />
               </button>
-              <Link
-                to="/"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                aria-label={t('common.close')}
-              >
-                <IoClose className="text-2xl" />
-              </Link>
+              <div className="flex items-center gap-2">
+                <AuthThemeMenu />
+                <Link
+                  to="/"
+                  className="vibely-auth-icon-btn flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+                  aria-label={t('common.close')}
+                >
+                  <IoClose className="text-2xl" />
+                </Link>
+              </div>
             </div>
             <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
               <h2 className="text-center text-3xl font-bold leading-tight">
@@ -1093,18 +1098,21 @@ export function LoginPage() {
                   setStatus("");
                   setSendResetError("");
                 }}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+                className="vibely-auth-icon-btn flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
                 aria-label={t('common.back')}
               >
                 <IoArrowBack className="text-2xl" />
               </button>
-              <Link
-                to="/"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                aria-label={t('common.close')}
-              >
-                <IoClose className="text-2xl" />
-              </Link>
+              <div className="flex items-center gap-2">
+                <AuthThemeMenu />
+                <Link
+                  to="/"
+                  className="vibely-auth-icon-btn flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+                  aria-label={t('common.close')}
+                >
+                  <IoClose className="text-2xl" />
+                </Link>
+              </div>
             </div>
             <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
               <h2 className="text-center text-3xl font-bold leading-tight">

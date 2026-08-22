@@ -337,3 +337,96 @@ html.vibely-high-contrast body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Auth login/signup: light appearance (TikTok-style Auto / Dark / Light). */
+html[data-vibely-theme="light"] .vibely-auth-page {
+  background-color: rgba(255, 255, 255, 0.88);
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-auth-card {
+  background-color: #fff;
+  border-color: #e3e3e4;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-auth-page .border-zinc-800 {
+  border-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-auth-page .bg-zinc-950,
+html[data-vibely-theme="light"] .vibely-auth-page .bg-\[\#121212\],
+html[data-vibely-theme="light"] .vibely-auth-page .bg-zinc-900\/70,
+html[data-vibely-theme="light"] .vibely-auth-page .bg-zinc-950\/70,
+html[data-vibely-theme="light"] .vibely-auth-page .bg-zinc-900 {
+  background-color: #fff;
+}
+html[data-vibely-theme="light"] .vibely-auth-page .bg-zinc-800,
+html[data-vibely-theme="light"] .vibely-auth-page .vibely-auth-icon-btn,
+html[data-vibely-theme="light"] .vibely-auth-page .vibely-auth-method-btn {
+  background-color: #f1f1f2;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-auth-page .hover\:bg-zinc-700:hover,
+html[data-vibely-theme="light"] .vibely-auth-page .vibely-auth-method-btn:hover,
+html[data-vibely-theme="light"] .vibely-auth-page .hover\:bg-zinc-900:hover {
+  background-color: #e7e7e8;
+}
+html[data-vibely-theme="light"] .vibely-auth-page .text-zinc-100,
+html[data-vibely-theme="light"] .vibely-auth-page .text-zinc-200,
+html[data-vibely-theme="light"] .vibely-auth-page .hover\:text-white:hover,
+html[data-vibely-theme="light"] .vibely-auth-page .hover\:text-zinc-100:hover,
+html[data-vibely-theme="light"] .vibely-auth-page .hover\:text-zinc-200:hover {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-auth-page .text-zinc-300,
+html[data-vibely-theme="light"] .vibely-auth-page .text-zinc-400,
+html[data-vibely-theme="light"] .vibely-auth-page .text-zinc-500 {
+  color: #8a8b91;
+}
+html[data-vibely-theme="light"] .vibely-auth-page .bg-red-600,
+html[data-vibely-theme="light"] .vibely-auth-page .bg-red-600:hover,
+html[data-vibely-theme="light"] .vibely-auth-page button.bg-red-600 {
+  color: #fff;
+}
+html[data-vibely-theme="light"] .vibely-auth-page .text-red-500,
+html[data-vibely-theme="light"] .vibely-auth-page .text-red-400 {
+  color: #fe2c55;
+}
+html[data-vibely-theme="light"] .vibely-auth-input {
+  background-color: #f1f1f2;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-auth-input:focus,
+html[data-vibely-theme="light"] .vibely-auth-input:focus-visible,
+html[data-vibely-theme="light"] .vibely-auth-input:focus-within,
+html[data-vibely-theme="light"] .vibely-auth-input--error:focus,
+html[data-vibely-theme="light"] .vibely-auth-input--error:focus-visible {
+  background-color: #e7e7e8 !important;
+}
+html[data-vibely-theme="light"] .vibely-auth-theme-menu {
+  background-color: #fff;
+  border-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-auth-theme-menu .text-zinc-100,
+html[data-vibely-theme="light"] .vibely-auth-theme-menu .text-zinc-200 {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-auth-theme-menu .hover\:bg-zinc-800:hover,
+html[data-vibely-theme="light"] .vibely-auth-theme-menu .border-zinc-800 {
+  border-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-auth-theme-menu button:hover {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .birth-date-select-list {
+  background-color: #fff;
+  --tw-ring-color: #e3e3e4;
+  scrollbar-color: #c6c6c9 transparent;
+}
+html[data-vibely-theme="light"] .birth-date-select-list button {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .birth-date-select-list button:hover {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-auth-page [scrollbar-color] {
+  scrollbar-color: #c6c6c9 transparent;
+}
+

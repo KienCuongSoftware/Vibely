@@ -57,6 +57,25 @@
     />
     <meta name="twitter:image:alt" content="Vibely" />
     <title>Vibely - Make Your Day</title>
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("vibely:appearance");
+          var theme = "dark";
+          if (stored === "light") theme = "light";
+          else if (stored === "dark") theme = "dark";
+          else {
+            theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+          }
+          document.documentElement.dataset.vibelyTheme = theme;
+          document.documentElement.style.colorScheme = theme;
+        } catch (e) {
+          document.documentElement.dataset.vibelyTheme = "dark";
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

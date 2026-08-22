@@ -26,6 +26,11 @@
     "you": "Bạn",
     "downloadApp": "Tải ứng dụng"
   },
+  "appearance": {
+    "darkMode": "Chế độ tối",
+    "lightMode": "Chế độ sáng",
+    "automatic": "Tự động"
+  },
   "auth": {
     "loginTitle": "Đăng nhập vào Vibely",
     "signupTitle": "Đăng ký Vibely",

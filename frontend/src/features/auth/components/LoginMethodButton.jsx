@@ -16,7 +16,7 @@ export function LoginMethodButton({
   return (
     <button
       type="button"
-      className="relative flex h-[52px] w-full min-h-[52px] items-center gap-4 rounded-xl bg-zinc-800 px-4 text-left text-sm hover:bg-zinc-700"
+      className="vibely-auth-method-btn relative flex h-[52px] w-full min-h-[52px] items-center gap-4 rounded-xl bg-zinc-800 px-4 text-left text-sm hover:bg-zinc-700"
       onClick={onClick}
       aria-label={recentlyUsed ? `${label}, ${recentlyUsedLabel}` : label}
     >

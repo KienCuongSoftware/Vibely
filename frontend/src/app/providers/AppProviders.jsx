@@ -7,23 +7,26 @@ import { ChatInboxBadgeProvider } from '@/features/chat/store/ChatInboxBadgeCont
 import { NotificationUnreadProvider } from '@/features/notification/store/NotificationUnreadContext.jsx'
 import { SearchModalProvider } from '@/features/search/store/SearchModalContext.jsx'
 import { AppErrorBoundary } from '@/shared/components/AppErrorBoundary.jsx'
+import { ThemeProvider } from '@/shared/theme/ThemeContext.jsx'
 
 export function AppProviders({ children }) {
   return (
     <HelmetProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <SearchModalProvider>
-            <ActivityModalProvider>
-              <NotificationUnreadProvider>
-                <ChatInboxBadgeProvider>
-                  <AppErrorBoundary>{children}</AppErrorBoundary>
-                </ChatInboxBadgeProvider>
-              </NotificationUnreadProvider>
-            </ActivityModalProvider>
-          </SearchModalProvider>
-        </AuthProvider>
-      </BrowserRouter>
+      <ThemeProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <SearchModalProvider>
+              <ActivityModalProvider>
+                <NotificationUnreadProvider>
+                  <ChatInboxBadgeProvider>
+                    <AppErrorBoundary>{children}</AppErrorBoundary>
+                  </ChatInboxBadgeProvider>
+                </NotificationUnreadProvider>
+              </ActivityModalProvider>
+            </SearchModalProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </ThemeProvider>
     </HelmetProvider>
   )
 }
