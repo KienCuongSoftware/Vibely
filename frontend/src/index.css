@@ -467,10 +467,6 @@ html[data-vibely-theme="light"] .share-modal-scroll-row::before {
 html[data-vibely-theme="light"] .share-modal-scroll-row::after {
   background: linear-gradient(to left, #fff 0%, transparent 100%);
 }
-html[data-vibely-theme="light"] button.bg-white.text-black {
-  background-color: #161823;
-  color: #fff;
-}
 html[data-vibely-theme="light"] .bg-zinc-950,
 html[data-vibely-theme="light"] .bg-zinc-950\/40,
 html[data-vibely-theme="light"] .bg-zinc-950\/50,
@@ -481,12 +477,27 @@ html[data-vibely-theme="light"] .bg-zinc-950\/90,
 html[data-vibely-theme="light"] .bg-zinc-950\/95 {
   background-color: #fff;
 }
-html[data-vibely-theme="light"] .bg-zinc-900 {
+html[data-vibely-theme="light"] .bg-zinc-900,
+html[data-vibely-theme="light"] .bg-zinc-900\/40,
+html[data-vibely-theme="light"] .bg-zinc-900\/50,
+html[data-vibely-theme="light"] .bg-zinc-900\/60,
+html[data-vibely-theme="light"] .bg-zinc-900\/70,
+html[data-vibely-theme="light"] .bg-zinc-900\/80,
+html[data-vibely-theme="light"] .bg-zinc-900\/90,
+html[data-vibely-theme="light"] .bg-zinc-900\/95 {
   background-color: #f1f1f2;
 }
-html[data-vibely-theme="light"] .bg-zinc-800\/95,
-html[data-vibely-theme="light"] .bg-zinc-900\/95 {
-  background-color: #ffffff;
+html[data-vibely-theme="light"] .bg-zinc-800,
+html[data-vibely-theme="light"] .bg-zinc-800\/80,
+html[data-vibely-theme="light"] .bg-zinc-800\/90,
+html[data-vibely-theme="light"] .bg-zinc-800\/95 {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .bg-zinc-700 {
+  background-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .bg-\[\#0f0f11\] {
+  background-color: #f8f8f8;
 }
 html[data-vibely-theme="light"] aside.bg-zinc-950 {
   background-color: #f8f8f8;
@@ -517,8 +528,12 @@ html[data-vibely-theme="light"] .text-zinc-500 {
   color: #8a8b91;
 }
 html[data-vibely-theme="light"] .hover\:bg-zinc-900:hover,
+html[data-vibely-theme="light"] .hover\:bg-zinc-900\/60:hover,
+html[data-vibely-theme="light"] .hover\:bg-zinc-900\/80:hover,
+html[data-vibely-theme="light"] .hover\:bg-zinc-900\/90:hover,
 html[data-vibely-theme="light"] .hover\:bg-zinc-800:hover,
-html[data-vibely-theme="light"] .hover\:bg-zinc-800\/80:hover {
+html[data-vibely-theme="light"] .hover\:bg-zinc-800\/80:hover,
+html[data-vibely-theme="light"] .hover\:bg-zinc-700:hover {
   background-color: #f1f1f2;
 }
 html[data-vibely-theme="light"] nav button.bg-zinc-900 {
