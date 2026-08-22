@@ -171,14 +171,14 @@ export function Sidebar({
                 title={label}
                 aria-label={label}
                 aria-current={isActive ? "page" : undefined}
-                className={`flex w-full cursor-pointer flex-nowrap items-center rounded-lg ${
+                className={`flex w-full cursor-pointer flex-nowrap items-center rounded-lg hover:bg-zinc-900 ${
                   collapsed
                     ? "h-10 justify-center px-0"
                     : "h-10 gap-2.5 px-3 text-left"
                 } ${
                   isActive
                     ? "font-semibold text-[#FE2C55]"
-                    : "text-zinc-100 hover:bg-[#FE2C55]/10 hover:text-[#FE2C55]"
+                    : "text-zinc-100"
                 }`}
                 onClick={() => handleNavClick(item)}
               >
