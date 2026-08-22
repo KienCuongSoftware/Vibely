@@ -640,7 +640,7 @@ export function SettingsPage() {
   }
 
   return (
-    <section className="flex h-dvh flex-col overflow-hidden bg-black text-zinc-100">
+    <section className="vibely-chrome flex h-dvh flex-col overflow-hidden bg-black text-zinc-100">
       {/* ── TikTok-style top header ── */}
       <header className="relative z-50 flex h-14 shrink-0 items-center gap-3 border-b border-zinc-900 bg-black px-4">
         {/* Logo */}

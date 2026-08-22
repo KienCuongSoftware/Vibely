@@ -430,3 +430,64 @@ html[data-vibely-theme="light"] .vibely-auth-page [scrollbar-color] {
   scrollbar-color: #c6c6c9 transparent;
 }
 
+/* Settings chrome: apply saved light appearance. */
+html[data-vibely-theme="light"] .vibely-chrome {
+  background-color: #fff;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-chrome.bg-black,
+html[data-vibely-theme="light"] .vibely-chrome .bg-black {
+  background-color: #fff;
+}
+html[data-vibely-theme="light"] .vibely-chrome .bg-zinc-950 {
+  background-color: #fff;
+}
+html[data-vibely-theme="light"] .vibely-chrome .bg-zinc-900 {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-chrome aside.bg-zinc-950 {
+  background-color: #f8f8f8;
+}
+html[data-vibely-theme="light"] .vibely-chrome .border-zinc-900,
+html[data-vibely-theme="light"] .vibely-chrome .border-zinc-800,
+html[data-vibely-theme="light"] .vibely-chrome .border-zinc-800\/80,
+html[data-vibely-theme="light"] .vibely-chrome .border-zinc-700 {
+  border-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-chrome .ring-zinc-900,
+html[data-vibely-theme="light"] .vibely-chrome .ring-zinc-800 {
+  --tw-ring-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-chrome .text-zinc-100,
+html[data-vibely-theme="light"] .vibely-chrome .text-zinc-200,
+html[data-vibely-theme="light"] .vibely-chrome .hover\:text-white:hover,
+html[data-vibely-theme="light"] .vibely-chrome .hover\:text-zinc-100:hover {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-chrome header a.text-white,
+html[data-vibely-theme="light"] .vibely-chrome header .text-white:not(.bg-red-500) {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-chrome .text-zinc-300,
+html[data-vibely-theme="light"] .vibely-chrome .text-zinc-400,
+html[data-vibely-theme="light"] .vibely-chrome .text-zinc-500 {
+  color: #8a8b91;
+}
+html[data-vibely-theme="light"] .vibely-chrome .hover\:bg-zinc-900:hover,
+html[data-vibely-theme="light"] .vibely-chrome .hover\:bg-zinc-800:hover,
+html[data-vibely-theme="light"] .vibely-chrome .hover\:bg-zinc-800\/80:hover {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-chrome nav button.bg-zinc-900 {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-chrome .text-red-500 {
+  color: #fe2c55;
+}
+html[data-vibely-theme="light"] .vibely-chrome .bg-red-500 {
+  color: #fff;
+}
+html[data-vibely-theme="light"] .vibely-chrome header .rounded-full.bg-zinc-900 {
+  background-color: #f1f1f2;
+}
+
