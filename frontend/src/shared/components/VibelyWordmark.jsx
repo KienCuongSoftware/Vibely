@@ -3,19 +3,19 @@ import React from "react";
 /**
  * Logo sidebar kiểu TikTok: nốt nhạc (cyan/magenta) + chữ Vibely, 105×28.
  */
-export function VibelyWordmark({ className = "h-7 w-auto", title = "Vibely" }) {
+export function VibelyWordmark({ className = "h-9 w-auto", title = "Vibely" }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="105"
-      height="28"
-      viewBox="0 0 105 28"
+      width="132"
+      height="32"
+      viewBox="0 0 132 32"
       fill="none"
       className={className}
       role="img"
       aria-label={title}
     >
-      <g transform="translate(1.2 1.2) scale(0.0818) translate(-36 -96)">
+      <g transform="translate(0.6 1.4) scale(0.0915) translate(-36 -96)">
         <g fill="#25F4EE" transform="translate(-10 -8)">
           <ellipse cx="128" cy="336" rx="92" ry="78" />
           <rect x="186" y="96" width="32" height="256" rx="14" />
@@ -33,13 +33,13 @@ export function VibelyWordmark({ className = "h-7 w-auto", title = "Vibely" }) {
         </g>
       </g>
       <text
-        x="30"
-        y="21.2"
+        x="31"
+        y="24.5"
         fill="currentColor"
         fontFamily="Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
-        fontSize="17.5"
+        fontSize="22"
         fontWeight="800"
-        letterSpacing="-0.045em"
+        letterSpacing="-0.05em"
       >
         Vibely
       </text>

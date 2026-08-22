@@ -101,8 +101,8 @@ export function Sidebar({
       >
         <Link
           to="/"
-          className={`mb-4 flex h-10 items-center text-center font-black tracking-tight text-zinc-100 hover:text-white ${
-            collapsed ? "justify-center text-xl" : "justify-start pl-2 text-3xl"
+          className={`mb-4 flex h-11 items-center text-zinc-100 hover:text-white ${
+            collapsed ? "justify-center" : "justify-start pl-1"
           }`}
           onClick={() => {
             if (moreOpen) setMoreOpen(false);
@@ -111,7 +111,7 @@ export function Sidebar({
           {collapsed ? (
             <VibelyMarkIcon className="h-7 w-7 shrink-0 text-zinc-100" />
           ) : (
-            <VibelyWordmark className="h-7 w-auto shrink-0 text-zinc-100" />
+            <VibelyWordmark className="h-9 w-auto shrink-0 text-zinc-100" />
           )}
         </Link>
 
@@ -177,8 +177,8 @@ export function Sidebar({
                     : "h-10 gap-2.5 px-3 text-left"
                 } ${
                   isActive
-                    ? "bg-zinc-900 font-semibold text-red-500 ring-1 ring-zinc-800/80"
-                    : "hover:bg-zinc-900"
+                    ? "font-semibold text-[#FE2C55]"
+                    : "text-zinc-100 hover:bg-[#FE2C55]/10 hover:text-[#FE2C55]"
                 }`}
                 onClick={() => handleNavClick(item)}
               >
@@ -195,7 +195,7 @@ export function Sidebar({
                   />
                 ) : isUpload ? (
                   <span
-                    className={`inline-grid shrink-0 place-items-center rounded-[6px] border border-zinc-100 text-zinc-100 ${
+                    className={`inline-grid shrink-0 place-items-center rounded-[6px] border border-current ${
                       collapsed ? "h-7 w-7" : "h-6 w-6"
                     }`}
                     aria-hidden

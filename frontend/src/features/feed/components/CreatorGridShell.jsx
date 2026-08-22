@@ -16,7 +16,7 @@ export function GridLoginPrompt({ title, description }) {
   const { t } = useTranslation()
   return (
     <div
-      className={`relative mx-auto flex ${FEED_STAGE_OUTER_WIDTH_CLASS} flex-col items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-zinc-950 px-6 py-16 text-center shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl`}
+      className={`relative mx-auto flex ${FEED_STAGE_OUTER_WIDTH_CLASS} flex-col items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-zinc-950 px-6 py-16 text-center sm:rounded-2xl`}
     >
       <p className="text-lg font-semibold text-zinc-100">{title}</p>
       <p className="mt-2 max-w-xs text-sm leading-relaxed text-zinc-400">

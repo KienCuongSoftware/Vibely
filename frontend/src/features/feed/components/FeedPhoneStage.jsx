@@ -1025,7 +1025,7 @@ export function FeedPhoneStage({
     ? "relative h-full w-full overflow-hidden bg-black vibely-keep-dark"
     : theaterMode
       ? `${stageWidthClass} relative overflow-hidden bg-black vibely-keep-dark`
-      : `${stageWidthClass} relative overflow-hidden rounded-xl border border-white/10 bg-black shadow-[0_0_48px_rgba(0,0,0,0.72)] sm:rounded-2xl vibely-keep-dark`;
+      : `${stageWidthClass} relative overflow-hidden rounded-xl border border-white/10 bg-black sm:rounded-2xl vibely-keep-dark`;
 
   /** Giữ activeIndex ổn định khi chiều cao khung đổi (phát hiện 16:9). */
   const [stageHeightSettle, setStageHeightSettle] = useState(false);

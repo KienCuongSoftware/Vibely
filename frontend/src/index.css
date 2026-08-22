@@ -539,8 +539,13 @@ html[data-vibely-theme="light"] .hover\:bg-zinc-700:hover {
 html[data-vibely-theme="light"] nav button.bg-zinc-900 {
   background-color: #f1f1f2;
 }
-html[data-vibely-theme="light"] .text-red-500 {
+html[data-vibely-theme="light"] .text-red-500,
+html[data-vibely-theme="light"] .text-\[\#FE2C55\],
+html[data-vibely-theme="light"] .hover\:text-\[\#FE2C55\]:hover {
   color: #fe2c55;
+}
+html[data-vibely-theme="light"] .hover\:bg-\[\#FE2C55\]\/10:hover {
+  background-color: rgba(254, 44, 85, 0.1);
 }
 html[data-vibely-theme="light"] .bg-red-500 {
   color: #fff;
