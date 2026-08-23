@@ -536,8 +536,33 @@ html[data-vibely-theme="light"] .hover\:bg-zinc-900\/80:hover,
 html[data-vibely-theme="light"] .hover\:bg-zinc-900\/90:hover,
 html[data-vibely-theme="light"] .hover\:bg-zinc-800:hover,
 html[data-vibely-theme="light"] .hover\:bg-zinc-800\/80:hover,
+html[data-vibely-theme="light"] .hover\:bg-zinc-800\/90:hover,
 html[data-vibely-theme="light"] .hover\:bg-zinc-700:hover {
   background-color: #f1f1f2;
+}
+
+.vibely-more-panel {
+  background-color: #121212;
+  color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-more-panel {
+  background-color: #fff;
+  color: #161823;
+  border-color: #e3e3e4;
+}
+.vibely-more-row:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+html[data-vibely-theme="light"] .vibely-more-row:hover {
+  background-color: #f1f1f2;
+}
+.vibely-more-close {
+  background-color: #2f2f2f;
+  color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-more-close {
+  background-color: #f1f1f2;
+  color: #161823;
 }
 html[data-vibely-theme="light"] nav button.bg-zinc-900 {
   background-color: #f1f1f2;

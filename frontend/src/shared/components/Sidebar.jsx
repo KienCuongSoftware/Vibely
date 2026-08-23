@@ -25,6 +25,7 @@ import {
   IoGlobeOutline,
   IoLogOutOutline,
   IoMoonOutline,
+  IoSunnyOutline,
   IoRadioOutline,
   IoRocketOutline,
   IoSearchOutline,
@@ -241,7 +242,7 @@ export function Sidebar({
             <p className="mb-3 text-sm text-zinc-400">
               {t("nav.loginPrompt")}
             </p>
-            <GuestLoginTrigger className="block rounded-md bg-red-600 px-3 py-2 text-center font-semibold text-white hover:bg-red-500">
+            <GuestLoginTrigger className="flex h-11 w-full items-center justify-center rounded-md bg-red-600 px-4 text-[15px] font-semibold text-white hover:bg-red-500">
               {t("nav.login")}
             </GuestLoginTrigger>
           </div>
@@ -266,14 +267,14 @@ export function Sidebar({
       ) : null}
 
       {moreOpen ? (
-        <div className="flex h-full min-h-0 w-[min(calc(100vw-72px),340px)] shrink-0 flex-col overflow-hidden border-r border-zinc-900 bg-zinc-950 text-zinc-100">
+        <div className="vibely-more-panel flex h-full min-h-0 w-[min(calc(100vw-72px),340px)] shrink-0 flex-col overflow-hidden border-r border-zinc-800 text-zinc-100">
           {langOpen ? (
             <>
               <div className="flex shrink-0 items-center gap-2 border-b border-zinc-800 px-2 py-3">
                 <button
                   type="button"
                   aria-label={t("nav.back")}
-                  className="cursor-pointer rounded-full p-2 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                  className="vibely-more-row cursor-pointer rounded-full p-2 text-zinc-300"
                   onClick={() => setLangOpen(false)}
                 >
                   <IoChevronBack className="text-xl" />
@@ -285,7 +286,7 @@ export function Sidebar({
                   <button
                     key={lang.code}
                     type="button"
-                    className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-3 text-left text-sm text-zinc-100 hover:bg-zinc-800/90"
+                    className="vibely-more-row flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-3 text-left text-sm text-zinc-100"
                     onClick={() => { changeLanguage(lang.code); setLangOpen(false); }}
                   >
                     <span>{lang.nativeLabel}</span>
@@ -302,7 +303,7 @@ export function Sidebar({
                 <button
                   type="button"
                   aria-label={t("nav.back")}
-                  className="cursor-pointer rounded-full p-2 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                  className="vibely-more-row cursor-pointer rounded-full p-2 text-zinc-300"
                   onClick={() => setThemeOpen(false)}
                 >
                   <IoChevronBack className="text-xl" />
@@ -314,7 +315,7 @@ export function Sidebar({
                   <button
                     key={option.value}
                     type="button"
-                    className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-3 text-left text-sm text-zinc-100 hover:bg-zinc-800/90"
+                    className="vibely-more-row flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-3 text-left text-sm text-zinc-100"
                     onClick={() => { setPreference(option.value); setThemeOpen(false); }}
                   >
                     <span>{t(option.labelKey)}</span>
@@ -327,15 +328,15 @@ export function Sidebar({
             </>
           ) : (
           <>
-          <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-4 py-3">
-            <h2 className="text-lg font-bold">{t("nav.more")}</h2>
+          <div className="flex shrink-0 items-center justify-between px-4 pb-2 pt-4">
+            <h2 className="text-[22px] font-bold leading-none">{t("nav.more")}</h2>
             <button
               type="button"
               aria-label={t("nav.close")}
-              className="cursor-pointer rounded-full p-2 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+              className="vibely-more-close flex h-9 w-9 cursor-pointer items-center justify-center rounded-full"
               onClick={closeMore}
             >
-              <IoClose className="text-2xl" />
+              <IoClose className="text-xl" />
             </button>
           </div>
 
@@ -355,8 +356,7 @@ export function Sidebar({
               <MoreRow
                 icon={IoMoonOutline}
                 label={t("nav.darkMode")}
-                trailing={<IoChevronForward className="text-zinc-500" />}
-                onClick={() => setThemeOpen(true)}
+                trailing={<AppearanceSegment preference={preference} onChange={setPreference} />}
               />
             </MoreSection>
 
@@ -403,7 +403,7 @@ export function Sidebar({
               {!token ? (
                 <GuestLoginTrigger
                   onClick={closeMore}
-                  className="flex w-full cursor-pointer items-center justify-center rounded-lg px-3 py-3 text-sm font-semibold text-red-400 hover:bg-zinc-800/90"
+                  className="vibely-more-row flex w-full cursor-pointer items-center rounded-lg px-3 py-3 text-left text-sm font-semibold text-[#FE2C55]"
                 >
                   {t("nav.login")}
                 </GuestLoginTrigger>
@@ -436,11 +436,42 @@ export function Sidebar({
 
 function MoreSection({ title, children }) {
   return (
-    <div className="mb-5">
-      <p className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+    <div className="mb-2 border-b border-zinc-800 pb-3 last:mb-0 last:border-b-0 last:pb-0">
+      <p className="px-3 py-2 text-[13px] font-semibold text-zinc-500">
         {title}
       </p>
-      <div className="space-y-0.5">{children}</div>
+      <div>{children}</div>
+    </div>
+  );
+}
+
+function AppearanceSegment({ preference, onChange }) {
+  const { t } = useTranslation();
+  const options = [
+    { value: "system", icon: IoSettingsOutline, labelKey: "appearance.automatic" },
+    { value: "dark", icon: IoMoonOutline, labelKey: "appearance.darkMode" },
+    { value: "light", icon: IoSunnyOutline, labelKey: "appearance.lightMode" },
+  ];
+  return (
+    <div className="flex overflow-hidden rounded-full bg-zinc-800 p-0.5" onClick={(e) => e.stopPropagation()}>
+      {options.map((option) => {
+        const Icon = option.icon;
+        const active = preference === option.value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            title={t(option.labelKey)}
+            aria-label={t(option.labelKey)}
+            className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-full ${
+              active ? "bg-zinc-950 text-zinc-100" : "text-zinc-500"
+            }`}
+            onClick={() => onChange(option.value)}
+          >
+            <Icon className="text-sm" />
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -449,10 +480,10 @@ function MoreRow({ icon: Icon, label, trailing, onClick }) {
   return (
     <button
       type="button"
-      className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-3 text-left text-sm text-zinc-100 hover:bg-zinc-800/90"
+      className="vibely-more-row flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[15px] text-zinc-100"
       onClick={onClick}
     >
-      {Icon ? <Icon className="shrink-0 text-lg text-zinc-300" /> : null}
+      {Icon ? <Icon className="shrink-0 text-[18px] text-zinc-300" /> : null}
       <span className="min-w-0 flex-1">{label}</span>
       {trailing ? <span className="shrink-0">{trailing}</span> : null}
     </button>
