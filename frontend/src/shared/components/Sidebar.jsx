@@ -15,22 +15,20 @@ import { GuestLoginTrigger } from "@/features/auth/store/GuestAuthUiContext.jsx"
 import { APPEARANCE_OPTIONS } from "@/shared/theme/themeStorage.js";
 import {
   IoBagHandleOutline,
-  IoCashOutline,
   IoCheckmark,
   IoChevronBack,
   IoChevronForward,
+  IoClipboardOutline,
   IoClose,
   IoColorWandOutline,
-  IoDocumentTextOutline,
-  IoGlobeOutline,
+  IoDesktopOutline,
+  IoLanguageOutline,
   IoLogOutOutline,
   IoMoonOutline,
   IoSunnyOutline,
-  IoRadioOutline,
   IoRocketOutline,
   IoSearchOutline,
   IoSettingsOutline,
-  IoTrendingUpOutline,
 } from "react-icons/io5";
 
 export function Sidebar({
@@ -343,12 +341,7 @@ export function Sidebar({
           <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-2 py-3">
             <MoreSection title={t("nav.settings")}>
               <MoreRow
-                icon={IoSettingsOutline}
-                label={t("nav.general")}
-                onClick={() => {}}
-              />
-              <MoreRow
-                icon={IoGlobeOutline}
+                icon={IoLanguageOutline}
                 label={currentLangLabel}
                 trailing={<IoChevronForward className="text-zinc-500" />}
                 onClick={() => setLangOpen(true)}
@@ -364,54 +357,30 @@ export function Sidebar({
               <MoreRow
                 icon={IoRocketOutline}
                 label={t("moreMenu.studio")}
-                trailing={<IoChevronForward className="text-zinc-500" />}
                 onClick={() => {}}
               />
               <MoreRow
                 icon={IoColorWandOutline}
                 label={t("moreMenu.createEffects")}
-                trailing={<IoChevronForward className="text-zinc-500" />}
                 onClick={() => {}}
               />
               <MoreRow
-                icon={IoTrendingUpOutline}
-                label={t("moreMenu.promotePost")}
-                trailing={<IoChevronForward className="text-zinc-500" />}
-                onClick={() => {}}
-              />
-              <MoreRow
-                icon={IoRadioOutline}
+                icon={IoDesktopOutline}
                 label={t("moreMenu.liveTools")}
-                trailing={<IoChevronForward className="text-zinc-500" />}
-                onClick={() => {}}
-              />
-              <MoreRow
-                icon={IoCashOutline}
-                label={t("moreMenu.getCoins")}
                 trailing={<IoChevronForward className="text-zinc-500" />}
                 onClick={() => {}}
               />
               <MoreRow
                 icon={IoBagHandleOutline}
                 label={t("moreMenu.shop")}
-                trailing={<IoChevronForward className="text-zinc-500" />}
                 onClick={() => {}}
               />
             </MoreSection>
 
             <MoreSection title={t("moreMenu.other")}>
-              {!token ? (
-                <GuestLoginTrigger
-                  onClick={closeMore}
-                  className="vibely-more-row flex w-full cursor-pointer items-center rounded-lg px-3 py-3 text-left text-sm font-semibold text-[#FE2C55]"
-                >
-                  {t("nav.login")}
-                </GuestLoginTrigger>
-              ) : null}
               <MoreRow
-                icon={IoDocumentTextOutline}
+                icon={IoClipboardOutline}
                 label={t("moreMenu.support")}
-                trailing={<IoChevronForward className="text-zinc-500" />}
                 onClick={() => {}}
               />
               {token && onLogout ? (
