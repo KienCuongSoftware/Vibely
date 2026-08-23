@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { WatchRedirect } from '@/features/post/components/WatchRedirect.jsx'
 import { AdminRoute, AuthenticatedHomeRedirect, UserOnlyRoute } from '@/app/guards/AdminRoute.jsx'
 import { GuestAuthModal } from '@/features/auth/components/GuestAuthModal.jsx'
+import { GuestAuthUiProvider, RedirectToHomeLogin } from '@/features/auth/store/GuestAuthUiContext.jsx'
 
 function lazyNamed(loader, exportName) {
   return lazy(() => loader().then((module) => ({ default: module[exportName] })))
@@ -44,13 +45,13 @@ const AdminModerationPage = lazyNamed(() => import('@/features/admin/pages/Admin
 
 export function GuestRoutes() {
   return (
-    <>
+    <GuestAuthUiProvider>
     <Routes>
       <Route path="/" element={<FeedPage />} />
       <Route path="/foryou" element={<Navigate to="/" replace />} />
-      <Route path="/following" element={<Navigate to="/login" replace />} />
-      <Route path="/friends" element={<Navigate to="/login" replace />} />
-      <Route path="/messages" element={<Navigate to="/login" replace />} />
+      <Route path="/following" element={<RedirectToHomeLogin />} />
+      <Route path="/friends" element={<RedirectToHomeLogin />} />
+      <Route path="/messages" element={<RedirectToHomeLogin />} />
       <Route path="/feed" element={<Navigate to="/" replace />} />
       <Route path="/login" element={<FeedPage />} />
       <Route path="/Login" element={<Navigate to="/login" replace />} />
@@ -61,37 +62,37 @@ export function GuestRoutes() {
       <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
       <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
       <Route path="/sound" element={<SoundPage />} />
-      <Route path="/explore" element={<Navigate to="/login" replace />} />
+      <Route path="/explore" element={<RedirectToHomeLogin />} />
       <Route path="/explore/view/:publicId" element={<ExploreViewerPage />} />
-      <Route path="/search" element={<Navigate to="/login" replace />} />
+      <Route path="/search" element={<RedirectToHomeLogin />} />
       <Route path="/tag/:tag" element={<HashtagPage />} />
       <Route path="/watch/:publicId" element={<WatchRedirect />} />
-      <Route path="/settings" element={<Navigate to="/login" replace />} />
+      <Route path="/settings" element={<RedirectToHomeLogin />} />
       <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
-      <Route path="/vibelystudio/home" element={<Navigate to="/login" replace />} />
-      <Route path="/vibelystudio/posts" element={<Navigate to="/login" replace />} />
-      <Route path="/vibelystudio/analytics" element={<Navigate to="/login" replace />} />
-      <Route path="/vibelystudio/analytics/:publicId" element={<Navigate to="/login" replace />} />
-      <Route path="/vibelystudio/upload" element={<Navigate to="/login" replace />} />
-      <Route path="/vibelystudio/upload/post/:publicId" element={<Navigate to="/login" replace />} />
-      <Route path="/vibelystudio/comment/:publicId" element={<Navigate to="/login" replace />} />
-      <Route path="/vibelystudio/comments" element={<Navigate to="/login" replace />} />
-      <Route path="/vibelystudio/inspiration" element={<Navigate to="/login" replace />} />
-      <Route path="/admin" element={<Navigate to="/login" replace />} />
-      <Route path="/admin/users" element={<Navigate to="/login" replace />} />
-      <Route path="/admin/posts" element={<Navigate to="/login" replace />} />
-      <Route path="/admin/posts/:publicId" element={<Navigate to="/login" replace />} />
-      <Route path="/admin/moderation" element={<Navigate to="/login" replace />} />
+      <Route path="/vibelystudio/home" element={<RedirectToHomeLogin />} />
+      <Route path="/vibelystudio/posts" element={<RedirectToHomeLogin />} />
+      <Route path="/vibelystudio/analytics" element={<RedirectToHomeLogin />} />
+      <Route path="/vibelystudio/analytics/:publicId" element={<RedirectToHomeLogin />} />
+      <Route path="/vibelystudio/upload" element={<RedirectToHomeLogin />} />
+      <Route path="/vibelystudio/upload/post/:publicId" element={<RedirectToHomeLogin />} />
+      <Route path="/vibelystudio/comment/:publicId" element={<RedirectToHomeLogin />} />
+      <Route path="/vibelystudio/comments" element={<RedirectToHomeLogin />} />
+      <Route path="/vibelystudio/inspiration" element={<RedirectToHomeLogin />} />
+      <Route path="/admin" element={<RedirectToHomeLogin />} />
+      <Route path="/admin/users" element={<RedirectToHomeLogin />} />
+      <Route path="/admin/posts" element={<RedirectToHomeLogin />} />
+      <Route path="/admin/posts/:publicId" element={<RedirectToHomeLogin />} />
+      <Route path="/admin/moderation" element={<RedirectToHomeLogin />} />
       <Route path="/activity/:username/video/:publicId" element={<ActivityVideoWatchPage />} />
       <Route path="/embed/profile/:username" element={<ProfileEmbedPage />} />
       <Route path="/:username/video/:publicId" element={<PublicVideoDetailPage />} />
       <Route path="/:username/:publicId" element={<ProfileWatchVideoRoutePage />} />
-      <Route path="/profile" element={<Navigate to="/login" replace />} />
+      <Route path="/profile" element={<RedirectToHomeLogin />} />
       <Route path="/:username" element={<ProfilePage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     <GuestAuthModal />
-    </>
+    </GuestAuthUiProvider>
   )
 }
 

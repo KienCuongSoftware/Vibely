@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { IoLogOutOutline, IoPerson } from 'react-icons/io5'
 import { Sidebar } from '@/shared/components/Sidebar'
 import { AccountActionsPill } from '@/features/profile/components/AccountActionsPill'
+import { GuestLoginTrigger } from '@/features/auth/store/GuestAuthUiContext.jsx'
 import { TooltipHoverWrap } from '@/shared/components/TooltipControls'
 import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
 import { buildProfilePath } from '@/features/profile/utils/buildProfilePath.js'
@@ -22,12 +23,11 @@ export function GridLoginPrompt({ title, description }) {
       <p className="mt-2 max-w-xs text-sm leading-relaxed text-zinc-400">
         {description}
       </p>
-      <Link
-        to="/login"
+      <GuestLoginTrigger
         className="mt-6 inline-flex items-center justify-center rounded-full bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-red-500"
       >
         {t('nav.login')}
-      </Link>
+      </GuestLoginTrigger>
     </div>
   )
 }
@@ -130,12 +130,9 @@ export function CreatorGridShell({
           tone="profile"
         >
           {!token ? (
-            <Link
-              to="/login"
-              className="ml-0.5 cursor-pointer rounded-full bg-red-600 px-3 py-1 text-xs font-semibold leading-none text-white hover:bg-red-500"
-            >
-              {t('nav.login')}
-            </Link>
+              <GuestLoginTrigger className="ml-0.5 cursor-pointer rounded-full bg-red-600 px-3.5 py-2 text-xs font-semibold leading-none text-white hover:bg-red-500">
+                {t('nav.login')}
+              </GuestLoginTrigger>
           ) : (
             <div className="relative" ref={accountMenuRef}>
               <TooltipHoverWrap

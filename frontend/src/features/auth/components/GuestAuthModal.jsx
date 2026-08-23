@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from "react";
 import { useLocation } from "react-router-dom";
+import { useGuestAuthUi, isLoginPath, isSignupPath } from "@/features/auth/store/GuestAuthUiContext.jsx";
 
 const LoginPage = lazy(() =>
   import("@/features/auth/pages/LoginPage.jsx").then((m) => ({ default: m.LoginPage })),
@@ -8,25 +9,21 @@ const SignupPage = lazy(() =>
   import("@/features/auth/pages/SignupPage.jsx").then((m) => ({ default: m.SignupPage })),
 );
 
-function isLoginPath(pathname) {
-  return pathname === "/login" || pathname === "/signin";
-}
-
-function isSignupPath(pathname) {
-  return pathname === "/signup" || pathname === "/register";
-}
-
 /** Overlay đăng nhập / đăng ký trên feed (kiểu TikTok), không thay cả trang. */
 export function GuestAuthModal() {
   const { pathname } = useLocation();
-  if (isSignupPath(pathname)) {
+  const ui = useGuestAuthUi();
+  const showSignup = ui?.mode === "signup" || isSignupPath(pathname);
+  const showLogin = ui?.mode === "login" || isLoginPath(pathname);
+
+  if (showSignup) {
     return (
       <Suspense fallback={null}>
         <SignupPage asModal />
       </Suspense>
     );
   }
-  if (isLoginPath(pathname)) {
+  if (showLogin) {
     return (
       <Suspense fallback={null}>
         <LoginPage asModal />

@@ -37,6 +37,7 @@ import {
   userNeedsOnboarding,
 } from "@/features/auth/utils/onboarding.js";
 import { LoginMethodButton } from "@/features/auth/components/LoginMethodButton.jsx";
+import { GuestAuthCloseButton, useGuestAuthUi } from "@/features/auth/store/GuestAuthUiContext.jsx";
 import { ChallengeModal } from "@/security/captcha/ChallengeModal.jsx";
 import {
   buildAntiBotHeaders,
@@ -53,6 +54,7 @@ export function SignupPage({ asModal = false }) {
   const { register, refreshProfile, user, token } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const guestAuthUi = useGuestAuthUi();
   const [searchParams] = useSearchParams();
   const [view, setView] = useState("methods");
   const [oauthPending, setOauthPending] = useState(null);
@@ -678,13 +680,9 @@ export function SignupPage({ asModal = false }) {
           {view === "methods" ? (
             <>
               <div className="flex items-center justify-end gap-2 p-4">
-                <Link
-                  to="/"
-                  className="vibely-auth-icon-btn flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                  aria-label={t('common.close')}
-                >
+                <GuestAuthCloseButton asModal={asModal} aria-label={t('common.close')}>
                   <IoClose className="text-2xl" />
-                </Link>
+                </GuestAuthCloseButton>
               </div>
               <div className="mx-auto w-full max-w-[380px] space-y-4 px-5 pb-7 text-sm">
                 <h2 className="text-center text-3xl font-bold leading-tight">
@@ -747,13 +745,9 @@ export function SignupPage({ asModal = false }) {
                   <IoArrowBack className="text-2xl" />
                 </button>
                 <div className="flex items-center gap-2">
-                  <Link
-                    to="/"
-                    className="vibely-auth-icon-btn flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                    aria-label={t('common.close')}
-                  >
+                  <GuestAuthCloseButton asModal={asModal} aria-label={t('common.close')}>
                     <IoClose className="text-2xl" />
-                  </Link>
+                  </GuestAuthCloseButton>
                 </div>
               </div>
               <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
@@ -1114,13 +1108,9 @@ export function SignupPage({ asModal = false }) {
                   <IoArrowBack className="text-2xl" />
                 </button>
                 <div className="flex items-center gap-2">
-                  <Link
-                    to="/"
-                    className="vibely-auth-icon-btn flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
-                    aria-label={t('common.close')}
-                  >
+                  <GuestAuthCloseButton asModal={asModal} aria-label={t('common.close')}>
                     <IoClose className="text-2xl" />
-                  </Link>
+                  </GuestAuthCloseButton>
                 </div>
               </div>
               <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
@@ -1243,9 +1233,19 @@ export function SignupPage({ asModal = false }) {
           </p>
           <p className="mt-3 text-[13px] text-zinc-300">
             {t('auth.hasAccount')}{" "}
-            <Link className="font-semibold text-red-500" to="/login">
-              {t('auth.loginLink')}
-            </Link>
+            {asModal ? (
+              <button
+                type="button"
+                className="font-semibold text-red-500"
+                onClick={() => guestAuthUi?.openLogin()}
+              >
+                {t('auth.loginLink')}
+              </button>
+            ) : (
+              <Link className="font-semibold text-red-500" to="/login">
+                {t('auth.loginLink')}
+              </Link>
+            )}
           </p>
         </div>
       </div>

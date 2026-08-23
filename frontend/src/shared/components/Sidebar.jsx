@@ -11,6 +11,7 @@ import { useSearchModal } from "@/features/search/store/SearchModalContext.jsx";
 import { useLocale, SUPPORTED_LANGUAGES } from "@/i18n/useLocale.js";
 import { useTheme } from "@/shared/theme/ThemeContext.jsx";
 import { VibelyMarkIcon, VibelyWordmark } from "@/shared/components/VibelyWordmark.jsx";
+import { GuestLoginTrigger } from "@/features/auth/store/GuestAuthUiContext.jsx";
 import { APPEARANCE_OPTIONS } from "@/shared/theme/themeStorage.js";
 import {
   IoBagHandleOutline,
@@ -240,12 +241,9 @@ export function Sidebar({
             <p className="mb-3 text-sm text-zinc-400">
               {t("nav.loginPrompt")}
             </p>
-            <Link
-              to="/login"
-              className="block rounded-md bg-red-600 px-3 py-2 text-center font-semibold text-white hover:bg-red-500"
-            >
+            <GuestLoginTrigger className="block rounded-md bg-red-600 px-3 py-2 text-center font-semibold text-white hover:bg-red-500">
               {t("nav.login")}
-            </Link>
+            </GuestLoginTrigger>
           </div>
         ) : null}
 
@@ -403,13 +401,12 @@ export function Sidebar({
 
             <MoreSection title={t("moreMenu.other")}>
               {!token ? (
-                <Link
-                  to="/login"
+                <GuestLoginTrigger
                   onClick={closeMore}
                   className="flex w-full cursor-pointer items-center justify-center rounded-lg px-3 py-3 text-sm font-semibold text-red-400 hover:bg-zinc-800/90"
                 >
                   {t("nav.login")}
-                </Link>
+                </GuestLoginTrigger>
               ) : null}
               <MoreRow
                 icon={IoDocumentTextOutline}

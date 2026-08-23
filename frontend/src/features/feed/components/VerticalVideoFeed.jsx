@@ -19,6 +19,7 @@ import { MobileFollowingEmptyState } from "@/features/feed/components/MobileFoll
 import { Sidebar } from "@/shared/components/Sidebar";
 import { TooltipHoverWrap } from "@/shared/components/TooltipControls";
 import { AccountActionsPill } from "@/features/profile/components/AccountActionsPill";
+import { GuestLoginTrigger } from "@/features/auth/store/GuestAuthUiContext.jsx";
 import { VideoShareModal } from "@/features/post/components/VideoShareModal";
 import {
   BookmarkCollectionPopover,
@@ -1679,12 +1680,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
           tone="profile"
         >
           {!token ? (
-            <Link
-              to="/login"
-              className="ml-0.5 cursor-pointer rounded-full bg-red-600 px-3 py-1 text-xs font-semibold leading-none text-white hover:bg-red-500"
-            >
+            <GuestLoginTrigger className="ml-0.5 cursor-pointer rounded-full bg-red-600 px-3.5 py-2 text-xs font-semibold leading-none text-white hover:bg-red-500">
               {t('nav.login')}
-            </Link>
+            </GuestLoginTrigger>
           ) : (
             <div className="relative" ref={accountMenuRef}>
               <TooltipHoverWrap tip={t('common.account')} tipHidden={showAccountMenu} hoverOnly>
@@ -1791,12 +1789,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   <p className="mt-2 max-w-xs text-sm leading-relaxed text-zinc-400">
                     {t("forYou.emptyGuestDescription")}
                   </p>
-                  <Link
-                    to="/login"
-                    className="mt-6 inline-flex items-center justify-center rounded-full bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-red-500"
-                  >
+                  <GuestLoginTrigger className="mt-6 inline-flex items-center justify-center rounded-full bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-red-500">
                     {t("nav.login")}
-                  </Link>
+                  </GuestLoginTrigger>
                 </>
               ) : isFollowingFeed ? (
                 <>

@@ -16,6 +16,7 @@ import {
 import { FaComment } from 'react-icons/fa6'
 import { apiClient } from '@/shared/api/client.js'
 import { AccountActionsPill } from '@/features/profile/components/AccountActionsPill.jsx'
+import { GuestLoginTrigger } from '@/features/auth/store/GuestAuthUiContext.jsx'
 import { AvatarImage } from '@/shared/components/AvatarImage.jsx'
 import {
   BookmarkCollectionPopover,
@@ -861,12 +862,9 @@ export function FeedStyleVideoDetailPage({
         {!watchChrome ? (
         <AccountActionsPill className="absolute right-3 top-3 z-[100] lg:right-8 lg:top-5" tone="profile">
           {!token ? (
-            <Link
-              to="/login"
-              className="ml-0.5 cursor-pointer rounded-full bg-red-600 px-3 py-1 text-xs font-semibold leading-none text-white hover:bg-red-500"
-            >
+            <GuestLoginTrigger className="ml-0.5 cursor-pointer rounded-full bg-red-600 px-3.5 py-2 text-xs font-semibold leading-none text-white hover:bg-red-500">
               {t('nav.login')}
-            </Link>
+            </GuestLoginTrigger>
           ) : (
             <div className="relative" ref={accountMenuRef}>
               <TooltipHoverWrap tip={t('common.account')} tipHidden={showAccountMenu} hoverOnly>
