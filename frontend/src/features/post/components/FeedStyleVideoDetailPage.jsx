@@ -872,7 +872,7 @@ export function FeedStyleVideoDetailPage({
               <TooltipHoverWrap tip={t('common.account')} tipHidden={showAccountMenu} hoverOnly>
                 <button
                   type="button"
-                  className="flex cursor-pointer rounded-full p-0.5 ring-1 ring-zinc-700 transition hover:ring-zinc-500"
+                  className="flex cursor-pointer rounded-full p-0.5 transition hover:bg-zinc-800"
                   aria-label={t('common.accountMenu')}
                   onClick={() => setShowAccountMenu((prev) => !prev)}
                 >
@@ -888,7 +888,7 @@ export function FeedStyleVideoDetailPage({
                 </button>
               </TooltipHoverWrap>
               {showAccountMenu ? (
-                <div className="absolute right-0 z-[110] mt-2 w-44 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-800 py-1 shadow-2xl">
+                <div className="absolute right-0 z-[110] mt-2 w-44 overflow-hidden rounded-xl bg-zinc-800 py-1 shadow-2xl">
                   <Link
                     to={buildProfilePath(token, user)}
                     className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-100 hover:bg-zinc-700"

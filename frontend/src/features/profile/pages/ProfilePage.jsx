@@ -1483,7 +1483,7 @@ export function ProfilePage() {
               <TooltipHoverWrap tip={t('common.account')} tipHidden={showAccountMenu} hoverOnly>
                 <button
                   type="button"
-                  className="flex cursor-pointer rounded-full p-0.5 ring-1 ring-zinc-700 transition hover:ring-zinc-500"
+                  className="flex cursor-pointer rounded-full p-0.5 transition hover:bg-zinc-800"
                   aria-label={t('common.accountMenu')}
                   aria-expanded={showAccountMenu}
                   aria-haspopup="menu"
@@ -1506,7 +1506,7 @@ export function ProfilePage() {
               </TooltipHoverWrap>
               {showAccountMenu ? (
                 <div
-                  className="absolute right-0 mt-2 w-44 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-800 py-1 shadow-2xl"
+                  className="absolute right-0 mt-2 w-44 overflow-hidden rounded-xl bg-zinc-800 py-1 shadow-2xl"
                   role="menu"
                 >
                   <Link

@@ -4,8 +4,8 @@ import { IoCashOutline, IoPhonePortraitOutline } from "react-icons/io5";
 import { TooltipIconButton } from "@/shared/components/TooltipControls";
 
 const toneClasses = {
-  feed: "border-zinc-800 bg-zinc-900/95",
-  profile: "shrink-0 border-zinc-700 bg-zinc-800/95",
+  feed: "",
+  profile: "shrink-0",
 };
 
 /** Cùng một density để feed / hồ sơ không lệch kích thước (pixel). */
@@ -41,7 +41,7 @@ export function AccountActionsPill({
   const downloadApp = t("common.downloadApp");
   return (
     <div
-      className={`hidden lg:inline-flex flex-row flex-nowrap items-center rounded-full border shadow-lg ${d.shell} leading-none ${toneClasses[tone] ?? toneClasses.feed} ${className}`}
+      className={`hidden lg:inline-flex flex-row flex-nowrap items-center rounded-full ${d.shell} leading-none ${toneClasses[tone] ?? toneClasses.feed} ${className}`}
     >
       {showCoinAndApp ? (
         <>
@@ -52,7 +52,7 @@ export function AccountActionsPill({
             <IoPhonePortraitOutline className={d.icon} />
           </TooltipIconButton>
           <div
-            className={`mx-0.5 w-px shrink-0 self-center bg-zinc-600 ${d.rule}`}
+            className={`mx-0.5 w-px shrink-0 self-center bg-zinc-700 ${d.rule}`}
             aria-hidden
           />
         </>

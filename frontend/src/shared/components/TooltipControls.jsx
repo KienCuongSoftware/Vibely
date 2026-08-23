@@ -1,7 +1,7 @@
 import React from "react";
 
 const tipBaseClasses =
-  "pointer-events-none absolute left-1/2 z-[60] -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-700 px-2.5 py-1.5 text-xs font-medium text-zinc-100 opacity-0 shadow-xl ring-1 ring-zinc-600 transition-opacity duration-150";
+  "pointer-events-none absolute left-1/2 z-[60] -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-800 px-2.5 py-1.5 text-xs font-medium text-zinc-100 opacity-0 shadow-md transition-opacity duration-150";
 
 const tipPlacementClasses = {
   bottom: "top-full mt-2",
@@ -28,7 +28,7 @@ export function TooltipIconButton({
       <button
         type="button"
         aria-label={ariaLabel ?? tip}
-        className={`flex cursor-pointer items-center justify-center rounded-full text-zinc-100 transition-colors hover:bg-zinc-700/90 ${dim}`}
+        className={`flex cursor-pointer items-center justify-center rounded-full text-zinc-100 transition-colors hover:bg-zinc-800 ${dim}`}
         {...rest}
       >
         {children}
