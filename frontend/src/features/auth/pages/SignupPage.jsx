@@ -37,7 +37,6 @@ import {
   userNeedsOnboarding,
 } from "@/features/auth/utils/onboarding.js";
 import { LoginMethodButton } from "@/features/auth/components/LoginMethodButton.jsx";
-import { AuthThemeMenu } from "@/features/auth/components/AuthThemeMenu.jsx";
 import { ChallengeModal } from "@/security/captcha/ChallengeModal.jsx";
 import {
   buildAntiBotHeaders,
@@ -50,7 +49,7 @@ function normalizeVibelyId(value) {
   return value.trim().toLowerCase().replace(/^@+/, "");
 }
 
-export function SignupPage() {
+export function SignupPage({ asModal = false }) {
   const { register, refreshProfile, user, token } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -651,7 +650,13 @@ export function SignupPage() {
   };
 
   return (
-    <section className="vibely-auth-page relative flex min-h-screen items-center justify-center overflow-hidden bg-black/70 px-4 py-6 text-zinc-100">
+    <section
+      className={
+        asModal
+          ? "vibely-auth-page fixed inset-0 z-[240] flex items-center justify-center overflow-y-auto bg-black/50 px-4 py-6 text-zinc-100"
+          : "vibely-auth-page relative flex min-h-screen items-center justify-center overflow-hidden bg-black/70 px-4 py-6 text-zinc-100"
+      }
+    >
       <ChallengeModal
         open={challengeOpen}
         challengeLevel={challengeLevel}
@@ -673,7 +678,6 @@ export function SignupPage() {
           {view === "methods" ? (
             <>
               <div className="flex items-center justify-end gap-2 p-4">
-                <AuthThemeMenu />
                 <Link
                   to="/"
                   className="vibely-auth-icon-btn flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
@@ -743,7 +747,6 @@ export function SignupPage() {
                   <IoArrowBack className="text-2xl" />
                 </button>
                 <div className="flex items-center gap-2">
-                  <AuthThemeMenu />
                   <Link
                     to="/"
                     className="vibely-auth-icon-btn flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
@@ -956,10 +959,7 @@ export function SignupPage() {
             </>
           ) : view === "oauth-birth" ? (
             <>
-              <div className="flex items-center justify-end gap-2 p-4">
-                <AuthThemeMenu />
-              </div>
-              <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
+              <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 pt-6 text-sm">
                 <h2 className="text-center text-3xl font-bold leading-tight">
                   {t('auth.signupShort')}
                 </h2>
@@ -1018,7 +1018,6 @@ export function SignupPage() {
                 >
                   <IoArrowBack className="text-2xl" />
                 </button>
-                <AuthThemeMenu />
               </div>
               <div className="mx-auto w-full max-w-[380px] space-y-3 px-5 pb-6 text-sm">
                 <h2 className="text-center text-3xl font-bold leading-tight">
@@ -1115,7 +1114,6 @@ export function SignupPage() {
                   <IoArrowBack className="text-2xl" />
                 </button>
                 <div className="flex items-center gap-2">
-                  <AuthThemeMenu />
                   <Link
                     to="/"
                     className="vibely-auth-icon-btn flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"

@@ -2,12 +2,12 @@ import React, { lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { WatchRedirect } from '@/features/post/components/WatchRedirect.jsx'
 import { AdminRoute, AuthenticatedHomeRedirect, UserOnlyRoute } from '@/app/guards/AdminRoute.jsx'
+import { GuestAuthModal } from '@/features/auth/components/GuestAuthModal.jsx'
 
 function lazyNamed(loader, exportName) {
   return lazy(() => loader().then((module) => ({ default: module[exportName] })))
 }
 
-const LoginPage = lazyNamed(() => import('@/features/auth/pages/LoginPage.jsx'), 'LoginPage')
 const SignupPage = lazyNamed(() => import('@/features/auth/pages/SignupPage.jsx'), 'SignupPage')
 const FeedPage = lazyNamed(() => import('@/features/feed/pages/FeedPage.jsx'), 'FeedPage')
 const FollowingPage = lazyNamed(() => import('@/features/feed/pages/FollowingPage.jsx'), 'FollowingPage')
@@ -44,6 +44,7 @@ const AdminModerationPage = lazyNamed(() => import('@/features/admin/pages/Admin
 
 export function GuestRoutes() {
   return (
+    <>
     <Routes>
       <Route path="/" element={<FeedPage />} />
       <Route path="/foryou" element={<Navigate to="/" replace />} />
@@ -51,10 +52,10 @@ export function GuestRoutes() {
       <Route path="/friends" element={<Navigate to="/login" replace />} />
       <Route path="/messages" element={<Navigate to="/login" replace />} />
       <Route path="/feed" element={<Navigate to="/" replace />} />
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<FeedPage />} />
       <Route path="/Login" element={<Navigate to="/login" replace />} />
       <Route path="/signin" element={<Navigate to="/login" replace />} />
-      <Route path="/signup" element={<SignupPage />} />
+      <Route path="/signup" element={<FeedPage />} />
       <Route path="/Signup" element={<Navigate to="/signup" replace />} />
       <Route path="/register" element={<Navigate to="/signup" replace />} />
       <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
@@ -89,6 +90,8 @@ export function GuestRoutes() {
       <Route path="/:username" element={<ProfilePage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <GuestAuthModal />
+    </>
   )
 }
 

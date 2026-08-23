@@ -27,7 +27,6 @@ import {
   AUTH_FIELD_WITH_ICON,
 } from "@/features/auth/components/authFieldClasses.js";
 import { LoginMethodButton } from "@/features/auth/components/LoginMethodButton.jsx";
-import { AuthThemeMenu } from "@/features/auth/components/AuthThemeMenu.jsx";
 import { ChallengeModal } from "@/security/captcha/ChallengeModal.jsx";
 import {
   buildAntiBotHeaders,
@@ -74,7 +73,7 @@ function clearStoredBannedAppealEmail() {
   }
 }
 
-export function LoginPage() {
+export function LoginPage({ asModal = false }) {
   const { token, user, login, reactivateAccount, completeOAuthLogin, refreshProfile, authReady } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -729,7 +728,13 @@ export function LoginPage() {
   };
 
   return (
-    <section className="vibely-auth-page relative flex min-h-screen items-center justify-center overflow-hidden bg-black/70 px-4 py-6 text-zinc-100">
+    <section
+      className={
+        asModal
+          ? "vibely-auth-page fixed inset-0 z-[240] flex items-center justify-center overflow-y-auto bg-black/50 px-4 py-6 text-zinc-100"
+          : "vibely-auth-page relative flex min-h-screen items-center justify-center overflow-hidden bg-black/70 px-4 py-6 text-zinc-100"
+      }
+    >
       <ChallengeModal
         open={challengeOpen}
         challengeLevel={challengeLevel}
@@ -946,7 +951,6 @@ export function LoginPage() {
         {view === "methods" ? (
           <>
             <div className="flex items-center justify-end gap-2 p-4">
-              <AuthThemeMenu />
               <Link
                 to="/"
                 className="vibely-auth-icon-btn flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
@@ -1021,7 +1025,6 @@ export function LoginPage() {
                 <IoArrowBack className="text-2xl" />
               </button>
               <div className="flex items-center gap-2">
-                <AuthThemeMenu />
                 <Link
                   to="/"
                   className="vibely-auth-icon-btn flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
@@ -1104,7 +1107,6 @@ export function LoginPage() {
                 <IoArrowBack className="text-2xl" />
               </button>
               <div className="flex items-center gap-2">
-                <AuthThemeMenu />
                 <Link
                   to="/"
                   className="vibely-auth-icon-btn flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
