@@ -15,6 +15,7 @@ import {
 } from "react-icons/io5";
 
 import { consumePendingAccountBanned } from "@/features/auth/utils/accountBanBridge.js";
+import { resolvePostLoginDestination } from "@/features/auth/utils/loginRedirect.js";
 import { resolveBackendOrigin } from "@/shared/config/apiBase.js";
 import { normalizeLastLoginMethod } from "@/features/auth/utils/lastLoginMethod.js";
 import {
@@ -209,7 +210,7 @@ export function LoginPage({ asModal = false }) {
         navigate("/signup?onboarding=oauth", { replace: true });
         return;
       }
-      const destination = String(user.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/";
+      const destination = resolvePostLoginDestination(searchParams, user.role);
       navigate(destination, { replace: true });
       return;
     }
@@ -346,9 +347,7 @@ export function LoginPage({ asModal = false }) {
           // Cookie session from exchange is enough; profile refresh is best-effort.
         }
         navigate(
-          String(oauthData.role ?? "").toUpperCase() === "ADMIN"
-            ? "/admin"
-            : "/",
+          resolvePostLoginDestination(searchParams, oauthData.role),
           { replace: true },
         );
       })
@@ -548,7 +547,7 @@ export function LoginPage({ asModal = false }) {
       }
       setReactivationOpen(false);
       setStatus(t('auth.reactivateSuccess'));
-      navigate(String(result?.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/", {
+      navigate(resolvePostLoginDestination(searchParams, result?.role), {
         replace: true,
       });
     } catch (error) {
@@ -580,7 +579,7 @@ export function LoginPage({ asModal = false }) {
         navigate("/signup?onboarding=oauth", { replace: true });
         return;
       }
-      navigate(String(result?.role ?? "").toUpperCase() === "ADMIN" ? "/admin" : "/", {
+      navigate(resolvePostLoginDestination(searchParams, result?.role), {
         replace: true,
       });
     } catch (error) {

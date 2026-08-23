@@ -205,7 +205,7 @@ export function MobileFeedBottomNav({
       <button
         type="button"
         className={itemClass("explore")}
-        onClick={() => (token ? go("explore") : navigate("/login"))}
+        onClick={() => go("explore")}
       >
         <IoCompassOutline className="text-[22px]" aria-hidden />
         <span>{t("nav.explore")}</span>
@@ -213,7 +213,7 @@ export function MobileFeedBottomNav({
       <button
         type="button"
         className="flex flex-1 cursor-pointer flex-col items-center justify-center gap-0.5"
-        onClick={() => (token ? go("upload") : navigate("/login"))}
+        onClick={() => go("upload")}
         aria-label={t("nav.upload")}
       >
         <span className="relative flex h-9 w-10 items-center justify-center">
@@ -247,7 +247,7 @@ export function MobileFeedBottomNav({
       <button
         type="button"
         className={itemClass("profile")}
-        onClick={() => (token ? go("profile") : navigate("/login"))}
+        onClick={() => go("profile")}
       >
         <IoPersonOutline className="text-[22px]" aria-hidden />
         <span>{t("nav.profile")}</span>

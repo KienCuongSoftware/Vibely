@@ -10,6 +10,7 @@ import React, {
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { isPendingOAuthBrowserCallback } from "@/features/auth/utils/oauthCallback.js";
 import { registerGuestLoginOpener } from "@/features/auth/utils/guestAuthGate.js";
+import { hasLoginRedirectParam } from "@/features/auth/utils/loginRedirect.js";
 
 const GuestAuthUiContext = createContext(null);
 
@@ -38,10 +39,12 @@ export function GuestAuthUiProvider({ children }) {
   useEffect(() => {
     const { pathname, search } = location;
     if (isLoginPath(pathname)) {
-      setMode("login");
-      if (!isPendingOAuthBrowserCallback()) {
-        navigate({ pathname: "/", search }, { replace: true });
+      if (isPendingOAuthBrowserCallback() || hasLoginRedirectParam(search)) {
+        setMode(null);
+        return;
       }
+      setMode("login");
+      navigate({ pathname: "/", search }, { replace: true });
       return;
     }
     if (isSignupPath(pathname)) {

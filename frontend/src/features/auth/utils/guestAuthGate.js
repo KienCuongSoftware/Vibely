@@ -7,6 +7,12 @@ export function registerGuestLoginOpener(fn) {
   openGuestLoginImpl = fn
 }
 
+export function tryOpenGuestLogin() {
+  if (typeof openGuestLoginImpl !== 'function') return false
+  openGuestLoginImpl()
+  return true
+}
+
 export function redirectGuestToLogin(navigate, token) {
   if (token) return false
   if (typeof openGuestLoginImpl === 'function') {

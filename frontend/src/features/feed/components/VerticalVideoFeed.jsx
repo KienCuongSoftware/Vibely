@@ -1546,10 +1546,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   );
 
   const handleSidebarSelect = (id) => {
-    if (!token && id !== "latest") {
-      navigate("/login");
-      return;
-    }
     handleSidebarMenuSelect(navigate, id, {
       token,
       profilePath: buildProfilePath(token, user),

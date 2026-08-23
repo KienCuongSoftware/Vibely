@@ -1,15 +1,18 @@
 import React, { lazy } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom'
 import { WatchRedirect } from '@/features/post/components/WatchRedirect.jsx'
 import { AdminRoute, AuthenticatedHomeRedirect, UserOnlyRoute } from '@/app/guards/AdminRoute.jsx'
 import { GuestAuthModal } from '@/features/auth/components/GuestAuthModal.jsx'
 import { GuestAuthUiProvider, RedirectToHomeLogin } from '@/features/auth/store/GuestAuthUiContext.jsx'
+import { isPendingOAuthBrowserCallback } from '@/features/auth/utils/oauthCallback.js'
+import { buildStudioUploadLoginHref, hasLoginRedirectParam } from '@/features/auth/utils/loginRedirect.js'
 
 function lazyNamed(loader, exportName) {
   return lazy(() => loader().then((module) => ({ default: module[exportName] })))
 }
 
 const SignupPage = lazyNamed(() => import('@/features/auth/pages/SignupPage.jsx'), 'SignupPage')
+const LoginPage = lazyNamed(() => import('@/features/auth/pages/LoginPage.jsx'), 'LoginPage')
 const FeedPage = lazyNamed(() => import('@/features/feed/pages/FeedPage.jsx'), 'FeedPage')
 const FollowingPage = lazyNamed(() => import('@/features/feed/pages/FollowingPage.jsx'), 'FollowingPage')
 const FriendsPage = lazyNamed(() => import('@/features/feed/pages/FriendsPage.jsx'), 'FriendsPage')
@@ -43,17 +46,29 @@ const AdminPostsPage = lazyNamed(() => import('@/features/admin/pages/AdminPosts
 const AdminPostDetailPage = lazyNamed(() => import('@/features/admin/pages/AdminPostDetailPage.jsx'), 'AdminPostDetailPage')
 const AdminModerationPage = lazyNamed(() => import('@/features/admin/pages/AdminModerationPage.jsx'), 'AdminModerationPage')
 
+function GuestLoginRoute() {
+  const [params] = useSearchParams()
+  if (hasLoginRedirectParam(`?${params.toString()}`) || isPendingOAuthBrowserCallback()) {
+    return <LoginPage />
+  }
+  return <FeedPage />
+}
+
+function RedirectToStudioUploadLogin() {
+  return <Navigate to={buildStudioUploadLoginHref()} replace />
+}
+
 export function GuestRoutes() {
   return (
     <GuestAuthUiProvider>
     <Routes>
       <Route path="/" element={<FeedPage />} />
       <Route path="/foryou" element={<Navigate to="/" replace />} />
-      <Route path="/following" element={<RedirectToHomeLogin />} />
+      <Route path="/following" element={<FollowingPage />} />
       <Route path="/friends" element={<RedirectToHomeLogin />} />
       <Route path="/messages" element={<RedirectToHomeLogin />} />
       <Route path="/feed" element={<Navigate to="/" replace />} />
-      <Route path="/login" element={<FeedPage />} />
+      <Route path="/login" element={<GuestLoginRoute />} />
       <Route path="/Login" element={<Navigate to="/login" replace />} />
       <Route path="/signin" element={<Navigate to="/login" replace />} />
       <Route path="/signup" element={<FeedPage />} />
@@ -62,18 +77,18 @@ export function GuestRoutes() {
       <Route path="/legal/page/row/terms-of-service" element={<TermsOfServicePage />} />
       <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
       <Route path="/sound" element={<SoundPage />} />
-      <Route path="/explore" element={<RedirectToHomeLogin />} />
+      <Route path="/explore" element={<ExplorePage />} />
       <Route path="/explore/view/:publicId" element={<ExploreViewerPage />} />
-      <Route path="/search" element={<RedirectToHomeLogin />} />
+      <Route path="/search" element={<SearchResultsPage />} />
       <Route path="/tag/:tag" element={<HashtagPage />} />
       <Route path="/watch/:publicId" element={<WatchRedirect />} />
       <Route path="/settings" element={<RedirectToHomeLogin />} />
-      <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
+      <Route path="/upload" element={<RedirectToStudioUploadLogin />} />
       <Route path="/vibelystudio/home" element={<RedirectToHomeLogin />} />
       <Route path="/vibelystudio/posts" element={<RedirectToHomeLogin />} />
       <Route path="/vibelystudio/analytics" element={<RedirectToHomeLogin />} />
       <Route path="/vibelystudio/analytics/:publicId" element={<RedirectToHomeLogin />} />
-      <Route path="/vibelystudio/upload" element={<RedirectToHomeLogin />} />
+      <Route path="/vibelystudio/upload" element={<RedirectToStudioUploadLogin />} />
       <Route path="/vibelystudio/upload/post/:publicId" element={<RedirectToHomeLogin />} />
       <Route path="/vibelystudio/comment/:publicId" element={<RedirectToHomeLogin />} />
       <Route path="/vibelystudio/comments" element={<RedirectToHomeLogin />} />
