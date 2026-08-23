@@ -556,6 +556,10 @@ html[data-vibely-theme="light"] header .rounded-full.bg-zinc-900 {
 html[data-vibely-theme="light"] .text-white {
   color: #161823;
 }
+html[data-vibely-theme="light"] .bg-\[\#1877F2\] .text-white,
+html[data-vibely-theme="light"] .bg-\[\#06C755\] .text-white {
+  color: #fff;
+}
 html[data-vibely-theme="light"] .border-white,
 html[data-vibely-theme="light"] .border-b-2.border-white {
   border-color: #161823;
