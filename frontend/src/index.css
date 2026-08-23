@@ -344,9 +344,12 @@ html.vibely-high-contrast body {
 }
 
 /* Auth login/signup: light appearance (TikTok-style Auto / Dark / Light). */
-html[data-vibely-theme="light"] .vibely-auth-page {
+html[data-vibely-theme="light"] .vibely-auth-page:not(.vibely-auth-modal-scrim) {
   background-color: rgba(255, 255, 255, 0.88);
   color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-auth-modal-scrim {
+  background-color: rgba(0, 0, 0, 0.45);
 }
 html[data-vibely-theme="light"] .vibely-auth-card {
   background-color: #fff;

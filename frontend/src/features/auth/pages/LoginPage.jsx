@@ -731,7 +731,7 @@ export function LoginPage({ asModal = false }) {
     <section
       className={
         asModal
-          ? "vibely-auth-page fixed inset-0 z-[240] flex items-center justify-center overflow-y-auto bg-black/50 px-4 py-6 text-zinc-100"
+          ? "vibely-auth-page vibely-auth-modal-scrim fixed inset-0 z-[240] flex items-center justify-center overflow-y-auto bg-black/45 px-4 py-6 text-zinc-100"
           : "vibely-auth-page relative flex min-h-screen items-center justify-center overflow-hidden bg-black/70 px-4 py-6 text-zinc-100"
       }
     >
