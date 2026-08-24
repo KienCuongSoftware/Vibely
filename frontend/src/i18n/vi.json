@@ -29,7 +29,12 @@
   "appearance": {
     "darkMode": "Chế độ tối",
     "lightMode": "Chế độ sáng",
-    "automatic": "Tự động"
+    "automatic": "Tự động",
+    "helpTitle": "Giao diện",
+    "helpIntro": "Chọn cách Vibely hiển thị. Tự động theo cài đặt của thiết bị.",
+    "automaticDesc": "Theo chế độ sáng hoặc tối của thiết bị này.",
+    "darkDesc": "Luôn dùng nền tối.",
+    "lightDesc": "Luôn dùng nền sáng."
   },
   "auth": {
     "loginTitle": "Đăng nhập vào Vibely",

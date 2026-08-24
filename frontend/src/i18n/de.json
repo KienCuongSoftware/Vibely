@@ -29,7 +29,12 @@
   "appearance": {
     "darkMode": "Dunkelmodus",
     "lightMode": "Hellmodus",
-    "automatic": "Automatisch"
+    "automatic": "Automatisch",
+    "helpTitle": "Darstellung",
+    "helpIntro": "Lege fest, wie Vibely aussieht. Automatisch folgt der Geräteeinstellung.",
+    "automaticDesc": "Folgt dem hellen oder dunklen Design dieses Geräts.",
+    "darkDesc": "Immer dunklen Hintergrund verwenden.",
+    "lightDesc": "Immer hellen Hintergrund verwenden."
   },
   "auth": {
     "loginTitle": "Bei Vibely anmelden",

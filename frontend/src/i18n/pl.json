@@ -29,7 +29,12 @@
   "appearance": {
     "darkMode": "Tryb ciemny",
     "lightMode": "Tryb jasny",
-    "automatic": "Automatycznie"
+    "automatic": "Automatycznie",
+    "helpTitle": "Wygląd",
+    "helpIntro": "Wybierz wygląd Vibely. Automatycznie podąża za ustawieniem urządzenia.",
+    "automaticDesc": "Dopasowuje jasny lub ciemny motyw tego urządzenia.",
+    "darkDesc": "Zawsze używaj ciemnego tła.",
+    "lightDesc": "Zawsze używaj jasnego tła."
   },
   "auth": {
     "loginTitle": "Zaloguj się do Vibely",

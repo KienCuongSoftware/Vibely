@@ -29,7 +29,12 @@
   "appearance": {
     "darkMode": "다크 모드",
     "lightMode": "라이트 모드",
-    "automatic": "자동"
+    "automatic": "자동",
+    "helpTitle": "화면 스타일",
+    "helpIntro": "Vibely 표시 방식을 선택하세요. 자동은 기기 설정을 따릅니다.",
+    "automaticDesc": "이 기기의 밝은/어두운 테마를 따릅니다.",
+    "darkDesc": "항상 어두운 배경을 사용합니다.",
+    "lightDesc": "항상 밝은 배경을 사용합니다."
   },
   "auth": {
     "loginTitle": "Vibely에 로그인하세요",

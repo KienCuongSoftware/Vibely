@@ -29,7 +29,12 @@
   "appearance": {
     "darkMode": "Tmavý režim",
     "lightMode": "Svetlý režim",
-    "automatic": "Automaticky"
+    "automatic": "Automaticky",
+    "helpTitle": "Appearance",
+    "helpIntro": "Choose how Vibely looks. Automatic follows your device setting.",
+    "automaticDesc": "Match the light or dark theme of this device.",
+    "darkDesc": "Always use a dark background.",
+    "lightDesc": "Always use a light background."
   },
   "auth": {
     "loginTitle": "Prihláste sa do Vibely",

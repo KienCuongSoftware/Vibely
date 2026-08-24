@@ -29,7 +29,12 @@
   "appearance": {
     "darkMode": "Mode gelap",
     "lightMode": "Mode terang",
-    "automatic": "Otomatis"
+    "automatic": "Otomatis",
+    "helpTitle": "Tampilan",
+    "helpIntro": "Pilih tampilan Vibely. Otomatis mengikuti pengaturan perangkat.",
+    "automaticDesc": "Mengikuti tema terang atau gelap perangkat ini.",
+    "darkDesc": "Selalu gunakan latar gelap.",
+    "lightDesc": "Selalu gunakan latar terang."
   },
   "auth": {
     "loginTitle": "Masuk ke Vibely",

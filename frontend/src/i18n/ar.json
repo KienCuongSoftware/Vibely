@@ -29,7 +29,12 @@
   "appearance": {
     "darkMode": "الوضع الداكن",
     "lightMode": "الوضع الفاتح",
-    "automatic": "تلقائي"
+    "automatic": "تلقائي",
+    "helpTitle": "المظهر",
+    "helpIntro": "اختر مظهر Vibely. تلقائي يتبع إعداد الجهاز.",
+    "automaticDesc": "يطابق المظهر الفاتح أو الداكن لهذا الجهاز.",
+    "darkDesc": "استخدم خلفية داكنة دائماً.",
+    "lightDesc": "استخدم خلفية فاتحة دائماً."
   },
   "auth": {
     "loginTitle": "تسجيل الدخول إلى Vibely",

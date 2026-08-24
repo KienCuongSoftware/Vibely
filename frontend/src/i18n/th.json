@@ -29,7 +29,12 @@
   "appearance": {
     "darkMode": "โหมดมืด",
     "lightMode": "โหมดสว่าง",
-    "automatic": "อัตโนมัติ"
+    "automatic": "อัตโนมัติ",
+    "helpTitle": "ลักษณะที่ปรากฏ",
+    "helpIntro": "เลือกวิธีแสดง Vibely โหมดอัตโนมัติจะตามการตั้งค่าของอุปกรณ์",
+    "automaticDesc": "ตามธีมสว่างหรือมืดของอุปกรณ์นี้",
+    "darkDesc": "ใช้พื้นหลังมืดเสมอ",
+    "lightDesc": "ใช้พื้นหลังสว่างเสมอ"
   },
   "auth": {
     "loginTitle": "เข้าสู่ระบบ Vibely",

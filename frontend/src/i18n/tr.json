@@ -29,7 +29,12 @@
   "appearance": {
     "darkMode": "Karanlık mod",
     "lightMode": "Aydınlık mod",
-    "automatic": "Otomatik"
+    "automatic": "Otomatik",
+    "helpTitle": "Görünüm",
+    "helpIntro": "Vibely’nin nasıl görüneceğini seçin. Otomatik, cihaz ayarını takip eder.",
+    "automaticDesc": "Bu cihazın açık veya koyu temasına uyum sağlar.",
+    "darkDesc": "Her zaman koyu arka plan kullan.",
+    "lightDesc": "Her zaman açık arka plan kullan."
   },
   "auth": {
     "loginTitle": "Vibely'da oturum açın",

@@ -29,7 +29,12 @@
   "appearance": {
     "darkMode": "ダークモード",
     "lightMode": "ライトモード",
-    "automatic": "自動"
+    "automatic": "自動",
+    "helpTitle": "外観",
+    "helpIntro": "Vibely の表示方法を選択します。自動は端末の設定に従います。",
+    "automaticDesc": "この端末のライト／ダークテーマに合わせます。",
+    "darkDesc": "常に暗い背景を使います。",
+    "lightDesc": "常に明るい背景を使います。"
   },
   "auth": {
     "loginTitle": "Vibely にログインします",

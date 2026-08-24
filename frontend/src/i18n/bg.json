@@ -29,7 +29,12 @@
   "appearance": {
     "darkMode": "Тъмен режим",
     "lightMode": "Светъл режим",
-    "automatic": "Автоматично"
+    "automatic": "Автоматично",
+    "helpTitle": "Appearance",
+    "helpIntro": "Choose how Vibely looks. Automatic follows your device setting.",
+    "automaticDesc": "Match the light or dark theme of this device.",
+    "darkDesc": "Always use a dark background.",
+    "lightDesc": "Always use a light background."
   },
   "auth": {
     "loginTitle": "Влезте в Vibely",

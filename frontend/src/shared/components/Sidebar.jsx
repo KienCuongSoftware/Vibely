@@ -13,6 +13,7 @@ import { useTheme } from "@/shared/theme/ThemeContext.jsx";
 import { VibelyMarkIcon, VibelyWordmark } from "@/shared/components/VibelyWordmark.jsx";
 import { GuestLoginTrigger } from "@/features/auth/store/GuestAuthUiContext.jsx";
 import { APPEARANCE_OPTIONS } from "@/shared/theme/themeStorage.js";
+import { AppearanceHelpModal } from "@/shared/theme/AppearanceHelpModal.jsx";
 import { buildStudioHomeLoginHref } from "@/features/auth/utils/loginRedirect.js";
 import {
   IoBagHandleOutline,
@@ -28,8 +29,8 @@ import {
   IoMoonOutline,
   IoSunnyOutline,
   IoRocketOutline,
+  IoOptionsOutline,
   IoSearchOutline,
-  IoSettingsOutline,
 } from "react-icons/io5";
 
 export function Sidebar({
@@ -53,6 +54,7 @@ export function Sidebar({
   const [moreOpen, setMoreOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
+  const [appearanceHelpOpen, setAppearanceHelpOpen] = useState(false);
   const { preference, setPreference } = useTheme();
   const { locale, changeLanguage } = useLocale();
   const currentLangLabel = SUPPORTED_LANGUAGES.find((l) => l.code === locale)?.nativeLabel ?? locale;
@@ -92,7 +94,12 @@ export function Sidebar({
     onSelectMenu?.(item.id);
   };
 
-  const closeMore = () => { setMoreOpen(false); setLangOpen(false); setThemeOpen(false); };
+  const closeMore = () => {
+    setMoreOpen(false);
+    setLangOpen(false);
+    setThemeOpen(false);
+    setAppearanceHelpOpen(false);
+  };
 
   return (
     <div className="flex h-full min-h-0 shrink-0 overflow-hidden">
@@ -353,6 +360,7 @@ export function Sidebar({
                 icon={IoMoonOutline}
                 label={t("nav.darkMode")}
                 trailing={<AppearanceSegment preference={preference} onChange={setPreference} />}
+                onClick={() => setAppearanceHelpOpen(true)}
               />
             </MoreSection>
 
@@ -409,6 +417,13 @@ export function Sidebar({
           )}
         </div>
       ) : null}
+
+      <AppearanceHelpModal
+        open={appearanceHelpOpen}
+        preference={preference}
+        onChange={setPreference}
+        onClose={() => setAppearanceHelpOpen(false)}
+      />
     </div>
   );
 }
@@ -427,7 +442,7 @@ function MoreSection({ title, children }) {
 function AppearanceSegment({ preference, onChange }) {
   const { t } = useTranslation();
   const options = [
-    { value: "system", icon: IoSettingsOutline, labelKey: "appearance.automatic" },
+    { value: "system", icon: IoOptionsOutline, labelKey: "appearance.automatic" },
     { value: "dark", icon: IoMoonOutline, labelKey: "appearance.darkMode" },
     { value: "light", icon: IoSunnyOutline, labelKey: "appearance.lightMode" },
   ];

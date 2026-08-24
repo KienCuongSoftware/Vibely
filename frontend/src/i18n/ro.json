@@ -29,7 +29,12 @@
   "appearance": {
     "darkMode": "Mod întunecat",
     "lightMode": "Mod luminos",
-    "automatic": "Automat"
+    "automatic": "Automat",
+    "helpTitle": "Appearance",
+    "helpIntro": "Choose how Vibely looks. Automatic follows your device setting.",
+    "automaticDesc": "Match the light or dark theme of this device.",
+    "darkDesc": "Always use a dark background.",
+    "lightDesc": "Always use a light background."
   },
   "auth": {
     "loginTitle": "Conectați-vă la Vibely",

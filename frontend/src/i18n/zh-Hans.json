@@ -29,7 +29,12 @@
   "appearance": {
     "darkMode": "深色模式",
     "lightMode": "浅色模式",
-    "automatic": "自动"
+    "automatic": "自动",
+    "helpTitle": "外观",
+    "helpIntro": "选择 Vibely 的显示方式。自动将跟随设备设置。",
+    "automaticDesc": "跟随此设备的浅色或深色主题。",
+    "darkDesc": "始终使用深色背景。",
+    "lightDesc": "始终使用浅色背景。"
   },
   "auth": {
     "loginTitle": "登录Vibely",

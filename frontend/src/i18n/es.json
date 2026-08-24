@@ -29,7 +29,12 @@
   "appearance": {
     "darkMode": "Modo oscuro",
     "lightMode": "Modo claro",
-    "automatic": "Automático"
+    "automatic": "Automático",
+    "helpTitle": "Apariencia",
+    "helpIntro": "Elige el aspecto de Vibely. Automático sigue la configuración del dispositivo.",
+    "automaticDesc": "Coincide con el tema claro u oscuro de este dispositivo.",
+    "darkDesc": "Usa siempre un fondo oscuro.",
+    "lightDesc": "Usa siempre un fondo claro."
   },
   "auth": {
     "loginTitle": "Iniciar sesión en Vibely",
