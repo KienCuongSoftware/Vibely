@@ -267,6 +267,7 @@ export function Sidebar({
                 }
               </UploadTypeFlyout>
             );
+          })}
         </nav>
 
         {!token && !collapsed ? (
