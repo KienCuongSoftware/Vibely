@@ -19,12 +19,14 @@ import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoCreateRequest;
 import com.vibely.backend.video.VideoPrivacy;
+import com.vibely.backend.video.VideoPhotoUrls;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoResponse;
 import com.vibely.backend.video.VideoStatus;
 import com.vibely.backend.video.VideoUpdateRequest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import org.springframework.beans.factory.ObjectProvider;
@@ -96,9 +98,33 @@ public class VideoCommandService {
         User author = userRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("User not found"));
         long authorId = author.getId();
+        boolean photoPost = "PHOTO".equalsIgnoreCase(request.getMediaKind());
         Integer durationSeconds = request.getDurationSeconds();
-        if (durationSeconds == null || durationSeconds <= 0) {
-            throw new BadRequestException("Missing video duration.");
+        if (photoPost) {
+            List<String> photos = request.getPhotoUrls() == null
+                ? List.of()
+                : request.getPhotoUrls().stream()
+                    .map(VideoMediaUtils::normalizeText)
+                    .filter(u -> u != null)
+                    .toList();
+            if (photos.isEmpty() || photos.size() > 35) {
+                throw new BadRequestException("Photo posts need between 1 and 35 images.");
+            }
+            for (String url : photos) {
+                ownedMediaValidator.requireOwnedThumbnail(url, authorId);
+            }
+            if (durationSeconds == null || durationSeconds <= 0) {
+                durationSeconds = Math.max(1, photos.size());
+            }
+        } else {
+            if (durationSeconds == null || durationSeconds <= 0) {
+                throw new BadRequestException("Missing video duration.");
+            }
+            ownedMediaValidator.requireOwnedUpload(request.getVideoUrl(), authorId);
+            String thumb = VideoMediaUtils.normalizeText(request.getThumbnailUrl());
+            if (thumb != null) {
+                ownedMediaValidator.requireOwnedThumbnail(thumb, authorId);
+            }
         }
         if (durationSeconds > VideoCreateRequest.MAX_DURATION_SECONDS) {
             deleteOwnedUploadBestEffort(authorId, request.getVideoUrl(), request.getThumbnailUrl());
@@ -106,14 +132,11 @@ public class VideoCommandService {
                 "Video exceeds the maximum duration of 60 minutes. Please choose another video."
             );
         }
-        ownedMediaValidator.requireOwnedUpload(request.getVideoUrl(), authorId);
-        String thumb = VideoMediaUtils.normalizeText(request.getThumbnailUrl());
-        if (thumb != null) {
-            ownedMediaValidator.requireOwnedThumbnail(thumb, authorId);
-        }
-        String explicitAudio = VideoMediaUtils.normalizeText(request.getAudioUrl());
-        if (explicitAudio != null) {
-            ownedMediaValidator.requireOwnedAudio(explicitAudio, authorId);
+        if (!photoPost) {
+            String explicitAudio = VideoMediaUtils.normalizeText(request.getAudioUrl());
+            if (explicitAudio != null) {
+                ownedMediaValidator.requireOwnedAudio(explicitAudio, authorId);
+            }
         }
         // Default draft when omitted — only explicit studioDraft=false publishes into lists.
         boolean draft = !Boolean.FALSE.equals(request.getStudioDraft());
@@ -157,17 +180,35 @@ public class VideoCommandService {
             audioTitle = "original sound - " + VideoMediaUtils.resolveAuthorDisplayName(managedAuthor);
         }
         video.setAudioTitle(audioTitle);
-        video.setStatus(VideoStatus.RAW);
         video.setStudioDraft(draft);
         video.setScheduledAt(scheduledAt);
         video.setPrivacy(resolvePrivacy(request.getPrivacy()));
+        boolean photoPost = "PHOTO".equalsIgnoreCase(request.getMediaKind());
+        if (photoPost) {
+            List<String> photos = request.getPhotoUrls() == null
+                ? List.of()
+                : request.getPhotoUrls().stream()
+                    .map(VideoMediaUtils::normalizeText)
+                    .filter(u -> u != null)
+                    .toList();
+            video.setMediaKind("PHOTO");
+            video.setPhotoUrls(VideoPhotoUrls.stringify(photos));
+            video.setVideoUrl(photos.get(0));
+            video.setThumbnailUrl(photos.get(0));
+            video.setStatus(VideoStatus.READY);
+        } else {
+            video.setMediaKind("VIDEO");
+            video.setStatus(VideoStatus.RAW);
+        }
         Video saved = videoRepository.save(video);
         if (!draft) {
             exploreSyncService.syncExploreSignals(saved);
         }
-        videoProcessingEnqueueService.enqueueAfterVideoPersisted(saved);
-        originalityEnqueueService.enqueueAfterVideoPersisted(saved);
-        contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "upload");
+        if (!photoPost) {
+            videoProcessingEnqueueService.enqueueAfterVideoPersisted(saved);
+            originalityEnqueueService.enqueueAfterVideoPersisted(saved);
+            contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "upload");
+        }
         if (!draft) {
             publicationHoldService.holdIfPendingModeration(saved);
             moderationJoinService.tryEnqueue(saved.getId(), false);

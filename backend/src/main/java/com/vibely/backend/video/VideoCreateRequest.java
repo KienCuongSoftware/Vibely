@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
+import java.util.List;
 
 public class VideoCreateRequest {
 
@@ -46,6 +47,12 @@ public class VideoCreateRequest {
 
     /** Future publish instant (ISO-8601). Null = not scheduled. */
     private Instant scheduledAt;
+
+    /** VIDEO (default) or PHOTO slideshow. */
+    private String mediaKind;
+
+    /** Public thumbnail URLs for PHOTO posts (1–35). */
+    private List<String> photoUrls;
 
     public String getTitle() {
         return title;
@@ -125,5 +132,21 @@ public class VideoCreateRequest {
 
     public void setScheduledAt(Instant scheduledAt) {
         this.scheduledAt = scheduledAt;
+    }
+
+    public String getMediaKind() {
+        return mediaKind;
+    }
+
+    public void setMediaKind(String mediaKind) {
+        this.mediaKind = mediaKind;
+    }
+
+    public List<String> getPhotoUrls() {
+        return photoUrls;
+    }
+
+    public void setPhotoUrls(List<String> photoUrls) {
+        this.photoUrls = photoUrls;
     }
 }

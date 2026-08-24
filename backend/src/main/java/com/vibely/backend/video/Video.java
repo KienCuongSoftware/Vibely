@@ -114,6 +114,12 @@ public class Video {
     @Column(name = "description_lang", length = 16)
     private String descriptionLang;
 
+    @Column(name = "media_kind", nullable = false, length = 16)
+    private String mediaKind = "VIDEO";
+
+    @Column(name = "photo_urls", columnDefinition = "TEXT")
+    private String photoUrls;
+
     @PrePersist
     void prePersist() {
         if (publicId == null) {
@@ -321,5 +327,21 @@ public class Video {
 
     public void setDescriptionLang(String descriptionLang) {
         this.descriptionLang = descriptionLang;
+    }
+
+    public String getMediaKind() {
+        return mediaKind == null || mediaKind.isBlank() ? "VIDEO" : mediaKind;
+    }
+
+    public void setMediaKind(String mediaKind) {
+        this.mediaKind = mediaKind == null || mediaKind.isBlank() ? "VIDEO" : mediaKind;
+    }
+
+    public String getPhotoUrls() {
+        return photoUrls;
+    }
+
+    public void setPhotoUrls(String photoUrls) {
+        this.photoUrls = photoUrls;
     }
 }

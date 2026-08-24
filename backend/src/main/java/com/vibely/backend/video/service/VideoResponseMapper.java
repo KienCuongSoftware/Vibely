@@ -17,6 +17,7 @@ import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.video.FollowingFeedRowView;
 import com.vibely.backend.video.Video;
+import com.vibely.backend.video.VideoPhotoUrls;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoResponse;
 import java.time.LocalDateTime;
@@ -359,7 +360,9 @@ public class VideoResponseMapper {
             aiEnhancedLabel,
             standardMasterPlaylistUrl,
             video.isStudioDraft(),
-            video.getScheduledAt()
+            video.getScheduledAt(),
+            video.getMediaKind(),
+            VideoPhotoUrls.parse(video.getPhotoUrls())
         );
     }
 
