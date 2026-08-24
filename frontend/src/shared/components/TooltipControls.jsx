@@ -1,7 +1,7 @@
 import React from "react";
 
 const tipBaseClasses =
-  "pointer-events-none absolute left-1/2 z-[60] -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-800 px-2.5 py-1.5 text-xs font-medium text-zinc-100 opacity-0 shadow-md transition-opacity duration-150";
+  "pointer-events-none absolute left-1/2 z-[60] -translate-x-1/2 whitespace-nowrap rounded-xl border-0 bg-zinc-800 px-3 py-2 text-xs font-medium text-zinc-100 opacity-0 shadow-[0_4px_16px_rgba(0,0,0,0.18)] transition-opacity duration-150";
 
 const tipPlacementClasses = {
   bottom: "top-full mt-2",

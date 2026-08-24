@@ -14,6 +14,9 @@ import { VibelyMarkIcon, VibelyWordmark } from "@/shared/components/VibelyWordma
 import { GuestLoginTrigger } from "@/features/auth/store/GuestAuthUiContext.jsx";
 import { APPEARANCE_OPTIONS } from "@/shared/theme/themeStorage.js";
 import { AppearanceHelpModal } from "@/shared/theme/AppearanceHelpModal.jsx";
+import { TooltipHoverWrap } from "@/shared/components/TooltipControls.jsx";
+import { UploadTypeFlyout } from "@/features/upload/components/UploadTypeFlyout.jsx";
+import { goStudioUpload } from "@/shared/utils/sidebarNavigation.js";
 import { buildStudioHomeLoginHref } from "@/features/auth/utils/loginRedirect.js";
 import {
   IoBagHandleOutline,
@@ -174,9 +177,9 @@ export function Sidebar({
             );
             const showNavBadge = showActivityBadge || showMessagesBadge;
             const isUpload = item.id === "upload";
-            return (
+            const navButton = (
               <button
-                key={item.id}
+                key={isUpload ? undefined : item.id}
                 type="button"
                 title={label}
                 aria-label={label}
@@ -190,7 +193,10 @@ export function Sidebar({
                     ? "font-semibold text-[#FE2C55]"
                     : "text-zinc-100"
                 }`}
-                onClick={() => handleNavClick(item)}
+                onClick={() => {
+                  if (isUpload) return
+                  handleNavClick(item)
+                }}
               >
                 {useProfileAvatarIcon ? (
                   <img
@@ -242,7 +248,25 @@ export function Sidebar({
                 ) : null}
               </button>
             );
-          })}
+            if (!isUpload) {
+              return React.cloneElement(navButton, { key: item.id });
+            }
+            return (
+              <UploadTypeFlyout
+                key={item.id}
+                onPickVideo={() => goStudioUpload(navigate, token, 'video')}
+                onPickPhoto={() => goStudioUpload(navigate, token, 'photo')}
+              >
+                {({ open, menuId, toggle }) =>
+                  React.cloneElement(navButton, {
+                    'aria-haspopup': 'menu',
+                    'aria-expanded': open,
+                    'aria-controls': menuId,
+                    onClick: toggle,
+                  })
+                }
+              </UploadTypeFlyout>
+            );
         </nav>
 
         {!token && !collapsed ? (
@@ -447,23 +471,29 @@ function AppearanceSegment({ preference, onChange }) {
     { value: "light", icon: IoSunnyOutline, labelKey: "appearance.lightMode" },
   ];
   return (
-    <div className="flex overflow-hidden rounded-full bg-zinc-800 p-0.5" onClick={(e) => e.stopPropagation()}>
+    <div className="flex rounded-full bg-zinc-800 p-0.5" onClick={(e) => e.stopPropagation()}>
       {options.map((option) => {
         const Icon = option.icon;
         const active = preference === option.value;
         return (
-          <button
+          <TooltipHoverWrap
             key={option.value}
-            type="button"
-            title={t(option.labelKey)}
-            aria-label={t(option.labelKey)}
-            className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-full ${
-              active ? "bg-zinc-950 text-zinc-100" : "text-zinc-500"
-            }`}
-            onClick={() => onChange(option.value)}
+            tip={t(option.labelKey)}
+            hoverOnly
+            placement="top"
+            className="relative"
           >
-            <Icon className="text-sm" />
-          </button>
+            <button
+              type="button"
+              aria-label={t(option.labelKey)}
+              className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-full ${
+                active ? "bg-zinc-950 text-zinc-100" : "text-zinc-500"
+              }`}
+              onClick={() => onChange(option.value)}
+            >
+              <Icon className="text-sm" />
+            </button>
+          </TooltipHoverWrap>
         );
       })}
     </div>

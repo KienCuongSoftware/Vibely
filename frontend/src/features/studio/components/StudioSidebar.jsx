@@ -13,6 +13,11 @@ import {
   IoSchoolOutline,
   IoVideocamOutline,
 } from 'react-icons/io5'
+import { UploadTypeFlyout } from '@/features/upload/components/UploadTypeFlyout.jsx'
+import {
+  STUDIO_UPLOAD_PHOTO_PATH,
+  STUDIO_UPLOAD_VIDEO_PATH,
+} from '@/features/upload/utils/studioUploadPaths.js'
 
 function NavSection({ title, children, light }) {
   return (
@@ -97,15 +102,18 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
   const inspirationNavActive =
     active === 'inspiration' || /^\/vibelystudio\/inspiration\/?$/.test(location.pathname)
 
-  const handleUploadClick = () => {
-    if (onUpload) return
+  const goUpload = (tab) => {
     try {
-      sessionStorage.setItem(OPEN_UPLOAD_PICKER_KEY, '1')
+      if (tab === 'video') sessionStorage.setItem(OPEN_UPLOAD_PICKER_KEY, '1')
     } catch {
       /* ignore */
     }
-    navigate('/vibelystudio/upload')
+    navigate(tab === 'photo' ? STUDIO_UPLOAD_PHOTO_PATH : STUDIO_UPLOAD_VIDEO_PATH)
     onNavigate?.()
+  }
+
+  const handleUploadClick = () => {
+    goUpload('video')
   }
 
   const asideClass = light
@@ -126,21 +134,23 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
         {t('studio.brand')}
       </Link>
 
-      <button
-        type="button"
-        disabled={onUpload}
-        onClick={handleUploadClick}
-        title={onUpload ? t('studio.uploadDisabledTitle') : undefined}
-        className={`mt-5 w-full rounded-lg px-3 py-2.5 text-center text-sm font-semibold shadow-sm transition ${
-          onUpload
-            ? light
-              ? 'cursor-not-allowed bg-slate-100 text-slate-400'
-              : 'cursor-not-allowed bg-zinc-800 text-zinc-500'
-            : 'bg-[#fe2c55] text-white hover:bg-[#e62a4d]'
-        }`}
+      <UploadTypeFlyout
+        onPickVideo={() => goUpload('video')}
+        onPickPhoto={() => goUpload('photo')}
       >
-        {t('studio.upload')}
-      </button>
+        {({ open, menuId, toggle }) => (
+          <button
+            type="button"
+            aria-haspopup="menu"
+            aria-expanded={open}
+            aria-controls={menuId}
+            onClick={toggle}
+            className="mt-5 w-full rounded-lg bg-[#fe2c55] px-3 py-2.5 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-[#e62a4d]"
+          >
+            {t('studio.upload')}
+          </button>
+        )}
+      </UploadTypeFlyout>
 
       <NavSection title={t('studio.nav.manage')} light={light}>
         <NavLink to="/vibelystudio" icon={IoHomeOutline} label={t('studio.nav.home')} active={active === 'home'} light={light} onNavigate={onNavigate} />
