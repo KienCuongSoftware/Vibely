@@ -18,6 +18,10 @@ const FollowingPage = lazyNamed(() => import('@/features/feed/pages/FollowingPag
 const FriendsPage = lazyNamed(() => import('@/features/feed/pages/FriendsPage.jsx'), 'FriendsPage')
 const MessagesPage = lazyNamed(() => import('@/features/chat/pages/MessagesPage.jsx'), 'MessagesPage')
 const UploadPage = lazyNamed(() => import('@/features/upload/pages/UploadPage.jsx'), 'UploadPage')
+const PhotoComposerPage = lazyNamed(
+  () => import('@/features/upload/pages/PhotoComposerPage.jsx'),
+  'PhotoComposerPage',
+)
 const StudioHomePage = lazyNamed(() => import('@/features/studio/pages/StudioHomePage.jsx'), 'StudioHomePage')
 const StudioPostsPage = lazyNamed(() => import('@/features/studio/pages/StudioPostsPage.jsx'), 'StudioPostsPage')
 const StudioEditPostPage = lazyNamed(() => import('@/features/studio/pages/StudioEditPostPage.jsx'), 'StudioEditPostPage')
@@ -94,6 +98,7 @@ export function GuestRoutes() {
       <Route path="/vibelystudio/analytics" element={<RedirectToHomeLogin />} />
       <Route path="/vibelystudio/analytics/:publicId" element={<RedirectToHomeLogin />} />
       <Route path="/vibelystudio/upload" element={<RedirectToStudioUploadLogin />} />
+      <Route path="/vibelystudio/upload/post/photo" element={<RedirectToStudioUploadLogin />} />
       <Route path="/vibelystudio/upload/post/:publicId" element={<RedirectToHomeLogin />} />
       <Route path="/vibelystudio/comment/:publicId" element={<RedirectToHomeLogin />} />
       <Route path="/vibelystudio/comments" element={<RedirectToHomeLogin />} />
@@ -170,6 +175,10 @@ export function AuthenticatedRoutes({ user, isAdmin }) {
       <Route
         path="/vibelystudio/upload"
         element={<UserOnlyRoute user={user}><UploadPage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/vibelystudio/upload/post/photo"
+        element={<UserOnlyRoute user={user}><PhotoComposerPage /></UserOnlyRoute>}
       />
       <Route
         path="/vibelystudio/upload/post/:publicId"

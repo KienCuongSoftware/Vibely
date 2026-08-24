@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { VirtualizedFeed } from "@/features/feed/components/VirtualizedFeed";
 import { FeedVideoPlayer } from "@/features/feed/components/FeedVideoPlayer";
+import { FeedPhotoCarousel, photoUrlsOf } from "@/features/feed/components/FeedPhotoCarousel.jsx";
 import {
   IoCheckmark,
   IoChevronBack,
@@ -1121,7 +1122,9 @@ export function FeedPhoneStage({
           const authorProfilePath = feedAuthorProfilePath(video);
           const captionText = resolveDisplayCaption(video);
           const playbackUrl = resolveFeedPlaybackUrl(video);
-          const hasPlayback = Boolean(playbackUrl);
+          const photoUrls = photoUrlsOf(video);
+          const isPhotoPost = photoUrls.length > 0;
+          const hasPlayback = isPhotoPost || Boolean(playbackUrl);
           const cellPublicId = normalizeVideoPublicId(video.publicId);
           const reportedHidden =
             Boolean(cellPublicId) && reportHiddenIds.has(cellPublicId);
@@ -1143,6 +1146,9 @@ export function FeedPhoneStage({
                     bottom: theaterMode ? 0 : FEED_PROGRESS_TRACK_BOTTOM_PX,
                   }}
                 >
+                  {isPhotoPost ? (
+                    <FeedPhotoCarousel urls={photoUrls} className="h-full w-full" />
+                  ) : (
                   <FeedVideoPlayer
                     key={String(video.publicId)}
                     ref={isActive ? feedVideoRef : undefined}
@@ -1178,6 +1184,7 @@ export function FeedPhoneStage({
                         : undefined
                     }
                   />
+                  )}
                   {video?.aiEnhanced ? (
                     <div className="pointer-events-none absolute top-3 left-3 z-20 rounded-md bg-black/55 px-2 py-1 text-[11px] font-medium tracking-wide text-white/95 backdrop-blur-[2px]">
                       {String(video.aiEnhancedLabel ?? "AI Enhanced").trim() ||

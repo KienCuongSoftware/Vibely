@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { apiClient, uploadThumbnailToStorage, uploadVideoFile } from '@/shared/api/client'
 import { loadStudioSettings, saveStudioSettings } from '@/features/studio/utils/studioSettings.js'
 import { CoverPickerModal } from '@/features/upload/components/CoverPickerModal'
@@ -14,6 +14,15 @@ import {
 } from '@/features/upload/components/SchedulePickers.jsx'
 import { UploadChecksPanel } from '@/features/upload/components/UploadChecksPanel'
 import { StudioLayout } from '@/features/studio/components/StudioLayout'
+import {
+  PHOTO_UPLOAD_ACCEPT,
+  PHOTO_UPLOAD_MAX_FILES,
+  STUDIO_PHOTO_POST_PATH,
+  STUDIO_UPLOAD_PHOTO_PATH,
+  STUDIO_UPLOAD_VIDEO_PATH,
+  isAllowedPhotoFile,
+} from '@/features/upload/utils/studioUploadPaths.js'
+import { setPhotoDraftFiles } from '@/features/upload/utils/photoDraftStore.js'
 import { extractThumbnailBlobFromFile } from '@/features/post/utils/videoThumbnail.js'
 import {
   deleteUploadDraftKeepalive,
@@ -218,7 +227,10 @@ export function UploadPage() {
   const { t } = useTranslation()
   const { token, user } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const uploadTab = searchParams.get('tab') === 'photo' ? 'photo' : 'video'
   const fileInputRef = useRef(null)
+  const photoInputRef = useRef(null)
   const coverVideoRef = useRef(null)
   const previewVideoRef = useRef(null)
   const previewFrameRef = useRef(null)
@@ -510,7 +522,9 @@ export function UploadPage() {
       if (sessionStorage.getItem(OPEN_UPLOAD_PICKER_KEY)) {
         sessionStorage.removeItem(OPEN_UPLOAD_PICKER_KEY)
         requestAnimationFrame(() => {
-          if (!cancelled) fileInputRef.current?.click()
+          if (cancelled) return
+          if (uploadTab === 'photo') photoInputRef.current?.click()
+          else fileInputRef.current?.click()
         })
       }
     } catch {
@@ -519,7 +533,7 @@ export function UploadPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [uploadTab])
 
   useEffect(() => {
     if (!token || !uploadedVideo) return
@@ -1284,8 +1298,27 @@ export function UploadPage() {
     }
   }
 
+  const acceptPhotoFiles = (list) => {
+    const picked = []
+    for (const file of list || []) {
+      if (!isAllowedPhotoFile(file)) continue
+      if (picked.length >= PHOTO_UPLOAD_MAX_FILES) break
+      picked.push(file)
+    }
+    if (!picked.length) {
+      showUploadRejected(t('upload.photo.invalidFiles'))
+      return
+    }
+    setPhotoDraftFiles(picked)
+    navigate(STUDIO_PHOTO_POST_PATH)
+  }
+
   const onPickFile = async () => {
     if (busy) return
+    if (uploadTab === 'photo') {
+      photoInputRef.current?.click()
+      return
+    }
     if (window.showOpenFilePicker) {
       try {
         const [handle] = await window.showOpenFilePicker({
@@ -1333,7 +1366,12 @@ export function UploadPage() {
     event.stopPropagation()
     setDragActive(false)
     if (busy) return
-    const file = event.dataTransfer?.files?.[0] ?? null
+    const dropped = Array.from(event.dataTransfer?.files || [])
+    if (uploadTab === 'photo') {
+      acceptPhotoFiles(dropped)
+      return
+    }
+    const file = dropped[0] ?? null
     await handleSelectedFile(file)
   }
 
@@ -1852,6 +1890,39 @@ export function UploadPage() {
           onChange={onFileChange}
         />
 
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept={PHOTO_UPLOAD_ACCEPT}
+          multiple
+          className="hidden"
+          onChange={(event) => {
+            acceptPhotoFiles(Array.from(event.target.files || []))
+            event.target.value = ''
+          }}
+        />
+
+        <div className="mb-4 flex gap-6 border-b border-zinc-800">
+          <button
+            type="button"
+            className={`cursor-pointer pb-2 text-sm font-semibold ${
+              uploadTab === 'video' ? 'border-b-2 border-zinc-100 text-zinc-100' : 'text-zinc-500'
+            }`}
+            onClick={() => navigate(STUDIO_UPLOAD_VIDEO_PATH)}
+          >
+            {t('nav.uploadVideo')}
+          </button>
+          <button
+            type="button"
+            className={`cursor-pointer pb-2 text-sm font-semibold ${
+              uploadTab === 'photo' ? 'border-b-2 border-zinc-100 text-zinc-100' : 'text-zinc-500'
+            }`}
+            onClick={() => navigate(STUDIO_UPLOAD_PHOTO_PATH)}
+          >
+            {t('nav.uploadPhoto')}
+          </button>
+        </div>
+
         <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-3 sm:p-4 lg:p-6">
           {!uploadedVideo ? (
             <>
@@ -1870,10 +1941,10 @@ export function UploadPage() {
                   <IoCloudUploadOutline className="text-2xl sm:text-3xl" aria-hidden />
                 </div>
                 <p className="mt-4 text-base font-semibold text-pretty text-zinc-100 sm:text-lg">
-                  {t('upload.dropTitle')}
+                  {uploadTab === 'photo' ? t('upload.photo.dropTitle') : t('upload.dropTitle')}
                 </p>
                 <p className="mt-1 text-sm text-pretty text-zinc-500">
-                  {t('upload.dropHint')}
+                  {uploadTab === 'photo' ? t('upload.photo.dropHint') : t('upload.dropHint')}
                 </p>
                 <button
                   type="button"
@@ -1881,7 +1952,7 @@ export function UploadPage() {
                   onClick={onPickFile}
                   disabled={busy}
                 >
-                  {t('upload.pickVideo')}
+                  {uploadTab === 'photo' ? t('upload.photo.pickPhotos') : t('upload.pickVideo')}
                 </button>
                 {status ? (
                   <p className="mt-4 text-sm font-medium text-rose-400" role="alert">
