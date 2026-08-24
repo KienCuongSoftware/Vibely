@@ -594,8 +594,29 @@ html[data-vibely-theme="light"] .border-b-2.border-white {
 }
 html[data-vibely-theme="light"] .bg-red-600,
 html[data-vibely-theme="light"] .bg-red-500,
-html[data-vibely-theme="light"] .bg-\[\#FE2C55\] {
+html[data-vibely-theme="light"] .bg-\[\#FE2C55\],
+html[data-vibely-theme="light"] .bg-\[\#fe2c55\],
+html[data-vibely-theme="light"] .bg-\[\#fe2c55\].text-white,
+html[data-vibely-theme="light"] .bg-\[\#e62a4d\],
+html[data-vibely-theme="light"] .hover\:bg-\[\#e62a4d\]:hover {
   color: #fff;
+}
+
+.vibely-upload-flyout {
+  background-color: #27272a;
+}
+.vibely-upload-flyout-item:hover {
+  background-color: #3f3f46;
+}
+html[data-vibely-theme="light"] .vibely-upload-flyout {
+  background-color: #fff;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+}
+html[data-vibely-theme="light"] .vibely-upload-flyout .text-zinc-100 {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-upload-flyout-item:hover {
+  background-color: #f1f1f2;
 }
 html[data-vibely-theme="light"] .border-zinc-100 {
   border-color: #161823;

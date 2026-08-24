@@ -11,7 +11,7 @@ export function UploadTypeFlyout({
   children,
   onPickVideo,
   onPickPhoto,
-  align = 'start',
+  placement = 'end',
   panelClassName = '',
 }) {
   const { t } = useTranslation()
@@ -38,7 +38,11 @@ export function UploadTypeFlyout({
     const el = wrapRef.current
     if (!el) return
     const rect = el.getBoundingClientRect()
-    const top = align === 'center' ? rect.top + rect.height / 2 : rect.top
+    if (placement === 'bottom') {
+      setCoords({ top: rect.bottom + 6, left: rect.left })
+      return
+    }
+    const top = placement === 'center' ? rect.top + rect.height / 2 : rect.top
     setCoords({ top, left: rect.right + 8 })
   }
 
@@ -54,7 +58,7 @@ export function UploadTypeFlyout({
       window.removeEventListener('resize', onReposition)
       window.removeEventListener('scroll', onReposition, true)
     }
-  }, [open, align])
+  }, [open, placement])
 
   useEffect(() => {
     if (!open) return undefined
@@ -68,7 +72,7 @@ export function UploadTypeFlyout({
   }, [open])
 
   const itemClass =
-    'flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-100 hover:bg-zinc-700/80'
+    'vibely-upload-flyout-item flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-100'
 
   const panel = open
     ? createPortal(
@@ -79,9 +83,9 @@ export function UploadTypeFlyout({
           style={{
             top: coords.top,
             left: coords.left,
-            transform: align === 'center' ? 'translateY(-50%)' : undefined,
+            transform: placement === 'center' ? 'translateY(-50%)' : undefined,
           }}
-          className={`fixed z-[200] min-w-[176px] rounded-2xl bg-zinc-800 py-2.5 shadow-[0_8px_28px_rgba(0,0,0,0.18)] ${panelClassName}`}
+          className={`vibely-upload-flyout fixed z-[200] min-w-[176px] rounded-2xl py-2.5 shadow-[0_8px_28px_rgba(0,0,0,0.18)] ${panelClassName}`}
           onMouseEnter={clearClose}
           onMouseLeave={scheduleClose}
         >

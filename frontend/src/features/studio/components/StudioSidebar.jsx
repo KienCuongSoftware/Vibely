@@ -135,6 +135,7 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
       </Link>
 
       <UploadTypeFlyout
+        placement="bottom"
         onPickVideo={() => goUpload('video')}
         onPickPhoto={() => goUpload('photo')}
       >
