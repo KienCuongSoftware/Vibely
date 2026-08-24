@@ -19,7 +19,7 @@ export function UploadTypeFlyout({
   const wrapRef = useRef(null)
   const panelRef = useRef(null)
   const [open, setOpen] = useState(false)
-  const [coords, setCoords] = useState({ top: 0, left: 0 })
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: null })
   const closeTimer = useRef(null)
 
   const clearClose = () => {
@@ -39,11 +39,11 @@ export function UploadTypeFlyout({
     if (!el) return
     const rect = el.getBoundingClientRect()
     if (placement === 'bottom') {
-      setCoords({ top: rect.bottom + 6, left: rect.left })
+      setCoords({ top: rect.bottom + 6, left: rect.left, width: rect.width })
       return
     }
     const top = placement === 'center' ? rect.top + rect.height / 2 : rect.top
-    setCoords({ top, left: rect.right + 8 })
+    setCoords({ top, left: rect.right + 8, width: null })
   }
 
   useEffect(() => () => clearClose(), [])
@@ -83,9 +83,12 @@ export function UploadTypeFlyout({
           style={{
             top: coords.top,
             left: coords.left,
+            width: coords.width ?? undefined,
             transform: placement === 'center' ? 'translateY(-50%)' : undefined,
           }}
-          className={`vibely-upload-flyout fixed z-[200] min-w-[176px] rounded-2xl py-2.5 shadow-[0_8px_28px_rgba(0,0,0,0.18)] ${panelClassName}`}
+          className={`vibely-upload-flyout fixed z-[200] rounded-2xl py-2.5 shadow-[0_8px_28px_rgba(0,0,0,0.18)] ${
+            coords.width ? '' : 'min-w-[176px]'
+          } ${panelClassName}`}
           onMouseEnter={clearClose}
           onMouseLeave={scheduleClose}
         >
