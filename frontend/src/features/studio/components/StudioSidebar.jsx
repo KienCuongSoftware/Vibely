@@ -115,7 +115,7 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
   return (
     <aside className={className ? `${asideClass} ${className}` : asideClass}>
       <Link
-        to="/vibelystudio/home"
+        to="/vibelystudio"
         onClick={() => onNavigate?.()}
         className={
           light
@@ -143,7 +143,7 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
       </button>
 
       <NavSection title={t('studio.nav.manage')} light={light}>
-        <NavLink to="/vibelystudio/home" icon={IoHomeOutline} label={t('studio.nav.home')} active={active === 'home'} light={light} onNavigate={onNavigate} />
+        <NavLink to="/vibelystudio" icon={IoHomeOutline} label={t('studio.nav.home')} active={active === 'home'} light={light} onNavigate={onNavigate} />
         <NavLink
           to="/vibelystudio/posts"
           icon={IoVideocamOutline}

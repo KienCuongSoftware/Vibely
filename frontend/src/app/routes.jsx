@@ -5,7 +5,7 @@ import { AdminRoute, AuthenticatedHomeRedirect, UserOnlyRoute } from '@/app/guar
 import { GuestAuthModal } from '@/features/auth/components/GuestAuthModal.jsx'
 import { GuestAuthUiProvider, RedirectToHomeLogin } from '@/features/auth/store/GuestAuthUiContext.jsx'
 import { isPendingOAuthBrowserCallback } from '@/features/auth/utils/oauthCallback.js'
-import { buildStudioUploadLoginHref, hasLoginRedirectParam } from '@/features/auth/utils/loginRedirect.js'
+import { buildStudioHomeLoginHref, buildStudioUploadLoginHref, hasLoginRedirectParam } from '@/features/auth/utils/loginRedirect.js'
 
 function lazyNamed(loader, exportName) {
   return lazy(() => loader().then((module) => ({ default: module[exportName] })))
@@ -58,6 +58,10 @@ function RedirectToStudioUploadLogin() {
   return <Navigate to={buildStudioUploadLoginHref()} replace />
 }
 
+function RedirectToStudioHomeLogin() {
+  return <Navigate to={buildStudioHomeLoginHref()} replace />
+}
+
 export function GuestRoutes() {
   return (
     <GuestAuthUiProvider>
@@ -84,7 +88,8 @@ export function GuestRoutes() {
       <Route path="/watch/:publicId" element={<WatchRedirect />} />
       <Route path="/settings" element={<RedirectToHomeLogin />} />
       <Route path="/upload" element={<RedirectToStudioUploadLogin />} />
-      <Route path="/vibelystudio/home" element={<RedirectToHomeLogin />} />
+      <Route path="/vibelystudio" element={<RedirectToStudioHomeLogin />} />
+      <Route path="/vibelystudio/home" element={<Navigate to="/vibelystudio" replace />} />
       <Route path="/vibelystudio/posts" element={<RedirectToHomeLogin />} />
       <Route path="/vibelystudio/analytics" element={<RedirectToHomeLogin />} />
       <Route path="/vibelystudio/analytics/:publicId" element={<RedirectToHomeLogin />} />
@@ -152,11 +157,11 @@ export function AuthenticatedRoutes({ user, isAdmin }) {
       <Route path="/upload" element={<Navigate to="/vibelystudio/upload" replace />} />
       <Route
         path="/vibelystudio"
-        element={<UserOnlyRoute user={user}><Navigate to="/vibelystudio/home" replace /></UserOnlyRoute>}
+        element={<UserOnlyRoute user={user}><StudioHomePage /></UserOnlyRoute>}
       />
       <Route
         path="/vibelystudio/home"
-        element={<UserOnlyRoute user={user}><StudioHomePage /></UserOnlyRoute>}
+        element={<Navigate to="/vibelystudio" replace />}
       />
       <Route
         path="/vibelystudio/posts"

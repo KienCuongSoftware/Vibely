@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ActivityPanel } from "@/features/notification/components/ActivityPanel.jsx";
 import { useActivityModal } from "@/features/notification/store/ActivityModalContext.jsx";
@@ -13,6 +13,7 @@ import { useTheme } from "@/shared/theme/ThemeContext.jsx";
 import { VibelyMarkIcon, VibelyWordmark } from "@/shared/components/VibelyWordmark.jsx";
 import { GuestLoginTrigger } from "@/features/auth/store/GuestAuthUiContext.jsx";
 import { APPEARANCE_OPTIONS } from "@/shared/theme/themeStorage.js";
+import { buildStudioHomeLoginHref } from "@/features/auth/utils/loginRedirect.js";
 import {
   IoBagHandleOutline,
   IoCheckmark,
@@ -43,6 +44,7 @@ export function Sidebar({
   onOpenSearch,
 }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const searchModal = useSearchModal();
   const activityModal = useActivityModal();
   const { unreadCount } = useNotificationUnread();
@@ -149,10 +151,11 @@ export function Sidebar({
         <nav className="space-y-1">
           {menuItems.map((item) => {
             const label = t(item.labelKey || item.label);
-            const isActive =
-              activeMenu === item.id ||
-              (item.id === "activity" && activityOpen) ||
-              (moreOpen && item.id === "more");
+            const isActive = moreOpen
+              ? item.id === "more"
+              : item.id === "activity" && activityOpen
+                ? true
+                : activeMenu === item.id;
             const Icon = item.icon;
             const useProfileAvatarIcon = token && item.id === "profile";
             const showActivityBadge =
@@ -357,7 +360,14 @@ export function Sidebar({
               <MoreRow
                 icon={IoRocketOutline}
                 label={t("moreMenu.studio")}
-                onClick={() => {}}
+                onClick={() => {
+                  closeMore();
+                  if (!token) {
+                    navigate(buildStudioHomeLoginHref());
+                    return;
+                  }
+                  navigate("/vibelystudio");
+                }}
               />
               <MoreRow
                 icon={IoColorWandOutline}

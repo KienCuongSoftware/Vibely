@@ -1,14 +1,23 @@
-/** After login, send guests to Studio upload (TikTok-style redirect_url). */
+/** After login, send guests to Studio (TikTok-style redirect_url). */
+export const STUDIO_HOME_RETURN_PATH = "/vibelystudio";
 export const STUDIO_UPLOAD_RETURN_PATH = "/vibelystudio/upload?from=webapp&tab=video";
 
-export function buildStudioUploadLoginHref() {
+function buildStudioLoginHref(returnPath) {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const params = new URLSearchParams({
-    redirect_url: `${origin}${STUDIO_UPLOAD_RETURN_PATH}`,
+    redirect_url: `${origin}${returnPath}`,
     enter_method: "redirect",
     enter_from: "vibelystudio",
   });
   return `/login?${params.toString()}`;
+}
+
+export function buildStudioHomeLoginHref() {
+  return buildStudioLoginHref(STUDIO_HOME_RETURN_PATH);
+}
+
+export function buildStudioUploadLoginHref() {
+  return buildStudioLoginHref(STUDIO_UPLOAD_RETURN_PATH);
 }
 
 export function hasLoginRedirectParam(search) {
