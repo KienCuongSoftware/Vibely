@@ -3,16 +3,24 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import {
   IoAdd,
+  IoArrowRedoOutline,
   IoBookmarkOutline,
+  IoCameraOutline,
   IoChatbubbleEllipsesOutline,
+  IoChevronBack,
   IoClose,
+  IoEllipsisHorizontal,
   IoHeartOutline,
+  IoHomeOutline,
   IoLocationOutline,
   IoMusicalNotesOutline,
-  IoPaperPlaneOutline,
+  IoPeopleOutline,
+  IoPersonOutline,
+  IoSearchOutline,
 } from 'react-icons/io5'
 import { StudioLayout } from '@/features/studio/components/StudioLayout.jsx'
 import { useAuth } from '@/features/auth/hooks/useAuth.js'
+import { DEFAULT_AVATAR_URL } from '@/features/profile/utils/avatarUrl.js'
 import { apiClient, uploadThumbnailToStorage } from '@/shared/api/client'
 import {
   PHOTO_UPLOAD_ACCEPT,
@@ -43,8 +51,70 @@ function Card({ children, className = '' }) {
   )
 }
 
-function CardTitle({ children }) {
-  return <h2 className="text-[15px] font-semibold text-[#161823]">{children}</h2>
+function CardTitle({ children, className = '' }) {
+  return <h2 className={`text-[15px] font-semibold text-[#161823] ${className}`}>{children}</h2>
+}
+
+function PhotoBadge({ label }) {
+  return (
+    <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-semibold text-white backdrop-blur-sm">
+      <IoCameraOutline className="text-[10px]" aria-hidden />
+      {label}
+    </span>
+  )
+}
+
+function CaptionStack({ displayName, description, locationQuery, soundLabel, photoBadge }) {
+  return (
+    <div className="min-w-0 text-left text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+      <p className="flex min-w-0 items-center gap-1.5 text-[12px] font-bold">
+        <span className="truncate">{displayName}</span>
+        <PhotoBadge label={photoBadge} />
+      </p>
+      {description ? (
+        <p className="mt-0.5 line-clamp-2 text-[11px] font-normal leading-snug text-white/95">{description}</p>
+      ) : null}
+      {locationQuery ? (
+        <p className="mt-0.5 flex items-center gap-0.5 truncate text-[10px] text-white/85">
+          <IoLocationOutline className="shrink-0" aria-hidden />
+          {locationQuery}
+        </p>
+      ) : null}
+      <p className="mt-1 flex items-center gap-1 truncate text-[11px] text-white/90">
+        <IoMusicalNotesOutline className="shrink-0 text-sm" aria-hidden />
+        <span className="truncate">{soundLabel}</span>
+      </p>
+    </div>
+  )
+}
+
+function SideActions({ avatarSrc, showDisc = true }) {
+  return (
+    <div className="flex w-11 flex-col items-center gap-3 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
+      <div className="relative">
+        <img
+          src={avatarSrc}
+          alt=""
+          className="h-10 w-10 rounded-full border-[1.5px] border-white object-cover"
+        />
+        <span className="absolute -bottom-1 left-1/2 flex h-4 w-4 -translate-x-1/2 items-center justify-center rounded-full bg-[#fe2c55] text-[11px] font-bold leading-none text-white ring-[2px] ring-black">
+          +
+        </span>
+      </div>
+      <IoHeartOutline className="text-[26px]" aria-hidden />
+      <IoChatbubbleEllipsesOutline className="text-[25px]" aria-hidden />
+      <IoBookmarkOutline className="text-[24px]" aria-hidden />
+      <IoArrowRedoOutline className="text-[26px]" aria-hidden />
+      {showDisc ? (
+        <div
+          className="mt-0.5 flex h-8 w-8 animate-[spin_9s_linear_infinite] items-center justify-center rounded-full bg-zinc-950 ring-[1.5px] ring-white/90"
+          aria-hidden
+        >
+          <div className="h-3.5 w-3.5 rounded-full border border-dashed border-white/55" />
+        </div>
+      ) : null}
+    </div>
+  )
 }
 
 export function PhotoComposerPage() {
@@ -65,8 +135,14 @@ export function PhotoComposerPage() {
   const [previewTab, setPreviewTab] = useState('feed')
   const [showMoreSettings, setShowMoreSettings] = useState(false)
   const [locationQuery, setLocationQuery] = useState('')
+  const [dragOverIndex, setDragOverIndex] = useState(null)
+  const dragFromRef = useRef(null)
 
   const handle = `@${user?.username || 'vibely'}`
+  const displayName = user?.displayName || user?.username || 'Vibely'
+  const avatarSrc = user?.avatarUrl || DEFAULT_AVATAR_URL
+  const soundLabel = t('upload.photo.originalSound', { name: displayName })
+  const captionText = description.trim() || title.trim()
 
   useEffect(() => {
     if (!files.length) navigate(STUDIO_UPLOAD_PHOTO_PATH, { replace: true })
@@ -75,9 +151,12 @@ export function PhotoComposerPage() {
   useEffect(() => {
     const urls = files.map((file) => URL.createObjectURL(file))
     setPreviews(urls)
-    setPreviewIndex(0)
     return () => urls.forEach((url) => URL.revokeObjectURL(url))
   }, [files])
+
+  useEffect(() => {
+    setPreviewIndex((i) => Math.min(i, Math.max(0, files.length - 1)))
+  }, [files.length])
 
   const addFiles = (incoming) => {
     const next = [...files]
@@ -96,11 +175,11 @@ export function PhotoComposerPage() {
     setFiles(next)
   }
 
-  const moveCover = (index) => {
-    if (index <= 0) return
+  const reorderFiles = (from, to) => {
+    if (from === to || from < 0 || to < 0 || from >= files.length || to >= files.length) return
     const next = [...files]
-    const [picked] = next.splice(index, 1)
-    next.unshift(picked)
+    const [picked] = next.splice(from, 1)
+    next.splice(to, 0, picked)
     setPhotoDraftFiles(next)
     setFiles(next)
   }
@@ -169,10 +248,10 @@ export function PhotoComposerPage() {
         ) : null}
         <div className="grid min-h-0 flex-1 gap-6 overflow-y-auto lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-4 pb-8">
-            <h1 className="text-xl font-bold text-[#161823]">{t('upload.photo.detailsTitle')}</h1>
-
             <Card>
-              <CardTitle>{t('upload.photo.captionLabel')}</CardTitle>
+              <h1 className="text-xl font-bold text-[#161823]">{t('upload.photo.detailsTitle')}</h1>
+
+              <CardTitle className="mt-6">{t('upload.photo.captionLabel')}</CardTitle>
               <div className="mt-3 rounded-lg bg-[#f8f8f8] px-3 py-2">
                 <div className="flex items-start justify-between gap-3">
                   <input
@@ -214,10 +293,8 @@ export function PhotoComposerPage() {
                   </span>
                 </div>
               </div>
-            </Card>
 
-            <Card>
-              <CardTitle>{t('upload.photo.soundLabel')}</CardTitle>
+              <CardTitle className="mt-8">{t('upload.photo.soundLabel')}</CardTitle>
               <button
                 type="button"
                 className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#f8f8f8] px-3 py-2 text-sm font-medium text-[#161823] hover:bg-[#f1f1f2]"
@@ -225,47 +302,68 @@ export function PhotoComposerPage() {
                 <IoMusicalNotesOutline aria-hidden />
                 + {t('upload.photo.addSound')}
               </button>
-            </Card>
 
-            <Card>
-              <CardTitle>{t('upload.photo.photosLabel')}</CardTitle>
+              <CardTitle className="mt-8">{t('upload.photo.photosLabel')}</CardTitle>
               <p className="mt-1 text-sm text-[#8a8b91]">
-                {t('upload.photo.gridHint', { count: files.length, max: PHOTO_UPLOAD_MAX_FILES })}
+                {t('upload.photo.gridHint', { count: files.length })}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {previews.map((src, index) => (
                   <div
-                    key={src}
-                    className="relative h-[88px] w-[88px] overflow-hidden rounded-lg bg-[#f8f8f8]"
+                    key={`${files[index]?.name}-${files[index]?.lastModified}-${index}`}
+                    draggable
+                    onDragStart={(e) => {
+                      dragFromRef.current = index
+                      e.dataTransfer.effectAllowed = 'move'
+                      e.dataTransfer.setData('text/plain', String(index))
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault()
+                      e.dataTransfer.dropEffect = 'move'
+                      setDragOverIndex(index)
+                    }}
+                    onDragLeave={() => {
+                      setDragOverIndex((current) => (current === index ? null : current))
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      const from = dragFromRef.current
+                      dragFromRef.current = null
+                      setDragOverIndex(null)
+                      if (typeof from === 'number') reorderFiles(from, index)
+                    }}
+                    onDragEnd={() => {
+                      dragFromRef.current = null
+                      setDragOverIndex(null)
+                    }}
+                    className={`relative h-22 w-22 cursor-grab overflow-hidden rounded-lg bg-[#f8f8f8] active:cursor-grabbing ${
+                      dragOverIndex === index ? 'ring-2 ring-[#fe2c55]' : ''
+                    }`}
                   >
-                    <img src={src} alt="" className="h-full w-full object-cover" />
+                    <img src={src} alt="" draggable={false} className="h-full w-full object-cover" />
                     {index === 0 ? (
-                      <span className="absolute left-1 top-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                      <span className="absolute top-1.5 left-1.5 rounded-md bg-[#161823]/80 px-1.5 py-0.5 text-[10px] leading-none font-semibold text-white">
                         {t('upload.photo.cover')}
                       </span>
-                    ) : (
-                      <button
-                        type="button"
-                        className="absolute bottom-1 left-1 cursor-pointer rounded bg-black/65 px-1 py-0.5 text-[10px] text-white"
-                        onClick={() => moveCover(index)}
-                      >
-                        {t('upload.photo.setCover')}
-                      </button>
-                    )}
+                    ) : null}
                     <button
                       type="button"
-                      className="absolute right-1 top-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-black/65 text-white"
-                      onClick={() => removeAt(index)}
+                      className="absolute top-1 right-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-[#b0b0b4] text-white hover:bg-[#9a9a9e]"
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        removeAt(index)
+                      }}
                       aria-label={t('upload.photo.remove')}
                     >
-                      <IoClose className="text-xs" />
+                      <IoClose className="text-[11px]" />
                     </button>
                   </div>
                 ))}
                 {files.length < PHOTO_UPLOAD_MAX_FILES ? (
                   <button
                     type="button"
-                    className="flex h-[88px] w-[88px] cursor-pointer items-center justify-center rounded-lg border border-dashed border-[#c6c6c8] text-2xl text-[#8a8b91] hover:bg-[#f8f8f8]"
+                    className="flex h-22 w-22 cursor-pointer items-center justify-center rounded-lg border border-dashed border-[#c6c6c8] text-2xl text-[#8a8b91] hover:bg-[#f8f8f8]"
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <IoAdd aria-hidden />
@@ -283,10 +381,8 @@ export function PhotoComposerPage() {
                   e.target.value = ''
                 }}
               />
-            </Card>
 
-            <Card>
-              <CardTitle>{t('upload.location')}</CardTitle>
+              <CardTitle className="mt-8">{t('upload.location')}</CardTitle>
               <div className="relative mt-3">
                 <IoLocationOutline className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8a8b91]" />
                 <input
@@ -392,7 +488,7 @@ export function PhotoComposerPage() {
           </div>
 
           <aside className="hidden pb-8 lg:block">
-            <div className="mb-4 flex gap-5 border-b border-[#e8e8e9] text-sm">
+            <div className="mb-3 flex rounded-lg bg-[#f1f1f2] p-0.5 text-sm">
               {[
                 ['feed', t('upload.photo.previewFeed')],
                 ['profile', t('upload.photo.previewProfile')],
@@ -401,9 +497,9 @@ export function PhotoComposerPage() {
                 <button
                   key={id}
                   type="button"
-                  className={`cursor-pointer pb-2 font-medium ${
+                  className={`min-w-0 flex-1 cursor-pointer rounded-md px-2 py-1.5 font-medium ${
                     previewTab === id
-                      ? 'border-b-2 border-[#161823] text-[#161823]'
+                      ? 'bg-white text-[#161823] shadow-sm'
                       : 'text-[#8a8b91]'
                   }`}
                   onClick={() => setPreviewTab(id)}
@@ -412,56 +508,193 @@ export function PhotoComposerPage() {
                 </button>
               ))}
             </div>
-            <div className="mx-auto w-[240px] overflow-hidden rounded-[32px] border-[8px] border-[#161823] bg-black shadow-xl">
-              <div className="relative aspect-[9/16] bg-[#111]">
-                {previews[previewIndex] ? (
-                  <img
-                    src={previews[previewIndex]}
-                    alt=""
-                    className={`h-full w-full ${previewTab === 'profile' ? 'object-cover' : 'object-cover'}`}
-                  />
-                ) : null}
-                {previewTab === 'feed' ? (
-                  <>
-                    <div className="absolute right-2 bottom-16 flex flex-col items-center gap-4 text-white">
-                      <IoHeartOutline className="text-2xl drop-shadow" />
-                      <IoChatbubbleEllipsesOutline className="text-2xl drop-shadow" />
-                      <IoBookmarkOutline className="text-2xl drop-shadow" />
-                      <IoPaperPlaneOutline className="text-2xl drop-shadow" />
-                    </div>
-                    <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/75 p-3 pr-12">
-                      <p className="text-xs font-semibold text-white">{handle}</p>
-                      <p className="mt-1 line-clamp-2 text-[11px] text-white/90">
-                        {description || title}
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <div className="absolute inset-x-0 bottom-0 bg-black/55 p-3">
-                    <p className="text-xs font-semibold text-white">{handle}</p>
+
+            {previewTab === 'feed' ? (
+              <div className="mx-auto w-[260px] overflow-hidden rounded-[28px] border-[7px] border-[#161823] bg-black shadow-xl">
+                <div className="relative aspect-9/16 bg-black text-white">
+                  <div className="absolute inset-x-0 top-0 z-30 flex items-center justify-between px-3 pt-1 text-[10px] font-medium">
+                    <span>8:00</span>
+                    <span className="flex items-center gap-0.5 opacity-90">●●● Wi‑Fi</span>
                   </div>
-                )}
-                {previews.length > 1 ? (
-                  <div className="absolute top-3 right-3 rounded-full bg-black/55 px-2 py-0.5 text-[10px] text-white">
-                    {previewIndex + 1}/{previews.length}
+                  {previews[previewIndex] ? (
+                    <button
+                      type="button"
+                      className="absolute inset-0 cursor-pointer"
+                      onClick={() =>
+                        setPreviewIndex((i) => (previews.length ? (i + 1) % previews.length : 0))
+                      }
+                    >
+                      <img
+                        src={previews[previewIndex]}
+                        alt=""
+                        className="h-full w-full object-contain"
+                      />
+                    </button>
+                  ) : null}
+                  <div className="pointer-events-none absolute inset-x-0 top-6 z-20 flex items-start justify-between px-2.5 text-white">
+                    <span className="mt-0.5 rounded border border-white/35 px-1 py-0.5 text-[8px] font-extrabold tracking-wide">
+                      LIVE
+                    </span>
+                    <div className="flex items-end gap-5 text-[12px] font-semibold">
+                      <span className="pb-1.5 text-white/45">Following</span>
+                      <span className="relative pb-1.5">
+                        For You
+                        <span className="absolute bottom-0 left-1/2 h-[2px] w-6 -translate-x-1/2 rounded-full bg-white" />
+                      </span>
+                    </div>
+                    <IoSearchOutline className="mt-0.5 text-lg" aria-hidden />
                   </div>
-                ) : null}
-              </div>
-            </div>
-            {previews.length > 1 ? (
-              <div className="mx-auto mt-3 flex w-[240px] gap-1 overflow-x-auto">
-                {previews.map((src, i) => (
-                  <button
-                    key={src}
-                    type="button"
-                    className={`h-10 w-10 shrink-0 overflow-hidden rounded-md ring-2 ${
-                      i === previewIndex ? 'ring-[#fe2c55]' : 'ring-transparent'
-                    }`}
-                    onClick={() => setPreviewIndex(i)}
+                  {previews.length > 1 ? (
+                    <div className="pointer-events-none absolute top-14 right-2 z-20 rounded-md bg-black/45 px-1.5 py-0.5 text-[10px] font-semibold">
+                      {previewIndex + 1}/{previews.length}
+                    </div>
+                  ) : null}
+                  {previews.length > 1 ? (
+                    <div className="pointer-events-none absolute inset-x-0 bottom-[118px] z-20 flex justify-center gap-1">
+                      {previews.map((_, i) => (
+                        <span
+                          key={i}
+                          className={`h-1 w-1 rounded-full ${i === previewIndex ? 'bg-white' : 'bg-white/40'}`}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+                  <div className="pointer-events-none absolute right-1.5 bottom-[54px] z-20">
+                    <SideActions avatarSrc={avatarSrc} />
+                  </div>
+                  <div className="pointer-events-none absolute right-14 bottom-[54px] left-2.5 z-20">
+                    <CaptionStack
+                      displayName={displayName}
+                      description={captionText}
+                      locationQuery={locationQuery}
+                      soundLabel={soundLabel}
+                      photoBadge={t('upload.photo.photoBadge')}
+                    />
+                  </div>
+                  <nav
+                    className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex h-[48px] items-end justify-between bg-black px-0.5 pb-1.5 text-white"
+                    aria-hidden
                   >
-                    <img src={src} alt="" className="h-full w-full object-cover" />
-                  </button>
-                ))}
+                    <div className="flex flex-1 flex-col items-center gap-0.5">
+                      <IoHomeOutline className="text-[20px]" />
+                      <span className="text-[8px] font-semibold">Home</span>
+                    </div>
+                    <div className="flex flex-1 flex-col items-center gap-0.5 opacity-80">
+                      <IoPeopleOutline className="text-[19px]" />
+                      <span className="text-[8px] font-semibold">Friends</span>
+                    </div>
+                    <div className="flex items-center gap-px px-1 pb-0.5">
+                      <span className="h-6 w-[2px] rounded-sm bg-[#25f4ee]" />
+                      <div className="flex h-8 w-10 items-center justify-center rounded-md border border-white bg-black">
+                        <span className="text-lg leading-none">+</span>
+                      </div>
+                      <span className="h-6 w-[2px] rounded-sm bg-[#fe2c55]" />
+                    </div>
+                    <div className="flex flex-1 flex-col items-center gap-0.5 opacity-80">
+                      <IoChatbubbleEllipsesOutline className="text-[19px]" />
+                      <span className="text-[8px] font-semibold">Inbox</span>
+                    </div>
+                    <div className="flex flex-1 flex-col items-center gap-0.5 opacity-80">
+                      <IoPersonOutline className="text-[19px]" />
+                      <span className="text-[8px] font-semibold">Me</span>
+                    </div>
+                  </nav>
+                </div>
+              </div>
+            ) : null}
+
+            {previewTab === 'profile' ? (
+              <div className="mx-auto w-[260px] overflow-hidden rounded-[28px] border-[7px] border-[#161823] bg-white shadow-xl">
+                <div className="aspect-9/16 overflow-hidden bg-white text-[#161823]">
+                  <div className="flex items-center justify-between px-3 pt-2 text-[10px] text-[#161823]">
+                    <span>8:00</span>
+                    <span className="opacity-70">●●●</span>
+                  </div>
+                  <div className="flex items-center justify-between px-3 py-1">
+                    <IoChevronBack className="text-lg" aria-hidden />
+                    <IoEllipsisHorizontal className="text-lg" aria-hidden />
+                  </div>
+                  <div className="flex flex-col items-center px-4">
+                    <img
+                      src={avatarSrc}
+                      alt=""
+                      className="h-16 w-16 rounded-full object-cover"
+                    />
+                    <p className="mt-2 text-sm font-bold">{displayName}</p>
+                    <p className="text-[11px] text-[#8a8b91]">{handle}</p>
+                    <div className="mt-2 flex w-full justify-center gap-6 text-center text-[11px]">
+                      <div>
+                        <p className="font-bold">0</p>
+                        <p className="text-[#8a8b91]">Following</p>
+                      </div>
+                      <div>
+                        <p className="font-bold">0</p>
+                        <p className="text-[#8a8b91]">Followers</p>
+                      </div>
+                      <div>
+                        <p className="font-bold">0</p>
+                        <p className="text-[#8a8b91]">Likes</p>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex w-full gap-2">
+                      <div className="h-7 flex-1 rounded-md bg-[#f1f1f2]" />
+                      <div className="h-7 flex-1 rounded-md bg-[#f1f1f2]" />
+                    </div>
+                  </div>
+                  <div className="mt-3 flex justify-around border-b border-[#e8e8e9] pb-1 text-[#8a8b91]">
+                    <span className="border-b-2 border-[#161823] px-4 pb-1 text-[#161823]">▦</span>
+                    <span>↻</span>
+                    <span>♡</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-px bg-[#e8e8e9]">
+                    {previews[0] ? (
+                      <button
+                        type="button"
+                        className="relative aspect-square cursor-pointer bg-black"
+                        onClick={() => setPreviewTab('feed')}
+                      >
+                        <img src={previews[0]} alt="" className="h-full w-full object-cover" />
+                        {previews.length > 1 ? (
+                          <span className="absolute top-1 right-1 text-[10px] text-white drop-shadow">☰</span>
+                        ) : null}
+                      </button>
+                    ) : null}
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div key={i} className="aspect-square bg-[#f1f1f2]" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {previewTab === 'web' ? (
+              <div className="overflow-hidden rounded-2xl bg-black shadow-xl">
+                <div className="relative aspect-9/16 w-full">
+                  {previews[previewIndex] ? (
+                    <img
+                      src={previews[previewIndex]}
+                      alt=""
+                      className="h-full w-full object-contain"
+                    />
+                  ) : null}
+                  {previews.length > 1 ? (
+                    <div className="pointer-events-none absolute top-3 right-3 rounded-md bg-black/45 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                      {previewIndex + 1}/{previews.length}
+                    </div>
+                  ) : null}
+                  <div className="pointer-events-none absolute right-2 bottom-10">
+                    <SideActions avatarSrc={avatarSrc} showDisc={false} />
+                  </div>
+                  <div className="pointer-events-none absolute right-14 bottom-10 left-3">
+                    <CaptionStack
+                      displayName={displayName}
+                      description={captionText}
+                      locationQuery={locationQuery}
+                      soundLabel={soundLabel}
+                      photoBadge={t('upload.photo.photoBadge')}
+                    />
+                  </div>
+                </div>
               </div>
             ) : null}
           </aside>
