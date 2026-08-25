@@ -130,6 +130,7 @@ function CopyrightCheckInfoModal({ open, light, onClose, t }) {
             type="button"
             onClick={onClose}
             className="cursor-pointer rounded-lg bg-[#FE2C55] px-6 py-2 text-sm font-semibold text-white transition hover:bg-[#e6284c]"
+            style={{ color: '#fff' }}
           >
             {t('studio.settings.ok')}
           </button>
@@ -370,6 +371,7 @@ export function StudioSettingsModal({ open, theme = 'dark', onClose }) {
             className={`cursor-pointer rounded-lg px-5 py-2 text-sm font-semibold text-white transition ${
               dirty ? 'bg-[#FE2C55] hover:bg-[#e6284c]' : 'cursor-not-allowed bg-[#FE2C55]/50'
             }`}
+            style={{ color: '#fff' }}
           >
             {t('studio.settings.save')}
           </button>

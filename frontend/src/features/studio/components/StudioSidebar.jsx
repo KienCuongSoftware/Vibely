@@ -147,6 +147,7 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
             aria-controls={menuId}
             onClick={toggle}
             className="mt-5 w-full rounded-lg bg-[#fe2c55] px-3 py-2.5 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-[#e62a4d]"
+            style={{ color: '#fff' }}
           >
             {t('studio.upload')}
           </button>

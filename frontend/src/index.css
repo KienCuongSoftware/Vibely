@@ -536,9 +536,12 @@ html[data-vibely-theme="light"] .hover\:bg-zinc-900\/80:hover,
 html[data-vibely-theme="light"] .hover\:bg-zinc-900\/90:hover,
 html[data-vibely-theme="light"] .hover\:bg-zinc-800:hover,
 html[data-vibely-theme="light"] .hover\:bg-zinc-800\/80:hover,
-html[data-vibely-theme="light"] .hover\:bg-zinc-800\/90:hover,
-html[data-vibely-theme="light"] .hover\:bg-zinc-700:hover {
+html[data-vibely-theme="light"] .hover\:bg-zinc-800\/90:hover {
   background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .hover\:bg-zinc-700:hover,
+html[data-vibely-theme="light"] .vibely-account-menu-item:hover {
+  background-color: #e3e3e4;
 }
 
 .vibely-more-panel {
@@ -595,11 +598,16 @@ html[data-vibely-theme="light"] .border-b-2.border-white {
 html[data-vibely-theme="light"] .bg-red-600,
 html[data-vibely-theme="light"] .bg-red-500,
 html[data-vibely-theme="light"] .bg-\[\#FE2C55\],
+html[data-vibely-theme="light"] .bg-\[\#FE2C55\]\/50,
 html[data-vibely-theme="light"] .bg-\[\#fe2c55\],
+html[data-vibely-theme="light"] .bg-\[\#fe2c55\]\/50,
+html[data-vibely-theme="light"] .bg-\[\#FE2C55\].text-white,
 html[data-vibely-theme="light"] .bg-\[\#fe2c55\].text-white,
+html[data-vibely-theme="light"] .enabled\:bg-\[\#FE2C55\]:enabled,
 html[data-vibely-theme="light"] .bg-\[\#e62a4d\],
-html[data-vibely-theme="light"] .hover\:bg-\[\#e62a4d\]:hover {
-  color: #fff;
+html[data-vibely-theme="light"] .hover\:bg-\[\#e62a4d\]:hover,
+html[data-vibely-theme="light"] .hover\:bg-\[\#e6284c\]:hover {
+  color: #fff !important;
 }
 
 .vibely-upload-flyout {
