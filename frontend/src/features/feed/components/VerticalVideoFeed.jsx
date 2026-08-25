@@ -1704,14 +1704,14 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 <div className="absolute right-0 z-110 mt-2 w-44 overflow-hidden rounded-xl bg-zinc-800 py-1 shadow-2xl">
                   <Link
                     to={buildProfilePath(token, user)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-100 hover:bg-zinc-700"
+                    className="vibely-account-menu-item flex items-center gap-2 px-3 py-2 text-sm text-zinc-100 hover:bg-zinc-700"
                     onClick={() => setShowAccountMenu(false)}
                   >
                     <IoPerson className="text-base" />
                     {t('common.viewProfile')}
                   </Link>
                   <button
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-100 hover:bg-zinc-700"
+                    className="vibely-account-menu-item flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-100 hover:bg-zinc-700"
                     onClick={() => {
                       setShowAccountMenu(false);
                       setShowLogoutConfirm(true);

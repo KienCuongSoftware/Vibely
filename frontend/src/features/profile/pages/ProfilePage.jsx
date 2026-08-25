@@ -1511,7 +1511,7 @@ export function ProfilePage() {
                 >
                   <Link
                     to={profileHrefFromAuthUsername(user?.username)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-100 hover:bg-zinc-700"
+                    className="vibely-account-menu-item flex items-center gap-2 px-3 py-2 text-sm text-zinc-100 hover:bg-zinc-700"
                     role="menuitem"
                     onClick={() => setShowAccountMenu(false)}
                   >
@@ -1520,7 +1520,7 @@ export function ProfilePage() {
                   </Link>
                   <button
                     type="button"
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-100 hover:bg-zinc-700"
+                    className="vibely-account-menu-item flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-100 hover:bg-zinc-700"
                     role="menuitem"
                     onClick={() => {
                       setShowAccountMenu(false)
