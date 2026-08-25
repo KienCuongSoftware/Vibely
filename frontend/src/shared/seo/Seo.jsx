@@ -12,6 +12,7 @@ import {
   SITE_NAME,
   truncateText,
 } from '@/shared/seo/seoConfig.js'
+import { organizationJsonLd, websiteJsonLd } from '@/shared/seo/jsonLd.js'
 import { useNotificationUnread } from '@/features/notification/store/NotificationUnreadContext.jsx'
 import { formatUnreadDocumentTitle } from '@/features/notification/utils/notificationBadge.js'
 
