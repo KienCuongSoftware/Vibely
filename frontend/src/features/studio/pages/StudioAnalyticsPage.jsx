@@ -16,6 +16,7 @@ import {
   formatStudioMoney,
 } from "@/features/studio/components/StudioTrendChart";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { StudioMetricDeltaLine } from "@/features/studio/components/StudioMetricDeltaLine.jsx";
 
 const PERIOD_OPTIONS = [
   { days: 7, labelKey: "studio.period.d7" },
@@ -180,36 +181,14 @@ function peakDay(points, key) {
   return best;
 }
 
-function deltaOf(current, previous) {
-  if (previous == null) return null;
-  const diff = Number(current ?? 0) - Number(previous ?? 0);
-  const percent = previous > 0 ? (diff / previous) * 100 : null;
-  return { diff, percent };
-}
-
-function DeltaText({ delta }) {
-  if (!delta) {
-    return <p className="mt-1 text-[11px] text-zinc-600 tabular-nums">0(--)</p>;
-  }
-  const { diff, percent } = delta;
-  const pctText = percent == null ? "--" : `${Math.abs(percent).toFixed(1)}%`;
-  const tone =
-    diff > 0 ? "text-sky-400" : diff < 0 ? "text-rose-400" : "text-zinc-600";
+function DeltaText({ current, previous, money = false }) {
   return (
-    <p className={`mt-1 flex items-center gap-1 text-[11px] ${tone}`}>
-      {diff !== 0 ? (
-        <span
-          aria-hidden
-          className={`inline-block h-1.5 w-1.5 rounded-full ${
-            diff > 0 ? "bg-sky-400" : "bg-rose-400"
-          }`}
-        />
-      ) : null}
-      <span className="tabular-nums">
-        {diff > 0 ? "+" : ""}
-        {formatCompact(diff)}({pctText})
-      </span>
-    </p>
+    <StudioMetricDeltaLine
+      current={current}
+      previous={previous ?? 0}
+      money={money}
+      className="mt-1"
+    />
   );
 }
 
@@ -219,7 +198,9 @@ function MetricCell({
   tipAlign = "left",
   value,
   raw,
-  delta,
+  current,
+  previous,
+  money,
   active,
   onClick,
   hint,
@@ -265,7 +246,7 @@ function MetricCell({
       {hint ? (
         <p className="mt-1 text-[11px] text-zinc-600">{hint}</p>
       ) : (
-        <DeltaText delta={delta} />
+        <DeltaText current={current ?? value} previous={previous} money={money} />
       )}
     </button>
   );
@@ -528,38 +509,35 @@ export function StudioAnalyticsPage() {
         id: "views",
         label: t("studio.metrics.videoViews"),
         value: payload.totalViews,
-        delta: deltaOf(payload.totalViews, previousTotals?.totalViews),
+        previous: previousTotals?.totalViews ?? 0,
         tip: t("studio.metrics.videoViewsTip"),
       },
       {
         id: "profileViews",
         label: t("studio.metrics.profileViews"),
         value: payload.totalProfileViews,
-        delta: deltaOf(
-          payload.totalProfileViews,
-          previousTotals?.totalProfileViews,
-        ),
+        previous: previousTotals?.totalProfileViews ?? 0,
         tip: t("studio.metrics.profileViewsTip"),
       },
       {
         id: "likes",
         label: t("studio.metrics.likes"),
         value: payload.totalLikes,
-        delta: deltaOf(payload.totalLikes, previousTotals?.totalLikes),
+        previous: previousTotals?.totalLikes ?? 0,
         tip: t("studio.metrics.likesTip"),
       },
       {
         id: "comments",
         label: t("studio.metrics.comments"),
         value: payload.totalComments,
-        delta: deltaOf(payload.totalComments, previousTotals?.totalComments),
+        previous: previousTotals?.totalComments ?? 0,
         tip: t("studio.metrics.commentsTip"),
       },
       {
         id: "shares",
         label: t("studio.metrics.shares"),
         value: payload.totalShares,
-        delta: deltaOf(payload.totalShares, previousTotals?.totalShares),
+        previous: previousTotals?.totalShares ?? 0,
         tip: t("studio.metrics.sharesTip"),
       },
       {
@@ -567,7 +545,8 @@ export function StudioAnalyticsPage() {
         label: t("studio.metrics.rewards"),
         value: "$0.00",
         raw: true,
-        delta: null,
+        money: true,
+        previous: 0,
         tip: t("studio.metrics.rewardsTipLong"),
       },
     ],
@@ -746,7 +725,8 @@ export function StudioAnalyticsPage() {
               tipAlign={idx >= metricCells.length - 2 ? "right" : "left"}
               value={cell.value}
               raw={cell.raw}
-              delta={cell.delta}
+              previous={cell.previous}
+              money={cell.money}
               active={metric === cell.id}
               onClick={() => setMetric(cell.id)}
             />
@@ -947,7 +927,7 @@ export function StudioAnalyticsPage() {
             label={t("studio.metrics.videoViews")}
             tip={t("studio.analytics.videoViewsTip")}
             value={payload.totalViews}
-            delta={deltaOf(payload.totalViews, previousTotals?.totalViews)}
+            previous={previousTotals?.totalViews ?? 0}
             active={viewerMetric === "views"}
             onClick={() => setViewerMetric("views")}
           />
@@ -956,10 +936,7 @@ export function StudioAnalyticsPage() {
             tip={t("studio.metrics.profileViewsTip")}
             tipAlign="right"
             value={payload.totalProfileViews}
-            delta={deltaOf(
-              payload.totalProfileViews,
-              previousTotals?.totalProfileViews,
-            )}
+            previous={previousTotals?.totalProfileViews ?? 0}
             active={viewerMetric === "profileViews"}
             onClick={() => setViewerMetric("profileViews")}
           />
@@ -1083,7 +1060,7 @@ export function StudioAnalyticsPage() {
             tip={t("studio.analytics.newFollowersTip")}
             tipAlign="right"
             value={payload.newFollowers}
-            delta={deltaOf(payload.newFollowers, previousTotals?.newFollowers)}
+            previous={previousTotals?.newFollowers ?? 0}
             active={followerMetric === "new"}
             onClick={() => setFollowerMetric("new")}
           />

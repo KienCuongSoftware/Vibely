@@ -8,6 +8,8 @@ import { StudioLayout } from "@/features/studio/components/StudioLayout";
 import { StudioHoverTip } from "@/features/studio/components/StudioHoverTip";
 import { StudioTrendChart, formatStudioMoney } from "@/features/studio/components/StudioTrendChart";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { previousPeriodTotal } from "@/features/studio/utils/studioMetricDelta.js";
+import { StudioMetricDeltaLine } from "@/features/studio/components/StudioMetricDeltaLine.jsx";
 import { AvatarImage } from "@/shared/components/AvatarImage.jsx";
 import {
   DEFAULT_AVATAR_URL,
@@ -79,6 +81,12 @@ export function StudioHomePage() {
     points: buildZeroPoints(7),
     latestComments: [],
   });
+  const [priorTotals, setPriorTotals] = useState({
+    totalViews: 0,
+    totalLikes: 0,
+    totalComments: 0,
+    totalProfileViews: 0,
+  });
 
   const avatarSrc = sanitizeAvatarUrl(
     user?.avatarUrl || profile?.avatarUrl,
@@ -139,8 +147,16 @@ export function StudioHomePage() {
           const data = await apiClient.getStudioAnalyticsOverview(token, {
             days,
           });
+          let doubled = null;
+          try {
+            doubled = await apiClient.getStudioAnalyticsOverview(token, {
+              days: days * 2,
+            });
+          } catch {
+            doubled = null;
+          }
           if (cancelled) return;
-          setOverview({
+          const nextOverview = {
             totalViews: Number(data?.totalViews ?? 0),
             totalLikes: Number(data?.totalLikes ?? 0),
             totalComments: Number(data?.totalComments ?? 0),
@@ -152,6 +168,19 @@ export function StudioHomePage() {
             latestComments: Array.isArray(data?.latestComments)
               ? data.latestComments
               : [],
+          };
+          setOverview(nextOverview);
+          setPriorTotals({
+            totalViews: previousPeriodTotal(doubled?.totalViews, nextOverview.totalViews),
+            totalLikes: previousPeriodTotal(doubled?.totalLikes, nextOverview.totalLikes),
+            totalComments: previousPeriodTotal(
+              doubled?.totalComments,
+              nextOverview.totalComments,
+            ),
+            totalProfileViews: previousPeriodTotal(
+              doubled?.totalProfileViews,
+              nextOverview.totalProfileViews,
+            ),
           });
           if (!cancelled) setLoading(false);
           return;
@@ -168,6 +197,12 @@ export function StudioHomePage() {
               totalProfileViews: 0,
               points: buildZeroPoints(days),
               latestComments: [],
+            });
+            setPriorTotals({
+              totalViews: 0,
+              totalLikes: 0,
+              totalComments: 0,
+              totalProfileViews: 0,
             });
           }
         } finally {
@@ -186,30 +221,35 @@ export function StudioHomePage() {
         id: "views",
         label: t("studio.metrics.videoViews"),
         value: overview.totalViews,
+        previous: priorTotals.totalViews,
         tip: t("studio.metrics.videoViewsTip"),
       },
       {
         id: "profileViews",
         label: t("studio.metrics.profileViews"),
         value: overview.totalProfileViews,
+        previous: priorTotals.totalProfileViews,
         tip: t("studio.metrics.profileViewsTip"),
       },
       {
         id: "likes",
         label: t("studio.metrics.likes"),
         value: overview.totalLikes,
+        previous: priorTotals.totalLikes,
         tip: t("studio.metrics.likesTip"),
       },
       {
         id: "comments",
         label: t("studio.metrics.comments"),
         value: overview.totalComments,
+        previous: priorTotals.totalComments,
         tip: t("studio.metrics.commentsTip"),
       },
       {
         id: "shares",
         label: t("studio.metrics.shares"),
         value: 0,
+        previous: 0,
         tip: t("studio.metrics.sharesTip"),
       },
       {
@@ -217,10 +257,12 @@ export function StudioHomePage() {
         label: t("studio.metrics.rewards"),
         value: "$0.00",
         raw: true,
+        money: true,
+        previous: 0,
         tip: t("studio.metrics.rewardsTip"),
       },
     ],
-    [overview, t],
+    [overview, priorTotals, t],
   );
 
   const chartPoints = useMemo(() => {
@@ -348,7 +390,11 @@ export function StudioHomePage() {
                 >
                   {tab.raw ? tab.value : formatCompact(tab.value)}
                 </p>
-                <p className="mt-0.5 text-[11px] text-zinc-600">0 (--)</p>
+                <StudioMetricDeltaLine
+                  current={tab.money ? 0 : tab.value}
+                  previous={tab.previous}
+                  money={Boolean(tab.money)}
+                />
               </button>
             );
           })}
