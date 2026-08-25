@@ -5,3 +5,11 @@ export function formatNotificationBadgeCount(count) {
   if (n > 99) return '99+'
   return String(n)
 }
+
+/** TikTok-style browser tab: "(1) For You | Vibely". */
+export function formatUnreadDocumentTitle(baseTitle, unreadCount) {
+  const base = String(baseTitle ?? '').replace(/^\(\d+\+?\)\s+/, '').trim()
+  const badge = formatNotificationBadgeCount(unreadCount)
+  if (!base) return badge ? `(${badge})` : ''
+  return badge ? `(${badge}) ${base}` : base
+}

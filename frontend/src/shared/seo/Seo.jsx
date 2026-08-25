@@ -12,7 +12,8 @@ import {
   SITE_NAME,
   truncateText,
 } from '@/shared/seo/seoConfig.js'
-import { organizationJsonLd, websiteJsonLd } from '@/shared/seo/jsonLd.js'
+import { useNotificationUnread } from '@/features/notification/store/NotificationUnreadContext.jsx'
+import { formatUnreadDocumentTitle } from '@/features/notification/utils/notificationBadge.js'
 
 const OG_LOCALE_BY_LANG = {
   vi: 'vi_VN',
@@ -58,6 +59,7 @@ export function Seo({
   jsonLd = [],
 }) {
   const { t, i18n } = useTranslation()
+  const { unreadCount } = useNotificationUnread()
   const defaultDescription = t('seo.defaultDescription')
   const defaultKeywords = t('seo.defaultKeywords')
   const resolvedTitle = truncateText(title || DEFAULT_TITLE, 70) || DEFAULT_TITLE
@@ -72,7 +74,7 @@ export function Seo({
   return (
     <Helmet>
       <html lang={htmlLang} />
-      <title>{resolvedTitle}</title>
+      <title>{formatUnreadDocumentTitle(resolvedTitle, unreadCount)}</title>
       <meta name="description" content={resolvedDescription} />
       <meta name="keywords" content={keywords || defaultKeywords} />
       <link rel="canonical" href={resolvedCanonical} />
