@@ -23,20 +23,6 @@ import {
 
 const PAGE_SIZE = 20;
 const DEFAULT_AVATAR = DEFAULT_AVATAR_URL;
-const BIRTH_MONTH_OPTIONS = [
-  t('admin.users.months.m1'),
-  t('admin.users.months.m2'),
-  t('admin.users.months.m3'),
-  t('admin.users.months.m4'),
-  t('admin.users.months.m5'),
-  t('admin.users.months.m6'),
-  t('admin.users.months.m7'),
-  t('admin.users.months.m8'),
-  t('admin.users.months.m9'),
-  t('admin.users.months.m10'),
-  t('admin.users.months.m11'),
-  t('admin.users.months.m12'),
-];
 const EMPTY_FORM = {
   email: "",
   username: "",
@@ -45,6 +31,23 @@ const EMPTY_FORM = {
   password: "",
 };
 
+function birthMonthOptions(t) {
+  return [
+    t("admin.users.months.m1"),
+    t("admin.users.months.m2"),
+    t("admin.users.months.m3"),
+    t("admin.users.months.m4"),
+    t("admin.users.months.m5"),
+    t("admin.users.months.m6"),
+    t("admin.users.months.m7"),
+    t("admin.users.months.m8"),
+    t("admin.users.months.m9"),
+    t("admin.users.months.m10"),
+    t("admin.users.months.m11"),
+    t("admin.users.months.m12"),
+  ];
+}
+
 function normalizeVibelyId(value) {
   return String(value ?? "")
     .trim()
@@ -52,7 +55,7 @@ function normalizeVibelyId(value) {
     .replace(/^@+/, "");
 }
 
-function roleLabel(role) {
+function roleLabel(role, t) {
   return String(role ?? "").toUpperCase() === "ADMIN"
     ? t("admin.users.roleAdmin")
     : t("admin.users.roleUser");
@@ -76,6 +79,7 @@ function formatDateTime(value) {
 }
 
 function RoleBadge({ role }) {
+  const { t } = useTranslation();
   const admin = String(role ?? "").toUpperCase() === "ADMIN";
   return (
     <span
@@ -85,7 +89,7 @@ function RoleBadge({ role }) {
           : "bg-sky-500/15 text-sky-300 ring-1 ring-sky-500/30"
       }`}
     >
-      {roleLabel(role)}
+      {roleLabel(role, t)}
     </span>
   );
 }
@@ -552,7 +556,7 @@ function UserFormModal({
                 onMonthChange={setBirthMonth}
                 onDayChange={setBirthDay}
                 onYearChange={setBirthYear}
-                monthOptions={BIRTH_MONTH_OPTIONS}
+                monthOptions={birthMonthOptions(t)}
               />
               {!isBirthDateValid && birthMonth && birthDay && birthYear ? (
                 <p className="text-xs text-red-400">
@@ -839,11 +843,11 @@ export function AdminUsersPage() {
         (selectedRole === "ALL" ||
           String(item.role ?? "").toUpperCase() === selectedRole) &&
         (!keyword ||
-          [item.username, item.displayName, item.email, roleLabel(item.role)]
+          [item.username, item.displayName, item.email, roleLabel(item.role, t)]
             .filter(Boolean)
             .some((value) => String(value).toLowerCase().includes(keyword))),
     );
-  }, [query, selectedRole, users]);
+  }, [query, selectedRole, t, users]);
 
   const availableRoles = useMemo(() => {
     const roles = new Set(
@@ -852,19 +856,19 @@ export function AdminUsersPage() {
         .filter(Boolean),
     );
     return Array.from(roles).sort((a, b) =>
-      roleLabel(a).localeCompare(roleLabel(b), "vi"),
+      roleLabel(a, t).localeCompare(roleLabel(b, t), "vi"),
     );
-  }, [users]);
+  }, [t, users]);
 
   const roleFilterOptions = useMemo(
     () => [
       { value: "ALL", label: t("admin.users.allRoles") },
       ...availableRoles.map((role) => ({
         value: role,
-        label: roleLabel(role),
+        label: roleLabel(role, t),
       })),
     ],
-    [availableRoles],
+    [availableRoles, t],
   );
 
   const openCreateModal = () => {
