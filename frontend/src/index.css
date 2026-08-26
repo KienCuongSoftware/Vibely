@@ -610,6 +610,75 @@ html[data-vibely-theme="light"] .hover\:bg-\[\#e6284c\]:hover {
   color: #fff !important;
 }
 
+/* Pastel badge / status text designed for dark UI — darken for light theme contrast */
+html[data-vibely-theme="light"] .text-sky-200,
+html[data-vibely-theme="light"] .text-sky-300,
+html[data-vibely-theme="light"] .text-sky-400,
+html[data-vibely-theme="light"] .hover\:text-sky-200:hover,
+html[data-vibely-theme="light"] .hover\:text-sky-300:hover,
+html[data-vibely-theme="light"] .hover\:text-sky-400:hover {
+  color: #0369a1;
+}
+html[data-vibely-theme="light"] .text-emerald-50,
+html[data-vibely-theme="light"] .text-emerald-100,
+html[data-vibely-theme="light"] .text-emerald-200,
+html[data-vibely-theme="light"] .text-emerald-300,
+html[data-vibely-theme="light"] .text-emerald-400,
+html[data-vibely-theme="light"] .hover\:text-emerald-200:hover,
+html[data-vibely-theme="light"] .hover\:text-emerald-300:hover {
+  color: #047857;
+}
+html[data-vibely-theme="light"] .text-amber-200,
+html[data-vibely-theme="light"] .text-amber-300,
+html[data-vibely-theme="light"] .text-amber-400 {
+  color: #b45309;
+}
+html[data-vibely-theme="light"] .text-fuchsia-200,
+html[data-vibely-theme="light"] .text-fuchsia-300 {
+  color: #a21caf;
+}
+html[data-vibely-theme="light"] .text-red-200,
+html[data-vibely-theme="light"] .text-red-300,
+html[data-vibely-theme="light"] .hover\:text-red-200:hover,
+html[data-vibely-theme="light"] .hover\:text-red-300:hover {
+  color: #b91c1c;
+}
+html[data-vibely-theme="light"] .bg-sky-500\/10,
+html[data-vibely-theme="light"] .bg-sky-500\/15 {
+  background-color: rgba(14, 165, 233, 0.14);
+}
+html[data-vibely-theme="light"] .bg-emerald-500\/10,
+html[data-vibely-theme="light"] .bg-emerald-500\/15 {
+  background-color: rgba(16, 185, 129, 0.14);
+}
+html[data-vibely-theme="light"] .bg-amber-500\/10,
+html[data-vibely-theme="light"] .bg-amber-500\/15 {
+  background-color: rgba(245, 158, 11, 0.16);
+}
+html[data-vibely-theme="light"] .bg-fuchsia-500\/10,
+html[data-vibely-theme="light"] .bg-fuchsia-500\/15 {
+  background-color: rgba(217, 70, 239, 0.12);
+}
+html[data-vibely-theme="light"] .bg-red-500\/10,
+html[data-vibely-theme="light"] .bg-red-500\/15 {
+  background-color: rgba(239, 68, 68, 0.12);
+}
+html[data-vibely-theme="light"] .ring-sky-500\/30 {
+  --tw-ring-color: rgba(14, 165, 233, 0.35);
+}
+html[data-vibely-theme="light"] .ring-emerald-500\/30 {
+  --tw-ring-color: rgba(16, 185, 129, 0.35);
+}
+html[data-vibely-theme="light"] .ring-amber-500\/30 {
+  --tw-ring-color: rgba(245, 158, 11, 0.4);
+}
+html[data-vibely-theme="light"] .ring-fuchsia-500\/30 {
+  --tw-ring-color: rgba(217, 70, 239, 0.35);
+}
+html[data-vibely-theme="light"] .ring-red-500\/30 {
+  --tw-ring-color: rgba(239, 68, 68, 0.35);
+}
+
 .vibely-upload-flyout {
   background-color: #27272a;
 }
@@ -672,5 +741,28 @@ html[data-vibely-theme="light"] .vibely-keep-dark .text-zinc-500 {
 html[data-vibely-theme="light"] .vibely-keep-dark .bg-red-600,
 html[data-vibely-theme="light"] .vibely-keep-dark .bg-red-500 {
   color: #fff !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .text-sky-200,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-sky-300,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-sky-400 {
+  color: #7dd3fc !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .text-emerald-200,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-emerald-300,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-emerald-400 {
+  color: #6ee7b7 !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .text-amber-200,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-amber-300,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-amber-400 {
+  color: #fcd34d !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .text-fuchsia-200,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-fuchsia-300 {
+  color: #f0abfc !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .text-red-200,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-red-300 {
+  color: #fca5a5 !important;
 }
 
