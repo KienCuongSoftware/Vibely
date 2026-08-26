@@ -11,6 +11,7 @@ import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { isPendingOAuthBrowserCallback } from "@/features/auth/utils/oauthCallback.js";
 import { registerGuestLoginOpener } from "@/features/auth/utils/guestAuthGate.js";
 import { hasLoginRedirectParam } from "@/features/auth/utils/loginRedirect.js";
+import { OPEN_LOGIN_AFTER_LOAD_KEY } from "@/shared/utils/lazyWithChunkRetry.js";
 
 const GuestAuthUiContext = createContext(null);
 
@@ -34,6 +35,17 @@ export function GuestAuthUiProvider({ children }) {
   useEffect(() => {
     registerGuestLoginOpener(openLogin);
     return () => registerGuestLoginOpener(null);
+  }, [openLogin]);
+
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem(OPEN_LOGIN_AFTER_LOAD_KEY) === "1") {
+        sessionStorage.removeItem(OPEN_LOGIN_AFTER_LOAD_KEY);
+        openLogin();
+      }
+    } catch {
+      /* ignore */
+    }
   }, [openLogin]);
 
   useEffect(() => {

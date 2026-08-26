@@ -14,6 +14,7 @@ import {
   DEFAULT_AVATAR_URL,
   sanitizeAvatarUrl,
 } from '@/features/profile/utils/avatarUrl.js'
+import { OPEN_LOGIN_AFTER_LOAD_KEY } from '@/shared/utils/lazyWithChunkRetry.js'
 
 /** @param {'dark' | 'light'} [theme='dark'] */
 export function StudioAccountMenu({ theme = 'dark' }) {
@@ -125,7 +126,14 @@ export function StudioAccountMenu({ theme = 'dark' }) {
               onClick={() => {
                 setOpen(false)
                 logout()
-                navigate('/login', { replace: true })
+                // Hard redirect to home as guest + open login modal.
+                // Soft navigate('/login') while still authenticated flashed /admin/users.
+                try {
+                  sessionStorage.setItem(OPEN_LOGIN_AFTER_LOAD_KEY, '1')
+                } catch {
+                  /* ignore */
+                }
+                window.location.replace('/')
               }}
             >
               <IoLogOutOutline className={iconClass} aria-hidden />
