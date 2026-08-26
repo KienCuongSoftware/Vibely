@@ -1,12 +1,13 @@
-import React, { lazy, Suspense } from "react";
+import React, { Suspense } from "react";
 import { useLocation } from "react-router-dom";
 import { useGuestAuthUi, isLoginPath, isSignupPath } from "@/features/auth/store/GuestAuthUiContext.jsx";
 import { hasLoginRedirectParam } from "@/features/auth/utils/loginRedirect.js";
+import { lazyWithChunkRetry } from "@/shared/utils/lazyWithChunkRetry.js";
 
-const LoginPage = lazy(() =>
+const LoginPage = lazyWithChunkRetry(() =>
   import("@/features/auth/pages/LoginPage.jsx").then((m) => ({ default: m.LoginPage })),
 );
-const SignupPage = lazy(() =>
+const SignupPage = lazyWithChunkRetry(() =>
   import("@/features/auth/pages/SignupPage.jsx").then((m) => ({ default: m.SignupPage })),
 );
 

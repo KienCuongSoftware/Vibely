@@ -32,7 +32,14 @@ export class AppErrorBoundary extends React.Component {
             <button
               type="button"
               className="mt-5 rounded-md bg-red-600 px-4 py-2 font-medium hover:bg-red-500"
-              onClick={() => window.location.assign('/login')}
+              onClick={() => {
+                try {
+                  sessionStorage.removeItem('vibely:chunk-reload')
+                } catch {
+                  /* ignore */
+                }
+                window.location.assign('/')
+              }}
             >
               {i18n.t('appError.reloadLogin')}
             </button>

@@ -1,4 +1,4 @@
-import React, { lazy } from 'react'
+import React from 'react'
 import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom'
 import { WatchRedirect } from '@/features/post/components/WatchRedirect.jsx'
 import { AdminRoute, AuthenticatedHomeRedirect, UserOnlyRoute } from '@/app/guards/AdminRoute.jsx'
@@ -6,9 +6,12 @@ import { GuestAuthModal } from '@/features/auth/components/GuestAuthModal.jsx'
 import { GuestAuthUiProvider, RedirectToHomeLogin } from '@/features/auth/store/GuestAuthUiContext.jsx'
 import { isPendingOAuthBrowserCallback } from '@/features/auth/utils/oauthCallback.js'
 import { buildStudioHomeLoginHref, buildStudioUploadLoginHref, hasLoginRedirectParam } from '@/features/auth/utils/loginRedirect.js'
+import { lazyWithChunkRetry } from '@/shared/utils/lazyWithChunkRetry.js'
 
 function lazyNamed(loader, exportName) {
-  return lazy(() => loader().then((module) => ({ default: module[exportName] })))
+  return lazyWithChunkRetry(() =>
+    loader().then((module) => ({ default: module[exportName] })),
+  )
 }
 
 const SignupPage = lazyNamed(() => import('@/features/auth/pages/SignupPage.jsx'), 'SignupPage')
@@ -55,7 +58,9 @@ function GuestLoginRoute() {
   if (hasLoginRedirectParam(`?${params.toString()}`) || isPendingOAuthBrowserCallback()) {
     return <LoginPage />
   }
-  return <FeedPage />
+  // Modal-only: GuestAuthUiProvider opens login and replaces URL to "/".
+  // Avoid mounting FeedPage here (failed chunk would crash before redirect).
+  return null
 }
 
 function RedirectToStudioUploadLogin() {
