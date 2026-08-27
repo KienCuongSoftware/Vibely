@@ -211,6 +211,7 @@ function UserFormModal({
   onClose,
   onSubmit,
 }) {
+  const { t } = useTranslation();
   const isEdit = mode === "edit";
   const [form, setForm] = useState(() => ({
     ...EMPTY_FORM,
@@ -323,7 +324,7 @@ function UserFormModal({
     }, 350);
 
     return () => clearTimeout(timeoutId);
-  }, [isEdit, isEmailValid, normalizedEmail]);
+  }, [isEdit, isEmailValid, normalizedEmail, t]);
 
   useEffect(() => {
     if (!normalizedUsername) {
@@ -361,7 +362,7 @@ function UserFormModal({
     }, 350);
 
     return () => clearTimeout(timeoutId);
-  }, [initialSnapshot.username, isEdit, normalizedUsername]);
+  }, [initialSnapshot.username, isEdit, normalizedUsername, t]);
 
   const recheckEmailAvailability = async () => {
     if (!isEmailValid) return;
