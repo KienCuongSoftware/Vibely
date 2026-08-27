@@ -34,3 +34,7 @@ export function lazyWithChunkRetry(factory) {
 }
 
 export const OPEN_LOGIN_AFTER_LOAD_KEY = 'vibely:open-login'
+
+/** After logout: skip /me + /refresh once so a lingering cookie cannot bounce admins back. */
+export const FORCE_GUEST_AFTER_LOAD_KEY = 'vibely:force-guest'
+

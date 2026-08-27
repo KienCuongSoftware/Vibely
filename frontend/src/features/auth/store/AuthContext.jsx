@@ -8,6 +8,7 @@ import {
 import { AccountBannedOverlay } from "@/features/auth/components/AccountBannedOverlay.jsx";
 import { COOKIE_SESSION_MARKER } from "@/features/auth/utils/session.js";
 import { isPendingOAuthBrowserCallback } from "@/features/auth/utils/oauthCallback.js";
+import { FORCE_GUEST_AFTER_LOAD_KEY } from "@/shared/utils/lazyWithChunkRetry.js";
 import { collectLoginContext } from "@/security/loginContext.js";
 import { DEFAULT_AVATAR_URL, sanitizeAvatarUrl } from "@/features/profile/utils/avatarUrl.js";
 import { AuthContext } from "@/features/auth/store/auth-context";
@@ -271,6 +272,25 @@ export function AuthProvider({ children }) {
           setAuthReady(true);
         }
         return;
+      }
+
+      // Explicit logout asked for a guest session — do not revive via refresh cookie.
+      try {
+        if (sessionStorage.getItem(FORCE_GUEST_AFTER_LOAD_KEY) === "1") {
+          sessionStorage.removeItem(FORCE_GUEST_AFTER_LOAD_KEY);
+          clearSession();
+          try {
+            await apiClient.logout();
+          } catch {
+            /* cookies may already be gone */
+          }
+          if (!cancelled) {
+            setAuthReady(true);
+          }
+          return;
+        }
+      } catch {
+        /* ignore sessionStorage errors */
       }
 
       try {

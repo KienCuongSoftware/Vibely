@@ -14,7 +14,7 @@ import {
   DEFAULT_AVATAR_URL,
   sanitizeAvatarUrl,
 } from '@/features/profile/utils/avatarUrl.js'
-import { OPEN_LOGIN_AFTER_LOAD_KEY } from '@/shared/utils/lazyWithChunkRetry.js'
+import { FORCE_GUEST_AFTER_LOAD_KEY } from '@/shared/utils/lazyWithChunkRetry.js'
 
 /** @param {'dark' | 'light'} [theme='dark'] */
 export function StudioAccountMenu({ theme = 'dark' }) {
@@ -126,14 +126,14 @@ export function StudioAccountMenu({ theme = 'dark' }) {
               onClick={() => {
                 setOpen(false)
                 void (async () => {
-                  await logout()
-                  // Hard redirect as guest + open login. Await logout so httpOnly
-                  // cookies are cleared before / bootstrap can refresh an admin session.
+                  // Mark guest before logout/reload so bootstrap cannot revive admin via refresh.
                   try {
-                    sessionStorage.setItem(OPEN_LOGIN_AFTER_LOAD_KEY, '1')
+                    sessionStorage.setItem(FORCE_GUEST_AFTER_LOAD_KEY, '1')
                   } catch {
                     /* ignore */
                   }
+                  await logout()
+                  // Land on feed as guest — do not bounce through /login (that fought admin redirect).
                   window.location.replace('/')
                 })()
               }}
