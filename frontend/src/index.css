@@ -525,7 +525,9 @@ html[data-vibely-theme="light"] header a.text-white,
 html[data-vibely-theme="light"] header .text-white:not(.bg-red-500) {
   color: #161823;
 }
-html[data-vibely-theme="light"] .text-zinc-300,
+html[data-vibely-theme="light"] .text-zinc-300 {
+  color: #52525b;
+}
 html[data-vibely-theme="light"] .text-zinc-400,
 html[data-vibely-theme="light"] .text-zinc-500 {
   color: #8a8b91;
@@ -637,11 +639,31 @@ html[data-vibely-theme="light"] .text-fuchsia-200,
 html[data-vibely-theme="light"] .text-fuchsia-300 {
   color: #a21caf;
 }
+html[data-vibely-theme="light"] .text-red-50,
+html[data-vibely-theme="light"] .text-red-100,
+html[data-vibely-theme="light"] .text-red-100\/90,
 html[data-vibely-theme="light"] .text-red-200,
+html[data-vibely-theme="light"] .text-red-200\/80,
+html[data-vibely-theme="light"] .text-red-200\/90,
 html[data-vibely-theme="light"] .text-red-300,
+html[data-vibely-theme="light"] .text-red-400,
 html[data-vibely-theme="light"] .hover\:text-red-200:hover,
 html[data-vibely-theme="light"] .hover\:text-red-300:hover {
   color: #b91c1c;
+}
+html[data-vibely-theme="light"] .text-rose-100,
+html[data-vibely-theme="light"] .text-rose-100\/90,
+html[data-vibely-theme="light"] .text-rose-200,
+html[data-vibely-theme="light"] .text-rose-200\/80,
+html[data-vibely-theme="light"] .text-rose-300,
+html[data-vibely-theme="light"] .text-rose-400,
+html[data-vibely-theme="light"] .hover\:text-rose-300:hover {
+  color: #be123c;
+}
+html[data-vibely-theme="light"] .text-orange-200,
+html[data-vibely-theme="light"] .text-orange-300,
+html[data-vibely-theme="light"] .text-orange-400 {
+  color: #c2410c;
 }
 html[data-vibely-theme="light"] .bg-sky-500\/10,
 html[data-vibely-theme="light"] .bg-sky-500\/15 {
@@ -660,8 +682,17 @@ html[data-vibely-theme="light"] .bg-fuchsia-500\/15 {
   background-color: rgba(217, 70, 239, 0.12);
 }
 html[data-vibely-theme="light"] .bg-red-500\/10,
-html[data-vibely-theme="light"] .bg-red-500\/15 {
+html[data-vibely-theme="light"] .bg-red-500\/15,
+html[data-vibely-theme="light"] .bg-red-600\/15 {
   background-color: rgba(239, 68, 68, 0.12);
+}
+html[data-vibely-theme="light"] .bg-rose-500\/10,
+html[data-vibely-theme="light"] .bg-rose-500\/15 {
+  background-color: rgba(244, 63, 94, 0.12);
+}
+html[data-vibely-theme="light"] .bg-orange-500\/10,
+html[data-vibely-theme="light"] .bg-orange-500\/15 {
+  background-color: rgba(249, 115, 22, 0.14);
 }
 html[data-vibely-theme="light"] .ring-sky-500\/30 {
   --tw-ring-color: rgba(14, 165, 233, 0.35);
@@ -761,8 +792,27 @@ html[data-vibely-theme="light"] .vibely-keep-dark .text-fuchsia-200,
 html[data-vibely-theme="light"] .vibely-keep-dark .text-fuchsia-300 {
   color: #f0abfc !important;
 }
+html[data-vibely-theme="light"] .vibely-keep-dark .text-red-50,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-red-100,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-red-100\/90,
 html[data-vibely-theme="light"] .vibely-keep-dark .text-red-200,
-html[data-vibely-theme="light"] .vibely-keep-dark .text-red-300 {
+html[data-vibely-theme="light"] .vibely-keep-dark .text-red-200\/80,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-red-200\/90,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-red-300,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-red-400 {
   color: #fca5a5 !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .text-rose-100,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-rose-100\/90,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-rose-200,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-rose-200\/80,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-rose-300,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-rose-400 {
+  color: #fda4af !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .text-orange-200,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-orange-300,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-orange-400 {
+  color: #fdba74 !important;
 }
 
