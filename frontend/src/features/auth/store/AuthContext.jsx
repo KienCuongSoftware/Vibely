@@ -241,8 +241,13 @@ export function AuthProvider({ children }) {
     });
   };
 
-  const logout = () => {
-    apiClient.logout().catch(() => {});
+  const logout = async () => {
+    try {
+      // Await cookie clear before any hard redirect, or / bootstrap refreshes admin session.
+      await apiClient.logout();
+    } catch {
+      /* ignore network errors — still drop local session */
+    }
     clearSession();
     setAuthReady(true);
   };

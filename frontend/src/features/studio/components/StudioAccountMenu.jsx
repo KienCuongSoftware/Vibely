@@ -125,15 +125,17 @@ export function StudioAccountMenu({ theme = 'dark' }) {
               className={itemClass}
               onClick={() => {
                 setOpen(false)
-                logout()
-                // Hard redirect to home as guest + open login modal.
-                // Soft navigate('/login') while still authenticated flashed /admin/users.
-                try {
-                  sessionStorage.setItem(OPEN_LOGIN_AFTER_LOAD_KEY, '1')
-                } catch {
-                  /* ignore */
-                }
-                window.location.replace('/')
+                void (async () => {
+                  await logout()
+                  // Hard redirect as guest + open login. Await logout so httpOnly
+                  // cookies are cleared before / bootstrap can refresh an admin session.
+                  try {
+                    sessionStorage.setItem(OPEN_LOGIN_AFTER_LOAD_KEY, '1')
+                  } catch {
+                    /* ignore */
+                  }
+                  window.location.replace('/')
+                })()
               }}
             >
               <IoLogOutOutline className={iconClass} aria-hidden />
