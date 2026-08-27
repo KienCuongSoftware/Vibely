@@ -14,13 +14,14 @@ import {
   DEFAULT_AVATAR_URL,
   sanitizeAvatarUrl,
 } from '@/features/profile/utils/avatarUrl.js'
+import { apiClient } from '@/shared/api/client'
 import { FORCE_GUEST_AFTER_LOAD_KEY } from '@/shared/utils/lazyWithChunkRetry.js'
 
 /** @param {'dark' | 'light'} [theme='dark'] */
 export function StudioAccountMenu({ theme = 'dark' }) {
   const { t } = useTranslation()
   const light = theme === 'light'
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -126,14 +127,18 @@ export function StudioAccountMenu({ theme = 'dark' }) {
               onClick={() => {
                 setOpen(false)
                 void (async () => {
-                  // Mark guest before logout/reload so bootstrap cannot revive admin via refresh.
+                  // Stay authenticated in React until hard reload — clearing token first
+                  // mounts GuestRoutes on /admin/* and flashes the login overlay.
                   try {
                     sessionStorage.setItem(FORCE_GUEST_AFTER_LOAD_KEY, '1')
                   } catch {
                     /* ignore */
                   }
-                  await logout()
-                  // Land on feed as guest — do not bounce through /login (that fought admin redirect).
+                  try {
+                    await apiClient.logout()
+                  } catch {
+                    /* cookies may already be gone */
+                  }
                   window.location.replace('/')
                 })()
               }}

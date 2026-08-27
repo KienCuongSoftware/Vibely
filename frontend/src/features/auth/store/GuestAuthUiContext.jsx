@@ -11,7 +11,7 @@ import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { isPendingOAuthBrowserCallback } from "@/features/auth/utils/oauthCallback.js";
 import { registerGuestLoginOpener } from "@/features/auth/utils/guestAuthGate.js";
 import { hasLoginRedirectParam } from "@/features/auth/utils/loginRedirect.js";
-import { OPEN_LOGIN_AFTER_LOAD_KEY } from "@/shared/utils/lazyWithChunkRetry.js";
+import { OPEN_LOGIN_AFTER_LOAD_KEY, FORCE_GUEST_AFTER_LOAD_KEY } from "@/shared/utils/lazyWithChunkRetry.js";
 
 const GuestAuthUiContext = createContext(null);
 
@@ -142,6 +142,14 @@ export function RedirectToHomeLogin() {
   const ui = useGuestAuthUi();
   const openLogin = ui?.openLogin;
   useLayoutEffect(() => {
+    // Skip login flash during force-guest logout reload.
+    try {
+      if (sessionStorage.getItem(FORCE_GUEST_AFTER_LOAD_KEY) === "1") {
+        return;
+      }
+    } catch {
+      /* ignore */
+    }
     openLogin?.();
   }, [openLogin]);
   return <Navigate to="/" replace />;
