@@ -12,6 +12,7 @@ import { isPendingOAuthBrowserCallback } from "@/features/auth/utils/oauthCallba
 import { registerGuestLoginOpener } from "@/features/auth/utils/guestAuthGate.js";
 import { hasLoginRedirectParam } from "@/features/auth/utils/loginRedirect.js";
 import { OPEN_LOGIN_AFTER_LOAD_KEY, FORCE_GUEST_AFTER_LOAD_KEY } from "@/shared/utils/lazyWithChunkRetry.js";
+import { hasLoggedOutGuard } from "@/features/auth/utils/loggedOutGuard.js";
 
 const GuestAuthUiContext = createContext(null);
 
@@ -142,9 +143,12 @@ export function RedirectToHomeLogin() {
   const ui = useGuestAuthUi();
   const openLogin = ui?.openLogin;
   useLayoutEffect(() => {
-    // Skip login flash during force-guest logout reload.
+    // Skip login flash during / after explicit logout.
     try {
-      if (sessionStorage.getItem(FORCE_GUEST_AFTER_LOAD_KEY) === "1") {
+      if (
+        sessionStorage.getItem(FORCE_GUEST_AFTER_LOAD_KEY) === "1" ||
+        hasLoggedOutGuard()
+      ) {
         return;
       }
     } catch {

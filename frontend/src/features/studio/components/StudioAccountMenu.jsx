@@ -15,6 +15,7 @@ import {
   sanitizeAvatarUrl,
 } from '@/features/profile/utils/avatarUrl.js'
 import { apiClient } from '@/shared/api/client'
+import { setLoggedOutGuard } from '@/features/auth/utils/loggedOutGuard.js'
 import { FORCE_GUEST_AFTER_LOAD_KEY } from '@/shared/utils/lazyWithChunkRetry.js'
 
 /** @param {'dark' | 'light'} [theme='dark'] */
@@ -130,6 +131,7 @@ export function StudioAccountMenu({ theme = 'dark' }) {
                   // Stay authenticated in React until hard reload — clearing token first
                   // mounts GuestRoutes on /admin/* and flashes the login overlay.
                   try {
+                    setLoggedOutGuard()
                     sessionStorage.setItem(FORCE_GUEST_AFTER_LOAD_KEY, '1')
                   } catch {
                     /* ignore */

@@ -9,6 +9,11 @@ import { AccountBannedOverlay } from "@/features/auth/components/AccountBannedOv
 import { COOKIE_SESSION_MARKER } from "@/features/auth/utils/session.js";
 import { isPendingOAuthBrowserCallback } from "@/features/auth/utils/oauthCallback.js";
 import { FORCE_GUEST_AFTER_LOAD_KEY } from "@/shared/utils/lazyWithChunkRetry.js";
+import {
+  clearLoggedOutGuard,
+  hasLoggedOutGuard,
+  setLoggedOutGuard,
+} from "@/features/auth/utils/loggedOutGuard.js";
 import { collectLoginContext } from "@/security/loginContext.js";
 import { DEFAULT_AVATAR_URL, sanitizeAvatarUrl } from "@/features/profile/utils/avatarUrl.js";
 import { AuthContext } from "@/features/auth/store/auth-context";
@@ -135,6 +140,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const handleAccountBanned = useCallback((payload = {}) => {
+    setLoggedOutGuard();
     apiClient.logout().catch(() => {});
     localStorage.removeItem(USER_CACHE_KEY);
     setToken(null);
@@ -155,6 +161,7 @@ export function AuthProvider({ children }) {
   }, [handleAccountBanned]);
 
   const establishSession = (result) => {
+    clearLoggedOutGuard();
     const mapped = mapAuthSessionToUser(result);
     setUser(mapped);
     setToken(COOKIE_SESSION_MARKER);
@@ -243,6 +250,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
+    setLoggedOutGuard();
     try {
       // Await cookie clear before any hard redirect, or / bootstrap refreshes admin session.
       await apiClient.logout();
@@ -274,10 +282,16 @@ export function AuthProvider({ children }) {
         return;
       }
 
-      // Explicit logout asked for a guest session — do not revive via refresh cookie.
+      // Explicit logout: stay guest across reloads until the next successful login.
+      // Cookies can linger if logout POST fails (CSRF/network); do not revive via /refresh.
       try {
-        if (sessionStorage.getItem(FORCE_GUEST_AFTER_LOAD_KEY) === "1") {
+        const forceGuestOnce =
+          sessionStorage.getItem(FORCE_GUEST_AFTER_LOAD_KEY) === "1";
+        if (forceGuestOnce) {
           sessionStorage.removeItem(FORCE_GUEST_AFTER_LOAD_KEY);
+          setLoggedOutGuard();
+        }
+        if (forceGuestOnce || hasLoggedOutGuard()) {
           clearSession();
           try {
             await apiClient.logout();
@@ -290,7 +304,7 @@ export function AuthProvider({ children }) {
           return;
         }
       } catch {
-        /* ignore sessionStorage errors */
+        /* ignore storage errors */
       }
 
       try {
@@ -305,6 +319,7 @@ export function AuthProvider({ children }) {
         if (!me) {
           clearSession();
         } else {
+          clearLoggedOutGuard();
           persistUserCache(me);
           setUser(mapUserWithDefaultAvatar(me));
           setToken(COOKIE_SESSION_MARKER);
