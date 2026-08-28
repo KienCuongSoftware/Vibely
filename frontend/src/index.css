@@ -777,6 +777,12 @@ html[data-vibely-theme="light"] .vibely-keep-dark.bg-black,
 html[data-vibely-theme="light"] .vibely-keep-dark .bg-black {
   background-color: #000 !important;
 }
+html[data-vibely-theme="light"] .vibely-keep-dark .bg-black\/70 {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .hover\:bg-black\/80:hover {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
 html[data-vibely-theme="light"] .vibely-keep-dark.bg-zinc-950,
 html[data-vibely-theme="light"] .vibely-keep-dark .bg-zinc-950 {
   background-color: #09090b !important;

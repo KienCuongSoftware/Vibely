@@ -2209,7 +2209,7 @@ export function UploadPage() {
                       <span className="text-sm font-medium text-zinc-300">Ảnh bìa</span>
                       <IoInformationCircleOutline className="text-zinc-500" aria-hidden />
                     </div>
-                    <div className="relative inline-block max-w-[200px] overflow-hidden rounded-lg border border-zinc-700 bg-black">
+                    <div className="vibely-keep-dark relative inline-block max-w-[200px] overflow-hidden rounded-lg border border-zinc-700 bg-black">
                       {thumbnailUrl ? (
                         <img
                           src={thumbnailUrl}
