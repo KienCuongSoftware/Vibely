@@ -73,7 +73,7 @@
     "birthDate": "你的生日是什么时候？",
     "birthPrivate": "您的生日不会公开显示。",
     "createVibelyId": "创建Vibely ID",
-    "vibelyIdPlaceholder": "your.id",
+    "vibelyIdPlaceholder": "输入你的 Vibely ID",
     "vibelyIdHint": "您以后可以随时更改此设置",
     "vibelyIdEnter": "输入Vibely ID进行检查",
     "vibelyIdChecking": "检查Vibely ID...",

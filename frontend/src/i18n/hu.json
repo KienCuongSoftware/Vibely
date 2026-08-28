@@ -73,7 +73,7 @@
     "birthDate": "Mikor van a születésnapod?",
     "birthPrivate": "A születésnapod nem jelenik meg nyilvánosan.",
     "createVibelyId": "Vibely ID létrehozása",
-    "vibelyIdPlaceholder": "your.id",
+    "vibelyIdPlaceholder": "Adja meg Vibely ID-jét",
     "vibelyIdHint": "Ezt később bármikor módosíthatja",
     "vibelyIdEnter": "Az ellenőrzéshez írjon be egy Vibely ID-t",
     "vibelyIdChecking": "Vibely ID ellenőrzése...",

@@ -15,6 +15,7 @@ import { AdminUsersPageSkeleton } from "@/features/admin/components/AdminListSke
 import { AdminPagination } from "@/features/admin/components/AdminPagination.jsx";
 import { BirthDateFields } from "@/features/auth/components/BirthDateSelect.jsx";
 import { validateBirthDateParts } from "@/features/auth/utils/birthDate.js";
+import { localizeUsernameCheckMessage } from "@/features/auth/utils/localizeUsernameCheckMessage.js";
 import { useAuth } from "@/features/auth/hooks/useAuth.js";
 import {
   DEFAULT_AVATAR_URL,
@@ -494,7 +495,7 @@ function UserFormModal({
                 >
                   {usernameChecking
                     ? t('admin.users.checkingVibelyId')
-                    : usernameMessage}
+                    : localizeUsernameCheckMessage(usernameMessage)}
                 </p>
                 {usernameCanRecheck && !usernameChecking ? (
                   <button

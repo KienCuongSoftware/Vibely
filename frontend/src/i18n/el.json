@@ -73,7 +73,7 @@
     "birthDate": "Πότε είναι τα γενέθλιά σου;",
     "birthPrivate": "Τα γενέθλιά σας δεν θα εμφανίζονται δημόσια.",
     "createVibelyId": "Δημιουργία Vibely ID",
-    "vibelyIdPlaceholder": "your.id",
+    "vibelyIdPlaceholder": "Εισαγάγετε το Vibely ID σας",
     "vibelyIdHint": "Μπορείτε πάντα να το αλλάξετε αργότερα",
     "vibelyIdEnter": "Εισαγάγετε ένα Vibely ID για έλεγχο",
     "vibelyIdChecking": "Έλεγχος Vibely ID...",

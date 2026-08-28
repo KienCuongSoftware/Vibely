@@ -73,7 +73,7 @@
     "birthDate": "Hvenær átt þú afmæli?",
     "birthPrivate": "Fæðingardagurinn þinn verður ekki sýndur opinberlega.",
     "createVibelyId": "Búðu til Vibely ID",
-    "vibelyIdPlaceholder": "your.id",
+    "vibelyIdPlaceholder": "Sláðu inn Vibely ID-ið þitt",
     "vibelyIdHint": "Þú getur alltaf breytt þessu seinna",
     "vibelyIdEnter": "Sláðu inn Vibely ID til að athuga",
     "vibelyIdChecking": "Athugar Vibely ID...",

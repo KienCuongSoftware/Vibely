@@ -73,7 +73,7 @@
     "birthDate": "วันเกิดของคุณคือเมื่อไหร่?",
     "birthPrivate": "วันเกิดของคุณจะไม่ถูกแสดงต่อสาธารณะ",
     "createVibelyId": "สร้างรหัส Vibely",
-    "vibelyIdPlaceholder": "your.id",
+    "vibelyIdPlaceholder": "กรอก Vibely ID ของคุณ",
     "vibelyIdHint": "คุณสามารถเปลี่ยนแปลงได้ในภายหลัง",
     "vibelyIdEnter": "ป้อน Vibely ID เพื่อตรวจสอบ",
     "vibelyIdChecking": "กำลังตรวจสอบ Vibely ID...",

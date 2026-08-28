@@ -73,7 +73,7 @@
     "birthDate": "あなたの誕生日はいつですか？",
     "birthPrivate": "あなたの誕生日は公開されません。",
     "createVibelyId": "Vibely ID を作成する",
-    "vibelyIdPlaceholder": "your.id",
+    "vibelyIdPlaceholder": "Vibely IDを入力",
     "vibelyIdHint": "これは後でいつでも変更できます",
     "vibelyIdEnter": "Vibely ID を入力して確認してください",
     "vibelyIdChecking": "Vibely ID を確認中...",

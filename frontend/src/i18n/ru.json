@@ -73,7 +73,7 @@
     "birthDate": "Когда у тебя День рождения?",
     "birthPrivate": "Ваш день рождения не будет показан публично.",
     "createVibelyId": "Создать Vibely ID",
-    "vibelyIdPlaceholder": "your.id",
+    "vibelyIdPlaceholder": "Введите ваш Vibely ID",
     "vibelyIdHint": "Вы всегда можете изменить это позже.",
     "vibelyIdEnter": "Введите Vibely ID, чтобы проверить",
     "vibelyIdChecking": "Проверяем Vibely ID...",

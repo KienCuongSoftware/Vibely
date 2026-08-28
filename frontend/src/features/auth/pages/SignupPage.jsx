@@ -27,6 +27,7 @@ import {
 } from "@/features/auth/components/authFieldClasses.js";
 import { BirthDateFields } from "@/features/auth/components/BirthDateSelect.jsx";
 import { validateBirthDateParts } from "@/features/auth/utils/birthDate.js";
+import { localizeUsernameCheckMessage } from "@/features/auth/utils/localizeUsernameCheckMessage.js";
 import {
   buildOnboardingPendingFromUser,
   clearOnboardingSession,
@@ -1028,7 +1029,7 @@ export function SignupPage({ asModal = false }) {
                     </span>
                     <input
                       className={AUTH_FIELD_AT}
-                      placeholder="your.id"
+                      placeholder={t("auth.vibelyIdPlaceholder")}
                       value={vibelyId}
                       onChange={(event) => {
                         const nextValue = event.target.value;
@@ -1055,7 +1056,8 @@ export function SignupPage({ asModal = false }) {
                     {usernameChecking
                       ? t('auth.vibelyIdChecking')
                       : normalizedVibelyId
-                        ? usernameMessage || t('auth.vibelyIdHint')
+                        ? localizeUsernameCheckMessage(usernameMessage) ||
+                          t("auth.vibelyIdHint")
                         : t('auth.vibelyIdEnter')}
                   </p>
                   {usernameCanRecheck && !usernameChecking ? (
@@ -1128,7 +1130,7 @@ export function SignupPage({ asModal = false }) {
                     </span>
                     <input
                       className={AUTH_FIELD_AT}
-                      placeholder="your.id"
+                      placeholder={t("auth.vibelyIdPlaceholder")}
                       value={vibelyId}
                       onChange={(event) => {
                         const nextValue = event.target.value;
@@ -1155,7 +1157,8 @@ export function SignupPage({ asModal = false }) {
                     {usernameChecking
                       ? t('auth.vibelyIdChecking')
                       : normalizedVibelyId
-                        ? usernameMessage || t('auth.vibelyIdHint')
+                        ? localizeUsernameCheckMessage(usernameMessage) ||
+                          t("auth.vibelyIdHint")
                         : t('auth.vibelyIdEnter')}
                   </p>
                   {usernameCanRecheck && !usernameChecking ? (

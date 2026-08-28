@@ -73,7 +73,7 @@
     "birthDate": "Doğum günün ne zaman?",
     "birthPrivate": "Doğum gününüz herkese açık olarak gösterilmeyecek.",
     "createVibelyId": "Vibely ID oluştur",
-    "vibelyIdPlaceholder": "your.id",
+    "vibelyIdPlaceholder": "Vibely ID'nizi girin",
     "vibelyIdHint": "Bunu daha sonra istediğiniz zaman değiştirebilirsiniz",
     "vibelyIdEnter": "Kontrol etmek için Vibely ID girin",
     "vibelyIdChecking": "Vibely ID kontrol ediliyor...",

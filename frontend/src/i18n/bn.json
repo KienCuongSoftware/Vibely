@@ -73,7 +73,7 @@
     "birthDate": "তোমার জন্মদিন কবে?",
     "birthPrivate": "আপনার জন্মদিন সর্বজনীনভাবে দেখানো হবে না।",
     "createVibelyId": "Vibely ID তৈরি করুন",
-    "vibelyIdPlaceholder": "your.id",
+    "vibelyIdPlaceholder": "আপনার Vibely ID লিখুন",
     "vibelyIdHint": "আপনি সর্বদা এটি পরে পরিবর্তন করতে পারেন",
     "vibelyIdEnter": "চেক করতে একটি Vibely ID লিখুন",
     "vibelyIdChecking": "Vibely ID পরীক্ষা করা হচ্ছে...",

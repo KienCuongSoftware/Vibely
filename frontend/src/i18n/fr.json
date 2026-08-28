@@ -73,7 +73,7 @@
     "birthDate": "Quelle est votre date de naissance ?",
     "birthPrivate": "Votre date de naissance ne sera pas affichée publiquement.",
     "createVibelyId": "Créer un Vibely ID",
-    "vibelyIdPlaceholder": "votre.id",
+    "vibelyIdPlaceholder": "Entrez votre ID Vibely",
     "vibelyIdHint": "Vous pourrez toujours modifier cela plus tard",
     "vibelyIdEnter": "Entrez un Vibely ID à vérifier",
     "vibelyIdChecking": "Vérification du Vibely ID...",

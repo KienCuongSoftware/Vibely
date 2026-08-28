@@ -73,7 +73,7 @@
     "birthDate": "Millal on teie sünnipäev?",
     "birthPrivate": "Teie sünnipäeva ei kuvata avalikult.",
     "createVibelyId": "Looge Vibely ID",
-    "vibelyIdPlaceholder": "your.id",
+    "vibelyIdPlaceholder": "Sisestage oma Vibely ID",
     "vibelyIdHint": "Saate seda alati hiljem muuta",
     "vibelyIdEnter": "Kontrollimiseks sisestage Vibely ID",
     "vibelyIdChecking": "Vibely ID kontrollimine...",

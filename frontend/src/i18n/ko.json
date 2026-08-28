@@ -73,7 +73,7 @@
     "birthDate": "당신의 생일은 언제입니까?",
     "birthPrivate": "생일은 공개적으로 표시되지 않습니다.",
     "createVibelyId": "Vibely ID 만들기",
-    "vibelyIdPlaceholder": "your.id",
+    "vibelyIdPlaceholder": "Vibely ID를 입력하세요",
     "vibelyIdHint": "나중에 언제든지 변경할 수 있습니다.",
     "vibelyIdEnter": "확인하려면 Vibely ID를 입력하세요.",
     "vibelyIdChecking": "Vibely ID 확인 중...",

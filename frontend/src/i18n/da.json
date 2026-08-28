@@ -73,7 +73,7 @@
     "birthDate": "Hvornår har du fødselsdag?",
     "birthPrivate": "Din fødselsdag vil ikke blive vist offentligt.",
     "createVibelyId": "Opret Vibely ID",
-    "vibelyIdPlaceholder": "your.id",
+    "vibelyIdPlaceholder": "Indtast dit Vibely ID",
     "vibelyIdHint": "Du kan altid ændre dette senere",
     "vibelyIdEnter": "Indtast et Vibely ID for at kontrollere",
     "vibelyIdChecking": "Kontrollerer Vibely ID...",

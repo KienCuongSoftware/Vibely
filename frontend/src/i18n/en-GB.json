@@ -73,7 +73,7 @@
     "birthDate": "When is your birthday?",
     "birthPrivate": "Your birthday won't be shown publicly.",
     "createVibelyId": "Create Vibely ID",
-    "vibelyIdPlaceholder": "your.id",
+    "vibelyIdPlaceholder": "Enter your Vibely ID",
     "vibelyIdHint": "You can always change this later",
     "vibelyIdEnter": "Enter a Vibely ID to check",
     "vibelyIdChecking": "Checking Vibely ID...",
