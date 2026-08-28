@@ -388,8 +388,8 @@ export function UploadPage() {
     const rate = uploadLoadedBytes / elapsed
     if (rate <= 0) return ''
     const remaining = Math.max(0, uploadTotalBytes - uploadLoadedBytes)
-    return formatEtaLabel(remaining / rate)
-  }, [uploadProgress, uploadStartedAt, uploadLoadedBytes, uploadTotalBytes, nowTick])
+    return formatEtaLabel(remaining / rate, t)
+  }, [uploadProgress, uploadStartedAt, uploadLoadedBytes, uploadTotalBytes, nowTick, t])
 
   useEffect(() => {
     const refresh = () => {

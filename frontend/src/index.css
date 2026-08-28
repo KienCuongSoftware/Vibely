@@ -798,6 +798,47 @@ html[data-vibely-theme="light"] .vibely-cover-modal .text-amber-200 {
 html[data-vibely-theme="light"] .vibely-cover-modal .text-rose-300 {
   color: #be123c;
 }
+html[data-vibely-theme="light"] .vibely-cover-phone-preview {
+  background-color: #fff;
+  color: #161823;
+  --tw-ring-color: rgb(227 227 228 / 0.65);
+}
+html[data-vibely-theme="light"] .vibely-cover-phone-preview .bg-black {
+  background-color: #fff;
+}
+html[data-vibely-theme="light"] .vibely-cover-phone-preview .text-white,
+html[data-vibely-theme="light"] .vibely-cover-phone-preview .text-zinc-100 {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-cover-phone-preview .text-zinc-400 {
+  color: #8a8b91;
+}
+html[data-vibely-theme="light"] .vibely-cover-phone-preview .border-zinc-700,
+html[data-vibely-theme="light"] .vibely-cover-phone-preview .border-zinc-800 {
+  border-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-cover-phone-preview .bg-zinc-950 {
+  background-color: #f8f8f8;
+}
+html[data-vibely-theme="light"] .vibely-cover-phone-preview .bg-zinc-900 {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-cover-phone-preview .bg-zinc-800 {
+  background-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-cover-phone-preview .bg-zinc-700 {
+  background-color: #d4d4d8;
+}
+html[data-vibely-theme="light"] .vibely-cover-phone-preview .ring-white\/10 {
+  --tw-ring-color: rgb(227 227 228 / 0.8);
+}
+html[data-vibely-theme="light"] .vibely-cover-phone-status .bg-white {
+  background-color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-cover-phone-status.text-white,
+html[data-vibely-theme="light"] .vibely-cover-phone-status .text-white {
+  color: #161823;
+}
 html[data-vibely-theme="light"] .border-zinc-100 {
   border-color: #161823;
 }

@@ -2080,13 +2080,13 @@ export function CoverPickerModal({
           {/* Cột phải: phone dọc — Preview in profile (9:16) */}
           <aside className="hidden w-[260px] shrink-0 flex-col border-l border-white/10 bg-[#1a1a1a] lg:flex xl:w-[300px]">
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-4">
-              <div className="vibely-keep-dark flex aspect-9/16 w-[220px] max-h-[min(560px,70vh)] flex-col overflow-hidden rounded-[32px] border border-zinc-700 bg-black shadow-lg ring-1 ring-white/10">
+              <div className="vibely-cover-phone-preview flex aspect-9/16 w-[220px] max-h-[min(560px,70vh)] flex-col overflow-hidden rounded-[32px] border border-zinc-700 bg-black shadow-lg ring-1 ring-white/10">
                 {/* Status bar + nav — vector (nét mọi DPI), giống UploadPage profile preview */}
                 <div className="flex shrink-0 flex-col bg-black">
                   <div className="flex items-center justify-between px-3 pt-2 pb-0.5 text-[11px] font-semibold tabular-nums text-white">
                     <span>8:00</span>
                     <div
-                      className="flex items-center gap-1.5 text-white"
+                      className="vibely-cover-phone-status flex items-center gap-1.5 text-white"
                       aria-hidden
                     >
                       <div className="flex items-end gap-px pb-0.5">
