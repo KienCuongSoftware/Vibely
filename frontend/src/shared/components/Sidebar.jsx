@@ -181,7 +181,7 @@ export function Sidebar({
               <button
                 key={isUpload ? undefined : item.id}
                 type="button"
-                title={label}
+                title={collapsed ? label : undefined}
                 aria-label={label}
                 aria-current={isActive ? "page" : undefined}
                 className={`flex w-full cursor-pointer flex-nowrap items-center rounded-lg hover:bg-zinc-900 ${

@@ -73,7 +73,6 @@ export function AdminSidebar({ active = "users", className = "", onNavigate }) {
               key={item.id}
               to={item.to}
               onClick={() => onNavigate?.()}
-              title={label}
               aria-label={label}
               aria-current={isActive ? "page" : undefined}
               className={`flex h-10 w-full items-center gap-2.5 rounded-lg px-3 text-sm transition hover:bg-zinc-900 ${
