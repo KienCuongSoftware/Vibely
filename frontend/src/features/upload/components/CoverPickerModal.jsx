@@ -1721,7 +1721,7 @@ export function CoverPickerModal({
       aria-modal="true"
       aria-labelledby="cover-modal-title"
     >
-      <div className="flex h-[min(920px,96vh)] w-full max-w-[1180px] flex-col overflow-hidden rounded-xl bg-[#121212] text-zinc-100 shadow-2xl ring-1 ring-white/10">
+      <div className="vibely-cover-modal flex h-[min(920px,96vh)] w-full max-w-[1180px] flex-col overflow-hidden rounded-xl bg-[#121212] text-zinc-100 shadow-2xl ring-1 ring-white/10">
         {/* Header kiểu TikTok */}
         <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-3 py-2.5 sm:px-4">
           <div className="flex min-w-0 items-center gap-1">
@@ -1840,7 +1840,7 @@ export function CoverPickerModal({
           </aside>
 
           {/* Cột giữa: canvas ngang + scale + filmstrip */}
-          <div className="flex min-w-0 flex-1 flex-col bg-[#0a0a0a] vibely-keep-dark">
+          <div className="flex min-w-0 flex-1 flex-col bg-[#0a0a0a]">
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-3 sm:px-6">
               {!canUseVideoTab && tab === "video" ? (
                 <p className="max-w-sm rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-center text-sm text-amber-200">
@@ -1859,7 +1859,7 @@ export function CoverPickerModal({
                   {/* Canvas ngang — guide dọc = vùng crop hiện trên preview hồ sơ */}
                   <div
                     ref={canvasStageRef}
-                    className="relative aspect-video w-full overflow-hidden rounded-sm bg-black shadow-lg ring-1 ring-white/15"
+                    className="vibely-keep-dark relative aspect-video w-full overflow-hidden rounded-sm bg-black shadow-lg ring-1 ring-white/15"
                     onPointerDown={() => {
                       setStickerSelected(false);
                       setStickerEditing(false);
@@ -2080,7 +2080,7 @@ export function CoverPickerModal({
           {/* Cột phải: phone dọc — Preview in profile (9:16) */}
           <aside className="hidden w-[260px] shrink-0 flex-col border-l border-white/10 bg-[#1a1a1a] lg:flex xl:w-[300px]">
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-4">
-              <div className="flex aspect-9/16 w-[220px] max-h-[min(560px,70vh)] flex-col overflow-hidden rounded-[32px] border border-zinc-700 bg-black shadow-lg ring-1 ring-white/10">
+              <div className="vibely-keep-dark flex aspect-9/16 w-[220px] max-h-[min(560px,70vh)] flex-col overflow-hidden rounded-[32px] border border-zinc-700 bg-black shadow-lg ring-1 ring-white/10">
                 {/* Status bar + nav — vector (nét mọi DPI), giống UploadPage profile preview */}
                 <div className="flex shrink-0 flex-col bg-black">
                   <div className="flex items-center justify-between px-3 pt-2 pb-0.5 text-[11px] font-semibold tabular-nums text-white">

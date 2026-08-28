@@ -767,6 +767,37 @@ html[data-vibely-theme="light"] .vibely-upload-flyout .text-zinc-100 {
 html[data-vibely-theme="light"] .vibely-upload-flyout-item:hover {
   background-color: #f1f1f2;
 }
+html[data-vibely-theme="light"] .vibely-cover-modal {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-cover-modal .border-white\/10 {
+  border-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-cover-modal .ring-white\/10 {
+  --tw-ring-color: rgb(227 227 228 / 0.65);
+}
+html[data-vibely-theme="light"] .vibely-cover-modal .bg-white\/5 {
+  background-color: #f8f8f8;
+}
+html[data-vibely-theme="light"] .vibely-cover-modal .bg-white\/10 {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-cover-modal .hover\:bg-white\/5:hover,
+html[data-vibely-theme="light"] .vibely-cover-modal .hover\:bg-white\/10:hover {
+  background-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-cover-modal .border-white\/15 {
+  border-color: #d4d4d8;
+}
+html[data-vibely-theme="light"] .vibely-cover-modal .hover\:border-white\/30:hover {
+  border-color: #a1a1aa;
+}
+html[data-vibely-theme="light"] .vibely-cover-modal .text-amber-200 {
+  color: #b45309;
+}
+html[data-vibely-theme="light"] .vibely-cover-modal .text-rose-300 {
+  color: #be123c;
+}
 html[data-vibely-theme="light"] .border-zinc-100 {
   border-color: #161823;
 }
@@ -786,6 +817,19 @@ html[data-vibely-theme="light"] .vibely-keep-dark .hover\:bg-black\/80:hover {
 html[data-vibely-theme="light"] .vibely-keep-dark.bg-zinc-950,
 html[data-vibely-theme="light"] .vibely-keep-dark .bg-zinc-950 {
   background-color: #09090b !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .bg-zinc-900 {
+  background-color: #18181b !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .bg-zinc-800 {
+  background-color: #27272a !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .bg-zinc-700 {
+  background-color: #3f3f46 !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .border-zinc-800,
+html[data-vibely-theme="light"] .vibely-keep-dark .border-zinc-700 {
+  border-color: #3f3f46 !important;
 }
 html[data-vibely-theme="light"] .vibely-keep-dark.bg-\[\#121212\],
 html[data-vibely-theme="light"] .vibely-keep-dark .bg-\[\#121212\] {
