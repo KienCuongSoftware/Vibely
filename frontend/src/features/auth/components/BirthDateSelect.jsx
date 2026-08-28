@@ -118,10 +118,8 @@ export function BirthDateSelect({
             <li key={option.value} role="option" aria-selected={isSelected}>
               <button
                 type="button"
-                className={`flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-[13px] transition ${
-                  isSelected
-                    ? "bg-zinc-700/80 text-zinc-100"
-                    : "text-zinc-300 hover:bg-zinc-700/50"
+                className={`birth-date-select-option flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-[13px] transition ${
+                  isSelected ? "birth-date-select-option--selected" : ""
                 }`}
                 onClick={() => {
                   onChange(option.value);
@@ -148,9 +146,9 @@ export function BirthDateSelect({
         aria-haspopup="listbox"
         aria-controls={open ? listId : undefined}
         onClick={() => setOpenState(!open)}
-        className={`flex h-10 w-full items-center rounded px-3 pr-8 text-left text-[13px] outline-none ring-0 transition focus:outline-none focus:ring-0 ${
-          open ? "bg-zinc-700 text-zinc-100" : "bg-zinc-800 text-zinc-200 hover:bg-zinc-700/60"
-        } ${!selected ? "text-zinc-400" : ""}`}
+        className={`birth-date-select-trigger flex h-10 w-full items-center rounded px-3 pr-8 text-left text-[13px] outline-none ring-0 transition focus:outline-none focus:ring-0 ${
+          open ? "birth-date-select-trigger--open" : ""
+        } ${!selected ? "birth-date-select-trigger--placeholder" : ""}`}
       >
         <span className="truncate">{displayLabel}</span>
       </button>

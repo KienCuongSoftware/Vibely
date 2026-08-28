@@ -25,6 +25,31 @@
   background: transparent;
 }
 
+.birth-date-select-trigger {
+  background-color: #27272a;
+  color: #e4e4e7;
+}
+.birth-date-select-trigger:hover {
+  background-color: #3f3f46;
+}
+.birth-date-select-trigger--open {
+  background-color: #3f3f46;
+  color: #f4f4f5;
+}
+.birth-date-select-trigger--placeholder {
+  color: #a1a1aa;
+}
+.birth-date-select-option {
+  color: #d4d4d8;
+}
+.birth-date-select-option:hover {
+  background-color: rgba(63, 63, 70, 0.55);
+}
+.birth-date-select-option--selected {
+  background-color: rgba(63, 63, 70, 0.85);
+  color: #f4f4f5;
+}
+
 /* Ô nhập đăng nhập / đăng ký — không viền trắng khi focus (kiểu TikTok). */
 .vibely-auth-input {
   border: 1px solid transparent !important;
@@ -425,15 +450,31 @@ html[data-vibely-theme="light"] .vibely-auth-theme-menu button:hover {
   background-color: #f1f1f2;
 }
 html[data-vibely-theme="light"] .birth-date-select-list {
-  background-color: #fff;
+  background-color: #fff !important;
   --tw-ring-color: #e3e3e4;
   scrollbar-color: #c6c6c9 transparent;
 }
-html[data-vibely-theme="light"] .birth-date-select-list button {
+html[data-vibely-theme="light"] .birth-date-select-trigger {
+  background-color: #f1f1f2;
   color: #161823;
 }
-html[data-vibely-theme="light"] .birth-date-select-list button:hover {
-  background-color: #f1f1f2;
+html[data-vibely-theme="light"] .birth-date-select-trigger:hover,
+html[data-vibely-theme="light"] .birth-date-select-trigger--open {
+  background-color: #e3e3e4;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .birth-date-select-trigger--placeholder {
+  color: #8a8b91;
+}
+html[data-vibely-theme="light"] .birth-date-select-option {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .birth-date-select-option:hover {
+  background-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .birth-date-select-option--selected {
+  background-color: #d4d4d8;
+  color: #161823;
 }
 html[data-vibely-theme="light"] .vibely-auth-page [scrollbar-color] {
   scrollbar-color: #c6c6c9 transparent;
