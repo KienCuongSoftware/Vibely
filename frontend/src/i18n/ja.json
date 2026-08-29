@@ -554,6 +554,39 @@
     "forYou": "おすすめ",
     "loadMore": "さらに読み込む"
   },
+  "livePage": {
+    "pageTitle": "LIVE | Vibely",
+    "nav": {
+      "exploreLive": "LIVEを探索",
+      "goLive": "LIVE開始",
+      "creatorTools": "クリエイターツール"
+    },
+    "recommendedCreators": "おすすめLIVEクリエイター",
+    "openLiveStudio": "LIVE Studioを開く",
+    "watching": "視聴中",
+    "unmute": "ミュート解除",
+    "seeAll": "すべて見る",
+    "scrollCategoriesLeft": "カテゴリを左にスクロール",
+    "scrollCategoriesRight": "カテゴリを右にスクロール",
+    "scrollRowLeft": "左にスクロール",
+    "scrollRowRight": "右にスクロール",
+    "categories": {
+      "recommended": "おすすめ",
+      "following": "フォロー中",
+      "gaming": "ゲーム",
+      "lifestyle": "ライフスタイル",
+      "freeFire": "Garena Free Fire",
+      "pubg": "PUBG Mobile",
+      "music": "音楽",
+      "outdoor": "アウトドア",
+      "chat": "チャット",
+      "food": "フード"
+    },
+    "sections": {
+      "gaming": "ゲーム",
+      "lifestyle": "ライフスタイル"
+    }
+  },
   "messagesPage": {
     "title": "メッセージ",
     "pageTitle": "メッセージ | Vibely",

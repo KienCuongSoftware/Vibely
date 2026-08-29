@@ -543,6 +543,39 @@
     "forYou": "推薦",
     "loadMore": "載入更多"
   },
+  "livePage": {
+    "pageTitle": "LIVE | Vibely",
+    "nav": {
+      "exploreLive": "探索 LIVE",
+      "goLive": "開始 LIVE",
+      "creatorTools": "創作者工具"
+    },
+    "recommendedCreators": "推薦 LIVE 創作者",
+    "openLiveStudio": "開啟 LIVE Studio",
+    "watching": "正在觀看",
+    "unmute": "取消靜音",
+    "seeAll": "查看全部",
+    "scrollCategoriesLeft": "向左捲動分類",
+    "scrollCategoriesRight": "向右捲動分類",
+    "scrollRowLeft": "向左捲動",
+    "scrollRowRight": "向右捲動",
+    "categories": {
+      "recommended": "推薦",
+      "following": "正在關注",
+      "gaming": "遊戲",
+      "lifestyle": "生活方式",
+      "freeFire": "Garena Free Fire",
+      "pubg": "PUBG Mobile",
+      "music": "音樂",
+      "outdoor": "戶外",
+      "chat": "聊天",
+      "food": "美食"
+    },
+    "sections": {
+      "gaming": "遊戲",
+      "lifestyle": "生活方式"
+    }
+  },
   "messagesPage": {
     "title": "訊息",
     "pageTitle": "訊息 | Vibely",

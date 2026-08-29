@@ -543,6 +543,39 @@
     "forYou": "لك",
     "loadMore": "تحميل المزيد"
   },
+  "livePage": {
+    "pageTitle": "LIVE | Vibely",
+    "nav": {
+      "exploreLive": "استكشاف LIVE",
+      "goLive": "بدء LIVE",
+      "creatorTools": "أدوات المبدع"
+    },
+    "recommendedCreators": "مبدعو LIVE المقترحون",
+    "openLiveStudio": "فتح LIVE Studio",
+    "watching": "يشاهدون",
+    "unmute": "إلغاء كتم الصوت",
+    "seeAll": "عرض الكل",
+    "scrollCategoriesLeft": "تمرير الفئات لليسار",
+    "scrollCategoriesRight": "تمرير الفئات لليمين",
+    "scrollRowLeft": "تمرير لليسار",
+    "scrollRowRight": "تمرير لليمين",
+    "categories": {
+      "recommended": "مقترح",
+      "following": "المتابَعون",
+      "gaming": "الألعاب",
+      "lifestyle": "نمط الحياة",
+      "freeFire": "Garena Free Fire",
+      "pubg": "PUBG Mobile",
+      "music": "الموسيقى",
+      "outdoor": "في الهواء الطلق",
+      "chat": "دردشة",
+      "food": "طعام"
+    },
+    "sections": {
+      "gaming": "الألعاب",
+      "lifestyle": "نمط الحياة"
+    }
+  },
   "messagesPage": {
     "title": "الرسائل",
     "pageTitle": "الرسائل | Vibely",

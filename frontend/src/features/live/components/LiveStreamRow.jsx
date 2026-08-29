@@ -16,10 +16,10 @@ export function LiveStreamRow({ title, streams, onSelectStream }) {
   return (
     <section className="mt-6 lg:mt-8">
       <div className="mb-3 flex items-center justify-between gap-3 px-1">
-        <h2 className="text-[17px] font-bold text-zinc-100 lg:text-lg">{title}</h2>
+        <h2 className="live-section-title text-[17px] font-bold text-zinc-100 lg:text-lg">{title}</h2>
         <button
           type="button"
-          className="cursor-pointer text-[13px] font-semibold text-zinc-500 transition hover:text-zinc-300"
+          className="live-see-all cursor-pointer text-[13px] font-semibold text-zinc-500 transition hover:text-zinc-300"
         >
           {t('livePage.seeAll')}
         </button>

@@ -42,7 +42,7 @@ export function LivePage() {
   const featuredStream = LIVE_FEATURED_STREAM
 
   return (
-    <section className="vibely-live-page vibely-keep-dark flex h-dvh max-h-dvh min-h-0 flex-col bg-black text-zinc-100 lg:flex-row">
+    <section className="vibely-live-page flex h-dvh max-h-dvh min-h-0 flex-col bg-black text-zinc-100 lg:flex-row">
       <div className="hidden shrink-0 lg:flex">
         <LiveSidebar
           activeNav="explore"
@@ -52,7 +52,7 @@ export function LivePage() {
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         {isMobile ? (
-          <header className="flex shrink-0 items-center gap-3 border-b border-white/10 px-3 py-3">
+          <header className="live-mobile-header flex shrink-0 items-center gap-3 border-b border-white/10 px-3 py-3">
             <button
               type="button"
               onClick={() => navigate('/')}

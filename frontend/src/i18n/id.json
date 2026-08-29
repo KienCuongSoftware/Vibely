@@ -543,6 +543,39 @@
     "forYou": "Untuk Anda",
     "loadMore": "Muat lebih banyak"
   },
+  "livePage": {
+    "pageTitle": "LIVE | Vibely",
+    "nav": {
+      "exploreLive": "Jelajahi LIVE",
+      "goLive": "Mulai LIVE",
+      "creatorTools": "Alat kreator"
+    },
+    "recommendedCreators": "Kreator LIVE rekomendasi",
+    "openLiveStudio": "Buka LIVE Studio",
+    "watching": "menonton",
+    "unmute": "Nyalakan suara",
+    "seeAll": "Lihat semua",
+    "scrollCategoriesLeft": "Gulir kategori ke kiri",
+    "scrollCategoriesRight": "Gulir kategori ke kanan",
+    "scrollRowLeft": "Gulir ke kiri",
+    "scrollRowRight": "Gulir ke kanan",
+    "categories": {
+      "recommended": "Rekomendasi",
+      "following": "Mengikuti",
+      "gaming": "Game",
+      "lifestyle": "Gaya hidup",
+      "freeFire": "Garena Free Fire",
+      "pubg": "PUBG Mobile",
+      "music": "Musik",
+      "outdoor": "Luar ruangan",
+      "chat": "Obrolan",
+      "food": "Makanan"
+    },
+    "sections": {
+      "gaming": "Game",
+      "lifestyle": "Gaya hidup"
+    }
+  },
   "messagesPage": {
     "title": "Pesan",
     "pageTitle": "Pesan | Vibely",

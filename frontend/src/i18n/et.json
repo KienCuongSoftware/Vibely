@@ -543,6 +543,39 @@
     "forYou": "Für dich",
     "loadMore": "Mehr laden"
   },
+  "livePage": {
+    "pageTitle": "LIVE | Vibely",
+    "nav": {
+      "exploreLive": "Explore LIVE",
+      "goLive": "Go LIVE",
+      "creatorTools": "Creator tools"
+    },
+    "recommendedCreators": "Recommended LIVE creators",
+    "openLiveStudio": "Open LIVE Studio",
+    "watching": "watching",
+    "unmute": "Unmute",
+    "seeAll": "See all",
+    "scrollCategoriesLeft": "Scroll categories left",
+    "scrollCategoriesRight": "Scroll categories right",
+    "scrollRowLeft": "Scroll row left",
+    "scrollRowRight": "Scroll row right",
+    "categories": {
+      "recommended": "Recommended",
+      "following": "Following",
+      "gaming": "Gaming",
+      "lifestyle": "Lifestyle",
+      "freeFire": "Garena Free Fire",
+      "pubg": "PUBG Mobile",
+      "music": "Music",
+      "outdoor": "Outdoor",
+      "chat": "Chat",
+      "food": "Food"
+    },
+    "sections": {
+      "gaming": "Gaming",
+      "lifestyle": "Lifestyle"
+    }
+  },
   "messagesPage": {
     "title": "Viestit",
     "pageTitle": "Viestit | Vibely",

@@ -543,6 +543,39 @@
     "forYou": "สำหรับคุณ",
     "loadMore": "โหลดเพิ่ม"
   },
+  "livePage": {
+    "pageTitle": "LIVE | Vibely",
+    "nav": {
+      "exploreLive": "สำรวจ LIVE",
+      "goLive": "เริ่ม LIVE",
+      "creatorTools": "เครื่องมือครีเอเตอร์"
+    },
+    "recommendedCreators": "ครีเอเตอร์ LIVE แนะนำ",
+    "openLiveStudio": "เปิด LIVE Studio",
+    "watching": "กำลังดู",
+    "unmute": "เปิดเสียง",
+    "seeAll": "ดูทั้งหมด",
+    "scrollCategoriesLeft": "เลื่อนหมวดหมู่ไปทางซ้าย",
+    "scrollCategoriesRight": "เลื่อนหมวดหมู่ไปทางขวา",
+    "scrollRowLeft": "เลื่อนไปทางซ้าย",
+    "scrollRowRight": "เลื่อนไปทางขวา",
+    "categories": {
+      "recommended": "แนะนำ",
+      "following": "กำลังติดตาม",
+      "gaming": "เกม",
+      "lifestyle": "ไลฟ์สไตล์",
+      "freeFire": "Garena Free Fire",
+      "pubg": "PUBG Mobile",
+      "music": "ดนตรี",
+      "outdoor": "กลางแจ้ง",
+      "chat": "แชท",
+      "food": "อาหาร"
+    },
+    "sections": {
+      "gaming": "เกม",
+      "lifestyle": "ไลฟ์สไตล์"
+    }
+  },
   "messagesPage": {
     "title": "ข้อความ",
     "pageTitle": "ข้อความ | Vibely",

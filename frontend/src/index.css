@@ -840,10 +840,80 @@ html[data-vibely-theme="light"] .vibely-cover-phone-status .text-white {
   color: #161823;
 }
 
-/* LIVE hub stays dark like TikTok LIVE (even on light theme). */
-html[data-vibely-theme="light"] .vibely-live-page.vibely-keep-dark {
-  background-color: #000 !important;
-  color: #f4f4f5 !important;
+/* LIVE hub — light + dark theme (page chrome follows app theme; player stays dark). */
+html[data-vibely-theme="light"] .vibely-live-page {
+  background-color: #fff;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-sidebar,
+html[data-vibely-theme="light"] .vibely-live-page .live-mobile-header {
+  background-color: #fff;
+  border-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-category-bar {
+  border-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-nav-item:not(.live-nav-item--active) {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-nav-item:not(.live-nav-item--active):hover {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-nav-icon:not(.text-\[\#fe2c55\]) {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-nav-item--active {
+  background-color: rgba(254, 44, 85, 0.08);
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-creator-row:hover {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-creator-row .text-zinc-100 {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-category-tab--inactive {
+  background-color: #f1f1f2;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-category-tab--inactive:hover {
+  background-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-category-tab--active {
+  background-color: #161823;
+  color: #fff;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-section-title {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-see-all {
+  color: #8a8b91;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-see-all:hover {
+  color: #52525b;
+}
+html[data-vibely-theme="light"] .vibely-live-page .text-zinc-500 {
+  color: #8a8b91;
+}
+html[data-vibely-theme="light"] .vibely-live-page .border-white\/10,
+html[data-vibely-theme="light"] .vibely-live-page .border-white\/5 {
+  border-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-live-page .bg-black {
+  background-color: #fff;
+}
+html[data-vibely-theme="light"] .vibely-live-page .text-zinc-100 {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-live-page .hover\:bg-white\/10:hover {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-category-bar button.border-zinc-700 {
+  border-color: #e3e3e4;
+  background-color: #fff;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-category-bar button.border-zinc-700:hover:not(:disabled) {
+  background-color: #f1f1f2;
 }
 
 html[data-vibely-theme="light"] .border-zinc-100 {

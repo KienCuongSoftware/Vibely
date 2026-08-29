@@ -543,6 +543,39 @@
     "forYou": "Para si",
     "loadMore": "Carregar mais"
   },
+  "livePage": {
+    "pageTitle": "LIVE | Vibely",
+    "nav": {
+      "exploreLive": "Explorar LIVE",
+      "goLive": "Iniciar LIVE",
+      "creatorTools": "Ferramentas do criador"
+    },
+    "recommendedCreators": "Criadores LIVE recomendados",
+    "openLiveStudio": "Abrir LIVE Studio",
+    "watching": "assistindo",
+    "unmute": "Ativar som",
+    "seeAll": "Ver tudo",
+    "scrollCategoriesLeft": "Rolar categorias para a esquerda",
+    "scrollCategoriesRight": "Rolar categorias para a direita",
+    "scrollRowLeft": "Rolar para a esquerda",
+    "scrollRowRight": "Rolar para a direita",
+    "categories": {
+      "recommended": "Recomendado",
+      "following": "Seguindo",
+      "gaming": "Jogos",
+      "lifestyle": "Estilo de vida",
+      "freeFire": "Garena Free Fire",
+      "pubg": "PUBG Mobile",
+      "music": "Música",
+      "outdoor": "Ar livre",
+      "chat": "Chat",
+      "food": "Comida"
+    },
+    "sections": {
+      "gaming": "Jogos",
+      "lifestyle": "Estilo de vida"
+    }
+  },
   "messagesPage": {
     "title": "Mensagens",
     "pageTitle": "Mensagens | Vibely",

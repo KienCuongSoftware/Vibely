@@ -31,13 +31,16 @@ function LiveNavItem({ active, icon: Icon, label, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[15px] font-semibold transition ${
+      className={`live-nav-item flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[15px] font-semibold transition ${
         active
-          ? 'bg-white/10 text-[#fe2c55]'
+          ? 'live-nav-item--active bg-white/10 text-[#fe2c55]'
           : 'text-zinc-100 hover:bg-white/5'
       }`}
     >
-      <Icon className={`shrink-0 text-[22px] ${active ? 'text-[#fe2c55]' : 'text-zinc-100'}`} aria-hidden />
+      <Icon
+        className={`live-nav-icon shrink-0 text-[22px] ${active ? 'text-[#fe2c55]' : 'text-zinc-100'}`}
+        aria-hidden
+      />
       <span className="min-w-0 truncate">{label}</span>
     </button>
   )
@@ -47,7 +50,7 @@ function RecommendedCreatorRow({ creator }) {
   return (
     <button
       type="button"
-      className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-left transition hover:bg-white/5"
+      className="live-creator-row flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-left transition hover:bg-white/5"
     >
       <div className="relative shrink-0">
         <img
@@ -84,7 +87,7 @@ export function LiveSidebar({ activeNav = 'explore', recommendedCreators = [] })
   const navigate = useNavigate()
 
   return (
-    <aside className="flex h-full w-[240px] shrink-0 flex-col border-r border-white/10 bg-black px-3 py-4 xl:w-[260px]">
+    <aside className="live-sidebar flex h-full w-[240px] shrink-0 flex-col border-r border-white/10 bg-black px-3 py-4 xl:w-[260px]">
       <Link to="/" className="mb-5 inline-flex shrink-0 px-1">
         <VibelyWordmark className="h-8 w-auto text-zinc-100" />
       </Link>

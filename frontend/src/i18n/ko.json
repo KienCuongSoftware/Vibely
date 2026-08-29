@@ -543,6 +543,39 @@
     "forYou": "추천",
     "loadMore": "더 보기"
   },
+  "livePage": {
+    "pageTitle": "LIVE | Vibely",
+    "nav": {
+      "exploreLive": "LIVE 둘러보기",
+      "goLive": "LIVE 시작",
+      "creatorTools": "크리에이터 도구"
+    },
+    "recommendedCreators": "추천 LIVE 크리에이터",
+    "openLiveStudio": "LIVE Studio 열기",
+    "watching": "시청 중",
+    "unmute": "음소거 해제",
+    "seeAll": "모두 보기",
+    "scrollCategoriesLeft": "카테고리 왼쪽으로 스크롤",
+    "scrollCategoriesRight": "카테고리 오른쪽으로 스크롤",
+    "scrollRowLeft": "왼쪽으로 스크롤",
+    "scrollRowRight": "오른쪽으로 스크롤",
+    "categories": {
+      "recommended": "추천",
+      "following": "팔로잉",
+      "gaming": "게임",
+      "lifestyle": "라이프스타일",
+      "freeFire": "Garena Free Fire",
+      "pubg": "PUBG Mobile",
+      "music": "음악",
+      "outdoor": "아웃도어",
+      "chat": "채팅",
+      "food": "음식"
+    },
+    "sections": {
+      "gaming": "게임",
+      "lifestyle": "라이프스타일"
+    }
+  },
   "messagesPage": {
     "title": "메시지",
     "pageTitle": "메시지 | Vibely",

@@ -11,7 +11,7 @@ export function LiveHeroPlayer({ stream }) {
 
   return (
     <div className="relative mx-auto w-full max-w-[960px]">
-      <div className="group relative aspect-video w-full overflow-hidden rounded-2xl bg-zinc-950 shadow-[0_16px_48px_rgba(0,0,0,0.45)] ring-1 ring-white/10">
+      <div className="vibely-keep-dark group relative aspect-video w-full overflow-hidden rounded-2xl bg-zinc-950 shadow-[0_16px_48px_rgba(0,0,0,0.45)] ring-1 ring-white/10">
         <img
           src={stream.coverUrl}
           alt=""

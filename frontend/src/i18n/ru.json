@@ -543,6 +543,39 @@
     "forYou": "Для вас",
     "loadMore": "Загрузить ещё"
   },
+  "livePage": {
+    "pageTitle": "LIVE | Vibely",
+    "nav": {
+      "exploreLive": "Смотреть LIVE",
+      "goLive": "Начать LIVE",
+      "creatorTools": "Инструменты автора"
+    },
+    "recommendedCreators": "Рекомендуемые LIVE-авторы",
+    "openLiveStudio": "Открыть LIVE Studio",
+    "watching": "смотрят",
+    "unmute": "Включить звук",
+    "seeAll": "Смотреть все",
+    "scrollCategoriesLeft": "Прокрутить категории влево",
+    "scrollCategoriesRight": "Прокрутить категории вправо",
+    "scrollRowLeft": "Прокрутить влево",
+    "scrollRowRight": "Прокрутить вправо",
+    "categories": {
+      "recommended": "Рекомендации",
+      "following": "Подписки",
+      "gaming": "Игры",
+      "lifestyle": "Лifestyle",
+      "freeFire": "Garena Free Fire",
+      "pubg": "PUBG Mobile",
+      "music": "Музыка",
+      "outdoor": "На улице",
+      "chat": "Чат",
+      "food": "Еда"
+    },
+    "sections": {
+      "gaming": "Игры",
+      "lifestyle": "Lifestyle"
+    }
+  },
   "messagesPage": {
     "title": "Сообщения",
     "pageTitle": "Сообщения | Vibely",

@@ -543,6 +543,39 @@
     "forYou": "आपके लिए",
     "loadMore": "और लोड करें"
   },
+  "livePage": {
+    "pageTitle": "LIVE | Vibely",
+    "nav": {
+      "exploreLive": "LIVE देखें",
+      "goLive": "LIVE शुरू करें",
+      "creatorTools": "क्रिएटर टूल्स"
+    },
+    "recommendedCreators": "अनुशंसित LIVE क्रिएटर",
+    "openLiveStudio": "LIVE Studio खोलें",
+    "watching": "देख रहे हैं",
+    "unmute": "आवाज़ चालू करें",
+    "seeAll": "सभी देखें",
+    "scrollCategoriesLeft": "श्रेणियाँ बाएँ स्क्रॉल करें",
+    "scrollCategoriesRight": "श्रेणियाँ दाएँ स्क्रॉल करें",
+    "scrollRowLeft": "बाएँ स्क्रॉल करें",
+    "scrollRowRight": "दाएँ स्क्रॉल करें",
+    "categories": {
+      "recommended": "अनुशंसित",
+      "following": "फ़ॉलो किए गए",
+      "gaming": "गेमिंग",
+      "lifestyle": "लाइफ़स्टाइल",
+      "freeFire": "Garena Free Fire",
+      "pubg": "PUBG Mobile",
+      "music": "संगीत",
+      "outdoor": "आउटडोर",
+      "chat": "चैट",
+      "food": "भोजन"
+    },
+    "sections": {
+      "gaming": "गेमिंग",
+      "lifestyle": "लाइफ़स्टाइल"
+    }
+  },
   "messagesPage": {
     "title": "संदेश",
     "pageTitle": "संदेश | Vibely",

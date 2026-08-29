@@ -543,6 +543,39 @@
     "forYou": "Sizin için",
     "loadMore": "Daha fazla yükle"
   },
+  "livePage": {
+    "pageTitle": "LIVE | Vibely",
+    "nav": {
+      "exploreLive": "LIVE keşfet",
+      "goLive": "LIVE başlat",
+      "creatorTools": "İçerik üretici araçları"
+    },
+    "recommendedCreators": "Önerilen LIVE içerik üreticileri",
+    "openLiveStudio": "LIVE Studio'yu aç",
+    "watching": "izliyor",
+    "unmute": "Sesi aç",
+    "seeAll": "Tümünü gör",
+    "scrollCategoriesLeft": "Kategorileri sola kaydır",
+    "scrollCategoriesRight": "Kategorileri sağa kaydır",
+    "scrollRowLeft": "Sola kaydır",
+    "scrollRowRight": "Sağa kaydır",
+    "categories": {
+      "recommended": "Önerilen",
+      "following": "Takip edilenler",
+      "gaming": "Oyun",
+      "lifestyle": "Yaşam tarzı",
+      "freeFire": "Garena Free Fire",
+      "pubg": "PUBG Mobile",
+      "music": "Müzik",
+      "outdoor": "Açık hava",
+      "chat": "Sohbet",
+      "food": "Yemek"
+    },
+    "sections": {
+      "gaming": "Oyun",
+      "lifestyle": "Yaşam tarzı"
+    }
+  },
   "messagesPage": {
     "title": "Mesajlar",
     "pageTitle": "Mesajlar | Vibely",

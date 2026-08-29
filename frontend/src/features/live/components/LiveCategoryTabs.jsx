@@ -29,7 +29,7 @@ export function LiveCategoryTabs({ categories, activeId, onSelect }) {
   }
 
   return (
-    <div className="flex shrink-0 items-center gap-2 border-b border-white/5 px-3 py-3 lg:px-5">
+    <div className="live-category-bar flex shrink-0 items-center gap-2 border-b border-white/5 px-3 py-3 lg:px-5">
       <button
         type="button"
         onClick={() => scrollBy(-1)}
@@ -53,10 +53,10 @@ export function LiveCategoryTabs({ categories, activeId, onSelect }) {
                 key={cat.id}
                 type="button"
                 onClick={() => onSelect(cat.id)}
-                className={`cursor-pointer whitespace-nowrap rounded-full px-4 py-2 text-[14px] font-semibold transition ${
+                className={`live-category-tab cursor-pointer whitespace-nowrap rounded-full px-4 py-2 text-[14px] font-semibold transition ${
                   active
-                    ? 'bg-white font-bold text-black'
-                    : 'bg-zinc-800/90 text-zinc-100 hover:bg-zinc-700'
+                    ? 'live-category-tab--active bg-white font-bold text-black'
+                    : 'live-category-tab--inactive bg-zinc-800/90 text-zinc-100 hover:bg-zinc-700'
                 }`}
               >
                 {t(cat.labelKey)}
