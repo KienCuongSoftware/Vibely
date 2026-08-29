@@ -8,8 +8,8 @@ import { LiveSidebar } from '@/features/live/components/LiveSidebar.jsx'
 import { LiveStreamRow } from '@/features/live/components/LiveStreamRow.jsx'
 import {
   LIVE_CATEGORIES,
-  LIVE_FEATURED_STREAM,
   LIVE_GAMING_STREAMS,
+  LIVE_HERO_STREAMS,
   LIVE_LIFESTYLE_STREAMS,
   LIVE_RECOMMENDED_CREATORS,
 } from '@/features/live/data/liveMockData.js'
@@ -38,8 +38,6 @@ export function LivePage() {
       onActivity: () => navigate('/?openActivity=1'),
     })
   }
-
-  const featuredStream = LIVE_FEATURED_STREAM
 
   return (
     <section className="vibely-live-page flex h-dvh max-h-dvh min-h-0 flex-col bg-black text-zinc-100 lg:flex-row">
@@ -74,7 +72,7 @@ export function LivePage() {
         />
 
         <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-3 pb-6 pt-4 lg:px-6 lg:pb-8 lg:pt-5">
-          <LiveHeroPlayer stream={featuredStream} />
+          <LiveHeroPlayer streams={LIVE_HERO_STREAMS} />
 
           <LiveStreamRow
             title={t('livePage.sections.gaming')}

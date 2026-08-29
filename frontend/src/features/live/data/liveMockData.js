@@ -50,11 +50,49 @@ export const LIVE_FEATURED_STREAM = {
   displayName: 'PUBG Master VN',
   avatarUrl: 'https://picsum.photos/seed/vibely-live-feat-avatar/80/80',
   coverUrl: 'https://picsum.photos/seed/vibely-live-feat-cover/1280/720',
-  webcamUrl: 'https://picsum.photos/seed/vibely-live-feat-cam/160/120',
+  portraitCoverUrl: 'https://picsum.photos/seed/vibely-live-feat-portrait/720/1280',
   viewerCount: 12400,
   categoryId: 'gaming',
   verified: true,
 }
+
+/** Hero carousel — cycles in the featured player. */
+export const LIVE_HERO_STREAMS = [
+  LIVE_FEATURED_STREAM,
+  {
+    id: 'hero-2',
+    title: 'Free Fire — solo rank',
+    username: 'ff_legend',
+    displayName: 'FF Legend',
+    avatarUrl: 'https://picsum.photos/seed/vibely-live-g1-av/80/80',
+    coverUrl: 'https://picsum.photos/seed/vibely-live-g1/1280/720',
+    portraitCoverUrl: 'https://picsum.photos/seed/vibely-live-g1-portrait/720/1280',
+    viewerCount: 3200,
+    verified: false,
+  },
+  {
+    id: 'hero-3',
+    title: 'English chat live',
+    username: 'english_coach',
+    displayName: 'Cô Dung English',
+    avatarUrl: 'https://picsum.photos/seed/vibely-live-hero3-av/80/80',
+    coverUrl: 'https://picsum.photos/seed/vibely-live-hero3/1280/720',
+    portraitCoverUrl: 'https://picsum.photos/seed/vibely-live-hero3-portrait/720/1280',
+    viewerCount: 254,
+    verified: true,
+  },
+  {
+    id: 'hero-4',
+    title: 'Valorant ranked',
+    username: 'valo_vn',
+    displayName: 'Valo VN',
+    avatarUrl: 'https://picsum.photos/seed/vibely-live-g4-av/80/80',
+    coverUrl: 'https://picsum.photos/seed/vibely-live-g4/1280/720',
+    portraitCoverUrl: 'https://picsum.photos/seed/vibely-live-g4-portrait/720/1280',
+    viewerCount: 2100,
+    verified: false,
+  },
+]
 
 export const LIVE_GAMING_STREAMS = [
   {

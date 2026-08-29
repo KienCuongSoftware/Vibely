@@ -840,6 +840,21 @@ html[data-vibely-theme="light"] .vibely-cover-phone-status .text-white {
   color: #161823;
 }
 
+/* LIVE hero player — audio wave on CTA */
+@keyframes live-hero-wave {
+  0%,
+  100% {
+    transform: scaleY(0.55);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+.live-hero-wave-bar {
+  transform-origin: bottom;
+  animation: live-hero-wave 0.9s ease-in-out infinite;
+}
+
 /* LIVE hub — light + dark theme (page chrome follows app theme; player stays dark). */
 html[data-vibely-theme="light"] .vibely-live-page {
   background-color: #fff;
