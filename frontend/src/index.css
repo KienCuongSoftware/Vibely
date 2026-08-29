@@ -839,6 +839,13 @@ html[data-vibely-theme="light"] .vibely-cover-phone-status.text-white,
 html[data-vibely-theme="light"] .vibely-cover-phone-status .text-white {
   color: #161823;
 }
+
+/* LIVE hub stays dark like TikTok LIVE (even on light theme). */
+html[data-vibely-theme="light"] .vibely-live-page.vibely-keep-dark {
+  background-color: #000 !important;
+  color: #f4f4f5 !important;
+}
+
 html[data-vibely-theme="light"] .border-zinc-100 {
   border-color: #161823;
 }

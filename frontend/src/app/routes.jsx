@@ -45,6 +45,7 @@ const SoundPage = lazyNamed(() => import('@/features/post/pages/SoundPage.jsx'),
 const HashtagPage = lazyNamed(() => import('@/features/post/pages/HashtagPage.jsx'), 'HashtagPage')
 const ExplorePage = lazyNamed(() => import('@/features/explore/pages/ExplorePage.jsx'), 'ExplorePage')
 const ExploreViewerPage = lazyNamed(() => import('@/features/explore/pages/ExploreViewerPage.jsx'), 'ExploreViewerPage')
+const LivePage = lazyNamed(() => import('@/features/live/pages/LivePage.jsx'), 'LivePage')
 const SearchResultsPage = lazyNamed(() => import('@/features/search/pages/SearchResultsPage.jsx'), 'SearchResultsPage')
 const AdminUsersPage = lazyNamed(() => import('@/features/admin/pages/AdminUsersPage.jsx'), 'AdminUsersPage')
 const AdminBannedUsersPage = lazyNamed(() => import('@/features/admin/pages/AdminBannedUsersPage.jsx'), 'AdminBannedUsersPage')
@@ -91,6 +92,7 @@ export function GuestRoutes() {
       <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
       <Route path="/sound" element={<SoundPage />} />
       <Route path="/explore" element={<ExplorePage />} />
+      <Route path="/live" element={<LivePage />} />
       <Route path="/explore/view/:publicId" element={<ExploreViewerPage />} />
       <Route path="/search" element={<SearchResultsPage />} />
       <Route path="/tag/:tag" element={<HashtagPage />} />
@@ -212,6 +214,10 @@ export function AuthenticatedRoutes({ user, isAdmin }) {
       <Route
         path="/explore"
         element={<UserOnlyRoute user={user}><ExplorePage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/live"
+        element={<UserOnlyRoute user={user}><LivePage /></UserOnlyRoute>}
       />
       <Route
         path="/search"

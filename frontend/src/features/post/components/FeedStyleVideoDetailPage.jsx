@@ -831,7 +831,7 @@ export function FeedStyleVideoDetailPage({
       />
       <div className="shrink-0 lg:hidden">
         <MobileFeedTopBar
-          onLiveTap={() => redirectGuestToLogin(navigate, token)}
+          onLiveTap={() => navigate('/live')}
           onSearchTap={() => {
             if (redirectGuestToLogin(navigate, token)) return
             navigate('/search')

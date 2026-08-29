@@ -252,6 +252,39 @@
     "searchOnVibely": "Tìm kiếm trên Vibely",
     "loadMore": "Tải thêm"
   },
+  "livePage": {
+    "pageTitle": "LIVE | Vibely",
+    "nav": {
+      "exploreLive": "Khám phá phiên LIVE",
+      "goLive": "Bắt đầu LIVE",
+      "creatorTools": "Công cụ dành cho nhà sáng tạo"
+    },
+    "recommendedCreators": "Nhà sáng tạo LIVE đề xuất",
+    "openLiveStudio": "Mở LIVE Studio",
+    "watching": "đang xem",
+    "unmute": "Bật tiếng",
+    "seeAll": "Xem tất cả",
+    "scrollCategoriesLeft": "Cuộn danh mục sang trái",
+    "scrollCategoriesRight": "Cuộn danh mục sang phải",
+    "scrollRowLeft": "Cuộn sang trái",
+    "scrollRowRight": "Cuộn sang phải",
+    "categories": {
+      "recommended": "Đề xuất",
+      "following": "Đang Follow",
+      "gaming": "Game",
+      "lifestyle": "Phong cách sống",
+      "freeFire": "Garena Free Fire",
+      "pubg": "PUBG Mobile",
+      "music": "Âm nhạc",
+      "outdoor": "Ngoài trời",
+      "chat": "Trò chuyện",
+      "food": "Ẩm thực"
+    },
+    "sections": {
+      "gaming": "Chơi game",
+      "lifestyle": "Phong cách sống"
+    }
+  },
   "messagesPage": {
     "title": "Tin nhắn",
     "pageTitle": "Tin nhắn | Vibely",

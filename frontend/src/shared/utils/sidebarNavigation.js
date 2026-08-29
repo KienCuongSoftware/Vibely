@@ -39,6 +39,11 @@ export function handleSidebarMenuSelect(
     return
   }
 
+  if (id === 'live') {
+    navigate('/live')
+    return
+  }
+
   if (id === 'upload') {
     goStudioUpload(navigate, token, 'video')
     return
