@@ -1,17 +1,18 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { IoCheckmarkCircle, IoPlay, IoVolumeHighOutline } from 'react-icons/io5'
+import { IoCheckmarkCircle, IoVolumeHighOutline, IoVolumeMuteOutline } from 'react-icons/io5'
 import { LiveBadge } from '@/features/live/components/LiveBadge.jsx'
 import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 
 export function LiveHeroPlayer({ stream }) {
   const { t } = useTranslation()
+  const [muted, setMuted] = useState(true)
 
   if (!stream) return null
 
   return (
     <div className="relative mx-auto w-full max-w-[960px]">
-      <div className="vibely-keep-dark group relative aspect-video w-full overflow-hidden rounded-2xl bg-zinc-950 shadow-[0_16px_48px_rgba(0,0,0,0.45)] ring-1 ring-white/10">
+      <div className="vibely-keep-dark relative aspect-video w-full overflow-hidden rounded-2xl bg-zinc-950 shadow-[0_16px_48px_rgba(0,0,0,0.45)] ring-1 ring-white/10">
         <img
           src={stream.coverUrl}
           alt=""
@@ -27,6 +28,20 @@ export function LiveHeroPlayer({ stream }) {
             {formatLiveViewerCount(stream.viewerCount)} {t('livePage.watching')}
           </span>
         </div>
+
+        <button
+          type="button"
+          aria-label={muted ? t('livePage.unmute') : t('livePage.mute')}
+          aria-pressed={muted}
+          onClick={() => setMuted((value) => !value)}
+          className="absolute right-3 top-3 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-black/55 text-white shadow-lg backdrop-blur-sm transition hover:bg-black/75 sm:right-4 sm:top-4"
+        >
+          {muted ? (
+            <IoVolumeMuteOutline className="text-[22px]" aria-hidden />
+          ) : (
+            <IoVolumeHighOutline className="text-[22px]" aria-hidden />
+          )}
+        </button>
 
         <div className="absolute left-3 top-14 max-w-[200px] rounded-xl border border-white/15 bg-black/75 px-3 py-2 text-[12px] font-semibold text-white shadow-lg backdrop-blur-md sm:left-4 sm:top-16 sm:max-w-none sm:text-[13px]">
           {t('livePage.openLiveStudio')}
@@ -47,14 +62,8 @@ export function LiveHeroPlayer({ stream }) {
           </div>
         ) : null}
 
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 transition group-hover:opacity-100">
-          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm">
-            <IoPlay className="ml-1 text-3xl" aria-hidden />
-          </span>
-        </div>
-
-        <div className="absolute bottom-0 inset-x-0 flex items-end justify-between gap-3 bg-linear-to-t from-black/85 via-black/35 to-transparent px-3 pb-3 pt-16 sm:px-4 sm:pb-4">
-          <div className="min-w-0 flex-1">
+        <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/35 to-transparent px-3 pb-3 pt-16 sm:px-4 sm:pb-4">
+          <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-2">
               <img
                 src={stream.avatarUrl}
@@ -78,13 +87,6 @@ export function LiveHeroPlayer({ stream }) {
               {stream.title}
             </p>
           </div>
-          <button
-            type="button"
-            aria-label={t('livePage.unmute')}
-            className="mb-0.5 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-zinc-800/90 text-white transition hover:bg-zinc-700"
-          >
-            <IoVolumeHighOutline className="text-lg" aria-hidden />
-          </button>
         </div>
       </div>
     </div>

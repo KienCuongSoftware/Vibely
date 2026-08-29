@@ -848,7 +848,15 @@ html[data-vibely-theme="light"] .vibely-live-page {
 html[data-vibely-theme="light"] .vibely-live-page .live-sidebar,
 html[data-vibely-theme="light"] .vibely-live-page .live-mobile-header {
   background-color: #fff;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-sidebar {
   border-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-sidebar .border-zinc-900 {
+  border-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-get-coins {
+  color: #fff;
 }
 html[data-vibely-theme="light"] .vibely-live-page .live-category-bar {
   border-color: #e3e3e4;
@@ -856,17 +864,12 @@ html[data-vibely-theme="light"] .vibely-live-page .live-category-bar {
 html[data-vibely-theme="light"] .vibely-live-page .live-nav-item:not(.live-nav-item--active) {
   color: #161823;
 }
-html[data-vibely-theme="light"] .vibely-live-page .live-nav-item:not(.live-nav-item--active):hover {
-  background-color: #f1f1f2;
-}
-html[data-vibely-theme="light"] .vibely-live-page .live-nav-icon:not(.text-\[\#fe2c55\]) {
-  color: #161823;
-}
-html[data-vibely-theme="light"] .vibely-live-page .live-nav-item--active {
-  background-color: rgba(254, 44, 85, 0.08);
-}
+html[data-vibely-theme="light"] .vibely-live-page .live-nav-item:not(.live-nav-item--active):hover,
 html[data-vibely-theme="light"] .vibely-live-page .live-creator-row:hover {
   background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-nav-item--active {
+  color: #fe2c55;
 }
 html[data-vibely-theme="light"] .vibely-live-page .live-creator-row .text-zinc-100 {
   color: #161823;
