@@ -1,47 +1,36 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   IoArrowBack,
+  IoCashOutline,
   IoCheckmarkCircle,
   IoEllipsisHorizontal,
   IoPlayCircleOutline,
   IoTvOutline,
   IoVideocamOutline,
 } from 'react-icons/io5'
-import { VibelyWordmark } from '@/shared/components/VibelyWordmark.jsx'
+import { SidebarMorePanel } from '@/shared/components/SidebarMorePanel.jsx'
+import { VibelyMarkIcon, VibelyWordmark } from '@/shared/components/VibelyWordmark.jsx'
 import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 
-function CoinIcon({ className = 'text-base' }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-      aria-hidden
-    >
-      <circle cx="12" cy="12" r="10" opacity="0.25" />
-      <path d="M12 4.5c3.6 0 6.5 2.2 6.5 5s-2.9 5-6.5 5h-2v2.5H8v-2.5H6.5C2.9 14.5 0 12.3 0 9.5S2.9 4.5 6.5 4.5H8V2h2v2.5h2zm-3.5 5c0 1.4 1.6 2.5 3.5 2.5s3.5-1.1 3.5-2.5S13.4 7 11.5 7 8 8.1 8 9.5z" />
-    </svg>
-  )
-}
-
-function LiveNavItem({ active, icon: Icon, label, onClick }) {
+function LiveNavItem({ active, icon: Icon, label, onClick, collapsed = false }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`live-nav-item flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[15px] font-semibold transition ${
+      aria-label={label}
+      title={collapsed ? label : undefined}
+      className={`live-nav-item flex h-10 w-full cursor-pointer items-center rounded-lg text-[15px] transition hover:bg-zinc-900 ${
+        collapsed ? 'justify-center px-0' : 'gap-2.5 px-3 text-left'
+      } ${
         active
-          ? 'live-nav-item--active bg-white/10 text-[#fe2c55]'
-          : 'text-zinc-100 hover:bg-white/5'
+          ? 'live-nav-item--active font-semibold text-[#FE2C55]'
+          : 'text-zinc-100'
       }`}
     >
-      <Icon
-        className={`live-nav-icon shrink-0 text-[22px] ${active ? 'text-[#fe2c55]' : 'text-zinc-100'}`}
-        aria-hidden
-      />
-      <span className="min-w-0 truncate">{label}</span>
+      <Icon className="live-nav-icon shrink-0 text-[22px]" aria-hidden />
+      {!collapsed ? <span className="min-w-0 truncate">{label}</span> : null}
     </button>
   )
 }
@@ -50,7 +39,7 @@ function RecommendedCreatorRow({ creator }) {
   return (
     <button
       type="button"
-      className="live-creator-row flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-left transition hover:bg-white/5"
+      className="live-creator-row flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-left transition hover:bg-zinc-900"
     >
       <div className="relative shrink-0">
         <img
@@ -82,75 +71,121 @@ function RecommendedCreatorRow({ creator }) {
   )
 }
 
-export function LiveSidebar({ activeNav = 'explore', recommendedCreators = [] }) {
+export function LiveSidebar({
+  activeNav = 'explore',
+  recommendedCreators = [],
+  token,
+  onLogout,
+}) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const [moreOpen, setMoreOpen] = useState(false)
+
+  const closeMore = () => setMoreOpen(false)
+
+  const navTo = (path) => {
+    closeMore()
+    navigate(path)
+  }
 
   return (
-    <aside className="live-sidebar flex h-full w-[240px] shrink-0 flex-col border-r border-white/10 bg-black px-3 py-4 xl:w-[260px]">
-      <Link to="/" className="mb-5 inline-flex shrink-0 px-1">
-        <VibelyWordmark className="h-8 w-auto text-zinc-100" />
-      </Link>
-
-      <nav className="flex flex-col gap-0.5">
-        <LiveNavItem
-          icon={IoArrowBack}
-          label={t('nav.back')}
-          onClick={() => navigate('/')}
-        />
-        <LiveNavItem
-          active={activeNav === 'explore'}
-          icon={IoTvOutline}
-          label={t('livePage.nav.exploreLive')}
-          onClick={() => navigate('/live')}
-        />
-        <LiveNavItem
-          active={activeNav === 'goLive'}
-          icon={IoVideocamOutline}
-          label={t('livePage.nav.goLive')}
-          onClick={() => {}}
-        />
-        <LiveNavItem
-          active={activeNav === 'creatorTools'}
-          icon={IoPlayCircleOutline}
-          label={t('livePage.nav.creatorTools')}
-          onClick={() => {}}
-        />
-        <LiveNavItem
-          active={activeNav === 'more'}
-          icon={IoEllipsisHorizontal}
-          label={t('nav.more')}
-          onClick={() => {}}
-        />
-      </nav>
-
-      <button
-        type="button"
-        className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#fe2c55] px-4 py-2.5 text-[15px] font-bold text-white transition hover:bg-[#e6284c]"
+    <div className="flex h-full min-h-0 shrink-0 overflow-hidden">
+      <aside
+        className={`live-sidebar flex h-full shrink-0 flex-col border-r border-zinc-900 bg-black px-3 py-4 transition-[width] duration-200 ease-out ${
+          moreOpen ? 'w-[72px]' : 'w-[220px]'
+        }`}
       >
-        <CoinIcon className="text-lg" />
-        {t('moreMenu.getCoins')}
-      </button>
+        <Link
+          to="/"
+          className={`mb-4 flex h-11 shrink-0 items-center text-zinc-100 hover:text-white ${
+            moreOpen ? 'justify-center pl-0' : 'justify-start pl-1'
+          }`}
+          onClick={closeMore}
+        >
+          {moreOpen ? (
+            <VibelyMarkIcon className="h-7 w-7 shrink-0 text-zinc-100" />
+          ) : (
+            <VibelyWordmark className="h-9 w-auto shrink-0 text-zinc-100" />
+          )}
+        </Link>
 
-      <div className="mt-6 min-h-0 flex-1 overflow-y-auto scrollbar-none">
-        <p className="mb-2 px-2 text-[13px] font-semibold text-zinc-500">
-          {t('livePage.recommendedCreators')}
-        </p>
-        <div className="flex flex-col gap-0.5">
-          {recommendedCreators.map((creator) => (
-            <RecommendedCreatorRow key={creator.id} creator={creator} />
-          ))}
-        </div>
-      </div>
+        <nav className="space-y-1">
+          <LiveNavItem
+            collapsed={moreOpen}
+            icon={IoArrowBack}
+            label={t('nav.back')}
+            onClick={() => navTo('/')}
+          />
+          <LiveNavItem
+            collapsed={moreOpen}
+            active={!moreOpen && activeNav === 'explore'}
+            icon={IoTvOutline}
+            label={t('livePage.nav.exploreLive')}
+            onClick={() => navTo('/live')}
+          />
+          <LiveNavItem
+            collapsed={moreOpen}
+            active={!moreOpen && activeNav === 'goLive'}
+            icon={IoVideocamOutline}
+            label={t('livePage.nav.goLive')}
+            onClick={closeMore}
+          />
+          <LiveNavItem
+            collapsed={moreOpen}
+            active={!moreOpen && activeNav === 'creatorTools'}
+            icon={IoPlayCircleOutline}
+            label={t('livePage.nav.creatorTools')}
+            onClick={closeMore}
+          />
+          <LiveNavItem
+            collapsed={moreOpen}
+            active={moreOpen}
+            icon={IoEllipsisHorizontal}
+            label={t('nav.more')}
+            onClick={() => setMoreOpen((open) => !open)}
+          />
+        </nav>
 
-      <footer className="mt-4 shrink-0 space-y-1 border-t border-white/10 pt-4 text-[11px] leading-relaxed text-zinc-500">
-        <div className="flex flex-wrap gap-x-2 gap-y-1">
-          <span>{t('nav.company')}</span>
-          <span>{t('nav.program')}</span>
-        </div>
-        <p>{t('nav.termsAndPolicies')}</p>
-        <p>{t('nav.copyright')}</p>
-      </footer>
-    </aside>
+        {!moreOpen ? (
+          <>
+            <button
+              type="button"
+              className="live-get-coins mt-3 flex h-9 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-[#fe2c55] px-3 text-[13px] font-semibold text-white transition hover:bg-[#e6284c]"
+            >
+              <IoCashOutline className="shrink-0 text-base" aria-hidden />
+              {t('moreMenu.getCoins')}
+            </button>
+
+            <div className="mt-6 min-h-0 flex-1 overflow-y-auto scrollbar-none">
+              <p className="mb-2 px-2 text-[13px] font-semibold text-zinc-500">
+                {t('livePage.recommendedCreators')}
+              </p>
+              <div className="flex flex-col gap-0.5">
+                {recommendedCreators.map((creator) => (
+                  <RecommendedCreatorRow key={creator.id} creator={creator} />
+                ))}
+              </div>
+            </div>
+
+            <footer className="mt-4 shrink-0 space-y-1 border-t border-zinc-900 pt-4 text-[11px] leading-relaxed text-zinc-500">
+              <div className="flex flex-wrap gap-x-2 gap-y-1">
+                <span>{t('nav.company')}</span>
+                <span>{t('nav.program')}</span>
+              </div>
+              <p>{t('nav.termsAndPolicies')}</p>
+              <p>{t('nav.copyright')}</p>
+            </footer>
+          </>
+        ) : null}
+      </aside>
+
+      {moreOpen ? (
+        <SidebarMorePanel
+          onClose={closeMore}
+          token={token}
+          onLogout={onLogout}
+        />
+      ) : null}
+    </div>
   )
 }

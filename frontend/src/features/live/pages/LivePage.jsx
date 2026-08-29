@@ -23,7 +23,7 @@ import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
 export function LivePage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { token, user } = useAuth()
+  const { token, user, logout } = useAuth()
   const [activeCategory, setActiveCategory] = useState('recommended')
   const isMobile = isMobileFeedLayout()
 
@@ -47,6 +47,8 @@ export function LivePage() {
         <LiveSidebar
           activeNav="explore"
           recommendedCreators={LIVE_RECOMMENDED_CREATORS}
+          token={token}
+          onLogout={token ? logout : undefined}
         />
       </div>
 
