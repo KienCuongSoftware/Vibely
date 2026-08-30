@@ -167,7 +167,10 @@ export function SupportPage() {
   }
 
   return (
-    <section className="vibely-chrome vibely-support-page min-h-dvh bg-black text-zinc-100">
+    <section
+      key={activeLocale}
+      className="vibely-chrome vibely-support-page min-h-dvh bg-black text-zinc-100"
+    >
       <header className="support-header sticky top-0 z-40 border-b backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-[1120px] items-center justify-between gap-4 px-4 sm:px-6">
           <Link to="/support" className="support-brand flex shrink-0 items-center gap-2">
