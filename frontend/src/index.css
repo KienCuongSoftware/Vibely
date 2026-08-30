@@ -611,6 +611,16 @@ html[data-vibely-theme="light"] .vibely-more-close {
   color: #161823;
 }
 
+/* Activity panel filter chips — selected tab stays dark in light theme */
+.vibely-activity-filter-btn--selected {
+  background-color: #161823;
+  color: #fff;
+}
+html[data-vibely-theme="light"] .vibely-activity-filter-btn--selected {
+  background-color: #161823;
+  color: #fff;
+}
+
 /* Support center — follows app light/dark theme */
 .vibely-support-page {
   background-color: #000;
