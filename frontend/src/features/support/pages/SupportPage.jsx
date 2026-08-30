@@ -18,6 +18,7 @@ import { useNotificationUnread } from '@/features/notification/store/Notificatio
 import { AccountAvatarMenu } from '@/shared/components/AccountAvatarMenu.jsx'
 import { AvatarImage } from '@/shared/components/AvatarImage'
 import { GuestLoginTrigger } from '@/features/auth/store/GuestAuthUiContext.jsx'
+import { VibelyWordmark } from '@/shared/components/VibelyWordmark.jsx'
 import {
   SUPPORT_CATEGORY_IDS,
   SUPPORT_FAQ_IDS,
@@ -162,8 +163,10 @@ export function SupportPage() {
       <header className="support-header sticky top-0 z-40 border-b backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-[1120px] items-center justify-between gap-4 px-4 sm:px-6">
           <Link to="/support" className="support-brand flex shrink-0 items-center gap-2">
-            <img src="/vibely-icon.svg" alt="" className="h-8 w-8" />
-            <span className="text-[17px] font-bold">{t('supportPage.brand')}</span>
+            <VibelyWordmark className="h-9 w-auto shrink-0" />
+            <span className="text-[17px] font-bold">
+              {t('supportPage.brand').replace(/^Vibely\s*/i, '').trim() || 'Support'}
+            </span>
           </Link>
 
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">

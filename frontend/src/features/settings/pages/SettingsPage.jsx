@@ -25,6 +25,7 @@ import { useSearchModal } from '@/features/search/store/SearchModalContext'
 import { ActivityPanel } from '@/features/notification/components/ActivityPanel'
 import { AccountAvatarMenu } from '@/shared/components/AccountAvatarMenu.jsx'
 import { AvatarImage } from '@/shared/components/AvatarImage'
+import { VibelyWordmark } from '@/shared/components/VibelyWordmark.jsx'
 import {
   IoAccessibilityOutline,
   IoArrowBack,
@@ -634,9 +635,8 @@ export function SettingsPage() {
       {/* ── TikTok-style top header ── */}
       <header className="relative z-50 flex h-14 shrink-0 items-center gap-3 border-b border-zinc-900 bg-black px-4">
         {/* Logo */}
-        <Link to="/" className="flex shrink-0 items-center gap-2 text-white">
-          <img src="/vibely-icon.svg" alt="Vibely" className="h-8 w-8" />
-          <span className="hidden text-lg font-bold sm:block">Vibely</span>
+        <Link to="/" className="flex shrink-0 items-center text-zinc-100 hover:text-white">
+          <VibelyWordmark className="h-9 w-auto shrink-0" />
         </Link>
 
         {/* Search bar */}
