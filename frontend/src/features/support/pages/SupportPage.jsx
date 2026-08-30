@@ -74,10 +74,11 @@ function CategoryCard({ title, description, icon: Icon, onClick }) {
 }
 
 export function SupportPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { token, user, logout } = useAuth()
   const { unreadCount } = useNotificationUnread()
   const { locale, changeLanguage, languages } = useLocale()
+  const activeLocale = i18n.resolvedLanguage || i18n.language || locale
   const [query, setQuery] = useState('')
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
@@ -88,7 +89,7 @@ export function SupportPage() {
 
   useEffect(() => {
     document.title = t('supportPage.pageTitle')
-  }, [t])
+  }, [t, activeLocale])
 
   useEffect(() => {
     if (!avatarMenuOpen && !notifOpen && !langOpen) return undefined
@@ -114,7 +115,7 @@ export function SupportPage() {
         id,
         label: t(`supportPage.faq.${id}`),
       })),
-    [t],
+    [t, activeLocale],
   )
 
   const categoryItems = useMemo(
@@ -125,7 +126,7 @@ export function SupportPage() {
         description: t(`supportPage.categories.${item.id}.description`),
         Icon: CATEGORY_ICONS[item.icon] ?? IoDocumentTextOutline,
       })),
-    [t],
+    [t, activeLocale],
   )
 
   const visibleFaqs = useMemo(() => {
