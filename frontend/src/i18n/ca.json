@@ -2700,5 +2700,52 @@
     "verifyFailed": "Error en la verificación del captcha",
     "loadFailed": "No se pudo cargar el captcha",
     "loadTimeout": "El captcha tarda demasiado. Revisa tu conexión y actualiza."
+  },
+  "supportPage": {
+    "pageTitle": "Suport | Vibely",
+    "brand": "Suport Vibely",
+    "heroTitle": "Com us podem ajudar?",
+    "searchPlaceholder": "Cerca articles d'ajuda",
+    "supportTicket": "Sol·licitud de suport",
+    "faqTitle": "Preguntes freqüents",
+    "seeMoreTopics": "Veure altres temes →",
+    "noResults": "Cap article d'ajuda coincideix amb la cerca.",
+    "feedback": "Comentaris",
+    "termsLink": "Condicions del servei",
+    "privacyLink": "Política de privadesa",
+    "faq": {
+      "howToLogin": "Com iniciar sessió",
+      "phoneAlreadyRegistered": "Aquest número de telèfon ja està registrat",
+      "whyNoPointsAfterPayment": "Per què no he rebut monedes després del pagament?",
+      "whyCantCompletePayment": "Per què no puc completar el pagament?",
+      "needToPayTax": "He de declarar i pagar impostos?",
+      "createAccount": "Crea un compte"
+    },
+    "categories": {
+      "account": {
+        "title": "Compte",
+        "description": "Gestiona el perfil, les dades d'accés i la configuració del compte."
+      },
+      "usingVibely": {
+        "title": "Utilitzar Vibely",
+        "description": "Aprèn a utilitzar l'app i a interactuar amb altres persones."
+      },
+      "posts": {
+        "title": "Publicacions",
+        "description": "Crea, gestiona i edita els teus vídeos i fotos."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Consells i suport per fer LIVE."
+      },
+      "monetization": {
+        "title": "Monetització",
+        "description": "Programes per a creadors, pagaments i funcions de botiga."
+      },
+      "privacySafety": {
+        "title": "Privadesa i seguretat",
+        "description": "Controls de privadesa, eines de seguretat i denúncia de contingut."
+      }
+    }
   }
 }

@@ -2700,5 +2700,52 @@
     "verifyFailed": "Weryfikacja captcha nie powiodła się",
     "loadFailed": "Nie udało się wczytać captcha",
     "loadTimeout": "Captcha trwa zbyt długo. Sprawdź połączenie i odśwież."
+  },
+  "supportPage": {
+    "pageTitle": "Podpora | Vibely",
+    "brand": "Vibely Podpora",
+    "heroTitle": "Kako vam lahko pomagamo?",
+    "searchPlaceholder": "Iskanje člankov pomoči",
+    "supportTicket": "Zahteva za podporo",
+    "faqTitle": "Pogosto zastavljena vprašanja",
+    "seeMoreTopics": "Oglejte si druge teme →",
+    "noResults": "Noben članek pomoči ne ustreza vašemu iskanju.",
+    "feedback": "Povratne informacije",
+    "termsLink": "Pogoji storitve",
+    "privacyLink": "Pravilnik o zasebnosti",
+    "faq": {
+      "howToLogin": "Kako se prijaviti",
+      "phoneAlreadyRegistered": "Ta telefonska številka je že registrirana",
+      "whyNoPointsAfterPayment": "Zakaj po plačilu nisem prejel kovancev?",
+      "whyCantCompletePayment": "Zakaj ne morem dokončati plačila?",
+      "needToPayTax": "Ali moram prijaviti in plačati davke?",
+      "createAccount": "Ustvari račun"
+    },
+    "categories": {
+      "account": {
+        "title": "Račun",
+        "description": "Upravljajte profil, podatke za prijavo in nastavitve računa."
+      },
+      "usingVibely": {
+        "title": "Uporaba Vibely",
+        "description": "Naučite se uporabljati aplikacijo in komunicirati z drugimi."
+      },
+      "posts": {
+        "title": "Objave",
+        "description": "Ustvarjajte, upravljajte in urejajte videoposnetke in fotografije."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Nasveti in podpora za LIVE prenos."
+      },
+      "monetization": {
+        "title": "Monetizacija",
+        "description": "Programi za ustvarjalce, plačila in funkcije trgovine."
+      },
+      "privacySafety": {
+        "title": "Zasebnost in varnost",
+        "description": "Nadzor zasebnosti, varnostna orodja in prijava vsebine."
+      }
+    }
   }
 }

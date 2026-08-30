@@ -2693,5 +2693,52 @@
     "verifyFailed": "فشل التحقق من الكابتشا",
     "loadFailed": "تعذر تحميل الكابتشا",
     "loadTimeout": "يستغرق الكابتشا وقتًا طويلاً. تحقق من الاتصال وحدّث الصفحة."
+  },
+  "supportPage": {
+    "pageTitle": "الدعم | Vibely",
+    "brand": "دعم Vibely",
+    "heroTitle": "كيف يمكننا مساعدتك؟",
+    "searchPlaceholder": "البحث في مقالات المساعدة",
+    "supportTicket": "طلب دعم",
+    "faqTitle": "الأسئلة الشائعة",
+    "seeMoreTopics": "عرض مواضيع أخرى ←",
+    "noResults": "لا توجد مقالات مساعدة تطابق بحثك.",
+    "feedback": "ملاحظات",
+    "termsLink": "شروط الخدمة",
+    "privacyLink": "سياسة الخصوصية",
+    "faq": {
+      "howToLogin": "كيفية تسجيل الدخول",
+      "phoneAlreadyRegistered": "رقم الهاتف هذا مسجّل بالفعل",
+      "whyNoPointsAfterPayment": "لماذا لم أتلقّ العملات بعد الدفع؟",
+      "whyCantCompletePayment": "لماذا لا يمكنني إتمام الدفع؟",
+      "needToPayTax": "هل أحتاج إلى الإقرار بدفع الضرائب؟",
+      "createAccount": "إنشاء حساب"
+    },
+    "categories": {
+      "account": {
+        "title": "الحساب",
+        "description": "إدارة ملفك الشخصي وبيانات تسجيل الدخول وإعدادات الحساب."
+      },
+      "usingVibely": {
+        "title": "استخدام Vibely",
+        "description": "تعلّم كيفية استخدام التطبيق والتفاعل مع الآخرين."
+      },
+      "posts": {
+        "title": "المنشورات",
+        "description": "إنشاء مقاطع الفيديو والصور وإدارتها وتعديلها."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "نصائح ودعم للبث المباشر."
+      },
+      "monetization": {
+        "title": "تحقيق الدخل",
+        "description": "برامج المبدعين والمدفوعات وميزات المتجر."
+      },
+      "privacySafety": {
+        "title": "الخصوصية والأمان",
+        "description": "ضوابط الخصوصية وأدوات الأمان والإبلاغ عن المحتوى."
+      }
+    }
   }
 }

@@ -2700,5 +2700,52 @@
     "verifyFailed": "Weryfikacja captcha nie powiodła się",
     "loadFailed": "Nie udało się wczytać captcha",
     "loadTimeout": "Captcha trwa zbyt długo. Sprawdź połączenie i odśwież."
+  },
+  "supportPage": {
+    "pageTitle": "Podrška | Vibely",
+    "brand": "Vibely Podrška",
+    "heroTitle": "Kako vam možemo pomoći?",
+    "searchPlaceholder": "Pretraži članke pomoći",
+    "supportTicket": "Zahtjev za podršku",
+    "faqTitle": "Često postavljana pitanja",
+    "seeMoreTopics": "Pogledaj druge teme →",
+    "noResults": "Nema članaka pomoći koji odgovaraju vašoj pretrazi.",
+    "feedback": "Povratne informacije",
+    "termsLink": "Uvjeti usluge",
+    "privacyLink": "Politika privatnosti",
+    "faq": {
+      "howToLogin": "Kako se prijaviti",
+      "phoneAlreadyRegistered": "Ovaj broj telefona već je registriran",
+      "whyNoPointsAfterPayment": "Zašto nisam dobio/la novčiće nakon plaćanja?",
+      "whyCantCompletePayment": "Zašto ne mogu dovršiti plaćanje?",
+      "needToPayTax": "Trebam li prijaviti i platiti poreze?",
+      "createAccount": "Stvori račun"
+    },
+    "categories": {
+      "account": {
+        "title": "Račun",
+        "description": "Upravljajte profilom, podacima za prijavu i postavkama računa."
+      },
+      "usingVibely": {
+        "title": "Korištenje Vibelyja",
+        "description": "Naučite koristiti aplikaciju i komunicirati s drugima."
+      },
+      "posts": {
+        "title": "Objave",
+        "description": "Stvarajte, upravljajte i uređujte videozapise i fotografije."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Savjeti i podrška za LIVE prijenos."
+      },
+      "monetization": {
+        "title": "Monetizacija",
+        "description": "Programi za kreatore, plaćanja i značajke trgovine."
+      },
+      "privacySafety": {
+        "title": "Privatnost i sigurnost",
+        "description": "Kontrole privatnosti, alati sigurnosti i prijava sadržaja."
+      }
+    }
   }
 }

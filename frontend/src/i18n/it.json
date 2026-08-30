@@ -2693,5 +2693,52 @@
     "verifyFailed": "Verifica captcha non riuscita",
     "loadFailed": "Impossibile caricare il captcha",
     "loadTimeout": "Il captcha sta impiegando troppo. Controlla la connessione e aggiorna."
+  },
+  "supportPage": {
+    "pageTitle": "Assistenza | Vibely",
+    "brand": "Assistenza Vibely",
+    "heroTitle": "Come possiamo aiutarti?",
+    "searchPlaceholder": "Cerca articoli di assistenza",
+    "supportTicket": "Richiesta di assistenza",
+    "faqTitle": "Domande frequenti",
+    "seeMoreTopics": "Vedi altri argomenti →",
+    "noResults": "Nessun articolo di assistenza corrisponde alla ricerca.",
+    "feedback": "Feedback",
+    "termsLink": "Termini di servizio",
+    "privacyLink": "Informativa sulla privacy",
+    "faq": {
+      "howToLogin": "Come accedere",
+      "phoneAlreadyRegistered": "Questo numero di telefono è già registrato",
+      "whyNoPointsAfterPayment": "Perché non ho ricevuto monete dopo il pagamento?",
+      "whyCantCompletePayment": "Perché non riesco a completare il pagamento?",
+      "needToPayTax": "Devo dichiarare e pagare le tasse?",
+      "createAccount": "Crea un account"
+    },
+    "categories": {
+      "account": {
+        "title": "Account",
+        "description": "Gestisci profilo, credenziali di accesso e impostazioni account."
+      },
+      "usingVibely": {
+        "title": "Usare Vibely",
+        "description": "Scopri come usare l'app e interagire con gli altri."
+      },
+      "posts": {
+        "title": "Post",
+        "description": "Crea, gestisci e modifica video e foto."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Suggerimenti e assistenza per andare LIVE."
+      },
+      "monetization": {
+        "title": "Monetizzazione",
+        "description": "Programmi creator, pagamenti e funzioni shop."
+      },
+      "privacySafety": {
+        "title": "Privacy e sicurezza",
+        "description": "Controlli privacy, strumenti di sicurezza e segnalazione contenuti."
+      }
+    }
   }
 }

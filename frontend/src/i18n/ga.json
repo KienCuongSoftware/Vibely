@@ -2700,5 +2700,52 @@
     "verifyFailed": "Captcha verification failed",
     "loadFailed": "Couldn't load captcha",
     "loadTimeout": "Captcha is taking too long. Check your connection and refresh."
+  },
+  "supportPage": {
+    "pageTitle": "Tacaíocht | Vibely",
+    "brand": "Tacaíocht Vibely",
+    "heroTitle": "Conas is féidir linn cabhrú leat?",
+    "searchPlaceholder": "Cuardaigh altanna cabhrach",
+    "supportTicket": "Iarratas tacaíochta",
+    "faqTitle": "Ceisteanna coitianta",
+    "seeMoreTopics": "Féach ar ábhair eile →",
+    "noResults": "Níl aon alt cabhrach ag teacht le do chuardach.",
+    "feedback": "Aiseolas",
+    "termsLink": "Téarmaí Seirbhíse",
+    "privacyLink": "Beartas Príobháideachta",
+    "faq": {
+      "howToLogin": "Conas logáil isteach",
+      "phoneAlreadyRegistered": "Tá an uimhir fón seo cláraithe cheana",
+      "whyNoPointsAfterPayment": "Cén fáth nár fuair mé bonn tar éis íocaíochta?",
+      "whyCantCompletePayment": "Cén fáth nach féidir liom an íocaíocht a chríochnú?",
+      "needToPayTax": "An gcaithfidh mé cánacha a dhearbhú agus a íoc?",
+      "createAccount": "Cruthaigh cuntas"
+    },
+    "categories": {
+      "account": {
+        "title": "Cuntas",
+        "description": "Bainistigh do phróifíl, sonraí logála isteach agus socruithe cuntais."
+      },
+      "usingVibely": {
+        "title": "Vibely a úsáid",
+        "description": "Foghlaim conas an aip a úsáid agus idirghníomhú le daoine eile."
+      },
+      "posts": {
+        "title": "Poist",
+        "description": "Cruthaigh, bainistigh agus cuir in eagar do fhíseáin agus grianghraif."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Leideanna agus tacaíocht chun dul LIVE."
+      },
+      "monetization": {
+        "title": "Monatú",
+        "description": "Cláir chruthaitheoirí, íocaíochtaí agus gnéithe siopa."
+      },
+      "privacySafety": {
+        "title": "Príobháideachas agus sábháilteacht",
+        "description": "Rialuithe príobháideachais, uirlisí sábháilteachta agus tuairisciú ábhair."
+      }
+    }
   }
 }

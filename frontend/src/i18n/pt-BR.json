@@ -2693,5 +2693,52 @@
     "verifyFailed": "Falha na verificação do captcha",
     "loadFailed": "Não foi possível carregar o captcha",
     "loadTimeout": "O captcha está a demorar demasiado. Verifique a ligação e atualize."
+  },
+  "supportPage": {
+    "pageTitle": "Suporte | Vibely",
+    "brand": "Suporte Vibely",
+    "heroTitle": "Como podemos ajudar?",
+    "searchPlaceholder": "Pesquisar artigos de ajuda",
+    "supportTicket": "Solicitação de suporte",
+    "faqTitle": "Perguntas frequentes",
+    "seeMoreTopics": "Ver outros tópicos →",
+    "noResults": "Nenhum artigo de ajuda corresponde à sua pesquisa.",
+    "feedback": "Feedback",
+    "termsLink": "Termos de Serviço",
+    "privacyLink": "Política de Privacidade",
+    "faq": {
+      "howToLogin": "Como fazer login",
+      "phoneAlreadyRegistered": "Este número de telefone já está cadastrado",
+      "whyNoPointsAfterPayment": "Por que não recebi moedas após o pagamento?",
+      "whyCantCompletePayment": "Por que não consigo concluir o pagamento?",
+      "needToPayTax": "Preciso declarar e pagar impostos?",
+      "createAccount": "Criar conta"
+    },
+    "categories": {
+      "account": {
+        "title": "Conta",
+        "description": "Gerencie seu perfil, dados de login e configurações da conta."
+      },
+      "usingVibely": {
+        "title": "Usar o Vibely",
+        "description": "Aprenda a usar o app e interagir com outras pessoas."
+      },
+      "posts": {
+        "title": "Publicações",
+        "description": "Crie, gerencie e edite seus vídeos e fotos."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Dicas e suporte para ir LIVE."
+      },
+      "monetization": {
+        "title": "Monetização",
+        "description": "Programas de criadores, pagamentos e recursos da loja."
+      },
+      "privacySafety": {
+        "title": "Privacidade e segurança",
+        "description": "Controles de privacidade, ferramentas de segurança e denúncia de conteúdo."
+      }
+    }
   }
 }

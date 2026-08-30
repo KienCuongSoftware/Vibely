@@ -2700,5 +2700,52 @@
     "verifyFailed": "Verifikasi captcha gagal",
     "loadFailed": "Tidak dapat memuat captcha",
     "loadTimeout": "Captcha terlalu lama. Periksa koneksi dan segarkan."
+  },
+  "supportPage": {
+    "pageTitle": "Dhukungan | Vibely",
+    "brand": "Dhukungan Vibely",
+    "heroTitle": "Kepiye kita bisa mbantu?",
+    "searchPlaceholder": "Golek artikel bantuan",
+    "supportTicket": "Panjaluk dhukungan",
+    "faqTitle": "Pitakonan sing asring ditakokake",
+    "seeMoreTopics": "Deleng topik liyane →",
+    "noResults": "Ora ana artikel bantuan sing cocog karo pencarianmu.",
+    "feedback": "Umpan balik",
+    "termsLink": "Syarat Layanan",
+    "privacyLink": "Kebijakan Privasi",
+    "faq": {
+      "howToLogin": "Cara mlebu",
+      "phoneAlreadyRegistered": "Nomer telpon iki wis kedaftar",
+      "whyNoPointsAfterPayment": "Kenaapa aku ora nampa koin sawise mbayar?",
+      "whyCantCompletePayment": "Kenaapa aku ora bisa ngrampungake pembayaran?",
+      "needToPayTax": "Apa aku kudu nglapor lan mbayar pajak?",
+      "createAccount": "Gawe akun"
+    },
+    "categories": {
+      "account": {
+        "title": "Akun",
+        "description": "Atur profil, rincian login, lan setelan akunmu."
+      },
+      "usingVibely": {
+        "title": "Nggunakake Vibely",
+        "description": "Sinau carane nggunakake aplikasi lan interaksi karo wong liya."
+      },
+      "posts": {
+        "title": "Postingan",
+        "description": "Gawe, atur, lan edit video lan foto."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Tips lan dhukungan kanggo LIVE."
+      },
+      "monetization": {
+        "title": "Monetisasi",
+        "description": "Program kreator, pembayaran, lan fitur toko."
+      },
+      "privacySafety": {
+        "title": "Privasi lan keamanan",
+        "description": "Kontrol privasi, alat keamanan, lan laporan konten."
+      }
+    }
   }
 }

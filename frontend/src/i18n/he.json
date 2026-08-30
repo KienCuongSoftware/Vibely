@@ -2700,5 +2700,52 @@
     "verifyFailed": "אימות captcha נכשל",
     "loadFailed": "לא ניתן לטעון captcha",
     "loadTimeout": "ה-captcha לוקח יותר מדי זמן. בדוק את החיבור ורענן."
+  },
+  "supportPage": {
+    "pageTitle": "תמיכה | Vibely",
+    "brand": "תמיכת Vibely",
+    "heroTitle": "איך נוכל לעזור?",
+    "searchPlaceholder": "חיפוש במאמרי עזרה",
+    "supportTicket": "בקשת תמיכה",
+    "faqTitle": "שאלות נפוצות",
+    "seeMoreTopics": "ראה נושאים נוספים ←",
+    "noResults": "לא נמצאו מאמרי עזרה התואמים לחיפוש.",
+    "feedback": "משוב",
+    "termsLink": "תנאי שירות",
+    "privacyLink": "מדיניות פרטיות",
+    "faq": {
+      "howToLogin": "איך מתחברים",
+      "phoneAlreadyRegistered": "מספר הטלפון הזה כבר רשום",
+      "whyNoPointsAfterPayment": "למה לא קיבלתי מטבעות אחרי התשלום?",
+      "whyCantCompletePayment": "למה אני לא יכול להשלים את התשלום?",
+      "needToPayTax": "האם אני צריך לדווח ולשלם מיסים?",
+      "createAccount": "יצירת חשבון"
+    },
+    "categories": {
+      "account": {
+        "title": "חשבון",
+        "description": "נהל את הפרופיל, פרטי ההתחברות והגדרות החשבון."
+      },
+      "usingVibely": {
+        "title": "שימוש ב-Vibely",
+        "description": "למד כיצד להשתמש באפליקציה ולתקשר עם אחרים."
+      },
+      "posts": {
+        "title": "פוסטים",
+        "description": "צור, נהל וערוך סרטונים ותמונות."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "טיפים ותמיכה לשידור LIVE."
+      },
+      "monetization": {
+        "title": "מונטיזציה",
+        "description": "תוכניות יוצרים, תשלומים ותכונות חנות."
+      },
+      "privacySafety": {
+        "title": "פרטיות ובטיחות",
+        "description": "בקרות פרטיות, כלי בטיחות ודיווח על תוכן."
+      }
+    }
   }
 }

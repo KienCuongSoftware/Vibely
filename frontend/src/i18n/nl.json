@@ -2700,5 +2700,52 @@
     "verifyFailed": "Captcha-Überprüfung fehlgeschlagen",
     "loadFailed": "Captcha konnte nicht geladen werden",
     "loadTimeout": "Captcha dauert zu lange. Prüfe deine Verbindung und aktualisiere."
+  },
+  "supportPage": {
+    "pageTitle": "Ondersteuning | Vibely",
+    "brand": "Vibely Ondersteuning",
+    "heroTitle": "Hoe kunnen we helpen?",
+    "searchPlaceholder": "Zoek in hulpartikelen",
+    "supportTicket": "Supportverzoek",
+    "faqTitle": "Veelgestelde vragen",
+    "seeMoreTopics": "Andere onderwerpen bekijken →",
+    "noResults": "Geen hulpartikelen komen overeen met je zoekopdracht.",
+    "feedback": "Feedback",
+    "termsLink": "Servicevoorwaarden",
+    "privacyLink": "Privacybeleid",
+    "faq": {
+      "howToLogin": "Inloggen",
+      "phoneAlreadyRegistered": "Dit telefoonnummer is al geregistreerd",
+      "whyNoPointsAfterPayment": "Waarom heb ik na betaling geen munten ontvangen?",
+      "whyCantCompletePayment": "Waarom kan ik de betaling niet voltooien?",
+      "needToPayTax": "Moet ik belasting aangeven en betalen?",
+      "createAccount": "Account aanmaken"
+    },
+    "categories": {
+      "account": {
+        "title": "Account",
+        "description": "Beheer je profiel, inloggegevens en accountinstellingen."
+      },
+      "usingVibely": {
+        "title": "Vibely gebruiken",
+        "description": "Leer de app te gebruiken en met anderen te communiceren."
+      },
+      "posts": {
+        "title": "Berichten",
+        "description": "Maak, beheer en bewerk je video's en foto's."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Tips en ondersteuning voor LIVE gaan."
+      },
+      "monetization": {
+        "title": "Monetisatie",
+        "description": "Creatorprogramma's, betalingen en shopfuncties."
+      },
+      "privacySafety": {
+        "title": "Privacy en veiligheid",
+        "description": "Privacy-instellingen, veiligheidstools en content melden."
+      }
+    }
   }
 }

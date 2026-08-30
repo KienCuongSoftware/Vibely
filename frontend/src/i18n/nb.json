@@ -2700,5 +2700,52 @@
     "verifyFailed": "Captcha-Überprüfung fehlgeschlagen",
     "loadFailed": "Captcha konnte nicht geladen werden",
     "loadTimeout": "Captcha dauert zu lange. Prüfe deine Verbindung und aktualisiere."
+  },
+  "supportPage": {
+    "pageTitle": "Support | Vibely",
+    "brand": "Vibely Support",
+    "heroTitle": "Hvordan kan vi hjelpe?",
+    "searchPlaceholder": "Søk i hjelpeartikler",
+    "supportTicket": "Supportforespørsel",
+    "faqTitle": "Ofte stilte spørsmål",
+    "seeMoreTopics": "Se andre emner →",
+    "noResults": "Ingen hjelpeartikler samsvarer med søket ditt.",
+    "feedback": "Tilbakemelding",
+    "termsLink": "Vilkår for bruk",
+    "privacyLink": "Personvernerklæring",
+    "faq": {
+      "howToLogin": "Slik logger du inn",
+      "phoneAlreadyRegistered": "Dette telefonnummeret er allerede registrert",
+      "whyNoPointsAfterPayment": "Hvorfor mottok jeg ikke mynter etter betaling?",
+      "whyCantCompletePayment": "Hvorfor kan jeg ikke fullføre betalingen?",
+      "needToPayTax": "Må jeg deklarere og betale skatt?",
+      "createAccount": "Opprett konto"
+    },
+    "categories": {
+      "account": {
+        "title": "Konto",
+        "description": "Administrer profilen, påloggingsdetaljene og kontoinnstillingene dine."
+      },
+      "usingVibely": {
+        "title": "Bruke Vibely",
+        "description": "Lær hvordan du bruker appen og samhandler med andre."
+      },
+      "posts": {
+        "title": "Innlegg",
+        "description": "Opprett, administrer og rediger videoer og bilder."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Tips og støtte for å gå LIVE."
+      },
+      "monetization": {
+        "title": "Inntektsgenerering",
+        "description": "Skaperprogrammer, betalinger og butikkfunksjoner."
+      },
+      "privacySafety": {
+        "title": "Personvern og sikkerhet",
+        "description": "Personvernkontroller, sikkerhetsverktøy og rapportering av innhold."
+      }
+    }
   }
 }

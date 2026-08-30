@@ -2700,5 +2700,52 @@
     "verifyFailed": "Captcha-Überprüfung fehlgeschlagen",
     "loadFailed": "Captcha konnte nicht geladen werden",
     "loadTimeout": "Captcha dauert zu lange. Prüfe deine Verbindung und aktualisiere."
+  },
+  "supportPage": {
+    "pageTitle": "Atbalsts | Vibely",
+    "brand": "Vibely Atbalsts",
+    "heroTitle": "Kā mēs varam palīdzēt?",
+    "searchPlaceholder": "Meklēt palīdzības rakstus",
+    "supportTicket": "Atbalsta pieprasījums",
+    "faqTitle": "Biežāk uzdotie jautājumi",
+    "seeMoreTopics": "Skatīt citas tēmas →",
+    "noResults": "Jūsu meklēšanai neatbilst neviens palīdzības raksts.",
+    "feedback": "Atsauksmes",
+    "termsLink": "Pakalpojuma noteikumi",
+    "privacyLink": "Privātuma politika",
+    "faq": {
+      "howToLogin": "Kā pieteikties",
+      "phoneAlreadyRegistered": "Šis tālruņa numurs jau ir reģistrēts",
+      "whyNoPointsAfterPayment": "Kāpēc es nesaņēmu monētas pēc maksājuma?",
+      "whyCantCompletePayment": "Kāpēc es nevaru pabeigt maksājumu?",
+      "needToPayTax": "Vai man jādeklarē un jāmaksā nodokļi?",
+      "createAccount": "Izveidot kontu"
+    },
+    "categories": {
+      "account": {
+        "title": "Konts",
+        "description": "Pārvaldiet profilu, pieteikšanās datus un konta iestatījumus."
+      },
+      "usingVibely": {
+        "title": "Vibely lietošana",
+        "description": "Uzziniet, kā lietot lietotni un sazināties ar citiem."
+      },
+      "posts": {
+        "title": "Ieraksti",
+        "description": "Izveidojiet, pārvaldiet un rediģējiet video un fotoattēlus."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Padomi un atbalsts LIVE pārraidei."
+      },
+      "monetization": {
+        "title": "Monetizācija",
+        "description": "Radītāju programmas, maksājumi un veikala funkcijas."
+      },
+      "privacySafety": {
+        "title": "Privātums un drošība",
+        "description": "Privātuma kontroles, drošības rīki un satura ziņošana."
+      }
+    }
   }
 }

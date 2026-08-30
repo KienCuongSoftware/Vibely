@@ -2700,5 +2700,52 @@
     "verifyFailed": "Captcha doğrulaması başarısız",
     "loadFailed": "Captcha yüklenemedi",
     "loadTimeout": "Captcha çok uzun sürüyor. Bağlantını kontrol et ve yenile."
+  },
+  "supportPage": {
+    "pageTitle": "Dəstək | Vibely",
+    "brand": "Vibely Dəstəyi",
+    "heroTitle": "Sizə necə kömək edə bilərik?",
+    "searchPlaceholder": "Kömək məqalələrini axtarın",
+    "supportTicket": "Dəstək sorğusu",
+    "faqTitle": "Tez-tez verilən suallar",
+    "seeMoreTopics": "Digər mövzulara bax →",
+    "noResults": "Axtarışınıza uyğun kömək məqaləsi tapılmadı.",
+    "feedback": "Rəy",
+    "termsLink": "Xidmət Şərtləri",
+    "privacyLink": "Məxfilik Siyasəti",
+    "faq": {
+      "howToLogin": "Necə daxil olmaq olar",
+      "phoneAlreadyRegistered": "Bu telefon nömrəsi artıq qeydiyyatdan keçib",
+      "whyNoPointsAfterPayment": "Ödənişdən sonra niyə sikkə almadım?",
+      "whyCantCompletePayment": "Niyə ödənişi tamamlaya bilmirəm?",
+      "needToPayTax": "Vergi bəyan etməli və ödəməliyəm?",
+      "createAccount": "Hesab yarat"
+    },
+    "categories": {
+      "account": {
+        "title": "Hesab",
+        "description": "Profilinizi, giriş məlumatlarınızı və hesab parametrlərini idarə edin."
+      },
+      "usingVibely": {
+        "title": "Vibely istifadəsi",
+        "description": "Tətbiqdən necə istifadə edəcəyinizi və başqaları ilə necə əlaqə quracağınızı öyrənin."
+      },
+      "posts": {
+        "title": "Paylaşımlar",
+        "description": "Videolarınızı və şəkillərinizi yaradın, idarə edin və redaktə edin."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "CANLI yayıma çıxmaq üçün məsləhətlər və dəstək."
+      },
+      "monetization": {
+        "title": "Monetizasiya",
+        "description": "Yaradıcı proqramları, ödənişlər və mağaza funksiyaları."
+      },
+      "privacySafety": {
+        "title": "Məxfilik və təhlükəsizlik",
+        "description": "Məxfilik nəzarətləri, təhlükəsizlik alətləri və məzmun bildirişi."
+      }
+    }
   }
 }

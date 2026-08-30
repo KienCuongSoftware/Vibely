@@ -2700,5 +2700,52 @@
     "verifyFailed": "Ошибка проверки капчи",
     "loadFailed": "Не удалось загрузить капчу",
     "loadTimeout": "Капча загружается слишком долго. Проверьте соединение и обновите."
+  },
+  "supportPage": {
+    "pageTitle": "Yordam | Vibely",
+    "brand": "Vibely Yordami",
+    "heroTitle": "Sizga qanday yordam bera olamiz?",
+    "searchPlaceholder": "Yordam maqolalarini qidiring",
+    "supportTicket": "Yordam so'rovi",
+    "faqTitle": "Tez-tez beriladigan savollar",
+    "seeMoreTopics": "Boshqa mavzularni ko'rish →",
+    "noResults": "Qidiruvingizga mos yordam maqolalari topilmadi.",
+    "feedback": "Fikr-mulohaza",
+    "termsLink": "Xizmat shartlari",
+    "privacyLink": "Maxfiylik siyosati",
+    "faq": {
+      "howToLogin": "Qanday kirish kerak",
+      "phoneAlreadyRegistered": "Bu telefon raqami allaqachon ro'yxatdan o'tgan",
+      "whyNoPointsAfterPayment": "To'lovdan keyin nima uchun tangalar olmadim?",
+      "whyCantCompletePayment": "Nima uchun to'lovni yakunlay olmayapman?",
+      "needToPayTax": "Soliq deklaratsiya qilish va to'lashim kerakmi?",
+      "createAccount": "Hisob yaratish"
+    },
+    "categories": {
+      "account": {
+        "title": "Hisob",
+        "description": "Profilingiz, kirish ma'lumotlari va hisob sozlamalarini boshqaring."
+      },
+      "usingVibely": {
+        "title": "Vibely dan foydalanish",
+        "description": "Ilovadan qanday foydalanish va boshqalar bilan muloqot qilishni o'rganing."
+      },
+      "posts": {
+        "title": "Postlar",
+        "description": "Videolar va fotosuratlaringizni yarating, boshqaring va tahrirlang."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "LIVE efir uchun maslahatlar va yordam."
+      },
+      "monetization": {
+        "title": "Monetizatsiya",
+        "description": "Ijodkor dasturlari, to'lovlar va do'kon funksiyalari."
+      },
+      "privacySafety": {
+        "title": "Maxfiylik va xavfsizlik",
+        "description": "Maxfiylik nazorati, xavfsizlik vositalari va kontent haqida xabar berish."
+      }
+    }
   }
 }

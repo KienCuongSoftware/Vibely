@@ -2693,5 +2693,52 @@
     "verifyFailed": "Captcha-Überprüfung fehlgeschlagen",
     "loadFailed": "Captcha konnte nicht geladen werden",
     "loadTimeout": "Captcha dauert zu lange. Prüfe deine Verbindung und aktualisiere."
+  },
+  "supportPage": {
+    "pageTitle": "Support | Vibely",
+    "brand": "Vibely Support",
+    "heroTitle": "Wie können wir helfen?",
+    "searchPlaceholder": "Hilfeartikel durchsuchen",
+    "supportTicket": "Supportanfrage",
+    "faqTitle": "Häufig gestellte Fragen",
+    "seeMoreTopics": "Weitere Themen ansehen →",
+    "noResults": "Keine Hilfeartikel entsprechen deiner Suche.",
+    "feedback": "Feedback",
+    "termsLink": "Nutzungsbedingungen",
+    "privacyLink": "Datenschutzrichtlinie",
+    "faq": {
+      "howToLogin": "So meldest du dich an",
+      "phoneAlreadyRegistered": "Diese Telefonnummer ist bereits registriert",
+      "whyNoPointsAfterPayment": "Warum habe ich nach der Zahlung keine Münzen erhalten?",
+      "whyCantCompletePayment": "Warum kann ich die Zahlung nicht abschließen?",
+      "needToPayTax": "Muss ich Steuern anmelden und zahlen?",
+      "createAccount": "Konto erstellen"
+    },
+    "categories": {
+      "account": {
+        "title": "Konto",
+        "description": "Verwalte dein Profil, Anmeldedaten und Kontoeinstellungen."
+      },
+      "usingVibely": {
+        "title": "Vibely nutzen",
+        "description": "Erfahre, wie du die App nutzt und mit anderen interagierst."
+      },
+      "posts": {
+        "title": "Beiträge",
+        "description": "Erstelle, verwalte und bearbeite deine Videos und Fotos."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Tipps und Support für LIVE-Streams."
+      },
+      "monetization": {
+        "title": "Monetarisierung",
+        "description": "Creator-Programme, Zahlungen und Shop-Funktionen."
+      },
+      "privacySafety": {
+        "title": "Datenschutz und Sicherheit",
+        "description": "Datenschutzeinstellungen, Sicherheitstools und Melden von Inhalten."
+      }
+    }
   }
 }

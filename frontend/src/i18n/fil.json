@@ -2700,5 +2700,52 @@
     "verifyFailed": "Verifikasi captcha gagal",
     "loadFailed": "Tidak dapat memuat captcha",
     "loadTimeout": "Captcha terlalu lama. Periksa koneksi dan segarkan."
+  },
+  "supportPage": {
+    "pageTitle": "Suporta | Vibely",
+    "brand": "Vibely Support",
+    "heroTitle": "Paano kami makakatulong?",
+    "searchPlaceholder": "Maghanap ng mga artikulo ng tulong",
+    "supportTicket": "Kahilingan sa suporta",
+    "faqTitle": "Mga madalas itanong",
+    "seeMoreTopics": "Tingnan ang iba pang paksa →",
+    "noResults": "Walang artikulo ng tulong na tumutugma sa iyong paghahanap.",
+    "feedback": "Feedback",
+    "termsLink": "Mga Tuntunin ng Serbisyo",
+    "privacyLink": "Patakaran sa Privacy",
+    "faq": {
+      "howToLogin": "Paano mag-log in",
+      "phoneAlreadyRegistered": "Nakarehistro na ang numerong ito",
+      "whyNoPointsAfterPayment": "Bakit hindi ako nakatanggap ng coins pagkatapos magbayad?",
+      "whyCantCompletePayment": "Bakit hindi ko makumpleto ang pagbabayad?",
+      "needToPayTax": "Kailangan ko bang magdeklara at magbayad ng buwis?",
+      "createAccount": "Gumawa ng account"
+    },
+    "categories": {
+      "account": {
+        "title": "Account",
+        "description": "Pamahalaan ang iyong profile, login details, at account settings."
+      },
+      "usingVibely": {
+        "title": "Paggamit ng Vibely",
+        "description": "Alamin kung paano gamitin ang app at makipag-ugnayan sa iba."
+      },
+      "posts": {
+        "title": "Mga post",
+        "description": "Gumawa, pamahalaan, at i-edit ang iyong mga video at larawan."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Mga tip at suporta sa pag-LIVE."
+      },
+      "monetization": {
+        "title": "Monetization",
+        "description": "Mga programa ng creator, pagbabayad, at shop features."
+      },
+      "privacySafety": {
+        "title": "Privacy at kaligtasan",
+        "description": "Privacy controls, safety tools, at pag-report ng content."
+      }
+    }
   }
 }

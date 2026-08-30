@@ -2700,5 +2700,52 @@
     "verifyFailed": "Captcha-Überprüfung fehlgeschlagen",
     "loadFailed": "Captcha konnte nicht geladen werden",
     "loadTimeout": "Captcha dauert zu lange. Prüfe deine Verbindung und aktualisiere."
+  },
+  "supportPage": {
+    "pageTitle": "Pagalba | Vibely",
+    "brand": "Vibely Pagalba",
+    "heroTitle": "Kaip galime padėti?",
+    "searchPlaceholder": "Ieškoti pagalbos straipsnių",
+    "supportTicket": "Pagalbos užklausa",
+    "faqTitle": "Dažniausiai užduodami klausimai",
+    "seeMoreTopics": "Žiūrėti kitas temas →",
+    "noResults": "Jūsų paieškai atitinkančių pagalbos straipsnių nėra.",
+    "feedback": "Atsiliepimai",
+    "termsLink": "Paslaugų teikimo sąlygos",
+    "privacyLink": "Privatumo politika",
+    "faq": {
+      "howToLogin": "Kaip prisijungti",
+      "phoneAlreadyRegistered": "Šis telefono numeris jau užregistruotas",
+      "whyNoPointsAfterPayment": "Kodėl po mokėjimo negavau monetų?",
+      "whyCantCompletePayment": "Kodėl negaliu užbaigti mokėjimo?",
+      "needToPayTax": "Ar turiu deklaruoti ir mokėti mokesčius?",
+      "createAccount": "Sukurti paskyrą"
+    },
+    "categories": {
+      "account": {
+        "title": "Paskyra",
+        "description": "Tvarkykite profilį, prisijungimo duomenis ir paskyros nustatymus."
+      },
+      "usingVibely": {
+        "title": "Vibely naudojimas",
+        "description": "Sužinokite, kaip naudotis programėle ir bendrauti su kitais."
+      },
+      "posts": {
+        "title": "Įrašai",
+        "description": "Kurkite, tvarkykite ir redaguokite vaizdo įrašus bei nuotraukas."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Patarimai ir pagalba transliuojant LIVE."
+      },
+      "monetization": {
+        "title": "Monetizavimas",
+        "description": "Kūrėjų programos, mokėjimai ir parduotuvės funkcijos."
+      },
+      "privacySafety": {
+        "title": "Privatumas ir sauga",
+        "description": "Privatumo valdikliai, saugumo įrankiai ir turinio pranešimai."
+      }
+    }
   }
 }

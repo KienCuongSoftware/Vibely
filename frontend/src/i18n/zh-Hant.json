@@ -2693,5 +2693,52 @@
     "verifyFailed": "驗證碼驗證失敗",
     "loadFailed": "無法載入驗證碼",
     "loadTimeout": "驗證碼載入過久。請檢查連線後重新整理。"
+  },
+  "supportPage": {
+    "pageTitle": "支援 | Vibely",
+    "brand": "Vibely 支援",
+    "heroTitle": "我們能如何協助您？",
+    "searchPlaceholder": "搜尋說明文章",
+    "supportTicket": "支援請求",
+    "faqTitle": "常見問題",
+    "seeMoreTopics": "查看其他主題 →",
+    "noResults": "沒有符合您搜尋的說明文章。",
+    "feedback": "意見回饋",
+    "termsLink": "服務條款",
+    "privacyLink": "隱私權政策",
+    "faq": {
+      "howToLogin": "如何登入",
+      "phoneAlreadyRegistered": "此電話號碼已註冊",
+      "whyNoPointsAfterPayment": "為什麼付款後沒有收到金幣？",
+      "whyCantCompletePayment": "為什麼無法完成付款？",
+      "needToPayTax": "我需要申報並繳稅嗎？",
+      "createAccount": "建立帳號"
+    },
+    "categories": {
+      "account": {
+        "title": "帳號",
+        "description": "管理您的個人檔案、登入資訊和帳號設定。"
+      },
+      "usingVibely": {
+        "title": "使用 Vibely",
+        "description": "了解如何使用應用程式以及與他人互動。"
+      },
+      "posts": {
+        "title": "貼文",
+        "description": "建立、管理和編輯您的影片與照片。"
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "開播 LIVE 的提示與支援。"
+      },
+      "monetization": {
+        "title": "變現",
+        "description": "創作者計畫、付款和商店功能。"
+      },
+      "privacySafety": {
+        "title": "隱私與安全",
+        "description": "隱私控制、安全工具和內容舉報。"
+      }
+    }
   }
 }

@@ -7,7 +7,6 @@ import {
   IoChevronDown,
   IoDesktopOutline,
   IoDocumentTextOutline,
-  IoGlobeOutline,
   IoNotificationsOutline,
   IoPersonOutline,
   IoPhonePortraitOutline,
@@ -186,11 +185,10 @@ export function SupportPage() {
                   setNotifOpen(false)
                   setAvatarMenuOpen(false)
                 }}
-                className="support-lang-btn flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-2 text-sm font-medium transition sm:px-3"
+                className="support-lang-btn flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-2 text-sm font-medium transition sm:gap-1.5 sm:px-3"
               >
-                <IoGlobeOutline className="text-[18px]" aria-hidden />
-                <span className="hidden max-w-[8rem] truncate sm:inline">{currentLangLabel}</span>
-                <IoChevronDown className="hidden text-sm opacity-70 sm:inline" aria-hidden />
+                <span className="max-w-[7.5rem] truncate sm:max-w-[8rem]">{currentLangLabel}</span>
+                <IoChevronDown className="text-sm opacity-70" aria-hidden />
               </button>
               {langOpen ? (
                 <div className="support-lang-menu absolute right-0 top-11 z-50 max-h-[min(420px,70dvh)] w-[min(280px,calc(100vw-2rem))] overflow-hidden rounded-xl border shadow-2xl">

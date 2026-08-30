@@ -2693,5 +2693,52 @@
     "verifyFailed": "कैप्चा सत्यापन विफल",
     "loadFailed": "कैप्चा लोड नहीं हो सका",
     "loadTimeout": "कैप्चा में बहुत समय लग रहा है। कनेक्शन जाँचें और रीफ़्रेश करें।"
+  },
+  "supportPage": {
+    "pageTitle": "सहायता | Vibely",
+    "brand": "Vibely सहायता",
+    "heroTitle": "हम आपकी कैसे मदद कर सकते हैं?",
+    "searchPlaceholder": "सहायता लेख खोजें",
+    "supportTicket": "सहायता अनुरोध",
+    "faqTitle": "अक्सर पूछे जाने वाले प्रश्न",
+    "seeMoreTopics": "अन्य विषय देखें →",
+    "noResults": "आपकी खोज से मेल खाने वाला कोई सहायता लेख नहीं मिला।",
+    "feedback": "प्रतिक्रिया",
+    "termsLink": "सेवा की शर्तें",
+    "privacyLink": "गोपनीयता नीति",
+    "faq": {
+      "howToLogin": "लॉग इन कैसे करें",
+      "phoneAlreadyRegistered": "यह फ़ोन नंबर पहले से पंजीकृत है",
+      "whyNoPointsAfterPayment": "भुगतान के बाद मुझे सिक्के क्यों नहीं मिले?",
+      "whyCantCompletePayment": "मैं भुगतान पूरा क्यों नहीं कर पा रहा/रही?",
+      "needToPayTax": "क्या मुझे कर घोषित और भुगतान करना होगा?",
+      "createAccount": "खाता बनाएँ"
+    },
+    "categories": {
+      "account": {
+        "title": "खाता",
+        "description": "अपनी प्रोफ़ाइल, लॉगिन विवरण और खाता सेटिंग प्रबंधित करें।"
+      },
+      "usingVibely": {
+        "title": "Vibely का उपयोग",
+        "description": "ऐप का उपयोग करना और दूसरों के साथ बातचीत करना सीखें।"
+      },
+      "posts": {
+        "title": "पोस्ट",
+        "description": "अपने वीडियो और फ़ोटो बनाएँ, प्रबंधित करें और संपादित करें।"
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "LIVE जाने के लिए सुझाव और सहायता।"
+      },
+      "monetization": {
+        "title": "मुद्रीकरण",
+        "description": "क्रिएटर प्रोग्राम, भुगतान और शॉप सुविधाएँ।"
+      },
+      "privacySafety": {
+        "title": "गोपनीयता और सुरक्षा",
+        "description": "गोपनीयता नियंत्रण, सुरक्षा उपकरण और सामग्री रिपोर्टिंग।"
+      }
+    }
   }
 }

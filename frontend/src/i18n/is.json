@@ -2700,5 +2700,52 @@
     "verifyFailed": "Captcha-Überprüfung fehlgeschlagen",
     "loadFailed": "Captcha konnte nicht geladen werden",
     "loadTimeout": "Captcha dauert zu lange. Prüfe deine Verbindung und aktualisiere."
+  },
+  "supportPage": {
+    "pageTitle": "Aðstoð | Vibely",
+    "brand": "Vibely Aðstoð",
+    "heroTitle": "Hvernig getum við hjálpað?",
+    "searchPlaceholder": "Leita í hjálpargreinum",
+    "supportTicket": "Stuðningsbeiðni",
+    "faqTitle": "Algengar spurningar",
+    "seeMoreTopics": "Sjá önnur efni →",
+    "noResults": "Engar hjálpargreinar passa við leitina þína.",
+    "feedback": "Endurgjöf",
+    "termsLink": "Þjónustuskilmálar",
+    "privacyLink": "Persónuverndarstefna",
+    "faq": {
+      "howToLogin": "Hvernig á að skrá sig inn",
+      "phoneAlreadyRegistered": "Þetta símanúmer er þegar skráð",
+      "whyNoPointsAfterPayment": "Af hverju fékk ég ekki mynt eftir greiðslu?",
+      "whyCantCompletePayment": "Af hverju get ég ekki lokið greiðslunni?",
+      "needToPayTax": "Þarf ég að tilkynna og greiða skatta?",
+      "createAccount": "Búa til reikning"
+    },
+    "categories": {
+      "account": {
+        "title": "Reikningur",
+        "description": "Stjórnaðu prófílnum, innskráningarupplýsingum og reikningsstillingum."
+      },
+      "usingVibely": {
+        "title": "Notkun Vibely",
+        "description": "Lærðu að nota appið og eiga samskipti við aðra."
+      },
+      "posts": {
+        "title": "Færslur",
+        "description": "Búðu til, stjórnaðu og breyttu myndböndum og myndum."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Ráð og aðstoð við að fara LIVE."
+      },
+      "monetization": {
+        "title": "Tekjuvæðing",
+        "description": "Höfundaprogrömm, greiðslur og verslunar eiginleikar."
+      },
+      "privacySafety": {
+        "title": "Persónuvernd og öryggi",
+        "description": "Persónuverndarstillingar, öryggistæði og tilkynning efnis."
+      }
+    }
   }
 }

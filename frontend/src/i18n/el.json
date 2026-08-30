@@ -2700,5 +2700,52 @@
     "verifyFailed": "Error en la verificación del captcha",
     "loadFailed": "No se pudo cargar el captcha",
     "loadTimeout": "El captcha tarda demasiado. Revisa tu conexión y actualiza."
+  },
+  "supportPage": {
+    "pageTitle": "Υποστήριξη | Vibely",
+    "brand": "Vibely Υποστήριξη",
+    "heroTitle": "Πώς μπορούμε να βοηθήσουμε;",
+    "searchPlaceholder": "Αναζήτηση άρθρων βοήθειας",
+    "supportTicket": "Αίτημα υποστήριξης",
+    "faqTitle": "Συχνές ερωτήσεις",
+    "seeMoreTopics": "Δείτε άλλα θέματα →",
+    "noResults": "Δεν βρέθηκαν άρθρα βοήθειας που να ταιριάζουν με την αναζήτησή σας.",
+    "feedback": "Σχόλια",
+    "termsLink": "Όροι Υπηρεσίας",
+    "privacyLink": "Πολιτική Απορρήτου",
+    "faq": {
+      "howToLogin": "Πώς να συνδεθείτε",
+      "phoneAlreadyRegistered": "Αυτός ο αριθμός τηλεφώνου είναι ήδη καταχωρημένος",
+      "whyNoPointsAfterPayment": "Γιατί δεν έλαβα νομίσματα μετά την πληρωμή;",
+      "whyCantCompletePayment": "Γιατί δεν μπορώ να ολοκληρώσω την πληρωμή;",
+      "needToPayTax": "Πρέπει να δηλώσω και να πληρώσω φόρους;",
+      "createAccount": "Δημιουργία λογαριασμού"
+    },
+    "categories": {
+      "account": {
+        "title": "Λογαριασμός",
+        "description": "Διαχειριστείτε το προφίλ, τα στοιχεία σύνδεσης και τις ρυθμίσεις λογαριασμού."
+      },
+      "usingVibely": {
+        "title": "Χρήση Vibely",
+        "description": "Μάθετε πώς να χρησιμοποιείτε την εφαρμογή και να αλληλεπιδράτε με άλλους."
+      },
+      "posts": {
+        "title": "Δημοσιεύσεις",
+        "description": "Δημιουργήστε, διαχειριστείτε και επεξεργαστείτε βίντεο και φωτογραφίες."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Συμβουλές και υποστήριξη για LIVE μετάδοση."
+      },
+      "monetization": {
+        "title": "Μονετίκευση",
+        "description": "Προγράμματα δημιουργών, πληρωμές και λειτουργίες καταστήματος."
+      },
+      "privacySafety": {
+        "title": "Απόρρητο και ασφάλεια",
+        "description": "Έλεγχοι απορρήτου, εργαλεία ασφάλειας και αναφορά περιεχομένου."
+      }
+    }
   }
 }

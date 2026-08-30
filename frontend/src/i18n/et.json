@@ -2700,5 +2700,52 @@
     "verifyFailed": "Captcha-Überprüfung fehlgeschlagen",
     "loadFailed": "Captcha konnte nicht geladen werden",
     "loadTimeout": "Captcha dauert zu lange. Prüfe deine Verbindung und aktualisiere."
+  },
+  "supportPage": {
+    "pageTitle": "Tugi | Vibely",
+    "brand": "Vibely Tugi",
+    "heroTitle": "Kuidas saame aidata?",
+    "searchPlaceholder": "Otsi abistavatest artiklidest",
+    "supportTicket": "Tugipäring",
+    "faqTitle": "Korduma kippuvad küsimused",
+    "seeMoreTopics": "Vaata teisi teemasid →",
+    "noResults": "Sinu otsingule ei vasta ükski abistav artikkel.",
+    "feedback": "Tagasiside",
+    "termsLink": "Teenuse tingimused",
+    "privacyLink": "Privaatsuspoliitika",
+    "faq": {
+      "howToLogin": "Kuidas sisse logida",
+      "phoneAlreadyRegistered": "See telefoninumber on juba registreeritud",
+      "whyNoPointsAfterPayment": "Miks ma ei saanud pärast makset münte?",
+      "whyCantCompletePayment": "Miks ma ei saa makset lõpule viia?",
+      "needToPayTax": "Kas pean makse deklareerima ja maksma?",
+      "createAccount": "Loo konto"
+    },
+    "categories": {
+      "account": {
+        "title": "Konto",
+        "description": "Halda oma profiili, sisselogimisandmeid ja konto seadeid."
+      },
+      "usingVibely": {
+        "title": "Vibely kasutamine",
+        "description": "Õpi rakendust kasutama ja teistega suhtlema."
+      },
+      "posts": {
+        "title": "Postitused",
+        "description": "Loo, halda ja muuda oma videoid ja fotosid."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Nõuanded ja tugi LIVE'i minemiseks."
+      },
+      "monetization": {
+        "title": "Monetiseerimine",
+        "description": "Loojate programmid, maksed ja poe funktsioonid."
+      },
+      "privacySafety": {
+        "title": "Privaatsus ja turvalisus",
+        "description": "Privaatsuse seaded, turvavahendid ja sisu teavitamine."
+      }
+    }
   }
 }

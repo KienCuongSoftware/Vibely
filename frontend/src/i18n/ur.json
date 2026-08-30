@@ -2700,5 +2700,52 @@
     "verifyFailed": "کیپچا تصدیق ناکام",
     "loadFailed": "کیپچا لوڈ نہیں ہو سکا",
     "loadTimeout": "کیپچا بہت دیر لے رہا ہے۔ کنکشن چیک کریں اور ریفریش کریں۔"
+  },
+  "supportPage": {
+    "pageTitle": "مدد | Vibely",
+    "brand": "Vibely مدد",
+    "heroTitle": "ہم آپ کی کیسے مدد کر سکتے ہیں؟",
+    "searchPlaceholder": "مدد کے مضامین تلاش کریں",
+    "supportTicket": "مدد کی درخواست",
+    "faqTitle": "اکثر پوچھے جانے والے سوالات",
+    "seeMoreTopics": "دیگر موضوعات دیکھیں →",
+    "noResults": "آپ کی تلاش سے مماثل کوئی مدد کا مضمون نہیں ملا۔",
+    "feedback": "رائے",
+    "termsLink": "سروس کی شرائط",
+    "privacyLink": "رازداری کی پالیسی",
+    "faq": {
+      "howToLogin": "لاگ ان کیسے کریں",
+      "phoneAlreadyRegistered": "یہ فون نمبر پہلے سے رجسٹرڈ ہے",
+      "whyNoPointsAfterPayment": "ادائیگی کے بعد مجھے سکے کیوں نہیں ملے؟",
+      "whyCantCompletePayment": "میں ادائیگی کیوں مکمل نہیں کر پا رہا؟",
+      "needToPayTax": "کیا مجھے ٹیکس declare اور ادا کرنا ہوگا؟",
+      "createAccount": "اکاؤنٹ بنائیں"
+    },
+    "categories": {
+      "account": {
+        "title": "اکاؤنٹ",
+        "description": "اپنا پروفائل، لاگ ان تفصیلات اور اکاؤنٹ کی ترتیبات منظم کریں۔"
+      },
+      "usingVibely": {
+        "title": "Vibely کا استعمال",
+        "description": "ایپ استعمال کرنے اور دوسروں کے ساتھ بات چیت کرنے کا طریقہ سیکھیں۔"
+      },
+      "posts": {
+        "title": "پوسٹس",
+        "description": "اپنی ویڈیوز اور تصاویر بنائیں، منظم کریں اور ترمیم کریں۔"
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "LIVE جانے کے لیے تجاویز اور مدد۔"
+      },
+      "monetization": {
+        "title": "مونیٹائزیشن",
+        "description": "کریئٹر پروگرام، ادائیگیاں اور شاپ فیچرز۔"
+      },
+      "privacySafety": {
+        "title": "رازداری اور حفاظت",
+        "description": "رازداری کے کنٹرول، حفاظتی ٹولز اور مواد کی رپورٹنگ۔"
+      }
+    }
   }
 }

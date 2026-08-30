@@ -2700,5 +2700,52 @@
     "verifyFailed": "Weryfikacja captcha nie powiodła się",
     "loadFailed": "Nie udało się wczytać captcha",
     "loadTimeout": "Captcha trwa zbyt długo. Sprawdź połączenie i odśwież."
+  },
+  "supportPage": {
+    "pageTitle": "Asistență | Vibely",
+    "brand": "Asistență Vibely",
+    "heroTitle": "Cum vă putem ajuta?",
+    "searchPlaceholder": "Căutați articole de ajutor",
+    "supportTicket": "Cerere de asistență",
+    "faqTitle": "Întrebări frecvente",
+    "seeMoreTopics": "Vedeți alte subiecte →",
+    "noResults": "Niciun articol de ajutor nu corespunde căutării.",
+    "feedback": "Feedback",
+    "termsLink": "Termeni și condiții",
+    "privacyLink": "Politica de confidențialitate",
+    "faq": {
+      "howToLogin": "Cum să vă conectați",
+      "phoneAlreadyRegistered": "Acest număr de telefon este deja înregistrat",
+      "whyNoPointsAfterPayment": "De ce nu am primit monede după plată?",
+      "whyCantCompletePayment": "De ce nu pot finaliza plata?",
+      "needToPayTax": "Trebuie să declar și să plătesc taxe?",
+      "createAccount": "Creați un cont"
+    },
+    "categories": {
+      "account": {
+        "title": "Cont",
+        "description": "Gestionați profilul, datele de conectare și setările contului."
+      },
+      "usingVibely": {
+        "title": "Utilizarea Vibely",
+        "description": "Aflați cum să folosiți aplicația și să interacționați cu alții."
+      },
+      "posts": {
+        "title": "Postări",
+        "description": "Creați, gestionați și editați videoclipuri și fotografii."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Sfaturi și asistență pentru LIVE."
+      },
+      "monetization": {
+        "title": "Monetizare",
+        "description": "Programe pentru creatori, plăți și funcții de magazin."
+      },
+      "privacySafety": {
+        "title": "Confidențialitate și siguranță",
+        "description": "Controale de confidențialitate, instrumente de siguranță și raportare conținut."
+      }
+    }
   }
 }

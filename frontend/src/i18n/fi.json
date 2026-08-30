@@ -2700,5 +2700,52 @@
     "verifyFailed": "Captcha-Überprüfung fehlgeschlagen",
     "loadFailed": "Captcha konnte nicht geladen werden",
     "loadTimeout": "Captcha dauert zu lange. Prüfe deine Verbindung und aktualisiere."
+  },
+  "supportPage": {
+    "pageTitle": "Tuki | Vibely",
+    "brand": "Vibely Tuki",
+    "heroTitle": "Miten voimme auttaa?",
+    "searchPlaceholder": "Hae ohjeartikkeleista",
+    "supportTicket": "Tukipyyntö",
+    "faqTitle": "Usein kysytyt kysymykset",
+    "seeMoreTopics": "Katso muita aiheita →",
+    "noResults": "Hakua vastaavia ohjeartikkeleita ei löytynyt.",
+    "feedback": "Palaute",
+    "termsLink": "Palveluehdot",
+    "privacyLink": "Tietosuojakäytäntö",
+    "faq": {
+      "howToLogin": "Kuinka kirjaudutaan sisään",
+      "phoneAlreadyRegistered": "Tämä puhelinnumero on jo rekisteröity",
+      "whyNoPointsAfterPayment": "Miksi en saanut kolikoita maksun jälkeen?",
+      "whyCantCompletePayment": "Miksi en voi suorittaa maksua loppuun?",
+      "needToPayTax": "Pitääkö minun ilmoittaa ja maksaa veroja?",
+      "createAccount": "Luo tili"
+    },
+    "categories": {
+      "account": {
+        "title": "Tili",
+        "description": "Hallitse profiiliasi, kirjautumistietojasi ja tiliasetuksiasi."
+      },
+      "usingVibely": {
+        "title": "Vibelyn käyttö",
+        "description": "Opi käyttämään sovellusta ja ole vuorovaikutuksessa muiden kanssa."
+      },
+      "posts": {
+        "title": "Julkaisut",
+        "description": "Luo, hallitse ja muokkaa videoita ja kuvia."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Vinkkejä ja tukea LIVE-lähetykseen."
+      },
+      "monetization": {
+        "title": "Monetisointi",
+        "description": "Sisällöntuottajaohjelmat, maksut ja kaupan ominaisuudet."
+      },
+      "privacySafety": {
+        "title": "Yksityisyys ja turvallisuus",
+        "description": "Yksityisyysasetukset, turvallisuustyökalut ja sisällön ilmoittaminen."
+      }
+    }
   }
 }

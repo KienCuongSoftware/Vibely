@@ -2693,5 +2693,52 @@
     "verifyFailed": "验证码验证失败",
     "loadFailed": "无法加载验证码",
     "loadTimeout": "验证码加载超时。请检查网络后刷新。"
+  },
+  "supportPage": {
+    "pageTitle": "支持 | Vibely",
+    "brand": "Vibely 支持",
+    "heroTitle": "我们能帮您什么？",
+    "searchPlaceholder": "搜索帮助文章",
+    "supportTicket": "支持请求",
+    "faqTitle": "常见问题",
+    "seeMoreTopics": "查看其他主题 →",
+    "noResults": "没有与您的搜索匹配的帮助文章。",
+    "feedback": "反馈",
+    "termsLink": "服务条款",
+    "privacyLink": "隐私政策",
+    "faq": {
+      "howToLogin": "如何登录",
+      "phoneAlreadyRegistered": "该手机号已注册",
+      "whyNoPointsAfterPayment": "为什么付款后没有收到金币？",
+      "whyCantCompletePayment": "为什么无法完成付款？",
+      "needToPayTax": "我需要申报和缴纳税款吗？",
+      "createAccount": "创建账号"
+    },
+    "categories": {
+      "account": {
+        "title": "账号",
+        "description": "管理您的个人资料、登录信息和账号设置。"
+      },
+      "usingVibely": {
+        "title": "使用 Vibely",
+        "description": "了解如何使用应用以及与他人互动。"
+      },
+      "posts": {
+        "title": "帖子",
+        "description": "创建、管理和编辑您的视频与照片。"
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "开播 LIVE 的提示与支持。"
+      },
+      "monetization": {
+        "title": "变现",
+        "description": "创作者计划、支付和商店功能。"
+      },
+      "privacySafety": {
+        "title": "隐私与安全",
+        "description": "隐私控制、安全工具和内容举报。"
+      }
+    }
   }
 }

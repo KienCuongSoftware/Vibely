@@ -2700,5 +2700,52 @@
     "verifyFailed": "Verifikasi captcha gagal",
     "loadFailed": "Tidak dapat memuat captcha",
     "loadTimeout": "Captcha terlalu lama. Periksa koneksi dan segarkan."
+  },
+  "supportPage": {
+    "pageTitle": "Usaidizi | Vibely",
+    "brand": "Usaidizi wa Vibely",
+    "heroTitle": "Tunawezaje kukusaidia?",
+    "searchPlaceholder": "Tafuta makala za msaada",
+    "supportTicket": "Ombi la usaidizi",
+    "faqTitle": "Maswali yanayoulizwa mara kwa mara",
+    "seeMoreTopics": "Angalia mada nyingine →",
+    "noResults": "Hakuna makala za msaada zinazolingana na utafutaji wako.",
+    "feedback": "Maoni",
+    "termsLink": "Masharti ya Huduma",
+    "privacyLink": "Sera ya Faragha",
+    "faq": {
+      "howToLogin": "Jinsi ya kuingia",
+      "phoneAlreadyRegistered": "Nambari hii ya simu tayari imesajiliwa",
+      "whyNoPointsAfterPayment": "Kwa nini sikupata sarafu baada ya malipo?",
+      "whyCantCompletePayment": "Kwa nini siwezi kukamilisha malipo?",
+      "needToPayTax": "Je, ninahitaji kutoa taarifa na kulipa kodi?",
+      "createAccount": "Unda akaunti"
+    },
+    "categories": {
+      "account": {
+        "title": "Akaunti",
+        "description": "Dhibiti wasifu wako, maelezo ya kuingia na mipangilio ya akaunti."
+      },
+      "usingVibely": {
+        "title": "Kutumia Vibely",
+        "description": "Jifunze jinsi ya kutumia programu na kuwasiliana na wengine."
+      },
+      "posts": {
+        "title": "Machapisho",
+        "description": "Unda, dhibiti na hariri video na picha zako."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Vidokezo na usaidizi wa kwenda LIVE."
+      },
+      "monetization": {
+        "title": "Utajiri",
+        "description": "Programu za waundaji, malipo na vipengele vya duka."
+      },
+      "privacySafety": {
+        "title": "Faragha na usalama",
+        "description": "Udhibiti wa faragha, zana za usalama na kuripoti maudhui."
+      }
+    }
   }
 }

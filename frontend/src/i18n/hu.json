@@ -2700,5 +2700,52 @@
     "verifyFailed": "Captcha verification failed",
     "loadFailed": "Couldn't load captcha",
     "loadTimeout": "Captcha is taking too long. Check your connection and refresh."
+  },
+  "supportPage": {
+    "pageTitle": "Támogatás | Vibely",
+    "brand": "Vibely Támogatás",
+    "heroTitle": "Miben segíthetünk?",
+    "searchPlaceholder": "Súgócikkek keresése",
+    "supportTicket": "Támogatási kérelem",
+    "faqTitle": "Gyakran ismételt kérdések",
+    "seeMoreTopics": "További témák megtekintése →",
+    "noResults": "Nincs a keresésnek megfelelő súgócikk.",
+    "feedback": "Visszajelzés",
+    "termsLink": "Szolgáltatási feltételek",
+    "privacyLink": "Adatvédelmi szabályzat",
+    "faq": {
+      "howToLogin": "Bejelentkezés",
+      "phoneAlreadyRegistered": "Ez a telefonszám már regisztrálva van",
+      "whyNoPointsAfterPayment": "Miért nem kaptam érméket a fizetés után?",
+      "whyCantCompletePayment": "Miért nem tudom befejezni a fizetést?",
+      "needToPayTax": "Be kell jelentenem és fizetnem kell adót?",
+      "createAccount": "Fiók létrehozása"
+    },
+    "categories": {
+      "account": {
+        "title": "Fiók",
+        "description": "Kezeld a profilodat, bejelentkezési adataidat és fiókbeállításaidat."
+      },
+      "usingVibely": {
+        "title": "Vibely használata",
+        "description": "Tanuld meg az alkalmazás használatát és a kapcsolatteremtést."
+      },
+      "posts": {
+        "title": "Bejegyzések",
+        "description": "Hozz létre, kezelj és szerkessz videókat és fotókat."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Tippek és támogatás LIVE indításhoz."
+      },
+      "monetization": {
+        "title": "Monetizáció",
+        "description": "Alkotói programok, fizetések és bolt funkciók."
+      },
+      "privacySafety": {
+        "title": "Adatvédelem és biztonság",
+        "description": "Adatvédelmi beállítások, biztonsági eszközök és tartalom jelentése."
+      }
+    }
   }
 }

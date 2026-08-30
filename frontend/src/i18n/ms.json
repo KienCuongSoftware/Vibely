@@ -2700,5 +2700,52 @@
     "verifyFailed": "Verifikasi captcha gagal",
     "loadFailed": "Tidak dapat memuat captcha",
     "loadTimeout": "Captcha terlalu lama. Periksa koneksi dan segarkan."
+  },
+  "supportPage": {
+    "pageTitle": "Sokongan | Vibely",
+    "brand": "Sokongan Vibely",
+    "heroTitle": "Bagaimana kami boleh membantu?",
+    "searchPlaceholder": "Cari artikel bantuan",
+    "supportTicket": "Permintaan sokongan",
+    "faqTitle": "Soalan lazim",
+    "seeMoreTopics": "Lihat topik lain →",
+    "noResults": "Tiada artikel bantuan sepadan dengan carian anda.",
+    "feedback": "Maklum balas",
+    "termsLink": "Syarat Perkhidmatan",
+    "privacyLink": "Dasar Privasi",
+    "faq": {
+      "howToLogin": "Cara log masuk",
+      "phoneAlreadyRegistered": "Nombor telefon ini sudah didaftarkan",
+      "whyNoPointsAfterPayment": "Mengapa saya tidak menerima syiling selepas pembayaran?",
+      "whyCantCompletePayment": "Mengapa saya tidak boleh melengkapkan pembayaran?",
+      "needToPayTax": "Adakah saya perlu isytihar dan bayar cukai?",
+      "createAccount": "Cipta akaun"
+    },
+    "categories": {
+      "account": {
+        "title": "Akaun",
+        "description": "Urus profil, butiran log masuk dan tetapan akaun anda."
+      },
+      "usingVibely": {
+        "title": "Menggunakan Vibely",
+        "description": "Ketahui cara menggunakan aplikasi dan berinteraksi dengan orang lain."
+      },
+      "posts": {
+        "title": "Siaran",
+        "description": "Cipta, urus dan edit video serta foto anda."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Tip dan sokongan untuk LIVE."
+      },
+      "monetization": {
+        "title": "Monetisasi",
+        "description": "Program pencipta, pembayaran dan ciri kedai."
+      },
+      "privacySafety": {
+        "title": "Privasi dan keselamatan",
+        "description": "Kawalan privasi, alat keselamatan dan pelaporan kandungan."
+      }
+    }
   }
 }

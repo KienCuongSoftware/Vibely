@@ -2693,5 +2693,52 @@
     "verifyFailed": "Échec de la vérification captcha",
     "loadFailed": "Impossible de charger le captcha",
     "loadTimeout": "Le captcha met trop de temps. Vérifiez votre connexion et actualisez."
+  },
+  "supportPage": {
+    "pageTitle": "Assistance | Vibely",
+    "brand": "Assistance Vibely",
+    "heroTitle": "Comment pouvons-nous vous aider?",
+    "searchPlaceholder": "Rechercher des articles d'aide",
+    "supportTicket": "Demande d'assistance",
+    "faqTitle": "Questions fréquentes",
+    "seeMoreTopics": "Voir d'autres sujets →",
+    "noResults": "Aucun article d'aide ne correspond à votre recherche.",
+    "feedback": "Commentaires",
+    "termsLink": "Conditions d'utilisation",
+    "privacyLink": "Politique de confidentialité",
+    "faq": {
+      "howToLogin": "Comment se connecter",
+      "phoneAlreadyRegistered": "Ce numéro de téléphone est déjà enregistré",
+      "whyNoPointsAfterPayment": "Pourquoi n'ai-je pas reçu de pièces après le paiement?",
+      "whyCantCompletePayment": "Pourquoi ne puis-je pas finaliser le paiement?",
+      "needToPayTax": "Dois-je déclarer et payer des impôts?",
+      "createAccount": "Créer un compte"
+    },
+    "categories": {
+      "account": {
+        "title": "Compte",
+        "description": "Gérez votre profil, vos identifiants et les paramètres du compte."
+      },
+      "usingVibely": {
+        "title": "Utiliser Vibely",
+        "description": "Apprenez à utiliser l'application et à interagir avec les autres."
+      },
+      "posts": {
+        "title": "Publications",
+        "description": "Créez, gérez et modifiez vos vidéos et photos."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Conseils et assistance pour passer en LIVE."
+      },
+      "monetization": {
+        "title": "Monétisation",
+        "description": "Programmes créateurs, paiements et fonctionnalités boutique."
+      },
+      "privacySafety": {
+        "title": "Confidentialité et sécurité",
+        "description": "Contrôles de confidentialité, outils de sécurité et signalement de contenu."
+      }
+    }
   }
 }

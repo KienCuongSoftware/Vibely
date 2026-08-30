@@ -2693,5 +2693,52 @@
     "verifyFailed": "캡차 인증에 실패했습니다",
     "loadFailed": "캡차를 불러오지 못했습니다",
     "loadTimeout": "캡차가 너무 오래 걸립니다. 연결을 확인하고 새로고침하세요."
+  },
+  "supportPage": {
+    "pageTitle": "지원 | Vibely",
+    "brand": "Vibely 지원",
+    "heroTitle": "무엇을 도와드릴까요?",
+    "searchPlaceholder": "도움말 검색",
+    "supportTicket": "지원 요청",
+    "faqTitle": "자주 묻는 질문",
+    "seeMoreTopics": "다른 주제 보기 →",
+    "noResults": "검색과 일치하는 도움말이 없습니다.",
+    "feedback": "피드백",
+    "termsLink": "서비스 약관",
+    "privacyLink": "개인정보 처리방침",
+    "faq": {
+      "howToLogin": "로그인 방법",
+      "phoneAlreadyRegistered": "이미 등록된 전화번호입니다",
+      "whyNoPointsAfterPayment": "결제 후 코인을 받지 못한 이유는?",
+      "whyCantCompletePayment": "결제를 완료할 수 없는 이유는?",
+      "needToPayTax": "세금 신고 및 납부가 필요한가요?",
+      "createAccount": "계정 만들기"
+    },
+    "categories": {
+      "account": {
+        "title": "계정",
+        "description": "프로필, 로그인 정보 및 계정 설정을 관리하세요."
+      },
+      "usingVibely": {
+        "title": "Vibely 사용하기",
+        "description": "앱 사용 방법과 다른 사용자와 상호작용하는 방법을 알아보세요."
+      },
+      "posts": {
+        "title": "게시물",
+        "description": "동영상과 사진을 만들고, 관리하고, 편집하세요."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "LIVE 방송 팁 및 지원."
+      },
+      "monetization": {
+        "title": "수익 창출",
+        "description": "크리에이터 프로그램, 결제 및 샵 기능."
+      },
+      "privacySafety": {
+        "title": "개인정보 및 안전",
+        "description": "개인정보 설정, 안전 도구 및 콘텐츠 신고."
+      }
+    }
   }
 }

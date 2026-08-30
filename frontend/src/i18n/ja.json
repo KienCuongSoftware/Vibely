@@ -2705,5 +2705,52 @@
       "likes": "いいね",
       "defaultText": "テキスト"
     }
+  },
+  "supportPage": {
+    "pageTitle": "サポート | Vibely",
+    "brand": "Vibely サポート",
+    "heroTitle": "どのようなご用件でしょうか？",
+    "searchPlaceholder": "ヘルプ記事を検索",
+    "supportTicket": "サポートリクエスト",
+    "faqTitle": "よくある質問",
+    "seeMoreTopics": "他のトピックを見る →",
+    "noResults": "検索に一致するヘルプ記事はありません。",
+    "feedback": "フィードバック",
+    "termsLink": "利用規約",
+    "privacyLink": "プライバシーポリシー",
+    "faq": {
+      "howToLogin": "ログイン方法",
+      "phoneAlreadyRegistered": "この電話番号はすでに登録されています",
+      "whyNoPointsAfterPayment": "支払い後にコインが届かないのはなぜですか？",
+      "whyCantCompletePayment": "支払いを完了できないのはなぜですか？",
+      "needToPayTax": "税金の申告と納付が必要ですか？",
+      "createAccount": "アカウントを作成"
+    },
+    "categories": {
+      "account": {
+        "title": "アカウント",
+        "description": "プロフィール、ログイン情報、アカウント設定を管理します。"
+      },
+      "usingVibely": {
+        "title": "Vibelyの使い方",
+        "description": "アプリの使い方や他のユーザーとの交流方法を学びます。"
+      },
+      "posts": {
+        "title": "投稿",
+        "description": "動画や写真の作成、管理、編集を行います。"
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "LIVE配信のヒントとサポート。"
+      },
+      "monetization": {
+        "title": "収益化",
+        "description": "クリエイタープログラム、決済、ショップ機能。"
+      },
+      "privacySafety": {
+        "title": "プライバシーと安全",
+        "description": "プライバシー設定、安全ツール、コンテンツの報告。"
+      }
+    }
   }
 }

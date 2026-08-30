@@ -2700,5 +2700,52 @@
     "verifyFailed": "Weryfikacja captcha nie powiodła się",
     "loadFailed": "Nie udało się wczytać captcha",
     "loadTimeout": "Captcha trwa zbyt długo. Sprawdź połączenie i odśwież."
+  },
+  "supportPage": {
+    "pageTitle": "Podpora | Vibely",
+    "brand": "Vibely Podpora",
+    "heroTitle": "Ako vám môžeme pomôcť?",
+    "searchPlaceholder": "Hľadať v článkoch pomoci",
+    "supportTicket": "Požiadavka na podporu",
+    "faqTitle": "Často kladené otázky",
+    "seeMoreTopics": "Zobraziť ďalšie témy →",
+    "noResults": "Vašemu hľadaniu nezodpovedajú žiadne články pomoci.",
+    "feedback": "Spätná väzba",
+    "termsLink": "Zmluvné podmienky",
+    "privacyLink": "Zásady ochrany osobných údajov",
+    "faq": {
+      "howToLogin": "Ako sa prihlásiť",
+      "phoneAlreadyRegistered": "Toto telefónne číslo je už zaregistrované",
+      "whyNoPointsAfterPayment": "Prečo som po platbe nedostal mince?",
+      "whyCantCompletePayment": "Prečo nemôžem dokončiť platbu?",
+      "needToPayTax": "Musím deklarovať a platiť dane?",
+      "createAccount": "Vytvoriť účet"
+    },
+    "categories": {
+      "account": {
+        "title": "Účet",
+        "description": "Spravujte profil, prihlasovacie údaje a nastavenia účtu."
+      },
+      "usingVibely": {
+        "title": "Používanie Vibely",
+        "description": "Naučte sa používať aplikáciu a komunikovať s ostatnými."
+      },
+      "posts": {
+        "title": "Príspevky",
+        "description": "Vytvárajte, spravujte a upravujte videá a fotografie."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Tipy a podpora pre LIVE vysielanie."
+      },
+      "monetization": {
+        "title": "Monetizácia",
+        "description": "Programy pre tvorcov, platby a funkcie obchodu."
+      },
+      "privacySafety": {
+        "title": "Súkromie a bezpečnosť",
+        "description": "Nastavenia súkromia, bezpečnostné nástroje a nahlasovanie obsahu."
+      }
+    }
   }
 }

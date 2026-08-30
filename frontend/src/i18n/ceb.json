@@ -2700,5 +2700,52 @@
     "verifyFailed": "Verifikasi captcha gagal",
     "loadFailed": "Tidak dapat memuat captcha",
     "loadTimeout": "Captcha terlalu lama. Periksa koneksi dan segarkan."
+  },
+  "supportPage": {
+    "pageTitle": "Suporta | Vibely",
+    "brand": "Vibely Support",
+    "heroTitle": "Unsa among matabang kanimo?",
+    "searchPlaceholder": "Pangitaa ang mga artikulo sa tabang",
+    "supportTicket": "Hangyo sa suporta",
+    "faqTitle": "Kanunay nga gipangutana",
+    "seeMoreTopics": "Tan-awa ang ubang hilisgutan →",
+    "noResults": "Walay artikulo sa tabang nga motakdo sa imong pagpangita.",
+    "feedback": "Feedback",
+    "termsLink": "Mga Termino sa Serbisyo",
+    "privacyLink": "Patakaran sa Pagkapribado",
+    "faq": {
+      "howToLogin": "Unsaon pag-log in",
+      "phoneAlreadyRegistered": "Kini nga numero sa telepono rehistrado na",
+      "whyNoPointsAfterPayment": "Nganong wala ko makadawat og coins human sa bayad?",
+      "whyCantCompletePayment": "Nganong dili nako makompleto ang bayad?",
+      "needToPayTax": "Kinahanglan ba nako magdeklarar ug mobayad og buhis?",
+      "createAccount": "Paghimo og account"
+    },
+    "categories": {
+      "account": {
+        "title": "Account",
+        "description": "Dumala sa imong profile, login details, ug account settings."
+      },
+      "usingVibely": {
+        "title": "Paggamit sa Vibely",
+        "description": "Hibaloi unsaon paggamit sa app ug pakig-uban sa uban."
+      },
+      "posts": {
+        "title": "Mga post",
+        "description": "Paghimo, pagdumala, ug pag-edit sa imong mga video ug litrato."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Mga tip ug suporta sa pag-LIVE."
+      },
+      "monetization": {
+        "title": "Monetization",
+        "description": "Mga programa sa creator, bayad, ug shop features."
+      },
+      "privacySafety": {
+        "title": "Privacy ug kaluwasan",
+        "description": "Privacy controls, safety tools, ug pag-report sa content."
+      }
+    }
   }
 }

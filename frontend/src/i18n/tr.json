@@ -2693,5 +2693,52 @@
     "verifyFailed": "Captcha doğrulaması başarısız",
     "loadFailed": "Captcha yüklenemedi",
     "loadTimeout": "Captcha çok uzun sürüyor. Bağlantını kontrol et ve yenile."
+  },
+  "supportPage": {
+    "pageTitle": "Destek | Vibely",
+    "brand": "Vibely Destek",
+    "heroTitle": "Size nasıl yardımcı olabiliriz?",
+    "searchPlaceholder": "Yardım makalelerinde ara",
+    "supportTicket": "Destek talebi",
+    "faqTitle": "Sık sorulan sorular",
+    "seeMoreTopics": "Diğer konuları gör →",
+    "noResults": "Aramanızla eşleşen yardım makalesi yok.",
+    "feedback": "Geri bildirim",
+    "termsLink": "Hizmet Şartları",
+    "privacyLink": "Gizlilik Politikası",
+    "faq": {
+      "howToLogin": "Nasıl giriş yapılır",
+      "phoneAlreadyRegistered": "Bu telefon numarası zaten kayıtlı",
+      "whyNoPointsAfterPayment": "Ödemeden sonra neden jeton almadım?",
+      "whyCantCompletePayment": "Ödemeyi neden tamamlayamıyorum?",
+      "needToPayTax": "Vergi beyan edip ödemem gerekiyor mu?",
+      "createAccount": "Hesap oluştur"
+    },
+    "categories": {
+      "account": {
+        "title": "Hesap",
+        "description": "Profilinizi, giriş bilgilerinizi ve hesap ayarlarınızı yönetin."
+      },
+      "usingVibely": {
+        "title": "Vibely kullanımı",
+        "description": "Uygulamayı nasıl kullanacağınızı ve başkalarıyla etkileşime geçeceğinizi öğrenin."
+      },
+      "posts": {
+        "title": "Gönderiler",
+        "description": "Videolarınızı ve fotoğraflarınızı oluşturun, yönetin ve düzenleyin."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "LIVE yayına geçmek için ipuçları ve destek."
+      },
+      "monetization": {
+        "title": "Para kazanma",
+        "description": "İçerik üretici programları, ödemeler ve mağaza özellikleri."
+      },
+      "privacySafety": {
+        "title": "Gizlilik ve güvenlik",
+        "description": "Gizlilik kontrolleri, güvenlik araçları ve içerik bildirimi."
+      }
+    }
   }
 }
