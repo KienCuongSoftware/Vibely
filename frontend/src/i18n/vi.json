@@ -292,6 +292,53 @@
       "lifestyle": "Phong cách sống"
     }
   },
+  "supportPage": {
+    "pageTitle": "Trợ giúp | Vibely",
+    "brand": "Vibely Support",
+    "heroTitle": "Chúng tôi có thể giúp gì?",
+    "searchPlaceholder": "Tìm kiếm bài viết trợ giúp",
+    "supportTicket": "Phiếu yêu cầu hỗ trợ",
+    "faqTitle": "Câu hỏi thường gặp",
+    "seeMoreTopics": "Xem chủ đề khác →",
+    "noResults": "Không tìm thấy bài viết trợ giúp phù hợp.",
+    "feedback": "Phản hồi",
+    "termsLink": "Điều khoản dịch vụ",
+    "privacyLink": "Chính sách quyền riêng tư",
+    "faq": {
+      "howToLogin": "Cách đăng nhập",
+      "phoneAlreadyRegistered": "Số điện thoại này đã được đăng ký",
+      "whyNoPointsAfterPayment": "Tại sao tôi không nhận được Xu sau khi thực hiện thanh toán?",
+      "whyCantCompletePayment": "Tại sao tôi không thể hoàn tất thanh toán?",
+      "needToPayTax": "Tôi có cần kê khai và nộp thuế không?",
+      "createAccount": "Tạo tài khoản"
+    },
+    "categories": {
+      "account": {
+        "title": "Tài khoản",
+        "description": "Quản lý hồ sơ, thông tin đăng nhập và cài đặt tài khoản."
+      },
+      "usingVibely": {
+        "title": "Sử dụng Vibely",
+        "description": "Khám phá cách dùng ứng dụng và tương tác với người khác."
+      },
+      "posts": {
+        "title": "Bài đăng",
+        "description": "Tạo, quản lý và chỉnh sửa video, ảnh của bạn."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Mẹo và hỗ trợ khi phát LIVE."
+      },
+      "monetization": {
+        "title": "Kiếm tiền",
+        "description": "Chương trình nhà sáng tạo, thanh toán và Vibely Shop."
+      },
+      "privacySafety": {
+        "title": "Quyền riêng tư và an toàn",
+        "description": "Quyền riêng tư, công cụ an toàn và báo cáo nội dung."
+      }
+    }
+  },
   "messagesPage": {
     "title": "Tin nhắn",
     "pageTitle": "Tin nhắn | Vibely",

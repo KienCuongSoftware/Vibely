@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { IoLogOutOutline, IoPerson } from 'react-icons/io5'
 import { Sidebar } from '@/shared/components/Sidebar'
 import { AccountActionsPill } from '@/features/profile/components/AccountActionsPill'
+import { AccountAvatarMenu } from '@/shared/components/AccountAvatarMenu.jsx'
 import { GuestLoginTrigger } from '@/features/auth/store/GuestAuthUiContext.jsx'
 import { TooltipHoverWrap } from '@/shared/components/TooltipControls'
 import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
@@ -61,15 +61,11 @@ export function CreatorGridShell({
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   const menuItems = useMemo(() => buildMainSidebarMenuItems(token), [token])
-  const profilePath = useMemo(
-    () => buildProfilePath(token, user),
-    [token, user],
-  )
 
   const handleSidebarSelect = (id) => {
     handleSidebarMenuSelect(navigate, id, {
       token,
-      profilePath,
+      profilePath: buildProfilePath(token, user),
       onUnhandled: () => {},
     })
   }
@@ -162,27 +158,17 @@ export function CreatorGridShell({
                 </button>
               </TooltipHoverWrap>
               {showAccountMenu ? (
-                <div className="absolute right-0 z-[110] mt-2 w-44 overflow-hidden rounded-xl bg-zinc-800 py-1 shadow-2xl">
-                  <Link
-                    to={profilePath}
-                    className="vibely-account-menu-item flex items-center gap-2 px-3 py-2 text-sm text-zinc-100 hover:bg-zinc-700"
-                    onClick={() => setShowAccountMenu(false)}
-                  >
-                    <IoPerson className="text-base" />
-                    {t('common.viewProfile')}
-                  </Link>
-                  <button
-                    type="button"
-                    className="vibely-account-menu-item flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-100 hover:bg-zinc-700"
-                    onClick={() => {
-                      setShowAccountMenu(false)
-                      setShowLogoutConfirm(true)
-                    }}
-                  >
-                    <IoLogOutOutline className="text-base" />
-                    {t('common.logout')}
-                  </button>
-                </div>
+                <AccountAvatarMenu
+                  open
+                  onClose={() => setShowAccountMenu(false)}
+                  user={user}
+                  token={token}
+                  className="absolute right-0 z-[110] top-full mt-2"
+                  onLogout={() => {
+                    setShowAccountMenu(false)
+                    setShowLogoutConfirm(true)
+                  }}
+                />
               ) : null}
             </div>
           )}

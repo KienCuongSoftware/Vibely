@@ -19,35 +19,23 @@ import {
 } from '@/features/settings/utils/accountRegions'
 import { collectLoginContext } from '@/security/loginContext'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { buildProfilePath } from '@/features/profile/utils/buildProfilePath.js'
-import { useLocale } from '@/i18n/useLocale'
 import { useNotificationUnread } from '@/features/notification/store/NotificationUnreadContext'
 import { useChatInboxBadge } from '@/features/chat/store/ChatInboxBadgeContext'
 import { useSearchModal } from '@/features/search/store/SearchModalContext'
-import { useTheme } from '@/shared/theme/ThemeContext.jsx'
-import { APPEARANCE_OPTIONS } from '@/shared/theme/themeStorage.js'
 import { ActivityPanel } from '@/features/notification/components/ActivityPanel'
+import { AccountAvatarMenu } from '@/shared/components/AccountAvatarMenu.jsx'
 import { AvatarImage } from '@/shared/components/AvatarImage'
 import {
   IoAccessibilityOutline,
   IoArrowBack,
-  IoCashOutline,
-  IoCheckmark,
   IoChatbubbleOutline,
-  IoChevronBack,
   IoChevronForward,
   IoCloudUploadOutline,
-  IoGlobeOutline,
-  IoHelpCircleOutline,
   IoHourglassOutline,
-  IoLogOutOutline,
   IoMegaphoneOutline,
-  IoMoonOutline,
   IoNotificationsOutline,
   IoPerson,
-  IoRocketOutline,
   IoSearchOutline,
-  IoSettingsOutline,
   IoShieldOutline,
   IoStorefrontOutline,
   IoVideocamOutline,
@@ -201,15 +189,11 @@ function SettingsGroupLabel({ title }) {
 export function SettingsPage() {
   const navigate = useNavigate()
   const { token, user, logout, refreshProfile } = useAuth()
-  const { t } = useTranslation()
-  const { locale, changeLanguage, languages } = useLocale()
+  const { t, i18n } = useTranslation()
   const { unreadCount } = useNotificationUnread()
   const { chatInboxBadgeCount } = useChatInboxBadge()
   const searchModal = useSearchModal()
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false)
-  const [avatarLangOpen, setAvatarLangOpen] = useState(false)
-  const [avatarThemeOpen, setAvatarThemeOpen] = useState(false)
-  const { preference, setPreference } = useTheme()
   const avatarMenuRef = useRef(null)
   const [notifOpen, setNotifOpen] = useState(false)
   const notifRef = useRef(null)
@@ -275,8 +259,6 @@ export function SettingsPage() {
     const handler = (e) => {
       if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target)) {
         setAvatarMenuOpen(false)
-        setAvatarLangOpen(false)
-        setAvatarThemeOpen(false)
       }
     }
     document.addEventListener('mousedown', handler)
@@ -639,6 +621,14 @@ export function SettingsPage() {
     }
   }
 
+  const handleOpenSettings = () => {
+    setActiveSetting('account')
+    setAccountView('main')
+    setPrivacyView('main')
+    contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+    navigate('/settings')
+  }
+
   return (
     <section className="vibely-chrome flex h-dvh flex-col overflow-hidden bg-black text-zinc-100">
       {/* ── TikTok-style top header ── */}
@@ -708,148 +698,20 @@ export function SettingsPage() {
           <div className="relative" ref={avatarMenuRef}>
             <button
               type="button"
-              onClick={() => { setAvatarMenuOpen((v) => !v); setNotifOpen(false); setAvatarLangOpen(false); setAvatarThemeOpen(false) }}
+              onClick={() => { setAvatarMenuOpen((v) => !v); setNotifOpen(false) }}
               className="h-9 w-9 overflow-hidden rounded-full ring-2 ring-transparent hover:ring-zinc-600"
             >
               <AvatarImage src={avatarSrc} alt={user?.displayName || 'avatar'} className="h-full w-full object-cover" />
             </button>
 
-            {avatarMenuOpen && (
-              <div className="absolute right-0 top-11 z-50 flex max-h-[calc(100dvh-72px)] w-[280px] flex-col overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl">
-                {avatarLangOpen ? (
-                  /* ── Language submenu ── */
-                  <>
-                    <div className="flex items-center gap-2 border-b border-zinc-800 px-2 py-3">
-                      <button
-                        type="button"
-                        onClick={() => setAvatarLangOpen(false)}
-                        className="rounded-full p-2 text-zinc-300 hover:bg-zinc-800"
-                      >
-                        <IoChevronBack className="text-lg" />
-                      </button>
-                      <span className="font-bold text-zinc-100">{t('settings.language')}</span>
-                    </div>
-                    <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto py-1">
-                      {languages.map((lang) => (
-                        <button
-                          key={lang.code}
-                          type="button"
-                          onClick={() => { changeLanguage(lang.code); setAvatarLangOpen(false); setAvatarMenuOpen(false) }}
-                          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
-                        >
-                          <span>{lang.nativeLabel}</span>
-                          {locale === lang.code && <IoCheckmark className="text-red-500" />}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                ) : avatarThemeOpen ? (
-                  <>
-                    <div className="flex items-center gap-2 border-b border-zinc-800 px-2 py-3">
-                      <button
-                        type="button"
-                        onClick={() => setAvatarThemeOpen(false)}
-                        className="rounded-full p-2 text-zinc-300 hover:bg-zinc-800"
-                        aria-label={t('common.back')}
-                      >
-                        <IoChevronBack className="text-lg" />
-                      </button>
-                      <span className="font-bold text-zinc-100">{t('appearance.darkMode')}</span>
-                    </div>
-                    <div className="py-1">
-                      {APPEARANCE_OPTIONS.map((option) => (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => {
-                            setPreference(option.value)
-                            setAvatarThemeOpen(false)
-                            setAvatarMenuOpen(false)
-                          }}
-                          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
-                        >
-                          <span>{t(option.labelKey)}</span>
-                          {preference === option.value ? (
-                            <IoCheckmark className="text-lg text-zinc-100" aria-hidden />
-                          ) : null}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  /* ── Main menu ── */
-                  <>
-                    {/* Menu items */}
-                    <div className="py-1">
-                      <Link
-                        to={buildProfilePath(token, user)}
-                        onClick={() => setAvatarMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
-                      >
-                        <IoPerson className="shrink-0 text-lg text-zinc-300" />
-                        <span>{t('settings.menu.viewProfile')}</span>
-                      </Link>
-                      <button
-                        type="button"
-                        className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
-                      >
-                        <IoCashOutline className="shrink-0 text-lg text-zinc-300" />
-                        <span>{t('settings.menu.getCoins')}</span>
-                      </button>
-                      <button
-                        type="button"
-                        className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
-                      >
-                        <IoRocketOutline className="shrink-0 text-lg text-zinc-300" />
-                        <span className="whitespace-nowrap">{t('settings.menu.creatorTools')}</span>
-                      </button>
-                      <Link
-                        to="/settings"
-                        onClick={() => setAvatarMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
-                      >
-                        <IoSettingsOutline className="shrink-0 text-lg text-zinc-300" />
-                        <span>{t('settings.title')}</span>
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => setAvatarLangOpen(true)}
-                        className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
-                      >
-                        <IoGlobeOutline className="shrink-0 text-lg text-zinc-300" />
-                        <span>
-                          {languages.find((l) => l.code === locale)?.nativeLabel ?? t('settings.language')}
-                        </span>
-                      </button>
-                      <button
-                        type="button"
-                        className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
-                      >
-                        <IoHelpCircleOutline className="shrink-0 text-lg text-zinc-300" />
-                        <span>{t('settings.menu.feedbackHelp')}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setAvatarThemeOpen(true)}
-                        className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
-                      >
-                        <IoMoonOutline className="shrink-0 text-lg text-zinc-300" />
-                        <span>{t('settings.menu.darkMode')}</span>
-                      </button>
-                      <div className="mx-4 my-1 border-t border-zinc-800" />
-                      <button
-                        type="button"
-                        onClick={() => { setAvatarMenuOpen(false); logout() }}
-                        className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/80"
-                      >
-                        <IoLogOutOutline className="shrink-0 text-lg text-zinc-300" />
-                        <span>{t('settings.logout')}</span>
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+            <AccountAvatarMenu
+              open={avatarMenuOpen}
+              onClose={() => setAvatarMenuOpen(false)}
+              user={user}
+              token={token}
+              onLogout={logout}
+              onOpenSettings={handleOpenSettings}
+            />
           </div>
         </div>
       </header>
@@ -1332,7 +1194,7 @@ export function SettingsPage() {
             <SettingsSection title={t('settings.accountSection.info')}>
               <SettingsRow
                 title={t('settings.accountSection.region')}
-                trailing={getRegionLabel(accountRegionCode, locale?.startsWith('vi') ? 'vi' : 'en')}
+                trailing={getRegionLabel(accountRegionCode, i18n.language?.startsWith('vi') ? 'vi' : 'en')}
                 onClick={() => {
                   setAccountRegionError('')
                   setAccountRegionModalOpen(true)

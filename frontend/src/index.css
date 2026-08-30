@@ -610,6 +610,34 @@ html[data-vibely-theme="light"] .vibely-more-close {
   background-color: #f1f1f2;
   color: #161823;
 }
+
+/* Support center — always light, TikTok-style help hub */
+.vibely-support-page {
+  background-color: #fff;
+  color: #161823;
+}
+.vibely-support-page [role="menu"] {
+  background-color: #fff !important;
+  border-color: #e3e3e4 !important;
+}
+.vibely-support-page .vibely-account-avatar-menu-item {
+  color: #161823;
+}
+.vibely-support-page .vibely-account-avatar-menu-item:hover {
+  background-color: #f1f1f2 !important;
+}
+.vibely-support-page [role="menu"] .text-zinc-100,
+.vibely-support-page [role="menu"] .text-zinc-200,
+.vibely-support-page [role="menu"] .text-zinc-300 {
+  color: #161823;
+}
+.vibely-support-page [role="menu"] .border-zinc-800 {
+  border-color: #e3e3e4;
+}
+.vibely-support-page [role="menu"] button.rounded-full:hover {
+  background-color: #f1f1f2;
+}
+
 html[data-vibely-theme="light"] nav button.bg-zinc-900 {
   background-color: #f1f1f2;
 }

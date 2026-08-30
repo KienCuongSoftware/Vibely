@@ -21,6 +21,7 @@ import {
   IoMoonOutline,
   IoOptionsOutline,
   IoRocketOutline,
+  IoSettingsOutline,
   IoSunnyOutline,
 } from "react-icons/io5";
 
@@ -190,6 +191,19 @@ export function SidebarMorePanel({ onClose, token, onLogout, showTools = true })
             <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-2 py-3">
               <MoreSection title={t("nav.settings")}>
                 <MoreRow
+                  icon={IoSettingsOutline}
+                  label={t("settings.title")}
+                  trailing={<IoChevronForward className="text-zinc-500" />}
+                  onClick={() => {
+                    handleClose();
+                    if (!token) {
+                      navigate("/login");
+                      return;
+                    }
+                    navigate("/settings");
+                  }}
+                />
+                <MoreRow
                   icon={IoLanguageOutline}
                   label={currentLangLabel}
                   trailing={<IoChevronForward className="text-zinc-500" />}
@@ -242,7 +256,10 @@ export function SidebarMorePanel({ onClose, token, onLogout, showTools = true })
                 <MoreRow
                   icon={IoClipboardOutline}
                   label={t("moreMenu.support")}
-                  onClick={() => {}}
+                  onClick={() => {
+                    handleClose();
+                    navigate("/support");
+                  }}
                 />
                 {token && onLogout ? (
                   <MoreRow

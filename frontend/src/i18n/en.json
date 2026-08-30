@@ -292,6 +292,53 @@
       "lifestyle": "Lifestyle"
     }
   },
+  "supportPage": {
+    "pageTitle": "Support | Vibely",
+    "brand": "Vibely Support",
+    "heroTitle": "How can we help?",
+    "searchPlaceholder": "Search help articles",
+    "supportTicket": "Support request",
+    "faqTitle": "Frequently asked questions",
+    "seeMoreTopics": "See other topics →",
+    "noResults": "No help articles match your search.",
+    "feedback": "Feedback",
+    "termsLink": "Terms of Service",
+    "privacyLink": "Privacy Policy",
+    "faq": {
+      "howToLogin": "How to log in",
+      "phoneAlreadyRegistered": "This phone number is already registered",
+      "whyNoPointsAfterPayment": "Why didn't I receive coins after payment?",
+      "whyCantCompletePayment": "Why can't I complete payment?",
+      "needToPayTax": "Do I need to declare and pay taxes?",
+      "createAccount": "Create an account"
+    },
+    "categories": {
+      "account": {
+        "title": "Account",
+        "description": "Manage your profile, login details, and account settings."
+      },
+      "usingVibely": {
+        "title": "Using Vibely",
+        "description": "Learn how to use the app and interact with others."
+      },
+      "posts": {
+        "title": "Posts",
+        "description": "Create, manage, and edit your videos and photos."
+      },
+      "live": {
+        "title": "Vibely LIVE",
+        "description": "Tips and support for going LIVE."
+      },
+      "monetization": {
+        "title": "Monetization",
+        "description": "Creator programs, payments, and shop features."
+      },
+      "privacySafety": {
+        "title": "Privacy and safety",
+        "description": "Privacy controls, safety tools, and reporting content."
+      }
+    }
+  },
   "messagesPage": {
     "title": "Messages",
     "pageTitle": "Messages | Vibely",
