@@ -13,7 +13,7 @@ function HeaderLabelChip({ icon, label }) {
       type="button"
       title={label}
       aria-label={label}
-      className="flex max-w-[10.5rem] min-w-0 cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-2 text-[13px] font-semibold leading-none text-zinc-100 transition-colors hover:bg-zinc-800"
+      className="vibely-account-actions-chip flex max-w-[10.5rem] min-w-0 cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-2 text-[13px] font-semibold leading-none transition-colors"
     >
       <span className="shrink-0 text-[16px]" aria-hidden>
         {icon}
@@ -37,14 +37,14 @@ export function AccountActionsPill({
   const downloadApp = t("common.downloadApp");
   return (
     <div
-      className={`hidden lg:inline-flex max-w-[min(100%,28rem)] flex-row flex-nowrap items-center rounded-full bg-zinc-950 py-1.5 pl-1 pr-1.5 shadow-[0_2px_8px_rgba(0,0,0,0.08)] ${toneClasses[tone] ?? toneClasses.feed} ${className}`}
+      className={`vibely-account-actions-pill hidden lg:inline-flex max-w-[min(100%,28rem)] flex-row flex-nowrap items-center rounded-full py-1.5 pl-1 pr-1.5 ${toneClasses[tone] ?? toneClasses.feed} ${className}`}
     >
       {showCoinAndApp ? (
         <>
           <HeaderLabelChip icon={<IoCashOutline />} label={getCoins} />
           <HeaderLabelChip icon={<IoPhonePortraitOutline />} label={downloadApp} />
           <div
-            className="mx-0.5 h-6 w-px shrink-0 self-center bg-zinc-700"
+            className="vibely-account-actions-divider mx-0.5 h-6 w-px shrink-0 self-center"
             aria-hidden
           />
         </>

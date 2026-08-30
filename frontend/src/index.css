@@ -611,14 +611,46 @@ html[data-vibely-theme="light"] .vibely-more-close {
   color: #161823;
 }
 
-/* Activity panel filter chips — selected tab stays dark in light theme */
+/* Activity panel filter chips */
 .vibely-activity-filter-btn--selected {
-  background-color: #161823;
-  color: #fff;
+  background-color: #fff;
+  color: #161823;
 }
 html[data-vibely-theme="light"] .vibely-activity-filter-btn--selected {
   background-color: #161823;
   color: #fff;
+}
+
+/* Profile / feed header pill — Nhận Xu, Tải ứng dụng */
+.vibely-account-actions-pill {
+  background-color: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(10px);
+}
+.vibely-account-actions-chip {
+  color: #fff;
+}
+.vibely-account-actions-chip:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.vibely-account-actions-divider {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+html[data-vibely-theme="light"] .vibely-account-actions-pill {
+  background-color: #fff;
+  border-color: #e3e3e4;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  backdrop-filter: none;
+}
+html[data-vibely-theme="light"] .vibely-account-actions-chip {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-account-actions-chip:hover {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-account-actions-divider {
+  background-color: #e3e3e4;
 }
 
 /* Support center — follows app light/dark theme */
