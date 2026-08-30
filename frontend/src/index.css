@@ -611,30 +611,211 @@ html[data-vibely-theme="light"] .vibely-more-close {
   color: #161823;
 }
 
-/* Support center — always light, TikTok-style help hub */
+/* Support center — follows app light/dark theme */
 .vibely-support-page {
+  background-color: #000;
+  color: #f1f1f2;
+}
+.vibely-support-page .support-header {
+  border-color: #27272a;
+  background-color: rgba(0, 0, 0, 0.92);
+}
+.vibely-support-page .support-brand {
+  color: #f1f1f2;
+}
+.vibely-support-page .support-lang-btn,
+.vibely-support-page .support-icon-btn {
+  color: #e4e4e7;
+}
+.vibely-support-page .support-lang-btn:hover,
+.vibely-support-page .support-icon-btn:hover {
+  background-color: #27272a;
+}
+.vibely-support-page .support-lang-menu {
+  border-color: #3f3f46;
+  background-color: #18181b;
+  color: #f4f4f5;
+}
+.vibely-support-page .support-lang-menu-header {
+  border-color: #3f3f46;
+  color: #fafafa;
+}
+.vibely-support-page .support-lang-option:hover {
+  background-color: #27272a;
+}
+.vibely-support-page .support-hero-title,
+.vibely-support-page .support-section-title {
+  color: #fafafa;
+}
+.vibely-support-page .support-search-field {
+  background-color: #27272a;
+}
+.vibely-support-page .support-search-icon,
+.vibely-support-page .support-search-input::placeholder {
+  color: #a1a1aa;
+}
+.vibely-support-page .support-search-input {
+  color: #fafafa;
+}
+.vibely-support-page .support-ticket-btn {
+  border-color: #52525b;
+  background-color: #18181b;
+  color: #fafafa;
+}
+.vibely-support-page .support-ticket-btn:hover {
+  background-color: #27272a;
+}
+.vibely-support-page .support-faq-link {
+  color: #f4f4f5;
+}
+.vibely-support-page .support-faq-link:hover {
+  color: #fe2c55;
+}
+.vibely-support-page .support-category-card {
+  border-color: #3f3f46;
+  background-color: #18181b;
+}
+.vibely-support-page .support-category-card:hover {
+  border-color: #52525b;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+.vibely-support-page .support-category-title {
+  color: #fafafa;
+}
+.vibely-support-page .support-category-desc,
+.vibely-support-page .support-muted {
+  color: #a1a1aa;
+}
+.vibely-support-page .support-category-icon {
+  color: #27272a;
+}
+.vibely-support-page .support-category-card:hover .support-category-icon {
+  color: #3f3f46;
+}
+.vibely-support-page .support-more-link {
+  color: #f4f4f5;
+}
+.vibely-support-page .support-more-link:hover {
+  color: #fe2c55;
+}
+.vibely-support-page .support-footer {
+  border-color: #3f3f46;
+}
+.vibely-support-page .support-footer-link {
+  color: #a1a1aa;
+}
+.vibely-support-page .support-footer-link:hover {
+  color: #fafafa;
+}
+
+html[data-vibely-theme="light"] .vibely-support-page {
   background-color: #fff;
   color: #161823;
 }
-.vibely-support-page [role="menu"] {
+html[data-vibely-theme="light"] .vibely-support-page .support-header {
+  border-color: #e3e3e4;
+  background-color: rgba(255, 255, 255, 0.95);
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-brand {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-lang-btn,
+html[data-vibely-theme="light"] .vibely-support-page .support-icon-btn {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-lang-btn:hover,
+html[data-vibely-theme="light"] .vibely-support-page .support-icon-btn:hover {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-lang-menu {
+  border-color: #e3e3e4;
+  background-color: #fff;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-lang-menu-header {
+  border-color: #e3e3e4;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-lang-option:hover {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-hero-title,
+html[data-vibely-theme="light"] .vibely-support-page .support-section-title {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-search-field {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-search-icon,
+html[data-vibely-theme="light"] .vibely-support-page .support-search-input::placeholder {
+  color: #757575;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-search-input {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-ticket-btn {
+  border-color: #d4d4d8;
+  background-color: #fff;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-ticket-btn:hover {
+  background-color: #fafafa;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-faq-link {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-category-card {
+  border-color: #e3e3e4;
+  background-color: #fff;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-category-card:hover {
+  border-color: #d4d4d8;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-category-title {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-category-desc,
+html[data-vibely-theme="light"] .vibely-support-page .support-muted {
+  color: #757575;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-category-icon {
+  color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-category-card:hover .support-category-icon {
+  color: #ebebec;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-more-link {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-footer {
+  border-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-footer-link {
+  color: #757575;
+}
+html[data-vibely-theme="light"] .vibely-support-page .support-footer-link:hover {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-support-page [role="menu"] {
   background-color: #fff !important;
   border-color: #e3e3e4 !important;
 }
-.vibely-support-page .vibely-account-avatar-menu-item {
+html[data-vibely-theme="light"] .vibely-support-page .vibely-account-avatar-menu-item {
   color: #161823;
 }
-.vibely-support-page .vibely-account-avatar-menu-item:hover {
+html[data-vibely-theme="light"] .vibely-support-page .vibely-account-avatar-menu-item:hover {
   background-color: #f1f1f2 !important;
 }
-.vibely-support-page [role="menu"] .text-zinc-100,
-.vibely-support-page [role="menu"] .text-zinc-200,
-.vibely-support-page [role="menu"] .text-zinc-300 {
+html[data-vibely-theme="light"] .vibely-support-page [role="menu"] .text-zinc-100,
+html[data-vibely-theme="light"] .vibely-support-page [role="menu"] .text-zinc-200,
+html[data-vibely-theme="light"] .vibely-support-page [role="menu"] .text-zinc-300 {
   color: #161823;
 }
-.vibely-support-page [role="menu"] .border-zinc-800 {
+html[data-vibely-theme="light"] .vibely-support-page [role="menu"] .border-zinc-800 {
   border-color: #e3e3e4;
 }
-.vibely-support-page [role="menu"] button.rounded-full:hover {
+html[data-vibely-theme="light"] .vibely-support-page [role="menu"] button.rounded-full:hover {
   background-color: #f1f1f2;
 }
 
