@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   IoCashOutline,
-  IoCheckmark,
-  IoChevronDown,
   IoDesktopOutline,
   IoDocumentTextOutline,
   IoNotificationsOutline,
@@ -20,7 +18,6 @@ import { useNotificationUnread } from '@/features/notification/store/Notificatio
 import { AccountAvatarMenu } from '@/shared/components/AccountAvatarMenu.jsx'
 import { AvatarImage } from '@/shared/components/AvatarImage'
 import { GuestLoginTrigger } from '@/features/auth/store/GuestAuthUiContext.jsx'
-import { useLocale } from '@/i18n/useLocale'
 import {
   SUPPORT_CATEGORY_IDS,
   SUPPORT_FAQ_IDS,
@@ -77,35 +74,30 @@ export function SupportPage() {
   const { t, i18n } = useTranslation()
   const { token, user, logout } = useAuth()
   const { unreadCount } = useNotificationUnread()
-  const { locale, changeLanguage, languages } = useLocale()
-  const activeLocale = i18n.resolvedLanguage || i18n.language || locale
+  const activeLocale = i18n.resolvedLanguage || i18n.language
   const [query, setQuery] = useState('')
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
-  const [langOpen, setLangOpen] = useState(false)
   const avatarMenuRef = useRef(null)
   const notifRef = useRef(null)
-  const langRef = useRef(null)
 
   useEffect(() => {
     document.title = t('supportPage.pageTitle')
   }, [t, activeLocale])
 
   useEffect(() => {
-    if (!avatarMenuOpen && !notifOpen && !langOpen) return undefined
+    if (!avatarMenuOpen && !notifOpen) return undefined
 
     const handler = (event) => {
       if (avatarMenuOpen && avatarMenuRef.current?.contains(event.target)) return
       if (notifOpen && notifRef.current?.contains(event.target)) return
-      if (langOpen && langRef.current?.contains(event.target)) return
       setAvatarMenuOpen(false)
       setNotifOpen(false)
-      setLangOpen(false)
     }
 
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [avatarMenuOpen, notifOpen, langOpen])
+  }, [avatarMenuOpen, notifOpen])
 
   const normalizedQuery = normalizeSearch(query)
 
@@ -152,9 +144,6 @@ export function SupportPage() {
     user?.avatarUrl || user?.avatar || user?.profileImageUrl || '/images/users/default-avatar.jpeg',
   ).trim()
 
-  const currentLangLabel =
-    languages.find((lang) => lang.code === locale)?.nativeLabel ?? locale
-
   const handleCategorySelect = (title) => {
     setQuery(title)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -163,7 +152,6 @@ export function SupportPage() {
   const closePanels = () => {
     setAvatarMenuOpen(false)
     setNotifOpen(false)
-    setLangOpen(false)
   }
 
   return (
@@ -179,48 +167,6 @@ export function SupportPage() {
           </Link>
 
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-            <div className="relative" ref={langRef}>
-              <button
-                type="button"
-                aria-label={t('nav.language')}
-                aria-expanded={langOpen}
-                onClick={() => {
-                  setLangOpen((value) => !value)
-                  setNotifOpen(false)
-                  setAvatarMenuOpen(false)
-                }}
-                className="support-lang-btn flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-2 text-sm font-medium transition sm:gap-1.5 sm:px-3"
-              >
-                <span className="max-w-[7.5rem] truncate sm:max-w-[8rem]">{currentLangLabel}</span>
-                <IoChevronDown className="text-sm opacity-70" aria-hidden />
-              </button>
-              {langOpen ? (
-                <div className="support-lang-menu absolute right-0 top-11 z-50 max-h-[min(420px,70dvh)] w-[min(280px,calc(100vw-2rem))] overflow-hidden rounded-xl border shadow-2xl">
-                  <div className="support-lang-menu-header border-b px-4 py-3 text-sm font-bold">
-                    {t('settings.languageTitle')}
-                  </div>
-                  <div className="scrollbar-none max-h-[360px] overflow-y-auto py-1">
-                    {languages.map((lang) => (
-                      <button
-                        key={lang.code}
-                        type="button"
-                        onClick={() => {
-                          changeLanguage(lang.code)
-                          setLangOpen(false)
-                        }}
-                        className="support-lang-option flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left text-sm transition"
-                      >
-                        <span>{lang.nativeLabel}</span>
-                        {locale === lang.code ? (
-                          <IoCheckmark className="text-lg text-[#fe2c55]" aria-hidden />
-                        ) : null}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-
             {token ? (
               <>
                 <div className="relative" ref={notifRef}>
@@ -231,7 +177,6 @@ export function SupportPage() {
                     onClick={() => {
                       setNotifOpen((value) => !value)
                       setAvatarMenuOpen(false)
-                      setLangOpen(false)
                     }}
                     className="support-icon-btn relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full transition"
                   >
@@ -255,7 +200,6 @@ export function SupportPage() {
                     onClick={() => {
                       setAvatarMenuOpen((value) => !value)
                       setNotifOpen(false)
-                      setLangOpen(false)
                     }}
                     className="h-9 w-9 overflow-hidden rounded-full ring-2 ring-transparent transition hover:ring-zinc-600"
                     aria-label={t('common.accountMenu')}
