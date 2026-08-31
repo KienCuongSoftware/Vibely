@@ -207,7 +207,7 @@ export function PhotoComposerPage() {
       }
       const caption = description.trim()
       const heading = (title.trim() || caption.slice(0, 80) || 'Photo').slice(0, 120)
-      await apiClient.createVideo(
+      const created = await apiClient.createVideo(
         {
           title: heading,
           description: caption || heading,
@@ -224,7 +224,17 @@ export function PhotoComposerPage() {
         token,
       )
       clearPhotoDraftFiles()
-      navigate(asDraft ? '/vibelystudio/posts?tab=drafts' : '/vibelystudio/posts')
+      const scheduledLater = !asDraft && postTiming === 'schedule'
+      navigate(asDraft ? '/vibelystudio/posts?tab=drafts' : '/vibelystudio/posts', {
+        state: asDraft
+          ? undefined
+          : {
+              pendingReview:
+                !scheduledLater && created?.publicId
+                  ? { publicIds: [created.publicId], privacy }
+                  : undefined,
+            },
+      })
     } catch (err) {
       setError(err?.message || t('upload.uploadFailed'))
     } finally {

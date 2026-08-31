@@ -26,6 +26,26 @@ public class ModerationPrivacyHoldService {
         video.setPrivacy(VideoPrivacy.PRIVATE);
     }
 
+    /** True while Studio should show "content under review" for the author. */
+    public boolean isReviewPending(Video video, boolean reviewRequired) {
+        if (video == null || video.isStudioDraft()) {
+            return false;
+        }
+        if (video.getStatus() == VideoStatus.REMOVED) {
+            return false;
+        }
+        if (reviewRequired) {
+            return true;
+        }
+        VideoStatus status = video.getStatus();
+        if (status == VideoStatus.RAW
+            || status == VideoStatus.PROCESSING
+            || status == VideoStatus.HIDDEN) {
+            return true;
+        }
+        return video.getIntendedPrivacy() != null;
+    }
+
     public boolean isPrivacyLocked(Video video, boolean reviewRequired) {
         if (video == null || video.isStudioDraft()) {
             return false;

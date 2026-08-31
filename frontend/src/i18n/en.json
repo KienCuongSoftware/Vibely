@@ -1567,6 +1567,19 @@
       "reviewingContent": "Content is being reviewed",
       "hiddenModeration": "Hidden / under review — not on For You yet",
       "reviewingTeam": "Under review — Vibely team is reviewing",
+      "reviewModal": {
+        "close": "Close",
+        "subtitle": "We expect to notify you of the result within 12 hours.",
+        "statusTitle": "Review status",
+        "stepPending": "Pending review",
+        "stepReviewing": "Under review",
+        "stepDone": "Review finished",
+        "faqTitle": "Frequently asked questions",
+        "faqWhyTitle": "Why is Vibely reviewing my content?",
+        "faqWhyBody": "Vibely reviews content to keep the community safe and aligned with our Community Guidelines. This applies to every new post.",
+        "faqEngagementTitle": "Does this affect engagement on my post?",
+        "faqEngagementBody": "While review is in progress, your post may have limited public visibility. After approval, your chosen privacy setting applies fully."
+      },
       "showing": "Showing {{shown}} / {{total}} posts",
       "deletePost": "Delete post",
       "deleteHint": "Video, cover image, and storage files will be deleted. This cannot be undone."

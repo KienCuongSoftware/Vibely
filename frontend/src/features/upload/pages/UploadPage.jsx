@@ -1429,6 +1429,7 @@ export function UploadPage() {
       const desc = description.trim().slice(0, 1000)
       // Title for API: first line of caption (or generic) — never keep snaptik/file stem.
       const title = (desc.split('\n')[0] || 'Video').trim().slice(0, 120) || 'Video'
+      let publishedPublicId = uploadedVideo.publicId
       if (uploadedVideo.publicId) {
         const latest = await apiClient.getVideo(uploadedVideo.publicId, { token })
         if (latest?.status === 'FAILED') {
@@ -1454,7 +1455,7 @@ export function UploadPage() {
         untrackUploadDraftPublicId(uploadedVideo.publicId)
         draftPublicIdRef.current = null
       } else {
-        await apiClient.createVideo(
+        const created = await apiClient.createVideo(
           {
             title,
             description: desc,
@@ -1469,6 +1470,7 @@ export function UploadPage() {
           },
           token,
         )
+        publishedPublicId = created?.publicId ?? null
       }
       publishingRef.current = true
       processingPollRef.current += 1
@@ -1477,6 +1479,10 @@ export function UploadPage() {
           successMessage: scheduledAtPayload
             ? t('upload.scheduledOk')
             : t('upload.postedOk'),
+          pendingReview:
+            !scheduledAtPayload && publishedPublicId
+              ? { publicIds: [publishedPublicId], privacy }
+              : undefined,
         },
       })
       return

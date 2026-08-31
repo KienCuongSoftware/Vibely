@@ -1567,6 +1567,19 @@
       "reviewingContent": "Nội dung đang được xét duyệt",
       "hiddenModeration": "Đã ẩn / đang kiểm duyệt — chưa lên For You",
       "reviewingTeam": "Đang kiểm duyệt — đội ngũ Vibely đang xem xét",
+      "reviewModal": {
+        "close": "Đóng",
+        "subtitle": "Chúng tôi dự kiến sẽ thông báo cho bạn về kết quả trong vòng 12 giờ.",
+        "statusTitle": "Trạng thái xét duyệt",
+        "stepPending": "Đang chờ xét duyệt",
+        "stepReviewing": "Đang xét duyệt",
+        "stepDone": "Đã xét duyệt xong",
+        "faqTitle": "Câu hỏi thường gặp",
+        "faqWhyTitle": "Tại sao Vibely xét duyệt nội dung của tôi?",
+        "faqWhyBody": "Vibely xét duyệt nội dung để đảm bảo cộng đồng an toàn và tuân thủ Nguyên tắc cộng đồng. Quy trình này áp dụng cho mọi bài đăng mới.",
+        "faqEngagementTitle": "Điều này có ảnh hưởng đến mức độ tương tác ở bài đăng của tôi không?",
+        "faqEngagementBody": "Trong thời gian xét duyệt, bài đăng có thể hạn chế hiển thị công khai. Sau khi được duyệt, quyền riêng tư bạn đã chọn sẽ được áp dụng đầy đủ."
+      },
       "showing": "Hiển thị {{shown}} / {{total}} bài",
       "deletePost": "Xóa bài",
       "deleteHint": "Video, ảnh bìa và file trên kho lưu trữ sẽ bị xóa. Thao tác này không thể hoàn tác."

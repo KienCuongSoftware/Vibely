@@ -329,6 +329,10 @@ public class VideoResponseMapper {
             video,
             reviewRequired
         );
+        boolean moderationReviewPending = moderationPrivacyHoldService.isReviewPending(
+            video,
+            reviewRequired
+        );
         String intendedPrivacy = video.getIntendedPrivacy() == null
             ? null
             : video.getIntendedPrivacy().name();
@@ -367,6 +371,7 @@ public class VideoResponseMapper {
             repostedAtValue,
             reviewRequired,
             moderationPrivacyLocked,
+            moderationReviewPending,
             intendedPrivacy,
             video.getDescriptionLang(),
             aiEnhanced,

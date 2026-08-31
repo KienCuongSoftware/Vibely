@@ -247,6 +247,10 @@ public class ModerationPublicationHoldService {
         if (video.getStatus() != VideoStatus.READY) {
             return;
         }
+        // Keep review pending until moderation returns ALLOW/LIMIT/REVIEW (even when publication hold is off).
+        if (properties.isEnabled() && !hasPublicClearance(video.getId())) {
+            return;
+        }
         boolean reviewRequired = decisionRepository.findByVideo_Id(video.getId())
             .map(d -> d.isReviewRequired())
             .orElse(false);

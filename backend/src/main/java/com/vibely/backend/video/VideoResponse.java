@@ -46,6 +46,8 @@ public record VideoResponse(
     boolean reviewRequired,
     /** True while encoding/moderation keeps effective privacy on PRIVATE. */
     boolean moderationPrivacyLocked,
+    /** True while Studio should show under-review UX for the author. */
+    boolean moderationReviewPending,
     /** Creator privacy choice during review; null once restored. */
     String intendedPrivacy,
     /** ISO language of description when known (translation). */

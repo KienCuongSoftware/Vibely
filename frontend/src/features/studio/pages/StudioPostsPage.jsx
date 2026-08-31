@@ -14,11 +14,13 @@ import {
   IoLockClosedOutline,
   IoPeopleOutline,
   IoPencil,
+  IoTimeOutline,
   IoTrashOutline,
 } from "react-icons/io5";
 import { apiClient } from "@/shared/api/client";
 import { StudioLayout } from "@/features/studio/components/StudioLayout";
 import { StudioAccountMenu } from "@/features/studio/components/StudioAccountMenu";
+import { StudioReviewStatusModal } from "@/features/studio/components/StudioReviewStatusModal";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { buildProfileVideoUrl } from "@/features/post/utils/videoPublicId.js";
 import { resolveStudioListLabel } from "@/features/post/utils/videoCaption.js";
@@ -48,9 +50,14 @@ const PRIVACY_OPTIONS = [
 ];
 
 function normalizePrivacy(raw) {
-  const key = String(raw || "PUBLIC").toUpperCase();
-  if (key === "FRIENDS") return "FRIENDS";
-  if (key === "PRIVATE") return "PRIVATE";
+  const key = String(raw || "PUBLIC").trim();
+  const lower = key.toLowerCase();
+  if (lower === "friends") return "FRIENDS";
+  if (lower === "onlyyou" || lower === "only_you") return "PRIVATE";
+  if (lower === "everyone") return "PUBLIC";
+  const upper = key.toUpperCase();
+  if (upper === "FRIENDS") return "FRIENDS";
+  if (upper === "PRIVATE") return "PRIVATE";
   return "PUBLIC";
 }
 
@@ -124,11 +131,34 @@ function isEncodingOrHoldStatus(status) {
   return s === "RAW" || s === "PROCESSING" || s === "HIDDEN";
 }
 
+function isContentUnderReview(video, optimisticPublicIds) {
+  if (!video || video.studioDraft) return false;
+  if (String(video.status || "").toUpperCase() === "REMOVED") return false;
+  if (video.moderationReviewPending) return true;
+  if (video.intendedPrivacy) return true;
+  if (isEncodingOrHoldStatus(video.status)) return true;
+  if (video.reviewRequired) return true;
+  if (optimisticPublicIds?.has?.(video.publicId)) return true;
+  return false;
+}
+
+function reviewProgressStep(video) {
+  if (video?.reviewRequired) return 1;
+  return 0;
+}
+
+function displayPrivacyForVideo(video, optimisticPrivacyById) {
+  const optimisticPrivacy = optimisticPrivacyById?.get?.(video?.publicId);
+  if (optimisticPrivacy) return privacyMeta(optimisticPrivacy);
+  if (video?.intendedPrivacy) return privacyMeta(video.intendedPrivacy);
+  return privacyMeta(video?.privacy);
+}
+
 function isModerationPrivacyLocked(video) {
   if (!video || video.studioDraft) return false;
   if (video.moderationPrivacyLocked) return true;
   if (isEncodingOrHoldStatus(video.status)) return true;
-  return Boolean(video.reviewRequired);
+  return Boolean(video.reviewRequired) || Boolean(video.intendedPrivacy);
 }
 
 export function StudioPostsPage() {
@@ -137,6 +167,7 @@ export function StudioPostsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const successMessage = location.state?.successMessage;
+  const pendingReviewFromNav = location.state?.pendingReview;
   const listTab =
     new URLSearchParams(location.search).get("tab") === "drafts"
       ? "drafts"
@@ -152,6 +183,48 @@ export function StudioPostsPage() {
   const [moreMenu, setMoreMenu] = useState(null);
   const [privacyMenu, setPrivacyMenu] = useState(null);
   const [privacyBusyId, setPrivacyBusyId] = useState(null);
+  const [reviewModalVideo, setReviewModalVideo] = useState(null);
+  const [optimisticReviewIds, setOptimisticReviewIds] = useState(() => new Set());
+  const [optimisticPrivacyById, setOptimisticPrivacyById] = useState(
+    () => new Map(),
+  );
+
+  useEffect(() => {
+    if (!pendingReviewFromNav?.publicIds?.length) return;
+    const ids = pendingReviewFromNav.publicIds.filter(Boolean);
+    if (!ids.length) return;
+    setOptimisticReviewIds((prev) => {
+      const next = new Set(prev);
+      ids.forEach((id) => next.add(id));
+      return next;
+    });
+    if (pendingReviewFromNav.privacy) {
+      setOptimisticPrivacyById((prev) => {
+        const next = new Map(prev);
+        ids.forEach((id) =>
+          next.set(id, normalizePrivacy(pendingReviewFromNav.privacy)),
+        );
+        return next;
+      });
+    }
+    navigate(`${location.pathname}${location.search}`, {
+      replace: true,
+      state: successMessage ? { successMessage } : null,
+    });
+  }, [
+    pendingReviewFromNav,
+    navigate,
+    location.pathname,
+    location.search,
+    successMessage,
+  ]);
+
+  useEffect(() => {
+    if (!optimisticReviewIds.size || reviewModalVideo) return;
+    const id = [...optimisticReviewIds][0];
+    const row = items.find((v) => v.publicId === id);
+    if (row) setReviewModalVideo(row);
+  }, [items, optimisticReviewIds, reviewModalVideo]);
 
   const load = useCallback(async () => {
     if (!authReady) return;
@@ -189,9 +262,51 @@ export function StudioPostsPage() {
 
   // Soft realtime while posts are still under AI publication hold / encoding.
   const hasPendingModeration = useMemo(
-    () => items.some((v) => isModerationPrivacyLocked(v)),
-    [items],
+    () => items.some((v) => isContentUnderReview(v, optimisticReviewIds)),
+    [items, optimisticReviewIds],
   );
+
+  useEffect(() => {
+    if (!items.length || !optimisticReviewIds.size) return;
+    setOptimisticReviewIds((prev) => {
+      if (!prev.size) return prev;
+      const next = new Set(prev);
+      let changed = false;
+      for (const id of prev) {
+        const row = items.find((v) => v.publicId === id);
+        if (
+          row &&
+          !row.moderationReviewPending &&
+          !row.intendedPrivacy &&
+          !row.reviewRequired &&
+          !isEncodingOrHoldStatus(row.status)
+        ) {
+          next.delete(id);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+    setOptimisticPrivacyById((prev) => {
+      if (!prev.size) return prev;
+      const next = new Map(prev);
+      let changed = false;
+      for (const id of prev.keys()) {
+        const row = items.find((v) => v.publicId === id);
+        if (
+          row &&
+          !row.moderationReviewPending &&
+          !row.intendedPrivacy &&
+          !row.reviewRequired &&
+          !isEncodingOrHoldStatus(row.status)
+        ) {
+          next.delete(id);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [items, optimisticReviewIds.size]);
 
   useEffect(() => {
     if (!authReady || !token || !hasPendingModeration) return undefined;
@@ -539,10 +654,9 @@ export function StudioPostsPage() {
                   const detailUrl =
                     buildProfileVideoUrl(username, v.publicId) ||
                     `/watch/${v.publicId}`;
-                  const privacyLocked = isModerationPrivacyLocked(v);
-                  const privacy = privacyLocked
-                    ? privacyMeta("PRIVATE")
-                    : privacyMeta(v.privacy);
+                  const underReview = isContentUnderReview(v, optimisticReviewIds);
+                  const privacyLocked = isModerationPrivacyLocked(v) || underReview;
+                  const privacy = displayPrivacyForVideo(v, optimisticPrivacyById);
                   const PrivacyIcon = privacy.Icon;
                   const busyPrivacy = privacyBusyId === v.publicId;
                   return (
@@ -599,14 +713,18 @@ export function StudioPostsPage() {
                               <p className="mt-0.5 text-xs font-medium text-rose-400">
                                 {t("studio.posts.removedViolation")}
                               </p>
-                            ) : isEncodingOrHoldStatus(v.status) ? (
-                              <p className="mt-0.5 text-xs font-medium text-amber-400">
-                                {t("studio.posts.pendingReview")}
-                              </p>
-                            ) : v.reviewRequired ? (
-                              <p className="mt-0.5 text-xs font-medium text-amber-400">
-                                {t("studio.posts.reviewingContent")}
-                              </p>
+                            ) : underReview ? (
+                              <button
+                                type="button"
+                                className="mt-0.5 inline-flex max-w-full cursor-pointer items-center gap-1 text-left text-xs font-medium text-[#ff7a00] hover:underline"
+                                onClick={() => setReviewModalVideo(v)}
+                              >
+                                <IoTimeOutline
+                                  className="shrink-0 text-sm"
+                                  aria-hidden
+                                />
+                                <span>{t("studio.posts.reviewingContent")}</span>
+                              </button>
                             ) : null}
                           </div>
                         </div>
@@ -760,7 +878,10 @@ export function StudioPostsPage() {
             >
               {PRIVACY_OPTIONS.map((opt) => {
                 const selected =
-                  normalizePrivacy(privacyMenu.video?.privacy) === opt.value;
+                  displayPrivacyForVideo(
+                    privacyMenu.video,
+                    optimisticPrivacyById,
+                  ).value === opt.value;
                 const Icon = opt.Icon;
                 return (
                   <button
@@ -812,6 +933,12 @@ export function StudioPostsPage() {
             document.body,
           )
         : null}
+
+      <StudioReviewStatusModal
+        open={reviewModalVideo != null}
+        activeStep={reviewModalVideo ? reviewProgressStep(reviewModalVideo) : 0}
+        onClose={() => setReviewModalVideo(null)}
+      />
 
       {deleteTarget ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4">
