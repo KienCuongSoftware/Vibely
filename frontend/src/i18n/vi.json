@@ -1563,6 +1563,8 @@
       "actions": "Thao tác",
       "createdAt": "Ngày tạo",
       "removedViolation": "Đã gỡ khỏi hồ sơ (vi phạm)",
+      "pendingReview": "Đang chờ xét duyệt",
+      "reviewingContent": "Nội dung đang được xét duyệt",
       "hiddenModeration": "Đã ẩn / đang kiểm duyệt — chưa lên For You",
       "reviewingTeam": "Đang kiểm duyệt — đội ngũ Vibely đang xem xét",
       "showing": "Hiển thị {{shown}} / {{total}} bài",

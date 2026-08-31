@@ -12,13 +12,16 @@ public class ModerationDecisionApplier {
 
     private final ModerationDecisionRepository decisionRepository;
     private final VideoRepository videoRepository;
+    private final ModerationPrivacyHoldService privacyHoldService;
 
     public ModerationDecisionApplier(
         ModerationDecisionRepository decisionRepository,
-        VideoRepository videoRepository
+        VideoRepository videoRepository,
+        ModerationPrivacyHoldService privacyHoldService
     ) {
         this.decisionRepository = decisionRepository;
         this.videoRepository = videoRepository;
+        this.privacyHoldService = privacyHoldService;
     }
 
     /**
@@ -131,7 +134,8 @@ public class ModerationDecisionApplier {
 
         if (!shadow && nextStatus != null && video.getStatus() != nextStatus) {
             video.setStatus(nextStatus);
-            videoRepository.save(video);
         }
+        privacyHoldService.releaseIfEligible(video, reviewRequired);
+        videoRepository.save(video);
     }
 }

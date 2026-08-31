@@ -31,6 +31,7 @@ public class ModerationPublicationHoldService {
     private final ExploreCacheService exploreCacheService;
     private final JdbcTemplate jdbcTemplate;
     private final ModerationJoinService joinService;
+    private final ModerationPrivacyHoldService privacyHoldService;
 
     public ModerationPublicationHoldService(
         ModerationProperties properties,
@@ -38,7 +39,8 @@ public class ModerationPublicationHoldService {
         ModerationDecisionRepository decisionRepository,
         ExploreCacheService exploreCacheService,
         JdbcTemplate jdbcTemplate,
-        ModerationJoinService joinService
+        ModerationJoinService joinService,
+        ModerationPrivacyHoldService privacyHoldService
     ) {
         this.properties = properties;
         this.videoRepository = videoRepository;
@@ -46,6 +48,7 @@ public class ModerationPublicationHoldService {
         this.exploreCacheService = exploreCacheService;
         this.jdbcTemplate = jdbcTemplate;
         this.joinService = joinService;
+        this.privacyHoldService = privacyHoldService;
     }
 
     public boolean isHoldActive() {
@@ -57,10 +60,14 @@ public class ModerationPublicationHoldService {
      */
     @Transactional
     public void holdIfPendingModeration(Video video) {
-        if (!isHoldActive() || video == null || video.getId() == null) {
+        if (video == null || video.getId() == null) {
             return;
         }
         if (video.isStudioDraft()) {
+            return;
+        }
+        if (!isHoldActive()) {
+            releasePrivacyWhenReady(video);
             return;
         }
         if (video.getStatus() != VideoStatus.READY && video.getStatus() != VideoStatus.HIDDEN) {
@@ -76,6 +83,8 @@ public class ModerationPublicationHoldService {
             log.info("Held videoId={} HIDDEN pending AI moderation", video.getId());
             evictExploreCaches();
         }
+        privacyHoldService.applyHoldOnPublish(video);
+        videoRepository.save(video);
     }
 
     /**
@@ -234,14 +243,31 @@ public class ModerationPublicationHoldService {
             .orElse(false);
     }
 
-    private boolean promoteReady(Video video) {
-        if (video.getStatus() == VideoStatus.READY) {
-            return false;
+    private void releasePrivacyWhenReady(Video video) {
+        if (video.getStatus() != VideoStatus.READY) {
+            return;
         }
-        video.setStatus(VideoStatus.READY);
+        boolean reviewRequired = decisionRepository.findByVideo_Id(video.getId())
+            .map(d -> d.isReviewRequired())
+            .orElse(false);
+        privacyHoldService.releaseIfEligible(video, reviewRequired);
         videoRepository.save(video);
-        evictExploreCaches();
-        return true;
+    }
+
+    private boolean promoteReady(Video video) {
+        boolean reviewRequired = decisionRepository.findByVideo_Id(video.getId())
+            .map(d -> d.isReviewRequired())
+            .orElse(false);
+        boolean statusChanged = video.getStatus() != VideoStatus.READY;
+        if (statusChanged) {
+            video.setStatus(VideoStatus.READY);
+        }
+        privacyHoldService.releaseIfEligible(video, reviewRequired);
+        videoRepository.save(video);
+        if (statusChanged) {
+            evictExploreCaches();
+        }
+        return statusChanged;
     }
 
     private void evictExploreCaches() {

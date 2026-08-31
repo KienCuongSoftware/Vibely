@@ -44,6 +44,10 @@ public record VideoResponse(
     LocalDateTime repostedAt,
     /** True when AI/admin has flagged the video for human review (Studio warning). */
     boolean reviewRequired,
+    /** True while encoding/moderation keeps effective privacy on PRIVATE. */
+    boolean moderationPrivacyLocked,
+    /** Creator privacy choice during review; null once restored. */
+    String intendedPrivacy,
     /** ISO language of description when known (translation). */
     String descriptionLang,
     /** True when masterPlaylistUrl is an AI Enhanced ladder. */

@@ -4,7 +4,9 @@ import com.vibely.backend.contentunderstanding.ContentUnderstandingEnqueueServic
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.moderation.ModerationCaptionGateService;
+import com.vibely.backend.moderation.ModerationDecisionRepository;
 import com.vibely.backend.moderation.ModerationJoinService;
+import com.vibely.backend.moderation.ModerationPrivacyHoldService;
 import com.vibely.backend.moderation.ModerationPublicationHoldService;
 import com.vibely.backend.moderation.ModerationReviewQueueCleanupService;
 import com.vibely.backend.notification.NotificationService;
@@ -53,6 +55,8 @@ public class VideoCommandService {
     private final ModerationCaptionGateService captionGateService;
     private final ModerationJoinService moderationJoinService;
     private final ModerationPublicationHoldService publicationHoldService;
+    private final ModerationPrivacyHoldService privacyHoldService;
+    private final ModerationDecisionRepository moderationDecisionRepository;
     private final ModerationReviewQueueCleanupService reviewQueueCleanupService;
     private final TransactionTemplate tx;
 
@@ -72,6 +76,8 @@ public class VideoCommandService {
         ModerationCaptionGateService captionGateService,
         ModerationJoinService moderationJoinService,
         ModerationPublicationHoldService publicationHoldService,
+        ModerationPrivacyHoldService privacyHoldService,
+        ModerationDecisionRepository moderationDecisionRepository,
         ModerationReviewQueueCleanupService reviewQueueCleanupService,
         PlatformTransactionManager transactionManager
     ) {
@@ -90,6 +96,8 @@ public class VideoCommandService {
         this.captionGateService = captionGateService;
         this.moderationJoinService = moderationJoinService;
         this.publicationHoldService = publicationHoldService;
+        this.privacyHoldService = privacyHoldService;
+        this.moderationDecisionRepository = moderationDecisionRepository;
         this.reviewQueueCleanupService = reviewQueueCleanupService;
         this.tx = new TransactionTemplate(transactionManager);
     }
@@ -151,7 +159,10 @@ public class VideoCommandService {
                 request.getDescription()
             );
         }
-        return tx.execute(status -> persistNewVideo(author, request, draft, durationSeconds, scheduledAt));
+        final int publishDurationSeconds = durationSeconds;
+        return tx.execute(status ->
+            persistNewVideo(author, request, draft, publishDurationSeconds, scheduledAt)
+        );
     }
 
     private VideoResponse persistNewVideo(
@@ -199,6 +210,9 @@ public class VideoCommandService {
         } else {
             video.setMediaKind("VIDEO");
             video.setStatus(VideoStatus.RAW);
+        }
+        if (!draft) {
+            privacyHoldService.applyHoldOnPublish(video);
         }
         Video saved = videoRepository.save(video);
         if (!draft) {
@@ -325,7 +339,14 @@ public class VideoCommandService {
             }
         }
         if (request.getPrivacy() != null && !request.getPrivacy().isBlank()) {
+            boolean reviewRequired = moderationDecisionRepository.findByVideo_Id(video.getId())
+                .map(d -> d.isReviewRequired())
+                .orElse(false);
+            privacyHoldService.assertPrivacyChangeAllowed(video, reviewRequired);
             video.setPrivacy(resolvePrivacy(request.getPrivacy()));
+        }
+        if (!keepAsDraft && wasDraft) {
+            privacyHoldService.applyHoldOnPublish(video);
         }
         Video saved = videoRepository.save(video);
         // Hashtags / Explore signals follow description text on every metadata save.

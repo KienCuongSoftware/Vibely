@@ -1563,6 +1563,8 @@
       "actions": "Actions",
       "createdAt": "Created",
       "removedViolation": "Removed from profile (violation)",
+      "pendingReview": "Pending review",
+      "reviewingContent": "Content is being reviewed",
       "hiddenModeration": "Hidden / under review — not on For You yet",
       "reviewingTeam": "Under review — Vibely team is reviewing",
       "showing": "Showing {{shown}} / {{total}} posts",

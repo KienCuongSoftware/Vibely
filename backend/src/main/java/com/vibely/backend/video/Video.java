@@ -110,6 +110,11 @@ public class Video {
     @Column(name = "privacy", nullable = false, length = 20)
     private VideoPrivacy privacy = VideoPrivacy.PUBLIC;
 
+    /** Creator choice at publish; cleared when review restores {@link #privacy}. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "intended_privacy", length = 20)
+    private VideoPrivacy intendedPrivacy;
+
     /** ISO-639 language of description (detect-once for translation). */
     @Column(name = "description_lang", length = 16)
     private String descriptionLang;
@@ -319,6 +324,14 @@ public class Video {
 
     public void setPrivacy(VideoPrivacy privacy) {
         this.privacy = privacy == null ? VideoPrivacy.PUBLIC : privacy;
+    }
+
+    public VideoPrivacy getIntendedPrivacy() {
+        return intendedPrivacy;
+    }
+
+    public void setIntendedPrivacy(VideoPrivacy intendedPrivacy) {
+        this.intendedPrivacy = intendedPrivacy;
     }
 
     public String getDescriptionLang() {

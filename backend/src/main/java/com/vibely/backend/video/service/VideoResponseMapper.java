@@ -11,6 +11,7 @@ import com.vibely.backend.interaction.repository.LikeRepository;
 import com.vibely.backend.interaction.repository.VideoBookmarkRepository;
 import com.vibely.backend.interaction.repository.VideoViewRepository;
 import com.vibely.backend.moderation.ModerationDecisionRepository;
+import com.vibely.backend.moderation.ModerationPrivacyHoldService;
 import com.vibely.backend.storage.S3PresignedUploadService;
 import com.vibely.backend.user.CommentAudience;
 import com.vibely.backend.user.entity.User;
@@ -55,6 +56,7 @@ public class VideoResponseMapper {
     private final UserRepository userRepository;
     private final VideoRepository videoRepository;
     private final ModerationDecisionRepository moderationDecisionRepository;
+    private final ModerationPrivacyHoldService moderationPrivacyHoldService;
     private final JdbcTemplate jdbcTemplate;
     private final VideoVersionRepository videoVersionRepository;
     private final EnhancementProperties enhancementProperties;
@@ -70,6 +72,7 @@ public class VideoResponseMapper {
         UserRepository userRepository,
         VideoRepository videoRepository,
         ModerationDecisionRepository moderationDecisionRepository,
+        ModerationPrivacyHoldService moderationPrivacyHoldService,
         JdbcTemplate jdbcTemplate,
         VideoVersionRepository videoVersionRepository,
         EnhancementProperties enhancementProperties
@@ -84,6 +87,7 @@ public class VideoResponseMapper {
         this.userRepository = userRepository;
         this.videoRepository = videoRepository;
         this.moderationDecisionRepository = moderationDecisionRepository;
+        this.moderationPrivacyHoldService = moderationPrivacyHoldService;
         this.jdbcTemplate = jdbcTemplate;
         this.videoVersionRepository = videoVersionRepository;
         this.enhancementProperties = enhancementProperties;
@@ -321,6 +325,13 @@ public class VideoResponseMapper {
             followedByViewer,
             authorFollowsViewer
         );
+        boolean moderationPrivacyLocked = moderationPrivacyHoldService.isPrivacyLocked(
+            video,
+            reviewRequired
+        );
+        String intendedPrivacy = video.getIntendedPrivacy() == null
+            ? null
+            : video.getIntendedPrivacy().name();
         return new VideoResponse(
             video.getPublicId(),
             author.getId(),
@@ -355,6 +366,8 @@ public class VideoResponseMapper {
             repostedByAvatarUrl,
             repostedAtValue,
             reviewRequired,
+            moderationPrivacyLocked,
+            intendedPrivacy,
             video.getDescriptionLang(),
             aiEnhanced,
             aiEnhancedLabel,

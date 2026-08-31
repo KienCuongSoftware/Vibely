@@ -119,6 +119,18 @@ function privacyMeta(raw) {
   return PRIVACY_OPTIONS.find((o) => o.value === value) || PRIVACY_OPTIONS[0];
 }
 
+function isEncodingOrHoldStatus(status) {
+  const s = String(status || "").toUpperCase();
+  return s === "RAW" || s === "PROCESSING" || s === "HIDDEN";
+}
+
+function isModerationPrivacyLocked(video) {
+  if (!video || video.studioDraft) return false;
+  if (video.moderationPrivacyLocked) return true;
+  if (isEncodingOrHoldStatus(video.status)) return true;
+  return Boolean(video.reviewRequired);
+}
+
 export function StudioPostsPage() {
   const { t } = useTranslation();
   const { token, authReady, user } = useAuth();
@@ -177,11 +189,7 @@ export function StudioPostsPage() {
 
   // Soft realtime while posts are still under AI publication hold / encoding.
   const hasPendingModeration = useMemo(
-    () =>
-      items.some((v) => {
-        const s = String(v?.status || "").toUpperCase();
-        return s === "HIDDEN" || s === "PROCESSING" || s === "RAW";
-      }),
+    () => items.some((v) => isModerationPrivacyLocked(v)),
     [items],
   );
 
@@ -531,7 +539,10 @@ export function StudioPostsPage() {
                   const detailUrl =
                     buildProfileVideoUrl(username, v.publicId) ||
                     `/watch/${v.publicId}`;
-                  const privacy = privacyMeta(v.privacy);
+                  const privacyLocked = isModerationPrivacyLocked(v);
+                  const privacy = privacyLocked
+                    ? privacyMeta("PRIVATE")
+                    : privacyMeta(v.privacy);
                   const PrivacyIcon = privacy.Icon;
                   const busyPrivacy = privacyBusyId === v.publicId;
                   return (
@@ -588,13 +599,13 @@ export function StudioPostsPage() {
                               <p className="mt-0.5 text-xs font-medium text-rose-400">
                                 {t("studio.posts.removedViolation")}
                               </p>
-                            ) : String(v.status || "").toUpperCase() === "HIDDEN" ? (
+                            ) : isEncodingOrHoldStatus(v.status) ? (
                               <p className="mt-0.5 text-xs font-medium text-amber-400">
-                                {t("studio.posts.hiddenModeration")}
+                                {t("studio.posts.pendingReview")}
                               </p>
                             ) : v.reviewRequired ? (
                               <p className="mt-0.5 text-xs font-medium text-amber-400">
-                                {t("studio.posts.reviewingTeam")}
+                                {t("studio.posts.reviewingContent")}
                               </p>
                             ) : null}
                           </div>
@@ -606,6 +617,7 @@ export function StudioPostsPage() {
                           data-studio-privacy-trigger
                           disabled={
                             busyPrivacy ||
+                            privacyLocked ||
                             String(v.status || "").toUpperCase() === "REMOVED"
                           }
                           className="inline-flex w-max shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg border border-zinc-700 bg-zinc-900 px-2.5 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-60"
