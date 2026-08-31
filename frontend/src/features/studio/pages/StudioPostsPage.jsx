@@ -155,10 +155,10 @@ function reviewStatusLabelKey(video) {
   return "studio.posts.pendingReview";
 }
 
-function displayPrivacyForVideo(video, optimisticPrivacyById) {
-  const optimisticPrivacy = optimisticPrivacyById?.get?.(video?.publicId);
-  if (optimisticPrivacy) return privacyMeta(optimisticPrivacy);
-  if (video?.intendedPrivacy) return privacyMeta(video.intendedPrivacy);
+function displayPrivacyForVideo(video, optimisticReviewIds) {
+  if (isContentUnderReview(video, optimisticReviewIds)) {
+    return privacyMeta("PRIVATE");
+  }
   return privacyMeta(video?.privacy);
 }
 
@@ -193,9 +193,6 @@ export function StudioPostsPage() {
   const [privacyBusyId, setPrivacyBusyId] = useState(null);
   const [reviewModalVideo, setReviewModalVideo] = useState(null);
   const [optimisticReviewIds, setOptimisticReviewIds] = useState(() => new Set());
-  const [optimisticPrivacyById, setOptimisticPrivacyById] = useState(
-    () => new Map(),
-  );
 
   useEffect(() => {
     if (!pendingReviewFromNav?.publicIds?.length) return;
@@ -206,15 +203,6 @@ export function StudioPostsPage() {
       ids.forEach((id) => next.add(id));
       return next;
     });
-    if (pendingReviewFromNav.privacy) {
-      setOptimisticPrivacyById((prev) => {
-        const next = new Map(prev);
-        ids.forEach((id) =>
-          next.set(id, normalizePrivacy(pendingReviewFromNav.privacy)),
-        );
-        return next;
-      });
-    }
     navigate(`${location.pathname}${location.search}`, {
       replace: true,
       state: successMessage ? { successMessage } : null,
@@ -281,25 +269,6 @@ export function StudioPostsPage() {
       const next = new Set(prev);
       let changed = false;
       for (const id of prev) {
-        const row = items.find((v) => v.publicId === id);
-        if (
-          row &&
-          !row.moderationReviewPending &&
-          !row.intendedPrivacy &&
-          !row.reviewRequired &&
-          !isEncodingOrHoldStatus(row.status)
-        ) {
-          next.delete(id);
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-    setOptimisticPrivacyById((prev) => {
-      if (!prev.size) return prev;
-      const next = new Map(prev);
-      let changed = false;
-      for (const id of prev.keys()) {
         const row = items.find((v) => v.publicId === id);
         if (
           row &&
@@ -664,7 +633,7 @@ export function StudioPostsPage() {
                     `/watch/${v.publicId}`;
                   const underReview = isContentUnderReview(v, optimisticReviewIds);
                   const privacyLocked = isModerationPrivacyLocked(v) || underReview;
-                  const privacy = displayPrivacyForVideo(v, optimisticPrivacyById);
+                  const privacy = displayPrivacyForVideo(v, optimisticReviewIds);
                   const PrivacyIcon = privacy.Icon;
                   const busyPrivacy = privacyBusyId === v.publicId;
                   return (
@@ -888,7 +857,7 @@ export function StudioPostsPage() {
                 const selected =
                   displayPrivacyForVideo(
                     privacyMenu.video,
-                    optimisticPrivacyById,
+                    optimisticReviewIds,
                   ).value === opt.value;
                 const Icon = opt.Icon;
                 return (
