@@ -143,8 +143,16 @@ function isContentUnderReview(video, optimisticPublicIds) {
 }
 
 function reviewProgressStep(video) {
-  if (video?.reviewRequired) return 1;
+  // reviewRequired = AI/human queue flag, not "admin is actively reviewing".
+  // Stay on step 0 until backend exposes an explicit in-review-by-admin signal.
+  void video;
   return 0;
+}
+
+function reviewStatusLabelKey(video) {
+  // Same rule: freshly published and queued posts are "waiting", not "under review".
+  void video;
+  return "studio.posts.pendingReview";
 }
 
 function displayPrivacyForVideo(video, optimisticPrivacyById) {
@@ -723,7 +731,7 @@ export function StudioPostsPage() {
                                   className="shrink-0 text-sm"
                                   aria-hidden
                                 />
-                                <span>{t("studio.posts.reviewingContent")}</span>
+                                <span>{t(reviewStatusLabelKey(v))}</span>
                               </button>
                             ) : null}
                           </div>
