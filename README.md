@@ -1,502 +1,76 @@
-# Vibely
+<p align="center">
+  <img src="docs/screenshots/Feed.png" alt="Vibely For You feed" width="720" />
+</p>
 
-### A production-style, TikTok-inspired short-video social platform — Spring Boot, React, HLS streaming, Redis, and AWS S3.
+<h1 align="center">Vibely</h1>
 
-[![Java](https://img.shields.io/badge/Java-17+-007396?logo=openjdk&logoColor=white)](https://openjdk.org/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![Flutter](https://img.shields.io/badge/Flutter-Mobile-02569B?logo=flutter&logoColor=white)](https://flutter.dev/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)](https://redis.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<p align="center">
+  <strong>A production-style short-video social platform</strong><br/>
+  TikTok-inspired UX · Spring Boot · React · HLS · Redis · S3 · AI workers
+</p>
 
-Vibely is a full-stack short-video platform engineered like a modern consumer social product — not a CRUD demo. It combines **cursor-based feeds**, **virtualized rendering**, **HLS adaptive streaming**, **FFmpeg transcoding**, **Redis caching**, **JWT authentication with refresh tokens**, **adaptive anti-bot captcha**, **email OTP signup**, **WebSocket chat**, and a **UUIDv7 public identity layer** on top of a high-performance internal relational schema.
+<p align="center">
+  <a href="https://vibely.sbs">🌐 Live demo</a> ·
+  <a href="docs/README.md">📚 Docs</a> ·
+  <a href="CONTRIBUTING.md">🤝 Contributing</a> ·
+  <a href="LICENSE">MIT License</a>
+</p>
 
-Built for engineers who care about **real pagination**, **media pipelines**, **mobile-first UX**, and **production-oriented backend design**.
-
----
-
-## Highlights
-
-| Area            | What Vibely does                                                                                      |
-| --------------- | ----------------------------------------------------------------------------------------------------- |
-| **Feed**        | TikTok-style infinite scroll with virtualization, media windowing, and HLS manifest prefetch          |
-| **Streaming**   | FFmpeg → HLS segments → S3 → CDN-ready URLs → `hls.js` playback                                       |
-| **Identity**    | Dual-key model: `BIGINT` internally, **UUIDv7 `publicId`** externally                                 |
-| **Auth**        | JWT + refresh rotation, OAuth (Google / Facebook / LINE), email OTP signup, forgot-password flow      |
-| **Anti-bot**    | Risk scoring, rotate/slider/checkbox captcha, behavior telemetry, auth hardening (`428` challenge)    |
-| **Messaging**   | Direct chat with message requests, STOMP/WebSocket realtime, share-to-chat from videos                |
-| **Performance** | Keyset pagination, batched feed queries, Redis share/redirect cache, aggressive client memory cleanup |
-| **Studio**      | Upload, post editing, per-video analytics, comment moderation UI                                      |
-| **Search**      | Global suggest + users/videos/hashtags + `/api/search/semantic` (CU), `/search` results page |
-| **AI / CU**     | Async content understanding (tags, topics, related hybrid); originality detection workers |
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-17+-007396?logo=openjdk&logoColor=white" alt="Java 17+"/>
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white" alt="Spring Boot 3.5"/>
+  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React 19"/>
+  <img src="https://img.shields.io/badge/Flutter-Mobile-02569B?logo=flutter&logoColor=white" alt="Flutter"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-16+-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL"/>
+  <img src="https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white" alt="Redis"/>
+  <img src="https://img.shields.io/badge/Flyway-V97-CC0200?logo=flyway&logoColor=white" alt="Flyway V97"/>
+  <img src="https://img.shields.io/badge/i18n-56%20locales-blueviolet" alt="56 locales"/>
+</p>
 
 ---
 
-## Features
+## At a glance
 
-### Feed & playback
-
-- **Cursor-based infinite feed** with opaque keyset cursors (`FeedCursorCodec`)
-- **Virtualized rendering** via TanStack Virtual — never mounts the full dataset
-- **Media windowing** — typically **3–7 active `<video>` elements** at once
-- **IntersectionObserver** visibility rules (play ≥ 70%, pause < 20%)
-- **HLS-first playback** with tuned buffer limits and first-segment prefetch
-- **Poster placeholders** for off-window slides (no hidden autoplay leaks)
-
-### Backend & data
-
-- **Spring Boot** REST API with consistent response envelope
-- **PostgreSQL** + **Flyway** migrations, JPA/Hibernate
-- **Keyset pagination** (`ORDER BY createdAt DESC, id DESC`) — no offset scanning on the hot feed path
-- **Batched interaction counts** on feed pages (likes, comments, bookmarks, views)
-- **Redis** for short-link cache, share counters, and rate-limit backing (optional but first-class)
-
-### Media pipeline
-
-- Presigned **S3 uploads** for raw video and thumbnails
-- **FFmpeg** transcoding to multi-bitrate **HLS** (`.m3u8` + `.ts`)
-- **Audio mastering** pipeline (loudness normalization, mobile-speaker optimization)
-- Async **processing workers** with job state tracking
-- Public paths organized by **`publicId`** — CDN-friendly, non-enumerable
-
-### Security & identity
-
-- **UUIDv7 public identifiers** for all video URLs and API routes
-- Numeric-only IDs rejected at the API boundary
-- **JWT + refresh token** rotation (captcha token consumed only after successful auth)
-- **OAuth 2.0 / OIDC** login (Google, Facebook, LINE) with onboarding flow
-- **Email OTP** for signup (`send-code` / `verify-code`) and **password reset** (`PASSWORD_RESET` purpose)
-- **Adaptive captcha** on login, register, and sensitive OTP sends — see `frontend/src/security/` and `frontend/src/features/auth/`
-- Share links, redirect analytics, and idempotent share writes
-
-### Messaging
-
-- **Direct messages** with conversation list and media preview
-- **Message requests** — accept/reject before strangers can chat
-- **STOMP over WebSocket** for realtime delivery (`/ws`)
-- **Share video to chat** from the watch/feed UI
-
-### Creator studio
-
-- Upload flow with cover picker and preview
-- Post editor, analytics dashboard, comment management
-- View/playthrough tracking for retention insights
-
-### Search & discovery
-
-- **Global search API** — `GET /api/search/suggest`, `/users`, `/videos`, `/hashtags`, `/trending`; authenticated **search history** (GET/POST/DELETE `/api/search/history`)
-- **Suggest while typing** — trending keywords filtered to match the query (not the full-site trending list)
-- **Results page** — `/search?q=…` with Top / Users / Videos tabs (`features/search`)
-- **Watch page** — inline suggest dropdown (`WatchSearchDropdown`); no history rows on watch
-- **Explore search** — separate cursor-paginated `GET /api/explore/search` for discovery grids
-
-### Profile & watch UX
-
-- Profile video grid with hover preview; **Vừa xem** marker and scroll-to-tile control (sessionStorage per username)
-- Profile and explore-style pages use **hidden scrollbars** (`scrollbar-none`) inside a `h-dvh` shell
-- Watch page: volume/PiP, creator queue navigation, **Video của nhà sáng tạo** sidebar tab with hover preview and “Hiện đang phát” indicator
+| | |
+|---|---|
+| 🎬 **Product** | For You feed, watch, explore, search, profiles, reposts, bookmarks, notifications |
+| 🎛️ **Studio** | Upload, drafts, schedule, analytics, comments, inspiration — TikTok-style **review status** + privacy hold |
+| 💬 **Social** | DMs, message requests, STOMP realtime, share-to-chat |
+| 🔐 **Auth** | JWT + refresh, Google / Facebook / LINE OAuth, email OTP signup, password reset, adaptive captcha |
+| 🤖 **AI** | Content understanding, originality, moderation workers, NLLB translation, optional AI enhance |
+| 🌍 **i18n** | **56 locales** (Vietnamese-first product copy; English fallback) |
+| 🚀 **Prod** | [vibely.sbs](https://vibely.sbs) — Docker on VPS, nginx static SPA, Cloudflare CDN |
 
 ---
 
-## Tech stack
+## Why Vibely exists
 
-| Layer         | Technologies                                                                       |
-| ------------- | ---------------------------------------------------------------------------------- |
-| **Frontend**  | React 19, Vite 8, React Router 7 (+ react-router 8.3 override), Tailwind CSS 4, TanStack Virtual, HLS.js, Vitest |
-| **Mobile**    | Flutter, `http`, `video_player`, Google Sign-In, Facebook Login                    |
-| **AI workers** | Python: originality + content-understanding (OpenCV, OCR, CLIP, Whisper, YOLO, Qdrant) |
-| **Backend**   | Spring Boot 3.5, Spring Security, Spring Data JPA, Flyway, PostgreSQL              |
-| **Cache**     | Redis 7 (share cache, captcha sessions, rate limits, Explore cache)                |
-| **Messaging** | Spring WebSocket + STOMP; RabbitMQ (CU jobs when enabled); Kafka optional (anti-bot) |
-| **Media**     | FFmpeg, FFprobe, HLS (adaptive streaming)                                          |
-| **Storage**   | AWS S3 (presigned upload + CDN-ready public URLs)                                  |
-| **Vectors**   | Qdrant (originality + CU collections)                                              |
-| **Auth**      | JWT (HS256), refresh tokens, OAuth 2.0 / OIDC, SMTP OTP                            |
-| **Anti-bot**  | Procedural captcha, HMAC verification tokens, optional Kafka telemetry             |
-| **Tooling**   | Maven, ESLint, Docker Compose (Redis; Kafka optional profile)                      |
+Vibely is engineered like a **real consumer social product**, not a CRUD demo:
+
+- **Cursor-based feeds** with virtualization — never mount the full catalog
+- **HLS adaptive streaming** — FFmpeg ladder → S3 → CDN → `hls.js`
+- **UUIDv7 public IDs** — opaque URLs, fast `BIGINT` joins internally
+- **Publication moderation** — new posts show *pending review* in Studio; effective privacy stays private until clearance
+- **Batched feed queries**, Redis caches, anti-bot risk engine, WebSocket chat
+
+Built for engineers who care about **media pipelines**, **mobile-first UX**, and **production trade-offs**.
 
 ---
 
-## System architecture
-
-```mermaid
-flowchart TB
-  subgraph Client
-    UI[React SPA]
-    VF[Virtualized Feed]
-    HLS[hls.js Player]
-    UI --> VF --> HLS
-  end
-
-  subgraph CDN["CDN / S3 public URLs"]
-    M3U8[master.m3u8]
-    TS[.ts segments]
-    M3U8 --> TS
-  end
-
-  subgraph API["Spring Boot API"]
-    Feed["/api/feed"]
-    Videos["/api/videos"]
-    Auth["/api/auth"]
-    Chat["/api/chat"]
-    Captcha["/api/captcha"]
-    Share["/api/v1/share"]
-  end
-
-  subgraph Data
-    PG[(PostgreSQL)]
-    RD[(Redis)]
-  end
-
-  subgraph Workers
-    FF[FFmpeg HLS Pipeline]
-  end
-
-  S3[(AWS S3)]
-
-  HLS -->|GET manifest + segments| CDN
-  UI -->|cursor pagination JSON| Feed
-  UI -->|interactions JWT| Videos
-  Feed --> PG
-  Feed --> RD
-  Share --> RD
-  Videos --> PG
-  Auth --> PG
-  FF -->|write HLS| S3
-  S3 --> CDN
-  UI -->|presigned PUT| S3
-```
-
-**Request paths**
-
-```
-Watch:  Client ──► CDN ──► HLS segments
-Feed:   Client ──► API ──► PostgreSQL (+ Redis cache)
-Upload: Client ──► S3 (presigned) ──► Worker ──► S3 HLS prefix ──► CDN
-```
-
----
-
-## Feed architecture
-
-The feed is designed for **virtually infinite scrolling** without rendering or buffering the entire catalog.
-
-```
-┌─────────────────────────────────────────────┐
-│  React state: lightweight video metadata    │
-│  (cursor-appended, soft-capped ~120 items)  │
-└─────────────────────┬───────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────┐
-│  VirtualizedFeed (@tanstack/react-virtual)    │
-│  • snap scroll, overscan = 1                  │
-│  • IntersectionObserver → active index        │
-└─────────────────────┬───────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────┐
-│  Media window (radius ±2) → max ~5 players    │
-│  • HLS attach only inside window              │
-│  • poster placeholder outside window          │
-└─────────────────────┬───────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────┐
-│  FeedPrefetchManager                          │
-│  • prefetch next 2 HLS manifests only         │
-│  • warm next poster                           │
-└─────────────────────────────────────────────┘
-```
-
-**Backend pagination**
-
-- `GET /api/feed?cursor=<opaque>&size=8&sort=latest`
-- Cursor encodes `{ id, createdAt }` via `FeedCursorCodec` (Base64url JSON)
-- Query uses **keyset** `(createdAt, id)` — stable under concurrent inserts
-- **No `OFFSET`** on the primary latest feed path
-
-**Client tuning** (`frontend/src/features/feed/utils/feedConfig.js`)
-
-| Constant                 | Value | Purpose                 |
-| ------------------------ | ----- | ----------------------- |
-| `MEDIA_WINDOW_RADIUS`    | 2     | Max ~5 HLS players      |
-| `PLAY_VISIBILITY_RATIO`  | 0.70  | Autoplay threshold      |
-| `PAUSE_VISIBILITY_RATIO` | 0.20  | Pause off-screen slides |
-| `PREFETCH_AHEAD_COUNT`   | 2     | Manifest prefetch depth |
-
----
-
-## UUIDv7 public identity
-
-Vibely uses a **dual-key architecture** — internal performance, external opacity.
-
-| Layer      | Identifier           | Used for                             |
-| ---------- | -------------------- | ------------------------------------ |
-| Database   | `BIGINT id`          | PK/FK, joins, feed cursors           |
-| Public API | `UUID publicId` (v7) | URLs, share links, client cache keys |
-
-**Example routes**
-
-```
-/watch/018fc2c7-f2e9-7a41-b9d7-0123456789ab
-/@creator/video/018fc2c7-f2e9-7a41-b9d7-0123456789ab
-GET /api/videos/018fc2c7-f2e9-7a41-b9d7-0123456789ab
-```
-
-**Why this matters**
-
-- Prevents trivial **ID enumeration** (`/videos/1`, `/videos/2`, …)
-- Keeps **B-tree index locality** and fast joins on `BIGINT`
-- Feed cursors remain compact and index-friendly
-- HLS objects stored under **`hls/{authorId}/{publicId}/`** — globally unique, CDN-safe paths
-
-Legacy numeric routes are **rejected** — no silent fallback to internal IDs.
-
----
-
-## Authentication
-
-| Token                | TTL            | Storage                                            |
-| -------------------- | -------------- | -------------------------------------------------- |
-| Access (JWT)         | **15 minutes** | Memory / client state                              |
-| Refresh              | **14 days**    | HttpOnly-style client contract via API             |
-| Captcha verification | **~5 minutes** | `sessionStorage` (`X-Captcha-Verification` header) |
-| Email OTP            | **10 minutes** | PostgreSQL `otp_verification_codes`                |
-
-**Email signup** — birth date + password → `POST /api/auth/send-code` (purpose `REGISTER`, captcha when required) → verify OTP → `POST /api/auth/register`.
-
-**Forgot password** — `POST /api/auth/send-code` (purpose `PASSWORD_RESET`) → `POST /api/auth/reset-password` with OTP + new password. See [docs/auth/PASSWORD_RESET.md](docs/auth/PASSWORD_RESET.md).
-
-**Login** — may require captcha (`428 CAPTCHA_REQUIRED`); complete challenge via `GET /api/captcha/challenge` + `POST /api/captcha/verify`, then retry with `X-Captcha-Verification`. Failed attempts do not burn the captcha token until login succeeds.
-
-OAuth providers (Google, Facebook, LINE) exchange through the browser OAuth security chain. Flutter mobile uses `POST /api/auth/oauth/native` with Google `idToken` or Facebook `accessToken`; the backend verifies provider tokens and then issues the same JWT session model after onboarding (birth date, Vibely ID).
-
-**Deeper docs:** [docs/auth/](docs/auth/) · [docs/anti-bot/](docs/anti-bot/)
-
----
-
-## Media pipeline
-
-```
-Upload (presigned S3 PUT)
-        │
-        ▼
-Video record (status: RAW) + processing job enqueued
-        │
-        ▼
-FFmpeg transcode ──► HLS renditions (multi-bitrate)
-        │
-        ├──► Audio analysis / loudness normalization
-        │
-        ▼
-S3: hls/{authorId}/{publicId}/playlist.m3u8
-        │
-        ▼
-CDN URL in API response (masterPlaylistUrl)
-        │
-        ▼
-Client: hls.js adaptive playback
-```
-
-Raw uploads remain under `uploads/`; processed HLS lives under `hls/` — never mixed.
-
----
-
-## Performance optimizations
-
-| Layer        | Technique                                                                       |
-| ------------ | ------------------------------------------------------------------------------- |
-| **Feed API** | Keyset pagination, `JOIN FETCH author`, batched count queries (4/page vs 4×N)   |
-| **Redis**    | Short-link cache, share counter mirror, redirect negative cache                 |
-| **Frontend** | Virtualization, media windowing, `React.memo` on player, manifest-only prefetch |
-| **HLS**      | `maxBufferLength: 12s`, `backBufferLength: 0`, first-segment prefetch           |
-| **Memory**   | Destroy HLS instances off-window; trim metadata list after long sessions        |
-| **Mobile**   | Touch scroll, snap slides, small concurrent prefetch pool                       |
-
----
-
-## API design
-
-All responses use a consistent envelope:
-
-```json
-{ "success": true, "data": { ... } }
-```
-
-```json
-{ "success": false, "error": { "status": 400, "message": "..." } }
-```
-
-### Feed (cursor pagination)
-
-```http
-GET /api/feed?size=8&sort=latest
-GET /api/feed?size=8&sort=latest&cursor=eyJpZCI6OTk...
-```
-
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "publicId": "018fc2c7-f2e9-7a41-b9d7-0123456789ab",
-        "title": "Morning routine",
-        "masterPlaylistUrl": "https://cdn.example.com/hls/42/018fc2c7-…/playlist.m3u8",
-        "thumbnailUrl": "https://cdn.example.com/thumbnails/….jpg",
-        "likeCount": 1284,
-        "commentCount": 89,
-        "shareCount": 42,
-        "viewCount": 18500,
-        "authorUsername": "creator",
-        "durationSeconds": 34,
-        "status": "READY"
-      }
-    ],
-    "hasNext": true,
-    "nextCursor": "eyJpZCI6OTgsInQiOiIyMDI2…",
-    "sort": "latest"
-  }
-}
-```
-
-### Video by public ID
-
-```http
-GET /api/videos/018fc2c7-f2e9-7a41-b9d7-0123456789ab
-```
-
-Numeric paths like `/api/videos/123` return **400 Bad Request**.
-
-### Interactions
-
-```http
-POST   /api/videos/{publicId}/likes
-DELETE /api/videos/{publicId}/likes
-POST   /api/videos/{publicId}/bookmarks
-GET    /api/videos/{publicId}/comments
-POST   /api/videos/{publicId}/views
-POST   /api/v1/videos/{publicId}/share
-```
-
-### Auth
-
-```http
-POST /api/auth/register          # X-Captcha-Verification when required
-POST /api/auth/login
-POST /api/auth/refresh
-POST /api/auth/logout
-GET  /api/auth/me
-POST /api/auth/send-code         # purpose: REGISTER | PASSWORD_RESET
-POST /api/auth/verify-code
-POST /api/auth/reset-password
-POST /api/auth/oauth/exchange
-POST /api/auth/complete-onboarding
-```
-
-### Anti-bot
-
-```http
-GET  /api/captcha/challenge?level=ROTATE
-POST /api/captcha/verify
-POST /api/risk/evaluate
-POST /api/fingerprint/register
-POST /api/behavior/track
-```
-
-### Search
-
-```http
-GET    /api/search/suggest?q=
-GET    /api/search/users?q=
-GET    /api/search/videos?q=
-GET    /api/search/hashtags?q=
-GET    /api/search/trending
-GET    /api/search/history          # Bearer
-POST   /api/search/history          # Bearer — { "query": "..." }
-DELETE /api/search/history          # Bearer
-```
-
-Explore also exposes paginated video search: `GET /api/explore/search?q=&cursor=`. See [docs/search/](docs/search/).
-
-### Chat
-
-```http
-GET  /api/chat/conversations
-POST /api/chat/conversations/direct/{userId}
-GET  /api/chat/conversations/{id}/messages
-POST /api/chat/conversations/{id}/messages
-POST /api/chat/conversations/{id}/accept
-POST /api/chat/conversations/{id}/reject
-```
-
-### Health
-
-```http
-GET /api/health/readiness
-```
-
----
-
-## Project structure
-
-```
-Vibely/
-├── backend/                    # Spring Boot API
-│   └── src/main/java/com/vibely/backend/
-│       ├── antibot/            # Captcha, risk engine, auth protection
-│       ├── auth/               # JWT, OAuth, OTP, mail
-│       ├── chat/               # Conversations, WebSocket publisher
-│       ├── feed/               # FeedCursorCodec, feed controllers
-│       ├── search/             # Suggest, entity search, trends, history
-│       ├── interaction/        # Likes, comments, bookmarks, views
-│       ├── processing/         # FFmpeg HLS pipeline, job workers
-│       ├── share/              # Short links, analytics, Redis cache
-│       ├── studio/             # Creator analytics API
-│       ├── video/              # Video domain, UUID public IDs
-│       ├── contentunderstanding/ # CU persist, projection, Qdrant client
-│       ├── discovery/          # Topics, for-you ranking, related
-│       └── originality/        # Originality APIs / job orchestration
-│   └── src/main/resources/db/migration/   # Flyway SQL (+ tip V66)
-├── frontend/                   # React + Vite SPA (feature-first)
-│   └── src/
-│       ├── app/                # main, App, routes, providers, guards
-│       ├── features/           # auth, feed, post, profile, search, chat, studio, …
-│       ├── shared/             # api client, Sidebar, config, seo, shared hooks
-│       ├── store/              # AuthContext / useAuth
-│       ├── realtime/           # Shared STOMP helpers
-│       ├── security/           # Anti-bot SDK, captcha UI, fingerprint
-│       └── tests/              # Vitest setup
-├── mobile/                     # Flutter app (feed, auth, profile, search)
-├── ai-workers/                 # Python workers
-│   ├── originality/            # Reupload / watermark / OCR signals → Qdrant
-│   └── content-understanding/  # Multimodal CU pipeline → tags + Qdrant
-├── docs/                       # Engineering docs — see docs/README.md
-│   ├── architecture/content-understanding/
-│   ├── erd/
-│   └── database/
-├── deploy/                     # VPS compose / nginx samples
-├── infra/                      # Lambda audio extract (optional)
-├── docker-compose.yml          # Redis (+ optional Kafka profile)
-├── CONTRIBUTING.md
-├── SECURITY.md
-└── LICENSE
-```
----
-
-## Local development
+## Quick start
 
 ### Prerequisites
 
-| Tool             | Version                                 |
-| ---------------- | --------------------------------------- |
-| Java             | 17+                                     |
-| Maven            | 3.9+                                    |
-| Node.js          | 22.22+ (frontend; Docker image uses Node 24) |
-| PostgreSQL       | 14+                                     |
-| FFmpeg / FFprobe | 6+ (on `PATH` or via `FFMPEG_PATH`)     |
-| Redis            | 7+ (optional; disabled by default in `dev` unless `APP_REDIS_ENABLED=true`) |
+| Tool | Version |
+|------|---------|
+| Java | 17+ |
+| Maven | 3.9+ |
+| Node.js | **22.22+** |
+| PostgreSQL | 14+ |
+| FFmpeg / FFprobe | 6+ |
+| Redis | 7+ (optional locally) |
 
-### 1. Start Redis (and optional Kafka)
+### 1 · Infrastructure
 
 ```bash
 docker compose up -d redis
@@ -504,61 +78,24 @@ docker compose up -d redis
 # docker compose --profile kafka up -d
 ```
 
-### 2. Database
+### 2 · Database
 
-Create a PostgreSQL database named `vibely` (or configure `DB_URL`).
+Create PostgreSQL database `vibely`. Flyway runs on backend startup — tip migration **`V97`** (`intended_privacy` for Studio review hold). See [docs/database/](docs/database/).
 
-**Schema:** Flyway tip **V66** under `backend/src/main/resources/db/migration/` (version gaps exist; SQL is source of truth). Full ERD: [docs/erd/vibely-erd-full.png](docs/erd/vibely-erd-full.png) · [docs/database/](docs/database/)
-
-### 3. Backend environment
-
-| Variable                          | Description               | Default                               |
-| --------------------------------- | ------------------------- | ------------------------------------- |
-| `DB_PASSWORD`                     | PostgreSQL password       | _(required)_                          |
-| `JWT_SECRET`                      | Signing key for JWT       | change in production                  |
-| `DB_URL`                          | JDBC URL                  | local PostgreSQL                      |
-| `DB_USERNAME`                     | DB user                   | `postgres`                            |
-| `REDIS_HOST`                      | Redis host                | `localhost`                           |
-| `APP_REDIS_ENABLED`               | Enable Redis features     | `false` in dev unless overridden      |
-| `APP_S3_ENABLED`                  | Enable S3 uploads/HLS     | `true` in dev profile                 |
-| `AWS_S3_BUCKET`                   | S3 bucket name            | —                                     |
-| `AWS_ACCESS_KEY_ID`               | AWS credentials           | —                                     |
-| `AWS_SECRET_ACCESS_KEY`           | AWS credentials           | —                                     |
-| `FFMPEG_PATH`                     | FFmpeg binary             | `ffmpeg`                              |
-| `FFPROBE_PATH`                    | FFprobe binary            | `ffprobe`                             |
-| `APP_PROCESSING_WORKER_ENABLED`   | Run in-process HLS worker | `true` in dev                         |
-| `CORS_ALLOWED_ORIGINS`            | Frontend origin           | `http://localhost:5173`               |
-| `APP_MAIL_ENABLED`                | Send real OTP emails      | `false` (use `demoCode` in API)       |
-| `SMTP_HOST` / `SMTP_PORT`         | SMTP server               | Gmail `587` when mail enabled         |
-| `SMTP_USERNAME` / `SMTP_PASSWORD` | SMTP credentials          | —                                     |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth web client | —                            |
-| `FACEBOOK_APP_ID` / `FACEBOOK_APP_SECRET` | Facebook OAuth app credentials | —                        |
-| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_ID` | Direct Spring Facebook client ID for VPS | — |
-| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_SECRET` | Direct Spring Facebook secret for VPS | — |
-| `ANTIBOT_HMAC_SECRET`             | Captcha/token signing     | dev default in `application-dev.yaml` |
-| `OPENAI_API_KEY`                  | OpenAI key for discovery  | placeholder in dev; set real value in `application-local.yaml` |
-| `DISCOVERY_OPENAI_ENABLED`        | Enable OpenAI indexing    | `true`                                |
-
-For local dev, merge mail/OAuth/S3/discovery secrets into `backend/src/main/resources/application-local.yaml` (gitignored; see `application-dev.yaml` for keys). Do not use the sample `sk-...` placeholder as a real OpenAI key. The current VPS reads `/opt/vibely/vibely.env` and imports `/opt/vibely/config/application-local.yaml`; see [docs/deployment/README.md](docs/deployment/README.md).
-
-```bash
-# Discovery (content understanding on upload/edit)
-OPENAI_API_KEY=sk-...
-DISCOVERY_OPENAI_ENABLED=true
-```
-
-**Engineering docs:** [docs/README.md](docs/README.md)
+### 3 · Backend
 
 ```bash
 cd backend
 export DB_PASSWORD=your_password
 export JWT_SECRET=your-local-secret-min-32-chars
-mvn spring-boot:run
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-API: `http://localhost:8080`
+→ API at **http://localhost:8080**
 
-### 4. Frontend
+Secrets (OAuth, S3, SMTP): gitignored `application-local.yaml` — keys listed in [docs/deployment/README.md](docs/deployment/README.md).
+
+### 4 · Frontend
 
 ```bash
 cd frontend
@@ -566,9 +103,9 @@ npm install
 npm run dev
 ```
 
-App: `http://localhost:5173` (proxies `/api` → backend)
+→ App at **http://localhost:5173** (Vite proxies `/api`, `/ws`, OAuth paths to `:8080`)
 
-### 5. Mobile
+### 5 · Mobile (optional)
 
 ```powershell
 cd mobile
@@ -576,17 +113,238 @@ flutter pub get
 flutter run
 ```
 
-The mobile app points at `https://vibely.sbs` by default. OAuth setup details are in [mobile/README.md](mobile/README.md).
+Default API: `https://vibely.sbs` — see [mobile/README.md](mobile/README.md).
 
-### 6. Tests
+---
+
+## Product map
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  For You / Following / Friends     Explore / Search / Hashtags          │
+│  Watch + creator sidebar           Profile grid + reposts               │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Vibely Studio                     Settings · Support · Legal           │
+│  Upload · drafts · schedule        Account · privacy · data export      │
+│  Posts · analytics · comments      Activity · notifications             │
+│  Review modal (TikTok-style)       Admin · moderation queue               │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Messages (STOMP)                  Share links · short URLs               │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+| Surface | Route examples |
+|---------|----------------|
+| Feed | `/foryou`, `/following`, `/friends` |
+| Watch | `/watch/:publicId`, `/@user/video/:publicId` |
+| Studio | `/vibelystudio/home`, `/posts`, `/upload` |
+| Search | `/search?q=…` |
+| Settings | `/settings` |
+| Support | `/support` |
+| Admin | `/admin/moderation` |
+
+Full route table: [frontend/README.md](frontend/README.md).
+
+---
+
+## System architecture
+
+```mermaid
+flowchart TB
+  subgraph Clients
+    WEB[React SPA]
+    MOB[Flutter app]
+  end
+
+  subgraph Edge
+    CF[Cloudflare CDN]
+    NGX[Nginx on VPS]
+  end
+
+  subgraph API["Spring Boot API :8080"]
+    FEED[Feed / Explore / Search]
+    VID[Videos + Studio]
+    AUTH[Auth + Anti-bot]
+    CHAT[Chat STOMP]
+    MOD[Moderation]
+  end
+
+  subgraph Workers["AI & media workers"]
+    FF[FFmpeg HLS in-process]
+    CU[content-understanding]
+    OR[originality]
+    CM[content-moderation]
+    TR[translation NLLB]
+  end
+
+  subgraph Data
+    PG[(PostgreSQL)]
+    RD[(Redis)]
+    S3[(AWS S3)]
+    QD[(Qdrant)]
+  end
+
+  WEB --> NGX
+  MOB --> CF
+  NGX -->|/api /ws| API
+  NGX -->|static| WEB
+  API --> PG
+  API --> RD
+  API --> S3
+  FF --> S3
+  CU --> QD
+  OR --> QD
+  CM --> PG
+  S3 --> CF
+```
+
+**Typical paths**
+
+| Flow | Path |
+|------|------|
+| Watch | Client → CDN → HLS segments |
+| Feed | Client → API → PostgreSQL (+ Redis) |
+| Upload | Client → S3 presigned PUT → FFmpeg → S3 `hls/` → CDN |
+| Moderation | Upload → CU + originality → moderation worker → decision → Studio status |
+
+Deep dives: [docs/architecture/](docs/architecture/).
+
+---
+
+## Tech stack
+
+| Layer | Technologies |
+|-------|----------------|
+| **Frontend** | React 19, Vite 8, React Router 7, Tailwind 4, TanStack Virtual, hls.js, i18next, Vitest |
+| **Backend** | Spring Boot 3.5, Security, JPA, Flyway, WebSocket/STOMP, Actuator |
+| **Mobile** | Flutter, video_player, Google/Facebook native login |
+| **AI workers** | Python: `content-understanding`, `originality`, `content-moderation`, `translation`, `ai-enhance` |
+| **Data** | PostgreSQL, Redis, Qdrant, RabbitMQ (CU jobs when enabled) |
+| **Media** | FFmpeg multi-bitrate HLS, presigned S3, optional AI-enhanced ladder |
+| **Auth** | JWT HS256, refresh rotation, OAuth 2.0, SMTP OTP |
+| **Deploy** | Docker Hub images, VPS Compose, nginx → `/var/www/vibely` |
+
+---
+
+## Feed & playback (high level)
+
+```
+ React metadata list (soft-capped)
+        │
+        ▼
+ @tanstack/react-virtual  ← snap scroll, overscan 1
+        │
+        ▼
+ Media window (±2 slides) ← max ~5 hls.js instances
+        │
+        ▼
+ FeedPrefetchManager      ← prefetch next 2 manifests
+```
+
+Backend: keyset cursor `(createdAt, id)` — **no OFFSET** on hot paths. Tuning: `frontend/src/features/feed/utils/feedConfig.js`.
+
+---
+
+## Studio & moderation UX
+
+When a creator publishes:
+
+1. Post appears in **Bài đăng** with **「Đang chờ xét duyệt」**
+2. Privacy column shows **「Chỉ mình tôi」** while review is pending (effective hold; restores creator choice after clearance)
+3. Click status → **TikTok-style modal** (3-step stepper + FAQ), localized via i18n
+4. Backend stores `intended_privacy` (Flyway **V97**) until moderation clears
+
+Details: [docs/moderation/README.md](docs/moderation/README.md).
+
+---
+
+## UUIDv7 public identity
+
+| Layer | ID | Used for |
+|-------|-----|----------|
+| Database | `BIGINT` | PK/FK, feed cursors |
+| Public API | UUID v7 | URLs, share links, S3 `hls/{authorId}/{publicId}/` |
+
+Numeric video IDs are **rejected** at the API boundary.
+
+---
+
+## Repository layout
+
+```
+Vibely/
+├── backend/                 # Spring Boot modular monolith
+│   └── src/main/java/com/vibely/backend/
+│       ├── antibot/ auth/ chat/ feed/ search/ interaction/
+│       ├── processing/ share/ studio/ admin/ video/
+│       ├── moderation/      # AI + human review, publication hold
+│       ├── contentunderstanding/ originality/ translation/
+│       └── resources/db/migration/   # Flyway V1…V97
+├── frontend/                # React + Vite SPA (feature-first)
+│   └── src/features/        # auth feed post profile studio search chat …
+│       └── i18n/            # 56 locale JSON files
+├── mobile/                  # Flutter client
+├── ai-workers/
+│   ├── content-understanding/
+│   ├── originality/
+│   ├── content-moderation/
+│   ├── translation/
+│   └── ai-enhance/
+├── docs/                    # Engineering docs index → docs/README.md
+├── deploy/                  # VPS compose, nginx, sync script
+├── infra/                   # Lambda audio extract (optional)
+└── docker-compose.yml       # Local Redis (+ Kafka profile)
+```
+
+---
+
+## Production deploy (vibely.sbs)
+
+**Images:** `kiencuongsoftware/vibely-backend` · `kiencuongsoftware/vibely-frontend`
+
+| Component | How it runs |
+|-----------|-------------|
+| Backend | Docker Compose, `network_mode: host` → `:8080` |
+| Frontend | Static files in **`/var/www/vibely`** (host nginx) |
+| Config | `/opt/vibely/vibely.env` + `config/application-local.yaml` |
+
+> **Important:** `docker compose pull` alone does **not** update `/var/www/vibely`. After pushing a new frontend image, **sync static files** from the container.
 
 ```bash
-# Backend
-cd backend && mvn test
+# On VPS — manual sync (works even without repo checkout)
+docker pull kiencuongsoftware/vibely-frontend:latest
+TMP=vibely-fe-sync-$$
+docker create --name $TMP kiencuongsoftware/vibely-frontend:latest
+find /var/www/vibely -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+docker cp $TMP:/usr/share/nginx/html/. /var/www/vibely/
+docker rm -f $TMP
 
-# Frontend
-cd frontend && npm test
+# Verify new bundle
+grep -o 'pendingReview' /var/www/vibely/assets/StudioPostsPage-*.js | head -1
 ```
+
+Then **Cloudflare → Purge Everything** and hard-refresh the browser.
+
+Full guide: [docs/deployment/README.md](docs/deployment/README.md) · Compose reference: [deploy/vps/docker-compose.yml](deploy/vps/docker-compose.yml).
+
+---
+
+## API snapshot
+
+Envelope: `{ "success": true, "data": … }` or `{ "success": false, "error": { "status", "message" } }`.
+
+```http
+GET  /api/feed/for-you?size=8&cursor=…
+GET  /api/videos/{uuid-v7-publicId}
+POST /api/videos/{publicId}/likes
+GET  /api/search/suggest?q=
+GET  /api/chat/conversations
+POST /api/auth/login
+GET  /api/captcha/challenge
+GET  /api/health/readiness
+```
+
+Full reference: [docs/api/REST_REFERENCE.md](docs/api/REST_REFERENCE.md).
 
 ---
 
@@ -597,54 +355,68 @@ cd frontend && npm test
 <p align="center">
   <img src="docs/screenshots/Feed.png" alt="For You feed" width="720" />
 </p>
+<p align="center"><sub>Infinite scroll · HLS · likes / comments / share</sub></p>
 
-<p align="center"><sub>TikTok-style infinite scroll, HLS playback, likes / comments / share</sub></p>
-
-### Creator studio
+### Creator Studio
 
 <p align="center">
   <img src="docs/screenshots/Studio.png" alt="Vibely Studio" width="720" />
 </p>
-
-<p align="center"><sub>Home dashboard, 7-day metrics, posts and comments</sub></p>
+<p align="center"><sub>Dashboard · posts · analytics · moderation status</sub></p>
 
 ---
 
 ## Roadmap
 
-- [ ] **Recommendation engine** — personalized ranking beyond chronological / trending-lite
-- [ ] **Push notifications** — follows, likes, comments
-- [x] **Direct messaging** — STOMP chat with message requests (see [docs/chat/](docs/chat/))
-- [ ] **Real-time** — live comment counts and presence on watch feed
-- [x] **Mobile app** — Flutter client sharing the same API
-- [ ] **Live streaming** — RTMP ingest → LL-HLS
-- [ ] **AI moderation** — automated content safety pipeline
-- [ ] **Distributed workers** — SQS/Kafka-driven transcoding fleet
-- [ ] **First-page Redis cache** — hot feed edge cache with TTL invalidation
-- [ ] **Following feed cursors** — keyset pagination for social graph feed
+| Status | Item |
+|--------|------|
+| ✅ | Direct messaging + message requests |
+| ✅ | Flutter mobile client |
+| ✅ | Content understanding + originality workers |
+| ✅ | AI moderation pipeline + admin HITL queue |
+| ✅ | Studio publication review UX (pending status + modal) |
+| ✅ | 56-locale i18n |
+| ✅ | Photo posts + scheduled publish |
+| 🔲 | Personalized For You ranking beyond current signals |
+| 🔲 | Push notifications |
+| 🔲 | Live streaming (RTMP → LL-HLS) |
+| 🔲 | Distributed transcoding fleet (SQS/Kafka) |
+
+Details: [docs/roadmap/](docs/roadmap/).
 
 ---
 
-## Contributing
+## Documentation index
 
-We welcome focused, production-quality contributions.
+| Start here | Description |
+|------------|-------------|
+| [docs/README.md](docs/README.md) | Master index + “what to update when” |
+| [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) | Code-aligned snapshot |
+| [docs/deployment/README.md](docs/deployment/README.md) | Local, Docker, VPS |
+| [docs/auth/](docs/auth/) | JWT, OAuth, OTP |
+| [docs/anti-bot/](docs/anti-bot/) | Captcha, risk engine |
+| [docs/moderation/](docs/moderation/) | Publication hold + admin |
+| [docs/frontend/](docs/frontend/) | SPA architecture |
+| [docs/database/](docs/database/) | Schema + Flyway |
 
-1. Read [CONTRIBUTING.md](CONTRIBUTING.md)
-2. Fork and create a feature branch from `main`
-3. Keep PRs scoped to a single concern
-4. Run `mvn test` and `npm test` before opening
-5. Follow existing code conventions (minimal diffs, no drive-by refactors)
+---
 
-Security issues: see [SECURITY.md](SECURITY.md) — please do not open public issues for vulnerabilities.
+## Contributing & security
+
+- Contributions: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Security reports: [SECURITY.md](SECURITY.md) — please do not open public issues for vulnerabilities
+
+```bash
+cd backend && mvn test
+cd frontend && npm test
+```
 
 ---
 
 ## License
 
-This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
-
----
+**MIT** — see [LICENSE](LICENSE).
 
 <p align="center">
-  <sub>Built as a production-oriented portfolio platform — feeds, media pipelines, and real engineering trade-offs.</sub>
+  <sub>Built as a production-oriented portfolio platform — feeds, media pipelines, moderation, and real engineering trade-offs.</sub>
 </p>

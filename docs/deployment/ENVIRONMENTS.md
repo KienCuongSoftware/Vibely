@@ -2,47 +2,59 @@
 
 ## 1. Overview
 
-| Env | Branch | Data | CDN |
-|-----|--------|------|-----|
-| Local | feature | Docker PG, optional Redis | dev presign URLs |
-| Staging | main | anonymized snapshot | staging CF |
-| Production | release tag | RDS prod | prod CF |
+| Env | Branch | API | Web | Data |
+|-----|--------|-----|-----|------|
+| **Local** | feature | `:8080` Spring | `:5173` Vite | Docker PG, optional Redis |
+| **Production** | `main` | Docker → `:8080` on VPS | Static `/var/www/vibely` + Cloudflare | PG on VPS, Redis, S3, Qdrant, RabbitMQ (CU) |
+
+There is no separate staging cluster today — production-like testing happens on the VPS with profile `dev`.
 
 ## 2. Configuration matrix
 
-| Variable | Local | Prod |
-|----------|-------|------|
-| `app.redis.enabled` | true (recommended) | true |
-| `app.antibot.kafka-enabled` | false | true |
-| `spring.jpa.show-sql` | true | false |
-| JWT secret | dev | Secrets Manager |
-| `OPENAI_API_KEY` | `application-local.yaml` or env | Secrets Manager |
-| `DISCOVERY_OPENAI_ENABLED` | `true` | `true` |
+| Variable | Local | Prod (VPS) |
+|----------|-------|------------|
+| `app.redis.enabled` | optional (`APP_REDIS_ENABLED`) | `true` |
+| `app.antibot.kafka-enabled` | `false` | optional |
+| `spring.jpa.show-sql` | may be `true` in dev | `false` |
+| JWT secret | dev env / local yaml | `/opt/vibely/vibely.env` |
+| S3 / OAuth / SMTP | `application-local.yaml` | `application-local.yaml` on VPS |
+| `APP_MODERATION_APPLY_DECISIONS` | often `false` (shadow) | set per ops policy |
+| `APP_TRANSLATION_ENABLED` | optional | `true` + sidecar `:8002` |
 
-## 3. Current VPS Reality
+## 3. Current VPS reality (vibely.sbs)
 
-The current VPS deployment is intentionally simpler than the target blue/green model:
+| Item | Value |
+|------|-------|
+| Public URL | https://vibely.sbs |
+| Backend | Docker `vibely-backend`, **host network** → `127.0.0.1:8080` |
+| Frontend | Host nginx → **`/var/www/vibely`** (sync from frontend Docker image) |
+| Compose | `/opt/vibely/docker-compose.yml` |
+| Env file | `/opt/vibely/vibely.env` |
+| Imported YAML | `/opt/vibely/config/application-local.yaml` |
+| Active Spring profile | `dev` (as configured today) |
 
-- Systemd service: `vibely.service`
-- JAR path: `/opt/vibely/backend/vibely-backend.jar`
-- Main env file: `/opt/vibely/vibely.env`
-- Imported config: `/opt/vibely/config/application-local.yaml`
-- Active profile: `dev`
-- Public base URL: `https://www.vibely.sbs`
-
-Important VPS env values:
+Important env values:
 
 | Variable | Purpose |
 |----------|---------|
-| `SPRING_PROFILES_ACTIVE=dev` | Current active Spring profile |
-| `SPRING_CONFIG_IMPORT=optional:file:/opt/vibely/config/application-local.yaml` | Imports local secret YAML |
-| `OAUTH_PUBLIC_BASE_URL=https://www.vibely.sbs` | OAuth redirect base |
-| `FRONTEND_BASE_URL=https://www.vibely.sbs` | OAuth success/failure frontend base |
-| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_ID` | Direct Spring Facebook App ID |
-| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_SECRET` | Direct Spring Facebook App Secret |
+| `SPRING_PROFILES_ACTIVE=dev` | Active Spring profile |
+| `SPRING_CONFIG_IMPORT=optional:file:/opt/vibely/config/application-local.yaml` | Local secrets |
+| `OAUTH_PUBLIC_BASE_URL=https://vibely.sbs` | OAuth redirect base |
+| `FRONTEND_BASE_URL=https://vibely.sbs` | Post-login redirects |
+| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_*` | Direct Facebook OAuth (avoid placeholder drift) |
 
-Keep provider secrets out of git. If secrets were shared in screenshots/chat, rotate them in the provider console and update the VPS env.
+**Legacy:** some docs reference `vibely.service` + JAR — still valid but Docker backend is the primary deploy path. See [deployment/README.md](README.md).
 
-## 4–15.
+Keep provider secrets out of git. Rotate any credentials that were exposed in chat or screenshots.
 
-Blue/green: two ASG target groups, flip Nginx upstream. Rollback: previous artifact + Flyway forward-only fixes. Hardening: WAF, shield, rate limits at edge.
+## 4. Local frontend env
+
+| Variable | Purpose |
+|----------|---------|
+| `VITE_API_BASE_URL` | Override API base (empty = same-origin `/api`) |
+| `VITE_BACKEND_ORIGIN` | OAuth origin on localhost |
+| `VITE_PUBLIC_APP_URL` | Share-link origin when using tunnels |
+
+## 5. Future / aspirational
+
+Blue/green ASG, RDS, Secrets Manager, WAF at edge — described in older roadmap docs; not the current VPS setup.

@@ -61,7 +61,7 @@ Vibely/
 ├── backend/                 # Spring Boot modular monolith
 ├── frontend/                # React 19 + Vite SPA (feature-first: app/features/shared/store)
 ├── mobile/                  # Flutter client
-├── ai-workers/              # originality + content-understanding + content-moderation (Python)
+├── ai-workers/              # originality, CU, moderation, translation, ai-enhance (Python)
 ├── docs/
 ├── deploy/                  # VPS compose / nginx samples
 ├── infra/                   # Lambda samples
@@ -73,7 +73,7 @@ Vibely/
 | Environment | API | Web | Data |
 |-------------|-----|-----|------|
 | Local | `:8080` | `:5173` | PostgreSQL, Redis optional |
-| Production (current) | Nginx → Spring on VPS | Static SPA `/var/www/vibely` | PG + Redis + S3 + Qdrant + RabbitMQ (CU) |
+| Production (current) | Nginx → Docker backend `:8080` | Static SPA `/var/www/vibely` | PG + Redis + S3 + Qdrant + RabbitMQ (CU) |
 
 ## Related
 

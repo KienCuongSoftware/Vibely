@@ -8,6 +8,7 @@ React/Vite SPA for Vibely: feed, watch, auth, studio, admin, explore, search, ch
 - Vite 8 + `@vitejs/plugin-react`
 - Tailwind CSS 4 (`@tailwindcss/vite`)
 - `hls.js`, TanStack Virtual, STOMP WebSocket
+- **i18next** — 56 locales under `src/i18n/` (Vietnamese + English primary)
 - Vitest + Testing Library
 - Path alias `@/` → `src/` (`vite.config.js`, `jsconfig.json`)
 
@@ -28,8 +29,9 @@ frontend/src/
 │   ├── chat/
 │   ├── notification/    # Activity panels + notification WS
 │   ├── upload/
-│   ├── studio/
+│   ├── studio/            # Creator dashboard, posts, review modal, analytics
 │   ├── settings/
+│   ├── support/           # Help center (/support)
 │   ├── admin/
 │   ├── comment/
 │   ├── bookmark/
@@ -69,8 +71,8 @@ Declared in `src/app/routes.jsx`, composed from `src/app/App.jsx`. Providers liv
 | Feed / watch | `/foryou`, `/watch/:publicId`, `/:username/video/:publicId`, `/:username/:publicId` |
 | Studio | `/vibelystudio/home`, `/posts`, `/upload`, `/upload/post/:publicId`, `/analytics/:publicId`, `/comment/:publicId` |
 | Discovery | `/explore`, `/explore/view/:publicId`, `/search`, `/tag/:tag` |
-| Social | `/following`, `/friends`, `/messages`, `/settings` |
-| Admin | `/admin`, `/admin/users`, `/admin/posts`, `/admin/posts/:publicId`, … |
+| Social | `/following`, `/friends`, `/messages`, `/settings`, `/support` |
+| Admin | `/admin`, `/admin/users`, `/admin/posts`, `/admin/moderation`, … |
 
 Guests can open `/foryou`, public profiles/videos, legal, and auth. Authenticated users get the rest; admin is role-gated.
 

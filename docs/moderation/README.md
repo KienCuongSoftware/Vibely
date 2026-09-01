@@ -16,6 +16,7 @@ Canonical design: **[Intelligent Content Moderation TDD](../architecture/content
 | Worker | `ai-workers/content-moderation` |
 | Compose | `deploy/vps/docker-compose.content-moderation.yml` |
 | Publication hold | With `APP_MODERATION_APPLY_DECISIONS=true`, new public posts stay `HIDDEN` until the moderation worker ALLOW/LIMIT |
+| Studio UX | Creator sees **pending review** in `/vibelystudio/posts`; effective privacy **PRIVATE** until clearance; `intended_privacy` restored after (Flyway **V97**) |
 
 **Shadow by default:** `APP_MODERATION_APPLY_DECISIONS=false` persists reports without mutating `videos.status` / Explore. Set `true` to apply LIMIT/REVIEW/BLOCK levers.
 

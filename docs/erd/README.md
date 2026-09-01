@@ -4,4 +4,4 @@
 |------|-------------|
 | [vibely-erd-full.png](vibely-erd-full.png) | PostgreSQL schema ERD; SQL migrations are the source of truth |
 
-Regenerate this diagram when Flyway migrations add or remove tables or change major foreign keys. Tip migration **V66**; narrative schema: [database/](../database/).
+Regenerate this diagram when Flyway migrations add or remove tables or change major foreign keys. Tip migration **V97**; narrative schema: [database/](../database/).

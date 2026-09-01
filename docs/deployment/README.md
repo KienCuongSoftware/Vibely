@@ -14,18 +14,83 @@
 
 See root [README.md](../../README.md).
 
-## Current VPS Deployment
+## Current VPS Deployment (vibely.sbs)
 
-The current production-like VPS deployment is a single Spring Boot JAR managed by systemd.
+**Primary path today:** Docker Compose on Hostinger VPS + host nginx serving static SPA.
 
 | Item | Value |
 |------|-------|
 | Host | `72.62.72.93` (`srv1756911`) |
-| Service | `vibely.service` |
-| JAR | `/opt/vibely/backend/vibely-backend.jar` |
-| Environment file | `/opt/vibely/vibely.env` |
-| Imported local config | `/opt/vibely/config/application-local.yaml` |
-| Public API | `https://vibely.sbs` |
+| Public site | https://vibely.sbs |
+| Compose file | `/opt/vibely/docker-compose.yml` (repo: `deploy/vps/docker-compose.yml`) |
+| Backend container | `kiencuongsoftware/vibely-backend:latest` → host network `:8080` |
+| Frontend static | **`/var/www/vibely`** (host nginx document root) |
+| Env | `/opt/vibely/vibely.env` |
+| Secrets YAML | `/opt/vibely/config/application-local.yaml` |
+| CDN | Cloudflare (purge after frontend deploy) |
+
+**Legacy (optional):** systemd service `vibely.service` + JAR at `/opt/vibely/backend/vibely-backend.jar` — see [Deploy Backend JAR](#deploy-backend-jar-legacy) below. Docker is what ships new backend builds today.
+
+### Typical release (Windows → VPS)
+
+**1. Build & push (Windows PowerShell)**
+
+```powershell
+cd D:\Worksplace\FullStack\Vibely\backend
+mvn -DskipTests package
+docker build --no-cache -t kiencuongsoftware/vibely-backend:latest .
+docker push kiencuongsoftware/vibely-backend:latest
+
+cd D:\Worksplace\FullStack\Vibely\frontend
+docker build --no-cache -t kiencuongsoftware/vibely-frontend:latest .
+docker push kiencuongsoftware/vibely-frontend:latest
+```
+
+**2. Pull & restart backend (VPS)**
+
+```bash
+cd /opt/vibely
+docker pull kiencuongsoftware/vibely-backend:latest
+docker compose up -d backend
+curl -s http://127.0.0.1:8080/actuator/health
+docker logs vibely-backend 2>&1 | grep -i Flyway | tail -3
+```
+
+**3. Sync frontend static (VPS) — required**
+
+`docker compose pull` does **not** update `/var/www/vibely`. Use **manual copy** (always works):
+
+```bash
+docker pull kiencuongsoftware/vibely-frontend:latest
+
+# Optional: confirm image contains your change
+docker run --rm kiencuongsoftware/vibely-frontend:latest \
+  sh -c "grep -rl 'pendingReview' /usr/share/nginx/html/assets/StudioPostsPage-*.js | head -1"
+
+TMP=vibely-fe-sync-$$
+docker create --name $TMP kiencuongsoftware/vibely-frontend:latest
+find /var/www/vibely -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+docker cp $TMP:/usr/share/nginx/html/. /var/www/vibely/
+docker rm -f $TMP
+
+grep -o 'pendingReview\|reviewModal' /var/www/vibely/assets/StudioPostsPage-*.js | head -3
+```
+
+If the repo is checked out on the VPS, you can instead run:
+
+```bash
+bash /path/to/Vibely/deploy/vps/sync-frontend-static.sh
+```
+
+**4. Cloudflare** → Caching → **Purge Everything** → hard refresh / incognito.
+
+**5. Smoke tests**
+
+```bash
+curl -s https://vibely.sbs/api/feed/for-you?size=2 | head -c 200
+curl -sI https://vibely.sbs/api/oauth2/authorization/google | head -5
+# OAuth must 302 to Google — not 200 text/html
+```
 
 `/opt/vibely/vibely.env` should include:
 
@@ -62,9 +127,9 @@ SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_SECRET=...
 
 Google/Facebook/LINE browser OAuth and storage/mail secrets may also live in `/opt/vibely/config/application-local.yaml`.
 
-## Deploy Backend JAR
+## Deploy Backend JAR (legacy)
 
-Build on Windows:
+Use only if you run **systemd + JAR** instead of the Docker backend container.
 
 ```powershell
 cd D:\Worksplace\FullStack\Vibely\backend
@@ -167,18 +232,15 @@ docker run --rm -p 8081:80 `
 
 ## Deploy Frontend Static Files to VPS
 
-Host nginx serves the SPA from `/var/www/vibely`. **`docker compose pull` alone does not update that folder** unless you sync or point nginx at the frontend container (`127.0.0.1:8081`).
+Host nginx serves the SPA from `/var/www/vibely`. **`docker compose pull` alone does not update that folder.**
 
-After pushing a new frontend image:
+Prefer the **manual sync** commands in [Current VPS Deployment](#current-vps-deployment-vibelysbs) above. Alternative script (requires repo on VPS):
 
 ```bash
-cd /opt/vibely
-bash deploy/vps/sync-frontend-static.sh
-# or from repo root on VPS:
 bash /path/to/Vibely/deploy/vps/sync-frontend-static.sh
 ```
 
-Verify the bundle uses `/api/oauth2/authorization/` (not bare `/oauth2/`):
+Verify OAuth paths in the bundle:
 
 ```bash
 grep -o 'oauth2/authorization[^`"]*' /var/www/vibely/assets/LoginPage-*.js | head -1

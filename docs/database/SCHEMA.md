@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-Single PostgreSQL database, multi-domain tables, Flyway versioned migrations through **V66** (inspect SQL files; versions may skip). Domains include auth, video, engagement, share, explore, discovery, search, chat, anti-bot, notification, moderation, account, originality, and content-understanding.
+Single PostgreSQL database, multi-domain tables, Flyway versioned migrations through **V97** (inspect SQL files; versions may skip). Domains include auth, video, engagement, share, explore, discovery, search, chat, anti-bot, notification, moderation, account, originality, content-understanding, translation, and studio.
 
 **Canonical source:** SQL under `backend/src/main/resources/db/migration/`.
 

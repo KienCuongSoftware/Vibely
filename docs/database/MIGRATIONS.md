@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-**Flyway** applies SQL migrations on startup. Inspect `backend/src/main/resources/db/migration/` for the real set — version numbers may skip. Current tip: **V77**. Java migration `V22__BackfillVideoPublicUuid` handles video public UUID backfill.
+**Flyway** applies SQL migrations on startup. Inspect `backend/src/main/resources/db/migration/` for the real set — version numbers may skip. Current tip: **V97**.
 
 ## 2. Rules
 
@@ -52,6 +52,20 @@
 | V75 | CU CLIP NSFW/violence visual tags + lower plugin BLOCK thresholds (0.42) |
 | V76 | Moderation job idempotent unique index only for PENDING/PROCESSING (allow re-eval) |
 | V77 | Sexual lex title obfuscations (`tinh_duc`, `Video_Tinh_Duc`, …) → BLOCK |
+| V78–V81 | Moderation lex/visual tuning, visual review ceilings |
+| V82 | Description translation cache columns |
+| V83–V86 | Account region, comment audience, DM privacy, data export |
+| V87 | Vietnamese search fold |
+| V88–V89 | Ban appeal cleanup, AI enhancement ladder |
+| V90–V91 | Display name cooldown, profile views |
+| V92 | Video `scheduled_at` (Studio schedule) |
+| V93 | Refresh token `revoked_at` |
+| V94 | Studio inspirations |
+| V95 | Deactivate seed system notifications |
+| V96 | Photo posts (`media_kind`, `photo_urls`) |
+| V97 | Studio review privacy hold (`intended_privacy`) |
+
+Java migration `V22__BackfillVideoPublicUuid` handles video public UUID backfill.
 
 After schema changes, update [SCHEMA.md](SCHEMA.md) and the [full ERD](../erd/vibely-erd-full.png) when table count or major relationships change.
 
