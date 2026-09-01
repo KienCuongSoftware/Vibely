@@ -1,13 +1,31 @@
-<p align="center">
-  <img src="docs/screenshots/Feed.png" alt="Vibely For You feed" width="720" />
-</p>
-
 <h1 align="center">Vibely</h1>
 
 <p align="center">
   <strong>A production-style short-video social platform</strong><br/>
   TikTok-inspired UX · Spring Boot · React · HLS · Redis · S3 · AI workers
 </p>
+
+<!-- LIVE-STATS:START -->
+### Production metrics · [vibely.sbs](https://vibely.sbs)
+
+| Metric | Count |
+|--------|------:|
+| Active creators | **0** |
+| Published videos | **0** |
+| Total views | **0** |
+| UI locales | **56** |
+| Status | **pending deploy** |
+
+<sub>Updated 2026-09-01 13:52 UTC · <a href="https://vibely.sbs/api/public/stats">JSON</a> · daily GitHub Action</sub>
+
+```mermaid
+xychart-beta
+    title "Vibely production"
+    x-axis [Creators, Videos, "Views (k)", Locales]
+    y-axis "Count" 0 --> 70
+    bar [0, 0, 0, 56]
+```
+<!-- LIVE-STATS:END -->
 
 <p align="center">
   <a href="https://vibely.sbs">🌐 Live demo</a> ·
@@ -342,9 +360,32 @@ GET  /api/chat/conversations
 POST /api/auth/login
 GET  /api/captcha/challenge
 GET  /api/health/readiness
+GET  /api/public/stats              # live platform counters (README chart)
+GET  /api/public/stats/shield/{metric}   # optional shields.io JSON
 ```
 
 Full reference: [docs/api/REST_REFERENCE.md](docs/api/REST_REFERENCE.md).
+
+### Live README metrics
+
+The hero **table + bar chart** are refreshed by [`.github/workflows/update-readme-stats.yml`](.github/workflows/update-readme-stats.yml) (every 6h + manual dispatch). Source: `GET /api/public/stats` (cached **5 min** on the server):
+
+| Metric | Source |
+|--------|--------|
+| **creators** | `users` where `account_status = ACTIVE` |
+| **videos** | `videos` where `status = READY` and not a studio draft |
+| **views** | row count in `video_views` |
+| **locales** | `56` (frontend i18n files) |
+| **online** | API health (endpoint reachable) |
+
+After deploying backend, verify then run the workflow (or `node scripts/update-readme-stats.mjs` locally):
+
+```bash
+curl -sL https://vibely.sbs/api/public/stats
+node scripts/update-readme-stats.mjs
+```
+
+Until `/api/public/stats` is public on production, the chart shows **56 locales** and zeros for DB counters — deploy the latest backend image first.
 
 ---
 

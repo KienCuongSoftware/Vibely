@@ -116,7 +116,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/ws", "/ws/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/robots.txt", "/sitemap.xml", "/sitemap-*.xml").permitAll()
-                .requestMatchers("/api/health/**").permitAll();
+                .requestMatchers("/api/health/**").permitAll()
+                .requestMatchers("/api/public/stats", "/api/public/stats/**").permitAll();
                 if (isProdProfile()) {
                     chain = chain
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
