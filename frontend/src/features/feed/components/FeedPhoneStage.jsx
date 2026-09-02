@@ -409,7 +409,7 @@ export { FEED_COMMENTS_PANEL_WIDTH_PX } from "@/features/feed/utils/feedLayout.j
 
 /** Cột feed hẹp — video dọc (mặc định, gần TikTok web). */
 export const FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT =
-  "w-[min(280px,84vw)] shrink-0 md:w-[min(353px,87vw)] lg:w-[min(408px,min(82vw,520px))]";
+  "w-[min(240px,78vw)] shrink-0 md:w-[min(304px,82vw)] lg:w-[min(352px,min(76vw,448px))]";
 
 /** @deprecated — landscape dùng computeFeedLandscapeStageWidthPx. */
 export const FEED_STAGE_OUTER_WIDTH_CLASS_WIDE =
