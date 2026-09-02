@@ -381,6 +381,12 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
           and v.studioDraft = false
           and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
           and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
+          and v.intendedPrivacy is null
+          and not exists (
+              select 1 from com.vibely.backend.moderation.ModerationDecisionEntity d
+              where d.video = v
+                and (d.reviewRequired = true or d.exploreEligible = false)
+          )
         order by v.createdAt desc, v.id desc
         """)
     Page<Video> findReadyFeedFirstPage(
@@ -394,6 +400,12 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
           and v.studioDraft = false
           and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
           and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
+          and v.intendedPrivacy is null
+          and not exists (
+              select 1 from com.vibely.backend.moderation.ModerationDecisionEntity d
+              where d.video = v
+                and (d.reviewRequired = true or d.exploreEligible = false)
+          )
         and (v.createdAt < :cTime or (v.createdAt = :cTime and v.id < :cId))
         order by v.createdAt desc, v.id desc
         """)
@@ -418,6 +430,15 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     @Query("""
         select v.id from Video v
         where v.status = :status
+          and v.studioDraft = false
+          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
+          and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
+          and v.intendedPrivacy is null
+          and not exists (
+              select 1 from com.vibely.backend.moderation.ModerationDecisionEntity d
+              where d.video = v
+                and (d.reviewRequired = true or d.exploreEligible = false)
+          )
         order by coalesce(v.rankingScore, v.exploreScore) desc, v.createdAt desc
         """)
     List<Long> findTopRankingVideoIds(@Param("status") VideoStatus status, Pageable pageable);

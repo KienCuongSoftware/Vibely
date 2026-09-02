@@ -80,8 +80,8 @@ public class ModerationDecisionApplier {
                 }
             }
             case REVIEW -> {
-                // Soft / borderline: stay public (READY) while humans review in admin queue.
-                exploreEligible = true;
+                // TikTok-style: author-visible, off For You / Explore until human clears review.
+                exploreEligible = false;
                 reviewRequired = true;
                 statusApplied = VideoStatus.READY.name();
                 if (!shadow
@@ -134,6 +134,9 @@ public class ModerationDecisionApplier {
 
         if (!shadow && nextStatus != null && video.getStatus() != nextStatus) {
             video.setStatus(nextStatus);
+        }
+        if (!shadow && reviewRequired) {
+            privacyHoldService.applyHoldOnPublish(video);
         }
         privacyHoldService.releaseIfEligible(video, reviewRequired);
         videoRepository.save(video);

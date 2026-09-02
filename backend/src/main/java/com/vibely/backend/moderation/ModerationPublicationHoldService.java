@@ -247,14 +247,21 @@ public class ModerationPublicationHoldService {
         if (video.getStatus() != VideoStatus.READY) {
             return;
         }
-        // Keep review pending until moderation returns ALLOW/LIMIT/REVIEW (even when publication hold is off).
-        if (properties.isEnabled() && !hasPublicClearance(video.getId())) {
-            return;
-        }
         boolean reviewRequired = decisionRepository.findByVideo_Id(video.getId())
             .map(d -> d.isReviewRequired())
             .orElse(false);
-        privacyHoldService.releaseIfEligible(video, reviewRequired);
+        if (reviewRequired) {
+            privacyHoldService.applyHoldOnPublish(video);
+            videoRepository.save(video);
+            return;
+        }
+        // Keep review pending until moderation returns ALLOW/LIMIT/REVIEW (even when publication hold is off).
+        if (properties.isEnabled() && !hasPublicClearance(video.getId())) {
+            privacyHoldService.applyHoldOnPublish(video);
+            videoRepository.save(video);
+            return;
+        }
+        privacyHoldService.releaseIfEligible(video, false);
         videoRepository.save(video);
     }
 
@@ -265,6 +272,9 @@ public class ModerationPublicationHoldService {
         boolean statusChanged = video.getStatus() != VideoStatus.READY;
         if (statusChanged) {
             video.setStatus(VideoStatus.READY);
+        }
+        if (reviewRequired) {
+            privacyHoldService.applyHoldOnPublish(video);
         }
         privacyHoldService.releaseIfEligible(video, reviewRequired);
         videoRepository.save(video);
