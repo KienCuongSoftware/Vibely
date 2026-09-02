@@ -65,6 +65,7 @@ import {
   FEED_MORE_SPEED_TRACK_CLASS,
   FEED_VIDEO_OVERLAY_BTN_CLASS,
   computeFeedLandscapeStageWidthPx,
+  computeFeedPortraitStageSizePx,
   FEED_STAGE_DISPLAY_SCALE,
 } from "@/features/feed/utils/feedLayout.js";
 
@@ -996,6 +997,15 @@ export function FeedPhoneStage({
       ? Math.round((landscapeStageWidthPx * 9) / 16)
       : null;
 
+  const portraitStageSizePx =
+    mobileFullBleed || effectiveStageWide || theaterMode
+      ? null
+      : computeFeedPortraitStageSizePx({
+          slotHeightPx: feedSlotHeightPx,
+          viewportWidth:
+            typeof window !== "undefined" ? window.innerWidth : undefined,
+        });
+
   /** Theater: khung cao gần full viewport, rộng đúng tỉ lệ 9:16 như TikTok watch. */
   const theaterStageWidthPx =
     theaterMode && !mobileFullBleed && !effectiveStageWide
@@ -1013,7 +1023,8 @@ export function FeedPhoneStage({
     ? mobileMeasuredSlotPx
     : effectiveStageWide && landscapeVideoHeightPx != null
       ? landscapeVideoHeightPx
-      : Math.round(feedSlotHeightPx * FEED_STAGE_DISPLAY_SCALE);
+      : portraitStageSizePx?.height ??
+        Math.round(feedSlotHeightPx * FEED_STAGE_DISPLAY_SCALE);
 
   const virtualSlotHeightPx = mobileFullBleed
     ? mobileMeasuredSlotPx
@@ -1021,7 +1032,7 @@ export function FeedPhoneStage({
 
   const stageWidthClass = mobileFullBleed
     ? "relative h-full w-full shrink-0"
-    : effectiveStageWide || theaterMode
+    : effectiveStageWide || theaterMode || portraitStageSizePx
       ? "relative shrink-0"
       : FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT;
 
@@ -1091,7 +1102,10 @@ export function FeedPhoneStage({
           ? undefined
           : {
               width:
-                landscapeStageWidthPx ?? theaterStageWidthPx ?? undefined,
+                landscapeStageWidthPx ??
+                theaterStageWidthPx ??
+                portraitStageSizePx?.width ??
+                undefined,
               height: stageOuterHeightPx,
             }
       }

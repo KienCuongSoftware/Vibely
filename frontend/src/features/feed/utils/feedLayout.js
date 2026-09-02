@@ -79,10 +79,35 @@ export function feedCommentsPanelWidthCss() {
 export const FEED_VIEWPORT_INSET_PX = 24;
 
 /** Thu nhẹ khung video For You (9:16 + 16:9) — giữ đúng tỉ lệ. */
-export const FEED_STAGE_DISPLAY_SCALE = 0.8;
+export const FEED_STAGE_DISPLAY_SCALE = 0.72;
 
 /** Trần rộng khung 16:9 (trước scale) — tránh full viewport trên màn hình lớn. */
-export const FEED_LANDSCAPE_MAX_WIDTH_PX = 920;
+export const FEED_LANDSCAPE_MAX_WIDTH_PX = 760;
+
+/** Khung 9:16 — rộng/cao khớp tỉ lệ, không để khung đen cao full viewport. */
+export function computeFeedPortraitStageSizePx({
+  slotHeightPx,
+  viewportWidth,
+}) {
+  const vw =
+    viewportWidth ?? (typeof window !== "undefined" ? window.innerWidth : 1280);
+  const slotH =
+    slotHeightPx ??
+    (typeof window !== "undefined"
+      ? Math.max(320, window.innerHeight - FEED_VIEWPORT_INSET_PX)
+      : 760);
+  const maxHeight = Math.round(slotH * FEED_STAGE_DISPLAY_SCALE);
+  let maxWidth = Math.min(220, Math.round(vw * 0.76));
+  if (vw >= 1024) {
+    maxWidth = Math.min(300, Math.round(vw * 0.72));
+  } else if (vw >= 768) {
+    maxWidth = Math.min(268, Math.round(vw * 0.78));
+  }
+  const widthFromHeight = Math.round((maxHeight * 9) / 16);
+  const width = Math.max(200, Math.min(maxWidth, widthFromHeight));
+  const height = Math.round((width * 16) / 9);
+  return { width, height };
+}
 
 /** Tính chiều rộng khung video ngang — tận dụng tối đa chỗ trống như TikTok web. */
 export function computeFeedLandscapeStageWidthPx({
