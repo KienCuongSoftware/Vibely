@@ -253,7 +253,7 @@ function ResolvePanel({
 
         <div className="scrollbar-none grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 sm:grid-cols-2 sm:p-5">
           <div className="space-y-3">
-            <div className="overflow-hidden rounded-xl border border-zinc-800 bg-black">
+            <div className="vibely-keep-dark overflow-hidden rounded-xl border border-zinc-800 bg-black">
               {mediaUrl ? (
                 <video
                   key={mediaUrl}

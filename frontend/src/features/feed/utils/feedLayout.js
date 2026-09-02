@@ -78,6 +78,9 @@ export function feedCommentsPanelWidthCss() {
 /** Chiều cao slot feed (px dưới viewport). */
 export const FEED_VIEWPORT_INSET_PX = 24;
 
+/** Thu nhẹ khung video For You (9:16 + 16:9) — giữ đúng tỉ lệ. */
+export const FEED_STAGE_DISPLAY_SCALE = 0.93;
+
 /** Tính chiều rộng khung video ngang — tận dụng tối đa chỗ trống như TikTok web. */
 export function computeFeedLandscapeStageWidthPx({
   commentsOpen,
@@ -98,5 +101,7 @@ export function computeFeedLandscapeStageWidthPx({
     (commentsOpen ? FEED_COMMENTS_PANEL_WIDTH_PX + FEED_STAGE_EDGE_GAP_PX : 0);
   const byViewport = Math.max(280, vw - reserved);
   const byAspect = Math.round((slotH * 16) / 9);
-  return Math.min(byViewport, byAspect);
+  return Math.round(
+    Math.min(byViewport, byAspect) * FEED_STAGE_DISPLAY_SCALE,
+  );
 }

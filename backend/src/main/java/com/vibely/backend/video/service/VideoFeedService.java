@@ -58,6 +58,7 @@ public class VideoFeedService {
     private final VideoResponseMapper responseMapper;
     private final ProfileVisibilityService profileVisibilityService;
     private final VideoPrivacyAccessService privacyAccessService;
+    private final PublicVideoVisibilityService publicVideoVisibilityService;
 
     public VideoFeedService(
         VideoRepository videoRepository,
@@ -70,7 +71,8 @@ public class VideoFeedService {
         com.vibely.backend.storage.S3ObjectUrlBuilder objectUrlBuilder,
         VideoResponseMapper responseMapper,
         ProfileVisibilityService profileVisibilityService,
-        VideoPrivacyAccessService privacyAccessService
+        VideoPrivacyAccessService privacyAccessService,
+        PublicVideoVisibilityService publicVideoVisibilityService
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
@@ -83,6 +85,7 @@ public class VideoFeedService {
         this.responseMapper = responseMapper;
         this.profileVisibilityService = profileVisibilityService;
         this.privacyAccessService = privacyAccessService;
+        this.publicVideoVisibilityService = publicVideoVisibilityService;
     }
 
     @Transactional(readOnly = true)
@@ -121,7 +124,10 @@ public class VideoFeedService {
             ? videoRepository.findReadyFeedFirstPage(VideoStatus.READY, p)
             : videoRepository.findReadyFeedKeyset(VideoStatus.READY, cTime, cId, p);
         boolean hasNext = slice.getContent().size() > req;
-        List<Video> rows = slice.getContent().stream().limit(req).toList();
+        List<Video> rows = slice.getContent().stream()
+            .limit(req)
+            .filter(publicVideoVisibilityService::isEligibleForPublicFeed)
+            .toList();
         rows = shuffleFeedRows(rows);
         String next = null;
         if (hasNext && !rows.isEmpty()) {

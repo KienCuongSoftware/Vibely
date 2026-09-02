@@ -190,7 +190,7 @@ function FeedChevronNav({ activeIndex, videoCount, onStep, busy, className }) {
     <div
       className={
         className ??
-        "ml-2 flex shrink-0 flex-col justify-center gap-2.5 self-center sm:ml-3"
+        "vibely-feed-chrome-rail ml-2 flex shrink-0 flex-col justify-center gap-2.5 self-center sm:ml-3"
       }
     >
       <button
@@ -1945,10 +1945,10 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               <div
                 className={
                   mobileLayout
-                    ? `pointer-events-auto z-30 flex h-full shrink-0 flex-col items-center justify-center gap-3 px-2 pb-8${
+                    ? `vibely-feed-chrome-rail pointer-events-auto z-30 flex h-full shrink-0 flex-col items-center justify-center gap-3 px-2 pb-8${
                         feedCommentsOpen ? " hidden" : ""
                       }`
-                    : `pointer-events-auto z-30 flex flex-col items-center gap-3 lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-4 lg:pb-14 ${
+                    : `vibely-feed-chrome-rail pointer-events-auto z-30 flex flex-col items-center gap-3 lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-4 lg:pb-14 ${
                         feedCommentsOpen
                           ? "lg:justify-center lg:self-center lg:pb-0"
                           : ""

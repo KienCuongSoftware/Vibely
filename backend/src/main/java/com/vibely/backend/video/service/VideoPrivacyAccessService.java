@@ -11,9 +11,14 @@ import org.springframework.stereotype.Service;
 public class VideoPrivacyAccessService {
 
     private final FollowRepository followRepository;
+    private final PublicVideoVisibilityService publicVideoVisibilityService;
 
-    public VideoPrivacyAccessService(FollowRepository followRepository) {
+    public VideoPrivacyAccessService(
+        FollowRepository followRepository,
+        PublicVideoVisibilityService publicVideoVisibilityService
+    ) {
         this.followRepository = followRepository;
+        this.publicVideoVisibilityService = publicVideoVisibilityService;
     }
 
     public boolean isMutualFriends(User a, User b) {
@@ -35,6 +40,9 @@ public class VideoPrivacyAccessService {
         User author = video.getAuthor();
         if (viewer != null && Objects.equals(viewer.getId(), author.getId())) {
             return true;
+        }
+        if (publicVideoVisibilityService.isHeldOffPublicSurfaces(video)) {
+            return false;
         }
         VideoPrivacy privacy = video.getPrivacy() == null ? VideoPrivacy.PUBLIC : video.getPrivacy();
         return switch (privacy) {

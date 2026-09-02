@@ -67,6 +67,10 @@ public class ModerationPublicationHoldService {
             return;
         }
         if (!isHoldActive()) {
+            if (properties.isEnabled() && !hasPublicClearance(video.getId())) {
+                privacyHoldService.applyHoldOnPublish(video);
+                videoRepository.save(video);
+            }
             releasePrivacyWhenReady(video);
             return;
         }
@@ -93,12 +97,13 @@ public class ModerationPublicationHoldService {
      */
     @Transactional
     public int reconcileStuckHolds() {
+        int fixed = repairPublicPrivacyMismatches();
+
         if (!isHoldActive()) {
-            return 0;
+            return fixed;
         }
         int enqueueAfter = Math.max(1, properties.getPublicationHoldEnqueueAfterMinutes());
         int holdTimeout = Math.max(enqueueAfter + 1, properties.getPublicationHoldTimeoutMinutes());
-        int fixed = 0;
 
         // 1) Already cleared by AI (ALLOW/LIMIT/REVIEW) — REVIEW is visible to author, off FYP.
         List<Map<String, Object>> cleared = jdbcTemplate.queryForList(
@@ -282,6 +287,52 @@ public class ModerationPublicationHoldService {
             evictExploreCaches();
         }
         return statusChanged;
+    }
+
+    private int repairPublicPrivacyMismatches() {
+        if (!properties.isEnabled()) {
+            return 0;
+        }
+        int fixed = 0;
+        int repairedPrivacy = jdbcTemplate.update(
+            """
+            UPDATE videos
+            SET privacy = 'PRIVATE'
+            WHERE intended_privacy IS NOT NULL
+              AND privacy <> 'PRIVATE'
+              AND COALESCE(studio_draft, FALSE) = FALSE
+            """
+        );
+        if (repairedPrivacy > 0) {
+            log.info(
+                "Repaired {} videos: privacy forced PRIVATE while intended_privacy is set",
+                repairedPrivacy
+            );
+            evictExploreCaches();
+            fixed += repairedPrivacy;
+        }
+
+        int repairedReview = jdbcTemplate.update(
+            """
+            UPDATE videos v
+            SET privacy = 'PRIVATE',
+                intended_privacy = COALESCE(v.intended_privacy, v.privacy)
+            FROM moderation_decisions d
+            WHERE d.video_id = v.id
+              AND d.review_required = TRUE
+              AND v.privacy = 'PUBLIC'
+              AND COALESCE(v.studio_draft, FALSE) = FALSE
+            """
+        );
+        if (repairedReview > 0) {
+            log.info(
+                "Repaired {} videos: privacy forced PRIVATE while human review is pending",
+                repairedReview
+            );
+            evictExploreCaches();
+            fixed += repairedReview;
+        }
+        return fixed;
     }
 
     private void evictExploreCaches() {

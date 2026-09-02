@@ -1089,8 +1089,8 @@ export function FeedStyleVideoDetailPage({
               <div
                 className={
                   watchChrome
-                    ? 'pointer-events-auto fixed right-6 bottom-[max(6.5rem,18%)] z-80 flex flex-col items-center gap-3.5'
-                    : 'pointer-events-none absolute right-2 bottom-[4.75rem] z-30 lg:pointer-events-auto lg:static lg:ml-3 lg:flex lg:shrink-0 lg:flex-col lg:items-center lg:gap-4 lg:self-center'
+                    ? 'vibely-feed-chrome-rail pointer-events-auto fixed right-6 bottom-[max(6.5rem,18%)] z-80 flex flex-col items-center gap-3.5'
+                    : 'vibely-feed-chrome-rail pointer-events-none absolute right-2 bottom-[4.75rem] z-30 lg:pointer-events-auto lg:static lg:ml-3 lg:flex lg:shrink-0 lg:flex-col lg:items-center lg:gap-4 lg:self-center'
                 }
               >
                 <div className="pointer-events-auto flex flex-col items-center gap-3">
