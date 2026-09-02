@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "Velg bilder",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "Bytt lyd",
+      "removeSound": "Fjern lyd",
+      "soundPicker": {
+        "title": "Lyd",
+        "search": "Søk etter lyder",
+        "use": "Bruk",
+        "preview": "Forhåndsvis",
+        "favorite": "Legg til i favoritter",
+        "unfavorite": "Fjern fra favoritter",
+        "loading": "Laster lyder…",
+        "loadFailed": "Kunne ikke laste lyder. Prøv igjen.",
+        "untitled": "Original lyd",
+        "tabs": {
+          "recommended": "Anbefalt",
+          "favorites": "Favoritter",
+          "recent": "Nylig"
+        },
+        "empty": {
+          "recommended": "Ingen lyder ennå. Publiser videoer med lyd for å bygge biblioteket.",
+          "favorites": "Favorittlydene dine vises her.",
+          "recent": "Nylig brukte lyder vises her."
+        }
+      }
     },
     "selectedFile": "Ausgewählt: {{name}}",
     "durationLabel": "Dauer: {{duration}}",

@@ -2594,7 +2594,30 @@
       "dropTitle": "Selecciona fotos para subir",
       "dropHint": "O arrastra y suelta fotos aquí. Hasta 35 fotos por publicación.",
       "pickPhotos": "Seleccionar fotos",
-      "invalidFiles": "Usa JPG, JPEG, PNG o WebP, máx. 50 MB cada una, hasta 35 fotos."
+      "invalidFiles": "Usa JPG, JPEG, PNG o WebP, máx. 50 MB cada una, hasta 35 fotos.",
+      "changeSound": "Cambiar sonido",
+      "removeSound": "Quitar sonido",
+      "soundPicker": {
+        "title": "Sonido",
+        "search": "Buscar sonidos",
+        "use": "Usar",
+        "preview": "Vista previa",
+        "favorite": "Añadir a favoritos",
+        "unfavorite": "Quitar de favoritos",
+        "loading": "Cargando sonidos…",
+        "loadFailed": "No se pudieron cargar los sonidos. Inténtalo de nuevo.",
+        "untitled": "Sonido original",
+        "tabs": {
+          "recommended": "Recomendados",
+          "favorites": "Favoritos",
+          "recent": "Recientes"
+        },
+        "empty": {
+          "recommended": "Aún no hay sonidos. Publica videos con audio para crear la biblioteca.",
+          "favorites": "Tus sonidos favoritos aparecerán aquí.",
+          "recent": "Los sonidos usados recientemente aparecerán aquí."
+        }
+      }
     },
     "selectedFile": "Seleccionado: {{name}}",
     "durationLabel": "Duración: {{duration}}",

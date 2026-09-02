@@ -2601,7 +2601,30 @@
       "dropTitle": "Selecteer foto’s om te uploaden",
       "dropHint": "Of sleep foto’s hierheen. Maximaal 35 foto’s per post.",
       "pickPhotos": "Foto’s selecteren",
-      "invalidFiles": "JPG, JPEG, PNG of WebP, max. 50 MB per bestand, tot 35 foto’s."
+      "invalidFiles": "JPG, JPEG, PNG of WebP, max. 50 MB per bestand, tot 35 foto’s.",
+      "changeSound": "Geluid wijzigen",
+      "removeSound": "Geluid verwijderen",
+      "soundPicker": {
+        "title": "Geluid",
+        "search": "Geluiden zoeken",
+        "use": "Gebruiken",
+        "preview": "Voorbeeld",
+        "favorite": "Toevoegen aan favorieten",
+        "unfavorite": "Verwijderen uit favorieten",
+        "loading": "Geluiden laden…",
+        "loadFailed": "Geluiden laden mislukt. Probeer opnieuw.",
+        "untitled": "Origineel geluid",
+        "tabs": {
+          "recommended": "Aanbevolen",
+          "favorites": "Favorieten",
+          "recent": "Recent"
+        },
+        "empty": {
+          "recommended": "Nog geen geluiden. Publiceer video's met audio om de bibliotheek op te bouwen.",
+          "favorites": "Je favoriete geluiden verschijnen hier.",
+          "recent": "Recent gebruikte geluiden verschijnen hier."
+        }
+      }
     },
     "selectedFile": "Ausgewählt: {{name}}",
     "durationLabel": "Dauer: {{duration}}",

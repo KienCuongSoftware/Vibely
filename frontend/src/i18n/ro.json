@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "Selectează fotografii",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "Schimbă sunetul",
+      "removeSound": "Elimină sunetul",
+      "soundPicker": {
+        "title": "Sunet",
+        "search": "Caută sunete",
+        "use": "Folosește",
+        "preview": "Previzualizare",
+        "favorite": "Adaugă la favorite",
+        "unfavorite": "Elimină din favorite",
+        "loading": "Se încarcă sunetele…",
+        "loadFailed": "Nu s-au putut încărca sunetele. Încearcă din nou.",
+        "untitled": "Sunet original",
+        "tabs": {
+          "recommended": "Recomandate",
+          "favorites": "Favorite",
+          "recent": "Recente"
+        },
+        "empty": {
+          "recommended": "Încă nu există sunete. Publică videoclipuri cu audio pentru a construi biblioteca.",
+          "favorites": "Sunetele tale favorite vor apărea aici.",
+          "recent": "Sunetele folosite recent vor apărea aici."
+        }
+      }
     },
     "selectedFile": "Wybrano: {{name}}",
     "durationLabel": "Czas trwania: {{duration}}",

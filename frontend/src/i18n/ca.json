@@ -2601,7 +2601,30 @@
       "dropTitle": "Selecciona fotos para subir",
       "dropHint": "O arrastra y suelta fotos aquí. Hasta 35 fotos por publicación.",
       "pickPhotos": "Selecciona fotos",
-      "invalidFiles": "Usa JPG, JPEG, PNG o WebP, máx. 50 MB cada una, hasta 35 fotos."
+      "invalidFiles": "Usa JPG, JPEG, PNG o WebP, máx. 50 MB cada una, hasta 35 fotos.",
+      "changeSound": "Canvia el so",
+      "removeSound": "Elimina el so",
+      "soundPicker": {
+        "title": "So",
+        "search": "Cerca sons",
+        "use": "Utilitza",
+        "preview": "Previsualització",
+        "favorite": "Afegeix a preferits",
+        "unfavorite": "Elimina dels preferits",
+        "loading": "S'estan carregant els sons…",
+        "loadFailed": "No s'han pogut carregar els sons. Torna-ho a provar.",
+        "untitled": "So original",
+        "tabs": {
+          "recommended": "Recomanats",
+          "favorites": "Preferits",
+          "recent": "Recents"
+        },
+        "empty": {
+          "recommended": "Encara no hi ha sons. Publica vídeos amb àudio per crear la biblioteca.",
+          "favorites": "Els teus sons preferits apareixeran aquí.",
+          "recent": "Els sons utilitzats recentment apareixeran aquí."
+        }
+      }
     },
     "selectedFile": "Seleccionado: {{name}}",
     "durationLabel": "Duración: {{duration}}",

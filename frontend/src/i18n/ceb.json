@@ -2601,7 +2601,30 @@
       "dropTitle": "Pilih foto untuk diunggah",
       "dropHint": "Atau seret dan lepas foto di sini. Maksimal 35 foto per postingan.",
       "pickPhotos": "Pumili ng mga larawan",
-      "invalidFiles": "Gunakan JPG, JPEG, PNG, atau WebP, maks. 50 MB per file, hingga 35 foto."
+      "invalidFiles": "Gunakan JPG, JPEG, PNG, atau WebP, maks. 50 MB per file, hingga 35 foto.",
+      "changeSound": "Usbon ang tunog",
+      "removeSound": "Tangtangon ang tunog",
+      "soundPicker": {
+        "title": "Tunog",
+        "search": "Pangitaa ang mga tunog",
+        "use": "Gamiton",
+        "preview": "Preview",
+        "favorite": "Idugang sa paborito",
+        "unfavorite": "Kuhaa sa paborito",
+        "loading": "Nag-load sa mga tunog…",
+        "loadFailed": "Dili ma-load ang mga tunog. Sulayi pag-usab.",
+        "untitled": "Orihinal nga tunog",
+        "tabs": {
+          "recommended": "Girekomenda",
+          "favorites": "Paborito",
+          "recent": "Bag-o"
+        },
+        "empty": {
+          "recommended": "Wala pay tunog. I-publish ang mga video nga naay audio aron makahimo og library.",
+          "favorites": "Ang imong paboritong tunog makita dinhi.",
+          "recent": "Ang bag-ong gigamit nga tunog makita dinhi."
+        }
+      }
     },
     "selectedFile": "Dipilih: {{name}}",
     "durationLabel": "Durasi: {{duration}}",

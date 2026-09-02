@@ -2721,6 +2721,29 @@
       "previewWeb": "Web",
       "photoBadge": "Photo",
       "originalSound": "Original sound - {{name}}",
+      "changeSound": "Change sound",
+      "removeSound": "Remove sound",
+      "soundPicker": {
+        "title": "Sound",
+        "search": "Search sounds",
+        "use": "Use",
+        "preview": "Preview sound",
+        "favorite": "Add to favorites",
+        "unfavorite": "Remove from favorites",
+        "loading": "Loading sounds…",
+        "loadFailed": "Could not load sounds. Try again.",
+        "untitled": "Original sound",
+        "tabs": {
+          "recommended": "Recommended",
+          "favorites": "Favorites",
+          "recent": "Recent"
+        },
+        "empty": {
+          "recommended": "No sounds yet. Publish videos with audio to build the library.",
+          "favorites": "Sounds you favorite will appear here.",
+          "recent": "Sounds you recently used will appear here."
+        }
+      },
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "Select photos",

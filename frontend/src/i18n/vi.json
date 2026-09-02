@@ -2721,6 +2721,29 @@
       "previewWeb": "Web",
       "photoBadge": "Photo",
       "originalSound": "Âm thanh gốc - {{name}}",
+      "changeSound": "Đổi âm thanh",
+      "removeSound": "Xóa âm thanh",
+      "soundPicker": {
+        "title": "Âm thanh",
+        "search": "Tìm kiếm âm thanh",
+        "use": "Dùng",
+        "preview": "Nghe thử",
+        "favorite": "Thêm vào yêu thích",
+        "unfavorite": "Bỏ yêu thích",
+        "loading": "Đang tải âm thanh…",
+        "loadFailed": "Không tải được âm thanh. Thử lại.",
+        "untitled": "Âm thanh gốc",
+        "tabs": {
+          "recommended": "Đề xuất",
+          "favorites": "Yêu thích",
+          "recent": "Gần đây"
+        },
+        "empty": {
+          "recommended": "Chưa có âm thanh. Đăng video có nhạc để xây thư viện.",
+          "favorites": "Âm thanh bạn yêu thích sẽ hiện ở đây.",
+          "recent": "Âm thanh dùng gần đây sẽ hiện ở đây."
+        }
+      },
       "dropTitle": "Chọn ảnh để tải lên",
       "dropHint": "Hoặc kéo và thả ảnh vào đây. Tải lên tối đa 35 ảnh mỗi bài đăng.",
       "pickPhotos": "Chọn ảnh",

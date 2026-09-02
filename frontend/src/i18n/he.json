@@ -2601,7 +2601,30 @@
       "dropTitle": "בחר תמונות להעלאה",
       "dropHint": "או גרור תמונות לכאן. עד 35 תמונות לפוסט.",
       "pickPhotos": "בחר תמונות",
-      "invalidFiles": "JPG, JPEG, PNG או WebP, עד 50MB כל אחת, עד 35 תמונות."
+      "invalidFiles": "JPG, JPEG, PNG או WebP, עד 50MB כל אחת, עד 35 תמונות.",
+      "changeSound": "שנה צליל",
+      "removeSound": "הסר צליל",
+      "soundPicker": {
+        "title": "צליל",
+        "search": "חפש צלילים",
+        "use": "השתמש",
+        "preview": "תצוגה מקדימה",
+        "favorite": "הוסף למועדפים",
+        "unfavorite": "הסר מהמועדפים",
+        "loading": "טוען צלילים…",
+        "loadFailed": "לא ניתן לטעון צלילים. נסה שוב.",
+        "untitled": "צליל מקורי",
+        "tabs": {
+          "recommended": "מומלצים",
+          "favorites": "מועדפים",
+          "recent": "אחרונים"
+        },
+        "empty": {
+          "recommended": "אין עדיין צלילים. פרסם סרטונים עם אודיו כדי לבנות את הספרייה.",
+          "favorites": "הצלילים המועדפים שלך יופיעו כאן.",
+          "recent": "צלילים שבהם השתמשת לאחרונה יופיעו כאן."
+        }
+      }
     },
     "selectedFile": "נבחר: {{name}}",
     "durationLabel": "משך: {{duration}}",

@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "Επιλογή φωτογραφιών",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "Αλλαγή ήχου",
+      "removeSound": "Αφαίρεση ήχου",
+      "soundPicker": {
+        "title": "Ήχος",
+        "search": "Αναζήτηση ήχων",
+        "use": "Χρήση",
+        "preview": "Προεπισκόπηση",
+        "favorite": "Προσθήκη στα αγαπημένα",
+        "unfavorite": "Αφαίρεση από τα αγαπημένα",
+        "loading": "Φόρτωση ήχων…",
+        "loadFailed": "Δεν ήταν δυνατή η φόρτωση των ήχων. Δοκιμάστε ξανά.",
+        "untitled": "Πρωτότυπος ήχος",
+        "tabs": {
+          "recommended": "Προτεινόμενα",
+          "favorites": "Αγαπημένα",
+          "recent": "Πρόσφατα"
+        },
+        "empty": {
+          "recommended": "Δεν υπάρχουν ακόμα ήχοι. Δημοσιεύστε βίντεο με ήχο για να δημιουργήσετε τη βιβλιοθήκη.",
+          "favorites": "Οι αγαπημένοι σας ήχοι θα εμφανιστούν εδώ.",
+          "recent": "Οι πρόσφατα χρησιμοποιημένοι ήχοι θα εμφανιστούν εδώ."
+        }
+      }
     },
     "selectedFile": "Seleccionado: {{name}}",
     "durationLabel": "Duración: {{duration}}",

@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "ছবি বেছে নিন",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "শব্দ পরিবর্তন করুন",
+      "removeSound": "শব্দ সরান",
+      "soundPicker": {
+        "title": "শব্দ",
+        "search": "শব্দ খুঁজুন",
+        "use": "ব্যবহার করুন",
+        "preview": "প্রিভিউ",
+        "favorite": "পছন্দের তালিকায় যোগ করুন",
+        "unfavorite": "পছন্দের তালিকা থেকে সরান",
+        "loading": "শব্দ লোড হচ্ছে…",
+        "loadFailed": "শব্দ লোড করা যায়নি। আবার চেষ্টা করুন।",
+        "untitled": "মূল শব্দ",
+        "tabs": {
+          "recommended": "সুপারিশকৃত",
+          "favorites": "পছন্দের",
+          "recent": "সাম্প্রতিক"
+        },
+        "empty": {
+          "recommended": "এখনও কোনো শব্দ নেই। লাইব্রেরি তৈরি করতে অডিও সহ ভিডিও প্রকাশ করুন।",
+          "favorites": "আপনার পছন্দের শব্দগুলো এখানে দেখা যাবে।",
+          "recent": "সম্প্রতি ব্যবহৃত শব্দগুলো এখানে দেখা যাবে।"
+        }
+      }
     },
     "selectedFile": "चयनित: {{name}}",
     "durationLabel": "अवधि: {{duration}}",

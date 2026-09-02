@@ -2594,7 +2594,30 @@
       "dropTitle": "Fotos zum Hochladen auswählen",
       "dropHint": "Oder Fotos hierher ziehen. Maximal 35 Fotos pro Beitrag.",
       "pickPhotos": "Fotos auswählen",
-      "invalidFiles": "JPG, JPEG, PNG oder WebP, max. 50 MB pro Datei, bis zu 35 Fotos."
+      "invalidFiles": "JPG, JPEG, PNG oder WebP, max. 50 MB pro Datei, bis zu 35 Fotos.",
+      "changeSound": "Sound ändern",
+      "removeSound": "Sound entfernen",
+      "soundPicker": {
+        "title": "Sound",
+        "search": "Sounds suchen",
+        "use": "Verwenden",
+        "preview": "Vorschau",
+        "favorite": "Zu Favoriten hinzufügen",
+        "unfavorite": "Aus Favoriten entfernen",
+        "loading": "Sounds werden geladen…",
+        "loadFailed": "Sounds konnten nicht geladen werden. Bitte erneut versuchen.",
+        "untitled": "Originalsound",
+        "tabs": {
+          "recommended": "Empfohlen",
+          "favorites": "Favoriten",
+          "recent": "Zuletzt"
+        },
+        "empty": {
+          "recommended": "Noch keine Sounds. Veröffentliche Videos mit Audio, um die Bibliothek aufzubauen.",
+          "favorites": "Deine Favoriten erscheinen hier.",
+          "recent": "Kürzlich verwendete Sounds erscheinen hier."
+        }
+      }
     },
     "selectedFile": "Ausgewählt: {{name}}",
     "durationLabel": "Dauer: {{duration}}",

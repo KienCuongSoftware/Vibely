@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "Zgjidh foto",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "Ndrysho tingullin",
+      "removeSound": "Hiq tingullin",
+      "soundPicker": {
+        "title": "Tingull",
+        "search": "Kërko tinguj",
+        "use": "Përdor",
+        "preview": "Parapamje",
+        "favorite": "Shto te të preferuarat",
+        "unfavorite": "Hiq nga të preferuarat",
+        "loading": "Duke ngarkuar tingujt…",
+        "loadFailed": "Tingujt nuk u ngarkuan. Provo përsëri.",
+        "untitled": "Tingull origjinal",
+        "tabs": {
+          "recommended": "Të rekomanduara",
+          "favorites": "Të preferuara",
+          "recent": "Të fundit"
+        },
+        "empty": {
+          "recommended": "Ende nuk ka tinguj. Publiko video me audio për të ndërtuar bibliotekën.",
+          "favorites": "Tingujt e preferuar do të shfaqen këtu.",
+          "recent": "Tingujt e përdorur së fundmi do të shfaqen këtu."
+        }
+      }
     },
     "selectedFile": "Seleccionado: {{name}}",
     "durationLabel": "Duración: {{duration}}",

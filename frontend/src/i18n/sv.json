@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "Välj foton",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "Byt ljud",
+      "removeSound": "Ta bort ljud",
+      "soundPicker": {
+        "title": "Ljud",
+        "search": "Sök ljud",
+        "use": "Använd",
+        "preview": "Förhandsgranska",
+        "favorite": "Lägg till i favoriter",
+        "unfavorite": "Ta bort från favoriter",
+        "loading": "Laddar ljud…",
+        "loadFailed": "Kunde inte ladda ljud. Försök igen.",
+        "untitled": "Originaljud",
+        "tabs": {
+          "recommended": "Rekommenderat",
+          "favorites": "Favoriter",
+          "recent": "Senaste"
+        },
+        "empty": {
+          "recommended": "Inga ljud ännu. Publicera videor med ljud för att bygga biblioteket.",
+          "favorites": "Dina favoritljud visas här.",
+          "recent": "Nyligen använda ljud visas här."
+        }
+      }
     },
     "selectedFile": "Ausgewählt: {{name}}",
     "durationLabel": "Dauer: {{duration}}",

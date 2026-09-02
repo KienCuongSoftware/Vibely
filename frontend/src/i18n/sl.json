@@ -2601,7 +2601,30 @@
       "dropTitle": "Wybierz zdjęcia do przesłania",
       "dropHint": "Lub przeciągnij zdjęcia tutaj. Maks. 35 zdjęć na post.",
       "pickPhotos": "Izberi fotografije",
-      "invalidFiles": "JPG, JPEG, PNG lub WebP, maks. 50 MB każde, do 35 zdjęć."
+      "invalidFiles": "JPG, JPEG, PNG lub WebP, maks. 50 MB każde, do 35 zdjęć.",
+      "changeSound": "Spremeni zvok",
+      "removeSound": "Odstrani zvok",
+      "soundPicker": {
+        "title": "Zvok",
+        "search": "Išči zvoke",
+        "use": "Uporabi",
+        "preview": "Predogled",
+        "favorite": "Dodaj med priljubljene",
+        "unfavorite": "Odstrani iz priljubljenih",
+        "loading": "Nalaganje zvokov…",
+        "loadFailed": "Zvokov ni bilo mogoče naložiti. Poskusi znova.",
+        "untitled": "Izvirni zvok",
+        "tabs": {
+          "recommended": "Priporočeno",
+          "favorites": "Priljubljeno",
+          "recent": "Nedavno"
+        },
+        "empty": {
+          "recommended": "Še ni zvokov. Objavi videoposnetke z zvokom za knjižnico.",
+          "favorites": "Tvoji priljubljeni zvoki bodo prikazani tukaj.",
+          "recent": "Nedavno uporabljeni zvoki bodo prikazani tukaj."
+        }
+      }
     },
     "selectedFile": "Wybrano: {{name}}",
     "durationLabel": "Czas trwania: {{duration}}",

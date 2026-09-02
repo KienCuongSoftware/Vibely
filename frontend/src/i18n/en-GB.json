@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "Select photos",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "Change sound",
+      "removeSound": "Remove sound",
+      "soundPicker": {
+        "title": "Sound",
+        "search": "Search sounds",
+        "use": "Use",
+        "preview": "Preview sound",
+        "favorite": "Add to favourites",
+        "unfavorite": "Remove from favourites",
+        "loading": "Loading sounds…",
+        "loadFailed": "Could not load sounds. Try again.",
+        "untitled": "Original sound",
+        "tabs": {
+          "recommended": "Recommended",
+          "favorites": "Favourites",
+          "recent": "Recent"
+        },
+        "empty": {
+          "recommended": "No sounds yet. Publish videos with audio to build the library.",
+          "favorites": "Sounds you favourite will appear here.",
+          "recent": "Sounds you recently used will appear here."
+        }
+      }
     },
     "selectedFile": "Selected: {{name}}",
     "durationLabel": "Duration: {{duration}}",

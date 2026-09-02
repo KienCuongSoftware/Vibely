@@ -2594,7 +2594,30 @@
       "dropTitle": "เลือกรูปที่จะอัปโหลด",
       "dropHint": "หรือลากแล้ววางรูปที่นี่ สูงสุด 35 รูปต่อโพสต์",
       "pickPhotos": "เลือกรูป",
-      "invalidFiles": "ใช้ JPG, JPEG, PNG หรือ WebP สูงสุด 50 MB ต่อไฟล์ สูงสุด 35 รูป"
+      "invalidFiles": "ใช้ JPG, JPEG, PNG หรือ WebP สูงสุด 50 MB ต่อไฟล์ สูงสุด 35 รูป",
+      "changeSound": "เปลี่ยนเสียง",
+      "removeSound": "ลบเสียง",
+      "soundPicker": {
+        "title": "เสียง",
+        "search": "ค้นหาเสียง",
+        "use": "ใช้",
+        "preview": "ฟังตัวอย่าง",
+        "favorite": "เพิ่มในรายการโปรด",
+        "unfavorite": "นำออกจากรายการโปรด",
+        "loading": "กำลังโหลดเสียง…",
+        "loadFailed": "โหลดเสียงไม่สำเร็จ ลองอีกครั้ง",
+        "untitled": "เสียงต้นฉบับ",
+        "tabs": {
+          "recommended": "แนะนำ",
+          "favorites": "รายการโปรด",
+          "recent": "ล่าสุด"
+        },
+        "empty": {
+          "recommended": "ยังไม่มีเสียง โพสต์วิดีโอที่มีเสียงเพื่อสร้างคลังเสียง",
+          "favorites": "เสียงที่คุณชอบจะแสดงที่นี่",
+          "recent": "เสียงที่ใช้ล่าสุดจะแสดงที่นี่"
+        }
+      }
     },
     "selectedFile": "ที่เลือก: {{name}}",
     "durationLabel": "ระยะเวลา: {{duration}}",

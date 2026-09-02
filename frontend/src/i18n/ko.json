@@ -2594,7 +2594,30 @@
       "dropTitle": "업로드할 사진 선택",
       "dropHint": "또는 여기에 사진을 끌어다 놓으세요. 게시물당 최대 35장.",
       "pickPhotos": "사진 선택",
-      "invalidFiles": "JPG, JPEG, PNG 또는 WebP, 각 최대 50MB, 최대 35장."
+      "invalidFiles": "JPG, JPEG, PNG 또는 WebP, 각 최대 50MB, 최대 35장.",
+      "changeSound": "사운드 변경",
+      "removeSound": "사운드 제거",
+      "soundPicker": {
+        "title": "사운드",
+        "search": "사운드 검색",
+        "use": "사용",
+        "preview": "미리 듣기",
+        "favorite": "즐겨찾기에 추가",
+        "unfavorite": "즐겨찾기에서 제거",
+        "loading": "사운드 불러오는 중…",
+        "loadFailed": "사운드를 불러오지 못했습니다. 다시 시도하세요.",
+        "untitled": "원본 사운드",
+        "tabs": {
+          "recommended": "추천",
+          "favorites": "즐겨찾기",
+          "recent": "최근"
+        },
+        "empty": {
+          "recommended": "아직 사운드가 없습니다. 오디오가 있는 동영상을 게시해 라이브러리를 만드세요.",
+          "favorites": "즐겨찾기한 사운드가 여기에 표시됩니다.",
+          "recent": "최근 사용한 사운드가 여기에 표시됩니다."
+        }
+      }
     },
     "selectedFile": "선택됨: {{name}}",
     "durationLabel": "길이: {{duration}}",

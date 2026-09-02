@@ -2601,7 +2601,30 @@
       "dropTitle": "Выберите фото для загрузки",
       "dropHint": "Или перетащите фото сюда. До 35 фото в публикации.",
       "pickPhotos": "Выбрать фото",
-      "invalidFiles": "JPG, JPEG, PNG или WebP, не более 50 МБ каждое, до 35 фото."
+      "invalidFiles": "JPG, JPEG, PNG или WebP, не более 50 МБ каждое, до 35 фото.",
+      "changeSound": "Ovozni o'zgartirish",
+      "removeSound": "Ovozni olib tashlash",
+      "soundPicker": {
+        "title": "Ovoz",
+        "search": "Ovozlarni qidirish",
+        "use": "Foydalanish",
+        "preview": "Ko'rib chiqish",
+        "favorite": "Sevimlilarga qo'shish",
+        "unfavorite": "Sevimlilardan olib tashlash",
+        "loading": "Ovozlar yuklanmoqda…",
+        "loadFailed": "Ovozlarni yuklab bo'lmadi. Qayta urinib ko'ring.",
+        "untitled": "Asl ovoz",
+        "tabs": {
+          "recommended": "Tavsiya etilgan",
+          "favorites": "Sevimlilar",
+          "recent": "So'nggi"
+        },
+        "empty": {
+          "recommended": "Hali ovozlar yo'q. Kutubxonani yaratish uchun ovozli videolar joylang.",
+          "favorites": "Sevimli ovozlaringiz shu yerda ko'rinadi.",
+          "recent": "Yaqinda ishlatilgan ovozlar shu yerda ko'rinadi."
+        }
+      }
     },
     "selectedFile": "Выбрано: {{name}}",
     "durationLabel": "Длительность: {{duration}}",

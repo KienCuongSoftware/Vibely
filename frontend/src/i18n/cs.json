@@ -2601,7 +2601,30 @@
       "dropTitle": "Wybierz zdjęcia do przesłania",
       "dropHint": "Lub przeciągnij zdjęcia tutaj. Maks. 35 zdjęć na post.",
       "pickPhotos": "Vybrat fotky",
-      "invalidFiles": "JPG, JPEG, PNG lub WebP, maks. 50 MB każde, do 35 zdjęć."
+      "invalidFiles": "JPG, JPEG, PNG lub WebP, maks. 50 MB każde, do 35 zdjęć.",
+      "changeSound": "Změnit zvuk",
+      "removeSound": "Odebrat zvuk",
+      "soundPicker": {
+        "title": "Zvuk",
+        "search": "Hledat zvuky",
+        "use": "Použít",
+        "preview": "Náhled",
+        "favorite": "Přidat do oblíbených",
+        "unfavorite": "Odebrat z oblíbených",
+        "loading": "Načítání zvuků…",
+        "loadFailed": "Zvuky se nepodařilo načíst. Zkuste to znovu.",
+        "untitled": "Původní zvuk",
+        "tabs": {
+          "recommended": "Doporučené",
+          "favorites": "Oblíbené",
+          "recent": "Nedávné"
+        },
+        "empty": {
+          "recommended": "Zatím žádné zvuky. Publikujte videa se zvukem a vytvořte knihovnu.",
+          "favorites": "Vaše oblíbené zvuky se zobrazí zde.",
+          "recent": "Nedávno použité zvuky se zobrazí zde."
+        }
+      }
     },
     "selectedFile": "Wybrano: {{name}}",
     "durationLabel": "Czas trwania: {{duration}}",

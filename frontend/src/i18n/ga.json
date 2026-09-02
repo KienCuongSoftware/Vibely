@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "Roghnaigh grianghraif",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "Athraigh fuaim",
+      "removeSound": "Bain fuaim",
+      "soundPicker": {
+        "title": "Fuaim",
+        "search": "Cuardaigh fuaimeanna",
+        "use": "Úsáid",
+        "preview": "Réamhamharc",
+        "favorite": "Cuir le ceanáin",
+        "unfavorite": "Bain de cheanáin",
+        "loading": "Ag lódáil fuaimeanna…",
+        "loadFailed": "Níorbh fhéidir na fuaimeanna a lódáil. Bain triail eile as.",
+        "untitled": "Fuaim bhunaidh",
+        "tabs": {
+          "recommended": "Molta",
+          "favorites": "Ceanáin",
+          "recent": "Le déanaí"
+        },
+        "empty": {
+          "recommended": "Níl aon fhuaim ann fós. Foilsigh físeáin le fuaim chun an leabharlann a thógáil.",
+          "favorites": "Taispeánfar do cheanáin anseo.",
+          "recent": "Taispeánfar fuaimeanna a úsáideadh le déanaí anseo."
+        }
+      }
     },
     "selectedFile": "Selected: {{name}}",
     "durationLabel": "Duration: {{duration}}",

@@ -2594,7 +2594,30 @@
       "dropTitle": "Yüklenecek fotoğrafları seçin",
       "dropHint": "Veya fotoğrafları buraya sürükleyin. Gönderi başına en fazla 35 fotoğraf.",
       "pickPhotos": "Fotoğraf seç",
-      "invalidFiles": "JPG, JPEG, PNG veya WebP kullanın, her biri en fazla 50 MB, en fazla 35 fotoğraf."
+      "invalidFiles": "JPG, JPEG, PNG veya WebP kullanın, her biri en fazla 50 MB, en fazla 35 fotoğraf.",
+      "changeSound": "Sesi değiştir",
+      "removeSound": "Sesi kaldır",
+      "soundPicker": {
+        "title": "Ses",
+        "search": "Ses ara",
+        "use": "Kullan",
+        "preview": "Önizleme",
+        "favorite": "Favorilere ekle",
+        "unfavorite": "Favorilerden çıkar",
+        "loading": "Sesler yükleniyor…",
+        "loadFailed": "Sesler yüklenemedi. Tekrar deneyin.",
+        "untitled": "Orijinal ses",
+        "tabs": {
+          "recommended": "Önerilen",
+          "favorites": "Favoriler",
+          "recent": "Son"
+        },
+        "empty": {
+          "recommended": "Henüz ses yok. Kütüphaneyi oluşturmak için sesli videolar yayınlayın.",
+          "favorites": "Favori sesleriniz burada görünecek.",
+          "recent": "Son kullanılan sesler burada görünecek."
+        }
+      }
     },
     "selectedFile": "Seçildi: {{name}}",
     "durationLabel": "Süre: {{duration}}",

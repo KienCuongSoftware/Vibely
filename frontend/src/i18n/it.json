@@ -2594,7 +2594,30 @@
       "dropTitle": "Seleziona foto da caricare",
       "dropHint": "Oppure trascina le foto qui. Massimo 35 foto per post.",
       "pickPhotos": "Seleziona foto",
-      "invalidFiles": "Usa JPG, JPEG, PNG o WebP, max 50 MB ciascuna, fino a 35 foto."
+      "invalidFiles": "Usa JPG, JPEG, PNG o WebP, max 50 MB ciascuna, fino a 35 foto.",
+      "changeSound": "Cambia suono",
+      "removeSound": "Rimuovi suono",
+      "soundPicker": {
+        "title": "Suono",
+        "search": "Cerca suoni",
+        "use": "Usa",
+        "preview": "Anteprima",
+        "favorite": "Aggiungi ai preferiti",
+        "unfavorite": "Rimuovi dai preferiti",
+        "loading": "Caricamento suoni…",
+        "loadFailed": "Impossibile caricare i suoni. Riprova.",
+        "untitled": "Suono originale",
+        "tabs": {
+          "recommended": "Consigliati",
+          "favorites": "Preferiti",
+          "recent": "Recenti"
+        },
+        "empty": {
+          "recommended": "Nessun suono ancora. Pubblica video con audio per creare la libreria.",
+          "favorites": "I tuoi suoni preferiti appariranno qui.",
+          "recent": "I suoni usati di recente appariranno qui."
+        }
+      }
     },
     "selectedFile": "Selezionato: {{name}}",
     "durationLabel": "Durata: {{duration}}",

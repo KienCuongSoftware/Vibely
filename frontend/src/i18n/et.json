@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "Vali fotod",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "Muuda heli",
+      "removeSound": "Eemalda heli",
+      "soundPicker": {
+        "title": "Heli",
+        "search": "Otsi helisid",
+        "use": "Kasuta",
+        "preview": "Eelvaade",
+        "favorite": "Lisa lemmikutesse",
+        "unfavorite": "Eemalda lemmikutest",
+        "loading": "Helide laadimine…",
+        "loadFailed": "Helisid ei õnnestunud laadida. Proovi uuesti.",
+        "untitled": "Originaalheli",
+        "tabs": {
+          "recommended": "Soovitatud",
+          "favorites": "Lemmikud",
+          "recent": "Hiljutised"
+        },
+        "empty": {
+          "recommended": "Helisid pole veel. Avalda heliga videoid, et luua raamatukogu.",
+          "favorites": "Sinu lemmikhelid kuvatakse siin.",
+          "recent": "Hiljuti kasutatud helid kuvatakse siin."
+        }
+      }
     },
     "selectedFile": "Ausgewählt: {{name}}",
     "durationLabel": "Dauer: {{duration}}",

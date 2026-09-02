@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "Velja myndir",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "Breyta hljóði",
+      "removeSound": "Fjarlægja hljóð",
+      "soundPicker": {
+        "title": "Hljóð",
+        "search": "Leita að hljóðum",
+        "use": "Nota",
+        "preview": "Forskoðun",
+        "favorite": "Bæta við eftirlæti",
+        "unfavorite": "Fjarlægja úr eftirlæti",
+        "loading": "Hleð hljóðum…",
+        "loadFailed": "Ekki tókst að hlaða hljóðum. Reyndu aftur.",
+        "untitled": "Upprunalegt hljóð",
+        "tabs": {
+          "recommended": "Mælt með",
+          "favorites": "Eftirlæti",
+          "recent": "Nýlegt"
+        },
+        "empty": {
+          "recommended": "Engin hljóð ennþá. Birtu myndbönd með hljóði til að byggja upp safnið.",
+          "favorites": "Eftirlætishljóðin þín birtast hér.",
+          "recent": "Nýlega notuð hljóð birtast hér."
+        }
+      }
     },
     "selectedFile": "Ausgewählt: {{name}}",
     "durationLabel": "Dauer: {{duration}}",

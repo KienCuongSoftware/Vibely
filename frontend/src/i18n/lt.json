@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "Pasirinkti nuotraukas",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "Keisti garsą",
+      "removeSound": "Pašalinti garsą",
+      "soundPicker": {
+        "title": "Garsas",
+        "search": "Ieškoti garsų",
+        "use": "Naudoti",
+        "preview": "Peržiūra",
+        "favorite": "Pridėti prie mėgstamų",
+        "unfavorite": "Pašalinti iš mėgstamų",
+        "loading": "Įkeliami garsai…",
+        "loadFailed": "Nepavyko įkelti garsų. Bandykite dar kartą.",
+        "untitled": "Originalus garsas",
+        "tabs": {
+          "recommended": "Rekomenduojama",
+          "favorites": "Mėgstami",
+          "recent": "Naujausi"
+        },
+        "empty": {
+          "recommended": "Garsų dar nėra. Skelbkite vaizdo įrašus su garsu, kad sukurtumėte biblioteką.",
+          "favorites": "Jūsų mėgstami garsai bus rodomi čia.",
+          "recent": "Neseniai naudoti garsai bus rodomi čia."
+        }
+      }
     },
     "selectedFile": "Ausgewählt: {{name}}",
     "durationLabel": "Dauer: {{duration}}",

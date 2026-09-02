@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "Izvēlēties foto",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "Mainīt skaņu",
+      "removeSound": "Noņemt skaņu",
+      "soundPicker": {
+        "title": "Skaņa",
+        "search": "Meklēt skaņas",
+        "use": "Izmantot",
+        "preview": "Priekšskatījums",
+        "favorite": "Pievienot favorītiem",
+        "unfavorite": "Noņemt no favorītiem",
+        "loading": "Ielādē skaņas…",
+        "loadFailed": "Neizdevās ielādēt skaņas. Mēģiniet vēlreiz.",
+        "untitled": "Oriģinālā skaņa",
+        "tabs": {
+          "recommended": "Ieteiktie",
+          "favorites": "Favorīti",
+          "recent": "Nesenie"
+        },
+        "empty": {
+          "recommended": "Vēl nav skaņu. Publicējiet video ar audio, lai veidotu bibliotēku.",
+          "favorites": "Jūsu favorītu skaņas parādīsies šeit.",
+          "recent": "Nesen izmantotās skaņas parādīsies šeit."
+        }
+      }
     },
     "selectedFile": "Ausgewählt: {{name}}",
     "durationLabel": "Dauer: {{duration}}",

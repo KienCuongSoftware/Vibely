@@ -2594,7 +2594,30 @@
       "dropTitle": "選取要上傳的照片",
       "dropHint": "或將照片拖放到這裡。每則貼文最多 35 張。",
       "pickPhotos": "選取照片",
-      "invalidFiles": "使用 JPG、JPEG、PNG 或 WebP，每張最大 50 MB，最多 35 張。"
+      "invalidFiles": "使用 JPG、JPEG、PNG 或 WebP，每張最大 50 MB，最多 35 張。",
+      "changeSound": "更換音樂",
+      "removeSound": "移除音樂",
+      "soundPicker": {
+        "title": "音樂",
+        "search": "搜尋音樂",
+        "use": "使用",
+        "preview": "試聽",
+        "favorite": "加入收藏",
+        "unfavorite": "取消收藏",
+        "loading": "正在載入音樂…",
+        "loadFailed": "無法載入音樂，請重試。",
+        "untitled": "原聲",
+        "tabs": {
+          "recommended": "推薦",
+          "favorites": "收藏",
+          "recent": "最近"
+        },
+        "empty": {
+          "recommended": "尚無音樂。發佈含音訊的影片以建立音樂庫。",
+          "favorites": "你收藏的音樂將顯示在這裡。",
+          "recent": "你最近使用的音樂將顯示在這裡。"
+        }
+      }
     },
     "selectedFile": "已選擇：{{name}}",
     "durationLabel": "時長：{{duration}}",

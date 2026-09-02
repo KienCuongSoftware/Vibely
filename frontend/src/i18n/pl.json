@@ -2601,7 +2601,30 @@
       "dropTitle": "Wybierz zdjęcia do przesłania",
       "dropHint": "Lub przeciągnij zdjęcia tutaj. Maks. 35 zdjęć na post.",
       "pickPhotos": "Wybierz zdjęcia",
-      "invalidFiles": "JPG, JPEG, PNG lub WebP, maks. 50 MB każde, do 35 zdjęć."
+      "invalidFiles": "JPG, JPEG, PNG lub WebP, maks. 50 MB każde, do 35 zdjęć.",
+      "changeSound": "Zmień dźwięk",
+      "removeSound": "Usuń dźwięk",
+      "soundPicker": {
+        "title": "Dźwięk",
+        "search": "Szukaj dźwięków",
+        "use": "Użyj",
+        "preview": "Podgląd",
+        "favorite": "Dodaj do ulubionych",
+        "unfavorite": "Usuń z ulubionych",
+        "loading": "Ładowanie dźwięków…",
+        "loadFailed": "Nie udało się załadować dźwięków. Spróbuj ponownie.",
+        "untitled": "Oryginalny dźwięk",
+        "tabs": {
+          "recommended": "Polecane",
+          "favorites": "Ulubione",
+          "recent": "Ostatnie"
+        },
+        "empty": {
+          "recommended": "Brak dźwięków. Publikuj filmy z audio, aby zbudować bibliotekę.",
+          "favorites": "Twoje ulubione dźwięki pojawią się tutaj.",
+          "recent": "Ostatnio używane dźwięki pojawią się tutaj."
+        }
+      }
     },
     "selectedFile": "Wybrano: {{name}}",
     "durationLabel": "Czas trwania: {{duration}}",

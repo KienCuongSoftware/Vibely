@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "تصاویر منتخب کریں",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "آواز تبدیل کریں",
+      "removeSound": "آواز ہٹائیں",
+      "soundPicker": {
+        "title": "آواز",
+        "search": "آوازیں تلاش کریں",
+        "use": "استعمال کریں",
+        "preview": "پیش نظارہ",
+        "favorite": "پسندیدہ میں شامل کریں",
+        "unfavorite": "پسندیدہ سے ہٹائیں",
+        "loading": "آوازیں لوڈ ہو رہی ہیں…",
+        "loadFailed": "آوازیں لوڈ نہیں ہو سکیں۔ دوبارہ کوشش کریں۔",
+        "untitled": "اصل آواز",
+        "tabs": {
+          "recommended": "تجویز کردہ",
+          "favorites": "پسندیدہ",
+          "recent": "حالیہ"
+        },
+        "empty": {
+          "recommended": "ابھی کوئی آواز نہیں۔ لائبریری بنانے کے لیے آڈیو والی ویڈیوز شائع کریں۔",
+          "favorites": "آپ کی پسندیدہ آوازیں یہاں دکھائی دیں گی۔",
+          "recent": "حال ہی میں استعمال شدہ آوازیں یہاں دکھائی دیں گی۔"
+        }
+      }
     },
     "selectedFile": "منتخب: {{name}}",
     "durationLabel": "مدت: {{duration}}",

@@ -2601,7 +2601,30 @@
       "dropTitle": "Pilih foto untuk diunggah",
       "dropHint": "Atau seret dan lepas foto di sini. Maksimal 35 foto per postingan.",
       "pickPhotos": "Pilih foto",
-      "invalidFiles": "Gunakan JPG, JPEG, PNG, atau WebP, maks. 50 MB per file, hingga 35 foto."
+      "invalidFiles": "Gunakan JPG, JPEG, PNG, atau WebP, maks. 50 MB per file, hingga 35 foto.",
+      "changeSound": "Tukar bunyi",
+      "removeSound": "Buang bunyi",
+      "soundPicker": {
+        "title": "Bunyi",
+        "search": "Cari bunyi",
+        "use": "Guna",
+        "preview": "Pratonton",
+        "favorite": "Tambah ke kegemaran",
+        "unfavorite": "Buang dari kegemaran",
+        "loading": "Memuatkan bunyi…",
+        "loadFailed": "Gagal memuatkan bunyi. Cuba lagi.",
+        "untitled": "Bunyi asal",
+        "tabs": {
+          "recommended": "Disyorkan",
+          "favorites": "Kegemaran",
+          "recent": "Terkini"
+        },
+        "empty": {
+          "recommended": "Tiada bunyi lagi. Siarkan video beraudio untuk membina pustaka.",
+          "favorites": "Bunyi kegemaran anda akan dipaparkan di sini.",
+          "recent": "Bunyi yang digunakan baru-baru ini akan dipaparkan di sini."
+        }
+      }
     },
     "selectedFile": "Dipilih: {{name}}",
     "durationLabel": "Durasi: {{duration}}",

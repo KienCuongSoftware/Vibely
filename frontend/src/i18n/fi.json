@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "Valitse kuvat",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "Vaihda ääni",
+      "removeSound": "Poista ääni",
+      "soundPicker": {
+        "title": "Ääni",
+        "search": "Hae ääniä",
+        "use": "Käytä",
+        "preview": "Esikuuntele",
+        "favorite": "Lisää suosikkeihin",
+        "unfavorite": "Poista suosikeista",
+        "loading": "Ladataan ääniä…",
+        "loadFailed": "Ääniä ei voitu ladata. Yritä uudelleen.",
+        "untitled": "Alkuperäinen ääni",
+        "tabs": {
+          "recommended": "Suositellut",
+          "favorites": "Suosikit",
+          "recent": "Viimeisimmät"
+        },
+        "empty": {
+          "recommended": "Ei ääniä vielä. Julkaise videoita äänellä rakentaaksesi kirjaston.",
+          "favorites": "Suosikkiäänesi näkyvät täällä.",
+          "recent": "Viimeksi käytetyt äänet näkyvät täällä."
+        }
+      }
     },
     "selectedFile": "Ausgewählt: {{name}}",
     "durationLabel": "Dauer: {{duration}}",

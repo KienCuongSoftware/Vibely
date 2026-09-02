@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "Chagua picha",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "Badilisha sauti",
+      "removeSound": "Ondoa sauti",
+      "soundPicker": {
+        "title": "Sauti",
+        "search": "Tafuta sauti",
+        "use": "Tumia",
+        "preview": "Hakiki",
+        "favorite": "Ongeza kwenye vipendwa",
+        "unfavorite": "Ondoa kwenye vipendwa",
+        "loading": "Inapakia sauti…",
+        "loadFailed": "Imeshindwa kupakia sauti. Jaribu tena.",
+        "untitled": "Sauti asili",
+        "tabs": {
+          "recommended": "Inayopendekezwa",
+          "favorites": "Vipendwa",
+          "recent": "Hivi karibuni"
+        },
+        "empty": {
+          "recommended": "Bado hakuna sauti. Chapisha video zenye sauti ili kujenga maktaba.",
+          "favorites": "Sauti unazopenda zitaonekana hapa.",
+          "recent": "Sauti ulizotumia hivi karibuni zitaonekana hapa."
+        }
+      }
     },
     "selectedFile": "Dipilih: {{name}}",
     "durationLabel": "Durasi: {{duration}}",

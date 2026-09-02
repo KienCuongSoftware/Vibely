@@ -2594,7 +2594,30 @@
       "dropTitle": "Selecione fotos para enviar",
       "dropHint": "Ou arraste e solte fotos aqui. Até 35 fotos por post.",
       "pickPhotos": "Selecionar fotos",
-      "invalidFiles": "Use JPG, JPEG, PNG ou WebP, máx. 50 MB cada, até 35 fotos."
+      "invalidFiles": "Use JPG, JPEG, PNG ou WebP, máx. 50 MB cada, até 35 fotos.",
+      "changeSound": "Alterar som",
+      "removeSound": "Remover som",
+      "soundPicker": {
+        "title": "Som",
+        "search": "Buscar sons",
+        "use": "Usar",
+        "preview": "Pré-visualizar",
+        "favorite": "Adicionar aos favoritos",
+        "unfavorite": "Remover dos favoritos",
+        "loading": "Carregando sons…",
+        "loadFailed": "Não foi possível carregar os sons. Tente novamente.",
+        "untitled": "Som original",
+        "tabs": {
+          "recommended": "Recomendados",
+          "favorites": "Favoritos",
+          "recent": "Recentes"
+        },
+        "empty": {
+          "recommended": "Ainda não há sons. Publique vídeos com áudio para criar a biblioteca.",
+          "favorites": "Seus sons favoritos aparecerão aqui.",
+          "recent": "Os sons usados recentemente aparecerão aqui."
+        }
+      }
     },
     "selectedFile": "Selecionado: {{name}}",
     "durationLabel": "Duração: {{duration}}",

@@ -2601,7 +2601,30 @@
       "dropTitle": "Pilih foto untuk diunggah",
       "dropHint": "Atau seret dan lepas foto di sini. Maksimal 35 foto per postingan.",
       "pickPhotos": "Pilih foto",
-      "invalidFiles": "Gunakan JPG, JPEG, PNG, atau WebP, maks. 50 MB per file, hingga 35 foto."
+      "invalidFiles": "Gunakan JPG, JPEG, PNG, atau WebP, maks. 50 MB per file, hingga 35 foto.",
+      "changeSound": "Ganti swara",
+      "removeSound": "Busak swara",
+      "soundPicker": {
+        "title": "Swara",
+        "search": "Goleki swara",
+        "use": "Gunakake",
+        "preview": "Pratinjau",
+        "favorite": "Tambah menyang favorit",
+        "unfavorite": "Busak saka favorit",
+        "loading": "Muat swara…",
+        "loadFailed": "Ora bisa muat swara. Coba maneh.",
+        "untitled": "Swara asli",
+        "tabs": {
+          "recommended": "Disaranake",
+          "favorites": "Favorit",
+          "recent": "Anyar"
+        },
+        "empty": {
+          "recommended": "Durung ana swara. Terbitake video karo audio kanggo nggawe perpustakaan.",
+          "favorites": "Swara favorit sampeyan bakal katon ing kene.",
+          "recent": "Swara sing anyar digunakake bakal katon ing kene."
+        }
+      }
     },
     "selectedFile": "Dipilih: {{name}}",
     "durationLabel": "Durasi: {{duration}}",

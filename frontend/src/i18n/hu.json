@@ -2601,7 +2601,30 @@
       "dropTitle": "Select photos to upload",
       "dropHint": "Or drag and drop photos here. Up to 35 photos per post.",
       "pickPhotos": "Fotók kiválasztása",
-      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos."
+      "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
+      "changeSound": "Hang cseréje",
+      "removeSound": "Hang eltávolítása",
+      "soundPicker": {
+        "title": "Hang",
+        "search": "Hangok keresése",
+        "use": "Használat",
+        "preview": "Előnézet",
+        "favorite": "Kedvencekhez adás",
+        "unfavorite": "Eltávolítás a kedvencekből",
+        "loading": "Hangok betöltése…",
+        "loadFailed": "A hangok betöltése sikertelen. Próbáld újra.",
+        "untitled": "Eredeti hang",
+        "tabs": {
+          "recommended": "Ajánlott",
+          "favorites": "Kedvencek",
+          "recent": "Legutóbbi"
+        },
+        "empty": {
+          "recommended": "Még nincsenek hangok. Tölts fel hanggal rendelkező videókat a könyvtár építéséhez.",
+          "favorites": "A kedvenc hangjaid itt jelennek meg.",
+          "recent": "A nemrég használt hangok itt jelennek meg."
+        }
+      }
     },
     "selectedFile": "Selected: {{name}}",
     "durationLabel": "Duration: {{duration}}",
