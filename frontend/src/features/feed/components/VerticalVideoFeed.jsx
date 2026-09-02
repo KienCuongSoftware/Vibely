@@ -1827,13 +1827,18 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               className={
                 mobileLayout
                   ? "relative min-h-0 w-full flex-1 flex flex-row overflow-hidden"
-                  : `relative min-h-0 w-full max-lg:flex-1 max-lg:overflow-hidden h-full ${
-                      feedCommentsOpen && !mobileLayout && feedDockLandscape
-                        ? "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-start"
-                        : "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-center"
-                    }`
+                  : feedCommentsOpen && !mobileLayout && feedDockLandscape
+                    ? "relative flex h-full min-h-0 w-full items-center justify-start"
+                    : "relative flex h-full min-h-0 w-full items-center justify-center"
               }
             >
+              <div
+                className={
+                  mobileLayout
+                    ? "contents"
+                    : "vibely-feed-stage-cluster flex shrink-0 items-center"
+                }
+              >
               <div
                 className={
                   mobileLayout
@@ -2099,6 +2104,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   onStep={requestFeedStep}
                   busy={feedStepBusy}
                 />
+              </div>
               </div>
             </div>
             </>
