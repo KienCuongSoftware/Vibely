@@ -9,6 +9,8 @@ export const postApi = {
     request(`/api/videos/${publicId}`, token ? { token } : {}),
   getVideosBySound: (audioUrl, { page = 0, size = 24 } = {}) =>
     request(`/api/videos/sound${toQuery({ audioUrl, page, size })}`),
+  browseSounds: (q, { page = 0, size = 20 } = {}) =>
+    request(`/api/videos/sounds${toQuery({ q: q || undefined, page, size })}`),
   getVideosByHashtag: (tag, { page = 0, size = 24 } = {}) =>
     request(`/api/videos/hashtag${toQuery({ tag, page, size })}`),
   getVideoAnalysis: (publicId, token) =>

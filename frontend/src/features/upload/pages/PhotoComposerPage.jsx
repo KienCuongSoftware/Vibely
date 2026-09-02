@@ -39,6 +39,7 @@ import {
   defaultScheduleDate,
   isScheduleAtLeastLeadAhead,
 } from '@/features/upload/components/SchedulePickers.jsx'
+import { SoundPickerModal } from '@/features/upload/components/SoundPickerModal.jsx'
 
 const TITLE_MAX = 90
 const DESC_MAX = 1000
@@ -137,11 +138,15 @@ export function PhotoComposerPage() {
   const [locationQuery, setLocationQuery] = useState('')
   const [dragOverIndex, setDragOverIndex] = useState(null)
   const dragFromRef = useRef(null)
+  const [soundPickerOpen, setSoundPickerOpen] = useState(false)
+  const [selectedSound, setSelectedSound] = useState(null)
+  const previewAudioRef = useRef(null)
 
   const handle = `@${user?.username || 'vibely'}`
   const displayName = user?.displayName || user?.username || 'Vibely'
   const avatarSrc = user?.avatarUrl || DEFAULT_AVATAR_URL
-  const soundLabel = t('upload.photo.originalSound', { name: displayName })
+  const soundLabel = selectedSound?.audioTitle?.trim()
+    || t('upload.photo.originalSound', { name: displayName })
   const captionText = description.trim() || title.trim()
 
   useEffect(() => {
@@ -157,6 +162,25 @@ export function PhotoComposerPage() {
   useEffect(() => {
     setPreviewIndex((i) => Math.min(i, Math.max(0, files.length - 1)))
   }, [files.length])
+
+  useEffect(() => {
+    const el = previewAudioRef.current
+    if (!el) return undefined
+    if (!selectedSound?.audioUrl) {
+      el.pause()
+      el.removeAttribute('src')
+      return undefined
+    }
+    el.src = selectedSound.audioUrl
+    el.loop = true
+    const play = () => {
+      el.play().catch(() => {})
+    }
+    play()
+    return () => {
+      el.pause()
+    }
+  }, [selectedSound?.audioUrl])
 
   const addFiles = (incoming) => {
     const next = [...files]
@@ -218,6 +242,8 @@ export function PhotoComposerPage() {
           privacy,
           mediaKind: 'PHOTO',
           photoUrls: urls,
+          audioUrl: selectedSound?.audioUrl || undefined,
+          audioTitle: selectedSound?.audioTitle || undefined,
           scheduledAt:
             !asDraft && postTiming === 'schedule' ? scheduleAt.toISOString() : undefined,
         },
@@ -305,13 +331,49 @@ export function PhotoComposerPage() {
               </div>
 
               <CardTitle className="mt-8">{t('upload.photo.soundLabel')}</CardTitle>
-              <button
-                type="button"
-                className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#f8f8f8] px-3 py-2 text-sm font-medium text-[#161823] hover:bg-[#f1f1f2]"
-              >
-                <IoMusicalNotesOutline aria-hidden />
-                + {t('upload.photo.addSound')}
-              </button>
+              {selectedSound ? (
+                <div className="mt-3 flex items-center gap-3 rounded-lg bg-[#f8f8f8] px-3 py-2">
+                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-md bg-[#e8e8e9]">
+                    {selectedSound.thumbnailUrl ? (
+                      <img
+                        src={selectedSound.thumbnailUrl}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center text-[#8a8b91]">
+                        <IoMusicalNotesOutline aria-hidden />
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-[#161823]">{soundLabel}</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="cursor-pointer text-sm font-medium text-[#161823] hover:underline"
+                    onClick={() => setSoundPickerOpen(true)}
+                  >
+                    {t('upload.photo.changeSound')}
+                  </button>
+                  <button
+                    type="button"
+                    className="cursor-pointer text-sm font-medium text-[#8a8b91] hover:text-[#fe2c55]"
+                    onClick={() => setSelectedSound(null)}
+                  >
+                    {t('upload.photo.removeSound')}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#f8f8f8] px-3 py-2 text-sm font-medium text-[#161823] hover:bg-[#f1f1f2]"
+                  onClick={() => setSoundPickerOpen(true)}
+                >
+                  <IoMusicalNotesOutline aria-hidden />
+                  + {t('upload.photo.addSound')}
+                </button>
+              )}
 
               <CardTitle className="mt-8">{t('upload.photo.photosLabel')}</CardTitle>
               <p className="mt-1 text-sm text-[#8a8b91]">
@@ -710,6 +772,12 @@ export function PhotoComposerPage() {
           </aside>
         </div>
       </div>
+      <SoundPickerModal
+        open={soundPickerOpen}
+        onClose={() => setSoundPickerOpen(false)}
+        onSelect={setSelectedSound}
+      />
+      <audio ref={previewAudioRef} className="hidden" loop />
     </StudioLayout>
   )
 }
