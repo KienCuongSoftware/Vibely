@@ -94,7 +94,7 @@ export function StudioReviewStatusModal({ open, activeStep, onClose }) {
       >
         <button
           type="button"
-          className="absolute top-4 right-4 rounded-full p-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+          className="absolute top-4 right-4 cursor-pointer rounded-full p-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
           aria-label={t("studio.posts.reviewModal.close")}
           onClick={onClose}
         >

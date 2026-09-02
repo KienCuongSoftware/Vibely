@@ -215,13 +215,6 @@ export function StudioPostsPage() {
     successMessage,
   ]);
 
-  useEffect(() => {
-    if (!optimisticReviewIds.size || reviewModalVideo) return;
-    const id = [...optimisticReviewIds][0];
-    const row = items.find((v) => v.publicId === id);
-    if (row) setReviewModalVideo(row);
-  }, [items, optimisticReviewIds, reviewModalVideo]);
-
   const load = useCallback(async () => {
     if (!authReady) return;
     if (!token) {
