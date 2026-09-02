@@ -14,6 +14,7 @@ import com.vibely.backend.storage.S3PresignedUploadService;
 import com.vibely.backend.storage.VideoPresignRequest;
 import com.vibely.backend.video.download.VideoWatermarkDownloadService;
 import com.vibely.backend.video.download.WatermarkedDownloadArtifact;
+import com.vibely.backend.video.SoundBrowsePageResponse;
 import com.vibely.backend.video.service.VideoService;
 import jakarta.validation.Valid;
 import java.nio.file.Path;
@@ -88,6 +89,16 @@ public class VideoController {
         @RequestParam(defaultValue = "24") int size
     ) {
         return ApiResponse.success(videoService.getVideosByAudio(audioUrl, page, size));
+    }
+
+    /** Distinct sounds from published videos — for Studio photo sound picker. */
+    @GetMapping("/sounds")
+    public ApiResponse<SoundBrowsePageResponse> browseSounds(
+        @RequestParam(required = false) String q,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
+    ) {
+        return ApiResponse.success(videoService.browseSounds(q, page, size));
     }
 
     @GetMapping("/hashtag")

@@ -2,6 +2,7 @@ package com.vibely.backend.video.service;
 
 import com.vibely.backend.feed.dto.FeedPageResponse;
 import com.vibely.backend.feed.FeedSort;
+import com.vibely.backend.video.SoundBrowsePageResponse;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoCreateRequest;
 import com.vibely.backend.video.VideoResponse;
@@ -21,17 +22,20 @@ public class VideoService {
     private final VideoQueryService queryService;
     private final VideoFeedService feedService;
     private final VideoEngagementService engagementService;
+    private final SoundCatalogService soundCatalogService;
 
     public VideoService(
         VideoCommandService commandService,
         VideoQueryService queryService,
         VideoFeedService feedService,
-        VideoEngagementService engagementService
+        VideoEngagementService engagementService,
+        SoundCatalogService soundCatalogService
     ) {
         this.commandService = commandService;
         this.queryService = queryService;
         this.feedService = feedService;
         this.engagementService = engagementService;
+        this.soundCatalogService = soundCatalogService;
     }
 
     public VideoResponse createVideo(String email, VideoCreateRequest request) {
@@ -56,6 +60,10 @@ public class VideoService {
 
     public FeedPageResponse getVideosByAudio(String audioUrl, int page, int size) {
         return feedService.getVideosByAudio(audioUrl, page, size);
+    }
+
+    public SoundBrowsePageResponse browseSounds(String query, int page, int size) {
+        return soundCatalogService.browse(query, page, size);
     }
 
     public FeedPageResponse getVideosByHashtag(String tag, int page, int size) {

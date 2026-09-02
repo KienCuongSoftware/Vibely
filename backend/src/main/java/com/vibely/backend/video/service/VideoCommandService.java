@@ -181,20 +181,20 @@ public class VideoCommandService {
         video.setVideoUrl(request.getVideoUrl());
         video.setThumbnailUrl(request.getThumbnailUrl());
         video.setDurationSeconds(durationSeconds);
+        boolean photoPost = "PHOTO".equalsIgnoreCase(request.getMediaKind());
         String audioUrl = VideoMediaUtils.normalizeText(request.getAudioUrl());
-        if (audioUrl == null) {
+        if (audioUrl == null && !photoPost) {
             audioUrl = VideoMediaUtils.deriveAudioUrlFromVideoUrl(request.getVideoUrl());
         }
         video.setAudioUrl(audioUrl);
         String audioTitle = VideoMediaUtils.normalizeText(request.getAudioTitle());
-        if (audioTitle == null) {
+        if (audioTitle == null && audioUrl != null) {
             audioTitle = "original sound - " + VideoMediaUtils.resolveAuthorDisplayName(managedAuthor);
         }
         video.setAudioTitle(audioTitle);
         video.setStudioDraft(draft);
         video.setScheduledAt(scheduledAt);
         video.setPrivacy(resolvePrivacy(request.getPrivacy()));
-        boolean photoPost = "PHOTO".equalsIgnoreCase(request.getMediaKind());
         if (photoPost) {
             List<String> photos = request.getPhotoUrls() == null
                 ? List.of()
