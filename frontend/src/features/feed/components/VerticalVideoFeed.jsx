@@ -467,8 +467,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
 
   const activeVideo = videos[activeIndex] ?? null;
   const [stageWide, setStageWide] = useState(false);
-  /** Chỉ video ngang căn trái; video dọc luôn giữa (kể cả khi mở bình luận). */
-  const feedAlignStart = stageWide && !feedCommentsOpen;
   const feedDockLandscape = feedCommentsOpen && stageWide;
   const activeAuthorProfilePath = useMemo(
     () => feedAuthorProfilePath(activeVideo),
@@ -1738,9 +1736,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               ? feedDockLandscape
                 ? "min-w-0 px-1 py-0"
                 : "min-w-0 px-1 py-0"
-              : feedAlignStart
-                ? "lg:justify-start"
-                : ""
+              : ""
           }`}
         >
           {!feedHydrated && videos.length === 0 ? (
@@ -1832,13 +1828,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 mobileLayout
                   ? "relative min-h-0 w-full flex-1 flex flex-row overflow-hidden"
                   : `relative min-h-0 w-full max-lg:flex-1 max-lg:overflow-hidden h-full ${
-                      feedCommentsOpen && !mobileLayout
-                        ? feedDockLandscape
-                          ? "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-start"
-                          : "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-center"
-                        : feedAlignStart
-                          ? "lg:flex lg:items-center lg:justify-start lg:gap-0 lg:pr-3"
-                          : "lg:flex lg:items-center lg:justify-center lg:gap-0"
+                      feedCommentsOpen && !mobileLayout && feedDockLandscape
+                        ? "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-start"
+                        : "lg:flex lg:h-full lg:min-w-0 lg:max-w-full lg:items-center lg:justify-center"
                     }`
               }
             >
@@ -1846,11 +1838,11 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 className={
                   mobileLayout
                     ? "relative min-h-0 flex-1 overflow-hidden"
-                    : feedCommentsOpen && !mobileLayout
-                      ? feedDockLandscape
-                        ? "relative flex h-full min-h-0 w-full flex-col items-start justify-center max-lg:flex-1"
-                        : "relative flex h-full min-h-0 w-full flex-col items-center justify-center max-lg:flex-1"
-                      : "relative h-full max-lg:w-full max-lg:flex-1 lg:w-auto lg:shrink-0"
+                    : feedCommentsOpen && !mobileLayout && feedDockLandscape
+                      ? "relative flex h-full min-h-0 w-full flex-col items-start justify-center max-lg:flex-1"
+                      : feedCommentsOpen && !mobileLayout
+                        ? "relative flex h-full min-h-0 w-full flex-col items-center justify-center max-lg:flex-1"
+                        : "relative h-full max-lg:w-full max-lg:flex-1 lg:w-auto lg:shrink-0"
                 }
               >
                 <FeedPhoneStage

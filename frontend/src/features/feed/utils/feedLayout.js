@@ -78,16 +78,29 @@ export function feedCommentsPanelWidthCss() {
 /** Chiều cao slot feed (px dưới viewport). */
 export const FEED_VIEWPORT_INSET_PX = 24;
 
-/** Thu nhẹ khung video For You (9:16 + 16:9) — giữ đúng tỉ lệ. */
-export const FEED_STAGE_DISPLAY_SCALE = 0.72;
+/** TikTok web: khung video ~92% chiều cao viewport (cả 9:16 và 16:9). */
+export const FEED_STAGE_HEIGHT_RATIO = 0.92;
 
-/** Trần rộng khung 16:9 (trước scale) — tránh full viewport trên màn hình lớn. */
-export const FEED_LANDSCAPE_MAX_WIDTH_PX = 760;
+/** @deprecated — dùng FEED_STAGE_HEIGHT_RATIO */
+export const FEED_STAGE_DISPLAY_SCALE = FEED_STAGE_HEIGHT_RATIO;
 
-/** Khung 9:16 — rộng/cao khớp tỉ lệ, không để khung đen cao full viewport. */
+/** Trần rộng khung 16:9 trên màn hình rất rộng. */
+export const FEED_LANDSCAPE_MAX_WIDTH_PX = 1020;
+
+function feedStageReservedWidthPx(commentsOpen) {
+  return (
+    FEED_SIDEBAR_WIDTH_PX +
+    FEED_ACTION_RAIL_PX +
+    FEED_STAGE_EDGE_GAP_PX +
+    (commentsOpen ? FEED_COMMENTS_PANEL_WIDTH_PX + FEED_STAGE_EDGE_GAP_PX : 0)
+  );
+}
+
+/** Khung 9:16 — cao gần full viewport, rộng theo tỉ lệ (TikTok web). */
 export function computeFeedPortraitStageSizePx({
   slotHeightPx,
   viewportWidth,
+  commentsOpen = false,
 }) {
   const vw =
     viewportWidth ?? (typeof window !== "undefined" ? window.innerWidth : 1280);
@@ -96,20 +109,17 @@ export function computeFeedPortraitStageSizePx({
     (typeof window !== "undefined"
       ? Math.max(320, window.innerHeight - FEED_VIEWPORT_INSET_PX)
       : 760);
-  const maxHeight = Math.round(slotH * FEED_STAGE_DISPLAY_SCALE);
-  let maxWidth = Math.min(220, Math.round(vw * 0.76));
-  if (vw >= 1024) {
-    maxWidth = Math.min(300, Math.round(vw * 0.72));
-  } else if (vw >= 768) {
-    maxWidth = Math.min(268, Math.round(vw * 0.78));
+  const maxHeight = Math.round(slotH * FEED_STAGE_HEIGHT_RATIO);
+  let width = Math.round((maxHeight * 9) / 16);
+  const clusterMaxWidth = Math.max(260, vw - feedStageReservedWidthPx(commentsOpen) - 16);
+  if (width > clusterMaxWidth) {
+    width = clusterMaxWidth;
   }
-  const widthFromHeight = Math.round((maxHeight * 9) / 16);
-  const width = Math.max(200, Math.min(maxWidth, widthFromHeight));
   const height = Math.round((width * 16) / 9);
   return { width, height };
 }
 
-/** Tính chiều rộng khung video ngang — tận dụng tối đa chỗ trống như TikTok web. */
+/** Tính chiều rộng khung video ngang — căn giữa, tỉ lệ 16:9 theo chiều cao khung. */
 export function computeFeedLandscapeStageWidthPx({
   commentsOpen,
   viewportWidth,
@@ -122,15 +132,9 @@ export function computeFeedLandscapeStageWidthPx({
     (typeof window !== "undefined"
       ? Math.max(320, window.innerHeight - FEED_VIEWPORT_INSET_PX)
       : 760);
-  const reserved =
-    FEED_SIDEBAR_WIDTH_PX +
-    FEED_ACTION_RAIL_PX +
-    FEED_STAGE_EDGE_GAP_PX +
-    (commentsOpen ? FEED_COMMENTS_PANEL_WIDTH_PX + FEED_STAGE_EDGE_GAP_PX : 0);
+  const reserved = feedStageReservedWidthPx(commentsOpen);
   const byViewport = Math.max(280, vw - reserved);
-  const byAspect = Math.round((slotH * 16) / 9);
-  return Math.round(
-    Math.min(byViewport, byAspect, FEED_LANDSCAPE_MAX_WIDTH_PX) *
-      FEED_STAGE_DISPLAY_SCALE,
-  );
+  const stageHeight = Math.round(slotH * FEED_STAGE_HEIGHT_RATIO);
+  const byAspect = Math.round((stageHeight * 16) / 9);
+  return Math.min(byViewport, byAspect, FEED_LANDSCAPE_MAX_WIDTH_PX);
 }

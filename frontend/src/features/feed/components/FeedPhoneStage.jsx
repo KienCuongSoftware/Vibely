@@ -66,7 +66,7 @@ import {
   FEED_VIDEO_OVERLAY_BTN_CLASS,
   computeFeedLandscapeStageWidthPx,
   computeFeedPortraitStageSizePx,
-  FEED_STAGE_DISPLAY_SCALE,
+  FEED_STAGE_HEIGHT_RATIO,
 } from "@/features/feed/utils/feedLayout.js";
 
 /** Track cách đáy card — knob 14px căn giữa track, mép dưới trùng đáy card (không clip). */
@@ -1004,6 +1004,7 @@ export function FeedPhoneStage({
           slotHeightPx: feedSlotHeightPx,
           viewportWidth:
             typeof window !== "undefined" ? window.innerWidth : undefined,
+          commentsOpen: commentsDockOpen,
         });
 
   /** Theater: khung cao gần full viewport, rộng đúng tỉ lệ 9:16 như TikTok watch. */
@@ -1011,11 +1012,11 @@ export function FeedPhoneStage({
     theaterMode && !mobileFullBleed && !effectiveStageWide
       ? Math.round(
           Math.min(
-            Math.round(feedSlotHeightPx * (9 / 16)),
+            Math.round(feedSlotHeightPx * FEED_STAGE_HEIGHT_RATIO * (9 / 16)),
             typeof window !== "undefined"
               ? Math.max(320, window.innerWidth - 32)
               : 720,
-          ) * FEED_STAGE_DISPLAY_SCALE,
+          ),
         )
       : null;
 
@@ -1024,7 +1025,7 @@ export function FeedPhoneStage({
     : effectiveStageWide && landscapeVideoHeightPx != null
       ? landscapeVideoHeightPx
       : portraitStageSizePx?.height ??
-        Math.round(feedSlotHeightPx * FEED_STAGE_DISPLAY_SCALE);
+        Math.round(feedSlotHeightPx * FEED_STAGE_HEIGHT_RATIO);
 
   const virtualSlotHeightPx = mobileFullBleed
     ? mobileMeasuredSlotPx
