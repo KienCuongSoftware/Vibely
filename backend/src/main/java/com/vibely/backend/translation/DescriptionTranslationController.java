@@ -25,7 +25,7 @@ public class DescriptionTranslationController {
         this.translationService = translationService;
     }
 
-    /** Enqueue + try sync translate. */
+    /** Enqueue + try sync translate (authenticated). */
     @PostMapping("/{publicId}/description-translation")
     public DescriptionTranslationResponse requestTranslation(
         @PathVariable UUID publicId,
@@ -38,8 +38,7 @@ public class DescriptionTranslationController {
             throw ex;
         } catch (Throwable ex) {
             log.error("description-translation POST failed publicId={}: {}", publicId, ex.toString(), ex);
-            String msg = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName();
-            return DescriptionTranslationResponse.failed(truncate(msg, 500));
+            return DescriptionTranslationResponse.failed("Translation request failed");
         }
     }
 
@@ -62,15 +61,7 @@ public class DescriptionTranslationController {
             throw ex;
         } catch (Throwable ex) {
             log.error("description-translation GET failed publicId={}: {}", publicId, ex.toString(), ex);
-            String msg = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName();
-            return DescriptionTranslationResponse.failed(truncate(msg, 500));
+            return DescriptionTranslationResponse.failed("Translation request failed");
         }
-    }
-
-    private static String truncate(String value, int max) {
-        if (value == null) {
-            return null;
-        }
-        return value.length() <= max ? value : value.substring(0, max);
     }
 }

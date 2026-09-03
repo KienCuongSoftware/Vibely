@@ -2,8 +2,11 @@ package com.vibely.backend.translation;
 
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.user.entity.User;
+import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
+import com.vibely.backend.video.service.VideoPrivacyAccessService;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -21,6 +24,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -37,6 +43,8 @@ public class DescriptionTranslationService {
     private final TranslationJobRepository jobRepository;
     private final TranslationCacheService cacheService;
     private final VietnameseDiacriticRestorer diacriticRestorer;
+    private final VideoPrivacyAccessService privacyAccessService;
+    private final UserRepository userRepository;
     private final ExecutorService syncExecutor = Executors.newCachedThreadPool(r -> {
         Thread t = new Thread(r, "translation-sync");
         t.setDaemon(true);
@@ -50,7 +58,9 @@ public class DescriptionTranslationService {
         DescriptionTranslationRepository translationRepository,
         TranslationJobRepository jobRepository,
         TranslationCacheService cacheService,
-        VietnameseDiacriticRestorer diacriticRestorer
+        VietnameseDiacriticRestorer diacriticRestorer,
+        VideoPrivacyAccessService privacyAccessService,
+        UserRepository userRepository
     ) {
         this.properties = properties;
         this.translationClient = translationClient;
@@ -59,6 +69,8 @@ public class DescriptionTranslationService {
         this.jobRepository = jobRepository;
         this.cacheService = cacheService;
         this.diacriticRestorer = diacriticRestorer;
+        this.privacyAccessService = privacyAccessService;
+        this.userRepository = userRepository;
     }
 
     public DescriptionTranslationResponse getOrRequest(UUID publicId, String targetLangRaw) {
@@ -68,11 +80,7 @@ public class DescriptionTranslationService {
             throw ex;
         } catch (Exception ex) {
             log.error("Translation getOrRequest failed publicId={}: {}", publicId, ex.getMessage(), ex);
-            return DescriptionTranslationResponse.failed(
-                truncate(ex.getMessage(), 500) != null
-                    ? truncate(ex.getMessage(), 500)
-                    : "Translation request failed"
-            );
+            return DescriptionTranslationResponse.failed("Translation request failed");
         }
     }
 
@@ -90,6 +98,7 @@ public class DescriptionTranslationService {
 
         Video video = videoRepository.findWithAuthorByPublicId(publicId)
             .orElseThrow(() -> new NotFoundException("Video not found"));
+        requireWatchAccess(video);
 
         String original = resolveCaption(video);
         if (!StringUtils.hasText(original)) {
@@ -160,7 +169,7 @@ public class DescriptionTranslationService {
             }
             log.warn("Translation sync failed videoId={}: {}", video.getId(), ex.getMessage());
             if (job.getAttempts() >= properties.getMaxJobAttempts()) {
-                return DescriptionTranslationResponse.failed(truncate(ex.getMessage(), 500));
+                return DescriptionTranslationResponse.failed("Translation request failed");
             }
             return DescriptionTranslationResponse.pending(job.getId(), original, sourceLang, targetLang);
         }
@@ -176,6 +185,7 @@ public class DescriptionTranslationService {
         }
         Video video = videoRepository.findWithAuthorByPublicId(publicId)
             .orElseThrow(() -> new NotFoundException("Video not found"));
+        requireWatchAccess(video);
         String original = resolveCaption(video);
         if (!StringUtils.hasText(original)) {
             return DescriptionTranslationResponse.skipped(original, null, targetLang, "Empty description");
@@ -378,6 +388,7 @@ public class DescriptionTranslationService {
         String targetLang = VietnameseDiacriticRestorer.TARGET_LANG;
         Video video = videoRepository.findWithAuthorByPublicId(publicId)
             .orElseThrow(() -> new NotFoundException("Video not found"));
+        requireWatchAccess(video);
         String original = resolveCaption(video);
         if (!StringUtils.hasText(original)) {
             return DescriptionTranslationResponse.skipped(original, null, targetLang, "Empty description");
@@ -461,6 +472,25 @@ public class DescriptionTranslationService {
         return na.split("-")[0].equals(nb.split("-")[0])
             && !na.startsWith("zh")
             && !nb.startsWith("zh");
+    }
+
+    private void requireWatchAccess(Video video) {
+        User viewer = resolveViewer();
+        if (!privacyAccessService.canViewerWatch(video, viewer)) {
+            throw new NotFoundException("Video not found");
+        }
+    }
+
+    private User resolveViewer() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null
+            || !authentication.isAuthenticated()
+            || authentication instanceof AnonymousAuthenticationToken
+            || authentication.getName() == null
+            || authentication.getName().isBlank()) {
+            return null;
+        }
+        return userRepository.findByEmail(authentication.getName()).orElse(null);
     }
 
     static String sha256(String text) {

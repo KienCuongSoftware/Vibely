@@ -7,17 +7,17 @@ public final class ShareClientHints {
 
     private ShareClientHints() {}
 
+    /**
+     * Prefer the address seen by the servlet container after trusted proxy processing
+     * ({@code ForwardedHeaderFilter} / {@code server.forward-headers-strategy}).
+     * Do not trust client-supplied {@code X-Forwarded-For} directly.
+     */
     public static String clientIp(HttpServletRequest request) {
-        String forwarded = header(request, "X-Forwarded-For");
-        if (forwarded != null) {
-            int comma = forwarded.indexOf(',');
-            return (comma > 0 ? forwarded.substring(0, comma) : forwarded).trim();
+        String remote = request.getRemoteAddr();
+        if (remote != null && !remote.isBlank()) {
+            return remote.trim();
         }
-        String realIp = header(request, "X-Real-IP");
-        if (realIp != null) {
-            return realIp;
-        }
-        return request.getRemoteAddr();
+        return "unknown";
     }
 
     public static String countryCode(HttpServletRequest request) {

@@ -272,7 +272,8 @@ public class AuthController {
             token = authorization.substring(7);
         }
         if (token != null && !token.isBlank() && jwtService.isTokenValid(token)) {
-            return ResponseEntity.ok(ApiResponse.success(new WsTicketResponse(token)));
+            // Probe only — do not echo the access JWT into JSON (XSS blast radius).
+            return ResponseEntity.ok(ApiResponse.success(new WsTicketResponse("ok")));
         }
 
         String refreshToken = authCookieService.readRefreshToken(request).orElse(null);
@@ -286,7 +287,7 @@ public class AuthController {
                 refreshed.accessToken(),
                 refreshed.refreshToken()
             );
-            return ResponseEntity.ok(ApiResponse.success(new WsTicketResponse(refreshed.accessToken())));
+            return ResponseEntity.ok(ApiResponse.success(new WsTicketResponse("ok")));
         } catch (BadRequestException ex) {
             // Only /auth/refresh owns the session: dropping cookies here would kill a session that
             // a parallel refresh just renewed, logging the user out on reload.

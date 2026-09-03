@@ -185,7 +185,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/videos/*/topics").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*/categories").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*/description-translation").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/videos/*/description-translation").permitAll()
                 .requestMatchers("/api/internal/originality/**").permitAll()
                 .requestMatchers("/api/internal/content-understanding/**").permitAll()
                 .requestMatchers("/api/internal/enhancement/**").permitAll()
@@ -271,8 +270,7 @@ public class SecurityConfig {
             || uri.equals("/api/captcha/verify")
             || uri.equals("/api/fingerprint/register")
             || uri.equals("/api/behavior/track")
-            || uri.equals("/api/trust/evaluate")
-            || uri.matches("^/api/videos/[^/]+/description-translation$");
+            || uri.equals("/api/trust/evaluate");
     }
 
     /** CSRF for POST/PUT/PATCH/DELETE when the browser sent Vibely session cookies. */

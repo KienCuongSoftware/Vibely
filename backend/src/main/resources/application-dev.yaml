@@ -16,9 +16,10 @@ spring:
           connectiontimeout: 10000
           timeout: 10000
           writetimeout: 10000
-  # Sau khi sửa nội dung migration đã apply (checksum lệch), dev có thể bật lại true rồi chạy: mvn flyway:repair
+  # Keep validate on so checksum drift fails loudly; repair intentionally when needed:
+  #   mvn flyway:repair
   flyway:
-    validate-on-migrate: false
+    validate-on-migrate: true
   datasource:
     url: jdbc:postgresql://localhost:5432/vibely
     username: postgres

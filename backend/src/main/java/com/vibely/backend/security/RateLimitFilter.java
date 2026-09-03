@@ -66,8 +66,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
             }
         } else if (shareWriteRoute) {
             String subject = request.getHeader("Authorization") != null
-                ? "user:" + request.getRemoteAddr()
-                : "guest:" + request.getRemoteAddr();
+                ? "user:" + clientIp
+                : "guest:" + clientIp;
             if (!shareRateLimiter.allowShareWrite(subject)) {
                 writeRateLimited(response);
                 return;
@@ -84,8 +84,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
             }
         } else if (downloadRoute) {
             String subject = request.getHeader("Authorization") != null
-                ? "auth:" + request.getRemoteAddr()
-                : "guest:" + request.getRemoteAddr();
+                ? "auth:" + clientIp
+                : "guest:" + clientIp;
             if (!shareRateLimiter.allowDownload(subject)) {
                 writeRateLimited(response);
                 return;
@@ -103,7 +103,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             }
             int limit = authWriteRoute ? AUTH_LIMIT : COMMENT_LIMIT;
             String userKey = request.getHeader("Authorization") != null ? "auth-user" : "guest";
-            String key = request.getRemoteAddr() + ":" + userKey + ":" + uri;
+            String key = clientIp + ":" + userKey + ":" + uri;
             if (!allowRequest(key, limit)) {
                 writeRateLimited(response);
                 return;

@@ -169,7 +169,7 @@ public class GlobalExceptionHandler {
             .body(ApiResponse.failure(ApiError.of(
                 HttpStatus.NOT_FOUND.value(),
                 "NOT_FOUND",
-                "Resource not found: " + ex.getResourcePath()
+                "Resource not found"
             )));
     }
 
