@@ -94,15 +94,17 @@ public class VideoFeedService {
         Long viewerId = resolveViewerId(viewerEmail);
         if (sort == FeedSort.TRENDING_LITE) {
             Page<Video> resultPage = videoRepository.findTrendingByStatus(VideoStatus.READY, pageable);
-            return responseMapper.toFeedPageResponse(resultPage, sort.name().toLowerCase(), null, viewerId);
+            Page<Video> filtered = filterEligiblePublicFeed(resultPage);
+            return responseMapper.toFeedPageResponse(filtered, sort.name().toLowerCase(), null, viewerId);
         }
         Page<Video> resultPage = videoRepository.findByStatusOrderByCreatedAtDesc(VideoStatus.READY, pageable);
+        Page<Video> filtered = filterEligiblePublicFeed(resultPage);
         String nextCursor = null;
-        if (resultPage.hasNext() && !resultPage.getContent().isEmpty()) {
-            Video last = resultPage.getContent().get(resultPage.getContent().size() - 1);
+        if (filtered.hasNext() && !filtered.getContent().isEmpty()) {
+            Video last = filtered.getContent().get(filtered.getContent().size() - 1);
             nextCursor = FeedCursorCodec.encode(last.getCreatedAt(), last.getId());
         }
-        return responseMapper.toFeedPageResponse(resultPage, sort.name().toLowerCase(), nextCursor, viewerId);
+        return responseMapper.toFeedPageResponse(filtered, sort.name().toLowerCase(), nextCursor, viewerId);
     }
 
     /**
@@ -163,7 +165,17 @@ public class VideoFeedService {
             follower.getId(),
             pageable
         );
-        List<VideoResponse> items = responseMapper.toFollowingFeedResponses(slice.getContent(), follower.getId());
+        List<FollowingFeedRowView> visibleRows = slice.getContent().stream()
+            .filter(row -> {
+                if (row.getVideoId() == null) {
+                    return false;
+                }
+                return videoRepository.findById(row.getVideoId())
+                    .map(video -> privacyAccessService.canViewerWatch(video, follower))
+                    .orElse(false);
+            })
+            .toList();
+        List<VideoResponse> items = responseMapper.toFollowingFeedResponses(visibleRows, follower.getId());
         return new FeedPageResponse(
             items,
             slice.getNumber(),
@@ -196,7 +208,10 @@ public class VideoFeedService {
                 VideoStatus.READY,
                 pageable
             ));
-        return responseMapper.toFeedPageResponse(resultPage, "sound");
+        return responseMapper.toFeedPageResponse(
+            filterEligiblePublicFeed(resultPage),
+            "sound"
+        );
     }
 
     @Transactional(readOnly = true)
@@ -211,7 +226,10 @@ public class VideoFeedService {
             SqlSafe.escapeRegexLiteral(normalizedTag),
             pageable
         );
-        return responseMapper.toFeedPageResponse(resultPage, "hashtag");
+        return responseMapper.toFeedPageResponse(
+            filterEligiblePublicFeed(resultPage),
+            "hashtag"
+        );
     }
 
     @Transactional(readOnly = true)
@@ -383,5 +401,15 @@ public class VideoFeedService {
         List<Video> shuffled = new ArrayList<>(rows);
         Collections.shuffle(shuffled, ThreadLocalRandom.current());
         return shuffled;
+    }
+
+    private Page<Video> filterEligiblePublicFeed(Page<Video> page) {
+        List<Video> visible = page.getContent().stream()
+            .filter(publicVideoVisibilityService::isEligibleForPublicFeed)
+            .toList();
+        if (visible.size() == page.getContent().size()) {
+            return page;
+        }
+        return new PageImpl<>(visible, page.getPageable(), visible.size());
     }
 }

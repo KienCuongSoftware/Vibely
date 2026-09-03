@@ -30,6 +30,7 @@ import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.user.service.ProfileVisibilityService;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
+import com.vibely.backend.video.service.VideoPrivacyAccessService;
 import com.vibely.backend.video.service.VideoService;
 import com.vibely.backend.video.VideoStatus;
 import java.time.LocalDateTime;
@@ -70,6 +71,7 @@ public class InteractionService {
     private final NotificationService notificationService;
     private final ProfileVisibilityService profileVisibilityService;
     private final ObjectProvider<UserReportModerationService> userReportModerationService;
+    private final VideoPrivacyAccessService privacyAccessService;
 
     public InteractionService(
         UserRepository userRepository,
@@ -87,7 +89,8 @@ public class InteractionService {
         VideoRepository videoRepository,
         NotificationService notificationService,
         ProfileVisibilityService profileVisibilityService,
-        ObjectProvider<UserReportModerationService> userReportModerationService
+        ObjectProvider<UserReportModerationService> userReportModerationService,
+        VideoPrivacyAccessService privacyAccessService
     ) {
         this.userRepository = userRepository;
         this.videoService = videoService;
@@ -105,6 +108,7 @@ public class InteractionService {
         this.notificationService = notificationService;
         this.profileVisibilityService = profileVisibilityService;
         this.userReportModerationService = userReportModerationService;
+        this.privacyAccessService = privacyAccessService;
     }
 
     public void likeVideo(String email, UUID videoPublicId) {
@@ -320,6 +324,15 @@ public class InteractionService {
             .orElseGet(FollowEntity::new);
         follow.setFollower(follower);
         follow.setFollowing(following);
+        if (following.isPrivateAccount()) {
+            if (follow.getStatus() == FollowStatus.ACCEPTED) {
+                return;
+            }
+            follow.setStatus(FollowStatus.PENDING);
+            followRepository.save(follow);
+            notificationService.onFollowRequest(follower, following);
+            return;
+        }
         follow.setStatus(FollowStatus.ACCEPTED);
         followRepository.save(follow);
         notificationService.onFollow(follower, following);
@@ -406,6 +419,9 @@ public class InteractionService {
     public void reportVideo(String email, UUID videoPublicId, String reason) {
         User reporter = getUser(email);
         Video video = videoService.getVideoByPublicIdOrThrow(videoPublicId);
+        if (!privacyAccessService.canViewerWatch(video, reporter)) {
+            throw new NotFoundException("Video not found");
+        }
         if (video.getStatus() == VideoStatus.HIDDEN) {
             throw new BadRequestException("Video was already hidden");
         }
@@ -465,10 +481,10 @@ public class InteractionService {
     }
 
     /**
-     * Thích / lưu / bình luận: công khai chỉ khi READY; tác giả được tương tác khi video còn RAW/PROCESSING
-     * (đang xử lý) hoặc HIDDEN/REPORTED (chỉ chủ bài).
+     * Thích / lưu / bình luận: cần quyền xem video; tác giả được tương tác khi video còn RAW/PROCESSING
+     * hoặc HIDDEN/REPORTED (chỉ chủ bài).
      */
-    private static void requireEngagementAllowed(Video video, User actor) {
+    private void requireEngagementAllowed(Video video, User actor) {
         VideoStatus s = video.getStatus();
         if (s == VideoStatus.REMOVED || s == VideoStatus.FAILED) {
             throw new BadRequestException("Video is unavailable.");
@@ -482,6 +498,9 @@ public class InteractionService {
             return;
         }
         if (s == VideoStatus.READY) {
+            if (!privacyAccessService.canViewerWatch(video, actor)) {
+                throw new NotFoundException("Video not found");
+            }
             return;
         }
         if (!isAuthor) {
@@ -489,13 +508,13 @@ public class InteractionService {
         }
     }
 
-    private static boolean canViewComments(Video video, User viewer) {
+    private boolean canViewComments(Video video, User viewer) {
         VideoStatus s = video.getStatus();
         if (s == VideoStatus.REMOVED || s == VideoStatus.FAILED) {
             return false;
         }
         if (s == VideoStatus.READY) {
-            return true;
+            return privacyAccessService.canViewerWatch(video, viewer);
         }
         if (viewer == null) {
             return false;

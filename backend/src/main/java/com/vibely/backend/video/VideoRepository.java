@@ -93,6 +93,12 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         where v.status = :status and v.studioDraft = false
           and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
           and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
+          and v.intendedPrivacy is null
+          and not exists (
+              select 1 from com.vibely.backend.moderation.ModerationDecisionEntity d
+              where d.video = v
+                and (d.reviewRequired = true or d.exploreEligible = false)
+          )
         order by v.createdAt desc
         """)
     Page<Video> findByStatusOrderByCreatedAtDesc(
@@ -156,6 +162,13 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
                 WHERE v.status = 'READY'
                   AND COALESCE(v.studio_draft, FALSE) = FALSE
                   AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
+                  AND COALESCE(v.privacy, 'PUBLIC') <> 'PRIVATE'
+                  AND v.intended_privacy IS NULL
+                  AND NOT EXISTS (
+                      SELECT 1 FROM moderation_decisions md
+                      WHERE md.video_id = v.id
+                        AND (md.review_required = TRUE OR md.explore_eligible = FALSE)
+                  )
                   AND v.author_id IN (
                       SELECT f.following_id FROM follows f WHERE f.follower_id = :followerId
                   )
@@ -168,6 +181,13 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
                 WHERE v.status = 'READY'
                   AND COALESCE(v.studio_draft, FALSE) = FALSE
                   AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
+                  AND COALESCE(v.privacy, 'PUBLIC') <> 'PRIVATE'
+                  AND v.intended_privacy IS NULL
+                  AND NOT EXISTS (
+                      SELECT 1 FROM moderation_decisions md
+                      WHERE md.video_id = v.id
+                        AND (md.review_required = TRUE OR md.explore_eligible = FALSE)
+                  )
                   AND r.user_id IN (
                       SELECT f.following_id FROM follows f WHERE f.follower_id = :followerId
                   )
@@ -182,6 +202,13 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
                 WHERE v.status = 'READY'
                   AND COALESCE(v.studio_draft, FALSE) = FALSE
                   AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
+                  AND COALESCE(v.privacy, 'PUBLIC') <> 'PRIVATE'
+                  AND v.intended_privacy IS NULL
+                  AND NOT EXISTS (
+                      SELECT 1 FROM moderation_decisions md
+                      WHERE md.video_id = v.id
+                        AND (md.review_required = TRUE OR md.explore_eligible = FALSE)
+                  )
                   AND v.author_id IN (
                       SELECT f.following_id FROM follows f WHERE f.follower_id = :followerId
                   )
@@ -192,6 +219,13 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
                 WHERE v.status = 'READY'
                   AND COALESCE(v.studio_draft, FALSE) = FALSE
                   AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
+                  AND COALESCE(v.privacy, 'PUBLIC') <> 'PRIVATE'
+                  AND v.intended_privacy IS NULL
+                  AND NOT EXISTS (
+                      SELECT 1 FROM moderation_decisions md
+                      WHERE md.video_id = v.id
+                        AND (md.review_required = TRUE OR md.explore_eligible = FALSE)
+                  )
                   AND r.user_id IN (
                       SELECT f.following_id FROM follows f WHERE f.follower_id = :followerId
                   )
@@ -204,12 +238,40 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         Pageable pageable
     );
 
-    Page<Video> findByAudioUrlAndStatusOrderByCreatedAtDesc(String audioUrl, VideoStatus status, Pageable pageable);
+    @Query("""
+        select v from Video v
+        where v.status = :status
+          and v.studioDraft = false
+          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
+          and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
+          and v.intendedPrivacy is null
+          and not exists (
+              select 1 from com.vibely.backend.moderation.ModerationDecisionEntity d
+              where d.video = v
+                and (d.reviewRequired = true or d.exploreEligible = false)
+          )
+          and v.audioUrl = :audioUrl
+        order by v.createdAt desc
+        """)
+    Page<Video> findByAudioUrlAndStatusOrderByCreatedAtDesc(
+        @Param("audioUrl") String audioUrl,
+        @Param("status") VideoStatus status,
+        Pageable pageable
+    );
 
     /** Khớp URL âm thanh canonical hoặc cùng S3 object key (presigned GET có query khác). */
     @Query("""
         select v from Video v
         where v.status = :status
+        and v.studioDraft = false
+        and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
+        and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
+        and v.intendedPrivacy is null
+        and not exists (
+            select 1 from com.vibely.backend.moderation.ModerationDecisionEntity d
+            where d.video = v
+              and (d.reviewRequired = true or d.exploreEligible = false)
+        )
         and (v.audioUrl = :exactUrl or v.audioUrl like concat('%', :audioKey))
         order by v.createdAt desc
         """)
@@ -225,6 +287,15 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
             select *
             from videos v
             where v.status = :status
+              and coalesce(v.studio_draft, false) = false
+              and (v.scheduled_at is null or v.scheduled_at <= now())
+              and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
+              and v.intended_privacy is null
+              and not exists (
+                  select 1 from moderation_decisions md
+                  where md.video_id = v.id
+                    and (md.review_required = true or md.explore_eligible = false)
+              )
               and (
                 coalesce(v.description, '') ~* concat('(^|[^[:alnum:]_])#', :tagRegex, '($|[^[:alnum:]_])')
                 or coalesce(v.title, '') ~* concat('(^|[^[:alnum:]_])#', :tagRegex, '($|[^[:alnum:]_])')
@@ -235,6 +306,15 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
             select count(*)
             from videos v
             where v.status = :status
+              and coalesce(v.studio_draft, false) = false
+              and (v.scheduled_at is null or v.scheduled_at <= now())
+              and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
+              and v.intended_privacy is null
+              and not exists (
+                  select 1 from moderation_decisions md
+                  where md.video_id = v.id
+                    and (md.review_required = true or md.explore_eligible = false)
+              )
               and (
                 coalesce(v.description, '') ~* concat('(^|[^[:alnum:]_])#', :tagRegex, '($|[^[:alnum:]_])')
                 or coalesce(v.title, '') ~* concat('(^|[^[:alnum:]_])#', :tagRegex, '($|[^[:alnum:]_])')
@@ -362,6 +442,12 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
           and v.studioDraft = false
           and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
           and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
+          and v.intendedPrivacy is null
+          and not exists (
+              select 1 from com.vibely.backend.moderation.ModerationDecisionEntity d
+              where d.video = v
+                and (d.reviewRequired = true or d.exploreEligible = false)
+          )
         group by v
         order by (count(distinct l.id) + count(distinct c.id)) desc, v.createdAt desc
         """)

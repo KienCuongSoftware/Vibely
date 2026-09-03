@@ -33,6 +33,7 @@ public class VideoEngagementService {
     private final ExploreCacheService exploreCacheService;
     private final ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor;
     private final ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService;
+    private final VideoPrivacyAccessService privacyAccessService;
 
     public VideoEngagementService(
         VideoQueryService queryService,
@@ -41,7 +42,8 @@ public class VideoEngagementService {
         UserRepository userRepository,
         ExploreCacheService exploreCacheService,
         ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor,
-        ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService
+        ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService,
+        VideoPrivacyAccessService privacyAccessService
     ) {
         this.queryService = queryService;
         this.videoRepository = videoRepository;
@@ -50,6 +52,7 @@ public class VideoEngagementService {
         this.exploreCacheService = exploreCacheService;
         this.userInterestSignalProcessor = userInterestSignalProcessor;
         this.videoEngagementStatsService = videoEngagementStatsService;
+        this.privacyAccessService = privacyAccessService;
     }
 
     @Transactional
@@ -80,12 +83,16 @@ public class VideoEngagementService {
         if (target.getStatus() == VideoStatus.REMOVED) {
             return;
         }
+        User viewer = resolveViewer(viewerEmail);
+        if (!privacyAccessService.canViewerWatch(target, viewer)) {
+            return;
+        }
         VideoViewEntity row = new VideoViewEntity();
         row.setVideo(target);
         row.setWatchedMs(body.watchedMs());
         row.setDurationMs(body.durationMs());
         videoViewRepository.save(row);
-        Long viewerId = resolveViewerId(viewerEmail);
+        Long viewerId = viewer != null ? viewer.getId() : null;
         if (viewerId != null) {
             userInterestSignalProcessor.ifAvailable(p ->
                 p.onView(viewerId, target, body.watchedMs(), body.durationMs())
@@ -112,12 +119,15 @@ public class VideoEngagementService {
 
     @Transactional
     public void recordShare(Long videoId, String viewerEmail) {
-        videoRepository.incrementShareCount(videoId, VideoStatus.READY);
         Video target = queryService.getVideoOrThrow(videoId);
+        User viewer = resolveViewer(viewerEmail);
+        if (!privacyAccessService.canViewerWatch(target, viewer)) {
+            return;
+        }
+        videoRepository.incrementShareCount(videoId, VideoStatus.READY);
         videoEngagementStatsService.ifAvailable(s -> s.recomputeSafely(target));
-        Long viewerId = resolveViewerId(viewerEmail);
-        if (viewerId != null) {
-            userInterestSignalProcessor.ifAvailable(p -> p.onShare(viewerId, target));
+        if (viewer != null) {
+            userInterestSignalProcessor.ifAvailable(p -> p.onShare(viewer.getId(), target));
         }
     }
 
@@ -135,13 +145,11 @@ public class VideoEngagementService {
         return watchedMs >= VIEW_MIN_PLAYED_MS;
     }
 
-    private Long resolveViewerId(String viewerEmail) {
+    private User resolveViewer(String viewerEmail) {
         if (viewerEmail == null || viewerEmail.isBlank()) {
             return null;
         }
-        return userRepository.findByEmail(viewerEmail.trim())
-            .map(User::getId)
-            .orElse(null);
+        return userRepository.findByEmail(viewerEmail.trim()).orElse(null);
     }
 
     private void evictExploreCaches(Video target) {

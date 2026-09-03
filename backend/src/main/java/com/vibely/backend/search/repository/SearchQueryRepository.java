@@ -91,6 +91,13 @@ public interface SearchQueryRepository extends JpaRepository<User, Long> {
             left join description_translations dt on dt.video_id = v.id
             where v.status = 'READY'
               and coalesce(v.privacy, 'PUBLIC') = 'PUBLIC'
+              and coalesce(v.studio_draft, false) = false
+              and v.intended_privacy is null
+              and not exists (
+                  select 1 from moderation_decisions md
+                  where md.video_id = v.id
+                    and (md.review_required = true or md.explore_eligible = false)
+              )
               and (
                 vibely_search_fold(coalesce(v.title, '')) like concat('%', :q, '%')
                 or replace(vibely_search_fold(coalesce(v.title, '')), ' ', '') like concat('%', replace(:q, ' ', ''), '%')
