@@ -96,7 +96,7 @@ public class EnhancementInternalController {
                 "Enhancement internal token is not configured."
             );
         }
-        if (token == null || !expected.equals(token)) {
+        if (!com.vibely.backend.security.InternalTokenSecurity.matches(expected, token)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid internal token");
         }
     }
