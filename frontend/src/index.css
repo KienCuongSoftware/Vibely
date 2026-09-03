@@ -688,6 +688,24 @@ html[data-vibely-theme="light"] .vibely-feed-chrome-rail .bg-zinc-950 {
   border-color: #ebebec;
 }
 
+/* Theater / watch page keeps dark chrome even in light appearance. */
+html[data-vibely-theme="light"] .vibely-keep-dark .vibely-feed-chrome-rail .border-white\/25,
+html[data-vibely-theme="light"] .vibely-keep-dark .vibely-feed-chrome-rail .border-white\/35 {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .vibely-feed-chrome-rail .bg-black\/30 {
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  box-shadow: none;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .vibely-feed-chrome-rail .hover\:bg-white\/20:hover,
+html[data-vibely-theme="light"] .vibely-keep-dark .vibely-feed-chrome-rail .active\:bg-white\/25:active {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .vibely-feed-chrome-rail .bg-zinc-950 {
+  background-color: #09090b !important;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
 /* Feed ⋯ menu + segmented controls on light chrome. */
 html[data-vibely-theme="light"] .hover\:bg-white\/\[0\.06\]:hover,
 html[data-vibely-theme="light"] .active\:bg-white\/\[0\.09\]:active {

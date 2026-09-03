@@ -1252,7 +1252,7 @@ export function FeedPhoneStage({
                       <div
                         className={
                           theaterMode
-                            ? "pointer-events-none fixed top-4 right-6 z-80 flex items-center gap-2"
+                            ? "pointer-events-none absolute top-3 right-3 z-50 flex items-center gap-2"
                             : "pointer-events-none absolute inset-x-0 top-0 z-50 flex items-center justify-between px-3 pt-3"
                         }
                       >
@@ -1619,7 +1619,7 @@ export function FeedPhoneStage({
           ref={progressTrackRef}
           className={
             theaterMode
-              ? "group/progress pointer-events-auto fixed inset-x-6 bottom-2 z-80 h-4 cursor-pointer sm:inset-x-10"
+              ? "group/progress pointer-events-auto absolute inset-x-0 bottom-0 z-70 h-4 cursor-pointer"
               : "group/progress pointer-events-auto absolute inset-x-0 bottom-0 z-70 h-4 w-full cursor-pointer"
           }
           role="slider"

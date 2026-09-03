@@ -820,7 +820,7 @@ export function FeedStyleVideoDetailPage({
   }, [])
 
   return (
-    <section className="flex h-dvh max-h-dvh min-h-0 w-full flex-col overflow-hidden bg-black text-zinc-100 lg:flex-row">
+    <section className="vibely-keep-dark flex h-dvh max-h-dvh min-h-0 w-full flex-col overflow-hidden bg-black text-zinc-100 lg:flex-row">
       <Seo
         title={videoSeoTitle}
         description={videoSeoDescription}
@@ -916,7 +916,7 @@ export function FeedStyleVideoDetailPage({
         <div
           className={`relative flex min-h-0 min-w-0 flex-1 items-stretch justify-stretch ${
             watchChrome
-              ? 'h-full lg:items-center lg:justify-center'
+              ? 'h-full items-center justify-center bg-black'
               : 'lg:items-center lg:justify-center lg:px-1 lg:py-1'
           }`}
         >
@@ -943,16 +943,27 @@ export function FeedStyleVideoDetailPage({
           ) : feedVideo ? (
             <div
               className={`relative h-full min-h-0 w-full max-lg:flex-1 ${
-                feedDockLandscape
-                  ? 'min-w-0 items-center justify-start lg:flex lg:flex-row'
-                  : 'lg:flex lg:flex-row lg:items-center lg:justify-center'
+                watchChrome
+                  ? 'flex items-center justify-center'
+                  : feedDockLandscape
+                    ? 'min-w-0 items-center justify-start lg:flex lg:flex-row'
+                    : 'lg:flex lg:flex-row lg:items-center lg:justify-center'
               }`}
             >
               <div
                 className={
-                  feedDockLandscape
-                    ? 'relative flex h-full min-h-0 w-full flex-col items-start justify-center max-lg:flex-1'
-                    : 'relative flex h-full min-h-0 max-lg:w-full max-lg:flex-1 flex-col items-center justify-center lg:w-auto lg:shrink-0'
+                  watchChrome
+                    ? 'vibely-feed-stage-cluster relative flex max-h-full shrink-0 items-center'
+                    : 'contents'
+                }
+              >
+              <div
+                className={
+                  watchChrome
+                    ? 'relative flex max-h-full min-h-0 flex-col items-center justify-center lg:w-auto lg:shrink-0'
+                    : feedDockLandscape
+                      ? 'relative flex h-full min-h-0 w-full flex-col items-start justify-center max-lg:flex-1'
+                      : 'relative flex h-full min-h-0 max-lg:w-full max-lg:flex-1 flex-col items-center justify-center lg:w-auto lg:shrink-0'
                 }
               >
                 <FeedPhoneStage
@@ -1021,7 +1032,7 @@ export function FeedStyleVideoDetailPage({
                   }}
                 />
                 {watchChrome ? (
-                  <div className="pointer-events-auto fixed top-4 left-6 z-80 flex items-center gap-2">
+                  <div className="pointer-events-auto absolute top-4 left-4 z-80 flex items-center gap-2 sm:left-5">
                     <button
                       type="button"
                       aria-label={t('watch.backToForYou')}
@@ -1041,7 +1052,7 @@ export function FeedStyleVideoDetailPage({
                   </div>
                 ) : null}
                 {watchChrome && feedVideo ? (
-                  <div className="pointer-events-auto fixed bottom-10 left-6 z-80 w-[min(17.5rem,calc(50vw-min(280px,28vh)-2rem))] max-w-[280px]">
+                  <div className="pointer-events-auto absolute bottom-10 left-4 z-80 w-[min(17.5rem,calc(100%-5rem))] max-w-[280px] sm:left-5">
                     <Link
                       to={authorProfilePath}
                       className="inline-block max-w-full truncate text-[15px] font-bold leading-snug text-white hover:underline"
@@ -1089,7 +1100,7 @@ export function FeedStyleVideoDetailPage({
               <div
                 className={
                   watchChrome
-                    ? 'vibely-feed-chrome-rail pointer-events-auto fixed right-6 bottom-[max(6.5rem,18%)] z-80 flex flex-col items-center gap-3.5'
+                    ? 'vibely-feed-chrome-rail pointer-events-auto relative z-30 ml-3 flex shrink-0 flex-col items-center gap-3.5 self-center'
                     : 'vibely-feed-chrome-rail pointer-events-none absolute right-2 bottom-[4.75rem] z-30 lg:pointer-events-auto lg:static lg:ml-3 lg:flex lg:shrink-0 lg:flex-col lg:items-center lg:gap-4 lg:self-center'
                 }
               >
@@ -1242,6 +1253,7 @@ export function FeedStyleVideoDetailPage({
                   </button>
                 ) : null}
                 </div>
+              </div>
               </div>
             </div>
           ) : null}
