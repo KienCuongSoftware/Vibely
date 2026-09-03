@@ -92,18 +92,22 @@ public class ModerationPublicationHoldService {
     }
 
     /**
-     * Unstick HIDDEN videos: apply existing ALLOW/LIMIT (even legacy shadow rows),
+     * Unstick HIDDEN / READY privacy holds: apply existing ALLOW/LIMIT (even legacy shadow rows),
      * force-enqueue moderation when CU is done, soft-promote after timeout.
      */
     @Transactional
     public int reconcileStuckHolds() {
         int fixed = repairPublicPrivacyMismatches();
+        int enqueueAfter = Math.max(1, properties.getPublicationHoldEnqueueAfterMinutes());
+        int holdTimeout = Math.max(enqueueAfter + 1, properties.getPublicationHoldTimeoutMinutes());
+
+        // 0) READY but still privacy-held — common when encoding finished before AI wrote a decision,
+        //    or ALLOW applied while status was already READY (status unchanged, hold never cleared).
+        fixed += releaseStuckReadyPrivacyHolds(holdTimeout);
 
         if (!isHoldActive()) {
             return fixed;
         }
-        int enqueueAfter = Math.max(1, properties.getPublicationHoldEnqueueAfterMinutes());
-        int holdTimeout = Math.max(enqueueAfter + 1, properties.getPublicationHoldTimeoutMinutes());
 
         // 1) Already cleared by AI (ALLOW/LIMIT/REVIEW) — REVIEW is visible to author, off FYP.
         List<Map<String, Object>> cleared = jdbcTemplate.queryForList(
@@ -248,6 +252,66 @@ public class ModerationPublicationHoldService {
             .orElse(false);
     }
 
+    /**
+     * READY + intended_privacy still set → invisible on For You / guest watch (404).
+     * Release when cleared by AI/admin, or after the same soft-timeout used for HIDDEN holds.
+     */
+    private int releaseStuckReadyPrivacyHolds(int holdTimeoutMinutes) {
+        List<Map<String, Object>> stuck = jdbcTemplate.queryForList(
+            """
+            SELECT v.id AS video_id
+            FROM videos v
+            WHERE v.status = 'READY'
+              AND v.intended_privacy IS NOT NULL
+              AND COALESCE(v.studio_draft, FALSE) = FALSE
+              AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
+              AND NOT EXISTS (
+                  SELECT 1 FROM moderation_decisions md
+                  WHERE md.video_id = v.id
+                    AND (
+                      md.review_required = TRUE
+                      OR md.effective_decision IN ('BLOCK', 'DELETE')
+                    )
+              )
+              AND (
+                  EXISTS (
+                      SELECT 1 FROM moderation_decisions md
+                      WHERE md.video_id = v.id
+                        AND md.effective_decision IN ('ALLOW', 'LIMIT', 'REVIEW')
+                  )
+                  OR v.created_at < NOW() - (INTERVAL '1 minute' * ?)
+              )
+            ORDER BY v.created_at ASC
+            LIMIT 100
+            """,
+            holdTimeoutMinutes
+        );
+        int fixed = 0;
+        for (Map<String, Object> row : stuck) {
+            long videoId = ((Number) row.get("video_id")).longValue();
+            Video video = videoRepository.findById(videoId).orElse(null);
+            if (video == null || video.getIntendedPrivacy() == null) {
+                continue;
+            }
+            boolean reviewRequired = decisionRepository.findByVideo_Id(videoId)
+                .map(d -> d.isReviewRequired())
+                .orElse(false);
+            if (reviewRequired) {
+                continue;
+            }
+            privacyHoldService.releaseIfEligible(video, false);
+            if (video.getIntendedPrivacy() == null) {
+                videoRepository.save(video);
+                fixed++;
+                log.info("Released stuck READY privacy hold videoId={}", videoId);
+            }
+        }
+        if (fixed > 0) {
+            evictExploreCaches();
+        }
+        return fixed;
+    }
+
     private void releasePrivacyWhenReady(Video video) {
         if (video.getStatus() != VideoStatus.READY) {
             return;
@@ -261,6 +325,7 @@ public class ModerationPublicationHoldService {
             return;
         }
         // Keep review pending until moderation returns ALLOW/LIMIT/REVIEW (even when publication hold is off).
+        // Reconcile + soft-timeout will release READY rows that never received a decision.
         if (properties.isEnabled() && !hasPublicClearance(video.getId())) {
             privacyHoldService.applyHoldOnPublish(video);
             videoRepository.save(video);
@@ -274,6 +339,7 @@ public class ModerationPublicationHoldService {
         boolean reviewRequired = decisionRepository.findByVideo_Id(video.getId())
             .map(d -> d.isReviewRequired())
             .orElse(false);
+        boolean hadPrivacyHold = video.getIntendedPrivacy() != null;
         boolean statusChanged = video.getStatus() != VideoStatus.READY;
         if (statusChanged) {
             video.setStatus(VideoStatus.READY);
@@ -283,10 +349,11 @@ public class ModerationPublicationHoldService {
         }
         privacyHoldService.releaseIfEligible(video, reviewRequired);
         videoRepository.save(video);
-        if (statusChanged) {
+        boolean privacyReleased = hadPrivacyHold && video.getIntendedPrivacy() == null;
+        if (statusChanged || privacyReleased) {
             evictExploreCaches();
         }
-        return statusChanged;
+        return statusChanged || privacyReleased;
     }
 
     private int repairPublicPrivacyMismatches() {
