@@ -1,6 +1,8 @@
 package com.vibely.backend.auth.service;
 
 import com.vibely.backend.user.entity.User;
+import java.net.URI;
+import java.util.Locale;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -43,13 +45,32 @@ public class UserAvatarResolver {
         if (!StringUtils.hasText(url) || url.startsWith("/")) {
             return false;
         }
-        String lower = url.toLowerCase();
-        return lower.contains("fbsbx.com")
-            || lower.contains("fbcdn.net")
-            || lower.contains("lookaside.fbsbx.com")
-            || lower.contains("googleusercontent.com")
-            || lower.contains("ggpht.com")
-            || lower.contains("google.com/a/");
+        try {
+            URI uri = URI.create(url.trim());
+            String scheme = uri.getScheme();
+            if (scheme == null || !(scheme.equalsIgnoreCase("https") || scheme.equalsIgnoreCase("http"))) {
+                return false;
+            }
+            String host = uri.getHost();
+            if (host == null || host.isBlank()) {
+                return false;
+            }
+            String lower = host.toLowerCase(Locale.ROOT);
+            return lower.equals("fbsbx.com")
+                || lower.endsWith(".fbsbx.com")
+                || lower.equals("fbcdn.net")
+                || lower.endsWith(".fbcdn.net")
+                || lower.equals("lookaside.fbsbx.com")
+                || lower.endsWith(".lookaside.fbsbx.com")
+                || lower.equals("googleusercontent.com")
+                || lower.endsWith(".googleusercontent.com")
+                || lower.equals("ggpht.com")
+                || lower.endsWith(".ggpht.com")
+                || lower.equals("google.com")
+                || lower.endsWith(".google.com");
+        } catch (Exception ex) {
+            return false;
+        }
     }
 
     /**
