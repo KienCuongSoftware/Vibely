@@ -17,6 +17,7 @@ import {
   IoPeopleOutline,
   IoPersonOutline,
   IoSearchOutline,
+  IoTrashOutline,
 } from 'react-icons/io5'
 import { StudioLayout } from '@/features/studio/components/StudioLayout.jsx'
 import { useAuth } from '@/features/auth/hooks/useAuth.js'
@@ -40,6 +41,7 @@ import {
   isScheduleAtLeastLeadAhead,
 } from '@/features/upload/components/SchedulePickers.jsx'
 import { SoundPickerModal } from '@/features/upload/components/SoundPickerModal.jsx'
+import { formatSoundDuration } from '@/features/upload/utils/soundLibraryStore.js'
 
 const TITLE_MAX = 90
 const DESC_MAX = 1000
@@ -58,30 +60,36 @@ function CardTitle({ children, className = '' }) {
 
 function PhotoBadge({ label }) {
   return (
-    <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-semibold text-white backdrop-blur-sm">
+    <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-black/45 px-1.5 py-0.5 text-[9px] font-semibold text-white ring-1 ring-white/25">
       <IoCameraOutline className="text-[10px]" aria-hidden />
       {label}
     </span>
   )
 }
 
+/** Overlay copy stays readable on light photos (no soft white glow). */
+const PREVIEW_CAPTION_SHADOW =
+  '[text-shadow:0_1px_1px_rgba(0,0,0,0.95),0_0_2px_rgba(0,0,0,0.9),0_2px_6px_rgba(0,0,0,0.65)]'
+
 function CaptionStack({ displayName, description, locationQuery, soundLabel, photoBadge }) {
   return (
-    <div className="min-w-0 text-left text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+    <div className={`min-w-0 text-left text-white ${PREVIEW_CAPTION_SHADOW}`}>
       <p className="flex min-w-0 items-center gap-1.5 text-[12px] font-bold">
         <span className="truncate">{displayName}</span>
         <PhotoBadge label={photoBadge} />
       </p>
       {description ? (
-        <p className="mt-0.5 line-clamp-2 text-[11px] font-normal leading-snug text-white/95">{description}</p>
+        <p className="mt-0.5 line-clamp-2 text-[11px] font-normal leading-snug text-white">
+          {description}
+        </p>
       ) : null}
       {locationQuery ? (
-        <p className="mt-0.5 flex items-center gap-0.5 truncate text-[10px] text-white/85">
+        <p className="mt-0.5 flex items-center gap-0.5 truncate text-[10px] text-white">
           <IoLocationOutline className="shrink-0" aria-hidden />
           {locationQuery}
         </p>
       ) : null}
-      <p className="mt-1 flex items-center gap-1 truncate text-[11px] text-white/90">
+      <p className="mt-1 flex items-center gap-1 truncate text-[11px] text-white">
         <IoMusicalNotesOutline className="shrink-0 text-sm" aria-hidden />
         <span className="truncate">{soundLabel}</span>
       </p>
@@ -91,7 +99,9 @@ function CaptionStack({ displayName, description, locationQuery, soundLabel, pho
 
 function SideActions({ avatarSrc, showDisc = true }) {
   return (
-    <div className="flex w-11 flex-col items-center gap-3 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
+    <div
+      className={`flex w-11 flex-col items-center gap-3 text-white ${PREVIEW_CAPTION_SHADOW}`}
+    >
       <div className="relative">
         <img
           src={avatarSrc}
@@ -147,6 +157,14 @@ export function PhotoComposerPage() {
   const avatarSrc = user?.avatarUrl || DEFAULT_AVATAR_URL
   const soundLabel = selectedSound?.audioTitle?.trim()
     || t('upload.photo.originalSound', { name: displayName })
+  const soundMeta = selectedSound
+    ? [
+        formatSoundDuration(selectedSound.durationSeconds),
+        selectedSound.authorDisplayName?.trim() || displayName,
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : ''
   const captionText = description.trim() || title.trim()
 
   useEffect(() => {
@@ -332,8 +350,8 @@ export function PhotoComposerPage() {
 
               <CardTitle className="mt-8">{t('upload.photo.soundLabel')}</CardTitle>
               {selectedSound ? (
-                <div className="mt-3 flex items-center gap-3 rounded-lg bg-[#f8f8f8] px-3 py-2">
-                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-md bg-[#e8e8e9]">
+                <div className="mt-3 flex items-center gap-3 rounded-xl bg-[#f1f1f2] px-3 py-2.5">
+                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#e3e3e4]">
                     {selectedSound.thumbnailUrl ? (
                       <img
                         src={selectedSound.thumbnailUrl}
@@ -342,26 +360,30 @@ export function PhotoComposerPage() {
                       />
                     ) : (
                       <span className="flex h-full w-full items-center justify-center text-[#8a8b91]">
-                        <IoMusicalNotesOutline aria-hidden />
+                        <IoMusicalNotesOutline className="text-xl" aria-hidden />
                       </span>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-[#161823]">{soundLabel}</p>
+                    {soundMeta ? (
+                      <p className="mt-0.5 truncate text-xs text-[#8a8b91]">{soundMeta}</p>
+                    ) : null}
                   </div>
                   <button
                     type="button"
-                    className="cursor-pointer text-sm font-medium text-[#161823] hover:underline"
-                    onClick={() => setSoundPickerOpen(true)}
+                    className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white text-[#161823] shadow-sm ring-1 ring-black/5 hover:bg-[#fafafa]"
+                    onClick={() => setSelectedSound(null)}
+                    aria-label={t('upload.photo.removeSound')}
                   >
-                    {t('upload.photo.changeSound')}
+                    <IoTrashOutline className="text-lg" aria-hidden />
                   </button>
                   <button
                     type="button"
-                    className="cursor-pointer text-sm font-medium text-[#8a8b91] hover:text-[#fe2c55]"
-                    onClick={() => setSelectedSound(null)}
+                    className="shrink-0 cursor-pointer rounded-lg bg-white px-3.5 py-2 text-sm font-semibold text-[#161823] shadow-sm ring-1 ring-black/5 hover:bg-[#fafafa]"
+                    onClick={() => setSoundPickerOpen(true)}
                   >
-                    {t('upload.photo.removeSound')}
+                    {t('upload.photo.replaceSound')}
                   </button>
                 </div>
               ) : (
@@ -582,7 +604,7 @@ export function PhotoComposerPage() {
             </div>
 
             {previewTab === 'feed' ? (
-              <div className="mx-auto w-[260px] overflow-hidden rounded-[28px] border-[7px] border-[#161823] bg-black shadow-xl">
+              <div className="vibely-keep-dark mx-auto w-[260px] overflow-hidden rounded-[28px] border-[7px] border-[#161823] bg-black shadow-xl">
                 <div className="relative aspect-9/16 bg-black text-white">
                   <div className="absolute inset-x-0 top-0 z-30 flex items-center justify-between px-3 pt-1 text-[10px] font-medium">
                     <span>8:00</span>
@@ -740,24 +762,44 @@ export function PhotoComposerPage() {
             ) : null}
 
             {previewTab === 'web' ? (
-              <div className="overflow-hidden rounded-2xl bg-black shadow-xl">
-                <div className="relative aspect-9/16 w-full">
+              <div className="vibely-keep-dark overflow-hidden rounded-2xl bg-black shadow-xl">
+                <div className="relative aspect-video w-full bg-black">
                   {previews[previewIndex] ? (
-                    <img
-                      src={previews[previewIndex]}
-                      alt=""
-                      className="h-full w-full object-contain"
-                    />
+                    <button
+                      type="button"
+                      className="absolute inset-0 cursor-pointer"
+                      onClick={() =>
+                        setPreviewIndex((i) => (previews.length ? (i + 1) % previews.length : 0))
+                      }
+                    >
+                      <img
+                        src={previews[previewIndex]}
+                        alt=""
+                        className="h-full w-full object-contain"
+                      />
+                    </button>
                   ) : null}
                   {previews.length > 1 ? (
-                    <div className="pointer-events-none absolute top-3 right-3 rounded-md bg-black/45 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                    <div className="pointer-events-none absolute top-3 right-3 z-20 rounded-md bg-black/45 px-1.5 py-0.5 text-[10px] font-semibold text-white">
                       {previewIndex + 1}/{previews.length}
                     </div>
                   ) : null}
-                  <div className="pointer-events-none absolute right-2 bottom-10">
+                  {previews.length > 1 ? (
+                    <div className="pointer-events-none absolute inset-x-0 bottom-3 z-20 flex justify-center gap-1.5">
+                      {previews.map((_, i) => (
+                        <span
+                          key={i}
+                          className={`h-1.5 w-1.5 rounded-full ${
+                            i === previewIndex ? 'bg-white' : 'bg-white/40'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+                  <div className="pointer-events-none absolute right-3 bottom-8 z-20">
                     <SideActions avatarSrc={avatarSrc} showDisc={false} />
                   </div>
-                  <div className="pointer-events-none absolute right-14 bottom-10 left-3">
+                  <div className="pointer-events-none absolute right-16 bottom-8 left-4 z-20">
                     <CaptionStack
                       displayName={displayName}
                       description={captionText}
