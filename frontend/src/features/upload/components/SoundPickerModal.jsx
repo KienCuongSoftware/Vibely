@@ -1,7 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { IoClose, IoHeart, IoHeartOutline, IoMusicalNotesOutline, IoSearchOutline } from 'react-icons/io5'
+import {
+  IoBookmark,
+  IoBookmarkOutline,
+  IoClose,
+  IoMusicalNotesOutline,
+  IoPause,
+  IoPlay,
+  IoSearchOutline,
+} from 'react-icons/io5'
 import { postApi } from '@/features/post/api/postApi.js'
 import {
   filterSounds,
@@ -15,7 +23,16 @@ import {
 
 const TABS = ['recommended', 'favorites', 'recent']
 
-function SoundRow({ item, playing, onPreview, onUse, onToggleFavorite, favorite }) {
+function SoundRow({
+  item,
+  playing,
+  progressPct,
+  onPreview,
+  onSeek,
+  onUse,
+  onToggleFavorite,
+  favorite,
+}) {
   const { t } = useTranslation()
   const title = item.audioTitle?.trim() || t('upload.photo.soundPicker.untitled')
   const meta = [
@@ -24,7 +41,11 @@ function SoundRow({ item, playing, onPreview, onUse, onToggleFavorite, favorite 
   ].filter(Boolean).join(' · ')
 
   return (
-    <div className="flex items-center gap-3 border-b border-[#f1f1f2] py-3 last:border-b-0">
+    <div
+      className={`group/sound flex items-center gap-3 border-b border-[#f1f1f2] py-3 last:border-b-0 ${
+        playing ? 'bg-[#fafafa]' : ''
+      }`}
+    >
       <button
         type="button"
         className="relative h-14 w-14 shrink-0 cursor-pointer overflow-hidden rounded-md bg-[#f1f1f2]"
@@ -38,23 +59,76 @@ function SoundRow({ item, playing, onPreview, onUse, onToggleFavorite, favorite 
             <IoMusicalNotesOutline className="text-xl" aria-hidden />
           </span>
         )}
+        <span
+          className={`absolute inset-0 flex items-center justify-center bg-black/40 text-white transition-opacity ${
+            playing
+              ? 'opacity-100'
+              : 'opacity-0 group-hover/sound:opacity-100'
+          }`}
+          aria-hidden
+        >
+          {playing ? (
+            <IoPause className="text-2xl" />
+          ) : (
+            <IoPlay className="translate-x-px text-2xl" />
+          )}
+        </span>
+      </button>
+
+      <div className="min-w-0 flex-1">
+        <button
+          type="button"
+          className="w-full cursor-pointer text-left"
+          onClick={() => onPreview(item)}
+        >
+          <p className="truncate text-sm font-semibold text-[#161823]">{title}</p>
+          <p className="mt-0.5 truncate text-xs text-[#8a8b91]">{meta}</p>
+        </button>
         {playing ? (
-          <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-[10px] font-bold text-white">
-            ▶
-          </span>
+          <div
+            className="group/progress mt-2 h-3 cursor-pointer"
+            role="slider"
+            tabIndex={0}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(progressPct)}
+            aria-label={t('upload.photo.soundPicker.preview')}
+            onClick={(e) => {
+              e.stopPropagation()
+              const rect = e.currentTarget.getBoundingClientRect()
+              if (rect.width <= 0) return
+              const pct = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width))
+              onSeek?.(pct)
+            }}
+            onKeyDown={(e) => {
+              if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+              e.preventDefault()
+              const delta = e.key === 'ArrowLeft' ? -0.05 : 0.05
+              onSeek?.(Math.min(1, Math.max(0, progressPct / 100 + delta)))
+            }}
+          >
+            <div className="relative top-1 h-[3px] rounded-full bg-[#e3e3e4] transition-[height] group-hover/progress:h-[5px]">
+              <div
+                className="absolute inset-y-0 left-0 rounded-full bg-[#161823]"
+                style={{ width: `${Math.min(100, Math.max(0, progressPct))}%` }}
+              />
+              <div
+                className="absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow ring-1 ring-black/10 opacity-0 transition-opacity group-hover/progress:opacity-100"
+                style={{ left: `${Math.min(100, Math.max(0, progressPct))}%` }}
+                aria-hidden
+              />
+            </div>
+          </div>
         ) : null}
-      </button>
+      </div>
+
       <button
         type="button"
-        className="min-w-0 flex-1 cursor-pointer text-left"
-        onClick={() => onPreview(item)}
-      >
-        <p className="truncate text-sm font-semibold text-[#161823]">{title}</p>
-        <p className="mt-0.5 truncate text-xs text-[#8a8b91]">{meta}</p>
-      </button>
-      <button
-        type="button"
-        className="shrink-0 cursor-pointer rounded-full p-1.5 text-[#8a8b91] hover:bg-[#f1f1f2] hover:text-[#fe2c55]"
+        className={`shrink-0 cursor-pointer rounded-full p-1.5 text-[#161823] transition-opacity hover:bg-[#f1f1f2] ${
+          favorite || playing
+            ? 'opacity-100'
+            : 'opacity-0 group-hover/sound:opacity-100 focus-visible:opacity-100'
+        }`}
         onClick={() => onToggleFavorite(item)}
         aria-label={
           favorite
@@ -63,11 +137,12 @@ function SoundRow({ item, playing, onPreview, onUse, onToggleFavorite, favorite 
         }
       >
         {favorite ? (
-          <IoHeart className="text-lg text-[#fe2c55]" aria-hidden />
+          <IoBookmark className="text-xl text-[#161823]" aria-hidden />
         ) : (
-          <IoHeartOutline className="text-lg" aria-hidden />
+          <IoBookmarkOutline className="text-xl" aria-hidden />
         )}
       </button>
+
       <button
         type="button"
         className="shrink-0 cursor-pointer rounded-md bg-[#fe2c55] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[#e62a4d]"
@@ -87,6 +162,7 @@ export function SoundPickerModal({ open, onClose, onSelect }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [playingUrl, setPlayingUrl] = useState('')
+  const [progressPct, setProgressPct] = useState(0)
   const [favoriteRevision, setFavoriteRevision] = useState(0)
   const audioRef = useRef(null)
   const debounceRef = useRef(null)
@@ -98,6 +174,7 @@ export function SoundPickerModal({ open, onClose, onSelect }) {
       el.currentTime = 0
     }
     setPlayingUrl('')
+    setProgressPct(0)
   }, [])
 
   useEffect(() => {
@@ -110,6 +187,20 @@ export function SoundPickerModal({ open, onClose, onSelect }) {
   }, [open, stopPreview])
 
   useEffect(() => () => stopPreview(), [stopPreview])
+
+  useEffect(() => {
+    const el = audioRef.current
+    if (!el) return undefined
+    const onTimeUpdate = () => {
+      if (!el.duration || !Number.isFinite(el.duration) || el.duration <= 0) {
+        setProgressPct(0)
+        return
+      }
+      setProgressPct((el.currentTime / el.duration) * 100)
+    }
+    el.addEventListener('timeupdate', onTimeUpdate)
+    return () => el.removeEventListener('timeupdate', onTimeUpdate)
+  }, [open])
 
   const loadRecommended = useCallback(async (search) => {
     setLoading(true)
@@ -157,8 +248,21 @@ export function SoundPickerModal({ open, onClose, onSelect }) {
     if (!el) return
     el.src = item.audioUrl
     el.play()
-      .then(() => setPlayingUrl(item.audioUrl))
-      .catch(() => setPlayingUrl(''))
+      .then(() => {
+        setPlayingUrl(item.audioUrl)
+        setProgressPct(0)
+      })
+      .catch(() => {
+        setPlayingUrl('')
+        setProgressPct(0)
+      })
+  }
+
+  const handleSeek = (ratio) => {
+    const el = audioRef.current
+    if (!el?.duration || !Number.isFinite(el.duration) || el.duration <= 0) return
+    el.currentTime = el.duration * ratio
+    setProgressPct(ratio * 100)
   }
 
   const handleUse = (item) => {
@@ -259,8 +363,10 @@ export function SoundPickerModal({ open, onClose, onSelect }) {
                   key={item.audioUrl}
                   item={item}
                   playing={playingUrl === item.audioUrl}
+                  progressPct={playingUrl === item.audioUrl ? progressPct : 0}
                   favorite={isFavoriteSound(item.audioUrl)}
                   onPreview={handlePreview}
+                  onSeek={handleSeek}
                   onUse={handleUse}
                   onToggleFavorite={handleToggleFavorite}
                 />
