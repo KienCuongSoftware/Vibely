@@ -32,6 +32,7 @@ public class ModerationPublicationHoldService {
     private final JdbcTemplate jdbcTemplate;
     private final ModerationJoinService joinService;
     private final ModerationPrivacyHoldService privacyHoldService;
+    private final ModerationDecisionApplier decisionApplier;
 
     public ModerationPublicationHoldService(
         ModerationProperties properties,
@@ -40,7 +41,8 @@ public class ModerationPublicationHoldService {
         ExploreCacheService exploreCacheService,
         JdbcTemplate jdbcTemplate,
         ModerationJoinService joinService,
-        ModerationPrivacyHoldService privacyHoldService
+        ModerationPrivacyHoldService privacyHoldService,
+        ModerationDecisionApplier decisionApplier
     ) {
         this.properties = properties;
         this.videoRepository = videoRepository;
@@ -49,6 +51,7 @@ public class ModerationPublicationHoldService {
         this.jdbcTemplate = jdbcTemplate;
         this.joinService = joinService;
         this.privacyHoldService = privacyHoldService;
+        this.decisionApplier = decisionApplier;
     }
 
     public boolean isHoldActive() {
@@ -104,6 +107,12 @@ public class ModerationPublicationHoldService {
         // 0) READY but still privacy-held — common when encoding finished before AI wrote a decision,
         //    or ALLOW applied while status was already READY (status unchanged, hold never cleared).
         fixed += releaseStuckReadyPrivacyHolds(holdTimeout);
+
+        // 0b) REVIEW/BLOCK holds with no open admin queue → reopen so moderators can clear FYP blocks.
+        fixed += reopenOrphanReviewQueueItems();
+
+        // 0c) Stale REVIEW after hold timeout → soft ALLOW so For You is not empty forever.
+        fixed += softClearStaleReviewHolds(holdTimeout);
 
         if (!isHoldActive()) {
             return fixed;
@@ -305,6 +314,113 @@ public class ModerationPublicationHoldService {
                 fixed++;
                 log.info("Released stuck READY privacy hold videoId={}", videoId);
             }
+        }
+        if (fixed > 0) {
+            evictExploreCaches();
+        }
+        return fixed;
+    }
+
+    /**
+     * AI REVIEW/BLOCK wrote a decision but the admin queue row is missing or already closed —
+     * reopen so "/admin/moderation" is not empty while For You stays blocked.
+     */
+    private int reopenOrphanReviewQueueItems() {
+        if (!properties.isEnabled()) {
+            return 0;
+        }
+        int inserted = jdbcTemplate.update(
+            """
+            INSERT INTO moderation_review_queue
+                (video_id, report_id, priority, queue_state, reason, created_at, updated_at)
+            SELECT md.video_id,
+                   md.report_id,
+                   50,
+                   'OPEN',
+                   'ORPHAN_REVIEW_REOPEN',
+                   NOW(),
+                   NOW()
+            FROM moderation_decisions md
+            INNER JOIN videos v ON v.id = md.video_id
+            WHERE md.report_id IS NOT NULL
+              AND COALESCE(v.studio_draft, FALSE) = FALSE
+              AND v.status IN ('READY', 'HIDDEN', 'REPORTED')
+              AND (
+                  md.review_required = TRUE
+                  OR md.effective_decision IN ('REVIEW', 'BLOCK', 'DELETE')
+              )
+              AND md.effective_decision NOT IN ('ALLOW', 'LIMIT')
+              AND NOT EXISTS (
+                  SELECT 1 FROM moderation_review_queue q
+                  WHERE q.video_id = md.video_id
+                    AND q.queue_state IN ('OPEN', 'CLAIMED')
+              )
+            ORDER BY v.created_at ASC
+            LIMIT 50
+            """
+        );
+        if (inserted > 0) {
+            log.info("Reopened {} orphan moderation review queue item(s)", inserted);
+        }
+        return inserted;
+    }
+
+    /**
+     * If nobody resolves REVIEW within the publication-hold timeout, soft-clear to ALLOW
+     * so public feeds are not permanently empty.
+     */
+    private int softClearStaleReviewHolds(int holdTimeoutMinutes) {
+        if (!properties.isEnabled()) {
+            return 0;
+        }
+        List<Map<String, Object>> stale = jdbcTemplate.queryForList(
+            """
+            SELECT v.id AS video_id
+            FROM videos v
+            INNER JOIN moderation_decisions md ON md.video_id = v.id
+            WHERE COALESCE(v.studio_draft, FALSE) = FALSE
+              AND v.status = 'READY'
+              AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
+              AND md.effective_decision = 'REVIEW'
+              AND md.review_required = TRUE
+              AND v.created_at < NOW() - (INTERVAL '1 minute' * ?)
+            ORDER BY v.created_at ASC
+            LIMIT 40
+            """,
+            holdTimeoutMinutes
+        );
+        int fixed = 0;
+        for (Map<String, Object> row : stale) {
+            long videoId = ((Number) row.get("video_id")).longValue();
+            Video video = videoRepository.findById(videoId).orElse(null);
+            if (video == null) {
+                continue;
+            }
+            ModerationReportEntity report = decisionRepository.findByVideo_Id(videoId)
+                .map(ModerationDecisionEntity::getReport)
+                .orElse(null);
+            decisionApplier.apply(
+                video,
+                report,
+                ModerationDecision.ALLOW,
+                false,
+                "SYSTEM:HOLD_TIMEOUT"
+            );
+            jdbcTemplate.update(
+                """
+                UPDATE moderation_review_queue
+                SET queue_state = 'RESOLVED', updated_at = NOW()
+                WHERE video_id = ?
+                  AND queue_state IN ('OPEN', 'CLAIMED')
+                """,
+                videoId
+            );
+            fixed++;
+            log.warn(
+                "Soft-cleared stale REVIEW videoId={} to ALLOW after {}m hold timeout",
+                videoId,
+                holdTimeoutMinutes
+            );
         }
         if (fixed > 0) {
             evictExploreCaches();
