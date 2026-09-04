@@ -2603,6 +2603,7 @@
       "pickPhotos": "Выбрать фото",
       "invalidFiles": "JPG, JPEG, PNG или WebP, не более 50 МБ каждое, до 35 фото.",
       "changeSound": "Дыбысты өзгерту",
+      "replaceSound": "Ауыстыру",
       "removeSound": "Дыбысты жою",
       "soundPicker": {
         "title": "Дыбыс",

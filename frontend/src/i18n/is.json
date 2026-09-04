@@ -2603,6 +2603,7 @@
       "pickPhotos": "Velja myndir",
       "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
       "changeSound": "Breyta hljóði",
+      "replaceSound": "Skipta út",
       "removeSound": "Fjarlægja hljóð",
       "soundPicker": {
         "title": "Hljóð",

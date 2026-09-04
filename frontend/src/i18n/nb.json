@@ -2603,6 +2603,7 @@
       "pickPhotos": "Velg bilder",
       "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
       "changeSound": "Bytt lyd",
+      "replaceSound": "Erstatt",
       "removeSound": "Fjern lyd",
       "soundPicker": {
         "title": "Lyd",

@@ -2596,6 +2596,7 @@
       "pickPhotos": "फ़ोटो चुनें",
       "invalidFiles": "JPG, JPEG, PNG या WebP, प्रत्येक अधिकतम 50 MB, अधिकतम 35 फ़ोटो.",
       "changeSound": "ध्वनि बदलें",
+      "replaceSound": "बदलें",
       "removeSound": "ध्वनि हटाएँ",
       "soundPicker": {
         "title": "ध्वनि",

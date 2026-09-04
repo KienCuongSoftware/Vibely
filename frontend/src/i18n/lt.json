@@ -2603,6 +2603,7 @@
       "pickPhotos": "Pasirinkti nuotraukas",
       "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
       "changeSound": "Keisti garsą",
+      "replaceSound": "Pakeisti",
       "removeSound": "Pašalinti garsą",
       "soundPicker": {
         "title": "Garsas",

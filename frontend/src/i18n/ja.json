@@ -2651,6 +2651,7 @@
       "pickPhotos": "写真を選択",
       "invalidFiles": "JPG、JPEG、PNG、WebP、各50MBまで、最大35枚。",
       "changeSound": "サウンドを変更",
+      "replaceSound": "置き換え",
       "removeSound": "サウンドを削除",
       "soundPicker": {
         "title": "サウンド",

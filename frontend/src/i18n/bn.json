@@ -2603,6 +2603,7 @@
       "pickPhotos": "ছবি বেছে নিন",
       "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
       "changeSound": "শব্দ পরিবর্তন করুন",
+      "replaceSound": "প্রতিস্থাপন",
       "removeSound": "শব্দ সরান",
       "soundPicker": {
         "title": "শব্দ",

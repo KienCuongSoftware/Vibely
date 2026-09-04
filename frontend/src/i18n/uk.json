@@ -2603,6 +2603,7 @@
       "pickPhotos": "Вибрати фото",
       "invalidFiles": "JPG, JPEG, PNG или WebP, не более 50 МБ каждое, до 35 фото.",
       "changeSound": "Змінити звук",
+      "replaceSound": "Замінити",
       "removeSound": "Видалити звук",
       "soundPicker": {
         "title": "Звук",

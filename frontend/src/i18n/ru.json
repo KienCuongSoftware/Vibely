@@ -2596,6 +2596,7 @@
       "pickPhotos": "Выбрать фото",
       "invalidFiles": "JPG, JPEG, PNG или WebP, не более 50 МБ каждое, до 35 фото.",
       "changeSound": "Изменить звук",
+      "replaceSound": "Заменить",
       "removeSound": "Удалить звук",
       "soundPicker": {
         "title": "Звук",

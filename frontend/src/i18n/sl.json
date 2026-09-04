@@ -2603,6 +2603,7 @@
       "pickPhotos": "Izberi fotografije",
       "invalidFiles": "JPG, JPEG, PNG lub WebP, maks. 50 MB każde, do 35 zdjęć.",
       "changeSound": "Spremeni zvok",
+      "replaceSound": "Zamenjaj",
       "removeSound": "Odstrani zvok",
       "soundPicker": {
         "title": "Zvok",

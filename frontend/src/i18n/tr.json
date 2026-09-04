@@ -2596,6 +2596,7 @@
       "pickPhotos": "Fotoğraf seç",
       "invalidFiles": "JPG, JPEG, PNG veya WebP kullanın, her biri en fazla 50 MB, en fazla 35 fotoğraf.",
       "changeSound": "Sesi değiştir",
+      "replaceSound": "Değiştir",
       "removeSound": "Sesi kaldır",
       "soundPicker": {
         "title": "Ses",

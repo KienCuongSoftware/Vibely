@@ -2603,6 +2603,7 @@
       "pickPhotos": "Vali fotod",
       "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
       "changeSound": "Muuda heli",
+      "replaceSound": "Asenda",
       "removeSound": "Eemalda heli",
       "soundPicker": {
         "title": "Heli",

@@ -2722,6 +2722,7 @@
       "photoBadge": "Photo",
       "originalSound": "Âm thanh gốc - {{name}}",
       "changeSound": "Đổi âm thanh",
+      "replaceSound": "Thay thế",
       "removeSound": "Xóa âm thanh",
       "soundPicker": {
         "title": "Âm thanh",

@@ -2603,6 +2603,7 @@
       "pickPhotos": "Выбрать фото",
       "invalidFiles": "JPG, JPEG, PNG или WebP, не более 50 МБ каждое, до 35 фото.",
       "changeSound": "Ovozni o'zgartirish",
+      "replaceSound": "Almashtirish",
       "removeSound": "Ovozni olib tashlash",
       "soundPicker": {
         "title": "Ovoz",

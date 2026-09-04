@@ -2603,6 +2603,7 @@
       "pickPhotos": "تصاویر منتخب کریں",
       "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
       "changeSound": "آواز تبدیل کریں",
+      "replaceSound": "تبدیل کریں",
       "removeSound": "آواز ہٹائیں",
       "soundPicker": {
         "title": "آواز",

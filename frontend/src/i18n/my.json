@@ -2603,6 +2603,7 @@
       "pickPhotos": "เลือกรูป",
       "invalidFiles": "ใช้ JPG, JPEG, PNG หรือ WebP สูงสุด 50 MB ต่อไฟล์ สูงสุด 35 รูป",
       "changeSound": "အသံပြောင်းရန်",
+      "replaceSound": "အစားထိုး",
       "removeSound": "အသံဖယ်ရှားရန်",
       "soundPicker": {
         "title": "အသံ",

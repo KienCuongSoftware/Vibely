@@ -2603,6 +2603,7 @@
       "pickPhotos": "Izvēlēties foto",
       "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
       "changeSound": "Mainīt skaņu",
+      "replaceSound": "Aizstāt",
       "removeSound": "Noņemt skaņu",
       "soundPicker": {
         "title": "Skaņa",

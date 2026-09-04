@@ -2596,6 +2596,7 @@
       "pickPhotos": "사진 선택",
       "invalidFiles": "JPG, JPEG, PNG 또는 WebP, 각 최대 50MB, 최대 35장.",
       "changeSound": "사운드 변경",
+      "replaceSound": "바꾸기",
       "removeSound": "사운드 제거",
       "soundPicker": {
         "title": "사운드",

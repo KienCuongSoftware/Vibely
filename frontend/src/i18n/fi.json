@@ -2603,6 +2603,7 @@
       "pickPhotos": "Valitse kuvat",
       "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
       "changeSound": "Vaihda ääni",
+      "replaceSound": "Korvaa",
       "removeSound": "Poista ääni",
       "soundPicker": {
         "title": "Ääni",

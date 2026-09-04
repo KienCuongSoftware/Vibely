@@ -2596,6 +2596,7 @@
       "pickPhotos": "Pilih foto",
       "invalidFiles": "Gunakan JPG, JPEG, PNG, atau WebP, maks. 50 MB per file, hingga 35 foto.",
       "changeSound": "Ganti suara",
+      "replaceSound": "Ganti",
       "removeSound": "Hapus suara",
       "soundPicker": {
         "title": "Suara",

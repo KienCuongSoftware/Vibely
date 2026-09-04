@@ -2603,6 +2603,7 @@
       "pickPhotos": "Chagua picha",
       "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
       "changeSound": "Badilisha sauti",
+      "replaceSound": "Badilisha",
       "removeSound": "Ondoa sauti",
       "soundPicker": {
         "title": "Sauti",

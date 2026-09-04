@@ -2596,6 +2596,7 @@
       "pickPhotos": "اختيار الصور",
       "invalidFiles": "استخدم JPG أو JPEG أو PNG أو WebP، بحد أقصى 50 ميغابايت لكل ملف، حتى 35 صورة.",
       "changeSound": "تغيير الصوت",
+      "replaceSound": "استبدال",
       "removeSound": "إزالة الصوت",
       "soundPicker": {
         "title": "الصوت",

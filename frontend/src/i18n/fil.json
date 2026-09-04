@@ -2603,6 +2603,7 @@
       "pickPhotos": "Pumili ng mga larawan",
       "invalidFiles": "Gunakan JPG, JPEG, PNG, atau WebP, maks. 50 MB per file, hingga 35 foto.",
       "changeSound": "Palitan ang tunog",
+      "replaceSound": "Palitan",
       "removeSound": "Alisin ang tunog",
       "soundPicker": {
         "title": "Tunog",

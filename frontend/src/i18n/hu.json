@@ -2603,6 +2603,7 @@
       "pickPhotos": "Fotók kiválasztása",
       "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
       "changeSound": "Hang cseréje",
+      "replaceSound": "Csere",
       "removeSound": "Hang eltávolítása",
       "soundPicker": {
         "title": "Hang",

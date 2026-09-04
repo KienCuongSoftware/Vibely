@@ -2603,6 +2603,7 @@
       "pickPhotos": "เลือกรูป",
       "invalidFiles": "ใช้ JPG, JPEG, PNG หรือ WebP สูงสุด 50 MB ต่อไฟล์ สูงสุด 35 รูป",
       "changeSound": "ប្តូរសំឡេង",
+      "replaceSound": "ជំនួស",
       "removeSound": "លុបសំឡេង",
       "soundPicker": {
         "title": "សំឡេង",

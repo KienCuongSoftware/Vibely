@@ -2603,6 +2603,7 @@
       "pickPhotos": "Välj foton",
       "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
       "changeSound": "Byt ljud",
+      "replaceSound": "Ersätt",
       "removeSound": "Ta bort ljud",
       "soundPicker": {
         "title": "Ljud",

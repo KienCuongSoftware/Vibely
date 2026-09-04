@@ -2603,6 +2603,7 @@
       "pickPhotos": "Foto seç",
       "invalidFiles": "JPG, JPEG, PNG veya WebP kullanın, her biri en fazla 50 MB, en fazla 35 fotoğraf.",
       "changeSound": "Səsi dəyiş",
+      "replaceSound": "Əvəz et",
       "removeSound": "Səsi sil",
       "soundPicker": {
         "title": "Səs",

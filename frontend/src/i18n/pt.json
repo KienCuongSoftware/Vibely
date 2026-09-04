@@ -2596,6 +2596,7 @@
       "pickPhotos": "Selecionar fotos",
       "invalidFiles": "Use JPG, JPEG, PNG ou WebP, máx. 50 MB cada, até 35 fotos.",
       "changeSound": "Alterar som",
+      "replaceSound": "Substituir",
       "removeSound": "Remover som",
       "soundPicker": {
         "title": "Som",

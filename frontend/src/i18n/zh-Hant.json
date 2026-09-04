@@ -2596,6 +2596,7 @@
       "pickPhotos": "選取照片",
       "invalidFiles": "使用 JPG、JPEG、PNG 或 WebP，每張最大 50 MB，最多 35 張。",
       "changeSound": "更換音樂",
+      "replaceSound": "取代",
       "removeSound": "移除音樂",
       "soundPicker": {
         "title": "音樂",

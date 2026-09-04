@@ -2603,6 +2603,7 @@
       "pickPhotos": "בחר תמונות",
       "invalidFiles": "JPG, JPEG, PNG או WebP, עד 50MB כל אחת, עד 35 תמונות.",
       "changeSound": "שנה צליל",
+      "replaceSound": "החלף",
       "removeSound": "הסר צליל",
       "soundPicker": {
         "title": "צליל",

@@ -2603,6 +2603,7 @@
       "pickPhotos": "Foto’s selecteren",
       "invalidFiles": "JPG, JPEG, PNG of WebP, max. 50 MB per bestand, tot 35 foto’s.",
       "changeSound": "Geluid wijzigen",
+      "replaceSound": "Vervangen",
       "removeSound": "Geluid verwijderen",
       "soundPicker": {
         "title": "Geluid",

@@ -2603,6 +2603,7 @@
       "pickPhotos": "Επιλογή φωτογραφιών",
       "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
       "changeSound": "Αλλαγή ήχου",
+      "replaceSound": "Αντικατάσταση",
       "removeSound": "Αφαίρεση ήχου",
       "soundPicker": {
         "title": "Ήχος",

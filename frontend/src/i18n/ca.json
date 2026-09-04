@@ -2603,6 +2603,7 @@
       "pickPhotos": "Selecciona fotos",
       "invalidFiles": "Usa JPG, JPEG, PNG o WebP, máx. 50 MB cada una, hasta 35 fotos.",
       "changeSound": "Canvia el so",
+      "replaceSound": "Substitueix",
       "removeSound": "Elimina el so",
       "soundPicker": {
         "title": "So",

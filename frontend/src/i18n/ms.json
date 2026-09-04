@@ -2603,6 +2603,7 @@
       "pickPhotos": "Pilih foto",
       "invalidFiles": "Gunakan JPG, JPEG, PNG, atau WebP, maks. 50 MB per file, hingga 35 foto.",
       "changeSound": "Tukar bunyi",
+      "replaceSound": "Ganti",
       "removeSound": "Buang bunyi",
       "soundPicker": {
         "title": "Bunyi",

@@ -2603,6 +2603,7 @@
       "pickPhotos": "Selectează fotografii",
       "invalidFiles": "Use JPG, JPEG, PNG or WebP, max 50 MB each, up to 35 photos.",
       "changeSound": "Schimbă sunetul",
+      "replaceSound": "Înlocuiește",
       "removeSound": "Elimină sunetul",
       "soundPicker": {
         "title": "Sunet",
