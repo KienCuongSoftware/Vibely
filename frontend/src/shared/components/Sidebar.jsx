@@ -105,16 +105,31 @@ export function Sidebar({
           }`}
         >
           {showCollapseToggle && userCollapsed ? (
-            <TooltipHoverWrap tip={collapseTip} hoverOnly>
-              <button
-                type="button"
-                onClick={toggleUserCollapsed}
-                aria-label={collapseTip}
-                aria-expanded={false}
-                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-zinc-100"
-              >
-                <TbLayoutSidebarLeftExpand className="text-[22px]" aria-hidden />
-              </button>
+            /* TikTok: logo mặc định; hover mới hiện nút mở rộng sidebar */
+            <TooltipHoverWrap tip={collapseTip} hoverOnly className="relative">
+              <div className="group/siderail relative flex h-9 w-9 items-center justify-center">
+                <Link
+                  to="/"
+                  className="absolute inset-0 flex items-center justify-center text-zinc-100 transition-opacity duration-150 group-hover/siderail:pointer-events-none group-hover/siderail:opacity-0 group-focus-within/siderail:pointer-events-none group-focus-within/siderail:opacity-0"
+                  onClick={() => {
+                    if (moreOpen) setMoreOpen(false);
+                  }}
+                >
+                  <VibelyMarkIcon className="h-7 w-7 shrink-0 text-zinc-100" />
+                </Link>
+                <button
+                  type="button"
+                  onClick={toggleUserCollapsed}
+                  aria-label={collapseTip}
+                  aria-expanded={false}
+                  className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-lg text-zinc-400 opacity-0 transition-all duration-150 pointer-events-none hover:bg-zinc-900 hover:text-zinc-100 group-hover/siderail:pointer-events-auto group-hover/siderail:opacity-100 group-focus-within/siderail:pointer-events-auto group-focus-within/siderail:opacity-100"
+                >
+                  <TbLayoutSidebarLeftExpand
+                    className="text-[22px]"
+                    aria-hidden
+                  />
+                </button>
+              </div>
             </TooltipHoverWrap>
           ) : (
             <>
