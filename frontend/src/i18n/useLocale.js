@@ -63,7 +63,7 @@ export const SUPPORTED_LANGUAGES = [
 export function useLocale() {
   const { i18n } = useTranslation()
   const locale = i18n.language
-  const normalizedLocale = String(locale || 'vi').toLowerCase()
+  const normalizedLocale = String(locale || 'en').toLowerCase()
   const selected = SUPPORTED_LANGUAGES.find((lang) => {
     const code = lang.code.toLowerCase()
     return normalizedLocale === code || normalizedLocale.startsWith(`${code}-`)

@@ -14,9 +14,9 @@ const resources = Object.fromEntries(
 
 export function getSavedLocale() {
   try {
-    return localStorage.getItem(LOCALE_KEY) || 'vi'
+    return localStorage.getItem(LOCALE_KEY) || 'en'
   } catch {
-    return 'vi'
+    return 'en'
   }
 }
 

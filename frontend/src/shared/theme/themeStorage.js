@@ -15,7 +15,8 @@ export function readAppearancePreference() {
   } catch {
     // ignore
   }
-  return "system";
+  // First visit (no preference yet): light like TikTok web.
+  return "light";
 }
 
 export function writeAppearancePreference(preference) {
@@ -29,7 +30,7 @@ export function writeAppearancePreference(preference) {
 export function resolveAppearance(preference) {
   if (preference === "light" || preference === "dark") return preference;
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-    return "dark";
+    return "light";
   }
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
