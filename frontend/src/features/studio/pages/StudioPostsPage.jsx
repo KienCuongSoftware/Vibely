@@ -529,7 +529,7 @@ export function StudioPostsPage() {
                     <tr key={v.publicId} className="border-b border-zinc-800/80 last:border-b-0">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="relative h-[72px] w-[52px] shrink-0 overflow-hidden rounded-md bg-zinc-800">
+                          <div className="vibely-keep-dark relative h-[72px] w-[52px] shrink-0 overflow-hidden rounded-md bg-zinc-800">
                             {hasThumb ? (
                               <VideoThumbnailImg
                                 src={v.thumbnailUrl}
@@ -638,7 +638,7 @@ export function StudioPostsPage() {
                         <div className="flex items-center gap-3">
                           <Link
                             to={detailUrl}
-                            className="relative h-[72px] w-[52px] shrink-0 cursor-pointer overflow-hidden rounded-md bg-zinc-800"
+                            className="vibely-keep-dark relative h-[72px] w-[52px] shrink-0 cursor-pointer overflow-hidden rounded-md bg-zinc-800"
                             title={t("studio.posts.viewVideo")}
                           >
                             {hasThumb ? (
