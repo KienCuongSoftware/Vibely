@@ -17,6 +17,7 @@ import {
   IoTimeOutline,
   IoTrashOutline,
 } from "react-icons/io5";
+import { VideoThumbnailImg } from "@/features/post/components/VideoThumbnailImg.jsx";
 import { apiClient } from "@/shared/api/client";
 import { StudioLayout } from "@/features/studio/components/StudioLayout";
 import { StudioAccountMenu } from "@/features/studio/components/StudioAccountMenu";
@@ -479,19 +480,19 @@ export function StudioPostsPage() {
         ) : (
           <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
             <span className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-1.5">
-              Lượt xem
+              {t("studio.posts.views")}
               <IoChevronDown className="text-zinc-600" aria-hidden />
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-1.5">
-              Lượt thích
+              {t("studio.posts.likes")}
               <IoChevronDown className="text-zinc-600" aria-hidden />
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-1.5">
-              Bình luận
+              {t("studio.posts.comments")}
               <IoChevronDown className="text-zinc-600" aria-hidden />
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-1.5">
-              Quyền riêng tư
+              {t("studio.posts.privacy")}
               <IoChevronDown className="text-zinc-600" aria-hidden />
             </span>
           </div>
@@ -510,10 +511,10 @@ export function StudioPostsPage() {
                 <tr className="border-b border-zinc-800 bg-zinc-900/50 text-xs text-zinc-500">
                   <th className="px-4 py-3 font-medium">{t("studio.posts.tabDrafts")}</th>
                   <th className="w-[28%] whitespace-nowrap px-4 py-3 text-center font-medium">
-                    Cập nhật lần cuối
+                    {t("studio.posts.lastUpdated")}
                   </th>
                   <th className="w-[18%] whitespace-nowrap px-4 py-3 text-right font-medium">
-                    Thao tác
+                    {t("studio.posts.actions")}
                   </th>
                 </tr>
               </thead>
@@ -530,9 +531,8 @@ export function StudioPostsPage() {
                         <div className="flex items-center gap-3">
                           <div className="relative h-[72px] w-[52px] shrink-0 overflow-hidden rounded-md bg-zinc-800">
                             {hasThumb ? (
-                              <img
+                              <VideoThumbnailImg
                                 src={v.thumbnailUrl}
-                                alt=""
                                 className="h-full w-full object-cover"
                               />
                             ) : v.videoUrl ? (
@@ -595,19 +595,19 @@ export function StudioPostsPage() {
                 <tr className="border-b border-zinc-800 bg-zinc-900/50 text-xs text-zinc-500">
                   <th className="px-4 py-3 font-medium">{t("studio.posts.tabPosts")}</th>
                   <th className="whitespace-nowrap px-3 py-3 text-left font-medium">
-                    Quyền riêng tư
+                    {t("studio.posts.privacy")}
                   </th>
                   <th className="w-[1%] whitespace-nowrap px-2 py-3 text-center font-medium">
-                    Thích
+                    {t("studio.posts.likes")}
                   </th>
                   <th className="w-[1%] whitespace-nowrap px-2 py-3 text-center font-medium">
-                    Bình luận
+                    {t("studio.posts.comments")}
                   </th>
                   <th className="w-[1%] whitespace-nowrap px-2 py-3 text-center font-medium">
-                    Ngày tạo
+                    {t("studio.posts.createdAt")}
                   </th>
                   <th className="w-[1%] whitespace-nowrap px-2 py-3 text-center font-medium">
-                    Thao tác
+                    {t("studio.posts.actions")}
                   </th>
                 </tr>
               </thead>
@@ -642,9 +642,8 @@ export function StudioPostsPage() {
                             title={t("studio.posts.viewVideo")}
                           >
                             {hasThumb ? (
-                              <img
+                              <VideoThumbnailImg
                                 src={v.thumbnailUrl}
-                                alt=""
                                 className="h-full w-full object-cover"
                               />
                             ) : v.videoUrl ? (
@@ -897,7 +896,7 @@ export function StudioPostsPage() {
                 }}
               >
                 <IoTrashOutline className="h-4 w-4 shrink-0" aria-hidden />
-                Xóa bài
+                {t("studio.posts.deletePost")}
               </button>
             </div>,
             document.body,
@@ -926,7 +925,7 @@ export function StudioPostsPage() {
                 disabled={deleteBusy}
                 onClick={() => setDeleteTarget(null)}
               >
-                Hủy
+                {t("studio.posts.cancel")}
               </button>
               <button
                 type="button"

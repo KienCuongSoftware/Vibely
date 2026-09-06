@@ -1524,7 +1524,11 @@
       },
       "keyMetrics": "Key metrics",
       "recentPosts": "Recent posts",
-      "knowledgeForYou": "Knowledge for you"
+      "knowledgeForYou": "Knowledge for you",
+      "loadingStats": "Loading stats…",
+      "emptyPosts": "No posts yet",
+      "latestComments": "Latest comments",
+      "emptyComments": "No comments on your videos yet"
     },
     "posts": {
       "tabPosts": "Posts",

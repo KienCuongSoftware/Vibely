@@ -402,7 +402,7 @@ export function StudioHomePage() {
 
         <div className="p-4 sm:p-5">
           {loading ? (
-            <p className="mb-2 text-sm text-zinc-500">Đang tải thống kê…</p>
+            <p className="mb-2 text-sm text-zinc-500">{t("studio.home.loadingStats")}</p>
           ) : null}
           <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-3 pt-10">
             <StudioTrendChart
@@ -435,7 +435,7 @@ export function StudioHomePage() {
             <div className="min-h-[140px] rounded-xl border border-zinc-800 bg-zinc-950/50">
               {recentPosts.length === 0 ? (
                 <p className="flex h-[140px] items-center justify-center text-sm text-zinc-500">
-                  Chưa có bài đăng nào
+                  {t("studio.posts.emptyPostsTitle")}
                 </p>
               ) : (
                 <ul className="divide-y divide-zinc-800">
@@ -485,13 +485,13 @@ export function StudioHomePage() {
               className="mb-3 inline-flex cursor-pointer items-center gap-0.5 text-base font-bold text-zinc-100 hover:text-white"
               onClick={() => navigate("/vibelystudio/posts")}
             >
-              Bình luận mới nhất
+              {t("studio.home.latestComments")}
               <IoChevronForward className="text-lg text-zinc-500" aria-hidden />
             </button>
             <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-4">
               {overview.latestComments.length === 0 ? (
                 <p className="text-sm text-zinc-500">
-                  Chưa có bình luận nào trên video của bạn
+                  {t("studio.home.emptyComments")}
                 </p>
               ) : (
                 <div className="space-y-2">

@@ -1524,7 +1524,11 @@
       },
       "keyMetrics": "Chỉ số chính",
       "recentPosts": "Bài đăng gần đây",
-      "knowledgeForYou": "Kiến thức dành cho bạn"
+      "knowledgeForYou": "Kiến thức dành cho bạn",
+      "loadingStats": "Đang tải thống kê…",
+      "emptyPosts": "Chưa có bài đăng nào",
+      "latestComments": "Bình luận mới nhất",
+      "emptyComments": "Chưa có bình luận nào trên video của bạn"
     },
     "posts": {
       "tabPosts": "Bài đăng",

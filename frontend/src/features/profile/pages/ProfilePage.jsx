@@ -322,8 +322,8 @@ function ProfileGridVideoTile({
         <div
           className={
             pendingCheck
-              ? 'relative aspect-9/16 w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800'
-              : 'relative aspect-9/16 w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600'
+              ? 'vibely-keep-dark relative aspect-9/16 w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800'
+              : 'vibely-keep-dark relative aspect-9/16 w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600'
           }
           onMouseEnter={() => {
             if (!pendingCheck) onHover(video.publicId)

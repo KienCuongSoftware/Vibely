@@ -957,7 +957,7 @@ export function StudioVideoAnalyticsPage() {
   const trafficBlock = (
     <section className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
       <h2 className="inline-flex items-center gap-1.5 text-base font-semibold text-white">
-        Nguồn traffic
+        {t('studio.videoAnalytics.trafficSources')}
         <StudioHoverTip
           underline={false}
           text={t('studio.videoAnalytics.trafficTip')}
@@ -994,7 +994,7 @@ export function StudioVideoAnalyticsPage() {
   const searchBlock = (
     <section className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
       <h2 className="inline-flex items-center gap-1.5 text-base font-semibold text-white">
-        Từ khóa tìm kiếm
+        {t('studio.videoAnalytics.searchQueries')}
         <StudioHoverTip
           underline={false}
           text={t('studio.videoAnalytics.searchTip')}
@@ -1077,11 +1077,11 @@ export function StudioVideoAnalyticsPage() {
             <div className="mt-2 flex flex-wrap items-center justify-center gap-4 text-xs text-zinc-500">
               <span className="inline-flex items-center gap-1.5">
                 <span className="h-2 w-4 rounded-sm bg-pink-400" aria-hidden />
-                Thích
+                {t('studio.videoAnalytics.likes')}
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <span className="h-2 w-4 rounded-sm bg-sky-400" aria-hidden />
-                Bình luận
+                {t('studio.videoAnalytics.comments')}
               </span>
             </div>
           ) : null}
@@ -1145,7 +1145,7 @@ export function StudioVideoAnalyticsPage() {
             className="inline-flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-zinc-300 transition hover:bg-zinc-800 hover:text-white"
           >
             <IoArrowBack className="h-4 w-4" aria-hidden />
-            Bài đăng
+            {t('studio.videoAnalytics.post')}
           </button>
         </div>
 
