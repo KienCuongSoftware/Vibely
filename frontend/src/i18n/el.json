@@ -513,7 +513,9 @@
     "general": "Generale",
     "tools": "Strumenti",
     "back": "Atrás",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "collapseSidebar": "Σύμπτυξη πλαϊνής γραμμής",
+    "expandSidebar": "Ανάπτυξη πλαϊνής γραμμής"
   },
   "forYou": {
     "emptyTitle": "Nessun video in Per te",

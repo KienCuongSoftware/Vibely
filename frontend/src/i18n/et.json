@@ -513,7 +513,9 @@
     "general": "Yleiset",
     "tools": "Työkalut",
     "back": "Zurück",
-    "close": "Schließen"
+    "close": "Schließen",
+    "collapseSidebar": "Ahenda külgriba",
+    "expandSidebar": "Laienda külgriba"
   },
   "forYou": {
     "emptyTitle": "Sinulle-syötteessä ei ole vielä videoita",

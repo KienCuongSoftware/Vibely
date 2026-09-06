@@ -513,7 +513,9 @@
     "general": "Genel",
     "tools": "Araçlar",
     "back": "Geri",
-    "close": "Kapat"
+    "close": "Kapat",
+    "collapseSidebar": "Yan paneli yığ",
+    "expandSidebar": "Yan paneli genişlət"
   },
   "forYou": {
     "emptyTitle": "Sizin için’de henüz video yok",

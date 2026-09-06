@@ -513,7 +513,9 @@
     "general": "Umum",
     "tools": "Alat",
     "back": "Kembali",
-    "close": "Tutup"
+    "close": "Tutup",
+    "collapseSidebar": "Ciutkan bilah sisi",
+    "expandSidebar": "Perluas bilah sisi"
   },
   "forYou": {
     "emptyTitle": "Belum ada video di For You",

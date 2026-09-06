@@ -513,7 +513,9 @@
     "general": "כללי",
     "tools": "כלים",
     "back": "חזרה",
-    "close": "סגור"
+    "close": "סגור",
+    "collapseSidebar": "כווץ את סרגל הצד",
+    "expandSidebar": "הרחב את סרגל הצד"
   },
   "forYou": {
     "emptyTitle": "אין סרטונים ב\"עבורך\" עדיין",

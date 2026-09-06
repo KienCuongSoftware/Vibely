@@ -513,7 +513,9 @@
     "general": "일반",
     "tools": "도구",
     "back": "뒤로",
-    "close": "닫기"
+    "close": "닫기",
+    "collapseSidebar": "사이드바 접기",
+    "expandSidebar": "사이드바 펼치기"
   },
   "forYou": {
     "emptyTitle": "For You에 아직 영상이 없습니다",

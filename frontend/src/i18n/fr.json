@@ -513,7 +513,9 @@
     "general": "Général",
     "tools": "Outils",
     "back": "Retour",
-    "close": "Fermer"
+    "close": "Fermer",
+    "collapseSidebar": "Réduire la barre latérale",
+    "expandSidebar": "Développer la barre latérale"
   },
   "forYou": {
     "emptyTitle": "Aucune vidéo sur Pour toi",

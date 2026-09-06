@@ -47,6 +47,9 @@ export const FEED_MORE_SPEED_PILL_IDLE_CLASS =
 /** Chiều ngang sidebar (đồng bộ Sidebar.jsx). */
 export const FEED_SIDEBAR_WIDTH_PX = 220;
 
+/** Sidebar thu gọn (icon-only) — đồng bộ Sidebar.jsx `w-[72px]`. */
+export const FEED_SIDEBAR_COLLAPSED_WIDTH_PX = 72;
+
 /** Khoảng cách giữa sidebar / panel và khung video. */
 export const FEED_STAGE_EDGE_GAP_PX = 8;
 
@@ -87,9 +90,12 @@ export const FEED_STAGE_DISPLAY_SCALE = FEED_STAGE_HEIGHT_RATIO;
 /** Trần rộng khung 16:9 trên màn hình rất rộng. */
 export const FEED_LANDSCAPE_MAX_WIDTH_PX = 1020;
 
-function feedStageReservedWidthPx(commentsOpen) {
+function feedStageReservedWidthPx(
+  commentsOpen,
+  sidebarWidthPx = FEED_SIDEBAR_WIDTH_PX,
+) {
   return (
-    FEED_SIDEBAR_WIDTH_PX +
+    sidebarWidthPx +
     FEED_ACTION_RAIL_PX +
     FEED_STAGE_EDGE_GAP_PX +
     (commentsOpen ? FEED_COMMENTS_PANEL_WIDTH_PX + FEED_STAGE_EDGE_GAP_PX : 0)
@@ -101,6 +107,7 @@ export function computeFeedPortraitStageSizePx({
   slotHeightPx,
   viewportWidth,
   commentsOpen = false,
+  sidebarWidthPx = FEED_SIDEBAR_WIDTH_PX,
 }) {
   const vw =
     viewportWidth ?? (typeof window !== "undefined" ? window.innerWidth : 1280);
@@ -111,7 +118,10 @@ export function computeFeedPortraitStageSizePx({
       : 760);
   const maxHeight = Math.round(slotH * FEED_STAGE_HEIGHT_RATIO);
   let width = Math.round((maxHeight * 9) / 16);
-  const clusterMaxWidth = Math.max(260, vw - feedStageReservedWidthPx(commentsOpen) - 16);
+  const clusterMaxWidth = Math.max(
+    260,
+    vw - feedStageReservedWidthPx(commentsOpen, sidebarWidthPx) - 16,
+  );
   if (width > clusterMaxWidth) {
     width = clusterMaxWidth;
   }
@@ -124,6 +134,7 @@ export function computeFeedLandscapeStageWidthPx({
   commentsOpen,
   viewportWidth,
   slotHeightPx,
+  sidebarWidthPx = FEED_SIDEBAR_WIDTH_PX,
 }) {
   const vw =
     viewportWidth ?? (typeof window !== "undefined" ? window.innerWidth : 1280);
@@ -132,7 +143,7 @@ export function computeFeedLandscapeStageWidthPx({
     (typeof window !== "undefined"
       ? Math.max(320, window.innerHeight - FEED_VIEWPORT_INSET_PX)
       : 760);
-  const reserved = feedStageReservedWidthPx(commentsOpen);
+  const reserved = feedStageReservedWidthPx(commentsOpen, sidebarWidthPx);
   const byViewport = Math.max(280, vw - reserved);
   const stageHeight = Math.round(slotH * FEED_STAGE_HEIGHT_RATIO);
   const byAspect = Math.round((stageHeight * 16) / 9);

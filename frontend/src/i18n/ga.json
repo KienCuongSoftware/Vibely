@@ -513,7 +513,9 @@
     "general": "General",
     "tools": "Tools",
     "back": "Back",
-    "close": "Close"
+    "close": "Close",
+    "collapseSidebar": "Laghdaigh an taobhbharra",
+    "expandSidebar": "Leathnaigh an taobhbharra"
   },
   "forYou": {
     "emptyTitle": "No videos on For You yet",

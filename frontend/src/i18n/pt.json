@@ -513,7 +513,9 @@
     "general": "Geral",
     "tools": "Ferramentas",
     "back": "Voltar",
-    "close": "Fechar"
+    "close": "Fechar",
+    "collapseSidebar": "Recolher barra lateral",
+    "expandSidebar": "Expandir barra lateral"
   },
   "forYou": {
     "emptyTitle": "Ainda sem vídeos em Para si",

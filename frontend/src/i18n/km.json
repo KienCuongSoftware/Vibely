@@ -513,7 +513,9 @@
     "general": "ทั่วไป",
     "tools": "เครื่องมือ",
     "back": "กลับ",
-    "close": "ปิด"
+    "close": "ปิด",
+    "collapseSidebar": "បង្រួមរបារចំហៀង",
+    "expandSidebar": "ពង្រីករបារចំហៀង"
   },
   "forYou": {
     "emptyTitle": "ยังไม่มีวิดีโอใน สำหรับคุณ",

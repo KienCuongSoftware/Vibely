@@ -513,7 +513,9 @@
     "general": "Obecné",
     "tools": "Nástroje",
     "back": "Atrás",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "collapseSidebar": "Palos shiritin anesor",
+    "expandSidebar": "Zgjero shiritin anesor"
   },
   "forYou": {
     "emptyTitle": "Na Pro vás zatím žádná videa",

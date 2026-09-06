@@ -7,6 +7,7 @@ import { ChatInboxBadgeProvider } from '@/features/chat/store/ChatInboxBadgeCont
 import { NotificationUnreadProvider } from '@/features/notification/store/NotificationUnreadContext.jsx'
 import { SearchModalProvider } from '@/features/search/store/SearchModalContext.jsx'
 import { AppErrorBoundary } from '@/shared/components/AppErrorBoundary.jsx'
+import { MainSidebarCollapseProvider } from '@/shared/store/MainSidebarCollapseContext.jsx'
 import { ThemeProvider } from '@/shared/theme/ThemeContext.jsx'
 
 export function AppProviders({ children }) {
@@ -15,15 +16,17 @@ export function AppProviders({ children }) {
       <ThemeProvider>
         <BrowserRouter>
           <AuthProvider>
-            <SearchModalProvider>
-              <ActivityModalProvider>
-                <NotificationUnreadProvider>
-                  <ChatInboxBadgeProvider>
-                    <AppErrorBoundary>{children}</AppErrorBoundary>
-                  </ChatInboxBadgeProvider>
-                </NotificationUnreadProvider>
-              </ActivityModalProvider>
-            </SearchModalProvider>
+            <MainSidebarCollapseProvider>
+              <SearchModalProvider>
+                <ActivityModalProvider>
+                  <NotificationUnreadProvider>
+                    <ChatInboxBadgeProvider>
+                      <AppErrorBoundary>{children}</AppErrorBoundary>
+                    </ChatInboxBadgeProvider>
+                  </NotificationUnreadProvider>
+                </ActivityModalProvider>
+              </SearchModalProvider>
+            </MainSidebarCollapseProvider>
           </AuthProvider>
         </BrowserRouter>
       </ThemeProvider>

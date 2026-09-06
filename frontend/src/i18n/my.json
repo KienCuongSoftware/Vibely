@@ -513,7 +513,9 @@
     "general": "ทั่วไป",
     "tools": "เครื่องมือ",
     "back": "กลับ",
-    "close": "ปิด"
+    "close": "ปิด",
+    "collapseSidebar": "ဘေးဘားကို ခေါက်သိမ်းရန်",
+    "expandSidebar": "ဘေးဘားကို ချဲ့ရန်"
   },
   "forYou": {
     "emptyTitle": "ยังไม่มีวิดีโอใน สำหรับคุณ",

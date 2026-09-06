@@ -513,7 +513,9 @@
     "general": "عام",
     "tools": "الأدوات",
     "back": "رجوع",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "collapseSidebar": "طي الشريط الجانبي",
+    "expandSidebar": "توسيع الشريط الجانبي"
   },
   "forYou": {
     "emptyTitle": "لا توجد فيديوهات في لك بعد",

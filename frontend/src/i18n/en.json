@@ -222,7 +222,9 @@
     "general": "General",
     "tools": "Tools",
     "back": "Back",
-    "close": "Close"
+    "close": "Close",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar"
   },
   "forYou": {
     "pageTitle": "Watch trending videos for you | Vibely",

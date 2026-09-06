@@ -513,7 +513,9 @@
     "general": "General",
     "tools": "Tools",
     "back": "Back",
-    "close": "Close"
+    "close": "Close",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar"
   },
   "forYou": {
     "emptyTitle": "No videos on For You yet",

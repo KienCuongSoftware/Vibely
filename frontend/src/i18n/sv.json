@@ -513,7 +513,9 @@
     "general": "Generelt",
     "tools": "Værktøjer",
     "back": "Zurück",
-    "close": "Schließen"
+    "close": "Schließen",
+    "collapseSidebar": "Dölj sidofält",
+    "expandSidebar": "Visa sidofält"
   },
   "forYou": {
     "emptyTitle": "Ingen videoer på For dig endnu",

@@ -50,6 +50,7 @@ import { normalizeVideoPublicId } from "@/features/post/utils/videoPublicId.js";
 import { resolveDisplayCaption } from "@/features/post/utils/videoCaption.js";
 import { SelfRepostIndicator } from "@/features/feed/components/SelfRepostIndicator.jsx";
 import { TooltipHoverWrap } from "@/shared/components/TooltipControls.jsx";
+import { useMainSidebarCollapse } from "@/shared/store/MainSidebarCollapseContext.jsx";
 import {
   FEED_COMMENTS_PANEL_WIDTH_PX,
   FEED_MORE_MENU_BADGE_ICON_CLASS,
@@ -631,6 +632,7 @@ export function FeedPhoneStage({
   selfRepostBusy = false,
 }) {
   const { t } = useTranslation();
+  const { sidebarWidthPx } = useMainSidebarCollapse();
   /** Khung rộng từ trình duyệt (videoWidth/Height sau decode). */
   const [clientWideForLandscape, setClientWideForLandscape] = useState(false);
   /** Fallback: suy luận ngang từ thumbnail natural size. */
@@ -990,6 +992,7 @@ export function FeedPhoneStage({
       : computeFeedLandscapeStageWidthPx({
           commentsOpen: commentsDockOpen,
           slotHeightPx: feedSlotHeightPx,
+          sidebarWidthPx,
         });
 
   const landscapeVideoHeightPx =
@@ -1005,6 +1008,7 @@ export function FeedPhoneStage({
           viewportWidth:
             typeof window !== "undefined" ? window.innerWidth : undefined,
           commentsOpen: commentsDockOpen,
+          sidebarWidthPx,
         });
 
   /** Theater: khung cao gần full viewport, rộng đúng tỉ lệ 9:16 như TikTok watch. */

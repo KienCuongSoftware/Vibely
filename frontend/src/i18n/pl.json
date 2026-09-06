@@ -513,7 +513,9 @@
     "general": "Ogólne",
     "tools": "Narzędzia",
     "back": "Wstecz",
-    "close": "Zamknij"
+    "close": "Zamknij",
+    "collapseSidebar": "Zwiń pasek boczny",
+    "expandSidebar": "Rozwiń pasek boczny"
   },
   "forYou": {
     "emptyTitle": "Brak filmów na Dla Ciebie",

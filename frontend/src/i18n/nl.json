@@ -513,7 +513,9 @@
     "general": "Algemeen",
     "tools": "Tools",
     "back": "Terug",
-    "close": "Sluiten"
+    "close": "Sluiten",
+    "collapseSidebar": "Zijbalk samenvouwen",
+    "expandSidebar": "Zijbalk uitvouwen"
   },
   "forYou": {
     "emptyTitle": "Nog geen video’s op Voor jou",

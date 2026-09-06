@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { TbLayoutSidebar, TbLayoutSidebarLeftExpand } from "react-icons/tb";
 import { ActivityPanel } from "@/features/notification/components/ActivityPanel.jsx";
 import { useActivityModal } from "@/features/notification/store/ActivityModalContext.jsx";
 import { useChatInboxBadge } from "@/features/chat/store/ChatInboxBadgeContext.jsx";
@@ -9,9 +10,11 @@ import { formatNotificationBadgeCount } from "@/features/notification/utils/noti
 import { SearchModal } from "@/features/search/components/SearchModal.jsx";
 import { useSearchModal } from "@/features/search/store/SearchModalContext.jsx";
 import { SidebarMorePanel } from "@/shared/components/SidebarMorePanel.jsx";
+import { TooltipHoverWrap } from "@/shared/components/TooltipControls.jsx";
 import { VibelyMarkIcon, VibelyWordmark } from "@/shared/components/VibelyWordmark.jsx";
 import { GuestLoginTrigger } from "@/features/auth/store/GuestAuthUiContext.jsx";
 import { UploadTypeFlyout } from "@/features/upload/components/UploadTypeFlyout.jsx";
+import { useMainSidebarCollapse } from "@/shared/store/MainSidebarCollapseContext.jsx";
 import { goStudioUpload } from "@/shared/utils/sidebarNavigation.js";
 import {
   IoSearchOutline,
@@ -34,6 +37,8 @@ export function Sidebar({
   const activityModal = useActivityModal();
   const { unreadCount } = useNotificationUnread();
   const { chatInboxBadgeCount } = useChatInboxBadge();
+  const { userCollapsed, toggleUserCollapsed, setTransientCollapsed } =
+    useMainSidebarCollapse();
   const openSearch = onOpenSearch ?? searchModal?.openSearch;
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -44,8 +49,19 @@ export function Sidebar({
 
   const activityOpen = Boolean(activityModal?.open);
   const searchOpen = Boolean(searchModal?.open);
+  const panelCollapsed = moreOpen || activityOpen || searchOpen;
   const collapsed =
-    forceCollapsed || moreOpen || activityOpen || searchOpen;
+    forceCollapsed || userCollapsed || panelCollapsed;
+  const showCollapseToggle = !forceCollapsed && !panelCollapsed;
+  const collapseTip = userCollapsed
+    ? t("nav.expandSidebar")
+    : t("nav.collapseSidebar");
+
+  useEffect(() => {
+    const transient = forceCollapsed || panelCollapsed;
+    setTransientCollapsed(transient);
+    return () => setTransientCollapsed(false);
+  }, [forceCollapsed, panelCollapsed, setTransientCollapsed]);
 
   const handleOpenSearch = () => {
     if (moreOpen) setMoreOpen(false);
@@ -83,21 +99,56 @@ export function Sidebar({
           collapsed ? "w-[72px] px-2" : "w-[220px] px-3"
         }`}
       >
-        <Link
-          to="/"
-          className={`mb-4 flex h-11 items-center text-zinc-100 hover:text-white ${
-            collapsed ? "justify-center" : "justify-start pl-1"
+        <div
+          className={`mb-4 flex h-11 shrink-0 items-center gap-1 ${
+            collapsed ? "justify-center" : "justify-between pl-1"
           }`}
-          onClick={() => {
-            if (moreOpen) setMoreOpen(false);
-          }}
         >
-          {collapsed ? (
-            <VibelyMarkIcon className="h-7 w-7 shrink-0 text-zinc-100" />
+          {showCollapseToggle && userCollapsed ? (
+            <TooltipHoverWrap tip={collapseTip} hoverOnly>
+              <button
+                type="button"
+                onClick={toggleUserCollapsed}
+                aria-label={collapseTip}
+                aria-expanded={false}
+                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-zinc-100"
+              >
+                <TbLayoutSidebarLeftExpand className="text-[22px]" aria-hidden />
+              </button>
+            </TooltipHoverWrap>
           ) : (
-            <VibelyWordmark className="h-9 w-auto shrink-0 text-zinc-100" />
+            <>
+              <Link
+                to="/"
+                className={`flex min-w-0 items-center text-zinc-100 hover:text-white ${
+                  collapsed ? "justify-center" : "justify-start"
+                }`}
+                onClick={() => {
+                  if (moreOpen) setMoreOpen(false);
+                }}
+              >
+                {collapsed ? (
+                  <VibelyMarkIcon className="h-7 w-7 shrink-0 text-zinc-100" />
+                ) : (
+                  <VibelyWordmark className="h-9 w-auto shrink-0 text-zinc-100" />
+                )}
+              </Link>
+              {showCollapseToggle ? (
+                <TooltipHoverWrap tip={collapseTip} hoverOnly>
+                  <button
+                    type="button"
+                    onClick={toggleUserCollapsed}
+                    aria-label={collapseTip}
+                    aria-expanded
+                    className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-zinc-100"
+                  >
+                    <TbLayoutSidebar className="text-[20px]" aria-hidden />
+                  </button>
+                </TooltipHoverWrap>
+              ) : null}
+            </>
           )}
-        </Link>
+        </div>
 
         {!hideSearch ? (
           collapsed ? (

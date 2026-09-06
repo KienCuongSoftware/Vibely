@@ -524,7 +524,9 @@
     "general": "一般",
     "tools": "ツール",
     "back": "戻る",
-    "close": "閉じる"
+    "close": "閉じる",
+    "collapseSidebar": "サイドバーを折りたたむ",
+    "expandSidebar": "サイドバーを展開"
   },
   "forYou": {
     "emptyTitle": "For You にまだ動画がありません",

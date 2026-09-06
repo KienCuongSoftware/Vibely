@@ -513,7 +513,9 @@
     "general": "सामान्य",
     "tools": "टूल्स",
     "back": "वापस",
-    "close": "बंद करें"
+    "close": "बंद करें",
+    "collapseSidebar": "साइडबार संक्षिप्त करें",
+    "expandSidebar": "साइडबार विस्तृत करें"
   },
   "forYou": {
     "emptyTitle": "For You पर अभी कोई वीडियो नहीं",

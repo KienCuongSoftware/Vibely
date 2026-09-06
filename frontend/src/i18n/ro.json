@@ -513,7 +513,9 @@
     "general": "Obecné",
     "tools": "Nástroje",
     "back": "Wstecz",
-    "close": "Zamknij"
+    "close": "Zamknij",
+    "collapseSidebar": "Restrânge bara laterală",
+    "expandSidebar": "Extinde bara laterală"
   },
   "forYou": {
     "emptyTitle": "Na Pro vás zatím žádná videa",

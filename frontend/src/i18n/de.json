@@ -513,7 +513,9 @@
     "general": "Allgemein",
     "tools": "Tools",
     "back": "Zurück",
-    "close": "Schließen"
+    "close": "Schließen",
+    "collapseSidebar": "Seitenleiste einklappen",
+    "expandSidebar": "Seitenleiste erweitern"
   },
   "forYou": {
     "emptyTitle": "Noch keine Videos auf Für dich",

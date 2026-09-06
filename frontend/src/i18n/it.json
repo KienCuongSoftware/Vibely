@@ -513,7 +513,9 @@
     "general": "Generale",
     "tools": "Strumenti",
     "back": "Indietro",
-    "close": "Chiudi"
+    "close": "Chiudi",
+    "collapseSidebar": "Comprimi barra laterale",
+    "expandSidebar": "Espandi barra laterale"
   },
   "forYou": {
     "emptyTitle": "Nessun video in Per te",

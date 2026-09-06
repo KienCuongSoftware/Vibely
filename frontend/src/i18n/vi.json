@@ -222,7 +222,9 @@
     "general": "Chung",
     "tools": "Công cụ",
     "back": "Quay lại",
-    "close": "Đóng"
+    "close": "Đóng",
+    "collapseSidebar": "Thu gọn thanh bên",
+    "expandSidebar": "Mở rộng thanh bên"
   },
   "forYou": {
     "pageTitle": "Xem các video thịnh hành dành cho bạn | Vibely",

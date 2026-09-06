@@ -513,7 +513,9 @@
     "general": "General",
     "tools": "Herramientas",
     "back": "Atrás",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "collapseSidebar": "Redueix la barra lateral",
+    "expandSidebar": "Amplia la barra lateral"
   },
   "forYou": {
     "emptyTitle": "Aún no hay videos en Para ti",

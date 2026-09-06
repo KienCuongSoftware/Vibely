@@ -513,7 +513,9 @@
     "general": "一般",
     "tools": "工具",
     "back": "返回",
-    "close": "關閉"
+    "close": "關閉",
+    "collapseSidebar": "收合側邊欄",
+    "expandSidebar": "展開側邊欄"
   },
   "forYou": {
     "emptyTitle": "推薦頁尚無影片",

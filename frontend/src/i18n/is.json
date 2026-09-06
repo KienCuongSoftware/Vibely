@@ -513,7 +513,9 @@
     "general": "Generelt",
     "tools": "Værktøjer",
     "back": "Zurück",
-    "close": "Schließen"
+    "close": "Schließen",
+    "collapseSidebar": "Minnka hliðarstiku",
+    "expandSidebar": "Stækka hliðarstiku"
   },
   "forYou": {
     "emptyTitle": "Ingen videoer på For dig endnu",
