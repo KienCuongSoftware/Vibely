@@ -145,6 +145,15 @@ public class VideoCommandService {
             if (explicitAudio != null) {
                 ownedMediaValidator.requireOwnedAudio(explicitAudio, authorId);
             }
+        } else {
+            String explicitAudio = VideoMediaUtils.normalizeText(request.getAudioUrl());
+            if (explicitAudio != null) {
+                ownedMediaValidator.requireOwnedOrCatalogAudio(
+                    explicitAudio,
+                    authorId,
+                    key -> videoRepository.existsPublicCatalogAudio(explicitAudio, key)
+                );
+            }
         }
         // Default draft when omitted — only explicit studioDraft=false publishes into lists.
         boolean draft = !Boolean.FALSE.equals(request.getStudioDraft());

@@ -68,6 +68,35 @@ public class S3OwnedMediaValidator {
         requireKeyPrefix(url, "audios/" + userId + "/");
     }
 
+    /**
+     * Photo/sound reuse: own audio under audios/{userId}/, or a catalog sound whose
+     * object key already appears on a READY+PUBLIC video (not an arbitrary private key).
+     */
+    public void requireOwnedOrCatalogAudio(String url, long userId, java.util.function.Predicate<String> catalogAudioKeyAllowed) {
+        if (!s3Properties.isEnabled()) {
+            return;
+        }
+        if (url == null || url.isBlank()) {
+            return;
+        }
+        String key = resolveKey(url);
+        String ownedPrefix = "audios/" + userId + "/";
+        if (key.startsWith(ownedPrefix)) {
+            return;
+        }
+        if (!key.startsWith("audios/")) {
+            throw new BadRequestException("Audio URL must be an app audio object.");
+        }
+        if (catalogAudioKeyAllowed == null || !catalogAudioKeyAllowed.test(key)) {
+            throw new BadRequestException("Audio URL does not belong to your account or a public sound.");
+        }
+    }
+
+    /** Resolve object key for callers that need catalog matching. */
+    public String resolveObjectKey(String url) {
+        return resolveKey(url);
+    }
+
     /** Chat images (thumbnails/) and videos (uploads/) uploaded by the sender. */
     public void requireOwnedChatMedia(String url, long userId) {
         if (!s3Properties.isEnabled()) {

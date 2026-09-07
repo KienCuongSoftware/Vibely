@@ -23,6 +23,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private static final long WINDOW_SECONDS = 60L;
     private static final int AUTH_LIMIT = 20;
     private static final int COMMENT_LIMIT = 60;
+    private static final int AVAILABILITY_CHECK_LIMIT = 15;
+    private static final int ENGAGEMENT_WRITE_LIMIT = 90;
 
     private final Map<String, Counter> counters = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper;
@@ -53,6 +55,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
         boolean publicShareRoute = uri.matches("^/api/videos/[^/]+/shares$") && "POST".equals(method);
         boolean downloadRoute = uri.matches("^/api/videos/[^/]+/download$") && "GET".equals(method);
         boolean antibotRoute = isAntiBotRoute(uri, method);
+        boolean availabilityCheckRoute = isAvailabilityCheckRoute(uri, method);
+        boolean engagementWriteRoute = isEngagementWriteRoute(uri, method);
 
         if (redirectRoute) {
             if (!shareRateLimiter.allowRedirect(clientIp)) {
@@ -95,6 +99,18 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 writeRateLimited(response);
                 return;
             }
+        } else if (availabilityCheckRoute) {
+            String key = clientIp + ":availability:" + uri;
+            if (!allowRequest(key, AVAILABILITY_CHECK_LIMIT)) {
+                writeRateLimited(response);
+                return;
+            }
+        } else if (engagementWriteRoute) {
+            String key = clientIp + ":engagement:" + method;
+            if (!allowRequest(key, ENGAGEMENT_WRITE_LIMIT)) {
+                writeRateLimited(response);
+                return;
+            }
         } else if (authWriteRoute || commentWriteRoute) {
             // OAuth exchange is retried after LINE/Google round-trips; keep it out of the tight bucket.
             if (oauthSessionRoute) {
@@ -121,6 +137,25 @@ public class RateLimitFilter extends OncePerRequestFilter {
             || uri.equals("/api/fingerprint/register")
             || uri.equals("/api/behavior/track")
             || uri.equals("/api/trust/evaluate");
+    }
+
+    private static boolean isAvailabilityCheckRoute(String uri, String method) {
+        if (!"GET".equals(method) && !"HEAD".equals(method)) {
+            return false;
+        }
+        return uri.equals("/api/users/check-email")
+            || uri.equals("/api/users/check-username");
+    }
+
+    private static boolean isEngagementWriteRoute(String uri, String method) {
+        if (!"POST".equals(method) && !"DELETE".equals(method)) {
+            return false;
+        }
+        return uri.matches("^/api/videos/[^/]+/likes$")
+            || uri.matches("^/api/videos/[^/]+/bookmarks$")
+            || uri.matches("^/api/videos/[^/]+/comments/\\d+/likes$")
+            || uri.matches("^/api/follows/\\d+$")
+            || uri.matches("^/api/follows/requests/\\d+/(accept|reject)$");
     }
 
     private void writeRateLimited(HttpServletResponse response) throws IOException {

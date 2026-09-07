@@ -15,6 +15,7 @@ import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
+import com.vibely.backend.video.service.VideoPrivacyAccessService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ public class ShareService {
     private final ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService;
     private final ExploreCacheService exploreCacheService;
     private final ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor;
+    private final VideoPrivacyAccessService privacyAccessService;
 
     public ShareService(
         VideoRepository videoRepository,
@@ -56,7 +58,8 @@ public class ShareService {
         ObjectProvider<RedisShareCounterCache> shareCounterCache,
         ObjectProvider<VideoEngagementStatsService> videoEngagementStatsService,
         ExploreCacheService exploreCacheService,
-        ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor
+        ObjectProvider<UserInterestSignalProcessor> userInterestSignalProcessor,
+        VideoPrivacyAccessService privacyAccessService
     ) {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
@@ -71,6 +74,7 @@ public class ShareService {
         this.videoEngagementStatsService = videoEngagementStatsService;
         this.exploreCacheService = exploreCacheService;
         this.userInterestSignalProcessor = userInterestSignalProcessor;
+        this.privacyAccessService = privacyAccessService;
     }
 
     @Transactional
@@ -88,6 +92,9 @@ public class ShareService {
 
         User user = userRepository.findByEmail(userEmail)
             .orElseThrow(() -> new NotFoundException("User not found"));
+        if (!privacyAccessService.canViewerWatch(video, user)) {
+            throw new NotFoundException("Video not found");
+        }
 
         ShareChannel channel = ShareChannel.from(request == null ? null : request.channel());
         String idempotencyKey = request == null ? null : normalizeBlank(request.idempotencyKey());

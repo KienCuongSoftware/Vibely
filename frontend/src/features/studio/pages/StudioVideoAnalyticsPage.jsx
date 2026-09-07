@@ -1,5 +1,5 @@
 import React from 'react'
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
@@ -473,7 +473,11 @@ export function StudioVideoAnalyticsPage() {
         </div>
       </div>
       <p className="mt-4 text-xs text-zinc-500">
-        <span dangerouslySetInnerHTML={{ __html: t('studio.videoAnalytics.metricsPeriodNote', { days }) }} />
+        <Trans
+          i18nKey="studio.videoAnalytics.metricsPeriodNote"
+          values={{ days }}
+          components={{ strong: <strong /> }}
+        />
       </p>
     </section>
   )

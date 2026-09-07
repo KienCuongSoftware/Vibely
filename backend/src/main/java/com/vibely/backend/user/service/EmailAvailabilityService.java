@@ -46,10 +46,10 @@ public class EmailAvailabilityService {
         }
 
         String message = confirm
-            ? "Email is already in use (re-verified against the database)"
+            ? "This email cannot be used (re-verified against the database)"
             : bloomHint
-                ? "Email may already be in use. Tap Check again to verify."
-                : "Email is already in use";
+                ? "This email cannot be used. Tap Check again to verify."
+                : "This email cannot be used";
         return new EmailCheckResponse(false, normalized, message, bloomHint, !confirm);
     }
 

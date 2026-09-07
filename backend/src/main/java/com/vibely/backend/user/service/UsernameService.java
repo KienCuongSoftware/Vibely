@@ -72,10 +72,10 @@ public class UsernameService {
         }
 
         String message = confirm
-            ? "Vibely ID already exists (re-verified against the database)"
+            ? "This Vibely ID cannot be used (re-verified against the database)"
             : bloomHint
-                ? "Vibely ID may already exist. Tap Check again to verify."
-                : "Vibely ID already exists";
+                ? "This Vibely ID cannot be used. Tap Check again to verify."
+                : "This Vibely ID cannot be used";
         return new UsernameCheckResponse(
             false,
             normalized,

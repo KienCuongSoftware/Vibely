@@ -282,6 +282,22 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         Pageable pageable
     );
 
+    /** True when a READY+PUBLIC published video already references this audio object key. */
+    @Query("""
+        select case when count(v) > 0 then true else false end from Video v
+        where v.status = com.vibely.backend.video.VideoStatus.READY
+          and v.studioDraft = false
+          and (v.scheduledAt is null or v.scheduledAt <= CURRENT_TIMESTAMP)
+          and v.privacy = com.vibely.backend.video.VideoPrivacy.PUBLIC
+          and v.intendedPrivacy is null
+          and v.audioUrl is not null
+          and (v.audioUrl = :exactUrl or v.audioUrl like concat('%', :audioKey, '%'))
+        """)
+    boolean existsPublicCatalogAudio(
+        @Param("exactUrl") String exactUrl,
+        @Param("audioKey") String audioKey
+    );
+
     @Query(
         value = """
             select *

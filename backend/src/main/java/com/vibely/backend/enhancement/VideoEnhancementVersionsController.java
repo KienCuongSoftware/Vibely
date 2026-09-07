@@ -2,6 +2,7 @@ package com.vibely.backend.enhancement;
 
 import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.common.NotFoundException;
+import com.vibely.backend.storage.MediaUrlPresigner;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.video.Video;
@@ -24,17 +25,20 @@ public class VideoEnhancementVersionsController {
     private final VideoRepository videoRepository;
     private final UserRepository userRepository;
     private final VideoPrivacyAccessService privacyAccessService;
+    private final MediaUrlPresigner mediaUrlPresigner;
 
     public VideoEnhancementVersionsController(
         EnhancementJobService jobService,
         VideoRepository videoRepository,
         UserRepository userRepository,
-        VideoPrivacyAccessService privacyAccessService
+        VideoPrivacyAccessService privacyAccessService,
+        MediaUrlPresigner mediaUrlPresigner
     ) {
         this.jobService = jobService;
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
         this.privacyAccessService = privacyAccessService;
+        this.mediaUrlPresigner = mediaUrlPresigner;
     }
 
     @GetMapping("/{videoId}/versions")
@@ -60,7 +64,7 @@ public class VideoEnhancementVersionsController {
             m.put("kind", v.getKind().name());
             m.put("profile", v.getProfile());
             m.put("label", v.getLabel());
-            m.put("masterPlaylistUrl", v.getMasterPlaylistUrl());
+            m.put("masterPlaylistUrl", mediaUrlPresigner.presignPlaybackUrl(v.getMasterPlaylistUrl()));
             m.put("widthPx", v.getWidthPx());
             m.put("heightPx", v.getHeightPx());
             m.put("aiEnhanced", v.getKind() == VideoVersionKind.AI_ENHANCED);
