@@ -176,7 +176,11 @@
     "birthInvalid": "Ungültiges Geburtsdatum",
     "birthFuture": "Geburtsdatum darf nicht in der Zukunft liegen",
     "birthMinAge": "Du musst mindestens {{age}} Jahre alt sein, um Vibely zu nutzen",
-    "loginRequiredProfile": "Zum Aktualisieren des Profils musst du dich anmelden"
+    "loginRequiredProfile": "Zum Aktualisieren des Profils musst du dich anmelden",
+    "vibelyIdAvailable": "This Vibely ID is available",
+    "vibelyIdAvailableRecheck": "This Vibely ID is available (re-verified against the database)",
+    "vibelyIdTakenRecheck": "This Vibely ID is already taken (re-verified against the database)",
+    "vibelyIdMaybeTaken": "This Vibely ID may already exist. Tap Check again to verify."
   },
   "months": {
     "1": "Januar",
@@ -278,7 +282,17 @@
       "personalizedSwitch": "Personalisierte Anzeigen",
       "offVibelyActivity": "Aktivität außerhalb von Vibely nutzen",
       "offVibelyActivityHint": "Partnerdaten zulassen, um dein Anzeigenerlebnis zu verbessern.",
-      "offVibelySwitch": "Aktivität außerhalb von Vibely"
+      "offVibelySwitch": "Aktivität außerhalb von Vibely",
+      "manageTopics": "Manage ad topics",
+      "turnOffAdvertisers": "Turn off ads from advertisers",
+      "editPersonalDetails": "Edit personal details",
+      "offPlatformData": "Manage your off-Vibely data",
+      "targetedOutside": "Targeted ads outside Vibely",
+      "targetedOutsideHint": "Allow Vibely to show you personalized ads on other platforms.",
+      "useOffPlatform": "Use activity outside Vibely for ad targeting",
+      "useOffPlatformHint": "Allow activity from partners to help personalize ads you see on Vibely.",
+      "disconnectAdvertisers": "Disconnect advertisers",
+      "clearOffPlatformData": "Clear off-Vibely data"
     },
     "screenTimeSection": {
       "title": "Bildschirmzeit",
@@ -289,7 +303,8 @@
       "weeklyUpdateHint": "Get a report of your account usage habits.",
       "weeklyReport": "Wochenbericht",
       "summary": "Übersicht",
-      "helpResources": "Hilfe und Ressourcen"
+      "helpResources": "Hilfe und Ressourcen",
+      "restBreak": "Rest breaks"
     },
     "contentSection": {
       "title": "Inhaltspräferenzen",
@@ -515,7 +530,9 @@
     "back": "Zurück",
     "close": "Schließen",
     "collapseSidebar": "Seitenleiste einklappen",
-    "expandSidebar": "Seitenleiste erweitern"
+    "expandSidebar": "Seitenleiste erweitern",
+    "uploadVideo": "Video",
+    "uploadPhoto": "Photo"
   },
   "forYou": {
     "emptyTitle": "Noch keine Videos auf Für dich",
@@ -576,7 +593,14 @@
     "sections": {
       "gaming": "Gaming",
       "lifestyle": "Lifestyle"
-    }
+    },
+    "mute": "Mute",
+    "heroHeadline": "Watch now and interact with others in real time",
+    "clickToWatchLive": "Click to watch LIVE",
+    "viewersLabel": "{{count}} watching",
+    "previousLive": "Previous LIVE",
+    "nextLive": "Next LIVE",
+    "refreshLive": "Switch LIVE"
   },
   "messagesPage": {
     "title": "Nachrichten",
@@ -760,7 +784,8 @@
     "next": "Weiter",
     "noFavoriteVideos": "Keine Favoriten zum Hinzufügen",
     "allFavoritesInCollection": "Alle deine favorisierten Videos sind schon in der Sammlung.",
-    "logoutConfirm": "Möchtest du dich wirklich abmelden?"
+    "logoutConfirm": "Möchtest du dich wirklich abmelden?",
+    "followerStat": "Follower"
   },
   "watchPage": {
     "pageTitle": "Video auf Vibely",
@@ -1409,7 +1434,11 @@
       },
       "keyMetrics": "Kennzahlen",
       "recentPosts": "Aktuelle Beiträge",
-      "knowledgeForYou": "Wissen für dich"
+      "knowledgeForYou": "Wissen für dich",
+      "loadingStats": "Loading stats…",
+      "emptyPosts": "No posts yet",
+      "latestComments": "Latest comments",
+      "emptyComments": "No comments on your videos yet"
     },
     "posts": {
       "tabPosts": "Beiträge",
@@ -1454,7 +1483,22 @@
       "reviewingTeam": "In Prüfung — das Vibely-Team prüft",
       "showing": "{{shown}} / {{total}} Beiträge angezeigt",
       "deletePost": "Beitrag löschen",
-      "deleteHint": "Video, Coverbild und Speicherdateien werden gelöscht. Das kann nicht rückgängig gemacht werden."
+      "deleteHint": "Video, Coverbild und Speicherdateien werden gelöscht. Das kann nicht rückgängig gemacht werden.",
+      "pendingReview": "Pending review",
+      "reviewingContent": "Content is being reviewed",
+      "reviewModal": {
+        "close": "Close",
+        "subtitle": "We expect to notify you of the result within 12 hours.",
+        "statusTitle": "Review status",
+        "stepPending": "Pending review",
+        "stepReviewing": "Under review",
+        "stepDone": "Review finished",
+        "faqTitle": "Frequently asked questions",
+        "faqWhyTitle": "Why is Vibely reviewing my content?",
+        "faqWhyBody": "Vibely reviews content to keep the community safe and aligned with our Community Guidelines. This applies to every new post.",
+        "faqEngagementTitle": "Does this affect engagement on my post?",
+        "faqEngagementBody": "While review is in progress, your post may have limited public visibility. After approval, your chosen privacy setting applies fully."
+      }
     },
     "comments": {
       "title": "Kommentare",

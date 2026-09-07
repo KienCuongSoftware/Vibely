@@ -176,7 +176,11 @@
     "birthInvalid": "出生日期无效",
     "birthFuture": "出生日期不能晚于今天",
     "birthMinAge": "使用 Vibely 需年满 {{age}} 岁",
-    "loginRequiredProfile": "需要登录才能更新资料"
+    "loginRequiredProfile": "需要登录才能更新资料",
+    "vibelyIdAvailable": "This Vibely ID is available",
+    "vibelyIdAvailableRecheck": "This Vibely ID is available (re-verified against the database)",
+    "vibelyIdTakenRecheck": "This Vibely ID is already taken (re-verified against the database)",
+    "vibelyIdMaybeTaken": "This Vibely ID may already exist. Tap Check again to verify."
   },
   "months": {
     "1": "一月",
@@ -278,7 +282,17 @@
       "personalizedSwitch": "个性化广告",
       "offVibelyActivity": "使用 Vibely 以外的活动",
       "offVibelyActivityHint": "允许合作伙伴数据改善你的广告体验。",
-      "offVibelySwitch": "Vibely 以外的活动"
+      "offVibelySwitch": "Vibely 以外的活动",
+      "manageTopics": "Manage ad topics",
+      "turnOffAdvertisers": "Turn off ads from advertisers",
+      "editPersonalDetails": "Edit personal details",
+      "offPlatformData": "Manage your off-Vibely data",
+      "targetedOutside": "Targeted ads outside Vibely",
+      "targetedOutsideHint": "Allow Vibely to show you personalized ads on other platforms.",
+      "useOffPlatform": "Use activity outside Vibely for ad targeting",
+      "useOffPlatformHint": "Allow activity from partners to help personalize ads you see on Vibely.",
+      "disconnectAdvertisers": "Disconnect advertisers",
+      "clearOffPlatformData": "Clear off-Vibely data"
     },
     "screenTimeSection": {
       "title": "屏幕使用时间",
@@ -289,7 +303,8 @@
       "weeklyUpdateHint": "Get a report of your account usage habits.",
       "weeklyReport": "每周报告",
       "summary": "摘要",
-      "helpResources": "帮助与资源"
+      "helpResources": "帮助与资源",
+      "restBreak": "Rest breaks"
     },
     "contentSection": {
       "title": "内容偏好",
@@ -515,7 +530,9 @@
     "back": "返回",
     "close": "关闭",
     "collapseSidebar": "收起侧边栏",
-    "expandSidebar": "展开侧边栏"
+    "expandSidebar": "展开侧边栏",
+    "uploadVideo": "Video",
+    "uploadPhoto": "Photo"
   },
   "forYou": {
     "emptyTitle": "推荐页暂无视频",
@@ -576,7 +593,14 @@
     "sections": {
       "gaming": "游戏",
       "lifestyle": "生活方式"
-    }
+    },
+    "mute": "Mute",
+    "heroHeadline": "Watch now and interact with others in real time",
+    "clickToWatchLive": "Click to watch LIVE",
+    "viewersLabel": "{{count}} watching",
+    "previousLive": "Previous LIVE",
+    "nextLive": "Next LIVE",
+    "refreshLive": "Switch LIVE"
   },
   "messagesPage": {
     "title": "私信",
@@ -760,7 +784,8 @@
     "next": "下一步",
     "noFavoriteVideos": "没有可添加的收藏视频",
     "allFavoritesInCollection": "你收藏的视频都已加入该合集。",
-    "logoutConfirm": "确定要退出登录吗？"
+    "logoutConfirm": "确定要退出登录吗？",
+    "followerStat": "Follower"
   },
   "watchPage": {
     "pageTitle": "Vibely 视频",
@@ -1409,7 +1434,11 @@
       },
       "keyMetrics": "核心指标",
       "recentPosts": "近期作品",
-      "knowledgeForYou": "为你准备的知识"
+      "knowledgeForYou": "为你准备的知识",
+      "loadingStats": "Loading stats…",
+      "emptyPosts": "No posts yet",
+      "latestComments": "Latest comments",
+      "emptyComments": "No comments on your videos yet"
     },
     "posts": {
       "tabPosts": "作品",
@@ -1454,7 +1483,22 @@
       "reviewingTeam": "审核中 — Vibely 团队正在审核",
       "showing": "显示 {{shown}} / {{total}} 条作品",
       "deletePost": "删除作品",
-      "deleteHint": "视频、封面和存储文件将被删除，且无法撤销。"
+      "deleteHint": "视频、封面和存储文件将被删除，且无法撤销。",
+      "pendingReview": "Pending review",
+      "reviewingContent": "Content is being reviewed",
+      "reviewModal": {
+        "close": "Close",
+        "subtitle": "We expect to notify you of the result within 12 hours.",
+        "statusTitle": "Review status",
+        "stepPending": "Pending review",
+        "stepReviewing": "Under review",
+        "stepDone": "Review finished",
+        "faqTitle": "Frequently asked questions",
+        "faqWhyTitle": "Why is Vibely reviewing my content?",
+        "faqWhyBody": "Vibely reviews content to keep the community safe and aligned with our Community Guidelines. This applies to every new post.",
+        "faqEngagementTitle": "Does this affect engagement on my post?",
+        "faqEngagementBody": "While review is in progress, your post may have limited public visibility. After approval, your chosen privacy setting applies fully."
+      }
     },
     "comments": {
       "title": "评论",

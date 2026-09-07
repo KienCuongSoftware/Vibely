@@ -176,7 +176,11 @@
     "birthInvalid": "Geçersiz doğum tarihi",
     "birthFuture": "Doğum tarihi gelecekte olamaz",
     "birthMinAge": "Vibely kullanmak için en az {{age}} yaşında olmalısınız",
-    "loginRequiredProfile": "Profili güncellemek için giriş yapmalısınız"
+    "loginRequiredProfile": "Profili güncellemek için giriş yapmalısınız",
+    "vibelyIdAvailable": "This Vibely ID is available",
+    "vibelyIdAvailableRecheck": "This Vibely ID is available (re-verified against the database)",
+    "vibelyIdTakenRecheck": "This Vibely ID is already taken (re-verified against the database)",
+    "vibelyIdMaybeTaken": "This Vibely ID may already exist. Tap Check again to verify."
   },
   "months": {
     "1": "Ocak",
@@ -278,7 +282,17 @@
       "personalizedSwitch": "Kişiselleştirilmiş reklamlar",
       "offVibelyActivity": "Vibely dışındaki etkinliği kullan",
       "offVibelyActivityHint": "Reklam deneyimini iyileştirmek için iş ortağı verilerine izin ver.",
-      "offVibelySwitch": "Vibely dışındaki etkinlik"
+      "offVibelySwitch": "Vibely dışındaki etkinlik",
+      "manageTopics": "Manage ad topics",
+      "turnOffAdvertisers": "Turn off ads from advertisers",
+      "editPersonalDetails": "Edit personal details",
+      "offPlatformData": "Manage your off-Vibely data",
+      "targetedOutside": "Targeted ads outside Vibely",
+      "targetedOutsideHint": "Allow Vibely to show you personalized ads on other platforms.",
+      "useOffPlatform": "Use activity outside Vibely for ad targeting",
+      "useOffPlatformHint": "Allow activity from partners to help personalize ads you see on Vibely.",
+      "disconnectAdvertisers": "Disconnect advertisers",
+      "clearOffPlatformData": "Clear off-Vibely data"
     },
     "screenTimeSection": {
       "title": "Ekran süresi",
@@ -289,7 +303,8 @@
       "weeklyUpdateHint": "Get a report of your account usage habits.",
       "weeklyReport": "Haftalık rapor",
       "summary": "Özet",
-      "helpResources": "Yardım ve kaynaklar"
+      "helpResources": "Yardım ve kaynaklar",
+      "restBreak": "Rest breaks"
     },
     "contentSection": {
       "title": "İçerik tercihleri",
@@ -515,7 +530,9 @@
     "back": "Geri",
     "close": "Kapat",
     "collapseSidebar": "Kenar çubuğunu daralt",
-    "expandSidebar": "Kenar çubuğunu genişlet"
+    "expandSidebar": "Kenar çubuğunu genişlet",
+    "uploadVideo": "Video",
+    "uploadPhoto": "Photo"
   },
   "forYou": {
     "emptyTitle": "Sizin için sayfasında henüz video yok",
@@ -576,7 +593,14 @@
     "sections": {
       "gaming": "Oyun",
       "lifestyle": "Yaşam tarzı"
-    }
+    },
+    "mute": "Mute",
+    "heroHeadline": "Watch now and interact with others in real time",
+    "clickToWatchLive": "Click to watch LIVE",
+    "viewersLabel": "{{count}} watching",
+    "previousLive": "Previous LIVE",
+    "nextLive": "Next LIVE",
+    "refreshLive": "Switch LIVE"
   },
   "messagesPage": {
     "title": "Mesajlar",
@@ -760,7 +784,8 @@
     "next": "İleri",
     "noFavoriteVideos": "Eklenecek favori video yok",
     "allFavoritesInCollection": "Tüm favori videoların zaten bu koleksiyonda.",
-    "logoutConfirm": "Çıkış yapmak istediğine emin misin?"
+    "logoutConfirm": "Çıkış yapmak istediğine emin misin?",
+    "followerStat": "Follower"
   },
   "watchPage": {
     "pageTitle": "Vibely’de video",
@@ -1409,7 +1434,11 @@
       },
       "keyMetrics": "Temel metrikler",
       "recentPosts": "Son gönderiler",
-      "knowledgeForYou": "Sizin için bilgiler"
+      "knowledgeForYou": "Sizin için bilgiler",
+      "loadingStats": "Loading stats…",
+      "emptyPosts": "No posts yet",
+      "latestComments": "Latest comments",
+      "emptyComments": "No comments on your videos yet"
     },
     "posts": {
       "tabPosts": "Gönderiler",
@@ -1454,7 +1483,22 @@
       "reviewingTeam": "İncelemede — Vibely ekibi inceliyor",
       "showing": "{{shown}} / {{total}} gönderi gösteriliyor",
       "deletePost": "Gönderiyi sil",
-      "deleteHint": "Video, kapak görseli ve depolama dosyaları silinecek. Bu geri alınamaz."
+      "deleteHint": "Video, kapak görseli ve depolama dosyaları silinecek. Bu geri alınamaz.",
+      "pendingReview": "Pending review",
+      "reviewingContent": "Content is being reviewed",
+      "reviewModal": {
+        "close": "Close",
+        "subtitle": "We expect to notify you of the result within 12 hours.",
+        "statusTitle": "Review status",
+        "stepPending": "Pending review",
+        "stepReviewing": "Under review",
+        "stepDone": "Review finished",
+        "faqTitle": "Frequently asked questions",
+        "faqWhyTitle": "Why is Vibely reviewing my content?",
+        "faqWhyBody": "Vibely reviews content to keep the community safe and aligned with our Community Guidelines. This applies to every new post.",
+        "faqEngagementTitle": "Does this affect engagement on my post?",
+        "faqEngagementBody": "While review is in progress, your post may have limited public visibility. After approval, your chosen privacy setting applies fully."
+      }
     },
     "comments": {
       "title": "Yorumlar",

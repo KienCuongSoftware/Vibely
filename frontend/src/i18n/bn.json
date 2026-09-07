@@ -176,7 +176,11 @@
     "birthInvalid": "जन्म तिथि अमान्य है",
     "birthFuture": "जन्म तिथि भविष्य में नहीं हो सकती",
     "birthMinAge": "Vibely इस्तेमाल करने के लिए आपकी आयु कम से कम {{age}} वर्ष होनी चाहिए",
-    "loginRequiredProfile": "प्रोफ़ाइल अपडेट करने के लिए लॉग इन करें"
+    "loginRequiredProfile": "प्रोफ़ाइल अपडेट करने के लिए लॉग इन करें",
+    "vibelyIdAvailable": "This Vibely ID is available",
+    "vibelyIdAvailableRecheck": "This Vibely ID is available (re-verified against the database)",
+    "vibelyIdTakenRecheck": "This Vibely ID is already taken (re-verified against the database)",
+    "vibelyIdMaybeTaken": "This Vibely ID may already exist. Tap Check again to verify."
   },
   "months": {
     "1": "জানুয়ারি",
@@ -278,7 +282,17 @@
       "personalizedSwitch": "पर्सनलाइज़्ड विज्ञापन",
       "offVibelyActivity": "Vibely के बाहर की गतिविधि इस्तेमाल करें",
       "offVibelyActivityHint": "विज्ञापन अनुभव बेहतर बनाने के लिए पार्टनर डेटा की अनुमति दें।",
-      "offVibelySwitch": "Vibely के बाहर की गतिविधि"
+      "offVibelySwitch": "Vibely के बाहर की गतिविधि",
+      "manageTopics": "Manage ad topics",
+      "turnOffAdvertisers": "Turn off ads from advertisers",
+      "editPersonalDetails": "Edit personal details",
+      "offPlatformData": "Manage your off-Vibely data",
+      "targetedOutside": "Targeted ads outside Vibely",
+      "targetedOutsideHint": "Allow Vibely to show you personalized ads on other platforms.",
+      "useOffPlatform": "Use activity outside Vibely for ad targeting",
+      "useOffPlatformHint": "Allow activity from partners to help personalize ads you see on Vibely.",
+      "disconnectAdvertisers": "Disconnect advertisers",
+      "clearOffPlatformData": "Clear off-Vibely data"
     },
     "screenTimeSection": {
       "title": "स्क्रीन टाइम",
@@ -289,7 +303,8 @@
       "weeklyUpdateHint": "Get a report of your account usage habits.",
       "weeklyReport": "साप्ताहिक रिपोर्ट",
       "summary": "सारांश",
-      "helpResources": "मदद और संसाधन"
+      "helpResources": "मदद और संसाधन",
+      "restBreak": "Rest breaks"
     },
     "contentSection": {
       "title": "कंटेंट प्राथमिकताएँ",
@@ -515,7 +530,9 @@
     "back": "वापस",
     "close": "बंद करें",
     "collapseSidebar": "সাইডবার সংকুচিত করুন",
-    "expandSidebar": "সাইডবার প্রসারিত করুন"
+    "expandSidebar": "সাইডবার প্রসারিত করুন",
+    "uploadVideo": "Video",
+    "uploadPhoto": "Photo"
   },
   "forYou": {
     "emptyTitle": "For You पर अभी कोई वीडियो नहीं",
@@ -767,7 +784,8 @@
     "next": "अगला",
     "noFavoriteVideos": "जोड़ने के लिए पसंदीदा वीडियो नहीं हैं",
     "allFavoritesInCollection": "आपके सारे पसंदीदा वीडियो पहले से इस कलेक्शन में हैं।",
-    "logoutConfirm": "क्या आप वाकई लॉग आउट करना चाहते हैं?"
+    "logoutConfirm": "क्या आप वाकई लॉग आउट करना चाहते हैं?",
+    "followerStat": "Follower"
   },
   "watchPage": {
     "pageTitle": "Vibely पर वीडियो",
@@ -1416,7 +1434,11 @@
       },
       "keyMetrics": "मुख्य मेट्रिक्स",
       "recentPosts": "हाल की पोस्ट",
-      "knowledgeForYou": "आपके लिए ज्ञान"
+      "knowledgeForYou": "आपके लिए ज्ञान",
+      "loadingStats": "Loading stats…",
+      "emptyPosts": "No posts yet",
+      "latestComments": "Latest comments",
+      "emptyComments": "No comments on your videos yet"
     },
     "posts": {
       "tabPosts": "पोस्ट",
@@ -1461,7 +1483,22 @@
       "reviewingTeam": "समीक्षा में — Vibely टीम समीक्षा कर रही है",
       "showing": "{{shown}} / {{total}} पोस्ट दिखाई जा रही हैं",
       "deletePost": "पोस्ट हटाएँ",
-      "deleteHint": "वीडियो, कवर छवि और स्टोरेज फ़ाइलें हट जाएँगी। यह पूर्ववत नहीं हो सकता।"
+      "deleteHint": "वीडियो, कवर छवि और स्टोरेज फ़ाइलें हट जाएँगी। यह पूर्ववत नहीं हो सकता।",
+      "pendingReview": "Pending review",
+      "reviewingContent": "Content is being reviewed",
+      "reviewModal": {
+        "close": "Close",
+        "subtitle": "We expect to notify you of the result within 12 hours.",
+        "statusTitle": "Review status",
+        "stepPending": "Pending review",
+        "stepReviewing": "Under review",
+        "stepDone": "Review finished",
+        "faqTitle": "Frequently asked questions",
+        "faqWhyTitle": "Why is Vibely reviewing my content?",
+        "faqWhyBody": "Vibely reviews content to keep the community safe and aligned with our Community Guidelines. This applies to every new post.",
+        "faqEngagementTitle": "Does this affect engagement on my post?",
+        "faqEngagementBody": "While review is in progress, your post may have limited public visibility. After approval, your chosen privacy setting applies fully."
+      }
     },
     "comments": {
       "title": "टिप्पणियाँ",

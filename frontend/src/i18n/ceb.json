@@ -176,7 +176,11 @@
     "birthInvalid": "Tanggal lahir tidak valid",
     "birthFuture": "Tanggal lahir tidak boleh di masa depan",
     "birthMinAge": "Anda harus berusia minimal {{age}} tahun untuk memakai Vibely",
-    "loginRequiredProfile": "Anda perlu masuk untuk memperbarui profil"
+    "loginRequiredProfile": "Anda perlu masuk untuk memperbarui profil",
+    "vibelyIdAvailable": "This Vibely ID is available",
+    "vibelyIdAvailableRecheck": "This Vibely ID is available (re-verified against the database)",
+    "vibelyIdTakenRecheck": "This Vibely ID is already taken (re-verified against the database)",
+    "vibelyIdMaybeTaken": "This Vibely ID may already exist. Tap Check again to verify."
   },
   "months": {
     "1": "Enero",
@@ -278,7 +282,17 @@
       "personalizedSwitch": "Iklan yang dipersonalisasi",
       "offVibelyActivity": "Gunakan aktivitas di luar Vibely",
       "offVibelyActivityHint": "Izinkan data mitra untuk meningkatkan pengalaman iklan.",
-      "offVibelySwitch": "Aktivitas di luar Vibely"
+      "offVibelySwitch": "Aktivitas di luar Vibely",
+      "manageTopics": "Manage ad topics",
+      "turnOffAdvertisers": "Turn off ads from advertisers",
+      "editPersonalDetails": "Edit personal details",
+      "offPlatformData": "Manage your off-Vibely data",
+      "targetedOutside": "Targeted ads outside Vibely",
+      "targetedOutsideHint": "Allow Vibely to show you personalized ads on other platforms.",
+      "useOffPlatform": "Use activity outside Vibely for ad targeting",
+      "useOffPlatformHint": "Allow activity from partners to help personalize ads you see on Vibely.",
+      "disconnectAdvertisers": "Disconnect advertisers",
+      "clearOffPlatformData": "Clear off-Vibely data"
     },
     "screenTimeSection": {
       "title": "Waktu layar",
@@ -289,7 +303,8 @@
       "weeklyUpdateHint": "Get a report of your account usage habits.",
       "weeklyReport": "Laporan mingguan",
       "summary": "Ringkasan",
-      "helpResources": "Bantuan dan sumber daya"
+      "helpResources": "Bantuan dan sumber daya",
+      "restBreak": "Rest breaks"
     },
     "contentSection": {
       "title": "Preferensi konten",
@@ -515,7 +530,9 @@
     "back": "Kembali",
     "close": "Tutup",
     "collapseSidebar": "I-collapse ang sidebar",
-    "expandSidebar": "I-expand ang sidebar"
+    "expandSidebar": "I-expand ang sidebar",
+    "uploadVideo": "Video",
+    "uploadPhoto": "Photo"
   },
   "forYou": {
     "emptyTitle": "Belum ada video di Untuk Anda",
@@ -767,7 +784,8 @@
     "next": "Berikutnya",
     "noFavoriteVideos": "Tidak ada video favorit untuk ditambahkan",
     "allFavoritesInCollection": "Semua video favoritmu sudah ada di koleksi ini.",
-    "logoutConfirm": "Yakin ingin keluar?"
+    "logoutConfirm": "Yakin ingin keluar?",
+    "followerStat": "Follower"
   },
   "watchPage": {
     "pageTitle": "Video di Vibely",
@@ -1416,7 +1434,11 @@
       },
       "keyMetrics": "Metrik utama",
       "recentPosts": "Postingan terbaru",
-      "knowledgeForYou": "Pengetahuan untuk Anda"
+      "knowledgeForYou": "Pengetahuan untuk Anda",
+      "loadingStats": "Loading stats…",
+      "emptyPosts": "No posts yet",
+      "latestComments": "Latest comments",
+      "emptyComments": "No comments on your videos yet"
     },
     "posts": {
       "tabPosts": "Postingan",
@@ -1461,7 +1483,22 @@
       "reviewingTeam": "Sedang ditinjau — tim Vibely sedang meninjau",
       "showing": "Menampilkan {{shown}} / {{total}} postingan",
       "deletePost": "Hapus postingan",
-      "deleteHint": "Video, gambar sampul, dan file penyimpanan akan dihapus. Ini tidak dapat dibatalkan."
+      "deleteHint": "Video, gambar sampul, dan file penyimpanan akan dihapus. Ini tidak dapat dibatalkan.",
+      "pendingReview": "Pending review",
+      "reviewingContent": "Content is being reviewed",
+      "reviewModal": {
+        "close": "Close",
+        "subtitle": "We expect to notify you of the result within 12 hours.",
+        "statusTitle": "Review status",
+        "stepPending": "Pending review",
+        "stepReviewing": "Under review",
+        "stepDone": "Review finished",
+        "faqTitle": "Frequently asked questions",
+        "faqWhyTitle": "Why is Vibely reviewing my content?",
+        "faqWhyBody": "Vibely reviews content to keep the community safe and aligned with our Community Guidelines. This applies to every new post.",
+        "faqEngagementTitle": "Does this affect engagement on my post?",
+        "faqEngagementBody": "While review is in progress, your post may have limited public visibility. After approval, your chosen privacy setting applies fully."
+      }
     },
     "comments": {
       "title": "Komentar",

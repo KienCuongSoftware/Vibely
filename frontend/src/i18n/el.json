@@ -176,7 +176,11 @@
     "birthInvalid": "Fecha de nacimiento no válida",
     "birthFuture": "La fecha de nacimiento no puede ser futura",
     "birthMinAge": "Debes tener al menos {{age}} años para usar Vibely",
-    "loginRequiredProfile": "Debes iniciar sesión para actualizar tu perfil"
+    "loginRequiredProfile": "Debes iniciar sesión para actualizar tu perfil",
+    "vibelyIdAvailable": "This Vibely ID is available",
+    "vibelyIdAvailableRecheck": "This Vibely ID is available (re-verified against the database)",
+    "vibelyIdTakenRecheck": "This Vibely ID is already taken (re-verified against the database)",
+    "vibelyIdMaybeTaken": "This Vibely ID may already exist. Tap Check again to verify."
   },
   "months": {
     "1": "Ιανουάριος",
@@ -278,7 +282,17 @@
       "personalizedSwitch": "Anuncios personalizados",
       "offVibelyActivity": "Usar actividad fuera de Vibely",
       "offVibelyActivityHint": "Permite datos de partners para mejorar tu experiencia de anuncios.",
-      "offVibelySwitch": "Actividad fuera de Vibely"
+      "offVibelySwitch": "Actividad fuera de Vibely",
+      "manageTopics": "Manage ad topics",
+      "turnOffAdvertisers": "Turn off ads from advertisers",
+      "editPersonalDetails": "Edit personal details",
+      "offPlatformData": "Manage your off-Vibely data",
+      "targetedOutside": "Targeted ads outside Vibely",
+      "targetedOutsideHint": "Allow Vibely to show you personalized ads on other platforms.",
+      "useOffPlatform": "Use activity outside Vibely for ad targeting",
+      "useOffPlatformHint": "Allow activity from partners to help personalize ads you see on Vibely.",
+      "disconnectAdvertisers": "Disconnect advertisers",
+      "clearOffPlatformData": "Clear off-Vibely data"
     },
     "screenTimeSection": {
       "title": "Tiempo de uso",
@@ -289,7 +303,8 @@
       "weeklyUpdateHint": "Get a report of your account usage habits.",
       "weeklyReport": "Informe semanal",
       "summary": "Resumen",
-      "helpResources": "Ayuda y recursos"
+      "helpResources": "Ayuda y recursos",
+      "restBreak": "Rest breaks"
     },
     "contentSection": {
       "title": "Preferencias de contenido",
@@ -515,7 +530,9 @@
     "back": "Atrás",
     "close": "Cerrar",
     "collapseSidebar": "Σύμπτυξη πλαϊνής γραμμής",
-    "expandSidebar": "Ανάπτυξη πλαϊνής γραμμής"
+    "expandSidebar": "Ανάπτυξη πλαϊνής γραμμής",
+    "uploadVideo": "Video",
+    "uploadPhoto": "Photo"
   },
   "forYou": {
     "emptyTitle": "Nessun video in Per te",
@@ -767,7 +784,8 @@
     "next": "Siguiente",
     "noFavoriteVideos": "No hay videos favoritos para añadir",
     "allFavoritesInCollection": "Todos tus videos favoritos ya están en la colección.",
-    "logoutConfirm": "¿Seguro que quieres cerrar sesión?"
+    "logoutConfirm": "¿Seguro que quieres cerrar sesión?",
+    "followerStat": "Follower"
   },
   "watchPage": {
     "pageTitle": "Video en Vibely",
@@ -1416,7 +1434,11 @@
       },
       "keyMetrics": "Métricas clave",
       "recentPosts": "Publicaciones recientes",
-      "knowledgeForYou": "Conocimiento para ti"
+      "knowledgeForYou": "Conocimiento para ti",
+      "loadingStats": "Loading stats…",
+      "emptyPosts": "No posts yet",
+      "latestComments": "Latest comments",
+      "emptyComments": "No comments on your videos yet"
     },
     "posts": {
       "tabPosts": "Publicaciones",
@@ -1461,7 +1483,22 @@
       "reviewingTeam": "En revisión — el equipo de Vibely está revisando",
       "showing": "Mostrando {{shown}} / {{total}} publicaciones",
       "deletePost": "Eliminar publicación",
-      "deleteHint": "Se eliminarán el vídeo, la imagen de portada y los archivos de almacenamiento. Esto no se puede deshacer."
+      "deleteHint": "Se eliminarán el vídeo, la imagen de portada y los archivos de almacenamiento. Esto no se puede deshacer.",
+      "pendingReview": "Pending review",
+      "reviewingContent": "Content is being reviewed",
+      "reviewModal": {
+        "close": "Close",
+        "subtitle": "We expect to notify you of the result within 12 hours.",
+        "statusTitle": "Review status",
+        "stepPending": "Pending review",
+        "stepReviewing": "Under review",
+        "stepDone": "Review finished",
+        "faqTitle": "Frequently asked questions",
+        "faqWhyTitle": "Why is Vibely reviewing my content?",
+        "faqWhyBody": "Vibely reviews content to keep the community safe and aligned with our Community Guidelines. This applies to every new post.",
+        "faqEngagementTitle": "Does this affect engagement on my post?",
+        "faqEngagementBody": "While review is in progress, your post may have limited public visibility. After approval, your chosen privacy setting applies fully."
+      }
     },
     "comments": {
       "title": "Comentarios",

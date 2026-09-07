@@ -176,7 +176,11 @@
     "birthInvalid": "Недействительная дата рождения",
     "birthFuture": "Дата рождения не может быть в будущем",
     "birthMinAge": "Чтобы пользоваться Vibely, вам должно быть не меньше {{age}} лет",
-    "loginRequiredProfile": "Чтобы обновить профиль, нужно войти"
+    "loginRequiredProfile": "Чтобы обновить профиль, нужно войти",
+    "vibelyIdAvailable": "This Vibely ID is available",
+    "vibelyIdAvailableRecheck": "This Vibely ID is available (re-verified against the database)",
+    "vibelyIdTakenRecheck": "This Vibely ID is already taken (re-verified against the database)",
+    "vibelyIdMaybeTaken": "This Vibely ID may already exist. Tap Check again to verify."
   },
   "months": {
     "1": "қаңтар",
@@ -278,7 +282,17 @@
       "personalizedSwitch": "Персонализированная реклама",
       "offVibelyActivity": "Использовать активность вне Vibely",
       "offVibelyActivityHint": "Разрешите данные партнёров, чтобы улучшить рекламу.",
-      "offVibelySwitch": "Активность вне Vibely"
+      "offVibelySwitch": "Активность вне Vibely",
+      "manageTopics": "Manage ad topics",
+      "turnOffAdvertisers": "Turn off ads from advertisers",
+      "editPersonalDetails": "Edit personal details",
+      "offPlatformData": "Manage your off-Vibely data",
+      "targetedOutside": "Targeted ads outside Vibely",
+      "targetedOutsideHint": "Allow Vibely to show you personalized ads on other platforms.",
+      "useOffPlatform": "Use activity outside Vibely for ad targeting",
+      "useOffPlatformHint": "Allow activity from partners to help personalize ads you see on Vibely.",
+      "disconnectAdvertisers": "Disconnect advertisers",
+      "clearOffPlatformData": "Clear off-Vibely data"
     },
     "screenTimeSection": {
       "title": "Экранное время",
@@ -289,7 +303,8 @@
       "weeklyUpdateHint": "Get a report of your account usage habits.",
       "weeklyReport": "Еженедельный отчёт",
       "summary": "Сводка",
-      "helpResources": "Справка и ресурсы"
+      "helpResources": "Справка и ресурсы",
+      "restBreak": "Rest breaks"
     },
     "contentSection": {
       "title": "Настройки контента",
@@ -515,7 +530,9 @@
     "back": "Назад",
     "close": "Закрыть",
     "collapseSidebar": "Бүйірлік панельді жию",
-    "expandSidebar": "Бүйірлік панельді жаю"
+    "expandSidebar": "Бүйірлік панельді жаю",
+    "uploadVideo": "Video",
+    "uploadPhoto": "Photo"
   },
   "forYou": {
     "emptyTitle": "Пока нет видео в «Для вас»",
@@ -767,7 +784,8 @@
     "next": "Далее",
     "noFavoriteVideos": "Нет избранных видео для добавления",
     "allFavoritesInCollection": "Все ваши избранные видео уже в этой подборке.",
-    "logoutConfirm": "Точно выйти?"
+    "logoutConfirm": "Точно выйти?",
+    "followerStat": "Follower"
   },
   "watchPage": {
     "pageTitle": "Видео в Vibely",
@@ -1416,7 +1434,11 @@
       },
       "keyMetrics": "Ключевые метрики",
       "recentPosts": "Недавние публикации",
-      "knowledgeForYou": "Знания для вас"
+      "knowledgeForYou": "Знания для вас",
+      "loadingStats": "Loading stats…",
+      "emptyPosts": "No posts yet",
+      "latestComments": "Latest comments",
+      "emptyComments": "No comments on your videos yet"
     },
     "posts": {
       "tabPosts": "Публикации",
@@ -1461,7 +1483,22 @@
       "reviewingTeam": "На проверке — команда Vibely проверяет",
       "showing": "Показано {{shown}} / {{total}} публикаций",
       "deletePost": "Удалить публикацию",
-      "deleteHint": "Видео, обложка и файлы хранилища будут удалены. Это нельзя отменить."
+      "deleteHint": "Видео, обложка и файлы хранилища будут удалены. Это нельзя отменить.",
+      "pendingReview": "Pending review",
+      "reviewingContent": "Content is being reviewed",
+      "reviewModal": {
+        "close": "Close",
+        "subtitle": "We expect to notify you of the result within 12 hours.",
+        "statusTitle": "Review status",
+        "stepPending": "Pending review",
+        "stepReviewing": "Under review",
+        "stepDone": "Review finished",
+        "faqTitle": "Frequently asked questions",
+        "faqWhyTitle": "Why is Vibely reviewing my content?",
+        "faqWhyBody": "Vibely reviews content to keep the community safe and aligned with our Community Guidelines. This applies to every new post.",
+        "faqEngagementTitle": "Does this affect engagement on my post?",
+        "faqEngagementBody": "While review is in progress, your post may have limited public visibility. After approval, your chosen privacy setting applies fully."
+      }
     },
     "comments": {
       "title": "Комментарии",

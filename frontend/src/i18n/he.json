@@ -176,7 +176,11 @@
     "birthInvalid": "תאריך לידה לא תקין",
     "birthFuture": "תאריך לידה לא יכול להיות בעתיד",
     "birthMinAge": "עליכם להיות בני {{age}} לפחות כדי להשתמש ב-Vibely",
-    "loginRequiredProfile": "צריך להתחבר כדי לעדכן פרופיל"
+    "loginRequiredProfile": "צריך להתחבר כדי לעדכן פרופיל",
+    "vibelyIdAvailable": "This Vibely ID is available",
+    "vibelyIdAvailableRecheck": "This Vibely ID is available (re-verified against the database)",
+    "vibelyIdTakenRecheck": "This Vibely ID is already taken (re-verified against the database)",
+    "vibelyIdMaybeTaken": "This Vibely ID may already exist. Tap Check again to verify."
   },
   "months": {
     "1": "יָנוּאָר",
@@ -278,7 +282,17 @@
       "personalizedSwitch": "מודעות מותאמות אישית",
       "offVibelyActivity": "שימוש בפעילות מחוץ ל-Vibely",
       "offVibelyActivityHint": "אפשרו נתוני שותפים לשיפור חוויית המודעות.",
-      "offVibelySwitch": "פעילות מחוץ ל-Vibely"
+      "offVibelySwitch": "פעילות מחוץ ל-Vibely",
+      "manageTopics": "Manage ad topics",
+      "turnOffAdvertisers": "Turn off ads from advertisers",
+      "editPersonalDetails": "Edit personal details",
+      "offPlatformData": "Manage your off-Vibely data",
+      "targetedOutside": "Targeted ads outside Vibely",
+      "targetedOutsideHint": "Allow Vibely to show you personalized ads on other platforms.",
+      "useOffPlatform": "Use activity outside Vibely for ad targeting",
+      "useOffPlatformHint": "Allow activity from partners to help personalize ads you see on Vibely.",
+      "disconnectAdvertisers": "Disconnect advertisers",
+      "clearOffPlatformData": "Clear off-Vibely data"
     },
     "screenTimeSection": {
       "title": "זמן מסך",
@@ -289,7 +303,8 @@
       "weeklyUpdateHint": "Get a report of your account usage habits.",
       "weeklyReport": "דוח שבועי",
       "summary": "סיכום",
-      "helpResources": "עזרה ומשאבים"
+      "helpResources": "עזרה ומשאבים",
+      "restBreak": "Rest breaks"
     },
     "contentSection": {
       "title": "העדפות תוכן",
@@ -515,7 +530,9 @@
     "back": "חזרה",
     "close": "סגור",
     "collapseSidebar": "כווץ את סרגל הצד",
-    "expandSidebar": "הרחב את סרגל הצד"
+    "expandSidebar": "הרחב את סרגל הצד",
+    "uploadVideo": "Video",
+    "uploadPhoto": "Photo"
   },
   "forYou": {
     "emptyTitle": "אין סרטונים ב\"עבורך\" עדיין",
@@ -767,7 +784,8 @@
     "next": "הבא",
     "noFavoriteVideos": "אין סרטונים מועדפים להוספה",
     "allFavoritesInCollection": "כל הסרטונים המועדפים כבר באוסף.",
-    "logoutConfirm": "בטוחים שרוצים להתנתק?"
+    "logoutConfirm": "בטוחים שרוצים להתנתק?",
+    "followerStat": "Follower"
   },
   "watchPage": {
     "pageTitle": "סרטון ב-Vibely",
@@ -1416,7 +1434,11 @@
       },
       "keyMetrics": "מדדים מרכזיים",
       "recentPosts": "פוסטים אחרונים",
-      "knowledgeForYou": "ידע בשבילכם"
+      "knowledgeForYou": "ידע בשבילכם",
+      "loadingStats": "Loading stats…",
+      "emptyPosts": "No posts yet",
+      "latestComments": "Latest comments",
+      "emptyComments": "No comments on your videos yet"
     },
     "posts": {
       "tabPosts": "פוסטים",
@@ -1461,7 +1483,22 @@
       "reviewingTeam": "בבדיקה — צוות Vibely בודק",
       "showing": "מציג {{shown}} / {{total}} פוסטים",
       "deletePost": "מחיקת פוסט",
-      "deleteHint": "הסרטון, תמונת הכריכה וקובצי האחסון יימחקו. לא ניתן לבטל."
+      "deleteHint": "הסרטון, תמונת הכריכה וקובצי האחסון יימחקו. לא ניתן לבטל.",
+      "pendingReview": "Pending review",
+      "reviewingContent": "Content is being reviewed",
+      "reviewModal": {
+        "close": "Close",
+        "subtitle": "We expect to notify you of the result within 12 hours.",
+        "statusTitle": "Review status",
+        "stepPending": "Pending review",
+        "stepReviewing": "Under review",
+        "stepDone": "Review finished",
+        "faqTitle": "Frequently asked questions",
+        "faqWhyTitle": "Why is Vibely reviewing my content?",
+        "faqWhyBody": "Vibely reviews content to keep the community safe and aligned with our Community Guidelines. This applies to every new post.",
+        "faqEngagementTitle": "Does this affect engagement on my post?",
+        "faqEngagementBody": "While review is in progress, your post may have limited public visibility. After approval, your chosen privacy setting applies fully."
+      }
     },
     "comments": {
       "title": "תגובות",

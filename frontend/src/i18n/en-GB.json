@@ -176,7 +176,11 @@
     "birthInvalid": "Invalid date of birth",
     "birthFuture": "Date of birth cannot be in the future",
     "birthMinAge": "You must be at least {{age}} years old to use Vibely",
-    "loginRequiredProfile": "You need to log in to update your profile"
+    "loginRequiredProfile": "You need to log in to update your profile",
+    "vibelyIdAvailable": "This Vibely ID is available",
+    "vibelyIdAvailableRecheck": "This Vibely ID is available (re-verified against the database)",
+    "vibelyIdTakenRecheck": "This Vibely ID is already taken (re-verified against the database)",
+    "vibelyIdMaybeTaken": "This Vibely ID may already exist. Tap Check again to verify."
   },
   "months": {
     "1": "January",
@@ -278,7 +282,17 @@
       "personalizedSwitch": "Personalized ads",
       "offVibelyActivity": "Use activity outside Vibely",
       "offVibelyActivityHint": "Allow partner data to improve your ads experience.",
-      "offVibelySwitch": "Activity outside Vibely"
+      "offVibelySwitch": "Activity outside Vibely",
+      "manageTopics": "Manage ad topics",
+      "turnOffAdvertisers": "Turn off ads from advertisers",
+      "editPersonalDetails": "Edit personal details",
+      "offPlatformData": "Manage your off-Vibely data",
+      "targetedOutside": "Targeted ads outside Vibely",
+      "targetedOutsideHint": "Allow Vibely to show you personalized ads on other platforms.",
+      "useOffPlatform": "Use activity outside Vibely for ad targeting",
+      "useOffPlatformHint": "Allow activity from partners to help personalize ads you see on Vibely.",
+      "disconnectAdvertisers": "Disconnect advertisers",
+      "clearOffPlatformData": "Clear off-Vibely data"
     },
     "screenTimeSection": {
       "title": "Screen time",
@@ -289,7 +303,8 @@
       "weeklyUpdateHint": "Get a report of your account usage habits.",
       "weeklyReport": "Weekly report",
       "summary": "Summary",
-      "helpResources": "Help and resources"
+      "helpResources": "Help and resources",
+      "restBreak": "Rest breaks"
     },
     "contentSection": {
       "title": "Content preferences",
@@ -515,7 +530,9 @@
     "back": "Back",
     "close": "Close",
     "collapseSidebar": "Collapse sidebar",
-    "expandSidebar": "Expand sidebar"
+    "expandSidebar": "Expand sidebar",
+    "uploadVideo": "Video",
+    "uploadPhoto": "Photo"
   },
   "forYou": {
     "emptyTitle": "No videos on For You yet",
@@ -767,7 +784,8 @@
     "next": "Next",
     "noFavoriteVideos": "No favorite videos to add",
     "allFavoritesInCollection": "All of your favorite videos are already in the collection.",
-    "logoutConfirm": "Are you sure you want to log out?"
+    "logoutConfirm": "Are you sure you want to log out?",
+    "followerStat": "Follower"
   },
   "watchPage": {
     "pageTitle": "Video on Vibely",
@@ -1416,7 +1434,11 @@
       },
       "keyMetrics": "Key metrics",
       "recentPosts": "Recent posts",
-      "knowledgeForYou": "Knowledge for you"
+      "knowledgeForYou": "Knowledge for you",
+      "loadingStats": "Loading stats…",
+      "emptyPosts": "No posts yet",
+      "latestComments": "Latest comments",
+      "emptyComments": "No comments on your videos yet"
     },
     "posts": {
       "tabPosts": "Posts",
@@ -1461,7 +1483,22 @@
       "reviewingTeam": "Under review — Vibely team is reviewing",
       "showing": "Showing {{shown}} / {{total}} posts",
       "deletePost": "Delete post",
-      "deleteHint": "Video, cover image, and storage files will be deleted. This cannot be undone."
+      "deleteHint": "Video, cover image, and storage files will be deleted. This cannot be undone.",
+      "pendingReview": "Pending review",
+      "reviewingContent": "Content is being reviewed",
+      "reviewModal": {
+        "close": "Close",
+        "subtitle": "We expect to notify you of the result within 12 hours.",
+        "statusTitle": "Review status",
+        "stepPending": "Pending review",
+        "stepReviewing": "Under review",
+        "stepDone": "Review finished",
+        "faqTitle": "Frequently asked questions",
+        "faqWhyTitle": "Why is Vibely reviewing my content?",
+        "faqWhyBody": "Vibely reviews content to keep the community safe and aligned with our Community Guidelines. This applies to every new post.",
+        "faqEngagementTitle": "Does this affect engagement on my post?",
+        "faqEngagementBody": "While review is in progress, your post may have limited public visibility. After approval, your chosen privacy setting applies fully."
+      }
     },
     "comments": {
       "title": "Comments",
