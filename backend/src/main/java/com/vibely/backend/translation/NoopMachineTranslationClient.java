@@ -1,6 +1,5 @@
 package com.vibely.backend.translation;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -9,7 +8,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnProperty(prefix = "app.translation", name = "enabled", havingValue = "false", matchIfMissing = true)
-@ConditionalOnMissingBean(MachineTranslationClient.class)
 public class NoopMachineTranslationClient implements MachineTranslationClient {
 
     @Override

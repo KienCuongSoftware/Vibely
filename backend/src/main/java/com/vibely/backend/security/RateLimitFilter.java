@@ -25,6 +25,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private static final int COMMENT_LIMIT = 60;
     private static final int AVAILABILITY_CHECK_LIMIT = 15;
     private static final int ENGAGEMENT_WRITE_LIMIT = 90;
+    private static final int SEARCH_LIMIT = 60;
 
     private final Map<String, Counter> counters = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper;
@@ -43,6 +44,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         String uri = request.getRequestURI();
         String method = request.getMethod();
+        if (uri != null && uri.startsWith("/api/internal/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String clientIp = ShareClientHints.clientIp(request);
         boolean authWriteRoute = uri.startsWith("/api/auth/") && "POST".equals(method);
         boolean oauthSessionRoute =
@@ -57,6 +62,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         boolean antibotRoute = isAntiBotRoute(uri, method);
         boolean availabilityCheckRoute = isAvailabilityCheckRoute(uri, method);
         boolean engagementWriteRoute = isEngagementWriteRoute(uri, method);
+        boolean searchRoute = isSearchRoute(uri, method);
 
         if (redirectRoute) {
             if (!shareRateLimiter.allowRedirect(clientIp)) {
@@ -111,6 +117,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 writeRateLimited(response);
                 return;
             }
+        } else if (searchRoute) {
+            String key = clientIp + ":search";
+            if (!allowRequest(key, SEARCH_LIMIT)) {
+                writeRateLimited(response);
+                return;
+            }
         } else if (authWriteRoute || commentWriteRoute) {
             // OAuth exchange is retried after LINE/Google round-trips; keep it out of the tight bucket.
             if (oauthSessionRoute) {
@@ -137,6 +149,13 @@ public class RateLimitFilter extends OncePerRequestFilter {
             || uri.equals("/api/fingerprint/register")
             || uri.equals("/api/behavior/track")
             || uri.equals("/api/trust/evaluate");
+    }
+
+    private static boolean isSearchRoute(String uri, String method) {
+        if (!"GET".equals(method) && !"HEAD".equals(method)) {
+            return false;
+        }
+        return uri.startsWith("/api/search/");
     }
 
     private static boolean isAvailabilityCheckRoute(String uri, String method) {

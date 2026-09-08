@@ -2,6 +2,7 @@ package com.vibely.backend.storage;
 
 import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.common.BadRequestException;
+import java.util.Locale;
 import org.springframework.stereotype.Component;
 
 /**
@@ -41,12 +42,13 @@ public class S3OwnedMediaValidator {
             return;
         }
         if (!s3Properties.isEnabled()) {
-            return;
+            throw new BadRequestException("Remote media URLs are not allowed when object storage is disabled.");
         }
         requireOwnedThumbnail(trimmed, userId);
     }
 
     public void requireOwnedUpload(String url, long userId) {
+        rejectRemoteWhenStorageDisabled(url);
         if (!s3Properties.isEnabled()) {
             return;
         }
@@ -54,6 +56,7 @@ public class S3OwnedMediaValidator {
     }
 
     public void requireOwnedThumbnail(String url, long userId) {
+        rejectRemoteWhenStorageDisabled(url);
         if (!s3Properties.isEnabled()) {
             return;
         }
@@ -62,6 +65,7 @@ public class S3OwnedMediaValidator {
 
     /** Extracted audio track under audios/{userId}/ (derived from upload path). */
     public void requireOwnedAudio(String url, long userId) {
+        rejectRemoteWhenStorageDisabled(url);
         if (!s3Properties.isEnabled()) {
             return;
         }
@@ -73,6 +77,7 @@ public class S3OwnedMediaValidator {
      * object key already appears on a READY+PUBLIC video (not an arbitrary private key).
      */
     public void requireOwnedOrCatalogAudio(String url, long userId, java.util.function.Predicate<String> catalogAudioKeyAllowed) {
+        rejectRemoteWhenStorageDisabled(url);
         if (!s3Properties.isEnabled()) {
             return;
         }
@@ -99,6 +104,7 @@ public class S3OwnedMediaValidator {
 
     /** Chat images (thumbnails/) and videos (uploads/) uploaded by the sender. */
     public void requireOwnedChatMedia(String url, long userId) {
+        rejectRemoteWhenStorageDisabled(url);
         if (!s3Properties.isEnabled()) {
             return;
         }
@@ -108,6 +114,21 @@ public class S3OwnedMediaValidator {
         if (!key.startsWith(uploadPrefix) && !key.startsWith(thumbPrefix)) {
             throw new BadRequestException("Chat media URL does not belong to your account.");
         }
+    }
+
+    private void rejectRemoteWhenStorageDisabled(String url) {
+        if (s3Properties.isEnabled() || url == null || url.isBlank()) {
+            return;
+        }
+        if (isRemoteUrl(url)) {
+            throw new BadRequestException("Remote media URLs are not allowed when object storage is disabled.");
+        }
+    }
+
+    private static boolean isRemoteUrl(String url) {
+        String trimmed = url.trim();
+        String lower = trimmed.toLowerCase(Locale.ROOT);
+        return lower.contains("://") || trimmed.startsWith("//");
     }
 
     private void requireKeyPrefix(String url, String requiredPrefix) {

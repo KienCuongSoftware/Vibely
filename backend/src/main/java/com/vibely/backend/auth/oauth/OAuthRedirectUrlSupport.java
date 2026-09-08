@@ -25,10 +25,13 @@ public final class OAuthRedirectUrlSupport {
         if (isLocalhostOrigin(requestOrigin) && StringUtils.hasText(frontendBaseUrl)) {
             return trimTrailingSlash(frontendBaseUrl);
         }
-        if (isLocalhostOrigin(requestOrigin)) {
+        if (isLocalhostOrigin(requestOrigin) || isBackendDevOrigin(requestOrigin)) {
             return requestOrigin;
         }
-        return requestOrigin;
+        if (StringUtils.hasText(frontendBaseUrl)) {
+            return trimTrailingSlash(frontendBaseUrl);
+        }
+        return "";
     }
 
     private static String resolveRequestOrigin(HttpServletRequest request) {

@@ -60,4 +60,15 @@ class S3OwnedMediaValidatorTest {
             42L
         )).isInstanceOf(BadRequestException.class);
     }
+
+    @Test
+    void rejectsRemoteUploadWhenS3Disabled() {
+        S3Properties properties = new S3Properties();
+        properties.setEnabled(false);
+        S3OwnedMediaValidator disabled = new S3OwnedMediaValidator(properties, new S3ObjectUrlBuilder(properties));
+        assertThatThrownBy(() -> disabled.requireOwnedUpload("https://evil.example/steal.mp4", 1L))
+            .isInstanceOf(BadRequestException.class);
+        assertThatCode(() -> disabled.requireOwnedUpload("/uploads/local.mp4", 1L))
+            .doesNotThrowAnyException();
+    }
 }
