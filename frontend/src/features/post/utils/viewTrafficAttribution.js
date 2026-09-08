@@ -3,7 +3,7 @@
  * Allowlist: foryou | profile | search | other.
  */
 
-const ALLOWED_SOURCES = new Set(["foryou", "profile", "search", "other"]);
+const ALLOWED_SOURCES = new Set(["foryou", "profile", "search", "other", "studio"]);
 const SEARCH_QUERY_MAX = 80;
 
 /**
@@ -70,12 +70,20 @@ export function resolveViewTrafficAttribution(opts = {}) {
     return { source: "other" };
   }
 
+  if (state.fromExplore || pathname.startsWith("/explore")) {
+    return { source: "other" };
+  }
+
   if (pathname.startsWith("/search")) {
     return attribution("search", params.get("q"));
   }
   if (pathname.startsWith("/tag/")) {
     const tag = decodeUriSegment(pathname.slice("/tag/".length).split("/")[0]);
     return attribution("search", tag ? `#${tag}` : undefined);
+  }
+
+  if (/^\/@[^/]+\/video\//.test(pathname) || opts.forYouStyle) {
+    return { source: "foryou" };
   }
 
   if (/^\/@[^/]+\/[^/]+\/?$/.test(pathname) && !pathname.includes("/video/")) {

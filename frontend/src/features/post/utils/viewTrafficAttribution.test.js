@@ -12,6 +12,23 @@ describe("viewTrafficAttribution", () => {
     ).toEqual({ source: "foryou" });
   });
 
+  it("maps For You-style /@user/video permalink to foryou", () => {
+    expect(
+      resolveViewTrafficAttribution({
+        pathname: "/@alice/video/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+      }),
+    ).toEqual({ source: "foryou" });
+  });
+
+  it("keeps explore arrivals as other", () => {
+    expect(
+      resolveViewTrafficAttribution({
+        pathname: "/@alice/video/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        state: { fromExplore: true },
+      }),
+    ).toEqual({ source: "other" });
+  });
+
   it("maps profile watch permalink to profile", () => {
     expect(
       resolveViewTrafficAttribution({

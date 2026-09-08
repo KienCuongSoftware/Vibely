@@ -722,6 +722,9 @@ public class StudioAnalyticsService {
                 case VideoViewTraffic.FOR_YOU -> forYou += n;
                 case VideoViewTraffic.PROFILE -> profile += n;
                 case VideoViewTraffic.SEARCH -> search += n;
+                case VideoViewTraffic.STUDIO -> {
+                    /* preview trong Studio không phải nguồn khám phá */
+                }
                 default -> other += n;
             }
         }

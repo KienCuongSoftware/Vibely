@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -228,12 +229,17 @@ public class VideoController {
     public ApiResponse<Void> recordView(
         Authentication authentication,
         @PathVariable String publicId,
-        @RequestBody(required = false) VideoViewRequest body
+        @RequestBody(required = false) VideoViewRequest body,
+        @RequestHeader(value = "Referer", required = false) String referer
     ) {
         String viewerEmail = authentication != null && !(authentication instanceof AnonymousAuthenticationToken)
             ? authentication.getName()
             : null;
-        videoService.recordView(VideoPublicIds.parse(publicId), body, viewerEmail);
+        videoService.recordView(
+            VideoPublicIds.parse(publicId),
+            VideoViewTraffic.applySource(body, referer),
+            viewerEmail
+        );
         return ApiResponse.success(null);
     }
 

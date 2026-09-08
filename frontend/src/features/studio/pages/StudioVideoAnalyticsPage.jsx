@@ -764,7 +764,7 @@ export function StudioVideoAnalyticsPage() {
                               watchedMs,
                               durationMs,
                             },
-                            { source: 'other' },
+                            { source: 'studio' },
                           ),
                         )
                         .then(() => {
@@ -787,7 +787,7 @@ export function StudioVideoAnalyticsPage() {
                             watchedMs,
                             ...(durationMs != null ? { durationMs } : {}),
                           },
-                          { source: 'other' },
+                          { source: 'studio' },
                         ),
                       )
                       .then(() => {

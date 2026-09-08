@@ -694,6 +694,7 @@ export function FeedStyleVideoDetailPage({
         search: location.search,
         state: location.state,
         videoPublicId: publicId,
+        forYouStyle,
       })
 
       if (
@@ -733,7 +734,7 @@ export function FeedStyleVideoDetailPage({
           detailViewQualifySentRef.current = false
         })
     },
-    [location.pathname, location.search, location.state, publicId, token],
+    [forYouStyle, location.pathname, location.search, location.state, publicId, token],
   )
 
   useEffect(() => {
