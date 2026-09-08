@@ -1567,6 +1567,12 @@
       "newFollowers": "신규 팔로워",
       "trafficSources": "유입 경로",
       "trafficSourcesTip": "시청자가 영상을 발견한 곳(추천, 프로필, 검색 등).",
+      "sources": {
+        "foryou": "For You",
+        "profile": "Profile",
+        "search": "Search",
+        "other": "Other"
+      },
       "searchQueries": "검색어",
       "searchQueriesTip": "선택한 기간에 시청자를 영상으로 이끈 검색 키워드입니다.",
       "topPosts": "인기 게시물",

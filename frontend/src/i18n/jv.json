@@ -1567,6 +1567,12 @@
       "newFollowers": "Pengikut baru",
       "trafficSources": "Sumber traffic",
       "trafficSourcesTip": "Tempat penonton menemukan video Anda (Untuk Anda, profil, pencarian, …).",
+      "sources": {
+        "foryou": "For You",
+        "profile": "Profile",
+        "search": "Search",
+        "other": "Other"
+      },
       "searchQueries": "Kueri pencarian",
       "searchQueriesTip": "Kata kunci pencarian yang membawa penonton ke video Anda pada periode yang dipilih.",
       "topPosts": "Postingan teratas",

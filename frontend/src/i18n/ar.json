@@ -1567,6 +1567,12 @@
       "newFollowers": "متابعون جدد",
       "trafficSources": "مصادر الزيارات",
       "trafficSourcesTip": "حيث اكتشف المشاهدون فيديوهاتك (لك، الملف، البحث، …).",
+      "sources": {
+        "foryou": "For You",
+        "profile": "Profile",
+        "search": "Search",
+        "other": "Other"
+      },
       "searchQueries": "استعلامات البحث",
       "searchQueriesTip": "كلمات البحث التي قادت المشاهدين إلى فيديوهاتك في الفترة المحددة.",
       "topPosts": "أبرز المنشورات",

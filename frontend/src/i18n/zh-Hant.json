@@ -1567,6 +1567,12 @@
       "newFollowers": "新增粉絲",
       "trafficSources": "流量來源",
       "trafficSourcesTip": "觀眾如何發現你的視頻（推薦、主頁、搜索等）。",
+      "sources": {
+        "foryou": "For You",
+        "profile": "Profile",
+        "search": "Search",
+        "other": "Other"
+      },
       "searchQueries": "搜索詞",
       "searchQueriesTip": "所選時間段內引導觀眾找到你視頻的搜索關鍵詞。",
       "topPosts": "熱門作品",

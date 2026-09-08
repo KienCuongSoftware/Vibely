@@ -1567,6 +1567,12 @@
       "newFollowers": "Yeni takipçiler",
       "trafficSources": "Trafik kaynakları",
       "trafficSourcesTip": "İzleyenlerin videolarınızı nerede keşfettiği (Senin için, profil, arama, …).",
+      "sources": {
+        "foryou": "For You",
+        "profile": "Profile",
+        "search": "Search",
+        "other": "Other"
+      },
       "searchQueries": "Arama sorguları",
       "searchQueriesTip": "Seçilen dönemde izleyenleri videolarınıza götüren arama anahtar kelimeleri.",
       "topPosts": "En iyi gönderiler",

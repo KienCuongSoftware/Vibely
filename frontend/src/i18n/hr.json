@@ -1567,6 +1567,12 @@
       "newFollowers": "Nowi obserwujący",
       "trafficSources": "Źródła ruchu",
       "trafficSourcesTip": "Gdzie widzowie odkryli Twoje filmy (Dla Ciebie, profil, wyszukiwanie, …).",
+      "sources": {
+        "foryou": "For You",
+        "profile": "Profile",
+        "search": "Search",
+        "other": "Other"
+      },
       "searchQueries": "Zapytania wyszukiwania",
       "searchQueriesTip": "Słowa kluczowe wyszukiwania, które doprowadziły widzów do Twoich filmów w wybranym okresie.",
       "topPosts": "Najlepsze posty",

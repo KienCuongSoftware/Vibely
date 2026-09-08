@@ -1567,6 +1567,12 @@
       "newFollowers": "עוקבים חדשים",
       "trafficSources": "מקורות תנועה",
       "trafficSourcesTip": "איפה צופים גילו את הסרטונים שלכם («עבורך», פרופיל, חיפוש, …).",
+      "sources": {
+        "foryou": "For You",
+        "profile": "Profile",
+        "search": "Search",
+        "other": "Other"
+      },
       "searchQueries": "שאילתות חיפוש",
       "searchQueriesTip": "מילות חיפוש שהובילו צופים לסרטונים בתקופה שנבחרה.",
       "topPosts": "פוסטים מובילים",

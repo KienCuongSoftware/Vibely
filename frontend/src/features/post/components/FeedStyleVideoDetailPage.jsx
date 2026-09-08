@@ -69,6 +69,14 @@ import { absoluteUrl } from '@/shared/seo/seoConfig.js'
 import { buildProfileHref } from '@/features/search/utils/searchUtils.js'
 import { formatRelativeTimeVi } from '@/shared/utils/relativeTimeVi.js'
 import { isEnterKey } from '@/shared/utils/keyboardShortcuts.js'
+import {
+  watchTimeNearPlaythroughEnd,
+  watchTimeQualifiesForViewRecord,
+} from '@/features/post/utils/watchQualifiesForViewRecord.js'
+import {
+  resolveViewTrafficAttribution,
+  withViewTrafficFields,
+} from '@/features/post/utils/viewTrafficAttribution.js'
 
 const DEFAULT_AVATAR = '/images/users/default-avatar.jpeg'
 const FEED_DEFAULT_AUTHOR_AVATAR = '/images/users/default-avatar.jpeg'
@@ -237,6 +245,8 @@ export function FeedStyleVideoDetailPage({
   const bookmarkButtonRef = useRef(null)
   const followBadgeTimerRef = useRef(null)
   const repostToastTimerRef = useRef(null)
+  const detailViewQualifySentRef = useRef(false)
+  const detailViewPlaythroughSentRef = useRef(false)
 
   const [video, setVideo] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -658,7 +668,73 @@ export function FeedStyleVideoDetailPage({
     setBookmarkManageOpen(false)
     setRepostToastOpen(false)
     setMobilePanelOpen(false)
+    detailViewQualifySentRef.current = false
+    detailViewPlaythroughSentRef.current = false
   }, [publicId])
+
+  const onActiveFeedPlaybackTick = useCallback(
+    (e) => {
+      const el = e.currentTarget
+      if (!el || el.tagName !== 'VIDEO' || !publicId) return
+      let dur = el.duration
+      if (!Number.isFinite(dur) || dur <= 0) {
+        try {
+          if (el.seekable?.length) {
+            dur = el.seekable.end(el.seekable.length - 1)
+          }
+        } catch {
+          /* noop */
+        }
+      }
+      const watchedMs = Math.floor(el.currentTime * 1000)
+      const durationMs =
+        Number.isFinite(dur) && dur > 0 ? Math.floor(dur * 1000) : null
+      const attribution = resolveViewTrafficAttribution({
+        pathname: location.pathname,
+        search: location.search,
+        state: location.state,
+        videoPublicId: publicId,
+      })
+
+      if (
+        durationMs != null &&
+        !detailViewPlaythroughSentRef.current &&
+        watchTimeNearPlaythroughEnd(watchedMs, durationMs)
+      ) {
+        detailViewPlaythroughSentRef.current = true
+        apiClient
+          .recordVideoView(
+            publicId,
+            withViewTrafficFields({ watchedMs, durationMs }, attribution),
+            { token },
+          )
+          .catch(() => {
+            detailViewPlaythroughSentRef.current = false
+          })
+        return
+      }
+
+      if (detailViewQualifySentRef.current) return
+      if (!watchTimeQualifiesForViewRecord(watchedMs, durationMs)) return
+      detailViewQualifySentRef.current = true
+      apiClient
+        .recordVideoView(
+          publicId,
+          withViewTrafficFields(
+            {
+              watchedMs,
+              ...(durationMs != null ? { durationMs } : {}),
+            },
+            attribution,
+          ),
+          { token },
+        )
+        .catch(() => {
+          detailViewQualifySentRef.current = false
+        })
+    },
+    [location.pathname, location.search, location.state, publicId, token],
+  )
 
   useEffect(() => {
     if (!showAccountMenu) return undefined
@@ -1001,7 +1077,7 @@ export function FeedStyleVideoDetailPage({
                   feedDefaultAuthorAvatar={FEED_DEFAULT_AUTHOR_AVATAR}
                   thumbnailFallbackUrl={undefined}
                   playbackFlash={playbackFlash}
-                  onActiveFeedPlaybackTick={() => {}}
+                  onActiveFeedPlaybackTick={onActiveFeedPlaybackTick}
                   commentsDockOpen={!mobileLayout && !watchChrome && sidebarTab === 'comments'}
                   onStageWideChange={setStageWide}
                   contextMenuToken={forYouStyle ? token : undefined}

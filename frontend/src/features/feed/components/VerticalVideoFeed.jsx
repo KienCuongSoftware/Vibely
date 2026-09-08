@@ -32,6 +32,10 @@ import {
   watchTimeNearPlaythroughEnd,
   watchTimeQualifiesForViewRecord,
 } from "@/features/post/utils/watchQualifiesForViewRecord";
+import {
+  resolveViewTrafficAttribution,
+  withViewTrafficFields,
+} from "@/features/post/utils/viewTrafficAttribution.js";
 import { useRapidStepNavigation } from "@/features/feed/hooks/useRapidStepNavigation.js";
 import {
   isFutureSchedule,
@@ -1187,8 +1191,31 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
       activeVideo?.authorUsername,
       activeVideo?.publicId,
     );
-    if (path) navigate(path);
-  }, [activeVideo?.authorUsername, activeVideo?.publicId, navigate]);
+    if (!path) return;
+    const attribution = resolveViewTrafficAttribution({
+      pathname: location.pathname,
+      search: location.search,
+      state: location.state,
+      feedMode,
+      videoPublicId: activeVideo?.publicId,
+    });
+    navigate(path, {
+      state: {
+        viewTrafficSource: attribution.source,
+        ...(attribution.searchQuery
+          ? { viewSearchQuery: attribution.searchQuery }
+          : {}),
+      },
+    });
+  }, [
+    activeVideo?.authorUsername,
+    activeVideo?.publicId,
+    feedMode,
+    location.pathname,
+    location.search,
+    location.state,
+    navigate,
+  ]);
 
   useEffect(() => {
     if (!authReady || !token || !isVideoPublicId(activeVideo?.publicId)) {
@@ -1347,10 +1374,23 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     ) {
       feedViewPlaythroughSentRef.current.add(id);
       apiClient
-        .recordVideoView(id, {
-          watchedMs,
-          durationMs,
-        }, { token })
+        .recordVideoView(
+          id,
+          withViewTrafficFields(
+            {
+              watchedMs,
+              durationMs,
+            },
+            resolveViewTrafficAttribution({
+              pathname: location.pathname,
+              search: location.search,
+              state: location.state,
+              feedMode,
+              videoPublicId: id,
+            }),
+          ),
+          { token },
+        )
         .catch(() => {
           feedViewPlaythroughSentRef.current.delete(id);
         });
@@ -1361,14 +1401,27 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     if (!watchTimeQualifiesForViewRecord(watchedMs, durationMs)) return;
     feedViewQualifySentRef.current.add(id);
     apiClient
-      .recordVideoView(id, {
-        watchedMs,
-        ...(durationMs != null ? { durationMs } : {}),
-      }, { token })
+      .recordVideoView(
+        id,
+        withViewTrafficFields(
+          {
+            watchedMs,
+            ...(durationMs != null ? { durationMs } : {}),
+          },
+          resolveViewTrafficAttribution({
+            pathname: location.pathname,
+            search: location.search,
+            state: location.state,
+            feedMode,
+            videoPublicId: id,
+          }),
+        ),
+        { token },
+      )
       .catch(() => {
         feedViewQualifySentRef.current.delete(id);
       });
-  }, [token]);
+  }, [feedMode, location.pathname, location.search, location.state, token]);
 
   const autoAdvanceAfterLoadRef = useRef(false);
 

@@ -241,7 +241,32 @@ class ApiFlowIntegrationTest {
             .andExpect(jsonPath("$.data.playbackSampleSize").value(3))
             .andExpect(jsonPath("$.data.periodTotalWatchMs").value(9500))
             .andExpect(jsonPath("$.data.retention.length()").value(21))
-            .andExpect(jsonPath("$.data.trafficSources.length()").value(4));
+            .andExpect(jsonPath("$.data.trafficSources.length()").value(4))
+            .andExpect(jsonPath("$.data.trafficSources[0].id").value("foryou"))
+            .andExpect(jsonPath("$.data.trafficSources[0].percent").value(0.0))
+            .andExpect(jsonPath("$.data.trafficSources[3].id").value("other"))
+            .andExpect(jsonPath("$.data.trafficSources[3].percent").value(100.0))
+            .andExpect(jsonPath("$.data.searchKeywords").isEmpty());
+
+        mockMvc.perform(
+                post("/api/videos/" + videoPublicId + "/views")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"watchedMs\":2500,\"durationMs\":10000,\"source\":\"search\",\"searchQuery\":\"  dance  trend  \"}")
+            )
+            .andExpect(status().isOk());
+
+        mockMvc.perform(
+                get("/api/studio/analytics/video/" + videoPublicId + "?days=7")
+                    .header("Authorization", "Bearer " + token)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.playbackSampleSize").value(4))
+            .andExpect(jsonPath("$.data.trafficSources[2].id").value("search"))
+            .andExpect(jsonPath("$.data.trafficSources[2].percent").value(25.0))
+            .andExpect(jsonPath("$.data.trafficSources[3].percent").value(75.0))
+            .andExpect(jsonPath("$.data.searchKeywords.length()").value(1))
+            .andExpect(jsonPath("$.data.searchKeywords[0].query").value("dance trend"))
+            .andExpect(jsonPath("$.data.searchKeywords[0].impressions").value(1));
 
         mockMvc.perform(get("/api/users/demo_user/videos?page=0&size=10"))
             .andExpect(status().isOk())

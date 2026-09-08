@@ -13,6 +13,10 @@ import {
   watchTimeNearPlaythroughEnd,
   watchTimeQualifiesForViewRecord,
 } from "@/features/post/utils/watchQualifiesForViewRecord";
+import {
+  resolveViewTrafficAttribution,
+  withViewTrafficFields,
+} from "@/features/post/utils/viewTrafficAttribution.js";
 import { TooltipHoverWrap } from "@/shared/components/TooltipControls";
 import { feedPrefetchManager } from "@/features/feed/algorithms/FeedPrefetchManager.js";
 import { resolveFeedPlaybackUrl } from "@/features/feed/utils/feedPlayback.js";
@@ -1381,10 +1385,18 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
         apiClient
           .recordVideoView(
             key,
-            {
-              watchedMs,
-              durationMs,
-            },
+            withViewTrafficFields(
+              {
+                watchedMs,
+                durationMs,
+              },
+              resolveViewTrafficAttribution({
+                pathname: location.pathname,
+                search: location.search,
+                state: location.state,
+                videoPublicId: key,
+              }),
+            ),
             { token },
           )
           .catch(() => {});
@@ -1397,10 +1409,18 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
       apiClient
         .recordVideoView(
           key,
-          {
-            watchedMs,
-            ...(durationMs != null ? { durationMs } : {}),
-          },
+          withViewTrafficFields(
+            {
+              watchedMs,
+              ...(durationMs != null ? { durationMs } : {}),
+            },
+            resolveViewTrafficAttribution({
+              pathname: location.pathname,
+              search: location.search,
+              state: location.state,
+              videoPublicId: key,
+            }),
+          ),
           { token },
         )
         .catch(() => {});
@@ -1413,7 +1433,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
       el.removeEventListener("seeked", onPlaybackSample);
       el.removeEventListener("ended", onPlaybackSample);
     };
-  }, [publicIdFromRoute]);
+  }, [location.pathname, location.search, location.state, publicIdFromRoute, token]);
 
   useEffect(() => {
     const routeId = publicIdFromRoute;

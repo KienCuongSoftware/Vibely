@@ -1567,6 +1567,12 @@
       "newFollowers": "ผู้ติดตามใหม่",
       "trafficSources": "แหล่งเข้าชม",
       "trafficSourcesTip": "ผู้ชมค้นพบวิดีโอของคุณจากที่ใด (สำหรับคุณ โปรไฟล์ ค้นหา …)",
+      "sources": {
+        "foryou": "For You",
+        "profile": "Profile",
+        "search": "Search",
+        "other": "Other"
+      },
       "searchQueries": "คำค้นหา",
       "searchQueriesTip": "คำสำคัญที่นำผู้ชมมาสู่วิดีโอของคุณในช่วงที่เลือก",
       "topPosts": "โพสต์ยอดนิยม",

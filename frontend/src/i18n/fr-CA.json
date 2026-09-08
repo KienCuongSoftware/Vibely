@@ -1567,6 +1567,12 @@
       "newFollowers": "Nouveaux abonnés",
       "trafficSources": "Sources de trafic",
       "trafficSourcesTip": "Où les spectateurs ont découvert tes vidéos (Pour toi, profil, recherche, …).",
+      "sources": {
+        "foryou": "For You",
+        "profile": "Profile",
+        "search": "Search",
+        "other": "Other"
+      },
       "searchQueries": "Requêtes de recherche",
       "searchQueriesTip": "Mots-clés de recherche qui ont mené les spectateurs à tes vidéos sur la période sélectionnée.",
       "topPosts": "Meilleures publications",

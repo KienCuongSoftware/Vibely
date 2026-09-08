@@ -36,10 +36,21 @@ public class VideoViewEntity {
     @Column(name = "duration_ms")
     private Long durationMs;
 
+    /** foryou | profile | search | other */
+    @Column(name = "traffic_source", length = 16)
+    private String trafficSource;
+
+    /** Truy vấn tìm kiếm / hashtag khi nguồn là search. */
+    @Column(name = "search_query", length = 80)
+    private String searchQuery;
+
     @PrePersist
     void prePersist() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
+        }
+        if (trafficSource == null || trafficSource.isBlank()) {
+            trafficSource = "other";
         }
     }
 
@@ -61,5 +72,21 @@ public class VideoViewEntity {
 
     public void setDurationMs(Long durationMs) {
         this.durationMs = durationMs;
+    }
+
+    public String getTrafficSource() {
+        return trafficSource;
+    }
+
+    public void setTrafficSource(String trafficSource) {
+        this.trafficSource = trafficSource;
+    }
+
+    public String getSearchQuery() {
+        return searchQuery;
+    }
+
+    public void setSearchQuery(String searchQuery) {
+        this.searchQuery = searchQuery;
     }
 }

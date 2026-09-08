@@ -19,6 +19,7 @@ import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.service.VideoService;
 import com.vibely.backend.video.VideoResponse;
 import com.vibely.backend.video.VideoStatus;
+import com.vibely.backend.video.VideoViewTraffic;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -315,8 +316,10 @@ public class StudioAnalyticsService {
             periodPublishedVideoCount,
             points,
             topVideos,
-            DEFAULT_TRAFFIC_SOURCES,
-            List.of(),
+            buildTrafficSources(videoViewRepository.countTrafficSourcesForAuthorSince(
+                meId, STUDIO_VIDEO_METRICS_STATUSES, from)),
+            buildSearchKeywords(videoViewRepository.findSearchQueriesForAuthorSince(
+                meId, STUDIO_VIDEO_METRICS_STATUSES, from, PageRequest.of(0, 10))),
             buildFollowerRegions(meId),
             buildFollowerAgeBuckets(meId)
         );
@@ -538,8 +541,9 @@ public class StudioAnalyticsService {
             video,
             points,
             retention,
-            DEFAULT_TRAFFIC_SOURCES,
-            List.of(),
+            buildTrafficSources(videoViewRepository.countTrafficSourcesForVideoSince(videoId, from)),
+            buildSearchKeywords(videoViewRepository.findSearchQueriesForVideoSince(
+                videoId, from, PageRequest.of(0, 10))),
             topSemanticTags
         );
     }
@@ -704,5 +708,48 @@ public class StudioAnalyticsService {
             out.add(new StudioRetentionPointResponse(p, (reached * 100.0) / n));
         }
         return out;
+    }
+
+    private static List<StudioTrafficSourceResponse> buildTrafficSources(List<GroupCountProjection> rows) {
+        long forYou = 0L;
+        long profile = 0L;
+        long search = 0L;
+        long other = 0L;
+        for (GroupCountProjection row : rows) {
+            long n = row.getTotal();
+            String key = row.getGroupKey() == null ? VideoViewTraffic.OTHER : row.getGroupKey().trim().toLowerCase(Locale.ROOT);
+            switch (key) {
+                case VideoViewTraffic.FOR_YOU -> forYou += n;
+                case VideoViewTraffic.PROFILE -> profile += n;
+                case VideoViewTraffic.SEARCH -> search += n;
+                default -> other += n;
+            }
+        }
+        long total = forYou + profile + search + other;
+        if (total <= 0) {
+            return DEFAULT_TRAFFIC_SOURCES;
+        }
+        return List.of(
+            new StudioTrafficSourceResponse(VideoViewTraffic.FOR_YOU, "For You", percentOf(forYou, total)),
+            new StudioTrafficSourceResponse(VideoViewTraffic.PROFILE, "Profile", percentOf(profile, total)),
+            new StudioTrafficSourceResponse(VideoViewTraffic.SEARCH, "Search", percentOf(search, total)),
+            new StudioTrafficSourceResponse(VideoViewTraffic.OTHER, "Other", percentOf(other, total))
+        );
+    }
+
+    private static List<StudioSearchKeywordResponse> buildSearchKeywords(List<GroupCountProjection> rows) {
+        List<StudioSearchKeywordResponse> out = new ArrayList<>();
+        for (GroupCountProjection row : rows) {
+            String query = row.getGroupKey();
+            if (query == null || query.isBlank()) {
+                continue;
+            }
+            out.add(new StudioSearchKeywordResponse(query.trim(), row.getTotal()));
+        }
+        return out;
+    }
+
+    private static double percentOf(long part, long total) {
+        return Math.round((part * 1000.0) / total) / 10.0;
     }
 }

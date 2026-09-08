@@ -1657,6 +1657,12 @@
       "newFollowers": "Người theo dõi mới",
       "trafficSources": "Nguồn traffic",
       "trafficSourcesTip": "Nơi người xem phát hiện video của bạn (For You, hồ sơ, tìm kiếm, …).",
+      "sources": {
+        "foryou": "For You",
+        "profile": "Hồ sơ",
+        "search": "Tìm kiếm",
+        "other": "Khác"
+      },
       "searchQueries": "Truy vấn tìm kiếm",
       "searchQueriesTip": "Các từ khóa tìm kiếm dẫn người xem tới video của bạn trong khoảng thời gian đã chọn.",
       "topPosts": "Bài đăng hàng đầu",

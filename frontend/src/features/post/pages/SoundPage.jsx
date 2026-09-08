@@ -352,6 +352,8 @@ export function SoundGridVideoCard({
   narrowWidthClass = 'max-w-[96px]',
   playing = false,
   onHoverPreview,
+  openTo = '/foryou',
+  openState,
 }) {
   const [popoverOpen, setPopoverOpen] = useState(false)
   const [popoverSide, setPopoverSide] = useState('right')
@@ -438,8 +440,8 @@ export function SoundGridVideoCard({
   const thumb = (
     <>
       <Link
-        to="/foryou"
-        state={{ focusVideoPublicId: video.publicId }}
+        to={openTo}
+        state={{ focusVideoPublicId: video.publicId, ...openState }}
         className="absolute inset-0 z-0 block"
         aria-label="Mở video trong feed"
       />
@@ -886,6 +888,7 @@ export function SoundPage() {
                   soundOwnerVibelyId={soundOwnerVibelyId}
                   playing={sourceVideo?.publicId === soundGridPlayingId}
                   onHoverPreview={focusSoundGridVideo}
+                  openState={{ viewTrafficSource: 'other' }}
                 />
               ) : null}
               {!sourceLoading &&
@@ -909,6 +912,7 @@ export function SoundPage() {
                   soundOwnerVibelyId={soundOwnerVibelyId}
                   playing={v.publicId === soundGridPlayingId}
                   onHoverPreview={focusSoundGridVideo}
+                  openState={{ viewTrafficSource: 'other' }}
                 />
               ))}
             </div>

@@ -8,5 +8,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
  */
 public record VideoViewRequest(
     @JsonAlias("watched_ms") Long watchedMs,
-    @JsonAlias("duration_ms") Long durationMs
+    @JsonAlias("duration_ms") Long durationMs,
+    @JsonAlias({"traffic_source", "trafficSource"}) String source,
+    @JsonAlias({"search_query", "query"}) String searchQuery
 ) {}

@@ -1610,6 +1610,12 @@
       "newFollowers": "新規フォロワー",
       "trafficSources": "流入元",
       "trafficSourcesTip": "視聴者が動画を見つけた場所（おすすめ、プロフィール、検索など）。",
+      "sources": {
+        "foryou": "For You",
+        "profile": "Profile",
+        "search": "Search",
+        "other": "Other"
+      },
       "searchQueries": "検索クエリ",
       "searchQueriesTip": "選択した期間に視聴者を動画へ導いた検索キーワードです。",
       "topPosts": "トップ投稿",

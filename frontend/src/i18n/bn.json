@@ -1567,6 +1567,12 @@
       "newFollowers": "नए फ़ॉलोअर",
       "trafficSources": "ट्रैफ़िक स्रोत",
       "trafficSourcesTip": "दर्शकों ने आपके वीडियो कहाँ से खोजे («आपके लिए», प्रोफ़ाइल, खोज, …)।",
+      "sources": {
+        "foryou": "For You",
+        "profile": "Profile",
+        "search": "Search",
+        "other": "Other"
+      },
       "searchQueries": "खोज क्वेरी",
       "searchQueriesTip": "चयनित अवधि में दर्शकों को आपके वीडियो तक लाने वाले खोज कीवर्ड।",
       "topPosts": "शीर्ष पोस्ट",

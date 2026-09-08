@@ -1567,6 +1567,12 @@
       "newFollowers": "Новые подписчики",
       "trafficSources": "Источники трафика",
       "trafficSourcesTip": "Где зрители нашли ваши видео («Для вас», профиль, поиск, …).",
+      "sources": {
+        "foryou": "For You",
+        "profile": "Profile",
+        "search": "Search",
+        "other": "Other"
+      },
       "searchQueries": "Поисковые запросы",
       "searchQueriesTip": "Ключевые слова поиска, которые привели зрителей к вашим видео за выбранный период.",
       "topPosts": "Лучшие публикации",

@@ -750,14 +750,21 @@ export function StudioAnalyticsPage() {
           title={t("studio.analytics.trafficSources")}
           tip={t("studio.analytics.trafficSourcesTip")}
         >
-          <p className="mt-2 text-xs text-zinc-500">
-            {t("studio.analytics.needMoreData")}
-          </p>
+          {payload.trafficSources.some((row) => row.percent != null) ? null : (
+            <p className="mt-2 text-xs text-zinc-500">
+              {t("studio.analytics.needMoreData")}
+            </p>
+          )}
           <BarRows
             rows={
               payload.trafficSources.length
-                ? payload.trafficSources
-                : Array.from({ length: 5 }, (_, i) => ({
+                ? payload.trafficSources.map((row) => ({
+                    ...row,
+                    label: t(`studio.analytics.sources.${row.id}`, {
+                      defaultValue: row.label ?? row.id,
+                    }),
+                  }))
+                : Array.from({ length: 4 }, (_, i) => ({
                     id: `traffic-${i}`,
                     label: "-",
                     percent: null,

@@ -1567,6 +1567,12 @@
       "newFollowers": "新增粉丝",
       "trafficSources": "流量来源",
       "trafficSourcesTip": "观众如何发现你的视频（推荐、主页、搜索等）。",
+      "sources": {
+        "foryou": "For You",
+        "profile": "Profile",
+        "search": "Search",
+        "other": "Other"
+      },
       "searchQueries": "搜索词",
       "searchQueriesTip": "所选时间段内引导观众找到你视频的搜索关键词。",
       "topPosts": "热门作品",

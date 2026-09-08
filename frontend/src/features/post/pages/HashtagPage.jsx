@@ -178,6 +178,10 @@ export function HashtagPage() {
                     narrowWidthClass="max-w-none"
                   playing={video.publicId === hashtagGridPlayingId}
                   onHoverPreview={focusHashtagGridVideo}
+                  openState={{
+                    viewTrafficSource: 'search',
+                    ...(hashtag ? { viewSearchQuery: `#${hashtag}` } : {}),
+                  }}
                   />
                 ))}
               </div>

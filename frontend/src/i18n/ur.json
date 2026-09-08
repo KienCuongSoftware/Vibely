@@ -1567,6 +1567,12 @@
       "newFollowers": "نئے فالوورز",
       "trafficSources": "ٹریفک ذرائع",
       "trafficSourcesTip": "ناظرین نے آپ کی ویڈیوز کہاں سے دریافت کیں («آپ کے لیے»، پروفائل، تلاش، …)۔",
+      "sources": {
+        "foryou": "For You",
+        "profile": "Profile",
+        "search": "Search",
+        "other": "Other"
+      },
       "searchQueries": "تلاش کے سوالات",
       "searchQueriesTip": "منتخب مدت میں ناظرین کو آپ کی ویڈیوز تک لانے والے تلاش کے الفاظ۔",
       "topPosts": "نمایاں پوسٹس",

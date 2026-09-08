@@ -11,6 +11,7 @@ import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.VideoStatus;
 import com.vibely.backend.video.VideoViewRequest;
+import com.vibely.backend.video.VideoViewTraffic;
 import java.util.UUID;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
@@ -87,10 +88,13 @@ public class VideoEngagementService {
         if (!privacyAccessService.canViewerWatch(target, viewer)) {
             return;
         }
+        String source = VideoViewTraffic.normalizeSource(body.source());
         VideoViewEntity row = new VideoViewEntity();
         row.setVideo(target);
         row.setWatchedMs(body.watchedMs());
         row.setDurationMs(body.durationMs());
+        row.setTrafficSource(source);
+        row.setSearchQuery(VideoViewTraffic.normalizeSearchQuery(source, body.searchQuery()));
         videoViewRepository.save(row);
         Long viewerId = viewer != null ? viewer.getId() : null;
         if (viewerId != null) {

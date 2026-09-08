@@ -3,10 +3,12 @@ package com.vibely.backend.interaction.repository;
 import com.vibely.backend.interaction.dto.PlaybackSample;
 import com.vibely.backend.interaction.entity.VideoViewEntity;
 import com.vibely.backend.studio.DailyCountProjection;
+import com.vibely.backend.studio.GroupCountProjection;
 import com.vibely.backend.video.VideoStatus;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -108,4 +110,64 @@ public interface VideoViewRepository extends JpaRepository<VideoViewEntity, Long
         WHERE vv.video.id = :videoId
         """)
     double rewatchRateByVideoId(@Param("videoId") Long videoId);
+
+    @Query("""
+        select coalesce(vv.trafficSource, 'other') as groupKey, count(vv.id) as total
+        from VideoViewEntity vv
+        where vv.video.author.id = :authorId
+          and vv.video.status in :statuses
+          and vv.createdAt >= :from
+        group by coalesce(vv.trafficSource, 'other')
+        """)
+    List<GroupCountProjection> countTrafficSourcesForAuthorSince(
+        @Param("authorId") Long authorId,
+        @Param("statuses") List<VideoStatus> statuses,
+        @Param("from") LocalDateTime from
+    );
+
+    @Query("""
+        select coalesce(vv.trafficSource, 'other') as groupKey, count(vv.id) as total
+        from VideoViewEntity vv
+        where vv.video.id = :videoId
+          and vv.createdAt >= :from
+        group by coalesce(vv.trafficSource, 'other')
+        """)
+    List<GroupCountProjection> countTrafficSourcesForVideoSince(
+        @Param("videoId") Long videoId,
+        @Param("from") LocalDateTime from
+    );
+
+    @Query("""
+        select vv.searchQuery as groupKey, count(vv.id) as total
+        from VideoViewEntity vv
+        where vv.video.author.id = :authorId
+          and vv.video.status in :statuses
+          and vv.createdAt >= :from
+          and vv.searchQuery is not null
+          and vv.searchQuery <> ''
+        group by vv.searchQuery
+        order by count(vv.id) desc
+        """)
+    List<GroupCountProjection> findSearchQueriesForAuthorSince(
+        @Param("authorId") Long authorId,
+        @Param("statuses") List<VideoStatus> statuses,
+        @Param("from") LocalDateTime from,
+        Pageable pageable
+    );
+
+    @Query("""
+        select vv.searchQuery as groupKey, count(vv.id) as total
+        from VideoViewEntity vv
+        where vv.video.id = :videoId
+          and vv.createdAt >= :from
+          and vv.searchQuery is not null
+          and vv.searchQuery <> ''
+        group by vv.searchQuery
+        order by count(vv.id) desc
+        """)
+    List<GroupCountProjection> findSearchQueriesForVideoSince(
+        @Param("videoId") Long videoId,
+        @Param("from") LocalDateTime from,
+        Pageable pageable
+    );
 }

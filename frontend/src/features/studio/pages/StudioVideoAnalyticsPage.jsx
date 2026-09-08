@@ -23,6 +23,7 @@ import {
   watchTimeNearPlaythroughEnd,
   watchTimeQualifiesForViewRecord,
 } from '@/features/post/utils/watchQualifiesForViewRecord'
+import { withViewTrafficFields } from '@/features/post/utils/viewTrafficAttribution.js'
 import { parseApiDateTime } from '@/shared/utils/relativeTimeVi.js'
 
 const PERIOD_OPTIONS = [7, 28, 60, 90]
@@ -756,10 +757,16 @@ export function StudioVideoAnalyticsPage() {
                     ) {
                       retentionPlaythroughRecordedRef.current = true
                       apiClient
-                        .recordVideoView(String(publicId), {
-                          watchedMs,
-                          durationMs,
-                        })
+                        .recordVideoView(
+                          String(publicId),
+                          withViewTrafficFields(
+                            {
+                              watchedMs,
+                              durationMs,
+                            },
+                            { source: 'other' },
+                          ),
+                        )
                         .then(() => {
                           setAnalyticsRefreshTick((t) => t + 1)
                         })
@@ -773,10 +780,16 @@ export function StudioVideoAnalyticsPage() {
                     if (!watchTimeQualifiesForViewRecord(watchedMs, durationMs)) return
                     retentionQualifyRecordedRef.current = true
                     apiClient
-                      .recordVideoView(String(publicId), {
-                        watchedMs,
-                        ...(durationMs != null ? { durationMs } : {}),
-                      })
+                      .recordVideoView(
+                        String(publicId),
+                        withViewTrafficFields(
+                          {
+                            watchedMs,
+                            ...(durationMs != null ? { durationMs } : {}),
+                          },
+                          { source: 'other' },
+                        ),
+                      )
                       .then(() => {
                         setAnalyticsRefreshTick((t) => t + 1)
                       })
@@ -958,6 +971,7 @@ export function StudioVideoAnalyticsPage() {
     )
   }
 
+  const trafficReady = trafficSources.some((row) => row.percent != null)
   const trafficBlock = (
     <section className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
       <h2 className="inline-flex items-center gap-1.5 text-base font-semibold text-white">
@@ -971,13 +985,18 @@ export function StudioVideoAnalyticsPage() {
           </span>
         </StudioHoverTip>
       </h2>
-      <p className="mt-2 text-sm text-zinc-500">{t('studio.videoAnalytics.trafficSoon')}</p>
+      {trafficReady ? null : (
+        <p className="mt-2 text-sm text-zinc-500">{t('studio.analytics.needMoreData')}</p>
+      )}
       <ul className="mt-4 space-y-2.5">
         {(trafficSources.length ? trafficSources : [{ id: 'x', label: '—', percent: null }]).map((row) => {
           const pct = row.percent != null ? Math.min(100, Math.max(0, Number(row.percent))) : null
+          const label = t(`studio.analytics.sources.${row.id}`, {
+            defaultValue: row.label ?? row.id,
+          })
           return (
             <li key={row.id} className="flex items-center gap-2 text-xs">
-              <span className="w-28 shrink-0 text-zinc-400">{row.label}</span>
+              <span className="w-28 shrink-0 text-zinc-400">{label}</span>
               <span className="h-2 flex-1 overflow-hidden rounded-full bg-zinc-800">
                 {pct != null ? (
                   <span className="block h-full rounded-full bg-sky-500/90" style={{ width: `${pct}%` }} />

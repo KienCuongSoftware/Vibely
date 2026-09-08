@@ -22,6 +22,7 @@ import { useSearch } from '@/features/search/hooks/useSearch'
 import { useSearchHistory } from '@/features/search/hooks/useSearchHistory'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { buildProfileVideoUrl, videoPublicIdOf } from '@/features/post/utils/videoPublicId.js'
+import { searchViewNavState } from '@/features/post/utils/viewTrafficAttribution.js'
 import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
 import { buildMainSidebarMenuItems } from '@/shared/utils/mainSidebarMenuItems.js'
 
@@ -359,9 +360,9 @@ export function SearchResultsPage() {
     (video) => {
       const id = videoPublicIdOf(video)
       const path = buildProfileVideoUrl(video?.authorUsername, id)
-      if (path) navigate(path)
+      if (path) navigate(path, { state: searchViewNavState(qFromUrl) })
     },
-    [navigate],
+    [navigate, qFromUrl],
   )
 
   const showUsers = activeTab === 'users'
@@ -460,7 +461,11 @@ export function SearchResultsPage() {
               }
               onVideoSelect={(row) => {
                 const path = buildProfileVideoUrl(row?.authorUsername, row?.publicId)
-                if (path) navigate(path)
+                if (path) {
+                  navigate(path, {
+                    state: searchViewNavState(qFromUrl || suggestQuery),
+                  })
+                }
               }}
             />
           ) : (
