@@ -1,5 +1,6 @@
 package com.vibely.backend.auth.service;
 
+import com.vibely.backend.antibot.config.AntiBotProperties;
 import com.vibely.backend.antibot.domain.CaptchaPurpose;
 import com.vibely.backend.antibot.security.VerificationTokenStore;
 import com.vibely.backend.auth.dto.OtpRequestMetadata;
@@ -24,6 +25,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,20 +36,26 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class OtpVerificationService {
 
+    private static final int OTP_MAX_FAILURES = 8;
+    private static final long OTP_LOCKOUT_SECONDS = 15 * 60L;
+
     private final OtpChallengeRepository otpChallengeRepository;
     private final OtpVerificationCodeRepository otpVerificationCodeRepository;
     private final VerificationTokenStore verificationTokenStore;
+    private final AntiBotProperties antiBotProperties;
     private final OtpVerificationEmailSender emailSender;
     private final OtpMailProperties mailProperties;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final int resendCooldownSeconds;
     private final int codeExpirySeconds;
+    private final ConcurrentHashMap<String, OtpFailureWindow> otpFailures = new ConcurrentHashMap<>();
 
     public OtpVerificationService(
         OtpChallengeRepository otpChallengeRepository,
         OtpVerificationCodeRepository otpVerificationCodeRepository,
         VerificationTokenStore verificationTokenStore,
+        AntiBotProperties antiBotProperties,
         OtpVerificationEmailSender emailSender,
         OtpMailProperties mailProperties,
         UserRepository userRepository,
@@ -58,6 +66,7 @@ public class OtpVerificationService {
         this.otpChallengeRepository = otpChallengeRepository;
         this.otpVerificationCodeRepository = otpVerificationCodeRepository;
         this.verificationTokenStore = verificationTokenStore;
+        this.antiBotProperties = antiBotProperties;
         this.emailSender = emailSender;
         this.mailProperties = mailProperties;
         this.userRepository = userRepository;
@@ -78,7 +87,7 @@ public class OtpVerificationService {
         String email = request.getEmail().trim().toLowerCase();
         OtpCodePurpose purpose = OtpCodePurpose.fromRequestValue(request.getPurpose());
 
-        if (!isHumanVerified(request, verificationToken, purpose)) {
+        if (!isHumanVerified(verificationToken, purpose)) {
             logChallenge(email, false, "captcha", "verification failed");
             throw new BadRequestException("Anti-spam verification failed, please try again");
         }
@@ -172,18 +181,25 @@ public class OtpVerificationService {
         boolean consume
     ) {
         String email = rawEmail.trim().toLowerCase();
+        ensureOtpNotLocked(email);
         OtpVerificationCode otpCode = otpVerificationCodeRepository
             .findTopByEmailAndPurposeAndConsumedFalseOrderByCreatedAtDesc(email, purpose.name())
-            .orElseThrow(() -> new BadRequestException("Invalid verification code"));
+            .orElse(null);
+        if (otpCode == null) {
+            recordOtpFailure(email);
+            throw new BadRequestException("Invalid verification code");
+        }
 
         if (otpCode.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Verification code has expired");
         }
 
         if (!otpCode.getCodeHash().equals(hash(rawCode.trim()))) {
-            throw new BadRequestException("Incorrect verification code");
+            recordOtpFailure(email);
+            throw new BadRequestException("Invalid verification code");
         }
 
+        clearOtpFailures(email);
         if (consume) {
             otpCode.setConsumed(true);
         }
@@ -191,7 +207,6 @@ public class OtpVerificationService {
     }
 
     private boolean isHumanVerified(
-        SendCodeRequest request,
         String verificationToken,
         OtpCodePurpose purpose
     ) {
@@ -199,13 +214,61 @@ public class OtpVerificationService {
             ? CaptchaPurpose.PASSWORD_RESET
             : CaptchaPurpose.REGISTER;
 
+        if (!antiBotProperties.isEnabled() || !antiBotProperties.isAuthProtectionEnabled()) {
+            return true;
+        }
         if (verificationToken != null && !verificationToken.isBlank()) {
             return verificationTokenStore.validateUnused(
                 verificationToken,
                 captchaPurpose.name()
             );
         }
-        return request.isChallengePassed();
+        return false;
+    }
+
+    private void ensureOtpNotLocked(String email) {
+        OtpFailureWindow window = otpFailures.get(email);
+        if (window == null) {
+            return;
+        }
+        long now = System.currentTimeMillis() / 1000L;
+        synchronized (window) {
+            if (now - window.windowStart >= OTP_LOCKOUT_SECONDS) {
+                otpFailures.remove(email, window);
+                return;
+            }
+            if (window.count >= OTP_MAX_FAILURES) {
+                throw new BadRequestException("Invalid verification code");
+            }
+        }
+    }
+
+    private void recordOtpFailure(String email) {
+        long now = System.currentTimeMillis() / 1000L;
+        OtpFailureWindow window = otpFailures.computeIfAbsent(email, ignored -> new OtpFailureWindow(now));
+        synchronized (window) {
+            if (now - window.windowStart >= OTP_LOCKOUT_SECONDS) {
+                window.windowStart = now;
+                window.count = 0;
+            }
+            window.count++;
+            if (window.count >= OTP_MAX_FAILURES) {
+                throw new BadRequestException("Invalid verification code");
+            }
+        }
+    }
+
+    private void clearOtpFailures(String email) {
+        otpFailures.remove(email);
+    }
+
+    private static final class OtpFailureWindow {
+        private long windowStart;
+        private int count;
+
+        private OtpFailureWindow(long windowStart) {
+            this.windowStart = windowStart;
+        }
     }
 
     private void enforceResendCooldown(String email, OtpCodePurpose purpose) {

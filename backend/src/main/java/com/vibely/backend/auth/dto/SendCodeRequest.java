@@ -9,6 +9,7 @@ public class SendCodeRequest {
     @NotBlank(message = "Email is required")
     private String email;
 
+    /** Ignored by the server — captcha must be a real verification token when antibot is on. */
     private boolean challengePassed;
 
     /** REGISTER (mặc định) hoặc PASSWORD_RESET */

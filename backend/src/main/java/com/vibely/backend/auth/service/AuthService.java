@@ -59,7 +59,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class AuthService {
 
-    private static final long REFRESH_ROTATION_GRACE_SECONDS = 30;
+    private static final long REFRESH_ROTATION_GRACE_SECONDS = 5;
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -165,14 +165,6 @@ public class AuthService {
             );
         } catch (AuthenticationException ex) {
             authProtectionService.onLoginFailure(request.getEmail(), httpRequest);
-            findUserForLoginIdentifier(request.getEmail())
-                .filter(user -> !user.isActive())
-                .ifPresent(user -> {
-                    if (user.isBanned()) {
-                        throw new AccountBannedException(user.getEmail(), user.getBanReason());
-                    }
-                    throw new AccountDeactivatedException(user.getEmail());
-                });
             throw new BadRequestException("Incorrect login credentials");
         }
         User user = findUserForLoginIdentifier(request.getEmail())
