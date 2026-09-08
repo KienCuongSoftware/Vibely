@@ -106,7 +106,7 @@ export function Sidebar({
         >
           {showCollapseToggle && userCollapsed ? (
             /* TikTok: logo mặc định; hover mới hiện nút mở rộng sidebar */
-            <TooltipHoverWrap tip={collapseTip} hoverOnly className="relative">
+            <TooltipHoverWrap tip={collapseTip} hoverOnly portal className="relative">
               <div className="group/siderail relative flex h-9 w-9 items-center justify-center">
                 <Link
                   to="/"
@@ -149,7 +149,7 @@ export function Sidebar({
                 )}
               </Link>
               {showCollapseToggle ? (
-                <TooltipHoverWrap tip={collapseTip} hoverOnly>
+                <TooltipHoverWrap tip={collapseTip} hoverOnly portal>
                   <button
                     type="button"
                     onClick={toggleUserCollapsed}
