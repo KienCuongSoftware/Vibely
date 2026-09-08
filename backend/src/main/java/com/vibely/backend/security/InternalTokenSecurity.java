@@ -41,4 +41,21 @@ public final class InternalTokenSecurity {
         byte[] b = provided.getBytes(StandardCharsets.UTF_8);
         return MessageDigest.isEqual(a, b);
     }
+
+    /** Compare against every configured token so timing does not reveal which worker matched. */
+    public static boolean matchesAny(Iterable<String> expectedTokens, String provided) {
+        if (provided == null || expectedTokens == null) {
+            return false;
+        }
+        boolean matched = false;
+        for (String expected : expectedTokens) {
+            if (expected == null || expected.isBlank()) {
+                continue;
+            }
+            if (matches(expected, provided)) {
+                matched = true;
+            }
+        }
+        return matched;
+    }
 }

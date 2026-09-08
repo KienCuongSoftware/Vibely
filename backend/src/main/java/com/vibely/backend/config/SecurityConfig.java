@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vibely.backend.common.ApiError;
 import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.observability.RequestCorrelationFilter;
+import com.vibely.backend.security.InternalApiAuthFilter;
 import com.vibely.backend.security.JwtAuthenticationFilter;
 import com.vibely.backend.security.RateLimitFilter;
 import jakarta.servlet.http.Cookie;
@@ -44,6 +45,7 @@ public class SecurityConfig {
 
     private final AppUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final InternalApiAuthFilter internalApiAuthFilter;
     private final RateLimitFilter rateLimitFilter;
     private final RequestCorrelationFilter requestCorrelationFilter;
     private final ObjectMapper objectMapper;
@@ -61,6 +63,7 @@ public class SecurityConfig {
     public SecurityConfig(
         AppUserDetailsService userDetailsService,
         JwtAuthenticationFilter jwtAuthenticationFilter,
+        InternalApiAuthFilter internalApiAuthFilter,
         RateLimitFilter rateLimitFilter,
         RequestCorrelationFilter requestCorrelationFilter,
         ObjectMapper objectMapper,
@@ -68,6 +71,7 @@ public class SecurityConfig {
     ) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.internalApiAuthFilter = internalApiAuthFilter;
         this.rateLimitFilter = rateLimitFilter;
         this.requestCorrelationFilter = requestCorrelationFilter;
         this.objectMapper = objectMapper;
@@ -207,10 +211,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.HEAD, "/api/videos/*/categories").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*/description-translation").permitAll()
                 .requestMatchers(HttpMethod.HEAD, "/api/videos/*/description-translation").permitAll()
-                .requestMatchers("/api/internal/originality/**").permitAll()
-                .requestMatchers("/api/internal/content-understanding/**").permitAll()
-                .requestMatchers("/api/internal/enhancement/**").permitAll()
-                .requestMatchers("/api/internal/moderation/**").permitAll()
+                .requestMatchers("/api/internal/**").hasRole("INTERNAL")
                 .requestMatchers(HttpMethod.GET, "/api/videos/*/versions").permitAll()
                 .requestMatchers(HttpMethod.HEAD, "/api/videos/*/versions").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*").permitAll()
@@ -220,7 +221,8 @@ public class SecurityConfig {
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(requestCorrelationFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(internalApiAuthFilter, JwtAuthenticationFilter.class);
 
         // OAuth2 login is handled by OAuth2LoginSecurityConfiguration (@Order(1)).
 
@@ -249,6 +251,8 @@ public class SecurityConfig {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
+        // Password is checked before account status so a wrong password cannot reveal ban/deactivation.
+        provider.setPreAuthenticationChecks(user -> {});
         return provider;
     }
 
@@ -272,7 +276,7 @@ public class SecurityConfig {
             return true;
         }
         String uri = request.getRequestURI();
-        if (uri.startsWith("/ws")) {
+        if (uri.startsWith("/ws") || uri.startsWith("/api/internal/")) {
             return true;
         }
         if (!"POST".equals(request.getMethod())) {
