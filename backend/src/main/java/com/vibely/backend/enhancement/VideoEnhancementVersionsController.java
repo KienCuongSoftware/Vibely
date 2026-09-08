@@ -1,16 +1,19 @@
 package com.vibely.backend.enhancement;
 
 import com.vibely.backend.common.ApiResponse;
+import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.storage.MediaUrlPresigner;
 import com.vibely.backend.user.entity.User;
 import com.vibely.backend.user.repository.UserRepository;
 import com.vibely.backend.video.Video;
+import com.vibely.backend.video.VideoPublicIds;
 import com.vibely.backend.video.VideoRepository;
 import com.vibely.backend.video.service.VideoPrivacyAccessService;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,12 +44,18 @@ public class VideoEnhancementVersionsController {
         this.mediaUrlPresigner = mediaUrlPresigner;
     }
 
-    @GetMapping("/{videoId}/versions")
+    @GetMapping("/{publicId}/versions")
     public ApiResponse<List<Map<String, Object>>> versions(
-        @PathVariable Long videoId,
+        @PathVariable String publicId,
         Authentication authentication
     ) {
-        Video video = videoRepository.findById(videoId)
+        UUID parsedId;
+        try {
+            parsedId = VideoPublicIds.parse(publicId);
+        } catch (BadRequestException ex) {
+            throw new NotFoundException("Video not found");
+        }
+        Video video = videoRepository.findByPublicId(parsedId)
             .orElseThrow(() -> new NotFoundException("Video not found"));
         User viewer = null;
         if (authentication != null
@@ -58,7 +67,7 @@ public class VideoEnhancementVersionsController {
         if (!privacyAccessService.canViewerWatch(video, viewer)) {
             throw new NotFoundException("Video not found");
         }
-        List<Map<String, Object>> rows = jobService.listActiveVersions(videoId).stream().map(v -> {
+        List<Map<String, Object>> rows = jobService.listActiveVersions(video.getId()).stream().map(v -> {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("id", v.getId());
             m.put("kind", v.getKind().name());

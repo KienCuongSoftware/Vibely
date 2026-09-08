@@ -97,6 +97,9 @@ public class UserService {
         Authentication authentication
     ) {
         User targetUser = getUserByUsername(username);
+        if (!profileVisibilityService.canViewProfileContent(targetUser, getViewer(authentication))) {
+            return new UserFollowListResponse(List.of(), false, Math.max(page, 0), Math.min(Math.max(size, 1), 50));
+        }
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 50));
         Page<FollowEntity> relations = followRepository.findFollowingPage(targetUser, pageable);
         return toUserFollowListResponse(relations, authentication, FollowEntity::getFollowing);
@@ -109,6 +112,9 @@ public class UserService {
         Authentication authentication
     ) {
         User targetUser = getUserByUsername(username);
+        if (!profileVisibilityService.canViewProfileContent(targetUser, getViewer(authentication))) {
+            return new UserFollowListResponse(List.of(), false, Math.max(page, 0), Math.min(Math.max(size, 1), 50));
+        }
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 50));
         Page<FollowEntity> relations = followRepository.findFollowersPage(targetUser, pageable);
         return toUserFollowListResponse(relations, authentication, FollowEntity::getFollower);

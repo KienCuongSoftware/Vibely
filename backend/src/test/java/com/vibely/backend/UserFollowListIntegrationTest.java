@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static java.util.Objects.requireNonNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -61,6 +62,43 @@ class UserFollowListIntegrationTest {
             .andExpect(jsonPath("$.data.items[0].self").value(true))
             .andExpect(jsonPath("$.data.page").value(0))
             .andExpect(jsonPath("$.data.size").value(20));
+    }
+
+    @Test
+    void hidesFollowerListsForPrivateAccountsFromStrangers() throws Exception {
+        AuthInfo owner = register("private_owner", "private-owner@vibely.dev");
+        AuthInfo stranger = register("private_stranger", "private-stranger@vibely.dev");
+        AuthInfo friend = register("private_friend", "private-friend@vibely.dev");
+        follow(friend, owner.userId());
+
+        mockMvc.perform(
+                patch("/api/users/me/privacy")
+                    .header("Authorization", "Bearer " + owner.token())
+                    .contentType(requireNonNull(MediaType.APPLICATION_JSON))
+                    .content("{\"privateAccount\":true}")
+            )
+            .andExpect(status().isOk());
+
+        mockMvc.perform(
+                get("/api/users/private_owner/followers?page=0&size=20")
+                    .header("Authorization", "Bearer " + stranger.token())
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.items").isEmpty());
+
+        mockMvc.perform(
+                get("/api/users/private_owner/following?page=0&size=20")
+                    .header("Authorization", "Bearer " + stranger.token())
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.items").isEmpty());
+
+        mockMvc.perform(
+                get("/api/users/private_owner/followers?page=0&size=20")
+                    .header("Authorization", "Bearer " + owner.token())
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.items[0].username").value("private_friend"));
     }
 
     private AuthInfo register(String username, String email) throws Exception {

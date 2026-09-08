@@ -1,5 +1,6 @@
 package com.vibely.backend.video.service;
 
+import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.discovery.service.UserInterestSignalProcessor;
 import com.vibely.backend.discovery.service.VideoEngagementStatsService;
 import com.vibely.backend.explore.service.ExploreCacheService;
@@ -72,20 +73,20 @@ public class VideoEngagementService {
     }
 
     /**
-     * Ghi một lượt xem đủ thời lượng phát (client gửi watchedMs từ trình phát).
-     * Mọi trạng thái trừ REMOVED. Body thiếu hoặc không đạt ngưỡng: bỏ qua (200, không tăng đếm).
+     * Body thiếu hoặc không đạt ngưỡng: bỏ qua (200, không tăng đếm) sau khi video đã xem được.
+     * Video ẩn/không tồn tại với viewer: 404 — khớp GET video, không lộ tồn tại qua 200 rỗng.
      */
     @Transactional
     public void recordView(Long id, VideoViewRequest body, String viewerEmail) {
-        if (body == null || !qualifiesPlaybackForView(body.watchedMs(), body.durationMs())) {
-            return;
-        }
         Video target = queryService.getVideoOrThrow(id);
         if (target.getStatus() == VideoStatus.REMOVED) {
-            return;
+            throw new NotFoundException("Video not found");
         }
         User viewer = resolveViewer(viewerEmail);
         if (!privacyAccessService.canViewerWatch(target, viewer)) {
+            throw new NotFoundException("Video not found");
+        }
+        if (body == null || !qualifiesPlaybackForView(body.watchedMs(), body.durationMs())) {
             return;
         }
         String source = VideoViewTraffic.normalizeSource(body.source());
@@ -124,9 +125,12 @@ public class VideoEngagementService {
     @Transactional
     public void recordShare(Long videoId, String viewerEmail) {
         Video target = queryService.getVideoOrThrow(videoId);
+        if (target.getStatus() == VideoStatus.REMOVED) {
+            throw new NotFoundException("Video not found");
+        }
         User viewer = resolveViewer(viewerEmail);
         if (!privacyAccessService.canViewerWatch(target, viewer)) {
-            return;
+            throw new NotFoundException("Video not found");
         }
         videoRepository.incrementShareCount(videoId, VideoStatus.READY);
         videoEngagementStatsService.ifAvailable(s -> s.recomputeSafely(target));

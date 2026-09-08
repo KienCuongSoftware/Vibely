@@ -286,7 +286,7 @@ public class InteractionService {
             viewer = userRepository.findByEmail(viewerEmail.trim()).orElse(null);
         }
         if (!canViewComments(video, viewer)) {
-            return List.of();
+            throw new NotFoundException("Video not found");
         }
         List<CommentEntity> entities = commentRepository.findByVideoOrderByCreatedAtDesc(video);
         if (entities.isEmpty()) {
