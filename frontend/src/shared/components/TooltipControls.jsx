@@ -58,7 +58,8 @@ export function TooltipHoverWrap({
   children,
 }) {
   const wrapRef = useRef(null);
-  const [coords, setCoords] = useState({ top: 0, left: 0 });
+  const tipRef = useRef(null);
+  const [coords, setCoords] = useState({ top: 0, left: 8 });
   const [visible, setVisible] = useState(false);
   const showTipClasses = hoverOnly
     ? "group-hover/hovertip:opacity-100"
@@ -69,10 +70,15 @@ export function TooltipHoverWrap({
     const el = wrapRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    setCoords({
-      top: placement === "top" ? rect.top - 8 : rect.bottom + 8,
-      left: rect.left + rect.width / 2,
-    });
+    const pad = 8;
+    const tip = tipRef.current;
+    const tw = tip?.offsetWidth ?? 160;
+    const th = tip?.offsetHeight ?? 0;
+    const maxLeft = Math.max(pad, window.innerWidth - pad - tw);
+    const left = Math.min(Math.max(pad, rect.left), maxLeft);
+    const top =
+      placement === "top" ? rect.top - pad - th : rect.bottom + pad;
+    setCoords({ top, left });
   };
 
   useLayoutEffect(() => {
@@ -101,11 +107,10 @@ export function TooltipHoverWrap({
     visible
       ? createPortal(
           <span
+            ref={tipRef}
             role="tooltip"
             style={{ top: coords.top, left: coords.left }}
-            className={`fixed -translate-x-1/2 ${
-              placement === "top" ? "-translate-y-full" : ""
-            } ${tipBaseClasses}`}
+            className={`fixed z-[300] ${tipBaseClasses}`}
           >
             {tip}
           </span>,
