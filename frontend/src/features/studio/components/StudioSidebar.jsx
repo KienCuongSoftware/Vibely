@@ -139,13 +139,13 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
         onPickVideo={() => goUpload('video')}
         onPickPhoto={() => goUpload('photo')}
       >
-        {({ open, menuId, toggle }) => (
+        {({ open, menuId }) => (
           <button
             type="button"
             aria-haspopup="menu"
             aria-expanded={open}
             aria-controls={menuId}
-            onClick={toggle}
+            onClick={() => goUpload('video')}
             className="mt-5 w-full rounded-lg bg-[#fe2c55] px-3 py-2.5 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-[#e62a4d]"
             style={{ color: '#fff' }}
           >

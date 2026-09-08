@@ -295,12 +295,12 @@ export function Sidebar({
                 onPickVideo={() => goStudioUpload(navigate, token, 'video')}
                 onPickPhoto={() => goStudioUpload(navigate, token, 'photo')}
               >
-                {({ open, menuId, toggle }) =>
+                {({ open, menuId }) =>
                   React.cloneElement(navButton, {
                     'aria-haspopup': 'menu',
                     'aria-expanded': open,
                     'aria-controls': menuId,
-                    onClick: toggle,
+                    onClick: () => goStudioUpload(navigate, token, 'video'),
                   })
                 }
               </UploadTypeFlyout>
