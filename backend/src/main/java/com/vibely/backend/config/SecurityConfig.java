@@ -131,7 +131,9 @@ public class SecurityConfig {
                     chain = chain.requestMatchers(
                         "/actuator/health",
                         "/actuator/info",
-                        "/actuator/prometheus"
+                        "/actuator/prometheus",
+                        "/actuator/metrics",
+                        "/actuator/metrics/**"
                     ).permitAll();
                 }
                 chain

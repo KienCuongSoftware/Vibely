@@ -67,6 +67,19 @@ management:
     web:
       exposure:
         include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: vibely-backend
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+      slo:
+        http.server.requests: 100ms, 250ms, 500ms, 1s
 app:
   jwt:
     secret: ${JWT_SECRET:change-this-in-real-environments}
