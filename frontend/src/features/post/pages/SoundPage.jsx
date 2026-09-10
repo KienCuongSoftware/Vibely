@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { BiDotsVerticalRounded } from 'react-icons/bi'
-import { IoMusicalNotes, IoPause, IoPlay } from 'react-icons/io5'
+import { IoHeart, IoMusicalNotes, IoPause, IoPlay } from 'react-icons/io5'
 import Hls from 'hls.js'
 import { apiClient } from '@/shared/api/client'
 import { useAuth } from '@/features/auth/hooks/useAuth'
@@ -342,7 +342,9 @@ function SoundGridMedia({
   return thumbNode
 }
 
-/** Thumbnail + VibelyID trên video; mô tả + ⋮ (hover mô tả hiện nút); popover mở khi hover/bấm ⋮. */
+/** Thumbnail + VibelyID trên video; mô tả + ⋮ (hover mô tả hiện nút); popover mở khi hover/bấm ⋮.
+ *  `variant="explore"`: TimTok-style — tim + số trong thumbnail, avatar + tên tài khoản phía dưới.
+ */
 export function SoundGridVideoCard({
   video,
   coverFallback,
@@ -354,7 +356,9 @@ export function SoundGridVideoCard({
   onHoverPreview,
   openTo = '/foryou',
   openState,
+  variant = 'sound',
 }) {
+  const isExplore = variant === 'explore'
   const [popoverOpen, setPopoverOpen] = useState(false)
   const [popoverSide, setPopoverSide] = useState('right')
   const cardRef = useRef(null)
@@ -413,7 +417,7 @@ export function SoundGridVideoCard({
   }, [clearCloseTimer])
 
   useEffect(() => {
-    if (!popoverOpen) return undefined
+    if (!popoverOpen || isExplore) return undefined
     const onKey = (e) => {
       if (e.key === 'Escape') setPopoverOpen(false)
     }
@@ -425,17 +429,19 @@ export function SoundGridVideoCard({
       document.removeEventListener('keydown', onKey)
       globalThis.window?.removeEventListener('resize', onResize)
     }
-  }, [popoverOpen, updatePopoverSide])
+  }, [popoverOpen, updatePopoverSide, isExplore])
 
   const rawUser = String(video.authorUsername ?? 'vibely')
     .trim()
     .replace(/^@/, '')
+  const displayName = resolveAuthorDisplayName(video)
   const profile = soundProfilePath(rawUser)
   const oneLine =
     String(video.description ?? '').trim() ||
     String(video.title ?? '').trim() ||
     '\u00A0'
   const overlayAvatar = resolveGridAuthorAvatar(video)
+  const likeLabel = formatCompactCount(video?.likeCount ?? 0)
 
   const thumb = (
     <>
@@ -452,46 +458,55 @@ export function SoundGridVideoCard({
           coverFallback={coverFallback}
         />
       </div>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-linear-to-t from-black/75 via-black/15 to-transparent px-2 pb-1.5 pt-5">
-        <div className="pointer-events-auto inline-flex max-w-[calc(100%-4px)] items-center">
-          {profile ? (
-            <Link
-              to={profile}
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex max-w-full items-center gap-1.5 transition hover:opacity-90"
-              aria-label={`Hồ sơ ${rawUser}`}
-            >
-              <img
-                src={overlayAvatar}
-                alt=""
-                className="h-6 w-6 shrink-0 rounded-full object-cover shadow-[0_2px_10px_rgba(0,0,0,0.55)]"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  e.currentTarget.src = DEFAULT_COVER
-                }}
-              />
-              <span className="truncate text-[11px] font-bold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.95),0_0_1px_rgba(0,0,0,0.8)]">
-                {rawUser}
-              </span>
-            </Link>
-          ) : (
-            <span className="inline-flex max-w-full items-center gap-1.5">
-              <img
-                src={overlayAvatar}
-                alt=""
-                className="h-6 w-6 shrink-0 rounded-full object-cover shadow-[0_2px_10px_rgba(0,0,0,0.55)]"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  e.currentTarget.src = DEFAULT_COVER
-                }}
-              />
-              <span className="truncate text-[11px] font-bold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.95),0_0_1px_rgba(0,0,0,0.8)]">
-                {rawUser}
-              </span>
-            </span>
-          )}
+      {isExplore ? (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-linear-to-t from-black/70 via-black/20 to-transparent px-2.5 pb-2 pt-8">
+          <div className="inline-flex items-center gap-1 text-[13px] font-semibold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
+            <IoHeart className="text-[15px]" aria-hidden />
+            <span>{likeLabel}</span>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-linear-to-t from-black/75 via-black/15 to-transparent px-2 pb-1.5 pt-5">
+          <div className="pointer-events-auto inline-flex max-w-[calc(100%-4px)] items-center">
+            {profile ? (
+              <Link
+                to={profile}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex max-w-full items-center gap-1.5 transition hover:opacity-90"
+                aria-label={`Hồ sơ ${rawUser}`}
+              >
+                <img
+                  src={overlayAvatar}
+                  alt=""
+                  className="h-6 w-6 shrink-0 rounded-full object-cover shadow-[0_2px_10px_rgba(0,0,0,0.55)]"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.src = DEFAULT_COVER
+                  }}
+                />
+                <span className="truncate text-[11px] font-bold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.95),0_0_1px_rgba(0,0,0,0.8)]">
+                  {rawUser}
+                </span>
+              </Link>
+            ) : (
+              <span className="inline-flex max-w-full items-center gap-1.5">
+                <img
+                  src={overlayAvatar}
+                  alt=""
+                  className="h-6 w-6 shrink-0 rounded-full object-cover shadow-[0_2px_10px_rgba(0,0,0,0.55)]"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.src = DEFAULT_COVER
+                  }}
+                />
+                <span className="truncate text-[11px] font-bold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.95),0_0_1px_rgba(0,0,0,0.8)]">
+                  {rawUser}
+                </span>
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </>
   )
 
@@ -517,70 +532,115 @@ export function SoundGridVideoCard({
           onHoverPreview?.(video.publicId)
         }
       }}
-      onMouseLeave={() => scheduleClosePopover()}
+      onMouseLeave={() => {
+        if (!isExplore) scheduleClosePopover()
+      }}
     >
       <div className={frameClass}>{thumb}</div>
-      <div
-        className={`group/desc flex min-w-0 cursor-default items-start gap-0.5 rounded-md px-0.5 py-0.5 transition-colors hover:bg-white/[0.06] ${descRowClass}`}
-      >
-        <p className="line-clamp-1 flex-1 text-[11px] leading-snug text-zinc-400 group-hover/desc:text-zinc-200">
-          {renderCaptionWithHashtags(oneLine)}
-        </p>
-        <button
-          ref={triggerRef}
-          type="button"
-          aria-label="Chi tiết video"
-          aria-expanded={popoverOpen}
-          className="shrink-0 rounded-full p-0.5 text-lg text-zinc-300 opacity-0 transition-opacity hover:bg-white/10 hover:text-white group-hover/desc:opacity-100 group-focus-within/desc:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
-          onMouseEnter={(e) => {
-            e.stopPropagation()
-            openPopover()
-          }}
-          onFocus={() => openPopover()}
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            if (popoverOpen) {
-              setPopoverOpen(false)
-              return
-            }
-            openPopover()
-          }}
-        >
-          <BiDotsVerticalRounded aria-hidden className="block h-[18px] w-[18px]" />
-        </button>
-      </div>
-      {popoverOpen ? (
-        <div
-          className="pointer-events-auto absolute z-[68] -translate-y-1/2"
-          style={{
-            top: popoverAnchorTop ?? '50%',
-            ...(popoverSide === 'left'
-              ? { right: popoverAnchorRight ?? undefined }
-              : { left: popoverAnchorLeft ?? undefined }),
-          }}
-          onMouseEnter={clearCloseTimer}
-          onMouseLeave={scheduleClosePopover}
-        >
-          {popoverSide === 'left' ? (
-            <SoundVideoDetailPopover
-              video={video}
-              formatCount={formatCompactCount}
-              soundPageHref={soundPageHref}
-              soundOwnerVibelyId={soundOwnerVibelyId}
-              side="left"
-            />
+      {isExplore ? (
+        <div className={`${descRowClass} mt-2`}>
+          {profile ? (
+            <Link
+              to={profile}
+              onClick={(e) => e.stopPropagation()}
+              className="flex min-w-0 items-center gap-1.5 transition hover:opacity-80"
+              aria-label={`Hồ sơ ${displayName}`}
+            >
+              <img
+                src={overlayAvatar}
+                alt=""
+                className="h-5 w-5 shrink-0 rounded-full object-cover ring-1 ring-black/10"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.src = DEFAULT_COVER
+                }}
+              />
+              <span className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-tight text-zinc-100">
+                {displayName}
+              </span>
+            </Link>
           ) : (
-            <SoundVideoDetailPopover
-              video={video}
-              formatCount={formatCompactCount}
-              soundPageHref={soundPageHref}
-              soundOwnerVibelyId={soundOwnerVibelyId}
-              side="right"
-            />
+            <div className="flex min-w-0 items-center gap-1.5">
+              <img
+                src={overlayAvatar}
+                alt=""
+                className="h-5 w-5 shrink-0 rounded-full object-cover ring-1 ring-black/10"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.src = DEFAULT_COVER
+                }}
+              />
+              <span className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-tight text-zinc-100">
+                {displayName}
+              </span>
+            </div>
           )}
         </div>
-      ) : null}
+      ) : (
+        <>
+          <div
+            className={`group/desc flex min-w-0 cursor-default items-start gap-0.5 rounded-md px-0.5 py-0.5 transition-colors hover:bg-white/[0.06] ${descRowClass}`}
+          >
+            <p className="line-clamp-1 flex-1 text-[11px] leading-snug text-zinc-400 group-hover/desc:text-zinc-200">
+              {renderCaptionWithHashtags(oneLine)}
+            </p>
+            <button
+              ref={triggerRef}
+              type="button"
+              aria-label="Chi tiết video"
+              aria-expanded={popoverOpen}
+              className="shrink-0 rounded-full p-0.5 text-lg text-zinc-300 opacity-0 transition-opacity hover:bg-white/10 hover:text-white group-hover/desc:opacity-100 group-focus-within/desc:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+              onMouseEnter={(e) => {
+                e.stopPropagation()
+                openPopover()
+              }}
+              onFocus={() => openPopover()}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (popoverOpen) {
+                  setPopoverOpen(false)
+                  return
+                }
+                openPopover()
+              }}
+            >
+              <BiDotsVerticalRounded aria-hidden className="block h-[18px] w-[18px]" />
+            </button>
+          </div>
+          {popoverOpen ? (
+            <div
+              className="pointer-events-auto absolute z-[68] -translate-y-1/2"
+              style={{
+                top: popoverAnchorTop ?? '50%',
+                ...(popoverSide === 'left'
+                  ? { right: popoverAnchorRight ?? undefined }
+                  : { left: popoverAnchorLeft ?? undefined }),
+              }}
+              onMouseEnter={clearCloseTimer}
+              onMouseLeave={scheduleClosePopover}
+            >
+              {popoverSide === 'left' ? (
+                <SoundVideoDetailPopover
+                  video={video}
+                  formatCount={formatCompactCount}
+                  soundPageHref={soundPageHref}
+                  soundOwnerVibelyId={soundOwnerVibelyId}
+                  side="left"
+                />
+              ) : (
+                <SoundVideoDetailPopover
+                  video={video}
+                  formatCount={formatCompactCount}
+                  soundPageHref={soundPageHref}
+                  soundOwnerVibelyId={soundOwnerVibelyId}
+                  side="right"
+                />
+              )}
+            </div>
+          ) : null}
+        </>
+      )}
     </div>
   )
 }

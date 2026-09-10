@@ -262,7 +262,13 @@ body {
   margin: 0;
   min-height: 100%;
   background-color: #000;
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    sans-serif;
 }
 html[data-vibely-theme="light"] body {
   background-color: #fff;
@@ -369,7 +375,8 @@ html.vibely-high-contrast body {
 }
 
 /* Auth login/signup: light appearance (TikTok-style Auto / Dark / Light). */
-html[data-vibely-theme="light"] .vibely-auth-page:not(.vibely-auth-modal-scrim) {
+html[data-vibely-theme="light"]
+  .vibely-auth-page:not(.vibely-auth-modal-scrim) {
   background-color: rgba(255, 255, 255, 0.88);
   color: #161823;
 }
@@ -442,7 +449,9 @@ html[data-vibely-theme="light"] .vibely-auth-theme-menu .text-zinc-100,
 html[data-vibely-theme="light"] .vibely-auth-theme-menu .text-zinc-200 {
   color: #161823;
 }
-html[data-vibely-theme="light"] .vibely-auth-theme-menu .hover\:bg-zinc-800:hover,
+html[data-vibely-theme="light"]
+  .vibely-auth-theme-menu
+  .hover\:bg-zinc-800:hover,
 html[data-vibely-theme="light"] .vibely-auth-theme-menu .border-zinc-800 {
   border-color: #e3e3e4;
 }
@@ -679,8 +688,12 @@ html[data-vibely-theme="light"] .vibely-feed-chrome-rail .bg-black\/30 {
   background-color: #fafafa;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
-html[data-vibely-theme="light"] .vibely-feed-chrome-rail .hover\:bg-white\/20:hover,
-html[data-vibely-theme="light"] .vibely-feed-chrome-rail .active\:bg-white\/25:active {
+html[data-vibely-theme="light"]
+  .vibely-feed-chrome-rail
+  .hover\:bg-white\/20:hover,
+html[data-vibely-theme="light"]
+  .vibely-feed-chrome-rail
+  .active\:bg-white\/25:active {
   background-color: #f3f3f4;
 }
 html[data-vibely-theme="light"] .vibely-feed-chrome-rail .bg-zinc-950 {
@@ -689,19 +702,37 @@ html[data-vibely-theme="light"] .vibely-feed-chrome-rail .bg-zinc-950 {
 }
 
 /* Theater / watch page keeps dark chrome even in light appearance. */
-html[data-vibely-theme="light"] .vibely-keep-dark .vibely-feed-chrome-rail .border-white\/25,
-html[data-vibely-theme="light"] .vibely-keep-dark .vibely-feed-chrome-rail .border-white\/35 {
+html[data-vibely-theme="light"]
+  .vibely-keep-dark
+  .vibely-feed-chrome-rail
+  .border-white\/25,
+html[data-vibely-theme="light"]
+  .vibely-keep-dark
+  .vibely-feed-chrome-rail
+  .border-white\/35 {
   border-color: rgba(255, 255, 255, 0.3);
 }
-html[data-vibely-theme="light"] .vibely-keep-dark .vibely-feed-chrome-rail .bg-black\/30 {
+html[data-vibely-theme="light"]
+  .vibely-keep-dark
+  .vibely-feed-chrome-rail
+  .bg-black\/30 {
   background-color: rgba(0, 0, 0, 0.3) !important;
   box-shadow: none;
 }
-html[data-vibely-theme="light"] .vibely-keep-dark .vibely-feed-chrome-rail .hover\:bg-white\/20:hover,
-html[data-vibely-theme="light"] .vibely-keep-dark .vibely-feed-chrome-rail .active\:bg-white\/25:active {
+html[data-vibely-theme="light"]
+  .vibely-keep-dark
+  .vibely-feed-chrome-rail
+  .hover\:bg-white\/20:hover,
+html[data-vibely-theme="light"]
+  .vibely-keep-dark
+  .vibely-feed-chrome-rail
+  .active\:bg-white\/25:active {
   background-color: rgba(255, 255, 255, 0.2) !important;
 }
-html[data-vibely-theme="light"] .vibely-keep-dark .vibely-feed-chrome-rail .bg-zinc-950 {
+html[data-vibely-theme="light"]
+  .vibely-keep-dark
+  .vibely-feed-chrome-rail
+  .bg-zinc-950 {
   background-color: #09090b !important;
   border-color: rgba(255, 255, 255, 0.35);
 }
@@ -914,7 +945,9 @@ html[data-vibely-theme="light"] .vibely-support-page .support-lang-menu-header {
   border-color: #e3e3e4;
   color: #161823;
 }
-html[data-vibely-theme="light"] .vibely-support-page .support-lang-option:hover {
+html[data-vibely-theme="light"]
+  .vibely-support-page
+  .support-lang-option:hover {
   background-color: #f1f1f2;
 }
 html[data-vibely-theme="light"] .vibely-support-page .support-hero-title,
@@ -925,7 +958,9 @@ html[data-vibely-theme="light"] .vibely-support-page .support-search-field {
   background-color: #f1f1f2;
 }
 html[data-vibely-theme="light"] .vibely-support-page .support-search-icon,
-html[data-vibely-theme="light"] .vibely-support-page .support-search-input::placeholder {
+html[data-vibely-theme="light"]
+  .vibely-support-page
+  .support-search-input::placeholder {
   color: #757575;
 }
 html[data-vibely-theme="light"] .vibely-support-page .support-search-input {
@@ -946,7 +981,9 @@ html[data-vibely-theme="light"] .vibely-support-page .support-category-card {
   border-color: #e3e3e4;
   background-color: #fff;
 }
-html[data-vibely-theme="light"] .vibely-support-page .support-category-card:hover {
+html[data-vibely-theme="light"]
+  .vibely-support-page
+  .support-category-card:hover {
   border-color: #d4d4d8;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
@@ -960,7 +997,10 @@ html[data-vibely-theme="light"] .vibely-support-page .support-muted {
 html[data-vibely-theme="light"] .vibely-support-page .support-category-icon {
   color: #f1f1f2;
 }
-html[data-vibely-theme="light"] .vibely-support-page .support-category-card:hover .support-category-icon {
+html[data-vibely-theme="light"]
+  .vibely-support-page
+  .support-category-card:hover
+  .support-category-icon {
   color: #ebebec;
 }
 html[data-vibely-theme="light"] .vibely-support-page .support-more-link {
@@ -972,28 +1012,49 @@ html[data-vibely-theme="light"] .vibely-support-page .support-footer {
 html[data-vibely-theme="light"] .vibely-support-page .support-footer-link {
   color: #757575;
 }
-html[data-vibely-theme="light"] .vibely-support-page .support-footer-link:hover {
+html[data-vibely-theme="light"]
+  .vibely-support-page
+  .support-footer-link:hover {
   color: #161823;
 }
 html[data-vibely-theme="light"] .vibely-support-page [role="menu"] {
   background-color: #fff !important;
   border-color: #e3e3e4 !important;
 }
-html[data-vibely-theme="light"] .vibely-support-page .vibely-account-avatar-menu-item {
+html[data-vibely-theme="light"]
+  .vibely-support-page
+  .vibely-account-avatar-menu-item {
   color: #161823;
 }
-html[data-vibely-theme="light"] .vibely-support-page .vibely-account-avatar-menu-item:hover {
+html[data-vibely-theme="light"]
+  .vibely-support-page
+  .vibely-account-avatar-menu-item:hover {
   background-color: #f1f1f2 !important;
 }
-html[data-vibely-theme="light"] .vibely-support-page [role="menu"] .text-zinc-100,
-html[data-vibely-theme="light"] .vibely-support-page [role="menu"] .text-zinc-200,
-html[data-vibely-theme="light"] .vibely-support-page [role="menu"] .text-zinc-300 {
+html[data-vibely-theme="light"]
+  .vibely-support-page
+  [role="menu"]
+  .text-zinc-100,
+html[data-vibely-theme="light"]
+  .vibely-support-page
+  [role="menu"]
+  .text-zinc-200,
+html[data-vibely-theme="light"]
+  .vibely-support-page
+  [role="menu"]
+  .text-zinc-300 {
   color: #161823;
 }
-html[data-vibely-theme="light"] .vibely-support-page [role="menu"] .border-zinc-800 {
+html[data-vibely-theme="light"]
+  .vibely-support-page
+  [role="menu"]
+  .border-zinc-800 {
   border-color: #e3e3e4;
 }
-html[data-vibely-theme="light"] .vibely-support-page [role="menu"] button.rounded-full:hover {
+html[data-vibely-theme="light"]
+  .vibely-support-page
+  [role="menu"]
+  button.rounded-full:hover {
   background-color: #f1f1f2;
 }
 
@@ -1008,14 +1069,32 @@ html[data-vibely-theme="light"] .vibely-support-page [role="menu"] button.rounde
 
 .vibely-not-found-page .not-found-hero {
   background:
-    radial-gradient(ellipse 70% 55% at 12% 8%, rgba(168, 216, 255, 0.55), transparent 58%),
-    radial-gradient(ellipse 65% 50% at 88% 42%, rgba(255, 176, 196, 0.42), transparent 55%),
-    radial-gradient(ellipse 50% 40% at 50% 100%, rgba(255, 255, 255, 0.9), transparent 70%),
+    radial-gradient(
+      ellipse 70% 55% at 12% 8%,
+      rgba(168, 216, 255, 0.55),
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 65% 50% at 88% 42%,
+      rgba(255, 176, 196, 0.42),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 50% 100%,
+      rgba(255, 255, 255, 0.9),
+      transparent 70%
+    ),
     #ffffff;
 }
 
 .vibely-not-found-page .not-found-digit {
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
   font-size: clamp(5.5rem, 18vw, 9.5rem);
   font-weight: 800;
   line-height: 1;
@@ -1071,24 +1150,45 @@ html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer {
 .vibely-not-found-page .not-found-footer .text-white\/70,
 .vibely-not-found-page .not-found-footer .text-white\/45,
 html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer a,
-html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer .text-white,
-html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer .text-white\/70,
-html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer .text-white\/45 {
+html[data-vibely-theme="light"]
+  .vibely-not-found-page
+  .not-found-footer
+  .text-white,
+html[data-vibely-theme="light"]
+  .vibely-not-found-page
+  .not-found-footer
+  .text-white\/70,
+html[data-vibely-theme="light"]
+  .vibely-not-found-page
+  .not-found-footer
+  .text-white\/45 {
   color: #fff !important;
 }
 
-html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer .text-white\/70 {
+html[data-vibely-theme="light"]
+  .vibely-not-found-page
+  .not-found-footer
+  .text-white\/70 {
   color: rgba(255, 255, 255, 0.7) !important;
 }
 
-html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer .text-white\/45 {
+html[data-vibely-theme="light"]
+  .vibely-not-found-page
+  .not-found-footer
+  .text-white\/45 {
   color: rgba(255, 255, 255, 0.45) !important;
 }
 
 .vibely-not-found-page .not-found-footer .border-white\/10,
-html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer .border-white\/10,
+html[data-vibely-theme="light"]
+  .vibely-not-found-page
+  .not-found-footer
+  .border-white\/10,
 .vibely-not-found-page .not-found-footer .border-t,
-html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer .border-t {
+html[data-vibely-theme="light"]
+  .vibely-not-found-page
+  .not-found-footer
+  .border-t {
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
@@ -1320,7 +1420,9 @@ html[data-vibely-theme="light"] .vibely-cover-modal .hover\:bg-white\/10:hover {
 html[data-vibely-theme="light"] .vibely-cover-modal .border-white\/15 {
   border-color: #d4d4d8;
 }
-html[data-vibely-theme="light"] .vibely-cover-modal .hover\:border-white\/30:hover {
+html[data-vibely-theme="light"]
+  .vibely-cover-modal
+  .hover\:border-white\/30:hover {
   border-color: #a1a1aa;
 }
 html[data-vibely-theme="light"] .vibely-cover-modal .text-amber-200 {
@@ -1398,7 +1500,10 @@ html[data-vibely-theme="light"] .vibely-live-page .live-mobile-header {
 html[data-vibely-theme="light"] .vibely-live-page .live-sidebar {
   border-color: #e3e3e4;
 }
-html[data-vibely-theme="light"] .vibely-live-page .live-sidebar .border-zinc-900 {
+html[data-vibely-theme="light"]
+  .vibely-live-page
+  .live-sidebar
+  .border-zinc-900 {
   border-color: #e3e3e4;
 }
 html[data-vibely-theme="light"] .vibely-live-page .live-get-coins {
@@ -1407,24 +1512,33 @@ html[data-vibely-theme="light"] .vibely-live-page .live-get-coins {
 html[data-vibely-theme="light"] .vibely-live-page .live-category-bar {
   border-color: #e3e3e4;
 }
-html[data-vibely-theme="light"] .vibely-live-page .live-nav-item:not(.live-nav-item--active) {
+html[data-vibely-theme="light"]
+  .vibely-live-page
+  .live-nav-item:not(.live-nav-item--active) {
   color: #161823;
 }
-html[data-vibely-theme="light"] .vibely-live-page .live-nav-item:not(.live-nav-item--active):hover,
+html[data-vibely-theme="light"]
+  .vibely-live-page
+  .live-nav-item:not(.live-nav-item--active):hover,
 html[data-vibely-theme="light"] .vibely-live-page .live-creator-row:hover {
   background-color: #f1f1f2;
 }
 html[data-vibely-theme="light"] .vibely-live-page .live-nav-item--active {
   color: #fe2c55;
 }
-html[data-vibely-theme="light"] .vibely-live-page .live-creator-row .text-zinc-100 {
+html[data-vibely-theme="light"]
+  .vibely-live-page
+  .live-creator-row
+  .text-zinc-100 {
   color: #161823;
 }
 html[data-vibely-theme="light"] .vibely-live-page .live-category-tab--inactive {
   background-color: #f1f1f2;
   color: #161823;
 }
-html[data-vibely-theme="light"] .vibely-live-page .live-category-tab--inactive:hover {
+html[data-vibely-theme="light"]
+  .vibely-live-page
+  .live-category-tab--inactive:hover {
   background-color: #e3e3e4;
 }
 html[data-vibely-theme="light"] .vibely-live-page .live-category-tab--active {
@@ -1456,12 +1570,18 @@ html[data-vibely-theme="light"] .vibely-live-page .text-zinc-100 {
 html[data-vibely-theme="light"] .vibely-live-page .hover\:bg-white\/10:hover {
   background-color: #f1f1f2;
 }
-html[data-vibely-theme="light"] .vibely-live-page .live-category-bar button.border-zinc-700 {
+html[data-vibely-theme="light"]
+  .vibely-live-page
+  .live-category-bar
+  button.border-zinc-700 {
   border-color: #e3e3e4;
   background-color: #fff;
   color: #161823;
 }
-html[data-vibely-theme="light"] .vibely-live-page .live-category-bar button.border-zinc-700:hover:not(:disabled) {
+html[data-vibely-theme="light"]
+  .vibely-live-page
+  .live-category-bar
+  button.border-zinc-700:hover:not(:disabled) {
   background-color: #f1f1f2;
 }
 
@@ -1687,19 +1807,26 @@ html[data-vibely-theme="light"] .vibely-sound-video-popover .text-zinc-500 {
 
 html[data-vibely-theme="light"] .vibely-sound-video-popover .border-white\/10,
 html[data-vibely-theme="light"] .vibely-sound-video-popover .border-white\/12,
-html[data-vibely-theme="light"] .vibely-sound-video-popover .divide-white\/10 > :not([hidden]) ~ :not([hidden]) {
+html[data-vibely-theme="light"]
+  .vibely-sound-video-popover
+  .divide-white\/10
+  > :not([hidden])
+  ~ :not([hidden]) {
   border-color: #e3e3e4 !important;
 }
 
-html[data-vibely-theme="light"] .vibely-sound-video-popover .hover\:bg-white\/\[0\.07\]:hover {
+html[data-vibely-theme="light"]
+  .vibely-sound-video-popover
+  .hover\:bg-white\/\[0\.07\]:hover {
   background-color: rgba(22, 24, 35, 0.05) !important;
 }
 
 html[data-vibely-theme="light"] .vibely-sound-video-popover .text-sky-400 {
   color: #0ea5e9 !important;
 }
-
-html[data-vibely-theme="light"] .vibely-sound-video-popover .hover\:text-sky-300:hover {
+j
+  html[data-vibely-theme="light"]
+  .vibely-sound-video-popover
+  .hover\:text-sky-300:hover {
   color: #0284c7 !important;
 }
-

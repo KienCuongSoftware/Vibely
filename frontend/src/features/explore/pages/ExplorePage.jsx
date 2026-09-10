@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { IoChevronBack, IoChevronForward, IoHeart, IoPlay, IoPlayOutline, IoSearch } from 'react-icons/io5'
+import { IoChevronBack, IoChevronForward, IoHeart, IoSearch } from 'react-icons/io5'
 import { apiClient } from '@/shared/api/client'
 import { Sidebar } from '@/shared/components/Sidebar'
 import {
@@ -15,7 +15,6 @@ import { resolveFeedPlaybackUrl } from '@/features/feed/utils/feedPlayback.js'
 import { DEFAULT_COVER, SoundGridVideoCard } from '@/features/post/pages/SoundPage.jsx'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { buildProfileVideoUrl } from '@/features/post/utils/videoPublicId.js'
-import { formatRelativeTimeVi } from '@/shared/utils/relativeTimeVi.js'
 import {
   ExploreLoadMoreSkeleton,
   ExplorePageSkeleton,
@@ -58,6 +57,8 @@ function ExploreMobileVideoCard({ video, coverFallback, onOpen }) {
   const username = String(video?.authorUsername ?? 'user')
     .trim()
     .replace(/^@/, '')
+  const displayName =
+    String(video?.authorDisplayName ?? '').trim() || username || 'Vibely'
 
   return (
     <button
@@ -76,20 +77,10 @@ function ExploreMobileVideoCard({ video, coverFallback, onOpen }) {
             e.currentTarget.src = DEFAULT_COVER
           }}
         />
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <IoPlay className="text-[34px] text-white/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)]" aria-hidden />
-        </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/35 to-transparent px-2 pb-2 pt-8">
-          <div className="flex items-end justify-between gap-2">
-            <div className="inline-flex items-center gap-1 text-[12px] font-semibold text-white drop-shadow-md">
-              <IoPlayOutline className="text-sm" aria-hidden />
-              {formatCompactCount(video?.viewCount ?? 0)}
-            </div>
-            {video?.createdAt ? (
-              <span className="text-[11px] font-medium text-white/90 drop-shadow-md">
-                {formatRelativeTimeVi(video.createdAt)}
-              </span>
-            ) : null}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 via-black/20 to-transparent px-2.5 pb-2 pt-8">
+          <div className="inline-flex items-center gap-1 text-[13px] font-semibold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
+            <IoHeart className="text-[15px]" aria-hidden />
+            <span>{formatCompactCount(video?.likeCount ?? 0)}</span>
           </div>
         </div>
       </div>
@@ -97,21 +88,15 @@ function ExploreMobileVideoCard({ video, coverFallback, onOpen }) {
         <img
           src={avatar}
           alt=""
-          className="h-5 w-5 shrink-0 rounded-full object-cover ring-1 ring-zinc-700"
+          className="h-5 w-5 shrink-0 rounded-full object-cover ring-1 ring-black/10"
           referrerPolicy="no-referrer"
           onError={(e) => {
             e.currentTarget.src = DEFAULT_COVER
           }}
         />
-        <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-zinc-200">
-          {username}
+        <span className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-tight text-zinc-100">
+          {displayName}
         </span>
-        {(video?.likeCount ?? 0) > 0 ? (
-          <span className="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-semibold text-zinc-300">
-            <IoHeart className="text-xs" aria-hidden />
-            {formatCompactCount(video.likeCount)}
-          </span>
-        ) : null}
       </div>
     </button>
   )
@@ -417,6 +402,7 @@ export function ExplorePage() {
                       narrowWidthClass="max-w-none"
                       playing={video.publicId === playingId}
                       onHoverPreview={setPlayingId}
+                      variant="explore"
                     />
                   </div>
                 ))}
