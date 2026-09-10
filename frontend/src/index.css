@@ -1027,8 +1027,6 @@ html[data-vibely-theme="light"] .vibely-support-page [role="menu"] button.rounde
   width: clamp(5.75rem, 22vw, 10.5rem);
   height: clamp(5.75rem, 22vw, 10.5rem);
   object-fit: contain;
-  /* PNG has a black plate — lift yellow face onto the light hero */
-  mix-blend-mode: lighten;
   transform: translateY(0.06em);
   animation: not-found-smiley-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }

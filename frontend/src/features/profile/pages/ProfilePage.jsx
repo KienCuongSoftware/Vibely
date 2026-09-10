@@ -498,6 +498,15 @@ export function ProfilePage() {
         })
         .catch((error) => {
           if (!isMounted) return
+          const code = String(error?.code || '')
+          const isMissingUser =
+            error?.status === 404 ||
+            code === 'USER_NOT_FOUND' ||
+            code === 'NOT_FOUND'
+          if (isMissingUser) {
+            navigate('/404', { replace: true })
+            return
+          }
           setPublicProfile(null)
           setStatus(error.message)
         })
@@ -514,7 +523,7 @@ export function ProfilePage() {
       .then(() => setStatus(t('profileChrome.profileLoaded')))
       .catch((error) => setStatus(error.message))
     return undefined
-  }, [token, refreshProfile, username, authReady])
+  }, [token, refreshProfile, username, authReady, navigate, t])
 
   // Đếm lượt xem hồ sơ (Studio analytics) — không đếm khi xem hồ sơ của chính mình
   useEffect(() => {

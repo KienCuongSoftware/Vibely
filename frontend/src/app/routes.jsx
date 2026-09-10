@@ -123,8 +123,9 @@ export function GuestRoutes() {
       <Route path="/:username/video/:publicId" element={<PublicVideoDetailPage />} />
       <Route path="/:username/:publicId" element={<ProfileWatchVideoRoutePage />} />
       <Route path="/profile" element={<RedirectToHomeLogin />} />
+      <Route path="/404" element={<NotFoundPage />} />
       <Route path="/:username" element={<ProfilePage />} />
-      <Route path="*" element={<NotFoundPage />} />
+      <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>
     <GuestAuthModal />
     </GuestAuthUiProvider>
@@ -299,9 +300,10 @@ export function AuthenticatedRoutes({ user, isAdmin }) {
       <Route path="/:username/video/:publicId" element={<PublicVideoDetailPage />} />
       <Route path="/:username/:publicId" element={<ProfileWatchVideoRoutePage />} />
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/404" element={<NotFoundPage />} />
       <Route path="/:username" element={<ProfilePage />} />
       <Route path="/watch/:publicId" element={<WatchRedirect />} />
-      <Route path="*" element={<NotFoundPage />} />
+      <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>
   )
 }
