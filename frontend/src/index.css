@@ -1053,7 +1053,7 @@ html[data-vibely-theme="light"] .vibely-support-page [role="menu"] button.rounde
   transform: translateY(0);
 }
 
-/* Global light theme remaps `.text-white` → dark; keep CTA + footer brand white */
+/* Global light theme remaps `.text-white` → dark and `#121212` → white; keep 404 footer dark */
 .vibely-not-found-page .not-found-cta,
 html[data-vibely-theme="light"] .vibely-not-found-page .not-found-cta {
   color: #fff !important;
@@ -1061,12 +1061,35 @@ html[data-vibely-theme="light"] .vibely-not-found-page .not-found-cta {
 
 .vibely-not-found-page .not-found-footer,
 html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer {
-  color: #fff;
+  background-color: #121212 !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 .vibely-not-found-page .not-found-footer a,
-html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer a {
-  color: inherit;
+.vibely-not-found-page .not-found-footer .text-white,
+.vibely-not-found-page .not-found-footer .text-white\/70,
+.vibely-not-found-page .not-found-footer .text-white\/45,
+html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer a,
+html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer .text-white,
+html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer .text-white\/70,
+html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer .text-white\/45 {
+  color: #fff !important;
+}
+
+html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer .text-white\/70 {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer .text-white\/45 {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.vibely-not-found-page .not-found-footer .border-white\/10,
+html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer .border-white\/10,
+.vibely-not-found-page .not-found-footer .border-t,
+html[data-vibely-theme="light"] .vibely-not-found-page .not-found-footer .border-t {
+  border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 @keyframes not-found-digit-in {

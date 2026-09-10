@@ -67,8 +67,12 @@ export function NotFoundPage() {
 
       <footer className="not-found-footer mt-auto border-t border-white/10 bg-[#121212] text-white">
         <div className="mx-auto flex max-w-[1180px] flex-col gap-6 px-4 py-10 sm:flex-row sm:items-start sm:justify-between sm:px-6 sm:py-12">
-          <Link to={FOR_YOU_PATH} className="inline-flex shrink-0 text-white" aria-label="Vibely">
-            <VibelyWordmark className="h-8 w-auto" />
+          <Link
+            to={FOR_YOU_PATH}
+            className="not-found-footer-brand inline-flex shrink-0 overflow-hidden text-white"
+            aria-label="Vibely"
+          >
+            <VibelyWordmark className="h-8 w-auto overflow-hidden" />
           </Link>
           <nav
             aria-label={t('notFoundPage.footerNav')}
