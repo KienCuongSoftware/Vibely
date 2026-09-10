@@ -65,7 +65,7 @@ function ExploreMobileVideoCard({ video, coverFallback, onOpen }) {
       onClick={() => onOpen(video)}
       className="group w-full cursor-pointer text-left"
     >
-      <div className="relative aspect-[9/16] overflow-hidden rounded-lg bg-zinc-900">
+      <div className="vibely-keep-dark relative aspect-[9/16] overflow-hidden rounded-lg bg-zinc-900">
         <img
           src={poster}
           alt=""

@@ -99,10 +99,10 @@ function SoundVideoDetailPopover({
     <div
       role="dialog"
       aria-label="Chi tiết video"
-      className={`pointer-events-auto relative z-[80] w-[min(400px,calc(100vw-2rem))] max-w-[400px] rounded-xl border border-white/12 bg-[#1f1f1f] p-5 text-left shadow-2xl ring-1 ring-black/40 before:pointer-events-none before:absolute before:top-1/2 before:z-10 before:-translate-y-1/2 before:border-y-[8px] before:border-y-transparent before:content-[''] ${
+      className={`vibely-sound-video-popover pointer-events-auto relative z-[80] w-[min(400px,calc(100vw-2rem))] max-w-[400px] rounded-xl border border-white/12 bg-[#1f1f1f] p-5 text-left shadow-2xl ring-1 ring-black/40 ${
         side === 'left'
-          ? "before:right-0 before:translate-x-full before:border-l-[10px] before:border-l-[#1f1f1f]"
-          : "before:left-0 before:-translate-x-full before:border-r-[10px] before:border-r-[#1f1f1f]"
+          ? 'vibely-sound-video-popover--left'
+          : 'vibely-sound-video-popover--right'
       }`}
     >
       {profile ? (
@@ -496,8 +496,8 @@ export function SoundGridVideoCard({
   )
 
   const frameClass = wideSource
-    ? 'relative aspect-9/16 w-[min(200px,55vw)] overflow-hidden rounded-xl bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600'
-    : `relative mx-auto aspect-9/16 w-full ${narrowWidthClass} overflow-hidden rounded-lg bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600`
+    ? 'vibely-keep-dark relative aspect-9/16 w-[min(200px,55vw)] overflow-hidden rounded-xl bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600'
+    : `vibely-keep-dark relative mx-auto aspect-9/16 w-full ${narrowWidthClass} overflow-hidden rounded-lg bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600`
 
   const descRowClass = wideSource
     ? 'mt-2 w-[min(200px,55vw)]'

@@ -1604,3 +1604,79 @@ html[data-vibely-theme="light"] .vibely-keep-dark .text-orange-400 {
   color: #fdba74 !important;
 }
 
+/* Explore/sound video detail popover — caret matches themed card fill */
+.vibely-sound-video-popover {
+  --vibely-sound-popover-bg: #1f1f1f;
+  background-color: var(--vibely-sound-popover-bg);
+}
+
+.vibely-sound-video-popover::before {
+  pointer-events: none;
+  content: "";
+  position: absolute;
+  top: 50%;
+  z-index: 10;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-top-width: 8px;
+  border-bottom-width: 8px;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  transform: translateY(-50%);
+}
+
+.vibely-sound-video-popover--right::before {
+  left: 0;
+  border-right-width: 10px;
+  border-left-width: 0;
+  border-right-color: var(--vibely-sound-popover-bg);
+  transform: translate(-100%, -50%);
+}
+
+.vibely-sound-video-popover--left::before {
+  right: 0;
+  border-left-width: 10px;
+  border-right-width: 0;
+  border-left-color: var(--vibely-sound-popover-bg);
+  transform: translate(100%, -50%);
+}
+
+html[data-vibely-theme="light"] .vibely-sound-video-popover {
+  --vibely-sound-popover-bg: #f8f8f8;
+  border-color: #e3e3e4;
+  box-shadow: 0 12px 40px rgba(22, 24, 35, 0.12);
+}
+
+html[data-vibely-theme="light"] .vibely-sound-video-popover .text-white,
+html[data-vibely-theme="light"] .vibely-sound-video-popover .text-white\/95 {
+  color: #161823 !important;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-video-popover .text-zinc-200 {
+  color: #3a3a3a !important;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-video-popover .text-zinc-400,
+html[data-vibely-theme="light"] .vibely-sound-video-popover .text-zinc-500 {
+  color: #8a8b91 !important;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-video-popover .border-white\/10,
+html[data-vibely-theme="light"] .vibely-sound-video-popover .border-white\/12,
+html[data-vibely-theme="light"] .vibely-sound-video-popover .divide-white\/10 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #e3e3e4 !important;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-video-popover .hover\:bg-white\/\[0\.07\]:hover {
+  background-color: rgba(22, 24, 35, 0.05) !important;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-video-popover .text-sky-400 {
+  color: #0ea5e9 !important;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-video-popover .hover\:text-sky-300:hover {
+  color: #0284c7 !important;
+}
+
