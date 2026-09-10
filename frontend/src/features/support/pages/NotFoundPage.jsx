@@ -24,10 +24,10 @@ export function NotFoundPage() {
         <div className="mx-auto flex h-14 max-w-[1180px] items-center px-4 sm:px-6">
           <Link
             to={FOR_YOU_PATH}
-            className="not-found-brand inline-flex items-center text-[#161823]"
+            className="not-found-brand inline-flex items-center overflow-hidden text-[#161823]"
             aria-label="Vibely"
           >
-            <VibelyWordmark className="h-8 w-auto sm:h-9" />
+            <VibelyWordmark className="h-8 w-auto overflow-hidden sm:h-9" />
           </Link>
         </div>
       </header>

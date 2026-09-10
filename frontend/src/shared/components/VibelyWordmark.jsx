@@ -14,6 +14,7 @@ export function VibelyWordmark({ className = "h-9 w-auto", title = "Vibely" }) {
       className={className}
       role="img"
       aria-label={title}
+      overflow="hidden"
     >
       <g transform="translate(0.6 1.4) scale(0.0915) translate(-36 -96)">
         <g fill="#25F4EE" transform="translate(-10 -8)">
