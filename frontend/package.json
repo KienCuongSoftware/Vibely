@@ -38,12 +38,14 @@
     "globals": "^17.6.0",
     "jsdom": "^29.1.1",
     "png-to-ico": "^3.0.2",
-    "sharp": "^0.35.3",
+    "sharp": "^0.35.4",
     "tailwindcss": "^4.2.4",
     "vite": "^8.0.16",
     "vitest": "^4.1.8"
   },
   "overrides": {
-    "react-router": "8.3.0"
+    "react-router": "8.3.0",
+    "browserslist": ">=4.28.7",
+    "baseline-browser-mapping": ">=2.11.0"
   }
 }
