@@ -47,6 +47,7 @@ const ExplorePage = lazyNamed(() => import('@/features/explore/pages/ExplorePage
 const ExploreViewerPage = lazyNamed(() => import('@/features/explore/pages/ExploreViewerPage.jsx'), 'ExploreViewerPage')
 const LivePage = lazyNamed(() => import('@/features/live/pages/LivePage.jsx'), 'LivePage')
 const SupportPage = lazyNamed(() => import('@/features/support/pages/SupportPage.jsx'), 'SupportPage')
+const NotFoundPage = lazyNamed(() => import('@/features/support/pages/NotFoundPage.jsx'), 'NotFoundPage')
 const SearchResultsPage = lazyNamed(() => import('@/features/search/pages/SearchResultsPage.jsx'), 'SearchResultsPage')
 const AdminUsersPage = lazyNamed(() => import('@/features/admin/pages/AdminUsersPage.jsx'), 'AdminUsersPage')
 const AdminBannedUsersPage = lazyNamed(() => import('@/features/admin/pages/AdminBannedUsersPage.jsx'), 'AdminBannedUsersPage')
@@ -123,7 +124,7 @@ export function GuestRoutes() {
       <Route path="/:username/:publicId" element={<ProfileWatchVideoRoutePage />} />
       <Route path="/profile" element={<RedirectToHomeLogin />} />
       <Route path="/:username" element={<ProfilePage />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
     <GuestAuthModal />
     </GuestAuthUiProvider>
@@ -300,7 +301,7 @@ export function AuthenticatedRoutes({ user, isAdmin }) {
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/:username" element={<ProfilePage />} />
       <Route path="/watch/:publicId" element={<WatchRedirect />} />
-      <Route path="*" element={<AuthenticatedHomeRedirect user={user} />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }

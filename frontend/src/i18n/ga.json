@@ -2816,5 +2816,16 @@
         "description": "Rialuithe príobháideachais, uirlisí sábháilteachta agus tuairisciú ábhair."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Níor aimsíodh an leathanach | Vibely",
+    "eyebrow": "Níorbh fhéidir an leathanach seo a aimsiú",
+    "title": "Féach ar fhíseáin threochta eile ar Vibely",
+    "cta": "Féach anois",
+    "footerNav": "Naisc bhunleathanaigh",
+    "supportLink": "Tacaíocht",
+    "termsLink": "Téarmaí Seirbhíse",
+    "privacyLink": "Beartas Príobháideachta",
+    "copyright": "© {{year}} Vibely"
   }
 }

@@ -2816,5 +2816,16 @@
         "description": "رازداری کے کنٹرول، حفاظتی ٹولز اور مواد کی رپورٹنگ۔"
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "صفحہ نہیں ملا | Vibely",
+    "eyebrow": "یہ صفحہ نہیں مل سکا",
+    "title": "Vibely پر دیگر ٹرینڈنگ ویڈیوز دیکھیں",
+    "cta": "ابھی دیکھیں",
+    "footerNav": "فوٹر لنکس",
+    "supportLink": "مدد",
+    "termsLink": "سروس کی شرائط",
+    "privacyLink": "رازداری کی پالیسی",
+    "copyright": "© {{year}} Vibely"
   }
 }

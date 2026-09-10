@@ -341,6 +341,17 @@
       }
     }
   },
+  "notFoundPage": {
+    "pageTitle": "Không tìm thấy trang | Vibely",
+    "eyebrow": "Không thể tìm thấy trang này",
+    "title": "Xem những video thịnh hành khác trên Vibely",
+    "cta": "Xem ngay",
+    "footerNav": "Liên kết chân trang",
+    "supportLink": "Trợ giúp",
+    "termsLink": "Điều khoản dịch vụ",
+    "privacyLink": "Chính sách quyền riêng tư",
+    "copyright": "© {{year}} Vibely"
+  },
   "messagesPage": {
     "title": "Tin nhắn",
     "pageTitle": "Tin nhắn | Vibely",

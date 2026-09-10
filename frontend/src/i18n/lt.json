@@ -2816,5 +2816,16 @@
         "description": "Privatumo valdikliai, saugumo įrankiai ir turinio pranešimai."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Puslapis nerastas | Vibely",
+    "eyebrow": "Šio puslapio rasti nepavyko",
+    "title": "Žiūrėkite kitus populiarius vaizdo įrašus Vibely",
+    "cta": "Žiūrėti dabar",
+    "footerNav": "Poraštės nuorodos",
+    "supportLink": "Pagalba",
+    "termsLink": "Paslaugų teikimo sąlygos",
+    "privacyLink": "Privatumo politika",
+    "copyright": "© {{year}} Vibely"
   }
 }

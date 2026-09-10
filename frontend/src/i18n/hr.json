@@ -2816,5 +2816,16 @@
         "description": "Kontrole privatnosti, alati sigurnosti i prijava sadržaja."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Stranica nije pronađena | Vibely",
+    "eyebrow": "Ova stranica nije pronađena",
+    "title": "Pogledajte druge popularne videozapise na Vibelyju",
+    "cta": "Pogledaj sada",
+    "footerNav": "Poveznice podnožja",
+    "supportLink": "Podrška",
+    "termsLink": "Uvjeti usluge",
+    "privacyLink": "Politika privatnosti",
+    "copyright": "© {{year}} Vibely"
   }
 }

@@ -2816,5 +2816,16 @@
         "description": "Personvernkontroller, sikkerhetsverktøy og rapportering av innhold."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Siden ble ikke funnet | Vibely",
+    "eyebrow": "Denne siden ble ikke funnet",
+    "title": "Se andre populære videoer på Vibely",
+    "cta": "Se nå",
+    "footerNav": "Bunntekstlenker",
+    "supportLink": "Support",
+    "termsLink": "Vilkår for bruk",
+    "privacyLink": "Personvernerklæring",
+    "copyright": "© {{year}} Vibely"
   }
 }

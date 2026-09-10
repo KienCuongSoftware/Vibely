@@ -2816,5 +2816,16 @@
         "description": "Udhibiti wa faragha, zana za usalama na kuripoti maudhui."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Ukurasa haujapatikana | Vibely",
+    "eyebrow": "Ukurasa huu haukuweza kupatikana",
+    "title": "Tazama video zingine zinazovuma kwenye Vibely",
+    "cta": "Tazama sasa",
+    "footerNav": "Viungo vya chini",
+    "supportLink": "Msaada",
+    "termsLink": "Masharti ya Huduma",
+    "privacyLink": "Sera ya Faragha",
+    "copyright": "© {{year}} Vibely"
   }
 }

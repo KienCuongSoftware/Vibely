@@ -2816,5 +2816,16 @@
         "description": "Privacy-instellingen, veiligheidstools en content melden."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Pagina niet gevonden | Vibely",
+    "eyebrow": "Deze pagina kon niet worden gevonden",
+    "title": "Bekijk andere trending video's op Vibely",
+    "cta": "Nu bekijken",
+    "footerNav": "Voettekstlinks",
+    "supportLink": "Ondersteuning",
+    "termsLink": "Servicevoorwaarden",
+    "privacyLink": "Privacybeleid",
+    "copyright": "© {{year}} Vibely"
   }
 }

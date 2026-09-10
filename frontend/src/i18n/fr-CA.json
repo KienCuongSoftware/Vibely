@@ -2816,5 +2816,16 @@
         "description": "Contrôles de confidentialité, outils de sécurité et signalement de contenu."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Page introuvable | Vibely",
+    "eyebrow": "Impossible de trouver cette page",
+    "title": "Regardez d'autres vidéos tendance sur Vibely",
+    "cta": "Regarder maintenant",
+    "footerNav": "Liens de bas de page",
+    "supportLink": "Assistance",
+    "termsLink": "Conditions d'utilisation",
+    "privacyLink": "Politique de confidentialité",
+    "copyright": "© {{year}} Vibely"
   }
 }

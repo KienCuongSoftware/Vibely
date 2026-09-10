@@ -2816,5 +2816,16 @@
         "description": "Gizlilik kontrolleri, güvenlik araçları ve içerik bildirimi."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Sayfa bulunamadı | Vibely",
+    "eyebrow": "Bu sayfa bulunamadı",
+    "title": "Vibely'de diğer trend videoları izleyin",
+    "cta": "Şimdi izle",
+    "footerNav": "Alt bilgi bağlantıları",
+    "supportLink": "Destek",
+    "termsLink": "Hizmet Şartları",
+    "privacyLink": "Gizlilik Politikası",
+    "copyright": "© {{year}} Vibely"
   }
 }

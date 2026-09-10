@@ -2816,5 +2816,16 @@
         "description": "隱私控制、安全工具和內容舉報。"
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "找不到頁面 | Vibely",
+    "eyebrow": "無法找到此頁面",
+    "title": "在 Vibely 上觀看其他熱門影片",
+    "cta": "立即觀看",
+    "footerNav": "頁尾連結",
+    "supportLink": "說明中心",
+    "termsLink": "服務條款",
+    "privacyLink": "隱私權政策",
+    "copyright": "© {{year}} Vibely"
   }
 }

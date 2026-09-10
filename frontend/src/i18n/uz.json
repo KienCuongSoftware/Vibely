@@ -2816,5 +2816,16 @@
         "description": "Maxfiylik nazorati, xavfsizlik vositalari va kontent haqida xabar berish."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Sahifa topilmadi | Vibely",
+    "eyebrow": "Bu sahifani topib bo'lmadi",
+    "title": "Vibelyda boshqa trend videolarni ko'ring",
+    "cta": "Hozir ko'rish",
+    "footerNav": "Pastki havolalar",
+    "supportLink": "Yordam",
+    "termsLink": "Xizmat shartlari",
+    "privacyLink": "Maxfiylik siyosati",
+    "copyright": "© {{year}} Vibely"
   }
 }

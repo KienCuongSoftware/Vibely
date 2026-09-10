@@ -2816,5 +2816,16 @@
         "description": "Privacy controls, safety tools, ug pag-report sa content."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Wala makita ang panid | Vibely",
+    "eyebrow": "Dili makita kini nga panid",
+    "title": "Tan-awa ang ubang trending nga video sa Vibely",
+    "cta": "Tan-awa karon",
+    "footerNav": "Mga link sa footer",
+    "supportLink": "Tabang",
+    "termsLink": "Mga Termino sa Serbisyo",
+    "privacyLink": "Patakaran sa Pagkapribado",
+    "copyright": "© {{year}} Vibely"
   }
 }

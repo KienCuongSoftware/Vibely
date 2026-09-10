@@ -2816,5 +2816,16 @@
         "description": "プライバシー設定、安全ツール、コンテンツの報告。"
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "ページが見つかりません | Vibely",
+    "eyebrow": "このページは見つかりませんでした",
+    "title": "Vibelyで他の人気動画を見る",
+    "cta": "今すぐ見る",
+    "footerNav": "フッターリンク",
+    "supportLink": "サポート",
+    "termsLink": "利用規約",
+    "privacyLink": "プライバシーポリシー",
+    "copyright": "© {{year}} Vibely"
   }
 }

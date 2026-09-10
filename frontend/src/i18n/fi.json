@@ -2816,5 +2816,16 @@
         "description": "Yksityisyysasetukset, turvallisuustyökalut ja sisällön ilmoittaminen."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Sivua ei löytynyt | Vibely",
+    "eyebrow": "Tätä sivua ei löytynyt",
+    "title": "Katso muita trendivideoita Vibelyssä",
+    "cta": "Katso nyt",
+    "footerNav": "Alatunnisteen linkit",
+    "supportLink": "Tuki",
+    "termsLink": "Palveluehdot",
+    "privacyLink": "Tietosuojakäytäntö",
+    "copyright": "© {{year}} Vibely"
   }
 }

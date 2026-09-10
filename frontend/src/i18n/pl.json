@@ -2816,5 +2816,16 @@
         "description": "Kontrola prywatności, narzędzia bezpieczeństwa i zgłaszanie treści."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Nie znaleziono strony | Vibely",
+    "eyebrow": "Nie można znaleźć tej strony",
+    "title": "Oglądaj inne popularne filmy na Vibely",
+    "cta": "Oglądaj teraz",
+    "footerNav": "Linki w stopce",
+    "supportLink": "Pomoc",
+    "termsLink": "Warunki świadczenia usług",
+    "privacyLink": "Polityka prywatności",
+    "copyright": "© {{year}} Vibely"
   }
 }

@@ -2816,5 +2816,16 @@
         "description": "Privacy controls, safety tools, at pag-report ng content."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Hindi nahanap ang page | Vibely",
+    "eyebrow": "Hindi mahanap ang page na ito",
+    "title": "Manood ng iba pang trending na video sa Vibely",
+    "cta": "Manood ngayon",
+    "footerNav": "Mga link sa footer",
+    "supportLink": "Suporta",
+    "termsLink": "Mga Tuntunin ng Serbisyo",
+    "privacyLink": "Patakaran sa Privacy",
+    "copyright": "© {{year}} Vibely"
   }
 }

@@ -2816,5 +2816,16 @@
         "description": "Integritetskontroller, säkerhetsverktyg och rapportering av innehåll."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Sidan hittades inte | Vibely",
+    "eyebrow": "Den här sidan kunde inte hittas",
+    "title": "Titta på andra trendande videor på Vibely",
+    "cta": "Titta nu",
+    "footerNav": "Sidfotslänkar",
+    "supportLink": "Support",
+    "termsLink": "Användarvillkor",
+    "privacyLink": "Sekretesspolicy",
+    "copyright": "© {{year}} Vibely"
   }
 }

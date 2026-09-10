@@ -2816,5 +2816,16 @@
         "description": "Nastavenia súkromia, bezpečnostné nástroje a nahlasovanie obsahu."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Stránka sa nenašla | Vibely",
+    "eyebrow": "Túto stránku sa nepodarilo nájsť",
+    "title": "Pozrite si ďalšie populárne videá na Vibely",
+    "cta": "Pozrieť teraz",
+    "footerNav": "Odkazy v päte",
+    "supportLink": "Podpora",
+    "termsLink": "Zmluvné podmienky",
+    "privacyLink": "Zásady ochrany osobných údajov",
+    "copyright": "© {{year}} Vibely"
   }
 }

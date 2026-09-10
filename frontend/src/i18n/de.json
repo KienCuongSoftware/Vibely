@@ -2816,5 +2816,16 @@
         "description": "Datenschutzeinstellungen, Sicherheitstools und Melden von Inhalten."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Seite nicht gefunden | Vibely",
+    "eyebrow": "Diese Seite wurde nicht gefunden",
+    "title": "Weitere Trend-Videos auf Vibely ansehen",
+    "cta": "Jetzt ansehen",
+    "footerNav": "Fußzeilenlinks",
+    "supportLink": "Hilfe",
+    "termsLink": "Nutzungsbedingungen",
+    "privacyLink": "Datenschutzrichtlinie",
+    "copyright": "© {{year}} Vibely"
   }
 }

@@ -2816,5 +2816,16 @@
         "description": "गोपनीयता नियंत्रण, सुरक्षा उपकरण और सामग्री रिपोर्टिंग।"
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "पेज नहीं मिला | Vibely",
+    "eyebrow": "यह पेज नहीं मिल सका",
+    "title": "Vibely पर अन्य ट्रेंडिंग वीडियो देखें",
+    "cta": "अभी देखें",
+    "footerNav": "फ़ुटर लिंक",
+    "supportLink": "सहायता",
+    "termsLink": "सेवा की शर्तें",
+    "privacyLink": "गोपनीयता नीति",
+    "copyright": "© {{year}} Vibely"
   }
 }

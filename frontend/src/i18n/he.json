@@ -2816,5 +2816,16 @@
         "description": "בקרות פרטיות, כלי בטיחות ודיווח על תוכן."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "הדף לא נמצא | Vibely",
+    "eyebrow": "לא ניתן למצוא את הדף הזה",
+    "title": "צפו בסרטונים פופולריים אחרים ב-Vibely",
+    "cta": "צפו עכשיו",
+    "footerNav": "קישורי כותרת תחתונה",
+    "supportLink": "תמיכה",
+    "termsLink": "תנאי שירות",
+    "privacyLink": "מדיניות פרטיות",
+    "copyright": "© {{year}} Vibely"
   }
 }

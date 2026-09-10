@@ -341,6 +341,17 @@
       }
     }
   },
+  "notFoundPage": {
+    "pageTitle": "Page not found | Vibely",
+    "eyebrow": "Couldn't find this page",
+    "title": "Watch other trending videos on Vibely",
+    "cta": "Watch now",
+    "footerNav": "Footer links",
+    "supportLink": "Support",
+    "termsLink": "Terms of Service",
+    "privacyLink": "Privacy Policy",
+    "copyright": "© {{year}} Vibely"
+  },
   "messagesPage": {
     "title": "Messages",
     "pageTitle": "Messages | Vibely",

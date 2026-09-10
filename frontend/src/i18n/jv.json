@@ -2816,5 +2816,16 @@
         "description": "Kontrol privasi, alat keamanan, lan laporan konten."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Kaca ora ditemokake | Vibely",
+    "eyebrow": "Kaca iki ora bisa ditemokake",
+    "title": "Deleng video tren liyane ing Vibely",
+    "cta": "Deleng saiki",
+    "footerNav": "Pranala footer",
+    "supportLink": "Pitulung",
+    "termsLink": "Syarat Layanan",
+    "privacyLink": "Kebijakan Privasi",
+    "copyright": "© {{year}} Vibely"
   }
 }

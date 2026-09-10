@@ -2816,5 +2816,16 @@
         "description": "Controlli privacy, strumenti di sicurezza e segnalazione contenuti."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Pagina non trovata | Vibely",
+    "eyebrow": "Impossibile trovare questa pagina",
+    "title": "Guarda altri video di tendenza su Vibely",
+    "cta": "Guarda ora",
+    "footerNav": "Link del piè di pagina",
+    "supportLink": "Assistenza",
+    "termsLink": "Termini di servizio",
+    "privacyLink": "Informativa sulla privacy",
+    "copyright": "© {{year}} Vibely"
   }
 }

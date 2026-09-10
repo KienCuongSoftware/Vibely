@@ -2816,5 +2816,16 @@
         "description": "Controale de confidențialitate, instrumente de siguranță și raportare conținut."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Pagina nu a fost găsită | Vibely",
+    "eyebrow": "Această pagină nu a putut fi găsită",
+    "title": "Urmărește alte videoclipuri în tendințe pe Vibely",
+    "cta": "Urmărește acum",
+    "footerNav": "Linkuri subsol",
+    "supportLink": "Asistență",
+    "termsLink": "Termeni și condiții",
+    "privacyLink": "Politica de confidențialitate",
+    "copyright": "© {{year}} Vibely"
   }
 }

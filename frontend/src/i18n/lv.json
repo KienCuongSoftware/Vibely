@@ -2816,5 +2816,16 @@
         "description": "Privātuma kontroles, drošības rīki un satura ziņošana."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Lapa nav atrasta | Vibely",
+    "eyebrow": "Šo lapu nevarēja atrast",
+    "title": "Skatieties citus populārus video Vibely",
+    "cta": "Skatīties tagad",
+    "footerNav": "Kājenes saites",
+    "supportLink": "Atbalsts",
+    "termsLink": "Pakalpojuma noteikumi",
+    "privacyLink": "Privātuma politika",
+    "copyright": "© {{year}} Vibely"
   }
 }

@@ -2816,5 +2816,16 @@
         "description": "Adatvédelmi beállítások, biztonsági eszközök és tartalom jelentése."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Az oldal nem található | Vibely",
+    "eyebrow": "Ez az oldal nem található",
+    "title": "Nézz más népszerű videókat a Vibelyn",
+    "cta": "Megnézem",
+    "footerNav": "Lábléc linkek",
+    "supportLink": "Támogatás",
+    "termsLink": "Szolgáltatási feltételek",
+    "privacyLink": "Adatvédelmi szabályzat",
+    "copyright": "© {{year}} Vibely"
   }
 }

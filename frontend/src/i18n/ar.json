@@ -2816,5 +2816,16 @@
         "description": "ضوابط الخصوصية وأدوات الأمان والإبلاغ عن المحتوى."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "الصفحة غير موجودة | Vibely",
+    "eyebrow": "تعذر العثور على هذه الصفحة",
+    "title": "شاهد فيديوهات رائجة أخرى على Vibely",
+    "cta": "شاهد الآن",
+    "footerNav": "روابط التذييل",
+    "supportLink": "الدعم",
+    "termsLink": "شروط الخدمة",
+    "privacyLink": "سياسة الخصوصية",
+    "copyright": "© {{year}} Vibely"
   }
 }

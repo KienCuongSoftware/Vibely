@@ -2816,5 +2816,16 @@
         "description": "Kawalan privasi, alat keselamatan dan pelaporan kandungan."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Halaman tidak dijumpai | Vibely",
+    "eyebrow": "Halaman ini tidak dapat dijumpai",
+    "title": "Tonton video tren lain di Vibely",
+    "cta": "Tonton sekarang",
+    "footerNav": "Pautan pengaki",
+    "supportLink": "Sokongan",
+    "termsLink": "Syarat Perkhidmatan",
+    "privacyLink": "Dasar Privasi",
+    "copyright": "© {{year}} Vibely"
   }
 }

@@ -2816,5 +2816,16 @@
         "description": "Privatlivskontroller, sikkerhedsværktøjer og anmeldelse af indhold."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Siden blev ikke fundet | Vibely",
+    "eyebrow": "Denne side kunne ikke findes",
+    "title": "Se andre populære videoer på Vibely",
+    "cta": "Se nu",
+    "footerNav": "Sidefodslinks",
+    "supportLink": "Support",
+    "termsLink": "Servicevilkår",
+    "privacyLink": "Privatlivspolitik",
+    "copyright": "© {{year}} Vibely"
   }
 }

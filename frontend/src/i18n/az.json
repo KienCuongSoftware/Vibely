@@ -2816,5 +2816,16 @@
         "description": "Məxfilik nəzarətləri, təhlükəsizlik alətləri və məzmun bildirişi."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Səhifə tapılmadı | Vibely",
+    "eyebrow": "Bu səhifə tapılmadı",
+    "title": "Vibely-də digər trend videolara baxın",
+    "cta": "İndi izlə",
+    "footerNav": "Alt keçidlər",
+    "supportLink": "Dəstək",
+    "termsLink": "Xidmət Şərtləri",
+    "privacyLink": "Məxfilik Siyasəti",
+    "copyright": "© {{year}} Vibely"
   }
 }

@@ -2816,5 +2816,16 @@
         "description": "Nadzor zasebnosti, varnostna orodja in prijava vsebine."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Strani ni mogoče najti | Vibely",
+    "eyebrow": "Te strani ni bilo mogoče najti",
+    "title": "Oglejte si druge priljubljene videoposnetke na Vibely",
+    "cta": "Oglej si zdaj",
+    "footerNav": "Povezave v nogi",
+    "supportLink": "Podpora",
+    "termsLink": "Pogoji storitve",
+    "privacyLink": "Pravilnik o zasebnosti",
+    "copyright": "© {{year}} Vibely"
   }
 }

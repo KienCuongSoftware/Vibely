@@ -2816,5 +2816,16 @@
         "description": "Persónuverndarstillingar, öryggistæði og tilkynning efnis."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Síða fannst ekki | Vibely",
+    "eyebrow": "Þessi síða fannst ekki",
+    "title": "Horfa á önnur vinsæl myndbönd á Vibely",
+    "cta": "Horfa núna",
+    "footerNav": "Tenglar í síðufót",
+    "supportLink": "Aðstoð",
+    "termsLink": "Þjónustuskilmálar",
+    "privacyLink": "Persónuverndarstefna",
+    "copyright": "© {{year}} Vibely"
   }
 }

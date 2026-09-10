@@ -2816,5 +2816,16 @@
         "description": "개인정보 설정, 안전 도구 및 콘텐츠 신고."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "페이지를 찾을 수 없음 | Vibely",
+    "eyebrow": "이 페이지를 찾을 수 없습니다",
+    "title": "Vibely에서 다른 인기 동영상을 시청하세요",
+    "cta": "지금 시청",
+    "footerNav": "푸터 링크",
+    "supportLink": "고객지원",
+    "termsLink": "서비스 약관",
+    "privacyLink": "개인정보 처리방침",
+    "copyright": "© {{year}} Vibely"
   }
 }

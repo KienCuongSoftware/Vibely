@@ -2816,5 +2816,16 @@
         "description": "Privaatsuse seaded, turvavahendid ja sisu teavitamine."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Lehte ei leitud | Vibely",
+    "eyebrow": "Seda lehte ei õnnestunud leida",
+    "title": "Vaata teisi populaarseid videoid Vibely's",
+    "cta": "Vaata kohe",
+    "footerNav": "Jaluse lingid",
+    "supportLink": "Tugi",
+    "termsLink": "Teenuse tingimused",
+    "privacyLink": "Privaatsuspoliitika",
+    "copyright": "© {{year}} Vibely"
   }
 }

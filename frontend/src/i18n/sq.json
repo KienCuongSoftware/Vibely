@@ -2816,5 +2816,16 @@
         "description": "Kontrolle privatësie, mjete sigurie dhe raportim përmbajtjeje."
       }
     }
+  },
+  "notFoundPage": {
+    "pageTitle": "Faqja nuk u gjet | Vibely",
+    "eyebrow": "Kjo faqe nuk mund të gjendej",
+    "title": "Shiko video të tjera në trend në Vibely",
+    "cta": "Shiko tani",
+    "footerNav": "Lidhjet e fundfaqes",
+    "supportLink": "Ndihmë",
+    "termsLink": "Kushtet e Shërbimit",
+    "privacyLink": "Politika e privatësisë",
+    "copyright": "© {{year}} Vibely"
   }
 }
