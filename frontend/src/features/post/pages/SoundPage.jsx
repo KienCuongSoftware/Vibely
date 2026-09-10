@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { BiDotsVerticalRounded } from 'react-icons/bi'
-import { IoHeart, IoMusicalNotes, IoPause, IoPlay } from 'react-icons/io5'
+import { IoHeartOutline, IoMusicalNotes, IoPause, IoPlay } from 'react-icons/io5'
 import Hls from 'hls.js'
 import { apiClient } from '@/shared/api/client'
 import { useAuth } from '@/features/auth/hooks/useAuth'
@@ -461,7 +461,7 @@ export function SoundGridVideoCard({
       {isExplore ? (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-linear-to-t from-black/70 via-black/20 to-transparent px-2.5 pb-2 pt-8">
           <div className="inline-flex items-center gap-1 text-[13px] font-semibold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
-            <IoHeart className="text-[15px]" aria-hidden />
+            <IoHeartOutline className="text-[15px]" aria-hidden />
             <span>{likeLabel}</span>
           </div>
         </div>
