@@ -24,6 +24,7 @@ const STATUS_OPTIONS = [
   { value: "FAILED", labelKey: "admin.status.failed" },
   { value: "REPORTED", labelKey: "admin.status.reported" },
   { value: "HIDDEN", labelKey: "admin.status.hidden" },
+  { value: "REMOVED", labelKey: "admin.status.removed" },
 ];
 
 function statusLabel(status, t) {

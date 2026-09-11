@@ -105,7 +105,7 @@ public class AdminPostService {
         Video video = videoRepository.findWithAuthorByPublicId(publicId)
             .orElseThrow(() -> new NotFoundException("Post not found"));
 
-        // Already soft-removed: purge DB row so it disappears from admin list.
+        // Already soft-removed: purge DB row (visible under status=REMOVED filter).
         // S3 wipe is best-effort (media may already be missing).
         if (video.getStatus() == VideoStatus.REMOVED) {
             purgePermanently(video);
@@ -113,7 +113,7 @@ public class AdminPostService {
         }
 
         cancelProcessingJob(video.getId());
-        // Soft-remove first: hide from profile/public URL, keep S3 for admin review.
+        // Soft-remove: hide from profile/public URL and default admin list; keep row for purge.
         video.setStatus(VideoStatus.REMOVED);
         videoRepository.save(video);
         notificationService.purgeForRemovedVideo(video.getId());
