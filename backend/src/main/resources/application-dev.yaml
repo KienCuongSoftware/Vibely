@@ -101,9 +101,11 @@ app:
   antibot:
     enabled: true
     # Off by default in local/dev so Selenium E2E can login without slider captcha.
-    # Re-enable: ANTIBOT_AUTH_PROTECTION_ENABLED=true
+    # Production VPS (often still profile=dev): set both env vars true in vibely.env.
+    #   ANTIBOT_AUTH_PROTECTION_ENABLED=true
+    #   ANTIBOT_ALWAYS_REQUIRE_CAPTCHA_ON_AUTH=true
     auth-protection-enabled: ${ANTIBOT_AUTH_PROTECTION_ENABLED:false}
-    always-require-captcha-on-auth: false
+    always-require-captcha-on-auth: ${ANTIBOT_ALWAYS_REQUIRE_CAPTCHA_ON_AUTH:false}
     hmac-secret: ${ANTIBOT_HMAC_SECRET:vibely-antibot-dev-secret}
     captcha-ttl-seconds: 120
     verification-token-ttl-seconds: 300

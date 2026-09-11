@@ -253,7 +253,8 @@ public class AuthProtectionService {
         }
 
         if (properties.isAlwaysRequireCaptchaOnAuth()) {
-            merged = maxLevel(merged, ChallengeLevel.CHECKBOX);
+            // Login/register always need interactive drag (slider), not checkbox-only.
+            merged = maxLevel(merged, ChallengeLevel.SLIDER);
         }
 
         return merged;

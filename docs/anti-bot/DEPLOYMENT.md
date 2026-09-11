@@ -12,6 +12,8 @@
 | Variable | Description |
 |----------|-------------|
 | `ANTIBOT_HMAC_SECRET` | HMAC key for challenge + verification tokens |
+| `ANTIBOT_AUTH_PROTECTION_ENABLED` | `true` to guard login/register with captcha (dev profile defaults `false` for E2E) |
+| `ANTIBOT_ALWAYS_REQUIRE_CAPTCHA_ON_AUTH` | `true` to always require **slider** on login/register |
 | `SPRING_DATA_REDIS_HOST` | Redis host |
 | `DB_PASSWORD` | PostgreSQL password |
 

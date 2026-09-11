@@ -56,6 +56,14 @@ app:
     frontend-failure-url: ${FRONTEND_BASE_URL:https://www.vibely.sbs}/login
   mail:
     expose-code-in-api: false
+  antibot:
+    enabled: true
+    auth-protection-enabled: ${ANTIBOT_AUTH_PROTECTION_ENABLED:true}
+    always-require-captcha-on-auth: ${ANTIBOT_ALWAYS_REQUIRE_CAPTCHA_ON_AUTH:true}
+    hmac-secret: ${ANTIBOT_HMAC_SECRET}
+    captcha-ttl-seconds: 120
+    verification-token-ttl-seconds: 300
+    kafka-enabled: false
   discovery:
     open-ai-enabled: ${DISCOVERY_OPENAI_ENABLED:true}
     open-ai-api-key: ${OPENAI_API_KEY:}
