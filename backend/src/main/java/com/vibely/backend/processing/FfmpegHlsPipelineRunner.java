@@ -671,6 +671,8 @@ public class FfmpegHlsPipelineRunner {
             }
             cmd.add("-c:a");
             cmd.add("aac");
+            cmd.add("-profile:a");
+            cmd.add("aac_low");
             cmd.add("-b:a");
             cmd.add(audioPlan.audioBitrateArg());
             cmd.add("-ar");

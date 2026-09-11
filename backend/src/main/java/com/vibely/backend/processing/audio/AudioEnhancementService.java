@@ -2,6 +2,7 @@ package com.vibely.backend.processing.audio;
 
 import com.vibely.backend.processing.ProcessingProperties;
 import java.nio.file.Path;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -44,7 +45,7 @@ public class AudioEnhancementService {
 
         if (!audio.isEnabled()) {
             log.info("audio enhancement disabled in config; passthrough AAC encode");
-            return AudioProcessingResult.passthrough("enhancement disabled");
+            return AudioProcessingResult.passthrough("enhancement disabled", bitrate, sampleRate);
         }
 
         long started = System.nanoTime();
@@ -52,17 +53,21 @@ public class AudioEnhancementService {
             AudioAnalysisSnapshot snapshot = profileAnalyzer.analyze(input, workDir);
             if (!snapshot.hasAudioStream()) {
                 log.info("audio plan: no audio stream; encode without -af");
-                return AudioProcessingResult.noAudioStream();
+                return AudioProcessingResult.noAudioStream(bitrate, sampleRate);
             }
 
             AudioMasteringProfile profile = profileAnalyzer.selectProfile(snapshot);
-            String filterChain = filterBuilder.buildFilterChain(profile);
+            String preLoudnorm = filterBuilder.buildMasteringChainWithoutLoudnorm(profile);
+            Optional<LoudnessNormalizationService.LoudnormMeasurement> measured =
+                loudnessNormalizationService.measure(input, workDir, preLoudnorm);
+            String filterChain = filterBuilder.buildFilterChain(profile, measured.orElse(null));
             long ms = (System.nanoTime() - started) / 1_000_000;
 
             log.info(
-                "audio plan: profile={} LUFS={} TP={}dB bitrate={}k sampleRate={}Hz "
+                "audio plan: profile={} loudnorm={} LUFS={} TP={}dB bitrate={}k sampleRate={}Hz "
                     + "channels={} durationSec={} meanVol={} maxVol={} filterChain={} analysisMs={}",
                 profile,
+                measured.isPresent() ? "two-pass" : "single-pass",
                 lufs,
                 tp,
                 bitrate,
@@ -81,7 +86,11 @@ public class AudioEnhancementService {
                 "audio enhancement planning failed; falling back to passthrough AAC (video job continues): {}",
                 e.toString()
             );
-            return AudioProcessingResult.passthrough("planning failed: " + e.getMessage());
+            return AudioProcessingResult.passthrough(
+                "planning failed: " + e.getMessage(),
+                bitrate,
+                sampleRate
+            );
         }
     }
 }

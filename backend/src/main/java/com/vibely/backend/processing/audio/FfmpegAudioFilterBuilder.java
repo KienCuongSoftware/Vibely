@@ -21,12 +21,28 @@ public class FfmpegAudioFilterBuilder {
         this.mobileSpeakerOptimizer = mobileSpeakerOptimizer;
     }
 
+    /** Full chain including loudnorm (single-pass fallback or two-pass when measured). */
     public String buildFilterChain(AudioMasteringProfile profile) {
+        return buildFilterChain(profile, null);
+    }
+
+    public String buildFilterChain(
+        AudioMasteringProfile profile,
+        LoudnessNormalizationService.LoudnormMeasurement measurement
+    ) {
+        String core = buildMasteringChainWithoutLoudnorm(profile);
+        String loudnorm = measurement == null
+            ? loudnessNormalizationService.loudnormFilterSegment()
+            : loudnessNormalizationService.loudnormFilterSegment(measurement);
+        return core + "," + loudnorm;
+    }
+
+    /** EQ + dynamics only — used for loudnorm measure pass and final chain assembly. */
+    public String buildMasteringChainWithoutLoudnorm(AudioMasteringProfile profile) {
         List<String> segments = new ArrayList<>();
         segments.addAll(profileCoreSegments(profile));
         segments.add(mobileSpeakerOptimizer.mobileEqSegments(profile));
         segments.addAll(dynamicsSegments(profile));
-        segments.add(loudnessNormalizationService.loudnormFilterSegment());
         return String.join(",", segments);
     }
 
@@ -34,29 +50,28 @@ public class FfmpegAudioFilterBuilder {
         return switch (profile) {
             case SPEECH -> List.of(
                 "highpass=f=100",
-                "equalizer=f=250:t=q:w=1:g=1.5",
-                "equalizer=f=3500:t=q:w=1:g=4"
+                "equalizer=f=250:t=q:w=1:g=1.2",
+                "equalizer=f=3000:t=q:w=1:g=3",
+                "equalizer=f=6000:t=q:w=1.2:g=1"
             );
             case MUSIC -> List.of(
-                // Punchier bass + presence, light early reflection for “TikTok room” feel.
-                "highpass=f=60",
-                "equalizer=f=90:t=q:w=1:g=1.5",
-                "equalizer=f=220:t=q:w=1:g=3",
-                "equalizer=f=3200:t=q:w=1:g=2.5",
-                "equalizer=f=8000:t=q:w=1:g=1.5",
-                "aecho=0.8:0.88:55:0.18"
+                "highpass=f=55",
+                "equalizer=f=90:t=q:w=1:g=2",
+                "equalizer=f=220:t=q:w=1:g=2",
+                "equalizer=f=3200:t=q:w=1:g=2",
+                "equalizer=f=10000:t=q:w=1:g=1.5"
             );
             case CINEMATIC -> List.of(
-                "highpass=f=50",
-                "equalizer=f=200:t=q:w=1:g=1.5",
-                "equalizer=f=4000:t=q:w=1:g=2.5",
-                "aecho=0.8:0.9:80:0.15"
+                "highpass=f=45",
+                "equalizer=f=180:t=q:w=1:g=1.2",
+                "equalizer=f=3500:t=q:w=1:g=2",
+                "equalizer=f=9000:t=q:w=1:g=1"
             );
             case DEFAULT -> List.of(
                 "highpass=f=80",
-                "equalizer=f=250:t=q:w=1:g=2.5",
-                "equalizer=f=3500:t=q:w=1:g=3.5",
-                "aecho=0.8:0.9:45:0.12"
+                "equalizer=f=220:t=q:w=1:g=1.5",
+                "equalizer=f=3200:t=q:w=1:g=2.5",
+                "equalizer=f=8000:t=q:w=1.2:g=1.2"
             );
         };
     }
@@ -64,20 +79,20 @@ public class FfmpegAudioFilterBuilder {
     private static List<String> dynamicsSegments(AudioMasteringProfile profile) {
         return switch (profile) {
             case SPEECH -> List.of(
-                "acompressor=threshold=-20dB:ratio=2.5:attack=15:release=120",
-                "alimiter=limit=-1dB"
+                "acompressor=threshold=-18dB:ratio=2.2:attack=12:release=100:makeup=1",
+                "alimiter=limit=-1.5dB"
             );
             case MUSIC -> List.of(
-                "acompressor=threshold=-16dB:ratio=3.5:attack=18:release=140",
-                "alimiter=limit=-1dB"
+                "acompressor=threshold=-18dB:ratio=2.8:attack=20:release=160:makeup=1",
+                "alimiter=limit=-1.5dB"
             );
             case CINEMATIC -> List.of(
-                "acompressor=threshold=-20dB:ratio=2.2:attack=25:release=200",
-                "alimiter=limit=-1dB"
+                "acompressor=threshold=-20dB:ratio=2:attack=28:release=220:makeup=1",
+                "alimiter=limit=-1.5dB"
             );
             case DEFAULT -> List.of(
-                "acompressor=threshold=-17dB:ratio=3.2:attack=18:release=140",
-                "alimiter=limit=-1dB"
+                "acompressor=threshold=-18dB:ratio=2.6:attack=18:release=140:makeup=1",
+                "alimiter=limit=-1.5dB"
             );
         };
     }

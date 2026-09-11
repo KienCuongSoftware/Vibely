@@ -14,30 +14,34 @@ public record AudioProcessingResult(
     int sampleRateHz,
     String notes
 ) {
-    public static AudioProcessingResult noAudioStream() {
+    public static AudioProcessingResult noAudioStream(int audioBitrateKbps, int sampleRateHz) {
         return new AudioProcessingResult(
             false,
             false,
             AudioMasteringProfile.DEFAULT,
             "",
             -12.0,
-            -1.0,
-            128,
-            48_000,
+            -1.5,
+            audioBitrateKbps,
+            sampleRateHz,
             "no audio stream"
         );
     }
 
-    public static AudioProcessingResult passthrough(String reason) {
+    public static AudioProcessingResult passthrough(
+        String reason,
+        int audioBitrateKbps,
+        int sampleRateHz
+    ) {
         return new AudioProcessingResult(
             false,
             true,
             AudioMasteringProfile.DEFAULT,
             "",
             -12.0,
-            -1.0,
-            128,
-            48_000,
+            -1.5,
+            audioBitrateKbps,
+            sampleRateHz,
             reason
         );
     }

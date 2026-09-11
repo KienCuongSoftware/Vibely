@@ -282,8 +282,12 @@ public class VideoWatermarkDownloadService {
         cmd.add("23");
         cmd.add("-c:a");
         cmd.add("aac");
+        cmd.add("-profile:a");
+        cmd.add("aac_low");
         cmd.add("-b:a");
-        cmd.add("128k");
+        cmd.add(processingProperties.getAudio().getBitrateKbps() + "k");
+        cmd.add("-ar");
+        cmd.add(String.valueOf(processingProperties.getAudio().getSampleRateHz()));
         cmd.add("-movflags");
         cmd.add("+faststart");
         cmd.add(output.toAbsolutePath().toString());
