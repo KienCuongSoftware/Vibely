@@ -58,8 +58,71 @@
     <meta name="twitter:image:alt" content="Vibely" />
     <title>Vibely - Make Your Day</title>
     <script src="/theme-boot.js"></script>
+    <style>
+      #vibely-boot-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: min(28vh, 240px);
+        background: #ffffff;
+        transition: opacity 0.28s ease, visibility 0.28s ease;
+      }
+      html[data-vibely-theme="dark"] #vibely-boot-splash {
+        background: #000000;
+      }
+      #vibely-boot-splash.is-done {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      #vibely-boot-splash .vibely-boot-mark {
+        width: 72px;
+        height: auto;
+        display: block;
+        overflow: visible;
+      }
+      #vibely-boot-splash .vibely-splash-note-fill {
+        fill: #111111;
+      }
+      html[data-vibely-theme="dark"] #vibely-boot-splash .vibely-splash-note-fill {
+        fill: #ffffff;
+      }
+    </style>
   </head>
   <body>
+    <div id="vibely-boot-splash" role="status" aria-live="polite" aria-label="Vibely">
+      <svg
+        class="vibely-boot-mark"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 280 420"
+        width="72"
+        height="108"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <defs>
+          <g id="vibely-splash-note">
+            <ellipse cx="128" cy="336" rx="92" ry="78" />
+            <rect x="186" y="96" width="32" height="256" rx="14" />
+            <path
+              d="M 218 104 C 304 128 320 196 278 236 C 260 254 240 264 232 268 L 232 244 C 248 238 264 228 272 216 C 290 192 282 154 218 138 Z"
+            />
+          </g>
+        </defs>
+        <g transform="translate(10 0)">
+          <use href="#vibely-splash-note" fill="#25F4EE" transform="translate(-7 -5)" />
+          <use href="#vibely-splash-note" fill="#FE2C55" transform="translate(7 5)" />
+          <use
+            class="vibely-splash-note-fill"
+            href="#vibely-splash-note"
+            transform="translate(0 0)"
+          />
+        </g>
+      </svg>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/app/main.jsx"></script>
   </body>
