@@ -1,18 +1,64 @@
 package com.vibely.backend.auth.mail;
 
-/**
- * Transactional email copy is currently EN or VI.
- * Other UI locales fall back to English until more templates exist.
- */
-public enum EmailLocale {
-    EN,
-    VI;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
 
-    public boolean vietnamese() {
-        return this == VI;
+/** UI language tag used to pick transactional email copy (e.g. en, vi, zh-Hans). */
+public final class EmailLocale {
+
+    public static final EmailLocale EN = new EmailLocale("en");
+
+    private static final Set<String> RTL = Set.of("ar", "he", "ur");
+
+    private final String tag;
+
+    private EmailLocale(String tag) {
+        this.tag = tag;
+    }
+
+    public static EmailLocale of(String tag) {
+        if (tag == null || tag.isBlank()) {
+            return EN;
+        }
+        return new EmailLocale(tag);
+    }
+
+    public String tag() {
+        return tag;
     }
 
     public String htmlLang() {
-        return vietnamese() ? "vi" : "en";
+        return tag;
+    }
+
+    public boolean rtl() {
+        String language = tag.contains("-") ? tag.substring(0, tag.indexOf('-')) : tag;
+        return RTL.contains(language.toLowerCase(Locale.ROOT));
+    }
+
+    public Locale toJavaLocale() {
+        return Locale.forLanguageTag(tag);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof EmailLocale other)) {
+            return false;
+        }
+        return tag.equalsIgnoreCase(other.tag);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(tag.toLowerCase(Locale.ROOT));
+    }
+
+    @Override
+    public String toString() {
+        return tag;
     }
 }

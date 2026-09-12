@@ -50,20 +50,13 @@ public final class VibelyEmailLayout {
         String footerRecipient = footerUsername == null || footerUsername.isBlank()
             ? ""
             : "<div>"
-                + EmailLocales.pick(
-                    resolved,
-                    "This email was generated for @" + escapeHtml(footerUsername) + ".",
-                    "Email này được gửi cho @" + escapeHtml(footerUsername) + "."
-                )
+                + MailCopy.get(resolved, "layout.generatedFor", escapeHtml(footerUsername))
                 + "</div>";
-        String automated = EmailLocales.pick(
-            resolved,
-            "This is an automated email, please do not reply.",
-            "Đây là email tự động, vui lòng không trả lời."
-        );
+        String automated = MailCopy.get(resolved, "layout.automated");
+        String dir = resolved.rtl() ? "rtl" : "ltr";
         return """
             <!DOCTYPE html>
-            <html lang="%s">
+            <html lang="%s" dir="%s">
             <head>
               <meta charset="UTF-8" />
               <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -100,6 +93,7 @@ public final class VibelyEmailLayout {
             </html>
             """.formatted(
                 resolved.htmlLang(),
+                dir,
                 safeTitle,
                 colorBarHtml(),
                 bodyRowsHtml,

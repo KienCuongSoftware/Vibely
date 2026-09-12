@@ -108,26 +108,27 @@ public class AccountBanAppealEmailService {
     }
 
     private String buildDecisionSubject(BanAppealStatus status, EmailLocale locale) {
-        return "[Vibely] "
-            + EmailLocales.pick(locale, "Appeal result — ", "Kết quả khiếu nại — ")
-            + statusLabel(status, locale);
+        return "[Vibely] " + MailCopy.get(locale, "appeal.subjectPrefix") + statusLabel(status, locale);
     }
 
     private String buildDecisionPlainText(BanAppeal appeal, String displayName, EmailLocale locale) {
         StringBuilder body = new StringBuilder();
-        body.append(EmailLocales.pick(locale, "Hello, ", "Xin chào, "))
+        body.append(MailCopy.get(locale, "appeal.helloComma"))
+            .append(' ')
             .append(resolveDisplayName(displayName, locale))
             .append(",\n\n");
-        body.append(EmailLocales.pick(locale, "We have updated your appeal result.\n\n", "Chúng tôi đã cập nhật kết quả khiếu nại của bạn.\n\n"));
-        body.append(EmailLocales.pick(locale, "Status: ", "Trạng thái: "))
+        body.append(MailCopy.get(locale, "appeal.updated")).append("\n\n");
+        body.append(MailCopy.get(locale, "common.status"))
+            .append(": ")
             .append(statusLabel(appeal.getStatus(), locale))
             .append('\n');
         body.append(statusExplanation(appeal.getStatus(), locale)).append("\n\n");
         if (StringUtils.hasText(appeal.getAdminNotes())) {
-            body.append(EmailLocales.pick(locale, "Note from the Vibely team:\n", "Ghi chú từ đội ngũ Vibely:\n"));
+            body.append(MailCopy.get(locale, "appeal.notes")).append('\n');
             body.append(appeal.getAdminNotes().trim()).append("\n\n");
         }
-        body.append(EmailLocales.pick(locale, "If you have questions, please contact ", "Nếu có thắc mắc, hãy liên hệ "))
+        body.append(MailCopy.get(locale, "common.contactSupportTo"))
+            .append(' ')
             .append(VibelyEmailLayout.SUPPORT_EMAIL)
             .append(".\n\n");
         body.append("Vibely");
@@ -140,20 +141,18 @@ public class AccountBanAppealEmailService {
                 <p style="margin:0 0 8px;"><strong>%s</strong></p>
                 <p style="margin:0 0 16px;white-space:pre-wrap;background:#f7f7f8;border-radius:10px;padding:16px 18px;color:#4b5563;">%s</p>
                 """.formatted(
-                    EmailLocales.pick(locale, "Note from the Vibely team:", "Ghi chú từ đội ngũ Vibely:"),
+                    MailCopy.get(locale, "appeal.notes"),
                     VibelyEmailLayout.escapeHtml(appeal.getAdminNotes().trim())
                 )
             : "";
 
-        String bodyRows = VibelyEmailLayout.headingRow(
-            EmailLocales.pick(locale, "Appeal result", "Kết quả khiếu nại")
-        ) + """
+        String bodyRows = VibelyEmailLayout.headingRow(MailCopy.get(locale, "appeal.heading")) + """
             <tr>
               <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
                 <p style="margin:0 0 16px;">%s <strong>%s</strong>,</p>
                 <p style="margin:0 0 16px;">%s</p>
                 <div style="margin:0 0 16px;background:#f7f7f8;border-radius:10px;padding:18px 20px;font-size:14px;line-height:1.7;color:#4b5563;">
-                  <div>%s <strong style="color:#161823;">%s</strong></div>
+                  <div>%s: <strong style="color:#161823;">%s</strong></div>
                 </div>
                 <p style="margin:0 0 16px;">%s</p>
                 %s
@@ -161,14 +160,14 @@ public class AccountBanAppealEmailService {
               </td>
             </tr>
             """.formatted(
-            EmailLocales.pick(locale, "Hello,", "Xin chào,"),
+            MailCopy.get(locale, "appeal.helloComma"),
             VibelyEmailLayout.escapeHtml(resolveDisplayName(displayName, locale)),
-            EmailLocales.pick(locale, "We have updated your appeal result.", "Chúng tôi đã cập nhật kết quả khiếu nại của bạn."),
-            EmailLocales.pick(locale, "Status:", "Trạng thái:"),
+            MailCopy.get(locale, "appeal.updated"),
+            MailCopy.get(locale, "common.status"),
             VibelyEmailLayout.escapeHtml(statusLabel(appeal.getStatus(), locale)),
             VibelyEmailLayout.escapeHtml(statusExplanation(appeal.getStatus(), locale)),
             notesBlock,
-            EmailLocales.pick(locale, "If you have questions, please contact", "Nếu có thắc mắc, hãy liên hệ"),
+            MailCopy.get(locale, "common.contactSupportTo"),
             VibelyEmailLayout.supportEmailLink()
         );
         return VibelyEmailLayout.document(buildDecisionSubject(appeal.getStatus(), locale), bodyRows, "", locale);
@@ -222,13 +221,13 @@ public class AccountBanAppealEmailService {
 
     private static String statusLabel(BanAppealStatus status, EmailLocale locale) {
         if (status == null) {
-            return EmailLocales.pick(locale, "Unknown", "Không rõ");
+            return MailCopy.get(locale, "appeal.statusUnknown");
         }
         return switch (status) {
-            case PENDING -> EmailLocales.pick(locale, "Pending", "Đang chờ");
-            case IN_REVIEW -> EmailLocales.pick(locale, "Under review", "Đang xem xét");
-            case APPROVED -> EmailLocales.pick(locale, "Approved", "Đã chấp nhận");
-            case REJECTED -> EmailLocales.pick(locale, "Rejected", "Đã từ chối");
+            case PENDING -> MailCopy.get(locale, "appeal.pending");
+            case IN_REVIEW -> MailCopy.get(locale, "appeal.inReview");
+            case APPROVED -> MailCopy.get(locale, "appeal.approved");
+            case REJECTED -> MailCopy.get(locale, "appeal.rejected");
         };
     }
 
@@ -237,18 +236,10 @@ public class AccountBanAppealEmailService {
             return "";
         }
         return switch (status) {
-            case PENDING -> EmailLocales.pick(locale, "Your appeal is pending review.", "Khiếu nại của bạn đang chờ xem xét.");
-            case IN_REVIEW -> EmailLocales.pick(locale, "The Vibely team is reviewing your appeal.", "Đội ngũ Vibely đang xem xét khiếu nại của bạn.");
-            case APPROVED -> EmailLocales.pick(
-                locale,
-                "Your appeal was approved. Your account has been unlocked and you can log in again.",
-                "Khiếu nại của bạn đã được chấp nhận. Tài khoản đã được mở khóa và bạn có thể đăng nhập lại."
-            );
-            case REJECTED -> EmailLocales.pick(
-                locale,
-                "Your appeal was rejected. The account remains restricted under Vibely community standards.",
-                "Khiếu nại của bạn đã bị từ chối. Tài khoản vẫn bị hạn chế theo tiêu chuẩn cộng đồng Vibely."
-            );
+            case PENDING -> MailCopy.get(locale, "appeal.explPending");
+            case IN_REVIEW -> MailCopy.get(locale, "appeal.explReview");
+            case APPROVED -> MailCopy.get(locale, "appeal.explApproved");
+            case REJECTED -> MailCopy.get(locale, "appeal.explRejected");
         };
     }
 
@@ -256,6 +247,6 @@ public class AccountBanAppealEmailService {
         if (StringUtils.hasText(displayName)) {
             return displayName.trim();
         }
-        return EmailLocales.pick(locale, "you", "bạn");
+        return MailCopy.get(locale, "common.you");
     }
 }

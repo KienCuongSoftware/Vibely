@@ -2,6 +2,7 @@ package com.vibely.backend.auth.context;
 
 import com.vibely.backend.auth.mail.EmailLocale;
 import com.vibely.backend.auth.mail.EmailLocales;
+import com.vibely.backend.auth.mail.MailCopy;
 import com.vibely.backend.auth.mail.OtpMailProperties;
 import com.vibely.backend.auth.mail.VibelyEmailLayout;
 import com.vibely.backend.user.entity.User;
@@ -10,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -24,10 +24,6 @@ import org.springframework.stereotype.Service;
 public class SecurityLoginEmailService {
 
     private static final Logger log = LoggerFactory.getLogger(SecurityLoginEmailService.class);
-    private static final DateTimeFormatter EN_TIME =
-        DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm 'UTC'", Locale.ENGLISH);
-    private static final DateTimeFormatter VI_TIME =
-        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm 'UTC'", Locale.forLanguageTag("vi-VN"));
 
     private final OtpMailProperties mailProperties;
     private final ObjectProvider<JavaMailSender> mailSenderProvider;
@@ -59,7 +55,7 @@ public class SecurityLoginEmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
             helper.setFrom(resolveFromAddress(), mailProperties.getFromName());
             helper.setTo(user.getEmail());
-            helper.setSubject(EmailLocales.pick(locale(user), "Vibely login alert", "Cảnh báo đăng nhập Vibely"));
+            helper.setSubject(MailCopy.get(locale(user), "login.subject"));
             helper.setText(plainBody(user, context, risk), htmlBody(user, context, risk));
             mailSender.send(message);
         } catch (Exception ex) {
@@ -70,12 +66,10 @@ public class SecurityLoginEmailService {
     private String htmlBody(User user, LoginContext context, LoginRiskResult risk) {
         EmailLocale locale = locale(user);
         String time = formatTime(locale);
-        String device = escape(context.getBrowser() + " on " + context.getOperatingSystem());
-        String location = escape(displayLocation(context, locale)).replace("\n", "<br />");
-        String reasons = escape(String.join(", ", risk.reasons()));
-        String bodyRows = VibelyEmailLayout.headingRow(
-            EmailLocales.pick(locale, "New login detected", "Phát hiện đăng nhập mới")
-        ) + """
+        String device = escape(context.getBrowser() + " on " + context.getOperatingSystem(), locale);
+        String location = escape(displayLocation(context, locale), locale).replace("\n", "<br />");
+        String reasons = escape(String.join(", ", risk.reasons()), locale);
+        String bodyRows = VibelyEmailLayout.headingRow(MailCopy.get(locale, "login.heading")) + """
             <tr>
               <td style="padding:0 56px 8px;font-size:15px;line-height:1.7;color:#161823;">
                 <p style="margin:0 0 18px;">%s <strong>%s</strong>, %s <strong>%s</strong>.</p>
@@ -98,28 +92,24 @@ public class SecurityLoginEmailService {
               </td>
             </tr>
             """.formatted(
-                EmailLocales.pick(locale, "Hello", "Xin chào"),
-                escape(user.getUsername()),
-                EmailLocales.pick(locale, "we detected a login with new signals:", "chúng tôi phát hiện đăng nhập với tín hiệu mới:"),
+                MailCopy.get(locale, "common.hello"),
+                escape(user.getUsername(), locale),
+                MailCopy.get(locale, "login.detectedSignals"),
                 reasons,
-                EmailLocales.pick(locale, "Time", "Thời gian"),
+                MailCopy.get(locale, "common.time"),
                 time,
-                EmailLocales.pick(locale, "Location", "Vị trí"),
+                MailCopy.get(locale, "common.location"),
                 location,
-                EmailLocales.pick(locale, "Device", "Thiết bị"),
+                MailCopy.get(locale, "common.device"),
                 device,
-                EmailLocales.pick(
-                    locale,
-                    "If this was you, you can ignore this email. If it was not you, change your password immediately and review account activity.",
-                    "Nếu đây là bạn, hãy bỏ qua email này. Nếu không phải bạn, hãy đổi mật khẩu ngay và kiểm tra hoạt động tài khoản."
-                ),
+                MailCopy.get(locale, "login.ignoreOrChange"),
                 frontendBaseUrl,
-                EmailLocales.pick(locale, "Open Vibely security settings", "Mở cài đặt bảo mật Vibely"),
-                EmailLocales.pick(locale, "Contact support:", "Liên hệ hỗ trợ:"),
+                MailCopy.get(locale, "login.openSettings"),
+                MailCopy.get(locale, "common.contactSupport"),
                 VibelyEmailLayout.supportEmailLink()
             );
         return VibelyEmailLayout.document(
-            EmailLocales.pick(locale, "Vibely login alert", "Cảnh báo đăng nhập Vibely"),
+            MailCopy.get(locale, "login.subject"),
             bodyRows,
             user.getUsername(),
             locale
@@ -139,21 +129,17 @@ public class SecurityLoginEmailService {
 
             %s
             """.formatted(
-                EmailLocales.pick(locale, "New login detected on Vibely", "Phát hiện đăng nhập mới trên Vibely"),
-                EmailLocales.pick(locale, "Reason:", "Lý do:"),
+                MailCopy.get(locale, "login.plainHeading"),
+                MailCopy.get(locale, "login.reasonLabel"),
                 String.join(", ", risk.reasons()),
-                EmailLocales.pick(locale, "Time", "Thời gian"),
+                MailCopy.get(locale, "common.time"),
                 formatTime(locale),
-                EmailLocales.pick(locale, "Device", "Thiết bị"),
+                MailCopy.get(locale, "common.device"),
                 context.getBrowser(),
                 context.getOperatingSystem(),
-                EmailLocales.pick(locale, "Location", "Vị trí"),
+                MailCopy.get(locale, "common.location"),
                 displayLocation(context, locale),
-                EmailLocales.pick(
-                    locale,
-                    "If this was not you, change your password immediately.",
-                    "Nếu không phải bạn, hãy đổi mật khẩu ngay."
-                )
+                MailCopy.get(locale, "login.notYou")
             ).trim();
     }
 
@@ -165,7 +151,7 @@ public class SecurityLoginEmailService {
         append(builder, context.getProvince());
         append(builder, context.getCountry());
         return builder.isEmpty()
-            ? EmailLocales.pick(locale, "Unknown", "Không xác định")
+            ? MailCopy.get(locale, "common.unknown")
             : builder.toString();
     }
 
@@ -189,8 +175,9 @@ public class SecurityLoginEmailService {
     }
 
     private String formatTime(EmailLocale locale) {
-        var now = LocalDateTime.now().atOffset(ZoneOffset.UTC);
-        return (locale != null && locale.vietnamese() ? VI_TIME : EN_TIME).format(now);
+        EmailLocale resolved = locale == null ? EmailLocale.EN : locale;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMM yyyy HH:mm 'UTC'", resolved.toJavaLocale());
+        return LocalDateTime.now().atOffset(ZoneOffset.UTC).format(formatter);
     }
 
     private String resolveFromAddress() {
@@ -203,9 +190,9 @@ public class SecurityLoginEmailService {
         return "noreply@vibely.app";
     }
 
-    private String escape(String raw) {
+    private String escape(String raw, EmailLocale locale) {
         if (raw == null || raw.isBlank()) {
-            return "Unknown";
+            return MailCopy.get(locale, "common.unknown");
         }
         return raw.replace("&", "&amp;")
             .replace("<", "&lt;")

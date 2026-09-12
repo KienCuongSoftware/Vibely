@@ -15,17 +15,18 @@ public final class EmailLocales {
                 if (!StringUtils.hasText(raw)) {
                     continue;
                 }
-                String normalized = PreferredLocaleCodes.normalizeOrDefault(raw).toLowerCase(Locale.ROOT);
-                if (normalized.equals("vi") || normalized.startsWith("vi-")) {
-                    return EmailLocale.VI;
-                }
-                return EmailLocale.EN;
+                String normalized = PreferredLocaleCodes.normalizeOrDefault(raw);
+                return EmailLocale.of(MailCopy.supportedTag(normalized));
             }
         }
         return EmailLocale.EN;
     }
 
+    /** @deprecated use {@link MailCopy#get(EmailLocale, String, Object...)} */
     public static String pick(EmailLocale locale, String english, String vietnamese) {
-        return locale != null && locale.vietnamese() ? vietnamese : english;
+        if (locale != null && "vi".equalsIgnoreCase(locale.tag())) {
+            return vietnamese;
+        }
+        return english;
     }
 }

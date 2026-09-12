@@ -7,30 +7,43 @@ import org.junit.jupiter.api.Test;
 class EmailLocalesTest {
 
     @Test
-    void resolvesVietnameseFromUiLocale() {
-        assertThat(EmailLocales.resolve("vi")).isEqualTo(EmailLocale.VI);
-        assertThat(EmailLocales.resolve("vi-VN")).isEqualTo(EmailLocale.VI);
-        assertThat(EmailLocales.resolve("en")).isEqualTo(EmailLocale.EN);
-        assertThat(EmailLocales.resolve("ja")).isEqualTo(EmailLocale.EN);
+    void resolvesUiLocalesToMatchingCopyTags() {
+        assertThat(EmailLocales.resolve("vi").tag()).isEqualTo("vi");
+        assertThat(EmailLocales.resolve("vi-VN").tag()).isEqualTo("vi");
+        assertThat(EmailLocales.resolve("en").tag()).isEqualTo("en");
+        assertThat(EmailLocales.resolve("ja").tag()).isEqualTo("ja");
+        assertThat(EmailLocales.resolve("zh-Hans").tag()).isEqualTo("zh-Hans");
+        assertThat(EmailLocales.resolve("ar").tag()).isEqualTo("ar");
     }
 
     @Test
     void prefersFirstNonBlankCandidate() {
-        assertThat(EmailLocales.resolve("vi", "en")).isEqualTo(EmailLocale.VI);
-        assertThat(EmailLocales.resolve(null, "en")).isEqualTo(EmailLocale.EN);
+        assertThat(EmailLocales.resolve("vi", "en").tag()).isEqualTo("vi");
+        assertThat(EmailLocales.resolve(null, "en").tag()).isEqualTo("en");
         assertThat(EmailLocales.resolve()).isEqualTo(EmailLocale.EN);
     }
 
     @Test
     void otpSubjectFollowsLocale() {
+        EmailLocale vi = EmailLocales.resolve("vi");
+        EmailLocale ja = EmailLocales.resolve("ja");
         assertThat(OtpVerificationEmailTemplate.subject("123456", EmailLocale.EN))
             .isEqualTo("123456 is your verification code");
-        assertThat(OtpVerificationEmailTemplate.subject("123456", EmailLocale.VI))
+        assertThat(OtpVerificationEmailTemplate.subject("123456", vi))
             .isEqualTo("123456 là mã xác minh của bạn");
-        assertThat(OtpVerificationEmailTemplate.formatExpiryLabel(600, EmailLocale.VI))
+        assertThat(OtpVerificationEmailTemplate.subject("123456", ja))
+            .contains("123456")
+            .doesNotContain("is your verification code");
+        assertThat(OtpVerificationEmailTemplate.formatExpiryLabel(600, vi))
             .isEqualTo("10 phút");
-        assertThat(OtpVerificationEmailTemplate.htmlBody("123456", "10 phút", "/help", EmailLocale.VI))
+        assertThat(OtpVerificationEmailTemplate.htmlBody("123456", "10 phút", "/help", vi))
             .contains("lang=\"vi\"")
             .contains("Để xác minh tài khoản");
+        assertThat(OtpVerificationEmailTemplate.htmlBody("123456", "10 minutes", "/help", ja))
+            .contains("lang=\"ja\"")
+            .contains("dir=\"ltr\"");
+        assertThat(OtpVerificationEmailTemplate.htmlBody("123456", "10 minutes", "/help", EmailLocales.resolve("ar")))
+            .contains("lang=\"ar\"")
+            .contains("dir=\"rtl\"");
     }
 }

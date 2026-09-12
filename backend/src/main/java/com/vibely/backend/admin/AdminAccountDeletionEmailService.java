@@ -2,6 +2,7 @@ package com.vibely.backend.admin;
 
 import com.vibely.backend.auth.mail.EmailLocale;
 import com.vibely.backend.auth.mail.EmailLocales;
+import com.vibely.backend.auth.mail.MailCopy;
 import com.vibely.backend.auth.mail.OtpMailProperties;
 import com.vibely.backend.auth.mail.VibelyEmailLayout;
 import jakarta.mail.internet.MimeMessage;
@@ -54,11 +55,7 @@ public class AdminAccountDeletionEmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
             helper.setFrom(resolveFromAddress(), mailProperties.getFromName());
             helper.setTo(deletedUser.email());
-            helper.setSubject(EmailLocales.pick(
-                locale(deletedUser.preferredLocale()),
-                "Your Vibely account has been deleted",
-                "Tài khoản Vibely của bạn đã bị xóa"
-            ));
+            helper.setSubject(MailCopy.get(locale(deletedUser.preferredLocale()), "delete.subject"));
             helper.setText(plainBody(deletedUser), htmlBody(deletedUser));
             mailSender.send(message);
             log.info("Admin account deletion email sent to {}", maskEmail(deletedUser.email()));
@@ -87,11 +84,7 @@ public class AdminAccountDeletionEmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
             helper.setFrom(resolveFromAddress(), mailProperties.getFromName());
             helper.setTo(updatedUser.email());
-            helper.setSubject(EmailLocales.pick(
-                locale(updatedUser.preferredLocale()),
-                "Your Vibely account information has been updated",
-                "Thông tin tài khoản Vibely của bạn đã được cập nhật"
-            ));
+            helper.setSubject(MailCopy.get(locale(updatedUser.preferredLocale()), "update.subject"));
             helper.setText(updatePlainBody(updatedUser), updateHtmlBody(updatedUser));
             mailSender.send(message);
             log.info("Admin account update email sent to {}", maskEmail(updatedUser.email()));
@@ -112,30 +105,20 @@ public class AdminAccountDeletionEmailService {
 
             Vibely
             """.formatted(
-            EmailLocales.pick(locale, "Hello", "Xin chào"),
+            MailCopy.get(locale, "common.hello"),
             displayName(user, locale),
-            EmailLocales.pick(locale, "Your Vibely account", "Tài khoản Vibely"),
+            MailCopy.get(locale, "account.your"),
             user.username(),
-            EmailLocales.pick(locale, "has been deleted by an administrator.", "đã bị quản trị viên xóa."),
-            EmailLocales.pick(
-                locale,
-                "All data related to the account may no longer be accessible on Vibely.",
-                "Mọi dữ liệu liên quan đến tài khoản có thể không còn truy cập được trên Vibely."
-            ),
-            EmailLocales.pick(
-                locale,
-                "If you believe this is a mistake, please contact Vibely support at",
-                "Nếu bạn cho rằng đây là nhầm lẫn, hãy liên hệ hỗ trợ Vibely tại"
-            ),
+            MailCopy.get(locale, "delete.hasBeenDeleted"),
+            MailCopy.get(locale, "delete.dataGone"),
+            MailCopy.get(locale, "delete.mistake"),
             VibelyEmailLayout.SUPPORT_EMAIL
         );
     }
 
     private String htmlBody(AdminDeletedUserInfo user) {
         EmailLocale locale = locale(user.preferredLocale());
-        String bodyRows = VibelyEmailLayout.headingRow(
-            EmailLocales.pick(locale, "Your account has been deleted", "Tài khoản của bạn đã bị xóa")
-        ) + """
+        String bodyRows = VibelyEmailLayout.headingRow(MailCopy.get(locale, "delete.heading")) + """
             <tr>
               <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
                 <p style="margin:0 0 16px;">%s <strong>%s</strong>,</p>
@@ -145,25 +128,17 @@ public class AdminAccountDeletionEmailService {
               </td>
             </tr>
             """.formatted(
-            EmailLocales.pick(locale, "Hello", "Xin chào"),
+            MailCopy.get(locale, "common.hello"),
             VibelyEmailLayout.escapeHtml(displayName(user, locale)),
-            EmailLocales.pick(locale, "Your Vibely account", "Tài khoản Vibely"),
+            MailCopy.get(locale, "account.your"),
             VibelyEmailLayout.escapeHtml(user.username()),
-            EmailLocales.pick(locale, "has been deleted by an administrator.", "đã bị quản trị viên xóa."),
-            EmailLocales.pick(
-                locale,
-                "All data related to the account may no longer be accessible on Vibely.",
-                "Mọi dữ liệu liên quan đến tài khoản có thể không còn truy cập được trên Vibely."
-            ),
-            EmailLocales.pick(
-                locale,
-                "If you believe this is a mistake, please contact Vibely support at",
-                "Nếu bạn cho rằng đây là nhầm lẫn, hãy liên hệ hỗ trợ Vibely tại"
-            ),
+            MailCopy.get(locale, "delete.hasBeenDeleted"),
+            MailCopy.get(locale, "delete.dataGone"),
+            MailCopy.get(locale, "delete.mistake"),
             VibelyEmailLayout.supportEmailLink()
         );
         return VibelyEmailLayout.document(
-            EmailLocales.pick(locale, "Your Vibely account has been deleted", "Tài khoản Vibely của bạn đã bị xóa"),
+            MailCopy.get(locale, "delete.subject"),
             bodyRows,
             user.username(),
             locale
@@ -182,28 +157,18 @@ public class AdminAccountDeletionEmailService {
 
             Vibely
             """.formatted(
-            EmailLocales.pick(locale, "Hello", "Xin chào"),
+            MailCopy.get(locale, "common.hello"),
             displayName(user, locale),
-            EmailLocales.pick(
-                locale,
-                "A Vibely administrator has updated your account information:",
-                "Quản trị viên Vibely đã cập nhật thông tin tài khoản của bạn:"
-            ),
+            MailCopy.get(locale, "update.adminUpdated"),
             updateChangeLines(user, locale),
-            EmailLocales.pick(
-                locale,
-                "If you do not recognize this change, please contact Vibely support at",
-                "Nếu bạn không nhận ra thay đổi này, hãy liên hệ hỗ trợ Vibely tại"
-            ),
+            MailCopy.get(locale, "update.unrecognized"),
             VibelyEmailLayout.SUPPORT_EMAIL
         );
     }
 
     private String updateHtmlBody(AdminUpdatedUserInfo user) {
         EmailLocale locale = locale(user.preferredLocale());
-        String bodyRows = VibelyEmailLayout.headingRow(
-            EmailLocales.pick(locale, "Account information has been updated", "Thông tin tài khoản đã được cập nhật")
-        ) + """
+        String bodyRows = VibelyEmailLayout.headingRow(MailCopy.get(locale, "update.heading")) + """
             <tr>
               <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
                 <p style="margin:0 0 16px;">%s <strong>%s</strong>,</p>
@@ -213,23 +178,15 @@ public class AdminAccountDeletionEmailService {
               </td>
             </tr>
             """.formatted(
-            EmailLocales.pick(locale, "Hello", "Xin chào"),
+            MailCopy.get(locale, "common.hello"),
             VibelyEmailLayout.escapeHtml(displayName(user, locale)),
-            EmailLocales.pick(
-                locale,
-                "A Vibely administrator has updated your account information:",
-                "Quản trị viên Vibely đã cập nhật thông tin tài khoản của bạn:"
-            ),
+            MailCopy.get(locale, "update.adminUpdated"),
             updateChangeItems(user, locale),
-            EmailLocales.pick(
-                locale,
-                "If you do not recognize this change, please contact Vibely support at",
-                "Nếu bạn không nhận ra thay đổi này, hãy liên hệ hỗ trợ Vibely tại"
-            ),
+            MailCopy.get(locale, "update.unrecognized"),
             VibelyEmailLayout.supportEmailLink()
         );
         return VibelyEmailLayout.document(
-            EmailLocales.pick(locale, "Vibely account information has been updated", "Thông tin tài khoản Vibely đã được cập nhật"),
+            MailCopy.get(locale, "update.subject"),
             bodyRows,
             user.newUsername(),
             locale
@@ -239,28 +196,26 @@ public class AdminAccountDeletionEmailService {
     private String displayName(AdminDeletedUserInfo user, EmailLocale locale) {
         return StringUtils.hasText(user.displayName())
             ? user.displayName().trim()
-            : EmailLocales.pick(locale, "you", "bạn");
+            : MailCopy.get(locale, "common.you");
     }
 
     private String displayName(AdminUpdatedUserInfo user, EmailLocale locale) {
         return StringUtils.hasText(user.displayName())
             ? user.displayName().trim()
-            : EmailLocales.pick(locale, "you", "bạn");
+            : MailCopy.get(locale, "common.you");
     }
 
     private String updateChangeLines(AdminUpdatedUserInfo user, EmailLocale locale) {
         StringBuilder lines = new StringBuilder();
         if (user.usernameChanged()) {
             lines.append("- ")
-                .append(EmailLocales.pick(locale, "Vibely ID changed from @", "Vibely ID đổi từ @"))
-                .append(user.oldUsername())
-                .append(EmailLocales.pick(locale, " to @", " thành @"))
-                .append(user.newUsername())
+                .append(MailCopy.get(locale, "update.idFrom", user.oldUsername()))
+                .append(MailCopy.get(locale, "update.idTo", user.newUsername()))
                 .append('\n');
         }
         if (user.passwordChanged()) {
             lines.append("- ")
-                .append(EmailLocales.pick(locale, "Login password has been changed", "Mật khẩu đăng nhập đã được đổi"))
+                .append(MailCopy.get(locale, "update.passwordChanged"))
                 .append('\n');
         }
         return lines.toString().trim();
@@ -270,18 +225,13 @@ public class AdminAccountDeletionEmailService {
         StringBuilder items = new StringBuilder();
         if (user.usernameChanged()) {
             items.append("<li>")
-                .append(EmailLocales.pick(locale, "Vibely ID changed from ", "Vibely ID đổi từ "))
-                .append("<strong>@")
-                .append(VibelyEmailLayout.escapeHtml(user.oldUsername()))
-                .append("</strong>")
-                .append(EmailLocales.pick(locale, " to ", " thành "))
-                .append("<strong>@")
-                .append(VibelyEmailLayout.escapeHtml(user.newUsername()))
-                .append("</strong></li>");
+                .append(MailCopy.get(locale, "update.idFrom", VibelyEmailLayout.escapeHtml(user.oldUsername())))
+                .append(MailCopy.get(locale, "update.idTo", VibelyEmailLayout.escapeHtml(user.newUsername())))
+                .append("</li>");
         }
         if (user.passwordChanged()) {
             items.append("<li>")
-                .append(EmailLocales.pick(locale, "Login password has been changed", "Mật khẩu đăng nhập đã được đổi"))
+                .append(MailCopy.get(locale, "update.passwordChanged"))
                 .append("</li>");
         }
         return items.toString();
@@ -299,10 +249,6 @@ public class AdminAccountDeletionEmailService {
             return smtpUsername.trim();
         }
         return "noreply@vibely.app";
-    }
-
-    private String escapeHtml(String value) {
-        return VibelyEmailLayout.escapeHtml(value);
     }
 
     private String maskEmail(String email) {

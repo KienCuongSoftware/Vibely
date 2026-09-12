@@ -2,6 +2,7 @@ package com.vibely.backend.admin;
 
 import com.vibely.backend.auth.mail.EmailLocale;
 import com.vibely.backend.auth.mail.EmailLocales;
+import com.vibely.backend.auth.mail.MailCopy;
 import com.vibely.backend.auth.mail.OtpMailProperties;
 import com.vibely.backend.auth.mail.VibelyEmailLayout;
 import jakarta.mail.internet.MimeMessage;
@@ -40,7 +41,7 @@ public class AdminAccountBanEmailService {
         }
         sendAdminAccountEmail(
             bannedUser.email(),
-            EmailLocales.pick(locale(bannedUser.preferredLocale()), "Your Vibely account has been banned", "Tài khoản Vibely của bạn đã bị cấm"),
+            MailCopy.get(locale(bannedUser.preferredLocale()), "ban.subject"),
             plainBanBody(bannedUser),
             htmlBanBody(bannedUser),
             "Admin account ban email"
@@ -53,7 +54,7 @@ public class AdminAccountBanEmailService {
         }
         sendAdminAccountEmail(
             unbannedUser.email(),
-            EmailLocales.pick(locale(unbannedUser.preferredLocale()), "Your Vibely account has been unlocked", "Tài khoản Vibely của bạn đã được mở khóa"),
+            MailCopy.get(locale(unbannedUser.preferredLocale()), "unban.subject"),
             plainUnbanBody(unbannedUser),
             htmlUnbanBody(unbannedUser),
             "Admin account unban email"
@@ -111,32 +112,22 @@ public class AdminAccountBanEmailService {
 
             Vibely
             """.formatted(
-            EmailLocales.pick(locale, "Hello", "Xin chào"),
+            MailCopy.get(locale, "common.hello"),
             displayName(user, locale),
-            EmailLocales.pick(locale, "Your Vibely account", "Tài khoản Vibely"),
+            MailCopy.get(locale, "account.your"),
             user.username(),
-            EmailLocales.pick(locale, "has been banned.", "đã bị cấm."),
-            EmailLocales.pick(locale, "Reason", "Lý do"),
+            MailCopy.get(locale, "ban.hasBeenBanned"),
+            MailCopy.get(locale, "common.reason"),
             reasonText(user, locale),
-            EmailLocales.pick(
-                locale,
-                "You will not be able to log in or use Vibely until the account is unbanned.",
-                "Bạn sẽ không thể đăng nhập hoặc dùng Vibely cho đến khi tài khoản được mở khóa."
-            ),
-            EmailLocales.pick(
-                locale,
-                "If you believe this is a mistake, you can submit an appeal to",
-                "Nếu bạn cho rằng đây là nhầm lẫn, hãy gửi khiếu nại tới"
-            ),
+            MailCopy.get(locale, "ban.cannotLogin"),
+            MailCopy.get(locale, "ban.appealTo"),
             VibelyEmailLayout.SUPPORT_EMAIL
         );
     }
 
     private String htmlBanBody(AdminBannedUserInfo user) {
         EmailLocale locale = locale(user.preferredLocale());
-        String bodyRows = VibelyEmailLayout.headingRow(
-            EmailLocales.pick(locale, "Your account has been banned", "Tài khoản của bạn đã bị cấm")
-        ) + """
+        String bodyRows = VibelyEmailLayout.headingRow(MailCopy.get(locale, "ban.heading")) + """
             <tr>
               <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
                 <p style="margin:0 0 16px;">%s <strong>%s</strong>,</p>
@@ -148,27 +139,19 @@ public class AdminAccountBanEmailService {
               </td>
             </tr>
             """.formatted(
-            EmailLocales.pick(locale, "Hello", "Xin chào"),
+            MailCopy.get(locale, "common.hello"),
             VibelyEmailLayout.escapeHtml(displayName(user, locale)),
-            EmailLocales.pick(locale, "Your Vibely account", "Tài khoản Vibely"),
+            MailCopy.get(locale, "account.your"),
             VibelyEmailLayout.escapeHtml(user.username()),
-            EmailLocales.pick(locale, "has been banned.", "đã bị cấm."),
-            EmailLocales.pick(locale, "Reason", "Lý do"),
+            MailCopy.get(locale, "ban.hasBeenBanned"),
+            MailCopy.get(locale, "common.reason"),
             VibelyEmailLayout.escapeHtml(reasonText(user, locale)),
-            EmailLocales.pick(
-                locale,
-                "You will not be able to log in or use Vibely until the account is unbanned.",
-                "Bạn sẽ không thể đăng nhập hoặc dùng Vibely cho đến khi tài khoản được mở khóa."
-            ),
-            EmailLocales.pick(
-                locale,
-                "If you believe this is a mistake, you can submit an appeal to",
-                "Nếu bạn cho rằng đây là nhầm lẫn, hãy gửi khiếu nại tới"
-            ),
+            MailCopy.get(locale, "ban.cannotLogin"),
+            MailCopy.get(locale, "ban.appealTo"),
             VibelyEmailLayout.supportEmailLink()
         );
         return VibelyEmailLayout.document(
-            EmailLocales.pick(locale, "Your Vibely account has been banned", "Tài khoản Vibely của bạn đã bị cấm"),
+            MailCopy.get(locale, "ban.subject"),
             bodyRows,
             user.username(),
             locale
@@ -188,22 +171,20 @@ public class AdminAccountBanEmailService {
 
             Vibely
             """.formatted(
-            EmailLocales.pick(locale, "Hello", "Xin chào"),
+            MailCopy.get(locale, "common.hello"),
             displayName(user, locale),
-            EmailLocales.pick(locale, "Your Vibely account", "Tài khoản Vibely"),
+            MailCopy.get(locale, "account.your"),
             user.username(),
-            EmailLocales.pick(locale, "has been unlocked by an administrator.", "đã được quản trị viên mở khóa."),
-            EmailLocales.pick(locale, "You can log in and use Vibely as usual.", "Bạn có thể đăng nhập và dùng Vibely như bình thường."),
-            EmailLocales.pick(locale, "If you have questions, please contact", "Nếu có thắc mắc, hãy liên hệ"),
+            MailCopy.get(locale, "unban.hasBeenUnlocked"),
+            MailCopy.get(locale, "unban.canLogin"),
+            MailCopy.get(locale, "common.contactSupportTo"),
             VibelyEmailLayout.SUPPORT_EMAIL
         );
     }
 
     private String htmlUnbanBody(AdminUnbannedUserInfo user) {
         EmailLocale locale = locale(user.preferredLocale());
-        String bodyRows = VibelyEmailLayout.headingRow(
-            EmailLocales.pick(locale, "Your account has been unlocked", "Tài khoản của bạn đã được mở khóa")
-        ) + """
+        String bodyRows = VibelyEmailLayout.headingRow(MailCopy.get(locale, "unban.heading")) + """
             <tr>
               <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
                 <p style="margin:0 0 16px;">%s <strong>%s</strong>,</p>
@@ -213,17 +194,17 @@ public class AdminAccountBanEmailService {
               </td>
             </tr>
             """.formatted(
-            EmailLocales.pick(locale, "Hello", "Xin chào"),
+            MailCopy.get(locale, "common.hello"),
             VibelyEmailLayout.escapeHtml(displayName(user, locale)),
-            EmailLocales.pick(locale, "Your Vibely account", "Tài khoản Vibely"),
+            MailCopy.get(locale, "account.your"),
             VibelyEmailLayout.escapeHtml(user.username()),
-            EmailLocales.pick(locale, "has been unlocked by an administrator.", "đã được quản trị viên mở khóa."),
-            EmailLocales.pick(locale, "You can log in and use Vibely as usual.", "Bạn có thể đăng nhập và dùng Vibely như bình thường."),
-            EmailLocales.pick(locale, "If you have questions, please contact", "Nếu có thắc mắc, hãy liên hệ"),
+            MailCopy.get(locale, "unban.hasBeenUnlocked"),
+            MailCopy.get(locale, "unban.canLogin"),
+            MailCopy.get(locale, "common.contactSupportTo"),
             VibelyEmailLayout.supportEmailLink()
         );
         return VibelyEmailLayout.document(
-            EmailLocales.pick(locale, "Your Vibely account has been unlocked", "Tài khoản Vibely của bạn đã được mở khóa"),
+            MailCopy.get(locale, "unban.subject"),
             bodyRows,
             user.username(),
             locale
@@ -233,13 +214,13 @@ public class AdminAccountBanEmailService {
     private String displayName(AdminBannedUserInfo user, EmailLocale locale) {
         return StringUtils.hasText(user.displayName())
             ? user.displayName().trim()
-            : EmailLocales.pick(locale, "you", "bạn");
+            : MailCopy.get(locale, "common.you");
     }
 
     private String displayName(AdminUnbannedUserInfo user, EmailLocale locale) {
         return StringUtils.hasText(user.displayName())
             ? user.displayName().trim()
-            : EmailLocales.pick(locale, "you", "bạn");
+            : MailCopy.get(locale, "common.you");
     }
 
     private String reasonText(AdminBannedUserInfo user, EmailLocale locale) {
@@ -247,7 +228,7 @@ public class AdminAccountBanEmailService {
         String cleaned = com.vibely.backend.moderation.BanReasonFormatter.forDisplay(raw);
         return StringUtils.hasText(cleaned)
             ? cleaned
-            : EmailLocales.pick(locale, "No specific reason", "Không có lý do cụ thể");
+            : MailCopy.get(locale, "ban.noReason");
     }
 
     private EmailLocale locale(String preferredLocale) {
@@ -262,10 +243,6 @@ public class AdminAccountBanEmailService {
             return smtpUsername.trim();
         }
         return "noreply@vibely.app";
-    }
-
-    private String escapeHtml(String value) {
-        return VibelyEmailLayout.escapeHtml(value);
     }
 
     private String maskEmail(String email) {

@@ -4,48 +4,30 @@ import com.vibely.backend.auth.dto.OtpRequestMetadata;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 final class OtpVerificationEmailTemplate {
-
-    private static final DateTimeFormatter EN_TIME =
-        DateTimeFormatter.ofPattern("d MMM yyyy HH:mm 'UTC'", Locale.ENGLISH);
-    private static final DateTimeFormatter VI_TIME =
-        DateTimeFormatter.ofPattern("d 'thg' M, yyyy HH:mm 'UTC'", Locale.forLanguageTag("vi-VN"));
 
     private OtpVerificationEmailTemplate() {
     }
 
     static String subject(String code, EmailLocale locale) {
-        return code + EmailLocales.pick(locale, " is your verification code", " là mã xác minh của bạn");
+        return code + MailCopy.get(locale, "otp.subjectSuffix");
     }
 
     static String accountDeactivationSubject(String code, EmailLocale locale) {
-        return code + EmailLocales.pick(locale, " is your 6-digit code", " là mã 6 chữ số của bạn");
+        return code + MailCopy.get(locale, "otp.sixDigitSubjectSuffix");
     }
 
     static String accountReactivationSubject(String code, EmailLocale locale) {
-        return code + EmailLocales.pick(
-            locale,
-            " is your Vibely account reactivation code",
-            " là mã kích hoạt lại tài khoản Vibely"
-        );
+        return code + MailCopy.get(locale, "otp.reactivationSubjectSuffix");
     }
 
     static String accountDeletionSubject(String code, EmailLocale locale) {
-        return code + EmailLocales.pick(
-            locale,
-            " is your Vibely account deletion code",
-            " là mã xóa tài khoản Vibely"
-        );
+        return code + MailCopy.get(locale, "otp.deletionSubjectSuffix");
     }
 
     static String passwordResetSubject(String code, EmailLocale locale) {
-        return code + EmailLocales.pick(
-            locale,
-            " is your Vibely password reset code",
-            " là mã đặt lại mật khẩu Vibely"
-        );
+        return code + MailCopy.get(locale, "otp.resetSubjectSuffix");
     }
 
     static String accountDeactivationHtmlBody(
@@ -59,33 +41,11 @@ final class OtpVerificationEmailTemplate {
         String title,
         String notYouLine
     ) {
-        String safeUsername = escapeHtml(username);
-        String browser = escapeHtml(metadata.browser());
-        String location = escapeHtml(metadata.approximateLocation());
+        String safeUsername = escapeHtml(username, locale);
+        String browser = escapeHtml(metadata.browser(), locale);
+        String location = escapeHtml(metadata.approximateLocation(), locale);
         String generatedAt = formatTime(locale);
-        String heading = EmailLocales.pick(locale, "Vibely 6-digit code", "Mã 6 chữ số Vibely");
-        String hello = EmailLocales.pick(locale, "Hello", "Xin chào");
-        String yourCode = EmailLocales.pick(locale, "Your 6-digit code is:", "Mã 6 chữ số của bạn là:");
-        String validFor = EmailLocales.pick(locale, "This code is valid for %s.", "Mã có hiệu lực trong %s.");
-        String timeLabel = EmailLocales.pick(locale, "Time", "Thời gian");
-        String locationLabel = EmailLocales.pick(locale, "Location", "Vị trí");
-        String deviceLabel = EmailLocales.pick(locale, "Device", "Thiết bị");
-        String onlyOfficial = EmailLocales.pick(
-            locale,
-            "<strong>Only enter this code on the official Vibely app or website.</strong> Do not share this code with anyone.",
-            "<strong>Chỉ nhập mã này trên ứng dụng hoặc website chính thức của Vibely.</strong> Không chia sẻ mã với bất kỳ ai."
-        );
-        String sharing = EmailLocales.pick(
-            locale,
-            "Sharing this code may allow others to access your Vibely account along with related personal information and content.",
-            "Chia sẻ mã này có thể giúp người khác truy cập tài khoản Vibely cùng thông tin và nội dung liên quan."
-        );
-        String safety = EmailLocales.pick(
-            locale,
-            "For your safety:<br />• Be careful with suspicious links or messages asking for login details.<br />• Contact Vibely support at %s if you need help.",
-            "Để bảo vệ tài khoản:<br />• Cẩn thận với liên kết hoặc tin nhắn đáng ngờ yêu cầu thông tin đăng nhập.<br />• Liên hệ hỗ trợ Vibely tại %s nếu bạn cần trợ giúp."
-        );
-        String bodyRows = VibelyEmailLayout.headingRow(heading) + """
+        String bodyRows = VibelyEmailLayout.headingRow(MailCopy.get(locale, "otp.heading")) + """
             <tr>
               <td style="padding:0 56px 8px;font-size:15px;line-height:1.7;color:#161823;">
                 <p style="margin:0 0 16px;">%s <strong>%s</strong>,</p>
@@ -112,22 +72,22 @@ final class OtpVerificationEmailTemplate {
               </td>
             </tr>
             """.formatted(
-                hello,
+                MailCopy.get(locale, "common.hello"),
                 safeUsername,
-                yourCode,
+                MailCopy.get(locale, "otp.yourCode"),
                 code,
                 actionLineHtml,
-                validFor.formatted(expiryLabel),
-                timeLabel,
+                MailCopy.get(locale, "otp.validFor", expiryLabel),
+                MailCopy.get(locale, "common.time"),
                 generatedAt,
-                locationLabel,
+                MailCopy.get(locale, "common.location"),
                 location,
-                deviceLabel,
+                MailCopy.get(locale, "common.device"),
                 browser,
-                onlyOfficial,
-                sharing,
+                MailCopy.get(locale, "otp.onlyOfficialHtml"),
+                MailCopy.get(locale, "otp.sharing"),
                 notYouLine,
-                safety.formatted(VibelyEmailLayout.supportEmailLink())
+                MailCopy.get(locale, "otp.safetyHtml", VibelyEmailLayout.supportEmailLink())
             );
         return VibelyEmailLayout.document(title, bodyRows, username, locale);
     }
@@ -140,17 +100,7 @@ final class OtpVerificationEmailTemplate {
         OtpRequestMetadata metadata,
         EmailLocale locale
     ) {
-        String safeUsername = escapeHtml(username);
-        String action = EmailLocales.pick(
-            locale,
-            "Use this code to verify that <strong>@%s</strong> is your Vibely account before deactivating.".formatted(safeUsername),
-            "Dùng mã này để xác nhận <strong>@%s</strong> là tài khoản Vibely của bạn trước khi vô hiệu hóa.".formatted(safeUsername)
-        );
-        String notYou = EmailLocales.pick(
-            locale,
-            "If you did not request this code, someone may be trying to access your account. Change your password in Vibely now.",
-            "Nếu bạn không yêu cầu mã này, có thể ai đó đang cố truy cập tài khoản. Hãy đổi mật khẩu trên Vibely ngay."
-        );
+        String safeUsername = escapeHtml(username, locale);
         return accountDeactivationHtmlBody(
             username,
             code,
@@ -158,9 +108,9 @@ final class OtpVerificationEmailTemplate {
             helpUrl,
             metadata,
             locale,
-            action,
-            EmailLocales.pick(locale, "Vibely account deactivation code", "Mã vô hiệu hóa tài khoản Vibely"),
-            notYou
+            MailCopy.get(locale, "otp.deactivationActionHtml", safeUsername),
+            MailCopy.get(locale, "otp.deactivationTitle"),
+            MailCopy.get(locale, "otp.deactivationNotYou")
         );
     }
 
@@ -188,33 +138,21 @@ final class OtpVerificationEmailTemplate {
             %s
             %s
             """.formatted(
-                EmailLocales.pick(locale, "Vibely 6-digit code", "Mã 6 chữ số Vibely"),
-                EmailLocales.pick(locale, "Hello", "Xin chào"),
+                MailCopy.get(locale, "otp.heading"),
+                MailCopy.get(locale, "common.hello"),
                 username,
-                EmailLocales.pick(locale, "Your 6-digit code is:", "Mã 6 chữ số của bạn là:"),
+                MailCopy.get(locale, "otp.yourCode"),
                 code,
-                EmailLocales.pick(
-                    locale,
-                    "Use this code to verify that @" + username + " is your Vibely account before deactivating.",
-                    "Dùng mã này để xác nhận @" + username + " là tài khoản Vibely của bạn trước khi vô hiệu hóa."
-                ),
-                EmailLocales.pick(locale, "This code is valid for " + expiryLabel + ".", "Mã có hiệu lực trong " + expiryLabel + "."),
-                EmailLocales.pick(locale, "Time", "Thời gian"),
+                MailCopy.get(locale, "otp.deactivationActionPlain", username),
+                MailCopy.get(locale, "otp.validFor", expiryLabel),
+                MailCopy.get(locale, "common.time"),
                 formatTime(locale),
-                EmailLocales.pick(locale, "Location", "Vị trí"),
+                MailCopy.get(locale, "common.location"),
                 metadata.approximateLocation(),
-                EmailLocales.pick(locale, "Device", "Thiết bị"),
+                MailCopy.get(locale, "common.device"),
                 metadata.browser(),
-                EmailLocales.pick(
-                    locale,
-                    "Only enter this code on the official Vibely app or website. Do not share this code with anyone.",
-                    "Chỉ nhập mã này trên ứng dụng hoặc website chính thức của Vibely. Không chia sẻ mã với bất kỳ ai."
-                ),
-                EmailLocales.pick(
-                    locale,
-                    "If you did not request this code, change your password in Vibely now.",
-                    "Nếu bạn không yêu cầu mã này, hãy đổi mật khẩu trên Vibely ngay."
-                )
+                MailCopy.get(locale, "otp.plainOnlyOfficial"),
+                MailCopy.get(locale, "otp.plainNotYouGeneric")
             ).trim();
     }
 
@@ -226,17 +164,7 @@ final class OtpVerificationEmailTemplate {
         OtpRequestMetadata metadata,
         EmailLocale locale
     ) {
-        String safeUsername = escapeHtml(username);
-        String action = EmailLocales.pick(
-            locale,
-            "Use this code to verify that <strong>@%s</strong> is your Vibely account before reactivating.".formatted(safeUsername),
-            "Dùng mã này để xác nhận <strong>@%s</strong> là tài khoản Vibely của bạn trước khi kích hoạt lại.".formatted(safeUsername)
-        );
-        String notYou = EmailLocales.pick(
-            locale,
-            "If you did not request account reactivation, ignore this email and change your password in Vibely now.",
-            "Nếu bạn không yêu cầu kích hoạt lại tài khoản, hãy bỏ qua email này và đổi mật khẩu trên Vibely ngay."
-        );
+        String safeUsername = escapeHtml(username, locale);
         return accountDeactivationHtmlBody(
             username,
             code,
@@ -244,9 +172,9 @@ final class OtpVerificationEmailTemplate {
             helpUrl,
             metadata,
             locale,
-            action,
-            EmailLocales.pick(locale, "Vibely account reactivation code", "Mã kích hoạt lại tài khoản Vibely"),
-            notYou
+            MailCopy.get(locale, "otp.reactivationActionHtml", safeUsername),
+            MailCopy.get(locale, "otp.reactivationTitle"),
+            MailCopy.get(locale, "otp.reactivationNotYou")
         );
     }
 
@@ -259,28 +187,12 @@ final class OtpVerificationEmailTemplate {
     ) {
         return accountDeactivationPlainBody(username, code, expiryLabel, metadata, locale)
             .replace(
-                EmailLocales.pick(
-                    locale,
-                    "Use this code to verify that @" + username + " is your Vibely account before deactivating.",
-                    "Dùng mã này để xác nhận @" + username + " là tài khoản Vibely của bạn trước khi vô hiệu hóa."
-                ),
-                EmailLocales.pick(
-                    locale,
-                    "Use this code to verify that @" + username + " is your Vibely account before reactivating.",
-                    "Dùng mã này để xác nhận @" + username + " là tài khoản Vibely của bạn trước khi kích hoạt lại."
-                )
+                MailCopy.get(locale, "otp.deactivationActionPlain", username),
+                MailCopy.get(locale, "otp.reactivationActionPlain", username)
             )
             .replace(
-                EmailLocales.pick(
-                    locale,
-                    "If you did not request this code, change your password in Vibely now.",
-                    "Nếu bạn không yêu cầu mã này, hãy đổi mật khẩu trên Vibely ngay."
-                ),
-                EmailLocales.pick(
-                    locale,
-                    "If you did not request account reactivation, ignore this email and change your password in Vibely now.",
-                    "Nếu bạn không yêu cầu kích hoạt lại tài khoản, hãy bỏ qua email này và đổi mật khẩu trên Vibely ngay."
-                )
+                MailCopy.get(locale, "otp.plainNotYouGeneric"),
+                MailCopy.get(locale, "otp.reactivationNotYou")
             );
     }
 
@@ -292,17 +204,7 @@ final class OtpVerificationEmailTemplate {
         OtpRequestMetadata metadata,
         EmailLocale locale
     ) {
-        String safeUsername = escapeHtml(username);
-        String action = EmailLocales.pick(
-            locale,
-            "Use this code to verify that <strong>@%s</strong> is your Vibely account before permanently deleting it.".formatted(safeUsername),
-            "Dùng mã này để xác nhận <strong>@%s</strong> là tài khoản Vibely của bạn trước khi xóa vĩnh viễn.".formatted(safeUsername)
-        );
-        String notYou = EmailLocales.pick(
-            locale,
-            "If you did not request account deletion, someone may be trying to access your account. Change your password immediately in Vibely.",
-            "Nếu bạn không yêu cầu xóa tài khoản, có thể ai đó đang cố truy cập. Hãy đổi mật khẩu ngay trên Vibely."
-        );
+        String safeUsername = escapeHtml(username, locale);
         return accountDeactivationHtmlBody(
             username,
             code,
@@ -310,9 +212,9 @@ final class OtpVerificationEmailTemplate {
             helpUrl,
             metadata,
             locale,
-            action,
-            EmailLocales.pick(locale, "Vibely account deletion code", "Mã xóa tài khoản Vibely"),
-            notYou
+            MailCopy.get(locale, "otp.deletionActionHtml", safeUsername),
+            MailCopy.get(locale, "otp.deletionTitle"),
+            MailCopy.get(locale, "otp.deletionNotYou")
         );
     }
 
@@ -325,35 +227,17 @@ final class OtpVerificationEmailTemplate {
     ) {
         return accountDeactivationPlainBody(username, code, expiryLabel, metadata, locale)
             .replace(
-                EmailLocales.pick(
-                    locale,
-                    "Use this code to verify that @" + username + " is your Vibely account before deactivating.",
-                    "Dùng mã này để xác nhận @" + username + " là tài khoản Vibely của bạn trước khi vô hiệu hóa."
-                ),
-                EmailLocales.pick(
-                    locale,
-                    "Use this code to verify that @" + username + " is your Vibely account before permanently deleting it.",
-                    "Dùng mã này để xác nhận @" + username + " là tài khoản Vibely của bạn trước khi xóa vĩnh viễn."
-                )
+                MailCopy.get(locale, "otp.deactivationActionPlain", username),
+                MailCopy.get(locale, "otp.deletionActionPlain", username)
             )
             .replace(
-                EmailLocales.pick(
-                    locale,
-                    "If you did not request this code, change your password in Vibely now.",
-                    "Nếu bạn không yêu cầu mã này, hãy đổi mật khẩu trên Vibely ngay."
-                ),
-                EmailLocales.pick(
-                    locale,
-                    "If you did not request account deletion, change your password immediately in Vibely.",
-                    "Nếu bạn không yêu cầu xóa tài khoản, hãy đổi mật khẩu ngay trên Vibely."
-                )
+                MailCopy.get(locale, "otp.plainNotYouGeneric"),
+                MailCopy.get(locale, "otp.deletionPlainNotYou")
             );
     }
 
     static String passwordResetHtmlBody(String code, String expiryLabel, String helpUrl, EmailLocale locale) {
-        String bodyRows = VibelyEmailLayout.headingRow(
-            EmailLocales.pick(locale, "Reset password", "Đặt lại mật khẩu")
-        ) + """
+        String bodyRows = VibelyEmailLayout.headingRow(MailCopy.get(locale, "otp.resetHeading")) + """
             <tr>
               <td style="padding:0 56px 8px;font-size:15px;line-height:1.7;color:#161823;">
                 <p style="margin:0 0 16px;">%s</p>
@@ -368,27 +252,14 @@ final class OtpVerificationEmailTemplate {
               </td>
             </tr>
             """.formatted(
-                EmailLocales.pick(
-                    locale,
-                    "Enter the following code on Vibely to reset your password:",
-                    "Nhập mã sau trên Vibely để đặt lại mật khẩu:"
-                ),
+                MailCopy.get(locale, "otp.resetIntro"),
                 code,
-                EmailLocales.pick(locale, "This code is valid for %s.".formatted(expiryLabel), "Mã có hiệu lực trong %s.".formatted(expiryLabel)),
-                EmailLocales.pick(
-                    locale,
-                    "If you did not request a password reset, ignore this email.",
-                    "Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này."
-                ),
-                EmailLocales.pick(locale, "Contact Vibely support:", "Liên hệ hỗ trợ Vibely:"),
+                MailCopy.get(locale, "otp.validFor", expiryLabel),
+                MailCopy.get(locale, "otp.resetIgnore"),
+                MailCopy.get(locale, "otp.resetContact"),
                 VibelyEmailLayout.supportEmailLink()
             );
-        return VibelyEmailLayout.document(
-            EmailLocales.pick(locale, "Reset Vibely password", "Đặt lại mật khẩu Vibely"),
-            bodyRows,
-            null,
-            locale
-        );
+        return VibelyEmailLayout.document(MailCopy.get(locale, "otp.resetTitle"), bodyRows, null, locale);
     }
 
     static String passwordResetPlainBody(String code, String expiryLabel, EmailLocale locale) {
@@ -401,22 +272,16 @@ final class OtpVerificationEmailTemplate {
 
             %s
             """.formatted(
-                EmailLocales.pick(locale, "Reset Vibely password", "Đặt lại mật khẩu Vibely"),
-                EmailLocales.pick(locale, "Enter the following code to reset your password:", "Nhập mã sau để đặt lại mật khẩu:"),
+                MailCopy.get(locale, "otp.resetTitle"),
+                MailCopy.get(locale, "otp.resetPlainIntro"),
                 code,
-                EmailLocales.pick(locale, "The code expires in " + expiryLabel + ".", "Mã hết hạn sau " + expiryLabel + "."),
-                EmailLocales.pick(
-                    locale,
-                    "If you did not request this, ignore this email.",
-                    "Nếu bạn không yêu cầu việc này, hãy bỏ qua email này."
-                )
+                MailCopy.get(locale, "otp.expiresIn", expiryLabel),
+                MailCopy.get(locale, "otp.resetPlainIgnore")
             ).trim();
     }
 
     static String htmlBody(String code, String expiryLabel, String helpUrl, EmailLocale locale) {
-        String bodyRows = VibelyEmailLayout.headingRow(
-            EmailLocales.pick(locale, "Vibely 6-digit code", "Mã 6 chữ số Vibely")
-        ) + """
+        String bodyRows = VibelyEmailLayout.headingRow(MailCopy.get(locale, "otp.heading")) + """
             <tr>
               <td style="padding:0 56px 8px;font-size:15px;line-height:1.7;color:#161823;">
                 <p style="margin:0 0 16px;">%s</p>
@@ -432,32 +297,15 @@ final class OtpVerificationEmailTemplate {
               </td>
             </tr>
             """.formatted(
-                EmailLocales.pick(
-                    locale,
-                    "To verify your account, enter the following code on Vibely:",
-                    "Để xác minh tài khoản, hãy nhập mã sau trên Vibely:"
-                ),
+                MailCopy.get(locale, "otp.verifyIntro"),
                 code,
-                EmailLocales.pick(locale, "This code is valid for %s.".formatted(expiryLabel), "Mã có hiệu lực trong %s.".formatted(expiryLabel)),
-                EmailLocales.pick(
-                    locale,
-                    "If you did not request this code, you can ignore this email.",
-                    "Nếu bạn không yêu cầu mã này, bạn có thể bỏ qua email."
-                ),
-                EmailLocales.pick(locale, "Vibely support team", "Đội ngũ hỗ trợ Vibely"),
+                MailCopy.get(locale, "otp.validFor", expiryLabel),
+                MailCopy.get(locale, "otp.ignoreCode"),
+                MailCopy.get(locale, "otp.supportTeam"),
                 VibelyEmailLayout.supportEmailLink(),
-                EmailLocales.pick(
-                    locale,
-                    "Have questions? Contact support by email or report in the app at <strong>Settings &gt; Report a problem</strong>.",
-                    "Cần trợ giúp? Liên hệ email hỗ trợ hoặc báo cáo trong ứng dụng tại <strong>Cài đặt &gt; Báo cáo sự cố</strong>."
-                )
+                MailCopy.get(locale, "otp.supportHintHtml")
             );
-        return VibelyEmailLayout.document(
-            EmailLocales.pick(locale, "Vibely verification code", "Mã xác minh Vibely"),
-            bodyRows,
-            null,
-            locale
-        );
+        return VibelyEmailLayout.document(MailCopy.get(locale, "otp.verifyTitle"), bodyRows, null, locale);
     }
 
     static String plainBody(String code, String expiryLabel, EmailLocale locale) {
@@ -470,39 +318,31 @@ final class OtpVerificationEmailTemplate {
 
             %s
             """.formatted(
-                EmailLocales.pick(locale, "Vibely verification code", "Mã xác minh Vibely"),
-                EmailLocales.pick(
-                    locale,
-                    "To verify your account, enter the following code on Vibely:",
-                    "Để xác minh tài khoản, hãy nhập mã sau trên Vibely:"
-                ),
+                MailCopy.get(locale, "otp.verifyTitle"),
+                MailCopy.get(locale, "otp.verifyIntro"),
                 code,
-                EmailLocales.pick(locale, "The code expires in " + expiryLabel + ".", "Mã hết hạn sau " + expiryLabel + "."),
-                EmailLocales.pick(
-                    locale,
-                    "If you did not request this code, ignore this email.",
-                    "Nếu bạn không yêu cầu mã này, hãy bỏ qua email này."
-                )
+                MailCopy.get(locale, "otp.expiresIn", expiryLabel),
+                MailCopy.get(locale, "otp.plainIgnore")
             ).trim();
     }
 
     static String formatExpiryLabel(int expirySeconds, EmailLocale locale) {
         if (expirySeconds >= 3600 && expirySeconds % 3600 == 0) {
-            int hours = expirySeconds / 3600;
-            return EmailLocales.pick(locale, hours + " hours", hours + " giờ");
+            return MailCopy.get(locale, "common.hours", expirySeconds / 3600);
         }
         int minutes = Math.max(1, (int) Math.ceil(expirySeconds / 60.0));
-        return EmailLocales.pick(locale, minutes + " minutes", minutes + " phút");
+        return MailCopy.get(locale, "common.minutes", minutes);
     }
 
     private static String formatTime(EmailLocale locale) {
-        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-        return (locale != null && locale.vietnamese() ? VI_TIME : EN_TIME).format(now);
+        EmailLocale resolved = locale == null ? EmailLocale.EN : locale;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMM yyyy HH:mm 'UTC'", resolved.toJavaLocale());
+        return OffsetDateTime.now(ZoneOffset.UTC).format(formatter);
     }
 
-    private static String escapeHtml(String raw) {
+    private static String escapeHtml(String raw, EmailLocale locale) {
         if (raw == null || raw.isBlank()) {
-            return EmailLocales.pick(EmailLocale.EN, "Vibely user", "người dùng Vibely");
+            return MailCopy.get(locale, "otp.guestName");
         }
         return raw.replace("&", "&amp;")
             .replace("<", "&lt;")
