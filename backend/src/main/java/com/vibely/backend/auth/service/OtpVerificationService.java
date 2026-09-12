@@ -12,6 +12,8 @@ import com.vibely.backend.auth.dto.VerifyCodeResponse;
 import com.vibely.backend.auth.entity.OtpChallenge;
 import com.vibely.backend.auth.entity.OtpCodePurpose;
 import com.vibely.backend.auth.entity.OtpVerificationCode;
+import com.vibely.backend.auth.mail.EmailLocale;
+import com.vibely.backend.auth.mail.EmailLocales;
 import com.vibely.backend.auth.mail.OtpMailProperties;
 import com.vibely.backend.auth.mail.OtpVerificationEmailSender;
 import com.vibely.backend.auth.repository.OtpChallengeRepository;
@@ -101,6 +103,12 @@ public class OtpVerificationService {
         String code = generateSixDigitCode();
         logChallenge(email, true, "captcha", "verified");
 
+        Optional<User> existingUser = userRepository.findByEmail(email);
+        EmailLocale emailLocale = EmailLocales.resolve(
+            request.getLocale(),
+            existingUser.map(User::getPreferredLocale).orElse(null)
+        );
+
         OtpVerificationCode otpCode = new OtpVerificationCode();
         otpCode.setEmail(email);
         otpCode.setPurpose(purpose.name());
@@ -112,24 +120,24 @@ public class OtpVerificationService {
 
         boolean emailSent;
         if (purpose == OtpCodePurpose.PASSWORD_RESET) {
-            emailSent = emailSender.sendPasswordResetCode(email, code, codeExpirySeconds);
+            emailSent = emailSender.sendPasswordResetCode(email, code, codeExpirySeconds, emailLocale);
         } else if (purpose == OtpCodePurpose.ACCOUNT_DEACTIVATION) {
-            String username = userRepository.findByEmail(email)
-                .map(User::getUsername)
-                .orElse(email);
-            emailSent = emailSender.sendAccountDeactivationCode(email, username, code, codeExpirySeconds, metadata);
+            String username = existingUser.map(User::getUsername).orElse(email);
+            emailSent = emailSender.sendAccountDeactivationCode(
+                email, username, code, codeExpirySeconds, metadata, emailLocale
+            );
         } else if (purpose == OtpCodePurpose.ACCOUNT_REACTIVATION) {
-            String username = userRepository.findByEmail(email)
-                .map(User::getUsername)
-                .orElse(email);
-            emailSent = emailSender.sendAccountReactivationCode(email, username, code, codeExpirySeconds, metadata);
+            String username = existingUser.map(User::getUsername).orElse(email);
+            emailSent = emailSender.sendAccountReactivationCode(
+                email, username, code, codeExpirySeconds, metadata, emailLocale
+            );
         } else if (purpose == OtpCodePurpose.ACCOUNT_DELETION) {
-            String username = userRepository.findByEmail(email)
-                .map(User::getUsername)
-                .orElse(email);
-            emailSent = emailSender.sendAccountDeletionCode(email, username, code, codeExpirySeconds, metadata);
+            String username = existingUser.map(User::getUsername).orElse(email);
+            emailSent = emailSender.sendAccountDeletionCode(
+                email, username, code, codeExpirySeconds, metadata, emailLocale
+            );
         } else {
-            emailSent = emailSender.sendVerificationCode(email, code, codeExpirySeconds);
+            emailSent = emailSender.sendVerificationCode(email, code, codeExpirySeconds, emailLocale);
         }
 
         String demoCode = null;

@@ -11,6 +11,7 @@ public record MeResponse(
     boolean needsOnboarding,
     boolean privateAccount,
     String accountRegion,
+    String preferredLocale,
     String commentAudience,
     String dmPotentialAudience,
     String dmOthersAudience

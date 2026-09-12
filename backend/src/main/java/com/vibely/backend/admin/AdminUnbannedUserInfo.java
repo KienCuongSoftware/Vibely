@@ -4,6 +4,7 @@ public record AdminUnbannedUserInfo(
     Long id,
     String username,
     String displayName,
-    String email
+    String email,
+    String preferredLocale
 ) {
 }

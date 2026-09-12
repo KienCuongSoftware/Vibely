@@ -8,6 +8,7 @@ public class LoginContextRequest {
     private Double longitude;
     private DeviceFingerprintPayload fingerprint;
     private String fingerprintHash;
+    private String locale;
 
     public Double getLatitude() {
         return latitude;
@@ -39,5 +40,13 @@ public class LoginContextRequest {
 
     public void setFingerprintHash(String fingerprintHash) {
         this.fingerprintHash = fingerprintHash;
+    }
+
+    public String getLocale() {
+        return locale;
+    }
+
+    public void setLocale(String locale) {
+        this.locale = locale;
     }
 }

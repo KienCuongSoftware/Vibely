@@ -36,13 +36,34 @@ public final class VibelyEmailLayout {
     }
 
     public static String document(String pageTitle, String bodyRowsHtml, String footerUsername) {
+        return document(pageTitle, bodyRowsHtml, footerUsername, EmailLocale.EN);
+    }
+
+    public static String document(
+        String pageTitle,
+        String bodyRowsHtml,
+        String footerUsername,
+        EmailLocale locale
+    ) {
+        EmailLocale resolved = locale == null ? EmailLocale.EN : locale;
         String safeTitle = escapeHtml(pageTitle);
         String footerRecipient = footerUsername == null || footerUsername.isBlank()
             ? ""
-            : "<div>This email was generated for @" + escapeHtml(footerUsername) + ".</div>";
+            : "<div>"
+                + EmailLocales.pick(
+                    resolved,
+                    "This email was generated for @" + escapeHtml(footerUsername) + ".",
+                    "Email này được gửi cho @" + escapeHtml(footerUsername) + "."
+                )
+                + "</div>";
+        String automated = EmailLocales.pick(
+            resolved,
+            "This is an automated email, please do not reply.",
+            "Đây là email tự động, vui lòng không trả lời."
+        );
         return """
             <!DOCTYPE html>
-            <html lang="vi">
+            <html lang="%s">
             <head>
               <meta charset="UTF-8" />
               <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -68,7 +89,7 @@ public final class VibelyEmailLayout {
                         <td align="center" style="padding:8px 28px 28px;color:#a1a1aa;font-size:12px;line-height:1.6;">
                           <div style="font-size:18px;font-weight:800;color:#b4b4bb;margin-bottom:8px;">Vibely</div>
                           %s
-                          <div>This is an automated email, please do not reply.</div>
+                          <div>%s</div>
                         </td>
                       </tr>
                     </table>
@@ -77,7 +98,14 @@ public final class VibelyEmailLayout {
               </table>
             </body>
             </html>
-            """.formatted(safeTitle, colorBarHtml(), bodyRowsHtml, footerRecipient);
+            """.formatted(
+                resolved.htmlLang(),
+                safeTitle,
+                colorBarHtml(),
+                bodyRowsHtml,
+                footerRecipient,
+                automated
+            );
     }
 
     public static String headingRow(String heading) {

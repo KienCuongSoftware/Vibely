@@ -8,6 +8,7 @@ public record AdminBannedUserInfo(
     String displayName,
     String email,
     String banReason,
-    LocalDateTime bannedAt
+    LocalDateTime bannedAt,
+    String preferredLocale
 ) {
 }

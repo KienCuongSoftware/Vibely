@@ -1,5 +1,8 @@
 import { useTranslation } from 'react-i18next'
+import { useContext } from 'react'
 import { saveLocale } from './i18n.js'
+import { AuthContext } from '@/features/auth/store/auth-context'
+import { apiClient } from '@/shared/api/client'
 
 export const SUPPORTED_LANGUAGES = [
   { code: 'az', label: 'Azerbaijani', nativeLabel: 'Azərbaycan' },
@@ -62,6 +65,7 @@ export const SUPPORTED_LANGUAGES = [
 
 export function useLocale() {
   const { i18n } = useTranslation()
+  const auth = useContext(AuthContext)
   const locale = i18n.language
   const normalizedLocale = String(locale || 'en').toLowerCase()
   const selected = SUPPORTED_LANGUAGES.find((lang) => {
@@ -78,6 +82,9 @@ export function useLocale() {
   const changeLanguage = (lang) => {
     saveLocale(lang)
     i18n.changeLanguage(lang)
+    if (auth?.token) {
+      void apiClient.updatePreferredLocale(auth.token, { preferredLocale: lang })
+    }
   }
 
   return {

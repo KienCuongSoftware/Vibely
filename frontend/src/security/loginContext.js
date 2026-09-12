@@ -1,5 +1,6 @@
 import { collectFingerprint } from "@/security/fingerprint/collectFingerprint.js";
 import { getDeviceHash } from "@/security/sdk/antiBotClient.js";
+import { getSavedLocale } from "@/i18n/i18n.js";
 
 function locationPermissionMessage(error) {
   if (error?.code === 1) {
@@ -79,5 +80,6 @@ export async function collectLoginContext(options = {}) {
     ...location,
     fingerprint,
     fingerprintHash: getDeviceHash(),
+    locale: getSavedLocale(),
   };
 }

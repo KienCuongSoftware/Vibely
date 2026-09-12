@@ -7,7 +7,8 @@ public record AdminUpdatedUserInfo(
     String oldUsername,
     String newUsername,
     boolean usernameChanged,
-    boolean passwordChanged
+    boolean passwordChanged,
+    String preferredLocale
 ) {
     public boolean hasNotifiableChanges() {
         return usernameChanged || passwordChanged;

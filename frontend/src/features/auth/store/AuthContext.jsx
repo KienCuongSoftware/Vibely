@@ -17,12 +17,21 @@ import {
 import { collectLoginContext } from "@/security/loginContext.js";
 import { DEFAULT_AVATAR_URL, sanitizeAvatarUrl } from "@/features/profile/utils/avatarUrl.js";
 import { AuthContext } from "@/features/auth/store/auth-context";
-import i18n from "@/i18n/i18n.js";
+import i18n, { getSavedLocale } from "@/i18n/i18n.js";
 
 const USER_CACHE_KEY = "vibely_user_cache";
 const LEGACY_TOKEN_KEY = "vibely_token";
 const LEGACY_REFRESH_TOKEN_KEY = "vibely_refresh_token";
 
+function syncPreferredLocale() {
+  try {
+    void apiClient.updatePreferredLocale(COOKIE_SESSION_MARKER, {
+      preferredLocale: getSavedLocale(),
+    });
+  } catch {
+    // ignore network / unauthenticated
+  }
+}
 function persistUserCache(meLike) {
   try {
     if (!meLike || typeof meLike !== "object") return;
@@ -166,6 +175,7 @@ export function AuthProvider({ children }) {
     setUser(mapped);
     setToken(COOKIE_SESSION_MARKER);
     persistSessionUser(result);
+    syncPreferredLocale();
     return result;
   };
 
@@ -323,6 +333,7 @@ export function AuthProvider({ children }) {
           persistUserCache(me);
           setUser(mapUserWithDefaultAvatar(me));
           setToken(COOKIE_SESSION_MARKER);
+          syncPreferredLocale();
         }
       } catch {
         if (cancelled) return;

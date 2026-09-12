@@ -51,6 +51,9 @@ public class AccountDeactivationController {
         request.setEmail(authentication.getName());
         request.setPurpose(OtpCodePurpose.ACCOUNT_DEACTIVATION.name());
         request.setChallengePassed(true);
+        if (loginContextRequest != null) {
+            request.setLocale(loginContextRequest.getLocale());
+        }
         LoginContext loginContext = loginContextService.buildContext(httpRequest, loginContextRequest);
         return ApiResponse.success(
             otpVerificationService.sendCode(request, null, toMetadata(loginContext))

@@ -1,4 +1,5 @@
 import { request, toQuery } from "@/shared/api/http.js";
+import { getSavedLocale } from "@/i18n/i18n.js";
 
 export const authApi = {
   login: (payload, headers) =>
@@ -8,7 +9,11 @@ export const authApi = {
   refresh: () => request("/api/auth/refresh", { method: "POST" }),
   logout: () => request("/api/auth/logout", { method: "POST" }),
   sendCode: (payload, headers) =>
-    request("/api/auth/send-code", { method: "POST", body: payload, headers }),
+    request("/api/auth/send-code", {
+      method: "POST",
+      body: { locale: getSavedLocale(), ...payload },
+      headers,
+    }),
   verifyCode: (payload) =>
     request("/api/auth/verify-code", { method: "POST", body: payload }),
   resetPassword: (payload) =>

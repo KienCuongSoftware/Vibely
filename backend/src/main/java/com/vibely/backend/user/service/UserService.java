@@ -2,12 +2,15 @@ package com.vibely.backend.user.service;
 
 import com.vibely.backend.auth.service.UserAvatarResolver;
 import com.vibely.backend.user.AccountRegionCodes;
+import com.vibely.backend.user.PreferredLocaleCodes;
 import com.vibely.backend.user.CommentAudience;
 import com.vibely.backend.user.MessageDmAudience;
 import com.vibely.backend.user.dto.AccountRegionResponse;
+import com.vibely.backend.user.dto.PreferredLocaleResponse;
 import com.vibely.backend.user.dto.PrivacySettingsResponse;
 import com.vibely.backend.user.dto.PublicUserProfileResponse;
 import com.vibely.backend.user.dto.UpdateAccountRegionRequest;
+import com.vibely.backend.user.dto.UpdatePreferredLocaleRequest;
 import com.vibely.backend.user.dto.UpdatePrivacySettingsRequest;
 import com.vibely.backend.user.dto.UpdateProfileRequest;
 import com.vibely.backend.user.dto.UserFollowListItemResponse;
@@ -236,6 +239,18 @@ public class UserService {
         user.setAccountRegion(code);
         userRepository.save(user);
         return new AccountRegionResponse(user.getAccountRegion());
+    }
+
+    @Transactional
+    public PreferredLocaleResponse updatePreferredLocale(String email, UpdatePreferredLocaleRequest request) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new NotFoundException("User not found"));
+        if (!PreferredLocaleCodes.isAllowed(request.preferredLocale())) {
+            throw new BadRequestException("Invalid language");
+        }
+        user.setPreferredLocale(PreferredLocaleCodes.normalizeOrDefault(request.preferredLocale()));
+        userRepository.save(user);
+        return new PreferredLocaleResponse(user.getPreferredLocale());
     }
 
     private User getViewer(Authentication authentication) {

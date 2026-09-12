@@ -78,6 +78,9 @@ public class User {
     @Column(name = "account_region", nullable = false, length = 8)
     private String accountRegion = "VN";
 
+    @Column(name = "preferred_locale", nullable = false, length = 16)
+    private String preferredLocale = "en";
+
     @Column(name = "comment_audience", nullable = false, length = 20)
     private String commentAudience = "EVERYONE";
 
@@ -267,6 +270,14 @@ public class User {
 
     public void setAccountRegion(String accountRegion) {
         this.accountRegion = accountRegion;
+    }
+
+    public String getPreferredLocale() {
+        return preferredLocale;
+    }
+
+    public void setPreferredLocale(String preferredLocale) {
+        this.preferredLocale = preferredLocale;
     }
 
     public String getCommentAudience() {

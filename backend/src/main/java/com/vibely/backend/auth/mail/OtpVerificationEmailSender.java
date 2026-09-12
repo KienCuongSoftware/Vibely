@@ -35,7 +35,7 @@ public class OtpVerificationEmailSender {
         this.smtpUsername = smtpUsername;
     }
 
-    public boolean sendPasswordResetCode(String toEmail, String code, int expirySeconds) {
+    public boolean sendPasswordResetCode(String toEmail, String code, int expirySeconds, EmailLocale locale) {
         if (!mailProperties.isEnabled()) {
             log.info("Password reset email skipped (app.mail.enabled=false). recipient={}", maskEmail(toEmail));
             return false;
@@ -47,16 +47,16 @@ public class OtpVerificationEmailSender {
             return false;
         }
 
-        String expiryLabel = OtpVerificationEmailTemplate.formatExpiryLabel(expirySeconds);
+        String expiryLabel = OtpVerificationEmailTemplate.formatExpiryLabel(expirySeconds, locale);
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
             helper.setFrom(resolveFromAddress(), mailProperties.getFromName());
             helper.setTo(toEmail);
-            helper.setSubject(OtpVerificationEmailTemplate.subject(code));
+            helper.setSubject(OtpVerificationEmailTemplate.passwordResetSubject(code, locale));
             helper.setText(
-                OtpVerificationEmailTemplate.passwordResetPlainBody(code, expiryLabel),
-                OtpVerificationEmailTemplate.passwordResetHtmlBody(code, expiryLabel, helpUrl)
+                OtpVerificationEmailTemplate.passwordResetPlainBody(code, expiryLabel, locale),
+                OtpVerificationEmailTemplate.passwordResetHtmlBody(code, expiryLabel, helpUrl, locale)
             );
             mailSender.send(message);
             log.info("Password reset email sent to {}", maskEmail(toEmail));
@@ -74,7 +74,8 @@ public class OtpVerificationEmailSender {
         String username,
         String code,
         int expirySeconds,
-        OtpRequestMetadata metadata
+        OtpRequestMetadata metadata,
+        EmailLocale locale
     ) {
         if (!mailProperties.isEnabled()) {
             log.info("Account deactivation email skipped (app.mail.enabled=false). recipient={}", maskEmail(toEmail));
@@ -87,21 +88,22 @@ public class OtpVerificationEmailSender {
             return false;
         }
 
-        String expiryLabel = OtpVerificationEmailTemplate.formatExpiryLabel(expirySeconds);
+        String expiryLabel = OtpVerificationEmailTemplate.formatExpiryLabel(expirySeconds, locale);
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
             helper.setFrom(resolveFromAddress(), mailProperties.getFromName());
             helper.setTo(toEmail);
-            helper.setSubject(OtpVerificationEmailTemplate.accountDeactivationSubject(code));
+            helper.setSubject(OtpVerificationEmailTemplate.accountDeactivationSubject(code, locale));
             helper.setText(
-                OtpVerificationEmailTemplate.accountDeactivationPlainBody(username, code, expiryLabel, metadata),
+                OtpVerificationEmailTemplate.accountDeactivationPlainBody(username, code, expiryLabel, metadata, locale),
                 OtpVerificationEmailTemplate.accountDeactivationHtmlBody(
                     username,
                     code,
                     expiryLabel,
                     helpUrl,
-                    metadata
+                    metadata,
+                    locale
                 )
             );
             mailSender.send(message);
@@ -120,7 +122,8 @@ public class OtpVerificationEmailSender {
         String username,
         String code,
         int expirySeconds,
-        OtpRequestMetadata metadata
+        OtpRequestMetadata metadata,
+        EmailLocale locale
     ) {
         if (!mailProperties.isEnabled()) {
             log.info("Account reactivation email skipped (app.mail.enabled=false). recipient={}", maskEmail(toEmail));
@@ -133,21 +136,22 @@ public class OtpVerificationEmailSender {
             return false;
         }
 
-        String expiryLabel = OtpVerificationEmailTemplate.formatExpiryLabel(expirySeconds);
+        String expiryLabel = OtpVerificationEmailTemplate.formatExpiryLabel(expirySeconds, locale);
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
             helper.setFrom(resolveFromAddress(), mailProperties.getFromName());
             helper.setTo(toEmail);
-            helper.setSubject(OtpVerificationEmailTemplate.accountReactivationSubject(code));
+            helper.setSubject(OtpVerificationEmailTemplate.accountReactivationSubject(code, locale));
             helper.setText(
-                OtpVerificationEmailTemplate.accountReactivationPlainBody(username, code, expiryLabel, metadata),
+                OtpVerificationEmailTemplate.accountReactivationPlainBody(username, code, expiryLabel, metadata, locale),
                 OtpVerificationEmailTemplate.accountReactivationHtmlBody(
                     username,
                     code,
                     expiryLabel,
                     helpUrl,
-                    metadata
+                    metadata,
+                    locale
                 )
             );
             mailSender.send(message);
@@ -166,7 +170,8 @@ public class OtpVerificationEmailSender {
         String username,
         String code,
         int expirySeconds,
-        OtpRequestMetadata metadata
+        OtpRequestMetadata metadata,
+        EmailLocale locale
     ) {
         if (!mailProperties.isEnabled()) {
             log.info("Account deletion email skipped (app.mail.enabled=false). recipient={}", maskEmail(toEmail));
@@ -179,21 +184,22 @@ public class OtpVerificationEmailSender {
             return false;
         }
 
-        String expiryLabel = OtpVerificationEmailTemplate.formatExpiryLabel(expirySeconds);
+        String expiryLabel = OtpVerificationEmailTemplate.formatExpiryLabel(expirySeconds, locale);
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
             helper.setFrom(resolveFromAddress(), mailProperties.getFromName());
             helper.setTo(toEmail);
-            helper.setSubject(OtpVerificationEmailTemplate.accountDeletionSubject(code));
+            helper.setSubject(OtpVerificationEmailTemplate.accountDeletionSubject(code, locale));
             helper.setText(
-                OtpVerificationEmailTemplate.accountDeletionPlainBody(username, code, expiryLabel, metadata),
+                OtpVerificationEmailTemplate.accountDeletionPlainBody(username, code, expiryLabel, metadata, locale),
                 OtpVerificationEmailTemplate.accountDeletionHtmlBody(
                     username,
                     code,
                     expiryLabel,
                     helpUrl,
-                    metadata
+                    metadata,
+                    locale
                 )
             );
             mailSender.send(message);
@@ -207,7 +213,7 @@ public class OtpVerificationEmailSender {
         }
     }
 
-    public boolean sendVerificationCode(String toEmail, String code, int expirySeconds) {
+    public boolean sendVerificationCode(String toEmail, String code, int expirySeconds, EmailLocale locale) {
         if (!mailProperties.isEnabled()) {
             log.info("OTP email skipped (app.mail.enabled=false). recipient={}", maskEmail(toEmail));
             return false;
@@ -219,16 +225,16 @@ public class OtpVerificationEmailSender {
             return false;
         }
 
-        String expiryLabel = OtpVerificationEmailTemplate.formatExpiryLabel(expirySeconds);
+        String expiryLabel = OtpVerificationEmailTemplate.formatExpiryLabel(expirySeconds, locale);
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
             helper.setFrom(resolveFromAddress(), mailProperties.getFromName());
             helper.setTo(toEmail);
-            helper.setSubject(OtpVerificationEmailTemplate.subject(code));
+            helper.setSubject(OtpVerificationEmailTemplate.subject(code, locale));
             helper.setText(
-                OtpVerificationEmailTemplate.plainBody(code, expiryLabel),
-                OtpVerificationEmailTemplate.htmlBody(code, expiryLabel, helpUrl)
+                OtpVerificationEmailTemplate.plainBody(code, expiryLabel, locale),
+                OtpVerificationEmailTemplate.htmlBody(code, expiryLabel, helpUrl, locale)
             );
             mailSender.send(message);
             log.info("OTP verification email sent to {}", maskEmail(toEmail));

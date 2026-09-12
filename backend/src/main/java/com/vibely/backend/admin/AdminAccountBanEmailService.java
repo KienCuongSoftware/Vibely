@@ -1,5 +1,7 @@
 package com.vibely.backend.admin;
 
+import com.vibely.backend.auth.mail.EmailLocale;
+import com.vibely.backend.auth.mail.EmailLocales;
 import com.vibely.backend.auth.mail.OtpMailProperties;
 import com.vibely.backend.auth.mail.VibelyEmailLayout;
 import jakarta.mail.internet.MimeMessage;
@@ -38,7 +40,7 @@ public class AdminAccountBanEmailService {
         }
         sendAdminAccountEmail(
             bannedUser.email(),
-            "Your Vibely account has been banned",
+            EmailLocales.pick(locale(bannedUser.preferredLocale()), "Your Vibely account has been banned", "Tài khoản Vibely của bạn đã bị cấm"),
             plainBanBody(bannedUser),
             htmlBanBody(bannedUser),
             "Admin account ban email"
@@ -51,7 +53,7 @@ public class AdminAccountBanEmailService {
         }
         sendAdminAccountEmail(
             unbannedUser.email(),
-            "Your Vibely account has been unlocked",
+            EmailLocales.pick(locale(unbannedUser.preferredLocale()), "Your Vibely account has been unlocked", "Tài khoản Vibely của bạn đã được mở khóa"),
             plainUnbanBody(unbannedUser),
             htmlUnbanBody(unbannedUser),
             "Admin account unban email"
@@ -94,91 +96,162 @@ public class AdminAccountBanEmailService {
     }
 
     private String plainBanBody(AdminBannedUserInfo user) {
+        EmailLocale locale = locale(user.preferredLocale());
         return """
-            Hello %s,
+            %s %s,
 
-            Your Vibely account @%s has been banned.
+            %s @%s %s
 
-            Reason:
+            %s:
             %s
 
-            You will not be able to log in or use Vibely until the account is unbanned.
+            %s
 
-            If you believe this is a mistake, you can submit an appeal to %s.
+            %s %s.
 
             Vibely
-            """.formatted(displayName(user), user.username(), reasonText(user), VibelyEmailLayout.SUPPORT_EMAIL);
+            """.formatted(
+            EmailLocales.pick(locale, "Hello", "Xin chào"),
+            displayName(user, locale),
+            EmailLocales.pick(locale, "Your Vibely account", "Tài khoản Vibely"),
+            user.username(),
+            EmailLocales.pick(locale, "has been banned.", "đã bị cấm."),
+            EmailLocales.pick(locale, "Reason", "Lý do"),
+            reasonText(user, locale),
+            EmailLocales.pick(
+                locale,
+                "You will not be able to log in or use Vibely until the account is unbanned.",
+                "Bạn sẽ không thể đăng nhập hoặc dùng Vibely cho đến khi tài khoản được mở khóa."
+            ),
+            EmailLocales.pick(
+                locale,
+                "If you believe this is a mistake, you can submit an appeal to",
+                "Nếu bạn cho rằng đây là nhầm lẫn, hãy gửi khiếu nại tới"
+            ),
+            VibelyEmailLayout.SUPPORT_EMAIL
+        );
     }
 
     private String htmlBanBody(AdminBannedUserInfo user) {
-        String bodyRows = VibelyEmailLayout.headingRow("Your account has been banned") + """
+        EmailLocale locale = locale(user.preferredLocale());
+        String bodyRows = VibelyEmailLayout.headingRow(
+            EmailLocales.pick(locale, "Your account has been banned", "Tài khoản của bạn đã bị cấm")
+        ) + """
             <tr>
               <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
-                <p style="margin:0 0 16px;">Hello <strong>%s</strong>,</p>
-                <p style="margin:0 0 16px;">Your Vibely account <strong>@%s</strong> has been banned.</p>
-                <p style="margin:0 0 8px;"><strong>Reason:</strong></p>
+                <p style="margin:0 0 16px;">%s <strong>%s</strong>,</p>
+                <p style="margin:0 0 16px;">%s <strong>@%s</strong> %s</p>
+                <p style="margin:0 0 8px;"><strong>%s:</strong></p>
                 <p style="margin:0 0 18px;white-space:pre-wrap;background:#f7f7f8;border-radius:10px;padding:16px 18px;color:#4b5563;">%s</p>
-                <p style="margin:0 0 16px;">You will not be able to log in or use Vibely until the account is unbanned.</p>
-                <p style="margin:0;">If you believe this is a mistake, you can submit an appeal to %s.</p>
+                <p style="margin:0 0 16px;">%s</p>
+                <p style="margin:0;">%s %s.</p>
               </td>
             </tr>
             """.formatted(
-            VibelyEmailLayout.escapeHtml(displayName(user)),
+            EmailLocales.pick(locale, "Hello", "Xin chào"),
+            VibelyEmailLayout.escapeHtml(displayName(user, locale)),
+            EmailLocales.pick(locale, "Your Vibely account", "Tài khoản Vibely"),
             VibelyEmailLayout.escapeHtml(user.username()),
-            VibelyEmailLayout.escapeHtml(reasonText(user)),
+            EmailLocales.pick(locale, "has been banned.", "đã bị cấm."),
+            EmailLocales.pick(locale, "Reason", "Lý do"),
+            VibelyEmailLayout.escapeHtml(reasonText(user, locale)),
+            EmailLocales.pick(
+                locale,
+                "You will not be able to log in or use Vibely until the account is unbanned.",
+                "Bạn sẽ không thể đăng nhập hoặc dùng Vibely cho đến khi tài khoản được mở khóa."
+            ),
+            EmailLocales.pick(
+                locale,
+                "If you believe this is a mistake, you can submit an appeal to",
+                "Nếu bạn cho rằng đây là nhầm lẫn, hãy gửi khiếu nại tới"
+            ),
             VibelyEmailLayout.supportEmailLink()
         );
-        return VibelyEmailLayout.document("Your Vibely account has been banned", bodyRows, user.username());
+        return VibelyEmailLayout.document(
+            EmailLocales.pick(locale, "Your Vibely account has been banned", "Tài khoản Vibely của bạn đã bị cấm"),
+            bodyRows,
+            user.username(),
+            locale
+        );
     }
 
     private String plainUnbanBody(AdminUnbannedUserInfo user) {
+        EmailLocale locale = locale(user.preferredLocale());
         return """
-            Hello %s,
+            %s %s,
 
-            Your Vibely account @%s has been unlocked by an administrator.
+            %s @%s %s
 
-            You can log in and use Vibely as usual.
+            %s
 
-            If you have questions, please contact %s.
+            %s %s.
 
             Vibely
             """.formatted(
-            displayName(user),
+            EmailLocales.pick(locale, "Hello", "Xin chào"),
+            displayName(user, locale),
+            EmailLocales.pick(locale, "Your Vibely account", "Tài khoản Vibely"),
             user.username(),
+            EmailLocales.pick(locale, "has been unlocked by an administrator.", "đã được quản trị viên mở khóa."),
+            EmailLocales.pick(locale, "You can log in and use Vibely as usual.", "Bạn có thể đăng nhập và dùng Vibely như bình thường."),
+            EmailLocales.pick(locale, "If you have questions, please contact", "Nếu có thắc mắc, hãy liên hệ"),
             VibelyEmailLayout.SUPPORT_EMAIL
         );
     }
 
     private String htmlUnbanBody(AdminUnbannedUserInfo user) {
-        String bodyRows = VibelyEmailLayout.headingRow("Your account has been unlocked") + """
+        EmailLocale locale = locale(user.preferredLocale());
+        String bodyRows = VibelyEmailLayout.headingRow(
+            EmailLocales.pick(locale, "Your account has been unlocked", "Tài khoản của bạn đã được mở khóa")
+        ) + """
             <tr>
               <td style="padding:0 56px 28px;font-size:15px;line-height:1.7;color:#161823;">
-                <p style="margin:0 0 16px;">Hello <strong>%s</strong>,</p>
-                <p style="margin:0 0 16px;">Your Vibely account <strong>@%s</strong> has been unlocked by an administrator.</p>
-                <p style="margin:0 0 16px;">You can log in and use Vibely as usual.</p>
-                <p style="margin:0;">If you have questions, please contact %s.</p>
+                <p style="margin:0 0 16px;">%s <strong>%s</strong>,</p>
+                <p style="margin:0 0 16px;">%s <strong>@%s</strong> %s</p>
+                <p style="margin:0 0 16px;">%s</p>
+                <p style="margin:0;">%s %s.</p>
               </td>
             </tr>
             """.formatted(
-            VibelyEmailLayout.escapeHtml(displayName(user)),
+            EmailLocales.pick(locale, "Hello", "Xin chào"),
+            VibelyEmailLayout.escapeHtml(displayName(user, locale)),
+            EmailLocales.pick(locale, "Your Vibely account", "Tài khoản Vibely"),
             VibelyEmailLayout.escapeHtml(user.username()),
+            EmailLocales.pick(locale, "has been unlocked by an administrator.", "đã được quản trị viên mở khóa."),
+            EmailLocales.pick(locale, "You can log in and use Vibely as usual.", "Bạn có thể đăng nhập và dùng Vibely như bình thường."),
+            EmailLocales.pick(locale, "If you have questions, please contact", "Nếu có thắc mắc, hãy liên hệ"),
             VibelyEmailLayout.supportEmailLink()
         );
-        return VibelyEmailLayout.document("Your Vibely account has been unlocked", bodyRows, user.username());
+        return VibelyEmailLayout.document(
+            EmailLocales.pick(locale, "Your Vibely account has been unlocked", "Tài khoản Vibely của bạn đã được mở khóa"),
+            bodyRows,
+            user.username(),
+            locale
+        );
     }
 
-    private String displayName(AdminBannedUserInfo user) {
-        return StringUtils.hasText(user.displayName()) ? user.displayName().trim() : "you";
+    private String displayName(AdminBannedUserInfo user, EmailLocale locale) {
+        return StringUtils.hasText(user.displayName())
+            ? user.displayName().trim()
+            : EmailLocales.pick(locale, "you", "bạn");
     }
 
-    private String displayName(AdminUnbannedUserInfo user) {
-        return StringUtils.hasText(user.displayName()) ? user.displayName().trim() : "you";
+    private String displayName(AdminUnbannedUserInfo user, EmailLocale locale) {
+        return StringUtils.hasText(user.displayName())
+            ? user.displayName().trim()
+            : EmailLocales.pick(locale, "you", "bạn");
     }
 
-    private String reasonText(AdminBannedUserInfo user) {
+    private String reasonText(AdminBannedUserInfo user, EmailLocale locale) {
         String raw = user == null ? null : user.banReason();
         String cleaned = com.vibely.backend.moderation.BanReasonFormatter.forDisplay(raw);
-        return StringUtils.hasText(cleaned) ? cleaned : "No specific reason";
+        return StringUtils.hasText(cleaned)
+            ? cleaned
+            : EmailLocales.pick(locale, "No specific reason", "Không có lý do cụ thể");
+    }
+
+    private EmailLocale locale(String preferredLocale) {
+        return EmailLocales.resolve(preferredLocale);
     }
 
     private String resolveFromAddress() {

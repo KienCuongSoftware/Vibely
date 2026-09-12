@@ -2,11 +2,13 @@ package com.vibely.backend.user.controller;
 
 import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.user.dto.AccountRegionResponse;
+import com.vibely.backend.user.dto.PreferredLocaleResponse;
 import com.vibely.backend.user.dto.CreateDataExportRequest;
 import com.vibely.backend.user.dto.DataExportRequestResponse;
 import com.vibely.backend.user.dto.EmailCheckResponse;
 import com.vibely.backend.user.dto.PrivacySettingsResponse;
 import com.vibely.backend.user.dto.UpdateAccountRegionRequest;
+import com.vibely.backend.user.dto.UpdatePreferredLocaleRequest;
 import com.vibely.backend.user.dto.UpdatePrivacySettingsRequest;
 import com.vibely.backend.user.dto.RecordProfileViewRequest;
 import com.vibely.backend.user.dto.SuggestedCreatorsResponse;
@@ -199,6 +201,17 @@ public class UserController {
     ) {
         return ApiResponse.success(
             userService.updateAccountRegion(authentication.getName(), request)
+        );
+    }
+
+    @PatchMapping("/me/locale")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<PreferredLocaleResponse> updatePreferredLocale(
+        Authentication authentication,
+        @Valid @RequestBody UpdatePreferredLocaleRequest request
+    ) {
+        return ApiResponse.success(
+            userService.updatePreferredLocale(authentication.getName(), request)
         );
     }
 

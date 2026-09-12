@@ -27,6 +27,7 @@ import com.vibely.backend.common.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import com.vibely.backend.security.JwtService;
 import com.vibely.backend.user.AccountRegionCodes;
+import com.vibely.backend.user.PreferredLocaleCodes;
 import com.vibely.backend.user.CommentAudience;
 import com.vibely.backend.user.MessageDmAudience;
 import com.vibely.backend.user.entity.Role;
@@ -284,6 +285,9 @@ public class AuthService {
         sendCodeRequest.setEmail(user.getEmail());
         sendCodeRequest.setPurpose(OtpCodePurpose.ACCOUNT_REACTIVATION.name());
         sendCodeRequest.setChallengePassed(true);
+        if (request.getLoginContext() != null) {
+            sendCodeRequest.setLocale(request.getLoginContext().getLocale());
+        }
         return otpVerificationService.sendCode(sendCodeRequest, null, enrichReactivationMetadata(user, metadata));
     }
 
@@ -326,6 +330,7 @@ public class AuthService {
             userRequiresOnboardingCheck(user),
             user.isPrivateAccount(),
             AccountRegionCodes.normalizeOrDefault(user.getAccountRegion()),
+            PreferredLocaleCodes.normalizeOrDefault(user.getPreferredLocale()),
             CommentAudience.normalizeOrDefault(user.getCommentAudience()),
             MessageDmAudience.normalizeOrDefault(user.getDmPotentialAudience()),
             MessageDmAudience.normalizeOrDefault(user.getDmOthersAudience())

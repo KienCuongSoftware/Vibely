@@ -5,6 +5,8 @@ export const settingsApi = {
     request("/api/users/me/privacy", { method: "PATCH", token, body: payload }),
   updateAccountRegion: (token, payload) =>
     request("/api/users/me/account-region", { method: "PATCH", token, body: payload }),
+  updatePreferredLocale: (token, payload) =>
+    request("/api/users/me/locale", { method: "PATCH", token, body: payload }),
   listDataExports: (token) =>
     request("/api/users/me/data-exports", { token }),
   createDataExport: (token, payload) =>

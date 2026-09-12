@@ -128,7 +128,8 @@ public class BanAppealService {
         if (previousStatus != nextStatus) {
             accountBanAppealEmailService.sendAppealDecision(
                 saved,
-                resolveDisplayName(user, saved.getContactEmail())
+                resolveDisplayName(user, saved.getContactEmail()),
+                user == null ? null : user.getPreferredLocale()
             );
         }
 

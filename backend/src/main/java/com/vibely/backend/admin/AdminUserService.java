@@ -140,7 +140,8 @@ public class AdminUserService {
             oldUsername,
             saved.getUsername(),
             usernameChanged,
-            passwordChanged
+            passwordChanged,
+            saved.getPreferredLocale()
         );
         return new AdminUserUpdateResult(saved, notification);
     }
@@ -163,7 +164,8 @@ public class AdminUserService {
             target.getId(),
             target.getUsername(),
             target.getDisplayName(),
-            target.getEmail()
+            target.getEmail(),
+            target.getPreferredLocale()
         );
 
         cleanupRowsThatWouldOtherwiseRemain(target.getId());
@@ -228,7 +230,8 @@ public class AdminUserService {
             user.getId(),
             user.getUsername(),
             user.getDisplayName(),
-            user.getEmail()
+            user.getEmail(),
+            user.getPreferredLocale()
         );
     }
 
@@ -239,7 +242,8 @@ public class AdminUserService {
             user.getDisplayName(),
             user.getEmail(),
             com.vibely.backend.moderation.BanReasonFormatter.forDisplay(user.getBanReason()),
-            user.getBannedAt()
+            user.getBannedAt(),
+            user.getPreferredLocale()
         );
     }
 

@@ -15,6 +15,9 @@ public class SendCodeRequest {
     /** REGISTER (mặc định) hoặc PASSWORD_RESET */
     private String purpose;
 
+    /** UI language (e.g. en, vi) — used to localize OTP email. */
+    private String locale;
+
     public String getEmail() {
         return email;
     }
@@ -37,5 +40,13 @@ public class SendCodeRequest {
 
     public void setPurpose(String purpose) {
         this.purpose = purpose;
+    }
+
+    public String getLocale() {
+        return locale;
+    }
+
+    public void setLocale(String locale) {
+        this.locale = locale;
     }
 }

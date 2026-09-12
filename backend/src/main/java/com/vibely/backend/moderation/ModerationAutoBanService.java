@@ -166,7 +166,8 @@ public class ModerationAutoBanService {
             target.getDisplayName(),
             target.getEmail(),
             BanReasonFormatter.forDisplay(target.getBanReason()),
-            target.getBannedAt()
+            target.getBannedAt(),
+            target.getPreferredLocale()
         );
     }
 

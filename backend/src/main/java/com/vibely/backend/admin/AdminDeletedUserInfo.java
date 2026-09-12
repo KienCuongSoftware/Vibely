@@ -4,6 +4,7 @@ public record AdminDeletedUserInfo(
     Long id,
     String username,
     String displayName,
-    String email
+    String email,
+    String preferredLocale
 ) {
 }
