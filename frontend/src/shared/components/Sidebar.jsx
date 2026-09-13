@@ -269,7 +269,7 @@ export function Sidebar({
                   </span>
                 ) : (
                   <span className="relative inline-flex shrink-0">
-                    <Icon className="text-[22px]" />
+                    <Icon className="text-[24px]" aria-hidden />
                     {showNavBadge && collapsed ? (
                       <span
                         className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FE2C55] px-0.5 text-[9px] font-bold leading-none text-white"
@@ -328,7 +328,11 @@ export function Sidebar({
         ) : null}
 
         {!collapsed ? (
-          <div className="mt-auto space-y-2 text-xs text-zinc-500">
+          <div
+            className={`mt-auto space-y-2 text-xs text-zinc-500 ${
+              token ? "border-t border-zinc-900 pt-4" : ""
+            }`}
+          >
             <p>{t("nav.company")}</p>
             <p>{t("nav.program")}</p>
             <p>{t("nav.termsAndPolicies")}</p>
