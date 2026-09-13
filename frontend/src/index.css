@@ -1489,6 +1489,12 @@ html[data-vibely-theme="light"] .vibely-cover-phone-status .text-white {
 }
 
 /* LIVE hub — light + dark theme (page chrome follows app theme; player stays dark). */
+.vibely-live-page .live-sidebar-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+html[data-vibely-theme="light"] .vibely-live-page .live-sidebar-divider {
+  border-top-color: rgba(22, 24, 35, 0.12);
+}
 html[data-vibely-theme="light"] .vibely-live-page {
   background-color: #fff;
   color: #161823;

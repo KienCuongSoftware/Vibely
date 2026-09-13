@@ -1,17 +1,16 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
+import { BsCameraVideoFill, BsTvFill } from 'react-icons/bs'
 import {
   IoArrowBack,
   IoCashOutline,
   IoCheckmarkCircle,
   IoPlayCircle,
   IoPlayCircleOutline,
-  IoVideocam,
   IoVideocamOutline,
 } from 'react-icons/io5'
 import {
-  MdLiveTv,
   MdMoreHoriz,
   MdOutlineLiveTv,
   MdOutlineMoreHoriz,
@@ -33,6 +32,7 @@ function LiveNavItem({
     <button
       type="button"
       onClick={onClick}
+      aria-current={active ? 'page' : undefined}
       aria-label={label}
       title={collapsed ? label : undefined}
       className={`live-nav-item flex h-10 w-full cursor-pointer items-center rounded-lg text-[15px] transition hover:bg-zinc-900 ${
@@ -43,7 +43,10 @@ function LiveNavItem({
           : 'text-zinc-100'
       }`}
     >
-      <ResolvedIcon className="live-nav-icon shrink-0 text-[24px]" aria-hidden />
+      <ResolvedIcon
+        className={`live-nav-icon shrink-0 text-[24px] ${active ? 'fill-current' : ''}`}
+        aria-hidden
+      />
       {!collapsed ? <span className="min-w-0 truncate">{label}</span> : null}
     </button>
   )
@@ -134,7 +137,7 @@ export function LiveSidebar({
             collapsed={moreOpen}
             active={!moreOpen && activeNav === 'explore'}
             icon={MdOutlineLiveTv}
-            activeIcon={MdLiveTv}
+            activeIcon={BsTvFill}
             label={t('livePage.nav.exploreLive')}
             onClick={() => navTo('/live')}
           />
@@ -142,7 +145,7 @@ export function LiveSidebar({
             collapsed={moreOpen}
             active={!moreOpen && activeNav === 'goLive'}
             icon={IoVideocamOutline}
-            activeIcon={IoVideocam}
+            activeIcon={BsCameraVideoFill}
             label={t('livePage.nav.goLive')}
             onClick={closeMore}
           />
@@ -166,7 +169,7 @@ export function LiveSidebar({
 
         {!moreOpen ? (
           <>
-            <div className="mt-3 border-t border-zinc-900 pt-3">
+            <div className="live-sidebar-divider mt-3 pt-3">
               <button
                 type="button"
                 className="live-get-coins flex h-9 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-[#fe2c55] px-3 text-[13px] font-semibold text-white transition hover:bg-[#e6284c]"
@@ -187,7 +190,7 @@ export function LiveSidebar({
               </div>
             </div>
 
-            <footer className="mt-4 shrink-0 space-y-1 border-t border-zinc-900 pt-4 text-[11px] leading-relaxed text-zinc-500">
+            <footer className="live-sidebar-divider mt-4 shrink-0 space-y-1 pt-4 text-[11px] leading-relaxed text-zinc-500">
               <div className="flex flex-wrap gap-x-2 gap-y-1">
                 <span>{t('nav.company')}</span>
                 <span>{t('nav.program')}</span>
