@@ -204,7 +204,7 @@ export function Sidebar({
               : item.id === "activity" && activityOpen
                 ? true
                 : activeMenu === item.id;
-            const Icon = item.icon;
+            const Icon = isActive && item.activeIcon ? item.activeIcon : item.icon;
             const useProfileAvatarIcon = token && item.id === "profile";
             const showActivityBadge =
               token && item.id === "activity" && unreadCount > 0;
@@ -249,13 +249,21 @@ export function Sidebar({
                   />
                 ) : isUpload ? (
                   <span
-                    className={`inline-grid shrink-0 place-items-center rounded-[6px] border border-current ${
+                    className={`inline-grid shrink-0 place-items-center rounded-[6px] ${
                       collapsed ? "h-7 w-7" : "h-6 w-6"
+                    } ${
+                      isActive
+                        ? "bg-current text-white"
+                        : "border border-current"
                     }`}
                     aria-hidden
                   >
                     {/* Text "+" sits low on the baseline — nudge up for optical center */}
-                    <span className="-translate-y-[1.5px] text-[18px] font-semibold leading-none">
+                    <span
+                      className={`-translate-y-[1.5px] text-[18px] font-semibold leading-none ${
+                        isActive ? "text-white" : ""
+                      }`}
+                    >
                       +
                     </span>
                   </span>
