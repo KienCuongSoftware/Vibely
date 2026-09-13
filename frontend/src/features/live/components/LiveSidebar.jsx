@@ -5,16 +5,30 @@ import {
   IoArrowBack,
   IoCashOutline,
   IoCheckmarkCircle,
-  IoEllipsisHorizontal,
+  IoPlayCircle,
   IoPlayCircleOutline,
-  IoTvOutline,
+  IoVideocam,
   IoVideocamOutline,
 } from 'react-icons/io5'
+import {
+  MdLiveTv,
+  MdMoreHoriz,
+  MdOutlineLiveTv,
+  MdOutlineMoreHoriz,
+} from 'react-icons/md'
 import { SidebarMorePanel } from '@/shared/components/SidebarMorePanel.jsx'
 import { VibelyMarkIcon, VibelyWordmark } from '@/shared/components/VibelyWordmark.jsx'
 import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 
-function LiveNavItem({ active, icon: Icon, label, onClick, collapsed = false }) {
+function LiveNavItem({
+  active,
+  icon: Icon,
+  activeIcon: ActiveIcon,
+  label,
+  onClick,
+  collapsed = false,
+}) {
+  const ResolvedIcon = active && ActiveIcon ? ActiveIcon : Icon
   return (
     <button
       type="button"
@@ -29,7 +43,7 @@ function LiveNavItem({ active, icon: Icon, label, onClick, collapsed = false }) 
           : 'text-zinc-100'
       }`}
     >
-      <Icon className="live-nav-icon shrink-0 text-[22px]" aria-hidden />
+      <ResolvedIcon className="live-nav-icon shrink-0 text-[24px]" aria-hidden />
       {!collapsed ? <span className="min-w-0 truncate">{label}</span> : null}
     </button>
   )
@@ -119,7 +133,8 @@ export function LiveSidebar({
           <LiveNavItem
             collapsed={moreOpen}
             active={!moreOpen && activeNav === 'explore'}
-            icon={IoTvOutline}
+            icon={MdOutlineLiveTv}
+            activeIcon={MdLiveTv}
             label={t('livePage.nav.exploreLive')}
             onClick={() => navTo('/live')}
           />
@@ -127,6 +142,7 @@ export function LiveSidebar({
             collapsed={moreOpen}
             active={!moreOpen && activeNav === 'goLive'}
             icon={IoVideocamOutline}
+            activeIcon={IoVideocam}
             label={t('livePage.nav.goLive')}
             onClick={closeMore}
           />
@@ -134,13 +150,15 @@ export function LiveSidebar({
             collapsed={moreOpen}
             active={!moreOpen && activeNav === 'creatorTools'}
             icon={IoPlayCircleOutline}
+            activeIcon={IoPlayCircle}
             label={t('livePage.nav.creatorTools')}
             onClick={closeMore}
           />
           <LiveNavItem
             collapsed={moreOpen}
             active={moreOpen}
-            icon={IoEllipsisHorizontal}
+            icon={MdOutlineMoreHoriz}
+            activeIcon={MdMoreHoriz}
             label={t('nav.more')}
             onClick={() => setMoreOpen((open) => !open)}
           />
@@ -148,13 +166,15 @@ export function LiveSidebar({
 
         {!moreOpen ? (
           <>
-            <button
-              type="button"
-              className="live-get-coins mt-3 flex h-9 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-[#fe2c55] px-3 text-[13px] font-semibold text-white transition hover:bg-[#e6284c]"
-            >
-              <IoCashOutline className="shrink-0 text-base" aria-hidden />
-              {t('moreMenu.getCoins')}
-            </button>
+            <div className="mt-3 border-t border-zinc-900 pt-3">
+              <button
+                type="button"
+                className="live-get-coins flex h-9 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-[#fe2c55] px-3 text-[13px] font-semibold text-white transition hover:bg-[#e6284c]"
+              >
+                <IoCashOutline className="shrink-0 text-base" aria-hidden />
+                {t('moreMenu.getCoins')}
+              </button>
+            </div>
 
             <div className="mt-6 min-h-0 flex-1 overflow-y-auto scrollbar-none">
               <p className="mb-2 px-2 text-[13px] font-semibold text-zinc-500">
