@@ -1358,7 +1358,11 @@ export function ProfilePage() {
     if (!avatarEditorSrc || !token || avatarEditorBusy) return
     const image = new Image()
     image.onload = async () => {
-      const size = 512
+      // Export at source short-side up to 2048px (was hard-capped at 512 → soft on retina / large phones).
+      const sourceW = image.naturalWidth || image.width || 1
+      const sourceH = image.naturalHeight || image.height || 1
+      const sourceShort = Math.min(sourceW, sourceH)
+      const size = Math.max(512, Math.min(2048, sourceShort))
       const canvas = document.createElement('canvas')
       canvas.width = size
       canvas.height = size
@@ -1368,8 +1372,8 @@ export function ProfilePage() {
         return
       }
       const { dw, dh, dx, dy } = avatarCoverLayout(
-        image.naturalWidth || image.width,
-        image.naturalHeight || image.height,
+        sourceW,
+        sourceH,
         size,
         avatarEditorZoom,
         avatarEditorOffset.x,
@@ -1389,7 +1393,7 @@ export function ProfilePage() {
           canvas.toBlob(
             (b) => (b ? resolve(b) : reject(new Error('toBlob failed'))),
             'image/jpeg',
-            0.9,
+            0.92,
           )
         })
         const publicUrl = await uploadThumbnailToStorage(
