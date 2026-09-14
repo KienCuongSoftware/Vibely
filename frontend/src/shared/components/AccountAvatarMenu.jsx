@@ -55,6 +55,8 @@ export function AccountAvatarMenu({
 
   if (!open) return null
 
+  const isAdmin = String(user?.role ?? '').toUpperCase() === 'ADMIN'
+
   const closeAll = () => {
     setLangOpen(false)
     setThemeOpen(false)
@@ -148,14 +150,18 @@ export function AccountAvatarMenu({
             <IoPerson className="shrink-0 text-lg text-zinc-300" aria-hidden />
             <span>{t('settings.menu.viewProfile')}</span>
           </MenuRow>
-          <MenuRow type="button" role="menuitem">
-            <IoCashOutline className="shrink-0 text-lg text-zinc-300" aria-hidden />
-            <span>{t('settings.menu.getCoins')}</span>
-          </MenuRow>
-          <MenuRow type="button" role="menuitem">
-            <IoRocketOutline className="shrink-0 text-lg text-zinc-300" aria-hidden />
-            <span className="whitespace-nowrap">{t('settings.menu.creatorTools')}</span>
-          </MenuRow>
+          {!isAdmin ? (
+            <>
+              <MenuRow type="button" role="menuitem">
+                <IoCashOutline className="shrink-0 text-lg text-zinc-300" aria-hidden />
+                <span>{t('settings.menu.getCoins')}</span>
+              </MenuRow>
+              <MenuRow type="button" role="menuitem">
+                <IoRocketOutline className="shrink-0 text-lg text-zinc-300" aria-hidden />
+                <span className="whitespace-nowrap">{t('settings.menu.creatorTools')}</span>
+              </MenuRow>
+            </>
+          ) : null}
           <MenuRow type="button" role="menuitem" onClick={handleOpenSettings}>
             <IoSettingsOutline className="shrink-0 text-lg text-zinc-300" aria-hidden />
             <span>{t('settings.title')}</span>
@@ -166,10 +172,12 @@ export function AccountAvatarMenu({
               {languages.find((lang) => lang.code === locale)?.nativeLabel ?? t('settings.language')}
             </span>
           </MenuRow>
-          <MenuRow type="button" role="menuitem" onClick={() => { closeAll(); navigate('/support') }}>
-            <IoHelpCircleOutline className="shrink-0 text-lg text-zinc-300" aria-hidden />
-            <span>{t('settings.menu.feedbackHelp')}</span>
-          </MenuRow>
+          {!isAdmin ? (
+            <MenuRow type="button" role="menuitem" onClick={() => { closeAll(); navigate('/support') }}>
+              <IoHelpCircleOutline className="shrink-0 text-lg text-zinc-300" aria-hidden />
+              <span>{t('settings.menu.feedbackHelp')}</span>
+            </MenuRow>
+          ) : null}
           <MenuRow type="button" role="menuitem" onClick={() => setThemeOpen(true)}>
             <IoMoonOutline className="shrink-0 text-lg text-zinc-300" aria-hidden />
             <span>{t('settings.menu.darkMode')}</span>
