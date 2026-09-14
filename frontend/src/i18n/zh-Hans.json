@@ -563,7 +563,7 @@
     "loadMore": "加载更多"
   },
   "livePage": {
-    "pageTitle": "LIVE | Vibely",
+    "pageTitle": "{{category}} - Vibely LIVE 动态",
     "nav": {
       "exploreLive": "探索 LIVE",
       "goLive": "开始 LIVE",

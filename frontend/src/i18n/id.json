@@ -563,7 +563,7 @@
     "loadMore": "Muat lebih banyak"
   },
   "livePage": {
-    "pageTitle": "LIVE | Vibely",
+    "pageTitle": "{{category}} - Feed di Vibely LIVE",
     "nav": {
       "exploreLive": "Jelajahi LIVE",
       "goLive": "Mulai LIVE",

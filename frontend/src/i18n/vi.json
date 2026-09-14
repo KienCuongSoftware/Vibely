@@ -255,7 +255,7 @@
     "loadMore": "Tải thêm"
   },
   "livePage": {
-    "pageTitle": "LIVE | Vibely",
+    "pageTitle": "{{category}} - Bảng tin trên Vibely LIVE",
     "nav": {
       "exploreLive": "Khám phá phiên LIVE",
       "goLive": "Bắt đầu LIVE",

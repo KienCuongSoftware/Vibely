@@ -563,7 +563,7 @@
     "loadMore": "Daha fazla yükle"
   },
   "livePage": {
-    "pageTitle": "LIVE | Vibely",
+    "pageTitle": "{{category}} - Vibely LIVE akışı",
     "nav": {
       "exploreLive": "LIVE keşfet",
       "goLive": "LIVE başlat",

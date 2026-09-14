@@ -563,7 +563,7 @@
     "loadMore": "Charger plus"
   },
   "livePage": {
-    "pageTitle": "LIVE | Vibely",
+    "pageTitle": "{{category}} - Fil sur Vibely LIVE",
     "nav": {
       "exploreLive": "Explorer LIVE",
       "goLive": "Lancer LIVE",

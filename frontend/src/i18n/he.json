@@ -563,7 +563,7 @@
     "loadMore": "טען עוד"
   },
   "livePage": {
-    "pageTitle": "LIVE | Vibely",
+    "pageTitle": "{{category}} - פיד ב-Vibely LIVE",
     "nav": {
       "exploreLive": "Explore LIVE",
       "goLive": "Go LIVE",

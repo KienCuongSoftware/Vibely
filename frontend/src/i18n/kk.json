@@ -563,7 +563,7 @@
     "loadMore": "Загрузить ещё"
   },
   "livePage": {
-    "pageTitle": "LIVE | Vibely",
+    "pageTitle": "{{category}} - Vibely LIVE лентасы",
     "nav": {
       "exploreLive": "Explore LIVE",
       "goLive": "Go LIVE",

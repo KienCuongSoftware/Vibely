@@ -563,7 +563,7 @@
     "loadMore": "مزید لوڈ کریں"
   },
   "livePage": {
-    "pageTitle": "LIVE | Vibely",
+    "pageTitle": "{{category}} - Vibely LIVE پر فیڈ",
     "nav": {
       "exploreLive": "Explore LIVE",
       "goLive": "Go LIVE",

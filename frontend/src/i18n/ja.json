@@ -563,7 +563,7 @@
     "loadMore": "さらに読み込む"
   },
   "livePage": {
-    "pageTitle": "LIVE | Vibely",
+    "pageTitle": "{{category}} - Vibely LIVEのフィード",
     "nav": {
       "exploreLive": "LIVEを探索",
       "goLive": "LIVE開始",

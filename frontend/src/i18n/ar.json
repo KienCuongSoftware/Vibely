@@ -563,7 +563,7 @@
     "loadMore": "تحميل المزيد"
   },
   "livePage": {
-    "pageTitle": "LIVE | Vibely",
+    "pageTitle": "{{category}} - الخلاصة على Vibely LIVE",
     "nav": {
       "exploreLive": "استكشاف LIVE",
       "goLive": "بدء LIVE",

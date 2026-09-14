@@ -563,7 +563,7 @@
     "loadMore": "Load more"
   },
   "livePage": {
-    "pageTitle": "LIVE | Vibely",
+    "pageTitle": "{{category}} - Feed on Vibely LIVE",
     "nav": {
       "exploreLive": "Explore LIVE",
       "goLive": "Go LIVE",

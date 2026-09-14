@@ -563,7 +563,7 @@
     "loadMore": "और लोड करें"
   },
   "livePage": {
-    "pageTitle": "LIVE | Vibely",
+    "pageTitle": "{{category}} - Vibely LIVE पर फ़ीड",
     "nav": {
       "exploreLive": "LIVE देखें",
       "goLive": "LIVE शुरू करें",

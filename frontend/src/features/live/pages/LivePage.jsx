@@ -28,8 +28,11 @@ export function LivePage() {
   const isMobile = isMobileFeedLayout()
 
   useEffect(() => {
-    document.title = t('livePage.pageTitle')
-  }, [t])
+    const categoryLabel = t(`livePage.categories.${activeCategory}`, {
+      defaultValue: t('livePage.categories.recommended'),
+    })
+    document.title = t('livePage.pageTitle', { category: categoryLabel })
+  }, [t, activeCategory])
 
   const handleSelectMenu = (id) => {
     handleSidebarMenuSelect(navigate, id, {

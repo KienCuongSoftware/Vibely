@@ -563,7 +563,7 @@
     "loadMore": "โหลดเพิ่ม"
   },
   "livePage": {
-    "pageTitle": "LIVE | Vibely",
+    "pageTitle": "{{category}} - ฟีดบน Vibely LIVE",
     "nav": {
       "exploreLive": "สำรวจ LIVE",
       "goLive": "เริ่ม LIVE",

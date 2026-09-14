@@ -563,7 +563,7 @@
     "loadMore": "Load more"
   },
   "livePage": {
-    "pageTitle": "LIVE | Vibely",
+    "pageTitle": "{{category}} - Vibely LIVE hírfolyam",
     "nav": {
       "exploreLive": "Explore LIVE",
       "goLive": "Go LIVE",

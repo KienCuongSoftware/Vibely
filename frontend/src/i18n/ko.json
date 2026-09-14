@@ -563,7 +563,7 @@
     "loadMore": "더 보기"
   },
   "livePage": {
-    "pageTitle": "LIVE | Vibely",
+    "pageTitle": "{{category}} - Vibely LIVE 피드",
     "nav": {
       "exploreLive": "LIVE 둘러보기",
       "goLive": "LIVE 시작",
