@@ -300,6 +300,11 @@ function avatarCoverLayout(imgW, imgH, viewSize, zoom, offsetX, offsetY) {
   return { dw, dh, dx, dy }
 }
 
+/** Max export edge — never upscale past the source short side. */
+const AVATAR_EXPORT_MAX = 4096
+const AVATAR_LOW_RES_PX = 720
+const AVATAR_MAX_BYTES = 15 * 1024 * 1024
+
 function ProfileGridVideoTile({
   video,
   profileUsername,
@@ -430,9 +435,12 @@ export function ProfilePage() {
   const [avatarEditorZoom, setAvatarEditorZoom] = useState(1)
   const [avatarEditorOffset, setAvatarEditorOffset] = useState({ x: 0, y: 0 })
   const [avatarNaturalSize, setAvatarNaturalSize] = useState({ w: 0, h: 0 })
+  const [avatarViewportPx, setAvatarViewportPx] = useState(400)
   const [avatarEditorBusy, setAvatarEditorBusy] = useState(false)
+  const [avatarLowResWarn, setAvatarLowResWarn] = useState(false)
   const avatarDragRef = useRef(null)
   const avatarViewportRef = useRef(null)
+  const avatarObjectUrlRef = useRef('')
   const avatarFileInputRef = useRef(null)
   const accountMenuRef = useRef(null)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
@@ -1278,6 +1286,13 @@ export function ProfilePage() {
     avatarFileInputRef.current?.click()
   }
 
+  const revokeAvatarObjectUrl = () => {
+    if (avatarObjectUrlRef.current) {
+      URL.revokeObjectURL(avatarObjectUrlRef.current)
+      avatarObjectUrlRef.current = ''
+    }
+  }
+
   const handleAvatarFileChange = (event) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -1288,25 +1303,23 @@ export function ProfilePage() {
       return
     }
 
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > AVATAR_MAX_BYTES) {
       setEditError(t('profileChrome.avatarMaxSize'))
       event.target.value = ''
       return
     }
 
-    const reader = new FileReader()
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setAvatarEditorSrc(reader.result)
-        setAvatarEditorZoom(1)
-        setAvatarEditorOffset({ x: 0, y: 0 })
-        setAvatarNaturalSize({ w: 0, h: 0 })
-        setIsAvatarEditorOpen(true)
-        setEditError('')
-      }
-    }
-    reader.onerror = () => setEditError(t('profileChrome.readImageFailed'))
-    reader.readAsDataURL(file)
+    // Object URL keeps full decode fidelity better than a huge data: URL.
+    revokeAvatarObjectUrl()
+    const objectUrl = URL.createObjectURL(file)
+    avatarObjectUrlRef.current = objectUrl
+    setAvatarEditorSrc(objectUrl)
+    setAvatarEditorZoom(1)
+    setAvatarEditorOffset({ x: 0, y: 0 })
+    setAvatarNaturalSize({ w: 0, h: 0 })
+    setAvatarLowResWarn(false)
+    setIsAvatarEditorOpen(true)
+    setEditError('')
     event.target.value = ''
   }
 
@@ -1315,7 +1328,29 @@ export function ProfilePage() {
     setIsAvatarEditorOpen(false)
     setAvatarEditorSrc('')
     setAvatarEditorOffset({ x: 0, y: 0 })
+    setAvatarLowResWarn(false)
+    revokeAvatarObjectUrl()
   }
+
+  useEffect(() => {
+    return () => {
+      revokeAvatarObjectUrl()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isAvatarEditorOpen) return undefined
+    const el = avatarViewportRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return undefined
+    const sync = () => {
+      const px = Math.round(Math.min(el.clientWidth, el.clientHeight) || 400)
+      setAvatarViewportPx(Math.max(1, px))
+    }
+    sync()
+    const ro = new ResizeObserver(sync)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [isAvatarEditorOpen])
 
   const onAvatarEditorPointerDown = (event) => {
     if (avatarEditorBusy) return
@@ -1358,11 +1393,11 @@ export function ProfilePage() {
     if (!avatarEditorSrc || !token || avatarEditorBusy) return
     const image = new Image()
     image.onload = async () => {
-      // Export at source short-side up to 2048px (was hard-capped at 512 → soft on retina / large phones).
+      // Export at source short-side (never upscale). Cap at 4096 for upload size.
       const sourceW = image.naturalWidth || image.width || 1
       const sourceH = image.naturalHeight || image.height || 1
       const sourceShort = Math.min(sourceW, sourceH)
-      const size = Math.max(512, Math.min(2048, sourceShort))
+      const size = Math.max(1, Math.min(AVATAR_EXPORT_MAX, sourceShort))
       const canvas = document.createElement('canvas')
       canvas.width = size
       canvas.height = size
@@ -1379,12 +1414,17 @@ export function ProfilePage() {
         avatarEditorOffset.x,
         avatarEditorOffset.y,
       )
-      // Opaque black under transparent corners if we clip — JPEG has no alpha.
+      // Sample the visible square from source pixels (one resample → sharper than
+      // drawing a scaled full-frame bitmap into the canvas).
+      const sx = (-dx) * (sourceW / dw)
+      const sy = (-dy) * (sourceH / dh)
+      const sw = size * (sourceW / dw)
+      const sh = size * (sourceH / dh)
       context.fillStyle = '#000'
       context.fillRect(0, 0, size, size)
       context.imageSmoothingEnabled = true
       context.imageSmoothingQuality = 'high'
-      context.drawImage(image, dx, dy, dw, dh)
+      context.drawImage(image, sx, sy, sw, sh, 0, 0, size, size)
 
       setAvatarEditorBusy(true)
       setEditError('')
@@ -1393,7 +1433,7 @@ export function ProfilePage() {
           canvas.toBlob(
             (b) => (b ? resolve(b) : reject(new Error('toBlob failed'))),
             'image/jpeg',
-            0.92,
+            0.95,
           )
         })
         const publicUrl = await uploadThumbnailToStorage(
@@ -1406,6 +1446,8 @@ export function ProfilePage() {
         setAvatarEditorSrc('')
         setAvatarEditorOffset({ x: 0, y: 0 })
         setAvatarNaturalSize({ w: 0, h: 0 })
+        setAvatarLowResWarn(false)
+        revokeAvatarObjectUrl()
       } catch (error) {
         setEditError(error?.message ?? t('profileChrome.uploadImageFailed'))
       } finally {
@@ -1420,22 +1462,23 @@ export function ProfilePage() {
 
   const avatarPreviewLayout = useMemo(() => {
     if (!avatarNaturalSize.w || !avatarNaturalSize.h) return null
-    // Percentages relative to the square viewport (view = 100).
-    const { dw, dh, dx, dy } = avatarCoverLayout(
+    const view = Math.max(1, avatarViewportPx)
+    const { dw, dx, dy } = avatarCoverLayout(
       avatarNaturalSize.w,
       avatarNaturalSize.h,
-      100,
+      view,
       avatarEditorZoom,
       avatarEditorOffset.x,
       avatarEditorOffset.y,
     )
+    // Natural-size img + GPU scale — sharper than % width/height on retina.
+    const scale = dw / avatarNaturalSize.w
     return {
-      width: `${dw}%`,
-      height: `${dh}%`,
-      left: `${dx}%`,
-      top: `${dy}%`,
+      width: avatarNaturalSize.w,
+      height: avatarNaturalSize.h,
+      transform: `translate3d(${dx}px, ${dy}px, 0) scale(${scale})`,
     }
-  }, [avatarNaturalSize, avatarEditorZoom, avatarEditorOffset])
+  }, [avatarNaturalSize, avatarEditorZoom, avatarEditorOffset, avatarViewportPx])
 
   if (mobileLayout && !username && authReady && !token) {
     return (
@@ -2322,7 +2365,7 @@ export function ProfilePage() {
               <div className="space-y-3 px-5 py-4">
                 <div
                   ref={avatarViewportRef}
-                  className="relative mx-auto aspect-square w-full max-w-[400px] cursor-grab overflow-hidden rounded-lg bg-black active:cursor-grabbing"
+                  className="relative mx-auto aspect-square w-full max-w-[520px] cursor-grab overflow-hidden rounded-lg bg-black active:cursor-grabbing"
                   onPointerDown={onAvatarEditorPointerDown}
                   onPointerMove={onAvatarEditorPointerMove}
                   onPointerUp={onAvatarEditorPointerUp}
@@ -2331,14 +2374,14 @@ export function ProfilePage() {
                   <img
                     src={avatarEditorSrc}
                     alt=""
-                    className="pointer-events-none absolute max-w-none select-none"
+                    className="pointer-events-none absolute left-0 top-0 max-w-none select-none will-change-transform"
                     style={
                       avatarPreviewLayout
                         ? {
                             width: avatarPreviewLayout.width,
                             height: avatarPreviewLayout.height,
-                            left: avatarPreviewLayout.left,
-                            top: avatarPreviewLayout.top,
+                            transform: avatarPreviewLayout.transform,
+                            transformOrigin: '0 0',
                           }
                         : {
                             inset: 0,
@@ -2348,13 +2391,14 @@ export function ProfilePage() {
                           }
                     }
                     draggable={false}
+                    decoding="sync"
                     aria-hidden
                     onLoad={(event) => {
                       const el = event.currentTarget
-                      setAvatarNaturalSize({
-                        w: el.naturalWidth || 0,
-                        h: el.naturalHeight || 0,
-                      })
+                      const w = el.naturalWidth || 0
+                      const h = el.naturalHeight || 0
+                      setAvatarNaturalSize({ w, h })
+                      setAvatarLowResWarn(Math.min(w, h) > 0 && Math.min(w, h) < AVATAR_LOW_RES_PX)
                     }}
                   />
                   <div
@@ -2370,8 +2414,13 @@ export function ProfilePage() {
                 <p className="text-center text-xs text-zinc-500">
                   {t('profilePage.cropHint')}
                 </p>
+                {avatarLowResWarn ? (
+                  <p className="text-center text-xs text-amber-400">
+                    {t('profileChrome.avatarLowResWarning')}
+                  </p>
+                ) : null}
 
-                <div className="mx-auto flex w-full max-w-[400px] items-center gap-4 px-2">
+                <div className="mx-auto flex w-full max-w-[520px] items-center gap-4 px-2">
                   <span className="w-24 whitespace-nowrap text-sm text-zinc-200">{t('profilePage.zoom')}</span>
                   <input
                     type="range"
