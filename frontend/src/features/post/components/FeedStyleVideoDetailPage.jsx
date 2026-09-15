@@ -1030,7 +1030,7 @@ export function FeedStyleVideoDetailPage({
               <div
                 className={
                   watchChrome
-                    ? 'vibely-feed-stage-cluster relative flex h-full max-h-full shrink-0 items-stretch'
+                    ? 'vibely-feed-stage-cluster relative flex max-h-full shrink-0 items-end'
                     : 'contents'
                 }
               >
@@ -1177,8 +1177,8 @@ export function FeedStyleVideoDetailPage({
               <div
                 className={
                   watchChrome
-                    ? 'vibely-feed-chrome-rail pointer-events-auto relative z-30 ml-3 flex h-full shrink-0 flex-col items-center justify-end gap-3.5 self-stretch pb-16'
-                    : 'vibely-feed-chrome-rail pointer-events-none absolute right-2 bottom-[3.25rem] z-30 lg:pointer-events-auto lg:static lg:ml-3 lg:flex lg:h-full lg:shrink-0 lg:flex-col lg:items-center lg:justify-end lg:gap-4 lg:self-stretch lg:pb-16'
+                    ? 'vibely-feed-chrome-rail pointer-events-auto relative z-30 ml-3 flex shrink-0 flex-col items-center gap-3.5 self-end pb-6'
+                    : 'vibely-feed-chrome-rail pointer-events-none absolute right-2 bottom-[3.25rem] z-30 lg:pointer-events-auto lg:static lg:ml-3 lg:flex lg:shrink-0 lg:flex-col lg:items-center lg:gap-4 lg:self-end lg:pb-6'
                 }
               >
                 <div className="pointer-events-auto flex flex-col items-center gap-3">
