@@ -1,12 +1,26 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { BiDotsVerticalRounded } from 'react-icons/bi'
-import { IoHeartOutline, IoMusicalNotes, IoPause, IoPlay } from 'react-icons/io5'
+import {
+  IoArrowRedo,
+  IoEllipsisHorizontal,
+  IoHeartOutline,
+  IoMusicalNotes,
+  IoPause,
+  IoPlay,
+} from 'react-icons/io5'
+import { LuFlag } from 'react-icons/lu'
 import Hls from 'hls.js'
 import { apiClient } from '@/shared/api/client'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { redirectGuestToLogin } from '@/features/auth/utils/guestAuthGate.js'
 import { isHlsPlaybackUrl, resolveFeedPlaybackUrl } from '@/features/feed/utils/feedPlayback.js'
-import { normalizeVideoPublicId } from '@/features/post/utils/videoPublicId.js'
+import {
+  isVideoPublicId,
+  normalizeVideoPublicId,
+} from '@/features/post/utils/videoPublicId.js'
+import { VideoShareModal } from '@/features/post/components/VideoShareModal'
+import { FeedReportModal } from '@/features/report'
 import { Sidebar } from '@/shared/components/Sidebar'
 import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
 import { buildMainSidebarMenuItems } from '@/shared/utils/mainSidebarMenuItems.js'
@@ -687,8 +701,13 @@ export function SoundPage() {
   const [sourceLoading, setSourceLoading] = useState(false)
   const [sourceError, setSourceError] = useState('')
   const soundAudioRef = useRef(null)
+  const soundMoreRef = useRef(null)
   const [soundPlaying, setSoundPlaying] = useState(false)
+  const [soundProgress, setSoundProgress] = useState(0)
   const [soundGridPlayingId, setSoundGridPlayingId] = useState(null)
+  const [shareModalOpen, setShareModalOpen] = useState(false)
+  const [soundMoreOpen, setSoundMoreOpen] = useState(false)
+  const [reportModalOpen, setReportModalOpen] = useState(false)
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 1023px)')
@@ -703,14 +722,27 @@ export function SoundPage() {
     if (!el) return undefined
     const onPlay = () => setSoundPlaying(true)
     const onPause = () => setSoundPlaying(false)
-    const onEnded = () => setSoundPlaying(false)
+    const onEnded = () => {
+      setSoundPlaying(false)
+      setSoundProgress(0)
+    }
+    const onTime = () => {
+      const dur = Number(el.duration)
+      if (!Number.isFinite(dur) || dur <= 0) {
+        setSoundProgress(0)
+        return
+      }
+      setSoundProgress(Math.min(1, Math.max(0, el.currentTime / dur)))
+    }
     el.addEventListener('play', onPlay)
     el.addEventListener('pause', onPause)
     el.addEventListener('ended', onEnded)
+    el.addEventListener('timeupdate', onTime)
     return () => {
       el.removeEventListener('play', onPlay)
       el.removeEventListener('pause', onPause)
       el.removeEventListener('ended', onEnded)
+      el.removeEventListener('timeupdate', onTime)
     }
   }, [audioUrl])
 
@@ -720,6 +752,7 @@ export function SoundPage() {
     el.pause()
     el.currentTime = 0
     setSoundPlaying(false)
+    setSoundProgress(0)
   }, [audioUrl])
 
   useEffect(() => {
@@ -727,6 +760,24 @@ export function SoundPage() {
       soundAudioRef.current?.pause()
     }
   }, [])
+
+  useEffect(() => {
+    if (!soundMoreOpen) return undefined
+    const onPointerDown = (event) => {
+      if (soundMoreRef.current && !soundMoreRef.current.contains(event.target)) {
+        setSoundMoreOpen(false)
+      }
+    }
+    const onKey = (event) => {
+      if (event.key === 'Escape') setSoundMoreOpen(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [soundMoreOpen])
 
   useEffect(() => {
     if (sourceVideoId == null) {
@@ -862,6 +913,38 @@ export function SoundPage() {
     setSoundGridPlayingId(publicId)
   }, [])
 
+  const shareVideo = useMemo(() => {
+    if (sourceVideo && isVideoPublicId(sourceVideo.publicId)) return sourceVideo
+    const first = items.find((v) => isVideoPublicId(v?.publicId))
+    return first ?? null
+  }, [sourceVideo, items])
+
+  const reportVideoPublicId = useMemo(() => {
+    if (shareVideo?.publicId) return normalizeVideoPublicId(shareVideo.publicId)
+    return normalizeVideoPublicId(sourceVideoId)
+  }, [shareVideo, sourceVideoId])
+
+  const openSoundShare = () => {
+    if (!isVideoPublicId(shareVideo?.publicId)) return
+    setSoundMoreOpen(false)
+    setShareModalOpen(true)
+  }
+
+  const openSoundReportMenu = () => {
+    setSoundMoreOpen((open) => !open)
+  }
+
+  const openSoundReport = () => {
+    setSoundMoreOpen(false)
+    if (redirectGuestToLogin(navigate, token)) return
+    if (!reportVideoPublicId) return
+    setReportModalOpen(true)
+  }
+
+  const PLAY_RING_R = 28
+  const playRingLen = 2 * Math.PI * PLAY_RING_R
+  const playRingOffset = playRingLen * (1 - soundProgress)
+
   return (
     <section className="vibely-sound-page flex h-dvh max-h-dvh min-h-0 flex-col bg-black text-zinc-100 lg:flex-row">
       <div className="hidden shrink-0 lg:block">
@@ -929,36 +1012,107 @@ export function SoundPage() {
                 }}
               >
                 {soundPlaying ? (
+                  <svg
+                    className="vibely-sound-play-ring pointer-events-none absolute h-[3.35rem] w-[3.35rem]"
+                    viewBox="0 0 64 64"
+                    aria-hidden
+                  >
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r={PLAY_RING_R}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeOpacity="0.35"
+                      strokeWidth="2.75"
+                    />
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r={PLAY_RING_R}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.75"
+                      strokeLinecap="round"
+                      strokeDasharray={playRingLen}
+                      strokeDashoffset={playRingOffset}
+                      transform="rotate(-90 32 32)"
+                      className="transition-[stroke-dashoffset] duration-150 ease-linear"
+                    />
+                  </svg>
+                ) : null}
+                {soundPlaying ? (
                   <IoPause
                     aria-hidden
-                    className="vibely-sound-play-icon h-11 w-11 shrink-0 text-white drop-shadow-md"
+                    className="vibely-sound-play-icon relative z-[1] h-8 w-8 shrink-0 text-white drop-shadow-md"
                   />
                 ) : (
                   <IoPlay
                     aria-hidden
-                    className="vibely-sound-play-icon h-11 w-11 shrink-0 translate-x-0.5 text-white drop-shadow-md"
+                    className="vibely-sound-play-icon relative z-[1] h-10 w-10 shrink-0 translate-x-0.5 text-white drop-shadow-md"
                   />
                 )}
               </button>
             </div>
-            <div className="min-w-0 flex-1">
-              <h1 className="line-clamp-2 text-[clamp(22px,3.2vw,42px)] font-extrabold leading-[1.08] tracking-tight text-zinc-100">
-                {title}
-              </h1>
-              {creatorProfileHref ? (
-                <Link
-                  to={creatorProfileHref}
-                  className="mt-1 inline-block text-lg italic text-zinc-200 transition hover:text-white hover:underline"
+            <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <h1 className="line-clamp-2 text-[clamp(22px,3.2vw,42px)] font-extrabold leading-[1.08] tracking-tight text-zinc-100">
+                  {title}
+                </h1>
+                {creatorProfileHref ? (
+                  <Link
+                    to={creatorProfileHref}
+                    className="mt-1 inline-block text-lg italic text-zinc-200 transition hover:text-white hover:underline"
+                  >
+                    {creator}
+                  </Link>
+                ) : (
+                  <p className="mt-1 text-lg italic text-zinc-200">{creator}</p>
+                )}
+                <p className="mt-1 text-xs text-zinc-400">
+                  {displayedVideoCount}{' '}
+                  {displayedVideoCount === 1 ? 'video' : 'videos'}
+                </p>
+              </div>
+              <div className="relative flex shrink-0 items-center gap-0.5 pt-1">
+                <button
+                  type="button"
+                  aria-label="Chia sẻ"
+                  disabled={!isVideoPublicId(shareVideo?.publicId)}
+                  className="vibely-sound-action-btn flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-zinc-100 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
+                  onClick={openSoundShare}
                 >
-                  {creator}
-                </Link>
-              ) : (
-                <p className="mt-1 text-lg italic text-zinc-200">{creator}</p>
-              )}
-              <p className="mt-1 text-xs text-zinc-400">
-                {displayedVideoCount}{' '}
-                {displayedVideoCount === 1 ? 'video' : 'videos'}
-              </p>
+                  <IoArrowRedo className="text-2xl" aria-hidden />
+                </button>
+                <div className="relative" ref={soundMoreRef}>
+                  <button
+                    type="button"
+                    aria-label="Thêm"
+                    aria-expanded={soundMoreOpen}
+                    className="vibely-sound-action-btn flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-zinc-100 transition hover:bg-white/10"
+                    onClick={openSoundReportMenu}
+                  >
+                    <IoEllipsisHorizontal className="text-2xl" aria-hidden />
+                  </button>
+                  {soundMoreOpen ? (
+                    <div
+                      role="menu"
+                      className="vibely-sound-more-menu absolute right-0 top-[calc(100%+6px)] z-40 min-w-[168px] overflow-hidden rounded-xl border border-white/10 bg-[#2f2f2f] py-1 shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
+                    >
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="flex w-full cursor-pointer items-center gap-3 px-3.5 py-3 text-left text-[14px] font-medium text-zinc-100 transition hover:bg-white/[0.06]"
+                        onClick={openSoundReport}
+                        disabled={!reportVideoPublicId}
+                      >
+                        <LuFlag className="h-[18px] w-[18px] shrink-0" aria-hidden />
+                        <span>Báo cáo</span>
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
             </div>
           </header>
         </div>
@@ -1026,6 +1180,21 @@ export function SoundPage() {
           onSelectMenu={handleSelectMenu}
         />
       ) : null}
+
+      <VideoShareModal
+        open={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        videoId={shareVideo?.publicId}
+        authorUsername={shareVideo?.authorUsername}
+        videoTitle={shareVideo?.title ?? title}
+        token={token}
+      />
+      <FeedReportModal
+        open={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        videoPublicId={reportVideoPublicId}
+        token={token}
+      />
     </section>
   )
 }

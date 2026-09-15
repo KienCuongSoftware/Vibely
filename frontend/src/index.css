@@ -1794,9 +1794,38 @@ html[data-vibely-theme="light"] .vibely-sound-play-btn:hover {
   background-color: rgba(255, 255, 255, 0.96) !important;
 }
 
-html[data-vibely-theme="light"] .vibely-sound-play-icon {
+.vibely-sound-play-ring {
+  color: #fff;
+}
+
+/* Play/pause over cover stays white in both themes (TikTok). */
+html[data-vibely-theme="light"] .vibely-sound-play-btn .vibely-sound-play-icon,
+html[data-vibely-theme="light"] .vibely-sound-play-btn .text-white {
+  color: #fff !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+
+html[data-vibely-theme="light"] .vibely-sound-action-btn {
   color: #161823 !important;
-  filter: none;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-action-btn:hover {
+  background-color: rgba(22, 24, 35, 0.06) !important;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-more-menu {
+  background-color: #fff !important;
+  border-color: #e3e3e4 !important;
+  box-shadow: 0 12px 40px rgba(22, 24, 35, 0.12);
+  color: #161823;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-more-menu .text-zinc-100 {
+  color: #161823 !important;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-more-menu button:hover {
+  background-color: rgba(22, 24, 35, 0.05) !important;
 }
 
 html[data-vibely-theme="light"] .vibely-sound-page .text-zinc-100 {
