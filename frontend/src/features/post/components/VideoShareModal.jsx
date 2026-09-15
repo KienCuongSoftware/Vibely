@@ -107,7 +107,7 @@ function ShareCircleButton({ label, bgClass, icon, onClick, disabled }) {
       className="group flex w-[96px] shrink-0 cursor-pointer flex-col items-center gap-2 rounded-xl px-1.5 py-2.5 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
     >
       <span
-        className={`flex h-[68px] w-[68px] items-center justify-center rounded-full text-2xl text-white shadow-md transition group-hover:brightness-110 group-hover:shadow-lg ${bgClass}`}
+        className={`share-circle-face flex h-[68px] w-[68px] items-center justify-center rounded-full text-2xl text-white shadow-md transition group-hover:brightness-110 group-hover:shadow-lg ${bgClass}`}
       >
         {icon}
       </span>

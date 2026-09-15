@@ -1261,6 +1261,15 @@ html[data-vibely-theme="light"] header .rounded-full.bg-zinc-900 {
 html[data-vibely-theme="light"] .text-white {
   color: #161823;
 }
+/* Share modal: icons on colored circles must stay white (global .text-white remap). */
+html[data-vibely-theme="light"] .share-circle-face,
+html[data-vibely-theme="light"] .share-circle-face.text-white,
+html[data-vibely-theme="light"] .share-circle-face .text-white {
+  color: #fff !important;
+}
+html[data-vibely-theme="light"] .share-circle-face .text-black {
+  color: #161823 !important;
+}
 html[data-vibely-theme="light"] .bg-\[\#1877F2\] .text-white,
 html[data-vibely-theme="light"] .bg-\[\#06C755\] .text-white {
   color: #fff;
