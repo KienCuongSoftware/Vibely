@@ -18,10 +18,10 @@ import {
   IoExpandOutline,
   IoPause,
   IoPlay,
-  IoVolumeHighOutline,
-  IoVolumeLowOutline,
-  IoVolumeMediumOutline,
-  IoVolumeMuteOutline,
+  IoVolumeHigh,
+  IoVolumeLow,
+  IoVolumeMedium,
+  IoVolumeMute,
 } from "react-icons/io5";
 import {
   LuFlag,
@@ -428,15 +428,15 @@ const FEED_VOLUME_DEFAULT = 1;
 
 function FeedVolumeIcon({ soundOn, volume }) {
   if (!soundOn || volume === 0) {
-    return <IoVolumeMuteOutline className="h-[22px] w-[22px]" aria-hidden />;
+    return <IoVolumeMute className="h-[22px] w-[22px]" aria-hidden />;
   }
   if (volume < 0.34) {
-    return <IoVolumeLowOutline className="h-[22px] w-[22px]" aria-hidden />;
+    return <IoVolumeLow className="h-[22px] w-[22px]" aria-hidden />;
   }
   if (volume < 0.67) {
-    return <IoVolumeMediumOutline className="h-[22px] w-[22px]" aria-hidden />;
+    return <IoVolumeMedium className="h-[22px] w-[22px]" aria-hidden />;
   }
-  return <IoVolumeHighOutline className="h-[22px] w-[22px]" aria-hidden />;
+  return <IoVolumeHigh className="h-[22px] w-[22px]" aria-hidden />;
 }
 
 /**

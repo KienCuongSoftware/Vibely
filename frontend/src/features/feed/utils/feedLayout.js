@@ -79,10 +79,10 @@ export function feedCommentsPanelWidthCss() {
 }
 
 /** Chiều cao slot feed (px dưới viewport). */
-export const FEED_VIEWPORT_INSET_PX = 24;
+export const FEED_VIEWPORT_INSET_PX = 12;
 
-/** TikTok web: khung video ~92% chiều cao viewport (cả 9:16 và 16:9). */
-export const FEED_STAGE_HEIGHT_RATIO = 0.92;
+/** TikTok web: khung 9:16 gần full chiều cao vùng nội dung (đỉnh/đáy sát lề). */
+export const FEED_STAGE_HEIGHT_RATIO = 0.98;
 
 /** @deprecated — dùng FEED_STAGE_HEIGHT_RATIO */
 export const FEED_STAGE_DISPLAY_SCALE = FEED_STAGE_HEIGHT_RATIO;
