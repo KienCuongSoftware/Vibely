@@ -1889,7 +1889,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                 className={
                   mobileLayout
                     ? "contents"
-                    : "vibely-feed-stage-cluster flex shrink-0 items-center"
+                    : "vibely-feed-stage-cluster flex h-full shrink-0 items-stretch"
                 }
               >
               <div
@@ -1995,10 +1995,10 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               <div
                 className={
                   mobileLayout
-                    ? `vibely-feed-chrome-rail pointer-events-auto z-30 flex h-full shrink-0 flex-col items-center justify-center gap-3 px-2 pb-8${
+                    ? `vibely-feed-chrome-rail pointer-events-auto z-30 flex h-full shrink-0 flex-col items-center justify-end gap-3 px-2 pb-10${
                         feedCommentsOpen ? " hidden" : ""
                       }`
-                    : `vibely-feed-chrome-rail pointer-events-auto z-30 flex flex-col items-center gap-3 lg:static lg:ml-3 lg:shrink-0 lg:self-center lg:gap-4 lg:pb-14 ${
+                    : `vibely-feed-chrome-rail pointer-events-auto z-30 flex flex-col items-center justify-end gap-3 lg:static lg:ml-3 lg:h-full lg:shrink-0 lg:self-stretch lg:justify-end lg:gap-4 lg:pb-16 ${
                         feedCommentsOpen
                           ? "lg:justify-center lg:self-center lg:pb-0"
                           : ""

@@ -1,49 +1,80 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { IoChevronBack, IoChevronForward } from 'react-icons/io5'
 
 export function FeedPhotoCarousel({ urls, className = '', onClick }) {
   const slides = (Array.isArray(urls) ? urls : []).filter(Boolean)
   const [index, setIndex] = useState(0)
+
+  const slidesKey = slides.join('\0')
+  useEffect(() => {
+    setIndex(0)
+  }, [slidesKey])
+
   if (!slides.length) return null
   const current = slides[Math.min(index, slides.length - 1)]
+  const multi = slides.length > 1
 
   const go = (delta, event) => {
     event?.stopPropagation()
+    event?.preventDefault()
     setIndex((i) => (i + delta + slides.length) % slides.length)
+  }
+
+  const goTo = (next, event) => {
+    event?.stopPropagation()
+    event?.preventDefault()
+    setIndex(next)
   }
 
   return (
     <div className={`relative h-full w-full bg-black ${className}`} onClick={onClick}>
-      <img src={current} alt="" className="h-full w-full object-contain" />
-      {slides.length > 1 ? (
-        <>
+      <img src={current} alt="" className="h-full w-full object-contain" draggable={false} />
+      {multi ? (
+        <div
+          className="absolute inset-x-0 bottom-3 z-10 flex items-center justify-center gap-2 px-3"
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             type="button"
-            className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/45 px-2 py-3 text-white"
+            className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full bg-black/35 text-white/85 backdrop-blur-[2px] transition hover:bg-black/50 hover:text-white"
             onClick={(e) => go(-1, e)}
             aria-label="Previous photo"
           >
-            ‹
+            <IoChevronBack className="text-base" aria-hidden />
           </button>
+          <div
+            className="flex max-w-[min(70%,220px)] items-center justify-center gap-1.5 overflow-hidden"
+            role="tablist"
+            aria-label="Photo slides"
+          >
+            {slides.map((_, i) => {
+              const active = i === index
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  aria-label={`Photo ${i + 1} of ${slides.length}`}
+                  className={`shrink-0 cursor-pointer rounded-full transition-all ${
+                    active
+                      ? 'h-1.5 w-1.5 bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.25)]'
+                      : 'h-1 w-1 bg-white/45 hover:bg-white/70'
+                  }`}
+                  onClick={(e) => goTo(i, e)}
+                />
+              )
+            })}
+          </div>
           <button
             type="button"
-            className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/45 px-2 py-3 text-white"
+            className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full bg-black/35 text-white/85 backdrop-blur-[2px] transition hover:bg-black/50 hover:text-white"
             onClick={(e) => go(1, e)}
             aria-label="Next photo"
           >
-            ›
+            <IoChevronForward className="text-base" aria-hidden />
           </button>
-          <div className="absolute top-3 right-3 z-10 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-medium text-white">
-            {index + 1}/{slides.length}
-          </div>
-          <div className="absolute inset-x-0 bottom-3 z-10 flex justify-center gap-1">
-            {slides.map((_, i) => (
-              <span
-                key={i}
-                className={`h-1 rounded-full ${i === index ? 'w-4 bg-white' : 'w-1 bg-white/40'}`}
-              />
-            ))}
-          </div>
-        </>
+        </div>
       ) : null}
     </div>
   )
