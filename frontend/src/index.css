@@ -1759,6 +1759,64 @@ html[data-vibely-theme="light"] .vibely-keep-dark .text-orange-400 {
   background-color: var(--vibely-sound-popover-bg);
 }
 
+/* Sound page hero — TikTok light/dark (scrim was hardcoded black → light theme looked broken). */
+html[data-vibely-theme="light"] .vibely-sound-page {
+  color: #161823;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-hero {
+  border-color: #e3e3e4;
+  background-color: #fff;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-hero-media {
+  opacity: 0.12;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-hero-scrim {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(255, 255, 255, 0.92) 45%,
+    #ffffff 100%
+  ) !important;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-hero .ring-zinc-700 {
+  --tw-ring-color: #e3e3e4;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-play-btn {
+  background-color: rgba(255, 255, 255, 0.88) !important;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-play-btn:hover {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-play-icon {
+  color: #161823 !important;
+  filter: none;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-page .text-zinc-100 {
+  color: #161823 !important;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-page .text-zinc-200,
+html[data-vibely-theme="light"] .vibely-sound-page .hover\:text-white:hover {
+  color: #3a3a3a !important;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-page .text-zinc-400,
+html[data-vibely-theme="light"] .vibely-sound-page .text-zinc-500 {
+  color: #8a8b91 !important;
+}
+
+html[data-vibely-theme="light"] .vibely-sound-page .border-zinc-800\/90 {
+  border-color: #e3e3e4;
+}
+
 .vibely-sound-video-popover::before {
   pointer-events: none;
   content: "";

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { BiDotsVerticalRounded } from 'react-icons/bi'
 import { IoHeartOutline, IoMusicalNotes, IoPause, IoPlay } from 'react-icons/io5'
 import Hls from 'hls.js'
@@ -7,6 +7,13 @@ import { apiClient } from '@/shared/api/client'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { isHlsPlaybackUrl, resolveFeedPlaybackUrl } from '@/features/feed/utils/feedPlayback.js'
 import { normalizeVideoPublicId } from '@/features/post/utils/videoPublicId.js'
+import { Sidebar } from '@/shared/components/Sidebar'
+import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
+import { buildMainSidebarMenuItems } from '@/shared/utils/mainSidebarMenuItems.js'
+import {
+  isMobileFeedLayout,
+  MobileFeedBottomNav,
+} from '@/features/feed/components/MobileFeedShell.jsx'
 
 export const DEFAULT_COVER = '/images/users/default-avatar.jpeg'
 
@@ -646,8 +653,18 @@ export function SoundGridVideoCard({
 }
 
 export function SoundPage() {
-  const { token } = useAuth()
+  const { token, user, logout } = useAuth()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout())
+  const menuItems = useMemo(() => buildMainSidebarMenuItems(token), [token])
+  const handleSelectMenu = (id) => {
+    handleSidebarMenuSelect(navigate, id, {
+      token,
+      isLoggedIn: Boolean(token),
+    })
+  }
+
   const audioUrl = String(searchParams.get('audioUrl') ?? '').trim()
   const audioTitleFromQuery = String(searchParams.get('title') ?? '').trim()
   const creatorFromQuery = String(searchParams.get('creator') ?? '').trim()
@@ -672,6 +689,14 @@ export function SoundPage() {
   const soundAudioRef = useRef(null)
   const [soundPlaying, setSoundPlaying] = useState(false)
   const [soundGridPlayingId, setSoundGridPlayingId] = useState(null)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)')
+    const sync = () => setMobileLayout(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
 
   useEffect(() => {
     const el = soundAudioRef.current
@@ -838,14 +863,26 @@ export function SoundPage() {
   }, [])
 
   return (
-    <div className="scrollbar-none h-dvh max-h-dvh overflow-y-auto overscroll-y-contain bg-black text-zinc-100">
+    <section className="vibely-sound-page flex h-dvh max-h-dvh min-h-0 flex-col bg-black text-zinc-100 lg:flex-row">
+      <div className="hidden shrink-0 lg:block">
+        <Sidebar
+          menuItems={menuItems}
+          activeMenu=""
+          onSelectMenu={handleSelectMenu}
+          token={token}
+          user={user}
+          onLogout={token ? logout : undefined}
+        />
+      </div>
+
+      <div className="scrollbar-none min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-y-contain">
       <audio
         ref={soundAudioRef}
         src={audioUrl || undefined}
         preload="metadata"
         className="hidden"
       />
-      <div className="relative overflow-hidden border-b border-zinc-800/90">
+      <div className="vibely-sound-hero relative overflow-hidden border-b border-zinc-800/90">
         {heroVideo ? (
           <video
             src={heroVideo}
@@ -854,17 +891,17 @@ export function SoundPage() {
             autoPlay
             loop
             playsInline
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-30 blur-xl"
+            className="vibely-sound-hero-media pointer-events-none absolute inset-0 h-full w-full object-cover opacity-30 blur-xl"
           />
         ) : (
           <img
             src={cover}
             alt=""
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-30 blur-xl"
+            className="vibely-sound-hero-media pointer-events-none absolute inset-0 h-full w-full object-cover opacity-30 blur-xl"
           />
         )}
-        <div className="absolute inset-0 bg-linear-to-b from-black/70 via-black/75 to-black" />
-        <div className="relative mx-auto w-full max-w-[1200px] px-4 py-5">
+        <div className="vibely-sound-hero-scrim absolute inset-0 bg-linear-to-b from-black/70 via-black/75 to-black" />
+        <div className="relative mx-auto w-full max-w-[1200px] px-4 py-5 lg:px-6">
           <header className="mt-2 flex flex-wrap items-start gap-4">
             <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg ring-1 ring-zinc-700">
               <img
@@ -880,7 +917,7 @@ export function SoundPage() {
                 type="button"
                 disabled={!audioUrl}
                 aria-label={soundPlaying ? 'Tạm dừng âm thanh' : 'Phát âm thanh'}
-                className="absolute inset-0 flex items-center justify-center bg-black/35 transition hover:bg-black/45 disabled:cursor-not-allowed disabled:opacity-40"
+                className="vibely-sound-play-btn absolute inset-0 flex items-center justify-center bg-black/35 transition hover:bg-black/45 disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
                   const el = soundAudioRef.current
                   if (!el || !audioUrl) return
@@ -894,18 +931,18 @@ export function SoundPage() {
                 {soundPlaying ? (
                   <IoPause
                     aria-hidden
-                    className="h-11 w-11 shrink-0 text-white drop-shadow-md"
+                    className="vibely-sound-play-icon h-11 w-11 shrink-0 text-white drop-shadow-md"
                   />
                 ) : (
                   <IoPlay
                     aria-hidden
-                    className="h-11 w-11 shrink-0 translate-x-0.5 text-white drop-shadow-md"
+                    className="vibely-sound-play-icon h-11 w-11 shrink-0 translate-x-0.5 text-white drop-shadow-md"
                   />
                 )}
               </button>
             </div>
             <div className="min-w-0 flex-1">
-              <h1 className="line-clamp-2 text-[clamp(22px,3.2vw,42px)] font-extrabold leading-[1.08] tracking-tight">
+              <h1 className="line-clamp-2 text-[clamp(22px,3.2vw,42px)] font-extrabold leading-[1.08] tracking-tight text-zinc-100">
                 {title}
               </h1>
               {creatorProfileHref ? (
@@ -927,7 +964,7 @@ export function SoundPage() {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-[1200px] px-4 py-6">
+      <div className="mx-auto w-full max-w-[1200px] px-4 py-6 lg:px-6">
         <section>
           {loading ? <p className="text-zinc-400">Đang tải video…</p> : null}
           {error ? <p className="text-red-400">{error}</p> : null}
@@ -979,7 +1016,17 @@ export function SoundPage() {
           ) : null}
         </section>
       </div>
-    </div>
+      </div>
+
+      {mobileLayout ? (
+        <MobileFeedBottomNav
+          token={token}
+          user={user}
+          activeId=""
+          onSelectMenu={handleSelectMenu}
+        />
+      ) : null}
+    </section>
   )
 }
 
