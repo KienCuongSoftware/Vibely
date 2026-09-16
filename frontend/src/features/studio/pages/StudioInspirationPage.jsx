@@ -104,6 +104,7 @@ function RankBadge({ rank }) {
 }
 
 function VideoCard({ item, onToggleSave, busy }) {
+  const { t } = useTranslation();
   const watchUrl = buildProfileWatchUrl(item.authorUsername, item.publicId) || "/foryou";
   return (
     <article className="group min-w-0">

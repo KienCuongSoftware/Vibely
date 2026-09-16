@@ -77,7 +77,7 @@ function formatPercent(p) {
   return `${Number(p).toFixed(1)}%`
 }
 
-function retentionDropHint(retention, durationSeconds) {
+function retentionDropHint(retention, durationSeconds, translate) {
   const pts = Array.isArray(retention) ? retention : []
   if (pts.length < 2) return null
   let maxDrop = 0
@@ -97,10 +97,14 @@ function retentionDropHint(retention, durationSeconds) {
     const sec = Math.round((dur * atProgress) / 100)
     const mm = Math.floor(sec / 60)
     const ss = sec % 60
-    const t = mm > 0 ? `${mm}:${String(ss).padStart(2, '0')}` : `0:${String(ss).padStart(2, '0')}`
-    return t('studio.videoAnalytics.leaveEarlyAt', { time: t, pct: atProgress })
+    const timeLabel =
+      mm > 0 ? `${mm}:${String(ss).padStart(2, '0')}` : `0:${String(ss).padStart(2, '0')}`
+    return translate('studio.videoAnalytics.leaveEarlyAt', {
+      time: timeLabel,
+      pct: atProgress,
+    })
   }
-  return tr('studio.videoAnalytics.leaveEarlyPct', { pct: atProgress })
+  return translate('studio.videoAnalytics.leaveEarlyPct', { pct: atProgress })
 }
 
 function formatClockFromSeconds(totalSec) {
@@ -326,8 +330,8 @@ export function StudioVideoAnalyticsPage() {
   const engagementChart = useMemo(() => buildEngagementChartMeta(points), [points])
 
   const retentionTip = useMemo(
-    () => retentionDropHint(retention, video?.durationSeconds),
-    [retention, video?.durationSeconds],
+    () => retentionDropHint(retention, video?.durationSeconds, t),
+    [retention, video?.durationSeconds, t],
   )
 
   const scrubRetention = useMemo(
