@@ -290,14 +290,12 @@ public class ContentUnderstandingJobService {
                 discoveryScore
             );
             // Explore video_categories: require strong CU mass (≈ high-conf tag × weight).
-            // Do NOT force score ≥ 1.0 — that was putting unrelated clips into Food/Education/Gaming.
+            // Explore/Inspiration chips count score >= 1.5 — persist at least that floor so
+            // CU-assigned videos actually appear under a category tab (not only "Tất cả").
             if (raw < 0.90) {
                 continue;
             }
-            double categoryTableScore = Math.min(2.0, raw);
-            if (categoryTableScore < 1.0) {
-                continue;
-            }
+            double categoryTableScore = Math.min(2.0, Math.max(1.5, raw));
             jdbcTemplate.update(
                 """
                     INSERT INTO video_categories (video_id, category_id, score, created_at)
