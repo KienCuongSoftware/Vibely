@@ -50,7 +50,7 @@ describe('ExplorePage', () => {
       expect(apiClient.getExploreTrending).toHaveBeenCalled()
     })
     expect(screen.getByRole('button', { name: 'Tất cả' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Anime' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Anime' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Công nghệ' })).toBeInTheDocument()
   })
 

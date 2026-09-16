@@ -73,6 +73,13 @@ public class AdminCuController {
         return ApiResponse.success(adminCuService.backfill(body));
     }
 
+    @PostMapping("/backfill-categories")
+    public ApiResponse<AdminCuService.AdminCuEnqueueResponse> backfillCategories(
+        @RequestBody(required = false) AdminCuService.AdminCuBackfillRequest body
+    ) {
+        return ApiResponse.success(adminCuService.backfillCategories(body));
+    }
+
     @GetMapping("/jobs")
     public ApiResponse<AdminCuService.AdminCuJobPageResponse> jobs(
         @RequestParam(defaultValue = "0") int page,

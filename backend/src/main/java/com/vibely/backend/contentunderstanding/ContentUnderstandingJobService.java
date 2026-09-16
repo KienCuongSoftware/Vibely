@@ -247,67 +247,103 @@ public class ContentUnderstandingJobService {
     }
 
     private void projectCategories(Long videoId, Map<Long, Float> tagScores) {
-        if (tagScores.isEmpty()) {
+        if (!tagScores.isEmpty()) {
+            List<Map<String, Object>> mappings = jdbcTemplate.queryForList(
+                "SELECT category_id, tag_id, weight, min_tag_confidence FROM category_tag_mapping"
+            );
+            Map<Long, Double> categoryScores = new HashMap<>();
+            for (Map<String, Object> row : mappings) {
+                Long tagId = ((Number) row.get("tag_id")).longValue();
+                Float conf = tagScores.get(tagId);
+                if (conf == null) {
+                    continue;
+                }
+                double minConf = ((Number) row.get("min_tag_confidence")).doubleValue();
+                if (conf < minConf) {
+                    continue;
+                }
+                Long categoryId = ((Number) row.get("category_id")).longValue();
+                double weight = ((Number) row.get("weight")).doubleValue();
+                categoryScores.merge(categoryId, weight * conf, Double::sum);
+            }
+            for (Map.Entry<Long, Double> e : categoryScores.entrySet()) {
+                double raw = e.getValue();
+                // Discovery can keep softer scores; Explore tabs need strong evidence only.
+                if (raw < 0.55) {
+                    continue;
+                }
+                double discoveryScore = Math.min(1.0, raw);
+                jdbcTemplate.update(
+                    """
+                        INSERT INTO video_category_scores
+                            (video_id, category_id, score, source, created_at, updated_at)
+                        VALUES (?, ?, ?, 'cu_tags', NOW(), NOW())
+                        ON CONFLICT (video_id, category_id) DO UPDATE SET
+                            score = GREATEST(video_category_scores.score, EXCLUDED.score),
+                            source = EXCLUDED.source,
+                            updated_at = NOW()
+                        """,
+                    videoId,
+                    e.getKey(),
+                    discoveryScore
+                );
+                // Explore video_categories: require strong CU mass (≈ high-conf tag × weight).
+                // Explore/Inspiration chips count score >= 1.5 — persist at least that floor so
+                // CU-assigned videos actually appear under a category tab (not only "Tất cả").
+                if (raw < 0.90) {
+                    continue;
+                }
+                double categoryTableScore = Math.min(2.0, Math.max(1.5, raw));
+                jdbcTemplate.update(
+                    """
+                        INSERT INTO video_categories (video_id, category_id, score, created_at)
+                        VALUES (?, ?, ?, NOW())
+                        ON CONFLICT (video_id, category_id)
+                        DO UPDATE SET score = GREATEST(video_categories.score, EXCLUDED.score)
+                        """,
+                    videoId,
+                    e.getKey(),
+                    categoryTableScore
+                );
+            }
+        }
+        ensureExploreCategoryIfMissing(videoId);
+    }
+
+    /** Guarantee every analyzed video has at least one Explore-visible category (score >= 1.5). */
+    private void ensureExploreCategoryIfMissing(Long videoId) {
+        Integer count = jdbcTemplate.queryForObject(
+            """
+                SELECT COUNT(*) FROM video_categories
+                WHERE video_id = ? AND score >= 1.5
+                """,
+            Integer.class,
+            videoId
+        );
+        if (count != null && count > 0) {
             return;
         }
-        List<Map<String, Object>> mappings = jdbcTemplate.queryForList(
-            "SELECT category_id, tag_id, weight, min_tag_confidence FROM category_tag_mapping"
+        Long lifestyleId = jdbcTemplate.query(
+            """
+                SELECT id FROM categories
+                WHERE slug = 'lifestyle' AND enabled = true
+                LIMIT 1
+                """,
+            rs -> rs.next() ? rs.getLong(1) : null
         );
-        Map<Long, Double> categoryScores = new HashMap<>();
-        for (Map<String, Object> row : mappings) {
-            Long tagId = ((Number) row.get("tag_id")).longValue();
-            Float conf = tagScores.get(tagId);
-            if (conf == null) {
-                continue;
-            }
-            double minConf = ((Number) row.get("min_tag_confidence")).doubleValue();
-            if (conf < minConf) {
-                continue;
-            }
-            Long categoryId = ((Number) row.get("category_id")).longValue();
-            double weight = ((Number) row.get("weight")).doubleValue();
-            categoryScores.merge(categoryId, weight * conf, Double::sum);
+        if (lifestyleId == null) {
+            return;
         }
-        for (Map.Entry<Long, Double> e : categoryScores.entrySet()) {
-            double raw = e.getValue();
-            // Discovery can keep softer scores; Explore tabs need strong evidence only.
-            if (raw < 0.55) {
-                continue;
-            }
-            double discoveryScore = Math.min(1.0, raw);
-            jdbcTemplate.update(
-                """
-                    INSERT INTO video_category_scores
-                        (video_id, category_id, score, source, created_at, updated_at)
-                    VALUES (?, ?, ?, 'cu_tags', NOW(), NOW())
-                    ON CONFLICT (video_id, category_id) DO UPDATE SET
-                        score = GREATEST(video_category_scores.score, EXCLUDED.score),
-                        source = EXCLUDED.source,
-                        updated_at = NOW()
-                    """,
-                videoId,
-                e.getKey(),
-                discoveryScore
-            );
-            // Explore video_categories: require strong CU mass (≈ high-conf tag × weight).
-            // Explore/Inspiration chips count score >= 1.5 — persist at least that floor so
-            // CU-assigned videos actually appear under a category tab (not only "Tất cả").
-            if (raw < 0.90) {
-                continue;
-            }
-            double categoryTableScore = Math.min(2.0, Math.max(1.5, raw));
-            jdbcTemplate.update(
-                """
-                    INSERT INTO video_categories (video_id, category_id, score, created_at)
-                    VALUES (?, ?, ?, NOW())
-                    ON CONFLICT (video_id, category_id)
-                    DO UPDATE SET score = GREATEST(video_categories.score, EXCLUDED.score)
-                    """,
-                videoId,
-                e.getKey(),
-                categoryTableScore
-            );
-        }
+        jdbcTemplate.update(
+            """
+                INSERT INTO video_categories (video_id, category_id, score, created_at)
+                VALUES (?, ?, 1.5, NOW())
+                ON CONFLICT (video_id, category_id)
+                DO UPDATE SET score = GREATEST(video_categories.score, EXCLUDED.score)
+                """,
+            videoId,
+            lifestyleId
+        );
     }
 
     private SemanticTagEntity resolveTag(String raw) {

@@ -30,7 +30,8 @@ function normalizeExploreTabs(rows, allLabel) {
     const kind = tab.kind ?? 'category'
     if (tab.slug === 'all') return true
     if (kind === 'for_you' || kind === 'topic') return true
-    return Number(tab.videoCount ?? 0) > 0
+    // Always show enabled category chips (empty tabs are OK — TikTok-like).
+    return kind === 'category'
   })
   const allTab = filtered.find((tab) => tab.slug === 'all') ?? allTabFallback
   const rest = filtered.filter((tab) => tab.slug !== 'all')

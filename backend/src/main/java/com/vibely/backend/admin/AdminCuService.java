@@ -12,6 +12,7 @@ import com.vibely.backend.contentunderstanding.SemanticTagEntity;
 import com.vibely.backend.contentunderstanding.SemanticTagRepository;
 import com.vibely.backend.explore.Category;
 import com.vibely.backend.explore.CategoryRepository;
+import com.vibely.backend.explore.service.VideoExploreCategoryEnsureService;
 import com.vibely.backend.video.Video;
 import com.vibely.backend.video.VideoPublicIds;
 import com.vibely.backend.video.VideoRepository;
@@ -39,6 +40,7 @@ public class AdminCuService {
     private final VideoRepository videoRepository;
     private final ContentUnderstandingEnqueueService enqueueService;
     private final JdbcTemplate jdbcTemplate;
+    private final VideoExploreCategoryEnsureService categoryEnsureService;
 
     public AdminCuService(
         CategoryTagMappingRepository mappingRepository,
@@ -47,7 +49,8 @@ public class AdminCuService {
         AnalysisJobRepository analysisJobRepository,
         VideoRepository videoRepository,
         ContentUnderstandingEnqueueService enqueueService,
-        JdbcTemplate jdbcTemplate
+        JdbcTemplate jdbcTemplate,
+        VideoExploreCategoryEnsureService categoryEnsureService
     ) {
         this.mappingRepository = mappingRepository;
         this.categoryRepository = categoryRepository;
@@ -56,6 +59,7 @@ public class AdminCuService {
         this.videoRepository = videoRepository;
         this.enqueueService = enqueueService;
         this.jdbcTemplate = jdbcTemplate;
+        this.categoryEnsureService = categoryEnsureService;
     }
 
     @Transactional(readOnly = true)
@@ -222,6 +226,13 @@ public class AdminCuService {
             enqueueService.enqueue(video, "backfill", priority, force).ifPresent(uuid -> jobIds.add(uuid.toString()));
         }
         return new AdminCuEnqueueResponse(jobIds.size(), jobIds, null);
+    }
+
+    @Transactional
+    public AdminCuEnqueueResponse backfillCategories(AdminCuBackfillRequest body) {
+        int limit = body == null || body.limit() == null ? 500 : Math.max(1, Math.min(body.limit(), 2000));
+        int fixed = categoryEnsureService.backfillMissing(limit);
+        return new AdminCuEnqueueResponse(fixed, List.of(), null);
     }
 
     @Transactional(readOnly = true)

@@ -58,7 +58,7 @@ public class ExploreLegacyCategorySyncService {
             .sorted((a, b) -> Double.compare(b.score(), a.score()))
             .toList();
         List<CategoryClassifierService.ScoredCategory> selected =
-            categoryClassifierService.selectCategoriesForPersist(mapped);
+            categoryClassifierService.resolveCategoriesForPersist(mapped);
         if (selected.isEmpty()) {
             return;
         }

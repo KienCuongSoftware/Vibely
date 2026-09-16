@@ -108,9 +108,6 @@ public class PersonalizedExploreTabsService {
                 continue;
             }
             long videoCount = videoCategoryRepository.countByCategoryId(category.getId());
-            if (videoCount <= 0) {
-                continue;
-            }
             tabs.add(new ExploreTabDto(
                 slug,
                 category.getName(),

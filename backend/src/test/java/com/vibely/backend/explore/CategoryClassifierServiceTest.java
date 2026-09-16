@@ -130,6 +130,34 @@ class CategoryClassifierServiceTest {
         assertThat(persisted).hasSize(2);
     }
 
+    @Test
+    void resolveCategoriesForPersistFallsBackToLifestyle() {
+        Category all = category("all", "Tất cả");
+        Category lifestyle = category("lifestyle", "Lifestyle");
+        when(categoryRepository.findBySlugAndEnabledTrue("lifestyle"))
+            .thenReturn(java.util.Optional.of(lifestyle));
+
+        List<CategoryClassifierService.ScoredCategory> resolved =
+            classifierService.resolveCategoriesForPersist(
+                List.of(new CategoryClassifierService.ScoredCategory(all, 1.0))
+            );
+        assertThat(resolved).hasSize(1);
+        assertThat(resolved.get(0).category().getSlug()).isEqualTo("lifestyle");
+        assertThat(resolved.get(0).score()).isEqualTo(1.5);
+    }
+
+    @Test
+    void resolveCategoriesForPersistKeepsSoftKeywordHit() {
+        Category dance = category("dance", "Nhảy");
+        List<CategoryClassifierService.ScoredCategory> resolved =
+            classifierService.resolveCategoriesForPersist(
+                List.of(new CategoryClassifierService.ScoredCategory(dance, 1.0))
+            );
+        assertThat(resolved).hasSize(1);
+        assertThat(resolved.get(0).category().getSlug()).isEqualTo("dance");
+        assertThat(resolved.get(0).score()).isEqualTo(1.5);
+    }
+
     private static Category category(String slug, String name) {
         Category category = new Category();
         category.setSlug(slug);

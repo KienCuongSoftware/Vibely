@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,6 +21,11 @@ public class CategoryClassifierService {
     private static final double MIN_CATEGORY_SCORE = 2.0;
     private static final double STRONG_CATEGORY_SCORE = 2.0;
     public static final String ALL_CATEGORY_SLUG = "all";
+    /** Catch-all Explore tab when keyword/CU cannot confidently classify a video. */
+    public static final String FALLBACK_CATEGORY_SLUG = "lifestyle";
+    public static final double FALLBACK_CATEGORY_SCORE = 1.5;
+    /** Soft keyword hit floor — below strong hashtag threshold but still enough for Explore chips. */
+    private static final double SOFT_CATEGORY_SCORE = 1.0;
 
     private static final Map<String, Set<String>> KEYWORDS;
     private static final Map<String, String> HASHTAG_CATEGORY_ALIASES;
@@ -347,6 +353,36 @@ public class CategoryClassifierService {
             }
         }
         return selected;
+    }
+
+    /**
+     * Categories to write into {@code video_categories} for Explore:
+     * strong keyword/hashtag matches, else soft single-hit at Explore floor, else {@code lifestyle}.
+     */
+    public List<ScoredCategory> resolveCategoriesForPersist(List<ScoredCategory> inferred) {
+        List<ScoredCategory> selected = selectCategoriesForPersist(inferred);
+        if (!selected.isEmpty()) {
+            return selected;
+        }
+        if (inferred != null) {
+            Optional<ScoredCategory> soft = inferred.stream()
+                .filter(sc -> sc.category() != null && !ALL_CATEGORY_SLUG.equals(sc.category().getSlug()))
+                .filter(sc -> sc.score() >= SOFT_CATEGORY_SCORE)
+                .max(Comparator.comparingDouble(ScoredCategory::score));
+            if (soft.isPresent()) {
+                ScoredCategory best = soft.get();
+                return List.of(new ScoredCategory(
+                    best.category(),
+                    Math.max(FALLBACK_CATEGORY_SCORE, best.score())
+                ));
+            }
+        }
+        return fallbackExploreCategory().map(List::of).orElseGet(List::of);
+    }
+
+    public Optional<ScoredCategory> fallbackExploreCategory() {
+        return categoryRepository.findBySlugAndEnabledTrue(FALLBACK_CATEGORY_SLUG)
+            .map(c -> new ScoredCategory(c, FALLBACK_CATEGORY_SCORE));
     }
 
     private String resolveCategorySlug(String tag, Map<String, Category> bySlug) {
