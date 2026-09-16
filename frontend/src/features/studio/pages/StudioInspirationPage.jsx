@@ -6,8 +6,8 @@ import {
   IoBookmarkOutline,
   IoChevronDown,
   IoChevronForward,
-  IoHeartOutline,
-  IoPlayOutline,
+  IoHeart,
+  IoPlay,
 } from "react-icons/io5";
 import { apiClient } from "@/shared/api/client";
 import { StudioLayout } from "@/features/studio/components/StudioLayout";
@@ -17,6 +17,7 @@ import { GridHoverVideoMedia } from "@/features/post/components/GridHoverVideoMe
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { buildProfileWatchUrl } from "@/features/post/utils/videoPublicId.js";
 import { getRegionLabel } from "@/features/settings/utils/accountRegions";
+import { localizeExploreTabName } from "@/features/explore/utils/localizeExploreTab.js";
 
 const PAGE_SIZE = 20;
 const TABS = [
@@ -110,7 +111,7 @@ function VideoCard({ item, onToggleSave, busy }) {
     <article className="group min-w-0">
       <Link
         to={watchUrl}
-        className="relative block aspect-9/16 overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
+        className="vibely-keep-dark relative block aspect-9/16 overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
       >
         <VideoThumbnailImg src={item.thumbnailUrl} alt="" />
         <RankBadge rank={item.rank} />
@@ -131,14 +132,14 @@ function VideoCard({ item, onToggleSave, busy }) {
             <IoBookmarkOutline className="text-base" aria-hidden />
           )}
         </button>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
-          <div className="flex items-center gap-2 text-[11px] font-semibold text-white drop-shadow-md">
-            <span className="inline-flex items-center gap-0.5">
-              <IoPlayOutline className="text-[13px]" aria-hidden />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/35 to-transparent px-2 pb-1.5 pt-10">
+          <div className="flex items-center gap-2.5 text-[12px] font-semibold text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.95),0_0_1px_rgba(0,0,0,0.85)]">
+            <span className="inline-flex items-center gap-1">
+              <IoPlay className="text-[13px] text-white" aria-hidden />
               {formatCompact(item.viewCount)}
             </span>
-            <span className="inline-flex items-center gap-0.5">
-              <IoHeartOutline className="text-[13px]" aria-hidden />
+            <span className="inline-flex items-center gap-1">
+              <IoHeart className="text-[13px] text-white" aria-hidden />
               {formatCompact(item.likeCount)}
             </span>
           </div>
@@ -496,7 +497,7 @@ export function StudioInspirationPage() {
               active={trendingKind === k.id}
               onClick={() => patchParams({ kind: k.id })}
             >
-              {k.label}
+              {t(k.labelKey)}
             </Pill>
           ))}
           <div className="relative ml-auto" ref={regionRef}>
@@ -558,7 +559,7 @@ export function StudioInspirationPage() {
                 active={category === "all"}
                 onClick={() => patchParams({ category: "all" })}
               >
-                Tất cả
+                {t("studio.inspiration.all")}
               </Pill>
               {categories.map((c) => (
                 <Pill
@@ -566,7 +567,7 @@ export function StudioInspirationPage() {
                   active={category === c.slug}
                   onClick={() => patchParams({ category: c.slug })}
                 >
-                  {c.name}
+                  {localizeExploreTabName(c, t)}
                 </Pill>
               ))}
             </div>
@@ -590,7 +591,7 @@ export function StudioInspirationPage() {
               active={recKind === k.id}
               onClick={() => patchParams({ rec: k.id })}
             >
-              {k.label}
+              {t(k.labelKey)}
             </Pill>
           ))}
         </div>

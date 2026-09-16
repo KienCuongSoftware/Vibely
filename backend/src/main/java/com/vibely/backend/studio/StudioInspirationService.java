@@ -82,7 +82,6 @@ public class StudioInspirationService {
                 c.getName(),
                 videoCategoryRepository.countByCategoryId(c.getId())
             ))
-            .filter(c -> c.videoCount() > 0)
             .toList();
     }
 
