@@ -211,6 +211,7 @@ function FollowerBandMenu({ value, onApply }) {
 }
 
 function EmptyState({ filtered }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center px-4 py-24">
       <div className="flex w-full max-w-[220px] items-start gap-3 opacity-40">
@@ -237,6 +238,7 @@ function CommentRow({
   onOpenVideo,
   busy,
 }) {
+  const { t } = useTranslation();
   const handle = String(comment.username ?? "user").trim().replace(/^@/, "");
   const initial = (comment.displayName || handle || "?").slice(0, 1).toUpperCase();
 
