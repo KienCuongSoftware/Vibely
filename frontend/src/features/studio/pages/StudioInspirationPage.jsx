@@ -298,7 +298,10 @@ export function StudioInspirationPage() {
       .getStudioInspirationCategories(token)
       .then((rows) => {
         if (cancelled) return;
-        setCategories(Array.isArray(rows) ? rows : []);
+        const next = (Array.isArray(rows) ? rows : []).filter(
+          (c) => Number(c?.videoCount ?? 0) > 0,
+        );
+        setCategories(next);
       })
       .catch(() => {
         if (!cancelled) setCategories([]);

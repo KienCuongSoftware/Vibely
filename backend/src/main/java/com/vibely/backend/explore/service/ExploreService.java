@@ -82,6 +82,7 @@ public class ExploreService {
         return categoryRepository.findByEnabledTrueOrderByNameAsc().stream()
             .filter(c -> c.getSlug() != null && !"all".equalsIgnoreCase(c.getSlug()))
             .map(c -> new ExploreCategoryDto(c.getSlug(), c.getName(), videoCategoryRepository.countByCategoryId(c.getId())))
+            .filter(c -> c.videoCount() > 0)
             .toList();
     }
 
