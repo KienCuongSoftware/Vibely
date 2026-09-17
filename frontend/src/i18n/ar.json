@@ -2045,7 +2045,8 @@
       "viewsUnit": "مشاهدات",
       "likesUnit": "إعجابات",
       "idCode": "ID #{{id}}",
-      "empty": "لا منشورات مطابقة."
+      "empty": "لا منشورات مطابقة.",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "تفاصيل المنشور",
@@ -2320,7 +2321,8 @@
       "bannedAt": "حُظر في",
       "role": "الدور",
       "views": "مشاهدات",
-      "likeViews": "إعجابات"
+      "likeViews": "إعجابات",
+      "viewsHeader": "المشاهدات"
     }
   },
   "report": {

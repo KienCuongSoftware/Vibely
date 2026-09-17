@@ -2045,7 +2045,8 @@
       "viewsUnit": "مناظر",
       "likesUnit": "لائکس",
       "idCode": "ID #{{id}}",
-      "empty": "کوئی مماثل پوسٹ نہیں۔"
+      "empty": "کوئی مماثل پوسٹ نہیں۔",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "پوسٹ تفصیل",
@@ -2320,7 +2321,8 @@
       "bannedAt": "پابندی کا وقت",
       "role": "کردار",
       "views": "مناظر",
-      "likeViews": "لائکس"
+      "likeViews": "لائکس",
+      "viewsHeader": "مناظر"
     }
   },
   "report": {

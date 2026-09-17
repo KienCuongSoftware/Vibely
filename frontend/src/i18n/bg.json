@@ -2045,7 +2045,8 @@
       "viewsUnit": "просмотров",
       "likesUnit": "лайков",
       "idCode": "ID #{{id}}",
-      "empty": "Нет подходящих публикаций."
+      "empty": "Нет подходящих публикаций.",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "Сведения о публикации",
@@ -2320,7 +2321,8 @@
       "bannedAt": "Заблокирован",
       "role": "Роль",
       "views": "просмотров",
-      "likeViews": "лайков"
+      "likeViews": "лайков",
+      "viewsHeader": "Просмотры"
     }
   },
   "report": {

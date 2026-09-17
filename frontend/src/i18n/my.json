@@ -2045,7 +2045,8 @@
       "viewsUnit": "ยอดดู",
       "likesUnit": "ถูกใจ",
       "idCode": "ID #{{id}}",
-      "empty": "ไม่มีโพสต์ที่ตรงกัน"
+      "empty": "ไม่มีโพสต์ที่ตรงกัน",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "รายละเอียดโพสต์",
@@ -2320,7 +2321,8 @@
       "bannedAt": "แบนเมื่อ",
       "role": "บทบาท",
       "views": "ยอดดู",
-      "likeViews": "ถูกใจ"
+      "likeViews": "ถูกใจ",
+      "viewsHeader": "ยอดดู"
     }
   },
   "report": {

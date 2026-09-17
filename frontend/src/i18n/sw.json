@@ -2045,7 +2045,8 @@
       "viewsUnit": "penayangan",
       "likesUnit": "suka",
       "idCode": "ID #{{id}}",
-      "empty": "Tidak ada postingan yang cocok."
+      "empty": "Tidak ada postingan yang cocok.",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "Detail postingan",
@@ -2320,7 +2321,8 @@
       "bannedAt": "Diblokir pada",
       "role": "Peran",
       "views": "penayangan",
-      "likeViews": "suka"
+      "likeViews": "suka",
+      "viewsHeader": "Penayangan"
     }
   },
   "report": {

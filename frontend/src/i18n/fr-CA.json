@@ -2045,7 +2045,8 @@
       "viewsUnit": "vues",
       "likesUnit": "j’aime",
       "idCode": "ID #{{id}}",
-      "empty": "Aucune publication correspondante."
+      "empty": "Aucune publication correspondante.",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "Détail de la publication",
@@ -2320,7 +2321,8 @@
       "bannedAt": "Banni le",
       "role": "Rôle",
       "views": "vues",
-      "likeViews": "j’aime"
+      "likeViews": "j’aime",
+      "viewsHeader": "Vues"
     }
   },
   "report": {

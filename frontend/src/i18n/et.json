@@ -2045,7 +2045,8 @@
       "viewsUnit": "aufrufe",
       "likesUnit": "meeldimist",
       "idCode": "ID #{{id}}",
-      "empty": "Keine passenden Beiträge."
+      "empty": "Keine passenden Beiträge.",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "Beitragsdetails",
@@ -2320,7 +2321,8 @@
       "bannedAt": "Gesperrt am",
       "role": "Rolle",
       "views": "aufrufe",
-      "likeViews": "meeldimist"
+      "likeViews": "meeldimist",
+      "viewsHeader": "Aufrufe"
     }
   },
   "report": {

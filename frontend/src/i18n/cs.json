@@ -2045,7 +2045,8 @@
       "viewsUnit": "wyświetleń",
       "likesUnit": "polubień",
       "idCode": "ID #{{id}}",
-      "empty": "Brak pasujących postów."
+      "empty": "Brak pasujących postów.",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "Szczegóły posta",
@@ -2320,7 +2321,8 @@
       "bannedAt": "Zbanowano",
       "role": "Rola",
       "views": "wyświetleń",
-      "likeViews": "polubień"
+      "likeViews": "polubień",
+      "viewsHeader": "Wyświetlenia"
     }
   },
   "report": {

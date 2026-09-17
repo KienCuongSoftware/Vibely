@@ -2045,7 +2045,8 @@
       "viewsUnit": "görüntülenme",
       "likesUnit": "beğeni",
       "idCode": "ID #{{id}}",
-      "empty": "Eşleşen gönderi yok."
+      "empty": "Eşleşen gönderi yok.",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "Gönderi ayrıntısı",
@@ -2320,7 +2321,8 @@
       "bannedAt": "Yasaklanma",
       "role": "Rol",
       "views": "görüntülenme",
-      "likeViews": "beğeni"
+      "likeViews": "beğeni",
+      "viewsHeader": "Görüntülenmeler"
     }
   },
   "report": {

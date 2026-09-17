@@ -2045,7 +2045,8 @@
       "viewsUnit": "व्यू",
       "likesUnit": "लाइक",
       "idCode": "ID #{{id}}",
-      "empty": "कोई मेल खाती पोस्ट नहीं।"
+      "empty": "कोई मेल खाती पोस्ट नहीं।",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "पोस्ट विवरण",
@@ -2320,7 +2321,8 @@
       "bannedAt": "प्रतिबंध समय",
       "role": "भूमिका",
       "views": "व्यू",
-      "likeViews": "लाइक"
+      "likeViews": "लाइक",
+      "viewsHeader": "व्यू"
     }
   },
   "report": {

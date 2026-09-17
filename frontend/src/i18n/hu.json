@@ -2045,7 +2045,8 @@
       "viewsUnit": "views",
       "likesUnit": "likes",
       "idCode": "ID #{{id}}",
-      "empty": "No matching posts."
+      "empty": "No matching posts.",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "Post detail",
@@ -2320,7 +2321,8 @@
       "bannedAt": "Banned at",
       "role": "Role",
       "views": "views",
-      "likeViews": "likes"
+      "likeViews": "likes",
+      "viewsHeader": "Views"
     }
   },
   "report": {

@@ -2147,7 +2147,8 @@
       "viewsUnit": "lượt xem",
       "likesUnit": "lượt thích",
       "idCode": "Mã #{{id}}",
-      "empty": "Không có bài đăng phù hợp."
+      "empty": "Không có bài đăng phù hợp.",
+      "viewAction": "Xem"
     },
     "postDetail": {
       "title": "Chi tiết bài đăng",
@@ -2422,7 +2423,8 @@
       "bannedAt": "Thời điểm cấm",
       "role": "Vai trò",
       "views": "lượt xem",
-      "likeViews": "lượt thích"
+      "likeViews": "lượt thích",
+      "viewsHeader": "Lượt xem"
     }
   },
   "report": {

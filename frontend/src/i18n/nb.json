@@ -2045,7 +2045,8 @@
       "viewsUnit": "aufrufe",
       "likesUnit": "likes",
       "idCode": "ID #{{id}}",
-      "empty": "Keine passenden Beiträge."
+      "empty": "Keine passenden Beiträge.",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "Beitragsdetails",
@@ -2320,7 +2321,8 @@
       "bannedAt": "Gesperrt am",
       "role": "Rolle",
       "views": "aufrufe",
-      "likeViews": "likes"
+      "likeViews": "likes",
+      "viewsHeader": "Aufrufe"
     }
   },
   "report": {

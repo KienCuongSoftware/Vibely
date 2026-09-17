@@ -2045,7 +2045,8 @@
       "viewsUnit": "צפיות",
       "likesUnit": "לייקים",
       "idCode": "ID #{{id}}",
-      "empty": "אין פוסטים תואמים."
+      "empty": "אין פוסטים תואמים.",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "פרטי פוסט",
@@ -2320,7 +2321,8 @@
       "bannedAt": "נחסם ב",
       "role": "תפקיד",
       "views": "צפיות",
-      "likeViews": "לייקים"
+      "likeViews": "לייקים",
+      "viewsHeader": "צפיות"
     }
   },
   "report": {

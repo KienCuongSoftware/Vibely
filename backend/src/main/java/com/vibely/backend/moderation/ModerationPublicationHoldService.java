@@ -205,6 +205,16 @@ public class ModerationPublicationHoldService {
         );
         for (Map<String, Object> row : noCu) {
             long videoId = ((Number) row.get("video_id")).longValue();
+            try {
+                // PHOTO posts can synthesize CU and join moderation immediately.
+                Long jobId = joinService.tryEnqueue(videoId, true);
+                if (jobId != null) {
+                    log.info("Hold reconcile enqueued moderation for no-CU videoId={} jobId={}", videoId, jobId);
+                    continue;
+                }
+            } catch (Exception ex) {
+                log.warn("Hold reconcile no-CU enqueue failed videoId={}: {}", videoId, ex.getMessage());
+            }
             log.warn("Hold reconcile: videoId={} still HIDDEN without completed CU", videoId);
         }
 

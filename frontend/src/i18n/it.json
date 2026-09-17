@@ -2045,7 +2045,8 @@
       "viewsUnit": "visualizzazioni",
       "likesUnit": "mi piace",
       "idCode": "ID #{{id}}",
-      "empty": "Nessun post corrispondente."
+      "empty": "Nessun post corrispondente.",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "Dettaglio post",
@@ -2320,7 +2321,8 @@
       "bannedAt": "Bannato il",
       "role": "Ruolo",
       "views": "visualizzazioni",
-      "likeViews": "mi piace"
+      "likeViews": "mi piace",
+      "viewsHeader": "Visualizzazioni"
     }
   },
   "report": {

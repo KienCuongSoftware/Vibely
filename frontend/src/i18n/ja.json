@@ -2088,7 +2088,8 @@
       "viewsUnit": "再生",
       "likesUnit": "いいね",
       "idCode": "ID #{{id}}",
-      "empty": "一致する投稿はありません。"
+      "empty": "一致する投稿はありません。",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "投稿の詳細",
@@ -2363,7 +2364,8 @@
       "bannedAt": "BAN日時",
       "role": "ロール",
       "views": "再生",
-      "likeViews": "いいね"
+      "likeViews": "いいね",
+      "viewsHeader": "再生数"
     }
   },
   "report": {

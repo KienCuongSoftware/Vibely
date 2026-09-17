@@ -2045,7 +2045,8 @@
       "viewsUnit": "visualizações",
       "likesUnit": "gostos",
       "idCode": "ID #{{id}}",
-      "empty": "Nenhuma publicação correspondente."
+      "empty": "Nenhuma publicação correspondente.",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "Detalhe da publicação",
@@ -2320,7 +2321,8 @@
       "bannedAt": "Banido em",
       "role": "Função",
       "views": "visualizações",
-      "likeViews": "gostos"
+      "likeViews": "gostos",
+      "viewsHeader": "Visualizações"
     }
   },
   "report": {

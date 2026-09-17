@@ -2045,7 +2045,8 @@
       "viewsUnit": "reproducciones",
       "likesUnit": "me gusta",
       "idCode": "ID #{{id}}",
-      "empty": "No hay publicaciones coincidentes."
+      "empty": "No hay publicaciones coincidentes.",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "Detalle de la publicación",
@@ -2320,7 +2321,8 @@
       "bannedAt": "Baneado el",
       "role": "Rol",
       "views": "reproducciones",
-      "likeViews": "me gusta"
+      "likeViews": "me gusta",
+      "viewsHeader": "Reproducciones"
     }
   },
   "report": {

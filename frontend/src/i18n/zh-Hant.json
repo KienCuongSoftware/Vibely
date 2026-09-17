@@ -2045,7 +2045,8 @@
       "viewsUnit": "次播放",
       "likesUnit": "次點讚",
       "idCode": "ID #{{id}}",
-      "empty": "没有匹配的作品。"
+      "empty": "没有匹配的作品。",
+      "viewAction": "View"
     },
     "postDetail": {
       "title": "作品詳情",
@@ -2320,7 +2321,8 @@
       "bannedAt": "封禁時間",
       "role": "角色",
       "views": "次播放",
-      "likeViews": "次點讚"
+      "likeViews": "次點讚",
+      "viewsHeader": "播放量"
     }
   },
   "report": {

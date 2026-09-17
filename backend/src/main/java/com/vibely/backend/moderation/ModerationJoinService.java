@@ -165,11 +165,14 @@ public class ModerationJoinService {
             """
             SELECT aj.video_id AS video_id, aj.id AS analysis_job_id
             FROM analysis_jobs aj
-            JOIN originality_reports o ON o.video_id = aj.video_id
             JOIN videos v ON v.id = aj.video_id
             WHERE aj.status = 'COMPLETED'
               AND COALESCE(v.studio_draft, FALSE) = FALSE
               AND (v.scheduled_at IS NULL OR v.scheduled_at <= NOW())
+              AND (
+                  EXISTS (SELECT 1 FROM originality_reports o WHERE o.video_id = aj.video_id)
+                  OR UPPER(COALESCE(v.media_kind, 'VIDEO')) = 'PHOTO'
+              )
               AND aj.id = (
                   SELECT aj2.id FROM analysis_jobs aj2
                   WHERE aj2.video_id = aj.video_id AND aj2.status = 'COMPLETED'
@@ -193,7 +196,14 @@ public class ModerationJoinService {
             Object aj = row.get("analysis_job_id");
             UUID analysisJobId = aj == null ? null : UUID.fromString(String.valueOf(aj));
             try {
-                Long jobId = tryEnqueue(videoId, false, analysisJobId, false);
+                boolean photo = Boolean.TRUE.equals(
+                    jdbcTemplate.query(
+                        "SELECT UPPER(COALESCE(media_kind,'VIDEO')) = 'PHOTO' FROM videos WHERE id = ?",
+                        rs -> rs.next() && rs.getBoolean(1),
+                        videoId
+                    )
+                );
+                Long jobId = tryEnqueue(videoId, photo, analysisJobId, false);
                 if (jobId != null) {
                     log.info("Reconcile enqueued missing moderation job videoId={} jobId={}", videoId, jobId);
                 }
@@ -226,11 +236,19 @@ public class ModerationJoinService {
             return null;
         }
 
+        boolean photoPost = "PHOTO".equalsIgnoreCase(video.getMediaKind());
+        boolean allowOrig = allowOriginalityPending || photoPost;
+
         UUID analysisJobId = preferredAnalysisJobId != null
             ? preferredAnalysisJobId
             : latestCompletedAnalysisJobId(videoId);
         if (analysisJobId == null) {
             analysisJobId = latestCompletedAnalysisJobId(videoId);
+        }
+        if (analysisJobId == null && photoPost) {
+            // Photos skip the video CU worker path historically; synthesize a completed
+            // analysis so moderation can join and appear in Admin → AI queue.
+            analysisJobId = ensureSyntheticPhotoAnalysisJob(video);
         }
         if (analysisJobId == null) {
             log.debug("Moderation enqueue skip videoId={}: no completed analysis job", videoId);
@@ -239,7 +257,7 @@ public class ModerationJoinService {
 
         Long originalityReportId = latestOriginalityReportId(videoId);
         boolean originalityPending = originalityReportId == null;
-        if (originalityPending && !allowOriginalityPending) {
+        if (originalityPending && !allowOrig) {
             log.debug("Moderation enqueue skip videoId={}: originality still pending", videoId);
             return null;
         }
@@ -387,6 +405,29 @@ public class ModerationJoinService {
         }
         Object id = rows.get(0).get("id");
         return id == null ? null : UUID.fromString(String.valueOf(id));
+    }
+
+    private UUID ensureSyntheticPhotoAnalysisJob(Video video) {
+        UUID existing = latestCompletedAnalysisJobId(video.getId());
+        if (existing != null) {
+            return existing;
+        }
+        UUID id = UUID.randomUUID();
+        jdbcTemplate.update(
+            """
+            INSERT INTO analysis_jobs (
+                id, video_id, status, priority, trigger_reason, model_bundle_version,
+                attempts, metrics, created_at, updated_at, started_at, finished_at
+            ) VALUES (
+                ?, ?, 'COMPLETED', 100, 'photo_publish', 'photo-synthetic',
+                0, CAST('{}' AS jsonb), NOW(), NOW(), NOW(), NOW()
+            )
+            """,
+            id,
+            video.getId()
+        );
+        log.info("Created synthetic COMPLETED analysis jobId={} for PHOTO videoId={}", id, video.getId());
+        return id;
     }
 
     private Long latestOriginalityReportId(Long videoId) {

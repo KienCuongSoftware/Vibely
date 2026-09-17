@@ -231,10 +231,14 @@ public class VideoCommandService {
             videoProcessingEnqueueService.enqueueAfterVideoPersisted(saved);
             originalityEnqueueService.enqueueAfterVideoPersisted(saved);
             contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "upload");
+        } else if (!draft) {
+            // Photos skip FFmpeg/originality, but still need CU + moderation join
+            // so they appear in Admin → Content moderation (not stuck HIDDEN forever).
+            contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "upload");
         }
         if (!draft) {
             publicationHoldService.holdIfPendingModeration(saved);
-            moderationJoinService.tryEnqueue(saved.getId(), false);
+            moderationJoinService.tryEnqueue(saved.getId(), photoPost);
         }
         return responseMapper.toResponse(saved);
     }
@@ -361,15 +365,19 @@ public class VideoCommandService {
         // Hashtags / Explore signals follow description text on every metadata save.
         exploreSyncService.syncExploreSignals(saved);
         if (!keepAsDraft) {
+            boolean photoPost = "PHOTO".equalsIgnoreCase(saved.getMediaKind());
             if (wasDraft) {
-                originalityEnqueueService.enqueueAfterVideoPersisted(saved);
+                if (!photoPost) {
+                    originalityEnqueueService.enqueueAfterVideoPersisted(saved);
+                }
                 contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "publish");
             } else {
                 contentUnderstandingEnqueueService.enqueueAfterVideoPersisted(saved, "metadata_updated");
             }
             // AI-first: keep off For You until moderation ALLOW/LIMIT; enqueue if CU+orig already done.
+            // Photos: allow originality pending (no originality pipeline for slideshows).
             publicationHoldService.holdIfPendingModeration(saved);
-            moderationJoinService.tryEnqueue(saved.getId(), false);
+            moderationJoinService.tryEnqueue(saved.getId(), photoPost);
         }
         return responseMapper.toResponse(saved);
     }

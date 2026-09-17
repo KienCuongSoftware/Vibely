@@ -353,7 +353,9 @@ export function AdminPostsPage() {
                     <th className="py-3 pr-4 font-medium">{t("admin.table.post")}</th>
                     <th className="px-3 py-3 font-medium">{t("admin.table.author")}</th>
                     <th className="px-3 py-3 font-medium">{t("admin.table.status")}</th>
-                    <th className="px-3 py-3 text-center font-medium">Xem</th>
+                    <th className="px-3 py-3 text-center font-medium">
+                      {t("admin.table.viewsHeader")}
+                    </th>
                     <th className="px-3 py-3 text-center font-medium">{t("admin.table.likes")}</th>
                     <th className="px-3 py-3 text-center font-medium">
                       {t("admin.table.comments")}
@@ -445,7 +447,7 @@ export function AdminPostsPage() {
                               to={`/admin/posts/${item.publicId}`}
                               className="inline-flex h-9 items-center justify-center rounded-full border border-zinc-700 px-3 text-xs font-semibold text-zinc-200 transition hover:border-red-500 hover:bg-red-500/10 hover:text-red-300"
                             >
-                              Xem
+                              {t("admin.posts.viewAction")}
                             </Link>
                             <button
                               type="button"
