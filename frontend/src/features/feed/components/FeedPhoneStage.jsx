@@ -425,8 +425,6 @@ export const FEED_STAGE_OUTER_WIDTH_CLASS =
   FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT;
 
 const FEED_VOLUME_DEFAULT = 1;
-/** Photo soundtrack files are often quieter than muxed video audio — boost to match. */
-const PHOTO_AUDIO_GAIN = 1.75;
 
 function FeedVolumeIcon({ soundOn, volume }) {
   if (!soundOn || volume === 0) {
@@ -637,9 +635,6 @@ export function FeedPhoneStage({
   /** Fallback: suy luận ngang từ thumbnail natural size. */
   const [thumbWideForLandscape, setThumbWideForLandscape] = useState(false);
   const photoAudioRef = useRef(null);
-  const photoAudioCtxRef = useRef(null);
-  const photoGainRef = useRef(null);
-  const photoSourceBoundRef = useRef(false);
   const progressTrackRef = useRef(null);
   const progressInnerRef = useRef(null);
   const progressFillRef = useRef(null);
@@ -826,41 +821,8 @@ export function FeedPhoneStage({
     const el = photoAudioRef.current;
     if (!el) return undefined;
 
-    const ensureGraph = () => {
-      if (photoSourceBoundRef.current) return;
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) return;
-      try {
-        const ctx = photoAudioCtxRef.current ?? new Ctx();
-        photoAudioCtxRef.current = ctx;
-        const source = ctx.createMediaElementSource(el);
-        const gain = ctx.createGain();
-        source.connect(gain);
-        gain.connect(ctx.destination);
-        photoGainRef.current = gain;
-        photoSourceBoundRef.current = true;
-      } catch {
-        /* MediaElementSource already bound or unsupported — fall back to element.volume */
-      }
-    };
-
-    const applyLevel = () => {
-      const level = Math.min(1, Math.max(0, Number(feedVolume) || 0));
-      const gainNode = photoGainRef.current;
-      if (gainNode && photoAudioCtxRef.current) {
-        // Control loudness via GainNode so we can exceed HTMLMediaElement.volume max of 1.
-        el.muted = false;
-        el.volume = 1;
-        gainNode.gain.value = playbackMuted ? 0 : level * PHOTO_AUDIO_GAIN;
-      } else {
-        el.muted = Boolean(playbackMuted);
-        el.volume = level;
-      }
-    };
-
     if (!activeIsPhotoPost || !activePhotoAudioUrl || activePhotoReportedHidden) {
       el.pause();
-      if (photoGainRef.current) photoGainRef.current.gain.value = 0;
       el.removeAttribute("src");
       try {
         el.load();
@@ -869,32 +831,27 @@ export function FeedPhoneStage({
       }
       return undefined;
     }
+
+    // Do not use Web Audio MediaElementSource here — CDN audio often lacks CORS and
+    // createMediaElementSource then silences playback permanently for that element.
     if (el.getAttribute("src") !== activePhotoAudioUrl) {
       el.src = activePhotoAudioUrl;
     }
     el.loop = true;
-    ensureGraph();
-    applyLevel();
+    el.muted = Boolean(playbackMuted);
+    // Keep photo soundtrack at full UI volume (matches video element path).
+    el.volume = playbackMuted ? 0 : Math.min(1, Math.max(0, Number(feedVolume) || 0));
 
     if (playbackMuted || userPaused) {
       el.pause();
       return undefined;
     }
 
-    const ctx = photoAudioCtxRef.current;
-    const kick = () => {
-      applyLevel();
-      const playPromise = el.play();
-      if (playPromise?.catch) {
-        playPromise.catch(() => {
-          /* autoplay blocked until user gesture / sound unlock */
-        });
-      }
-    };
-    if (ctx?.state === "suspended") {
-      void ctx.resume().then(kick).catch(kick);
-    } else {
-      kick();
+    const playPromise = el.play();
+    if (playPromise?.catch) {
+      playPromise.catch(() => {
+        /* autoplay blocked until user gesture / sound unlock */
+      });
     }
     return undefined;
   }, [
@@ -907,19 +864,6 @@ export function FeedPhoneStage({
     userPaused,
     activeIndex,
   ]);
-
-  useEffect(() => {
-    return () => {
-      try {
-        photoAudioCtxRef.current?.close?.();
-      } catch {
-        /* ignore */
-      }
-      photoAudioCtxRef.current = null;
-      photoGainRef.current = null;
-      photoSourceBoundRef.current = false;
-    };
-  }, []);
 
   useEffect(() => {
     const el = feedVideoRef.current;
