@@ -25,6 +25,10 @@ import {
 import { setPhotoDraftFiles } from '@/features/upload/utils/photoDraftStore.js'
 import { extractThumbnailBlobFromFile } from '@/features/post/utils/videoThumbnail.js'
 import {
+  canonicalOriginalSoundTitle,
+  localizeAudioTitle,
+} from '@/features/post/utils/localizeAudioTitle.js'
+import {
   deleteUploadDraftKeepalive,
   readUploadDraftPublicIds,
   trackUploadDraftPublicId,
@@ -1180,9 +1184,7 @@ export function UploadPage() {
         title: 'Video',
         playbackUrl: '',
         audioUrl: '',
-        audioTitle: t('upload.originalAudio', {
-          name: user?.displayName || user?.username || 'Vibely',
-        }),
+        audioTitle: canonicalOriginalSoundTitle(user?.displayName || user?.username || 'Vibely'),
         resolutionLabel: formatResolutionLabel(meta.width, meta.height),
         durationSeconds,
         publicId: null,
@@ -1214,9 +1216,7 @@ export function UploadPage() {
       uploadAbortRef.current = null
       const playbackUrl = uploaded.playbackUrl
       const audioUrl = deriveAudioUrlFromVideoUrl(playbackUrl)
-      const audioTitle = t('upload.originalAudio', {
-        name: user?.displayName || user?.username || 'Vibely',
-      })
+      const audioTitle = canonicalOriginalSoundTitle(user?.displayName || user?.username || 'Vibely')
       let autoThumbUrl = ''
       try {
         const thumbBlob = await extractThumbnailBlob(file, 1)
@@ -2616,7 +2616,10 @@ export function UploadPage() {
                                 <p className="mt-1 flex items-center gap-1 truncate text-[11px] opacity-85">
                                   <IoMusicalNotesOutline className="shrink-0 text-sm opacity-90" aria-hidden />
                                   <span className="truncate">
-                                    Original sound — {user?.displayName ?? 'Vibely'}
+                                    {localizeAudioTitle(uploadedVideo?.audioTitle, t, {
+                                      name: user?.displayName || user?.username || 'Vibely',
+                                      key: 'upload.photo.originalSound',
+                                    })}
                                   </span>
                                 </p>
                               </div>

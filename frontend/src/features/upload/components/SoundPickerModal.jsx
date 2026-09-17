@@ -11,6 +11,7 @@ import {
   IoSearchOutline,
 } from 'react-icons/io5'
 import { postApi } from '@/features/post/api/postApi.js'
+import { localizeAudioTitle } from '@/features/post/utils/localizeAudioTitle.js'
 import {
   filterSounds,
   formatSoundDuration,
@@ -34,7 +35,13 @@ function SoundRow({
   favorite,
 }) {
   const { t } = useTranslation()
-  const title = item.audioTitle?.trim() || t('upload.photo.soundPicker.untitled')
+  const rawTitle = item.audioTitle?.trim()
+  const title = rawTitle
+    ? localizeAudioTitle(rawTitle, t, {
+        name: item.authorDisplayName || 'Vibely',
+        key: 'upload.photo.originalSound',
+      })
+    : t('upload.photo.soundPicker.untitled')
   const meta = [
     formatSoundDuration(item.durationSeconds),
     item.authorDisplayName,

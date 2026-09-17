@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { BiDotsVerticalRounded } from 'react-icons/bi'
 import {
   IoArrowRedo,
@@ -19,6 +20,7 @@ import {
   isVideoPublicId,
   normalizeVideoPublicId,
 } from '@/features/post/utils/videoPublicId.js'
+import { localizeAudioTitle } from '@/features/post/utils/localizeAudioTitle.js'
 import { VideoShareModal } from '@/features/post/components/VideoShareModal'
 import { FeedReportModal } from '@/features/report'
 import { Sidebar } from '@/shared/components/Sidebar'
@@ -101,6 +103,7 @@ function SoundVideoDetailPopover({
   soundOwnerVibelyId,
   side = 'right',
 }) {
+  const { t } = useTranslation()
   if (!video) return null
   const rawUser = String(video.authorUsername ?? 'vibely')
     .trim()
@@ -108,9 +111,10 @@ function SoundVideoDetailPopover({
   const ownerId = String(soundOwnerVibelyId ?? '')
     .trim()
     .replace(/^@/, '')
-  const soundLine = ownerId
-    ? `nhạc nền - ${ownerId}`
-    : video.audioTitle?.trim() || `nhạc nền - ${rawUser}`
+  const soundLine = localizeAudioTitle(ownerId ? null : video.audioTitle, t, {
+    name: ownerId || rawUser,
+    key: 'upload.originalAudio',
+  })
   const avatar = resolveGridAuthorAvatar(video)
   const caption =
     String(video.description ?? '').trim() || String(video.title ?? '').trim()
@@ -119,7 +123,7 @@ function SoundVideoDetailPopover({
   return (
     <div
       role="dialog"
-      aria-label="Chi tiết video"
+      aria-label={t('common.videoDetails', { defaultValue: 'Video details' })}
       className={`vibely-sound-video-popover pointer-events-auto relative z-[80] w-[min(400px,calc(100vw-2rem))] max-w-[400px] rounded-xl border border-white/12 bg-[#1f1f1f] p-5 text-left shadow-2xl ring-1 ring-black/40 ${
         side === 'left'
           ? 'vibely-sound-video-popover--left'
@@ -667,6 +671,7 @@ export function SoundGridVideoCard({
 }
 
 export function SoundPage() {
+  const { t } = useTranslation()
   const { token, user, logout } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -842,8 +847,18 @@ export function SoundPage() {
     return DEFAULT_COVER
   }, [items, creatorAvatar, sourceVideo])
 
-  const title = items[0]?.audioTitle || audioTitleFromQuery || 'Âm thanh gốc'
-  const creator = items[0]?.authorDisplayName || creatorFromQuery || 'Nhà sáng tạo'
+  const title = localizeAudioTitle(
+    items[0]?.audioTitle || audioTitleFromQuery,
+    t,
+    {
+      name: items[0]?.authorDisplayName || creatorFromQuery || 'Vibely',
+      key: 'upload.photo.originalSound',
+    },
+  )
+  const creator =
+    items[0]?.authorDisplayName ||
+    creatorFromQuery ||
+    t('studio.inspiration.creatorFallback')
   const creatorUsername = String(items[0]?.authorUsername ?? '')
     .trim()
     .replace(/^@/, '')

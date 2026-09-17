@@ -25,6 +25,7 @@ import { StudioLayout } from '@/features/studio/components/StudioLayout'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { isVideoPublicId, normalizeVideoPublicId } from '@/features/post/utils/videoPublicId.js'
 import { resolveUploadedFileLabel } from '@/features/post/utils/videoFileLabel.js'
+import { localizeAudioTitle } from '@/features/post/utils/localizeAudioTitle.js'
 
 const DESC_MAX = 1000
 
@@ -492,10 +493,13 @@ export function StudioEditPostPage() {
   const postHeaderLabel = useMemo(() => resolveUploadedFileLabel(video), [video])
 
   const musicLine = useMemo(() => {
-    const a = String(video?.audioTitle ?? '').trim()
-    if (a) return `♫ ${a}`
-    return t('studio.editPost.originalSound', { name: user?.displayName || user?.username || 'Vibely' })
-  }, [video?.audioTitle, user?.displayName, user?.username])
+    const localized = localizeAudioTitle(video?.audioTitle, t, {
+      name: user?.displayName || user?.username || 'Vibely',
+      key: 'studio.editPost.originalSound',
+    })
+    if (String(localized).startsWith('♫')) return localized
+    return `♫ ${localized}`
+  }, [video?.audioTitle, user?.displayName, user?.username, t])
 
   const avatarSrc =
     user?.avatarUrl && String(user.avatarUrl).trim()

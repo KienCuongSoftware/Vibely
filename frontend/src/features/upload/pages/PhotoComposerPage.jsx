@@ -42,6 +42,9 @@ import {
 } from '@/features/upload/components/SchedulePickers.jsx'
 import { SoundPickerModal } from '@/features/upload/components/SoundPickerModal.jsx'
 import { formatSoundDuration } from '@/features/upload/utils/soundLibraryStore.js'
+import {
+  localizeAudioTitle,
+} from '@/features/post/utils/localizeAudioTitle.js'
 
 const TITLE_MAX = 90
 const DESC_MAX = 1000
@@ -155,8 +158,10 @@ export function PhotoComposerPage() {
   const handle = `@${user?.username || 'vibely'}`
   const displayName = user?.displayName || user?.username || 'Vibely'
   const avatarSrc = user?.avatarUrl || DEFAULT_AVATAR_URL
-  const soundLabel = selectedSound?.audioTitle?.trim()
-    || t('upload.photo.originalSound', { name: displayName })
+  const soundLabel = localizeAudioTitle(selectedSound?.audioTitle, t, {
+    name: displayName,
+    key: 'upload.photo.originalSound',
+  })
   const soundMeta = selectedSound
     ? [
         formatSoundDuration(selectedSound.durationSeconds),
