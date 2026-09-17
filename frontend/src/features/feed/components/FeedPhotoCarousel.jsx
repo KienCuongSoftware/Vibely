@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5'
 
-export function FeedPhotoCarousel({ urls, className = '', onClick }) {
+/** TikTok-style photo slideshow dwell per slide (ms). */
+export const FEED_PHOTO_SLIDE_MS = 3500
+
+export function FeedPhotoCarousel({
+  urls,
+  className = '',
+  onClick,
+  /** When true, auto-advance to the next slide every few seconds. */
+  active = true,
+  intervalMs = FEED_PHOTO_SLIDE_MS,
+}) {
   const slides = (Array.isArray(urls) ? urls : []).filter(Boolean)
   const [index, setIndex] = useState(0)
 
@@ -10,9 +20,18 @@ export function FeedPhotoCarousel({ urls, className = '', onClick }) {
     setIndex(0)
   }, [slidesKey])
 
+  const multi = slides.length > 1
+
+  useEffect(() => {
+    if (!active || !multi) return undefined
+    const timer = window.setInterval(() => {
+      setIndex((i) => (i + 1) % slides.length)
+    }, Math.max(1200, Number(intervalMs) || FEED_PHOTO_SLIDE_MS))
+    return () => window.clearInterval(timer)
+  }, [active, multi, slides.length, intervalMs, index])
+
   if (!slides.length) return null
   const current = slides[Math.min(index, slides.length - 1)]
-  const multi = slides.length > 1
 
   const go = (delta, event) => {
     event?.stopPropagation()
@@ -48,16 +67,16 @@ export function FeedPhotoCarousel({ urls, className = '', onClick }) {
             aria-label="Photo slides"
           >
             {slides.map((_, i) => {
-              const active = i === index
+              const activeDot = i === index
               return (
                 <button
                   key={i}
                   type="button"
                   role="tab"
-                  aria-selected={active}
+                  aria-selected={activeDot}
                   aria-label={`Photo ${i + 1} of ${slides.length}`}
                   className={`shrink-0 cursor-pointer rounded-full transition-all ${
-                    active
+                    activeDot
                       ? 'h-1.5 w-1.5 bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.25)]'
                       : 'h-1 w-1 bg-white/45 hover:bg-white/70'
                   }`}

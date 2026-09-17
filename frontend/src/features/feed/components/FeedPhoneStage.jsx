@@ -637,6 +637,7 @@ export function FeedPhoneStage({
   const [clientWideForLandscape, setClientWideForLandscape] = useState(false);
   /** Fallback: suy luận ngang từ thumbnail natural size. */
   const [thumbWideForLandscape, setThumbWideForLandscape] = useState(false);
+  const photoAudioRef = useRef(null);
   const progressTrackRef = useRef(null);
   const progressInnerRef = useRef(null);
   const progressFillRef = useRef(null);
@@ -811,6 +812,54 @@ export function FeedPhoneStage({
   );
 
   const activeVideo = videos[activeIndex];
+  const activePhotoUrls = photoUrlsOf(activeVideo);
+  const activeIsPhotoPost = activePhotoUrls.length > 0;
+  const activePhotoAudioUrl = String(activeVideo?.audioUrl ?? "").trim();
+  const activePhotoReportedHidden = Boolean(
+    normalizeVideoPublicId(activeVideo?.publicId) &&
+      reportHiddenIds.has(normalizeVideoPublicId(activeVideo?.publicId) || ""),
+  );
+
+  useEffect(() => {
+    const el = photoAudioRef.current;
+    if (!el) return undefined;
+    if (!activeIsPhotoPost || !activePhotoAudioUrl || activePhotoReportedHidden) {
+      el.pause();
+      el.removeAttribute("src");
+      try {
+        el.load();
+      } catch {
+        /* ignore */
+      }
+      return undefined;
+    }
+    if (el.getAttribute("src") !== activePhotoAudioUrl) {
+      el.src = activePhotoAudioUrl;
+    }
+    el.loop = true;
+    el.muted = Boolean(playbackMuted);
+    el.volume = Math.min(1, Math.max(0, Number(feedVolume) || 0));
+    if (playbackMuted || userPaused) {
+      el.pause();
+      return undefined;
+    }
+    const playPromise = el.play();
+    if (playPromise?.catch) {
+      playPromise.catch(() => {
+        /* autoplay blocked until user gesture / sound unlock */
+      });
+    }
+    return undefined;
+  }, [
+    activeIsPhotoPost,
+    activePhotoAudioUrl,
+    activePhotoReportedHidden,
+    activeVideo?.publicId,
+    playbackMuted,
+    feedVolume,
+    userPaused,
+    activeIndex,
+  ]);
 
   useEffect(() => {
     const el = feedVideoRef.current;
@@ -1115,6 +1164,13 @@ export function FeedPhoneStage({
             }
       }
     >
+      <audio
+        ref={photoAudioRef}
+        playsInline
+        preload="auto"
+        className="pointer-events-none absolute h-0 w-0 opacity-0"
+        aria-hidden
+      />
       <VirtualizedFeed
         ref={virtualFeedRef}
         videos={videos}
@@ -1165,11 +1221,17 @@ export function FeedPhoneStage({
                       : "rounded-xl sm:rounded-2xl"
                   }`}
                   style={{
-                    bottom: theaterMode ? 0 : FEED_PROGRESS_TRACK_BOTTOM_PX,
+                    bottom:
+                      theaterMode || isPhotoPost ? 0 : FEED_PROGRESS_TRACK_BOTTOM_PX,
                   }}
                 >
                   {isPhotoPost ? (
-                    <FeedPhotoCarousel urls={photoUrls} className="h-full w-full" />
+                    <FeedPhotoCarousel
+                      urls={photoUrls}
+                      className="h-full w-full"
+                      active={isActive && !reportedHidden}
+                      onClick={toggleFeedPlayback}
+                    />
                   ) : (
                   <FeedVideoPlayer
                     key={String(video.publicId)}
@@ -1615,7 +1677,8 @@ export function FeedPhoneStage({
         }}
       </VirtualizedFeed>
 
-      {resolveFeedPlaybackUrl(activeVideo) &&
+      {!activeIsPhotoPost &&
+      resolveFeedPlaybackUrl(activeVideo) &&
       !reportHiddenIds.has(
         normalizeVideoPublicId(activeVideo?.publicId) || "",
       ) ? (
