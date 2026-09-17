@@ -443,6 +443,7 @@ function FeedVolumeIcon({ soundOn, volume }) {
  * TikTok For You volume:
  * - Muted → mute icon always visible (no video hover needed)
  * - Unmuted → speaker shows on video hover; slider only when hovering the control
+ * Slider is unmounted when collapsed so the white track/thumb never leaks into the icon.
  */
 export function FeedVolumeControl({
   volume,
@@ -454,7 +455,9 @@ export function FeedVolumeControl({
 }) {
   const { t } = useTranslation();
   const [pinned, setPinned] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const isMuted = !soundOn || volume <= 0;
+  const expanded = pinned || hovered;
 
   useEffect(() => {
     if (!pinned) return undefined;
@@ -506,62 +509,56 @@ export function FeedVolumeControl({
       onPointerDown={stopFeedPointer}
       onMouseDown={stopFeedPointer}
       onClick={stopFeedPointer}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <div
         className={`flex h-10 items-center overflow-hidden rounded-full transition-[max-width,background-color,padding,box-shadow] duration-200 ease-out ${
-          pinned
+          expanded
             ? "max-w-[11.5rem] bg-black/55 py-0 pl-1.5 pr-3 shadow-[0_4px_18px_rgba(0,0,0,0.35)] backdrop-blur-md"
-            : "max-w-10 bg-transparent p-0 group-hover/vol:max-w-[11.5rem] group-hover/vol:bg-black/55 group-hover/vol:py-0 group-hover/vol:pl-1.5 group-hover/vol:pr-3 group-hover/vol:shadow-[0_4px_18px_rgba(0,0,0,0.35)] group-hover/vol:backdrop-blur-md focus-within:max-w-[11.5rem] focus-within:bg-black/55 focus-within:py-0 focus-within:pl-1.5 focus-within:pr-3"
+            : "max-w-10 bg-black/45 p-0 shadow-[0_2px_10px_rgba(0,0,0,0.28)] backdrop-blur-[2px]"
         }`}
       >
         <button
           type="button"
           aria-label={isMuted ? t('feed.unmute') : t('feed.mute')}
-          className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center text-white transition-opacity hover:opacity-90"
+          className="relative z-20 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center text-white transition-opacity hover:opacity-90"
           onPointerDown={stopFeedPointer}
           onClick={toggleSound}
         >
           <FeedVolumeIcon soundOn={soundOn} volume={volume} />
         </button>
-        <div
-          className={`relative flex h-10 shrink-0 items-center overflow-hidden transition-[width,opacity] duration-200 ease-out ${
-            pinned
-              ? "w-[7.25rem] opacity-100"
-              : "w-0 opacity-0 group-hover/vol:w-[7.25rem] group-hover/vol:opacity-100 focus-within:w-[7.25rem] focus-within:opacity-100"
-          }`}
-        >
-          <div
-            className="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center"
-            aria-hidden
-          >
-            <div className="relative h-[4px] w-full overflow-hidden rounded-full bg-white/30">
-              <div
-                className="absolute inset-y-0 left-0 rounded-full bg-white"
-                style={{ width: `${Math.min(100, Math.max(0, volume * 100))}%` }}
-              />
+        {expanded ? (
+          <div className="relative z-10 flex h-10 w-[7.25rem] shrink-0 items-center overflow-hidden">
+            <div
+              className="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center"
+              aria-hidden
+            >
+              <div className="relative h-[4px] w-full overflow-hidden rounded-full bg-white/30">
+                <div
+                  className="absolute inset-y-0 left-0 rounded-full bg-white"
+                  style={{ width: `${Math.min(100, Math.max(0, volume * 100))}%` }}
+                />
+              </div>
             </div>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={volume}
+              aria-label={t('feed.volume')}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(volume * 100)}
+              className="feed-volume-slider pointer-events-auto relative z-10 w-full cursor-pointer"
+              onPointerDown={pinInteraction}
+              onChange={onSlider}
+              onInput={onSlider}
+              onClick={stopFeedPointer}
+            />
           </div>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.01}
-            value={volume}
-            aria-label={t('feed.volume')}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={Math.round(volume * 100)}
-            className={`feed-volume-slider relative z-10 w-full cursor-pointer ${
-              pinned
-                ? "pointer-events-auto"
-                : "pointer-events-none group-hover/vol:pointer-events-auto focus-within:pointer-events-auto"
-            }`}
-            onPointerDown={pinInteraction}
-            onChange={onSlider}
-            onInput={onSlider}
-            onClick={stopFeedPointer}
-          />
-        </div>
+        ) : null}
       </div>
     </div>
   );
