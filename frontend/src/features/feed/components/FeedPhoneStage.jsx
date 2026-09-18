@@ -35,6 +35,7 @@ import {
   formatPlaybackSpeedOption,
 } from "@/features/feed/utils/feedPlaybackSpeedStorage.js";
 import { resolveFeedPlaybackUrl } from "@/features/feed/utils/feedPlayback.js";
+import { createPhotoAudioBoostController } from "@/features/feed/utils/photoFeedAudioBoost.js";
 import {
   sortQualityOptions,
   formatQualityLabel,
@@ -635,6 +636,7 @@ export function FeedPhoneStage({
   /** Fallback: suy luận ngang từ thumbnail natural size. */
   const [thumbWideForLandscape, setThumbWideForLandscape] = useState(false);
   const photoAudioRef = useRef(null);
+  const photoAudioBoostRef = useRef(null);
   const progressTrackRef = useRef(null);
   const progressInnerRef = useRef(null);
   const progressFillRef = useRef(null);
@@ -818,41 +820,30 @@ export function FeedPhoneStage({
   );
 
   useEffect(() => {
-    const el = photoAudioRef.current;
-    if (!el) return undefined;
+    if (!photoAudioBoostRef.current) {
+      photoAudioBoostRef.current = createPhotoAudioBoostController();
+    }
+    const boost = photoAudioBoostRef.current;
+    const htmlEl = photoAudioRef.current;
 
     if (!activeIsPhotoPost || !activePhotoAudioUrl || activePhotoReportedHidden) {
-      el.pause();
-      el.removeAttribute("src");
-      try {
-        el.load();
-      } catch {
-        /* ignore */
-      }
-      return undefined;
-    }
-
-    // Do not use Web Audio MediaElementSource here — CDN audio often lacks CORS and
-    // createMediaElementSource then silences playback permanently for that element.
-    if (el.getAttribute("src") !== activePhotoAudioUrl) {
-      el.src = activePhotoAudioUrl;
-    }
-    el.loop = true;
-    el.muted = Boolean(playbackMuted);
-    // Keep photo soundtrack at full UI volume (matches video element path).
-    el.volume = playbackMuted ? 0 : Math.min(1, Math.max(0, Number(feedVolume) || 0));
-
-    if (playbackMuted || userPaused) {
-      el.pause();
-      return undefined;
-    }
-
-    const playPromise = el.play();
-    if (playPromise?.catch) {
-      playPromise.catch(() => {
-        /* autoplay blocked until user gesture / sound unlock */
+      boost.sync({
+        url: "",
+        htmlEl,
+        muted: true,
+        paused: true,
+        volume: 0,
       });
+      return undefined;
     }
+
+    boost.sync({
+      url: activePhotoAudioUrl,
+      htmlEl,
+      muted: Boolean(playbackMuted),
+      paused: Boolean(userPaused),
+      volume: Number(feedVolume) || 0,
+    });
     return undefined;
   }, [
     activeIsPhotoPost,
@@ -864,6 +855,13 @@ export function FeedPhoneStage({
     userPaused,
     activeIndex,
   ]);
+
+  useEffect(() => {
+    return () => {
+      photoAudioBoostRef.current?.dispose();
+      photoAudioBoostRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     const el = feedVideoRef.current;
