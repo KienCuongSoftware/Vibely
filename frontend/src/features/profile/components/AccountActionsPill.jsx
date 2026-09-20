@@ -13,12 +13,12 @@ function HeaderLabelChip({ icon, label }) {
       type="button"
       title={label}
       aria-label={label}
-      className="vibely-account-actions-chip flex max-w-[10.5rem] min-w-0 cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-2 text-[13px] font-semibold leading-none transition-colors"
+      className="vibely-account-actions-chip flex max-w-[10.5rem] min-w-0 cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-semibold leading-snug transition-colors"
     >
-      <span className="shrink-0 text-[16px]" aria-hidden>
+      <span className="shrink-0 text-[16px] leading-none" aria-hidden>
         {icon}
       </span>
-      <span className="min-w-0 truncate">{label}</span>
+      <span className="min-w-0 truncate leading-snug">{label}</span>
     </button>
   );
 }
