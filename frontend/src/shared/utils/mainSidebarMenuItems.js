@@ -14,12 +14,11 @@ import {
   MdOutlinePeople,
   MdOutlinePerson,
   MdOutlinePersonAdd,
-  MdOutlineSend,
   MdPeople,
   MdPerson,
   MdPersonAdd,
-  MdSend,
 } from 'react-icons/md'
+import { HiOutlinePaperAirplane, HiPaperAirplane } from 'react-icons/hi2'
 
 /** Sidebar items use i18n keys under `nav.*` (resolve with t(labelKey) in Sidebar). */
 export function buildMainSidebarMenuItems(token) {
@@ -31,7 +30,8 @@ export function buildMainSidebarMenuItems(token) {
     { id: 'live', labelKey: 'nav.live', icon: MdOutlineLiveTv, activeIcon: MdLiveTv },
     ...(token
       ? [
-          { id: 'messages', labelKey: 'nav.messages', icon: MdOutlineSend, activeIcon: MdSend },
+          // TikTok web “Tin nhắn”: paper-plane DM icon (not Material send chevron).
+          { id: 'messages', labelKey: 'nav.messages', icon: HiOutlinePaperAirplane, activeIcon: HiPaperAirplane },
           { id: 'activity', labelKey: 'nav.activity', icon: MdOutlineNotifications, activeIcon: MdNotifications },
         ]
       : []),
