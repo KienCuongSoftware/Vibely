@@ -283,6 +283,10 @@
     "termsP2": "You also confirm that you will not run political, government, or election ads that violate Vibely’s political advertising policies.",
     "viewPriceDetails": "View price details ˄",
     "hidePriceDetails": "Hide price details ˅",
+    "priceDetailsTitle": "Price details",
+    "subtotal": "Subtotal",
+    "insufficientPoints": "Insufficient points",
+    "total": "Total",
     "start": "Start",
     "startPromote": "Start promoting",
     "emptyCampaigns": "You don’t have any promotions yet.",
@@ -2875,4 +2879,4 @@
       "defaultText": "Text"
     }
   }
-}
+}\n

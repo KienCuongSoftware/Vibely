@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
+  IoClose,
+  IoCloudUploadOutline,
   IoCreateOutline,
   IoEyeOutline,
   IoHeartOutline,
@@ -10,7 +12,6 @@ import {
   IoPersonOutline,
   IoPlayOutline,
   IoThumbsUpOutline,
-  IoCloudUploadOutline,
 } from "react-icons/io5";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { AccountAvatarMenu } from "@/shared/components/AccountAvatarMenu.jsx";
@@ -43,16 +44,10 @@ const GOAL_ICONS = {
   messageLeads: IoHeartOutline,
 };
 
-function formatBudget(amount, locale) {
-  try {
-    return new Intl.NumberFormat(locale || "vi-VN", {
-      style: "currency",
-      currency: "VND",
-      maximumFractionDigits: 0,
-    }).format(amount);
-  } catch {
-    return `${amount.toLocaleString("vi-VN")} ₫`;
-  }
+/** TikTok-style VND: đ69,000 */
+function formatDong(amount) {
+  const n = Math.max(0, Math.round(Number(amount) || 0));
+  return `đ${n.toLocaleString("vi-VN")}`;
 }
 
 function estimateReach(budget, durationHours) {
@@ -81,8 +76,87 @@ function PromoteSlider({ value, min, max, step, onChange, ariaLabel }) {
   );
 }
 
+function PriceDetailsModal({ open, onClose, budget, canStart, onStart, t }) {
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  // Shell: no wallet balance yet → show 0 like TikTok empty wallet.
+  const subtotal = 0;
+  const credit = 0;
+  const total = 0;
+
+  return (
+    <div
+      className="promote-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="presentation"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="promote-price-title"
+        className="promote-modal w-full max-w-[420px] overflow-hidden rounded-2xl shadow-2xl"
+      >
+        <div className="relative flex items-center justify-center px-4 pb-2 pt-5">
+          <h2 id="promote-price-title" className="text-[17px] font-bold">
+            {t("promotePage.priceDetailsTitle")}
+          </h2>
+          <button
+            type="button"
+            aria-label={t("nav.close")}
+            className="promote-modal-close absolute right-3 top-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full"
+            onClick={onClose}
+          >
+            <IoClose className="text-xl" />
+          </button>
+        </div>
+
+        <div className="px-5 pb-2 pt-2">
+          <div className="promote-price-row flex items-center justify-between border-b py-3.5 text-[15px]">
+            <span>{t("promotePage.subtotal")}</span>
+            <span className="tabular-nums">{formatDong(subtotal)}</span>
+          </div>
+          <div className="promote-price-row flex items-center justify-between border-b py-3.5 text-[15px]">
+            <span>{t("promotePage.insufficientPoints")}</span>
+            <span className="tabular-nums">{formatDong(credit)}</span>
+          </div>
+          <div className="flex items-center justify-between py-3.5 text-[15px]">
+            <span className="font-bold">{t("promotePage.total")}</span>
+            <span className="font-bold tabular-nums">{formatDong(total)}</span>
+          </div>
+          {/* Keep budget visible for context while payment is not wired */}
+          <p className="promote-muted pb-2 text-[12px]">
+            {t("promotePage.budget")}: {formatDong(budget)}
+          </p>
+        </div>
+
+        <div className="px-5 pb-5 pt-1">
+          <button
+            type="button"
+            disabled={!canStart}
+            className="flex h-11 w-full cursor-pointer items-center justify-center rounded-full bg-[#fe2c55] text-[15px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
+            onClick={onStart}
+          >
+            {t("promotePage.startPromote")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /**
- * TikTok-like Promote (Quảng bá) create flow — UI shell, no payment backend yet.
+ * TikTok-like Promote (Quảng bá) create flow — compact column + price modal.
  */
 export function PromotePage() {
   const { t, i18n } = useTranslation();
@@ -122,7 +196,7 @@ export function PromotePage() {
   return (
     <section className="vibely-chrome vibely-promote-page min-h-dvh">
       <header className="promote-header sticky top-0 z-40 border-b">
-        <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6">
+        <div className="mx-auto flex h-14 max-w-[980px] items-center justify-between gap-4 px-4">
           <Link to="/" className="shrink-0" aria-label="Vibely">
             <VibelyWordmark className="h-8 w-auto" />
           </Link>
@@ -164,11 +238,11 @@ export function PromotePage() {
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-[1200px] gap-6 px-4 py-6 sm:px-6">
-        <aside className="promote-sidebar hidden w-[220px] shrink-0 flex-col md:flex">
+      <div className="mx-auto flex max-w-[980px] gap-5 px-4 py-5">
+        <aside className="promote-sidebar hidden w-[180px] shrink-0 flex-col lg:flex">
           <button
             type="button"
-            className="promote-create-btn mb-4 flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-lg text-[15px] font-semibold"
+            className="promote-create-btn mb-3 flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-lg text-[14px] font-semibold"
             onClick={() => navigate("/vibelystudio/upload")}
           >
             <IoCreateOutline className="text-lg" aria-hidden />
@@ -177,7 +251,7 @@ export function PromotePage() {
           <nav className="flex flex-col gap-0.5">
             <button
               type="button"
-              className={`promote-nav-item flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[15px] ${
+              className={`promote-nav-item flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[14px] ${
                 nav === "dashboard" ? "is-active" : ""
               }`}
               onClick={() => setNav("dashboard")}
@@ -187,7 +261,7 @@ export function PromotePage() {
             </button>
             <button
               type="button"
-              className={`promote-nav-item flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[15px] ${
+              className={`promote-nav-item flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[14px] ${
                 nav === "mine" ? "is-active" : ""
               }`}
               onClick={() => setNav("mine")}
@@ -196,45 +270,45 @@ export function PromotePage() {
               {t("promotePage.mine")}
             </button>
           </nav>
-          <div className="promote-sidebar-footer mt-auto space-y-2 pt-8 text-[12px] leading-relaxed">
+          <div className="promote-sidebar-footer mt-auto space-y-2 pt-8 text-[11px] leading-relaxed">
             <p>{t("promotePage.programTerms")}</p>
             <p>{t("promotePage.adsPolicy")}</p>
             <p>{t("nav.copyright")}</p>
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1 pb-28">
+        <main className="mx-auto min-w-0 w-full max-w-[640px] flex-1 pb-24">
           {nav !== "create" ? (
-            <div className="promote-card rounded-xl p-8 text-center">
-              <h1 className="text-xl font-bold">
+            <div className="promote-card rounded-xl p-7 text-center">
+              <h1 className="text-lg font-bold">
                 {nav === "dashboard" ? t("promotePage.dashboard") : t("promotePage.mine")}
               </h1>
               <p className="promote-muted mt-2 text-sm">{t("promotePage.emptyCampaigns")}</p>
               <button
                 type="button"
-                className="mt-6 cursor-pointer rounded-lg bg-[#fe2c55] px-5 py-2.5 text-sm font-semibold text-white"
+                className="mt-5 cursor-pointer rounded-lg bg-[#fe2c55] px-5 py-2.5 text-sm font-semibold text-white"
                 onClick={() => setNav("create")}
               >
                 {t("promotePage.startPromote")}
               </button>
             </div>
           ) : (
-            <div className="space-y-4">
-              <section className="promote-card rounded-xl p-5 sm:p-6">
-                <div className="mb-4 flex items-center gap-1.5">
-                  <h2 className="text-[17px] font-bold">{t("promotePage.chooseGoal")}</h2>
+            <div className="space-y-3">
+              <section className="promote-card rounded-xl p-4 sm:p-5">
+                <div className="mb-3 flex items-center gap-1.5">
+                  <h2 className="text-[16px] font-bold">{t("promotePage.chooseGoal")}</h2>
                   <IoInformationCircleOutline className="promote-muted text-base" aria-hidden />
                 </div>
-                <div className="mb-4 flex flex-wrap gap-2">
+                <div className="mb-3 flex flex-wrap gap-2">
                   {GOAL_TABS.map((tab) => {
                     const active = goalTab === tab.id;
                     return (
                       <button
                         key={tab.id}
                         type="button"
-                        className={`cursor-pointer rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition ${
+                        className={`cursor-pointer rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
                           active
-                            ? "border-[#fe2c55] bg-[#fe2c55]/10 text-[#fe2c55]"
+                            ? "border-[#fe2c55] bg-[#fe2c55] text-white"
                             : "promote-pill"
                         }`}
                         onClick={() => setGoalTab(tab.id)}
@@ -252,11 +326,11 @@ export function PromotePage() {
                       <li key={goalId}>
                         <button
                           type="button"
-                          className="flex w-full cursor-pointer items-center gap-3 py-3.5 text-left"
+                          className="flex w-full cursor-pointer items-center gap-3 py-3 text-left"
                           onClick={() => setGoal(goalId)}
                         >
-                          <Icon className="promote-muted shrink-0 text-[22px]" aria-hidden />
-                          <span className="min-w-0 flex-1 text-[15px]">
+                          <Icon className="promote-muted shrink-0 text-[20px]" aria-hidden />
+                          <span className="min-w-0 flex-1 text-[14px]">
                             {t(`promotePage.goals.${goalId}`)}
                           </span>
                           <span
@@ -278,24 +352,24 @@ export function PromotePage() {
                 </ul>
               </section>
 
-              <section className="promote-card rounded-xl px-5 py-10 text-center sm:px-6">
-                <p className="text-lg font-bold">{t("promotePage.noVideoTitle")}</p>
-                <p className="promote-muted mt-1 text-sm">{t("promotePage.noVideoHint")}</p>
+              <section className="promote-card rounded-xl px-4 py-8 text-center sm:px-5">
+                <p className="text-[16px] font-bold">{t("promotePage.noVideoTitle")}</p>
+                <p className="promote-muted mt-1 text-[13px]">{t("promotePage.noVideoHint")}</p>
                 <button
                   type="button"
-                  className="mt-5 cursor-pointer rounded-lg border border-[#fe2c55] px-4 py-2 text-sm font-semibold text-[#fe2c55]"
+                  className="mt-4 cursor-pointer rounded-lg border border-[#fe2c55] px-4 py-2 text-[13px] font-semibold text-[#fe2c55]"
                   onClick={() => navigate("/vibelystudio/upload")}
                 >
                   {t("promotePage.uploadContent")}
                 </button>
               </section>
 
-              <section className="promote-card rounded-xl p-5 sm:p-6">
+              <section className="promote-card rounded-xl p-4 sm:p-5">
                 <div className="mb-1">
-                  <h2 className="text-[17px] font-bold">{t("promotePage.customPromote")}</h2>
-                  <p className="promote-muted text-[13px]">{t("promotePage.estimatesHint")}</p>
+                  <h2 className="text-[16px] font-bold">{t("promotePage.customPromote")}</h2>
+                  <p className="promote-muted text-[12px]">{t("promotePage.estimatesHint")}</p>
                 </div>
-                <div className="promote-estimate mt-4 flex min-h-[88px] items-center justify-center rounded-lg text-2xl font-semibold">
+                <div className="promote-estimate mt-3 flex min-h-20 items-center justify-center rounded-lg text-xl font-semibold">
                   {hasVideo && reach
                     ? t("promotePage.estimateRange", {
                         min: reach.min.toLocaleString(localeTag),
@@ -304,13 +378,13 @@ export function PromotePage() {
                     : "—"}
                 </div>
 
-                <h3 className="mt-6 text-[15px] font-bold">{t("promotePage.budgetDuration")}</h3>
+                <h3 className="mt-5 text-[14px] font-bold">{t("promotePage.budgetDuration")}</h3>
 
-                <div className="mt-4">
+                <div className="mt-3">
                   <div className="mb-2 flex items-center justify-between gap-2">
-                    <span className="text-[14px] font-semibold">{t("promotePage.budget")}</span>
-                    <span className="text-[15px] font-bold tabular-nums">
-                      {formatBudget(budget, localeTag)}
+                    <span className="text-[13px] font-semibold">{t("promotePage.budget")}</span>
+                    <span className="text-[14px] font-bold tabular-nums">
+                      {formatDong(budget)}
                     </span>
                   </div>
                   <PromoteSlider
@@ -321,16 +395,16 @@ export function PromotePage() {
                     ariaLabel={t("promotePage.budget")}
                     onChange={setBudget}
                   />
-                  <div className="promote-budget-tip mt-3 flex items-start gap-2 rounded-lg px-3 py-2.5 text-[13px]">
+                  <div className="promote-budget-tip mt-3 flex items-start gap-2 rounded-lg px-3 py-2 text-[12px]">
                     <IoThumbsUpOutline className="mt-0.5 shrink-0 text-base text-[#fe2c55]" aria-hidden />
                     <span>{t("promotePage.budgetTip")}</span>
                   </div>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-5">
                   <div className="mb-2 flex items-center justify-between gap-2">
-                    <span className="text-[14px] font-semibold">{t("promotePage.duration")}</span>
-                    <span className="text-[15px] font-bold">
+                    <span className="text-[13px] font-semibold">{t("promotePage.duration")}</span>
+                    <span className="text-[14px] font-bold">
                       {t("promotePage.durationHours", { count: duration })}
                     </span>
                   </div>
@@ -345,12 +419,12 @@ export function PromotePage() {
                 </div>
               </section>
 
-              <section className="promote-card rounded-xl p-5 sm:p-6">
-                <h2 className="text-[17px] font-bold">{t("promotePage.termsTitle")}</h2>
-                <p className="promote-muted mt-3 text-[13px] leading-relaxed">
+              <section className="promote-card rounded-xl p-4 sm:p-5">
+                <h2 className="text-[16px] font-bold">{t("promotePage.termsTitle")}</h2>
+                <p className="promote-muted mt-2.5 text-[12px] leading-relaxed">
                   {t("promotePage.termsP1")}
                 </p>
-                <p className="promote-muted mt-2 text-[13px] leading-relaxed">
+                <p className="promote-muted mt-2 text-[12px] leading-relaxed">
                   {t("promotePage.termsP2")}
                 </p>
               </section>
@@ -361,39 +435,36 @@ export function PromotePage() {
 
       {nav === "create" ? (
         <div className="promote-footer fixed inset-x-0 bottom-0 z-30 border-t">
-          <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-4 py-3 sm:px-6 md:pl-[244px]">
-            <button
-              type="button"
-              className="promote-muted cursor-pointer text-sm font-semibold"
-              onClick={() => setPriceOpen((v) => !v)}
-            >
-              {priceOpen ? t("promotePage.hidePriceDetails") : t("promotePage.viewPriceDetails")}
-            </button>
+          <div className="mx-auto flex max-w-[980px] items-center justify-between gap-4 px-4 py-3 lg:pl-[204px]">
+            <div className="min-w-0 flex-1">
+              <button
+                type="button"
+                className="promote-muted cursor-pointer text-[13px] font-semibold"
+                onClick={() => setPriceOpen(true)}
+              >
+                {t("promotePage.viewPriceDetails")}
+              </button>
+            </div>
             <button
               type="button"
               disabled={!canStart}
-              className="cursor-pointer rounded-lg bg-[#fe2c55] px-8 py-2.5 text-[15px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
-              onClick={() => {}}
+              className="cursor-pointer rounded-lg bg-[#fe2c55] px-7 py-2.5 text-[14px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
+              onClick={() => setPriceOpen(true)}
             >
               {t("promotePage.start")}
             </button>
           </div>
-          {priceOpen ? (
-            <div className="promote-price-panel border-t px-4 py-3 text-sm sm:px-6 md:pl-[244px]">
-              <div className="mx-auto flex max-w-[1200px] flex-wrap gap-x-8 gap-y-1">
-                <span>
-                  {t("promotePage.budget")}:{" "}
-                  <strong>{formatBudget(budget, localeTag)}</strong>
-                </span>
-                <span>
-                  {t("promotePage.duration")}:{" "}
-                  <strong>{t("promotePage.durationHours", { count: duration })}</strong>
-                </span>
-              </div>
-            </div>
-          ) : null}
         </div>
       ) : null}
+
+      <PriceDetailsModal
+        open={priceOpen}
+        onClose={() => setPriceOpen(false)}
+        budget={budget}
+        canStart={canStart}
+        onStart={() => setPriceOpen(false)}
+        t={t}
+      />
     </section>
   );
 }

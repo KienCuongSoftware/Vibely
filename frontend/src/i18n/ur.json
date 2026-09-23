@@ -2873,6 +2873,10 @@
     "startPromote": "Start promoting",
     "emptyCampaigns": "You don’t have any promotions yet.",
     "programTerms": "Vibely Promote Program and Payment Terms",
-    "adsPolicy": "Advertising Policy"
+    "adsPolicy": "Advertising Policy",
+    "priceDetailsTitle": "Price details",
+    "subtotal": "Subtotal",
+    "insufficientPoints": "Insufficient points",
+    "total": "Total"
   }
-}
+}\n

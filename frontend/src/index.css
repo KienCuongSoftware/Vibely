@@ -918,6 +918,24 @@ html[data-vibely-theme="light"] .vibely-account-actions-divider {
   border: 1px solid #d4d4d8;
   cursor: pointer;
 }
+.vibely-promote-page .promote-modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.45);
+}
+.vibely-promote-page .promote-modal {
+  background-color: #18181b;
+  color: #f1f1f2;
+  border: 1px solid #27272a;
+}
+.vibely-promote-page .promote-modal-close {
+  color: #a1a1aa;
+}
+.vibely-promote-page .promote-modal-close:hover {
+  background-color: #27272a;
+  color: #fafafa;
+}
+.vibely-promote-page .promote-price-row {
+  border-color: #27272a;
+}
 
 html[data-vibely-theme="light"] .vibely-promote-page {
   --promote-divider: #e3e3e4;
@@ -988,6 +1006,21 @@ html[data-vibely-theme="light"] .vibely-promote-page .promote-slider {
     #e3e3e4 var(--promote-pct, 0%),
     #e3e3e4 100%
   );
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-modal {
+  background-color: #fff;
+  color: #161823;
+  border-color: transparent;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-modal-close {
+  color: #757575;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-modal-close:hover {
+  background-color: #f1f1f2;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-price-row {
+  border-color: #f1f1f2;
 }
 
 
