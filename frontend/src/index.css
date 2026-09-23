@@ -820,11 +820,177 @@ html[data-vibely-theme="light"] .vibely-account-actions-divider {
   background-color: #e3e3e4;
 }
 
-/* Support center — follows app light/dark theme */
-.vibely-support-page {
-  background-color: #000;
+/* Promote (Quảng bá) — TikTok-like dashboard shell */
+.vibely-promote-page {
+  --promote-divider: #3f3f46;
+  background-color: #0a0a0a;
   color: #f1f1f2;
 }
+.vibely-promote-page .promote-header {
+  border-color: #27272a;
+  background-color: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(8px);
+}
+.vibely-promote-page .promote-icon-btn {
+  color: #e4e4e7;
+}
+.vibely-promote-page .promote-icon-btn:hover {
+  background-color: #27272a;
+}
+.vibely-promote-page .promote-create-btn {
+  background-color: #27272a;
+  color: #fafafa;
+}
+.vibely-promote-page .promote-create-btn:hover {
+  background-color: #3f3f46;
+}
+.vibely-promote-page .promote-nav-item {
+  color: #d4d4d8;
+}
+.vibely-promote-page .promote-nav-item:hover,
+.vibely-promote-page .promote-nav-item.is-active {
+  background-color: #18181b;
+  color: #fafafa;
+}
+.vibely-promote-page .promote-sidebar-footer {
+  color: #71717a;
+}
+.vibely-promote-page .promote-card {
+  background-color: #18181b;
+  border: 1px solid #27272a;
+}
+.vibely-promote-page .promote-muted {
+  color: #a1a1aa;
+}
+.vibely-promote-page .promote-pill {
+  border-color: #3f3f46;
+  background-color: transparent;
+  color: #e4e4e7;
+}
+.vibely-promote-page .promote-estimate {
+  background-color: #27272a;
+  color: #a1a1aa;
+}
+.vibely-promote-page .promote-budget-tip {
+  background-color: #27272a;
+  color: #d4d4d8;
+}
+.vibely-promote-page .promote-footer {
+  border-color: #27272a;
+  background-color: rgba(10, 10, 10, 0.96);
+  backdrop-filter: blur(8px);
+}
+.vibely-promote-page .promote-price-panel {
+  border-color: #27272a;
+  background-color: #121212;
+  color: #d4d4d8;
+}
+.vibely-promote-page .promote-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    #fe2c55 0%,
+    #fe2c55 var(--promote-pct, 0%),
+    #3f3f46 var(--promote-pct, 0%),
+    #3f3f46 100%
+  );
+  outline: none;
+}
+.vibely-promote-page .promote-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #d4d4d8;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+.vibely-promote-page .promote-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #d4d4d8;
+  cursor: pointer;
+}
+
+html[data-vibely-theme="light"] .vibely-promote-page {
+  --promote-divider: #e3e3e4;
+  background-color: #f8f8f8;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-header {
+  border-color: #e3e3e4;
+  background-color: rgba(255, 255, 255, 0.96);
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-icon-btn {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-icon-btn:hover {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-create-btn {
+  background-color: #f1f1f2;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-create-btn:hover {
+  background-color: #e3e3e4;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-nav-item {
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-nav-item:hover,
+html[data-vibely-theme="light"] .vibely-promote-page .promote-nav-item.is-active {
+  background-color: #f1f1f2;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-sidebar-footer {
+  color: #8a8b91;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-card {
+  background-color: #fff;
+  border-color: transparent;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-muted {
+  color: #757575;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-pill {
+  border-color: #e3e3e4;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-estimate {
+  background-color: #f1f1f2;
+  color: #8a8b91;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-budget-tip {
+  background-color: #f8f8f8;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-footer {
+  border-color: #e3e3e4;
+  background-color: rgba(255, 255, 255, 0.98);
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-price-panel {
+  border-color: #e3e3e4;
+  background-color: #fff;
+  color: #161823;
+}
+html[data-vibely-theme="light"] .vibely-promote-page .promote-slider {
+  background: linear-gradient(
+    to right,
+    #fe2c55 0%,
+    #fe2c55 var(--promote-pct, 0%),
+    #e3e3e4 var(--promote-pct, 0%),
+    #e3e3e4 100%
+  );
+}
+
+
 .vibely-support-page .support-header {
   border-color: #27272a;
   background-color: rgba(0, 0, 0, 0.92);

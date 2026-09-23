@@ -1,43 +1,51 @@
-import { VideoThumbnailImg } from '@/features/post/components/VideoThumbnailImg.jsx'
-import { DEFAULT_COVER } from '@/features/post/pages/SoundPage.jsx'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import i18n from '@/i18n/i18n.js'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { apiClient, uploadThumbnailToStorage } from '@/shared/api/client'
+import { VideoThumbnailImg } from "@/features/post/components/VideoThumbnailImg.jsx";
+import { DEFAULT_COVER } from "@/features/post/pages/SoundPage.jsx";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n/i18n.js";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
+import { apiClient, uploadThumbnailToStorage } from "@/shared/api/client";
 import {
   markFeedAuthorFollowed,
   markFeedAuthorUnfollowed,
-} from '@/features/follow/utils/feedFollowState.js'
-import { useAuth } from '@/features/auth/hooks/useAuth'
+} from "@/features/follow/utils/feedFollowState.js";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import {
   buildProfileWatchUrl,
   videoPublicIdOf,
-} from '@/features/post/utils/videoPublicId.js'
+} from "@/features/post/utils/videoPublicId.js";
 import {
   formatScheduleTileLabel,
   isFutureSchedule,
   readScheduledAt,
-} from '@/features/post/utils/videoSchedule.js'
+} from "@/features/post/utils/videoSchedule.js";
 import {
   loadProfileLastWatched,
   recordProfileLastWatchedFromVideo,
-} from '@/features/profile/utils/profileLastWatched.js'
-import { Sidebar } from '@/shared/components/Sidebar'
-import { AdminSidebar } from '@/features/admin/components/AdminSidebar.jsx'
-import { isMobileFeedLayout, MobileFeedBottomNav } from '@/features/feed/components/MobileFeedShell.jsx'
-import { MobileLoginPrompt } from '@/features/feed/components/MobilePageShell.jsx'
-import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
-import { buildMainSidebarMenuItems } from '@/shared/utils/mainSidebarMenuItems.js'
-import { TooltipHoverWrap } from '@/shared/components/TooltipControls'
-import { AccountActionsPill } from '@/features/profile/components/AccountActionsPill'
-import { ProfileFollowListModal } from '@/features/follow/components/ProfileFollowListModal'
-import { ProfileShareModal } from '@/features/profile/components/ProfileShareModal.jsx'
-import { ProfileEmbedModal } from '@/features/profile/components/ProfileEmbedModal.jsx'
+} from "@/features/profile/utils/profileLastWatched.js";
+import { Sidebar } from "@/shared/components/Sidebar";
+import { AdminSidebar } from "@/features/admin/components/AdminSidebar.jsx";
+import {
+  isMobileFeedLayout,
+  MobileFeedBottomNav,
+} from "@/features/feed/components/MobileFeedShell.jsx";
+import { MobileLoginPrompt } from "@/features/feed/components/MobilePageShell.jsx";
+import { handleSidebarMenuSelect } from "@/shared/utils/sidebarNavigation.js";
+import { buildMainSidebarMenuItems } from "@/shared/utils/mainSidebarMenuItems.js";
+import { TooltipHoverWrap } from "@/shared/components/TooltipControls";
+import { AccountActionsPill } from "@/features/profile/components/AccountActionsPill";
+import { ProfileFollowListModal } from "@/features/follow/components/ProfileFollowListModal";
+import { ProfileShareModal } from "@/features/profile/components/ProfileShareModal.jsx";
+import { ProfileEmbedModal } from "@/features/profile/components/ProfileEmbedModal.jsx";
 import {
   ProfilePageSkeleton,
   ProfileVideoGridSkeleton,
-} from '@/features/profile/components/ProfilePageSkeleton.jsx'
+} from "@/features/profile/components/ProfilePageSkeleton.jsx";
 import {
   IoAlbumsOutline,
   IoArrowBack,
@@ -58,182 +66,186 @@ import {
   IoChevronUp,
   IoSettingsOutline,
   IoTimeOutline,
-} from 'react-icons/io5'
-import { LuGrid2X2, LuRepeat2 } from 'react-icons/lu'
-import { AvatarImage } from '@/shared/components/AvatarImage.jsx'
-import { Seo } from '@/shared/seo/Seo.jsx'
-import { profilePageJsonLd } from '@/shared/seo/jsonLd.js'
-import { absoluteUrl } from '@/shared/seo/seoConfig.js'
+} from "react-icons/io5";
+import { LuGrid2X2, LuRepeat2 } from "react-icons/lu";
+import { AvatarImage } from "@/shared/components/AvatarImage.jsx";
+import { Seo } from "@/shared/seo/Seo.jsx";
+import { profilePageJsonLd } from "@/shared/seo/jsonLd.js";
+import { absoluteUrl } from "@/shared/seo/seoConfig.js";
 
-const DEFAULT_USER_AVATAR_URL = '/images/users/default-avatar.jpeg'
+const DEFAULT_USER_AVATAR_URL = "/images/users/default-avatar.jpeg";
 
 /** Format ISO / LocalDateTime string as dd/MM/yyyy (VN). */
 function formatVietnameseDate(raw) {
-  const text = String(raw ?? '').trim()
-  if (!text) return ''
-  const m = text.match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (m) return `${m[3]}/${m[2]}/${m[1]}`
-  const d = new Date(text)
-  if (Number.isNaN(d.getTime())) return text
-  const dd = String(d.getDate()).padStart(2, '0')
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const yyyy = d.getFullYear()
-  return `${dd}/${mm}/${yyyy}`
+  const text = String(raw ?? "").trim();
+  if (!text) return "";
+  const m = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+  const d = new Date(text);
+  if (Number.isNaN(d.getTime())) return text;
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
 }
 
 function formatCompactCount(value) {
-  const count = Number(value ?? 0)
+  const count = Number(value ?? 0);
   if (count >= 1_000_000) {
     const formatted =
       count >= 10_000_000
         ? (count / 1_000_000).toFixed(0)
-        : (count / 1_000_000).toFixed(1)
-    return `${formatted.replace(/\.0$/, '')}M`
+        : (count / 1_000_000).toFixed(1);
+    return `${formatted.replace(/\.0$/, "")}M`;
   }
   if (count >= 1_000) {
     const formatted =
-      count >= 10_000 ? (count / 1_000).toFixed(0) : (count / 1_000).toFixed(1)
-    return `${formatted.replace(/\.0$/, '')}K`
+      count >= 10_000 ? (count / 1_000).toFixed(0) : (count / 1_000).toFixed(1);
+    return `${formatted.replace(/\.0$/, "")}K`;
   }
-  return String(count)
+  return String(count);
 }
 
 /** Lưới hồ sơ tab Video: Mới nhất / Thịnh hành (lượt xem) / Cũ nhất. */
 function sortProfileVideos(items, mode) {
-  const list = Array.isArray(items) ? [...items] : []
+  const list = Array.isArray(items) ? [...items] : [];
   const createdMs = (v) => {
-    const t = new Date(v?.createdAt ?? 0).getTime()
-    return Number.isFinite(t) ? t : 0
-  }
-  const views = (v) => Number(v?.viewCount ?? v?.views ?? 0) || 0
-  const idNum = (v) => Number(v?.id ?? 0) || 0
+    const t = new Date(v?.createdAt ?? 0).getTime();
+    return Number.isFinite(t) ? t : 0;
+  };
+  const views = (v) => Number(v?.viewCount ?? v?.views ?? 0) || 0;
+  const idNum = (v) => Number(v?.id ?? 0) || 0;
 
-  if (mode === 'oldest') {
+  if (mode === "oldest") {
     return list.sort((a, b) => {
-      const ta = createdMs(a)
-      const tb = createdMs(b)
-      if (ta !== tb) return ta - tb
-      return idNum(a) - idNum(b)
-    })
+      const ta = createdMs(a);
+      const tb = createdMs(b);
+      if (ta !== tb) return ta - tb;
+      return idNum(a) - idNum(b);
+    });
   }
-  if (mode === 'trending') {
+  if (mode === "trending") {
     return list.sort((a, b) => {
-      const va = views(a)
-      const vb = views(b)
-      if (vb !== va) return vb - va
-      const ta = createdMs(a)
-      const tb = createdMs(b)
-      if (tb !== ta) return tb - ta
-      return idNum(b) - idNum(a)
-    })
+      const va = views(a);
+      const vb = views(b);
+      if (vb !== va) return vb - va;
+      const ta = createdMs(a);
+      const tb = createdMs(b);
+      if (tb !== ta) return tb - ta;
+      return idNum(b) - idNum(a);
+    });
   }
   // newest (default)
   return list.sort((a, b) => {
-    const ta = createdMs(a)
-    const tb = createdMs(b)
-    if (tb !== ta) return tb - ta
-    return idNum(b) - idNum(a)
-  })
+    const ta = createdMs(a);
+    const tb = createdMs(b);
+    if (tb !== ta) return tb - ta;
+    return idNum(b) - idNum(a);
+  });
 }
 
 function sortVideosNewestFirst(items) {
-  return sortProfileVideos(items, 'newest')
+  return sortProfileVideos(items, "newest");
 }
 
 /** Legacy auto-filled OAuth bios — không hiển thị như tiểu sử thật. */
 function resolveProfileBio(rawBio) {
-  const trimmed = String(rawBio ?? '').trim()
-  if (!trimmed) return null
-  if (/^(Facebook|Google) user:/i.test(trimmed)) return null
-  return trimmed
+  const trimmed = String(rawBio ?? "").trim();
+  if (!trimmed) return null;
+  if (/^(Facebook|Google) user:/i.test(trimmed)) return null;
+  return trimmed;
 }
 
 function profileHrefFromAuthUsername(raw) {
-  const id = String(raw ?? '')
+  const id = String(raw ?? "")
     .trim()
-    .replace(/^@/, '')
-  return id ? `/@${encodeURIComponent(id)}` : '/profile'
+    .replace(/^@/, "");
+  return id ? `/@${encodeURIComponent(id)}` : "/profile";
 }
 
 function normalizeProfileUsernameKey(raw) {
-  return String(raw ?? '')
+  return String(raw ?? "")
     .trim()
-    .replace(/^@/, '')
-    .toLowerCase()
+    .replace(/^@/, "")
+    .toLowerCase();
 }
 
 /** Permalink /@author/video/publicId — dùng author của video (đúng khi xem từ Yêu thích / Đã thích). */
 function profileVideoPermalinkForGrid(video, fallbackUsernameRaw) {
   const slug =
     normalizeProfileUsernameKey(video?.authorUsername) ||
-    normalizeProfileUsernameKey(fallbackUsernameRaw)
-  const link = buildProfileWatchUrl(slug, videoPublicIdOf(video))
-  return link || '/foryou'
+    normalizeProfileUsernameKey(fallbackUsernameRaw);
+  const link = buildProfileWatchUrl(slug, videoPublicIdOf(video));
+  return link || "/foryou";
 }
 
 /** Ô lưới hồ sơ: chỉ phát khi `playing`; tắt tiếng, loop. */
 function PrivateProfileLockedState() {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
       <div className="mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-zinc-800 text-zinc-400">
         <span className="relative">
           <IoPerson className="text-5xl" aria-hidden />
-          <IoLockClosed className="absolute -bottom-1 -right-1 rounded-full bg-zinc-800 p-1 text-lg text-zinc-300" aria-hidden />
+          <IoLockClosed
+            className="absolute -bottom-1 -right-1 rounded-full bg-zinc-800 p-1 text-lg text-zinc-300"
+            aria-hidden
+          />
         </span>
       </div>
-      <p className="text-xl font-bold text-zinc-100">{t('profilePage.privateTitle')}</p>
+      <p className="text-xl font-bold text-zinc-100">
+        {t("profilePage.privateTitle")}
+      </p>
       <p className="mt-2 max-w-sm text-sm leading-relaxed text-zinc-400">
-        {t('profilePage.privateDescription')}
+        {t("profilePage.privateDescription")}
       </p>
     </div>
-  )
+  );
 }
 
 function ProfileGridMedia({ item: v, playing = false }) {
-  const videoRef = useRef(null)
-  const url = typeof v?.videoUrl === 'string' ? v.videoUrl.trim() : ''
-  const thumb = typeof v?.thumbnailUrl === 'string' ? v.thumbnailUrl.trim() : ''
-  const [videoReady, setVideoReady] = useState(false)
+  const videoRef = useRef(null);
+  const url = typeof v?.videoUrl === "string" ? v.videoUrl.trim() : "";
+  const thumb =
+    typeof v?.thumbnailUrl === "string" ? v.thumbnailUrl.trim() : "";
+  const [videoReady, setVideoReady] = useState(false);
 
   useEffect(() => {
     if (!playing) {
-      setVideoReady(false)
+      setVideoReady(false);
     }
-  }, [playing, url])
+  }, [playing, url]);
 
   useEffect(() => {
-    const el = videoRef.current
-    if (!el || !url || !playing) return
+    const el = videoRef.current;
+    if (!el || !url || !playing) return;
     if (playing) {
-      const p = el.play()
-      if (p?.catch) p.catch(() => {})
+      const p = el.play();
+      if (p?.catch) p.catch(() => {});
     }
     return () => {
       try {
-        el.pause()
+        el.pause();
       } catch {
         /* noop */
       }
       try {
-        el.currentTime = 0
+        el.currentTime = 0;
       } catch {
         /* noop */
       }
-    }
-  }, [playing, url])
+    };
+  }, [playing, url]);
 
   const thumbNode = (
     <VideoThumbnailImg src={thumb || DEFAULT_COVER} fallback={DEFAULT_COVER} />
-  )
+  );
 
   if (url && playing) {
     return (
       <>
         {!videoReady ? (
-          <div className="absolute inset-0">
-            {thumbNode}
-          </div>
+          <div className="absolute inset-0">{thumbNode}</div>
         ) : null}
         <video
           ref={videoRef}
@@ -248,38 +260,49 @@ function ProfileGridMedia({ item: v, playing = false }) {
           onCanPlay={() => setVideoReady(true)}
         />
       </>
-    )
+    );
   }
-  return thumbNode
+  return thumbNode;
 }
 
 function profilePrivacyIcon(privacy) {
-  const key = String(privacy || 'PUBLIC').toUpperCase()
-  if (key === 'FRIENDS') {
-    return <IoPeople className="text-[14px] text-white drop-shadow-md" aria-label={i18n.t('profileChrome.privacyFriends')} />
+  const key = String(privacy || "PUBLIC").toUpperCase();
+  if (key === "FRIENDS") {
+    return (
+      <IoPeople
+        className="text-[14px] text-white drop-shadow-md"
+        aria-label={i18n.t("profileChrome.privacyFriends")}
+      />
+    );
   }
-  if (key === 'PRIVATE') {
-    return <IoLockClosed className="text-[14px] text-white drop-shadow-md" aria-label={i18n.t('profileChrome.privacyOnlyMe')} />
+  if (key === "PRIVATE") {
+    return (
+      <IoLockClosed
+        className="text-[14px] text-white drop-shadow-md"
+        aria-label={i18n.t("profileChrome.privacyOnlyMe")}
+      />
+    );
   }
-  return null
+  return null;
 }
 
 /** Non-owners never see PRIVATE; anonymous never sees FRIENDS (owner sees all). */
 function isProfileVideoVisibleToViewer(video, { isOwnProfile, hasViewer }) {
-  if (isOwnProfile) return true
-  const key = String(video?.privacy || 'PUBLIC').toUpperCase()
-  if (key === 'PRIVATE' || key === 'ONLYYOU' || key === 'ONLY_YOU') return false
-  if (key === 'FRIENDS' && !hasViewer) return false
-  if (key === 'EVERYONE' || key === 'PUBLIC' || !key) return true
+  if (isOwnProfile) return true;
+  const key = String(video?.privacy || "PUBLIC").toUpperCase();
+  if (key === "PRIVATE" || key === "ONLYYOU" || key === "ONLY_YOU")
+    return false;
+  if (key === "FRIENDS" && !hasViewer) return false;
+  if (key === "EVERYONE" || key === "PUBLIC" || !key) return true;
   // FRIENDS for logged-in viewers: backend already filtered; keep if present.
-  if (key === 'FRIENDS') return Boolean(hasViewer)
-  return key === 'PUBLIC'
+  if (key === "FRIENDS") return Boolean(hasViewer);
+  return key === "PUBLIC";
 }
 
 function isProfileVideoPendingModeration(video) {
-  const s = String(video?.status || '').toUpperCase()
+  const s = String(video?.status || "").toUpperCase();
   // HIDDEN = publication hold until AI moderation ALLOW/LIMIT; processing = still encoding.
-  return s === 'HIDDEN' || s === 'PROCESSING' || s === 'RAW'
+  return s === "HIDDEN" || s === "PROCESSING" || s === "RAW";
 }
 
 /**
@@ -287,23 +310,23 @@ function isProfileVideoPendingModeration(video) {
  * Preview and canvas must use the same math or "Áp dụng" will not match the circle.
  */
 function avatarCoverLayout(imgW, imgH, viewSize, zoom, offsetX, offsetY) {
-  const safeW = Math.max(1, Number(imgW) || 1)
-  const safeH = Math.max(1, Number(imgH) || 1)
-  const view = Math.max(1, Number(viewSize) || 1)
-  const z = Math.max(1, Number(zoom) || 1)
-  const base = Math.max(view / safeW, view / safeH)
-  const scale = base * z
-  const dw = safeW * scale
-  const dh = safeH * scale
-  const dx = (view - dw) / 2 + Number(offsetX || 0) * view
-  const dy = (view - dh) / 2 + Number(offsetY || 0) * view
-  return { dw, dh, dx, dy }
+  const safeW = Math.max(1, Number(imgW) || 1);
+  const safeH = Math.max(1, Number(imgH) || 1);
+  const view = Math.max(1, Number(viewSize) || 1);
+  const z = Math.max(1, Number(zoom) || 1);
+  const base = Math.max(view / safeW, view / safeH);
+  const scale = base * z;
+  const dw = safeW * scale;
+  const dh = safeH * scale;
+  const dx = (view - dw) / 2 + Number(offsetX || 0) * view;
+  const dy = (view - dh) / 2 + Number(offsetY || 0) * view;
+  return { dw, dh, dx, dy };
 }
 
 /** Max export edge — never upscale past the source short side. */
-const AVATAR_EXPORT_MAX = 4096
-const AVATAR_LOW_RES_PX = 720
-const AVATAR_MAX_BYTES = 15 * 1024 * 1024
+const AVATAR_EXPORT_MAX = 4096;
+const AVATAR_LOW_RES_PX = 720;
+const AVATAR_MAX_BYTES = 15 * 1024 * 1024;
 
 function ProfileGridVideoTile({
   video,
@@ -315,78 +338,80 @@ function ProfileGridVideoTile({
   onOpen,
   showSchedule = false,
 }) {
-  const privacyIcon = profilePrivacyIcon(video?.privacy)
-  const pendingCheck = isProfileVideoPendingModeration(video)
-  const scheduledAt = readScheduledAt(video)
+  const privacyIcon = profilePrivacyIcon(video?.privacy);
+  const pendingCheck = isProfileVideoPendingModeration(video);
+  const scheduledAt = readScheduledAt(video);
   const scheduleLabel =
     showSchedule && isFutureSchedule(scheduledAt)
       ? formatScheduleTileLabel(scheduledAt)
-      : ''
-  const permalink = profileVideoPermalinkForGrid(video, profileUsername)
+      : "";
+  const permalink = profileVideoPermalinkForGrid(video, profileUsername);
   const tileInner = (
-        <div
-          className={
-            pendingCheck
-              ? 'vibely-keep-dark relative aspect-9/16 w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800'
-              : 'vibely-keep-dark relative aspect-9/16 w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600'
-          }
-          onMouseEnter={() => {
-            if (!pendingCheck) onHover(video.publicId)
-          }}
-        >
-          <div
-            className={
-              pendingCheck
-                ? 'absolute inset-0 brightness-[0.45]'
-                : 'absolute inset-0'
-            }
-          >
-            <ProfileGridMedia item={video} playing={playing && !pendingCheck} />
-          </div>
-          {pendingCheck ? (
-            <div className="pointer-events-none absolute inset-0 z-4 flex items-center justify-center bg-black/55 px-2">
-              <span className="text-center text-[12px] font-semibold leading-snug text-white drop-shadow-md sm:text-[13px]">
-                {i18n.t('profileChrome.checking')}
-              </span>
-            </div>
-          ) : null}
-          {isLastWatched && !pendingCheck ? (
-            <div className="pointer-events-none absolute inset-0 z-3 flex items-center justify-center bg-black/50">
-              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white drop-shadow-md">
-                <IoPlay className="text-base" aria-hidden />
-                {i18n.t('profileChrome.justWatched')}
-              </span>
-            </div>
-          ) : null}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-2 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
-            <div className="flex items-end justify-between gap-2">
-              {scheduleLabel ? (
-                <div className="inline-flex min-w-0 items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
-                  <IoTimeOutline className="shrink-0 text-[13px]" aria-hidden />
-                  <span className="truncate">{scheduleLabel}</span>
-                </div>
-              ) : (
-                <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
-                  <IoPlayOutline className="text-[13px]" aria-hidden />
-                  <span>{formatCompactCount(video.viewCount ?? 0)}</span>
-                </div>
-              )}
-              {privacyIcon ? <div className="shrink-0 pb-0.5">{privacyIcon}</div> : null}
-            </div>
-          </div>
+    <div
+      className={
+        pendingCheck
+          ? "vibely-keep-dark relative aspect-9/16 w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800"
+          : "vibely-keep-dark relative aspect-9/16 w-full overflow-hidden rounded-md bg-zinc-900 ring-1 ring-zinc-800 transition hover:ring-zinc-600"
+      }
+      onMouseEnter={() => {
+        if (!pendingCheck) onHover(video.publicId);
+      }}
+    >
+      <div
+        className={
+          pendingCheck
+            ? "absolute inset-0 brightness-[0.45]"
+            : "absolute inset-0"
+        }
+      >
+        <ProfileGridMedia item={video} playing={playing && !pendingCheck} />
+      </div>
+      {pendingCheck ? (
+        <div className="pointer-events-none absolute inset-0 z-4 flex items-center justify-center bg-black/55 px-2">
+          <span className="text-center text-[12px] font-semibold leading-snug text-white drop-shadow-md sm:text-[13px]">
+            {i18n.t("profileChrome.checking")}
+          </span>
         </div>
-  )
+      ) : null}
+      {isLastWatched && !pendingCheck ? (
+        <div className="pointer-events-none absolute inset-0 z-3 flex items-center justify-center bg-black/50">
+          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white drop-shadow-md">
+            <IoPlay className="text-base" aria-hidden />
+            {i18n.t("profileChrome.justWatched")}
+          </span>
+        </div>
+      ) : null}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-2 bg-linear-to-t from-black/85 via-black/25 to-transparent px-2 pb-1.5 pt-10">
+        <div className="flex items-end justify-between gap-2">
+          {scheduleLabel ? (
+            <div className="inline-flex min-w-0 items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
+              <IoTimeOutline className="shrink-0 text-[13px]" aria-hidden />
+              <span className="truncate">{scheduleLabel}</span>
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white drop-shadow-md">
+              <IoPlayOutline className="text-[13px]" aria-hidden />
+              <span>{formatCompactCount(video.viewCount ?? 0)}</span>
+            </div>
+          )}
+          {privacyIcon ? (
+            <div className="shrink-0 pb-0.5">{privacyIcon}</div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
   return (
     <li
       ref={isLastWatched ? tileRef : undefined}
-      data-profile-video-id={String(video?.publicId ?? '')}
+      data-profile-video-id={String(video?.publicId ?? "")}
     >
       {pendingCheck ? (
         <div
           className="block cursor-not-allowed"
           role="status"
-          aria-label={i18n.t('profileChrome.pendingVideoAria')}
-          title={i18n.t('profileChrome.checkingShort')}
+          aria-label={i18n.t("profileChrome.pendingVideoAria")}
+          title={i18n.t("profileChrome.checkingShort")}
         >
           {tileInner}
         </div>
@@ -400,434 +425,467 @@ function ProfileGridVideoTile({
         </Link>
       )}
     </li>
-  )
+  );
 }
 
 export function ProfilePage() {
-  const { t } = useTranslation()
-  const { username } = useParams()
-  const { token, user, authReady, refreshProfile, updateProfile, logout } = useAuth()
-  const navigate = useNavigate()
-  const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout())
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [favoritesSubTab, setFavoritesSubTab] = useState('posts')
-  const [status, setStatus] = useState('')
-  const [publicProfile, setPublicProfile] = useState(null)
+  const { t } = useTranslation();
+  const { username } = useParams();
+  const { token, user, authReady, refreshProfile, updateProfile, logout } =
+    useAuth();
+  const navigate = useNavigate();
+  const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout());
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [favoritesSubTab, setFavoritesSubTab] = useState("posts");
+  const [status, setStatus] = useState("");
+  const [publicProfile, setPublicProfile] = useState(null);
   /** GET /users/:username — dùng thêm cho /profile (cùng mình) để có chỉ số follow / lượt xem tổng. */
-  const [ownPublicProfile, setOwnPublicProfile] = useState(null)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [ownPublicProfile, setOwnPublicProfile] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({
-    username: '',
-    displayName: '',
-    bio: '',
-    avatarUrl: '',
-  })
+    username: "",
+    displayName: "",
+    bio: "",
+    avatarUrl: "",
+  });
   const [initialEditForm, setInitialEditForm] = useState({
-    username: '',
-    displayName: '',
-    bio: '',
-    avatarUrl: '',
-  })
-  const [editError, setEditError] = useState('')
-  const [savingEdit, setSavingEdit] = useState(false)
-  const [isAvatarEditorOpen, setIsAvatarEditorOpen] = useState(false)
-  const [avatarEditorSrc, setAvatarEditorSrc] = useState('')
-  const [avatarEditorZoom, setAvatarEditorZoom] = useState(1)
-  const [avatarEditorOffset, setAvatarEditorOffset] = useState({ x: 0, y: 0 })
-  const [avatarNaturalSize, setAvatarNaturalSize] = useState({ w: 0, h: 0 })
-  const [avatarViewportPx, setAvatarViewportPx] = useState(400)
-  const [avatarEditorBusy, setAvatarEditorBusy] = useState(false)
-  const [avatarLowResWarn, setAvatarLowResWarn] = useState(false)
-  const avatarDragRef = useRef(null)
-  const avatarViewportRef = useRef(null)
-  const avatarObjectUrlRef = useRef('')
-  const avatarFileInputRef = useRef(null)
-  const accountMenuRef = useRef(null)
-  const [showAccountMenu, setShowAccountMenu] = useState(false)
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
-  const [bookmarkItems, setBookmarkItems] = useState([])
-  const [bookmarkTotal, setBookmarkTotal] = useState(0)
-  const [likedItems, setLikedItems] = useState([])
-  const [, setLikedTotal] = useState(0)
-  const [repostItems, setRepostItems] = useState([])
-  const [repostTotal, setRepostTotal] = useState(0)
-  const [bookmarkLoading, setBookmarkLoading] = useState(false)
-  const [likedLoading, setLikedLoading] = useState(false)
-  const [repostLoading, setRepostLoading] = useState(false)
-  const [libraryError, setLibraryError] = useState('')
-  const [newCollectionOpen, setNewCollectionOpen] = useState(false)
-  const [newCollectionStep, setNewCollectionStep] = useState('form')
-  const [collectionDraftName, setCollectionDraftName] = useState('')
-  const [collectionDraftPublic, setCollectionDraftPublic] = useState(false)
-  const [collectionPickIds, setCollectionPickIds] = useState(() => new Set())
-  const [profileVideos, setProfileVideos] = useState([])
-  const [profileVideosLoading, setProfileVideosLoading] = useState(false)
+    username: "",
+    displayName: "",
+    bio: "",
+    avatarUrl: "",
+  });
+  const [editError, setEditError] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [isAvatarEditorOpen, setIsAvatarEditorOpen] = useState(false);
+  const [avatarEditorSrc, setAvatarEditorSrc] = useState("");
+  const [avatarEditorZoom, setAvatarEditorZoom] = useState(1);
+  const [avatarEditorOffset, setAvatarEditorOffset] = useState({ x: 0, y: 0 });
+  const [avatarNaturalSize, setAvatarNaturalSize] = useState({ w: 0, h: 0 });
+  const [avatarViewportPx, setAvatarViewportPx] = useState(400);
+  const [avatarEditorBusy, setAvatarEditorBusy] = useState(false);
+  const [avatarLowResWarn, setAvatarLowResWarn] = useState(false);
+  const avatarDragRef = useRef(null);
+  const avatarViewportRef = useRef(null);
+  const avatarObjectUrlRef = useRef("");
+  const avatarFileInputRef = useRef(null);
+  const accountMenuRef = useRef(null);
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [bookmarkItems, setBookmarkItems] = useState([]);
+  const [bookmarkTotal, setBookmarkTotal] = useState(0);
+  const [likedItems, setLikedItems] = useState([]);
+  const [, setLikedTotal] = useState(0);
+  const [repostItems, setRepostItems] = useState([]);
+  const [repostTotal, setRepostTotal] = useState(0);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
+  const [likedLoading, setLikedLoading] = useState(false);
+  const [repostLoading, setRepostLoading] = useState(false);
+  const [libraryError, setLibraryError] = useState("");
+  const [newCollectionOpen, setNewCollectionOpen] = useState(false);
+  const [newCollectionStep, setNewCollectionStep] = useState("form");
+  const [collectionDraftName, setCollectionDraftName] = useState("");
+  const [collectionDraftPublic, setCollectionDraftPublic] = useState(false);
+  const [collectionPickIds, setCollectionPickIds] = useState(() => new Set());
+  const [profileVideos, setProfileVideos] = useState([]);
+  const [profileVideosLoading, setProfileVideosLoading] = useState(false);
   /** Tab Video: newest | trending | oldest */
-  const [videosSortMode, setVideosSortMode] = useState('newest')
+  const [videosSortMode, setVideosSortMode] = useState("newest");
   /** Video đang preview trong lưới hồ sơ; đổi khi hover ô khác, không reset khi rời chuột. */
-  const [profileGridPlayingId, setProfileGridPlayingId] = useState(null)
-  const [lastWatchedPublicId, setLastWatchedPublicId] = useState(null)
-  const [lastWatchedOffscreen, setLastWatchedOffscreen] = useState(false)
+  const [profileGridPlayingId, setProfileGridPlayingId] = useState(null);
+  const [lastWatchedPublicId, setLastWatchedPublicId] = useState(null);
+  const [lastWatchedOffscreen, setLastWatchedOffscreen] = useState(false);
   /** Hướng cuộn tới ô vừa xem: xuống nếu ô ở dưới, lên nếu ô ở trên. */
-  const [lastWatchedScrollDir, setLastWatchedScrollDir] = useState('down')
-  const lastWatchedTileRef = useRef(null)
-  const profileScrollRef = useRef(null)
-  const [profileActionNotice, setProfileActionNotice] = useState('')
-  const [profileShareOpen, setProfileShareOpen] = useState(false)
-  const [profileEmbedOpen, setProfileEmbedOpen] = useState(false)
-  const [followBusy, setFollowBusy] = useState(false)
-  const [followListOpen, setFollowListOpen] = useState(false)
-  const [followListTab, setFollowListTab] = useState('following')
+  const [lastWatchedScrollDir, setLastWatchedScrollDir] = useState("down");
+  const lastWatchedTileRef = useRef(null);
+  const profileScrollRef = useRef(null);
+  const [profileActionNotice, setProfileActionNotice] = useState("");
+  const [profileShareOpen, setProfileShareOpen] = useState(false);
+  const [profileEmbedOpen, setProfileEmbedOpen] = useState(false);
+  const [followBusy, setFollowBusy] = useState(false);
+  const [followListOpen, setFollowListOpen] = useState(false);
+  const [followListTab, setFollowListTab] = useState("following");
 
-  const COLLECTION_NAME_MAX = 30
+  const COLLECTION_NAME_MAX = 30;
 
   const closeNewCollectionModal = useCallback(() => {
-    setNewCollectionOpen(false)
-    setNewCollectionStep('form')
-    setCollectionDraftName('')
-    setCollectionDraftPublic(false)
-    setCollectionPickIds(new Set())
-  }, [])
+    setNewCollectionOpen(false);
+    setNewCollectionStep("form");
+    setCollectionDraftName("");
+    setCollectionDraftPublic(false);
+    setCollectionPickIds(new Set());
+  }, []);
 
   useEffect(() => {
     if (username) {
-      if (!authReady) return undefined
-      setPublicProfile(null)
-      setProfileVideos([])
-      setProfileVideosLoading(true)
-      setStatus('')
-      let isMounted = true
+      if (!authReady) return undefined;
+      setPublicProfile(null);
+      setProfileVideos([]);
+      setProfileVideosLoading(true);
+      setStatus("");
+      let isMounted = true;
       apiClient
         .getPublicProfile(username, token)
         .then((profile) => {
-          if (!isMounted) return
-          setPublicProfile(profile)
-          setStatus('')
+          if (!isMounted) return;
+          setPublicProfile(profile);
+          setStatus("");
         })
         .catch((error) => {
-          if (!isMounted) return
-          const code = String(error?.code || '')
+          if (!isMounted) return;
+          const code = String(error?.code || "");
           const isMissingUser =
             error?.status === 404 ||
-            code === 'USER_NOT_FOUND' ||
-            code === 'NOT_FOUND'
+            code === "USER_NOT_FOUND" ||
+            code === "NOT_FOUND";
           if (isMissingUser) {
-            navigate('/404', { replace: true })
-            return
+            navigate("/404", { replace: true });
+            return;
           }
-          setPublicProfile(null)
-          setStatus(error.message)
+          setPublicProfile(null);
+          setStatus(error.message);
         })
         .finally(() => {
-          if (isMounted) setProfileVideosLoading(false)
-        })
+          if (isMounted) setProfileVideosLoading(false);
+        });
       return () => {
-        isMounted = false
-      }
+        isMounted = false;
+      };
     }
 
-    if (!token || !authReady) return undefined
+    if (!token || !authReady) return undefined;
     refreshProfile()
-      .then(() => setStatus(t('profileChrome.profileLoaded')))
-      .catch((error) => setStatus(error.message))
-    return undefined
-  }, [token, refreshProfile, username, authReady, navigate, t])
+      .then(() => setStatus(t("profileChrome.profileLoaded")))
+      .catch((error) => setStatus(error.message));
+    return undefined;
+  }, [token, refreshProfile, username, authReady, navigate, t]);
 
   // Đếm lượt xem hồ sơ (Studio analytics) — không đếm khi xem hồ sơ của chính mình
   useEffect(() => {
-    if (!username || !publicProfile?.username) return undefined
-    const profileName = String(publicProfile.username).replace(/^@/, '')
-    const me = String(user?.username || '').replace(/^@/, '')
-    if (me && me.toLowerCase() === profileName.toLowerCase()) return undefined
+    if (!username || !publicProfile?.username) return undefined;
+    const profileName = String(publicProfile.username).replace(/^@/, "");
+    const me = String(user?.username || "").replace(/^@/, "");
+    if (me && me.toLowerCase() === profileName.toLowerCase()) return undefined;
 
-    const storageKey = `vibely:pv:${profileName.toLowerCase()}:${new Date().toISOString().slice(0, 10)}`
+    const storageKey = `vibely:pv:${profileName.toLowerCase()}:${new Date().toISOString().slice(0, 10)}`;
     try {
-      if (sessionStorage.getItem(storageKey)) return undefined
+      if (sessionStorage.getItem(storageKey)) return undefined;
     } catch {
       /* ignore */
     }
 
-    let cancelled = false
-    let viewerKey = null
+    let cancelled = false;
+    let viewerKey = null;
     try {
-      viewerKey = localStorage.getItem('vibely:viewer-key')
+      viewerKey = localStorage.getItem("vibely:viewer-key");
       if (!viewerKey) {
         viewerKey =
-          typeof crypto !== 'undefined' && crypto.randomUUID
+          typeof crypto !== "undefined" && crypto.randomUUID
             ? crypto.randomUUID()
-            : `vk-${Date.now()}-${Math.random().toString(36).slice(2)}`
-        localStorage.setItem('vibely:viewer-key', viewerKey)
+            : `vk-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        localStorage.setItem("vibely:viewer-key", viewerKey);
       }
     } catch {
-      viewerKey = null
+      viewerKey = null;
     }
 
     apiClient
       .recordProfileView(profileName, { token, viewerKey })
       .then(() => {
-        if (cancelled) return
+        if (cancelled) return;
         try {
-          sessionStorage.setItem(storageKey, '1')
+          sessionStorage.setItem(storageKey, "1");
         } catch {
           /* ignore */
         }
       })
-      .catch(() => {})
+      .catch(() => {});
 
     return () => {
-      cancelled = true
-    }
-  }, [username, publicProfile?.username, user?.username, token])
+      cancelled = true;
+    };
+  }, [username, publicProfile?.username, user?.username, token]);
 
   useEffect(() => {
     if (username || !token || !user?.username) {
-      setOwnPublicProfile(null)
-      return undefined
+      setOwnPublicProfile(null);
+      return undefined;
     }
-    let cancelled = false
+    let cancelled = false;
     apiClient
       .getPublicProfile(user.username, token)
       .then((p) => {
-        if (!cancelled) setOwnPublicProfile(p)
+        if (!cancelled) setOwnPublicProfile(p);
       })
       .catch(() => {
-        if (!cancelled) setOwnPublicProfile(null)
-      })
+        if (!cancelled) setOwnPublicProfile(null);
+      });
     return () => {
-      cancelled = true
-    }
-  }, [token, username, user?.username])
+      cancelled = true;
+    };
+  }, [token, username, user?.username]);
 
   useEffect(() => {
-    if (!showAccountMenu) return undefined
+    if (!showAccountMenu) return undefined;
 
     const handleOutsideClick = (event) => {
       if (!accountMenuRef.current?.contains(event.target)) {
-        setShowAccountMenu(false)
+        setShowAccountMenu(false);
       }
-    }
+    };
     const handleEscape = (event) => {
-      if (event.key === 'Escape') {
-        setShowAccountMenu(false)
-        setShowLogoutConfirm(false)
+      if (event.key === "Escape") {
+        setShowAccountMenu(false);
+        setShowLogoutConfirm(false);
       }
-    }
+    };
 
-    document.addEventListener('mousedown', handleOutsideClick)
-    document.addEventListener('keydown', handleEscape)
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
     return () => {
-      document.removeEventListener('mousedown', handleOutsideClick)
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [showAccountMenu])
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [showAccountMenu]);
 
   useEffect(() => {
-    if (!showLogoutConfirm) return undefined
+    if (!showLogoutConfirm) return undefined;
     const handleEscape = (event) => {
-      if (event.key === 'Escape') {
-        setShowLogoutConfirm(false)
+      if (event.key === "Escape") {
+        setShowLogoutConfirm(false);
       }
-    }
-    document.addEventListener('keydown', handleEscape)
-    return () => document.removeEventListener('keydown', handleEscape)
-  }, [showLogoutConfirm])
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [showLogoutConfirm]);
 
   useEffect(() => {
-    if (!newCollectionOpen) return undefined
+    if (!newCollectionOpen) return undefined;
     const handleEscape = (event) => {
-      if (event.key === 'Escape') {
-        closeNewCollectionModal()
+      if (event.key === "Escape") {
+        closeNewCollectionModal();
       }
-    }
-    document.addEventListener('keydown', handleEscape)
-    return () => document.removeEventListener('keydown', handleEscape)
-  }, [newCollectionOpen, closeNewCollectionModal])
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [newCollectionOpen, closeNewCollectionModal]);
 
   const profile = useMemo(() => {
-    if (username) return publicProfile
-    if (!user) return null
-    if (!ownPublicProfile) return user
+    if (username) return publicProfile;
+    if (!user) return null;
+    if (!ownPublicProfile) return user;
     return {
       ...user,
       followingCount: ownPublicProfile.followingCount,
       followerCount: ownPublicProfile.followerCount,
       totalLikeCount: ownPublicProfile.totalLikeCount,
       totalViewCount: ownPublicProfile.totalViewCount,
-    }
-  }, [username, publicProfile, user, ownPublicProfile])
-  const isPublicProfileLoading = Boolean(username) && (!authReady || (!publicProfile && !status))
+    };
+  }, [username, publicProfile, user, ownPublicProfile]);
+  const isPublicProfileLoading =
+    Boolean(username) && (!authReady || (!publicProfile && !status));
   /** Own /admin profile waits for auth; public profile waits for API. */
   const isProfilePageLoading =
-    !authReady || isPublicProfileLoading || (!username && Boolean(token) && !user)
-  const normalizeUsername = (value) => String(value ?? '').trim().replace(/^@/, '').toLowerCase()
+    !authReady ||
+    isPublicProfileLoading ||
+    (!username && Boolean(token) && !user);
+  const normalizeUsername = (value) =>
+    String(value ?? "")
+      .trim()
+      .replace(/^@/, "")
+      .toLowerCase();
   const isOwnProfile =
     Boolean(token) &&
     ((!username && Boolean(user)) ||
       (Boolean(user?.username) &&
         Boolean(profile?.username) &&
-        normalizeUsername(user.username) === normalizeUsername(profile.username)))
+        normalizeUsername(user.username) ===
+          normalizeUsername(profile.username)));
   const isAdminOwnProfile =
-    isOwnProfile && String(user?.role ?? '').toUpperCase() === 'ADMIN'
-  const isFollowingProfile = Boolean(profile?.followedByViewer)
-  const isFollowRequestPending = Boolean(profile?.followRequestPending)
-  const isBannedProfile = String(profile?.accountStatus ?? '').toUpperCase() === 'BANNED'
+    isOwnProfile && String(user?.role ?? "").toUpperCase() === "ADMIN";
+  const isFollowingProfile = Boolean(profile?.followedByViewer);
+  const isFollowRequestPending = Boolean(profile?.followRequestPending);
+  const isBannedProfile =
+    String(profile?.accountStatus ?? "").toUpperCase() === "BANNED";
   const isPrivateProfileLocked =
     !isBannedProfile &&
     Boolean(profile?.privateAccount) &&
     !isOwnProfile &&
-    !isFollowingProfile
+    !isFollowingProfile;
 
   const followButtonLabel = followBusy
-    ? t('profilePage.followSaving')
+    ? t("profilePage.followSaving")
     : isFollowingProfile
-      ? t('profilePage.following')
+      ? t("profilePage.following")
       : isFollowRequestPending
-        ? t('profilePage.followRequested')
-        : t('profilePage.follow')
+        ? t("profilePage.followRequested")
+        : t("profilePage.follow");
 
   useEffect(() => {
-    setProfileActionNotice('')
-  }, [profile?.username])
+    setProfileActionNotice("");
+  }, [profile?.username]);
 
   useEffect(() => {
-    setFollowListOpen(false)
-  }, [profile?.username])
+    setFollowListOpen(false);
+  }, [profile?.username]);
 
   const patchPublicProfile = useCallback((patch) => {
-    setPublicProfile((prev) => (prev ? { ...prev, ...patch } : prev))
-  }, [])
+    setPublicProfile((prev) => (prev ? { ...prev, ...patch } : prev));
+  }, []);
 
   const handleProfileFollowToggle = useCallback(async () => {
-    if (!profile?.id || isOwnProfile) return
+    if (!profile?.id || isOwnProfile) return;
     if (!token) {
-      navigate('/login')
-      return
+      navigate("/login");
+      return;
     }
-    if (followBusy) return
-    setProfileActionNotice('')
-    const prevFollowerCount = Number(profile?.followerCount ?? 0)
-    setFollowBusy(true)
+    if (followBusy) return;
+    setProfileActionNotice("");
+    const prevFollowerCount = Number(profile?.followerCount ?? 0);
+    setFollowBusy(true);
     try {
       if (isFollowingProfile || isFollowRequestPending) {
-        await apiClient.unfollow(profile.id, token)
-        markFeedAuthorUnfollowed(token, profile.id)
+        await apiClient.unfollow(profile.id, token);
+        markFeedAuthorUnfollowed(token, profile.id);
         patchPublicProfile({
           followedByViewer: false,
           followRequestPending: false,
-          followerCount: isFollowingProfile ? Math.max(0, prevFollowerCount - 1) : prevFollowerCount,
+          followerCount: isFollowingProfile
+            ? Math.max(0, prevFollowerCount - 1)
+            : prevFollowerCount,
           contentVisible: false,
-        })
+        });
       } else {
-        await apiClient.follow(profile.id, token)
-        markFeedAuthorFollowed(token, profile.id)
+        await apiClient.follow(profile.id, token);
+        markFeedAuthorFollowed(token, profile.id);
         patchPublicProfile({
           followedByViewer: true,
           followRequestPending: false,
           followerCount: prevFollowerCount + 1,
           contentVisible: true,
-        })
+        });
       }
     } catch (error) {
-      setProfileActionNotice(error?.message || t('profileChrome.followUpdateFailed'))
+      setProfileActionNotice(
+        error?.message || t("profileChrome.followUpdateFailed"),
+      );
     } finally {
-      setFollowBusy(false)
+      setFollowBusy(false);
     }
-  }, [profile?.id, profile?.followerCount, profile?.privateAccount, isOwnProfile, token, followBusy, isFollowingProfile, isFollowRequestPending, navigate, patchPublicProfile])
+  }, [
+    profile?.id,
+    profile?.followerCount,
+    profile?.privateAccount,
+    isOwnProfile,
+    token,
+    followBusy,
+    isFollowingProfile,
+    isFollowRequestPending,
+    navigate,
+    patchPublicProfile,
+  ]);
 
   const handleProfileMessageClick = useCallback(async () => {
     if (!token) {
-      navigate('/login')
-      return
+      navigate("/login");
+      return;
     }
     if (isOwnProfile) {
-      navigate('/messages')
-      return
+      navigate("/messages");
+      return;
     }
     if (!profile?.id) {
-      setProfileActionNotice(t('profileChrome.profileStillLoading'))
-      return
+      setProfileActionNotice(t("profileChrome.profileStillLoading"));
+      return;
     }
-    setProfileActionNotice('')
+    setProfileActionNotice("");
     try {
-      const convo = await apiClient.createOrGetDirectConversation(profile.id, token)
-      const conversationId = convo?.id
-      if (conversationId == null || conversationId === '') {
-        setProfileActionNotice(t('profileChrome.openChatFailed'))
-        return
+      const convo = await apiClient.createOrGetDirectConversation(
+        profile.id,
+        token,
+      );
+      const conversationId = convo?.id;
+      if (conversationId == null || conversationId === "") {
+        setProfileActionNotice(t("profileChrome.openChatFailed"));
+        return;
       }
-      navigate(`/messages?c=${encodeURIComponent(String(conversationId))}`)
+      navigate(`/messages?c=${encodeURIComponent(String(conversationId))}`);
     } catch (error) {
-      setProfileActionNotice(error?.message || t('profileChrome.openChatFailed'))
+      setProfileActionNotice(
+        error?.message || t("profileChrome.openChatFailed"),
+      );
     }
-  }, [token, profile?.id, isOwnProfile, navigate])
+  }, [token, profile?.id, isOwnProfile, navigate]);
 
   const handleProfileShareClick = useCallback(() => {
     if (!profile?.username) {
-      setProfileActionNotice(t('profileChrome.shareProfileMissing'))
-      return
+      setProfileActionNotice(t("profileChrome.shareProfileMissing"));
+      return;
     }
-    setProfileShareOpen(true)
-  }, [profile?.username])
+    setProfileShareOpen(true);
+  }, [profile?.username]);
 
   const handleProfileMoreClick = useCallback(() => {
-    setProfileActionNotice(t('profileChrome.moreOptionsSoon'))
-  }, [])
+    setProfileActionNotice(t("profileChrome.moreOptionsSoon"));
+  }, []);
 
-  const openFollowListModal = useCallback((tab) => {
-    if (!profile?.username) return
-    setFollowListTab(tab === 'followers' ? 'followers' : 'following')
-    setFollowListOpen(true)
-  }, [profile?.username])
+  const openFollowListModal = useCallback(
+    (tab) => {
+      if (!profile?.username) return;
+      setFollowListTab(tab === "followers" ? "followers" : "following");
+      setFollowListOpen(true);
+    },
+    [profile?.username],
+  );
 
   const closeFollowListModal = useCallback(() => {
-    setFollowListOpen(false)
-  }, [])
+    setFollowListOpen(false);
+  }, []);
 
   const handleFollowListRequireLogin = useCallback(() => {
-    navigate('/login')
-  }, [navigate])
+    navigate("/login");
+  }, [navigate]);
 
   const profileMainTab =
-    searchParams.get('tab') === 'favorites'
-      ? 'favorites'
-      : searchParams.get('tab') === 'reposted'
-        ? 'reposted'
-        : searchParams.get('tab') === 'liked'
-          ? 'liked'
-          : 'videos'
+    searchParams.get("tab") === "favorites"
+      ? "favorites"
+      : searchParams.get("tab") === "reposted"
+        ? "reposted"
+        : searchParams.get("tab") === "liked"
+          ? "liked"
+          : "videos";
 
   const setProfileMainTab = (next) => {
-    if (next === 'videos') {
-      setSearchParams({}, { replace: true })
+    if (next === "videos") {
+      setSearchParams({}, { replace: true });
     } else {
-      setSearchParams({ tab: next }, { replace: true })
+      setSearchParams({ tab: next }, { replace: true });
     }
-  }
+  };
 
   useEffect(() => {
-    if (!authReady) return undefined
-    if (profileMainTab !== 'videos' || !profile?.username) {
-      return undefined
+    if (!authReady) return undefined;
+    if (profileMainTab !== "videos" || !profile?.username) {
+      return undefined;
     }
     if (username && !publicProfile) {
-      return undefined
+      return undefined;
     }
     if (isBannedProfile || isPrivateProfileLocked) {
-      setProfileVideos([])
-      setProfileVideosLoading(false)
-      return undefined
+      setProfileVideos([]);
+      setProfileVideosLoading(false);
+      return undefined;
     }
-    let cancelled = false
-    setProfileVideosLoading(true)
-    ;(async () => {
+    let cancelled = false;
+    setProfileVideosLoading(true);
+    (async () => {
       try {
         const data = await apiClient.getVideosByUsername(profile.username, {
           page: 0,
           size: 48,
           token,
-        })
+        });
         if (!cancelled) {
-          const rows = Array.isArray(data?.items) ? data.items : []
+          const rows = Array.isArray(data?.items) ? data.items : [];
           const visible = rows.filter(
             (video) =>
               !video?.studioDraft &&
@@ -835,18 +893,18 @@ export function ProfilePage() {
                 isOwnProfile,
                 hasViewer: Boolean(token),
               }),
-          )
-          setProfileVideos(sortVideosNewestFirst(visible))
+          );
+          setProfileVideos(sortVideosNewestFirst(visible));
         }
       } catch {
-        if (!cancelled) setProfileVideos([])
+        if (!cancelled) setProfileVideos([]);
       } finally {
-        if (!cancelled) setProfileVideosLoading(false)
+        if (!cancelled) setProfileVideosLoading(false);
       }
-    })()
+    })();
     return () => {
-      cancelled = true
-    }
+      cancelled = true;
+    };
   }, [
     authReady,
     profileMainTab,
@@ -857,31 +915,31 @@ export function ProfilePage() {
     token,
     isBannedProfile,
     isPrivateProfileLocked,
-  ])
+  ]);
 
   // Soft realtime: poll while any tile is still HIDDEN/PROCESSING/RAW so overlay clears
   // without a full page reload (AJAX polling — enough for moderation latency).
   const hasPendingProfileModeration = useMemo(
     () => profileVideos.some(isProfileVideoPendingModeration),
     [profileVideos],
-  )
+  );
 
   useEffect(() => {
-    if (!authReady || !isOwnProfile || !token) return undefined
-    if (profileMainTab !== 'videos') return undefined
-    if (!hasPendingProfileModeration) return undefined
-    if (isBannedProfile || isPrivateProfileLocked) return undefined
+    if (!authReady || !isOwnProfile || !token) return undefined;
+    if (profileMainTab !== "videos") return undefined;
+    if (!hasPendingProfileModeration) return undefined;
+    if (isBannedProfile || isPrivateProfileLocked) return undefined;
 
-    let cancelled = false
-        const refreshPending = async () => {
+    let cancelled = false;
+    const refreshPending = async () => {
       try {
         const data = await apiClient.getVideosByUsername(profile.username, {
           page: 0,
           size: 48,
           token,
-        })
-        if (cancelled) return
-        const rows = Array.isArray(data?.items) ? data.items : []
+        });
+        if (cancelled) return;
+        const rows = Array.isArray(data?.items) ? data.items : [];
         const visible = rows.filter(
           (video) =>
             !video?.studioDraft &&
@@ -889,20 +947,20 @@ export function ProfilePage() {
               isOwnProfile: true,
               hasViewer: true,
             }),
-        )
-        setProfileVideos(sortVideosNewestFirst(visible))
+        );
+        setProfileVideos(sortVideosNewestFirst(visible));
       } catch {
         // Keep current grid; next tick retries (or ban overlay takes over).
       }
-    }
+    };
 
-    const first = window.setTimeout(refreshPending, 1500)
-    const timer = window.setInterval(refreshPending, 3000)
+    const first = window.setTimeout(refreshPending, 1500);
+    const timer = window.setInterval(refreshPending, 3000);
     return () => {
-      cancelled = true
-      window.clearTimeout(first)
-      window.clearInterval(timer)
-    }
+      cancelled = true;
+      window.clearTimeout(first);
+      window.clearInterval(timer);
+    };
   }, [
     authReady,
     isOwnProfile,
@@ -912,120 +970,121 @@ export function ProfilePage() {
     hasPendingProfileModeration,
     isBannedProfile,
     isPrivateProfileLocked,
-  ])
+  ]);
 
   useEffect(() => {
     if (!token || !isOwnProfile) {
-      setBookmarkItems([])
-      setBookmarkTotal(0)
-      return
+      setBookmarkItems([]);
+      setBookmarkTotal(0);
+      return;
     }
-    if (profileMainTab !== 'favorites') {
-      return
+    if (profileMainTab !== "favorites") {
+      return;
     }
-    let live = true
-    setBookmarkLoading(true)
-    setLibraryError('')
+    let live = true;
+    setBookmarkLoading(true);
+    setLibraryError("");
     apiClient
       .getMyBookmarkedVideos(token, { page: 0, size: 48 })
       .then((data) => {
-        if (!live) return
-        setBookmarkItems(data?.items ?? [])
-        setBookmarkTotal(Number(data?.total ?? 0))
+        if (!live) return;
+        setBookmarkItems(data?.items ?? []);
+        setBookmarkTotal(Number(data?.total ?? 0));
       })
       .catch((e) => {
-        if (live) setLibraryError(e.message)
+        if (live) setLibraryError(e.message);
       })
       .finally(() => {
-        if (live) setBookmarkLoading(false)
-      })
+        if (live) setBookmarkLoading(false);
+      });
     return () => {
-      live = false
-    }
-  }, [token, isOwnProfile, profileMainTab])
+      live = false;
+    };
+  }, [token, isOwnProfile, profileMainTab]);
 
   useEffect(() => {
     if (!token || !isOwnProfile) {
-      setLikedItems([])
-      setLikedTotal(0)
-      return
+      setLikedItems([]);
+      setLikedTotal(0);
+      return;
     }
-    if (profileMainTab !== 'liked') {
-      return
+    if (profileMainTab !== "liked") {
+      return;
     }
-    let live = true
-    setLikedLoading(true)
-    setLibraryError('')
+    let live = true;
+    setLikedLoading(true);
+    setLibraryError("");
     apiClient
       .getMyLikedVideos(token, { page: 0, size: 48 })
       .then((data) => {
-        if (!live) return
-        setLikedItems(data?.items ?? [])
-        setLikedTotal(Number(data?.total ?? 0))
+        if (!live) return;
+        setLikedItems(data?.items ?? []);
+        setLikedTotal(Number(data?.total ?? 0));
       })
       .catch((e) => {
-        if (live) setLibraryError(e.message)
+        if (live) setLibraryError(e.message);
       })
       .finally(() => {
-        if (live) setLikedLoading(false)
-      })
+        if (live) setLikedLoading(false);
+      });
     return () => {
-      live = false
-    }
-  }, [token, isOwnProfile, profileMainTab])
+      live = false;
+    };
+  }, [token, isOwnProfile, profileMainTab]);
 
   useEffect(() => {
     if (!token || !isOwnProfile) {
-      setRepostItems([])
-      setRepostTotal(0)
-      setRepostLoading(false)
-      return undefined
+      setRepostItems([]);
+      setRepostTotal(0);
+      setRepostLoading(false);
+      return undefined;
     }
-    let live = true
-    setRepostLoading(true)
-    setLibraryError('')
+    let live = true;
+    setRepostLoading(true);
+    setLibraryError("");
     apiClient
       .getMyRepostedVideos(token, { page: 0, size: 48 })
       .then((data) => {
-        if (!live) return
-        setRepostItems(data?.items ?? [])
-        setRepostTotal(Number(data?.total ?? 0))
+        if (!live) return;
+        setRepostItems(data?.items ?? []);
+        setRepostTotal(Number(data?.total ?? 0));
       })
       .catch((e) => {
-        if (live) setLibraryError(e.message)
+        if (live) setLibraryError(e.message);
       })
       .finally(() => {
-        if (live) setRepostLoading(false)
-      })
+        if (live) setRepostLoading(false);
+      });
     return () => {
-      live = false
-    }
-  }, [token, isOwnProfile])
+      live = false;
+    };
+  }, [token, isOwnProfile]);
 
   useEffect(() => {
     if (
-      profileMainTab === 'reposted' &&
+      profileMainTab === "reposted" &&
       isOwnProfile &&
       !repostLoading &&
       repostTotal === 0
     ) {
-      setProfileMainTab('videos')
+      setProfileMainTab("videos");
     }
-  }, [profileMainTab, isOwnProfile, repostLoading, repostTotal])
+  }, [profileMainTab, isOwnProfile, repostLoading, repostTotal]);
 
-  const collectionTotal = 0
+  const collectionTotal = 0;
 
   const sortedProfileVideos = useMemo(
     () => sortProfileVideos(profileVideos, videosSortMode),
     [profileVideos, videosSortMode],
-  )
+  );
 
   const profileGridVideoList = useMemo(() => {
-    if (profileMainTab === 'videos') return sortedProfileVideos
-    if (profileMainTab === 'favorites' && favoritesSubTab === 'posts') return bookmarkItems
-    if (profileMainTab === 'reposted') return repostItems
-    if (profileMainTab === 'liked') return likedItems
-    return []
+    if (profileMainTab === "videos") return sortedProfileVideos;
+    if (profileMainTab === "favorites" && favoritesSubTab === "posts")
+      return bookmarkItems;
+    if (profileMainTab === "reposted") return repostItems;
+    if (profileMainTab === "liked") return likedItems;
+    return [];
   }, [
     profileMainTab,
     favoritesSubTab,
@@ -1033,150 +1092,154 @@ export function ProfilePage() {
     bookmarkItems,
     repostItems,
     likedItems,
-  ])
+  ]);
 
   useEffect(() => {
     if (profileGridVideoList.length === 0) {
-      setProfileGridPlayingId(null)
-      return
+      setProfileGridPlayingId(null);
+      return;
     }
     setProfileGridPlayingId((prev) => {
-      if (prev != null && profileGridVideoList.some((v) => v.publicId === prev)) {
-        return prev
+      if (
+        prev != null &&
+        profileGridVideoList.some((v) => v.publicId === prev)
+      ) {
+        return prev;
       }
-      return null
-    })
-  }, [profileGridVideoList])
+      return null;
+    });
+  }, [profileGridVideoList]);
 
   const focusProfileGridVideo = useCallback((publicId) => {
-    if (publicId == null) return
-    setProfileGridPlayingId(publicId)
-  }, [])
+    if (publicId == null) return;
+    setProfileGridPlayingId(publicId);
+  }, []);
 
-  const profileSlug = profile?.username ?? username
+  const profileSlug = profile?.username ?? username;
 
   const handleProfileVideoOpen = useCallback(
     (video) => {
-      const id = videoPublicIdOf(video)
-      if (!id) return
+      const id = videoPublicIdOf(video);
+      if (!id) return;
       recordProfileLastWatchedFromVideo(
         { ...video, authorUsername: profileSlug },
         { tab: profileMainTab, favoritesSubTab },
-      )
-      setLastWatchedPublicId(id)
+      );
+      setLastWatchedPublicId(id);
     },
     [profileSlug, profileMainTab, favoritesSubTab],
-  )
+  );
 
   useEffect(() => {
-    const stored = loadProfileLastWatched(profileSlug)
-    setLastWatchedPublicId(stored?.publicId ?? null)
-    if (!stored?.publicId) return
-    if (stored.tab === 'favorites' && isOwnProfile) {
-      setProfileMainTab('favorites')
-      if (stored.favoritesSubTab === 'collections') {
-        setFavoritesSubTab('collections')
+    const stored = loadProfileLastWatched(profileSlug);
+    setLastWatchedPublicId(stored?.publicId ?? null);
+    if (!stored?.publicId) return;
+    if (stored.tab === "favorites" && isOwnProfile) {
+      setProfileMainTab("favorites");
+      if (stored.favoritesSubTab === "collections") {
+        setFavoritesSubTab("collections");
       } else {
-        setFavoritesSubTab('posts')
+        setFavoritesSubTab("posts");
       }
-    } else if (stored.tab === 'liked' && isOwnProfile) {
-      setProfileMainTab('liked')
-    } else if (stored.tab === 'reposted' && isOwnProfile) {
-      setProfileMainTab('reposted')
+    } else if (stored.tab === "liked" && isOwnProfile) {
+      setProfileMainTab("liked");
+    } else if (stored.tab === "reposted" && isOwnProfile) {
+      setProfileMainTab("reposted");
     } else {
-      setProfileMainTab('videos')
+      setProfileMainTab("videos");
     }
-  }, [profileSlug, isOwnProfile])
+  }, [profileSlug, isOwnProfile]);
 
   const lastWatchedInGrid =
     lastWatchedPublicId != null &&
     profileGridVideoList.some(
       (v) => videoPublicIdOf(v) === lastWatchedPublicId,
-    )
+    );
 
   const updateLastWatchedVisibility = useCallback(() => {
-    const el = lastWatchedTileRef.current
+    const el = lastWatchedTileRef.current;
     if (!el) {
-      setLastWatchedOffscreen(false)
-      return
+      setLastWatchedOffscreen(false);
+      return;
     }
-    const rect = el.getBoundingClientRect()
-    const viewH = window.innerHeight || document.documentElement.clientHeight
-    const visibleTop = Math.max(rect.top, 0)
-    const visibleBottom = Math.min(rect.bottom, viewH)
-    const visibleHeight = Math.max(0, visibleBottom - visibleTop)
-    const ratio = rect.height > 0 ? visibleHeight / rect.height : 0
-    const mostlyVisible = ratio >= 0.42 && rect.bottom > 48 && rect.top < viewH - 48
-    setLastWatchedOffscreen(!mostlyVisible)
+    const rect = el.getBoundingClientRect();
+    const viewH = window.innerHeight || document.documentElement.clientHeight;
+    const visibleTop = Math.max(rect.top, 0);
+    const visibleBottom = Math.min(rect.bottom, viewH);
+    const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+    const ratio = rect.height > 0 ? visibleHeight / rect.height : 0;
+    const mostlyVisible =
+      ratio >= 0.42 && rect.bottom > 48 && rect.top < viewH - 48;
+    setLastWatchedOffscreen(!mostlyVisible);
     if (rect.top > viewH * 0.55) {
-      setLastWatchedScrollDir('down')
+      setLastWatchedScrollDir("down");
     } else if (rect.bottom < viewH * 0.35) {
-      setLastWatchedScrollDir('up')
+      setLastWatchedScrollDir("up");
     } else {
-      setLastWatchedScrollDir(rect.top > viewH / 2 ? 'down' : 'up')
+      setLastWatchedScrollDir(rect.top > viewH / 2 ? "down" : "up");
     }
-  }, [])
+  }, []);
 
   const attachLastWatchedTileRef = useCallback(
     (node) => {
-      lastWatchedTileRef.current = node
+      lastWatchedTileRef.current = node;
       if (node) {
-        queueMicrotask(() => updateLastWatchedVisibility())
+        queueMicrotask(() => updateLastWatchedVisibility());
       }
     },
     [updateLastWatchedVisibility],
-  )
+  );
 
   const scrollToLastWatched = useCallback(() => {
-    const el = lastWatchedTileRef.current
-    if (!el) return
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }, [])
+    const el = lastWatchedTileRef.current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, []);
 
   useEffect(() => {
     if (!lastWatchedInGrid) {
-      setLastWatchedOffscreen(false)
-      return undefined
+      setLastWatchedOffscreen(false);
+      return undefined;
     }
 
-    let raf = 0
+    let raf = 0;
     const schedule = () => {
-      cancelAnimationFrame(raf)
-      raf = requestAnimationFrame(updateLastWatchedVisibility)
-    }
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(updateLastWatchedVisibility);
+    };
 
-    schedule()
-    const t1 = window.setTimeout(schedule, 0)
-    const t2 = window.setTimeout(schedule, 400)
+    schedule();
+    const t1 = window.setTimeout(schedule, 0);
+    const t2 = window.setTimeout(schedule, 400);
 
-    const el = lastWatchedTileRef.current
-    let observer
+    const el = lastWatchedTileRef.current;
+    let observer;
     if (el) {
       observer = new IntersectionObserver(schedule, {
         root: null,
         threshold: [0, 0.2, 0.4, 0.6, 0.8, 1],
-      })
-      observer.observe(el)
+      });
+      observer.observe(el);
     }
 
-    const scrollEl = profileScrollRef.current
-    scrollEl?.addEventListener('scroll', schedule, { passive: true })
-    window.addEventListener('resize', schedule)
+    const scrollEl = profileScrollRef.current;
+    scrollEl?.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
 
     return () => {
-      cancelAnimationFrame(raf)
-      window.clearTimeout(t1)
-      window.clearTimeout(t2)
-      observer?.disconnect()
-      scrollEl?.removeEventListener('scroll', schedule)
-      window.removeEventListener('resize', schedule)
-    }
+      cancelAnimationFrame(raf);
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      observer?.disconnect();
+      scrollEl?.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
   }, [
     lastWatchedInGrid,
     lastWatchedPublicId,
     profileGridVideoList,
     updateLastWatchedVisibility,
-  ])
+  ]);
 
   const renderProfileVideoGrid = (videos) => (
     <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
@@ -1194,217 +1257,229 @@ export function ProfilePage() {
         />
       ))}
     </ul>
-  )
+  );
 
-  const bioDraftLength = editForm.bio.length
+  const bioDraftLength = editForm.bio.length;
   const normalizeEditForm = (value) => ({
     username: normalizeUsername(value?.username),
-    displayName: String(value?.displayName ?? '').trim(),
-    bio: String(value?.bio ?? '').trim(),
-    avatarUrl: String(value?.avatarUrl ?? '').trim(),
-  })
+    displayName: String(value?.displayName ?? "").trim(),
+    bio: String(value?.bio ?? "").trim(),
+    avatarUrl: String(value?.avatarUrl ?? "").trim(),
+  });
   const hasEditChanges =
-    JSON.stringify(normalizeEditForm(editForm)) !== JSON.stringify(normalizeEditForm(initialEditForm))
-  const normalizedEditUsername = normalizeUsername(editForm.username)
+    JSON.stringify(normalizeEditForm(editForm)) !==
+    JSON.stringify(normalizeEditForm(initialEditForm));
+  const normalizedEditUsername = normalizeUsername(editForm.username);
   const usernameValidationMessage =
-    normalizedEditUsername.length < 2 ? t('profileChrome.usernameTooShort') : ''
+    normalizedEditUsername.length < 2
+      ? t("profileChrome.usernameTooShort")
+      : "";
   const canSubmitEditForm =
     hasEditChanges &&
     !savingEdit &&
     !usernameValidationMessage &&
     normalizedEditUsername.length > 0 &&
-    editForm.displayName.trim().length > 0
+    editForm.displayName.trim().length > 0;
 
-  const seoProfile = profile?.username ? profile : null
-  const seoUsername = String(seoProfile?.username ?? username ?? user?.username ?? '')
+  const seoProfile = profile?.username ? profile : null;
+  const seoUsername = String(
+    seoProfile?.username ?? username ?? user?.username ?? "",
+  )
     .trim()
-    .replace(/^@/, '')
-  const profileCanonical = seoUsername ? `/@${encodeURIComponent(seoUsername)}` : '/profile'
+    .replace(/^@/, "");
+  const profileCanonical = seoUsername
+    ? `/@${encodeURIComponent(seoUsername)}`
+    : "/profile";
   const profileDescription = seoUsername
-    ? t('profilePage.seoDescription', { username: seoUsername })
-    : t('profilePage.seoDescriptionGuest')
-  const profileImage = seoProfile?.avatarUrl || DEFAULT_USER_AVATAR_URL
+    ? t("profilePage.seoDescription", { username: seoUsername })
+    : t("profilePage.seoDescriptionGuest");
+  const profileImage = seoProfile?.avatarUrl || DEFAULT_USER_AVATAR_URL;
   const profileSeoTitle = seoUsername
-    ? t('profilePage.pageTitleWithUser', { username: seoUsername })
-    : t('profilePage.pageTitle')
+    ? t("profilePage.pageTitleWithUser", { username: seoUsername })
+    : t("profilePage.pageTitle");
 
-  const menuItems = useMemo(() => buildMainSidebarMenuItems(token), [token])
+  const menuItems = useMemo(() => buildMainSidebarMenuItems(token), [token]);
 
-  const activeMenu = isOwnProfile ? 'profile' : null
+  const activeMenu = isOwnProfile ? "profile" : null;
   const handleSelectMenu = (id) => {
     handleSidebarMenuSelect(navigate, id, {
       token,
-      profilePath: token ? profileHrefFromAuthUsername(user?.username) : undefined,
-    })
-  }
+      profilePath: token
+        ? profileHrefFromAuthUsername(user?.username)
+        : undefined,
+    });
+  };
 
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 1023px)')
-    const sync = () => setMobileLayout(mq.matches)
-    sync()
-    mq.addEventListener('change', sync)
-    return () => mq.removeEventListener('change', sync)
-  }, [])
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const sync = () => setMobileLayout(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
 
   const openEditProfileModal = () => {
-    if (!profile) return
+    if (!profile) return;
     const formSnapshot = {
-      username: profile.username ?? '',
-      displayName: profile.displayName ?? '',
-      bio: resolveProfileBio(profile.bio) ?? '',
-      avatarUrl: profile.avatarUrl && profile.avatarUrl !== DEFAULT_USER_AVATAR_URL ? profile.avatarUrl : '',
-    }
-    setEditForm(formSnapshot)
-    setInitialEditForm(formSnapshot)
-    setEditError('')
-    setIsEditModalOpen(true)
-  }
+      username: profile.username ?? "",
+      displayName: profile.displayName ?? "",
+      bio: resolveProfileBio(profile.bio) ?? "",
+      avatarUrl:
+        profile.avatarUrl && profile.avatarUrl !== DEFAULT_USER_AVATAR_URL
+          ? profile.avatarUrl
+          : "",
+    };
+    setEditForm(formSnapshot);
+    setInitialEditForm(formSnapshot);
+    setEditError("");
+    setIsEditModalOpen(true);
+  };
 
   const handleSubmitProfileEdit = async (event) => {
-    event.preventDefault()
-    if (!token || !canSubmitEditForm) return
-    setSavingEdit(true)
-    setEditError('')
+    event.preventDefault();
+    if (!token || !canSubmitEditForm) return;
+    setSavingEdit(true);
+    setEditError("");
     try {
-      const normalizedUsername = normalizeUsername(editForm.username)
+      const normalizedUsername = normalizeUsername(editForm.username);
       await updateProfile({
         username: normalizedUsername,
         displayName: editForm.displayName.trim(),
         bio: editForm.bio.trim(),
         avatarUrl: editForm.avatarUrl.trim(),
-      })
-      setStatus(t('profileChrome.profileUpdated'))
-      setIsEditModalOpen(false)
+      });
+      setStatus(t("profileChrome.profileUpdated"));
+      setIsEditModalOpen(false);
     } catch (error) {
-      setEditError(error.message)
+      setEditError(error.message);
     } finally {
-      setSavingEdit(false)
+      setSavingEdit(false);
     }
-  }
+  };
 
   const handlePickAvatarFromDevice = () => {
-    avatarFileInputRef.current?.click()
-  }
+    avatarFileInputRef.current?.click();
+  };
 
   const revokeAvatarObjectUrl = () => {
     if (avatarObjectUrlRef.current) {
-      URL.revokeObjectURL(avatarObjectUrlRef.current)
-      avatarObjectUrlRef.current = ''
+      URL.revokeObjectURL(avatarObjectUrlRef.current);
+      avatarObjectUrlRef.current = "";
     }
-  }
+  };
 
   const handleAvatarFileChange = (event) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      setEditError(t('profileChrome.pickValidImage'))
-      event.target.value = ''
-      return
+    if (!file.type.startsWith("image/")) {
+      setEditError(t("profileChrome.pickValidImage"));
+      event.target.value = "";
+      return;
     }
 
     if (file.size > AVATAR_MAX_BYTES) {
-      setEditError(t('profileChrome.avatarMaxSize'))
-      event.target.value = ''
-      return
+      setEditError(t("profileChrome.avatarMaxSize"));
+      event.target.value = "";
+      return;
     }
 
     // Object URL keeps full decode fidelity better than a huge data: URL.
-    revokeAvatarObjectUrl()
-    const objectUrl = URL.createObjectURL(file)
-    avatarObjectUrlRef.current = objectUrl
-    setAvatarEditorSrc(objectUrl)
-    setAvatarEditorZoom(1)
-    setAvatarEditorOffset({ x: 0, y: 0 })
-    setAvatarNaturalSize({ w: 0, h: 0 })
-    setAvatarLowResWarn(false)
-    setIsAvatarEditorOpen(true)
-    setEditError('')
-    event.target.value = ''
-  }
+    revokeAvatarObjectUrl();
+    const objectUrl = URL.createObjectURL(file);
+    avatarObjectUrlRef.current = objectUrl;
+    setAvatarEditorSrc(objectUrl);
+    setAvatarEditorZoom(1);
+    setAvatarEditorOffset({ x: 0, y: 0 });
+    setAvatarNaturalSize({ w: 0, h: 0 });
+    setAvatarLowResWarn(false);
+    setIsAvatarEditorOpen(true);
+    setEditError("");
+    event.target.value = "";
+  };
 
   const closeAvatarEditor = () => {
-    if (avatarEditorBusy) return
-    setIsAvatarEditorOpen(false)
-    setAvatarEditorSrc('')
-    setAvatarEditorOffset({ x: 0, y: 0 })
-    setAvatarLowResWarn(false)
-    revokeAvatarObjectUrl()
-  }
+    if (avatarEditorBusy) return;
+    setIsAvatarEditorOpen(false);
+    setAvatarEditorSrc("");
+    setAvatarEditorOffset({ x: 0, y: 0 });
+    setAvatarLowResWarn(false);
+    revokeAvatarObjectUrl();
+  };
 
   useEffect(() => {
     return () => {
-      revokeAvatarObjectUrl()
-    }
-  }, [])
+      revokeAvatarObjectUrl();
+    };
+  }, []);
 
   useEffect(() => {
-    if (!isAvatarEditorOpen) return undefined
-    const el = avatarViewportRef.current
-    if (!el || typeof ResizeObserver === 'undefined') return undefined
+    if (!isAvatarEditorOpen) return undefined;
+    const el = avatarViewportRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return undefined;
     const sync = () => {
-      const px = Math.round(Math.min(el.clientWidth, el.clientHeight) || 400)
-      setAvatarViewportPx(Math.max(1, px))
-    }
-    sync()
-    const ro = new ResizeObserver(sync)
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [isAvatarEditorOpen])
+      const px = Math.round(Math.min(el.clientWidth, el.clientHeight) || 400);
+      setAvatarViewportPx(Math.max(1, px));
+    };
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isAvatarEditorOpen]);
 
   const onAvatarEditorPointerDown = (event) => {
-    if (avatarEditorBusy) return
-    event.currentTarget.setPointerCapture?.(event.pointerId)
+    if (avatarEditorBusy) return;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
     avatarDragRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
       originX: avatarEditorOffset.x,
       originY: avatarEditorOffset.y,
-    }
-  }
+    };
+  };
 
   const onAvatarEditorPointerMove = (event) => {
-    const drag = avatarDragRef.current
-    if (!drag || drag.pointerId !== event.pointerId) return
-    const rect = event.currentTarget.getBoundingClientRect()
-    const size = Math.min(rect.width, rect.height) || 1
-    const dx = (event.clientX - drag.startX) / size
-    const dy = (event.clientY - drag.startY) / size
-    const max = 0.45 * avatarEditorZoom
+    const drag = avatarDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const size = Math.min(rect.width, rect.height) || 1;
+    const dx = (event.clientX - drag.startX) / size;
+    const dy = (event.clientY - drag.startY) / size;
+    const max = 0.45 * avatarEditorZoom;
     setAvatarEditorOffset({
       x: Math.max(-max, Math.min(max, drag.originX + dx)),
       y: Math.max(-max, Math.min(max, drag.originY + dy)),
-    })
-  }
+    });
+  };
 
   const onAvatarEditorPointerUp = (event) => {
-    const drag = avatarDragRef.current
-    if (!drag || drag.pointerId !== event.pointerId) return
-    avatarDragRef.current = null
+    const drag = avatarDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    avatarDragRef.current = null;
     try {
-      event.currentTarget.releasePointerCapture?.(event.pointerId)
+      event.currentTarget.releasePointerCapture?.(event.pointerId);
     } catch {
       /* noop */
     }
-  }
+  };
 
   const applyAvatarEditor = () => {
-    if (!avatarEditorSrc || !token || avatarEditorBusy) return
-    const image = new Image()
+    if (!avatarEditorSrc || !token || avatarEditorBusy) return;
+    const image = new Image();
     image.onload = async () => {
       // Export at source short-side (never upscale). Cap at 4096 for upload size.
-      const sourceW = image.naturalWidth || image.width || 1
-      const sourceH = image.naturalHeight || image.height || 1
-      const sourceShort = Math.min(sourceW, sourceH)
-      const size = Math.max(1, Math.min(AVATAR_EXPORT_MAX, sourceShort))
-      const canvas = document.createElement('canvas')
-      canvas.width = size
-      canvas.height = size
-      const context = canvas.getContext('2d')
+      const sourceW = image.naturalWidth || image.width || 1;
+      const sourceH = image.naturalHeight || image.height || 1;
+      const sourceShort = Math.min(sourceW, sourceH);
+      const size = Math.max(1, Math.min(AVATAR_EXPORT_MAX, sourceShort));
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const context = canvas.getContext("2d");
       if (!context) {
-        setEditError(t('profileChrome.processImageFailed'))
-        return
+        setEditError(t("profileChrome.processImageFailed"));
+        return;
       }
       const { dw, dh, dx, dy } = avatarCoverLayout(
         sourceW,
@@ -1413,56 +1488,56 @@ export function ProfilePage() {
         avatarEditorZoom,
         avatarEditorOffset.x,
         avatarEditorOffset.y,
-      )
+      );
       // Sample the visible square from source pixels (one resample → sharper than
       // drawing a scaled full-frame bitmap into the canvas).
-      const sx = (-dx) * (sourceW / dw)
-      const sy = (-dy) * (sourceH / dh)
-      const sw = size * (sourceW / dw)
-      const sh = size * (sourceH / dh)
-      context.fillStyle = '#000'
-      context.fillRect(0, 0, size, size)
-      context.imageSmoothingEnabled = true
-      context.imageSmoothingQuality = 'high'
-      context.drawImage(image, sx, sy, sw, sh, 0, 0, size, size)
+      const sx = -dx * (sourceW / dw);
+      const sy = -dy * (sourceH / dh);
+      const sw = size * (sourceW / dw);
+      const sh = size * (sourceH / dh);
+      context.fillStyle = "#000";
+      context.fillRect(0, 0, size, size);
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = "high";
+      context.drawImage(image, sx, sy, sw, sh, 0, 0, size, size);
 
-      setAvatarEditorBusy(true)
-      setEditError('')
+      setAvatarEditorBusy(true);
+      setEditError("");
       try {
         const blob = await new Promise((resolve, reject) => {
           canvas.toBlob(
-            (b) => (b ? resolve(b) : reject(new Error('toBlob failed'))),
-            'image/jpeg',
+            (b) => (b ? resolve(b) : reject(new Error("toBlob failed"))),
+            "image/jpeg",
             0.95,
-          )
-        })
+          );
+        });
         const publicUrl = await uploadThumbnailToStorage(
           token,
           blob,
           `avatar-${Date.now()}.jpg`,
-        )
-        setEditForm((prev) => ({ ...prev, avatarUrl: publicUrl }))
-        setIsAvatarEditorOpen(false)
-        setAvatarEditorSrc('')
-        setAvatarEditorOffset({ x: 0, y: 0 })
-        setAvatarNaturalSize({ w: 0, h: 0 })
-        setAvatarLowResWarn(false)
-        revokeAvatarObjectUrl()
+        );
+        setEditForm((prev) => ({ ...prev, avatarUrl: publicUrl }));
+        setIsAvatarEditorOpen(false);
+        setAvatarEditorSrc("");
+        setAvatarEditorOffset({ x: 0, y: 0 });
+        setAvatarNaturalSize({ w: 0, h: 0 });
+        setAvatarLowResWarn(false);
+        revokeAvatarObjectUrl();
       } catch (error) {
-        setEditError(error?.message ?? t('profileChrome.uploadImageFailed'))
+        setEditError(error?.message ?? t("profileChrome.uploadImageFailed"));
       } finally {
-        setAvatarEditorBusy(false)
+        setAvatarEditorBusy(false);
       }
-    }
+    };
     image.onerror = () => {
-      setEditError(t('profileChrome.processImageFailed'))
-    }
-    image.src = avatarEditorSrc
-  }
+      setEditError(t("profileChrome.processImageFailed"));
+    };
+    image.src = avatarEditorSrc;
+  };
 
   const avatarPreviewLayout = useMemo(() => {
-    if (!avatarNaturalSize.w || !avatarNaturalSize.h) return null
-    const view = Math.max(1, avatarViewportPx)
+    if (!avatarNaturalSize.w || !avatarNaturalSize.h) return null;
+    const view = Math.max(1, avatarViewportPx);
     const { dw, dx, dy } = avatarCoverLayout(
       avatarNaturalSize.w,
       avatarNaturalSize.h,
@@ -1470,31 +1545,41 @@ export function ProfilePage() {
       avatarEditorZoom,
       avatarEditorOffset.x,
       avatarEditorOffset.y,
-    )
+    );
     // Natural-size img + GPU scale — sharper than % width/height on retina.
-    const scale = dw / avatarNaturalSize.w
+    const scale = dw / avatarNaturalSize.w;
     return {
       width: avatarNaturalSize.w,
       height: avatarNaturalSize.h,
       transform: `translate3d(${dx}px, ${dy}px, 0) scale(${scale})`,
-    }
-  }, [avatarNaturalSize, avatarEditorZoom, avatarEditorOffset, avatarViewportPx])
+    };
+  }, [
+    avatarNaturalSize,
+    avatarEditorZoom,
+    avatarEditorOffset,
+    avatarViewportPx,
+  ]);
 
   if (mobileLayout && !username && authReady && !token) {
     return (
       <section className="flex h-dvh max-h-dvh min-h-0 flex-col bg-black text-zinc-100 lg:hidden">
         <Seo
-          title={t('profilePage.pageTitle')}
-          description={t('profilePage.loginSeoDescription')}
+          title={t("profilePage.pageTitle")}
+          description={t("profilePage.loginSeoDescription")}
           canonical="/profile"
         />
         <MobileLoginPrompt
-          title={t('profilePage.loginTitle')}
-          description={t('profilePage.loginDescription')}
+          title={t("profilePage.loginTitle")}
+          description={t("profilePage.loginDescription")}
         />
-        <MobileFeedBottomNav token={token} user={user} activeId="profile" onSelectMenu={handleSelectMenu} />
+        <MobileFeedBottomNav
+          token={token}
+          user={user}
+          activeId="profile"
+          onSelectMenu={handleSelectMenu}
+        />
       </section>
-    )
+    );
   }
 
   return (
@@ -1534,13 +1619,20 @@ export function ProfilePage() {
         className="scrollbar-none relative flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain px-3 py-3 lg:px-6 lg:py-5"
       >
         {token ? (
-          <AccountActionsPill className="absolute right-3 top-3 z-10 lg:right-8 lg:top-5" tone="profile">
+          <AccountActionsPill
+            className="absolute right-3 top-3 z-10 lg:right-8 lg:top-5"
+            tone="profile"
+          >
             <div className="relative" ref={accountMenuRef}>
-              <TooltipHoverWrap tip={t('common.account')} tipHidden={showAccountMenu} hoverOnly>
+              <TooltipHoverWrap
+                tip={t("common.account")}
+                tipHidden={showAccountMenu}
+                hoverOnly
+              >
                 <button
                   type="button"
                   className="flex cursor-pointer rounded-full p-0.5 transition hover:bg-zinc-800"
-                  aria-label={t('common.accountMenu')}
+                  aria-label={t("common.accountMenu")}
                   aria-expanded={showAccountMenu}
                   aria-haspopup="menu"
                   onClick={() => setShowAccountMenu((prev) => !prev)}
@@ -1555,7 +1647,7 @@ export function ProfilePage() {
                     alt=""
                     referrerPolicy="no-referrer"
                     onError={(e) => {
-                      e.currentTarget.src = DEFAULT_USER_AVATAR_URL
+                      e.currentTarget.src = DEFAULT_USER_AVATAR_URL;
                     }}
                   />
                 </button>
@@ -1572,19 +1664,19 @@ export function ProfilePage() {
                     onClick={() => setShowAccountMenu(false)}
                   >
                     <IoPerson className="text-base" />
-                    {t('common.viewProfile')}
+                    {t("common.viewProfile")}
                   </Link>
                   <button
                     type="button"
                     className="vibely-account-menu-item flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-100 hover:bg-zinc-700"
                     role="menuitem"
                     onClick={() => {
-                      setShowAccountMenu(false)
-                      setShowLogoutConfirm(true)
+                      setShowAccountMenu(false);
+                      setShowLogoutConfirm(true);
                     }}
                   >
                     <IoLogOutOutline className="text-base" />
-                    {t('common.logout')}
+                    {t("common.logout")}
                   </button>
                 </div>
               ) : null}
@@ -1593,192 +1685,97 @@ export function ProfilePage() {
         ) : null}
 
         <div className="flex flex-1 flex-col overflow-visible">
-        {!username && authReady && !token ? (
-          <section className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-            <h2 className="text-xl font-semibold">{t('profilePage.heading')}</h2>
-            <p className="mt-2 text-zinc-300">{t('profilePage.loginToView')}</p>
-          </section>
-        ) : isProfilePageLoading ? (
-          <ProfilePageSkeleton />
-        ) : (
-          <section className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col bg-black px-1 py-4 md:px-8 lg:py-6">
-            {mobileLayout ? (
-              <div className="mb-6 flex flex-col items-center text-center lg:hidden">
-                <h2 className="mb-4 max-w-full truncate text-[17px] font-bold text-white">
-                  <span className="inline-flex items-center gap-1.5">
-                    {profile?.displayName ?? t('profileChrome.vibelyUserFallback')}
-                    {profile?.privateAccount ? (
-                      <IoLockClosed className="shrink-0 text-sm text-zinc-400" aria-label={t('profileChrome.privateAccount')} />
-                    ) : null}
-                  </span>
-                </h2>
-                <AvatarImage
-                  className="h-24 w-24 rounded-full border border-zinc-800 object-cover"
-                  src={profile?.avatarUrl}
-                  fallbackSrc={DEFAULT_USER_AVATAR_URL}
-                  alt={t('profileChrome.profileAvatarAlt')}
-                />
-                <p className="mt-3 text-[17px] font-bold text-white">
-                  @{profile?.username ?? '-'}
-                </p>
-                <div className="mt-4 flex items-center gap-5 text-[13px] text-zinc-300">
-                  <button type="button" className="cursor-pointer" onClick={() => openFollowListModal('following')}>
-                    <span className="block font-bold text-white">{formatCompactCount(profile?.followingCount ?? 0)}</span>
-                    <span>{t('profilePage.followingStat')}</span>
-                  </button>
-                  <button type="button" className="cursor-pointer" onClick={() => openFollowListModal('followers')}>
-                    <span className="block font-bold text-white">{formatCompactCount(profile?.followerCount ?? 0)}</span>
-                    <span>{t('profilePage.followerStat')}</span>
-                  </button>
-                  <span>
-                    <span className="block font-bold text-white">{formatCompactCount(profile?.totalLikeCount ?? 0)}</span>
-                    <span>{t('profilePage.likesStat')}</span>
-                  </span>
-                </div>
-                {isOwnProfile ? (
-                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+          {!username && authReady && !token ? (
+            <section className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
+              <h2 className="text-xl font-semibold">
+                {t("profilePage.heading")}
+              </h2>
+              <p className="mt-2 text-zinc-300">
+                {t("profilePage.loginToView")}
+              </p>
+            </section>
+          ) : isProfilePageLoading ? (
+            <ProfilePageSkeleton />
+          ) : (
+            <section className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col bg-black px-1 py-4 md:px-8 lg:py-6">
+              {mobileLayout ? (
+                <div className="mb-6 flex flex-col items-center text-center lg:hidden">
+                  <h2 className="mb-4 max-w-full truncate text-[17px] font-bold text-white">
+                    <span className="inline-flex items-center gap-1.5">
+                      {profile?.displayName ??
+                        t("profileChrome.vibelyUserFallback")}
+                      {profile?.privateAccount ? (
+                        <IoLockClosed
+                          className="shrink-0 text-sm text-zinc-400"
+                          aria-label={t("profileChrome.privateAccount")}
+                        />
+                      ) : null}
+                    </span>
+                  </h2>
+                  <AvatarImage
+                    className="h-24 w-24 rounded-full border border-zinc-800 object-cover"
+                    src={profile?.avatarUrl}
+                    fallbackSrc={DEFAULT_USER_AVATAR_URL}
+                    alt={t("profileChrome.profileAvatarAlt")}
+                  />
+                  <p className="mt-3 text-[17px] font-bold text-white">
+                    @{profile?.username ?? "-"}
+                  </p>
+                  <div className="mt-4 flex items-center gap-5 text-[13px] text-zinc-300">
                     <button
                       type="button"
-                      className="cursor-pointer rounded-md border border-zinc-700 px-4 py-1.5 text-sm font-semibold text-zinc-100"
-                      onClick={openEditProfileModal}
+                      className="cursor-pointer"
+                      onClick={() => openFollowListModal("following")}
                     >
-                      {t('profileChrome.editProfile')}
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={t('profileChrome.shareProfile')}
-                      className="cursor-pointer rounded-md border border-zinc-700 p-2 text-zinc-100"
-                      onClick={handleProfileShareClick}
-                    >
-                      <IoArrowRedo />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-                    <button
-                      type="button"
-                      className={`min-w-[112px] rounded-md px-5 py-2 text-sm font-semibold ${
-                        isFollowingProfile || isFollowRequestPending
-                          ? 'border border-zinc-700 bg-zinc-900 text-zinc-100'
-                          : 'bg-[#FE2C55] text-white'
-                      } ${followBusy ? 'cursor-wait opacity-80' : 'cursor-pointer'}`}
-                      onClick={() => void handleProfileFollowToggle()}
-                      disabled={followBusy}
-                    >
-                      {followButtonLabel}
-                    </button>
-                    <button
-                      type="button"
-                      data-testid="profile-message-button"
-                      className="cursor-pointer rounded-md border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-100"
-                      onClick={handleProfileMessageClick}
-                    >
-                      {t('profilePage.message')}
-                    </button>
-                  </div>
-                )}
-                <p className="mt-3 max-w-sm text-sm text-zinc-400">
-                  {resolveProfileBio(profile?.bio) ?? t('profilePage.noBio')}
-                </p>
-              </div>
-            ) : null}
-
-            <div className="hidden items-start gap-4 lg:flex">
-              <div className="flex min-w-0 flex-1 items-start gap-5">
-                <AvatarImage
-                  className="h-28 w-28 rounded-full border border-zinc-800 object-cover md:h-32 md:w-32"
-                  src={profile?.avatarUrl}
-                  fallbackSrc={DEFAULT_USER_AVATAR_URL}
-                  alt={t('profileChrome.profileAvatarAlt')}
-                />
-                <div className="min-w-0 flex-1 space-y-3">
-                  <div className="flex flex-wrap items-end gap-x-4 gap-y-1">
-                    <h2 className="text-3xl font-bold leading-none">
-                      <span className="inline-flex items-center gap-2">
-                        {profile?.displayName ?? t('profileChrome.vibelyUserFallback')}
-                        {profile?.privateAccount ? (
-                          <IoLockClosed className="shrink-0 text-lg text-zinc-400" aria-label={t('profileChrome.privateAccount')} />
-                        ) : null}
-                      </span>
-                    </h2>
-                    <span className="text-zinc-500">|</span>
-                    <p className="pt-1 text-base text-zinc-400">@{profile?.username ?? '-'}</p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-300">
-                    <button
-                      type="button"
-                      className="cursor-pointer rounded-full transition hover:text-zinc-100"
-                      aria-label={t('profileChrome.openFollowingList')}
-                      onClick={() => openFollowListModal('following')}
-                    >
-                      <span className="font-semibold text-zinc-100">
+                      <span className="block font-bold text-white">
                         {formatCompactCount(profile?.followingCount ?? 0)}
-                      </span>{' '}
-                      {t('profilePage.followingStat')}
+                      </span>
+                      <span>{t("profilePage.followingStat")}</span>
                     </button>
                     <button
                       type="button"
-                      className="cursor-pointer rounded-full transition hover:text-zinc-100"
-                      aria-label={t('profileChrome.openFollowersList')}
-                      onClick={() => openFollowListModal('followers')}
+                      className="cursor-pointer"
+                      onClick={() => openFollowListModal("followers")}
                     >
-                      <span className="font-semibold text-zinc-100">
+                      <span className="block font-bold text-white">
                         {formatCompactCount(profile?.followerCount ?? 0)}
-                      </span>{' '}
-                      {t('profilePage.followerStat')}
+                      </span>
+                      <span>{t("profilePage.followerStat")}</span>
                     </button>
                     <span>
-                      <span className="font-semibold text-zinc-100">
+                      <span className="block font-bold text-white">
                         {formatCompactCount(profile?.totalLikeCount ?? 0)}
-                      </span>{' '}
-                      {t('profilePage.likesStat')}
+                      </span>
+                      <span>{t("profilePage.likesStat")}</span>
                     </span>
                   </div>
-
                   {isOwnProfile ? (
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
                       <button
                         type="button"
-                        className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"
+                        className="cursor-pointer rounded-md border border-zinc-700 px-4 py-1.5 text-sm font-semibold text-zinc-100"
                         onClick={openEditProfileModal}
                       >
-                        {t('profileChrome.editProfile')}
-                      </button>
-                      {isAdminOwnProfile ? null : (
-                        <button
-                          type="button"
-                          className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"
-                        >
-                          {t('moreMenu.promotePost')}
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        aria-label={t('profileChrome.profileSettings')}
-                        className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
-                        onClick={() => navigate('/settings')}
-                      >
-                        <IoSettingsOutline />
+                        {t("profileChrome.editProfile")}
                       </button>
                       <button
                         type="button"
-                        aria-label={t('profileChrome.shareProfile')}
-                        className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
+                        aria-label={t("profileChrome.shareProfile")}
+                        className="cursor-pointer rounded-md border border-zinc-700 p-2 text-zinc-100"
                         onClick={handleProfileShareClick}
                       >
                         <IoArrowRedo />
                       </button>
                     </div>
                   ) : (
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
                       <button
                         type="button"
-                        className={`min-w-[112px] rounded-full px-5 py-2 text-sm font-semibold transition ${
+                        className={`min-w-[112px] rounded-md px-5 py-2 text-sm font-semibold ${
                           isFollowingProfile || isFollowRequestPending
-                            ? 'border border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800'
-                            : 'bg-[#FE2C55] text-white hover:bg-[#ea284f]'
-                        } ${followBusy ? 'cursor-wait opacity-80' : 'cursor-pointer'}`}
+                            ? "border border-zinc-700 bg-zinc-900 text-zinc-100"
+                            : "bg-[#FE2C55] text-white"
+                        } ${followBusy ? "cursor-wait opacity-80" : "cursor-pointer"}`}
                         onClick={() => void handleProfileFollowToggle()}
                         disabled={followBusy}
                       >
@@ -1787,366 +1784,545 @@ export function ProfilePage() {
                       <button
                         type="button"
                         data-testid="profile-message-button"
-                        className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"
+                        className="cursor-pointer rounded-md border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-100"
                         onClick={handleProfileMessageClick}
                       >
-                        {t('profilePage.message')}
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={t('profileChrome.mutualFriends')}
-                        className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
-                        onClick={handleProfileMoreClick}
-                      >
-                        <IoPeople />
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={t('profileChrome.shareProfile')}
-                        className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
-                        onClick={handleProfileShareClick}
-                      >
-                        <IoArrowRedo />
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={t('profileChrome.moreProfileOptions')}
-                        className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
-                        onClick={handleProfileMoreClick}
-                      >
-                        <IoEllipsisHorizontal />
+                        {t("profilePage.message")}
                       </button>
                     </div>
                   )}
-
-                  {profileActionNotice ? (
-                    <p className="text-sm text-zinc-400">{profileActionNotice}</p>
-                  ) : null}
-
-                  <p className="text-sm text-zinc-300">
-                    {resolveProfileBio(profile?.bio) ?? t('profilePage.noBio')}
+                  <p className="mt-3 max-w-sm text-sm text-zinc-400">
+                    {resolveProfileBio(profile?.bio) ?? t("profilePage.noBio")}
                   </p>
                 </div>
-              </div>
-            </div>
+              ) : null}
 
-            <div className={`border-b border-zinc-900 ${mobileLayout ? 'mt-2' : 'mt-6'}`}>
-              <div className="flex flex-wrap items-end justify-between gap-4">
-                <div
-                  className={`flex text-base ${mobileLayout ? 'w-full justify-center gap-10' : 'gap-1 sm:gap-6'}`}
-                  role="tablist"
-                >
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={profileMainTab === 'videos'}
-                    className={`cursor-pointer px-2 py-3 sm:px-1 ${
-                      profileMainTab === 'videos'
-                        ? 'border-b-2 border-white font-semibold text-zinc-100'
-                        : 'border-b-2 border-transparent text-zinc-400 hover:text-zinc-200'
-                    }`}
-                    onClick={() => setProfileMainTab('videos')}
+              <div className="hidden items-start gap-4 lg:flex">
+                <div className="flex min-w-0 flex-1 items-start gap-5">
+                  <AvatarImage
+                    className="h-28 w-28 rounded-full border border-zinc-800 object-cover md:h-32 md:w-32"
+                    src={profile?.avatarUrl}
+                    fallbackSrc={DEFAULT_USER_AVATAR_URL}
+                    alt={t("profileChrome.profileAvatarAlt")}
+                  />
+                  <div className="min-w-0 flex-1 space-y-3">
+                    <div className="flex flex-wrap items-end gap-x-4 gap-y-1">
+                      <h2 className="text-3xl font-bold leading-none">
+                        <span className="inline-flex items-center gap-2">
+                          {profile?.displayName ??
+                            t("profileChrome.vibelyUserFallback")}
+                          {profile?.privateAccount ? (
+                            <IoLockClosed
+                              className="shrink-0 text-lg text-zinc-400"
+                              aria-label={t("profileChrome.privateAccount")}
+                            />
+                          ) : null}
+                        </span>
+                      </h2>
+                      <span className="text-zinc-500">|</span>
+                      <p className="pt-1 text-base text-zinc-400">
+                        @{profile?.username ?? "-"}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-300">
+                      <button
+                        type="button"
+                        className="cursor-pointer rounded-full transition hover:text-zinc-100"
+                        aria-label={t("profileChrome.openFollowingList")}
+                        onClick={() => openFollowListModal("following")}
+                      >
+                        <span className="font-semibold text-zinc-100">
+                          {formatCompactCount(profile?.followingCount ?? 0)}
+                        </span>{" "}
+                        {t("profilePage.followingStat")}
+                      </button>
+                      <button
+                        type="button"
+                        className="cursor-pointer rounded-full transition hover:text-zinc-100"
+                        aria-label={t("profileChrome.openFollowersList")}
+                        onClick={() => openFollowListModal("followers")}
+                      >
+                        <span className="font-semibold text-zinc-100">
+                          {formatCompactCount(profile?.followerCount ?? 0)}
+                        </span>{" "}
+                        {t("profilePage.followerStat")}
+                      </button>
+                      <span>
+                        <span className="font-semibold text-zinc-100">
+                          {formatCompactCount(profile?.totalLikeCount ?? 0)}
+                        </span>{" "}
+                        {t("profilePage.likesStat")}
+                      </span>
+                    </div>
+
+                    {isOwnProfile ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"
+                          onClick={openEditProfileModal}
+                        >
+                          {t("profileChrome.editProfile")}
+                        </button>
+                        {isAdminOwnProfile ? null : (
+                          <button
+                            type="button"
+                            className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"
+                            onClick={() => navigate("/promote")}
+                          >
+                            {t("moreMenu.promotePost")}
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          aria-label={t("profileChrome.profileSettings")}
+                          className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
+                          onClick={() => navigate("/settings")}
+                        >
+                          <IoSettingsOutline />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={t("profileChrome.shareProfile")}
+                          className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
+                          onClick={handleProfileShareClick}
+                        >
+                          <IoArrowRedo />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          className={`min-w-[112px] rounded-full px-5 py-2 text-sm font-semibold transition ${
+                            isFollowingProfile || isFollowRequestPending
+                              ? "border border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
+                              : "bg-[#FE2C55] text-white hover:bg-[#ea284f]"
+                          } ${followBusy ? "cursor-wait opacity-80" : "cursor-pointer"}`}
+                          onClick={() => void handleProfileFollowToggle()}
+                          disabled={followBusy}
+                        >
+                          {followButtonLabel}
+                        </button>
+                        <button
+                          type="button"
+                          data-testid="profile-message-button"
+                          className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"
+                          onClick={handleProfileMessageClick}
+                        >
+                          {t("profilePage.message")}
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={t("profileChrome.mutualFriends")}
+                          className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
+                          onClick={handleProfileMoreClick}
+                        >
+                          <IoPeople />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={t("profileChrome.shareProfile")}
+                          className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
+                          onClick={handleProfileShareClick}
+                        >
+                          <IoArrowRedo />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={t("profileChrome.moreProfileOptions")}
+                          className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 p-2.5 text-zinc-100 hover:bg-zinc-800"
+                          onClick={handleProfileMoreClick}
+                        >
+                          <IoEllipsisHorizontal />
+                        </button>
+                      </div>
+                    )}
+
+                    {profileActionNotice ? (
+                      <p className="text-sm text-zinc-400">
+                        {profileActionNotice}
+                      </p>
+                    ) : null}
+
+                    <p className="text-sm text-zinc-300">
+                      {resolveProfileBio(profile?.bio) ??
+                        t("profilePage.noBio")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className={`border-b border-zinc-900 ${mobileLayout ? "mt-2" : "mt-6"}`}
+              >
+                <div className="flex flex-wrap items-end justify-between gap-4">
+                  <div
+                    className={`flex text-base ${mobileLayout ? "w-full justify-center gap-10" : "gap-1 sm:gap-6"}`}
+                    role="tablist"
                   >
-                    <span className="inline-flex items-center gap-2">
-                      <LuGrid2X2 className="text-lg" aria-hidden />
-                      <span className="hidden lg:inline">{t('profileChrome.videos')}</span>
-                    </span>
-                  </button>
-                  {isOwnProfile && repostTotal > 0 ? (
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={profileMainTab === 'reposted'}
-                    className={`hidden cursor-pointer px-2 py-3 sm:px-1 lg:inline-flex ${
-                      profileMainTab === 'reposted'
-                        ? 'border-b-2 border-white font-semibold text-zinc-100'
-                        : 'border-b-2 border-transparent text-zinc-400 hover:text-zinc-200'
-                    }`}
-                    onClick={() => setProfileMainTab('reposted')}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <LuRepeat2 className="text-base" aria-hidden />
-                      {t('profileChrome.reposts')}
-                    </span>
-                  </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={profileMainTab === "videos"}
+                      className={`cursor-pointer px-2 py-3 sm:px-1 ${
+                        profileMainTab === "videos"
+                          ? "border-b-2 border-white font-semibold text-zinc-100"
+                          : "border-b-2 border-transparent text-zinc-400 hover:text-zinc-200"
+                      }`}
+                      onClick={() => setProfileMainTab("videos")}
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        <LuGrid2X2 className="text-lg" aria-hidden />
+                        <span className="hidden lg:inline">
+                          {t("profileChrome.videos")}
+                        </span>
+                      </span>
+                    </button>
+                    {isOwnProfile && repostTotal > 0 ? (
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={profileMainTab === "reposted"}
+                        className={`hidden cursor-pointer px-2 py-3 sm:px-1 lg:inline-flex ${
+                          profileMainTab === "reposted"
+                            ? "border-b-2 border-white font-semibold text-zinc-100"
+                            : "border-b-2 border-transparent text-zinc-400 hover:text-zinc-200"
+                        }`}
+                        onClick={() => setProfileMainTab("reposted")}
+                      >
+                        <span className="inline-flex items-center gap-2">
+                          <LuRepeat2 className="text-base" aria-hidden />
+                          {t("profileChrome.reposts")}
+                        </span>
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={profileMainTab === "favorites"}
+                      className={`hidden cursor-pointer px-2 py-3 sm:px-1 lg:inline-flex ${
+                        profileMainTab === "favorites"
+                          ? "border-b-2 border-white font-semibold text-zinc-100"
+                          : "border-b-2 border-transparent text-zinc-400 hover:text-zinc-200"
+                      }`}
+                      onClick={() => setProfileMainTab("favorites")}
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        <IoBookmarkOutline className="text-lg" aria-hidden />
+                        {t("profileChrome.favorites")}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={profileMainTab === "liked"}
+                      className={`cursor-pointer px-2 py-3 sm:px-1 ${
+                        profileMainTab === "liked"
+                          ? "border-b-2 border-white font-semibold text-zinc-100"
+                          : "border-b-2 border-transparent text-zinc-400 hover:text-zinc-200"
+                      }`}
+                      onClick={() => setProfileMainTab("liked")}
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        <IoHeartOutline className="text-lg" aria-hidden />
+                        <span className="hidden lg:inline">
+                          {t("profileChrome.liked")}
+                        </span>
+                      </span>
+                    </button>
+                  </div>
+
+                  {profileMainTab === "videos" ? (
+                    <div className="mb-2 flex items-center gap-1 rounded-md bg-zinc-900 p-1 text-sm text-zinc-300">
+                      <button
+                        type="button"
+                        aria-pressed={videosSortMode === "newest"}
+                        className={`cursor-pointer rounded px-3 py-1 ${
+                          videosSortMode === "newest"
+                            ? "bg-zinc-700 font-semibold text-zinc-100"
+                            : "hover:bg-zinc-800"
+                        }`}
+                        onClick={() => setVideosSortMode("newest")}
+                      >
+                        {t("profileChrome.sortNewest")}
+                      </button>
+                      <button
+                        type="button"
+                        aria-pressed={videosSortMode === "trending"}
+                        className={`cursor-pointer rounded px-3 py-1 ${
+                          videosSortMode === "trending"
+                            ? "bg-zinc-700 font-semibold text-zinc-100"
+                            : "hover:bg-zinc-800"
+                        }`}
+                        onClick={() => setVideosSortMode("trending")}
+                      >
+                        {t("profileChrome.sortTrending")}
+                      </button>
+                      <button
+                        type="button"
+                        aria-pressed={videosSortMode === "oldest"}
+                        className={`cursor-pointer rounded px-3 py-1 ${
+                          videosSortMode === "oldest"
+                            ? "bg-zinc-700 font-semibold text-zinc-100"
+                            : "hover:bg-zinc-800"
+                        }`}
+                        onClick={() => setVideosSortMode("oldest")}
+                      >
+                        {t("profileChrome.sortOldest")}
+                      </button>
+                    </div>
                   ) : null}
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={profileMainTab === 'favorites'}
-                    className={`hidden cursor-pointer px-2 py-3 sm:px-1 lg:inline-flex ${
-                      profileMainTab === 'favorites'
-                        ? 'border-b-2 border-white font-semibold text-zinc-100'
-                        : 'border-b-2 border-transparent text-zinc-400 hover:text-zinc-200'
-                    }`}
-                    onClick={() => setProfileMainTab('favorites')}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <IoBookmarkOutline className="text-lg" aria-hidden />
-                      {t('profileChrome.favorites')}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={profileMainTab === 'liked'}
-                    className={`cursor-pointer px-2 py-3 sm:px-1 ${
-                      profileMainTab === 'liked'
-                        ? 'border-b-2 border-white font-semibold text-zinc-100'
-                        : 'border-b-2 border-transparent text-zinc-400 hover:text-zinc-200'
-                    }`}
-                    onClick={() => setProfileMainTab('liked')}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <IoHeartOutline className="text-lg" aria-hidden />
-                      <span className="hidden lg:inline">{t('profileChrome.liked')}</span>
-                    </span>
-                  </button>
                 </div>
 
-                {profileMainTab === 'videos' ? (
-                  <div className="mb-2 flex items-center gap-1 rounded-md bg-zinc-900 p-1 text-sm text-zinc-300">
-                    <button
-                      type="button"
-                      aria-pressed={videosSortMode === 'newest'}
-                      className={`cursor-pointer rounded px-3 py-1 ${
-                        videosSortMode === 'newest'
-                          ? 'bg-zinc-700 font-semibold text-zinc-100'
-                          : 'hover:bg-zinc-800'
-                      }`}
-                      onClick={() => setVideosSortMode('newest')}
-                    >
-                      {t('profileChrome.sortNewest')}
-                    </button>
-                    <button
-                      type="button"
-                      aria-pressed={videosSortMode === 'trending'}
-                      className={`cursor-pointer rounded px-3 py-1 ${
-                        videosSortMode === 'trending'
-                          ? 'bg-zinc-700 font-semibold text-zinc-100'
-                          : 'hover:bg-zinc-800'
-                      }`}
-                      onClick={() => setVideosSortMode('trending')}
-                    >
-                      {t('profileChrome.sortTrending')}
-                    </button>
-                    <button
-                      type="button"
-                      aria-pressed={videosSortMode === 'oldest'}
-                      className={`cursor-pointer rounded px-3 py-1 ${
-                        videosSortMode === 'oldest'
-                          ? 'bg-zinc-700 font-semibold text-zinc-100'
-                          : 'hover:bg-zinc-800'
-                      }`}
-                      onClick={() => setVideosSortMode('oldest')}
-                    >
-                      {t('profileChrome.sortOldest')}
-                    </button>
+                {profileMainTab === "favorites" ? (
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-t border-zinc-800/90 py-2.5">
+                    <div className="flex gap-1 rounded-lg bg-zinc-900 p-1 text-xs text-zinc-300">
+                      <button
+                        type="button"
+                        className={`cursor-pointer rounded-md px-3 py-1.5 font-semibold ${
+                          favoritesSubTab === "posts"
+                            ? "bg-zinc-700 text-zinc-100"
+                            : "hover:bg-zinc-800"
+                        }`}
+                        onClick={() => setFavoritesSubTab("posts")}
+                      >
+                        {isOwnProfile
+                          ? t("profileChrome.postsCount", {
+                              count: bookmarkTotal,
+                            })
+                          : t("profileChrome.postsZero")}
+                      </button>
+                      <button
+                        type="button"
+                        className={`cursor-pointer rounded-md px-3 py-1.5 font-semibold ${
+                          favoritesSubTab === "collections"
+                            ? "bg-zinc-700 text-zinc-100"
+                            : "hover:bg-zinc-800"
+                        }`}
+                        onClick={() => setFavoritesSubTab("collections")}
+                      >
+                        {t("profileChrome.collectionsCount", {
+                          count: collectionTotal,
+                        })}
+                      </button>
+                    </div>
+                    {isOwnProfile ? (
+                      <button
+                        type="button"
+                        className="cursor-pointer rounded-md border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-xs font-semibold text-zinc-100 hover:bg-zinc-900"
+                        onClick={() => {
+                          setNewCollectionOpen(true);
+                          setNewCollectionStep("form");
+                          setCollectionDraftName("");
+                          setCollectionDraftPublic(false);
+                          setCollectionPickIds(new Set());
+                        }}
+                      >
+                        {t("profileChrome.createCollection")}
+                      </button>
+                    ) : null}
                   </div>
                 ) : null}
               </div>
 
-              {profileMainTab === 'favorites' ? (
-                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-zinc-800/90 py-2.5">
-                  <div className="flex gap-1 rounded-lg bg-zinc-900 p-1 text-xs text-zinc-300">
-                    <button
-                      type="button"
-                      className={`cursor-pointer rounded-md px-3 py-1.5 font-semibold ${
-                        favoritesSubTab === 'posts' ? 'bg-zinc-700 text-zinc-100' : 'hover:bg-zinc-800'
-                      }`}
-                      onClick={() => setFavoritesSubTab('posts')}
-                    >
-                      {isOwnProfile ? t('profileChrome.postsCount', { count: bookmarkTotal }) : t('profileChrome.postsZero')}
-                    </button>
-                    <button
-                      type="button"
-                      className={`cursor-pointer rounded-md px-3 py-1.5 font-semibold ${
-                        favoritesSubTab === 'collections'
-                          ? 'bg-zinc-700 text-zinc-100'
-                          : 'hover:bg-zinc-800'
-                      }`}
-                      onClick={() => setFavoritesSubTab('collections')}
-                    >
-                      {t('profileChrome.collectionsCount', { count: collectionTotal })}
-                    </button>
-                  </div>
-                  {isOwnProfile ? (
-                    <button
-                      type="button"
-                      className="cursor-pointer rounded-md border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-xs font-semibold text-zinc-100 hover:bg-zinc-900"
-                      onClick={() => {
-                        setNewCollectionOpen(true)
-                        setNewCollectionStep('form')
-                        setCollectionDraftName('')
-                        setCollectionDraftPublic(false)
-                        setCollectionPickIds(new Set())
-                      }}
-                    >
-                      {t('profileChrome.createCollection')}
-                    </button>
-                  ) : null}
+              {profileMainTab === "videos" ? (
+                <div className="min-h-[320px] px-2 py-4 sm:px-4 sm:py-5">
+                  {isBannedProfile ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                      <p className="text-xl font-bold text-zinc-100 sm:text-2xl">
+                        {t("profileChrome.accountBannedTitle")}
+                      </p>
+                      <p className="mt-2 max-w-md text-sm text-zinc-400 sm:text-base">
+                        {profile?.username
+                          ? t("profileChrome.accountBannedBody", {
+                              username: profile.username,
+                            })
+                          : t("profileChrome.accountBannedBodyThis")}
+                      </p>
+                    </div>
+                  ) : isPrivateProfileLocked ? (
+                    <PrivateProfileLockedState />
+                  ) : isPublicProfileLoading ||
+                    (profileVideosLoading && profileVideos.length === 0) ? (
+                    <ProfileVideoGridSkeleton />
+                  ) : profileVideos.length > 0 ? (
+                    renderProfileVideoGrid(sortedProfileVideos)
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-14 text-center">
+                      <div className="mb-4 rounded-full bg-zinc-800 p-6 text-zinc-200">
+                        <LuGrid2X2 className="text-3xl" aria-hidden />
+                      </div>
+                      <p className="text-3xl font-bold">
+                        {isOwnProfile
+                          ? t("profilePage.emptyVideosOwnTitle")
+                          : t("profilePage.emptyVideosOtherTitle")}
+                      </p>
+                      <p className="mt-1 text-base text-zinc-400">
+                        {isOwnProfile
+                          ? t("profilePage.emptyVideosOwnDescription")
+                          : t("profilePage.emptyVideosOtherDescription")}
+                      </p>
+                    </div>
+                  )}
                 </div>
               ) : null}
-            </div>
 
-            {profileMainTab === 'videos' ? (
-              <div className="min-h-[320px] px-2 py-4 sm:px-4 sm:py-5">
-                {isBannedProfile ? (
-                  <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <p className="text-xl font-bold text-zinc-100 sm:text-2xl">{t('profileChrome.accountBannedTitle')}</p>
-                    <p className="mt-2 max-w-md text-sm text-zinc-400 sm:text-base">
-                      {profile?.username ? t('profileChrome.accountBannedBody', { username: profile.username }) : t('profileChrome.accountBannedBodyThis')}
-                    </p>
-                  </div>
-                ) : isPrivateProfileLocked ? (
-                  <PrivateProfileLockedState />
-                ) : isPublicProfileLoading || (profileVideosLoading && profileVideos.length === 0) ? (
-                  <ProfileVideoGridSkeleton />
-                ) : profileVideos.length > 0 ? (
-                  renderProfileVideoGrid(sortedProfileVideos)
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-14 text-center">
-                    <div className="mb-4 rounded-full bg-zinc-800 p-6 text-zinc-200">
-                      <LuGrid2X2 className="text-3xl" aria-hidden />
+              {profileMainTab === "favorites" ? (
+                <div className="min-h-0 flex-1 px-2 py-4 sm:px-4 sm:py-5">
+                  {!isOwnProfile ? (
+                    <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
+                      <IoBookmarkOutline
+                        className="mb-4 h-28 w-28 shrink-0 text-zinc-100"
+                        aria-hidden
+                      />
+                      <p className="text-lg font-semibold text-zinc-100">
+                        {t("profileChrome.favoritePostsTitle")}
+                      </p>
+                      <p className="mt-2 max-w-sm text-sm text-zinc-400">
+                        {t("profileChrome.favoritePostsPrivate")}
+                      </p>
                     </div>
-                    <p className="text-3xl font-bold">
-                      {isOwnProfile
-                        ? t('profilePage.emptyVideosOwnTitle')
-                        : t('profilePage.emptyVideosOtherTitle')}
-                    </p>
-                    <p className="mt-1 text-base text-zinc-400">
-                      {isOwnProfile
-                        ? t('profilePage.emptyVideosOwnDescription')
-                        : t('profilePage.emptyVideosOtherDescription')}
-                    </p>
-                  </div>
-                )}
-              </div>
-            ) : null}
-
-            {profileMainTab === 'favorites' ? (
-              <div className="min-h-0 flex-1 px-2 py-4 sm:px-4 sm:py-5">
-                {!isOwnProfile ? (
-                  <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
-                    <IoBookmarkOutline
-                      className="mb-4 h-28 w-28 shrink-0 text-zinc-100"
-                      aria-hidden
-                    />
-                    <p className="text-lg font-semibold text-zinc-100">{t('profileChrome.favoritePostsTitle')}</p>
-                    <p className="mt-2 max-w-sm text-sm text-zinc-400">
-                      {t('profileChrome.favoritePostsPrivate')}
-                    </p>
-                  </div>
-                ) : favoritesSubTab === 'posts' ? (
-                  <>
-                    {libraryError ? (
-                      <p className="py-8 text-center text-sm text-red-400">{libraryError}</p>
-                    ) : null}
-                    {bookmarkLoading && bookmarkItems.length === 0 ? (
-                      <ProfileVideoGridSkeleton />
-                    ) : null}
-                    {!bookmarkLoading && bookmarkItems.length > 0 ? (
-                      renderProfileVideoGrid(bookmarkItems)
-                    ) : !bookmarkLoading && bookmarkItems.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
-                        <IoBookmarkOutline
-                          className="mb-4 h-28 w-28 shrink-0 text-zinc-100"
-                          aria-hidden
-                        />
-                        <p className="text-lg font-semibold text-zinc-100">{t('profileChrome.favoritePostsTitle')}</p>
-                        <p className="mt-2 max-w-sm text-sm text-zinc-400">
-                          {t('profileChrome.favoritePostsEmpty')}
+                  ) : favoritesSubTab === "posts" ? (
+                    <>
+                      {libraryError ? (
+                        <p className="py-8 text-center text-sm text-red-400">
+                          {libraryError}
                         </p>
-                      </div>
-                    ) : null}
-                  </>
-                ) : (
-                  <div className="mx-auto flex max-w-sm flex-col items-center px-3 py-8 text-center sm:py-10">
-                    <IoAlbumsOutline
-                      className="mb-3 h-20 w-20 shrink-0 text-zinc-100 sm:h-24 sm:w-24"
-                      aria-hidden
-                    />
-                    <p className="text-base font-semibold text-zinc-100 sm:text-lg">{t('profileChrome.yourCollections')}</p>
-                    <p className="mt-2 text-xs leading-snug text-zinc-400 sm:text-sm sm:leading-snug">
-                      {t('profileChrome.collectionsHint')}
-                    </p>
-                  </div>
-                )}
-              </div>
-            ) : null}
+                      ) : null}
+                      {bookmarkLoading && bookmarkItems.length === 0 ? (
+                        <ProfileVideoGridSkeleton />
+                      ) : null}
+                      {!bookmarkLoading && bookmarkItems.length > 0 ? (
+                        renderProfileVideoGrid(bookmarkItems)
+                      ) : !bookmarkLoading && bookmarkItems.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
+                          <IoBookmarkOutline
+                            className="mb-4 h-28 w-28 shrink-0 text-zinc-100"
+                            aria-hidden
+                          />
+                          <p className="text-lg font-semibold text-zinc-100">
+                            {t("profileChrome.favoritePostsTitle")}
+                          </p>
+                          <p className="mt-2 max-w-sm text-sm text-zinc-400">
+                            {t("profileChrome.favoritePostsEmpty")}
+                          </p>
+                        </div>
+                      ) : null}
+                    </>
+                  ) : (
+                    <div className="mx-auto flex max-w-sm flex-col items-center px-3 py-8 text-center sm:py-10">
+                      <IoAlbumsOutline
+                        className="mb-3 h-20 w-20 shrink-0 text-zinc-100 sm:h-24 sm:w-24"
+                        aria-hidden
+                      />
+                      <p className="text-base font-semibold text-zinc-100 sm:text-lg">
+                        {t("profileChrome.yourCollections")}
+                      </p>
+                      <p className="mt-2 text-xs leading-snug text-zinc-400 sm:text-sm sm:leading-snug">
+                        {t("profileChrome.collectionsHint")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : null}
 
-            {profileMainTab === 'liked' ? (
-              <div className="min-h-0 flex-1 px-2 py-4 sm:px-4 sm:py-5">
-                {!isOwnProfile && isPrivateProfileLocked ? (
-                  <PrivateProfileLockedState />
-                ) : !isOwnProfile ? (
-                  <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
-                    <IoHeartOutline className="mb-4 h-28 w-28 shrink-0 text-zinc-100" aria-hidden />
-                    <p className="text-lg font-semibold text-zinc-100">{t('profileChrome.likedTitle')}</p>
-                    <p className="mt-2 max-w-sm text-sm text-zinc-400">
-                      {t('profileChrome.likedPrivate')}
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    {libraryError ? (
-                      <p className="py-8 text-center text-sm text-red-400">{libraryError}</p>
-                    ) : null}
-                    {likedLoading && likedItems.length === 0 ? (
-                      <ProfileVideoGridSkeleton />
-                    ) : null}
-                    {!likedLoading && likedItems.length > 0 ? (
-                      renderProfileVideoGrid(likedItems)
-                    ) : !likedLoading && likedItems.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
-                        <IoHeartOutline className="mb-4 h-28 w-28 shrink-0 text-zinc-100" aria-hidden />
-                        <p className="text-lg font-semibold text-zinc-100">{t('profileChrome.likedTitle')}</p>
-                        <p className="mt-2 max-w-sm text-sm text-zinc-400">
-                          {t('profilePage.likedEmpty')}
+              {profileMainTab === "liked" ? (
+                <div className="min-h-0 flex-1 px-2 py-4 sm:px-4 sm:py-5">
+                  {!isOwnProfile && isPrivateProfileLocked ? (
+                    <PrivateProfileLockedState />
+                  ) : !isOwnProfile ? (
+                    <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
+                      <IoHeartOutline
+                        className="mb-4 h-28 w-28 shrink-0 text-zinc-100"
+                        aria-hidden
+                      />
+                      <p className="text-lg font-semibold text-zinc-100">
+                        {t("profileChrome.likedTitle")}
+                      </p>
+                      <p className="mt-2 max-w-sm text-sm text-zinc-400">
+                        {t("profileChrome.likedPrivate")}
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {libraryError ? (
+                        <p className="py-8 text-center text-sm text-red-400">
+                          {libraryError}
                         </p>
-                      </div>
-                    ) : null}
-                  </>
-                )}
-              </div>
-            ) : null}
+                      ) : null}
+                      {likedLoading && likedItems.length === 0 ? (
+                        <ProfileVideoGridSkeleton />
+                      ) : null}
+                      {!likedLoading && likedItems.length > 0 ? (
+                        renderProfileVideoGrid(likedItems)
+                      ) : !likedLoading && likedItems.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
+                          <IoHeartOutline
+                            className="mb-4 h-28 w-28 shrink-0 text-zinc-100"
+                            aria-hidden
+                          />
+                          <p className="text-lg font-semibold text-zinc-100">
+                            {t("profileChrome.likedTitle")}
+                          </p>
+                          <p className="mt-2 max-w-sm text-sm text-zinc-400">
+                            {t("profilePage.likedEmpty")}
+                          </p>
+                        </div>
+                      ) : null}
+                    </>
+                  )}
+                </div>
+              ) : null}
 
-            {profileMainTab === 'reposted' ? (
-              <div className="min-h-0 flex-1 px-2 py-4 sm:px-4 sm:py-5">
-                {!isOwnProfile ? (
-                  <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
-                    <LuRepeat2 className="mb-4 h-28 w-28 shrink-0 text-zinc-100" aria-hidden />
-                    <p className="text-lg font-semibold text-zinc-100">{t('profileChrome.reposts')}</p>
-                    <p className="mt-2 max-w-sm text-sm text-zinc-400">
-                      {t('profileChrome.repostsPrivate')}
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    {libraryError ? (
-                      <p className="py-8 text-center text-sm text-red-400">{libraryError}</p>
-                    ) : null}
-                    {repostLoading && repostItems.length === 0 ? (
-                      <ProfileVideoGridSkeleton />
-                    ) : null}
-                    {!repostLoading && repostItems.length > 0 ? (
-                      renderProfileVideoGrid(repostItems)
-                    ) : !repostLoading && repostItems.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
-                        <LuRepeat2 className="mb-4 h-28 w-28 shrink-0 text-zinc-100" aria-hidden />
-                        <p className="text-lg font-semibold text-zinc-100">{t('profileChrome.reposts')}</p>
-                        <p className="mt-2 max-w-sm text-sm text-zinc-400">
-                          {t('profileChrome.repostsEmpty')}
+              {profileMainTab === "reposted" ? (
+                <div className="min-h-0 flex-1 px-2 py-4 sm:px-4 sm:py-5">
+                  {!isOwnProfile ? (
+                    <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
+                      <LuRepeat2
+                        className="mb-4 h-28 w-28 shrink-0 text-zinc-100"
+                        aria-hidden
+                      />
+                      <p className="text-lg font-semibold text-zinc-100">
+                        {t("profileChrome.reposts")}
+                      </p>
+                      <p className="mt-2 max-w-sm text-sm text-zinc-400">
+                        {t("profileChrome.repostsPrivate")}
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {libraryError ? (
+                        <p className="py-8 text-center text-sm text-red-400">
+                          {libraryError}
                         </p>
-                      </div>
-                    ) : null}
-                  </>
-                )}
-              </div>
-            ) : null}
-
-          </section>
-        )}
+                      ) : null}
+                      {repostLoading && repostItems.length === 0 ? (
+                        <ProfileVideoGridSkeleton />
+                      ) : null}
+                      {!repostLoading && repostItems.length > 0 ? (
+                        renderProfileVideoGrid(repostItems)
+                      ) : !repostLoading && repostItems.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
+                          <LuRepeat2
+                            className="mb-4 h-28 w-28 shrink-0 text-zinc-100"
+                            aria-hidden
+                          />
+                          <p className="text-lg font-semibold text-zinc-100">
+                            {t("profileChrome.reposts")}
+                          </p>
+                          <p className="mt-2 max-w-sm text-sm text-zinc-400">
+                            {t("profileChrome.repostsEmpty")}
+                          </p>
+                        </div>
+                      ) : null}
+                    </>
+                  )}
+                </div>
+              ) : null}
+            </section>
+          )}
         </div>
 
         {lastWatchedInGrid && lastWatchedOffscreen ? (
@@ -2154,10 +2330,10 @@ export function ProfilePage() {
             type="button"
             onClick={scrollToLastWatched}
             className="fixed bottom-19 right-4 z-100 inline-flex cursor-pointer items-center gap-1 rounded-full bg-[#fe2c55] px-3 py-3.5 text-[13px] font-semibold leading-none text-white shadow-lg shadow-black/40 transition hover:bg-[#e0264b] active:scale-[0.98] lg:bottom-8 lg:right-8 lg:gap-1.5 lg:px-4 lg:py-2.5 lg:text-sm"
-            aria-label={t('profileChrome.scrollToLastWatched')}
+            aria-label={t("profileChrome.scrollToLastWatched")}
           >
-            {t('profileChrome.justWatched')}
-            {lastWatchedScrollDir === 'down' ? (
+            {t("profileChrome.justWatched")}
+            {lastWatchedScrollDir === "down" ? (
               <IoChevronDown className="text-base" aria-hidden />
             ) : (
               <IoChevronUp className="text-base" aria-hidden />
@@ -2189,7 +2365,7 @@ export function ProfilePage() {
           onClose={() => setProfileEmbedOpen(false)}
           profile={{
             ...profile,
-            bio: resolveProfileBio(profile?.bio) ?? '',
+            bio: resolveProfileBio(profile?.bio) ?? "",
           }}
           videos={profileVideos}
         />
@@ -2197,10 +2373,12 @@ export function ProfilePage() {
           <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
             <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl">
               <div className="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
-                <h3 className="text-2xl font-semibold">{t('profileChrome.editProfile')}</h3>
+                <h3 className="text-2xl font-semibold">
+                  {t("profileChrome.editProfile")}
+                </h3>
                 <button
                   type="button"
-                  aria-label={t('common.close')}
+                  aria-label={t("common.close")}
                   className="cursor-pointer rounded-full p-2 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
                   onClick={() => setIsEditModalOpen(false)}
                 >
@@ -2208,22 +2386,31 @@ export function ProfilePage() {
                 </button>
               </div>
 
-              <form className="space-y-0 px-5 py-4" onSubmit={handleSubmitProfileEdit}>
+              <form
+                className="space-y-0 px-5 py-4"
+                onSubmit={handleSubmitProfileEdit}
+              >
                 <div className="border-b border-zinc-800 pb-4">
-                  <div className="mb-3 text-sm font-semibold text-zinc-100">{t('profileChrome.profilePhoto')}</div>
+                  <div className="mb-3 text-sm font-semibold text-zinc-100">
+                    {t("profileChrome.profilePhoto")}
+                  </div>
                   <div className="flex justify-center">
                     <button
                       type="button"
                       onClick={handlePickAvatarFromDevice}
                       className="group relative cursor-pointer rounded-full"
-                      aria-label={t('profileChrome.changeProfilePhoto')}
+                      aria-label={t("profileChrome.changeProfilePhoto")}
                     >
                       <img
                         className="h-16 w-16 rounded-full object-cover ring-2 ring-zinc-700"
-                        src={editForm.avatarUrl || profile?.avatarUrl || DEFAULT_USER_AVATAR_URL}
-                        alt={t('profileChrome.profilePhotoAlt')}
+                        src={
+                          editForm.avatarUrl ||
+                          profile?.avatarUrl ||
+                          DEFAULT_USER_AVATAR_URL
+                        }
+                        alt={t("profileChrome.profilePhotoAlt")}
                         onError={(e) => {
-                          e.currentTarget.src = DEFAULT_USER_AVATAR_URL
+                          e.currentTarget.src = DEFAULT_USER_AVATAR_URL;
                         }}
                       />
                       <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-800 text-zinc-100 ring-1 ring-zinc-600 group-hover:bg-zinc-700">
@@ -2241,7 +2428,10 @@ export function ProfilePage() {
                 </div>
 
                 <div className="grid grid-cols-[96px_1fr] items-start gap-3 border-b border-zinc-800 py-4">
-                  <label htmlFor="edit-profile-username" className="pt-2 text-sm font-semibold text-zinc-100">
+                  <label
+                    htmlFor="edit-profile-username"
+                    className="pt-2 text-sm font-semibold text-zinc-100"
+                  >
                     Vibely ID
                   </label>
                   <div className="space-y-2">
@@ -2250,7 +2440,10 @@ export function ProfilePage() {
                       className="w-full rounded bg-zinc-900 px-3 py-2 text-zinc-100 outline-none ring-red-500/30 placeholder:text-zinc-500 focus:ring-2"
                       value={editForm.username}
                       onChange={(e) =>
-                        setEditForm((prev) => ({ ...prev, username: e.target.value.replace(/\s+/g, '') }))
+                        setEditForm((prev) => ({
+                          ...prev,
+                          username: e.target.value.replace(/\s+/g, ""),
+                        }))
                       }
                       placeholder="vibely.id"
                       required
@@ -2258,62 +2451,90 @@ export function ProfilePage() {
                       maxLength={24}
                     />
                     {usernameValidationMessage ? (
-                      <p className="text-xs text-red-400">{usernameValidationMessage}</p>
+                      <p className="text-xs text-red-400">
+                        {usernameValidationMessage}
+                      </p>
                     ) : null}
                     <p className="text-xs text-zinc-400">
-                      {typeof globalThis !== 'undefined' && globalThis.window?.location?.origin
+                      {typeof globalThis !== "undefined" &&
+                      globalThis.window?.location?.origin
                         ? globalThis.window.location.origin
-                        : 'http://localhost:5173'}
-                      /@{editForm.username || 'vibely.id'}
+                        : "http://localhost:5173"}
+                      /@{editForm.username || "vibely.id"}
                     </p>
                     <p className="text-xs leading-relaxed text-zinc-500">
-                      {t('profileChrome.usernameHint')}
+                      {t("profileChrome.usernameHint")}
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-[96px_1fr] items-start gap-3 border-b border-zinc-800 py-4">
-                  <label htmlFor="edit-profile-display-name" className="pt-2 text-sm font-semibold text-zinc-100">
-                    {t('profileChrome.nameLabel')}
+                  <label
+                    htmlFor="edit-profile-display-name"
+                    className="pt-2 text-sm font-semibold text-zinc-100"
+                  >
+                    {t("profileChrome.nameLabel")}
                   </label>
                   <div className="space-y-2">
                     <input
                       id="edit-profile-display-name"
                       className="w-full rounded bg-zinc-900 px-3 py-2 text-zinc-100 outline-none ring-red-500/30 placeholder:text-zinc-500 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60"
                       value={editForm.displayName}
-                      onChange={(e) => setEditForm((prev) => ({ ...prev, displayName: e.target.value }))}
-                      placeholder={t('profileChrome.displayName')}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({
+                          ...prev,
+                          displayName: e.target.value,
+                        }))
+                      }
+                      placeholder={t("profileChrome.displayName")}
                       required
                       maxLength={80}
                       disabled={profile?.canChangeDisplayName === false}
                       readOnly={profile?.canChangeDisplayName === false}
                     />
                     <p className="text-xs text-zinc-500">
-                      {profile?.canChangeDisplayName === false && profile?.displayNameChangeAvailableAt
-                        ? t('profileChrome.displayNameCooldownUntil', { date: formatVietnameseDate(profile.displayNameChangeAvailableAt) })
-                        : t('profileChrome.displayNameCooldown')}
+                      {profile?.canChangeDisplayName === false &&
+                      profile?.displayNameChangeAvailableAt
+                        ? t("profileChrome.displayNameCooldownUntil", {
+                            date: formatVietnameseDate(
+                              profile.displayNameChangeAvailableAt,
+                            ),
+                          })
+                        : t("profileChrome.displayNameCooldown")}
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-[96px_1fr] items-start gap-3 py-4">
-                  <label htmlFor="edit-profile-bio" className="pt-2 text-sm font-semibold text-zinc-100">
-                    {t('profileChrome.bio')}
+                  <label
+                    htmlFor="edit-profile-bio"
+                    className="pt-2 text-sm font-semibold text-zinc-100"
+                  >
+                    {t("profileChrome.bio")}
                   </label>
                   <div className="space-y-2">
                     <textarea
                       id="edit-profile-bio"
                       className="h-24 w-full resize-none rounded bg-zinc-900 px-3 py-2 text-zinc-100 outline-none ring-red-500/30 placeholder:text-zinc-500 focus:ring-2"
                       value={editForm.bio}
-                      onChange={(e) => setEditForm((prev) => ({ ...prev, bio: e.target.value.slice(0, 300) }))}
-                      placeholder={t('profileChrome.bio')}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({
+                          ...prev,
+                          bio: e.target.value.slice(0, 300),
+                        }))
+                      }
+                      placeholder={t("profileChrome.bio")}
                       maxLength={300}
                     />
-                    <p className="text-xs text-zinc-500">{bioDraftLength}/300</p>
+                    <p className="text-xs text-zinc-500">
+                      {bioDraftLength}/300
+                    </p>
                   </div>
                 </div>
 
-                {editError ? <p className="text-sm text-red-400">{editError}</p> : null}
+                {editError ? (
+                  <p className="text-sm text-red-400">{editError}</p>
+                ) : null}
 
                 <div className="flex justify-end gap-2 border-t border-zinc-800 pt-3">
                   <button
@@ -2321,17 +2542,19 @@ export function ProfilePage() {
                     className="cursor-pointer rounded-md bg-zinc-800 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-700"
                     onClick={() => setIsEditModalOpen(false)}
                     disabled={savingEdit}
-                  >{t('common.cancel')}</button>
+                  >
+                    {t("common.cancel")}
+                  </button>
                   <button
                     type="submit"
                     className={`rounded-md px-5 py-2 text-sm font-semibold transition ${
                       canSubmitEditForm
-                        ? 'cursor-pointer bg-red-500 text-white hover:bg-red-400'
-                        : 'cursor-not-allowed bg-zinc-900 text-zinc-500'
+                        ? "cursor-pointer bg-red-500 text-white hover:bg-red-400"
+                        : "cursor-not-allowed bg-zinc-900 text-zinc-500"
                     }`}
                     disabled={!canSubmitEditForm}
                   >
-                    {savingEdit ? t('profileChrome.saving') : t('common.save')}
+                    {savingEdit ? t("profileChrome.saving") : t("common.save")}
                   </button>
                 </div>
               </form>
@@ -2349,11 +2572,13 @@ export function ProfilePage() {
                   onClick={closeAvatarEditor}
                 >
                   <IoArrowBack className="text-xl" />
-                  <span className="text-2xl font-semibold">{t('profileChrome.editPhoto')}</span>
+                  <span className="text-2xl font-semibold">
+                    {t("profileChrome.editPhoto")}
+                  </span>
                 </button>
                 <button
                   type="button"
-                  aria-label={t('common.close')}
+                  aria-label={t("common.close")}
                   className="cursor-pointer rounded-full p-2 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 disabled:opacity-50"
                   disabled={avatarEditorBusy}
                   onClick={closeAvatarEditor}
@@ -2381,47 +2606,52 @@ export function ProfilePage() {
                             width: avatarPreviewLayout.width,
                             height: avatarPreviewLayout.height,
                             transform: avatarPreviewLayout.transform,
-                            transformOrigin: '0 0',
+                            transformOrigin: "0 0",
                           }
                         : {
                             inset: 0,
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
                           }
                     }
                     draggable={false}
                     decoding="sync"
                     aria-hidden
                     onLoad={(event) => {
-                      const el = event.currentTarget
-                      const w = el.naturalWidth || 0
-                      const h = el.naturalHeight || 0
-                      setAvatarNaturalSize({ w, h })
-                      setAvatarLowResWarn(Math.min(w, h) > 0 && Math.min(w, h) < AVATAR_LOW_RES_PX)
+                      const el = event.currentTarget;
+                      const w = el.naturalWidth || 0;
+                      const h = el.naturalHeight || 0;
+                      setAvatarNaturalSize({ w, h });
+                      setAvatarLowResWarn(
+                        Math.min(w, h) > 0 &&
+                          Math.min(w, h) < AVATAR_LOW_RES_PX,
+                      );
                     }}
                   />
                   <div
                     className="pointer-events-none absolute inset-0 rounded-full"
                     style={{
                       // TikTok-style: dim outside only — no inset ring between in/out.
-                      boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.55)',
+                      boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.55)",
                     }}
                     aria-hidden
                   />
                 </div>
 
                 <p className="text-center text-xs text-zinc-500">
-                  {t('profilePage.cropHint')}
+                  {t("profilePage.cropHint")}
                 </p>
                 {avatarLowResWarn ? (
                   <p className="text-center text-xs text-amber-400">
-                    {t('profileChrome.avatarLowResWarning')}
+                    {t("profileChrome.avatarLowResWarning")}
                   </p>
                 ) : null}
 
                 <div className="mx-auto flex w-full max-w-[520px] items-center gap-4 px-2">
-                  <span className="w-24 whitespace-nowrap text-sm text-zinc-200">{t('profilePage.zoom')}</span>
+                  <span className="w-24 whitespace-nowrap text-sm text-zinc-200">
+                    {t("profilePage.zoom")}
+                  </span>
                   <input
                     type="range"
                     min="1"
@@ -2429,7 +2659,9 @@ export function ProfilePage() {
                     step="0.01"
                     value={avatarEditorZoom}
                     disabled={avatarEditorBusy}
-                    onChange={(event) => setAvatarEditorZoom(Number(event.target.value))}
+                    onChange={(event) =>
+                      setAvatarEditorZoom(Number(event.target.value))
+                    }
                     className="h-1 w-full cursor-pointer accent-red-500 disabled:opacity-50"
                   />
                 </div>
@@ -2441,14 +2673,18 @@ export function ProfilePage() {
                   className="cursor-pointer rounded-md bg-zinc-800 px-6 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-700 disabled:opacity-50"
                   disabled={avatarEditorBusy}
                   onClick={closeAvatarEditor}
-                >{t('common.cancel')}</button>
+                >
+                  {t("common.cancel")}
+                </button>
                 <button
                   type="button"
                   className="cursor-pointer rounded-md bg-red-500 px-6 py-2 text-sm font-semibold text-white hover:bg-red-400 disabled:cursor-wait disabled:opacity-70"
                   disabled={avatarEditorBusy}
                   onClick={applyAvatarEditor}
                 >
-                  {avatarEditorBusy ? t('profileChrome.uploading') : t('profileChrome.apply')}
+                  {avatarEditorBusy
+                    ? t("profileChrome.uploading")
+                    : t("profileChrome.apply")}
                 </button>
               </div>
             </div>
@@ -2460,7 +2696,7 @@ export function ProfilePage() {
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6"
             role="presentation"
             onMouseDown={(e) => {
-              if (e.target === e.currentTarget) closeNewCollectionModal()
+              if (e.target === e.currentTarget) closeNewCollectionModal();
             }}
           >
             <div
@@ -2468,22 +2704,24 @@ export function ProfilePage() {
               onMouseDown={(e) => e.stopPropagation()}
             >
               <div className="relative flex shrink-0 items-center justify-center border-b border-zinc-800 px-4 py-3">
-                {newCollectionStep === 'pick' ? (
+                {newCollectionStep === "pick" ? (
                   <button
                     type="button"
-                    aria-label={t('common.back')}
+                    aria-label={t("common.back")}
                     className="absolute left-2 rounded-full p-2 text-zinc-200 hover:bg-zinc-800"
-                    onClick={() => setNewCollectionStep('form')}
+                    onClick={() => setNewCollectionStep("form")}
                   >
                     <IoArrowBack className="text-xl" aria-hidden />
                   </button>
                 ) : null}
                 <h2 className="text-center text-lg font-semibold text-zinc-100">
-                  {newCollectionStep === 'form' ? t('profileChrome.newCollection') : t('profileChrome.pickVideos')}
+                  {newCollectionStep === "form"
+                    ? t("profileChrome.newCollection")
+                    : t("profileChrome.pickVideos")}
                 </h2>
                 <button
                   type="button"
-                  aria-label={t('common.close')}
+                  aria-label={t("common.close")}
                   className="absolute right-2 rounded-full p-2 text-zinc-200 hover:bg-zinc-800"
                   onClick={closeNewCollectionModal}
                 >
@@ -2491,11 +2729,20 @@ export function ProfilePage() {
                 </button>
               </div>
 
-              {newCollectionStep === 'form' ? (
+              {newCollectionStep === "form" ? (
                 <div className="flex flex-col gap-4 px-4 pb-5 pt-3">
                   <div>
-                    <label htmlFor="new-collection-name" className="text-sm font-medium text-zinc-100">
-                      {t('profileChrome.collectionNameLabel', { current: Math.min(collectionDraftName.length, COLLECTION_NAME_MAX), max: COLLECTION_NAME_MAX })}
+                    <label
+                      htmlFor="new-collection-name"
+                      className="text-sm font-medium text-zinc-100"
+                    >
+                      {t("profileChrome.collectionNameLabel", {
+                        current: Math.min(
+                          collectionDraftName.length,
+                          COLLECTION_NAME_MAX,
+                        ),
+                        max: COLLECTION_NAME_MAX,
+                      })}
                     </label>
                     <input
                       id="new-collection-name"
@@ -2503,17 +2750,21 @@ export function ProfilePage() {
                       maxLength={COLLECTION_NAME_MAX}
                       value={collectionDraftName}
                       onChange={(e) =>
-                        setCollectionDraftName(e.target.value.slice(0, COLLECTION_NAME_MAX))
+                        setCollectionDraftName(
+                          e.target.value.slice(0, COLLECTION_NAME_MAX),
+                        )
                       }
-                      placeholder={t('profileChrome.collectionName')}
+                      placeholder={t("profileChrome.collectionName")}
                       className="mt-1.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-zinc-500"
                     />
                   </div>
                   <div className="flex items-start justify-between gap-3 border-t border-zinc-800/80 pt-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-zinc-100">{t('profileChrome.makePublic')}</p>
+                      <p className="text-sm font-medium text-zinc-100">
+                        {t("profileChrome.makePublic")}
+                      </p>
                       <p className="mt-1 text-xs leading-relaxed text-zinc-400">
-                        {t('profileChrome.makePublicHint')}
+                        {t("profileChrome.makePublicHint")}
                       </p>
                     </div>
                     <button
@@ -2522,12 +2773,14 @@ export function ProfilePage() {
                       aria-checked={collectionDraftPublic}
                       onClick={() => setCollectionDraftPublic((p) => !p)}
                       className={`relative mt-0.5 h-7 w-12 shrink-0 rounded-full transition-colors ${
-                        collectionDraftPublic ? 'bg-rose-600' : 'bg-zinc-600'
+                        collectionDraftPublic ? "bg-rose-600" : "bg-zinc-600"
                       }`}
                     >
                       <span
                         className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                          collectionDraftPublic ? 'translate-x-5' : 'translate-x-0'
+                          collectionDraftPublic
+                            ? "translate-x-5"
+                            : "translate-x-0"
                         }`}
                       />
                     </button>
@@ -2535,10 +2788,10 @@ export function ProfilePage() {
                   <button
                     type="button"
                     disabled={!collectionDraftName.trim() || bookmarkLoading}
-                    onClick={() => setNewCollectionStep('pick')}
+                    onClick={() => setNewCollectionStep("pick")}
                     className="mt-1 w-full rounded-xl py-3 text-sm font-semibold text-white transition enabled:cursor-pointer enabled:bg-[#FE2C55] enabled:hover:bg-[#f02850] disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {t('profilePage.next')}
+                    {t("profilePage.next")}
                   </button>
                 </div>
               ) : (
@@ -2550,12 +2803,15 @@ export function ProfilePage() {
                   ) : bookmarkItems.length === 0 ? (
                     <div className="flex flex-1 flex-col px-4 pb-4 pt-2">
                       <div className="flex flex-1 flex-col items-center justify-center px-2 py-8 text-center">
-                        <IoBookmarkOutline className="mb-4 h-24 w-24 shrink-0 text-zinc-100" aria-hidden />
+                        <IoBookmarkOutline
+                          className="mb-4 h-24 w-24 shrink-0 text-zinc-100"
+                          aria-hidden
+                        />
                         <p className="text-lg font-semibold text-zinc-100">
-                          {t('profilePage.noFavoriteVideos')}
+                          {t("profilePage.noFavoriteVideos")}
                         </p>
                         <p className="mt-2 max-w-sm text-sm text-zinc-400">
-                          {t('profilePage.allFavoritesInCollection')}
+                          {t("profilePage.allFavoritesInCollection")}
                         </p>
                       </div>
                       <button
@@ -2570,17 +2826,18 @@ export function ProfilePage() {
                     <div className="flex flex-1 flex-col overflow-hidden px-3 pb-3 pt-2">
                       <ul className="grid max-h-[min(360px,45vh)] grid-cols-3 gap-2 overflow-y-auto sm:grid-cols-4">
                         {bookmarkItems.map((v) => {
-                          const selected = collectionPickIds.has(v.publicId)
+                          const selected = collectionPickIds.has(v.publicId);
                           return (
                             <li key={v.publicId}>
                               <button
                                 type="button"
                                 onClick={() =>
                                   setCollectionPickIds((prev) => {
-                                    const next = new Set(prev)
-                                    if (next.has(v.publicId)) next.delete(v.publicId)
-                                    else next.add(v.publicId)
-                                    return next
+                                    const next = new Set(prev);
+                                    if (next.has(v.publicId))
+                                      next.delete(v.publicId);
+                                    else next.add(v.publicId);
+                                    return next;
                                   })
                                 }
                                 className="relative block w-full cursor-pointer text-left"
@@ -2590,16 +2847,21 @@ export function ProfilePage() {
                                   <span
                                     className={`absolute bottom-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 ${
                                       selected
-                                        ? 'border-white bg-rose-600 text-white'
-                                        : 'border-white/90 bg-black/45'
+                                        ? "border-white bg-rose-600 text-white"
+                                        : "border-white/90 bg-black/45"
                                     }`}
                                   >
-                                    {selected ? <IoCheckmark className="text-xs" aria-hidden /> : null}
+                                    {selected ? (
+                                      <IoCheckmark
+                                        className="text-xs"
+                                        aria-hidden
+                                      />
+                                    ) : null}
                                   </span>
                                 </div>
                               </button>
                             </li>
-                          )
+                          );
                         })}
                       </ul>
                       <button
@@ -2621,22 +2883,26 @@ export function ProfilePage() {
           <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/55 px-4">
             <div className="w-full max-w-sm rounded-xl bg-zinc-800 p-6 text-center shadow-2xl">
               <p className="text-2xl font-bold leading-snug">
-                {t('common.logoutConfirm')}
+                {t("common.logoutConfirm")}
               </p>
               <div className="mt-5 grid grid-cols-2 gap-3 text-base">
                 <button
                   type="button"
                   className="rounded-md bg-zinc-700 py-2 font-semibold text-zinc-200 hover:bg-zinc-600"
                   onClick={() => setShowLogoutConfirm(false)}
-                >{t('common.cancel')}</button>
+                >
+                  {t("common.cancel")}
+                </button>
                 <button
                   type="button"
                   className="rounded-md border border-red-500 py-2 font-semibold text-red-400 hover:bg-red-500/10"
                   onClick={() => {
-                    setShowLogoutConfirm(false)
-                    logout()
+                    setShowLogoutConfirm(false);
+                    logout();
                   }}
-                >{t('common.logout')}</button>
+                >
+                  {t("common.logout")}
+                </button>
               </div>
             </div>
           </div>
@@ -2654,5 +2920,5 @@ export function ProfilePage() {
         </div>
       ) : null}
     </section>
-  )
+  );
 }

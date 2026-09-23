@@ -2831,5 +2831,48 @@
     "termsLink": "Ketentuan Layanan",
     "privacyLink": "Kebijakan Privasi",
     "copyright": "© {{year}} Vibely"
+  },
+  "promotePage": {
+    "pageTitle": "Promote | Vibely",
+    "create": "Create",
+    "dashboard": "Dashboard",
+    "mine": "Mine",
+    "chooseGoal": "Choose your goal",
+    "tabs": {
+      "boostAccount": "Boost account",
+      "increaseSales": "Increase sales",
+      "attractLeads": "Attract leads"
+    },
+    "goals": {
+      "likesComments": "More likes and comments",
+      "videoViews": "More video views",
+      "followers": "More followers",
+      "profileViews": "More profile views",
+      "websiteTraffic": "More website traffic",
+      "productSales": "More product sales",
+      "leadForm": "More lead form submissions",
+      "messageLeads": "More message leads"
+    },
+    "noVideoTitle": "No video yet",
+    "noVideoHint": "...time to create some content!",
+    "uploadContent": "Upload content",
+    "customPromote": "Custom promotion",
+    "estimatesHint": "Shown results are estimates",
+    "estimateRange": "{{min}} – {{max}}",
+    "budgetDuration": "Set budget and duration",
+    "budget": "Budget",
+    "budgetTip": "This budget level is likely to achieve the desired results",
+    "duration": "Duration",
+    "durationHours": "{{count}} hours",
+    "termsTitle": "Terms",
+    "termsP1": "By continuing, you agree to Vibely’s Promote Program and Payment Terms, and confirm that your ads comply with Vibely’s Advertising Policies.",
+    "termsP2": "You also confirm that you will not run political, government, or election ads that violate Vibely’s political advertising policies.",
+    "viewPriceDetails": "View price details ˄",
+    "hidePriceDetails": "Hide price details ˅",
+    "start": "Start",
+    "startPromote": "Start promoting",
+    "emptyCampaigns": "You don’t have any promotions yet.",
+    "programTerms": "Vibely Promote Program and Payment Terms",
+    "adsPolicy": "Advertising Policy"
   }
 }

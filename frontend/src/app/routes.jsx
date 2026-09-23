@@ -47,6 +47,7 @@ const ExplorePage = lazyNamed(() => import('@/features/explore/pages/ExplorePage
 const ExploreViewerPage = lazyNamed(() => import('@/features/explore/pages/ExploreViewerPage.jsx'), 'ExploreViewerPage')
 const LivePage = lazyNamed(() => import('@/features/live/pages/LivePage.jsx'), 'LivePage')
 const SupportPage = lazyNamed(() => import('@/features/support/pages/SupportPage.jsx'), 'SupportPage')
+const PromotePage = lazyNamed(() => import('@/features/promote/pages/PromotePage.jsx'), 'PromotePage')
 const NotFoundPage = lazyNamed(() => import('@/features/support/pages/NotFoundPage.jsx'), 'NotFoundPage')
 const SearchResultsPage = lazyNamed(() => import('@/features/search/pages/SearchResultsPage.jsx'), 'SearchResultsPage')
 const AdminUsersPage = lazyNamed(() => import('@/features/admin/pages/AdminUsersPage.jsx'), 'AdminUsersPage')
@@ -96,6 +97,7 @@ export function GuestRoutes() {
       <Route path="/explore" element={<ExplorePage />} />
       <Route path="/live" element={<LivePage />} />
       <Route path="/support" element={<SupportPage />} />
+      <Route path="/promote" element={<RedirectToHomeLogin />} />
       <Route path="/explore/view/:publicId" element={<ExploreViewerPage />} />
       <Route path="/search" element={<SearchResultsPage />} />
       <Route path="/tag/:tag" element={<HashtagPage />} />
@@ -224,6 +226,10 @@ export function AuthenticatedRoutes({ user, isAdmin }) {
         element={<UserOnlyRoute user={user}><LivePage /></UserOnlyRoute>}
       />
       <Route path="/support" element={<SupportPage />} />
+      <Route
+        path="/promote"
+        element={<UserOnlyRoute user={user}><PromotePage /></UserOnlyRoute>}
+      />
       <Route
         path="/search"
         element={<UserOnlyRoute user={user}><SearchResultsPage /></UserOnlyRoute>}

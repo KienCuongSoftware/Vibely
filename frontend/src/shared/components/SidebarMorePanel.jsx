@@ -268,7 +268,14 @@ export function SidebarMorePanel({ onClose, token, onLogout, showTools = true })
                   <MoreRow
                     icon={IoTrendingUpOutline}
                     label={t("moreMenu.promotePost")}
-                    onClick={() => {}}
+                    onClick={() => {
+                      handleClose();
+                      if (!token) {
+                        navigate("/login");
+                        return;
+                      }
+                      navigate("/promote");
+                    }}
                   />
                   <MoreRow
                     icon={IoRadioOutline}
