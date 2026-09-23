@@ -552,7 +552,7 @@
     "liveTools": "LIVE-værktøjer",
     "getCoins": "Få mønter",
     "shop": "Sælg på Vibely Shop",
-    "support": "Support"
+    "support": "Hjälpcenter"
   },
   "explorePage": {
     "title": "Udforsk",
@@ -724,6 +724,7 @@
     "updateSuccess": "Profil erfolgreich aktualisiert",
     "pickValidImage": "Bitte wähle eine gültige Bilddatei",
     "avatarMaxSize": "Avatar darf höchstens 5 MB groß sein",
+    "avatarLowResWarning": "Detta foto har låg upplösning — din avatar kan se suddig ut. Använd ett originalfoto (minst ~720 px).",
     "readImageFailed": "Bild konnte nicht gelesen werden. Bitte erneut versuchen",
     "processImageFailed": "Bild konnte nicht verarbeitet werden. Bitte erneut versuchen",
     "uploadAvatarFailed": "Bild konnte nicht hochgeladen werden. Bitte erneut versuchen.",
@@ -1116,6 +1117,7 @@
     "profileUpdated": "Profil aktualisiert",
     "pickValidImage": "Bitte wähle eine gültige Bilddatei",
     "avatarMaxSize": "Avatarbild muss 5 MB oder kleiner sein",
+    "avatarLowResWarning": "Detta foto har låg upplösning — din avatar kan se suddig ut. Använd ett originalfoto (minst ~720 px).",
     "readImageFailed": "Bild konnte nicht gelesen werden. Bitte erneut versuchen",
     "processImageFailed": "Bild konnte nicht verarbeitet werden. Bitte erneut versuchen",
     "uploadImageFailed": "Bild konnte nicht hochgeladen werden. Bitte erneut versuchen.",

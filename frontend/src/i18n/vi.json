@@ -244,7 +244,7 @@
     "liveTools": "Công cụ phát LIVE",
     "getCoins": "Nhận Xu",
     "shop": "Bán hàng trên Vibely Shop",
-    "support": "Hỗ trợ"
+    "support": "Trung tâm trợ giúp"
   },
   "explorePage": {
     "title": "Khám phá",
@@ -503,6 +503,7 @@
     "updateSuccess": "Cập nhật hồ sơ thành công",
     "pickValidImage": "Vui lòng chọn file ảnh hợp lệ",
     "avatarMaxSize": "Ảnh đại diện tối đa 15MB",
+    "avatarLowResWarning": "Ảnh gốc độ phân giải thấp — avatar có thể bị mờ. Hãy chọn ảnh gốc từ máy ảnh (tối thiểu ~720px).",
     "readImageFailed": "Không thể đọc ảnh, vui lòng thử lại",
     "processImageFailed": "Không thể xử lý ảnh, vui lòng thử lại",
     "uploadAvatarFailed": "Không tải được ảnh lên. Vui lòng thử lại.",

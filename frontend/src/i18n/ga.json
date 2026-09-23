@@ -552,7 +552,7 @@
     "liveTools": "LIVE tools",
     "getCoins": "Get Coins",
     "shop": "Sell on Vibely Shop",
-    "support": "Support"
+    "support": "Help center"
   },
   "explorePage": {
     "title": "Explore",
@@ -724,6 +724,7 @@
     "updateSuccess": "Profile updated successfully",
     "pickValidImage": "Please choose a valid image file",
     "avatarMaxSize": "Avatar must be at most 5MB",
+    "avatarLowResWarning": "This photo is low resolution — your avatar may look soft. Use an original camera photo (at least ~720px).",
     "readImageFailed": "Could not read the image. Please try again",
     "processImageFailed": "Could not process the image. Please try again",
     "uploadAvatarFailed": "Could not upload the image. Please try again.",
@@ -1116,6 +1117,7 @@
     "profileUpdated": "Profile updated",
     "pickValidImage": "Please choose a valid image file",
     "avatarMaxSize": "Avatar image must be 5MB or smaller",
+    "avatarLowResWarning": "This photo is low resolution — your avatar may look soft. Use an original camera photo (at least ~720px).",
     "readImageFailed": "Couldn't read the image. Please try again",
     "processImageFailed": "Couldn't process the image. Please try again",
     "uploadImageFailed": "Couldn't upload the image. Please try again.",

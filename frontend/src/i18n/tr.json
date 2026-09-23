@@ -552,7 +552,7 @@
     "liveTools": "LIVE araçları",
     "getCoins": "Jeton al",
     "shop": "Vibely Shop’ta sat",
-    "support": "Destek"
+    "support": "Yardım Merkezi"
   },
   "explorePage": {
     "title": "Keşfet",
@@ -724,6 +724,7 @@
     "updateSuccess": "Profil güncellendi",
     "pickValidImage": "Geçerli bir görsel dosyası seç",
     "avatarMaxSize": "Avatar en fazla 5MB olmalı",
+    "avatarLowResWarning": "Bu fotoğraf düşük çözünürlüklü — avatarın bulanık görünebilir. Orijinal bir fotoğraf kullan (en az ~720 px).",
     "readImageFailed": "Görsel okunamadı. Tekrar dene",
     "processImageFailed": "Görsel işlenemedi. Tekrar dene",
     "uploadAvatarFailed": "Görsel yüklenemedi. Tekrar dene.",
@@ -1116,6 +1117,7 @@
     "profileUpdated": "Profil güncellendi",
     "pickValidImage": "Geçerli bir görsel dosyası seç",
     "avatarMaxSize": "Avatar görseli 5MB veya daha küçük olmalı",
+    "avatarLowResWarning": "Bu fotoğraf düşük çözünürlüklü — avatarın bulanık görünebilir. Orijinal bir fotoğraf kullan (en az ~720 px).",
     "readImageFailed": "Görsel okunamadı. Tekrar dene",
     "processImageFailed": "Görsel işlenemedi. Tekrar dene",
     "uploadImageFailed": "Görsel yüklenemedi. Tekrar dene.",

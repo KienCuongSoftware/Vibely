@@ -552,7 +552,7 @@
     "liveTools": "Narzędzia LIVE",
     "getCoins": "Zdobądź Monety",
     "shop": "Sprzedawaj w Vibely Shop",
-    "support": "Pomoc"
+    "support": "Centrum pomocy"
   },
   "explorePage": {
     "title": "Odkrywaj",
@@ -724,6 +724,7 @@
     "updateSuccess": "Profil zaktualizowany",
     "pickValidImage": "Wybierz prawidłowy plik obrazu",
     "avatarMaxSize": "Avatar może mieć maksymalnie 5 MB",
+    "avatarLowResWarning": "To zdjęcie ma niską rozdzielczość — awatar może być niewyraźny. Użyj oryginalnego zdjęcia (co najmniej ~720 px).",
     "readImageFailed": "Nie udało się odczytać obrazu. Spróbuj ponownie",
     "processImageFailed": "Nie udało się przetworzyć obrazu. Spróbuj ponownie",
     "uploadAvatarFailed": "Nie udało się przesłać obrazu. Spróbuj ponownie.",
@@ -1116,6 +1117,7 @@
     "profileUpdated": "Profil zaktualizowany",
     "pickValidImage": "Wybierz prawidłowy plik obrazu",
     "avatarMaxSize": "Obraz avatara musi mieć 5 MB lub mniej",
+    "avatarLowResWarning": "To zdjęcie ma niską rozdzielczość — awatar może być niewyraźny. Użyj oryginalnego zdjęcia (co najmniej ~720 px).",
     "readImageFailed": "Nie udało się odczytać obrazu. Spróbuj ponownie",
     "processImageFailed": "Nie udało się przetworzyć obrazu. Spróbuj ponownie",
     "uploadImageFailed": "Nie udało się przesłać obrazu. Spróbuj ponownie.",

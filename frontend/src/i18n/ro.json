@@ -552,7 +552,7 @@
     "liveTools": "Nástroje LIVE",
     "getCoins": "Získat mince",
     "shop": "Prodávat na Vibely Shop",
-    "support": "Podpora"
+    "support": "Centru de ajutor"
   },
   "explorePage": {
     "title": "Objevovat",
@@ -724,6 +724,7 @@
     "updateSuccess": "Profil zaktualizowany",
     "pickValidImage": "Wybierz prawidłowy plik obrazu",
     "avatarMaxSize": "Avatar może mieć maksymalnie 5 MB",
+    "avatarLowResWarning": "Această fotografie are rezoluție scăzută — avatarul poate apărea neclar. Folosește o fotografie originală (cel puțin ~720 px).",
     "readImageFailed": "Nie udało się odczytać obrazu. Spróbuj ponownie",
     "processImageFailed": "Nie udało się przetworzyć obrazu. Spróbuj ponownie",
     "uploadAvatarFailed": "Nie udało się przesłać obrazu. Spróbuj ponownie.",
@@ -1116,6 +1117,7 @@
     "profileUpdated": "Profil zaktualizowany",
     "pickValidImage": "Wybierz prawidłowy plik obrazu",
     "avatarMaxSize": "Obraz avatara musi mieć 5 MB lub mniej",
+    "avatarLowResWarning": "Această fotografie are rezoluție scăzută — avatarul poate apărea neclar. Folosește o fotografie originală (cel puțin ~720 px).",
     "readImageFailed": "Nie udało się odczytać obrazu. Spróbuj ponownie",
     "processImageFailed": "Nie udało się przetworzyć obrazu. Spróbuj ponownie",
     "uploadImageFailed": "Nie udało się przesłać obrazu. Spróbuj ponownie.",

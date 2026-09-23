@@ -552,7 +552,7 @@
     "liveTools": "כלי LIVE",
     "getCoins": "קבל מטבעות",
     "shop": "מכירה ב-Vibely Shop",
-    "support": "תמיכה"
+    "support": "מרכז העזרה"
   },
   "explorePage": {
     "title": "גילוי",
@@ -724,6 +724,7 @@
     "updateSuccess": "הפרופיל עודכן בהצלחה",
     "pickValidImage": "בחרו קובץ תמונה תקין",
     "avatarMaxSize": "האווטאר יכול להיות עד 5MB",
+    "avatarLowResWarning": "לתמונה הזו רזולוציה נמוכה — האווטאר עלול להיראות מטושטש. השתמשו בתמונה מקורית (לפחות ~720 פיקסלים).",
     "readImageFailed": "לא ניתן לקרוא את התמונה. נסו שוב",
     "processImageFailed": "לא ניתן לעבד את התמונה. נסו שוב",
     "uploadAvatarFailed": "לא ניתן להעלות את התמונה. נסו שוב.",
@@ -1116,6 +1117,7 @@
     "profileUpdated": "הפרופיל עודכן",
     "pickValidImage": "בחרו קובץ תמונה תקין",
     "avatarMaxSize": "תמונת האווטאר חייבת להיות 5MB או פחות",
+    "avatarLowResWarning": "לתמונה הזו רזולוציה נמוכה — האווטאר עלול להיראות מטושטש. השתמשו בתמונה מקורית (לפחות ~720 פיקסלים).",
     "readImageFailed": "לא ניתן לקרוא את התמונה. נסו שוב",
     "processImageFailed": "לא ניתן לעבד את התמונה. נסו שוב",
     "uploadImageFailed": "לא ניתן להעלות את התמונה. נסו שוב.",

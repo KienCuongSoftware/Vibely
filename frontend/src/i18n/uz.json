@@ -552,7 +552,7 @@
     "liveTools": "Инструменты LIVE",
     "getCoins": "Получить монеты",
     "shop": "Продавать в Vibely Shop",
-    "support": "Поддержка"
+    "support": "Yordam markazi"
   },
   "explorePage": {
     "title": "Обзор",
@@ -724,6 +724,7 @@
     "updateSuccess": "Профиль успешно обновлён",
     "pickValidImage": "Выберите корректный файл изображения",
     "avatarMaxSize": "Аватар не больше 5 МБ",
+    "avatarLowResWarning": "Bu foto past aniqlikda — avatar xira ko‘rinishi mumkin. Asl suratdan foydalaning (kamida ~720 px).",
     "readImageFailed": "Не удалось прочитать изображение. Попробуйте ещё раз",
     "processImageFailed": "Не удалось обработать изображение. Попробуйте ещё раз",
     "uploadAvatarFailed": "Не удалось загрузить изображение. Попробуйте ещё раз.",
@@ -1116,6 +1117,7 @@
     "profileUpdated": "Профиль обновлён",
     "pickValidImage": "Выберите корректный файл изображения",
     "avatarMaxSize": "Изображение аватара должно быть не больше 5 МБ",
+    "avatarLowResWarning": "Bu foto past aniqlikda — avatar xira ko‘rinishi mumkin. Asl suratdan foydalaning (kamida ~720 px).",
     "readImageFailed": "Не удалось прочитать изображение. Попробуйте ещё раз",
     "processImageFailed": "Не удалось обработать изображение. Попробуйте ещё раз",
     "uploadImageFailed": "Не удалось загрузить изображение. Попробуйте ещё раз.",

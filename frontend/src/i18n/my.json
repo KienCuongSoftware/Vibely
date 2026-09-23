@@ -552,7 +552,7 @@
     "liveTools": "เครื่องมือ LIVE",
     "getCoins": "รับเหรียญ",
     "shop": "ขายบน Vibely Shop",
-    "support": "ช่วยเหลือ"
+    "support": "အကူအညီစင်တာ"
   },
   "explorePage": {
     "title": "สำรวจ",
@@ -724,6 +724,7 @@
     "updateSuccess": "อัปเดตโปรไฟล์สำเร็จ",
     "pickValidImage": "เลือกไฟล์รูปภาพที่ถูกต้อง",
     "avatarMaxSize": "รูปโปรไฟล์ต้องไม่เกิน 5MB",
+    "avatarLowResWarning": "ဤဓာတ်ပုံသည် resolution နိမ့်သည် — avatar မှုန်ဝါးနိုင်သည်။ မူရင်းဓာတ်ပုံသုံးပါ (အနည်းဆုံး ~720px)။",
     "readImageFailed": "อ่านรูปภาพไม่ได้ โปรดลองอีกครั้ง",
     "processImageFailed": "ประมวลผลรูปภาพไม่ได้ โปรดลองอีกครั้ง",
     "uploadAvatarFailed": "อัปโหลดรูปภาพไม่ได้ โปรดลองอีกครั้ง",
@@ -1116,6 +1117,7 @@
     "profileUpdated": "อัปเดตโปรไฟล์แล้ว",
     "pickValidImage": "เลือกไฟล์รูปภาพที่ถูกต้อง",
     "avatarMaxSize": "รูปโปรไฟล์ต้องไม่เกิน 5MB",
+    "avatarLowResWarning": "ဤဓာတ်ပုံသည် resolution နိမ့်သည် — avatar မှုန်ဝါးနိုင်သည်။ မူရင်းဓာတ်ပုံသုံးပါ (အနည်းဆုံး ~720px)။",
     "readImageFailed": "อ่านรูปภาพไม่ได้ โปรดลองอีกครั้ง",
     "processImageFailed": "ประมวลผลรูปภาพไม่ได้ โปรดลองอีกครั้ง",
     "uploadImageFailed": "อัปโหลดรูปภาพไม่ได้ โปรดลองอีกครั้ง",

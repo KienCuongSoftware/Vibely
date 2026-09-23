@@ -552,7 +552,7 @@
     "liveTools": "Nástroje LIVE",
     "getCoins": "Získat mince",
     "shop": "Prodávat na Vibely Shop",
-    "support": "Podpora"
+    "support": "Center za pomoč"
   },
   "explorePage": {
     "title": "Objevovat",
@@ -724,6 +724,7 @@
     "updateSuccess": "Profil zaktualizowany",
     "pickValidImage": "Wybierz prawidłowy plik obrazu",
     "avatarMaxSize": "Avatar może mieć maksymalnie 5 MB",
+    "avatarLowResWarning": "Ta fotografija ima nizko ločljivost — avatar je lahko zamegljen. Uporabite izvirno fotografijo (vsaj ~720 px).",
     "readImageFailed": "Nie udało się odczytać obrazu. Spróbuj ponownie",
     "processImageFailed": "Nie udało się przetworzyć obrazu. Spróbuj ponownie",
     "uploadAvatarFailed": "Nie udało się przesłać obrazu. Spróbuj ponownie.",
@@ -1116,6 +1117,7 @@
     "profileUpdated": "Profil zaktualizowany",
     "pickValidImage": "Wybierz prawidłowy plik obrazu",
     "avatarMaxSize": "Obraz avatara musi mieć 5 MB lub mniej",
+    "avatarLowResWarning": "Ta fotografija ima nizko ločljivost — avatar je lahko zamegljen. Uporabite izvirno fotografijo (vsaj ~720 px).",
     "readImageFailed": "Nie udało się odczytać obrazu. Spróbuj ponownie",
     "processImageFailed": "Nie udało się przetworzyć obrazu. Spróbuj ponownie",
     "uploadImageFailed": "Nie udało się przesłać obrazu. Spróbuj ponownie.",

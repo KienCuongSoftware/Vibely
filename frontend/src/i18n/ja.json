@@ -552,7 +552,7 @@
     "liveTools": "LIVE ツール",
     "getCoins": "コインを受け取る",
     "shop": "Vibely Shop で販売",
-    "support": "サポート"
+    "support": "ヘルプセンター"
   },
   "explorePage": {
     "title": "発見",
@@ -753,6 +753,7 @@
     "updateSuccess": "プロフィールを更新しました",
     "pickValidImage": "有効な画像ファイルを選択してください",
     "avatarMaxSize": "アバターは最大5MBです",
+    "avatarLowResWarning": "この写真は解像度が低いため、アバターがぼやけることがあります。オリジナル写真をご利用ください（約720px以上）。",
     "readImageFailed": "画像を読み込めませんでした。もう一度お試しください",
     "processImageFailed": "画像を処理できませんでした。もう一度お試しください",
     "uploadAvatarFailed": "画像をアップロードできませんでした。もう一度お試しください。",
@@ -1159,6 +1160,7 @@
     "profileUpdated": "プロフィールを更新しました",
     "pickValidImage": "有効な画像ファイルを選択してください",
     "avatarMaxSize": "アバター画像は5MB以下にしてください",
+    "avatarLowResWarning": "この写真は解像度が低いため、アバターがぼやけることがあります。オリジナル写真をご利用ください（約720px以上）。",
     "readImageFailed": "画像を読み込めませんでした。もう一度お試しください",
     "processImageFailed": "画像を処理できませんでした。もう一度お試しください",
     "uploadImageFailed": "画像をアップロードできませんでした。もう一度お試しください。",

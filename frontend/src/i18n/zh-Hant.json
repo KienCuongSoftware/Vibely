@@ -552,7 +552,7 @@
     "liveTools": "直播工具",
     "getCoins": "領取金幣",
     "shop": "在 Vibely Shop 開店",
-    "support": "支援"
+    "support": "說明中心"
   },
   "explorePage": {
     "title": "探索",
@@ -724,6 +724,7 @@
     "updateSuccess": "個人檔案已成功更新",
     "pickValidImage": "請選擇有效的圖片檔案",
     "avatarMaxSize": "頭像大小不得超過 5MB",
+    "avatarLowResWarning": "這張照片解析度較低，頭像可能顯得模糊。請使用原圖（至少約 720px）。",
     "readImageFailed": "無法讀取圖片，請再試一次",
     "processImageFailed": "無法處理圖片，請再試一次",
     "uploadAvatarFailed": "無法上傳圖片，請再試一次。",
@@ -1116,6 +1117,7 @@
     "profileUpdated": "個人檔案已更新",
     "pickValidImage": "請選擇有效的圖片檔案",
     "avatarMaxSize": "頭像圖片須為 5MB 或更小",
+    "avatarLowResWarning": "這張照片解析度較低，頭像可能顯得模糊。請使用原圖（至少約 720px）。",
     "readImageFailed": "無法讀取圖片，請再試一次",
     "processImageFailed": "無法處理圖片，請再試一次",
     "uploadImageFailed": "無法上傳圖片，請再試一次。",

@@ -552,7 +552,7 @@
     "liveTools": "LIVE 도구",
     "getCoins": "코인 받기",
     "shop": "Vibely Shop에서 판매",
-    "support": "지원"
+    "support": "고객센터"
   },
   "explorePage": {
     "title": "탐색",
@@ -724,6 +724,7 @@
     "updateSuccess": "프로필이 업데이트됐어요",
     "pickValidImage": "유효한 이미지 파일을 선택하세요",
     "avatarMaxSize": "아바타는 최대 5MB여야 해요",
+    "avatarLowResWarning": "이 사진은 해상도가 낮아 아바타가 흐릿하게 보일 수 있습니다. 원본 사진을 사용하세요(최소 약 720px).",
     "readImageFailed": "이미지를 읽지 못했어요. 다시 시도하세요",
     "processImageFailed": "이미지를 처리하지 못했어요. 다시 시도하세요",
     "uploadAvatarFailed": "이미지를 업로드하지 못했어요. 다시 시도하세요.",
@@ -1116,6 +1117,7 @@
     "profileUpdated": "프로필이 업데이트됐어요",
     "pickValidImage": "유효한 이미지 파일을 선택하세요",
     "avatarMaxSize": "아바타 이미지는 5MB 이하여야 해요",
+    "avatarLowResWarning": "이 사진은 해상도가 낮아 아바타가 흐릿하게 보일 수 있습니다. 원본 사진을 사용하세요(최소 약 720px).",
     "readImageFailed": "이미지를 읽지 못했어요. 다시 시도하세요",
     "processImageFailed": "이미지를 처리하지 못했어요. 다시 시도하세요",
     "uploadImageFailed": "이미지를 업로드하지 못했어요. 다시 시도하세요.",

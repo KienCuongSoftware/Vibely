@@ -552,7 +552,7 @@
     "liveTools": "Nástroje LIVE",
     "getCoins": "Získat mince",
     "shop": "Prodávat na Vibely Shop",
-    "support": "Podpora"
+    "support": "Qendra e ndihmës"
   },
   "explorePage": {
     "title": "Objevovat",
@@ -724,6 +724,7 @@
     "updateSuccess": "Perfil actualizado",
     "pickValidImage": "Elige un archivo de imagen válido",
     "avatarMaxSize": "El avatar debe ser de 5 MB como máximo",
+    "avatarLowResWarning": "Kjo foto ka rezolucion të ulët — avatari mund të duket i turbullt. Përdorni një foto origjinale (të paktën ~720 px).",
     "readImageFailed": "No se pudo leer la imagen. Inténtalo de nuevo",
     "processImageFailed": "No se pudo procesar la imagen. Inténtalo de nuevo",
     "uploadAvatarFailed": "No se pudo subir la imagen. Inténtalo de nuevo.",
@@ -1116,6 +1117,7 @@
     "profileUpdated": "Perfil actualizado",
     "pickValidImage": "Elige un archivo de imagen válido",
     "avatarMaxSize": "La imagen de avatar debe ser de 5 MB o menos",
+    "avatarLowResWarning": "Kjo foto ka rezolucion të ulët — avatari mund të duket i turbullt. Përdorni një foto origjinale (të paktën ~720 px).",
     "readImageFailed": "No se pudo leer la imagen. Inténtalo de nuevo",
     "processImageFailed": "No se pudo procesar la imagen. Inténtalo de nuevo",
     "uploadImageFailed": "No se pudo subir la imagen. Inténtalo de nuevo.",

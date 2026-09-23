@@ -552,7 +552,7 @@
     "liveTools": "Alat LIVE",
     "getCoins": "Dapatkan Koin",
     "shop": "Jual di Vibely Shop",
-    "support": "Bantuan"
+    "support": "Pusat bantuan"
   },
   "explorePage": {
     "title": "Jelajahi",
@@ -724,6 +724,7 @@
     "updateSuccess": "Profil berhasil diperbarui",
     "pickValidImage": "Pilih file gambar yang valid",
     "avatarMaxSize": "Avatar maksimal 5MB",
+    "avatarLowResWarning": "Foto ini resolusi rendah — avatar mungkin kelihatan kabur. Gunakan foto asal (sekurang-kurangnya ~720px).",
     "readImageFailed": "Tidak bisa membaca gambar. Coba lagi",
     "processImageFailed": "Tidak bisa memproses gambar. Coba lagi",
     "uploadAvatarFailed": "Tidak bisa mengunggah gambar. Coba lagi.",
@@ -1116,6 +1117,7 @@
     "profileUpdated": "Profil diperbarui",
     "pickValidImage": "Pilih file gambar yang valid",
     "avatarMaxSize": "Gambar avatar harus 5MB atau lebih kecil",
+    "avatarLowResWarning": "Foto ini resolusi rendah — avatar mungkin kelihatan kabur. Gunakan foto asal (sekurang-kurangnya ~720px).",
     "readImageFailed": "Tidak bisa membaca gambar. Coba lagi",
     "processImageFailed": "Tidak bisa memproses gambar. Coba lagi",
     "uploadImageFailed": "Tidak bisa mengunggah gambar. Coba lagi.",
