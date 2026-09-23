@@ -6,23 +6,24 @@ import { useTheme } from "@/shared/theme/ThemeContext.jsx";
 import { APPEARANCE_OPTIONS } from "@/shared/theme/themeStorage.js";
 import { AppearanceHelpModal } from "@/shared/theme/AppearanceHelpModal.jsx";
 import { TooltipHoverWrap } from "@/shared/components/TooltipControls.jsx";
+import { VibelyMarkIcon } from "@/shared/components/VibelyWordmark.jsx";
 import { buildStudioHomeLoginHref } from "@/features/auth/utils/loginRedirect.js";
 import {
   IoBagHandleOutline,
+  IoCashOutline,
   IoCheckmark,
   IoChevronBack,
   IoChevronForward,
-  IoClipboardOutline,
   IoClose,
   IoColorWandOutline,
   IoDesktopOutline,
-  IoLanguageOutline,
+  IoHelpCircleOutline,
   IoLogOutOutline,
   IoMoonOutline,
-  IoOptionsOutline,
-  IoRocketOutline,
+  IoRadioOutline,
   IoSettingsOutline,
   IoSunnyOutline,
+  IoTrendingUpOutline,
 } from "react-icons/io5";
 
 function MoreSection({ title, children }) {
@@ -34,12 +35,13 @@ function MoreSection({ title, children }) {
   );
 }
 
+/** TikTok web: Light → Dark → System (sun / moon / desktop). */
 function AppearanceSegment({ preference, onChange }) {
   const { t } = useTranslation();
   const options = [
-    { value: "system", icon: IoOptionsOutline, labelKey: "appearance.automatic" },
-    { value: "dark", icon: IoMoonOutline, labelKey: "appearance.darkMode" },
     { value: "light", icon: IoSunnyOutline, labelKey: "appearance.lightMode" },
+    { value: "dark", icon: IoMoonOutline, labelKey: "appearance.darkMode" },
+    { value: "system", icon: IoDesktopOutline, labelKey: "appearance.automatic" },
   ];
   return (
     <div className="flex rounded-full bg-zinc-800 p-0.5" onClick={(e) => e.stopPropagation()}>
@@ -71,15 +73,38 @@ function AppearanceSegment({ preference, onChange }) {
   );
 }
 
-function MoreRow({ icon: Icon, label, trailing, onClick }) {
+function LanguageGlyphIcon({ className = "" }) {
+  return (
+    <span
+      className={`inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center text-[10px] font-bold leading-none tracking-tighter text-zinc-300 ${className}`}
+      aria-hidden
+    >
+      文A
+    </span>
+  );
+}
+
+function StudioMarkIcon() {
+  return (
+    <span
+      className="inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center overflow-hidden rounded-[4px] text-zinc-100"
+      aria-hidden
+    >
+      <VibelyMarkIcon className="h-[18px] w-[18px]" />
+    </span>
+  );
+}
+
+function MoreRow({ icon: Icon, iconNode, label, trailing, onClick }) {
   return (
     <button
       type="button"
       className="vibely-more-row flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[15px] text-zinc-100"
       onClick={onClick}
     >
-      {Icon ? <Icon className="shrink-0 text-[18px] text-zinc-300" /> : null}
-      <span className="min-w-0 flex-1">{label}</span>
+      {iconNode ??
+        (Icon ? <Icon className="shrink-0 text-[18px] text-zinc-300" /> : null)}
+      <span className="min-w-0 flex-1 leading-snug">{label}</span>
       {trailing ? <span className="shrink-0">{trailing}</span> : null}
     </button>
   );
@@ -87,6 +112,8 @@ function MoreRow({ icon: Icon, label, trailing, onClick }) {
 
 /**
  * Panel "Thêm" dùng chung — sidebar chính và LIVE sidebar.
+ * Bố cục / mục menu bám TikTok web: Chung, ngôn ngữ, theme, Studio, hiệu ứng,
+ * quảng bá, LIVE, Xu, Shop, trợ giúp, đăng xuất.
  */
 export function SidebarMorePanel({ onClose, token, onLogout, showTools = true }) {
   const { t } = useTranslation();
@@ -192,7 +219,7 @@ export function SidebarMorePanel({ onClose, token, onLogout, showTools = true })
               <MoreSection title={t("nav.settings")}>
                 <MoreRow
                   icon={IoSettingsOutline}
-                  label={t("settings.title")}
+                  label={t("nav.general")}
                   trailing={<IoChevronForward className="text-zinc-500" />}
                   onClick={() => {
                     handleClose();
@@ -204,7 +231,7 @@ export function SidebarMorePanel({ onClose, token, onLogout, showTools = true })
                   }}
                 />
                 <MoreRow
-                  icon={IoLanguageOutline}
+                  iconNode={<LanguageGlyphIcon />}
                   label={currentLangLabel}
                   trailing={<IoChevronForward className="text-zinc-500" />}
                   onClick={() => setLangOpen(true)}
@@ -222,7 +249,7 @@ export function SidebarMorePanel({ onClose, token, onLogout, showTools = true })
               {showTools ? (
                 <MoreSection title={t("nav.tools")}>
                   <MoreRow
-                    icon={IoRocketOutline}
+                    iconNode={<StudioMarkIcon />}
                     label={t("moreMenu.studio")}
                     onClick={() => {
                       handleClose();
@@ -239,9 +266,19 @@ export function SidebarMorePanel({ onClose, token, onLogout, showTools = true })
                     onClick={() => {}}
                   />
                   <MoreRow
-                    icon={IoDesktopOutline}
+                    icon={IoTrendingUpOutline}
+                    label={t("moreMenu.promotePost")}
+                    onClick={() => {}}
+                  />
+                  <MoreRow
+                    icon={IoRadioOutline}
                     label={t("moreMenu.liveTools")}
                     trailing={<IoChevronForward className="text-zinc-500" />}
+                    onClick={() => {}}
+                  />
+                  <MoreRow
+                    icon={IoCashOutline}
+                    label={t("moreMenu.getCoins")}
                     onClick={() => {}}
                   />
                   <MoreRow
@@ -254,7 +291,7 @@ export function SidebarMorePanel({ onClose, token, onLogout, showTools = true })
 
               <MoreSection title={t("moreMenu.other")}>
                 <MoreRow
-                  icon={IoClipboardOutline}
+                  icon={IoHelpCircleOutline}
                   label={t("moreMenu.support")}
                   onClick={() => {
                     handleClose();
