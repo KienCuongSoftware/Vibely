@@ -1578,7 +1578,7 @@
       "searchQueries": "Search queries",
       "searchQueriesTip": "Search keywords that led viewers to your videos in the selected period.",
       "topPosts": "Top posts",
-      "topPostsTip": "How many times your videos were viewed in the selected period.",
+      "topPostsTip": "Top posts in the last {{days}} days, ranked by views, likes, comments, and shares.",
       "peakActivity": "Peak activity times",
       "peakActivityTip": "Hours and days when your viewers are most active.",
       "hour": "Hour",
