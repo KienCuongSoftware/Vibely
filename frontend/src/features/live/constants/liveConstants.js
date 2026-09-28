@@ -78,8 +78,8 @@ export const LIVE_CHAT = Object.freeze({
 export const LIVE_LIKE = Object.freeze({
   /** Taps are aggregated and flushed at most once per window. */
   BATCH_WINDOW_MS: 1000,
-  /** Upper bound per flush so a stuck tab cannot send huge batches. */
-  MAX_BATCH_SIZE: 500,
+  /** Upper bound per flush; matches the backend `live.like.max-per-request`. */
+  MAX_BATCH_SIZE: 100,
   BURST_LIFETIME_MS: 900,
   MAX_VISIBLE_BURSTS: 12,
 })
@@ -92,6 +92,7 @@ export const LIVE_DISCOVERY = Object.freeze({
 
 export const LIVE_ROOM_EVENT = Object.freeze({
   COMMENT: 'comment',
+  COMMENT_DELETED: 'commentDeleted',
   VIEWER_COUNT: 'viewerCount',
   LIKE_COUNT: 'likeCount',
   GIFT: 'gift',
@@ -103,6 +104,15 @@ export const LIVE_CONNECTION_STATE = Object.freeze({
   CONNECTING: 'connecting',
   CONNECTED: 'connected',
   ERROR: 'error',
+})
+
+export const LIVE_REALTIME = Object.freeze({
+  /** Room topic on the Spring STOMP broker (`/ws`). */
+  topic: (liveId) => `/topic/live/${liveId}`,
+  /** REST polling cadence for guests (no WebSocket session) or when the socket is down. */
+  POLL_INTERVAL_MS: 5000,
+  /** Delay before trying the WebSocket again after it dropped. */
+  SOCKET_RETRY_MS: 15000,
 })
 
 /** Media layout breakpoint — matches the feed's mobile layout (max-width: 1023px). */

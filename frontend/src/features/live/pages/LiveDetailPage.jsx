@@ -11,7 +11,12 @@ import { LiveChat } from '@/features/live/components/room/LiveChat.jsx'
 import { LiveGiftPanel } from '@/features/live/components/room/LiveGiftPanel.jsx'
 import { LiveHostInfo } from '@/features/live/components/room/LiveHostInfo.jsx'
 import { LiveViewerCount } from '@/features/live/components/room/LiveViewerCount.jsx'
-import { getLiveCategoryLabelKey, LIVE_PATHS, LIVE_STATUS } from '@/features/live/constants/liveConstants.js'
+import {
+  getLiveCategoryLabelKey,
+  LIVE_PATHS,
+  LIVE_ROOM_EVENT,
+  LIVE_STATUS,
+} from '@/features/live/constants/liveConstants.js'
 import { useLiveChat } from '@/features/live/hooks/useLiveChat.js'
 import { useLiveDetail } from '@/features/live/hooks/useLiveData.js'
 import {
@@ -41,7 +46,7 @@ function RoomIconButton({ label, onClick, children }) {
 }
 
 /** All interactive room state; rendered only once metadata is loaded. */
-function LiveRoom({ live, token, user, isMobile, onBack, onOpenHost }) {
+function LiveRoom({ live, token, user, isMobile, onBack, onOpenHost, onStatusChange }) {
   const { t } = useTranslation()
   const requireAuth = useLiveAuthGate()
   const isEnded = live.status === LIVE_STATUS.ENDED
@@ -50,11 +55,19 @@ function LiveRoom({ live, token, user, isMobile, onBack, onOpenHost }) {
   const viewerCount = useLiveViewerCount({ room, initialCount: live.viewerCount })
   const chat = useLiveChat({ room, user })
   const likes = useLiveLikes({ liveId: live.id, token, room, initialCount: live.likeCount })
-  const follow = useLiveFollow({ liveId: live.id, token, initialFollowing: live.host?.followedByViewer })
+  const follow = useLiveFollow({ hostId: live.host?.id, token, initialFollowing: live.host?.followedByViewer })
   const gifts = useLiveGifts({ liveId: live.id, token })
   const { share, copied } = useLiveShare({ liveId: live.id, title: live.title })
   const [giftOpen, setGiftOpen] = useState(false)
   const [muted, setMuted] = useState(true)
+
+  useEffect(
+    () =>
+      room.subscribe(LIVE_ROOM_EVENT.STATUS, (payload) => {
+        if (payload?.status) onStatusChange(payload.status)
+      }),
+    [room.subscribe, onStatusChange],
+  )
 
   const commentsEnabled = Boolean(live.settings?.allowComments) && !isEnded
   const giftsEnabled = Boolean(live.settings?.allowGifts) && !isEnded
@@ -228,6 +241,11 @@ export function LiveDetailPage() {
   const isMobile = useLiveMobileLayout()
   const detail = useLiveDetail({ liveId, token })
   const live = detail.data
+  const { setData } = detail
+  const handleStatusChange = useCallback(
+    (status) => setData((prev) => (prev && prev.status !== status ? { ...prev, status } : prev)),
+    [setData],
+  )
 
   useEffect(() => {
     document.title = live?.title
@@ -266,6 +284,7 @@ export function LiveDetailPage() {
       isMobile={isMobile}
       onBack={back}
       onOpenHost={() => navigate(LIVE_PATHS.host(live.id))}
+      onStatusChange={handleStatusChange}
     />
   )
 }

@@ -101,8 +101,8 @@ export function useLiveLikes({ liveId, token, room, initialCount }) {
   return { likeCount: serverCount + pendingCount, bursts, like, removeBurst }
 }
 
-/** Optimistic follow toggle with rollback on failure. */
-export function useLiveFollow({ liveId, token, initialFollowing }) {
+/** Optimistic follow toggle with rollback on failure; uses the shared follow system by host id. */
+export function useLiveFollow({ hostId, token, initialFollowing }) {
   const [following, setFollowing] = useState(Boolean(initialFollowing))
   const [busy, setBusy] = useState(false)
 
@@ -111,19 +111,19 @@ export function useLiveFollow({ liveId, token, initialFollowing }) {
   }, [initialFollowing])
 
   const toggle = useCallback(async () => {
-    if (busy || !liveId) return
+    if (busy || !hostId) return
     const next = !following
     setFollowing(next)
     setBusy(true)
     try {
-      if (next) await liveService.followHost(liveId, token)
-      else await liveService.unfollowHost(liveId, token)
+      if (next) await liveService.followHost(hostId, token)
+      else await liveService.unfollowHost(hostId, token)
     } catch {
       setFollowing(!next)
     } finally {
       setBusy(false)
     }
-  }, [busy, following, liveId, token])
+  }, [busy, following, hostId, token])
 
   return { following, busy, toggle }
 }

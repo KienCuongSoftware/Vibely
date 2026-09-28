@@ -1,7 +1,7 @@
 /**
  * Data contracts shared by the REST client, the mock service and the UI.
- * The Spring Boot backend should return these shapes inside the standard
- * `{ success, data, error }` envelope handled by `shared/api/http.js`.
+ * `api/liveApi.js` normalizes the Spring Boot DTOs (standard `{ success, data, error }`
+ * envelope handled by `shared/api/http.js`) into these shapes.
  */
 
 /**
@@ -53,6 +53,9 @@
  *   settings: LiveSettings,
  *   playback: LivePlayback,
  *   isOwner: boolean,
+ *   peakViewerCount?: number,
+ *   giftsAvailable?: boolean,   false while the platform has no gift wallet (settings.allowGifts is then false too)
+ *   canModerate?: boolean,
  * }} LiveDetail
  */
 
@@ -109,6 +112,7 @@
 /**
  * Realtime events pushed to a room channel (see `LIVE_ROOM_EVENT`).
  * @typedef {{ type: 'comment', payload: LiveComment }
+ *   | { type: 'commentDeleted', payload: { id: string } }
  *   | { type: 'viewerCount', payload: { count: number } }
  *   | { type: 'likeCount', payload: { count: number } }
  *   | { type: 'gift', payload: { gift: LiveGift, sender: LiveComment['author'] } }

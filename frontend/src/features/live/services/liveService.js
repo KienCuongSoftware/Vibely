@@ -4,13 +4,13 @@ import { liveMockService } from '@/features/live/mock/liveMockService.js'
 export const LIVE_DATA_SOURCE = Object.freeze({ MOCK: 'mock', API: 'api' })
 
 /**
- * `VITE_LIVE_DATA_SOURCE=api` switches every LIVE screen to the Spring Boot API.
- * Defaults to mock while the backend does not exist.
+ * Every LIVE screen talks to the Spring Boot API by default.
+ * `VITE_LIVE_DATA_SOURCE=mock` switches to in-memory mock data (UI work without a backend, tests).
  */
 export function resolveLiveDataSource(value = import.meta.env.VITE_LIVE_DATA_SOURCE) {
-  return String(value ?? '').trim().toLowerCase() === LIVE_DATA_SOURCE.API
-    ? LIVE_DATA_SOURCE.API
-    : LIVE_DATA_SOURCE.MOCK
+  return String(value ?? '').trim().toLowerCase() === LIVE_DATA_SOURCE.MOCK
+    ? LIVE_DATA_SOURCE.MOCK
+    : LIVE_DATA_SOURCE.API
 }
 
 export const liveDataSource = resolveLiveDataSource()

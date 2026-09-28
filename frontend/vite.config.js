@@ -188,6 +188,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: './src/tests/setupTests.js',
+    env: {
+      VITE_LIVE_DATA_SOURCE: 'mock',
+    },
   },
   build: {
     chunkSizeWarningLimit: 600,

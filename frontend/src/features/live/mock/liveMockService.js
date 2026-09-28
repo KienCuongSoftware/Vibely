@@ -176,15 +176,15 @@ export const liveMockService = {
     return { likeCount: live.likeCount }
   },
 
-  async followHost(liveId) {
+  async followHost(hostId) {
     await delay()
-    store.followedHostIds.add(requireLive(liveId).host.id)
+    store.followedHostIds.add(String(hostId))
     return { following: true }
   },
 
-  async unfollowHost(liveId) {
+  async unfollowHost(hostId) {
     await delay()
-    store.followedHostIds.delete(requireLive(liveId).host.id)
+    store.followedHostIds.delete(String(hostId))
     return { following: false }
   },
 

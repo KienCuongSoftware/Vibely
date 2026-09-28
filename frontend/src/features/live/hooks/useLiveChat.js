@@ -47,6 +47,15 @@ export function useLiveChat({ room, user }) {
     }
   }, [room.subscribe])
 
+  useEffect(
+    () =>
+      room.subscribe(LIVE_ROOM_EVENT.COMMENT_DELETED, (payload) => {
+        if (!payload?.id) return
+        setMessages((prev) => prev.filter((message) => message.id !== payload.id))
+      }),
+    [room.subscribe],
+  )
+
   const deliver = useCallback(
     async (text, clientId) => {
       try {
