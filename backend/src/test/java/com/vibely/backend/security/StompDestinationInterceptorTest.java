@@ -37,6 +37,19 @@ class StompDestinationInterceptorTest {
     }
 
     @Test
+    void allowsLiveRoomTopic() {
+        assertThat(interceptor.preSend(subscribe("/topic/live/0190f3a2-7c1d-7b8e-9f00-123456789abc"), channel)).isNotNull();
+    }
+
+    @Test
+    void rejectsMalformedLiveTopic() {
+        assertThatThrownBy(() -> interceptor.preSend(subscribe("/topic/live/not-a-live"), channel))
+            .isInstanceOf(MessagingException.class);
+        assertThatThrownBy(() -> interceptor.preSend(subscribe("/topic/live/0190f3a2-7c1d-7b8e-9f00-123456789abc/x"), channel))
+            .isInstanceOf(MessagingException.class);
+    }
+
+    @Test
     void rejectsSendOutsideAppPrefix() {
         assertThatThrownBy(() -> interceptor.preSend(send("/topic/admin"), channel))
             .isInstanceOf(MessagingException.class);

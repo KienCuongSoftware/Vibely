@@ -1,6 +1,7 @@
 package com.vibely.backend.security;
 
 import java.util.Set;
+import java.util.regex.Pattern;
 import org.springframework.lang.NonNull;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -20,6 +21,9 @@ public class StompDestinationInterceptor implements ChannelInterceptor {
         "/user/queue/notifications"
     );
 
+    /** LIVE room topics; per-LIVE authorization happens in LiveStompSubscriptionInterceptor. */
+    private static final Pattern LIVE_TOPIC = Pattern.compile("^/topic/live/[0-9a-fA-F-]{36}$");
+
     @Override
     public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
@@ -29,7 +33,8 @@ public class StompDestinationInterceptor implements ChannelInterceptor {
         StompCommand command = accessor.getCommand();
         if (command == StompCommand.SUBSCRIBE) {
             String destination = accessor.getDestination();
-            if (destination == null || !ALLOWED_SUBSCRIBE.contains(destination)) {
+            if (destination == null
+                || !(ALLOWED_SUBSCRIBE.contains(destination) || LIVE_TOPIC.matcher(destination).matches())) {
                 throw new MessagingException("Subscription not allowed");
             }
         } else if (command == StompCommand.SEND) {

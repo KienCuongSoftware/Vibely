@@ -205,6 +205,26 @@ app:
     max-job-attempts: ${APP_TRANSLATION_MAX_JOB_ATTEMPTS:5}
     worker:
       enabled: ${APP_TRANSLATION_WORKER_ENABLED:true}
+live:
+  chat:
+    max-length: ${LIVE_CHAT_MAX_LENGTH:150}
+    history-page-size: ${LIVE_CHAT_HISTORY_PAGE_SIZE:50}
+    rate-limit:
+      max-messages: ${LIVE_CHAT_RATE_LIMIT_MAX_MESSAGES:5}
+      window-seconds: ${LIVE_CHAT_RATE_LIMIT_WINDOW_SECONDS:10}
+  like:
+    max-per-request: ${LIVE_LIKE_MAX_PER_REQUEST:100}
+    rate-limit:
+      max-likes: ${LIVE_LIKE_RATE_LIMIT_MAX_LIKES:300}
+      window-seconds: ${LIVE_LIKE_RATE_LIMIT_WINDOW_SECONDS:10}
+  realtime:
+    broadcast-interval-ms: ${LIVE_REALTIME_BROADCAST_INTERVAL_MS:1000}
+    persist-interval-ms: ${LIVE_REALTIME_PERSIST_INTERVAL_MS:15000}
+    state-ttl-hours: ${LIVE_REALTIME_STATE_TTL_HOURS:24}
+  discovery:
+    default-page-size: ${LIVE_DISCOVERY_DEFAULT_PAGE_SIZE:20}
+    max-page-size: ${LIVE_DISCOVERY_MAX_PAGE_SIZE:50}
+    max-search-length: ${LIVE_DISCOVERY_MAX_SEARCH_LENGTH:80}
 ---
 spring:
   config:
