@@ -592,7 +592,8 @@
     },
     "sections": {
       "gaming": "ゲーム",
-      "lifestyle": "ライフスタイル"
+      "lifestyle": "ライフスタイル",
+      "recommended": "あなたにおすすめ"
     },
     "mute": "Mute",
     "heroHeadline": "今すぐ視聴してリアルタイムで他の人と交流しましょう",
@@ -600,7 +601,128 @@
     "viewersLabel": "{{count}} watching",
     "previousLive": "Previous LIVE",
     "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE"
+    "refreshLive": "Switch LIVE",
+    "verified": "認証済みアカウント",
+    "card": {
+      "watchAria": "ライブを見る: {{host}} による {{title}}"
+    },
+    "states": {
+      "loading": "読み込み中…",
+      "retry": "もう一度やり直してください",
+      "backToDiscovery": "ライブに戻る",
+      "errorTitle": "何か問題が発生しました",
+      "discoveryError": "LIVE ストリームを読み込むことができませんでした。接続を確認して、もう一度試してください。",
+      "roomError": "このLIVEをロードできませんでした。接続を確認して、もう一度試してください。",
+      "emptyTitle": "現在ライブ ストリームはありません",
+      "emptyCategory": "このカテゴリにはまだライブ ストリームがありません。 Check back soon.",
+      "emptyFollowing": "あなたがフォローしているクリエイターは現在ライブではありません。",
+      "notFoundTitle": "ライブが見つかりません",
+      "notFoundDescription": "このLIVEは終了または削除された可能性があります。"
+    },
+    "player": {
+      "ended": "このLIVEは終了しました",
+      "noCover": "表紙画像なし"
+    },
+    "room": {
+      "pageTitle": "{{title}} |バイブリーライブ",
+      "follow": "フォローする",
+      "following": "続く",
+      "like": "のように",
+      "share": "共有",
+      "linkCopied": "リンクがコピーされました",
+      "gift": "ギフトを送る",
+      "giftShort": "贈り物",
+      "viewProfile": "{{name}} のプロフィールを表示",
+      "openHostControls": "ホストコントロールを開く"
+    },
+    "chat": {
+      "title": "ライブチャット",
+      "placeholder": "コメントを追加…",
+      "send": "送信",
+      "loading": "チャットに接続中…",
+      "empty": "コメントはまだありません。 Say hi!",
+      "error": "チャットに接続できませんでした。",
+      "disabled": "今回のLIVEはコメントオフとさせていただきます。",
+      "retry": "リトライ",
+      "newMessages": "{{count}} 件の新しいメッセージ"
+    },
+    "gifts": {
+      "title": "ギフト",
+      "coins": "{{count}} コイン",
+      "sent": "{{name}} を送信しました",
+      "loadError": "ギフトを読み込めませんでした。"
+    },
+    "create": {
+      "pageTitle": "ライブに行く | Vibely",
+      "title": "ライブをセットアップする",
+      "detailsSection": "LIVE詳細",
+      "coverLabel": "表紙画像",
+      "coverHint": "JPG、PNG、または WEBP、最大 {{max}} MB。ポートレート画像が最適です。",
+      "chooseCover": "画像を選択してください",
+      "changeCover": "イメージを変更する",
+      "removeCover": "取り除く",
+      "coverPreviewAlt": "LIVEカバープレビュー",
+      "titleLabel": "タイトル",
+      "titlePlaceholder": "あなたのLIVEは何についてですか？",
+      "descriptionLabel": "説明",
+      "descriptionPlaceholder": "視聴者に期待する内容を伝える (オプション)",
+      "categoryLabel": "カテゴリ",
+      "visibilityLabel": "誰が視聴できますか",
+      "visibility": {
+        "public": "みんな",
+        "followers": "フォロワー",
+        "friends": "友達"
+      },
+      "interactionSection": "交流",
+      "allowComments": "コメントを許可する",
+      "allowGifts": "ギフトを許可する",
+      "allowGiftsHint": "視聴者はLIVE中にギフトを贈ることができます。",
+      "allowGuests": "ゲストリクエストを許可する",
+      "allowGuestsHint": "視聴者はゲストとして LIVE への参加をリクエストできます。",
+      "matureContent": "成人向けコンテンツ",
+      "matureContentHint": "18歳以上のみ視聴可能です。",
+      "cancel": "キャンセル",
+      "submit": "ライブを作成する",
+      "submitting": "作成…",
+      "errors": {
+        "titleRequired": "タイトルを入力してください。",
+        "titleTooLong": "タイトルは {{max}} 文字以下にする必要があります。",
+        "descriptionTooLong": "説明は {{max}} 文字以下にする必要があります。",
+        "categoryRequired": "カテゴリを選択してください。",
+        "coverType": "JPG、PNG、または WEBP 画像を選択してください。",
+        "coverTooLarge": "画像は {{max}} MB 以下である必要があります。",
+        "submitFailed": "LIVEを作成できませんでした。もう一度試してください。"
+      }
+    },
+    "host": {
+      "pageTitle": "ライブスタジオ |ヴァイブリー",
+      "status": {
+        "scheduled": "準備ができて",
+        "live": "ライブ",
+        "ended": "終了しました"
+      },
+      "goLive": "ライブに行く",
+      "endLive": "ライブ終了",
+      "endConfirmTitle": "このライブを終了しますか?",
+      "endConfirmBody": "視聴者は切断され、このライブを再開できなくなります。",
+      "endedTitle": "LIVEは終了しました",
+      "summaryViewers": "視聴者",
+      "summaryLikes": "いいね！",
+      "muteMic": "マイクをミュートする",
+      "unmuteMic": "マイクのミュートを解除する",
+      "turnOffCamera": "カメラをオフにする",
+      "turnOnCamera": "カメラをオンにする",
+      "cameraOff": "カメラがオフになっています",
+      "settings": "ライブ設定",
+      "settingsSessionNote": "これらの変更は、このセッションにのみ適用されます。",
+      "previewUnavailable": "カメラプレビューはまだ利用できません",
+      "previewUnavailableHint": "メディアサーバーが接続されると、カメラからのストリーミングがサポートされます。",
+      "chatBeforeStart": "ライブにするとチャットが開きます。",
+      "chatEnded": "このLIVEは終了したためチャットは閉じています。",
+      "actionFailed": "何か問題が発生しました。もう一度試してください。",
+      "notOwnerTitle": "これをLIVEで管理することはできません",
+      "notOwnerDescription": "このLIVEではホストのみがLIVE Studioを開くことができます。"
+    }
   },
   "messagesPage": {
     "title": "メッセージ",

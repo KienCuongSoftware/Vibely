@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Oyun",
-      "lifestyle": "Həyat tərzi"
+      "lifestyle": "Həyat tərzi",
+      "recommended": "Sizin üçün tövsiyə olunur"
+    },
+    "verified": "Doğrulanmış hesab",
+    "card": {
+      "watchAria": "CANLI baxın: {{host}} tərəfindən {{title}}"
+    },
+    "states": {
+      "loading": "Yüklənir...",
+      "retry": "Yenidən cəhd edin",
+      "backToDiscovery": "CANLI-a qayıt",
+      "errorTitle": "Nəsə xəta baş verdi",
+      "discoveryError": "CANLI yayımları yükləyə bilmədik. Bağlantınızı yoxlayın və yenidən cəhd edin.",
+      "roomError": "Biz bunu CANLI yükləyə bilmədik. Bağlantınızı yoxlayın və yenidən cəhd edin.",
+      "emptyTitle": "Hazırda CANLI yayım yoxdur",
+      "emptyCategory": "Bu kateqoriyada hələ CANLI yayım yoxdur. Tezliklə yoxlayın.",
+      "emptyFollowing": "İzlədiyiniz yaradıcılar hazırda CANLI deyil.",
+      "notFoundTitle": "CANLI tapılmadı",
+      "notFoundDescription": "Bu CANLI bitmiş və ya silinmiş ola bilər."
+    },
+    "player": {
+      "ended": "Bu CANLI bitdi",
+      "noCover": "Qapaq şəkli yoxdur"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely CANLI",
+      "follow": "İzləyin",
+      "following": "İzləyir",
+      "like": "kimi",
+      "share": "Paylaşın",
+      "linkCopied": "Link kopyalandı",
+      "gift": "Hədiyyə göndərin",
+      "giftShort": "Hədiyyə",
+      "viewProfile": "{{name}} adlı şəxsin profilinə baxın",
+      "openHostControls": "Host nəzarətlərini açın"
+    },
+    "chat": {
+      "title": "CANLI söhbət",
+      "placeholder": "Şərh əlavə edin...",
+      "send": "Göndər",
+      "loading": "Söhbətə qoşulur...",
+      "empty": "Hələ şərh yoxdur. Salam deyin!",
+      "error": "Söhbətə qoşulmaq mümkün olmadı.",
+      "disabled": "Bu CANLI üçün şərhlər deaktiv edilib.",
+      "retry": "Yenidən cəhd edin",
+      "newMessages": "{{count}} yeni mesaj"
+    },
+    "gifts": {
+      "title": "Hədiyyələr",
+      "coins": "{{count}} sikkə",
+      "sent": "Siz {{name}} göndərdiniz",
+      "loadError": "Hədiyyələri yükləmək mümkün olmadı."
+    },
+    "create": {
+      "pageTitle": "CANLI | Vibely",
+      "title": "LIVE-ı qurun",
+      "detailsSection": "CANLI təfərrüatlar",
+      "coverLabel": "Qapaq şəkli",
+      "coverHint": "JPG, PNG və ya WEBP, {{max}} MB-a qədər. Portret şəkli ən yaxşı işləyir.",
+      "chooseCover": "Şəkil seçin",
+      "changeCover": "Şəkli dəyişdirin",
+      "removeCover": "Sil",
+      "coverPreviewAlt": "CANLI üz qabığına baxış",
+      "titleLabel": "Başlıq",
+      "titlePlaceholder": "Sizin LIVE nə haqqındadır?",
+      "descriptionLabel": "Təsvir",
+      "descriptionPlaceholder": "İzləyicilərə nə gözlədiklərini bildirin (istəyə görə)",
+      "categoryLabel": "Kateqoriya",
+      "visibilityLabel": "Kim baxa bilər",
+      "visibility": {
+        "public": "Hər kəs",
+        "followers": "İzləyicilər",
+        "friends": "Dostlar"
+      },
+      "interactionSection": "Qarşılıqlı əlaqə",
+      "allowComments": "Şərhlərə icazə verin",
+      "allowGifts": "Hədiyyələrə icazə verin",
+      "allowGiftsHint": "İzləyicilər CANLI yayım zamanı sizə hədiyyələr göndərə bilərlər.",
+      "allowGuests": "Qonaq sorğularına icazə verin",
+      "allowGuestsHint": "İzləyicilər CANLI LIVE-a qonaq kimi qoşulmaq üçün müraciət edə bilərlər.",
+      "matureContent": "Yetkin məzmun",
+      "matureContentHint": "Yalnız 18 yaşdan yuxarı tamaşaçılar baxa bilər.",
+      "cancel": "Ləğv et",
+      "submit": "CANLI yaradın",
+      "submitting": "Yaradılır...",
+      "errors": {
+        "titleRequired": "Başlıq daxil edin.",
+        "titleTooLong": "Başlıq {{max}} simvol və ya daha az olmalıdır.",
+        "descriptionTooLong": "Təsvir {{max}} simvol və ya daha az olmalıdır.",
+        "categoryRequired": "Zəhmət olmasa kateqoriya seçin.",
+        "coverType": "Lütfən, JPG, PNG və ya WEBP şəkli seçin.",
+        "coverTooLarge": "Şəkil {{max}} MB və ya daha kiçik olmalıdır.",
+        "submitFailed": "CANLI YAYINI yaratmaq mümkün olmadı. Yenidən cəhd edin."
+      }
+    },
+    "host": {
+      "pageTitle": "CANLI Studio | Vibely",
+      "status": {
+        "scheduled": "Hazır",
+        "live": "CANLI",
+        "ended": "Bitdi"
+      },
+      "goLive": "CANLI YAYIN",
+      "endLive": "CANLI bitir",
+      "endConfirmTitle": "Bu CANLI bitsin?",
+      "endConfirmBody": "İzləyicilərin əlaqəsi kəsiləcək və siz bu CANLI yayımı davam etdirə bilməyəcəksiniz.",
+      "endedTitle": "Sizin LIVE bitdi",
+      "summaryViewers": "İzləyicilər",
+      "summaryLikes": "Bəyənir",
+      "muteMic": "Mikrofonu susdur",
+      "unmuteMic": "Mikrofonun səsini açın",
+      "turnOffCamera": "Kameranı söndürün",
+      "turnOnCamera": "Kameranı yandırın",
+      "cameraOff": "Kamera söndürülüb",
+      "settings": "CANLI parametrlər",
+      "settingsSessionNote": "Bu dəyişikliklər yalnız bu sessiyaya aiddir.",
+      "previewUnavailable": "Kamera önizləməsi hələ mövcud deyil",
+      "previewUnavailableHint": "Media serveri qoşulduqdan sonra kameranızdan yayım dəstəklənəcək.",
+      "chatBeforeStart": "Siz CANLI yayıma çıxanda söhbət açılacaq.",
+      "chatEnded": "Bu CANLI yayım bitdiyi üçün söhbət bağlanıb.",
+      "actionFailed": "Nəsə xəta baş verdi. Yenidən cəhd edin.",
+      "notOwnerTitle": "Siz bu CANLI yayımı idarə edə bilməzsiniz",
+      "notOwnerDescription": "Bu CANLI üçün LIVE Studio-nu yalnız ev sahibi aça bilər."
     }
   },
   "messagesPage": {

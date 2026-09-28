@@ -592,7 +592,8 @@
     },
     "sections": {
       "gaming": "Juegos",
-      "lifestyle": "Estilo de vida"
+      "lifestyle": "Estilo de vida",
+      "recommended": "Recomendado para ti"
     },
     "mute": "Mute",
     "heroHeadline": "Míralo ahora e interactúa con otros en tiempo real",
@@ -600,7 +601,128 @@
     "viewersLabel": "{{count}} watching",
     "previousLive": "Previous LIVE",
     "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE"
+    "refreshLive": "Switch LIVE",
+    "verified": "Cuenta verificada",
+    "card": {
+      "watchAria": "Ver EN VIVO: {{title}} por {{host}}"
+    },
+    "states": {
+      "loading": "Cargando…",
+      "retry": "Intentar otra vez",
+      "backToDiscovery": "Volver a EN VIVO",
+      "errorTitle": "algo salió mal",
+      "discoveryError": "No pudimos cargar transmisiones EN VIVO. Comprueba tu conexión y vuelve a intentarlo.",
+      "roomError": "No pudimos cargar esto EN VIVO. Comprueba tu conexión y vuelve a intentarlo.",
+      "emptyTitle": "No hay transmisiones EN VIVO en este momento",
+      "emptyCategory": "Aún no hay transmisiones EN VIVO en esta categoría. Vuelve pronto.",
+      "emptyFollowing": "Los creadores que sigues no están EN VIVO en este momento.",
+      "notFoundTitle": "EN VIVO no encontrado",
+      "notFoundDescription": "Es posible que este LIVE haya finalizado o haya sido eliminado."
+    },
+    "player": {
+      "ended": "Este EN VIVO ha terminado",
+      "noCover": "Sin imagen de portada"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Seguir",
+      "following": "Siguiente",
+      "like": "Como",
+      "share": "Compartir",
+      "linkCopied": "Enlace copiado",
+      "gift": "enviar un regalo",
+      "giftShort": "Regalo",
+      "viewProfile": "Ver el perfil de {{name}}",
+      "openHostControls": "Abrir controles de host"
+    },
+    "chat": {
+      "title": "charla EN VIVO",
+      "placeholder": "Añade un comentario…",
+      "send": "Enviar",
+      "loading": "Conectándose para chatear…",
+      "empty": "Aún no hay comentarios. ¡Saluda!",
+      "error": "No se pudo conectar para chatear.",
+      "disabled": "Los comentarios están desactivados para este LIVE.",
+      "retry": "Rever",
+      "newMessages": "{{count}} mensajes nuevos"
+    },
+    "gifts": {
+      "title": "Regalos",
+      "coins": "{{count}} monedas",
+      "sent": "Enviaste {{name}}",
+      "loadError": "No se pudieron cargar los regalos."
+    },
+    "create": {
+      "pageTitle": "Vaya EN VIVO | vibrantemente",
+      "title": "Configura tu VIVO",
+      "detailsSection": "Detalles EN VIVO",
+      "coverLabel": "Imagen de portada",
+      "coverHint": "JPG, PNG o WEBP, hasta {{max}} MB. Una imagen de retrato funciona mejor.",
+      "chooseCover": "Elige imagen",
+      "changeCover": "Cambiar imagen",
+      "removeCover": "Eliminar",
+      "coverPreviewAlt": "Vista previa de la portada EN VIVO",
+      "titleLabel": "Título",
+      "titlePlaceholder": "¿De qué se trata tu VIVO?",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Dígales a los espectadores qué esperar (opcional)",
+      "categoryLabel": "Categoría",
+      "visibilityLabel": "¿Quién puede mirar?",
+      "visibility": {
+        "public": "Todos",
+        "followers": "Seguidores",
+        "friends": "Amigos"
+      },
+      "interactionSection": "Interacción",
+      "allowComments": "Permitir comentarios",
+      "allowGifts": "Permitir regalos",
+      "allowGiftsHint": "Los espectadores pueden enviarte regalos durante el EN VIVO.",
+      "allowGuests": "Permitir solicitudes de invitados",
+      "allowGuestsHint": "Los espectadores pueden solicitar unirse a su LIVE como invitados.",
+      "matureContent": "Contenido para adultos",
+      "matureContentHint": "Solo los espectadores mayores de 18 años pueden verlo.",
+      "cancel": "Cancelar",
+      "submit": "Crear EN VIVO",
+      "submitting": "Creando…",
+      "errors": {
+        "titleRequired": "Por favor introduce un título.",
+        "titleTooLong": "El título debe tener {{max}} caracteres o menos.",
+        "descriptionTooLong": "La descripción debe tener {{max}} caracteres o menos.",
+        "categoryRequired": "Por favor elija una categoría.",
+        "coverType": "Elija una imagen JPG, PNG o WEBP.",
+        "coverTooLarge": "La imagen debe tener {{max}} MB o menos.",
+        "submitFailed": "No se pudo crear tu LIVE. Por favor inténtalo de nuevo."
+      }
+    },
+    "host": {
+      "pageTitle": "Estudio EN VIVO | vibrantemente",
+      "status": {
+        "scheduled": "Listo",
+        "live": "VIVIR",
+        "ended": "Terminado"
+      },
+      "goLive": "Ir EN VIVO",
+      "endLive": "Finalizar EN VIVO",
+      "endConfirmTitle": "¿Termina esto EN VIVO?",
+      "endConfirmBody": "Los espectadores se desconectarán y no podrás reanudar este EN VIVO.",
+      "endedTitle": "Tu LIVE ha terminado",
+      "summaryViewers": "Espectadores",
+      "summaryLikes": "Gustos",
+      "muteMic": "Silenciar micrófono",
+      "unmuteMic": "Activar micrófono",
+      "turnOffCamera": "Apagar la cámara",
+      "turnOnCamera": "encender la cámara",
+      "cameraOff": "La cámara está apagada",
+      "settings": "Configuración EN VIVO",
+      "settingsSessionNote": "Estos cambios se aplican únicamente a esta sesión.",
+      "previewUnavailable": "La vista previa de la cámara aún no está disponible",
+      "previewUnavailableHint": "La transmisión desde su cámara será compatible una vez que el servidor de medios esté conectado.",
+      "chatBeforeStart": "El chat se abrirá cuando esté EN VIVO.",
+      "chatEnded": "El chat está cerrado porque este LIVE ha terminado.",
+      "actionFailed": "Algo salió mal. Por favor inténtalo de nuevo.",
+      "notOwnerTitle": "No puedes gestionar este EN VIVO",
+      "notOwnerDescription": "Solo el anfitrión puede abrir LIVE Studio para este LIVE."
+    }
   },
   "messagesPage": {
     "title": "Mensajes",

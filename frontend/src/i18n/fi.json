@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Pelaaminen",
-      "lifestyle": "Elämäntapa"
+      "lifestyle": "Elämäntapa",
+      "recommended": "Suositellaan sinulle"
+    },
+    "verified": "Vahvistettu tili",
+    "card": {
+      "watchAria": "Katso LIVE: {{title}}, {{host}}"
+    },
+    "states": {
+      "loading": "Ladataan…",
+      "retry": "Yritä uudelleen",
+      "backToDiscovery": "Takaisin LIVEen",
+      "errorTitle": "Jotain meni pieleen",
+      "discoveryError": "LIVE-lähetyksiä ei voitu ladata. Tarkista yhteys ja yritä uudelleen.",
+      "roomError": "Emme voineet ladata tätä LIVEä. Tarkista yhteys ja yritä uudelleen.",
+      "emptyTitle": "Ei LIVE-lähetyksiä juuri nyt",
+      "emptyCategory": "Tässä kategoriassa ei ole vielä LIVE-lähetyksiä. Check back soon.",
+      "emptyFollowing": "Seuraamasi sisällöntuottajat eivät ole tällä hetkellä LIVE-TV:ssä.",
+      "notFoundTitle": "LIVE ei löytynyt",
+      "notFoundDescription": "Tämä LIVE on saattanut päättyä tai se on poistettu."
+    },
+    "player": {
+      "ended": "Tämä LIVE on päättynyt",
+      "noCover": "Ei kansikuvaa"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Elävästi LIVE",
+      "follow": "Seuraa",
+      "following": "Jälkeen",
+      "like": "Pitää",
+      "share": "Jakaa",
+      "linkCopied": "Linkki kopioitu",
+      "gift": "Lähetä lahja",
+      "giftShort": "Lahja",
+      "viewProfile": "Näytä käyttäjän {{name}} profiili",
+      "openHostControls": "Avaa isäntäohjaimet"
+    },
+    "chat": {
+      "title": "LIVE-chat",
+      "placeholder": "Lisää kommentti…",
+      "send": "Lähetä",
+      "loading": "Yhdistetään chattiin…",
+      "empty": "Ei vielä kommentteja. Sano hei!",
+      "error": "Yhteyden muodostaminen keskusteluun epäonnistui.",
+      "disabled": "Kommentit on poistettu käytöstä tässä LIVE-lähetyksessä.",
+      "retry": "Yritä uudelleen",
+      "newMessages": "{{count}} uutta viestiä"
+    },
+    "gifts": {
+      "title": "Lahjat",
+      "coins": "{{count}} kolikkoa",
+      "sent": "Lähetit {{name}}",
+      "loadError": "Lahjojen lataaminen epäonnistui."
+    },
+    "create": {
+      "pageTitle": "Siirry LIVE | Elävästi",
+      "title": "Aseta LIVE",
+      "detailsSection": "LIVE tiedot",
+      "coverLabel": "Kansikuva",
+      "coverHint": "JPG, PNG tai WEBP, enintään {{max}} Mt. Muotokuva toimii parhaiten.",
+      "chooseCover": "Valitse kuva",
+      "changeCover": "Vaihda kuva",
+      "removeCover": "Poistaa",
+      "coverPreviewAlt": "LIVE-kannen esikatselu",
+      "titleLabel": "Otsikko",
+      "titlePlaceholder": "Mistä LIVE-tilassasi on kyse?",
+      "descriptionLabel": "Kuvaus",
+      "descriptionPlaceholder": "Kerro katsojille, mitä odottaa (valinnainen)",
+      "categoryLabel": "Luokka",
+      "visibilityLabel": "Kuka voi katsoa",
+      "visibility": {
+        "public": "Kaikki",
+        "followers": "Seuraajat",
+        "friends": "Ystävät"
+      },
+      "interactionSection": "Vuorovaikutus",
+      "allowComments": "Salli kommentit",
+      "allowGifts": "Salli lahjat",
+      "allowGiftsHint": "Katsojat voivat lähettää sinulle lahjoja LIVE-lähetyksen aikana.",
+      "allowGuests": "Salli vieraspyynnöt",
+      "allowGuestsHint": "Katsojat voivat pyytää pääsyä LIVE-lähetykseen vieraana.",
+      "matureContent": "Aikuisille suunnattu sisältö",
+      "matureContentHint": "Vain 18-vuotiaat ja sitä vanhemmat katsojat voivat katsoa.",
+      "cancel": "Peruuttaa",
+      "submit": "Luo LIVE",
+      "submitting": "Luodaan…",
+      "errors": {
+        "titleRequired": "Anna otsikko.",
+        "titleTooLong": "Otsikossa saa olla enintään {{max}} merkkiä.",
+        "descriptionTooLong": "Kuvauksessa saa olla enintään {{max}} merkkiä.",
+        "categoryRequired": "Valitse luokka.",
+        "coverType": "Valitse JPG-, PNG- tai WEBP-kuva.",
+        "coverTooLarge": "Kuvan on oltava {{max}} Mt tai pienempi.",
+        "submitFailed": "LIVE-lähetystäsi ei voitu luoda. Yritä uudelleen."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Studio | Elävästi",
+      "status": {
+        "scheduled": "Valmis",
+        "live": "ELÄÄ",
+        "ended": "Päättyi"
+      },
+      "goLive": "Siirry LIVE-lähetykseen",
+      "endLive": "Lopeta LIVE",
+      "endConfirmTitle": "Lopetetaanko tämä LIVE?",
+      "endConfirmBody": "Katsojien yhteys katkaistaan, etkä voi jatkaa tätä LIVE-lähetystä.",
+      "endedTitle": "LIVE on päättynyt",
+      "summaryViewers": "Katsojat",
+      "summaryLikes": "Tykkää",
+      "muteMic": "Mykistä mikrofoni",
+      "unmuteMic": "Poista mikrofonin mykistys",
+      "turnOffCamera": "Sammuta kamera",
+      "turnOnCamera": "Kytke kamera päälle",
+      "cameraOff": "Kamera on pois päältä",
+      "settings": "LIVE-asetukset",
+      "settingsSessionNote": "Nämä muutokset koskevat vain tätä istuntoa.",
+      "previewUnavailable": "Kameran esikatselu ei ole vielä saatavilla",
+      "previewUnavailableHint": "Suoratoistoa kamerasta tuetaan, kun mediapalvelin on yhdistetty.",
+      "chatBeforeStart": "Chat avautuu, kun aloitat LIVE-lähetyksen.",
+      "chatEnded": "Chat on suljettu, koska tämä LIVE on päättynyt.",
+      "actionFailed": "Jotain meni pieleen. Yritä uudelleen.",
+      "notOwnerTitle": "Et voi hallita tätä LIVE-lähetystä",
+      "notOwnerDescription": "Vain isäntä voi avata LIVE Studion tälle LIVElle."
     }
   },
   "messagesPage": {

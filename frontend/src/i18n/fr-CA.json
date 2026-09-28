@@ -592,7 +592,8 @@
     },
     "sections": {
       "gaming": "Jeux",
-      "lifestyle": "Style de vie"
+      "lifestyle": "Style de vie",
+      "recommended": "Recommandé pour vous"
     },
     "mute": "Mute",
     "heroHeadline": "Regardez maintenant et interagissez avec les autres en temps réel",
@@ -600,7 +601,128 @@
     "viewersLabel": "{{count}} watching",
     "previousLive": "Previous LIVE",
     "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE"
+    "refreshLive": "Switch LIVE",
+    "verified": "Compte vérifié",
+    "card": {
+      "watchAria": "Regardez EN DIRECT : {{title}} par {{host}}"
+    },
+    "states": {
+      "loading": "Chargement…",
+      "retry": "Essayer à nouveau",
+      "backToDiscovery": "Retour au LIVE",
+      "errorTitle": "Quelque chose s'est mal passé",
+      "discoveryError": "Nous n'avons pas pu charger les flux LIVE. Vérifiez votre connexion et réessayez.",
+      "roomError": "Nous n'avons pas pu charger ce LIVE. Vérifiez votre connexion et réessayez.",
+      "emptyTitle": "Pas de flux LIVE pour le moment",
+      "emptyCategory": "Il n’y a pas encore de flux LIVE dans cette catégorie. Revenez bientôt.",
+      "emptyFollowing": "Les créateurs que vous suivez ne sont pas EN DIRECT pour le moment.",
+      "notFoundTitle": "LIVE introuvable",
+      "notFoundDescription": "Ce LIVE a peut-être pris fin ou a été supprimé."
+    },
+    "player": {
+      "ended": "Ce LIVE est terminé",
+      "noCover": "Pas d'image de couverture"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Suivre",
+      "following": "Suivant",
+      "like": "Comme",
+      "share": "Partager",
+      "linkCopied": "Lien copié",
+      "gift": "Envoyer un cadeau",
+      "giftShort": "Cadeau",
+      "viewProfile": "Afficher le profil de {{name}}",
+      "openHostControls": "Ouvrir les contrôles de l'hôte"
+    },
+    "chat": {
+      "title": "Chat en direct",
+      "placeholder": "Ajouter un commentaire…",
+      "send": "Envoyer",
+      "loading": "Connexion pour discuter…",
+      "empty": "Pas encore de commentaires. Dites bonjour !",
+      "error": "Impossible de se connecter au chat.",
+      "disabled": "Les commentaires sont désactivés pour ce LIVE.",
+      "retry": "Réessayer",
+      "newMessages": "{{count}} nouveaux messages"
+    },
+    "gifts": {
+      "title": "Cadeaux",
+      "coins": "{{count}} pièces",
+      "sent": "Vous avez envoyé {{name}}",
+      "loadError": "Impossible de charger les cadeaux."
+    },
+    "create": {
+      "pageTitle": "Allez EN DIRECT | Vibement",
+      "title": "Configurez votre LIVE",
+      "detailsSection": "Détails EN DIRECT",
+      "coverLabel": "Image de couverture",
+      "coverHint": "JPG, PNG ou WEBP, jusqu'à {{max}} Mo. Une image portrait fonctionne mieux.",
+      "chooseCover": "Choisir une image",
+      "changeCover": "Changer l'image",
+      "removeCover": "Retirer",
+      "coverPreviewAlt": "Aperçu de la couverture EN DIRECT",
+      "titleLabel": "Titre",
+      "titlePlaceholder": "De quoi parle votre LIVE ?",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Dites aux spectateurs à quoi s'attendre (facultatif)",
+      "categoryLabel": "Catégorie",
+      "visibilityLabel": "Qui peut regarder",
+      "visibility": {
+        "public": "Tout le monde",
+        "followers": "Abonnés",
+        "friends": "Amis"
+      },
+      "interactionSection": "Interaction",
+      "allowComments": "Autoriser les commentaires",
+      "allowGifts": "Autoriser les cadeaux",
+      "allowGiftsHint": "Les téléspectateurs peuvent vous envoyer des cadeaux pendant le LIVE.",
+      "allowGuests": "Autoriser les demandes d'invités",
+      "allowGuestsHint": "Les téléspectateurs peuvent demander à rejoindre votre LIVE en tant qu'invité.",
+      "matureContent": "Contenu réservé aux adultes",
+      "matureContentHint": "Seuls les téléspectateurs âgés de 18 ans et plus peuvent regarder.",
+      "cancel": "Annuler",
+      "submit": "Créer EN DIRECT",
+      "submitting": "Création…",
+      "errors": {
+        "titleRequired": "Veuillez saisir un titre.",
+        "titleTooLong": "Le titre doit comporter {{max}} caractères au maximum.",
+        "descriptionTooLong": "La description doit comporter {{max}} caractères ou moins.",
+        "categoryRequired": "Veuillez choisir une catégorie.",
+        "coverType": "Veuillez choisir une image JPG, PNG ou WEBP.",
+        "coverTooLarge": "L'image doit faire {{max}} Mo ou moins.",
+        "submitFailed": "Impossible de créer votre LIVE. Veuillez réessayer."
+      }
+    },
+    "host": {
+      "pageTitle": "Studio EN DIRECT | Vibement",
+      "status": {
+        "scheduled": "Prêt",
+        "live": "EN DIRECT",
+        "ended": "Terminé"
+      },
+      "goLive": "Allez EN DIRECT",
+      "endLive": "Terminer EN DIRECT",
+      "endConfirmTitle": "Mettre fin à ce LIVE ?",
+      "endConfirmBody": "Les téléspectateurs seront déconnectés et vous ne pourrez pas reprendre ce LIVE.",
+      "endedTitle": "Votre LIVE est terminé",
+      "summaryViewers": "Téléspectateurs",
+      "summaryLikes": "Goûts",
+      "muteMic": "Couper le microphone",
+      "unmuteMic": "Activer le microphone",
+      "turnOffCamera": "Éteindre la caméra",
+      "turnOnCamera": "Allumer la caméra",
+      "cameraOff": "La caméra est éteinte",
+      "settings": "Paramètres EN DIRECT",
+      "settingsSessionNote": "Ces changements s'appliquent à cette session uniquement.",
+      "previewUnavailable": "L'aperçu de la caméra n'est pas encore disponible",
+      "previewUnavailableHint": "Le streaming depuis votre caméra sera pris en charge une fois le serveur multimédia connecté.",
+      "chatBeforeStart": "Le chat s'ouvrira lorsque vous passerez en direct.",
+      "chatEnded": "Le chat est fermé car ce LIVE est terminé.",
+      "actionFailed": "Quelque chose s'est mal passé. Veuillez réessayer.",
+      "notOwnerTitle": "Vous ne pouvez pas gérer ça en direct",
+      "notOwnerDescription": "Seul l'hôte peut ouvrir LIVE Studio pour ce LIVE."
+    }
   },
   "messagesPage": {
     "title": "Messages",

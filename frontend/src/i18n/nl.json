@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Gamen",
-      "lifestyle": "Levensstijl"
+      "lifestyle": "Levensstijl",
+      "recommended": "Aanbevolen voor jou"
+    },
+    "verified": "Geverifieerd account",
+    "card": {
+      "watchAria": "Bekijk LIVE: {{title}} door {{host}}"
+    },
+    "states": {
+      "loading": "Laden…",
+      "retry": "Probeer het opnieuw",
+      "backToDiscovery": "Terug naar LIVE",
+      "errorTitle": "Er is iets misgegaan",
+      "discoveryError": "We konden LIVE-streams niet laden. Controleer uw verbinding en probeer het opnieuw.",
+      "roomError": "We konden dit niet LIVE laden. Controleer uw verbinding en probeer het opnieuw.",
+      "emptyTitle": "Er zijn momenteel geen LIVE-streams",
+      "emptyCategory": "Er zijn nog geen LIVE-streams in deze categorie. Kom snel terug.",
+      "emptyFollowing": "Creators die je volgt, zijn momenteel niet LIVE.",
+      "notFoundTitle": "LIVE niet gevonden",
+      "notFoundDescription": "Deze LIVE is mogelijk beëindigd of verwijderd."
+    },
+    "player": {
+      "ended": "Deze LIVE is geëindigd",
+      "noCover": "Geen omslagfoto"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Volgen",
+      "following": "Volgende",
+      "like": "Leuk vinden",
+      "share": "Deel",
+      "linkCopied": "Link gekopieerd",
+      "gift": "Stuur een cadeau",
+      "giftShort": "Geschenk",
+      "viewProfile": "Bekijk het profiel van {{name}}.",
+      "openHostControls": "Hostbesturingselementen openen"
+    },
+    "chat": {
+      "title": "LIVEchat",
+      "placeholder": "Voeg een reactie toe…",
+      "send": "Versturen",
+      "loading": "Verbinding maken met chatten…",
+      "empty": "Nog geen opmerkingen. Zeg hallo!",
+      "error": "Kan geen verbinding maken met chatten.",
+      "disabled": "Reacties zijn uitgeschakeld voor deze LIVE.",
+      "retry": "Opnieuw proberen",
+      "newMessages": "{{count}} nieuwe berichten"
+    },
+    "gifts": {
+      "title": "Geschenken",
+      "coins": "{{count}} munten",
+      "sent": "Je hebt {{name}} verzonden",
+      "loadError": "Kan cadeaus niet laden."
+    },
+    "create": {
+      "pageTitle": "Ga LIVE | Levendig",
+      "title": "Stel uw LIVE in",
+      "detailsSection": "LIVE-details",
+      "coverLabel": "Omslagafbeelding",
+      "coverHint": "JPG, PNG of WEBP, maximaal {{max}} MB. Een portretfoto werkt het beste.",
+      "chooseCover": "Kies afbeelding",
+      "changeCover": "Verander afbeelding",
+      "removeCover": "Verwijderen",
+      "coverPreviewAlt": "LIVE omslagvoorbeeld",
+      "titleLabel": "Titel",
+      "titlePlaceholder": "Waar gaat jouw LIVE over?",
+      "descriptionLabel": "Beschrijving",
+      "descriptionPlaceholder": "Vertel kijkers wat ze kunnen verwachten (optioneel)",
+      "categoryLabel": "Categorie",
+      "visibilityLabel": "Wie kan kijken",
+      "visibility": {
+        "public": "Iedereen",
+        "followers": "Volgers",
+        "friends": "Vrienden"
+      },
+      "interactionSection": "Interactie",
+      "allowComments": "Reacties toestaan",
+      "allowGifts": "Sta geschenken toe",
+      "allowGiftsHint": "Kijkers kunnen je tijdens de LIVE cadeaus sturen.",
+      "allowGuests": "Sta gastverzoeken toe",
+      "allowGuestsHint": "Kijkers kunnen een verzoek indienen om als gast deel te nemen aan je LIVE.",
+      "matureContent": "Volwassen inhoud",
+      "matureContentHint": "Alleen kijkers van 18 jaar en ouder kunnen kijken.",
+      "cancel": "Annuleren",
+      "submit": "Creëer LIVE",
+      "submitting": "Creëren…",
+      "errors": {
+        "titleRequired": "Voer een titel in.",
+        "titleTooLong": "Titel moet uit {{max}} tekens of minder bestaan.",
+        "descriptionTooLong": "Beschrijving moet uit {{max}} tekens of minder bestaan.",
+        "categoryRequired": "Kies een categorie.",
+        "coverType": "Kies een JPG-, PNG- of WEBP-afbeelding.",
+        "coverTooLarge": "Afbeelding moet {{max}} MB of kleiner zijn.",
+        "submitFailed": "Kan je LIVE niet maken. Probeer het opnieuw."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE-studio | Levendig",
+      "status": {
+        "scheduled": "Klaar",
+        "live": "LIVE",
+        "ended": "Beëindigd"
+      },
+      "goLive": "Ga LIVE",
+      "endLive": "Einde LIVE",
+      "endConfirmTitle": "Dit LIVE beëindigen?",
+      "endConfirmBody": "De verbinding met de kijkers wordt verbroken en je kunt deze LIVE niet hervatten.",
+      "endedTitle": "Je LIVE is beëindigd",
+      "summaryViewers": "Kijkers",
+      "summaryLikes": "Vind ik leuk",
+      "muteMic": "Microfoon dempen",
+      "unmuteMic": "Schakel de microfoon uit",
+      "turnOffCamera": "Schakel de camera uit",
+      "turnOnCamera": "Schakel de camera in",
+      "cameraOff": "Camera staat uit",
+      "settings": "LIVE-instellingen",
+      "settingsSessionNote": "Deze wijzigingen zijn alleen van toepassing op deze sessie.",
+      "previewUnavailable": "Cameravoorbeeld is nog niet beschikbaar",
+      "previewUnavailableHint": "Streaming vanaf uw camera wordt ondersteund zodra de mediaserver is aangesloten.",
+      "chatBeforeStart": "De chat wordt geopend wanneer u LIVE gaat.",
+      "chatEnded": "Chat is gesloten omdat deze LIVE is afgelopen.",
+      "actionFailed": "Er is iets misgegaan. Probeer het opnieuw.",
+      "notOwnerTitle": "Je kunt dit niet LIVE beheren",
+      "notOwnerDescription": "Alleen de host kan LIVE Studio openen voor deze LIVE."
     }
   },
   "messagesPage": {

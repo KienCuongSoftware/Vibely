@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Gaming",
-      "lifestyle": "Lifestyle"
+      "lifestyle": "Lifestyle",
+      "recommended": "מומלץ עבורך"
+    },
+    "verified": "חשבון מאומת",
+    "card": {
+      "watchAria": "צפה בשידור חי: {{title}} מאת {{host}}"
+    },
+    "states": {
+      "loading": "טְעִינָה…",
+      "retry": "נסה שוב",
+      "backToDiscovery": "חזרה ל-LIVE",
+      "errorTitle": "משהו השתבש",
+      "discoveryError": "לא הצלחנו לטעון שידורים חיים. בדוק את החיבור שלך ונסה שוב.",
+      "roomError": "לא יכולנו לטעון את זה LIVE. בדוק את החיבור שלך ונסה שוב.",
+      "emptyTitle": "אין שידורים חיים כרגע",
+      "emptyCategory": "אין עדיין שידורים חיים בקטגוריה זו. בדוק שוב בקרוב.",
+      "emptyFollowing": "יוצרים שאתה עוקב אחריהם אינם בשידור חי כרגע.",
+      "notFoundTitle": "LIVE לא נמצא",
+      "notFoundDescription": "ייתכן שה-LIVE הזה הסתיים או הוסר."
+    },
+    "player": {
+      "ended": "LIVE זה הסתיים",
+      "noCover": "אין תמונת שער"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "לַעֲקוֹב",
+      "following": "הַבָּא",
+      "like": "כְּמוֹ",
+      "share": "לַחֲלוֹק",
+      "linkCopied": "הקישור הועתק",
+      "gift": "שלח מתנה",
+      "giftShort": "מַתָנָה",
+      "viewProfile": "הצג את הפרופיל של {{name}}",
+      "openHostControls": "פתח את פקדי המארח"
+    },
+    "chat": {
+      "title": "צ'אט בשידור חי",
+      "placeholder": "הוסף תגובה...",
+      "send": "לִשְׁלוֹחַ",
+      "loading": "מתחבר לצ'אט...",
+      "empty": "אין תגובות עדיין. תגיד שלום!",
+      "error": "לא ניתן להתחבר לצ'אט.",
+      "disabled": "תגובות כבויות עבור LIVE זה.",
+      "retry": "נסה שוב",
+      "newMessages": "{{count}} הודעות חדשות"
+    },
+    "gifts": {
+      "title": "מתנות",
+      "coins": "{{count}} מטבעות",
+      "sent": "שלחת את {{name}}",
+      "loadError": "לא ניתן היה לטעון מתנות."
+    },
+    "create": {
+      "pageTitle": "עבור בשידור חי | ברוגז",
+      "title": "הגדר את ה-LIVE שלך",
+      "detailsSection": "פרטים בשידור חי",
+      "coverLabel": "תמונת שער",
+      "coverHint": "JPG, PNG או WEBP, עד {{max}} MB. תמונת פורטרט עובדת הכי טוב.",
+      "chooseCover": "בחר תמונה",
+      "changeCover": "שנה תמונה",
+      "removeCover": "לְהַסִיר",
+      "coverPreviewAlt": "תצוגה מקדימה של השער בשידור חי",
+      "titleLabel": "כּוֹתֶרֶת",
+      "titlePlaceholder": "על מה ה-LIVE שלך?",
+      "descriptionLabel": "תֵאוּר",
+      "descriptionPlaceholder": "ספר לצופים למה לצפות (אופציונלי)",
+      "categoryLabel": "קָטֵגוֹרִיָה",
+      "visibilityLabel": "מי יכול לצפות",
+      "visibility": {
+        "public": "כֹּל אֶחָד",
+        "followers": "עוקבים",
+        "friends": "חברים"
+      },
+      "interactionSection": "אינטראקציה",
+      "allowComments": "אפשר הערות",
+      "allowGifts": "אפשר מתנות",
+      "allowGiftsHint": "הצופים יכולים לשלוח לך מתנות במהלך ה-LIVE.",
+      "allowGuests": "אפשר בקשות אורחים",
+      "allowGuestsHint": "צופים יכולים לבקש להצטרף ל-LIVE שלך כאורח.",
+      "matureContent": "תוכן בוגר",
+      "matureContentHint": "רק צופים בני 18 ומעלה יכולים לצפות.",
+      "cancel": "לְבַטֵל",
+      "submit": "צור LIVE",
+      "submitting": "יוצר...",
+      "errors": {
+        "titleRequired": "נא להזין כותרת.",
+        "titleTooLong": "הכותרת חייבת להכיל {{max}} תווים או פחות.",
+        "descriptionTooLong": "התיאור חייב להכיל {{max}} תווים או פחות.",
+        "categoryRequired": "אנא בחר קטגוריה.",
+        "coverType": "אנא בחר תמונת JPG, PNG או WEBP.",
+        "coverTooLarge": "התמונה חייבת להיות {{max}} MB או פחות.",
+        "submitFailed": "לא ניתן ליצור את ה-LIVE שלך. אנא נסה שוב."
+      }
+    },
+    "host": {
+      "pageTitle": "סטודיו LIVE | ברוגז",
+      "status": {
+        "scheduled": "מוּכָן",
+        "live": "לִחיוֹת",
+        "ended": "הסתיים"
+      },
+      "goLive": "עבור לייב",
+      "endLive": "סיים בשידור חי",
+      "endConfirmTitle": "לסיים את זה בשידור חי?",
+      "endConfirmBody": "הצופים ינותקו ולא תוכל להמשיך את זה בשידור חי.",
+      "endedTitle": "ה-LIVE שלך הסתיים",
+      "summaryViewers": "צופים",
+      "summaryLikes": "אוהב",
+      "muteMic": "השתקת מיקרופון",
+      "unmuteMic": "בטל השתקת המיקרופון",
+      "turnOffCamera": "כבה את המצלמה",
+      "turnOnCamera": "הפעל את המצלמה",
+      "cameraOff": "המצלמה כבויה",
+      "settings": "הגדרות LIVE",
+      "settingsSessionNote": "שינויים אלה חלים על הפעלה זו בלבד.",
+      "previewUnavailable": "תצוגה מקדימה של המצלמה אינה זמינה עדיין",
+      "previewUnavailableHint": "הזרמה מהמצלמה שלך תתמוך ברגע ששרת המדיה יתחבר.",
+      "chatBeforeStart": "הצ'אט ייפתח כשתעבור בשידור חי.",
+      "chatEnded": "הצ'אט נסגר כי ה-LIB הזה הסתיים.",
+      "actionFailed": "משהו השתבש. אנא נסה שוב.",
+      "notOwnerTitle": "אתה לא יכול לנהל את זה LIVE",
+      "notOwnerDescription": "רק המארח יכול לפתוח את LIVE Studio עבור LIVE זה."
     }
   },
   "messagesPage": {

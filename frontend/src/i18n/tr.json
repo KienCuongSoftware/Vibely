@@ -592,7 +592,8 @@
     },
     "sections": {
       "gaming": "Oyun",
-      "lifestyle": "Yaşam tarzı"
+      "lifestyle": "Yaşam tarzı",
+      "recommended": "Sizin için önerilenler"
     },
     "mute": "Mute",
     "heroHeadline": "Şimdi izleyin ve başkalarıyla gerçek zamanlı olarak etkileşime geçin",
@@ -600,7 +601,128 @@
     "viewersLabel": "{{count}} watching",
     "previousLive": "Previous LIVE",
     "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE"
+    "refreshLive": "Switch LIVE",
+    "verified": "Doğrulanmış hesap",
+    "card": {
+      "watchAria": "CANLI izle: {{title}}, {{host}}"
+    },
+    "states": {
+      "loading": "Yükleniyor…",
+      "retry": "Tekrar deneyin",
+      "backToDiscovery": "LIVE'a geri dön",
+      "errorTitle": "Bir şeyler ters gitti",
+      "discoveryError": "CANLI yayınları yükleyemedik. Bağlantınızı kontrol edip tekrar deneyin.",
+      "roomError": "Bunu CANLI olarak yükleyemedik. Bağlantınızı kontrol edip tekrar deneyin.",
+      "emptyTitle": "Şu anda CANLI yayın yok",
+      "emptyCategory": "Bu kategoride henüz CANLI yayın yok. Yakında tekrar kontrol edin.",
+      "emptyFollowing": "Takip ettiğiniz yaratıcılar şu anda CANLI değil.",
+      "notFoundTitle": "CANLI bulunamadı",
+      "notFoundDescription": "Bu CANLI sona ermiş veya kaldırılmış olabilir."
+    },
+    "player": {
+      "ended": "Bu CANLI sona erdi",
+      "noCover": "Kapak resmi yok"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Takip etmek",
+      "following": "Takip etme",
+      "like": "Beğenmek",
+      "share": "Paylaşmak",
+      "linkCopied": "Bağlantı kopyalandı",
+      "gift": "Hediye gönder",
+      "giftShort": "Hediye",
+      "viewProfile": "{{name}} adlı kişinin profilini görüntüleyin",
+      "openHostControls": "Ana makine kontrollerini aç"
+    },
+    "chat": {
+      "title": "CANLI sohbet",
+      "placeholder": "Yorum ekleyin…",
+      "send": "Göndermek",
+      "loading": "Sohbete bağlanılıyor…",
+      "empty": "Henüz yorum yok. Merhaba deyin!",
+      "error": "Sohbete bağlanılamadı.",
+      "disabled": "Bu CANLI yayında yorumlar kapatılmıştır.",
+      "retry": "Yeniden dene",
+      "newMessages": "{{count}} yeni mesaj"
+    },
+    "gifts": {
+      "title": "Hediyeler",
+      "coins": "{{count}} jeton",
+      "sent": "{{name}} gönderdiniz",
+      "loadError": "Hediyeler yüklenemedi."
+    },
+    "create": {
+      "pageTitle": "CANLI ol | Canlı bir şekilde",
+      "title": "LIVE'ınızı kurun",
+      "detailsSection": "CANLI ayrıntılar",
+      "coverLabel": "Kapak resmi",
+      "coverHint": "JPG, PNG veya WEBP, {{max}} MB'a kadar. Portre görüntüsü en iyi sonucu verir.",
+      "chooseCover": "Resim seç",
+      "changeCover": "Resmi değiştir",
+      "removeCover": "Kaldırmak",
+      "coverPreviewAlt": "CANLI kapak önizlemesi",
+      "titleLabel": "Başlık",
+      "titlePlaceholder": "CANLI yayınınız ne hakkında?",
+      "descriptionLabel": "Tanım",
+      "descriptionPlaceholder": "İzleyicilere ne beklemeleri gerektiğini söyleyin (isteğe bağlı)",
+      "categoryLabel": "Kategori",
+      "visibilityLabel": "Kimler izleyebilir?",
+      "visibility": {
+        "public": "Herkes",
+        "followers": "Takipçiler",
+        "friends": "Arkadaşlar"
+      },
+      "interactionSection": "Etkileşim",
+      "allowComments": "Yorumlara izin ver",
+      "allowGifts": "Hediyelere izin ver",
+      "allowGiftsHint": "İzleyiciler CANLI sırasında size hediyeler gönderebilir.",
+      "allowGuests": "Misafir isteklerine izin ver",
+      "allowGuestsHint": "İzleyiciler, CANLI yayınınıza konuk olarak katılma talebinde bulunabilir.",
+      "matureContent": "Yetişkinlere yönelik içerik",
+      "matureContentHint": "Yalnızca 18 yaş ve üzeri izleyiciler izleyebilir.",
+      "cancel": "İptal etmek",
+      "submit": "CANLI oluştur",
+      "submitting": "Oluşturuluyor…",
+      "errors": {
+        "titleRequired": "Lütfen bir başlık girin.",
+        "titleTooLong": "Başlık {{max}} karakter veya daha az olmalıdır.",
+        "descriptionTooLong": "Açıklama {{max}} karakter veya daha az olmalıdır.",
+        "categoryRequired": "Lütfen bir kategori seçin.",
+        "coverType": "Lütfen bir JPG, PNG veya WEBP resmi seçin.",
+        "coverTooLarge": "Resim {{max}} MB veya daha küçük olmalıdır.",
+        "submitFailed": "CANLI yayınınız oluşturulamadı. Lütfen tekrar deneyin."
+      }
+    },
+    "host": {
+      "pageTitle": "CANLI Stüdyo | Canlı bir şekilde",
+      "status": {
+        "scheduled": "Hazır",
+        "live": "CANLI",
+        "ended": "Sona erdi"
+      },
+      "goLive": "CANLI ol",
+      "endLive": "CANLI SONUÇ",
+      "endConfirmTitle": "Bu CANLI sonlandırılsın mı?",
+      "endConfirmBody": "İzleyicilerin bağlantısı kesilecek ve bu CANLI yayına devam edemeyeceksiniz.",
+      "endedTitle": "CANLI yayınınız sona erdi",
+      "summaryViewers": "İzleyiciler",
+      "summaryLikes": "Beğeniler",
+      "muteMic": "Mikrofonun sesini kapat",
+      "unmuteMic": "Mikrofonun sesini aç",
+      "turnOffCamera": "Kamerayı kapat",
+      "turnOnCamera": "Kamerayı aç",
+      "cameraOff": "Kamera kapalı",
+      "settings": "CANLI ayarlar",
+      "settingsSessionNote": "Bu değişiklikler yalnızca bu oturum için geçerlidir.",
+      "previewUnavailable": "Kamera önizlemesi henüz kullanılamıyor",
+      "previewUnavailableHint": "Medya sunucusu bağlandıktan sonra kameranızdan akış desteklenecektir.",
+      "chatBeforeStart": "CANLI yayına geçtiğinizde sohbet açılacaktır.",
+      "chatEnded": "Bu CANLI sona erdiğinden sohbet kapatıldı.",
+      "actionFailed": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+      "notOwnerTitle": "Bu CANLI'yı yönetemezsiniz",
+      "notOwnerDescription": "Bu LIVE için yalnızca toplantı sahibi LIVE Studio'yu açabilir."
+    }
   },
   "messagesPage": {
     "title": "Mesajlar",

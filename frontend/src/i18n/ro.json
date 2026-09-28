@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Jocuri",
-      "lifestyle": "Stil de viață"
+      "lifestyle": "Stil de viață",
+      "recommended": "Recomandat pentru tine"
+    },
+    "verified": "Cont verificat",
+    "card": {
+      "watchAria": "Urmărește LIVE: {{title}} de {{host}}"
+    },
+    "states": {
+      "loading": "Încărcare…",
+      "retry": "Încearcă din nou",
+      "backToDiscovery": "Înapoi la LIVE",
+      "errorTitle": "Ceva a mers prost",
+      "discoveryError": "Nu am putut încărca fluxurile LIVE. Verificați conexiunea și încercați din nou.",
+      "roomError": "Nu am putut încărca acest LIVE. Verificați conexiunea și încercați din nou.",
+      "emptyTitle": "Nu există fluxuri LIVE momentan",
+      "emptyCategory": "Nu există încă streamuri LIVE în această categorie. Reveniți în curând.",
+      "emptyFollowing": "Creatorii pe care îi urmărești nu sunt LIVE în acest moment.",
+      "notFoundTitle": "LIVE nu a fost găsit",
+      "notFoundDescription": "Este posibil ca acest LIVE să se fi încheiat sau să fi fost eliminat."
+    },
+    "player": {
+      "ended": "Acest LIVE s-a încheiat",
+      "noCover": "Nicio imagine de copertă"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Urmăriți",
+      "following": "Urmând",
+      "like": "Ca",
+      "share": "Distribuie",
+      "linkCopied": "Link copiat",
+      "gift": "Trimite un cadou",
+      "giftShort": "Cadou",
+      "viewProfile": "Vizualizați profilul lui {{name}}",
+      "openHostControls": "Deschide controalele gazdei"
+    },
+    "chat": {
+      "title": "chat LIVE",
+      "placeholder": "Adaugă un comentariu…",
+      "send": "Trimite",
+      "loading": "Se conectează la chat...",
+      "empty": "Niciun comentariu încă. Salută!",
+      "error": "Nu s-a putut conecta la chat.",
+      "disabled": "Comentariile sunt dezactivate pentru acest LIVE.",
+      "retry": "Reîncercați",
+      "newMessages": "{{count}} mesaje noi"
+    },
+    "gifts": {
+      "title": "Cadouri",
+      "coins": "{{count}} monede",
+      "sent": "Ai trimis {{name}}",
+      "loadError": "Nu s-au putut încărca cadourile."
+    },
+    "create": {
+      "pageTitle": "Intră LIVE | Vibely",
+      "title": "Configurați-vă LIVE",
+      "detailsSection": "detalii LIVE",
+      "coverLabel": "Imagine de copertă",
+      "coverHint": "JPG, PNG sau WEBP, până la {{max}} MB. O imagine portret funcționează cel mai bine.",
+      "chooseCover": "Alege imaginea",
+      "changeCover": "Schimbați imaginea",
+      "removeCover": "Elimina",
+      "coverPreviewAlt": "Previzualizare copertă LIVE",
+      "titleLabel": "Titlu",
+      "titlePlaceholder": "Despre ce este LIVE-ul tău?",
+      "descriptionLabel": "Descriere",
+      "descriptionPlaceholder": "Spuneți spectatorilor la ce să se aștepte (opțional)",
+      "categoryLabel": "Categorie",
+      "visibilityLabel": "Cine poate urmări",
+      "visibility": {
+        "public": "Toată lumea",
+        "followers": "Urmaritori",
+        "friends": "Prieteni"
+      },
+      "interactionSection": "Interacţiune",
+      "allowComments": "Permite comentarii",
+      "allowGifts": "Permite cadouri",
+      "allowGiftsHint": "Spectatorii vă pot trimite cadouri în timpul LIVE.",
+      "allowGuests": "Permiteți solicitările oaspeților",
+      "allowGuestsHint": "Spectatorii pot solicita să se alăture LIVE-ului tău ca invitat.",
+      "matureContent": "Conținut pentru adulți",
+      "matureContentHint": "Numai spectatorii cu vârsta de 18 ani și peste pot viziona.",
+      "cancel": "Anula",
+      "submit": "Creați LIVE",
+      "submitting": "Se creează…",
+      "errors": {
+        "titleRequired": "Vă rugăm să introduceți un titlu.",
+        "titleTooLong": "Titlul trebuie să aibă maximum {{max}} caractere.",
+        "descriptionTooLong": "Descrierea trebuie să aibă maximum {{max}} caractere.",
+        "categoryRequired": "Vă rugăm să alegeți o categorie.",
+        "coverType": "Vă rugăm să alegeți o imagine JPG, PNG sau WEBP.",
+        "coverTooLarge": "Imaginea trebuie să aibă {{max}} MB sau mai mică.",
+        "submitFailed": "Nu s-a putut crea LIVE. Vă rugăm să încercați din nou."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Studio | Vibely",
+      "status": {
+        "scheduled": "Gata",
+        "live": "TRĂI",
+        "ended": "Încheiat"
+      },
+      "goLive": "Intră LIVE",
+      "endLive": "Încheiați LIVE",
+      "endConfirmTitle": "Încheiați acest LIVE?",
+      "endConfirmBody": "Spectatorii vor fi deconectați și nu veți putea relua acest LIVE.",
+      "endedTitle": "LIVE-ul tău s-a încheiat",
+      "summaryViewers": "Spectatori",
+      "summaryLikes": "Like",
+      "muteMic": "Dezactivați microfonul",
+      "unmuteMic": "Activați microfonul",
+      "turnOffCamera": "Opriți camera",
+      "turnOnCamera": "Porniți camera",
+      "cameraOff": "Camera este oprită",
+      "settings": "setări LIVE",
+      "settingsSessionNote": "Aceste modificări se aplică numai acestei sesiuni.",
+      "previewUnavailable": "Previzualizarea camerei nu este încă disponibilă",
+      "previewUnavailableHint": "Redarea în flux de pe camera dvs. va fi acceptată odată ce serverul media este conectat.",
+      "chatBeforeStart": "Chatul se va deschide când intri în LIVE.",
+      "chatEnded": "Chatul este închis deoarece acest LIVE s-a încheiat.",
+      "actionFailed": "Ceva a mers prost. Vă rugăm să încercați din nou.",
+      "notOwnerTitle": "Nu poți gestiona acest LIVE",
+      "notOwnerDescription": "Doar gazda poate deschide LIVE Studio pentru acest LIVE."
     }
   },
   "messagesPage": {

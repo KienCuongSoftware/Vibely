@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Igranje",
-      "lifestyle": "Življenjski slog"
+      "lifestyle": "Življenjski slog",
+      "recommended": "Priporočeno za vas"
+    },
+    "verified": "Preverjen račun",
+    "card": {
+      "watchAria": "Oglejte si V ŽIVO: {{title}} avtor {{host}}"
+    },
+    "states": {
+      "loading": "Nalaganje ...",
+      "retry": "poskusi ponovno",
+      "backToDiscovery": "Nazaj na V ŽIVO",
+      "errorTitle": "Nekaj ​​je šlo narobe",
+      "discoveryError": "Pretokov V ŽIVO nismo mogli naložiti. Preverite povezavo in poskusite znova.",
+      "roomError": "Tega nismo mogli naložiti V ŽIVO. Preverite povezavo in poskusite znova.",
+      "emptyTitle": "Trenutno ni prenosov V ŽIVO",
+      "emptyCategory": "V tej kategoriji še ni prenosov V ŽIVO. Preverite znova kmalu.",
+      "emptyFollowing": "Ustvarjalci, ki jih spremljate, trenutno niso V ŽIVO.",
+      "notFoundTitle": "V ŽIVO ni mogoče najti",
+      "notFoundDescription": "Ta LIVE se je morda končal ali je bil odstranjen."
+    },
+    "player": {
+      "ended": "Ta LIVE se je končal",
+      "noCover": "Brez naslovne slike"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Sledi",
+      "following": "Sledim",
+      "like": "Všeč mi je",
+      "share": "Delite",
+      "linkCopied": "Povezava je kopirana",
+      "gift": "Pošljite darilo",
+      "giftShort": "Darilo",
+      "viewProfile": "Oglejte si profil osebe {{name}}",
+      "openHostControls": "Odprite nadzor gostitelja"
+    },
+    "chat": {
+      "title": "Klepet v ŽIVO",
+      "placeholder": "Dodajte komentar ...",
+      "send": "Pošlji",
+      "loading": "Povezovanje s klepetom ...",
+      "empty": "Še ni komentarjev. Pozdravi!",
+      "error": "Povezave s klepetom ni bilo mogoče vzpostaviti.",
+      "disabled": "Komentarji so za to V ŽIVO izklopljeni.",
+      "retry": "Poskusite znova",
+      "newMessages": "{{count}} novih sporočil"
+    },
+    "gifts": {
+      "title": "darila",
+      "coins": "{{count}} kovancev",
+      "sent": "Poslali ste {{name}}",
+      "loadError": "Daril ni bilo mogoče naložiti."
+    },
+    "create": {
+      "pageTitle": "Pojdi V ŽIVO | Vibely",
+      "title": "Nastavite LIVE",
+      "detailsSection": "Podrobnosti V ŽIVO",
+      "coverLabel": "Naslovna slika",
+      "coverHint": "JPG, PNG ali WEBP, do {{max}} MB. Najbolje deluje portretna slika.",
+      "chooseCover": "Izberite sliko",
+      "changeCover": "Spremeni sliko",
+      "removeCover": "Odstrani",
+      "coverPreviewAlt": "Predogled naslovnice V ŽIVO",
+      "titleLabel": "Naslov",
+      "titlePlaceholder": "O čem govori vaš LIVE?",
+      "descriptionLabel": "Opis",
+      "descriptionPlaceholder": "Povejte gledalcem, kaj lahko pričakujejo (izbirno)",
+      "categoryLabel": "Kategorija",
+      "visibilityLabel": "Kdo lahko gleda",
+      "visibility": {
+        "public": "Vsi",
+        "followers": "Sledilci",
+        "friends": "prijatelji"
+      },
+      "interactionSection": "Interakcija",
+      "allowComments": "Dovoli komentarje",
+      "allowGifts": "Dovoli darila",
+      "allowGiftsHint": "Gledalci vam lahko med LIVE pošljejo darila.",
+      "allowGuests": "Dovoli zahteve gostov",
+      "allowGuestsHint": "Gledalci lahko zahtevajo, da se pridružijo vašemu V ŽIVO kot gost.",
+      "matureContent": "Vsebina za odrasle",
+      "matureContentHint": "Ogledajo si ga lahko samo gledalci, stari 18 let in več.",
+      "cancel": "Prekliči",
+      "submit": "Ustvari V ŽIVO",
+      "submitting": "Ustvarjanje ...",
+      "errors": {
+        "titleRequired": "Vnesite naslov.",
+        "titleTooLong": "Naslov mora vsebovati {{max}} znakov ali manj.",
+        "descriptionTooLong": "Opis mora imeti {{max}} znakov ali manj.",
+        "categoryRequired": "Izberite kategorijo.",
+        "coverType": "Izberite sliko JPG, PNG ali WEBP.",
+        "coverTooLarge": "Slika mora biti {{max}} MB ali manjša.",
+        "submitFailed": "Vašega V ŽIVO ni bilo mogoče ustvariti. prosim poskusite ponovno"
+      }
+    },
+    "host": {
+      "pageTitle": "Studio V ŽIVO | Vibely",
+      "status": {
+        "scheduled": "pripravljena",
+        "live": "V ŽIVO",
+        "ended": "Končano"
+      },
+      "goLive": "Pojdi V ŽIVO",
+      "endLive": "Konec V ŽIVO",
+      "endConfirmTitle": "Končati to V ŽIVO?",
+      "endConfirmBody": "Gledalci bodo prekinjeni in tega V ŽIVO ne boste mogli nadaljevati.",
+      "endedTitle": "Vaš LIVE se je končal",
+      "summaryViewers": "Gledalci",
+      "summaryLikes": "Všeč mi je",
+      "muteMic": "Izklopi mikrofon",
+      "unmuteMic": "Vklopi mikrofon",
+      "turnOffCamera": "Izklopi kamero",
+      "turnOnCamera": "Vklopi kamero",
+      "cameraOff": "Kamera je izklopljena",
+      "settings": "LIVE nastavitve",
+      "settingsSessionNote": "Te spremembe veljajo samo za to sejo.",
+      "previewUnavailable": "Predogled kamere še ni na voljo",
+      "previewUnavailableHint": "Pretakanje iz vaše kamere bo podprto, ko bo medijski strežnik povezan.",
+      "chatBeforeStart": "Klepet se bo odprl, ko boste šli v ŽIVO.",
+      "chatEnded": "Klepet je zaprt, ker se je ta V ŽIVO končal.",
+      "actionFailed": "Nekaj ​​je šlo narobe. prosim poskusite ponovno",
+      "notOwnerTitle": "Tega ne morete upravljati V ŽIVO",
+      "notOwnerDescription": "Samo gostitelj lahko odpre LIVE Studio za ta LIVE."
     }
   },
   "messagesPage": {

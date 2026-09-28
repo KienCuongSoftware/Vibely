@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Paglalaro",
-      "lifestyle": "Pamumuhay"
+      "lifestyle": "Pamumuhay",
+      "recommended": "Inirerekomenda para sa iyo"
+    },
+    "verified": "Na-verify na account",
+    "card": {
+      "watchAria": "Manood ng LIVE: {{title}} ni {{host}}"
+    },
+    "states": {
+      "loading": "Naglo-load…",
+      "retry": "Subukan muli",
+      "backToDiscovery": "Bumalik sa LIVE",
+      "errorTitle": "Nagkaproblema",
+      "discoveryError": "Hindi kami makapag-load ng mga LIVE stream. Suriin ang iyong koneksyon at subukang muli.",
+      "roomError": "Hindi namin ma-load itong LIVE. Suriin ang iyong koneksyon at subukang muli.",
+      "emptyTitle": "Walang LIVE stream sa ngayon",
+      "emptyCategory": "Wala pang LIVE stream sa kategoryang ito. Bumalik sa lalong madaling panahon.",
+      "emptyFollowing": "Ang mga creator na sinusubaybayan mo ay hindi LIVE ngayon.",
+      "notFoundTitle": "Hindi natagpuan ang LIVE",
+      "notFoundDescription": "Maaaring natapos na o naalis na ang LIVE na ito."
+    },
+    "player": {
+      "ended": "Natapos na ang LIVE na ito",
+      "noCover": "Walang cover image"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Sundin",
+      "following": "Sumusunod",
+      "like": "Parang",
+      "share": "Ibahagi",
+      "linkCopied": "Nakopya ang link",
+      "gift": "Magpadala ng regalo",
+      "giftShort": "Regalo",
+      "viewProfile": "Tingnan ang profile ni {{name}}.",
+      "openHostControls": "Buksan ang mga kontrol ng host"
+    },
+    "chat": {
+      "title": "LIVE chat",
+      "placeholder": "Magdagdag ng komento…",
+      "send": "Ipadala",
+      "loading": "Kumokonekta sa chat…",
+      "empty": "Wala pang komento. say hi!",
+      "error": "Hindi makakonekta sa chat.",
+      "disabled": "Naka-off ang mga komento para sa LIVE na ito.",
+      "retry": "Subukan muli",
+      "newMessages": "{{count}} mga bagong mensahe"
+    },
+    "gifts": {
+      "title": "Mga regalo",
+      "coins": "{{count}} na mga barya",
+      "sent": "Ipinadala mo si {{name}}",
+      "loadError": "Hindi ma-load ang mga regalo."
+    },
+    "create": {
+      "pageTitle": "Mag-live | Vibely",
+      "title": "I-set up ang iyong LIVE",
+      "detailsSection": "LIVE na mga detalye",
+      "coverLabel": "Larawan sa pabalat",
+      "coverHint": "JPG, PNG o WEBP, hanggang {{max}} MB. Pinakamahusay na gumagana ang isang portrait na larawan.",
+      "chooseCover": "Pumili ng larawan",
+      "changeCover": "Baguhin ang larawan",
+      "removeCover": "Alisin",
+      "coverPreviewAlt": "LIVE cover preview",
+      "titleLabel": "Pamagat",
+      "titlePlaceholder": "Tungkol saan ang LIVE mo?",
+      "descriptionLabel": "Paglalarawan",
+      "descriptionPlaceholder": "Sabihin sa mga manonood kung ano ang aasahan (opsyonal)",
+      "categoryLabel": "Kategorya",
+      "visibilityLabel": "Sino ang makakapanood",
+      "visibility": {
+        "public": "lahat",
+        "followers": "Mga tagasunod",
+        "friends": "Mga kaibigan"
+      },
+      "interactionSection": "Pakikipag-ugnayan",
+      "allowComments": "Payagan ang mga komento",
+      "allowGifts": "Payagan ang mga regalo",
+      "allowGiftsHint": "Ang mga manonood ay maaaring magpadala sa iyo ng mga regalo sa LIVE.",
+      "allowGuests": "Payagan ang mga kahilingan ng bisita",
+      "allowGuestsHint": "Maaaring humiling ang mga manonood na sumali sa iyong LIVE bilang bisita.",
+      "matureContent": "Mature na nilalaman",
+      "matureContentHint": "Ang mga manonood lang na may edad 18 pataas ang makakapanood.",
+      "cancel": "Kanselahin",
+      "submit": "Lumikha ng LIVE",
+      "submitting": "Ginagawa…",
+      "errors": {
+        "titleRequired": "Mangyaring maglagay ng pamagat.",
+        "titleTooLong": "Ang pamagat ay dapat na {{max}} na mga character o mas kaunti.",
+        "descriptionTooLong": "Ang paglalarawan ay dapat na {{max}} na mga character o mas kaunti.",
+        "categoryRequired": "Mangyaring pumili ng kategorya.",
+        "coverType": "Mangyaring pumili ng JPG, PNG o WEBP na larawan.",
+        "coverTooLarge": "Ang larawan ay dapat na {{max}} MB o mas maliit.",
+        "submitFailed": "Hindi magawa ang iyong LIVE. Pakisubukang muli."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Studio | Vibely",
+      "status": {
+        "scheduled": "handa na",
+        "live": "LIVE",
+        "ended": "Natapos na"
+      },
+      "goLive": "Mag LIVE",
+      "endLive": "Tapusin LIVE",
+      "endConfirmTitle": "Tapusin ito ng LIVE?",
+      "endConfirmBody": "Madidiskonekta ang mga manonood at hindi mo na maipagpapatuloy ang LIVE na ito.",
+      "endedTitle": "Natapos na ang iyong LIVE",
+      "summaryViewers": "Mga manonood",
+      "summaryLikes": "Mga gusto",
+      "muteMic": "I-mute ang mikropono",
+      "unmuteMic": "I-unmute ang mikropono",
+      "turnOffCamera": "I-off ang camera",
+      "turnOnCamera": "I-on ang camera",
+      "cameraOff": "Naka-off ang camera",
+      "settings": "LIVE na mga setting",
+      "settingsSessionNote": "Nalalapat lang ang mga pagbabagong ito sa session na ito.",
+      "previewUnavailable": "Hindi pa available ang preview ng camera",
+      "previewUnavailableHint": "Ang pag-stream mula sa iyong camera ay susuportahan kapag nakakonekta na ang media server.",
+      "chatBeforeStart": "Magbubukas ang chat kapag nag-live ka.",
+      "chatEnded": "Sarado ang chat dahil natapos na ang LIVE na ito.",
+      "actionFailed": "Nagkaproblema. Pakisubukang muli.",
+      "notOwnerTitle": "Hindi mo mapapamahalaan itong LIVE",
+      "notOwnerDescription": "Ang host lang ang makakapagbukas ng LIVE Studio para sa LIVE na ito."
     }
   },
   "messagesPage": {

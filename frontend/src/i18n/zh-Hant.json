@@ -592,7 +592,8 @@
     },
     "sections": {
       "gaming": "遊戲",
-      "lifestyle": "生活方式"
+      "lifestyle": "生活方式",
+      "recommended": "為您推薦"
     },
     "mute": "Mute",
     "heroHeadline": "立即觀看並與他人即時互動",
@@ -600,7 +601,128 @@
     "viewersLabel": "{{count}} watching",
     "previousLive": "Previous LIVE",
     "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE"
+    "refreshLive": "Switch LIVE",
+    "verified": "已驗證帳戶",
+    "card": {
+      "watchAria": "觀看直播：{{title}}，作者：{{host}}"
+    },
+    "states": {
+      "loading": "載入中…",
+      "retry": "再試一次",
+      "backToDiscovery": "返回直播",
+      "errorTitle": "出了點問題",
+      "discoveryError": "我們無法載入即時串流。檢查您的連線並重試。",
+      "roomError": "我們無法加載此 LIVE。檢查您的連線並重試。",
+      "emptyTitle": "目前沒有直播",
+      "emptyCategory": "此類別中還沒有直播。請盡快回來查看。",
+      "emptyFollowing": "您關注的創作者目前尚未上線。",
+      "notFoundTitle": "未找到直播",
+      "notFoundDescription": "此 LIVE 可能已結束或刪除。"
+    },
+    "player": {
+      "ended": "本次LIVE已經結束",
+      "noCover": "無封面圖片"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "跟隨",
+      "following": "下列的",
+      "like": "喜歡",
+      "share": "分享",
+      "linkCopied": "連結已複製",
+      "gift": "送禮物",
+      "giftShort": "禮物",
+      "viewProfile": "查看{{name}}的個人資料",
+      "openHostControls": "開啟主機控制項"
+    },
+    "chat": {
+      "title": "即時聊天",
+      "placeholder": "新增評論...",
+      "send": "傳送",
+      "loading": "正在連接聊天...",
+      "empty": "還沒有評論。打個招呼吧！",
+      "error": "無法連接聊天。",
+      "disabled": "此直播的評論已關閉。",
+      "retry": "重試",
+      "newMessages": "{{count}} 筆新訊息"
+    },
+    "gifts": {
+      "title": "禮物",
+      "coins": "{{count}}枚硬幣",
+      "sent": "您發送了 {{name}}",
+      "loadError": "無法加載禮物。"
+    },
+    "create": {
+      "pageTitle": "上線 |維貝利",
+      "title": "設定您的 LIVE",
+      "detailsSection": "即時詳情",
+      "coverLabel": "封面圖片",
+      "coverHint": "JPG、PNG 或 WEBP，最大為 {{max}} MB。肖像圖像效果最好。",
+      "chooseCover": "選擇圖片",
+      "changeCover": "更改圖像",
+      "removeCover": "消除",
+      "coverPreviewAlt": "現場封面預覽",
+      "titleLabel": "標題",
+      "titlePlaceholder": "你的 LIVE 是關於什麼的？",
+      "descriptionLabel": "描述",
+      "descriptionPlaceholder": "告訴觀眾會發生什麼事（可選）",
+      "categoryLabel": "類別",
+      "visibilityLabel": "誰可以觀看",
+      "visibility": {
+        "public": "每個人",
+        "followers": "追隨者",
+        "friends": "朋友們"
+      },
+      "interactionSection": "交互作用",
+      "allowComments": "允許評論",
+      "allowGifts": "允許禮物",
+      "allowGiftsHint": "觀眾可以在直播期間向您發送禮物。",
+      "allowGuests": "允許客人要求",
+      "allowGuestsHint": "觀眾可以要求以訪客身份加入您的直播。",
+      "matureContent": "成人內容",
+      "matureContentHint": "只有年滿 18 歲的觀眾才能觀賞。",
+      "cancel": "取消",
+      "submit": "創建直播",
+      "submitting": "創造…",
+      "errors": {
+        "titleRequired": "請輸入標題。",
+        "titleTooLong": "標題不得超過 {{max}} 個字元。",
+        "descriptionTooLong": "說明不得超過 {{max}} 個字元。",
+        "categoryRequired": "請選擇一個類別。",
+        "coverType": "請選擇 JPG、PNG 或 WEBP 映像。",
+        "coverTooLarge": "圖片必須為 {{max}} MB 或更小。",
+        "submitFailed": "無法建立您的 LIVE。請再試一次。"
+      }
+    },
+    "host": {
+      "pageTitle": "現場工作室 |維貝利",
+      "status": {
+        "scheduled": "準備好",
+        "live": "居住",
+        "ended": "結束"
+      },
+      "goLive": "上線",
+      "endLive": "結束直播",
+      "endConfirmTitle": "結束這場直播嗎？",
+      "endConfirmBody": "觀眾將被斷開連接，您將無法恢復此直播。",
+      "endedTitle": "你的LIVE已經結束",
+      "summaryViewers": "觀眾",
+      "summaryLikes": "喜歡",
+      "muteMic": "麥克風靜音",
+      "unmuteMic": "取消麥克風靜音",
+      "turnOffCamera": "關閉相機",
+      "turnOnCamera": "開啟相機",
+      "cameraOff": "相機已關閉",
+      "settings": "即時設定",
+      "settingsSessionNote": "這些變更僅適用於本次會議。",
+      "previewUnavailable": "相機預覽尚不可用",
+      "previewUnavailableHint": "連接媒體伺服器後，將支援從相機串流播放。",
+      "chatBeforeStart": "當您上線時，聊天將會打開。",
+      "chatEnded": "聊天已關閉，因為此 LIVE 已結束。",
+      "actionFailed": "出了點問題。請再試一次。",
+      "notOwnerTitle": "您無法管理此 LIVE",
+      "notOwnerDescription": "只有主持人才能為此 LIVE 開啟 LIVE Studio。"
+    }
   },
   "messagesPage": {
     "title": "訊息",

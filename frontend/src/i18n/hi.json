@@ -592,7 +592,8 @@
     },
     "sections": {
       "gaming": "गेमिंग",
-      "lifestyle": "लाइफ़स्टाइल"
+      "lifestyle": "लाइफ़स्टाइल",
+      "recommended": "आप के लिए अनुशंसित"
     },
     "mute": "Mute",
     "heroHeadline": "अभी देखें और वास्तविक समय में दूसरों के साथ बातचीत करें",
@@ -600,7 +601,128 @@
     "viewersLabel": "{{count}} watching",
     "previousLive": "Previous LIVE",
     "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE"
+    "refreshLive": "Switch LIVE",
+    "verified": "सत्यापित खाते",
+    "card": {
+      "watchAria": "लाइव देखें: {{title}} द्वारा {{host}}"
+    },
+    "states": {
+      "loading": "लोड हो रहा है...",
+      "retry": "पुनः प्रयास करें",
+      "backToDiscovery": "लाइव पर वापस जाएँ",
+      "errorTitle": "कुछ गलत हो गया",
+      "discoveryError": "हम लाइव स्ट्रीम लोड नहीं कर सके. अपना कनेक्शन जांचें और पुनः प्रयास करें।",
+      "roomError": "हम इसे लाइव लोड नहीं कर सके. अपना कनेक्शन जांचें और पुनः प्रयास करें।",
+      "emptyTitle": "अभी कोई लाइव स्ट्रीम नहीं है",
+      "emptyCategory": "इस श्रेणी में अभी तक कोई लाइव स्ट्रीम नहीं है। जल्दी वापस जाँच करें।",
+      "emptyFollowing": "जिन क्रिएटर्स को आप फ़ॉलो करते हैं वे अभी लाइव नहीं हैं।",
+      "notFoundTitle": "लाइव नहीं मिला",
+      "notFoundDescription": "यह लाइव शायद ख़त्म हो गया है या हटा दिया गया है."
+    },
+    "player": {
+      "ended": "यह लाइव समाप्त हो गया है",
+      "noCover": "कोई कवर छवि नहीं"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "अनुसरण करना",
+      "following": "अगले",
+      "like": "पसंद",
+      "share": "शेयर करना",
+      "linkCopied": "लिंक कॉपी किया गया",
+      "gift": "एक उपहार भेजें",
+      "giftShort": "उपहार",
+      "viewProfile": "{{name}} की प्रोफ़ाइल देखें",
+      "openHostControls": "होस्ट नियंत्रण खोलें"
+    },
+    "chat": {
+      "title": "सीधी बातचीत",
+      "placeholder": "एक टिप्पणी जोड़ने…",
+      "send": "भेजना",
+      "loading": "चैट से कनेक्ट हो रहा है...",
+      "empty": "अब तक कोई टिप्पणी नहीं। नमस्ते कहे!",
+      "error": "चैट से कनेक्ट नहीं हो सका.",
+      "disabled": "इस लाइव के लिए टिप्पणियाँ बंद हैं।",
+      "retry": "पुन: प्रयास करें",
+      "newMessages": "{{count}} नए संदेश"
+    },
+    "gifts": {
+      "title": "उपहार",
+      "coins": "{{count}} सिक्के",
+      "sent": "आपने भेजा {{name}}",
+      "loadError": "उपहार लोड नहीं किए जा सके."
+    },
+    "create": {
+      "pageTitle": "लाइव हो जाओ | जीवंत",
+      "title": "अपना लाइव सेट करें",
+      "detailsSection": "लाइव विवरण",
+      "coverLabel": "कवर छवि",
+      "coverHint": "JPG, PNG या WEBP, {{max}} एमबी तक। एक पोर्ट्रेट छवि सबसे अच्छा काम करती है.",
+      "chooseCover": "छवि चुनें",
+      "changeCover": "छवि बदलें",
+      "removeCover": "निकालना",
+      "coverPreviewAlt": "लाइव कवर पूर्वावलोकन",
+      "titleLabel": "शीर्षक",
+      "titlePlaceholder": "आपका लाइव किस बारे में है?",
+      "descriptionLabel": "विवरण",
+      "descriptionPlaceholder": "दर्शकों को बताएं कि क्या अपेक्षा करें (वैकल्पिक)",
+      "categoryLabel": "वर्ग",
+      "visibilityLabel": "कौन देख सकता है",
+      "visibility": {
+        "public": "सब लोग",
+        "followers": "समर्थक",
+        "friends": "दोस्त"
+      },
+      "interactionSection": "इंटरैक्शन",
+      "allowComments": "टिप्पणियों की अनुमति दें",
+      "allowGifts": "उपहारों की अनुमति दें",
+      "allowGiftsHint": "लाइव के दौरान दर्शक आपको उपहार भेज सकते हैं।",
+      "allowGuests": "अतिथि अनुरोधों को अनुमति दें",
+      "allowGuestsHint": "दर्शक आपके लाइव में अतिथि के रूप में शामिल होने का अनुरोध कर सकते हैं।",
+      "matureContent": "परिपक्व सामग्री",
+      "matureContentHint": "केवल 18 वर्ष और उससे अधिक आयु के दर्शक ही देख सकते हैं।",
+      "cancel": "रद्द करना",
+      "submit": "लाइव बनाएं",
+      "submitting": "बनाया जा रहा है...",
+      "errors": {
+        "titleRequired": "कृपया एक शीर्षक दर्ज करें.",
+        "titleTooLong": "शीर्षक {{max}} या उससे कम अक्षर का होना चाहिए।",
+        "descriptionTooLong": "विवरण में {{max}} या उससे कम अक्षर होने चाहिए।",
+        "categoryRequired": "कृपया एक कैटेगरी चुनें।",
+        "coverType": "कृपया JPG, PNG या WEBP छवि चुनें।",
+        "coverTooLarge": "छवि {{max}} एमबी या छोटी होनी चाहिए.",
+        "submitFailed": "आपका लाइव नहीं बनाया जा सका. कृपया पुन: प्रयास करें।"
+      }
+    },
+    "host": {
+      "pageTitle": "लाइव स्टूडियो | जीवंत",
+      "status": {
+        "scheduled": "तैयार",
+        "live": "रहना",
+        "ended": "समाप्त"
+      },
+      "goLive": "रहने जाओ",
+      "endLive": "लाइव समाप्त करें",
+      "endConfirmTitle": "इस लाइव को समाप्त करें?",
+      "endConfirmBody": "दर्शक डिस्कनेक्ट हो जाएंगे और आप इस लाइव को फिर से शुरू नहीं कर पाएंगे।",
+      "endedTitle": "आपका LIVE समाप्त हो गया है",
+      "summaryViewers": "दर्शकों",
+      "summaryLikes": "पसंद है",
+      "muteMic": "माइक्रोफ़ोन म्यूट करें",
+      "unmuteMic": "माइक्रोफ़ोन अनम्यूट करें",
+      "turnOffCamera": "कैमरा बंद करें",
+      "turnOnCamera": "कैमरा चालू करें",
+      "cameraOff": "कैमरा बंद है",
+      "settings": "लाइव सेटिंग्स",
+      "settingsSessionNote": "ये परिवर्तन केवल इसी सत्र पर लागू होते हैं.",
+      "previewUnavailable": "कैमरा पूर्वावलोकन अभी उपलब्ध नहीं है",
+      "previewUnavailableHint": "मीडिया सर्वर कनेक्ट होने के बाद आपके कैमरे से स्ट्रीमिंग समर्थित होगी।",
+      "chatBeforeStart": "जब आप लाइव होंगे तो चैट खुल जाएगी.",
+      "chatEnded": "चैट बंद है क्योंकि यह लाइव समाप्त हो गया है।",
+      "actionFailed": "कुछ गलत हो गया। कृपया पुन: प्रयास करें।",
+      "notOwnerTitle": "आप इस लाइव को प्रबंधित नहीं कर सकते",
+      "notOwnerDescription": "इस लाइव के लिए केवल होस्ट ही लाइव स्टूडियो खोल सकता है।"
+    }
   },
   "messagesPage": {
     "title": "संदेश",

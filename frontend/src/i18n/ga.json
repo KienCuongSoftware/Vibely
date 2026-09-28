@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Cearrbhachas",
-      "lifestyle": "Stíl Mhaireachtála"
+      "lifestyle": "Stíl Mhaireachtála",
+      "recommended": "Molta duit"
+    },
+    "verified": "Cuntas fíoraithe",
+    "card": {
+      "watchAria": "Féach ar BEO: {{title}} le {{host}}"
+    },
+    "states": {
+      "loading": "Á lódáil…",
+      "retry": "Bain triail eile as",
+      "backToDiscovery": "Ar ais go BEO",
+      "errorTitle": "Chuaigh rud éigin mícheart",
+      "discoveryError": "Níorbh fhéidir linn sruthanna BEO a lódáil. Seiceáil do cheangal agus bain triail eile as.",
+      "roomError": "Níorbh fhéidir linn an BEO seo a lódáil. Seiceáil do cheangal agus bain triail eile as.",
+      "emptyTitle": "Níl aon sruthanna BEO faoi láthair",
+      "emptyCategory": "Níl aon sruthanna BEO sa chatagóir seo fós. Seiceáil ar ais go luath.",
+      "emptyFollowing": "Níl na cruthaitheoirí a leanann tú BEO faoi láthair.",
+      "notFoundTitle": "BEO gan aimsiú",
+      "notFoundDescription": "Seans gur cuireadh deireadh leis an BEO seo nó gur baineadh é."
+    },
+    "player": {
+      "ended": "Tá deireadh leis an mBEO seo",
+      "noCover": "Gan íomhá clúdaigh"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Lean",
+      "following": "Ag leanúint",
+      "like": "Cosúil",
+      "share": "Comhroinn",
+      "linkCopied": "Cóipeáladh an nasc",
+      "gift": "Seol bronntanas",
+      "giftShort": "Bronntanas",
+      "viewProfile": "Féach ar phróifíl {{name}}",
+      "openHostControls": "Oscail rialuithe óstach"
+    },
+    "chat": {
+      "title": "comhrá BEO",
+      "placeholder": "Cuir nóta tráchta leis…",
+      "send": "Seol",
+      "loading": "Ag nascadh le comhrá…",
+      "empty": "Níl trácht ar bith fós. Abair haigh!",
+      "error": "Níorbh fhéidir ceangal leis an gcomhrá.",
+      "disabled": "Tá nótaí tráchta múchta don BEO seo.",
+      "retry": "Bain triail eile as",
+      "newMessages": "{{count}} teachtaireacht nua"
+    },
+    "gifts": {
+      "title": "Bronntanais",
+      "coins": "{{count}} boinn",
+      "sent": "Sheol tú {{name}}",
+      "loadError": "Níorbh fhéidir bronntanais a lódáil."
+    },
+    "create": {
+      "pageTitle": "Téigh BEO | Vibely",
+      "title": "Socraigh do BEO",
+      "detailsSection": "Sonraí BEO",
+      "coverLabel": "Íomhá chlúdaigh",
+      "coverHint": "JPG, PNG nó WEBP, suas go dtí {{max}} MB. Is fearr a oibríonn íomhá portráide.",
+      "chooseCover": "Roghnaigh íomhá",
+      "changeCover": "Athraigh íomhá",
+      "removeCover": "Bain",
+      "coverPreviewAlt": "Réamhamharc ar chlúdach BEO",
+      "titleLabel": "Teideal",
+      "titlePlaceholder": "Cad atá faoi do BEO?",
+      "descriptionLabel": "Cur síos",
+      "descriptionPlaceholder": "Abair leis an lucht féachana cad ba cheart a bheith ag súil leis (roghnach)",
+      "categoryLabel": "Catagóir",
+      "visibilityLabel": "Cé atá in ann féachaint",
+      "visibility": {
+        "public": "gach duine",
+        "followers": "Leantóirí",
+        "friends": "Cairde"
+      },
+      "interactionSection": "Idirghníomhaíocht",
+      "allowComments": "Ceadaigh tuairimí",
+      "allowGifts": "Ceadaigh bronntanais",
+      "allowGiftsHint": "Is féidir le lucht féachana bronntanais a sheoladh chugat le linn an BEO.",
+      "allowGuests": "Ceadaigh iarratais ó aíonna",
+      "allowGuestsHint": "Is féidir le lucht féachana iarratas a dhéanamh chun páirt a ghlacadh i do BEO mar aoi.",
+      "matureContent": "Ábhar aibí",
+      "matureContentHint": "Ní féidir ach le lucht féachana atá 18 mbliana d’aois agus níos sine féachaint.",
+      "cancel": "Cealaigh",
+      "submit": "Cruthaigh BEO",
+      "submitting": "Ag cruthú…",
+      "errors": {
+        "titleRequired": "Cuir isteach teideal.",
+        "titleTooLong": "Caithfidh {{max}} carachtar nó níos lú a bheith sa teideal.",
+        "descriptionTooLong": "Caithfidh {{max}} carachtar nó níos lú a bheith sa chur síos.",
+        "categoryRequired": "Roghnaigh catagóir le do thoil.",
+        "coverType": "Roghnaigh íomhá JPG, PNG nó WEBP.",
+        "coverTooLarge": "Caithfidh an íomhá a bheith {{max}} MB nó níos lú.",
+        "submitFailed": "Níorbh fhéidir do BEO a chruthú. Bain triail eile as."
+      }
+    },
+    "host": {
+      "pageTitle": "Stiúideo BEO | Vibely",
+      "status": {
+        "scheduled": "Réidh",
+        "live": "BEO",
+        "ended": "dar críoch"
+      },
+      "goLive": "Téigh BEO",
+      "endLive": "Cuir deireadh le BEO",
+      "endConfirmTitle": "Cuir deireadh leis seo BEO?",
+      "endConfirmBody": "Déanfar an lucht féachana a dhínascadh agus ní bheidh tú in ann é seo a atosú BEO.",
+      "endedTitle": "Tá deireadh tagtha le do BEO",
+      "summaryViewers": "Lucht féachana",
+      "summaryLikes": "Is maith",
+      "muteMic": "Balbhaigh micreafón",
+      "unmuteMic": "Díbhalbhaigh micreafón",
+      "turnOffCamera": "Múch an ceamara",
+      "turnOnCamera": "Cuir an ceamara ar siúl",
+      "cameraOff": "Tá an ceamara múchta",
+      "settings": "Socruithe BEO",
+      "settingsSessionNote": "Baineann na hathruithe seo leis an seisiún seo amháin.",
+      "previewUnavailable": "Níl réamhamharc ceamara ar fáil fós",
+      "previewUnavailableHint": "Tacófar le sruthú ó do cheamara nuair a bheidh an freastalaí meán nasctha.",
+      "chatBeforeStart": "Osclófar comhrá nuair a théann tú BEO.",
+      "chatEnded": "Tá an comhrá dúnta toisc go bhfuil deireadh leis an mBEO seo.",
+      "actionFailed": "Chuaigh rud éigin mícheart. Bain triail eile as.",
+      "notOwnerTitle": "Ní féidir leat é seo a bhainistiú BEO",
+      "notOwnerDescription": "Ní féidir ach leis an óstach Stiúideo BEO a oscailt don BEO seo."
     }
   },
   "messagesPage": {

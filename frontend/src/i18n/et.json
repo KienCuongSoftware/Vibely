@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Mängimine",
-      "lifestyle": "Elustiil"
+      "lifestyle": "Elustiil",
+      "recommended": "Soovitatav teile"
+    },
+    "verified": "Kinnitatud konto",
+    "card": {
+      "watchAria": "Vaadake otseülekandeid: {{title}}, autor {{host}}"
+    },
+    "states": {
+      "loading": "Laadimine…",
+      "retry": "Proovi uuesti",
+      "backToDiscovery": "Tagasi LIVE juurde",
+      "errorTitle": "Midagi läks valesti",
+      "discoveryError": "Otseülekannet ei saanud laadida. Kontrollige ühendust ja proovige uuesti.",
+      "roomError": "Me ei saanud seda LIVE-i laadida. Kontrollige ühendust ja proovige uuesti.",
+      "emptyTitle": "Praegu pole otseülekandeid",
+      "emptyCategory": "Selles kategoorias pole veel ühtegi otseülekannet. Tulge varsti tagasi.",
+      "emptyFollowing": "Teie jälgitavad sisuloojad pole praegu otseülekandes.",
+      "notFoundTitle": "LIVE ei leitud",
+      "notFoundDescription": "See LIVE võib olla lõppenud või eemaldatud."
+    },
+    "player": {
+      "ended": "See LIVE on lõppenud",
+      "noCover": "Kaanepilt puudub"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Eluliselt LIVE",
+      "follow": "Jälgi",
+      "following": "Jälgides",
+      "like": "meeldib",
+      "share": "Jaga",
+      "linkCopied": "Link on kopeeritud",
+      "gift": "Saada kingitus",
+      "giftShort": "Kingitus",
+      "viewProfile": "Vaadake kasutaja {{name}} profiili",
+      "openHostControls": "Avage hosti juhtelemendid"
+    },
+    "chat": {
+      "title": "LIVE-vestlus",
+      "placeholder": "Lisa kommentaar…",
+      "send": "Saada",
+      "loading": "Vestlusega ühenduse loomine…",
+      "empty": "Kommentaarid veel puuduvad. Öelge tere!",
+      "error": "Vestlusega ei saanud ühendust luua.",
+      "disabled": "Kommentaarid on sellel otseülekandel välja lülitatud.",
+      "retry": "Proovi uuesti",
+      "newMessages": "{{count}} uut sõnumit"
+    },
+    "gifts": {
+      "title": "Kingitused",
+      "coins": "{{count}} münti",
+      "sent": "Saatsite kasutaja {{name}}",
+      "loadError": "Kingitusi ei saanud laadida."
+    },
+    "create": {
+      "pageTitle": "Mine otseülekandesse | Eluliselt",
+      "title": "Seadistage oma LIVE",
+      "detailsSection": "LIVE üksikasjad",
+      "coverLabel": "Kaanepilt",
+      "coverHint": "JPG, PNG või WEBP, kuni {{max}} MB. Portreekujutis töötab kõige paremini.",
+      "chooseCover": "Valige pilt",
+      "changeCover": "Muuda pilti",
+      "removeCover": "Eemalda",
+      "coverPreviewAlt": "LIVE kaane eelvaade",
+      "titleLabel": "Pealkiri",
+      "titlePlaceholder": "Millest su LIVE räägib?",
+      "descriptionLabel": "Kirjeldus",
+      "descriptionPlaceholder": "Rääkige vaatajatele, mida oodata (valikuline)",
+      "categoryLabel": "Kategooria",
+      "visibilityLabel": "Kes saab vaadata",
+      "visibility": {
+        "public": "Kõik",
+        "followers": "Jälgijad",
+        "friends": "Sõbrad"
+      },
+      "interactionSection": "Interaktsioon",
+      "allowComments": "Luba kommentaarid",
+      "allowGifts": "Luba kingitusi",
+      "allowGiftsHint": "Vaatajad saavad teile otseülekande ajal kingitusi saata.",
+      "allowGuests": "Luba külaliste taotlused",
+      "allowGuestsHint": "Vaatajad saavad taotleda teie otseülekandega liitumist külalisena.",
+      "matureContent": "Täiskasvanutele mõeldud sisu",
+      "matureContentHint": "Vaadata saavad ainult 18-aastased ja vanemad vaatajad.",
+      "cancel": "Tühista",
+      "submit": "Loo LIVE",
+      "submitting": "Loomine…",
+      "errors": {
+        "titleRequired": "Palun sisestage pealkiri.",
+        "titleTooLong": "Pealkiri peab olema kuni {{max}} tähemärki.",
+        "descriptionTooLong": "Kirjeldus peab sisaldama kuni {{max}} tähemärki.",
+        "categoryRequired": "Valige kategooria.",
+        "coverType": "Valige JPG-, PNG- või WEBP-pilt.",
+        "coverTooLarge": "Pilt peab olema {{max}} MB või väiksem.",
+        "submitFailed": "Teie otseülekannet ei saanud luua. Palun proovi uuesti."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Stuudio | Eluliselt",
+      "status": {
+        "scheduled": "Valmis",
+        "live": "LIVE",
+        "ended": "Lõppenud"
+      },
+      "goLive": "Minge otseülekandesse",
+      "endLive": "Lõpeta LIVE",
+      "endConfirmTitle": "Kas lõpetada see LIVE?",
+      "endConfirmBody": "Vaatajate ühendus katkestatakse ja te ei saa seda otseülekannet jätkata.",
+      "endedTitle": "Teie LIVE on lõppenud",
+      "summaryViewers": "Vaatajad",
+      "summaryLikes": "Meeldimised",
+      "muteMic": "Mikrofoni vaigistamine",
+      "unmuteMic": "Tühista mikrofoni vaigistus",
+      "turnOffCamera": "Lülitage kaamera välja",
+      "turnOnCamera": "Lülitage kaamera sisse",
+      "cameraOff": "Kaamera on välja lülitatud",
+      "settings": "LIVE seaded",
+      "settingsSessionNote": "Need muudatused kehtivad ainult selle seansi kohta.",
+      "previewUnavailable": "Kaamera eelvaade pole veel saadaval",
+      "previewUnavailableHint": "Teie kaamerast voogesitust toetatakse, kui meediumiserver on ühendatud.",
+      "chatBeforeStart": "Vestlus avaneb, kui lähete otseülekandesse.",
+      "chatEnded": "Vestlus on suletud, kuna see LIVE on lõppenud.",
+      "actionFailed": "Midagi läks valesti. Palun proovi uuesti.",
+      "notOwnerTitle": "Te ei saa seda otseülekannet hallata",
+      "notOwnerDescription": "Selle LIVE jaoks saab LIVE Studio avada ainult host."
     }
   },
   "messagesPage": {

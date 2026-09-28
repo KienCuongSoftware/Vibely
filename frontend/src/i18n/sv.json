@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Spelande",
-      "lifestyle": "Livsstil"
+      "lifestyle": "Livsstil",
+      "recommended": "Rekommenderas för dig"
+    },
+    "verified": "Verifierat konto",
+    "card": {
+      "watchAria": "Se LIVE: {{title}} av {{host}}"
+    },
+    "states": {
+      "loading": "Belastning…",
+      "retry": "Försök igen",
+      "backToDiscovery": "Tillbaka till LIVE",
+      "errorTitle": "Något gick fel",
+      "discoveryError": "Vi kunde inte ladda LIVE-strömmar. Kontrollera din anslutning och försök igen.",
+      "roomError": "Vi kunde inte ladda detta LIVE. Kontrollera din anslutning och försök igen.",
+      "emptyTitle": "Inga LIVE-strömmar just nu",
+      "emptyCategory": "Det finns inga LIVE-strömmar i denna kategori ännu. Kom tillbaka snart.",
+      "emptyFollowing": "Kreatörer du följer är inte LIVE just nu.",
+      "notFoundTitle": "LIVE hittades inte",
+      "notFoundDescription": "Denna LIVE kan ha avslutats eller tagits bort."
+    },
+    "player": {
+      "ended": "Detta LIVE har avslutats",
+      "noCover": "Ingen omslagsbild"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Följa",
+      "following": "Följande",
+      "like": "Som",
+      "share": "Dela",
+      "linkCopied": "Länken har kopierats",
+      "gift": "Skicka en present",
+      "giftShort": "Gåva",
+      "viewProfile": "Visa {{name}}s profil",
+      "openHostControls": "Öppna värdkontroller"
+    },
+    "chat": {
+      "title": "LIVE chatt",
+      "placeholder": "Lägg till en kommentar...",
+      "send": "Skicka",
+      "loading": "Ansluter till chatten...",
+      "empty": "Inga kommentarer än. Säg hej!",
+      "error": "Det gick inte att ansluta till chatten.",
+      "disabled": "Kommentarer är avstängda för detta LIVE.",
+      "retry": "Försöka igen",
+      "newMessages": "{{count}} nya meddelanden"
+    },
+    "gifts": {
+      "title": "Gåvor",
+      "coins": "{{count}} mynt",
+      "sent": "Du skickade {{name}}",
+      "loadError": "Det gick inte att ladda presenter."
+    },
+    "create": {
+      "pageTitle": "Gå LIVE | Vibely",
+      "title": "Ställ in din LIVE",
+      "detailsSection": "LIVE detaljer",
+      "coverLabel": "Omslagsbild",
+      "coverHint": "JPG, PNG eller WEBP, upp till {{max}} MB. En porträttbild fungerar bäst.",
+      "chooseCover": "Välj bild",
+      "changeCover": "Byt bild",
+      "removeCover": "Ta bort",
+      "coverPreviewAlt": "LIVE omslagsförhandsvisning",
+      "titleLabel": "Titel",
+      "titlePlaceholder": "Vad handlar din LIVE om?",
+      "descriptionLabel": "Beskrivning",
+      "descriptionPlaceholder": "Berätta för tittarna vad de kan förvänta sig (valfritt)",
+      "categoryLabel": "Kategori",
+      "visibilityLabel": "Vem kan titta",
+      "visibility": {
+        "public": "Alla",
+        "followers": "Följare",
+        "friends": "Vänner"
+      },
+      "interactionSection": "Interaktion",
+      "allowComments": "Tillåt kommentarer",
+      "allowGifts": "Tillåt gåvor",
+      "allowGiftsHint": "Tittarna kan skicka presenter till dig under LIVE.",
+      "allowGuests": "Tillåt gästförfrågningar",
+      "allowGuestsHint": "Tittare kan begära att få gå med i ditt LIVE som gäst.",
+      "matureContent": "Moget innehåll",
+      "matureContentHint": "Endast tittare som är 18 år och äldre kan titta.",
+      "cancel": "Avboka",
+      "submit": "Skapa LIVE",
+      "submitting": "Skapande…",
+      "errors": {
+        "titleRequired": "Vänligen ange en titel.",
+        "titleTooLong": "Rubriken måste vara {{max}} tecken eller färre.",
+        "descriptionTooLong": "Beskrivningen måste vara {{max}} tecken eller färre.",
+        "categoryRequired": "Välj en kategori.",
+        "coverType": "Välj en JPG-, PNG- eller WEBP-bild.",
+        "coverTooLarge": "Bilden måste vara {{max}} MB eller mindre.",
+        "submitFailed": "Det gick inte att skapa din LIVE. Försök igen."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Studio | Vibely",
+      "status": {
+        "scheduled": "Redo",
+        "live": "BO",
+        "ended": "Avslutade"
+      },
+      "goLive": "Gå LIVE",
+      "endLive": "Avsluta LIVE",
+      "endConfirmTitle": "Avsluta detta LIVE?",
+      "endConfirmBody": "Tittarna kommer att kopplas bort och du kommer inte att kunna återuppta detta LIVE.",
+      "endedTitle": "Ditt LIVE har avslutats",
+      "summaryViewers": "Tittare",
+      "summaryLikes": "Gillar",
+      "muteMic": "Stäng av mikrofonen",
+      "unmuteMic": "Slå på mikrofonen",
+      "turnOffCamera": "Stäng av kameran",
+      "turnOnCamera": "Slå på kameran",
+      "cameraOff": "Kameran är avstängd",
+      "settings": "LIVE-inställningar",
+      "settingsSessionNote": "Dessa ändringar gäller endast denna session.",
+      "previewUnavailable": "Kameraförhandsvisning är inte tillgänglig ännu",
+      "previewUnavailableHint": "Streaming från din kamera kommer att stödjas när mediaservern är ansluten.",
+      "chatBeforeStart": "Chatten öppnas när du går LIVE.",
+      "chatEnded": "Chatten är stängd eftersom denna LIVE har avslutats.",
+      "actionFailed": "Något gick fel. Försök igen.",
+      "notOwnerTitle": "Du kan inte hantera detta LIVE",
+      "notOwnerDescription": "Endast värden kan öppna LIVE Studio för denna LIVE."
     }
   },
   "messagesPage": {

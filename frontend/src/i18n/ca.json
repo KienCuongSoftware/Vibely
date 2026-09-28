@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Jocs",
-      "lifestyle": "Estil de vida"
+      "lifestyle": "Estil de vida",
+      "recommended": "Recomanat per a tu"
+    },
+    "verified": "Compte verificat",
+    "card": {
+      "watchAria": "Mira EN DIRECTE: {{title}} de {{host}}"
+    },
+    "states": {
+      "loading": "S'està carregant…",
+      "retry": "Torna-ho a provar",
+      "backToDiscovery": "Torna a LIVE",
+      "errorTitle": "Alguna cosa va fallar",
+      "discoveryError": "No hem pogut carregar les reproduccions en directe. Comprova la teva connexió i torna-ho a provar.",
+      "roomError": "No hem pogut carregar aquest EN DIRECTE. Comprova la teva connexió i torna-ho a provar.",
+      "emptyTitle": "No hi ha reproduccions en directe ara mateix",
+      "emptyCategory": "Encara no hi ha emissions en directe en aquesta categoria. Torna a consultar aviat.",
+      "emptyFollowing": "Els creadors que segueixes no estan en directe ara mateix.",
+      "notFoundTitle": "LIVE no trobat",
+      "notFoundDescription": "És possible que aquest LIVE hagi finalitzat o s'hagi eliminat."
+    },
+    "player": {
+      "ended": "Aquest LIVE ha acabat",
+      "noCover": "Sense imatge de portada"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Seguiu",
+      "following": "Seguint",
+      "like": "M'agrada",
+      "share": "Comparteix",
+      "linkCopied": "S'ha copiat l'enllaç",
+      "gift": "Envia un regal",
+      "giftShort": "Regal",
+      "viewProfile": "Veure el perfil de {{name}}",
+      "openHostControls": "Obriu els controls de l'amfitrió"
+    },
+    "chat": {
+      "title": "Xat en directe",
+      "placeholder": "Afegeix un comentari...",
+      "send": "Enviar",
+      "loading": "S'està connectant al xat...",
+      "empty": "Encara no hi ha comentaris. Digues hola!",
+      "error": "No s'ha pogut connectar al xat.",
+      "disabled": "Els comentaris estan desactivats per a aquest LIVE.",
+      "retry": "Torna-ho a provar",
+      "newMessages": "{{count}} missatges nous"
+    },
+    "gifts": {
+      "title": "Regals",
+      "coins": "{{count}} monedes",
+      "sent": "Has enviat {{name}}",
+      "loadError": "No s'han pogut carregar els regals."
+    },
+    "create": {
+      "pageTitle": "En directe | Vibrant",
+      "title": "Configura el teu LIVE",
+      "detailsSection": "Detalls EN DIRECTE",
+      "coverLabel": "Imatge de portada",
+      "coverHint": "JPG, PNG o WEBP, fins a {{max}} MB. Una imatge retrat funciona millor.",
+      "chooseCover": "Tria imatge",
+      "changeCover": "Canvia imatge",
+      "removeCover": "Eliminar",
+      "coverPreviewAlt": "Vista prèvia de la portada EN DIRECTE",
+      "titleLabel": "Títol",
+      "titlePlaceholder": "De què tracta el teu LIVE?",
+      "descriptionLabel": "Descripció",
+      "descriptionPlaceholder": "Digues als espectadors què poden esperar (opcional)",
+      "categoryLabel": "Categoria",
+      "visibilityLabel": "Qui pot mirar",
+      "visibility": {
+        "public": "Tothom",
+        "followers": "Seguidors",
+        "friends": "Amics"
+      },
+      "interactionSection": "Interacció",
+      "allowComments": "Permet comentaris",
+      "allowGifts": "Permetre regals",
+      "allowGiftsHint": "Els espectadors poden enviar-te regals durant el LIVE.",
+      "allowGuests": "Permet les sol·licituds dels convidats",
+      "allowGuestsHint": "Els espectadors poden sol·licitar unir-se al teu LIVE com a convidat.",
+      "matureContent": "Contingut per a adults",
+      "matureContentHint": "Només els espectadors majors de 18 anys poden veure'l.",
+      "cancel": "Cancel·la",
+      "submit": "Crear EN DIRECTE",
+      "submitting": "S'està creant…",
+      "errors": {
+        "titleRequired": "Introduïu un títol.",
+        "titleTooLong": "El títol ha de tenir {{max}} caràcters o menys.",
+        "descriptionTooLong": "La descripció ha de tenir {{max}} caràcters o menys.",
+        "categoryRequired": "Si us plau, trieu una categoria.",
+        "coverType": "Si us plau, trieu una imatge JPG, PNG o WEBP.",
+        "coverTooLarge": "La imatge ha de tenir {{max}} MB o menys.",
+        "submitFailed": "No s'ha pogut crear el teu LIVE. Si us plau, torna-ho a provar."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Studio | Vibrant",
+      "status": {
+        "scheduled": "A punt",
+        "live": "EN VIU",
+        "ended": "S'ha acabat"
+      },
+      "goLive": "Anar EN DIRECTE",
+      "endLive": "Finalitza EN DIRECTE",
+      "endConfirmTitle": "Acabar amb aquest EN DIRECTE?",
+      "endConfirmBody": "Els espectadors es desconnectaran i no podràs reprendre aquest LIVE.",
+      "endedTitle": "El teu LIVE ha acabat",
+      "summaryViewers": "Espectadors",
+      "summaryLikes": "M'agrada",
+      "muteMic": "Silencia el micròfon",
+      "unmuteMic": "Activa el micròfon",
+      "turnOffCamera": "Apagueu la càmera",
+      "turnOnCamera": "Enceneu la càmera",
+      "cameraOff": "La càmera està apagada",
+      "settings": "Configuració EN DIRECTE",
+      "settingsSessionNote": "Aquests canvis només s'apliquen a aquesta sessió.",
+      "previewUnavailable": "La vista prèvia de la càmera encara no està disponible",
+      "previewUnavailableHint": "La reproducció en temps real des de la càmera serà compatible un cop connectat el servidor multimèdia.",
+      "chatBeforeStart": "El xat s'obrirà quan en directe.",
+      "chatEnded": "El xat està tancat perquè aquest LIVE ha finalitzat.",
+      "actionFailed": "Alguna cosa va fallar. Si us plau, torna-ho a provar.",
+      "notOwnerTitle": "No pots gestionar aquest EN DIRECTE",
+      "notOwnerDescription": "Només l'amfitrió pot obrir LIVE Studio per a aquest LIVE."
     }
   },
   "messagesPage": {

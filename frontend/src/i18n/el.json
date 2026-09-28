@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Παιχνίδι",
-      "lifestyle": "Τρόπος ζωής"
+      "lifestyle": "Τρόπος ζωής",
+      "recommended": "Προτείνεται για εσάς"
+    },
+    "verified": "Επαληθευμένος λογαριασμός",
+    "card": {
+      "watchAria": "Παρακολουθήστε ΖΩΝΤΑΝΑ: {{title}} από {{host}}"
+    },
+    "states": {
+      "loading": "Φόρτωση…",
+      "retry": "Προσπαθήστε ξανά",
+      "backToDiscovery": "Επιστροφή στο LIVE",
+      "errorTitle": "Κάτι πήγε στραβά",
+      "discoveryError": "Δεν ήταν δυνατή η φόρτωση LIVE ροών. Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.",
+      "roomError": "Δεν μπορέσαμε να φορτώσουμε αυτό το LIVE. Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.",
+      "emptyTitle": "Δεν υπάρχουν LIVE ροές αυτήν τη στιγμή",
+      "emptyCategory": "Δεν υπάρχουν ακόμα LIVE ροές σε αυτήν την κατηγορία. Ελέγξτε ξανά σύντομα.",
+      "emptyFollowing": "Οι δημιουργοί που ακολουθείτε δεν είναι LIVE αυτήν τη στιγμή.",
+      "notFoundTitle": "Το LIVE δεν βρέθηκε",
+      "notFoundDescription": "Αυτό το LIVE μπορεί να έχει λήξει ή να έχει αφαιρεθεί."
+    },
+    "player": {
+      "ended": "Αυτό το LIVE τελείωσε",
+      "noCover": "Χωρίς εικόνα εξωφύλλου"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Ακολουθώ",
+      "following": "Εξής",
+      "like": "Σαν",
+      "share": "Μερίδιο",
+      "linkCopied": "Ο σύνδεσμος αντιγράφηκε",
+      "gift": "Στείλτε ένα δώρο",
+      "giftShort": "Δώρο",
+      "viewProfile": "Δείτε το προφίλ του χρήστη {{name}}",
+      "openHostControls": "Ανοίξτε τα στοιχεία ελέγχου κεντρικού υπολογιστή"
+    },
+    "chat": {
+      "title": "ΖΩΝΤΑΝΗ συνομιλία",
+      "placeholder": "Προσθέστε ένα σχόλιο…",
+      "send": "Στέλνω",
+      "loading": "Σύνδεση σε συνομιλία…",
+      "empty": "Δεν υπάρχουν ακόμη σχόλια. πες γεια!",
+      "error": "Δεν ήταν δυνατή η σύνδεση στη συνομιλία.",
+      "disabled": "Τα σχόλια είναι απενεργοποιημένα για αυτό το LIVE.",
+      "retry": "Δοκιμάζω πάλι",
+      "newMessages": "{{count}} νέα μηνύματα"
+    },
+    "gifts": {
+      "title": "Δώρα",
+      "coins": "{{count}} νομίσματα",
+      "sent": "Στείλατε {{name}}",
+      "loadError": "Δεν ήταν δυνατή η φόρτωση των δώρων."
+    },
+    "create": {
+      "pageTitle": "Μετάβαση LIVE | Vibely",
+      "title": "Ρυθμίστε το LIVE σας",
+      "detailsSection": "LIVE λεπτομέρειες",
+      "coverLabel": "Εικόνα εξωφύλλου",
+      "coverHint": "JPG, PNG ή WEBP, έως {{max}} MB. Μια εικόνα πορτραίτου λειτουργεί καλύτερα.",
+      "chooseCover": "Επιλέξτε εικόνα",
+      "changeCover": "Αλλαγή εικόνας",
+      "removeCover": "Αφαιρώ",
+      "coverPreviewAlt": "ΖΩΝΤΑΝΗ προεπισκόπηση εξωφύλλου",
+      "titleLabel": "Τίτλος",
+      "titlePlaceholder": "Τι αφορά το LIVE σας;",
+      "descriptionLabel": "Περιγραφή",
+      "descriptionPlaceholder": "Πείτε στους θεατές τι να περιμένουν (προαιρετικό)",
+      "categoryLabel": "Κατηγορία",
+      "visibilityLabel": "Ποιος μπορεί να παρακολουθήσει",
+      "visibility": {
+        "public": "Καθένας",
+        "followers": "Οπαδοί",
+        "friends": "Φίλοι"
+      },
+      "interactionSection": "Αλληλεπίδραση",
+      "allowComments": "Επιτρέπονται σχόλια",
+      "allowGifts": "Επιτρέψτε τα δώρα",
+      "allowGiftsHint": "Οι θεατές μπορούν να σας στείλουν δώρα κατά τη διάρκεια του LIVE.",
+      "allowGuests": "Να επιτρέπονται αιτήματα επισκεπτών",
+      "allowGuestsHint": "Οι θεατές μπορούν να ζητήσουν να συμμετάσχουν στο LIVE σας ως επισκέπτης.",
+      "matureContent": "Περιεχόμενο για ενήλικες",
+      "matureContentHint": "Μόνο θεατές ηλικίας 18 ετών και άνω μπορούν να παρακολουθήσουν.",
+      "cancel": "Ματαίωση",
+      "submit": "Δημιουργία LIVE",
+      "submitting": "Δημιουργία…",
+      "errors": {
+        "titleRequired": "Εισαγάγετε έναν τίτλο.",
+        "titleTooLong": "Ο τίτλος πρέπει να αποτελείται από {{max}} χαρακτήρες ή λιγότερους.",
+        "descriptionTooLong": "Η περιγραφή πρέπει να αποτελείται από {{max}} χαρακτήρες ή λιγότερους.",
+        "categoryRequired": "Επιλέξτε μια κατηγορία.",
+        "coverType": "Επιλέξτε μια εικόνα JPG, PNG ή WEBP.",
+        "coverTooLarge": "Η εικόνα πρέπει να είναι {{max}} MB ή μικρότερη.",
+        "submitFailed": "Δεν ήταν δυνατή η δημιουργία του LIVE σας. Δοκιμάστε ξανά."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Studio | Vibely",
+      "status": {
+        "scheduled": "Ετοιμος",
+        "live": "ΖΩ",
+        "ended": "Τελείωσε"
+      },
+      "goLive": "Μετάβαση LIVE",
+      "endLive": "Τέλος LIVE",
+      "endConfirmTitle": "Τελειώστε αυτό το LIVE;",
+      "endConfirmBody": "Οι θεατές θα αποσυνδεθούν και δεν θα μπορείτε να συνεχίσετε αυτό το LIVE.",
+      "endedTitle": "Το LIVE σας έληξε",
+      "summaryViewers": "Θεατές",
+      "summaryLikes": "Μου αρέσει",
+      "muteMic": "Σίγαση μικροφώνου",
+      "unmuteMic": "Κατάργηση σίγασης μικροφώνου",
+      "turnOffCamera": "Απενεργοποιήστε την κάμερα",
+      "turnOnCamera": "Ενεργοποιήστε την κάμερα",
+      "cameraOff": "Η κάμερα είναι απενεργοποιημένη",
+      "settings": "Ρυθμίσεις LIVE",
+      "settingsSessionNote": "Αυτές οι αλλαγές ισχύουν μόνο για αυτήν την περίοδο λειτουργίας.",
+      "previewUnavailable": "Η προεπισκόπηση κάμερας δεν είναι ακόμη διαθέσιμη",
+      "previewUnavailableHint": "Η ροή από την κάμερά σας θα υποστηρίζεται μόλις συνδεθεί ο διακομιστής πολυμέσων.",
+      "chatBeforeStart": "Η συζήτηση θα ανοίξει όταν μεταβείτε ΖΩΝΤΑΝΑ.",
+      "chatEnded": "Η συνομιλία έχει κλείσει επειδή αυτό το LIVE έχει τελειώσει.",
+      "actionFailed": "Κάτι πήγε στραβά. Δοκιμάστε ξανά.",
+      "notOwnerTitle": "Δεν μπορείτε να διαχειριστείτε αυτό το LIVE",
+      "notOwnerDescription": "Μόνο ο οικοδεσπότης μπορεί να ανοίξει το LIVE Studio για αυτό το LIVE."
     }
   },
   "messagesPage": {

@@ -592,7 +592,8 @@
     },
     "sections": {
       "gaming": "Игры",
-      "lifestyle": "Lifestyle"
+      "lifestyle": "Lifestyle",
+      "recommended": "Рекомендуется для вас"
     },
     "mute": "Mute",
     "heroHeadline": "Смотрите сейчас и общайтесь с другими в режиме реального времени",
@@ -600,7 +601,128 @@
     "viewersLabel": "{{count}} watching",
     "previousLive": "Previous LIVE",
     "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE"
+    "refreshLive": "Switch LIVE",
+    "verified": "Подтвержденный аккаунт",
+    "card": {
+      "watchAria": "Смотрите в прямом эфире: {{title}} от {{host}}"
+    },
+    "states": {
+      "loading": "Загрузка…",
+      "retry": "Попробуйте еще раз",
+      "backToDiscovery": "Вернуться к ПРЯМОМУ ЭФИРУ",
+      "errorTitle": "Что-то пошло не так",
+      "discoveryError": "Не удалось загрузить прямые трансляции. Проверьте подключение и повторите попытку.",
+      "roomError": "Мы не смогли загрузить этот прямой эфир. Проверьте подключение и повторите попытку.",
+      "emptyTitle": "Сейчас нет прямых трансляций",
+      "emptyCategory": "В этой категории пока нет LIVE-трансляций. Зайдите позже.",
+      "emptyFollowing": "Авторы, на которых вы подписаны, сейчас НЕ В РЕЖИМЕ.",
+      "notFoundTitle": "ЖИВОЙ не найден",
+      "notFoundDescription": "Возможно, этот LIVE закончился или был удален."
+    },
+    "player": {
+      "ended": "Этот LIVE закончился",
+      "noCover": "Нет обложки"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Вибели LIVE",
+      "follow": "Следовать",
+      "following": "Следующий",
+      "like": "Нравиться",
+      "share": "Делиться",
+      "linkCopied": "Ссылка скопирована",
+      "gift": "Отправить подарок",
+      "giftShort": "Подарок",
+      "viewProfile": "Посмотреть профиль {{name}}",
+      "openHostControls": "Открыть элементы управления хостом"
+    },
+    "chat": {
+      "title": "ЖИВОЙ чат",
+      "placeholder": "Добавить комментарий…",
+      "send": "Отправлять",
+      "loading": "Подключение к чату…",
+      "empty": "Комментариев пока нет. Скажи привет!",
+      "error": "Не удалось подключиться к чату.",
+      "disabled": "Комментарии для этого прямого эфира отключены.",
+      "retry": "Повторить попытку",
+      "newMessages": "{{count}} новых сообщений"
+    },
+    "gifts": {
+      "title": "Подарки",
+      "coins": "{{count}} монет",
+      "sent": "Вы отправили {{name}}",
+      "loadError": "Не удалось загрузить подарки."
+    },
+    "create": {
+      "pageTitle": "ЖИВИТЕ | Вибели",
+      "title": "Настройте свой LIVE",
+      "detailsSection": "ЖИВЫЕ подробности",
+      "coverLabel": "Обложка",
+      "coverHint": "JPG, PNG или WEBP, до {{max}} МБ. Портретное изображение подойдет лучше всего.",
+      "chooseCover": "Выбрать изображение",
+      "changeCover": "Изменить изображение",
+      "removeCover": "Удалять",
+      "coverPreviewAlt": "ЖИВОЙ просмотр обложки",
+      "titleLabel": "Заголовок",
+      "titlePlaceholder": "О чем ваш LIVE?",
+      "descriptionLabel": "Описание",
+      "descriptionPlaceholder": "Расскажите зрителям, чего ожидать (необязательно).",
+      "categoryLabel": "Категория",
+      "visibilityLabel": "Кто может смотреть",
+      "visibility": {
+        "public": "Каждый",
+        "followers": "Последователи",
+        "friends": "Друзья"
+      },
+      "interactionSection": "Взаимодействие",
+      "allowComments": "Разрешить комментарии",
+      "allowGifts": "Разрешить подарки",
+      "allowGiftsHint": "Зрители могут отправлять вам подарки во время прямого эфира.",
+      "allowGuests": "Разрешить запросы гостей",
+      "allowGuestsHint": "Зрители могут попросить присоединиться к вашей трансляции в качестве гостя.",
+      "matureContent": "Взрослый контент",
+      "matureContentHint": "Смотреть могут только зрители старше 18 лет.",
+      "cancel": "Отмена",
+      "submit": "Создать ПРЯМОЙ ЭФИР",
+      "submitting": "Создание…",
+      "errors": {
+        "titleRequired": "Пожалуйста, введите название.",
+        "titleTooLong": "Название должно содержать {{max}} символов или меньше.",
+        "descriptionTooLong": "Описание должно содержать {{max}} символов или меньше.",
+        "categoryRequired": "Пожалуйста, выберите категорию.",
+        "coverType": "Выберите изображение в формате JPG, PNG или WEBP.",
+        "coverTooLarge": "Размер изображения должен составлять {{max}} МБ или меньше.",
+        "submitFailed": "Не удалось создать свой LIVE. Пожалуйста, попробуйте еще раз."
+      }
+    },
+    "host": {
+      "pageTitle": "ЖИВАЯ Студия | Вибели",
+      "status": {
+        "scheduled": "Готовый",
+        "live": "ЖИТЬ",
+        "ended": "Закончено"
+      },
+      "goLive": "В прямом эфире",
+      "endLive": "Конец прямого эфира",
+      "endConfirmTitle": "Закончить этот прямой эфир?",
+      "endConfirmBody": "Зрители будут отключены, и вы не сможете возобновить прямую трансляцию.",
+      "endedTitle": "Ваш LIVE закончился",
+      "summaryViewers": "Зрители",
+      "summaryLikes": "Нравится",
+      "muteMic": "Отключить микрофон",
+      "unmuteMic": "Включить микрофон",
+      "turnOffCamera": "Выключить камеру",
+      "turnOnCamera": "Включите камеру",
+      "cameraOff": "Камера выключена",
+      "settings": "Настройки LIVE",
+      "settingsSessionNote": "Эти изменения применяются только к этому сеансу.",
+      "previewUnavailable": "Предварительный просмотр камеры пока недоступен.",
+      "previewUnavailableHint": "Потоковая передача с вашей камеры будет поддерживаться после подключения медиасервера.",
+      "chatBeforeStart": "Чат откроется, когда вы выйдете в прямом эфире.",
+      "chatEnded": "Чат закрыт, так как этот LIVE закончился.",
+      "actionFailed": "Что-то пошло не так. Пожалуйста, попробуйте еще раз.",
+      "notOwnerTitle": "Вы не можете управлять этим LIVE",
+      "notOwnerDescription": "Только организатор может открыть LIVE Studio для этого LIVE."
+    }
   },
   "messagesPage": {
     "title": "Сообщения",

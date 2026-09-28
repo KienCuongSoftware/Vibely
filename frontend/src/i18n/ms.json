@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Permainan",
-      "lifestyle": "Gaya hidup"
+      "lifestyle": "Gaya hidup",
+      "recommended": "Disyorkan untuk anda"
+    },
+    "verified": "Akaun disahkan",
+    "card": {
+      "watchAria": "Tonton LANGSUNG: {{title}} oleh {{host}}"
+    },
+    "states": {
+      "loading": "Memuatkan…",
+      "retry": "Cuba lagi",
+      "backToDiscovery": "Kembali ke LIVE",
+      "errorTitle": "Sesuatu telah berlaku",
+      "discoveryError": "Kami tidak dapat memuatkan strim LANGSUNG. Semak sambungan anda dan cuba lagi.",
+      "roomError": "Kami tidak dapat memuatkan LIVE ini. Semak sambungan anda dan cuba lagi.",
+      "emptyTitle": "Tiada strim LIVE sekarang",
+      "emptyCategory": "Tiada strim LANGSUNG dalam kategori ini lagi. Semak semula segera.",
+      "emptyFollowing": "Pencipta yang anda ikuti tidak LANGSUNG sekarang.",
+      "notFoundTitle": "LIVE tidak ditemui",
+      "notFoundDescription": "LIVE ini mungkin telah tamat atau telah dialih keluar."
+    },
+    "player": {
+      "ended": "LIVE ini telah tamat",
+      "noCover": "Tiada gambar muka depan"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Ikut",
+      "following": "Mengikuti",
+      "like": "Suka",
+      "share": "Kongsi",
+      "linkCopied": "Pautan disalin",
+      "gift": "Hantar hadiah",
+      "giftShort": "Hadiah",
+      "viewProfile": "Lihat profil {{name}}.",
+      "openHostControls": "Buka kawalan hos"
+    },
+    "chat": {
+      "title": "Sembang LANGSUNG",
+      "placeholder": "Tambah ulasan…",
+      "send": "Hantar",
+      "loading": "Menyambung ke sembang…",
+      "empty": "Tiada ulasan lagi. say hi!",
+      "error": "Tidak dapat menyambung ke sembang.",
+      "disabled": "Komen dimatikan untuk LIVE ini.",
+      "retry": "Cuba semula",
+      "newMessages": "{{count}} mesej baharu"
+    },
+    "gifts": {
+      "title": "Hadiah",
+      "coins": "{{count}} syiling",
+      "sent": "Anda menghantar {{name}}",
+      "loadError": "Tidak dapat memuatkan hadiah."
+    },
+    "create": {
+      "pageTitle": "Pergi LIVE | Vibely",
+      "title": "Sediakan LIVE anda",
+      "detailsSection": "Butiran LIVE",
+      "coverLabel": "Gambar muka depan",
+      "coverHint": "JPG, PNG atau WEBP, sehingga {{max}} MB. Imej potret berfungsi paling baik.",
+      "chooseCover": "Pilih imej",
+      "changeCover": "Tukar imej",
+      "removeCover": "Alih keluar",
+      "coverPreviewAlt": "Pratonton muka depan LIVE",
+      "titleLabel": "Tajuk",
+      "titlePlaceholder": "Tentang apa LIVE anda?",
+      "descriptionLabel": "Penerangan",
+      "descriptionPlaceholder": "Beritahu penonton perkara yang diharapkan (pilihan)",
+      "categoryLabel": "kategori",
+      "visibilityLabel": "Siapa yang boleh menonton",
+      "visibility": {
+        "public": "Semua orang",
+        "followers": "Pengikut",
+        "friends": "Kawan-kawan"
+      },
+      "interactionSection": "Interaksi",
+      "allowComments": "Benarkan ulasan",
+      "allowGifts": "Benarkan hadiah",
+      "allowGiftsHint": "Penonton boleh menghantar hadiah kepada anda semasa LIVE.",
+      "allowGuests": "Benarkan permintaan tetamu",
+      "allowGuestsHint": "Penonton boleh meminta untuk menyertai LIVE anda sebagai tetamu.",
+      "matureContent": "Kandungan matang",
+      "matureContentHint": "Hanya penonton berumur 18 tahun ke atas boleh menonton.",
+      "cancel": "Batal",
+      "submit": "Buat LIVE",
+      "submitting": "Mencipta…",
+      "errors": {
+        "titleRequired": "Sila masukkan tajuk.",
+        "titleTooLong": "Tajuk mestilah {{max}} aksara atau kurang.",
+        "descriptionTooLong": "Perihalan mestilah {{max}} aksara atau kurang.",
+        "categoryRequired": "Sila pilih kategori.",
+        "coverType": "Sila pilih imej JPG, PNG atau WEBP.",
+        "coverTooLarge": "Imej mestilah {{max}} MB atau lebih kecil.",
+        "submitFailed": "Tidak dapat membuat LIVE anda. Sila cuba lagi."
+      }
+    },
+    "host": {
+      "pageTitle": "Studio LIVE | Vibely",
+      "status": {
+        "scheduled": "sedia",
+        "live": "LIVE",
+        "ended": "Berakhir"
+      },
+      "goLive": "Pergi LIVE",
+      "endLive": "Tamat LIVE",
+      "endConfirmTitle": "Tamatkan LIVE ini?",
+      "endConfirmBody": "Penonton akan diputuskan sambungan dan anda tidak akan dapat menyambung semula LIVE ini.",
+      "endedTitle": "LIVE anda telah tamat",
+      "summaryViewers": "Penonton",
+      "summaryLikes": "suka",
+      "muteMic": "Redam mikrofon",
+      "unmuteMic": "Nyahredam mikrofon",
+      "turnOffCamera": "Matikan kamera",
+      "turnOnCamera": "Hidupkan kamera",
+      "cameraOff": "Kamera dimatikan",
+      "settings": "Tetapan LANGSUNG",
+      "settingsSessionNote": "Perubahan ini digunakan untuk sesi ini sahaja.",
+      "previewUnavailable": "Pratonton kamera belum tersedia lagi",
+      "previewUnavailableHint": "Penstriman daripada kamera anda akan disokong sebaik sahaja pelayan media disambungkan.",
+      "chatBeforeStart": "Sembang akan dibuka apabila anda membuat LIVE.",
+      "chatEnded": "Sembang ditutup kerana LIVE ini telah tamat.",
+      "actionFailed": "Sesuatu telah berlaku. Sila cuba lagi.",
+      "notOwnerTitle": "Anda tidak boleh mengurus LIVE ini",
+      "notOwnerDescription": "Hanya hos boleh membuka LIVE Studio untuk LIVE ini."
     }
   },
   "messagesPage": {

@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Spilamennska",
-      "lifestyle": "Lífsstíll"
+      "lifestyle": "Lífsstíll",
+      "recommended": "Mælt með fyrir þig"
+    },
+    "verified": "Staðfestur reikningur",
+    "card": {
+      "watchAria": "Horfðu á BEINNI: {{title}} eftir {{host}}"
+    },
+    "states": {
+      "loading": "Hleður…",
+      "retry": "Reyndu aftur",
+      "backToDiscovery": "Aftur í LIVE",
+      "errorTitle": "Eitthvað fór úrskeiðis",
+      "discoveryError": "Við gátum ekki hlaðið straumum í beinni. Athugaðu tenginguna þína og reyndu aftur.",
+      "roomError": "Við gátum ekki hlaðið þessu LIVE. Athugaðu tenginguna þína og reyndu aftur.",
+      "emptyTitle": "Engir straumar í beinni núna",
+      "emptyCategory": "Það eru engir straumar í beinni í þessum flokki ennþá. Athugaðu aftur fljótlega.",
+      "emptyFollowing": "Höfundar sem þú fylgist með eru ekki í BEINNI eins og er.",
+      "notFoundTitle": "LIVE fannst ekki",
+      "notFoundDescription": "Þetta LIVE gæti hafa lokið eða verið fjarlægt."
+    },
+    "player": {
+      "ended": "Þessu LIVE er lokið",
+      "noCover": "Engin forsíðumynd"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Fylgstu með",
+      "following": "Á eftir",
+      "like": "Eins og",
+      "share": "Deila",
+      "linkCopied": "Tengill afritaður",
+      "gift": "Sendu gjöf",
+      "giftShort": "Gjöf",
+      "viewProfile": "Skoðaðu prófíl {{name}}",
+      "openHostControls": "Opnaðu stýringar fyrir hýsingaraðila"
+    },
+    "chat": {
+      "title": "LIVE spjall",
+      "placeholder": "Bæta við athugasemd…",
+      "send": "Senda",
+      "loading": "Tengist spjalli...",
+      "empty": "Engar athugasemdir ennþá. Segðu hæ!",
+      "error": "Ekki tókst að tengjast spjalli.",
+      "disabled": "Slökkt er á athugasemdum fyrir þetta LIVE.",
+      "retry": "Reyndu aftur",
+      "newMessages": "{{count}} ný skilaboð"
+    },
+    "gifts": {
+      "title": "Gjafir",
+      "coins": "{{count}} mynt",
+      "sent": "Þú sendir {{name}}",
+      "loadError": "Ekki tókst að hlaða gjöfum."
+    },
+    "create": {
+      "pageTitle": "Farðu í BEINN | Hressandi",
+      "title": "Settu upp LIVE",
+      "detailsSection": "LIVE upplýsingar",
+      "coverLabel": "Forsíðumynd",
+      "coverHint": "JPG, PNG eða WEBP, allt að {{max}} MB. Andlitsmynd virkar best.",
+      "chooseCover": "Veldu mynd",
+      "changeCover": "Skiptu um mynd",
+      "removeCover": "Fjarlægja",
+      "coverPreviewAlt": "Í beinni forskoðun",
+      "titleLabel": "Titill",
+      "titlePlaceholder": "Um hvað snýst LIVE þitt?",
+      "descriptionLabel": "Lýsing",
+      "descriptionPlaceholder": "Segðu áhorfendum hverju þeir mega búast við (valfrjálst)",
+      "categoryLabel": "Flokkur",
+      "visibilityLabel": "Hver getur horft",
+      "visibility": {
+        "public": "Allir",
+        "followers": "Fylgjendur",
+        "friends": "Vinir"
+      },
+      "interactionSection": "Samskipti",
+      "allowComments": "Leyfa athugasemdir",
+      "allowGifts": "Leyfa gjafir",
+      "allowGiftsHint": "Áhorfendur geta sent þér gjafir meðan á LIVE stendur.",
+      "allowGuests": "Leyfa beiðnir gesta",
+      "allowGuestsHint": "Áhorfendur geta beðið um að taka þátt í LIVE sem gestur.",
+      "matureContent": "Þroskað efni",
+      "matureContentHint": "Aðeins áhorfendur 18 ára og eldri geta horft.",
+      "cancel": "Hætta við",
+      "submit": "Búðu til LIVE",
+      "submitting": "Býr til...",
+      "errors": {
+        "titleRequired": "Vinsamlega sláðu inn titil.",
+        "titleTooLong": "Titill verður að vera {{max}} stafir eða færri.",
+        "descriptionTooLong": "Lýsing verður að vera {{max}} stafir eða færri.",
+        "categoryRequired": "Vinsamlegast veldu flokk.",
+        "coverType": "Vinsamlegast veldu JPG, PNG eða WEBP mynd.",
+        "coverTooLarge": "Mynd verður að vera {{max}} MB eða minni.",
+        "submitFailed": "Gat ekki búið til LIVE. Vinsamlegast reyndu aftur."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Stúdíó | Hressandi",
+      "status": {
+        "scheduled": "Tilbúið",
+        "live": "Í BEINNI",
+        "ended": "Lokið"
+      },
+      "goLive": "Farðu í BEINN",
+      "endLive": "Enda LIVE",
+      "endConfirmTitle": "Ljúka þessu LIVE?",
+      "endConfirmBody": "Áhorfendur verða aftengdir og þú munt ekki geta haldið þessu áfram í BEINNI.",
+      "endedTitle": "LIVE er lokið",
+      "summaryViewers": "Áhorfendur",
+      "summaryLikes": "Líkar við",
+      "muteMic": "Slökkva á hljóðnema",
+      "unmuteMic": "Kveikja á hljóðnema",
+      "turnOffCamera": "Slökktu á myndavélinni",
+      "turnOnCamera": "Kveiktu á myndavélinni",
+      "cameraOff": "Slökkt er á myndavélinni",
+      "settings": "LIVE stillingar",
+      "settingsSessionNote": "Þessar breytingar eiga aðeins við um þennan fund.",
+      "previewUnavailable": "Forskoðun myndavélar er ekki tiltæk ennþá",
+      "previewUnavailableHint": "Straumspilun úr myndavélinni þinni verður stutt þegar miðlunarþjónninn er tengdur.",
+      "chatBeforeStart": "Spjall opnast þegar þú ferð í LIVE.",
+      "chatEnded": "Spjallinu er lokað vegna þess að þessu LIVE er lokið.",
+      "actionFailed": "Eitthvað fór úrskeiðis. Vinsamlegast reyndu aftur.",
+      "notOwnerTitle": "Þú getur ekki stjórnað þessu LIVE",
+      "notOwnerDescription": "Aðeins gestgjafinn getur opnað LIVE Studio fyrir þetta LIVE."
     }
   },
   "messagesPage": {

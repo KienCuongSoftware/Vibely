@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Dula",
-      "lifestyle": "Pagkinabuhi"
+      "lifestyle": "Pagkinabuhi",
+      "recommended": "Girekomenda alang kanimo"
+    },
+    "verified": "Gipamatud-an nga account",
+    "card": {
+      "watchAria": "Tan-awa ang LIVE: {{title}} ni {{host}}"
+    },
+    "states": {
+      "loading": "Nagkarga…",
+      "retry": "Sulayi pag-usab",
+      "backToDiscovery": "Balik sa LIVE",
+      "errorTitle": "Naay nahitabo",
+      "discoveryError": "Dili namo makarga ang mga LIVE stream. Susiha ang imong koneksyon ug sulayi pag-usab.",
+      "roomError": "Dili namo makarga kini nga LIVE. Susiha ang imong koneksyon ug sulayi pag-usab.",
+      "emptyTitle": "Walay LIVE streams karon",
+      "emptyCategory": "Wala pa'y LIVE stream sa kini nga kategorya. Balik sa dili madugay.",
+      "emptyFollowing": "Ang mga magbubuhat nga imong gisundan dili LIVE karon.",
+      "notFoundTitle": "LIVE dili makit-an",
+      "notFoundDescription": "Kini nga LIVE mahimong natapos na o gitangtang."
+    },
+    "player": {
+      "ended": "Kini nga LIVE natapos na",
+      "noCover": "Walay cover image"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Sunda",
+      "following": "Nagsunod",
+      "like": "Ingon",
+      "share": "Ipaambit",
+      "linkCopied": "Gikopya ang link",
+      "gift": "Magpadala ug regalo",
+      "giftShort": "Gasa",
+      "viewProfile": "Tan-awa ang profile ni {{name}}.",
+      "openHostControls": "Bukas nga mga kontrol sa host"
+    },
+    "chat": {
+      "title": "LIVE chat",
+      "placeholder": "Pagdugang usa ka komento…",
+      "send": "Ipadala",
+      "loading": "Nagkonektar sa chat…",
+      "empty": "Wala pay komento. Ingna hi!",
+      "error": "Dili makakonektar sa chat.",
+      "disabled": "Gipalong ang mga komento para niining LIVE.",
+      "retry": "Sulayi pag-usab",
+      "newMessages": "{{count}} bag-ong mga mensahe"
+    },
+    "gifts": {
+      "title": "Mga regalo",
+      "coins": "{{count}} mga sensilyo",
+      "sent": "Gipadala nimo si {{name}}",
+      "loadError": "Dili makarga ang mga regalo."
+    },
+    "create": {
+      "pageTitle": "Lakaw LIVE | Vibely",
+      "title": "Ibutang ang imong LIVE",
+      "detailsSection": "LIVE nga mga detalye",
+      "coverLabel": "Hapin nga hulagway",
+      "coverHint": "JPG, PNG o WEBP, hangtod sa {{max}} MB. Ang usa ka hulagway nga hulagway labing maayo.",
+      "chooseCover": "Pagpili og hulagway",
+      "changeCover": "Usba ang hulagway",
+      "removeCover": "Kuhaa",
+      "coverPreviewAlt": "LIVE nga preview sa hapin",
+      "titleLabel": "Titulo",
+      "titlePlaceholder": "Unsa imong LIVE?",
+      "descriptionLabel": "Deskripsyon",
+      "descriptionPlaceholder": "Sultihi ang mga tumatan-aw kon unsay madahom (opsyonal)",
+      "categoryLabel": "Kategorya",
+      "visibilityLabel": "Kinsay makabantay",
+      "visibility": {
+        "public": "Ang tanan",
+        "followers": "Mga sumusunod",
+        "friends": "Mga higala"
+      },
+      "interactionSection": "Interaksyon",
+      "allowComments": "Tugoti ang mga komento",
+      "allowGifts": "Tugoti ang mga regalo",
+      "allowGiftsHint": "Ang mga tumatan-aw makapadala kanimo og mga regalo atol sa LIVE.",
+      "allowGuests": "Tugoti ang mga hangyo sa bisita",
+      "allowGuestsHint": "Ang mga tumatan-aw mahimong mohangyo nga moapil sa imong LIVE isip bisita.",
+      "matureContent": "Hingkod nga sulod",
+      "matureContentHint": "Ang mga tumatan-aw lang nga nag-edad og 18 pataas ang makatan-aw.",
+      "cancel": "Pagkanselar",
+      "submit": "Paghimo LIVE",
+      "submitting": "Nagbuhat…",
+      "errors": {
+        "titleRequired": "Palihug pagsulod ug titulo.",
+        "titleTooLong": "Ang titulo kinahanglang {{max}} nga mga karakter o mas gamay.",
+        "descriptionTooLong": "Ang deskripsyon kinahanglang {{max}} nga mga karakter o mas gamay.",
+        "categoryRequired": "Palihug pagpili ug kategorya.",
+        "coverType": "Palihug pagpili og JPG, PNG o WEBP nga hulagway.",
+        "coverTooLarge": "Ang hulagway kinahanglang {{max}} MB o mas gamay.",
+        "submitFailed": "Dili makahimo sa imong LIVE. Palihug sulayi pag-usab."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Studio | Vibely",
+      "status": {
+        "scheduled": "Andam",
+        "live": "MABUHI",
+        "ended": "Natapos"
+      },
+      "goLive": "Lakaw LIVE",
+      "endLive": "Tapuson LIVE",
+      "endConfirmTitle": "Tapuson kini nga LIVE?",
+      "endConfirmBody": "Ang mga tumatan-aw madiskonekta ug dili ka na makapadayon niini nga LIVE.",
+      "endedTitle": "Nahuman na imong LIVE",
+      "summaryViewers": "Mga tumatan-aw",
+      "summaryLikes": "Mga ganahan",
+      "muteMic": "Ihilum ang mikropono",
+      "unmuteMic": "I-unmute ang mikropono",
+      "turnOffCamera": "I-off ang camera",
+      "turnOnCamera": "I-on ang camera",
+      "cameraOff": "Gipalong ang camera",
+      "settings": "LIVE setting",
+      "settingsSessionNote": "Kini nga mga pagbag-o magamit lamang sa kini nga sesyon.",
+      "previewUnavailable": "Ang preview sa camera dili pa magamit",
+      "previewUnavailableHint": "Ang pag-stream gikan sa imong camera masuportahan kung konektado na ang media server.",
+      "chatBeforeStart": "Maabli ang chat kung mag LIVE ka.",
+      "chatEnded": "Sirado na ang chat kay nahuman na ning LIVE.",
+      "actionFailed": "Naay nahitabo. Palihug sulayi pag-usab.",
+      "notOwnerTitle": "Dili nimo madumala kini nga LIVE",
+      "notOwnerDescription": "Ang host ra ang makaabli sa LIVE Studio para niining LIVE."
     }
   },
   "messagesPage": {

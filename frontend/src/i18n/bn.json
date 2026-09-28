@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "গেমিং",
-      "lifestyle": "জীবনধারা"
+      "lifestyle": "জীবনধারা",
+      "recommended": "আপনার জন্য প্রস্তাবিত"
+    },
+    "verified": "যাচাইকৃত অ্যাকাউন্ট",
+    "card": {
+      "watchAria": "লাইভ দেখুন: {{host}} দ্বারা {{title}}"
+    },
+    "states": {
+      "loading": "লোড হচ্ছে...",
+      "retry": "আবার চেষ্টা করুন",
+      "backToDiscovery": "লাইভে ফিরে যান",
+      "errorTitle": "কিছু ভুল হয়েছে",
+      "discoveryError": "আমরা লাইভ স্ট্রিমগুলি লোড করতে পারিনি৷ আপনার সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন.",
+      "roomError": "আমরা এই লাইভটি লোড করতে পারিনি৷ আপনার সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন.",
+      "emptyTitle": "এই মুহূর্তে কোনো লাইভ স্ট্রিম নেই",
+      "emptyCategory": "এই বিভাগে এখনও কোনো লাইভ স্ট্রিম নেই। শীঘ্রই আবার চেক করুন.",
+      "emptyFollowing": "আপনি অনুসরণ করেন এমন নির্মাতারা এখন লাইভ নয়।",
+      "notFoundTitle": "লাইভ পাওয়া যায়নি",
+      "notFoundDescription": "এই লাইভটি শেষ হয়ে যেতে পারে বা সরানো হয়েছে৷"
+    },
+    "player": {
+      "ended": "এই লাইভ শেষ হয়েছে",
+      "noCover": "কোনো কভার ছবি নেই"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "অনুসরণ করুন",
+      "following": "অনুসরণ করছে",
+      "like": "লাইক",
+      "share": "শেয়ার করুন",
+      "linkCopied": "লিঙ্ক কপি করা হয়েছে",
+      "gift": "একটি উপহার পাঠান",
+      "giftShort": "উপহার",
+      "viewProfile": "{{name}}-এর প্রোফাইল দেখুন৷",
+      "openHostControls": "হোস্ট নিয়ন্ত্রণ খুলুন"
+    },
+    "chat": {
+      "title": "লাইভ চ্যাট",
+      "placeholder": "একটি মন্তব্য যোগ করুন...",
+      "send": "পাঠান",
+      "loading": "চ্যাটে সংযুক্ত হচ্ছে...",
+      "empty": "এখনো কোন মন্তব্য নেই. হাই বল!",
+      "error": "চ্যাটে সংযোগ করা যায়নি।",
+      "disabled": "এই লাইভের জন্য মন্তব্য বন্ধ করা হয়েছে।",
+      "retry": "আবার চেষ্টা করুন",
+      "newMessages": "{{count}}টি নতুন বার্তা৷"
+    },
+    "gifts": {
+      "title": "উপহার",
+      "coins": "{{count}} কয়েন",
+      "sent": "আপনি {{name}} পাঠিয়েছেন",
+      "loadError": "উপহার লোড করা যায়নি।"
+    },
+    "create": {
+      "pageTitle": "লাইভ যান | Vibely",
+      "title": "আপনার লাইভ সেট আপ করুন",
+      "detailsSection": "লাইভ বিবরণ",
+      "coverLabel": "কভার ইমেজ",
+      "coverHint": "JPG, PNG বা WEBP, {{max}} MB পর্যন্ত। একটি প্রতিকৃতি চিত্র সবচেয়ে ভাল কাজ করে।",
+      "chooseCover": "ইমেজ চয়ন করুন",
+      "changeCover": "ছবি পরিবর্তন করুন",
+      "removeCover": "সরান",
+      "coverPreviewAlt": "লাইভ কভার পূর্বরূপ",
+      "titleLabel": "শিরোনাম",
+      "titlePlaceholder": "আপনার লাইভ কি সম্পর্কে?",
+      "descriptionLabel": "বর্ণনা",
+      "descriptionPlaceholder": "দর্শকদের বলুন কি আশা করবেন (ঐচ্ছিক)",
+      "categoryLabel": "শ্রেণী",
+      "visibilityLabel": "কে দেখতে পারে",
+      "visibility": {
+        "public": "সবাই",
+        "followers": "অনুসারী",
+        "friends": "বন্ধুরা"
+      },
+      "interactionSection": "মিথস্ক্রিয়া",
+      "allowComments": "মন্তব্যের অনুমতি দিন",
+      "allowGifts": "উপহারের অনুমতি দিন",
+      "allowGiftsHint": "লাইভ চলাকালীন দর্শকরা আপনাকে উপহার পাঠাতে পারে।",
+      "allowGuests": "অতিথিদের অনুরোধের অনুমতি দিন",
+      "allowGuestsHint": "দর্শকরা অতিথি হিসেবে আপনার লাইভে যোগদানের জন্য অনুরোধ করতে পারেন।",
+      "matureContent": "পরিণত বিষয়বস্তু",
+      "matureContentHint": "শুধুমাত্র 18 বছর বা তার বেশি বয়সী দর্শকরা দেখতে পারবেন।",
+      "cancel": "বাতিল করুন",
+      "submit": "লাইভ তৈরি করুন",
+      "submitting": "তৈরি করা হচ্ছে...",
+      "errors": {
+        "titleRequired": "একটি শিরোনাম লিখুন দয়া করে.",
+        "titleTooLong": "শিরোনাম অবশ্যই {{max}} অক্ষর বা তার কম হতে হবে৷",
+        "descriptionTooLong": "বর্ণনা অবশ্যই {{max}} অক্ষর বা তার কম হতে হবে৷",
+        "categoryRequired": "একটি বিভাগ নির্বাচন করুন.",
+        "coverType": "অনুগ্রহ করে একটি JPG, PNG বা WEBP ছবি বেছে নিন।",
+        "coverTooLarge": "ছবি অবশ্যই {{max}} MB বা ছোট হতে হবে৷",
+        "submitFailed": "আপনার লাইভ তৈরি করা যায়নি. আবার চেষ্টা করুন."
+      }
+    },
+    "host": {
+      "pageTitle": "লাইভ স্টুডিও | Vibely",
+      "status": {
+        "scheduled": "প্রস্তুত",
+        "live": "লাইভ",
+        "ended": "শেষ হয়েছে"
+      },
+      "goLive": "লাইভ যান",
+      "endLive": "লাইভ শেষ করুন",
+      "endConfirmTitle": "এই লাইভ শেষ করবেন?",
+      "endConfirmBody": "দর্শকদের সংযোগ বিচ্ছিন্ন করা হবে এবং আপনি এই লাইভটি পুনরায় শুরু করতে পারবেন না।",
+      "endedTitle": "আপনার লাইভ শেষ হয়েছে",
+      "summaryViewers": "দর্শক",
+      "summaryLikes": "পছন্দ",
+      "muteMic": "মাইক্রোফোন নিঃশব্দ করুন",
+      "unmuteMic": "মাইক্রোফোন আনমিউট করুন",
+      "turnOffCamera": "ক্যামেরা বন্ধ করুন",
+      "turnOnCamera": "ক্যামেরা চালু করুন",
+      "cameraOff": "ক্যামেরা বন্ধ",
+      "settings": "লাইভ সেটিংস",
+      "settingsSessionNote": "এই পরিবর্তনগুলি শুধুমাত্র এই অধিবেশনে প্রযোজ্য।",
+      "previewUnavailable": "ক্যামেরা প্রিভিউ এখনও উপলব্ধ নয়",
+      "previewUnavailableHint": "মিডিয়া সার্ভার সংযুক্ত হয়ে গেলে আপনার ক্যামেরা থেকে স্ট্রিমিং সমর্থিত হবে।",
+      "chatBeforeStart": "আপনি লাইভে গেলে চ্যাট খুলবে।",
+      "chatEnded": "চ্যাট বন্ধ আছে কারণ এই লাইভটি শেষ হয়েছে৷",
+      "actionFailed": "কিছু ভুল হয়েছে আবার চেষ্টা করুন.",
+      "notOwnerTitle": "আপনি এই লাইভ পরিচালনা করতে পারবেন না",
+      "notOwnerDescription": "শুধুমাত্র হোস্ট এই লাইভের জন্য লাইভ স্টুডিও খুলতে পারে।"
     }
   },
   "messagesPage": {

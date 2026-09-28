@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Oʻyin",
-      "lifestyle": "Hayot tarzi"
+      "lifestyle": "Hayot tarzi",
+      "recommended": "Siz uchun tavsiya etilgan"
+    },
+    "verified": "Tasdiqlangan hisob",
+    "card": {
+      "watchAria": "JONLI: {{title}} muallifi: {{host}}"
+    },
+    "states": {
+      "loading": "Yuklanmoqda…",
+      "retry": "Qayta urinib ko'ring",
+      "backToDiscovery": "LIVEga qaytish",
+      "errorTitle": "Nimadir xato ketdi",
+      "discoveryError": "LIVE translatsiyalarni yuklay olmadik. Ulanishingizni tekshiring va qaytadan urining.",
+      "roomError": "Buni LIVE yuklay olmadik. Ulanishingizni tekshiring va qaytadan urining.",
+      "emptyTitle": "Hozirda hech qanday LIVE translatsiya yo‘q",
+      "emptyCategory": "Bu turkumda hali LIVE translatsiyalari mavjud emas. Tez orada tekshiring.",
+      "emptyFollowing": "Siz kuzatayotgan ijodkorlar hozir JONLI emas.",
+      "notFoundTitle": "LIVE topilmadi",
+      "notFoundDescription": "Bu LIVE tugagan yoki olib tashlangan boʻlishi mumkin."
+    },
+    "player": {
+      "ended": "Bu LIVE tugadi",
+      "noCover": "Muqova tasviri yo'q"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Kuzatish",
+      "following": "Kuzatish",
+      "like": "Kabi",
+      "share": "Ulashish",
+      "linkCopied": "Havola nusxalandi",
+      "gift": "Sovg'a yuboring",
+      "giftShort": "Sovg'a",
+      "viewProfile": "{{name}} profilini ko‘ring",
+      "openHostControls": "Xost boshqaruvlarini oching"
+    },
+    "chat": {
+      "title": "JONLI chat",
+      "placeholder": "Fikr qo‘shish…",
+      "send": "Yuborish",
+      "loading": "Chatga ulanmoqda…",
+      "empty": "Hozircha izohlar yo‘q. Salom ayting!",
+      "error": "Chatga ulanib bo‘lmadi.",
+      "disabled": "Bu LIVE uchun sharhlar o‘chirilgan.",
+      "retry": "Qayta urinish",
+      "newMessages": "{{count}} ta yangi xabar"
+    },
+    "gifts": {
+      "title": "Sovg'alar",
+      "coins": "{{count}} tanga",
+      "sent": "Siz {{name}}ni yubordingiz",
+      "loadError": "Sovg‘alarni yuklab bo‘lmadi."
+    },
+    "create": {
+      "pageTitle": "LIVE | Vibely",
+      "title": "LIVEni sozlang",
+      "detailsSection": "LIVE tafsilotlari",
+      "coverLabel": "Muqova rasmi",
+      "coverHint": "JPG, PNG yoki WEBP, {{max}} MB gacha. Portret tasvir eng yaxshi ishlaydi.",
+      "chooseCover": "Rasmni tanlang",
+      "changeCover": "Tasvirni o'zgartirish",
+      "removeCover": "O'chirish",
+      "coverPreviewAlt": "LIVE muqovasiga oldindan ko'rish",
+      "titleLabel": "Sarlavha",
+      "titlePlaceholder": "Sizning LIVE nima haqida?",
+      "descriptionLabel": "Tavsif",
+      "descriptionPlaceholder": "Tomoshabinlarga nima kutish kerakligini ayting (ixtiyoriy)",
+      "categoryLabel": "Turkum",
+      "visibilityLabel": "Kim tomosha qilishi mumkin",
+      "visibility": {
+        "public": "Hamma",
+        "followers": "Obunachilar",
+        "friends": "Do'stlar"
+      },
+      "interactionSection": "O'zaro ta'sir",
+      "allowComments": "Fikr bildirishga ruxsat bering",
+      "allowGifts": "Sovg'alarga ruxsat bering",
+      "allowGiftsHint": "Tomoshabinlar LIVE paytida sizga sovg'a yuborishlari mumkin.",
+      "allowGuests": "Mehmon so'rovlariga ruxsat bering",
+      "allowGuestsHint": "Tomoshabinlar LIVEga mehmon sifatida qo‘shilishni so‘rashlari mumkin.",
+      "matureContent": "Voyaga yetganlar uchun kontent",
+      "matureContentHint": "Faqat 18 va undan katta yoshdagi tomoshabinlar tomosha qilishi mumkin.",
+      "cancel": "Bekor qilish",
+      "submit": "LIVE yaratish",
+      "submitting": "Yaratilmoqda…",
+      "errors": {
+        "titleRequired": "Iltimos, sarlavha kiriting.",
+        "titleTooLong": "Sarlavha {{max}} ta belgidan iborat boʻlishi kerak.",
+        "descriptionTooLong": "Tavsif {{max}} ta belgidan iborat boʻlishi kerak.",
+        "categoryRequired": "Kategoriya tanlang.",
+        "coverType": "JPG, PNG yoki WEBP rasmini tanlang.",
+        "coverTooLarge": "Rasm {{max}} MB yoki undan kichikroq boʻlishi kerak.",
+        "submitFailed": "LIVE yaratib bo‘lmadi. Iltimos, qayta urinib koʻring."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Studio | Vibely",
+      "status": {
+        "scheduled": "Tayyor",
+        "live": "JONLI",
+        "ended": "Tugadi"
+      },
+      "goLive": "jonli efirga o‘ting",
+      "endLive": "JONLI ENGLISH",
+      "endConfirmTitle": "Bu jonli efir tugatilsinmi?",
+      "endConfirmBody": "Tomoshabinlar uziladi va siz bu LIVEni davom ettira olmaysiz.",
+      "endedTitle": "LIVE nihoyasiga yetdi",
+      "summaryViewers": "Tomoshabinlar",
+      "summaryLikes": "Yoqadi",
+      "muteMic": "Mikrofon ovozini o'chirish",
+      "unmuteMic": "Mikrofon ovozini yoqish",
+      "turnOffCamera": "Kamerani o'chiring",
+      "turnOnCamera": "Kamerani yoqing",
+      "cameraOff": "Kamera oʻchirilgan",
+      "settings": "LIVE sozlamalari",
+      "settingsSessionNote": "Ushbu o'zgarishlar faqat ushbu sessiyaga tegishli.",
+      "previewUnavailable": "Kamerani oldindan ko‘rish hali mavjud emas",
+      "previewUnavailableHint": "Media server ulangandan so'ng kamerangizdan oqim qo'llab-quvvatlanadi.",
+      "chatBeforeStart": "Jonli efirga chiqqaningizda chat ochiladi.",
+      "chatEnded": "Chat yopildi, chunki bu LIVE tugadi.",
+      "actionFailed": "Nimadir xato ketdi. Iltimos, qayta urinib koʻring.",
+      "notOwnerTitle": "Siz bu LIVEni boshqara olmaysiz",
+      "notOwnerDescription": "Bu LIVE uchun LIVE Studioni faqat xost ochishi mumkin."
     }
   },
   "messagesPage": {

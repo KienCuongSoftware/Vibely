@@ -592,7 +592,8 @@
     },
     "sections": {
       "gaming": "Game",
-      "lifestyle": "Gaya hidup"
+      "lifestyle": "Gaya hidup",
+      "recommended": "Direkomendasikan untuk Anda"
     },
     "mute": "Mute",
     "heroHeadline": "Tonton sekarang dan berinteraksi dengan orang lain secara real time",
@@ -600,7 +601,128 @@
     "viewersLabel": "{{count}} watching",
     "previousLive": "Previous LIVE",
     "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE"
+    "refreshLive": "Switch LIVE",
+    "verified": "Akun terverifikasi",
+    "card": {
+      "watchAria": "Tonton LANGSUNG: {{title}} oleh {{host}}"
+    },
+    "states": {
+      "loading": "Memuat…",
+      "retry": "Coba lagi",
+      "backToDiscovery": "Kembali ke LANGSUNG",
+      "errorTitle": "Ada yang tidak beres",
+      "discoveryError": "Kami tidak dapat memuat streaming LIVE. Periksa koneksi Anda dan coba lagi.",
+      "roomError": "Kami tidak dapat memuat LIVE ini. Periksa koneksi Anda dan coba lagi.",
+      "emptyTitle": "Tidak ada streaming LANGSUNG saat ini",
+      "emptyCategory": "Belum ada streaming LIVE dalam kategori ini. Segera periksa kembali.",
+      "emptyFollowing": "Kreator yang Anda ikuti tidak sedang LIVE saat ini.",
+      "notFoundTitle": "LANGSUNG tidak ditemukan",
+      "notFoundDescription": "LIVE ini mungkin telah berakhir atau dihapus."
+    },
+    "player": {
+      "ended": "LIVE ini telah berakhir",
+      "noCover": "Tidak ada gambar sampul"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Mengikuti",
+      "following": "Mengikuti",
+      "like": "Menyukai",
+      "share": "Membagikan",
+      "linkCopied": "Tautan disalin",
+      "gift": "Kirim hadiah",
+      "giftShort": "Hadiah",
+      "viewProfile": "Lihat profil {{name}}",
+      "openHostControls": "Buka kontrol host"
+    },
+    "chat": {
+      "title": "Obrolan LANGSUNG",
+      "placeholder": "Tambahkan komentar…",
+      "send": "Mengirim",
+      "loading": "Menghubungkan ke obrolan…",
+      "empty": "Belum ada komentar. Sampaikan salam!",
+      "error": "Tidak dapat terhubung ke obrolan.",
+      "disabled": "Komentar dimatikan untuk LIVE ini.",
+      "retry": "Mencoba kembali",
+      "newMessages": "{{count}} pesan baru"
+    },
+    "gifts": {
+      "title": "Hadiah",
+      "coins": "{{count}} koin",
+      "sent": "Anda mengirim {{name}}",
+      "loadError": "Tidak dapat memuat hadiah."
+    },
+    "create": {
+      "pageTitle": "Tayangkan LANGSUNG | Rupanya",
+      "title": "Siapkan LANGSUNG Anda",
+      "detailsSection": "Detail LANGSUNG",
+      "coverLabel": "Gambar sampul",
+      "coverHint": "JPG, PNG atau WEBP, hingga {{max}} MB. Gambar potret berfungsi paling baik.",
+      "chooseCover": "Pilih gambar",
+      "changeCover": "Ubah gambar",
+      "removeCover": "Menghapus",
+      "coverPreviewAlt": "Pratinjau sampul LANGSUNG",
+      "titleLabel": "Judul",
+      "titlePlaceholder": "Tentang apa LIVE Anda?",
+      "descriptionLabel": "Keterangan",
+      "descriptionPlaceholder": "Beri tahu pemirsa apa yang diharapkan (opsional)",
+      "categoryLabel": "Kategori",
+      "visibilityLabel": "Siapa yang bisa menonton",
+      "visibility": {
+        "public": "Setiap orang",
+        "followers": "Pengikut",
+        "friends": "Teman-teman"
+      },
+      "interactionSection": "Interaksi",
+      "allowComments": "Izinkan komentar",
+      "allowGifts": "Izinkan hadiah",
+      "allowGiftsHint": "Pemirsa dapat mengirimi Anda hadiah selama LIVE.",
+      "allowGuests": "Izinkan permintaan tamu",
+      "allowGuestsHint": "Pemirsa dapat meminta untuk bergabung dengan LIVE Anda sebagai tamu.",
+      "matureContent": "Konten dewasa",
+      "matureContentHint": "Hanya pemirsa berusia 18 tahun ke atas yang dapat menonton.",
+      "cancel": "Membatalkan",
+      "submit": "Buat LANGSUNG",
+      "submitting": "Membuat…",
+      "errors": {
+        "titleRequired": "Silakan masukkan judul.",
+        "titleTooLong": "Judul harus terdiri dari {{max}} karakter atau kurang.",
+        "descriptionTooLong": "Deskripsi harus terdiri dari {{max}} karakter atau kurang.",
+        "categoryRequired": "Silakan pilih kategori.",
+        "coverType": "Silakan pilih gambar JPG, PNG atau WEBP.",
+        "coverTooLarge": "Gambar harus berukuran {{max}} MB atau lebih kecil.",
+        "submitFailed": "Tidak dapat membuat LIVE Anda. Silakan coba lagi."
+      }
+    },
+    "host": {
+      "pageTitle": "Studio LANGSUNG | Rupanya",
+      "status": {
+        "scheduled": "Siap",
+        "live": "HIDUP",
+        "ended": "Berakhir"
+      },
+      "goLive": "Tayangkan LANGSUNG",
+      "endLive": "Akhiri LANGSUNG",
+      "endConfirmTitle": "Akhiri LANGSUNG ini?",
+      "endConfirmBody": "Pemirsa akan terputus dan Anda tidak dapat melanjutkan LIVE ini.",
+      "endedTitle": "LIVE Anda telah berakhir",
+      "summaryViewers": "Pemirsa",
+      "summaryLikes": "Suka",
+      "muteMic": "Bisukan mikrofon",
+      "unmuteMic": "Suarakan mikrofon",
+      "turnOffCamera": "Matikan kamera",
+      "turnOnCamera": "Nyalakan kamera",
+      "cameraOff": "Kamera mati",
+      "settings": "Pengaturan LANGSUNG",
+      "settingsSessionNote": "Perubahan ini hanya berlaku untuk sesi ini.",
+      "previewUnavailable": "Pratinjau kamera belum tersedia",
+      "previewUnavailableHint": "Streaming dari kamera Anda akan didukung setelah server media terhubung.",
+      "chatBeforeStart": "Obrolan akan terbuka saat Anda LIVE.",
+      "chatEnded": "Chat ditutup karena LIVE ini telah berakhir.",
+      "actionFailed": "Ada yang tidak beres. Silakan coba lagi.",
+      "notOwnerTitle": "Anda tidak dapat mengelola LIVE ini",
+      "notOwnerDescription": "Hanya tuan rumah yang dapat membuka LIVE Studio untuk LIVE ini."
+    }
   },
   "messagesPage": {
     "title": "Pesan",

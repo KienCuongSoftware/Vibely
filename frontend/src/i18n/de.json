@@ -592,7 +592,8 @@
     },
     "sections": {
       "gaming": "Gaming",
-      "lifestyle": "Lifestyle"
+      "lifestyle": "Lifestyle",
+      "recommended": "Für Sie empfohlen"
     },
     "mute": "Mute",
     "heroHeadline": "Schauen Sie jetzt zu und interagieren Sie in Echtzeit mit anderen",
@@ -600,7 +601,128 @@
     "viewersLabel": "{{count}} watching",
     "previousLive": "Previous LIVE",
     "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE"
+    "refreshLive": "Switch LIVE",
+    "verified": "Verifiziertes Konto",
+    "card": {
+      "watchAria": "LIVE ansehen: {{title}} von {{host}}"
+    },
+    "states": {
+      "loading": "Laden…",
+      "retry": "Versuchen Sie es erneut",
+      "backToDiscovery": "Zurück zu LIVE",
+      "errorTitle": "Etwas ist schief gelaufen",
+      "discoveryError": "Wir konnten keine LIVE-Streams laden. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "roomError": "Wir konnten dies nicht LIVE laden. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "emptyTitle": "Zur Zeit keine LIVE-Streams",
+      "emptyCategory": "In dieser Kategorie gibt es noch keine LIVE-Streams. Schauen Sie bald wieder vorbei.",
+      "emptyFollowing": "Die Ersteller, denen Sie folgen, sind derzeit nicht LIVE.",
+      "notFoundTitle": "LIVE nicht gefunden",
+      "notFoundDescription": "Dieses LIVE wurde möglicherweise beendet oder entfernt."
+    },
+    "player": {
+      "ended": "Dieses LIVE ist beendet",
+      "noCover": "Kein Titelbild"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Folgen",
+      "following": "Nachfolgend",
+      "like": "Wie",
+      "share": "Aktie",
+      "linkCopied": "Link kopiert",
+      "gift": "Schicken Sie ein Geschenk",
+      "giftShort": "Geschenk",
+      "viewProfile": "Sehen Sie sich das Profil von {{name}} an",
+      "openHostControls": "Öffnen Sie die Host-Steuerelemente"
+    },
+    "chat": {
+      "title": "LIVE-Chat",
+      "placeholder": "Einen Kommentar hinzufügen…",
+      "send": "Schicken",
+      "loading": "Verbindung zum Chat herstellen…",
+      "empty": "Noch keine Kommentare. Sag Hallo!",
+      "error": "Es konnte keine Verbindung zum Chat hergestellt werden.",
+      "disabled": "Kommentare sind für dieses LIVE deaktiviert.",
+      "retry": "Wiederholen",
+      "newMessages": "{{count}} neue Nachrichten"
+    },
+    "gifts": {
+      "title": "Geschenke",
+      "coins": "{{count}} Münzen",
+      "sent": "Du hast {{name}} gesendet",
+      "loadError": "Geschenke konnten nicht geladen werden."
+    },
+    "create": {
+      "pageTitle": "LIVE gehen | Vibely",
+      "title": "Richten Sie Ihr LIVE ein",
+      "detailsSection": "LIVE-Details",
+      "coverLabel": "Titelbild",
+      "coverHint": "JPG, PNG oder WEBP, bis zu {{max}} MB. Ein Porträtbild funktioniert am besten.",
+      "chooseCover": "Bild auswählen",
+      "changeCover": "Bild ändern",
+      "removeCover": "Entfernen",
+      "coverPreviewAlt": "LIVE-Cover-Vorschau",
+      "titleLabel": "Titel",
+      "titlePlaceholder": "Worum geht es in deinem LIVE?",
+      "descriptionLabel": "Beschreibung",
+      "descriptionPlaceholder": "Sagen Sie den Zuschauern, was sie erwartet (optional)",
+      "categoryLabel": "Kategorie",
+      "visibilityLabel": "Wer kann zuschauen",
+      "visibility": {
+        "public": "Alle",
+        "followers": "Anhänger",
+        "friends": "Freunde"
+      },
+      "interactionSection": "Interaktion",
+      "allowComments": "Kommentare zulassen",
+      "allowGifts": "Geschenke zulassen",
+      "allowGiftsHint": "Zuschauer können Ihnen während des LIVE Geschenke schicken.",
+      "allowGuests": "Erlauben Sie Gastanfragen",
+      "allowGuestsHint": "Zuschauer können eine Anfrage stellen, um Ihrem LIVE als Gast beizutreten.",
+      "matureContent": "Inhalte für Erwachsene",
+      "matureContentHint": "Nur Zuschauer ab 18 Jahren können zuschauen.",
+      "cancel": "Stornieren",
+      "submit": "LIVE erstellen",
+      "submitting": "Erstellen…",
+      "errors": {
+        "titleRequired": "Bitte geben Sie einen Titel ein.",
+        "titleTooLong": "Der Titel darf höchstens {{max}} Zeichen lang sein.",
+        "descriptionTooLong": "Die Beschreibung darf höchstens {{max}} Zeichen lang sein.",
+        "categoryRequired": "Bitte wählen Sie eine Kategorie.",
+        "coverType": "Bitte wählen Sie ein JPG-, PNG- oder WEBP-Bild.",
+        "coverTooLarge": "Das Bild muss maximal {{max}} MB groß sein.",
+        "submitFailed": "Ihr LIVE konnte nicht erstellt werden. Bitte versuchen Sie es erneut."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE-Studio | Vibely",
+      "status": {
+        "scheduled": "Bereit",
+        "live": "LIVE",
+        "ended": "Beendet"
+      },
+      "goLive": "Gehen Sie LIVE",
+      "endLive": "LIVE beenden",
+      "endConfirmTitle": "Das LIVE beenden?",
+      "endConfirmBody": "Die Verbindung zu den Zuschauern wird unterbrochen und Sie können dieses LIVE-Video nicht fortsetzen.",
+      "endedTitle": "Dein LIVE ist zu Ende",
+      "summaryViewers": "Zuschauer",
+      "summaryLikes": "Gefällt mir",
+      "muteMic": "Mikrofon stumm schalten",
+      "unmuteMic": "Stummschaltung des Mikrofons aufheben",
+      "turnOffCamera": "Kamera ausschalten",
+      "turnOnCamera": "Kamera einschalten",
+      "cameraOff": "Die Kamera ist ausgeschaltet",
+      "settings": "LIVE-Einstellungen",
+      "settingsSessionNote": "Diese Änderungen gelten nur für diese Sitzung.",
+      "previewUnavailable": "Die Kameravorschau ist noch nicht verfügbar",
+      "previewUnavailableHint": "Das Streaming von Ihrer Kamera wird unterstützt, sobald der Medienserver verbunden ist.",
+      "chatBeforeStart": "Der Chat wird geöffnet, wenn Sie LIVE gehen.",
+      "chatEnded": "Der Chat ist geschlossen, da dieses LIVE beendet ist.",
+      "actionFailed": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",
+      "notOwnerTitle": "Das können Sie nicht LIVE verwalten",
+      "notOwnerDescription": "Nur der Gastgeber kann LIVE Studio für dieses LIVE öffnen."
+    }
   },
   "messagesPage": {
     "title": "Nachrichten",

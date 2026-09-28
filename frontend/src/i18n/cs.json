@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Hraní",
-      "lifestyle": "Životní styl"
+      "lifestyle": "Životní styl",
+      "recommended": "Doporučeno pro vás"
+    },
+    "verified": "Ověřený účet",
+    "card": {
+      "watchAria": "Sledovat ŽIVĚ: {{title}} od {{host}}"
+    },
+    "states": {
+      "loading": "Načítání…",
+      "retry": "Zkuste to znovu",
+      "backToDiscovery": "Zpět na LIVE",
+      "errorTitle": "Něco se pokazilo",
+      "discoveryError": "LIVE streamy se nepodařilo načíst. Zkontrolujte připojení a zkuste to znovu.",
+      "roomError": "Toto se nepodařilo načíst ŽIVĚ. Zkontrolujte připojení a zkuste to znovu.",
+      "emptyTitle": "Momentálně žádné LIVE streamy",
+      "emptyCategory": "V této kategorii zatím nejsou žádné živé přenosy. Vraťte se brzy.",
+      "emptyFollowing": "Tvůrci, které sledujete, právě nejsou ŽIVĚ.",
+      "notFoundTitle": "LIVE nenalezeno",
+      "notFoundDescription": "Tento LIVE mohl být ukončen nebo odstraněn."
+    },
+    "player": {
+      "ended": "Tento LIVE skončil",
+      "noCover": "Žádný titulní obrázek"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Následovat",
+      "following": "Následující",
+      "like": "Jako",
+      "share": "Podíl",
+      "linkCopied": "Odkaz zkopírován",
+      "gift": "Pošlete dárek",
+      "giftShort": "Dárek",
+      "viewProfile": "Zobrazit profil uživatele {{name}}",
+      "openHostControls": "Otevřete ovládací prvky hostitele"
+    },
+    "chat": {
+      "title": "ŽIVÝ chat",
+      "placeholder": "Přidat komentář…",
+      "send": "Poslat",
+      "loading": "Připojování k chatu…",
+      "empty": "Zatím žádné komentáře. Řekni ahoj!",
+      "error": "Nelze se připojit k chatu.",
+      "disabled": "Komentáře jsou pro tento LIVE vypnuty.",
+      "retry": "Zkuste to znovu",
+      "newMessages": "Nové zprávy: {{count}}"
+    },
+    "gifts": {
+      "title": "Dárky",
+      "coins": "{{count}} mincí",
+      "sent": "Odeslali jste {{name}}",
+      "loadError": "Dary se nepodařilo načíst."
+    },
+    "create": {
+      "pageTitle": "Jdi ŽIVĚ | Vibely",
+      "title": "Nastavte si LIVE",
+      "detailsSection": "LIVE detaily",
+      "coverLabel": "Titulní obrázek",
+      "coverHint": "JPG, PNG nebo WEBP, až {{max}} MB. Nejlépe funguje portrétní obrázek.",
+      "chooseCover": "Vyberte obrázek",
+      "changeCover": "Změnit obrázek",
+      "removeCover": "Odstranit",
+      "coverPreviewAlt": "ŽIVÝ náhled obálky",
+      "titleLabel": "Titul",
+      "titlePlaceholder": "O čem je váš LIVE?",
+      "descriptionLabel": "Popis",
+      "descriptionPlaceholder": "Řekněte divákům, co mohou očekávat (volitelné)",
+      "categoryLabel": "Kategorie",
+      "visibilityLabel": "Kdo se může dívat",
+      "visibility": {
+        "public": "Každý",
+        "followers": "Následovníci",
+        "friends": "Přátelé"
+      },
+      "interactionSection": "Interakce",
+      "allowComments": "Povolit komentáře",
+      "allowGifts": "Povolit dárky",
+      "allowGiftsHint": "Diváci vám mohou posílat dárky během LIVE.",
+      "allowGuests": "Povolit požadavky hostů",
+      "allowGuestsHint": "Diváci mohou požádat o připojení k vašemu LIVE jako host.",
+      "matureContent": "Obsah pro dospělé",
+      "matureContentHint": "Sledovat mohou pouze diváci starší 18 let.",
+      "cancel": "Zrušit",
+      "submit": "Vytvořit ŽIVĚ",
+      "submitting": "Vytváření…",
+      "errors": {
+        "titleRequired": "Zadejte název.",
+        "titleTooLong": "Název musí mít {{max}} znaků nebo méně.",
+        "descriptionTooLong": "Popis musí mít {{max}} znaků nebo méně.",
+        "categoryRequired": "Vyberte prosím kategorii.",
+        "coverType": "Vyberte obrázek ve formátu JPG, PNG nebo WEBP.",
+        "coverTooLarge": "Obrázek musí mít {{max}} MB nebo menší.",
+        "submitFailed": "LIVE se nepodařilo vytvořit. Zkuste to prosím znovu."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Studio | Vibely",
+      "status": {
+        "scheduled": "Připraveno",
+        "live": "ŽÍT",
+        "ended": "Skončilo"
+      },
+      "goLive": "Jdi ŽIVĚ",
+      "endLive": "Ukončit ŽIVĚ",
+      "endConfirmTitle": "Ukončit to LIVE?",
+      "endConfirmBody": "Diváci budou odpojeni a toto ŽIVĚ nebudete moci obnovit.",
+      "endedTitle": "Váš LIVE skončil",
+      "summaryViewers": "Diváci",
+      "summaryLikes": "Líbí se",
+      "muteMic": "Ztlumit mikrofon",
+      "unmuteMic": "Zapnout mikrofon",
+      "turnOffCamera": "Vypněte fotoaparát",
+      "turnOnCamera": "Zapněte kameru",
+      "cameraOff": "Kamera je vypnutá",
+      "settings": "LIVE nastavení",
+      "settingsSessionNote": "Tyto změny se týkají pouze této relace.",
+      "previewUnavailable": "Náhled fotoaparátu zatím není k dispozici",
+      "previewUnavailableHint": "Streamování z vaší kamery bude podporováno po připojení mediálního serveru.",
+      "chatBeforeStart": "Chat se otevře, když půjdete ŽIVĚ.",
+      "chatEnded": "Chat je uzavřen, protože tento LIVE skončil.",
+      "actionFailed": "Něco se pokazilo. Zkuste to prosím znovu.",
+      "notOwnerTitle": "Nemůžete to spravovat LIVE",
+      "notOwnerDescription": "LIVE Studio pro tento LIVE může otevřít pouze hostitel."
     }
   },
   "messagesPage": {

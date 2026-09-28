@@ -592,7 +592,8 @@
     },
     "sections": {
       "gaming": "게임",
-      "lifestyle": "라이프스타일"
+      "lifestyle": "라이프스타일",
+      "recommended": "당신에게 추천"
     },
     "mute": "Mute",
     "heroHeadline": "지금 시청하고 다른 사람들과 실시간으로 소통하세요",
@@ -600,7 +601,128 @@
     "viewersLabel": "{{count}} watching",
     "previousLive": "Previous LIVE",
     "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE"
+    "refreshLive": "Switch LIVE",
+    "verified": "인증된 계정",
+    "card": {
+      "watchAria": "실시간 시청: {{host}}의 {{title}}"
+    },
+    "states": {
+      "loading": "로드 중…",
+      "retry": "다시 시도하세요",
+      "backToDiscovery": "라이브로 돌아가기",
+      "errorTitle": "문제가 발생했습니다.",
+      "discoveryError": "실시간 스트림을 로드할 수 없습니다. 연결을 확인하고 다시 시도하세요.",
+      "roomError": "실시간을 로드할 수 없습니다. 연결을 확인하고 다시 시도하세요.",
+      "emptyTitle": "지금은 실시간 스트림이 없습니다.",
+      "emptyCategory": "이 카테고리에는 아직 라이브 스트림이 없습니다. 나중에 다시 확인해 보세요.",
+      "emptyFollowing": "귀하가 팔로우하는 크리에이터는 현재 라이브 상태가 아닙니다.",
+      "notFoundTitle": "라이브를 찾을 수 없습니다",
+      "notFoundDescription": "본 LIVE는 종료되었거나 삭제되었을 수 있습니다."
+    },
+    "player": {
+      "ended": "본 LIVE가 종료되었습니다",
+      "noCover": "표지 이미지 없음"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "따르다",
+      "following": "수행원",
+      "like": "좋다",
+      "share": "공유하다",
+      "linkCopied": "링크가 복사되었습니다",
+      "gift": "선물 보내기",
+      "giftShort": "선물",
+      "viewProfile": "{{name}}님의 프로필 보기",
+      "openHostControls": "호스트 제어 열기"
+    },
+    "chat": {
+      "title": "라이브 채팅",
+      "placeholder": "댓글 추가…",
+      "send": "보내다",
+      "loading": "채팅에 연결하는 중…",
+      "empty": "아직 댓글이 없습니다. 인사해!",
+      "error": "채팅에 연결할 수 없습니다.",
+      "disabled": "이번 LIVE에서는 댓글이 꺼져있습니다.",
+      "retry": "다시 해 보다",
+      "newMessages": "{{count}}개의 새 메시지"
+    },
+    "gifts": {
+      "title": "선물",
+      "coins": "{{count}}개의 코인",
+      "sent": "{{name}}님을 보냈습니다.",
+      "loadError": "선물을 로드할 수 없습니다."
+    },
+    "create": {
+      "pageTitle": "실시간 스트리밍 | 바이브리",
+      "title": "라이브 설정",
+      "detailsSection": "라이브 세부정보",
+      "coverLabel": "표지 이미지",
+      "coverHint": "JPG, PNG 또는 WEBP, 최대 {{max}}MB. 인물 이미지가 가장 효과적입니다.",
+      "chooseCover": "이미지 선택",
+      "changeCover": "이미지 변경",
+      "removeCover": "제거하다",
+      "coverPreviewAlt": "LIVE 커버 미리보기",
+      "titleLabel": "제목",
+      "titlePlaceholder": "당신의 LIVE는 무엇인가요?",
+      "descriptionLabel": "설명",
+      "descriptionPlaceholder": "시청자에게 무엇을 기대하는지 알려주세요(선택사항)",
+      "categoryLabel": "범주",
+      "visibilityLabel": "누가 시청할 수 있나요?",
+      "visibility": {
+        "public": "모든 사람",
+        "followers": "추종자",
+        "friends": "친구"
+      },
+      "interactionSection": "상호 작용",
+      "allowComments": "댓글 허용",
+      "allowGifts": "선물 허용",
+      "allowGiftsHint": "시청자는 LIVE 중에 선물을 보낼 수 있습니다.",
+      "allowGuests": "손님 요청 허용",
+      "allowGuestsHint": "시청자는 게스트로 LIVE 참여를 요청할 수 있습니다.",
+      "matureContent": "성인용 콘텐츠",
+      "matureContentHint": "18세 이상의 시청자만 시청할 수 있습니다.",
+      "cancel": "취소",
+      "submit": "라이브 만들기",
+      "submitting": "만드는 중…",
+      "errors": {
+        "titleRequired": "제목을 입력하세요.",
+        "titleTooLong": "제목은 {{max}}자 이하여야 합니다.",
+        "descriptionTooLong": "설명은 {{max}}자 이하여야 합니다.",
+        "categoryRequired": "카테고리를 선택해주세요.",
+        "coverType": "JPG, PNG 또는 WEBP 이미지를 선택하세요.",
+        "coverTooLarge": "이미지는 {{max}}MB 이하여야 합니다.",
+        "submitFailed": "LIVE를 만들 수 없습니다. 다시 시도해 주세요."
+      }
+    },
+    "host": {
+      "pageTitle": "라이브 스튜디오 | 바이브리",
+      "status": {
+        "scheduled": "준비가 된",
+        "live": "살다",
+        "ended": "종료됨"
+      },
+      "goLive": "실시간 스트리밍",
+      "endLive": "라이브 종료",
+      "endConfirmTitle": "실시간 스트리밍을 종료하시겠습니까?",
+      "endConfirmBody": "시청자의 연결이 끊어지며 이 LIVE를 재개할 수 없습니다.",
+      "endedTitle": "LIVE가 종료되었습니다",
+      "summaryViewers": "시청자",
+      "summaryLikes": "좋아요",
+      "muteMic": "마이크 음소거",
+      "unmuteMic": "마이크 음소거 해제",
+      "turnOffCamera": "카메라 끄기",
+      "turnOnCamera": "카메라 켜기",
+      "cameraOff": "카메라가 꺼져 있습니다",
+      "settings": "라이브 설정",
+      "settingsSessionNote": "이러한 변경 사항은 이 세션에만 적용됩니다.",
+      "previewUnavailable": "카메라 미리보기는 아직 사용할 수 없습니다.",
+      "previewUnavailableHint": "미디어 서버가 연결되면 카메라에서 스트리밍이 지원됩니다.",
+      "chatBeforeStart": "라이브로 전환하면 채팅이 열립니다.",
+      "chatEnded": "본 LIVE가 종료되어 채팅이 종료되었습니다.",
+      "actionFailed": "문제가 발생했습니다. 다시 시도해 주세요.",
+      "notOwnerTitle": "이 라이브를 관리할 수 없습니다.",
+      "notOwnerDescription": "이 LIVE에서는 호스트만 LIVE Studio를 열 수 있습니다."
+    }
   },
   "messagesPage": {
     "title": "메시지",

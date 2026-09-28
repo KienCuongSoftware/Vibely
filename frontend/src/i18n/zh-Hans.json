@@ -592,7 +592,8 @@
     },
     "sections": {
       "gaming": "游戏",
-      "lifestyle": "生活方式"
+      "lifestyle": "生活方式",
+      "recommended": "为您推荐"
     },
     "mute": "Mute",
     "heroHeadline": "立即观看并与他人实时互动",
@@ -600,7 +601,128 @@
     "viewersLabel": "{{count}} watching",
     "previousLive": "Previous LIVE",
     "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE"
+    "refreshLive": "Switch LIVE",
+    "verified": "已验证帐户",
+    "card": {
+      "watchAria": "观看直播：{{title}}，作者：{{host}}"
+    },
+    "states": {
+      "loading": "加载中…",
+      "retry": "再试一次",
+      "backToDiscovery": "返回直播",
+      "errorTitle": "出了点问题",
+      "discoveryError": "我们无法加载实时流。检查您的连接并重试。",
+      "roomError": "我们无法加载此 LIVE。检查您的连接并重试。",
+      "emptyTitle": "目前没有直播",
+      "emptyCategory": "此类别中还没有直播。请尽快回来查看。",
+      "emptyFollowing": "您关注的创作者目前尚未上线。",
+      "notFoundTitle": "未找到直播",
+      "notFoundDescription": "此 LIVE 可能已结束或被删除。"
+    },
+    "player": {
+      "ended": "本次LIVE已经结束",
+      "noCover": "无封面图片"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "跟随",
+      "following": "下列的",
+      "like": "喜欢",
+      "share": "分享",
+      "linkCopied": "链接已复制",
+      "gift": "送礼物",
+      "giftShort": "礼物",
+      "viewProfile": "查看{{name}}的个人资料",
+      "openHostControls": "打开主机控件"
+    },
+    "chat": {
+      "title": "实时聊天",
+      "placeholder": "添加评论...",
+      "send": "发送",
+      "loading": "正在连接聊天...",
+      "empty": "还没有评论。打个招呼吧！",
+      "error": "无法连接聊天。",
+      "disabled": "此直播的评论已关闭。",
+      "retry": "重试",
+      "newMessages": "{{count}} 条新消息"
+    },
+    "gifts": {
+      "title": "礼物",
+      "coins": "{{count}}枚硬币",
+      "sent": "您发送了 {{name}}",
+      "loadError": "无法加载礼物。"
+    },
+    "create": {
+      "pageTitle": "上线 |维贝利",
+      "title": "设置您的 LIVE",
+      "detailsSection": "实时详情",
+      "coverLabel": "封面图片",
+      "coverHint": "JPG、PNG 或 WEBP，最大为 {{max}} MB。肖像图像效果最好。",
+      "chooseCover": "选择图片",
+      "changeCover": "更改图像",
+      "removeCover": "消除",
+      "coverPreviewAlt": "现场封面预览",
+      "titleLabel": "标题",
+      "titlePlaceholder": "你的 LIVE 是关于什么的？",
+      "descriptionLabel": "描述",
+      "descriptionPlaceholder": "告诉观众会发生什么（可选）",
+      "categoryLabel": "类别",
+      "visibilityLabel": "谁可以观看",
+      "visibility": {
+        "public": "每个人",
+        "followers": "追随者",
+        "friends": "朋友们"
+      },
+      "interactionSection": "相互作用",
+      "allowComments": "允许评论",
+      "allowGifts": "允许礼物",
+      "allowGiftsHint": "观众可以在直播期间向您发送礼物。",
+      "allowGuests": "允许客人请求",
+      "allowGuestsHint": "观众可以请求以访客身份加入您的直播。",
+      "matureContent": "成人内容",
+      "matureContentHint": "只有年满 18 岁的观众才能观看。",
+      "cancel": "取消",
+      "submit": "创建直播",
+      "submitting": "创造……",
+      "errors": {
+        "titleRequired": "请输入标题。",
+        "titleTooLong": "标题不得超过 {{max}} 个字符。",
+        "descriptionTooLong": "说明不得超过 {{max}} 个字符。",
+        "categoryRequired": "请选择一个类别。",
+        "coverType": "请选择 JPG、PNG 或 WEBP 图像。",
+        "coverTooLarge": "图片必须为 {{max}} MB 或更小。",
+        "submitFailed": "无法创建您的 LIVE。请再试一次。"
+      }
+    },
+    "host": {
+      "pageTitle": "现场工作室 |维贝利",
+      "status": {
+        "scheduled": "准备好",
+        "live": "居住",
+        "ended": "结束"
+      },
+      "goLive": "上线",
+      "endLive": "结束直播",
+      "endConfirmTitle": "结束这场直播吗？",
+      "endConfirmBody": "观众将被断开连接，您将无法恢复此直播。",
+      "endedTitle": "你的LIVE已经结束",
+      "summaryViewers": "观众",
+      "summaryLikes": "喜欢",
+      "muteMic": "麦克风静音",
+      "unmuteMic": "取消麦克风静音",
+      "turnOffCamera": "关闭相机",
+      "turnOnCamera": "打开相机",
+      "cameraOff": "相机已关闭",
+      "settings": "实时设置",
+      "settingsSessionNote": "这些更改仅适用于本次会议。",
+      "previewUnavailable": "相机预览尚不可用",
+      "previewUnavailableHint": "连接媒体服务器后，将支持从相机进行流式传输。",
+      "chatBeforeStart": "当您上线时，聊天将会打开。",
+      "chatEnded": "聊天已关闭，因为此 LIVE 已结束。",
+      "actionFailed": "出了点问题。请再试一次。",
+      "notOwnerTitle": "您无法管理此 LIVE",
+      "notOwnerDescription": "只有主持人才能为此 LIVE 打开 LIVE Studio。"
+    }
   },
   "messagesPage": {
     "title": "私信",

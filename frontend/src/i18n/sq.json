@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Lojëra",
-      "lifestyle": "Mënyra e jetesës"
+      "lifestyle": "Mënyra e jetesës",
+      "recommended": "Rekomanduar për ju"
+    },
+    "verified": "Llogaria e verifikuar",
+    "card": {
+      "watchAria": "Shiko LIVE: {{title}} nga {{host}}"
+    },
+    "states": {
+      "loading": "Po ngarkohet…",
+      "retry": "Provo sërish",
+      "backToDiscovery": "Kthehu në LIVE",
+      "errorTitle": "Diçka shkoi keq",
+      "discoveryError": "Nuk mund të ngarkonim transmetimet LIVE. Kontrollo lidhjen tënde dhe provo sërish.",
+      "roomError": "Nuk mund ta ngarkonim këtë LIVE. Kontrollo lidhjen tënde dhe provo sërish.",
+      "emptyTitle": "Nuk ka transmetime LIVE për momentin",
+      "emptyCategory": "Nuk ka ende transmetime LIVE në këtë kategori. Kontrollo sërish së shpejti.",
+      "emptyFollowing": "Krijuesit që ndjek nuk janë LIVE për momentin.",
+      "notFoundTitle": "LIVE nuk u gjet",
+      "notFoundDescription": "Ky LIVE mund të ketë përfunduar ose është hequr."
+    },
+    "player": {
+      "ended": "Ky LIVE ka përfunduar",
+      "noCover": "Asnjë imazh kopertine"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Ndiqni",
+      "following": "Në vijim",
+      "like": "si",
+      "share": "Shpërndaje",
+      "linkCopied": "Lidhja u kopjua",
+      "gift": "Dërgo një dhuratë",
+      "giftShort": "Dhuratë",
+      "viewProfile": "Shiko profilin e {{name}}",
+      "openHostControls": "Hap kontrollet e hostit"
+    },
+    "chat": {
+      "title": "Bisedë LIVE",
+      "placeholder": "Shto një koment…",
+      "send": "Dërgo",
+      "loading": "Po lidhet me bisedën…",
+      "empty": "Ende nuk ka komente. Thuaj përshëndetje!",
+      "error": "Nuk mund të lidhej me bisedën.",
+      "disabled": "Komentet janë çaktivizuar për këtë LIVE.",
+      "retry": "Provo sërish",
+      "newMessages": "{{count}} mesazhe të reja"
+    },
+    "gifts": {
+      "title": "Dhurata",
+      "coins": "{{count}} monedha",
+      "sent": "Ju dërguat {{name}}",
+      "loadError": "Dhuratat nuk mund të ngarkoheshin."
+    },
+    "create": {
+      "pageTitle": "Shkoni LIVE | Vibely",
+      "title": "Konfiguro LIVE-në tënde",
+      "detailsSection": "Detaje LIVE",
+      "coverLabel": "Imazhi i kopertinës",
+      "coverHint": "JPG, PNG ose WEBP, deri në {{max}} MB. Një imazh portret funksionon më së miri.",
+      "chooseCover": "Zgjidhni imazhin",
+      "changeCover": "Ndrysho imazhin",
+      "removeCover": "Hiq",
+      "coverPreviewAlt": "Pamja paraprake e kopertinës LIVE",
+      "titleLabel": "Titulli",
+      "titlePlaceholder": "Për çfarë është LIVE juaj?",
+      "descriptionLabel": "Përshkrimi",
+      "descriptionPlaceholder": "Tregoju shikuesve se çfarë të presin (opsionale)",
+      "categoryLabel": "Kategoria",
+      "visibilityLabel": "Kush mund të shikojë",
+      "visibility": {
+        "public": "Të gjithë",
+        "followers": "Ndjekësit",
+        "friends": "Miqtë"
+      },
+      "interactionSection": "Ndërveprim",
+      "allowComments": "Lejo komentet",
+      "allowGifts": "Lejo dhuratat",
+      "allowGiftsHint": "Shikuesit mund t'ju dërgojnë dhurata gjatë LIVE.",
+      "allowGuests": "Lejo kërkesat e mysafirëve",
+      "allowGuestsHint": "Shikuesit mund të kërkojnë të bashkohen në LIVE tuaj si mysafir.",
+      "matureContent": "Përmbajtja e pjekur",
+      "matureContentHint": "Vetëm shikuesit e moshës 18 vjeç e lart mund të shikojnë.",
+      "cancel": "Anulo",
+      "submit": "Krijo LIVE",
+      "submitting": "Po krijohet…",
+      "errors": {
+        "titleRequired": "Ju lutemi shkruani një titull.",
+        "titleTooLong": "Titulli duhet të jetë {{max}} karaktere ose më pak.",
+        "descriptionTooLong": "Përshkrimi duhet të jetë {{max}} karaktere ose më pak.",
+        "categoryRequired": "Ju lutemi zgjidhni një kategori.",
+        "coverType": "Ju lutemi zgjidhni një imazh JPG, PNG ose WEBP.",
+        "coverTooLarge": "Imazhi duhet të jetë {{max}} MB ose më i vogël.",
+        "submitFailed": "Nuk mund të krijohej LIVE. Ju lutemi provoni përsëri."
+      }
+    },
+    "host": {
+      "pageTitle": "Studio LIVE | Vibely",
+      "status": {
+        "scheduled": "Gati",
+        "live": "LIVE",
+        "ended": "Përfundoi"
+      },
+      "goLive": "Shkoni LIVE",
+      "endLive": "Mbaroni LIVE",
+      "endConfirmTitle": "Të përfundojë kjo LIVE?",
+      "endConfirmBody": "Shikuesit do të shkëputen dhe nuk do të mund ta rifilloni këtë LIVE.",
+      "endedTitle": "LIVE juaj ka përfunduar",
+      "summaryViewers": "Shikuesit",
+      "summaryLikes": "Pëlqimet",
+      "muteMic": "Çaktivizo mikrofonin",
+      "unmuteMic": "Hiq zërin e mikrofonit",
+      "turnOffCamera": "Fik kamerën",
+      "turnOnCamera": "Aktivizoni kamerën",
+      "cameraOff": "Kamera është e fikur",
+      "settings": "Cilësimet LIVE",
+      "settingsSessionNote": "Këto ndryshime zbatohen vetëm për këtë sesion.",
+      "previewUnavailable": "Pamja paraprake e kamerës nuk ofrohet ende",
+      "previewUnavailableHint": "Transmetimi nga kamera juaj do të mbështetet pasi të lidhet serveri i medias.",
+      "chatBeforeStart": "Biseda do të hapet kur të shkoni LIVE.",
+      "chatEnded": "Biseda është mbyllur sepse kjo LIVE ka përfunduar.",
+      "actionFailed": "Diçka shkoi keq. Ju lutemi provoni përsëri.",
+      "notOwnerTitle": "Nuk mund ta menaxhosh këtë LIVE",
+      "notOwnerDescription": "Vetëm hosti mund të hapë LIVE Studio për këtë LIVE."
     }
   },
   "messagesPage": {

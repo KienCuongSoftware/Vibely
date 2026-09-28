@@ -592,7 +592,8 @@
     },
     "sections": {
       "gaming": "الألعاب",
-      "lifestyle": "نمط الحياة"
+      "lifestyle": "نمط الحياة",
+      "recommended": "موصى به لك"
     },
     "mute": "Mute",
     "heroHeadline": "شاهد الآن وتفاعل مع الآخرين في الوقت الفعلي",
@@ -600,7 +601,128 @@
     "viewersLabel": "{{count}} watching",
     "previousLive": "Previous LIVE",
     "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE"
+    "refreshLive": "Switch LIVE",
+    "verified": "حساب تم التحقق منه",
+    "card": {
+      "watchAria": "مشاهدة بث مباشر: {{title}} بواسطة {{host}}"
+    },
+    "states": {
+      "loading": "تحميل…",
+      "retry": "حاول ثانية",
+      "backToDiscovery": "العودة إلى البث المباشر",
+      "errorTitle": "حدث خطأ ما",
+      "discoveryError": "لم نتمكن من تحميل البث المباشر. تحقق من اتصالك وحاول مرة أخرى.",
+      "roomError": "لم نتمكن من تحميل هذا البث المباشر. تحقق من اتصالك وحاول مرة أخرى.",
+      "emptyTitle": "لا يوجد بث مباشر الآن",
+      "emptyCategory": "لا توجد مجموعات بث مباشر في هذه الفئة حتى الآن. التحقق مرة أخرى قريبا.",
+      "emptyFollowing": "منشئو المحتوى الذين تتابعهم ليسوا مباشرين الآن.",
+      "notFoundTitle": "لم يتم العثور على البث المباشر",
+      "notFoundDescription": "ربما يكون هذا البث المباشر قد انتهى أو تمت إزالته."
+    },
+    "player": {
+      "ended": "لقد انتهى هذا البث المباشر",
+      "noCover": "لا توجد صورة الغلاف"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "يتبع",
+      "following": "التالي",
+      "like": "يحب",
+      "share": "يشارك",
+      "linkCopied": "تم نسخ الرابط",
+      "gift": "أرسل هدية",
+      "giftShort": "هدية",
+      "viewProfile": "عرض الملف الشخصي لـ {{name}}.",
+      "openHostControls": "فتح عناصر تحكم المضيف"
+    },
+    "chat": {
+      "title": "دردشة مباشرة",
+      "placeholder": "إضافة تعليق…",
+      "send": "يرسل",
+      "loading": "جارٍ الاتصال بالدردشة…",
+      "empty": "لا توجد تعليقات حتى الآن. قل مرحبا!",
+      "error": "تعذر الاتصال بالمحادثة.",
+      "disabled": "تم إيقاف التعليقات لهذا البث المباشر.",
+      "retry": "أعد المحاولة",
+      "newMessages": "{{count}} رسائل جديدة"
+    },
+    "gifts": {
+      "title": "الهدايا",
+      "coins": "{{count}} عملات معدنية",
+      "sent": "لقد أرسلت {{name}}",
+      "loadError": "تعذر تحميل الهدايا."
+    },
+    "create": {
+      "pageTitle": "بث مباشر | مفعم بالحيوية",
+      "title": "قم بإعداد البث المباشر الخاص بك",
+      "detailsSection": "تفاصيل حية",
+      "coverLabel": "صورة الغلاف",
+      "coverHint": "JPG أو PNG أو WEBP، حتى {{max}} ميغابايت. الصورة الشخصية تعمل بشكل أفضل.",
+      "chooseCover": "اختر الصورة",
+      "changeCover": "تغيير الصورة",
+      "removeCover": "يزيل",
+      "coverPreviewAlt": "معاينة الغلاف المباشر",
+      "titleLabel": "عنوان",
+      "titlePlaceholder": "ما هو موضوعك المباشر؟",
+      "descriptionLabel": "وصف",
+      "descriptionPlaceholder": "أخبر المشاهدين بما يمكن توقعه (اختياري)",
+      "categoryLabel": "فئة",
+      "visibilityLabel": "من يستطيع المشاهدة",
+      "visibility": {
+        "public": "الجميع",
+        "followers": "المتابعون",
+        "friends": "أصدقاء"
+      },
+      "interactionSection": "تفاعل",
+      "allowComments": "السماح بالتعليقات",
+      "allowGifts": "السماح بالهدايا",
+      "allowGiftsHint": "يمكن للمشاهدين إرسال الهدايا إليك أثناء البث المباشر.",
+      "allowGuests": "السماح بطلبات الضيوف",
+      "allowGuestsHint": "يمكن للمشاهدين طلب الانضمام إلى البث المباشر كضيف.",
+      "matureContent": "محتوى ناضج",
+      "matureContentHint": "يمكن فقط للمشاهدين الذين تبلغ أعمارهم 18 عامًا أو أكثر المشاهدة.",
+      "cancel": "يلغي",
+      "submit": "إنشاء بث مباشر",
+      "submitting": "جارٍ الإنشاء…",
+      "errors": {
+        "titleRequired": "الرجاء إدخال عنوان.",
+        "titleTooLong": "يجب أن يتكون العنوان من {{max}} حرفًا أو أقل.",
+        "descriptionTooLong": "يجب أن يتكون الوصف من {{max}} حرفًا أو أقل.",
+        "categoryRequired": "الرجاء اختيار فئة.",
+        "coverType": "يرجى اختيار صورة JPG أو PNG أو WEBP.",
+        "coverTooLarge": "يجب أن يكون حجم الصورة {{max}} ميغابايت أو أصغر.",
+        "submitFailed": "تعذر إنشاء البث المباشر الخاص بك. يرجى المحاولة مرة أخرى."
+      }
+    },
+    "host": {
+      "pageTitle": "ستوديو مباشر | مفعم بالحيوية",
+      "status": {
+        "scheduled": "مستعد",
+        "live": "يعيش",
+        "ended": "انتهى"
+      },
+      "goLive": "اذهب للبث المباشر",
+      "endLive": "نهاية البث المباشر",
+      "endConfirmTitle": "هل تريد إنهاء هذا البث المباشر؟",
+      "endConfirmBody": "سيتم قطع اتصال المشاهدين ولن تتمكن من استئناف هذا البث المباشر.",
+      "endedTitle": "لقد انتهى البث المباشر الخاص بك",
+      "summaryViewers": "المشاهدين",
+      "summaryLikes": "يحب",
+      "muteMic": "كتم صوت الميكروفون",
+      "unmuteMic": "إلغاء كتم صوت الميكروفون",
+      "turnOffCamera": "قم بإيقاف تشغيل الكاميرا",
+      "turnOnCamera": "قم بتشغيل الكاميرا",
+      "cameraOff": "الكاميرا معطلة",
+      "settings": "إعدادات حية",
+      "settingsSessionNote": "تنطبق هذه التغييرات على هذه الجلسة فقط.",
+      "previewUnavailable": "معاينة الكاميرا غير متاحة بعد",
+      "previewUnavailableHint": "سيتم دعم البث من الكاميرا بمجرد اتصال خادم الوسائط.",
+      "chatBeforeStart": "سيتم فتح الدردشة عندما تبدأ البث المباشر.",
+      "chatEnded": "تم إغلاق الدردشة لأن هذا البث المباشر قد انتهى.",
+      "actionFailed": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+      "notOwnerTitle": "لا يمكنك إدارة هذا البث المباشر",
+      "notOwnerDescription": "يمكن للمضيف فقط فتح LIVE Studio لهذا البث المباشر."
+    }
   },
   "messagesPage": {
     "title": "الرسائل",

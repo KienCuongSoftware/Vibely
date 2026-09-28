@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Ойын",
-      "lifestyle": "Өмір салты"
+      "lifestyle": "Өмір салты",
+      "recommended": "Сізге ұсынылады"
+    },
+    "verified": "Расталған есептік жазба",
+    "card": {
+      "watchAria": "ТІКЕЛЕЙ ЭФИР: {{title}} авторы: {{host}}"
+    },
+    "states": {
+      "loading": "Жүктелуде…",
+      "retry": "Қайтадан байқап көріңіз",
+      "backToDiscovery": "ТІКЕЛЕЙ ЭФИРге оралу",
+      "errorTitle": "Бірдеңе дұрыс болмады",
+      "discoveryError": "ТІКЕЛЕЙ ағындарды жүктей алмадық. Байланысты тексеріп, әрекетті қайталаңыз.",
+      "roomError": "Біз бұл ТІКЕЛЕЙ ЭФИРді жүктей алмадық. Байланысты тексеріп, әрекетті қайталаңыз.",
+      "emptyTitle": "Дәл қазір ТІКЕЛЕЙ ағындар жоқ",
+      "emptyCategory": "Бұл санатта әлі ТІКЕЛЕЙ ағындар жоқ. Жақында қайта тексеріңіз.",
+      "emptyFollowing": "Сіз жазылатын авторлар қазір ТІКЕЛЕЙ ЭФИРде емес.",
+      "notFoundTitle": "LIVE табылмады",
+      "notFoundDescription": "Бұл LIVE аяқталуы немесе жойылуы мүмкін."
+    },
+    "player": {
+      "ended": "Бұл LIVE аяқталды",
+      "noCover": "Мұқаба суреті жоқ"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Бақылаңыз",
+      "following": "Бақылау",
+      "like": "Ұнайды",
+      "share": "Бөлісу",
+      "linkCopied": "Сілтеме көшірілді",
+      "gift": "Сыйлық жіберіңіз",
+      "giftShort": "Сыйлық",
+      "viewProfile": "{{name}} профилін қараңыз",
+      "openHostControls": "Хост басқару элементтерін ашыңыз"
+    },
+    "chat": {
+      "title": "ТІКЕЛЕЙ ЧАТ",
+      "placeholder": "Пікір қосу…",
+      "send": "Жіберу",
+      "loading": "Чатқа қосылуда…",
+      "empty": "Пікірлер әлі жоқ. Сәлем айт!",
+      "error": "Чатқа қосылу мүмкін болмады.",
+      "disabled": "Бұл ТІКЕЛЕЙ ЭФИР үшін пікірлер өшірілген.",
+      "retry": "Қайталап көріңіз",
+      "newMessages": "{{count}} жаңа хабар"
+    },
+    "gifts": {
+      "title": "Сыйлықтар",
+      "coins": "{{count}} монета",
+      "sent": "Сіз {{name}} жібердіңіз",
+      "loadError": "Сыйлықтар жүктелмеді."
+    },
+    "create": {
+      "pageTitle": "ТІКЕЛЕЙ ЭФИР | Күшті",
+      "title": "LIVE орнатыңыз",
+      "detailsSection": "Тікелей эфир мәліметтері",
+      "coverLabel": "Мұқаба суреті",
+      "coverHint": "JPG, PNG немесе WEBP, {{max}} МБ дейін. Портреттік кескін жақсы жұмыс істейді.",
+      "chooseCover": "Суретті таңдаңыз",
+      "changeCover": "Суретті өзгерту",
+      "removeCover": "Жою",
+      "coverPreviewAlt": "LIVE мұқабаны алдын ала қарау",
+      "titleLabel": "Тақырып",
+      "titlePlaceholder": "Сіздің LIVE не туралы?",
+      "descriptionLabel": "Сипаттама",
+      "descriptionPlaceholder": "Көрермендерге не күтетінін айтыңыз (міндетті емес)",
+      "categoryLabel": "Санат",
+      "visibilityLabel": "Кім көре алады",
+      "visibility": {
+        "public": "Барлығы",
+        "followers": "Жазылушылар",
+        "friends": "Достар"
+      },
+      "interactionSection": "Өзара әрекеттесу",
+      "allowComments": "Пікірлерге рұқсат беріңіз",
+      "allowGifts": "Сыйлықтарға рұқсат етіңіз",
+      "allowGiftsHint": "Тікелей эфир кезінде көрермендер сізге сыйлықтар жібере алады.",
+      "allowGuests": "Қонақ сұрауларына рұқсат беріңіз",
+      "allowGuestsHint": "Көрермендер сіздің LIVE-ға қонақ ретінде қосылуды сұрай алады.",
+      "matureContent": "Ересектерге арналған мазмұн",
+      "matureContentHint": "Тек 18 жастан асқан көрермендер көре алады.",
+      "cancel": "Болдырмау",
+      "submit": "LIVE жасау",
+      "submitting": "Жасалуда…",
+      "errors": {
+        "titleRequired": "Тақырып енгізіңіз.",
+        "titleTooLong": "Тақырып {{max}} таңбадан тұруы керек.",
+        "descriptionTooLong": "Сипаттама {{max}} таңбадан тұруы керек.",
+        "categoryRequired": "Санат таңдаңыз.",
+        "coverType": "JPG, PNG немесе WEBP кескінін таңдаңыз.",
+        "coverTooLarge": "Кескін {{max}} МБ немесе одан кішірек болуы керек.",
+        "submitFailed": "LIVE жасау мүмкін болмады. Қайталап көріңіз."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Studio | Күшті",
+      "status": {
+        "scheduled": "Дайын",
+        "live": "ТІКЕЛЕЙ ЭФИР",
+        "ended": "Аяқталды"
+      },
+      "goLive": "ТІКЕЛЕЙ ЭФИРге өтіңіз",
+      "endLive": "ТІКЕЛЕЙ ЭФИРді аяқтау",
+      "endConfirmTitle": "Осы ТІКЕЛЕЙ ЭФИР аяқталсын ба?",
+      "endConfirmBody": "Көрермендер ажыратылады және сіз бұл ТІКЕЛЕЙ ЭФИРді жалғастыра алмайсыз.",
+      "endedTitle": "Сіздің LIVE аяқталды",
+      "summaryViewers": "Көрермендер",
+      "summaryLikes": "Ұнатады",
+      "muteMic": "Микрофонның дыбысын өшіру",
+      "unmuteMic": "Микрофонның дыбысын қосу",
+      "turnOffCamera": "Камераны өшіріңіз",
+      "turnOnCamera": "Камераны қосыңыз",
+      "cameraOff": "Камера өшірулі",
+      "settings": "LIVE параметрлері",
+      "settingsSessionNote": "Бұл өзгерістер тек осы сеансқа қолданылады.",
+      "previewUnavailable": "Камераны алдын ала қарау мүмкіндігі әлі қолжетімді емес",
+      "previewUnavailableHint": "Медиа сервер қосылғаннан кейін камераңыздан ағынға қолдау көрсетіледі.",
+      "chatBeforeStart": "Тікелей эфирге шыққанда чат ашылады.",
+      "chatEnded": "Чат жабылды, себебі бұл ТІКЕЛЕЙ ЭФИР аяқталды.",
+      "actionFailed": "Бірдеңе дұрыс болмады. Қайталап көріңіз.",
+      "notOwnerTitle": "Сіз бұл LIVE басқару мүмкін емес",
+      "notOwnerDescription": "Осы LIVE үшін LIVE Studio қолданбасын тек хост аша алады."
     }
   },
   "messagesPage": {

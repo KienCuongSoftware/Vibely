@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Szerencsejáték",
-      "lifestyle": "Életmód"
+      "lifestyle": "Életmód",
+      "recommended": "Önnek ajánlott"
+    },
+    "verified": "Ellenőrzött fiók",
+    "card": {
+      "watchAria": "Nézd ÉLŐBEN: {{title}}, szerző: {{host}}"
+    },
+    "states": {
+      "loading": "Terhelés…",
+      "retry": "Próbáld újra",
+      "backToDiscovery": "Vissza a LIVE-hoz",
+      "errorTitle": "Valami elromlott",
+      "discoveryError": "Nem tudtuk betölteni az ÉLŐ közvetítéseket. Ellenőrizze a kapcsolatot, és próbálja újra.",
+      "roomError": "Ezt az ÉLŐBEN nem tudtuk betölteni. Ellenőrizze a kapcsolatot, és próbálja újra.",
+      "emptyTitle": "Jelenleg nincs ÉLŐ közvetítés",
+      "emptyCategory": "Ebben a kategóriában még nincsenek ÉLŐ közvetítések. Nézz vissza hamarosan.",
+      "emptyFollowing": "Az Ön által követett alkotók jelenleg nem ÉLŐK.",
+      "notFoundTitle": "A LIVE nem található",
+      "notFoundDescription": "Lehet, hogy ez az ÉLŐ véget ért, vagy eltávolították."
+    },
+    "player": {
+      "ended": "Ez a LIVE véget ért",
+      "noCover": "Nincs borítókép"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Kövesd",
+      "following": "Következő",
+      "like": "Mint",
+      "share": "Részesedés",
+      "linkCopied": "Link másolva",
+      "gift": "Küldj ajándékot",
+      "giftShort": "Ajándék",
+      "viewProfile": "Tekintse meg {{name}} profilját",
+      "openHostControls": "Nyissa meg a gazdagép vezérlőit"
+    },
+    "chat": {
+      "title": "ÉLŐ chat",
+      "placeholder": "Megjegyzés hozzáadása…",
+      "send": "Elküld",
+      "loading": "Csatlakozás a csevegéshez…",
+      "empty": "Még nincsenek megjegyzések. Sziasztok!",
+      "error": "Nem sikerült csatlakozni a csevegéshez.",
+      "disabled": "A megjegyzések ki vannak kapcsolva ezen az ÉLŐBEN.",
+      "retry": "Próbálja újra",
+      "newMessages": "{{count}} új üzenet"
+    },
+    "gifts": {
+      "title": "Ajándékok",
+      "coins": "{{count}} érme",
+      "sent": "Elküldted a következőt: {{name}}",
+      "loadError": "Nem sikerült betölteni az ajándékokat."
+    },
+    "create": {
+      "pageTitle": "Élőben | Vibely",
+      "title": "Állítsa be a LIVE-ot",
+      "detailsSection": "ÉLŐ részletek",
+      "coverLabel": "Borítókép",
+      "coverHint": "JPG, PNG vagy WEBP, legfeljebb {{max}} MB. A portré kép működik a legjobban.",
+      "chooseCover": "Válasszon képet",
+      "changeCover": "Kép módosítása",
+      "removeCover": "Távolítsa el",
+      "coverPreviewAlt": "ÉLŐ borító előnézet",
+      "titleLabel": "Cím",
+      "titlePlaceholder": "Miről szól az ÉLŐD?",
+      "descriptionLabel": "Leírás",
+      "descriptionPlaceholder": "Mondd el a nézőknek, mire számíthatnak (nem kötelező)",
+      "categoryLabel": "Kategória",
+      "visibilityLabel": "Aki nézheti",
+      "visibility": {
+        "public": "Mindenki",
+        "followers": "Követői",
+        "friends": "Barátok"
+      },
+      "interactionSection": "Kölcsönhatás",
+      "allowComments": "Megjegyzések engedélyezése",
+      "allowGifts": "Engedje meg az ajándékokat",
+      "allowGiftsHint": "A nézők ajándékokat küldhetnek neked az ÉLŐ adás során.",
+      "allowGuests": "Vendégkérések engedélyezése",
+      "allowGuestsHint": "A nézők kérhetik, hogy vendégként csatlakozzanak az ÉLŐ-edhez.",
+      "matureContent": "Felnőtteknek szóló tartalom",
+      "matureContentHint": "Csak 18 éven felüli nézők nézhetik.",
+      "cancel": "Mégse",
+      "submit": "Létrehozása ÉLŐ",
+      "submitting": "Létrehozás…",
+      "errors": {
+        "titleRequired": "Kérjük, adjon meg egy címet.",
+        "titleTooLong": "A cím legfeljebb {{max}} karakterből állhat.",
+        "descriptionTooLong": "A leírás legfeljebb {{max}} karakterből állhat.",
+        "categoryRequired": "Kérjük, válasszon kategóriát.",
+        "coverType": "Kérjük, válasszon JPG, PNG vagy WEBP képet.",
+        "coverTooLarge": "A kép legfeljebb {{max}} MB lehet.",
+        "submitFailed": "Nem sikerült létrehozni az ÉLŐT. Kérjük, próbálja újra."
+      }
+    },
+    "host": {
+      "pageTitle": "ÉLŐ Stúdió | Vibely",
+      "status": {
+        "scheduled": "Kész",
+        "live": "ÉLŐ",
+        "ended": "Véget ért"
+      },
+      "goLive": "Menj ÉLŐBEN",
+      "endLive": "Vége ÉLŐ",
+      "endConfirmTitle": "Befejezed ezt az ÉLŐBEN?",
+      "endConfirmBody": "A nézők kapcsolata megszakad, Ön pedig nem tudja folytatni az ÉLŐ adást.",
+      "endedTitle": "ÉLŐJE véget ért",
+      "summaryViewers": "Nézők",
+      "summaryLikes": "Tetszik",
+      "muteMic": "Mikrofon némítása",
+      "unmuteMic": "Mikrofon némításának feloldása",
+      "turnOffCamera": "Kapcsolja ki a kamerát",
+      "turnOnCamera": "Kapcsolja be a kamerát",
+      "cameraOff": "A kamera ki van kapcsolva",
+      "settings": "LIVE beállítások",
+      "settingsSessionNote": "Ezek a változtatások csak erre a munkamenetre vonatkoznak.",
+      "previewUnavailable": "A kamera előnézete még nem érhető el",
+      "previewUnavailableHint": "A fényképezőgépről történő streamelés a médiaszerver csatlakoztatása után támogatott.",
+      "chatBeforeStart": "A csevegés megnyílik, amikor ÉLŐBEN lépsz.",
+      "chatEnded": "A csevegés le van zárva, mert ez az ÉLŐKÖR véget ért.",
+      "actionFailed": "Valami elromlott. Kérjük, próbálja újra.",
+      "notOwnerTitle": "Ezt az ÉLŐBEN nem tudod kezelni",
+      "notOwnerDescription": "Csak a házigazda nyithatja meg a LIVE Stúdiót erre az ÉLŐ-re."
     }
   },
   "messagesPage": {

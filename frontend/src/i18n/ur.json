@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Gaming",
-      "lifestyle": "Lifestyle"
+      "lifestyle": "Lifestyle",
+      "recommended": "آپ کے لیے تجویز کردہ"
+    },
+    "verified": "تصدیق شدہ اکاؤنٹ",
+    "card": {
+      "watchAria": "لائیو دیکھیں: {{title}} از {{host}}"
+    },
+    "states": {
+      "loading": "لوڈ ہو رہا ہے…",
+      "retry": "دوبارہ کوشش کریں۔",
+      "backToDiscovery": "واپس لائیو پر",
+      "errorTitle": "کچھ غلط ہو گیا۔",
+      "discoveryError": "ہم لائیو سلسلے لوڈ نہیں کر سکے۔ اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
+      "roomError": "ہم اس لائیو کو لوڈ نہیں کر سکے۔ اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
+      "emptyTitle": "ابھی کوئی لائیو سلسلہ نہیں ہے۔",
+      "emptyCategory": "اس زمرے میں ابھی تک کوئی لائیو سلسلے نہیں ہیں۔ جلد ہی دوبارہ چیک کریں۔",
+      "emptyFollowing": "آپ جن تخلیق کاروں کی پیروی کرتے ہیں وہ ابھی لائیو نہیں ہیں۔",
+      "notFoundTitle": "LIVE نہیں ملا",
+      "notFoundDescription": "ہو سکتا ہے یہ LIVE ختم ہو گیا ہو یا ہٹا دیا گیا ہو۔"
+    },
+    "player": {
+      "ended": "یہ LIVE ختم ہو گیا ہے۔",
+      "noCover": "کور کی کوئی تصویر نہیں۔"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "پیروی کریں۔",
+      "following": "پیروی کرنا",
+      "like": "پسند",
+      "share": "شیئر کریں۔",
+      "linkCopied": "لنک کاپی ہو گیا۔",
+      "gift": "تحفہ بھیجیں۔",
+      "giftShort": "تحفہ",
+      "viewProfile": "{{name}} کا پروفائل دیکھیں",
+      "openHostControls": "میزبان کنٹرولز کھولیں۔"
+    },
+    "chat": {
+      "title": "لائیو چیٹ",
+      "placeholder": "ایک تبصرہ شامل کریں…",
+      "send": "بھیجیں۔",
+      "loading": "چیٹ سے منسلک ہو رہا ہے…",
+      "empty": "ابھی تک کوئی تبصرہ نہیں ہیلو کہو!",
+      "error": "چیٹ سے منسلک نہیں ہو سکا۔",
+      "disabled": "اس لائیو کے لیے تبصرے بند ہیں۔",
+      "retry": "دوبارہ کوشش کریں۔",
+      "newMessages": "{{count}} نئے پیغامات"
+    },
+    "gifts": {
+      "title": "تحفے",
+      "coins": "{{count}} سکے",
+      "sent": "آپ نے {{name}} کو بھیجا",
+      "loadError": "تحائف لوڈ نہیں ہو سکے۔"
+    },
+    "create": {
+      "pageTitle": "لائیو جائیں | Vibely",
+      "title": "اپنا لائیو ترتیب دیں۔",
+      "detailsSection": "براہ راست تفصیلات",
+      "coverLabel": "کور تصویر",
+      "coverHint": "JPG، PNG یا WEBP، {{max}} MB تک۔ ایک پورٹریٹ تصویر بہترین کام کرتی ہے۔",
+      "chooseCover": "تصویر کا انتخاب کریں۔",
+      "changeCover": "تصویر تبدیل کریں۔",
+      "removeCover": "ہٹا دیں۔",
+      "coverPreviewAlt": "لائیو کور کا پیش نظارہ",
+      "titleLabel": "عنوان",
+      "titlePlaceholder": "آپ کا لائیو کس بارے میں ہے؟",
+      "descriptionLabel": "تفصیل",
+      "descriptionPlaceholder": "ناظرین کو بتائیں کہ کیا توقع رکھیں (اختیاری)",
+      "categoryLabel": "زمرہ",
+      "visibilityLabel": "کون دیکھ سکتا ہے۔",
+      "visibility": {
+        "public": "ہر کوئی",
+        "followers": "پیروکار",
+        "friends": "دوستو"
+      },
+      "interactionSection": "تعامل",
+      "allowComments": "تبصرے کی اجازت دیں۔",
+      "allowGifts": "تحائف کی اجازت دیں۔",
+      "allowGiftsHint": "ناظرین لائیو کے دوران آپ کو تحائف بھیج سکتے ہیں۔",
+      "allowGuests": "مہمانوں کی درخواستوں کی اجازت دیں۔",
+      "allowGuestsHint": "ناظرین آپ کے لائیو میں بطور مہمان شامل ہونے کی درخواست کر سکتے ہیں۔",
+      "matureContent": "بالغ مواد",
+      "matureContentHint": "صرف 18 سال اور اس سے زیادہ عمر کے ناظرین دیکھ سکتے ہیں۔",
+      "cancel": "منسوخ کریں۔",
+      "submit": "لائیو بنائیں",
+      "submitting": "تخلیق ہو رہا ہے…",
+      "errors": {
+        "titleRequired": "براہ کرم ایک عنوان درج کریں۔",
+        "titleTooLong": "عنوان {{max}} حروف یا اس سے کم ہونا چاہیے۔",
+        "descriptionTooLong": "تفصیل {{max}} حروف یا اس سے کم ہونی چاہیے۔",
+        "categoryRequired": "براہ کرم ایک زمرہ منتخب کریں۔",
+        "coverType": "براہ کرم ایک JPG، PNG یا WEBP تصویر منتخب کریں۔",
+        "coverTooLarge": "تصویر {{max}} MB یا چھوٹی ہونی چاہیے۔",
+        "submitFailed": "آپ کا لائیو نہیں بنایا جا سکا۔ براہ کرم دوبارہ کوشش کریں۔"
+      }
+    },
+    "host": {
+      "pageTitle": "لائیو اسٹوڈیو | Vibely",
+      "status": {
+        "scheduled": "تیار",
+        "live": "لائیو",
+        "ended": "ختم ہوا۔"
+      },
+      "goLive": "لائیو جائیں",
+      "endLive": "LIVE ختم کریں۔",
+      "endConfirmTitle": "اس لائیو کو ختم کریں؟",
+      "endConfirmBody": "ناظرین کا رابطہ منقطع ہو جائے گا اور آپ اس لائیو کو دوبارہ شروع نہیں کر سکیں گے۔",
+      "endedTitle": "آپ کا لائیو ختم ہو گیا ہے۔",
+      "summaryViewers": "ناظرین",
+      "summaryLikes": "پسند کرتا ہے۔",
+      "muteMic": "مائیکروفون خاموش کریں۔",
+      "unmuteMic": "مائیکروفون کو چالو کریں۔",
+      "turnOffCamera": "کیمرہ بند کر دیں۔",
+      "turnOnCamera": "کیمرہ آن کریں۔",
+      "cameraOff": "کیمرہ آف ہے۔",
+      "settings": "لائیو ترتیبات",
+      "settingsSessionNote": "یہ تبدیلیاں صرف اس سیشن پر لاگو ہوتی ہیں۔",
+      "previewUnavailable": "کیمرے کا پیش نظارہ ابھی تک دستیاب نہیں ہے۔",
+      "previewUnavailableHint": "میڈیا سرور کے منسلک ہونے کے بعد آپ کے کیمرے سے سٹریمنگ کو سپورٹ کیا جائے گا۔",
+      "chatBeforeStart": "جب آپ لائیو جائیں گے تو چیٹ کھل جائے گی۔",
+      "chatEnded": "چیٹ بند ہے کیونکہ یہ لائیو ختم ہو گیا ہے۔",
+      "actionFailed": "کچھ غلط ہو گیا۔ براہ کرم دوبارہ کوشش کریں۔",
+      "notOwnerTitle": "آپ اس لائیو کا نظم نہیں کر سکتے",
+      "notOwnerDescription": "اس لائیو کے لیے صرف میزبان ہی لائیو اسٹوڈیو کھول سکتا ہے۔"
     }
   },
   "messagesPage": {

@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Gaming",
-      "lifestyle": "Lifestyle"
+      "lifestyle": "Lifestyle",
+      "recommended": "Polecane dla Ciebie"
+    },
+    "verified": "Zweryfikowane konto",
+    "card": {
+      "watchAria": "Oglądaj NA ŻYWO: {{title}} autorstwa: {{host}}"
+    },
+    "states": {
+      "loading": "Załadunek…",
+      "retry": "Spróbuj ponownie",
+      "backToDiscovery": "Powrót do NA ŻYWO",
+      "errorTitle": "Coś poszło nie tak",
+      "discoveryError": "Nie udało się wczytać transmisji NA ŻYWO. Sprawdź połączenie i spróbuj ponownie.",
+      "roomError": "Nie mogliśmy wczytać tego NA ŻYWO. Sprawdź połączenie i spróbuj ponownie.",
+      "emptyTitle": "W tej chwili brak transmisji NA ŻYWO",
+      "emptyCategory": "W tej kategorii nie ma jeszcze transmisji NA ŻYWO. Sprawdź ponownie wkrótce.",
+      "emptyFollowing": "Twórcy, których obserwujesz, nie są teraz NA ŻYWO.",
+      "notFoundTitle": "Nie znaleziono NA ŻYWO",
+      "notFoundDescription": "To LIVE mogło zostać zakończone lub usunięte."
+    },
+    "player": {
+      "ended": "To LIVE dobiegło końca",
+      "noCover": "Brak obrazu na okładce"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Podążać",
+      "following": "Następny",
+      "like": "Tak jak",
+      "share": "Udział",
+      "linkCopied": "Link skopiowany",
+      "gift": "Wyślij prezent",
+      "giftShort": "Prezent",
+      "viewProfile": "Zobacz profil {{name}}",
+      "openHostControls": "Otwórz kontrolki hosta"
+    },
+    "chat": {
+      "title": "Czat NA ŻYWO",
+      "placeholder": "Dodaj komentarz…",
+      "send": "Wysłać",
+      "loading": "Łączę się z czatem…",
+      "empty": "Brak komentarzy. Powiedz cześć!",
+      "error": "Nie udało się połączyć z czatem.",
+      "disabled": "Komentarze są wyłączone dla tego LIVE.",
+      "retry": "Spróbować ponownie",
+      "newMessages": "{{count}} nowych wiadomości"
+    },
+    "gifts": {
+      "title": "Prezenty",
+      "coins": "{{count}} monet",
+      "sent": "Wysłałeś {{name}}",
+      "loadError": "Nie udało się wczytać prezentów."
+    },
+    "create": {
+      "pageTitle": "Idź NA ŻYWO | Vibely",
+      "title": "Skonfiguruj swoje NA ŻYWO",
+      "detailsSection": "Szczegóły NA ŻYWO",
+      "coverLabel": "Obraz na okładce",
+      "coverHint": "JPG, PNG lub WEBP, do {{max}} MB. Najlepiej sprawdza się zdjęcie portretowe.",
+      "chooseCover": "Wybierz obraz",
+      "changeCover": "Zmień obraz",
+      "removeCover": "Usunąć",
+      "coverPreviewAlt": "Podgląd okładki NA ŻYWO",
+      "titleLabel": "Tytuł",
+      "titlePlaceholder": "O czym jest Twój LIVE?",
+      "descriptionLabel": "Opis",
+      "descriptionPlaceholder": "Powiedz widzom, czego się spodziewać (opcjonalnie)",
+      "categoryLabel": "Kategoria",
+      "visibilityLabel": "Kto może oglądać",
+      "visibility": {
+        "public": "Wszyscy",
+        "followers": "Świta",
+        "friends": "Przyjaciele"
+      },
+      "interactionSection": "Wzajemne oddziaływanie",
+      "allowComments": "Zezwalaj na komentarze",
+      "allowGifts": "Zezwalaj na prezenty",
+      "allowGiftsHint": "Widzowie mogą wysyłać Ci prezenty podczas NA ŻYWO.",
+      "allowGuests": "Zezwalaj na prośby gości",
+      "allowGuestsHint": "Widzowie mogą poprosić o dołączenie do Twojego LIVE jako gość.",
+      "matureContent": "Dojrzała treść",
+      "matureContentHint": "Oglądać mogą wyłącznie widzowie, którzy ukończyli 18 lat.",
+      "cancel": "Anulować",
+      "submit": "Twórz NA ŻYWO",
+      "submitting": "Tworzenie…",
+      "errors": {
+        "titleRequired": "Proszę wpisać tytuł.",
+        "titleTooLong": "Tytuł musi mieć maksymalnie {{max}} znaków.",
+        "descriptionTooLong": "Opis musi mieć maksymalnie {{max}} znaków.",
+        "categoryRequired": "Proszę wybrać kategorię.",
+        "coverType": "Wybierz obraz w formacie JPG, PNG lub WEBP.",
+        "coverTooLarge": "Obraz musi mieć rozmiar {{max}} MB lub mniejszy.",
+        "submitFailed": "Nie udało się utworzyć transmisji NA ŻYWO. Spróbuj ponownie."
+      }
+    },
+    "host": {
+      "pageTitle": "Studio NA ŻYWO | Vibely",
+      "status": {
+        "scheduled": "Gotowy",
+        "live": "NA ŻYWO",
+        "ended": "Zakończone"
+      },
+      "goLive": "Idź NA ŻYWO",
+      "endLive": "Zakończ NA ŻYWO",
+      "endConfirmTitle": "Zakończyć to NA ŻYWO?",
+      "endConfirmBody": "Widzowie zostaną rozłączeni i nie będzie można wznowić transmisji NA ŻYWO.",
+      "endedTitle": "Twoje LIVE dobiegło końca",
+      "summaryViewers": "Widzowie",
+      "summaryLikes": "Upodobania",
+      "muteMic": "Wyciszenie mikrofonu",
+      "unmuteMic": "Wyłącz wyciszenie mikrofonu",
+      "turnOffCamera": "Wyłącz aparat",
+      "turnOnCamera": "Włącz kamerę",
+      "cameraOff": "Kamera jest wyłączona",
+      "settings": "Ustawienia NA ŻYWO",
+      "settingsSessionNote": "Zmiany te dotyczą wyłącznie tej sesji.",
+      "previewUnavailable": "Podgląd kamery nie jest jeszcze dostępny",
+      "previewUnavailableHint": "Przesyłanie strumieniowe z kamery będzie obsługiwane po podłączeniu serwera multimediów.",
+      "chatBeforeStart": "Czat otworzy się, gdy zaczniesz NA ŻYWO.",
+      "chatEnded": "Czat jest zamknięty, ponieważ ten LIVE się zakończył.",
+      "actionFailed": "Coś poszło nie tak. Spróbuj ponownie.",
+      "notOwnerTitle": "Nie możesz tego zarządzać NA ŻYWO",
+      "notOwnerDescription": "Tylko gospodarz może otworzyć LIVE Studio dla tego LIVE."
     }
   },
   "messagesPage": {

@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Michezo ya kubahatisha",
-      "lifestyle": "Mtindo wa maisha"
+      "lifestyle": "Mtindo wa maisha",
+      "recommended": "Imependekezwa kwa ajili yako"
+    },
+    "verified": "Akaunti iliyothibitishwa",
+    "card": {
+      "watchAria": "Tazama LIVE: {{title}} kwa {{host}}"
+    },
+    "states": {
+      "loading": "Inapakia...",
+      "retry": "Jaribu tena",
+      "backToDiscovery": "Rudi kwa LIVE",
+      "errorTitle": "Hitilafu fulani imetokea",
+      "discoveryError": "Hatukuweza kupakia mitiririko ya MOJA KWA MOJA. Angalia muunganisho wako na ujaribu tena.",
+      "roomError": "Hatukuweza kupakia hii LIVE. Angalia muunganisho wako na ujaribu tena.",
+      "emptyTitle": "Hakuna mitiririko ya LIVE kwa sasa",
+      "emptyCategory": "Bado hakuna mitiririko ya MOJA KWA MOJA katika kategoria hii. Angalia tena hivi karibuni.",
+      "emptyFollowing": "Watayarishi unaowafuata HAWAPO LIVE kwa sasa.",
+      "notFoundTitle": "LIVE haijapatikana",
+      "notFoundDescription": "LIVE hii inaweza kuwa imeisha au imeondolewa."
+    },
+    "player": {
+      "ended": "Hii LIVE imeisha",
+      "noCover": "Hakuna picha ya jalada"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Fuata",
+      "following": "Kufuatia",
+      "like": "Kama",
+      "share": "Shiriki",
+      "linkCopied": "Kiungo kimenakiliwa",
+      "gift": "Tuma zawadi",
+      "giftShort": "Zawadi",
+      "viewProfile": "Tazama wasifu wa {{name}}",
+      "openHostControls": "Fungua vidhibiti vya seva pangishi"
+    },
+    "chat": {
+      "title": "Soga ya moja kwa moja",
+      "placeholder": "Ongeza maoni...",
+      "send": "Tuma",
+      "loading": "Inaunganisha kwenye gumzo...",
+      "empty": "Hakuna maoni bado. Sema jambo!",
+      "error": "Haikuweza kuunganisha kwenye gumzo.",
+      "disabled": "Maoni yamezimwa kwa hii LIVE.",
+      "retry": "Jaribu tena",
+      "newMessages": "{{count}} ujumbe mpya"
+    },
+    "gifts": {
+      "title": "Zawadi",
+      "coins": "Sarafu {{count}}",
+      "sent": "Ulituma {{name}}",
+      "loadError": "Haikuweza kupakia zawadi."
+    },
+    "create": {
+      "pageTitle": "Nenda LIVE | Vibely",
+      "title": "Sanidi LIVE yako",
+      "detailsSection": "LIVE maelezo",
+      "coverLabel": "Picha ya jalada",
+      "coverHint": "JPG, PNG au WEBP, hadi MB {{max}}. Picha ya wima hufanya kazi vyema zaidi.",
+      "chooseCover": "Chagua picha",
+      "changeCover": "Badilisha picha",
+      "removeCover": "Ondoa",
+      "coverPreviewAlt": "LIVE onyesho la kukagua jalada",
+      "titleLabel": "Kichwa",
+      "titlePlaceholder": "LIVE yako inahusu nini?",
+      "descriptionLabel": "Maelezo",
+      "descriptionPlaceholder": "Waambie watazamaji nini cha kutarajia (si lazima)",
+      "categoryLabel": "Kategoria",
+      "visibilityLabel": "Nani anaweza kutazama",
+      "visibility": {
+        "public": "Kila mtu",
+        "followers": "Wafuasi",
+        "friends": "Marafiki"
+      },
+      "interactionSection": "Mwingiliano",
+      "allowComments": "Ruhusu maoni",
+      "allowGifts": "Ruhusu zawadi",
+      "allowGiftsHint": "Watazamaji wanaweza kukutumia zawadi wakati wa LIVE.",
+      "allowGuests": "Ruhusu maombi ya wageni",
+      "allowGuestsHint": "Watazamaji wanaweza kuomba kujiunga LIVE kama mgeni.",
+      "matureContent": "Maudhui ya watu wazima",
+      "matureContentHint": "Watazamaji walio na umri wa miaka 18 na zaidi pekee ndio wanaoweza kutazama.",
+      "cancel": "Ghairi",
+      "submit": "Unda LIVE",
+      "submitting": "Inaunda...",
+      "errors": {
+        "titleRequired": "Tafadhali weka kichwa.",
+        "titleTooLong": "Kichwa lazima kiwe na herufi {{max}} au chache zaidi.",
+        "descriptionTooLong": "Maelezo lazima yawe na herufi {{max}} au chache zaidi.",
+        "categoryRequired": "Tafadhali chagua aina.",
+        "coverType": "Tafadhali chagua picha ya JPG, PNG au WEBP.",
+        "coverTooLarge": "Picha lazima iwe MB {{max}} au ndogo zaidi.",
+        "submitFailed": "Haikuweza kuunda LIVE yako. Tafadhali jaribu tena."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Studio | Vibely",
+      "status": {
+        "scheduled": "Tayari",
+        "live": "LIVE",
+        "ended": "Imeisha"
+      },
+      "goLive": "Nenda LIVE",
+      "endLive": "Maliza LIVE",
+      "endConfirmTitle": "Ungependa kukomesha hii LIVE?",
+      "endConfirmBody": "Watazamaji watakatizwa na hutaweza kuendelea na hii MOJA KWA MOJA.",
+      "endedTitle": "LIVE yako imeisha",
+      "summaryViewers": "Watazamaji",
+      "summaryLikes": "Anapenda",
+      "muteMic": "Zima maikrofoni",
+      "unmuteMic": "Washa maikrofoni",
+      "turnOffCamera": "Zima kamera",
+      "turnOnCamera": "Washa kamera",
+      "cameraOff": "Kamera imezimwa",
+      "settings": "Mipangilio ya LIVE",
+      "settingsSessionNote": "Mabadiliko haya yanatumika kwa kipindi hiki pekee.",
+      "previewUnavailable": "Onyesho la kukagua kamera bado halipatikani",
+      "previewUnavailableHint": "Utiririshaji kutoka kwa kamera yako utaauniwa pindi seva ya midia itakapounganishwa.",
+      "chatBeforeStart": "Gumzo litafunguliwa ukienda LIVE.",
+      "chatEnded": "Gumzo limefungwa kwa sababu LIVE hii imeisha.",
+      "actionFailed": "Hitilafu fulani imetokea. Tafadhali jaribu tena.",
+      "notOwnerTitle": "Huwezi kudhibiti hili LIVE",
+      "notOwnerDescription": "Ni mwenyeji pekee anayeweza kufungua LIVE Studio kwa hii LIVE."
     }
   },
   "messagesPage": {

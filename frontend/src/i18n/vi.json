@@ -338,7 +338,129 @@
     },
     "sections": {
       "gaming": "Chơi game",
-      "lifestyle": "Phong cách sống"
+      "lifestyle": "Phong cách sống",
+      "recommended": "Đề xuất cho bạn"
+    },
+    "verified": "Tài khoản đã xác minh",
+    "card": {
+      "watchAria": "Xem LIVE: {{title}} của {{host}}"
+    },
+    "states": {
+      "loading": "Đang tải…",
+      "retry": "Thử lại",
+      "backToDiscovery": "Quay lại LIVE",
+      "errorTitle": "Đã xảy ra lỗi",
+      "discoveryError": "Không thể tải danh sách LIVE. Hãy kiểm tra kết nối và thử lại.",
+      "roomError": "Không thể tải phiên LIVE này. Hãy kiểm tra kết nối và thử lại.",
+      "emptyTitle": "Hiện chưa có phiên LIVE nào",
+      "emptyCategory": "Danh mục này chưa có phiên LIVE nào. Hãy quay lại sau nhé.",
+      "emptyFollowing": "Những nhà sáng tạo bạn follow hiện không LIVE.",
+      "notFoundTitle": "Không tìm thấy phiên LIVE",
+      "notFoundDescription": "Phiên LIVE này có thể đã kết thúc hoặc bị gỡ."
+    },
+    "player": {
+      "ended": "Phiên LIVE đã kết thúc",
+      "noCover": "Chưa có ảnh bìa"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Follow",
+      "following": "Đang Follow",
+      "like": "Thích",
+      "share": "Chia sẻ",
+      "linkCopied": "Đã sao chép liên kết",
+      "gift": "Tặng quà",
+      "giftShort": "Quà",
+      "viewProfile": "Xem hồ sơ của {{name}}",
+      "openHostControls": "Mở bảng điều khiển host"
+    },
+    "chat": {
+      "title": "Trò chuyện LIVE",
+      "placeholder": "Thêm bình luận…",
+      "send": "Gửi",
+      "loading": "Đang kết nối trò chuyện…",
+      "empty": "Chưa có bình luận nào. Hãy gửi lời chào!",
+      "error": "Không thể kết nối trò chuyện.",
+      "disabled": "Bình luận đã bị tắt cho phiên LIVE này.",
+      "retry": "Thử lại",
+      "newMessages": "{{count}} tin nhắn mới"
+    },
+    "gifts": {
+      "title": "Quà tặng",
+      "coins": "{{count}} xu",
+      "sent": "Bạn đã tặng {{name}}",
+      "loadError": "Không thể tải danh sách quà."
+    },
+    "create": {
+      "pageTitle": "Bắt đầu LIVE | Vibely",
+      "title": "Thiết lập phiên LIVE",
+      "detailsSection": "Thông tin LIVE",
+      "coverLabel": "Ảnh bìa",
+      "coverHint": "JPG, PNG hoặc WEBP, tối đa {{max}} MB. Ảnh dọc sẽ hiển thị đẹp nhất.",
+      "chooseCover": "Chọn ảnh",
+      "changeCover": "Đổi ảnh",
+      "removeCover": "Xoá",
+      "coverPreviewAlt": "Xem trước ảnh bìa LIVE",
+      "titleLabel": "Tiêu đề",
+      "titlePlaceholder": "Phiên LIVE của bạn nói về điều gì?",
+      "descriptionLabel": "Mô tả",
+      "descriptionPlaceholder": "Cho người xem biết nội dung sắp tới (không bắt buộc)",
+      "categoryLabel": "Danh mục",
+      "visibilityLabel": "Ai có thể xem",
+      "visibility": {
+        "public": "Mọi người",
+        "followers": "Người follow",
+        "friends": "Bạn bè"
+      },
+      "interactionSection": "Tương tác",
+      "allowComments": "Cho phép bình luận",
+      "allowGifts": "Cho phép tặng quà",
+      "allowGiftsHint": "Người xem có thể tặng quà cho bạn trong lúc LIVE.",
+      "allowGuests": "Cho phép yêu cầu làm khách mời",
+      "allowGuestsHint": "Người xem có thể xin tham gia LIVE cùng bạn.",
+      "matureContent": "Nội dung người lớn",
+      "matureContentHint": "Chỉ người xem từ 18 tuổi trở lên mới có thể xem.",
+      "cancel": "Huỷ",
+      "submit": "Tạo LIVE",
+      "submitting": "Đang tạo…",
+      "errors": {
+        "titleRequired": "Vui lòng nhập tiêu đề.",
+        "titleTooLong": "Tiêu đề tối đa {{max}} ký tự.",
+        "descriptionTooLong": "Mô tả tối đa {{max}} ký tự.",
+        "categoryRequired": "Vui lòng chọn danh mục.",
+        "coverType": "Vui lòng chọn ảnh JPG, PNG hoặc WEBP.",
+        "coverTooLarge": "Ảnh tối đa {{max}} MB.",
+        "submitFailed": "Không thể tạo phiên LIVE. Vui lòng thử lại."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Studio | Vibely",
+      "status": {
+        "scheduled": "Sẵn sàng",
+        "live": "LIVE",
+        "ended": "Đã kết thúc"
+      },
+      "goLive": "Bắt đầu LIVE",
+      "endLive": "Kết thúc LIVE",
+      "endConfirmTitle": "Kết thúc phiên LIVE?",
+      "endConfirmBody": "Người xem sẽ bị ngắt kết nối và bạn không thể tiếp tục phiên LIVE này.",
+      "endedTitle": "Phiên LIVE đã kết thúc",
+      "summaryViewers": "Người xem",
+      "summaryLikes": "Lượt thích",
+      "muteMic": "Tắt micro",
+      "unmuteMic": "Bật micro",
+      "turnOffCamera": "Tắt camera",
+      "turnOnCamera": "Bật camera",
+      "cameraOff": "Camera đang tắt",
+      "settings": "Cài đặt LIVE",
+      "settingsSessionNote": "Thay đổi chỉ áp dụng cho phiên này.",
+      "previewUnavailable": "Chưa hỗ trợ xem trước camera",
+      "previewUnavailableHint": "Phát trực tiếp từ camera sẽ được hỗ trợ khi kết nối media server.",
+      "chatBeforeStart": "Trò chuyện sẽ mở khi bạn bắt đầu LIVE.",
+      "chatEnded": "Trò chuyện đã đóng vì phiên LIVE đã kết thúc.",
+      "actionFailed": "Đã xảy ra lỗi. Vui lòng thử lại.",
+      "notOwnerTitle": "Bạn không thể quản lý phiên LIVE này",
+      "notOwnerDescription": "Chỉ host mới có thể mở LIVE Studio cho phiên LIVE này."
     }
   },
   "supportPage": {

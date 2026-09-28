@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Spil",
-      "lifestyle": "Livsstil"
+      "lifestyle": "Livsstil",
+      "recommended": "Anbefales til dig"
+    },
+    "verified": "Verificeret konto",
+    "card": {
+      "watchAria": "Se LIVE: {{title}} af {{host}}"
+    },
+    "states": {
+      "loading": "Indlæser...",
+      "retry": "Prøv igen",
+      "backToDiscovery": "Tilbage til LIVE",
+      "errorTitle": "Noget gik galt",
+      "discoveryError": "Vi kunne ikke indlæse LIVE-streams. Tjek din forbindelse, og prøv igen.",
+      "roomError": "Vi kunne ikke indlæse dette LIVE. Tjek din forbindelse, og prøv igen.",
+      "emptyTitle": "Ingen LIVE-streams lige nu",
+      "emptyCategory": "Der er endnu ingen LIVE-streams i denne kategori. Kom snart tilbage.",
+      "emptyFollowing": "Skabere, du følger, er ikke LIVE lige nu.",
+      "notFoundTitle": "LIVE ikke fundet",
+      "notFoundDescription": "Denne LIVE kan være afsluttet eller blevet fjernet."
+    },
+    "player": {
+      "ended": "Denne LIVE er afsluttet",
+      "noCover": "Intet forsidebillede"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Følge",
+      "following": "Følge",
+      "like": "Ligesom",
+      "share": "Dele",
+      "linkCopied": "Linket er kopieret",
+      "gift": "Send en gave",
+      "giftShort": "Gave",
+      "viewProfile": "Se {{name}}s profil",
+      "openHostControls": "Åbn værtskontroller"
+    },
+    "chat": {
+      "title": "LIVE chat",
+      "placeholder": "Tilføj en kommentar...",
+      "send": "Sende",
+      "loading": "Opretter forbindelse til chat...",
+      "empty": "Ingen kommentarer endnu. Sig hej!",
+      "error": "Kunne ikke oprette forbindelse til chat.",
+      "disabled": "Kommentarer er slået fra for denne LIVE.",
+      "retry": "Prøv igen",
+      "newMessages": "{{count}} nye beskeder"
+    },
+    "gifts": {
+      "title": "Gaver",
+      "coins": "{{count}} mønter",
+      "sent": "Du sendte {{name}}",
+      "loadError": "Kunne ikke indlæse gaver."
+    },
+    "create": {
+      "pageTitle": "Gå LIVE | Vibely",
+      "title": "Konfigurer din LIVE",
+      "detailsSection": "LIVE detaljer",
+      "coverLabel": "Forsidebillede",
+      "coverHint": "JPG, PNG eller WEBP, op til {{max}} MB. Et portrætbillede fungerer bedst.",
+      "chooseCover": "Vælg billede",
+      "changeCover": "Skift billede",
+      "removeCover": "Fjerne",
+      "coverPreviewAlt": "LIVE-forhåndsvisning",
+      "titleLabel": "Titel",
+      "titlePlaceholder": "Hvad handler din LIVE om?",
+      "descriptionLabel": "Beskrivelse",
+      "descriptionPlaceholder": "Fortæl seerne, hvad de kan forvente (valgfrit)",
+      "categoryLabel": "Kategori",
+      "visibilityLabel": "Hvem kan se",
+      "visibility": {
+        "public": "Alle sammen",
+        "followers": "Tilhængere",
+        "friends": "Venner"
+      },
+      "interactionSection": "Vekselvirkning",
+      "allowComments": "Tillad kommentarer",
+      "allowGifts": "Tillad gaver",
+      "allowGiftsHint": "Seere kan sende dig gaver under LIVE.",
+      "allowGuests": "Tillad gæsteanmodninger",
+      "allowGuestsHint": "Seere kan anmode om at deltage i din LIVE som gæst.",
+      "matureContent": "Modent indhold",
+      "matureContentHint": "Kun seere på 18 år og derover kan se.",
+      "cancel": "Ophæve",
+      "submit": "Opret LIVE",
+      "submitting": "Opretter...",
+      "errors": {
+        "titleRequired": "Indtast venligst en titel.",
+        "titleTooLong": "Titlen skal være på {{max}} tegn eller færre.",
+        "descriptionTooLong": "Beskrivelsen skal være på {{max}} tegn eller færre.",
+        "categoryRequired": "Vælg venligst en kategori.",
+        "coverType": "Vælg venligst et JPG-, PNG- eller WEBP-billede.",
+        "coverTooLarge": "Billedet skal være {{max}} MB eller mindre.",
+        "submitFailed": "Kunne ikke oprette din LIVE. Prøv venligst igen."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Studio | Vibely",
+      "status": {
+        "scheduled": "Parat",
+        "live": "LEVENDE",
+        "ended": "Afsluttet"
+      },
+      "goLive": "Gå LIVE",
+      "endLive": "Slut LIVE",
+      "endConfirmTitle": "Vil du afslutte dette LIVE?",
+      "endConfirmBody": "Seerne vil blive afbrudt, og du vil ikke være i stand til at genoptage dette LIVE.",
+      "endedTitle": "Din LIVE er slut",
+      "summaryViewers": "Seere",
+      "summaryLikes": "Synes godt om",
+      "muteMic": "Slå mikrofon fra",
+      "unmuteMic": "Slå mikrofonen til",
+      "turnOffCamera": "Sluk kameraet",
+      "turnOnCamera": "Tænd kameraet",
+      "cameraOff": "Kameraet er slukket",
+      "settings": "LIVE-indstillinger",
+      "settingsSessionNote": "Disse ændringer gælder kun for denne session.",
+      "previewUnavailable": "Forhåndsvisning af kamera er ikke tilgængelig endnu",
+      "previewUnavailableHint": "Streaming fra dit kamera vil blive understøttet, når medieserveren er tilsluttet.",
+      "chatBeforeStart": "Chat åbnes, når du går LIVE.",
+      "chatEnded": "Chatten er lukket, fordi denne LIVE er afsluttet.",
+      "actionFailed": "Noget gik galt. Prøv venligst igen.",
+      "notOwnerTitle": "Du kan ikke administrere dette LIVE",
+      "notOwnerDescription": "Kun værten kan åbne LIVE Studio for denne LIVE."
     }
   },
   "messagesPage": {

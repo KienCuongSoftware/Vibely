@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Spēles",
-      "lifestyle": "Dzīvesveids"
+      "lifestyle": "Dzīvesveids",
+      "recommended": "Ieteicams jums"
+    },
+    "verified": "Verificēts konts",
+    "card": {
+      "watchAria": "Skatieties TIEŠRAIDĒ: {{title}} no {{host}}"
+    },
+    "states": {
+      "loading": "Notiek ielāde…",
+      "retry": "Mēģiniet vēlreiz",
+      "backToDiscovery": "Atpakaļ uz LIVE",
+      "errorTitle": "Kaut kas nogāja greizi",
+      "discoveryError": "Mēs nevarējām ielādēt tiešraides straumes. Pārbaudiet savienojumu un mēģiniet vēlreiz.",
+      "roomError": "Mēs nevarējām ielādēt šo TIEŠRAIDĒ. Pārbaudiet savienojumu un mēģiniet vēlreiz.",
+      "emptyTitle": "Pašlaik nav TIEŠRAIDES straumes",
+      "emptyCategory": "Šajā kategorijā vēl nav nevienas TIEŠRAIDES straumes. Drīzumā pārbaudiet vēlreiz.",
+      "emptyFollowing": "Satura veidotāji, kuriem sekojat, pašlaik nav TIEŠRAIDĒ.",
+      "notFoundTitle": "LIVE nav atrasts",
+      "notFoundDescription": "Iespējams, šī TIEŠRAIDE ir beigusies vai noņemta."
+    },
+    "player": {
+      "ended": "Šī LIVE ir beigusies",
+      "noCover": "Nav vāka attēla"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Sekojiet",
+      "following": "Sekošana",
+      "like": "Patīk",
+      "share": "Dalīties",
+      "linkCopied": "Saite nokopēta",
+      "gift": "Nosūtiet dāvanu",
+      "giftShort": "Dāvana",
+      "viewProfile": "Skatīt lietotāja {{name}} profilu",
+      "openHostControls": "Atveriet saimniekdatora vadīklas"
+    },
+    "chat": {
+      "title": "Tiešraides tērzēšana",
+      "placeholder": "Pievienot komentāru…",
+      "send": "Sūtīt",
+      "loading": "Notiek savienojuma izveide ar tērzēšanu…",
+      "empty": "Komentāru vēl nav. Saki čau!",
+      "error": "Nevarēja izveidot savienojumu ar tērzēšanu.",
+      "disabled": "Šajā TIEŠRAIDĒ ir izslēgti komentāri.",
+      "retry": "Mēģiniet vēlreiz",
+      "newMessages": "{{count}} jauni ziņojumi"
+    },
+    "gifts": {
+      "title": "Dāvanas",
+      "coins": "{{count}} monētas",
+      "sent": "Jūs nosūtījāt {{name}}",
+      "loadError": "Nevarēja ielādēt dāvanas."
+    },
+    "create": {
+      "pageTitle": "Iet TIEŠRAIDĒ | Vibely",
+      "title": "Iestatiet savu LIVE",
+      "detailsSection": "LIVE informācija",
+      "coverLabel": "Vāka attēls",
+      "coverHint": "JPG, PNG vai WEBP, līdz {{max}} MB. Vislabāk darbojas portreta attēls.",
+      "chooseCover": "Izvēlieties attēlu",
+      "changeCover": "Mainīt attēlu",
+      "removeCover": "Noņemt",
+      "coverPreviewAlt": "Tiešraides vāka priekšskatījums",
+      "titleLabel": "Nosaukums",
+      "titlePlaceholder": "Par ko ir jūsu LIVE?",
+      "descriptionLabel": "Apraksts",
+      "descriptionPlaceholder": "Pastāstiet skatītājiem, ko sagaidīt (neobligāti)",
+      "categoryLabel": "Kategorija",
+      "visibilityLabel": "Kurš var skatīties",
+      "visibility": {
+        "public": "Visi",
+        "followers": "Sekotāji",
+        "friends": "Draugi"
+      },
+      "interactionSection": "Mijiedarbība",
+      "allowComments": "Atļaut komentārus",
+      "allowGifts": "Atļaut dāvanas",
+      "allowGiftsHint": "Skatītāji var nosūtīt jums dāvanas LIVE laikā.",
+      "allowGuests": "Atļaut viesu pieprasījumus",
+      "allowGuestsHint": "Skatītāji var pieprasīt pievienoties jūsu tiešraidei kā viesis.",
+      "matureContent": "Pieaugušajiem paredzēts saturs",
+      "matureContentHint": "Skatīties var tikai 18 gadus veci un vecāki skatītāji.",
+      "cancel": "Atcelt",
+      "submit": "Izveidojiet LIVE",
+      "submitting": "Notiek izveide…",
+      "errors": {
+        "titleRequired": "Lūdzu, ievadiet nosaukumu.",
+        "titleTooLong": "Nosaukumā nedrīkst būt vairāk par {{max}} rakstzīmēm.",
+        "descriptionTooLong": "Aprakstā nedrīkst būt vairāk par {{max}} rakstzīmēm.",
+        "categoryRequired": "Lūdzu, izvēlieties kategoriju.",
+        "coverType": "Lūdzu, izvēlieties JPG, PNG vai WEBP attēlu.",
+        "coverTooLarge": "Attēlam ir jābūt {{max}} MB vai mazākam.",
+        "submitFailed": "Nevarēja izveidot jūsu LIVE. Lūdzu, mēģiniet vēlreiz."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Studio | Vibely",
+      "status": {
+        "scheduled": "Gatavs",
+        "live": "TIEŠRAIDĒ",
+        "ended": "Beigās"
+      },
+      "goLive": "Iet TIEŠRAIDĒ",
+      "endLive": "Beigt TIEŠRAIDĒ",
+      "endConfirmTitle": "Vai beigt šo TIEŠRAIDE?",
+      "endConfirmBody": "Skatītāji tiks atvienoti, un jūs nevarēsit atsākt šo TIEŠRAIDI.",
+      "endedTitle": "Jūsu TIEŠRAIDE ir beigusies",
+      "summaryViewers": "Skatītāji",
+      "summaryLikes": "Patīk",
+      "muteMic": "Izslēgt mikrofonu",
+      "unmuteMic": "Ieslēgt mikrofona skaņu",
+      "turnOffCamera": "Izslēdziet kameru",
+      "turnOnCamera": "Ieslēdziet kameru",
+      "cameraOff": "Kamera ir izslēgta",
+      "settings": "LIVE iestatījumi",
+      "settingsSessionNote": "Šīs izmaiņas attiecas tikai uz šo sesiju.",
+      "previewUnavailable": "Kameras priekšskatījums vēl nav pieejams",
+      "previewUnavailableHint": "Straumēšana no kameras tiks atbalstīta, tiklīdz būs izveidots savienojums ar multivides serveri.",
+      "chatBeforeStart": "Tērzēšana tiks atvērta, kad sāksiet TIEŠRAIDĒ.",
+      "chatEnded": "Tērzēšana ir slēgta, jo šī TIEŠRAIDE ir beigusies.",
+      "actionFailed": "Kaut kas nogāja greizi. Lūdzu, mēģiniet vēlreiz.",
+      "notOwnerTitle": "Jūs nevarat pārvaldīt šo LIVE",
+      "notOwnerDescription": "Tikai saimnieks var atvērt LIVE Studio šim LIVE."
     }
   },
   "messagesPage": {

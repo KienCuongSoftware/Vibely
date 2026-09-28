@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Gamelan",
-      "lifestyle": "Gaya urip"
+      "lifestyle": "Gaya urip",
+      "recommended": "Dianjurake kanggo sampeyan"
+    },
+    "verified": "Akun sing diverifikasi",
+    "card": {
+      "watchAria": "Tonton LIVE: {{title}} dening {{host}}"
+    },
+    "states": {
+      "loading": "Loading…",
+      "retry": "Coba maneh",
+      "backToDiscovery": "Bali menyang LIVE",
+      "errorTitle": "Ana sing salah",
+      "discoveryError": "Kita ora bisa mbukak stream LIVE. Priksa sambungan sampeyan lan coba maneh.",
+      "roomError": "Kita ora bisa mbukak LIVE iki. Priksa sambungan sampeyan lan coba maneh.",
+      "emptyTitle": "Ora ana stream LIVE saiki",
+      "emptyCategory": "Durung ana stream LIVE ing kategori iki. Priksa maneh enggal.",
+      "emptyFollowing": "Pencipta sing sampeyan tindakake saiki ora LIVE.",
+      "notFoundTitle": "LIVE ora ketemu",
+      "notFoundDescription": "LIVE iki bisa uga wis rampung utawa wis dibusak."
+    },
+    "player": {
+      "ended": "LIVE iki wis rampung",
+      "noCover": "Ora ana gambar tutup"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Tindakake",
+      "following": "Nderek",
+      "like": "Kaya",
+      "share": "Nuduhake",
+      "linkCopied": "Link disalin",
+      "gift": "Kirimi hadiah",
+      "giftShort": "hadiah",
+      "viewProfile": "Deleng profil {{name}}.",
+      "openHostControls": "Bukak kontrol host"
+    },
+    "chat": {
+      "title": "LIVE chatting",
+      "placeholder": "Tambah komentar…",
+      "send": "Ngirim",
+      "loading": "Nyambung menyang chatting…",
+      "empty": "Durung ana komentar. Ngucap salam!",
+      "error": "Ora bisa nyambung menyang chatting.",
+      "disabled": "Komentar dipateni kanggo LIVE iki.",
+      "retry": "Coba maneh",
+      "newMessages": "{{count}} pesen anyar"
+    },
+    "gifts": {
+      "title": "peparingé",
+      "coins": "{{count}} dhuwit recehan",
+      "sent": "Sampeyan ngirim {{name}}",
+      "loadError": "Ora bisa mbukak hadiah."
+    },
+    "create": {
+      "pageTitle": "Go LIVE | Vibely",
+      "title": "Setel LIVE sampeyan",
+      "detailsSection": "rincian LIVE",
+      "coverLabel": "Gambar panutup",
+      "coverHint": "JPG, PNG utawa WEBP, nganti {{max}} MB. Gambar potret paling apik.",
+      "chooseCover": "Pilih gambar",
+      "changeCover": "Ngganti gambar",
+      "removeCover": "Mbusak",
+      "coverPreviewAlt": "pratinjau tutup LIVE",
+      "titleLabel": "judhul",
+      "titlePlaceholder": "Apa LIVE sampeyan?",
+      "descriptionLabel": "Katrangan",
+      "descriptionPlaceholder": "Marang pamirsa apa sing dikarepake (opsional)",
+      "categoryLabel": "kategori",
+      "visibilityLabel": "Sapa sing bisa nonton",
+      "visibility": {
+        "public": "Kabeh wong",
+        "followers": "pandherekipun",
+        "friends": "Kanca-kanca"
+      },
+      "interactionSection": "Interaksi",
+      "allowComments": "Allow komentar",
+      "allowGifts": "Ngidini hadiah",
+      "allowGiftsHint": "Penonton bisa ngirim hadiah sajrone LIVE.",
+      "allowGuests": "Allow panjalukan tamu",
+      "allowGuestsHint": "Penonton bisa njaluk melu LIVE minangka tamu.",
+      "matureContent": "Isi diwasa",
+      "matureContentHint": "Mung pamirso umur 18 lan liwat bisa nonton.",
+      "cancel": "Batal",
+      "submit": "Gawe LIVE",
+      "submitting": "Nggawe…",
+      "errors": {
+        "titleRequired": "Mangga ketik judhul.",
+        "titleTooLong": "Judhul kudu {{max}} karakter utawa kurang.",
+        "descriptionTooLong": "Deskripsi kudu {{max}} karakter utawa kurang.",
+        "categoryRequired": "Mangga pilih kategori.",
+        "coverType": "Mangga pilih gambar JPG, PNG utawa WEBP.",
+        "coverTooLarge": "Gambar kudu {{max}} MB utawa luwih cilik.",
+        "submitFailed": "Ora bisa nggawe LIVE sampeyan. Coba maneh."
+      }
+    },
+    "host": {
+      "pageTitle": "LIVE Studio | Vibely",
+      "status": {
+        "scheduled": "siyap",
+        "live": "LIVE",
+        "ended": "rampung"
+      },
+      "goLive": "Go LIVE",
+      "endLive": "Pungkasi LIVE",
+      "endConfirmTitle": "Pungkasi LIVE iki?",
+      "endConfirmBody": "Pamirsa bakal pedhot lan sampeyan ora bakal bisa nerusake LIVE iki.",
+      "endedTitle": "LIVE sampeyan wis rampung",
+      "summaryViewers": "Pamirsa",
+      "summaryLikes": "seneng",
+      "muteMic": "Mikropon bisu",
+      "unmuteMic": "Mbusak mikropon",
+      "turnOffCamera": "Pateni kamera",
+      "turnOnCamera": "Nguripake kamera",
+      "cameraOff": "Kamera mati",
+      "settings": "setelan LIVE",
+      "settingsSessionNote": "Owah-owahan iki mung ditrapake kanggo sesi iki.",
+      "previewUnavailable": "Pratinjau kamera durung kasedhiya",
+      "previewUnavailableHint": "Streaming saka kamera bakal didhukung sawise server media disambungake.",
+      "chatBeforeStart": "Obrolan bakal mbukak nalika sampeyan mbukak LIVE.",
+      "chatEnded": "Obrolan ditutup amarga LIVE iki wis rampung.",
+      "actionFailed": "Ana sing salah. Coba maneh.",
+      "notOwnerTitle": "Sampeyan ora bisa ngatur LIVE iki",
+      "notOwnerDescription": "Mung host sing bisa mbukak LIVE Studio kanggo LIVE iki."
     }
   },
   "messagesPage": {

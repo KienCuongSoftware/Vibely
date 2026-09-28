@@ -599,7 +599,129 @@
     },
     "sections": {
       "gaming": "Igre",
-      "lifestyle": "Životni stil"
+      "lifestyle": "Životni stil",
+      "recommended": "Preporučeno za vas"
+    },
+    "verified": "Potvrđeni račun",
+    "card": {
+      "watchAria": "Gledajte UŽIVO: {{title}} od {{host}}"
+    },
+    "states": {
+      "loading": "učitavanje...",
+      "retry": "Pokušajte ponovno",
+      "backToDiscovery": "Povratak na UŽIVO",
+      "errorTitle": "Nešto nije u redu",
+      "discoveryError": "Nismo mogli učitati streamove UŽIVO. Provjerite vezu i pokušajte ponovno.",
+      "roomError": "Nismo mogli učitati ovo UŽIVO. Provjerite vezu i pokušajte ponovno.",
+      "emptyTitle": "Trenutačno nema prijenosa UŽIVO",
+      "emptyCategory": "U ovoj kategoriji još nema prijenosa UŽIVO. Provjerite uskoro.",
+      "emptyFollowing": "Kreatori koje pratite trenutno nisu UŽIVO.",
+      "notFoundTitle": "UŽIVO nije pronađeno",
+      "notFoundDescription": "Ovaj LIVE je možda završio ili je uklonjen."
+    },
+    "player": {
+      "ended": "Ovaj LIVE je završio",
+      "noCover": "Nema naslovne slike"
+    },
+    "room": {
+      "pageTitle": "{{title}} | Vibely LIVE",
+      "follow": "Slijedite",
+      "following": "Praćenje",
+      "like": "Kao",
+      "share": "Udio",
+      "linkCopied": "Veza je kopirana",
+      "gift": "Pošaljite dar",
+      "giftShort": "Dar",
+      "viewProfile": "Pogledaj profil {{name}}",
+      "openHostControls": "Otvorite kontrole domaćina"
+    },
+    "chat": {
+      "title": "Razgovor UŽIVO",
+      "placeholder": "Dodajte komentar…",
+      "send": "Poslati",
+      "loading": "Spajanje na chat...",
+      "empty": "Još nema komentara. Pozdravi!",
+      "error": "Nije moguće spojiti se na chat.",
+      "disabled": "Komentari su isključeni za ovaj UŽIVO.",
+      "retry": "Pokušaj ponovo",
+      "newMessages": "{{count}} novih poruka"
+    },
+    "gifts": {
+      "title": "Pokloni",
+      "coins": "{{count}} novčića",
+      "sent": "Poslali ste {{name}}",
+      "loadError": "Nije moguće učitati darove."
+    },
+    "create": {
+      "pageTitle": "Idi UŽIVO | Vibely",
+      "title": "Postavite svoj LIVE",
+      "detailsSection": "detalji UŽIVO",
+      "coverLabel": "Naslovna slika",
+      "coverHint": "JPG, PNG ili WEBP, do {{max}} MB. Portretna slika najbolje funkcionira.",
+      "chooseCover": "Odaberite sliku",
+      "changeCover": "Promjena slike",
+      "removeCover": "Ukloniti",
+      "coverPreviewAlt": "Pregled naslovnice UŽIVO",
+      "titleLabel": "Titula",
+      "titlePlaceholder": "O čemu je vaš LIVE?",
+      "descriptionLabel": "Opis",
+      "descriptionPlaceholder": "Recite gledateljima što mogu očekivati ​​(nije obavezno)",
+      "categoryLabel": "Kategorija",
+      "visibilityLabel": "Tko može gledati",
+      "visibility": {
+        "public": "svi",
+        "followers": "Sljedbenici",
+        "friends": "Prijatelji"
+      },
+      "interactionSection": "Interakcija",
+      "allowComments": "Dopusti komentare",
+      "allowGifts": "Dopusti darove",
+      "allowGiftsHint": "Gledatelji vam mogu slati darove tijekom LIVE-a.",
+      "allowGuests": "Dopusti zahtjeve gostiju",
+      "allowGuestsHint": "Gledatelji mogu zatražiti da se pridruže vašem UŽIVO kao gost.",
+      "matureContent": "Sadržaj za odrasle",
+      "matureContentHint": "Mogu gledati samo gledatelji od 18 i više godina.",
+      "cancel": "Otkazati",
+      "submit": "Kreirajte UŽIVO",
+      "submitting": "Izrada...",
+      "errors": {
+        "titleRequired": "Unesite naslov.",
+        "titleTooLong": "Naslov mora sadržavati {{max}} znakova ili manje.",
+        "descriptionTooLong": "Opis mora imati {{max}} znakova ili manje.",
+        "categoryRequired": "Odaberite kategoriju.",
+        "coverType": "Odaberite JPG, PNG ili WEBP sliku.",
+        "coverTooLarge": "Slika mora imati {{max}} MB ili manje.",
+        "submitFailed": "Nije moguće stvoriti vaš LIVE. Molimo pokušajte ponovo."
+      }
+    },
+    "host": {
+      "pageTitle": "UŽIVO Studio | Vibely",
+      "status": {
+        "scheduled": "Spreman",
+        "live": "ŽIVJETI",
+        "ended": "Završeno"
+      },
+      "goLive": "Idi UŽIVO",
+      "endLive": "Kraj UŽIVO",
+      "endConfirmTitle": "Prekinuti ovo UŽIVO?",
+      "endConfirmBody": "Gledatelji će biti isključeni i nećete moći nastaviti ovaj UŽIVO.",
+      "endedTitle": "Vaš LIVE je završio",
+      "summaryViewers": "Gledatelji",
+      "summaryLikes": "sviđanja",
+      "muteMic": "Isključi mikrofon",
+      "unmuteMic": "Uključi mikrofon",
+      "turnOffCamera": "Isključite kameru",
+      "turnOnCamera": "Uključi kameru",
+      "cameraOff": "Kamera je isključena",
+      "settings": "LIVE postavke",
+      "settingsSessionNote": "Ove se promjene odnose samo na ovu sesiju.",
+      "previewUnavailable": "Pregled kamere još nije dostupan",
+      "previewUnavailableHint": "Streaming s vaše kamere bit će podržan kada se medijski poslužitelj poveže.",
+      "chatBeforeStart": "Chat će se otvoriti kada krenete UŽIVO.",
+      "chatEnded": "Chat je zatvoren jer je ovaj UŽIVO završio.",
+      "actionFailed": "Nešto nije u redu. Molimo pokušajte ponovo.",
+      "notOwnerTitle": "Ne možete upravljati ovim UŽIVO",
+      "notOwnerDescription": "Samo domaćin može otvoriti LIVE Studio za ovaj LIVE."
     }
   },
   "messagesPage": {

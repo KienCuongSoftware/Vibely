@@ -592,7 +592,8 @@
     },
     "sections": {
       "gaming": "เกม",
-      "lifestyle": "ไลฟ์สไตล์"
+      "lifestyle": "ไลฟ์สไตล์",
+      "recommended": "แนะนำสำหรับคุณ"
     },
     "mute": "Mute",
     "heroHeadline": "ดูตอนนี้และโต้ตอบกับผู้อื่นแบบเรียลไทม์",
@@ -600,7 +601,128 @@
     "viewersLabel": "{{count}} watching",
     "previousLive": "Previous LIVE",
     "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE"
+    "refreshLive": "Switch LIVE",
+    "verified": "บัญชีที่ตรวจสอบแล้ว",
+    "card": {
+      "watchAria": "ชมสด: {{title}} โดย {{host}}"
+    },
+    "states": {
+      "loading": "กำลังโหลด...",
+      "retry": "ลองอีกครั้ง",
+      "backToDiscovery": "กลับสู่การถ่ายทอดสด",
+      "errorTitle": "มีบางอย่างผิดพลาด",
+      "discoveryError": "เราไม่สามารถโหลดสตรีมสด ตรวจสอบการเชื่อมต่อของคุณแล้วลองอีกครั้ง",
+      "roomError": "เราไม่สามารถโหลด LIVE นี้ ตรวจสอบการเชื่อมต่อของคุณแล้วลองอีกครั้ง",
+      "emptyTitle": "ไม่มีการถ่ายทอดสดในขณะนี้",
+      "emptyCategory": "ยังไม่มีการถ่ายทอดสดในหมวดหมู่นี้ โปรดกลับมาตรวจสอบอีกครั้งเร็วๆ นี้",
+      "emptyFollowing": "ครีเอเตอร์ที่คุณติดตามไม่ได้ถ่ายทอดสดอยู่ในขณะนี้",
+      "notFoundTitle": "ไม่พบรายการสด",
+      "notFoundDescription": "LIVE นี้อาจจบลงหรือถูกลบออกไป"
+    },
+    "player": {
+      "ended": "LIVE นี้จบแล้ว",
+      "noCover": "ไม่มีภาพหน้าปก"
+    },
+    "room": {
+      "pageTitle": "{{title}} | สดอย่างมีสติ",
+      "follow": "ติดตาม",
+      "following": "กำลังติดตาม",
+      "like": "ชอบ",
+      "share": "แบ่งปัน",
+      "linkCopied": "คัดลอกลิงก์แล้ว",
+      "gift": "ส่งของขวัญ",
+      "giftShort": "ของขวัญ",
+      "viewProfile": "ดูโปรไฟล์ของ {{name}}",
+      "openHostControls": "เปิดการควบคุมของโฮสต์"
+    },
+    "chat": {
+      "title": "แชทสด",
+      "placeholder": "เพิ่มความคิดเห็น...",
+      "send": "ส่ง",
+      "loading": "กำลังเชื่อมต่อกับแชท...",
+      "empty": "ยังไม่มีความคิดเห็น พูดสวัสดี!",
+      "error": "ไม่สามารถเชื่อมต่อกับแชทได้",
+      "disabled": "ความคิดเห็นถูกปิดสำหรับ LIVE นี้",
+      "retry": "ลองอีกครั้ง",
+      "newMessages": "{{count}} ข้อความใหม่"
+    },
+    "gifts": {
+      "title": "ของขวัญ",
+      "coins": "{{count}} เหรียญ",
+      "sent": "คุณส่ง {{name}}",
+      "loadError": "ไม่สามารถโหลดของขวัญได้"
+    },
+    "create": {
+      "pageTitle": "ถ่ายทอดสด | มีชีวิตชีวา",
+      "title": "ตั้งค่าการถ่ายทอดสดของคุณ",
+      "detailsSection": "รายละเอียดสด",
+      "coverLabel": "ภาพปก",
+      "coverHint": "JPG, PNG หรือ WEBP สูงสุด {{max}} MB รูปภาพแนวตั้งทำงานได้ดีที่สุด",
+      "chooseCover": "เลือกรูปภาพ",
+      "changeCover": "เปลี่ยนภาพ",
+      "removeCover": "ลบ",
+      "coverPreviewAlt": "ตัวอย่างปกสด",
+      "titleLabel": "ชื่อ",
+      "titlePlaceholder": "LIVE ของคุณเกี่ยวกับอะไร?",
+      "descriptionLabel": "คำอธิบาย",
+      "descriptionPlaceholder": "บอกผู้ชมว่าจะคาดหวังอะไร (ไม่บังคับ)",
+      "categoryLabel": "หมวดหมู่",
+      "visibilityLabel": "ใครดูได้บ้าง",
+      "visibility": {
+        "public": "ทุกคน",
+        "followers": "ผู้ติดตาม",
+        "friends": "เพื่อน"
+      },
+      "interactionSection": "ปฏิสัมพันธ์",
+      "allowComments": "ขออนุญาติแสดงความคิดเห็น.",
+      "allowGifts": "อนุญาตให้ของขวัญ",
+      "allowGiftsHint": "ผู้ชมสามารถส่งของขวัญให้คุณได้ระหว่างการถ่ายทอดสด",
+      "allowGuests": "อนุญาตคำขอของแขก",
+      "allowGuestsHint": "ผู้ชมสามารถขอเข้าร่วม LIVE ของคุณในฐานะแขกรับเชิญได้",
+      "matureContent": "เนื้อหาสำหรับผู้ใหญ่",
+      "matureContentHint": "เฉพาะผู้ชมที่มีอายุ 18 ปีขึ้นไปเท่านั้นที่สามารถรับชมได้",
+      "cancel": "ยกเลิก",
+      "submit": "สร้างสด",
+      "submitting": "กำลังสร้าง...",
+      "errors": {
+        "titleRequired": "กรุณากรอกชื่อ",
+        "titleTooLong": "ชื่อต้องมีอักขระไม่เกิน {{max}} ตัว",
+        "descriptionTooLong": "คำอธิบายต้องมีอักขระไม่เกิน {{max}} ตัว",
+        "categoryRequired": "กรุณาเลือกหมวดหมู่",
+        "coverType": "โปรดเลือกรูปภาพ JPG, PNG หรือ WEBP",
+        "coverTooLarge": "รูปภาพต้องมีขนาด {{max}} MB หรือเล็กกว่า",
+        "submitFailed": "ไม่สามารถสร้าง LIVE ของคุณได้ โปรดลองอีกครั้ง"
+      }
+    },
+    "host": {
+      "pageTitle": "ไลฟ์สตูดิโอ | มีชีวิตชีวา",
+      "status": {
+        "scheduled": "พร้อม",
+        "live": "สด",
+        "ended": "สิ้นสุดแล้ว"
+      },
+      "goLive": "ถ่ายทอดสด",
+      "endLive": "จบไลฟ์",
+      "endConfirmTitle": "จบ LIVE นี้เหรอ?",
+      "endConfirmBody": "ผู้ชมจะถูกตัดการเชื่อมต่อ และคุณจะไม่สามารถเริ่มการถ่ายทอดสดนี้ต่อได้",
+      "endedTitle": "LIVE ของคุณสิ้นสุดแล้ว",
+      "summaryViewers": "ผู้ชม",
+      "summaryLikes": "ชอบ",
+      "muteMic": "ปิดเสียงไมโครโฟน",
+      "unmuteMic": "เปิดเสียงไมโครโฟน",
+      "turnOffCamera": "ปิดกล้อง",
+      "turnOnCamera": "เปิดกล้อง",
+      "cameraOff": "กล้องปิดอยู่",
+      "settings": "การตั้งค่าสด",
+      "settingsSessionNote": "การเปลี่ยนแปลงเหล่านี้ใช้กับเซสชันนี้เท่านั้น",
+      "previewUnavailable": "การแสดงตัวอย่างกล้องยังไม่พร้อมใช้งาน",
+      "previewUnavailableHint": "การสตรีมจากกล้องของคุณจะได้รับการสนับสนุนเมื่อเชื่อมต่อเซิร์ฟเวอร์สื่อแล้ว",
+      "chatBeforeStart": "แชทจะเปิดขึ้นเมื่อคุณถ่ายทอดสด",
+      "chatEnded": "แชทถูกปิดเนื่องจาก LIVE นี้สิ้นสุดแล้ว",
+      "actionFailed": "มีบางอย่างผิดพลาด โปรดลองอีกครั้ง",
+      "notOwnerTitle": "คุณไม่สามารถจัดการ LIVE นี้",
+      "notOwnerDescription": "มีเพียงเจ้าภาพเท่านั้นที่สามารถเปิด LIVE Studio สำหรับ LIVE นี้"
+    }
   },
   "messagesPage": {
     "title": "ข้อความ",
