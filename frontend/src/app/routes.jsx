@@ -46,6 +46,9 @@ const HashtagPage = lazyNamed(() => import('@/features/post/pages/HashtagPage.js
 const ExplorePage = lazyNamed(() => import('@/features/explore/pages/ExplorePage.jsx'), 'ExplorePage')
 const ExploreViewerPage = lazyNamed(() => import('@/features/explore/pages/ExploreViewerPage.jsx'), 'ExploreViewerPage')
 const LivePage = lazyNamed(() => import('@/features/live/pages/LivePage.jsx'), 'LivePage')
+const LiveDetailPage = lazyNamed(() => import('@/features/live/pages/LiveDetailPage.jsx'), 'LiveDetailPage')
+const CreateLivePage = lazyNamed(() => import('@/features/live/pages/CreateLivePage.jsx'), 'CreateLivePage')
+const LiveHostPage = lazyNamed(() => import('@/features/live/pages/LiveHostPage.jsx'), 'LiveHostPage')
 const SupportPage = lazyNamed(() => import('@/features/support/pages/SupportPage.jsx'), 'SupportPage')
 const PromotePage = lazyNamed(() => import('@/features/promote/pages/PromotePage.jsx'), 'PromotePage')
 const NotFoundPage = lazyNamed(() => import('@/features/support/pages/NotFoundPage.jsx'), 'NotFoundPage')
@@ -96,6 +99,9 @@ export function GuestRoutes() {
       <Route path="/sound" element={<SoundPage />} />
       <Route path="/explore" element={<ExplorePage />} />
       <Route path="/live" element={<LivePage />} />
+      <Route path="/live/create" element={<RedirectToHomeLogin />} />
+      <Route path="/live/:liveId" element={<LiveDetailPage />} />
+      <Route path="/live/:liveId/host" element={<RedirectToHomeLogin />} />
       <Route path="/support" element={<SupportPage />} />
       <Route path="/promote" element={<RedirectToHomeLogin />} />
       <Route path="/explore/view/:publicId" element={<ExploreViewerPage />} />
@@ -224,6 +230,18 @@ export function AuthenticatedRoutes({ user, isAdmin }) {
       <Route
         path="/live"
         element={<UserOnlyRoute user={user}><LivePage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/live/create"
+        element={<UserOnlyRoute user={user}><CreateLivePage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/live/:liveId"
+        element={<UserOnlyRoute user={user}><LiveDetailPage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/live/:liveId/host"
+        element={<UserOnlyRoute user={user}><LiveHostPage /></UserOnlyRoute>}
       />
       <Route path="/support" element={<SupportPage />} />
       <Route

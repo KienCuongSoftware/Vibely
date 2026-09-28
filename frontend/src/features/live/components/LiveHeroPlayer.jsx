@@ -7,7 +7,9 @@ import {
   IoVolumeHighOutline,
   IoVolumeMuteOutline,
 } from 'react-icons/io5'
+import { AvatarImage } from '@/shared/components/AvatarImage.jsx'
 import { LiveBadge } from '@/features/live/components/LiveBadge.jsx'
+import { LiveVerifiedBadge } from '@/features/live/components/LiveVerifiedBadge.jsx'
 import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 
 function LiveAudioWaveIcon({ animated = false }) {
@@ -41,7 +43,7 @@ function HeroNavButton({ label, onClick, children }) {
   )
 }
 
-export function LiveHeroPlayer({ streams }) {
+export function LiveHeroPlayer({ streams, onWatch }) {
   const { t } = useTranslation()
   const [index, setIndex] = useState(0)
   const [hovered, setHovered] = useState(false)
@@ -49,6 +51,9 @@ export function LiveHeroPlayer({ streams }) {
 
   const list = streams?.length ? streams : []
   const stream = list[index % list.length]
+  const watch = () => {
+    if (stream) onWatch?.(stream)
+  }
 
   const goPrevious = useCallback(() => {
     if (list.length <= 1) return
@@ -90,14 +95,19 @@ export function LiveHeroPlayer({ streams }) {
           }`}
         >
           <div className="flex h-full items-center justify-center px-14 pb-12 pt-4">
-            <div className="relative aspect-[9/16] h-full max-h-[calc(100%-8px)] overflow-hidden rounded-md shadow-[0_8px_32px_rgba(0,0,0,0.55)] ring-1 ring-white/10">
+            <button
+              type="button"
+              onClick={watch}
+              aria-label={t('livePage.clickToWatchLive')}
+              className="relative aspect-[9/16] h-full max-h-[calc(100%-8px)] cursor-pointer overflow-hidden rounded-md shadow-[0_8px_32px_rgba(0,0,0,0.55)] ring-1 ring-white/10"
+            >
               <img
                 src={portraitUrl}
                 alt=""
                 className="h-full w-full object-cover"
                 referrerPolicy="no-referrer"
               />
-            </div>
+            </button>
           </div>
 
           <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-4 pb-4">
@@ -149,20 +159,22 @@ export function LiveHeroPlayer({ streams }) {
             </div>
 
             <div className="absolute bottom-5 left-5 flex min-w-0 items-center gap-3 sm:bottom-6 sm:left-7">
-              <img
-                src={stream.avatarUrl}
-                alt=""
+              <AvatarImage
+                src={stream.host?.avatarUrl}
                 className="h-10 w-10 shrink-0 rounded-full object-cover ring-2 ring-white/20"
-                referrerPolicy="no-referrer"
               />
               <div className="min-w-0">
-                <p className="truncate text-[15px] font-semibold text-white">{stream.displayName}</p>
-                <p className="text-[13px] text-zinc-300">{viewerLabel}</p>
+                <p className="flex min-w-0 items-center gap-1 text-[15px] font-semibold text-white">
+                  <span className="truncate">{stream.host?.displayName || stream.host?.username}</span>
+                  {stream.host?.verified ? <LiveVerifiedBadge /> : null}
+                </p>
+                <p className="truncate text-[13px] text-zinc-300">{viewerLabel}</p>
               </div>
             </div>
 
             <button
               type="button"
+              onClick={watch}
               className="live-hero-cta absolute bottom-5 left-1/2 inline-flex -translate-x-1/2 cursor-pointer items-center gap-2 rounded-full bg-black/55 px-4 py-2.5 text-[13px] font-semibold text-white backdrop-blur-md transition hover:bg-black/70 sm:bottom-6 sm:text-[14px]"
             >
               <LiveAudioWaveIcon animated />

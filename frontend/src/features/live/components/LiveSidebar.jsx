@@ -5,7 +5,6 @@ import { BsCameraVideoFill, BsTvFill } from 'react-icons/bs'
 import {
   IoArrowBack,
   IoCashOutline,
-  IoCheckmarkCircle,
   IoPlayCircle,
   IoPlayCircleOutline,
   IoVideocamOutline,
@@ -17,6 +16,8 @@ import {
 } from 'react-icons/md'
 import { SidebarMorePanel } from '@/shared/components/SidebarMorePanel.jsx'
 import { VibelyMarkIcon, VibelyWordmark } from '@/shared/components/VibelyWordmark.jsx'
+import { AvatarImage } from '@/shared/components/AvatarImage.jsx'
+import { LiveVerifiedBadge } from '@/features/live/components/LiveVerifiedBadge.jsx'
 import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 
 function LiveNavItem({
@@ -52,36 +53,32 @@ function LiveNavItem({
   )
 }
 
-function RecommendedCreatorRow({ creator }) {
+function RecommendedCreatorRow({ live, onSelect }) {
+  const { host } = live
   return (
     <button
       type="button"
+      onClick={() => onSelect?.(live)}
       className="live-creator-row flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-left transition hover:bg-zinc-900"
     >
       <div className="relative shrink-0">
-        <img
-          src={creator.avatarUrl}
-          alt=""
+        <AvatarImage
+          src={host?.avatarUrl}
           className="h-10 w-10 rounded-full object-cover ring-2 ring-[#fe2c55]"
-          referrerPolicy="no-referrer"
         />
-        {creator.isLive ? (
-          <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 rounded-sm bg-[#fe2c55] px-1 text-[8px] font-bold leading-tight text-white">
-            LIVE
-          </span>
-        ) : null}
+        <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 rounded-sm bg-[#fe2c55] px-1 text-[8px] font-bold leading-tight text-white">
+          LIVE
+        </span>
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-0.5">
           <span className="truncate text-[13px] font-semibold text-zinc-100">
-            {creator.displayName}
+            {host?.displayName || host?.username}
           </span>
-          {creator.verified ? (
-            <IoCheckmarkCircle className="shrink-0 text-sm text-sky-400" aria-hidden />
-          ) : null}
+          {host?.verified ? <LiveVerifiedBadge /> : null}
         </div>
         <p className="text-[12px] text-zinc-500">
-          {formatLiveViewerCount(creator.viewerCount)}
+          {formatLiveViewerCount(live.viewerCount)}
         </p>
       </div>
     </button>
@@ -90,7 +87,9 @@ function RecommendedCreatorRow({ creator }) {
 
 export function LiveSidebar({
   activeNav = 'explore',
-  recommendedCreators = [],
+  recommendedLives = [],
+  onSelectLive,
+  onGoLive,
   token,
   onLogout,
 }) {
@@ -147,7 +146,10 @@ export function LiveSidebar({
             icon={IoVideocamOutline}
             activeIcon={BsCameraVideoFill}
             label={t('livePage.nav.goLive')}
-            onClick={closeMore}
+            onClick={() => {
+              closeMore()
+              onGoLive?.()
+            }}
           />
           <LiveNavItem
             collapsed={moreOpen}
@@ -180,14 +182,18 @@ export function LiveSidebar({
             </div>
 
             <div className="mt-6 min-h-0 flex-1 overflow-y-auto scrollbar-none">
-              <p className="mb-2 px-2 text-[13px] font-semibold text-zinc-500">
-                {t('livePage.recommendedCreators')}
-              </p>
-              <div className="flex flex-col gap-0.5">
-                {recommendedCreators.map((creator) => (
-                  <RecommendedCreatorRow key={creator.id} creator={creator} />
-                ))}
-              </div>
+              {recommendedLives.length ? (
+                <>
+                  <p className="mb-2 px-2 text-[13px] font-semibold text-zinc-500">
+                    {t('livePage.recommendedCreators')}
+                  </p>
+                  <div className="flex flex-col gap-0.5">
+                    {recommendedLives.map((live) => (
+                      <RecommendedCreatorRow key={live.id} live={live} onSelect={onSelectLive} />
+                    ))}
+                  </div>
+                </>
+              ) : null}
             </div>
 
             <footer className="live-sidebar-divider mt-4 shrink-0 space-y-1 pt-4 text-[11px] leading-relaxed text-zinc-500">

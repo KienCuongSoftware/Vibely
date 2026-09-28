@@ -1,45 +1,89 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IoArrowBack } from 'react-icons/io5'
-import { useNavigate } from 'react-router-dom'
 import { LiveCategoryTabs } from '@/features/live/components/LiveCategoryTabs.jsx'
+import { LiveDiscoverySkeleton } from '@/features/live/components/LiveDiscoverySkeleton.jsx'
 import { LiveHeroPlayer } from '@/features/live/components/LiveHeroPlayer.jsx'
 import { LiveSidebar } from '@/features/live/components/LiveSidebar.jsx'
+import { LiveStateView } from '@/features/live/components/LiveStateView.jsx'
 import { LiveStreamRow } from '@/features/live/components/LiveStreamRow.jsx'
 import {
+  getLiveCategoryLabelKey,
   LIVE_CATEGORIES,
-  LIVE_GAMING_STREAMS,
-  LIVE_HERO_STREAMS,
-  LIVE_LIFESTYLE_STREAMS,
-  LIVE_RECOMMENDED_CREATORS,
-} from '@/features/live/data/liveMockData.js'
-import {
-  isMobileFeedLayout,
-  MobileFeedBottomNav,
-} from '@/features/feed/components/MobileFeedShell.jsx'
+  LIVE_DISCOVERY_SECTIONS,
+  LIVE_FEED_FILTER,
+} from '@/features/live/constants/liveConstants.js'
+import { useLiveDiscovery } from '@/features/live/hooks/useLiveData.js'
+import { useLiveMobileLayout } from '@/features/live/hooks/useLiveMobileLayout.js'
+import { useLiveNavigation } from '@/features/live/hooks/useLiveNavigation.js'
+import { RESOURCE_STATUS } from '@/features/live/hooks/useLiveResource.js'
+import { MobileFeedBottomNav } from '@/features/feed/components/MobileFeedShell.jsx'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
 
 export function LivePage() {
   const { t } = useTranslation()
-  const navigate = useNavigate()
-  const { token, user, logout } = useAuth()
-  const [activeCategory, setActiveCategory] = useState('recommended')
-  const isMobile = isMobileFeedLayout()
+  const { token, logout } = useAuth()
+  const { navigate, openLive, goLive, selectSidebarMenu } = useLiveNavigation()
+  const [activeCategory, setActiveCategory] = useState(LIVE_FEED_FILTER.RECOMMENDED)
+  const isMobile = useLiveMobileLayout()
+  const discovery = useLiveDiscovery({ category: activeCategory, token })
+  const data = discovery.data
 
   useEffect(() => {
-    const categoryLabel = t(`livePage.categories.${activeCategory}`, {
-      defaultValue: t('livePage.categories.recommended'),
-    })
-    document.title = t('livePage.pageTitle', { category: categoryLabel })
+    document.title = t('livePage.pageTitle', { category: t(getLiveCategoryLabelKey(activeCategory)) })
   }, [t, activeCategory])
 
-  const handleSelectMenu = (id) => {
-    handleSidebarMenuSelect(navigate, id, {
-      token,
-      profilePath: user?.username ? `/@${user.username}` : '/profile',
-      onActivity: () => navigate('/?openActivity=1'),
-    })
+  const sectionsById = new Map((data?.sections ?? []).map((section) => [section.id, section.items]))
+  const hasContent = Boolean(
+    data?.featured?.length || data?.recommended?.length || data?.sections?.some((section) => section.items.length),
+  )
+
+  const renderContent = () => {
+    if (discovery.status === RESOURCE_STATUS.LOADING && !data) return <LiveDiscoverySkeleton />
+    if (discovery.status === RESOURCE_STATUS.ERROR) {
+      return (
+        <LiveStateView
+          variant="error"
+          description={t('livePage.states.discoveryError')}
+          onAction={discovery.reload}
+        />
+      )
+    }
+    if (!hasContent) {
+      return (
+        <LiveStateView
+          variant="empty"
+          description={
+            activeCategory === LIVE_FEED_FILTER.FOLLOWING
+              ? t('livePage.states.emptyFollowing')
+              : t('livePage.states.emptyCategory')
+          }
+        />
+      )
+    }
+    return (
+      <div className={discovery.status === RESOURCE_STATUS.LOADING ? 'opacity-60 transition-opacity' : ''}>
+        <LiveHeroPlayer streams={data.featured} onWatch={openLive} />
+        <LiveStreamRow
+          title={t('livePage.sections.recommended')}
+          streams={data.recommended}
+          onSelectStream={openLive}
+        />
+        {LIVE_DISCOVERY_SECTIONS.map((section) => (
+          <LiveStreamRow
+            key={section.id}
+            title={t(section.titleKey)}
+            streams={sectionsById.get(section.id)}
+            onSelectStream={openLive}
+            onSeeAll={
+              activeCategory === section.seeAllCategory
+                ? undefined
+                : () => setActiveCategory(section.seeAllCategory)
+            }
+          />
+        ))}
+      </div>
+    )
   }
 
   return (
@@ -47,7 +91,9 @@ export function LivePage() {
       <div className="hidden shrink-0 lg:flex">
         <LiveSidebar
           activeNav="explore"
-          recommendedCreators={LIVE_RECOMMENDED_CREATORS}
+          recommendedLives={data?.recommendedHosts ?? []}
+          onSelectLive={openLive}
+          onGoLive={goLive}
           token={token}
           onLogout={token ? logout : undefined}
         />
@@ -64,7 +110,14 @@ export function LivePage() {
             >
               <IoArrowBack className="text-xl" aria-hidden />
             </button>
-            <h1 className="text-[17px] font-bold">{t('livePage.nav.exploreLive')}</h1>
+            <h1 className="min-w-0 flex-1 truncate text-[17px] font-bold">{t('livePage.nav.exploreLive')}</h1>
+            <button
+              type="button"
+              onClick={goLive}
+              className="shrink-0 cursor-pointer rounded-full bg-[#fe2c55] px-3 py-1.5 text-[13px] font-semibold text-white"
+            >
+              {t('livePage.nav.goLive')}
+            </button>
           </header>
         ) : null}
 
@@ -75,17 +128,7 @@ export function LivePage() {
         />
 
         <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-3 pb-6 pt-4 lg:px-6 lg:pb-8 lg:pt-5">
-          <LiveHeroPlayer streams={LIVE_HERO_STREAMS} />
-
-          <LiveStreamRow
-            title={t('livePage.sections.gaming')}
-            streams={LIVE_GAMING_STREAMS}
-          />
-
-          <LiveStreamRow
-            title={t('livePage.sections.lifestyle')}
-            streams={LIVE_LIFESTYLE_STREAMS}
-          />
+          {renderContent()}
         </div>
       </div>
 
@@ -94,18 +137,9 @@ export function LivePage() {
           active="home"
           onHome={() => navigate('/')}
           onExplore={() => navigate('/explore')}
-          onUpload={() =>
-            handleSidebarMenuSelect(navigate, 'upload', { token })
-          }
-          onInbox={() =>
-            handleSidebarMenuSelect(navigate, 'messages', { token })
-          }
-          onProfile={() =>
-            handleSidebarMenuSelect(navigate, 'profile', {
-              token,
-              profilePath: user?.username ? `/@${user.username}` : '/profile',
-            })
-          }
+          onUpload={() => selectSidebarMenu('upload')}
+          onInbox={() => selectSidebarMenu('messages')}
+          onProfile={() => selectSidebarMenu('profile')}
         />
       ) : null}
     </section>
