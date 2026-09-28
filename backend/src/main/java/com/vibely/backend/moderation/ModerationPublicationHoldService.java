@@ -207,7 +207,7 @@ public class ModerationPublicationHoldService {
             long videoId = ((Number) row.get("video_id")).longValue();
             try {
                 // PHOTO posts can synthesize CU and join moderation immediately.
-                Long jobId = joinService.tryEnqueue(videoId, true);
+                Long jobId = joinService.tryEnqueue(videoId, true, null, false);
                 if (jobId != null) {
                     log.info("Hold reconcile enqueued moderation for no-CU videoId={} jobId={}", videoId, jobId);
                     continue;
