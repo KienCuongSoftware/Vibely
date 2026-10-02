@@ -92,6 +92,21 @@ class LiveIntegrationTest {
             .andExpect(jsonPath("$.error.code").value("INVALID_CATEGORY"));
     }
 
+    @Test
+    void classifiesCategoryWhenHostDoesNotPickOne() throws Exception {
+        User host = register("autocat");
+        mockMvc.perform(post("/api/lives").header("Authorization", host.bearer())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"title\":\"Bắn Free Fire tối nay\"}"))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.data.category").value("FREEFIRE"));
+
+        User other = register("autocat2");
+        mockMvc.perform(post("/api/lives").header("Authorization", other.bearer())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"title\":\"Phiên LIVE của tôi\",\"category\":\"  \"}"))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.data.category").value("LIFESTYLE"));
+    }
+
     // --- lifecycle ----------------------------------------------------------------------------
 
     @Test

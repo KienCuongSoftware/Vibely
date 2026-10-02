@@ -73,6 +73,7 @@ public class LiveService {
     private final S3OwnedMediaValidator mediaValidator;
     private final LiveProperties properties;
     private final LiveMediaService mediaService;
+    private final LiveCategoryClassifier categoryClassifier;
 
     public LiveService(
         LiveRepository liveRepository,
@@ -87,9 +88,11 @@ public class LiveService {
         LiveResponseMapper mapper,
         S3OwnedMediaValidator mediaValidator,
         LiveProperties properties,
-        LiveMediaService mediaService
+        LiveMediaService mediaService,
+        LiveCategoryClassifier categoryClassifier
     ) {
         this.mediaService = mediaService;
+        this.categoryClassifier = categoryClassifier;
         this.liveRepository = liveRepository;
         this.followRepository = followRepository;
         this.actorResolver = actorResolver;
@@ -110,7 +113,9 @@ public class LiveService {
         live.setHost(host);
         live.setTitle(requireTitle(request.title()));
         live.setDescription(trimToNull(request.description()));
-        live.setCategory(parseCategory(request.category()));
+        live.setCategory(StringUtils.hasText(request.category())
+            ? parseCategory(request.category())
+            : categoryClassifier.classify(live.getTitle(), live.getDescription()));
         live.setCoverUrl(validatedCover(request.coverUrl(), host));
         live.setVisibility(request.visibility() == null ? LiveVisibility.PUBLIC : parseVisibility(request.visibility()));
         live.setAllowComments(request.allowComments() == null || request.allowComments());
