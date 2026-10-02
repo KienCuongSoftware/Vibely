@@ -3,6 +3,7 @@ import { LIVE_STATUS } from '@/features/live/constants/liveConstants.js'
 import { createHostMediaController, createHostPreviewController } from '@/features/live/media/hostMediaController.js'
 import { hostMediaPreferencesFor } from '@/features/live/media/hostMediaPreferences.js'
 import { liveService } from '@/features/live/services/liveService.js'
+import { parseApiDateTime } from '@/shared/utils/relativeTimeVi.js'
 
 const ELAPSED_TICK_MS = 1000
 
@@ -149,7 +150,7 @@ export function useLiveHostSession({ live, setLive, token, media }) {
     if (updated) release()
   }, [release, run])
 
-  const startedAt = live?.startedAt ? Date.parse(live.startedAt) : null
+  const startedAt = parseApiDateTime(live?.startedAt)?.getTime() ?? null
   const elapsedMs = isLive && startedAt ? Math.max(0, now - startedAt) : 0
 
   return { start, end, action, error, elapsedMs }

@@ -76,6 +76,19 @@ describe('useLiveHostSession', () => {
     expect(service.endLive.mock.invocationCallOrder[0]).toBeLessThan(media.release.mock.invocationCallOrder[0])
   })
 
+  it('counts the LIVE duration from a UTC startedAt sent without an offset', () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-02T03:00:30Z'))
+    try {
+      const live = { ...onAir, startedAt: '2026-10-02T03:00:00' }
+      const { result } = renderHook(() => useLiveHostSession({ live, setLive: vi.fn(), token: 't', media: fakeMedia('publishing') }))
+
+      expect(result.current.elapsedMs).toBe(30_000)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('marks the LIVE ended when the publisher learns it was ended elsewhere', () => {
     const media = fakeMedia('ended')
     const setLive = vi.fn()

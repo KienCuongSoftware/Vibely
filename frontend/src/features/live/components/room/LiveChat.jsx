@@ -5,11 +5,12 @@ import { AvatarImage } from '@/shared/components/AvatarImage.jsx'
 import { LIVE_CHAT, LIVE_LIMITS } from '@/features/live/constants/liveConstants.js'
 import { LiveVerifiedBadge } from '@/features/live/components/LiveVerifiedBadge.jsx'
 import { LiveSpinner, LiveStateView } from '@/features/live/components/LiveStateView.jsx'
+import { parseApiDateTime } from '@/shared/utils/relativeTimeVi.js'
 
 const LiveChatMessage = memo(function LiveChatMessage({ message, timeFormatter, overlay, onRetry }) {
   const { t } = useTranslation()
   const author = message.author ?? {}
-  const createdAt = message.createdAt ? new Date(message.createdAt) : null
+  const createdAt = parseApiDateTime(message.createdAt)
 
   return (
     <li
