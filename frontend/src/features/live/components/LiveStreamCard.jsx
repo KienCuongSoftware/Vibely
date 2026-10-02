@@ -26,7 +26,20 @@ export const LiveStreamCard = memo(function LiveStreamCard({ stream, onSelect })
             className="h-full w-full object-cover transition duration-300 group-hover:brightness-110"
             referrerPolicy="no-referrer"
           />
-        ) : null}
+        ) : (
+          <div className="vibely-keep-dark absolute inset-0 flex items-center justify-center bg-zinc-900">
+            <AvatarImage
+              src={stream.host?.avatarUrl}
+              className="absolute inset-0 h-full w-full scale-110 object-cover blur-xl brightness-50"
+              loading="lazy"
+            />
+            <AvatarImage
+              src={stream.host?.avatarUrl}
+              className="relative h-14 w-14 rounded-full object-cover ring-2 ring-[#fe2c55]"
+              loading="lazy"
+            />
+          </div>
+        )}
         <div className="pointer-events-none absolute left-2 top-2 flex items-center gap-1.5">
           <LiveBadge compact />
           <span className="text-[11px] font-semibold tabular-nums text-white drop-shadow-md">

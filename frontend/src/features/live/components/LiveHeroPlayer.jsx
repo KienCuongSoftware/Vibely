@@ -10,6 +10,7 @@ import {
 import { AvatarImage } from '@/shared/components/AvatarImage.jsx'
 import { LiveBadge } from '@/features/live/components/LiveBadge.jsx'
 import { LiveVerifiedBadge } from '@/features/live/components/LiveVerifiedBadge.jsx'
+import { LivePlayer } from '@/features/live/components/player/LivePlayer.jsx'
 import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 
 function LiveAudioWaveIcon({ animated = false }) {
@@ -67,8 +68,7 @@ export function LiveHeroPlayer({ streams, onWatch }) {
 
   if (!stream) return null
 
-  const portraitUrl = stream.portraitCoverUrl ?? stream.coverUrl
-  const backdropUrl = stream.coverUrl ?? portraitUrl
+  const backdropUrl = stream.coverUrl ?? stream.portraitCoverUrl ?? stream.host?.avatarUrl
   const viewerLabel = t('livePage.viewersLabel', {
     count: formatLiveViewerCount(stream.viewerCount),
   })
@@ -80,37 +80,36 @@ export function LiveHeroPlayer({ streams, onWatch }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        <img
-          src={backdropUrl}
-          alt=""
-          className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl brightness-[0.35] saturate-125"
-          referrerPolicy="no-referrer"
-        />
+        {backdropUrl ? (
+          <img
+            src={backdropUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl brightness-[0.35] saturate-125"
+            referrerPolicy="no-referrer"
+          />
+        ) : null}
         <div className="pointer-events-none absolute inset-0 bg-black/45" />
 
-        {/* Hover — portrait preview */}
-        <div
-          className={`absolute inset-0 transition-opacity duration-300 ease-out ${
-            hovered ? 'opacity-100' : 'pointer-events-none opacity-0'
-          }`}
-        >
-          <div className="flex h-full items-center justify-center px-14 pb-12 pt-4">
+        {/* The featured LIVE itself, always playing (muted until the viewer unmutes) */}
+        <div className="absolute inset-0 flex items-center justify-center px-14 pb-12 pt-4">
+          <div className="relative aspect-[9/16] h-full max-h-[calc(100%-8px)] overflow-hidden rounded-md shadow-[0_8px_32px_rgba(0,0,0,0.55)] ring-1 ring-white/10">
+            <LivePlayer key={stream.id} live={stream} muted={muted} className="h-full w-full" />
             <button
               type="button"
               onClick={watch}
               aria-label={t('livePage.clickToWatchLive')}
-              className="relative aspect-[9/16] h-full max-h-[calc(100%-8px)] cursor-pointer overflow-hidden rounded-md shadow-[0_8px_32px_rgba(0,0,0,0.55)] ring-1 ring-white/10"
-            >
-              <img
-                src={portraitUrl}
-                alt=""
-                className="h-full w-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            </button>
+              className="absolute inset-0 cursor-pointer"
+            />
           </div>
+        </div>
 
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-4 pb-4">
+        {/* Hover — controls */}
+        <div
+          className={`pointer-events-none absolute inset-0 transition-opacity duration-300 ease-out ${
+            hovered ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <div className={`absolute inset-x-0 bottom-0 flex items-center justify-between px-4 pb-4 ${hovered ? 'pointer-events-auto' : ''}`}>
             <button
               type="button"
               aria-label={t('livePage.refreshLive')}
@@ -138,22 +137,16 @@ export function LiveHeroPlayer({ streams, onWatch }) {
 
         {/* Default — promo overlay */}
         <div
-          className={`absolute inset-0 transition-opacity duration-300 ease-out ${
-            hovered ? 'pointer-events-none opacity-0' : 'opacity-100'
+          className={`pointer-events-none absolute inset-0 transition-opacity duration-300 ease-out ${
+            hovered ? 'opacity-0' : 'opacity-100'
           }`}
         >
-          <img
-            src={backdropUrl}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover opacity-35"
-            referrerPolicy="no-referrer"
-          />
-          <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-black/80 via-black/55 to-black/25" />
+          <div className="absolute inset-0 bg-linear-to-r from-black/75 via-black/20 to-transparent" />
 
           <div className="relative h-full px-5 py-5 sm:px-7 sm:py-6">
-            <div className="max-w-[520px] pr-12">
+            <div className="max-w-[34%]">
               <LiveBadge />
-              <h2 className="mt-4 text-[22px] font-bold leading-tight text-white sm:text-[26px] lg:text-[28px]">
+              <h2 className="mt-4 text-[18px] font-bold leading-tight text-white sm:text-[22px] lg:text-[24px]">
                 {t('livePage.heroHeadline')}
               </h2>
             </div>
@@ -175,7 +168,7 @@ export function LiveHeroPlayer({ streams, onWatch }) {
             <button
               type="button"
               onClick={watch}
-              className="live-hero-cta absolute bottom-5 left-1/2 inline-flex -translate-x-1/2 cursor-pointer items-center gap-2 rounded-full bg-black/55 px-4 py-2.5 text-[13px] font-semibold text-white backdrop-blur-md transition hover:bg-black/70 sm:bottom-6 sm:text-[14px]"
+              className="live-hero-cta pointer-events-auto absolute bottom-5 left-1/2 inline-flex -translate-x-1/2 cursor-pointer items-center gap-2 rounded-full bg-black/55 px-4 py-2.5 text-[13px] font-semibold text-white backdrop-blur-md transition hover:bg-black/70 sm:bottom-6 sm:text-[14px]"
             >
               <LiveAudioWaveIcon animated />
               {t('livePage.clickToWatchLive')}
