@@ -146,7 +146,7 @@ class LiveMediaIntegrationTest {
                 .header("Authorization", host.bearer()))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.error.code").value("LIVE_NOT_FOUND"));
-        mockMvc.perform(get("/api/lives/not-a-uuid/playback"))
+        mockMvc.perform(get("/api/lives/not-a-uuid/playback").header("Authorization", host.bearer()))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.error.code").value("INVALID_LIVE_ID"));
 
@@ -228,17 +228,28 @@ class LiveMediaIntegrationTest {
     @Test
     void playbackIsOfferedOnlyWhileHostPublishes() throws Exception {
         User host = register("play");
+        User viewer = register("playfan");
         String liveId = startedLive(host);
 
-        JsonNode waiting = playback(null, liveId);
+        JsonNode waiting = playback(viewer, liveId);
         assertThat(waiting.get("type").asText()).isEqualTo("webrtc");
         assertThat(waiting.get("publishing").asBoolean()).isFalse();
         assertThat(waiting.has("whepUrl")).isFalse();
 
         publish(host, liveId, "pub-play");
-        JsonNode live = playback(null, liveId);
+        JsonNode live = playback(viewer, liveId);
         assertThat(live.get("publishing").asBoolean()).isTrue();
         assertThat(live.get("whepUrl").asText()).startsWith("/rtc/v1/whep/?app=live&stream=");
+    }
+
+    @Test
+    void guestMustSignInToWatch() throws Exception {
+        User host = register("guestgate");
+        String liveId = startedLive(host);
+        publish(host, liveId, "pub-guestgate");
+
+        mockMvc.perform(get("/api/lives/" + liveId + "/playback"))
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -249,17 +260,15 @@ class LiveMediaIntegrationTest {
         start(host, liveId);
         publish(host, liveId, "pub-private");
 
-        mockMvc.perform(get("/api/lives/" + liveId + "/playback"))
+        mockMvc.perform(get("/api/lives/" + liveId + "/playback").header("Authorization", stranger.bearer()))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.error.code").value("LIVE_NOT_FOUND"));
-        mockMvc.perform(get("/api/lives/" + liveId + "/playback").header("Authorization", stranger.bearer()))
-            .andExpect(status().isNotFound());
 
         // A play token for another LIVE's session cannot be replayed against this stream.
         User otherHost = register("otherhost");
         String otherLive = startedLive(otherHost);
         publish(otherHost, otherLive, "pub-other");
-        Endpoint otherWhep = Endpoint.parse(playback(null, otherLive).get("whepUrl").asText());
+        Endpoint otherWhep = Endpoint.parse(playback(stranger, otherLive).get("whepUrl").asText());
         String stream = session(liveId).getStreamName();
         hook("on_play", "play-steal", stream, "app=live&stream=" + stream + "&token=" + otherWhep.token())
             .andExpect(status().isForbidden());
@@ -290,12 +299,13 @@ class LiveMediaIntegrationTest {
     @Test
     void endedLiveCannotPlay() throws Exception {
         User host = register("closed");
+        User viewer = register("closedfan");
         String liveId = startedLive(host);
         publish(host, liveId, "pub-closed");
-        Endpoint whep = Endpoint.parse(playback(null, liveId).get("whepUrl").asText());
+        Endpoint whep = Endpoint.parse(playback(viewer, liveId).get("whepUrl").asText());
         end(host, liveId);
 
-        JsonNode after = playback(null, liveId);
+        JsonNode after = playback(viewer, liveId);
         assertThat(after.get("status").asText()).isEqualTo("ENDED");
         assertThat(after.get("publishing").asBoolean()).isFalse();
         assertThat(after.has("whepUrl")).isFalse();
@@ -325,9 +335,9 @@ class LiveMediaIntegrationTest {
         hook("on_play", "play-2", fanTab2.stream(), fanTab2.query()).andExpect(status().isOk());
         assertThat(stats(liveId).get("viewerCount").asLong()).isEqualTo(1);
 
-        // A guest is a distinct viewer; the host watching is not counted.
-        Endpoint guest = Endpoint.parse(playback(null, liveId).get("whepUrl").asText());
-        hook("on_play", "play-guest", guest.stream(), guest.query()).andExpect(status().isOk());
+        // Another account is a distinct viewer; the host watching is not counted.
+        Endpoint other = Endpoint.parse(playback(register("fan2"), liveId).get("whepUrl").asText());
+        hook("on_play", "play-guest", other.stream(), other.query()).andExpect(status().isOk());
         Endpoint hostWhep = Endpoint.parse(playback(host, liveId).get("whepUrl").asText());
         hook("on_play", "play-host", hostWhep.stream(), hostWhep.query()).andExpect(status().isOk());
         assertThat(stats(liveId).get("viewerCount").asLong()).isEqualTo(2);

@@ -219,7 +219,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/videos/*").permitAll()
                 .requestMatchers(HttpMethod.HEAD, "/api/videos/*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/lives/moderators").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/lives", "/api/lives/*", "/api/lives/*/comments", "/api/lives/*/stats", "/api/lives/*/playback").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/lives", "/api/lives/*", "/api/lives/*/comments", "/api/lives/*/stats").permitAll()
                 .requestMatchers(HttpMethod.HEAD, "/api/lives", "/api/lives/*", "/api/lives/*/comments", "/api/lives/*/stats").permitAll()
                 .anyRequest().authenticated();
             })
