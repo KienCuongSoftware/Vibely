@@ -396,7 +396,6 @@
       "title": "Go LIVE",
       "titleLabel": "LIVE title",
       "titlePlaceholder": "Add a title (optional)",
-      "autoCategoryHint": "The category is picked automatically from your title, like on Explore. Add #hashtags to help viewers find you.",
       "permissionHint": "Allow Vibely to use your camera and microphone to go LIVE.",
       "defaultTitle": "{{name}}'s LIVE",
       "defaultTitleAnonymous": "New LIVE",

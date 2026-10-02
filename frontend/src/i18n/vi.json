@@ -396,7 +396,6 @@
       "title": "Bắt đầu LIVE",
       "titleLabel": "Tiêu đề LIVE",
       "titlePlaceholder": "Thêm tiêu đề (không bắt buộc)",
-      "autoCategoryHint": "Danh mục được tự động phân loại theo tiêu đề, giống trang Khám phá. Thêm #hashtag để người xem dễ tìm thấy bạn.",
       "permissionHint": "Cho phép Vibely dùng camera và micro để bắt đầu LIVE.",
       "defaultTitle": "LIVE của {{name}}",
       "defaultTitleAnonymous": "Phiên LIVE mới",

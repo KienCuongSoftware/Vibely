@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { IoArrowBack, IoPricetagOutline } from 'react-icons/io5'
+import { IoArrowBack } from 'react-icons/io5'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { LiveDeviceSelects } from '@/features/live/components/host/LiveDeviceSelects.jsx'
 import { LiveHostControls } from '@/features/live/components/host/LiveHostControls.jsx'
@@ -80,24 +80,6 @@ export function CreateLivePage() {
                 mediaStatus={media.state.status}
                 mediaError={media.state.error}
               />
-              <div className="absolute inset-x-0 top-0 bg-linear-to-b from-black/70 to-transparent p-3">
-                <label htmlFor="live-create-title" className="sr-only">
-                  {t('livePage.create.titleLabel')}
-                </label>
-                <input
-                  id="live-create-title"
-                  type="text"
-                  value={goLive.title}
-                  maxLength={LIVE_LIMITS.TITLE_MAX}
-                  onChange={(event) => goLive.setTitle(event.target.value)}
-                  placeholder={t('livePage.create.titlePlaceholder')}
-                  className="h-10 w-full rounded-lg border border-white/15 bg-black/40 px-3 text-[14px] font-semibold text-white placeholder:text-zinc-300 backdrop-blur focus:border-[#fe2c55] focus:outline-none"
-                />
-                <p className="mt-1.5 flex items-start gap-1.5 text-[11px] leading-snug text-zinc-200 drop-shadow">
-                  <IoPricetagOutline className="mt-px shrink-0" aria-hidden />
-                  {t('livePage.create.autoCategoryHint')}
-                </p>
-              </div>
             </div>
           </div>
 
@@ -117,6 +99,18 @@ export function CreateLivePage() {
                   <LiveDeviceSelects media={media} idPrefix="live-create" />
                 </div>
               ) : null}
+              <label htmlFor="live-create-title" className="sr-only">
+                {t('livePage.create.titleLabel')}
+              </label>
+              <input
+                id="live-create-title"
+                type="text"
+                value={goLive.title}
+                maxLength={LIVE_LIMITS.TITLE_MAX}
+                onChange={(event) => goLive.setTitle(event.target.value)}
+                placeholder={t('livePage.create.titlePlaceholder')}
+                className="live-input h-11 w-full rounded-lg border border-white/10 bg-zinc-800 px-3 text-[14px] text-zinc-100 placeholder:text-zinc-500 focus:border-[#fe2c55] focus:outline-none"
+              />
               <LiveHostControls
                 status={LIVE_STATUS.SCHEDULED}
                 micEnabled={media.state.micEnabled}
