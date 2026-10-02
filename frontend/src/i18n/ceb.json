@@ -657,6 +657,9 @@
       "title": "Lakaw LIVE",
       "titleLabel": "Titulo",
       "titlePlaceholder": "Unsa imong LIVE?",
+      "permissionHint": "Tugoti ang Vibely nga gamiton ang imong camera ug mikropono aron mag-LIVE.",
+      "defaultTitle": "LIVE ni {{name}}",
+      "defaultTitleAnonymous": "Bag-ong LIVE",
       "allowComments": "Tugoti ang mga komento",
       "allowGifts": "Tugoti ang mga regalo",
       "cancel": "Pagkanselar",
@@ -692,6 +695,51 @@
       "actionFailed": "Naay nahitabo. Palihug sulayi pag-usab.",
       "notOwnerTitle": "Dili nimo madumala kini nga LIVE",
       "notOwnerDescription": "Ang host ra ang makaabli sa LIVE Studio para niining LIVE."
+    },
+    "media": {
+      "retry": "Sulayi pag-usab",
+      "host": {
+        "requestingAccess": "Naghulat sa access sa camera ug mikropono…",
+        "previewUnavailable": "Dili magamit ang preview sa camera",
+        "connecting": "Gikonektar ang imong video…",
+        "reconnecting": "Naputol ang koneksyon. Nagkonektar pag-usab ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Nagkonektar sa LIVE…",
+        "waiting": "Naghulat sa video sa host…",
+        "reconnecting": "Nagkonektar pag-usab…",
+        "hostReconnecting": "Dili lig-on ang koneksyon sa host…",
+        "failed": "Dili ma-play kining LIVE.",
+        "tapToPlay": "I-tap aron i-play",
+        "tapToUnmute": "I-tap aron i-unmute"
+      },
+      "devices": {
+        "camera": "Camera",
+        "microphone": "Mikropono"
+      },
+      "errors": {
+        "permissionDenied": "Gi-block ang access sa camera o mikropono. Tugoti kini sa site settings sa browser, unya sulayi pag-usab.",
+        "deviceNotFound": "Walay nakit-ang camera o mikropono. Pagkonektar og device ug sulayi pag-usab.",
+        "deviceBusy": "Gigamit sa laing app o tab ang imong camera o mikropono.",
+        "deviceLost": "Nadiskonektar ang imong camera o mikropono. Pagpili og laing device sa LIVE settings.",
+        "unsupported": "Dili suportado niining browser ang LIVE video. Sulayi ang pinakabag-ong Chrome, Edge, Firefox o Safari.",
+        "insecureContext": "Kinahanglan sa LIVE video ang luwas nga koneksyon (HTTPS).",
+        "codecUnsupported": "Dili ma-encode niining browser ang H.264 video nga gikinahanglan sa LIVE.",
+        "publishRejected": "Gibalibaran sa media server ang stream. Palihug sulayi pag-usab.",
+        "publisherBusy": "Nag-stream na kining LIVE gikan sa laing tab o device.",
+        "serverUnavailable": "Dili magamit ang media server karon.",
+        "connectionFailed": "Napakyas ang koneksyon sa video. Susiha ang imong network.",
+        "mediaDisabled": "Wala ma-enable ang LIVE video niining server.",
+        "liveEnded": "Nahuman na kining LIVE.",
+        "notFound": "Dili makit-an kining LIVE.",
+        "forbidden": "Wala kay access sa video niining LIVE.",
+        "playbackFailed": "Dili ma-play kining LIVE."
+      },
+      "endReason": {
+        "admin": "Gitapos sa usa ka moderator kining LIVE.",
+        "hostDisconnected": "Nahuman kining LIVE kay nawad-an og koneksyon ang host.",
+        "publishTimeout": "Nahuman kining LIVE kay wala gyud nagsugod ang video sa host."
+      }
     }
   },
   "messagesPage": {

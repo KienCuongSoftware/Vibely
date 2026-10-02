@@ -657,6 +657,9 @@
       "title": "Nenda LIVE",
       "titleLabel": "Kichwa",
       "titlePlaceholder": "LIVE yako inahusu nini?",
+      "permissionHint": "Ruhusu Vibely kutumia kamera na maikrofoni yako ili kwenda LIVE.",
+      "defaultTitle": "LIVE ya {{name}}",
+      "defaultTitleAnonymous": "LIVE mpya",
       "allowComments": "Ruhusu maoni",
       "allowGifts": "Ruhusu zawadi",
       "cancel": "Ghairi",
@@ -692,6 +695,51 @@
       "actionFailed": "Hitilafu fulani imetokea. Tafadhali jaribu tena.",
       "notOwnerTitle": "Huwezi kudhibiti hili LIVE",
       "notOwnerDescription": "Ni mwenyeji pekee anayeweza kufungua LIVE Studio kwa hii LIVE."
+    },
+    "media": {
+      "retry": "Jaribu tena",
+      "host": {
+        "requestingAccess": "Inasubiri ruhusa ya kamera na maikrofoni…",
+        "previewUnavailable": "Onyesho la awali la kamera halipatikani",
+        "connecting": "Inaunganisha video yako…",
+        "reconnecting": "Muunganisho umekatika. Inaunganisha tena ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Inaunganisha kwenye LIVE…",
+        "waiting": "Inasubiri video ya mwenyeji…",
+        "reconnecting": "Inaunganisha tena…",
+        "hostReconnecting": "Muunganisho wa mwenyeji si thabiti…",
+        "failed": "Imeshindwa kucheza LIVE hii.",
+        "tapToPlay": "Gusa ili kucheza",
+        "tapToUnmute": "Gusa ili kuwasha sauti"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Maikrofoni"
+      },
+      "errors": {
+        "permissionDenied": "Ruhusa ya kamera au maikrofoni imezuiwa. Iruhusu kwenye mipangilio ya tovuti ya kivinjari, kisha ujaribu tena.",
+        "deviceNotFound": "Hakuna kamera au maikrofoni iliyopatikana. Unganisha kifaa kisha ujaribu tena.",
+        "deviceBusy": "Kamera au maikrofoni yako inatumiwa na programu au kichupo kingine.",
+        "deviceLost": "Kamera au maikrofoni yako imetenganishwa. Chagua kifaa kingine kwenye mipangilio ya LIVE.",
+        "unsupported": "Kivinjari hiki hakitumii video ya LIVE. Jaribu toleo jipya la Chrome, Edge, Firefox au Safari.",
+        "insecureContext": "Video ya LIVE inahitaji muunganisho salama (HTTPS).",
+        "codecUnsupported": "Kivinjari hiki hakiwezi kusimba video ya H.264 inayohitajika na LIVE.",
+        "publishRejected": "Seva ya midia imekataa matangazo. Tafadhali jaribu tena.",
+        "publisherBusy": "LIVE hii tayari inatangazwa kutoka kichupo au kifaa kingine.",
+        "serverUnavailable": "Seva ya midia haipatikani kwa sasa.",
+        "connectionFailed": "Muunganisho wa video umeshindwa. Angalia mtandao wako.",
+        "mediaDisabled": "Video ya LIVE haijawashwa kwenye seva hii.",
+        "liveEnded": "LIVE hii imeisha.",
+        "notFound": "LIVE hii haikupatikana.",
+        "forbidden": "Huna ruhusa ya kufikia video ya LIVE hii.",
+        "playbackFailed": "Imeshindwa kucheza LIVE hii."
+      },
+      "endReason": {
+        "admin": "LIVE hii ilisitishwa na msimamizi.",
+        "hostDisconnected": "LIVE hii iliisha kwa sababu mwenyeji alipoteza muunganisho.",
+        "publishTimeout": "LIVE hii iliisha kwa sababu video ya mwenyeji haikuanza kamwe."
+      }
     }
   },
   "messagesPage": {

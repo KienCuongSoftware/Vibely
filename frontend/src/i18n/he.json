@@ -657,6 +657,9 @@
       "title": "עבור לייב",
       "titleLabel": "כּוֹתֶרֶת",
       "titlePlaceholder": "על מה ה-LIVE שלך?",
+      "permissionHint": "אפשרו ל-Vibely להשתמש במצלמה ובמיקרופון כדי לעלות ל-LIVE.",
+      "defaultTitle": "ה-LIVE של {{name}}",
+      "defaultTitleAnonymous": "LIVE חדש",
       "allowComments": "אפשר הערות",
       "allowGifts": "אפשר מתנות",
       "cancel": "לְבַטֵל",
@@ -692,6 +695,51 @@
       "actionFailed": "משהו השתבש. אנא נסה שוב.",
       "notOwnerTitle": "אתה לא יכול לנהל את זה LIVE",
       "notOwnerDescription": "רק המארח יכול לפתוח את LIVE Studio עבור LIVE זה."
+    },
+    "media": {
+      "retry": "לנסות שוב",
+      "host": {
+        "requestingAccess": "ממתין לגישה למצלמה ולמיקרופון…",
+        "previewUnavailable": "תצוגה מקדימה של המצלמה אינה זמינה",
+        "connecting": "מחבר את הווידאו שלך…",
+        "reconnecting": "החיבור אבד. מתחבר מחדש ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "מתחבר ל-LIVE…",
+        "waiting": "ממתין לווידאו של המארח…",
+        "reconnecting": "מתחבר מחדש…",
+        "hostReconnecting": "החיבור של המארח אינו יציב…",
+        "failed": "לא ניתן להפעיל את ה-LIVE הזה.",
+        "tapToPlay": "הקישו להפעלה",
+        "tapToUnmute": "הקישו להפעלת הקול"
+      },
+      "devices": {
+        "camera": "מצלמה",
+        "microphone": "מיקרופון"
+      },
+      "errors": {
+        "permissionDenied": "הגישה למצלמה או למיקרופון נחסמה. אפשרו אותה בהגדרות האתר בדפדפן ונסו שוב.",
+        "deviceNotFound": "לא נמצאו מצלמה או מיקרופון. חברו מכשיר ונסו שוב.",
+        "deviceBusy": "אפליקציה או כרטיסייה אחרת משתמשת במצלמה או במיקרופון.",
+        "deviceLost": "המצלמה או המיקרופון נותקו. בחרו מכשיר אחר בהגדרות ה-LIVE.",
+        "unsupported": "הדפדפן הזה אינו תומך בווידאו LIVE. נסו את הגרסה העדכנית של Chrome,‏ Edge,‏ Firefox או Safari.",
+        "insecureContext": "ווידאו LIVE דורש חיבור מאובטח (HTTPS).",
+        "codecUnsupported": "הדפדפן הזה לא יכול לקודד ווידאו H.264, שנדרש ל-LIVE.",
+        "publishRejected": "שרת המדיה דחה את השידור. נסו שוב.",
+        "publisherBusy": "ה-LIVE הזה כבר משודר מכרטיסייה או ממכשיר אחר.",
+        "serverUnavailable": "שרת המדיה אינו זמין כרגע.",
+        "connectionFailed": "חיבור הווידאו נכשל. בדקו את הרשת.",
+        "mediaDisabled": "ווידאו LIVE אינו מופעל בשרת הזה.",
+        "liveEnded": "ה-LIVE הזה הסתיים.",
+        "notFound": "ה-LIVE הזה לא נמצא.",
+        "forbidden": "אין לך גישה לווידאו של ה-LIVE הזה.",
+        "playbackFailed": "לא ניתן להפעיל את ה-LIVE הזה."
+      },
+      "endReason": {
+        "admin": "ה-LIVE הזה הופסק על ידי מנחה.",
+        "hostDisconnected": "ה-LIVE הזה הסתיים כי המארח איבד את החיבור.",
+        "publishTimeout": "ה-LIVE הזה הסתיים כי הווידאו של המארח לא התחיל מעולם."
+      }
     }
   },
   "messagesPage": {

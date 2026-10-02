@@ -657,6 +657,9 @@
       "title": "Idi UŽIVO",
       "titleLabel": "Titula",
       "titlePlaceholder": "O čemu je vaš LIVE?",
+      "permissionHint": "Dopustite Vibelyju korištenje kamere i mikrofona kako biste pokrenuli LIVE.",
+      "defaultTitle": "LIVE korisnika {{name}}",
+      "defaultTitleAnonymous": "Novi LIVE",
       "allowComments": "Dopusti komentare",
       "allowGifts": "Dopusti darove",
       "cancel": "Otkazati",
@@ -692,6 +695,51 @@
       "actionFailed": "Nešto nije u redu. Molimo pokušajte ponovo.",
       "notOwnerTitle": "Ne možete upravljati ovim UŽIVO",
       "notOwnerDescription": "Samo domaćin može otvoriti LIVE Studio za ovaj LIVE."
+    },
+    "media": {
+      "retry": "Pokušaj ponovno",
+      "host": {
+        "requestingAccess": "Čeka se pristup kameri i mikrofonu…",
+        "previewUnavailable": "Pregled kamere nije dostupan",
+        "connecting": "Povezivanje vašeg videa…",
+        "reconnecting": "Veza je prekinuta. Ponovno povezivanje ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Povezivanje s LIVE-om…",
+        "waiting": "Čeka se video domaćina…",
+        "reconnecting": "Ponovno povezivanje…",
+        "hostReconnecting": "Veza domaćina je nestabilna…",
+        "failed": "Ovaj LIVE nije moguće reproducirati.",
+        "tapToPlay": "Dodirnite za reprodukciju",
+        "tapToUnmute": "Dodirnite za uključivanje zvuka"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofon"
+      },
+      "errors": {
+        "permissionDenied": "Pristup kameri ili mikrofonu je blokiran. Dopustite ga u postavkama web-mjesta u pregledniku i pokušajte ponovno.",
+        "deviceNotFound": "Nije pronađena kamera ni mikrofon. Priključite uređaj i pokušajte ponovno.",
+        "deviceBusy": "Kameru ili mikrofon koristi druga aplikacija ili kartica.",
+        "deviceLost": "Kamera ili mikrofon su isključeni. Odaberite drugi uređaj u postavkama LIVE-a.",
+        "unsupported": "Ovaj preglednik ne podržava LIVE video. Isprobajte najnoviji Chrome, Edge, Firefox ili Safari.",
+        "insecureContext": "LIVE video zahtijeva sigurnu vezu (HTTPS).",
+        "codecUnsupported": "Ovaj preglednik ne može kodirati H.264 video koji LIVE zahtijeva.",
+        "publishRejected": "Medijski poslužitelj odbio je prijenos. Pokušajte ponovno.",
+        "publisherBusy": "Ovaj LIVE već se prenosi s druge kartice ili uređaja.",
+        "serverUnavailable": "Medijski poslužitelj trenutačno nije dostupan.",
+        "connectionFailed": "Video veza nije uspjela. Provjerite mrežu.",
+        "mediaDisabled": "LIVE video nije omogućen na ovom poslužitelju.",
+        "liveEnded": "Ovaj LIVE je završio.",
+        "notFound": "Ovaj LIVE nije pronađen.",
+        "forbidden": "Nemate pristup videu ovog LIVE-a.",
+        "playbackFailed": "Ovaj LIVE nije moguće reproducirati."
+      },
+      "endReason": {
+        "admin": "Ovaj LIVE prekinuo je moderator.",
+        "hostDisconnected": "Ovaj LIVE je završio jer je domaćin izgubio vezu.",
+        "publishTimeout": "Ovaj LIVE je završio jer se video domaćina nikad nije pokrenuo."
+      }
     }
   },
   "messagesPage": {

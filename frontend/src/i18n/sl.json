@@ -657,6 +657,9 @@
       "title": "Pojdi V ŽIVO",
       "titleLabel": "Naslov",
       "titlePlaceholder": "O čem govori vaš LIVE?",
+      "permissionHint": "Dovolite Vibelyju uporabo kamere in mikrofona, da začnete LIVE.",
+      "defaultTitle": "LIVE uporabnika {{name}}",
+      "defaultTitleAnonymous": "Nov LIVE",
       "allowComments": "Dovoli komentarje",
       "allowGifts": "Dovoli darila",
       "cancel": "Prekliči",
@@ -692,6 +695,51 @@
       "actionFailed": "Nekaj ​​je šlo narobe. prosim poskusite ponovno",
       "notOwnerTitle": "Tega ne morete upravljati V ŽIVO",
       "notOwnerDescription": "Samo gostitelj lahko odpre LIVE Studio za ta LIVE."
+    },
+    "media": {
+      "retry": "Poskusi znova",
+      "host": {
+        "requestingAccess": "Čakanje na dostop do kamere in mikrofona…",
+        "previewUnavailable": "Predogled kamere ni na voljo",
+        "connecting": "Povezovanje vašega videa…",
+        "reconnecting": "Povezava je prekinjena. Ponovno povezovanje ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Povezovanje z LIVE…",
+        "waiting": "Čakanje na video gostitelja…",
+        "reconnecting": "Ponovno povezovanje…",
+        "hostReconnecting": "Povezava gostitelja je nestabilna…",
+        "failed": "Tega LIVE ni mogoče predvajati.",
+        "tapToPlay": "Tapnite za predvajanje",
+        "tapToUnmute": "Tapnite za vklop zvoka"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofon"
+      },
+      "errors": {
+        "permissionDenied": "Dostop do kamere ali mikrofona je bil blokiran. Dovolite ga v nastavitvah spletnega mesta v brskalniku in poskusite znova.",
+        "deviceNotFound": "Ni bilo najdene kamere ali mikrofona. Priključite napravo in poskusite znova.",
+        "deviceBusy": "Kamero ali mikrofon uporablja druga aplikacija ali zavihek.",
+        "deviceLost": "Kamera ali mikrofon je bil izklopljen. V nastavitvah LIVE izberite drugo napravo.",
+        "unsupported": "Ta brskalnik ne podpira videa LIVE. Poskusite najnovejši Chrome, Edge, Firefox ali Safari.",
+        "insecureContext": "Video LIVE potrebuje varno povezavo (HTTPS).",
+        "codecUnsupported": "Ta brskalnik ne more kodirati videa H.264, ki ga LIVE zahteva.",
+        "publishRejected": "Medijski strežnik je zavrnil prenos. Poskusite znova.",
+        "publisherBusy": "Ta LIVE se že prenaša iz drugega zavihka ali naprave.",
+        "serverUnavailable": "Medijski strežnik trenutno ni na voljo.",
+        "connectionFailed": "Video povezava ni uspela. Preverite omrežje.",
+        "mediaDisabled": "Video LIVE na tem strežniku ni omogočen.",
+        "liveEnded": "Ta LIVE se je končal.",
+        "notFound": "Tega LIVE ni bilo mogoče najti.",
+        "forbidden": "Nimate dostopa do videa tega LIVE.",
+        "playbackFailed": "Tega LIVE ni mogoče predvajati."
+      },
+      "endReason": {
+        "admin": "Ta LIVE je končal moderator.",
+        "hostDisconnected": "Ta LIVE se je končal, ker je gostitelj izgubil povezavo.",
+        "publishTimeout": "Ta LIVE se je končal, ker se video gostitelja ni nikoli začel."
+      }
     }
   },
   "messagesPage": {

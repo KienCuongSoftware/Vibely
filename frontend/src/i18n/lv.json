@@ -657,6 +657,9 @@
       "title": "Iet TIEŠRAIDĒ",
       "titleLabel": "Nosaukums",
       "titlePlaceholder": "Par ko ir jūsu LIVE?",
+      "permissionHint": "Atļaujiet Vibely izmantot kameru un mikrofonu, lai sāktu LIVE.",
+      "defaultTitle": "{{name}} LIVE",
+      "defaultTitleAnonymous": "Jauns LIVE",
       "allowComments": "Atļaut komentārus",
       "allowGifts": "Atļaut dāvanas",
       "cancel": "Atcelt",
@@ -692,6 +695,51 @@
       "actionFailed": "Kaut kas nogāja greizi. Lūdzu, mēģiniet vēlreiz.",
       "notOwnerTitle": "Jūs nevarat pārvaldīt šo LIVE",
       "notOwnerDescription": "Tikai saimnieks var atvērt LIVE Studio šim LIVE."
+    },
+    "media": {
+      "retry": "Mēģināt vēlreiz",
+      "host": {
+        "requestingAccess": "Gaida piekļuvi kamerai un mikrofonam…",
+        "previewUnavailable": "Kameras priekšskatījums nav pieejams",
+        "connecting": "Savieno jūsu video…",
+        "reconnecting": "Savienojums zaudēts. Atkārtoti savieno ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Savieno ar LIVE…",
+        "waiting": "Gaida vadītāja video…",
+        "reconnecting": "Atkārtoti savieno…",
+        "hostReconnecting": "Vadītāja savienojums ir nestabils…",
+        "failed": "Šo LIVE nevar atskaņot.",
+        "tapToPlay": "Pieskarieties, lai atskaņotu",
+        "tapToUnmute": "Pieskarieties, lai ieslēgtu skaņu"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofons"
+      },
+      "errors": {
+        "permissionDenied": "Piekļuve kamerai vai mikrofonam tika bloķēta. Atļaujiet to pārlūka vietnes iestatījumos un mēģiniet vēlreiz.",
+        "deviceNotFound": "Netika atrasta kamera vai mikrofons. Pievienojiet ierīci un mēģiniet vēlreiz.",
+        "deviceBusy": "Jūsu kameru vai mikrofonu izmanto cita lietotne vai cilne.",
+        "deviceLost": "Jūsu kamera vai mikrofons tika atvienots. Izvēlieties citu ierīci LIVE iestatījumos.",
+        "unsupported": "Šis pārlūks neatbalsta LIVE video. Izmēģiniet jaunāko Chrome, Edge, Firefox vai Safari.",
+        "insecureContext": "LIVE video nepieciešams drošs savienojums (HTTPS).",
+        "codecUnsupported": "Šis pārlūks nevar kodēt H.264 video, kas nepieciešams LIVE.",
+        "publishRejected": "Multivides serveris noraidīja straumi. Lūdzu, mēģiniet vēlreiz.",
+        "publisherBusy": "Šis LIVE jau tiek straumēts no citas cilnes vai ierīces.",
+        "serverUnavailable": "Multivides serveris pašlaik nav pieejams.",
+        "connectionFailed": "Video savienojums neizdevās. Pārbaudiet tīklu.",
+        "mediaDisabled": "LIVE video šajā serverī nav iespējots.",
+        "liveEnded": "Šis LIVE ir beidzies.",
+        "notFound": "Šo LIVE nevarēja atrast.",
+        "forbidden": "Jums nav piekļuves šī LIVE video.",
+        "playbackFailed": "Šo LIVE nevar atskaņot."
+      },
+      "endReason": {
+        "admin": "Šo LIVE beidza moderators.",
+        "hostDisconnected": "Šis LIVE beidzās, jo vadītājs zaudēja savienojumu.",
+        "publishTimeout": "Šis LIVE beidzās, jo vadītāja video tā arī nesākās."
+      }
     }
   },
   "messagesPage": {

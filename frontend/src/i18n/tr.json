@@ -573,6 +573,13 @@
     "openLiveStudio": "LIVE Studio'yu aç",
     "watching": "izliyor",
     "unmute": "Sesi aç",
+    "mute": "Mute",
+    "heroHeadline": "Şimdi izleyin ve başkalarıyla gerçek zamanlı olarak etkileşime geçin",
+    "clickToWatchLive": "CANLI izlemek için tıklayın",
+    "viewersLabel": "{{count}} watching",
+    "previousLive": "Previous LIVE",
+    "nextLive": "Next LIVE",
+    "refreshLive": "Switch LIVE",
     "seeAll": "Tümünü gör",
     "scrollCategoriesLeft": "Kategorileri sola kaydır",
     "scrollCategoriesRight": "Kategorileri sağa kaydır",
@@ -595,13 +602,6 @@
       "lifestyle": "Yaşam tarzı",
       "recommended": "Sizin için önerilenler"
     },
-    "mute": "Mute",
-    "heroHeadline": "Şimdi izleyin ve başkalarıyla gerçek zamanlı olarak etkileşime geçin",
-    "clickToWatchLive": "CANLI izlemek için tıklayın",
-    "viewersLabel": "{{count}} watching",
-    "previousLive": "Previous LIVE",
-    "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE",
     "verified": "Doğrulanmış hesap",
     "card": {
       "watchAria": "CANLI izle: {{title}}, {{host}}"
@@ -657,6 +657,9 @@
       "title": "CANLI ol",
       "titleLabel": "Başlık",
       "titlePlaceholder": "CANLI yayınınız ne hakkında?",
+      "permissionHint": "LIVE'a çıkmak için Vibely'nin kameranı ve mikrofonunu kullanmasına izin ver.",
+      "defaultTitle": "{{name}} adlı kullanıcının LIVE'ı",
+      "defaultTitleAnonymous": "Yeni LIVE",
       "allowComments": "Yorumlara izin ver",
       "allowGifts": "Hediyelere izin ver",
       "cancel": "İptal etmek",
@@ -692,6 +695,51 @@
       "actionFailed": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
       "notOwnerTitle": "Bu CANLI'yı yönetemezsiniz",
       "notOwnerDescription": "Bu LIVE için yalnızca toplantı sahibi LIVE Studio'yu açabilir."
+    },
+    "media": {
+      "retry": "Tekrar dene",
+      "host": {
+        "requestingAccess": "Kamera ve mikrofon erişimi bekleniyor…",
+        "previewUnavailable": "Kamera önizlemesi kullanılamıyor",
+        "connecting": "Videon bağlanıyor…",
+        "reconnecting": "Bağlantı kesildi. Yeniden bağlanılıyor ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "LIVE'a bağlanılıyor…",
+        "waiting": "Yayıncının videosu bekleniyor…",
+        "reconnecting": "Yeniden bağlanılıyor…",
+        "hostReconnecting": "Yayıncının bağlantısı dengesiz…",
+        "failed": "Bu LIVE oynatılamadı.",
+        "tapToPlay": "Oynatmak için dokun",
+        "tapToUnmute": "Sesi açmak için dokun"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofon"
+      },
+      "errors": {
+        "permissionDenied": "Kamera veya mikrofon erişimi engellendi. Tarayıcının site ayarlarından izin ver ve tekrar dene.",
+        "deviceNotFound": "Kamera veya mikrofon bulunamadı. Bir cihaz bağla ve tekrar dene.",
+        "deviceBusy": "Kameran veya mikrofonun başka bir uygulama ya da sekme tarafından kullanılıyor.",
+        "deviceLost": "Kameranın veya mikrofonunun bağlantısı kesildi. LIVE ayarlarından başka bir cihaz seç.",
+        "unsupported": "Bu tarayıcı LIVE videoyu desteklemiyor. Chrome, Edge, Firefox veya Safari'nin en son sürümünü dene.",
+        "insecureContext": "LIVE video güvenli (HTTPS) bağlantı gerektirir.",
+        "codecUnsupported": "Bu tarayıcı, LIVE için gereken H.264 videoyu kodlayamıyor.",
+        "publishRejected": "Medya sunucusu yayını reddetti. Lütfen tekrar dene.",
+        "publisherBusy": "Bu LIVE zaten başka bir sekmeden veya cihazdan yayınlanıyor.",
+        "serverUnavailable": "Medya sunucusu şu anda kullanılamıyor.",
+        "connectionFailed": "Video bağlantısı başarısız oldu. Ağını kontrol et.",
+        "mediaDisabled": "Bu sunucuda LIVE video etkin değil.",
+        "liveEnded": "Bu LIVE sona erdi.",
+        "notFound": "Bu LIVE bulunamadı.",
+        "forbidden": "Bu LIVE'ın videosuna erişimin yok.",
+        "playbackFailed": "Bu LIVE oynatılamadı."
+      },
+      "endReason": {
+        "admin": "Bu LIVE bir moderatör tarafından sonlandırıldı.",
+        "hostDisconnected": "Yayıncının bağlantısı kesildiği için bu LIVE sona erdi.",
+        "publishTimeout": "Yayıncının videosu hiç başlamadığı için bu LIVE sona erdi."
+      }
     }
   },
   "messagesPage": {

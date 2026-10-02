@@ -657,6 +657,9 @@
       "title": "Shkoni LIVE",
       "titleLabel": "Titulli",
       "titlePlaceholder": "Për çfarë është LIVE juaj?",
+      "permissionHint": "Lejo Vibely të përdorë kamerën dhe mikrofonin për të nisur LIVE.",
+      "defaultTitle": "LIVE i {{name}}",
+      "defaultTitleAnonymous": "LIVE i ri",
       "allowComments": "Lejo komentet",
       "allowGifts": "Lejo dhuratat",
       "cancel": "Anulo",
@@ -692,6 +695,51 @@
       "actionFailed": "Diçka shkoi keq. Ju lutemi provoni përsëri.",
       "notOwnerTitle": "Nuk mund ta menaxhosh këtë LIVE",
       "notOwnerDescription": "Vetëm hosti mund të hapë LIVE Studio për këtë LIVE."
+    },
+    "media": {
+      "retry": "Provo përsëri",
+      "host": {
+        "requestingAccess": "Në pritje të qasjes në kamerë dhe mikrofon…",
+        "previewUnavailable": "Pamja paraprake e kamerës nuk është e disponueshme",
+        "connecting": "Po lidhet videoja jote…",
+        "reconnecting": "Lidhja humbi. Po rilidhet ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Po lidhet me LIVE…",
+        "waiting": "Në pritje të videos së organizatorit…",
+        "reconnecting": "Po rilidhet…",
+        "hostReconnecting": "Lidhja e organizatorit është e paqëndrueshme…",
+        "failed": "Ky LIVE nuk mund të luhet.",
+        "tapToPlay": "Prek për ta luajtur",
+        "tapToUnmute": "Prek për të aktivizuar zërin"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofoni"
+      },
+      "errors": {
+        "permissionDenied": "Qasja në kamerë ose mikrofon u bllokua. Lejoje te cilësimet e sajtit në shfletues dhe provo përsëri.",
+        "deviceNotFound": "Nuk u gjet asnjë kamerë ose mikrofon. Lidh një pajisje dhe provo përsëri.",
+        "deviceBusy": "Kamera ose mikrofoni po përdoret nga një aplikacion ose skedë tjetër.",
+        "deviceLost": "Kamera ose mikrofoni u shkëput. Zgjidh një pajisje tjetër te cilësimet e LIVE.",
+        "unsupported": "Ky shfletues nuk mbështet video LIVE. Provo versionin më të fundit të Chrome, Edge, Firefox ose Safari.",
+        "insecureContext": "Videoja LIVE kërkon një lidhje të sigurt (HTTPS).",
+        "codecUnsupported": "Ky shfletues nuk mund të kodojë video H.264, që kërkohet për LIVE.",
+        "publishRejected": "Serveri i medias e refuzoi transmetimin. Provo përsëri.",
+        "publisherBusy": "Ky LIVE po transmetohet tashmë nga një skedë ose pajisje tjetër.",
+        "serverUnavailable": "Serveri i medias nuk është i disponueshëm tani.",
+        "connectionFailed": "Lidhja e videos dështoi. Kontrollo rrjetin.",
+        "mediaDisabled": "Videoja LIVE nuk është aktivizuar në këtë server.",
+        "liveEnded": "Ky LIVE ka përfunduar.",
+        "notFound": "Ky LIVE nuk u gjet.",
+        "forbidden": "Nuk ke qasje në videon e këtij LIVE.",
+        "playbackFailed": "Ky LIVE nuk mund të luhet."
+      },
+      "endReason": {
+        "admin": "Ky LIVE u përfundua nga një moderator.",
+        "hostDisconnected": "Ky LIVE përfundoi sepse organizatori humbi lidhjen.",
+        "publishTimeout": "Ky LIVE përfundoi sepse videoja e organizatorit nuk nisi kurrë."
+      }
     }
   },
   "messagesPage": {

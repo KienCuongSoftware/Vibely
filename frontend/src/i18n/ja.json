@@ -573,6 +573,13 @@
     "openLiveStudio": "LIVE Studioを開く",
     "watching": "視聴中",
     "unmute": "ミュート解除",
+    "mute": "Mute",
+    "heroHeadline": "今すぐ視聴してリアルタイムで他の人と交流しましょう",
+    "clickToWatchLive": "クリックしてライブを視聴",
+    "viewersLabel": "{{count}} watching",
+    "previousLive": "Previous LIVE",
+    "nextLive": "Next LIVE",
+    "refreshLive": "Switch LIVE",
     "seeAll": "すべて見る",
     "scrollCategoriesLeft": "カテゴリを左にスクロール",
     "scrollCategoriesRight": "カテゴリを右にスクロール",
@@ -595,13 +602,6 @@
       "lifestyle": "ライフスタイル",
       "recommended": "あなたにおすすめ"
     },
-    "mute": "Mute",
-    "heroHeadline": "今すぐ視聴してリアルタイムで他の人と交流しましょう",
-    "clickToWatchLive": "クリックしてライブを視聴",
-    "viewersLabel": "{{count}} watching",
-    "previousLive": "Previous LIVE",
-    "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE",
     "verified": "認証済みアカウント",
     "card": {
       "watchAria": "ライブを見る: {{host}} による {{title}}"
@@ -657,6 +657,9 @@
       "title": "ライブに行く",
       "titleLabel": "タイトル",
       "titlePlaceholder": "あなたのLIVEは何についてですか？",
+      "permissionHint": "LIVEを始めるには、Vibelyにカメラとマイクの使用を許可してください。",
+      "defaultTitle": "{{name}}のLIVE",
+      "defaultTitleAnonymous": "新しいLIVE",
       "allowComments": "コメントを許可する",
       "allowGifts": "ギフトを許可する",
       "cancel": "キャンセル",
@@ -692,6 +695,51 @@
       "actionFailed": "何か問題が発生しました。もう一度試してください。",
       "notOwnerTitle": "これをLIVEで管理することはできません",
       "notOwnerDescription": "このLIVEではホストのみがLIVE Studioを開くことができます。"
+    },
+    "media": {
+      "retry": "再試行",
+      "host": {
+        "requestingAccess": "カメラとマイクへのアクセスを待っています…",
+        "previewUnavailable": "カメラのプレビューを表示できません",
+        "connecting": "映像を接続しています…",
+        "reconnecting": "接続が切れました。再接続しています（{{attempt}}/{{max}}）…"
+      },
+      "viewer": {
+        "connecting": "LIVEに接続しています…",
+        "waiting": "ホストの映像を待っています…",
+        "reconnecting": "再接続しています…",
+        "hostReconnecting": "ホストの接続が不安定です…",
+        "failed": "このLIVEを再生できませんでした。",
+        "tapToPlay": "タップして再生",
+        "tapToUnmute": "タップしてミュート解除"
+      },
+      "devices": {
+        "camera": "カメラ",
+        "microphone": "マイク"
+      },
+      "errors": {
+        "permissionDenied": "カメラまたはマイクへのアクセスがブロックされています。ブラウザのサイト設定で許可してから、もう一度お試しください。",
+        "deviceNotFound": "カメラまたはマイクが見つかりません。デバイスを接続してもう一度お試しください。",
+        "deviceBusy": "カメラまたはマイクが別のアプリやタブで使用されています。",
+        "deviceLost": "カメラまたはマイクが切断されました。LIVE設定で別のデバイスを選んでください。",
+        "unsupported": "このブラウザはLIVE映像に対応していません。最新のChrome、Edge、Firefox、Safariをお試しください。",
+        "insecureContext": "LIVE映像には安全な接続（HTTPS）が必要です。",
+        "codecUnsupported": "このブラウザはLIVEに必要なH.264映像をエンコードできません。",
+        "publishRejected": "メディアサーバーが配信を拒否しました。もう一度お試しください。",
+        "publisherBusy": "このLIVEはすでに別のタブまたはデバイスから配信されています。",
+        "serverUnavailable": "メディアサーバーは現在利用できません。",
+        "connectionFailed": "映像の接続に失敗しました。ネットワークを確認してください。",
+        "mediaDisabled": "このサーバーではLIVE映像が有効になっていません。",
+        "liveEnded": "このLIVEは終了しました。",
+        "notFound": "このLIVEが見つかりませんでした。",
+        "forbidden": "このLIVEの映像にアクセスする権限がありません。",
+        "playbackFailed": "このLIVEを再生できませんでした。"
+      },
+      "endReason": {
+        "admin": "このLIVEはモデレーターによって終了されました。",
+        "hostDisconnected": "ホストの接続が切れたため、このLIVEは終了しました。",
+        "publishTimeout": "ホストの映像が開始されなかったため、このLIVEは終了しました。"
+      }
     }
   },
   "messagesPage": {

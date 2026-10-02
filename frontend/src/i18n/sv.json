@@ -657,6 +657,9 @@
       "title": "Gå LIVE",
       "titleLabel": "Titel",
       "titlePlaceholder": "Vad handlar din LIVE om?",
+      "permissionHint": "Låt Vibely använda din kamera och mikrofon för att gå LIVE.",
+      "defaultTitle": "{{name}}s LIVE",
+      "defaultTitleAnonymous": "Ny LIVE",
       "allowComments": "Tillåt kommentarer",
       "allowGifts": "Tillåt gåvor",
       "cancel": "Avboka",
@@ -692,6 +695,51 @@
       "actionFailed": "Något gick fel. Försök igen.",
       "notOwnerTitle": "Du kan inte hantera detta LIVE",
       "notOwnerDescription": "Endast värden kan öppna LIVE Studio för denna LIVE."
+    },
+    "media": {
+      "retry": "Försök igen",
+      "host": {
+        "requestingAccess": "Väntar på åtkomst till kamera och mikrofon…",
+        "previewUnavailable": "Kameraförhandsvisningen är inte tillgänglig",
+        "connecting": "Ansluter din video…",
+        "reconnecting": "Anslutningen bröts. Ansluter igen ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Ansluter till LIVE…",
+        "waiting": "Väntar på värdens video…",
+        "reconnecting": "Ansluter igen…",
+        "hostReconnecting": "Värdens anslutning är instabil…",
+        "failed": "Det gick inte att spela upp denna LIVE.",
+        "tapToPlay": "Tryck för att spela upp",
+        "tapToUnmute": "Tryck för att slå på ljudet"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofon"
+      },
+      "errors": {
+        "permissionDenied": "Åtkomst till kamera eller mikrofon blockerades. Tillåt det i webbläsarens webbplatsinställningar och försök igen.",
+        "deviceNotFound": "Ingen kamera eller mikrofon hittades. Anslut en och försök igen.",
+        "deviceBusy": "Din kamera eller mikrofon används av en annan app eller flik.",
+        "deviceLost": "Din kamera eller mikrofon kopplades bort. Välj en annan enhet i LIVE-inställningarna.",
+        "unsupported": "Den här webbläsaren stöder inte LIVE-video. Prova senaste Chrome, Edge, Firefox eller Safari.",
+        "insecureContext": "LIVE-video kräver en säker anslutning (HTTPS).",
+        "codecUnsupported": "Den här webbläsaren kan inte koda H.264-video, vilket krävs för LIVE.",
+        "publishRejected": "Medieservern nekade strömmen. Försök igen.",
+        "publisherBusy": "Denna LIVE strömmas redan från en annan flik eller enhet.",
+        "serverUnavailable": "Medieservern är inte tillgänglig just nu.",
+        "connectionFailed": "Videoanslutningen misslyckades. Kontrollera ditt nätverk.",
+        "mediaDisabled": "LIVE-video är inte aktiverat på den här servern.",
+        "liveEnded": "Denna LIVE har avslutats.",
+        "notFound": "Denna LIVE hittades inte.",
+        "forbidden": "Du har inte åtkomst till videon i denna LIVE.",
+        "playbackFailed": "Det gick inte att spela upp denna LIVE."
+      },
+      "endReason": {
+        "admin": "Denna LIVE avslutades av en moderator.",
+        "hostDisconnected": "Denna LIVE avslutades eftersom värden tappade anslutningen.",
+        "publishTimeout": "Denna LIVE avslutades eftersom värdens video aldrig startade."
+      }
     }
   },
   "messagesPage": {

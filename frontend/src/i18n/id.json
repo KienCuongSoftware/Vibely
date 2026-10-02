@@ -573,6 +573,13 @@
     "openLiveStudio": "Buka LIVE Studio",
     "watching": "menonton",
     "unmute": "Nyalakan suara",
+    "mute": "Mute",
+    "heroHeadline": "Tonton sekarang dan berinteraksi dengan orang lain secara real time",
+    "clickToWatchLive": "Klik untuk menonton LANGSUNG",
+    "viewersLabel": "{{count}} watching",
+    "previousLive": "Previous LIVE",
+    "nextLive": "Next LIVE",
+    "refreshLive": "Switch LIVE",
     "seeAll": "Lihat semua",
     "scrollCategoriesLeft": "Gulir kategori ke kiri",
     "scrollCategoriesRight": "Gulir kategori ke kanan",
@@ -595,13 +602,6 @@
       "lifestyle": "Gaya hidup",
       "recommended": "Direkomendasikan untuk Anda"
     },
-    "mute": "Mute",
-    "heroHeadline": "Tonton sekarang dan berinteraksi dengan orang lain secara real time",
-    "clickToWatchLive": "Klik untuk menonton LANGSUNG",
-    "viewersLabel": "{{count}} watching",
-    "previousLive": "Previous LIVE",
-    "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE",
     "verified": "Akun terverifikasi",
     "card": {
       "watchAria": "Tonton LANGSUNG: {{title}} oleh {{host}}"
@@ -657,6 +657,9 @@
       "title": "Tayangkan LANGSUNG",
       "titleLabel": "Judul",
       "titlePlaceholder": "Tentang apa LIVE Anda?",
+      "permissionHint": "Izinkan Vibely menggunakan kamera dan mikrofon untuk mulai LIVE.",
+      "defaultTitle": "LIVE {{name}}",
+      "defaultTitleAnonymous": "LIVE baru",
       "allowComments": "Izinkan komentar",
       "allowGifts": "Izinkan hadiah",
       "cancel": "Membatalkan",
@@ -692,6 +695,51 @@
       "actionFailed": "Ada yang tidak beres. Silakan coba lagi.",
       "notOwnerTitle": "Anda tidak dapat mengelola LIVE ini",
       "notOwnerDescription": "Hanya tuan rumah yang dapat membuka LIVE Studio untuk LIVE ini."
+    },
+    "media": {
+      "retry": "Coba lagi",
+      "host": {
+        "requestingAccess": "Menunggu akses kamera dan mikrofon…",
+        "previewUnavailable": "Pratinjau kamera tidak tersedia",
+        "connecting": "Menghubungkan videomu…",
+        "reconnecting": "Koneksi terputus. Menyambung ulang ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Menghubungkan ke LIVE…",
+        "waiting": "Menunggu video host…",
+        "reconnecting": "Menyambung ulang…",
+        "hostReconnecting": "Koneksi host tidak stabil…",
+        "failed": "LIVE ini tidak dapat diputar.",
+        "tapToPlay": "Ketuk untuk memutar",
+        "tapToUnmute": "Ketuk untuk menyalakan suara"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofon"
+      },
+      "errors": {
+        "permissionDenied": "Akses kamera atau mikrofon diblokir. Izinkan di pengaturan situs browser, lalu coba lagi.",
+        "deviceNotFound": "Kamera atau mikrofon tidak ditemukan. Sambungkan perangkat lalu coba lagi.",
+        "deviceBusy": "Kamera atau mikrofonmu sedang digunakan oleh aplikasi atau tab lain.",
+        "deviceLost": "Kamera atau mikrofonmu terputus. Pilih perangkat lain di pengaturan LIVE.",
+        "unsupported": "Browser ini tidak mendukung video LIVE. Coba Chrome, Edge, Firefox, atau Safari versi terbaru.",
+        "insecureContext": "Video LIVE memerlukan koneksi aman (HTTPS).",
+        "codecUnsupported": "Browser ini tidak dapat mengenkode video H.264 yang diperlukan LIVE.",
+        "publishRejected": "Server media menolak siaran. Coba lagi.",
+        "publisherBusy": "LIVE ini sudah disiarkan dari tab atau perangkat lain.",
+        "serverUnavailable": "Server media sedang tidak tersedia.",
+        "connectionFailed": "Koneksi video gagal. Periksa jaringanmu.",
+        "mediaDisabled": "Video LIVE tidak diaktifkan di server ini.",
+        "liveEnded": "LIVE ini telah berakhir.",
+        "notFound": "LIVE ini tidak ditemukan.",
+        "forbidden": "Kamu tidak memiliki akses ke video LIVE ini.",
+        "playbackFailed": "LIVE ini tidak dapat diputar."
+      },
+      "endReason": {
+        "admin": "LIVE ini diakhiri oleh moderator.",
+        "hostDisconnected": "LIVE ini berakhir karena koneksi host terputus.",
+        "publishTimeout": "LIVE ini berakhir karena video host tidak pernah dimulai."
+      }
     }
   },
   "messagesPage": {

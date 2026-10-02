@@ -657,6 +657,9 @@
       "title": "Intră LIVE",
       "titleLabel": "Titlu",
       "titlePlaceholder": "Despre ce este LIVE-ul tău?",
+      "permissionHint": "Permite-i lui Vibely să folosească camera și microfonul pentru a intra LIVE.",
+      "defaultTitle": "LIVE-ul lui {{name}}",
+      "defaultTitleAnonymous": "LIVE nou",
       "allowComments": "Permite comentarii",
       "allowGifts": "Permite cadouri",
       "cancel": "Anula",
@@ -692,6 +695,51 @@
       "actionFailed": "Ceva a mers prost. Vă rugăm să încercați din nou.",
       "notOwnerTitle": "Nu poți gestiona acest LIVE",
       "notOwnerDescription": "Doar gazda poate deschide LIVE Studio pentru acest LIVE."
+    },
+    "media": {
+      "retry": "Încearcă din nou",
+      "host": {
+        "requestingAccess": "Se așteaptă accesul la cameră și microfon…",
+        "previewUnavailable": "Previzualizarea camerei nu este disponibilă",
+        "connecting": "Se conectează videoclipul tău…",
+        "reconnecting": "Conexiune pierdută. Se reconectează ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Se conectează la LIVE…",
+        "waiting": "Se așteaptă videoclipul gazdei…",
+        "reconnecting": "Se reconectează…",
+        "hostReconnecting": "Conexiunea gazdei este instabilă…",
+        "failed": "Acest LIVE nu poate fi redat.",
+        "tapToPlay": "Atinge pentru redare",
+        "tapToUnmute": "Atinge pentru a activa sunetul"
+      },
+      "devices": {
+        "camera": "Cameră",
+        "microphone": "Microfon"
+      },
+      "errors": {
+        "permissionDenied": "Accesul la cameră sau microfon a fost blocat. Permite-l din setările site-ului din browser, apoi încearcă din nou.",
+        "deviceNotFound": "Nu a fost găsită nicio cameră sau niciun microfon. Conectează unul și încearcă din nou.",
+        "deviceBusy": "Camera sau microfonul este folosit de altă aplicație sau filă.",
+        "deviceLost": "Camera sau microfonul a fost deconectat. Alege alt dispozitiv din setările LIVE.",
+        "unsupported": "Acest browser nu acceptă video LIVE. Încearcă cea mai recentă versiune de Chrome, Edge, Firefox sau Safari.",
+        "insecureContext": "Video LIVE necesită o conexiune securizată (HTTPS).",
+        "codecUnsupported": "Acest browser nu poate codifica video H.264, necesar pentru LIVE.",
+        "publishRejected": "Serverul media a refuzat transmisiunea. Încearcă din nou.",
+        "publisherBusy": "Acest LIVE este deja transmis dintr-o altă filă sau de pe alt dispozitiv.",
+        "serverUnavailable": "Serverul media nu este disponibil momentan.",
+        "connectionFailed": "Conexiunea video a eșuat. Verifică rețeaua.",
+        "mediaDisabled": "Video LIVE nu este activat pe acest server.",
+        "liveEnded": "Acest LIVE s-a încheiat.",
+        "notFound": "Acest LIVE nu a fost găsit.",
+        "forbidden": "Nu ai acces la videoclipul acestui LIVE.",
+        "playbackFailed": "Acest LIVE nu poate fi redat."
+      },
+      "endReason": {
+        "admin": "Acest LIVE a fost încheiat de un moderator.",
+        "hostDisconnected": "Acest LIVE s-a încheiat deoarece gazda a pierdut conexiunea.",
+        "publishTimeout": "Acest LIVE s-a încheiat deoarece videoclipul gazdei nu a pornit niciodată."
+      }
     }
   },
   "messagesPage": {

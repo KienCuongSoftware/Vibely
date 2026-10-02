@@ -657,6 +657,9 @@
       "title": "jonli efirga o‘ting",
       "titleLabel": "Sarlavha",
       "titlePlaceholder": "Sizning LIVE nima haqida?",
+      "permissionHint": "LIVE boshlash uchun Vibely’ga kamera va mikrofondan foydalanishga ruxsat bering.",
+      "defaultTitle": "{{name}} LIVE efiri",
+      "defaultTitleAnonymous": "Yangi LIVE",
       "allowComments": "Fikr bildirishga ruxsat bering",
       "allowGifts": "Sovg'alarga ruxsat bering",
       "cancel": "Bekor qilish",
@@ -692,6 +695,51 @@
       "actionFailed": "Nimadir xato ketdi. Iltimos, qayta urinib koʻring.",
       "notOwnerTitle": "Siz bu LIVEni boshqara olmaysiz",
       "notOwnerDescription": "Bu LIVE uchun LIVE Studioni faqat xost ochishi mumkin."
+    },
+    "media": {
+      "retry": "Qayta urinish",
+      "host": {
+        "requestingAccess": "Kamera va mikrofonga ruxsat kutilmoqda…",
+        "previewUnavailable": "Kamera oldindan ko‘rinishi mavjud emas",
+        "connecting": "Videongiz ulanmoqda…",
+        "reconnecting": "Aloqa uzildi. Qayta ulanmoqda ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "LIVE’ga ulanmoqda…",
+        "waiting": "Boshlovchining videosi kutilmoqda…",
+        "reconnecting": "Qayta ulanmoqda…",
+        "hostReconnecting": "Boshlovchining aloqasi beqaror…",
+        "failed": "Bu LIVE’ni ijro etib bo‘lmadi.",
+        "tapToPlay": "Ijro etish uchun bosing",
+        "tapToUnmute": "Ovozni yoqish uchun bosing"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofon"
+      },
+      "errors": {
+        "permissionDenied": "Kamera yoki mikrofonga ruxsat bloklangan. Brauzerning sayt sozlamalarida ruxsat bering va qayta urinib ko‘ring.",
+        "deviceNotFound": "Kamera yoki mikrofon topilmadi. Qurilmani ulang va qayta urinib ko‘ring.",
+        "deviceBusy": "Kamera yoki mikrofoningiz boshqa ilova yoki varaqda ishlatilmoqda.",
+        "deviceLost": "Kamera yoki mikrofoningiz uzildi. LIVE sozlamalarida boshqa qurilmani tanlang.",
+        "unsupported": "Bu brauzer LIVE videoni qo‘llab-quvvatlamaydi. Chrome, Edge, Firefox yoki Safari’ning eng so‘nggi versiyasini sinab ko‘ring.",
+        "insecureContext": "LIVE video uchun xavfsiz (HTTPS) ulanish kerak.",
+        "codecUnsupported": "Bu brauzer LIVE uchun zarur H.264 videoni kodlay olmaydi.",
+        "publishRejected": "Media server efirni rad etdi. Qayta urinib ko‘ring.",
+        "publisherBusy": "Bu LIVE allaqachon boshqa varaq yoki qurilmadan efirga uzatilmoqda.",
+        "serverUnavailable": "Media server hozir mavjud emas.",
+        "connectionFailed": "Video ulanishi muvaffaqiyatsiz tugadi. Tarmoqni tekshiring.",
+        "mediaDisabled": "Bu serverda LIVE video yoqilmagan.",
+        "liveEnded": "Bu LIVE tugadi.",
+        "notFound": "Bu LIVE topilmadi.",
+        "forbidden": "Bu LIVE videosiga ruxsatingiz yo‘q.",
+        "playbackFailed": "Bu LIVE’ni ijro etib bo‘lmadi."
+      },
+      "endReason": {
+        "admin": "Bu LIVE moderator tomonidan yakunlandi.",
+        "hostDisconnected": "Boshlovchining aloqasi uzilgani sababli bu LIVE tugadi.",
+        "publishTimeout": "Boshlovchining videosi hech boshlanmagani sababli bu LIVE tugadi."
+      }
     }
   },
   "messagesPage": {

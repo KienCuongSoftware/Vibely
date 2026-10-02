@@ -657,6 +657,9 @@
       "title": "Mag LIVE",
       "titleLabel": "Pamagat",
       "titlePlaceholder": "Tungkol saan ang LIVE mo?",
+      "permissionHint": "Payagan ang Vibely na gamitin ang iyong camera at mikropono para mag-LIVE.",
+      "defaultTitle": "LIVE ni {{name}}",
+      "defaultTitleAnonymous": "Bagong LIVE",
       "allowComments": "Payagan ang mga komento",
       "allowGifts": "Payagan ang mga regalo",
       "cancel": "Kanselahin",
@@ -692,6 +695,51 @@
       "actionFailed": "Nagkaproblema. Pakisubukang muli.",
       "notOwnerTitle": "Hindi mo mapapamahalaan itong LIVE",
       "notOwnerDescription": "Ang host lang ang makakapagbukas ng LIVE Studio para sa LIVE na ito."
+    },
+    "media": {
+      "retry": "Subukan ulit",
+      "host": {
+        "requestingAccess": "Hinihintay ang access sa camera at mikropono…",
+        "previewUnavailable": "Hindi available ang preview ng camera",
+        "connecting": "Kinokonekta ang iyong video…",
+        "reconnecting": "Naputol ang koneksyon. Kumokonekta ulit ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Kumokonekta sa LIVE…",
+        "waiting": "Hinihintay ang video ng host…",
+        "reconnecting": "Kumokonekta ulit…",
+        "hostReconnecting": "Hindi stable ang koneksyon ng host…",
+        "failed": "Hindi ma-play ang LIVE na ito.",
+        "tapToPlay": "I-tap para i-play",
+        "tapToUnmute": "I-tap para i-unmute"
+      },
+      "devices": {
+        "camera": "Camera",
+        "microphone": "Mikropono"
+      },
+      "errors": {
+        "permissionDenied": "Na-block ang access sa camera o mikropono. Payagan ito sa site settings ng browser, pagkatapos ay subukan ulit.",
+        "deviceNotFound": "Walang nakitang camera o mikropono. Magkonekta ng device at subukan ulit.",
+        "deviceBusy": "Ginagamit ng ibang app o tab ang iyong camera o mikropono.",
+        "deviceLost": "Nadiskonekta ang iyong camera o mikropono. Pumili ng ibang device sa LIVE settings.",
+        "unsupported": "Hindi sinusuportahan ng browser na ito ang LIVE video. Subukan ang pinakabagong Chrome, Edge, Firefox o Safari.",
+        "insecureContext": "Kailangan ng LIVE video ng secure na koneksyon (HTTPS).",
+        "codecUnsupported": "Hindi ma-encode ng browser na ito ang H.264 video na kailangan ng LIVE.",
+        "publishRejected": "Tinanggihan ng media server ang stream. Pakisubukan ulit.",
+        "publisherBusy": "Nagsi-stream na ang LIVE na ito mula sa ibang tab o device.",
+        "serverUnavailable": "Hindi available ang media server sa ngayon.",
+        "connectionFailed": "Nabigo ang video connection. Tingnan ang iyong network.",
+        "mediaDisabled": "Hindi naka-enable ang LIVE video sa server na ito.",
+        "liveEnded": "Tapos na ang LIVE na ito.",
+        "notFound": "Hindi mahanap ang LIVE na ito.",
+        "forbidden": "Wala kang access sa video ng LIVE na ito.",
+        "playbackFailed": "Hindi ma-play ang LIVE na ito."
+      },
+      "endReason": {
+        "admin": "Tinapos ng isang moderator ang LIVE na ito.",
+        "hostDisconnected": "Natapos ang LIVE na ito dahil nawalan ng koneksyon ang host.",
+        "publishTimeout": "Natapos ang LIVE na ito dahil hindi nagsimula ang video ng host."
+      }
     }
   },
   "messagesPage": {

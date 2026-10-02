@@ -657,6 +657,9 @@
       "title": "Idź NA ŻYWO",
       "titleLabel": "Tytuł",
       "titlePlaceholder": "O czym jest Twój LIVE?",
+      "permissionHint": "Zezwól Vibely na używanie kamery i mikrofonu, aby rozpocząć LIVE.",
+      "defaultTitle": "LIVE użytkownika {{name}}",
+      "defaultTitleAnonymous": "Nowy LIVE",
       "allowComments": "Zezwalaj na komentarze",
       "allowGifts": "Zezwalaj na prezenty",
       "cancel": "Anulować",
@@ -692,6 +695,51 @@
       "actionFailed": "Coś poszło nie tak. Spróbuj ponownie.",
       "notOwnerTitle": "Nie możesz tego zarządzać NA ŻYWO",
       "notOwnerDescription": "Tylko gospodarz może otworzyć LIVE Studio dla tego LIVE."
+    },
+    "media": {
+      "retry": "Spróbuj ponownie",
+      "host": {
+        "requestingAccess": "Oczekiwanie na dostęp do kamery i mikrofonu…",
+        "previewUnavailable": "Podgląd kamery jest niedostępny",
+        "connecting": "Łączenie Twojego wideo…",
+        "reconnecting": "Utracono połączenie. Ponowne łączenie ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Łączenie z LIVE…",
+        "waiting": "Oczekiwanie na wideo prowadzącego…",
+        "reconnecting": "Ponowne łączenie…",
+        "hostReconnecting": "Połączenie prowadzącego jest niestabilne…",
+        "failed": "Nie można odtworzyć tego LIVE.",
+        "tapToPlay": "Dotknij, aby odtworzyć",
+        "tapToUnmute": "Dotknij, aby włączyć dźwięk"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofon"
+      },
+      "errors": {
+        "permissionDenied": "Dostęp do kamery lub mikrofonu został zablokowany. Zezwól na niego w ustawieniach witryny w przeglądarce i spróbuj ponownie.",
+        "deviceNotFound": "Nie znaleziono kamery ani mikrofonu. Podłącz urządzenie i spróbuj ponownie.",
+        "deviceBusy": "Kamera lub mikrofon są używane przez inną aplikację lub kartę.",
+        "deviceLost": "Kamera lub mikrofon zostały odłączone. Wybierz inne urządzenie w ustawieniach LIVE.",
+        "unsupported": "Ta przeglądarka nie obsługuje wideo LIVE. Wypróbuj najnowszą wersję Chrome, Edge, Firefox lub Safari.",
+        "insecureContext": "Wideo LIVE wymaga bezpiecznego połączenia (HTTPS).",
+        "codecUnsupported": "Ta przeglądarka nie potrafi kodować wideo H.264 wymaganego przez LIVE.",
+        "publishRejected": "Serwer multimediów odrzucił transmisję. Spróbuj ponownie.",
+        "publisherBusy": "Ten LIVE jest już transmitowany z innej karty lub urządzenia.",
+        "serverUnavailable": "Serwer multimediów jest teraz niedostępny.",
+        "connectionFailed": "Połączenie wideo nie powiodło się. Sprawdź sieć.",
+        "mediaDisabled": "Wideo LIVE nie jest włączone na tym serwerze.",
+        "liveEnded": "Ten LIVE się zakończył.",
+        "notFound": "Nie znaleziono tego LIVE.",
+        "forbidden": "Nie masz dostępu do wideo tego LIVE.",
+        "playbackFailed": "Nie można odtworzyć tego LIVE."
+      },
+      "endReason": {
+        "admin": "Ten LIVE został zakończony przez moderatora.",
+        "hostDisconnected": "Ten LIVE zakończył się, ponieważ prowadzący utracił połączenie.",
+        "publishTimeout": "Ten LIVE zakończył się, ponieważ wideo prowadzącego nigdy się nie rozpoczęło."
+      }
     }
   },
   "messagesPage": {

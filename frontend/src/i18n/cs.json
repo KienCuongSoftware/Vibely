@@ -657,6 +657,9 @@
       "title": "Jdi ŽIVĚ",
       "titleLabel": "Titul",
       "titlePlaceholder": "O čem je váš LIVE?",
+      "permissionHint": "Povolte Vibely používat kameru a mikrofon, abyste mohli spustit LIVE.",
+      "defaultTitle": "LIVE uživatele {{name}}",
+      "defaultTitleAnonymous": "Nové LIVE",
       "allowComments": "Povolit komentáře",
       "allowGifts": "Povolit dárky",
       "cancel": "Zrušit",
@@ -692,6 +695,51 @@
       "actionFailed": "Něco se pokazilo. Zkuste to prosím znovu.",
       "notOwnerTitle": "Nemůžete to spravovat LIVE",
       "notOwnerDescription": "LIVE Studio pro tento LIVE může otevřít pouze hostitel."
+    },
+    "media": {
+      "retry": "Zkusit znovu",
+      "host": {
+        "requestingAccess": "Čekání na přístup ke kameře a mikrofonu…",
+        "previewUnavailable": "Náhled kamery není k dispozici",
+        "connecting": "Připojování vašeho videa…",
+        "reconnecting": "Spojení bylo přerušeno. Znovu se připojuji ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Připojování k LIVE…",
+        "waiting": "Čekání na video hostitele…",
+        "reconnecting": "Znovu se připojuji…",
+        "hostReconnecting": "Připojení hostitele je nestabilní…",
+        "failed": "Toto LIVE nelze přehrát.",
+        "tapToPlay": "Klepnutím přehrajete",
+        "tapToUnmute": "Klepnutím zapnete zvuk"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofon"
+      },
+      "errors": {
+        "permissionDenied": "Přístup ke kameře nebo mikrofonu byl zablokován. Povolte ho v nastavení webu v prohlížeči a zkuste to znovu.",
+        "deviceNotFound": "Nebyla nalezena žádná kamera ani mikrofon. Připojte zařízení a zkuste to znovu.",
+        "deviceBusy": "Kameru nebo mikrofon používá jiná aplikace nebo karta.",
+        "deviceLost": "Kamera nebo mikrofon byly odpojeny. Vyberte jiné zařízení v nastavení LIVE.",
+        "unsupported": "Tento prohlížeč nepodporuje LIVE video. Zkuste nejnovější Chrome, Edge, Firefox nebo Safari.",
+        "insecureContext": "LIVE video vyžaduje zabezpečené připojení (HTTPS).",
+        "codecUnsupported": "Tento prohlížeč neumí kódovat video H.264, které LIVE vyžaduje.",
+        "publishRejected": "Mediální server stream odmítl. Zkuste to prosím znovu.",
+        "publisherBusy": "Toto LIVE se již vysílá z jiné karty nebo zařízení.",
+        "serverUnavailable": "Mediální server je momentálně nedostupný.",
+        "connectionFailed": "Video připojení selhalo. Zkontrolujte síť.",
+        "mediaDisabled": "LIVE video není na tomto serveru povoleno.",
+        "liveEnded": "Toto LIVE skončilo.",
+        "notFound": "Toto LIVE nebylo nalezeno.",
+        "forbidden": "Nemáte přístup k videu tohoto LIVE.",
+        "playbackFailed": "Toto LIVE nelze přehrát."
+      },
+      "endReason": {
+        "admin": "Toto LIVE ukončil moderátor.",
+        "hostDisconnected": "Toto LIVE skončilo, protože hostitel ztratil připojení.",
+        "publishTimeout": "Toto LIVE skončilo, protože video hostitele se nikdy nespustilo."
+      }
     }
   },
   "messagesPage": {

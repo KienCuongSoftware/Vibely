@@ -573,6 +573,13 @@
     "openLiveStudio": "Ouvrir LIVE Studio",
     "watching": "en direct",
     "unmute": "Activer le son",
+    "mute": "Mute",
+    "heroHeadline": "Regardez maintenant et interagissez avec les autres en temps réel",
+    "clickToWatchLive": "Cliquez pour regarder EN DIRECT",
+    "viewersLabel": "{{count}} watching",
+    "previousLive": "Previous LIVE",
+    "nextLive": "Next LIVE",
+    "refreshLive": "Switch LIVE",
     "seeAll": "Tout voir",
     "scrollCategoriesLeft": "Faire défiler les catégories vers la gauche",
     "scrollCategoriesRight": "Faire défiler les catégories vers la droite",
@@ -595,13 +602,6 @@
       "lifestyle": "Style de vie",
       "recommended": "Recommandé pour vous"
     },
-    "mute": "Mute",
-    "heroHeadline": "Regardez maintenant et interagissez avec les autres en temps réel",
-    "clickToWatchLive": "Cliquez pour regarder EN DIRECT",
-    "viewersLabel": "{{count}} watching",
-    "previousLive": "Previous LIVE",
-    "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE",
     "verified": "Compte vérifié",
     "card": {
       "watchAria": "Regardez EN DIRECT : {{title}} par {{host}}"
@@ -657,6 +657,9 @@
       "title": "Allez EN DIRECT",
       "titleLabel": "Titre",
       "titlePlaceholder": "De quoi parle votre LIVE ?",
+      "permissionHint": "Autorisez Vibely à utiliser votre caméra et votre micro pour passer en LIVE.",
+      "defaultTitle": "LIVE de {{name}}",
+      "defaultTitleAnonymous": "Nouveau LIVE",
       "allowComments": "Autoriser les commentaires",
       "allowGifts": "Autoriser les cadeaux",
       "cancel": "Annuler",
@@ -692,6 +695,51 @@
       "actionFailed": "Quelque chose s'est mal passé. Veuillez réessayer.",
       "notOwnerTitle": "Vous ne pouvez pas gérer ça en direct",
       "notOwnerDescription": "Seul l'hôte peut ouvrir LIVE Studio pour ce LIVE."
+    },
+    "media": {
+      "retry": "Réessayer",
+      "host": {
+        "requestingAccess": "En attente de l'accès à la caméra et au micro…",
+        "previewUnavailable": "L'aperçu de la caméra n'est pas disponible",
+        "connecting": "Connexion de votre vidéo…",
+        "reconnecting": "Connexion perdue. Reconnexion ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Connexion au LIVE…",
+        "waiting": "En attente de la vidéo de l'hôte…",
+        "reconnecting": "Reconnexion…",
+        "hostReconnecting": "La connexion de l'hôte est instable…",
+        "failed": "Impossible de lire ce LIVE.",
+        "tapToPlay": "Touchez pour lire",
+        "tapToUnmute": "Touchez pour activer le son"
+      },
+      "devices": {
+        "camera": "Caméra",
+        "microphone": "Micro"
+      },
+      "errors": {
+        "permissionDenied": "L'accès à la caméra ou au micro a été bloqué. Autorisez-le dans les paramètres du site de votre navigateur, puis réessayez.",
+        "deviceNotFound": "Aucune caméra ni aucun micro détecté. Branchez-en un et réessayez.",
+        "deviceBusy": "Votre caméra ou votre micro est utilisé par une autre application ou un autre onglet.",
+        "deviceLost": "Votre caméra ou votre micro a été déconnecté. Choisissez un autre appareil dans les paramètres du LIVE.",
+        "unsupported": "Ce navigateur ne prend pas en charge la vidéo LIVE. Essayez la dernière version de Chrome, Edge, Firefox ou Safari.",
+        "insecureContext": "La vidéo LIVE nécessite une connexion sécurisée (HTTPS).",
+        "codecUnsupported": "Ce navigateur ne peut pas encoder la vidéo H.264 requise pour le LIVE.",
+        "publishRejected": "Le serveur multimédia a refusé le flux. Veuillez réessayer.",
+        "publisherBusy": "Ce LIVE est déjà diffusé à partir d'un autre onglet ou appareil.",
+        "serverUnavailable": "Le serveur multimédia n'est pas disponible pour le moment.",
+        "connectionFailed": "La connexion vidéo a échoué. Vérifiez votre réseau.",
+        "mediaDisabled": "La vidéo LIVE n'est pas activée sur ce serveur.",
+        "liveEnded": "Ce LIVE est terminé.",
+        "notFound": "Ce LIVE est introuvable.",
+        "forbidden": "Vous n'avez pas accès à la vidéo de ce LIVE.",
+        "playbackFailed": "Impossible de lire ce LIVE."
+      },
+      "endReason": {
+        "admin": "Ce LIVE a été arrêté par un modérateur.",
+        "hostDisconnected": "Ce LIVE s'est terminé parce que l'hôte a perdu la connexion.",
+        "publishTimeout": "Ce LIVE s'est terminé parce que la vidéo de l'hôte n'a jamais démarré."
+      }
     }
   },
   "messagesPage": {

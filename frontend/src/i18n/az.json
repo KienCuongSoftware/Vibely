@@ -657,6 +657,9 @@
       "title": "CANLI YAYIN",
       "titleLabel": "Başlıq",
       "titlePlaceholder": "Sizin LIVE nə haqqındadır?",
+      "permissionHint": "LIVE başlatmaq üçün Vibely-yə kamera və mikrofondan istifadə etməyə icazə verin.",
+      "defaultTitle": "{{name}} adlı istifadəçinin LIVE-ı",
+      "defaultTitleAnonymous": "Yeni LIVE",
       "allowComments": "Şərhlərə icazə verin",
       "allowGifts": "Hədiyyələrə icazə verin",
       "cancel": "Ləğv et",
@@ -692,6 +695,51 @@
       "actionFailed": "Nəsə xəta baş verdi. Yenidən cəhd edin.",
       "notOwnerTitle": "Siz bu CANLI yayımı idarə edə bilməzsiniz",
       "notOwnerDescription": "Bu CANLI üçün LIVE Studio-nu yalnız ev sahibi aça bilər."
+    },
+    "media": {
+      "retry": "Yenidən cəhd et",
+      "host": {
+        "requestingAccess": "Kamera və mikrofona giriş gözlənilir…",
+        "previewUnavailable": "Kamera önizləməsi əlçatan deyil",
+        "connecting": "Videonuz qoşulur…",
+        "reconnecting": "Bağlantı kəsildi. Yenidən qoşulur ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "LIVE-a qoşulur…",
+        "waiting": "Aparıcının videosu gözlənilir…",
+        "reconnecting": "Yenidən qoşulur…",
+        "hostReconnecting": "Aparıcının bağlantısı qeyri-sabitdir…",
+        "failed": "Bu LIVE-ı oynatmaq mümkün olmadı.",
+        "tapToPlay": "Oynatmaq üçün toxunun",
+        "tapToUnmute": "Səsi açmaq üçün toxunun"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofon"
+      },
+      "errors": {
+        "permissionDenied": "Kamera və ya mikrofona giriş bloklandı. Brauzerin sayt ayarlarında icazə verin və yenidən cəhd edin.",
+        "deviceNotFound": "Kamera və ya mikrofon tapılmadı. Cihaz qoşun və yenidən cəhd edin.",
+        "deviceBusy": "Kameranız və ya mikrofonunuz başqa tətbiq və ya tab tərəfindən istifadə olunur.",
+        "deviceLost": "Kameranız və ya mikrofonunuz ayrıldı. LIVE ayarlarında başqa cihaz seçin.",
+        "unsupported": "Bu brauzer LIVE videonu dəstəkləmir. Chrome, Edge, Firefox və ya Safari-nin ən son versiyasını sınayın.",
+        "insecureContext": "LIVE video təhlükəsiz (HTTPS) bağlantı tələb edir.",
+        "codecUnsupported": "Bu brauzer LIVE üçün tələb olunan H.264 videonu kodlaya bilmir.",
+        "publishRejected": "Media serveri yayımı rədd etdi. Yenidən cəhd edin.",
+        "publisherBusy": "Bu LIVE artıq başqa tab və ya cihazdan yayımlanır.",
+        "serverUnavailable": "Media serveri hazırda əlçatan deyil.",
+        "connectionFailed": "Video bağlantısı alınmadı. Şəbəkənizi yoxlayın.",
+        "mediaDisabled": "Bu serverdə LIVE video aktiv deyil.",
+        "liveEnded": "Bu LIVE başa çatıb.",
+        "notFound": "Bu LIVE tapılmadı.",
+        "forbidden": "Bu LIVE-ın videosuna girişiniz yoxdur.",
+        "playbackFailed": "Bu LIVE-ı oynatmaq mümkün olmadı."
+      },
+      "endReason": {
+        "admin": "Bu LIVE moderator tərəfindən dayandırıldı.",
+        "hostDisconnected": "Aparıcının bağlantısı kəsildiyi üçün bu LIVE başa çatdı.",
+        "publishTimeout": "Aparıcının videosu heç başlamadığı üçün bu LIVE başa çatdı."
+      }
     }
   },
   "messagesPage": {

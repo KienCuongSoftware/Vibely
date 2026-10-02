@@ -657,6 +657,9 @@
       "title": "Anar EN DIRECTE",
       "titleLabel": "Títol",
       "titlePlaceholder": "De què tracta el teu LIVE?",
+      "permissionHint": "Permet que Vibely utilitzi la càmera i el micròfon per fer un LIVE.",
+      "defaultTitle": "LIVE de {{name}}",
+      "defaultTitleAnonymous": "LIVE nou",
       "allowComments": "Permet comentaris",
       "allowGifts": "Permetre regals",
       "cancel": "Cancel·la",
@@ -692,6 +695,51 @@
       "actionFailed": "Alguna cosa va fallar. Si us plau, torna-ho a provar.",
       "notOwnerTitle": "No pots gestionar aquest EN DIRECTE",
       "notOwnerDescription": "Només l'amfitrió pot obrir LIVE Studio per a aquest LIVE."
+    },
+    "media": {
+      "retry": "Torna-ho a provar",
+      "host": {
+        "requestingAccess": "Esperant l'accés a la càmera i al micròfon…",
+        "previewUnavailable": "La previsualització de la càmera no està disponible",
+        "connecting": "S'està connectant el teu vídeo…",
+        "reconnecting": "S'ha perdut la connexió. Reconnectant ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "S'està connectant al LIVE…",
+        "waiting": "Esperant el vídeo de l'amfitrió…",
+        "reconnecting": "Reconnectant…",
+        "hostReconnecting": "La connexió de l'amfitrió és inestable…",
+        "failed": "No es pot reproduir aquest LIVE.",
+        "tapToPlay": "Toca per reproduir",
+        "tapToUnmute": "Toca per activar el so"
+      },
+      "devices": {
+        "camera": "Càmera",
+        "microphone": "Micròfon"
+      },
+      "errors": {
+        "permissionDenied": "S'ha bloquejat l'accés a la càmera o al micròfon. Permet-lo a la configuració del lloc del navegador i torna-ho a provar.",
+        "deviceNotFound": "No s'ha trobat cap càmera ni micròfon. Connecta'n un i torna-ho a provar.",
+        "deviceBusy": "Una altra aplicació o pestanya està utilitzant la càmera o el micròfon.",
+        "deviceLost": "La càmera o el micròfon s'ha desconnectat. Tria un altre dispositiu a la configuració del LIVE.",
+        "unsupported": "Aquest navegador no admet vídeo LIVE. Prova la darrera versió de Chrome, Edge, Firefox o Safari.",
+        "insecureContext": "El vídeo LIVE necessita una connexió segura (HTTPS).",
+        "codecUnsupported": "Aquest navegador no pot codificar vídeo H.264, necessari per al LIVE.",
+        "publishRejected": "El servidor multimèdia ha rebutjat la transmissió. Torna-ho a provar.",
+        "publisherBusy": "Aquest LIVE ja s'està emetent des d'una altra pestanya o dispositiu.",
+        "serverUnavailable": "El servidor multimèdia no està disponible ara mateix.",
+        "connectionFailed": "La connexió de vídeo ha fallat. Comprova la xarxa.",
+        "mediaDisabled": "El vídeo LIVE no està activat en aquest servidor.",
+        "liveEnded": "Aquest LIVE ha acabat.",
+        "notFound": "No s'ha trobat aquest LIVE.",
+        "forbidden": "No tens accés al vídeo d'aquest LIVE.",
+        "playbackFailed": "No es pot reproduir aquest LIVE."
+      },
+      "endReason": {
+        "admin": "Un moderador ha finalitzat aquest LIVE.",
+        "hostDisconnected": "Aquest LIVE ha acabat perquè l'amfitrió ha perdut la connexió.",
+        "publishTimeout": "Aquest LIVE ha acabat perquè el vídeo de l'amfitrió no va començar mai."
+      }
     }
   },
   "messagesPage": {

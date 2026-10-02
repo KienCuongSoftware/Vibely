@@ -657,6 +657,9 @@
       "title": "Minge otseülekandesse",
       "titleLabel": "Pealkiri",
       "titlePlaceholder": "Millest su LIVE räägib?",
+      "permissionHint": "Luba Vibelyl kasutada kaamerat ja mikrofoni, et LIVE alustada.",
+      "defaultTitle": "Kasutaja {{name}} LIVE",
+      "defaultTitleAnonymous": "Uus LIVE",
       "allowComments": "Luba kommentaarid",
       "allowGifts": "Luba kingitusi",
       "cancel": "Tühista",
@@ -692,6 +695,51 @@
       "actionFailed": "Midagi läks valesti. Palun proovi uuesti.",
       "notOwnerTitle": "Te ei saa seda otseülekannet hallata",
       "notOwnerDescription": "Selle LIVE jaoks saab LIVE Studio avada ainult host."
+    },
+    "media": {
+      "retry": "Proovi uuesti",
+      "host": {
+        "requestingAccess": "Ootan juurdepääsu kaamerale ja mikrofonile…",
+        "previewUnavailable": "Kaamera eelvaade pole saadaval",
+        "connecting": "Sinu videot ühendatakse…",
+        "reconnecting": "Ühendus katkes. Ühendan uuesti ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "LIVE-iga ühendamine…",
+        "waiting": "Ootan saatejuhi videot…",
+        "reconnecting": "Ühendan uuesti…",
+        "hostReconnecting": "Saatejuhi ühendus on ebastabiilne…",
+        "failed": "Seda LIVE-i ei saa esitada.",
+        "tapToPlay": "Puuduta esitamiseks",
+        "tapToUnmute": "Puuduta heli sisselülitamiseks"
+      },
+      "devices": {
+        "camera": "Kaamera",
+        "microphone": "Mikrofon"
+      },
+      "errors": {
+        "permissionDenied": "Juurdepääs kaamerale või mikrofonile blokeeriti. Luba see brauseri saidiseadetes ja proovi uuesti.",
+        "deviceNotFound": "Kaamerat ega mikrofoni ei leitud. Ühenda seade ja proovi uuesti.",
+        "deviceBusy": "Sinu kaamerat või mikrofoni kasutab mõni teine rakendus või vahekaart.",
+        "deviceLost": "Sinu kaamera või mikrofon ühendati lahti. Vali LIVE-i seadetes teine seade.",
+        "unsupported": "See brauser ei toeta LIVE-videot. Proovi uusimat Chrome'i, Edge'i, Firefoxi või Safarit.",
+        "insecureContext": "LIVE-video vajab turvalist ühendust (HTTPS).",
+        "codecUnsupported": "See brauser ei suuda kodeerida LIVE-i jaoks vajalikku H.264-videot.",
+        "publishRejected": "Meediaserver lükkas voo tagasi. Proovi uuesti.",
+        "publisherBusy": "Seda LIVE-i edastatakse juba teisest vahekaardist või seadmest.",
+        "serverUnavailable": "Meediaserver pole praegu saadaval.",
+        "connectionFailed": "Videoühendus ebaõnnestus. Kontrolli oma võrku.",
+        "mediaDisabled": "LIVE-video pole selles serveris lubatud.",
+        "liveEnded": "See LIVE on lõppenud.",
+        "notFound": "Seda LIVE-i ei leitud.",
+        "forbidden": "Sul pole juurdepääsu selle LIVE-i videole.",
+        "playbackFailed": "Seda LIVE-i ei saa esitada."
+      },
+      "endReason": {
+        "admin": "Moderaator lõpetas selle LIVE-i.",
+        "hostDisconnected": "See LIVE lõppes, sest saatejuhi ühendus katkes.",
+        "publishTimeout": "See LIVE lõppes, sest saatejuhi video ei alanud kunagi."
+      }
     }
   },
   "messagesPage": {

@@ -573,6 +573,13 @@
     "openLiveStudio": "開啟 LIVE Studio",
     "watching": "正在觀看",
     "unmute": "取消靜音",
+    "mute": "Mute",
+    "heroHeadline": "立即觀看並與他人即時互動",
+    "clickToWatchLive": "點擊觀看直播",
+    "viewersLabel": "{{count}} watching",
+    "previousLive": "Previous LIVE",
+    "nextLive": "Next LIVE",
+    "refreshLive": "Switch LIVE",
     "seeAll": "查看全部",
     "scrollCategoriesLeft": "向左捲動分類",
     "scrollCategoriesRight": "向右捲動分類",
@@ -595,13 +602,6 @@
       "lifestyle": "生活方式",
       "recommended": "為您推薦"
     },
-    "mute": "Mute",
-    "heroHeadline": "立即觀看並與他人即時互動",
-    "clickToWatchLive": "點擊觀看直播",
-    "viewersLabel": "{{count}} watching",
-    "previousLive": "Previous LIVE",
-    "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE",
     "verified": "已驗證帳戶",
     "card": {
       "watchAria": "觀看直播：{{title}}，作者：{{host}}"
@@ -657,6 +657,9 @@
       "title": "上線",
       "titleLabel": "標題",
       "titlePlaceholder": "你的 LIVE 是關於什麼的？",
+      "permissionHint": "允許 Vibely 使用你的相機和麥克風以開始 LIVE。",
+      "defaultTitle": "{{name}} 的 LIVE",
+      "defaultTitleAnonymous": "新 LIVE",
       "allowComments": "允許評論",
       "allowGifts": "允許禮物",
       "cancel": "取消",
@@ -692,6 +695,51 @@
       "actionFailed": "出了點問題。請再試一次。",
       "notOwnerTitle": "您無法管理此 LIVE",
       "notOwnerDescription": "只有主持人才能為此 LIVE 開啟 LIVE Studio。"
+    },
+    "media": {
+      "retry": "重試",
+      "host": {
+        "requestingAccess": "正在等待相機和麥克風權限…",
+        "previewUnavailable": "無法使用相機預覽",
+        "connecting": "正在連線你的影片…",
+        "reconnecting": "連線已中斷，正在重新連線（{{attempt}}/{{max}}）…"
+      },
+      "viewer": {
+        "connecting": "正在連線 LIVE…",
+        "waiting": "正在等待主播的影片…",
+        "reconnecting": "正在重新連線…",
+        "hostReconnecting": "主播的網路不穩定…",
+        "failed": "無法播放這個 LIVE。",
+        "tapToPlay": "點一下即可播放",
+        "tapToUnmute": "點一下即可取消靜音"
+      },
+      "devices": {
+        "camera": "相機",
+        "microphone": "麥克風"
+      },
+      "errors": {
+        "permissionDenied": "相機或麥克風權限已被封鎖。請在瀏覽器的網站設定中允許，然後再試一次。",
+        "deviceNotFound": "找不到相機或麥克風。請連接裝置後再試一次。",
+        "deviceBusy": "你的相機或麥克風正被其他應用程式或分頁使用。",
+        "deviceLost": "你的相機或麥克風已中斷連線。請在 LIVE 設定中選擇其他裝置。",
+        "unsupported": "此瀏覽器不支援 LIVE 影片。請使用最新版 Chrome、Edge、Firefox 或 Safari。",
+        "insecureContext": "LIVE 影片需要安全連線（HTTPS）。",
+        "codecUnsupported": "此瀏覽器無法編碼 LIVE 所需的 H.264 影片。",
+        "publishRejected": "媒體伺服器拒絕了串流，請再試一次。",
+        "publisherBusy": "這個 LIVE 已在另一個分頁或裝置上串流。",
+        "serverUnavailable": "媒體伺服器暫時無法使用。",
+        "connectionFailed": "影片連線失敗，請檢查你的網路。",
+        "mediaDisabled": "此伺服器未啟用 LIVE 影片。",
+        "liveEnded": "這個 LIVE 已結束。",
+        "notFound": "找不到這個 LIVE。",
+        "forbidden": "你沒有權限觀看這個 LIVE 的影片。",
+        "playbackFailed": "無法播放這個 LIVE。"
+      },
+      "endReason": {
+        "admin": "這個 LIVE 已被管理員結束。",
+        "hostDisconnected": "主播連線中斷，這個 LIVE 已結束。",
+        "publishTimeout": "主播的影片始終沒有開始，這個 LIVE 已結束。"
+      }
     }
   },
   "messagesPage": {

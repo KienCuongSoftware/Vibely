@@ -573,6 +573,13 @@
     "openLiveStudio": "LIVE Studio 열기",
     "watching": "시청 중",
     "unmute": "음소거 해제",
+    "mute": "Mute",
+    "heroHeadline": "지금 시청하고 다른 사람들과 실시간으로 소통하세요",
+    "clickToWatchLive": "실시간 시청을 원하시면 클릭하세요",
+    "viewersLabel": "{{count}} watching",
+    "previousLive": "Previous LIVE",
+    "nextLive": "Next LIVE",
+    "refreshLive": "Switch LIVE",
     "seeAll": "모두 보기",
     "scrollCategoriesLeft": "카테고리 왼쪽으로 스크롤",
     "scrollCategoriesRight": "카테고리 오른쪽으로 스크롤",
@@ -595,13 +602,6 @@
       "lifestyle": "라이프스타일",
       "recommended": "당신에게 추천"
     },
-    "mute": "Mute",
-    "heroHeadline": "지금 시청하고 다른 사람들과 실시간으로 소통하세요",
-    "clickToWatchLive": "실시간 시청을 원하시면 클릭하세요",
-    "viewersLabel": "{{count}} watching",
-    "previousLive": "Previous LIVE",
-    "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE",
     "verified": "인증된 계정",
     "card": {
       "watchAria": "실시간 시청: {{host}}의 {{title}}"
@@ -657,6 +657,9 @@
       "title": "실시간 스트리밍",
       "titleLabel": "제목",
       "titlePlaceholder": "당신의 LIVE는 무엇인가요?",
+      "permissionHint": "LIVE를 시작하려면 Vibely가 카메라와 마이크를 사용하도록 허용하세요.",
+      "defaultTitle": "{{name}}님의 LIVE",
+      "defaultTitleAnonymous": "새 LIVE",
       "allowComments": "댓글 허용",
       "allowGifts": "선물 허용",
       "cancel": "취소",
@@ -692,6 +695,51 @@
       "actionFailed": "문제가 발생했습니다. 다시 시도해 주세요.",
       "notOwnerTitle": "이 라이브를 관리할 수 없습니다.",
       "notOwnerDescription": "이 LIVE에서는 호스트만 LIVE Studio를 열 수 있습니다."
+    },
+    "media": {
+      "retry": "다시 시도",
+      "host": {
+        "requestingAccess": "카메라와 마이크 접근 허용을 기다리는 중…",
+        "previewUnavailable": "카메라 미리보기를 사용할 수 없어요",
+        "connecting": "영상을 연결하는 중…",
+        "reconnecting": "연결이 끊겼어요. 다시 연결하는 중({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "LIVE에 연결하는 중…",
+        "waiting": "호스트의 영상을 기다리는 중…",
+        "reconnecting": "다시 연결하는 중…",
+        "hostReconnecting": "호스트의 연결이 불안정해요…",
+        "failed": "이 LIVE를 재생할 수 없어요.",
+        "tapToPlay": "탭하여 재생",
+        "tapToUnmute": "탭하여 음소거 해제"
+      },
+      "devices": {
+        "camera": "카메라",
+        "microphone": "마이크"
+      },
+      "errors": {
+        "permissionDenied": "카메라 또는 마이크 접근이 차단되었어요. 브라우저의 사이트 설정에서 허용한 뒤 다시 시도하세요.",
+        "deviceNotFound": "카메라나 마이크를 찾을 수 없어요. 기기를 연결하고 다시 시도하세요.",
+        "deviceBusy": "다른 앱이나 탭에서 카메라 또는 마이크를 사용 중이에요.",
+        "deviceLost": "카메라 또는 마이크 연결이 끊겼어요. LIVE 설정에서 다른 기기를 선택하세요.",
+        "unsupported": "이 브라우저는 LIVE 영상을 지원하지 않아요. 최신 Chrome, Edge, Firefox 또는 Safari를 사용해 보세요.",
+        "insecureContext": "LIVE 영상에는 보안 연결(HTTPS)이 필요해요.",
+        "codecUnsupported": "이 브라우저는 LIVE에 필요한 H.264 영상을 인코딩할 수 없어요.",
+        "publishRejected": "미디어 서버가 스트림을 거부했어요. 다시 시도하세요.",
+        "publisherBusy": "이 LIVE는 이미 다른 탭이나 기기에서 방송 중이에요.",
+        "serverUnavailable": "지금은 미디어 서버를 사용할 수 없어요.",
+        "connectionFailed": "영상 연결에 실패했어요. 네트워크를 확인하세요.",
+        "mediaDisabled": "이 서버에서는 LIVE 영상이 활성화되어 있지 않아요.",
+        "liveEnded": "이 LIVE는 종료되었어요.",
+        "notFound": "이 LIVE를 찾을 수 없어요.",
+        "forbidden": "이 LIVE 영상에 접근할 권한이 없어요.",
+        "playbackFailed": "이 LIVE를 재생할 수 없어요."
+      },
+      "endReason": {
+        "admin": "운영자가 이 LIVE를 종료했어요.",
+        "hostDisconnected": "호스트의 연결이 끊겨 이 LIVE가 종료되었어요.",
+        "publishTimeout": "호스트의 영상이 시작되지 않아 이 LIVE가 종료되었어요."
+      }
     }
   },
   "messagesPage": {

@@ -573,6 +573,13 @@
     "openLiveStudio": "Открыть LIVE Studio",
     "watching": "смотрят",
     "unmute": "Включить звук",
+    "mute": "Mute",
+    "heroHeadline": "Смотрите сейчас и общайтесь с другими в режиме реального времени",
+    "clickToWatchLive": "Нажмите, чтобы посмотреть в прямом эфире",
+    "viewersLabel": "{{count}} watching",
+    "previousLive": "Previous LIVE",
+    "nextLive": "Next LIVE",
+    "refreshLive": "Switch LIVE",
     "seeAll": "Смотреть все",
     "scrollCategoriesLeft": "Прокрутить категории влево",
     "scrollCategoriesRight": "Прокрутить категории вправо",
@@ -595,13 +602,6 @@
       "lifestyle": "Lifestyle",
       "recommended": "Рекомендуется для вас"
     },
-    "mute": "Mute",
-    "heroHeadline": "Смотрите сейчас и общайтесь с другими в режиме реального времени",
-    "clickToWatchLive": "Нажмите, чтобы посмотреть в прямом эфире",
-    "viewersLabel": "{{count}} watching",
-    "previousLive": "Previous LIVE",
-    "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE",
     "verified": "Подтвержденный аккаунт",
     "card": {
       "watchAria": "Смотрите в прямом эфире: {{title}} от {{host}}"
@@ -657,6 +657,9 @@
       "title": "В прямом эфире",
       "titleLabel": "Заголовок",
       "titlePlaceholder": "О чем ваш LIVE?",
+      "permissionHint": "Разрешите Vibely использовать камеру и микрофон, чтобы начать LIVE.",
+      "defaultTitle": "LIVE {{name}}",
+      "defaultTitleAnonymous": "Новый LIVE",
       "allowComments": "Разрешить комментарии",
       "allowGifts": "Разрешить подарки",
       "cancel": "Отмена",
@@ -692,6 +695,51 @@
       "actionFailed": "Что-то пошло не так. Пожалуйста, попробуйте еще раз.",
       "notOwnerTitle": "Вы не можете управлять этим LIVE",
       "notOwnerDescription": "Только организатор может открыть LIVE Studio для этого LIVE."
+    },
+    "media": {
+      "retry": "Повторить",
+      "host": {
+        "requestingAccess": "Ожидание доступа к камере и микрофону…",
+        "previewUnavailable": "Предпросмотр камеры недоступен",
+        "connecting": "Подключение вашего видео…",
+        "reconnecting": "Соединение потеряно. Переподключение ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Подключение к LIVE…",
+        "waiting": "Ожидание видео ведущего…",
+        "reconnecting": "Переподключение…",
+        "hostReconnecting": "Соединение ведущего нестабильно…",
+        "failed": "Не удалось воспроизвести этот LIVE.",
+        "tapToPlay": "Нажмите, чтобы воспроизвести",
+        "tapToUnmute": "Нажмите, чтобы включить звук"
+      },
+      "devices": {
+        "camera": "Камера",
+        "microphone": "Микрофон"
+      },
+      "errors": {
+        "permissionDenied": "Доступ к камере или микрофону заблокирован. Разрешите его в настройках сайта в браузере и повторите попытку.",
+        "deviceNotFound": "Камера или микрофон не найдены. Подключите устройство и повторите попытку.",
+        "deviceBusy": "Камера или микрофон используются другим приложением или вкладкой.",
+        "deviceLost": "Камера или микрофон отключены. Выберите другое устройство в настройках LIVE.",
+        "unsupported": "Этот браузер не поддерживает LIVE-видео. Используйте последнюю версию Chrome, Edge, Firefox или Safari.",
+        "insecureContext": "Для LIVE-видео нужно защищённое соединение (HTTPS).",
+        "codecUnsupported": "Этот браузер не может кодировать видео H.264, необходимое для LIVE.",
+        "publishRejected": "Медиасервер отклонил трансляцию. Повторите попытку.",
+        "publisherBusy": "Этот LIVE уже транслируется с другой вкладки или устройства.",
+        "serverUnavailable": "Медиасервер сейчас недоступен.",
+        "connectionFailed": "Не удалось установить видеосоединение. Проверьте сеть.",
+        "mediaDisabled": "LIVE-видео не включено на этом сервере.",
+        "liveEnded": "Этот LIVE завершён.",
+        "notFound": "Этот LIVE не найден.",
+        "forbidden": "У вас нет доступа к видео этого LIVE.",
+        "playbackFailed": "Не удалось воспроизвести этот LIVE."
+      },
+      "endReason": {
+        "admin": "Этот LIVE завершён модератором.",
+        "hostDisconnected": "Этот LIVE завершился, потому что ведущий потерял соединение.",
+        "publishTimeout": "Этот LIVE завершился, потому что видео ведущего так и не началось."
+      }
     }
   },
   "messagesPage": {

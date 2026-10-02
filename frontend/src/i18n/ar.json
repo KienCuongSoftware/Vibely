@@ -573,6 +573,13 @@
     "openLiveStudio": "فتح LIVE Studio",
     "watching": "يشاهدون",
     "unmute": "إلغاء كتم الصوت",
+    "mute": "Mute",
+    "heroHeadline": "شاهد الآن وتفاعل مع الآخرين في الوقت الفعلي",
+    "clickToWatchLive": "انقر للمشاهدة المباشرة",
+    "viewersLabel": "{{count}} watching",
+    "previousLive": "Previous LIVE",
+    "nextLive": "Next LIVE",
+    "refreshLive": "Switch LIVE",
     "seeAll": "عرض الكل",
     "scrollCategoriesLeft": "تمرير الفئات لليسار",
     "scrollCategoriesRight": "تمرير الفئات لليمين",
@@ -595,13 +602,6 @@
       "lifestyle": "نمط الحياة",
       "recommended": "موصى به لك"
     },
-    "mute": "Mute",
-    "heroHeadline": "شاهد الآن وتفاعل مع الآخرين في الوقت الفعلي",
-    "clickToWatchLive": "انقر للمشاهدة المباشرة",
-    "viewersLabel": "{{count}} watching",
-    "previousLive": "Previous LIVE",
-    "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE",
     "verified": "حساب تم التحقق منه",
     "card": {
       "watchAria": "مشاهدة بث مباشر: {{title}} بواسطة {{host}}"
@@ -657,6 +657,9 @@
       "title": "اذهب للبث المباشر",
       "titleLabel": "عنوان",
       "titlePlaceholder": "ما هو موضوعك المباشر؟",
+      "permissionHint": "اسمح لـ Vibely باستخدام الكاميرا والميكروفون لبدء LIVE.",
+      "defaultTitle": "LIVE الخاص بـ {{name}}",
+      "defaultTitleAnonymous": "LIVE جديد",
       "allowComments": "السماح بالتعليقات",
       "allowGifts": "السماح بالهدايا",
       "cancel": "يلغي",
@@ -692,6 +695,51 @@
       "actionFailed": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
       "notOwnerTitle": "لا يمكنك إدارة هذا البث المباشر",
       "notOwnerDescription": "يمكن للمضيف فقط فتح LIVE Studio لهذا البث المباشر."
+    },
+    "media": {
+      "retry": "حاول مرة أخرى",
+      "host": {
+        "requestingAccess": "في انتظار الوصول إلى الكاميرا والميكروفون…",
+        "previewUnavailable": "معاينة الكاميرا غير متاحة",
+        "connecting": "جارٍ توصيل الفيديو الخاص بك…",
+        "reconnecting": "انقطع الاتصال. جارٍ إعادة الاتصال ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "جارٍ الاتصال بـ LIVE…",
+        "waiting": "في انتظار فيديو المضيف…",
+        "reconnecting": "جارٍ إعادة الاتصال…",
+        "hostReconnecting": "اتصال المضيف غير مستقر…",
+        "failed": "تعذّر تشغيل هذا الـ LIVE.",
+        "tapToPlay": "انقر للتشغيل",
+        "tapToUnmute": "انقر لتشغيل الصوت"
+      },
+      "devices": {
+        "camera": "الكاميرا",
+        "microphone": "الميكروفون"
+      },
+      "errors": {
+        "permissionDenied": "تم حظر الوصول إلى الكاميرا أو الميكروفون. اسمح به من إعدادات الموقع في المتصفح، ثم حاول مرة أخرى.",
+        "deviceNotFound": "لم يتم العثور على كاميرا أو ميكروفون. وصّل جهازًا وحاول مرة أخرى.",
+        "deviceBusy": "تطبيق أو علامة تبويب أخرى تستخدم الكاميرا أو الميكروفون.",
+        "deviceLost": "تم فصل الكاميرا أو الميكروفون. اختر جهازًا آخر من إعدادات LIVE.",
+        "unsupported": "هذا المتصفح لا يدعم فيديو LIVE. جرّب أحدث إصدار من Chrome أو Edge أو Firefox أو Safari.",
+        "insecureContext": "يتطلب فيديو LIVE اتصالًا آمنًا (HTTPS).",
+        "codecUnsupported": "لا يستطيع هذا المتصفح ترميز فيديو H.264 المطلوب لـ LIVE.",
+        "publishRejected": "رفض خادم الوسائط البث. يُرجى المحاولة مرة أخرى.",
+        "publisherBusy": "يتم بث هذا الـ LIVE بالفعل من علامة تبويب أو جهاز آخر.",
+        "serverUnavailable": "خادم الوسائط غير متاح حاليًا.",
+        "connectionFailed": "فشل اتصال الفيديو. تحقق من الشبكة.",
+        "mediaDisabled": "فيديو LIVE غير مفعّل على هذا الخادم.",
+        "liveEnded": "انتهى هذا الـ LIVE.",
+        "notFound": "تعذّر العثور على هذا الـ LIVE.",
+        "forbidden": "ليس لديك إذن بالوصول إلى فيديو هذا الـ LIVE.",
+        "playbackFailed": "تعذّر تشغيل هذا الـ LIVE."
+      },
+      "endReason": {
+        "admin": "أنهى أحد المشرفين هذا الـ LIVE.",
+        "hostDisconnected": "انتهى هذا الـ LIVE لأن المضيف فقد الاتصال.",
+        "publishTimeout": "انتهى هذا الـ LIVE لأن فيديو المضيف لم يبدأ أبدًا."
+      }
     }
   },
   "messagesPage": {

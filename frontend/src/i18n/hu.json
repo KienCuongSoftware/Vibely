@@ -657,6 +657,9 @@
       "title": "Menj ÉLŐBEN",
       "titleLabel": "Cím",
       "titlePlaceholder": "Miről szól az ÉLŐD?",
+      "permissionHint": "Engedélyezd a Vibely számára a kamera és a mikrofon használatát a LIVE indításához.",
+      "defaultTitle": "{{name}} LIVE-ja",
+      "defaultTitleAnonymous": "Új LIVE",
       "allowComments": "Megjegyzések engedélyezése",
       "allowGifts": "Engedje meg az ajándékokat",
       "cancel": "Mégse",
@@ -692,6 +695,51 @@
       "actionFailed": "Valami elromlott. Kérjük, próbálja újra.",
       "notOwnerTitle": "Ezt az ÉLŐBEN nem tudod kezelni",
       "notOwnerDescription": "Csak a házigazda nyithatja meg a LIVE Stúdiót erre az ÉLŐ-re."
+    },
+    "media": {
+      "retry": "Újra",
+      "host": {
+        "requestingAccess": "Várakozás a kamera és a mikrofon hozzáférésére…",
+        "previewUnavailable": "A kamera előnézete nem érhető el",
+        "connecting": "A videód csatlakoztatása…",
+        "reconnecting": "Megszakadt a kapcsolat. Újracsatlakozás ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Csatlakozás a LIVE-hoz…",
+        "waiting": "Várakozás a házigazda videójára…",
+        "reconnecting": "Újracsatlakozás…",
+        "hostReconnecting": "A házigazda kapcsolata instabil…",
+        "failed": "Ez a LIVE nem játszható le.",
+        "tapToPlay": "Koppints a lejátszáshoz",
+        "tapToUnmute": "Koppints a hang bekapcsolásához"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofon"
+      },
+      "errors": {
+        "permissionDenied": "A kamera vagy a mikrofon hozzáférése le van tiltva. Engedélyezd a böngésző webhelybeállításaiban, majd próbáld újra.",
+        "deviceNotFound": "Nem található kamera vagy mikrofon. Csatlakoztass egyet, és próbáld újra.",
+        "deviceBusy": "A kamerát vagy a mikrofont egy másik alkalmazás vagy lap használja.",
+        "deviceLost": "A kamera vagy a mikrofon leválasztódott. Válassz másik eszközt a LIVE-beállításokban.",
+        "unsupported": "Ez a böngésző nem támogatja a LIVE-videót. Próbáld a legújabb Chrome-ot, Edge-et, Firefoxot vagy Safarit.",
+        "insecureContext": "A LIVE-videóhoz biztonságos (HTTPS) kapcsolat szükséges.",
+        "codecUnsupported": "Ez a böngésző nem tud H.264 videót kódolni, amely a LIVE-hoz szükséges.",
+        "publishRejected": "A médiaszerver elutasította a közvetítést. Próbáld újra.",
+        "publisherBusy": "Ez a LIVE már egy másik lapról vagy eszközről közvetít.",
+        "serverUnavailable": "A médiaszerver jelenleg nem érhető el.",
+        "connectionFailed": "A videokapcsolat sikertelen. Ellenőrizd a hálózatot.",
+        "mediaDisabled": "A LIVE-videó nincs engedélyezve ezen a szerveren.",
+        "liveEnded": "Ez a LIVE véget ért.",
+        "notFound": "Ez a LIVE nem található.",
+        "forbidden": "Nincs hozzáférésed ennek a LIVE-nak a videójához.",
+        "playbackFailed": "Ez a LIVE nem játszható le."
+      },
+      "endReason": {
+        "admin": "Ezt a LIVE-ot egy moderátor fejezte be.",
+        "hostDisconnected": "Ez a LIVE véget ért, mert a házigazda elvesztette a kapcsolatot.",
+        "publishTimeout": "Ez a LIVE véget ért, mert a házigazda videója el sem indult."
+      }
     }
   },
   "messagesPage": {

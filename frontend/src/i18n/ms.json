@@ -657,6 +657,9 @@
       "title": "Pergi LIVE",
       "titleLabel": "Tajuk",
       "titlePlaceholder": "Tentang apa LIVE anda?",
+      "permissionHint": "Benarkan Vibely menggunakan kamera dan mikrofon anda untuk mula LIVE.",
+      "defaultTitle": "LIVE {{name}}",
+      "defaultTitleAnonymous": "LIVE baharu",
       "allowComments": "Benarkan ulasan",
       "allowGifts": "Benarkan hadiah",
       "cancel": "Batal",
@@ -692,6 +695,51 @@
       "actionFailed": "Sesuatu telah berlaku. Sila cuba lagi.",
       "notOwnerTitle": "Anda tidak boleh mengurus LIVE ini",
       "notOwnerDescription": "Hanya hos boleh membuka LIVE Studio untuk LIVE ini."
+    },
+    "media": {
+      "retry": "Cuba lagi",
+      "host": {
+        "requestingAccess": "Menunggu akses kamera dan mikrofon…",
+        "previewUnavailable": "Pratonton kamera tidak tersedia",
+        "connecting": "Menyambungkan video anda…",
+        "reconnecting": "Sambungan terputus. Menyambung semula ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Menyambung ke LIVE…",
+        "waiting": "Menunggu video hos…",
+        "reconnecting": "Menyambung semula…",
+        "hostReconnecting": "Sambungan hos tidak stabil…",
+        "failed": "LIVE ini tidak dapat dimainkan.",
+        "tapToPlay": "Ketik untuk main",
+        "tapToUnmute": "Ketik untuk hidupkan bunyi"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofon"
+      },
+      "errors": {
+        "permissionDenied": "Akses kamera atau mikrofon telah disekat. Benarkan dalam tetapan tapak pelayar, kemudian cuba lagi.",
+        "deviceNotFound": "Tiada kamera atau mikrofon ditemui. Sambungkan peranti dan cuba lagi.",
+        "deviceBusy": "Kamera atau mikrofon anda sedang digunakan oleh apl atau tab lain.",
+        "deviceLost": "Kamera atau mikrofon anda telah diputuskan. Pilih peranti lain dalam tetapan LIVE.",
+        "unsupported": "Pelayar ini tidak menyokong video LIVE. Cuba Chrome, Edge, Firefox atau Safari versi terkini.",
+        "insecureContext": "Video LIVE memerlukan sambungan selamat (HTTPS).",
+        "codecUnsupported": "Pelayar ini tidak dapat mengekod video H.264 yang diperlukan oleh LIVE.",
+        "publishRejected": "Pelayan media menolak strim. Sila cuba lagi.",
+        "publisherBusy": "LIVE ini sudah distrim dari tab atau peranti lain.",
+        "serverUnavailable": "Pelayan media tidak tersedia buat masa ini.",
+        "connectionFailed": "Sambungan video gagal. Semak rangkaian anda.",
+        "mediaDisabled": "Video LIVE tidak didayakan pada pelayan ini.",
+        "liveEnded": "LIVE ini telah tamat.",
+        "notFound": "LIVE ini tidak ditemui.",
+        "forbidden": "Anda tiada akses kepada video LIVE ini.",
+        "playbackFailed": "LIVE ini tidak dapat dimainkan."
+      },
+      "endReason": {
+        "admin": "LIVE ini telah ditamatkan oleh moderator.",
+        "hostDisconnected": "LIVE ini tamat kerana hos terputus sambungan.",
+        "publishTimeout": "LIVE ini tamat kerana video hos tidak pernah bermula."
+      }
     }
   },
   "messagesPage": {

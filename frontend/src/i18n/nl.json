@@ -657,6 +657,9 @@
       "title": "Ga LIVE",
       "titleLabel": "Titel",
       "titlePlaceholder": "Waar gaat jouw LIVE over?",
+      "permissionHint": "Geef Vibely toegang tot je camera en microfoon om LIVE te gaan.",
+      "defaultTitle": "LIVE van {{name}}",
+      "defaultTitleAnonymous": "Nieuwe LIVE",
       "allowComments": "Reacties toestaan",
       "allowGifts": "Sta geschenken toe",
       "cancel": "Annuleren",
@@ -692,6 +695,51 @@
       "actionFailed": "Er is iets misgegaan. Probeer het opnieuw.",
       "notOwnerTitle": "Je kunt dit niet LIVE beheren",
       "notOwnerDescription": "Alleen de host kan LIVE Studio openen voor deze LIVE."
+    },
+    "media": {
+      "retry": "Opnieuw proberen",
+      "host": {
+        "requestingAccess": "Wachten op toegang tot camera en microfoon…",
+        "previewUnavailable": "Cameravoorbeeld is niet beschikbaar",
+        "connecting": "Je video wordt verbonden…",
+        "reconnecting": "Verbinding verbroken. Opnieuw verbinden ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Verbinden met de LIVE…",
+        "waiting": "Wachten op de video van de host…",
+        "reconnecting": "Opnieuw verbinden…",
+        "hostReconnecting": "De verbinding van de host is instabiel…",
+        "failed": "Kan deze LIVE niet afspelen.",
+        "tapToPlay": "Tik om af te spelen",
+        "tapToUnmute": "Tik om het geluid aan te zetten"
+      },
+      "devices": {
+        "camera": "Camera",
+        "microphone": "Microfoon"
+      },
+      "errors": {
+        "permissionDenied": "Toegang tot camera of microfoon is geblokkeerd. Sta het toe in de site-instellingen van je browser en probeer het opnieuw.",
+        "deviceNotFound": "Geen camera of microfoon gevonden. Sluit er een aan en probeer het opnieuw.",
+        "deviceBusy": "Je camera of microfoon wordt gebruikt door een andere app of tab.",
+        "deviceLost": "Je camera of microfoon is losgekoppeld. Kies een ander apparaat in de LIVE-instellingen.",
+        "unsupported": "Deze browser ondersteunt geen LIVE-video. Probeer de nieuwste versie van Chrome, Edge, Firefox of Safari.",
+        "insecureContext": "LIVE-video vereist een beveiligde verbinding (HTTPS).",
+        "codecUnsupported": "Deze browser kan geen H.264-video coderen, wat vereist is voor LIVE.",
+        "publishRejected": "De mediaserver heeft de stream geweigerd. Probeer het opnieuw.",
+        "publisherBusy": "Deze LIVE wordt al gestreamd vanaf een ander tabblad of apparaat.",
+        "serverUnavailable": "De mediaserver is momenteel niet beschikbaar.",
+        "connectionFailed": "De videoverbinding is mislukt. Controleer je netwerk.",
+        "mediaDisabled": "LIVE-video is niet ingeschakeld op deze server.",
+        "liveEnded": "Deze LIVE is beëindigd.",
+        "notFound": "Deze LIVE is niet gevonden.",
+        "forbidden": "Je hebt geen toegang tot de video van deze LIVE.",
+        "playbackFailed": "Kan deze LIVE niet afspelen."
+      },
+      "endReason": {
+        "admin": "Deze LIVE is beëindigd door een moderator.",
+        "hostDisconnected": "Deze LIVE is beëindigd omdat de host de verbinding verloor.",
+        "publishTimeout": "Deze LIVE is beëindigd omdat de video van de host nooit is gestart."
+      }
     }
   },
   "messagesPage": {

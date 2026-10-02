@@ -573,6 +573,13 @@
     "openLiveStudio": "打开 LIVE Studio",
     "watching": "正在观看",
     "unmute": "取消静音",
+    "mute": "Mute",
+    "heroHeadline": "立即观看并与他人实时互动",
+    "clickToWatchLive": "点击观看直播",
+    "viewersLabel": "{{count}} watching",
+    "previousLive": "Previous LIVE",
+    "nextLive": "Next LIVE",
+    "refreshLive": "Switch LIVE",
     "seeAll": "查看全部",
     "scrollCategoriesLeft": "向左滚动分类",
     "scrollCategoriesRight": "向右滚动分类",
@@ -595,13 +602,6 @@
       "lifestyle": "生活方式",
       "recommended": "为您推荐"
     },
-    "mute": "Mute",
-    "heroHeadline": "立即观看并与他人实时互动",
-    "clickToWatchLive": "点击观看直播",
-    "viewersLabel": "{{count}} watching",
-    "previousLive": "Previous LIVE",
-    "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE",
     "verified": "已验证帐户",
     "card": {
       "watchAria": "观看直播：{{title}}，作者：{{host}}"
@@ -657,6 +657,9 @@
       "title": "上线",
       "titleLabel": "标题",
       "titlePlaceholder": "你的 LIVE 是关于什么的？",
+      "permissionHint": "允许 Vibely 使用你的摄像头和麦克风以开始 LIVE。",
+      "defaultTitle": "{{name}} 的 LIVE",
+      "defaultTitleAnonymous": "新 LIVE",
       "allowComments": "允许评论",
       "allowGifts": "允许礼物",
       "cancel": "取消",
@@ -692,6 +695,51 @@
       "actionFailed": "出了点问题。请再试一次。",
       "notOwnerTitle": "您无法管理此 LIVE",
       "notOwnerDescription": "只有主持人才能为此 LIVE 打开 LIVE Studio。"
+    },
+    "media": {
+      "retry": "重试",
+      "host": {
+        "requestingAccess": "正在等待摄像头和麦克风权限…",
+        "previewUnavailable": "摄像头预览不可用",
+        "connecting": "正在连接你的视频…",
+        "reconnecting": "连接已断开，正在重新连接（{{attempt}}/{{max}}）…"
+      },
+      "viewer": {
+        "connecting": "正在连接 LIVE…",
+        "waiting": "正在等待主播的视频…",
+        "reconnecting": "正在重新连接…",
+        "hostReconnecting": "主播的网络不稳定…",
+        "failed": "无法播放此 LIVE。",
+        "tapToPlay": "点按播放",
+        "tapToUnmute": "点按取消静音"
+      },
+      "devices": {
+        "camera": "摄像头",
+        "microphone": "麦克风"
+      },
+      "errors": {
+        "permissionDenied": "摄像头或麦克风权限已被阻止。请在浏览器的网站设置中允许，然后重试。",
+        "deviceNotFound": "未找到摄像头或麦克风。请连接设备后重试。",
+        "deviceBusy": "你的摄像头或麦克风正被其他应用或标签页使用。",
+        "deviceLost": "你的摄像头或麦克风已断开。请在 LIVE 设置中选择其他设备。",
+        "unsupported": "此浏览器不支持 LIVE 视频。请使用最新版 Chrome、Edge、Firefox 或 Safari。",
+        "insecureContext": "LIVE 视频需要安全连接（HTTPS）。",
+        "codecUnsupported": "此浏览器无法编码 LIVE 所需的 H.264 视频。",
+        "publishRejected": "媒体服务器拒绝了推流，请重试。",
+        "publisherBusy": "此 LIVE 已在另一个标签页或设备上推流。",
+        "serverUnavailable": "媒体服务器暂时不可用。",
+        "connectionFailed": "视频连接失败，请检查你的网络。",
+        "mediaDisabled": "此服务器未启用 LIVE 视频。",
+        "liveEnded": "此 LIVE 已结束。",
+        "notFound": "找不到此 LIVE。",
+        "forbidden": "你无权观看此 LIVE 的视频。",
+        "playbackFailed": "无法播放此 LIVE。"
+      },
+      "endReason": {
+        "admin": "此 LIVE 已被管理员结束。",
+        "hostDisconnected": "主播连接中断，此 LIVE 已结束。",
+        "publishTimeout": "主播的视频始终未开始，此 LIVE 已结束。"
+      }
     }
   },
   "messagesPage": {

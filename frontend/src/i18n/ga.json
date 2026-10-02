@@ -657,6 +657,9 @@
       "title": "Téigh BEO",
       "titleLabel": "Teideal",
       "titlePlaceholder": "Cad atá faoi do BEO?",
+      "permissionHint": "Lig do Vibely do cheamara agus do mhicreafón a úsáid chun dul LIVE.",
+      "defaultTitle": "LIVE {{name}}",
+      "defaultTitleAnonymous": "LIVE nua",
       "allowComments": "Ceadaigh tuairimí",
       "allowGifts": "Ceadaigh bronntanais",
       "cancel": "Cealaigh",
@@ -692,6 +695,51 @@
       "actionFailed": "Chuaigh rud éigin mícheart. Bain triail eile as.",
       "notOwnerTitle": "Ní féidir leat é seo a bhainistiú BEO",
       "notOwnerDescription": "Ní féidir ach leis an óstach Stiúideo BEO a oscailt don BEO seo."
+    },
+    "media": {
+      "retry": "Bain triail eile as",
+      "host": {
+        "requestingAccess": "Ag fanacht ar rochtain ar an gceamara agus ar an micreafón…",
+        "previewUnavailable": "Níl réamhamharc an cheamara ar fáil",
+        "connecting": "Do fhíseán á nascadh…",
+        "reconnecting": "Cailleadh an nasc. Ag athnascadh ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Ag nascadh leis an LIVE…",
+        "waiting": "Ag fanacht ar fhíseán an óstaigh…",
+        "reconnecting": "Ag athnascadh…",
+        "hostReconnecting": "Tá nasc an óstaigh éagobhsaí…",
+        "failed": "Níorbh fhéidir an LIVE seo a sheinm.",
+        "tapToPlay": "Tapáil chun seinm",
+        "tapToUnmute": "Tapáil chun an fhuaim a chasadh air"
+      },
+      "devices": {
+        "camera": "Ceamara",
+        "microphone": "Micreafón"
+      },
+      "errors": {
+        "permissionDenied": "Cuireadh bac ar rochtain ar an gceamara nó ar an micreafón. Ceadaigh é i socruithe suímh do bhrabhsálaí, ansin bain triail eile as.",
+        "deviceNotFound": "Níor aimsíodh ceamara ná micreafón. Ceangail ceann agus bain triail eile as.",
+        "deviceBusy": "Tá aip nó cluaisín eile ag úsáid do cheamara nó do mhicreafóin.",
+        "deviceLost": "Dícheanglaíodh do cheamara nó do mhicreafón. Roghnaigh gléas eile i socruithe LIVE.",
+        "unsupported": "Ní thacaíonn an brabhsálaí seo le físeán LIVE. Bain triail as an leagan is déanaí de Chrome, Edge, Firefox nó Safari.",
+        "insecureContext": "Teastaíonn nasc slán (HTTPS) le haghaidh físeán LIVE.",
+        "codecUnsupported": "Ní féidir leis an mbrabhsálaí seo físeán H.264 a ionchódú, rud a theastaíonn le haghaidh LIVE.",
+        "publishRejected": "Dhiúltaigh an freastalaí meán don sruth. Bain triail eile as.",
+        "publisherBusy": "Tá an LIVE seo á shruthú cheana ó chluaisín nó ó ghléas eile.",
+        "serverUnavailable": "Níl an freastalaí meán ar fáil faoi láthair.",
+        "connectionFailed": "Theip ar an nasc físe. Seiceáil do líonra.",
+        "mediaDisabled": "Níl físeán LIVE cumasaithe ar an bhfreastalaí seo.",
+        "liveEnded": "Tá deireadh leis an LIVE seo.",
+        "notFound": "Níorbh fhéidir an LIVE seo a aimsiú.",
+        "forbidden": "Níl rochtain agat ar fhíseán an LIVE seo.",
+        "playbackFailed": "Níorbh fhéidir an LIVE seo a sheinm."
+      },
+      "endReason": {
+        "admin": "Chuir modhnóir deireadh leis an LIVE seo.",
+        "hostDisconnected": "Tháinig deireadh leis an LIVE seo mar gur chaill an t-óstach an nasc.",
+        "publishTimeout": "Tháinig deireadh leis an LIVE seo mar nár thosaigh físeán an óstaigh riamh."
+      }
     }
   },
   "messagesPage": {

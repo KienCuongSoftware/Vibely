@@ -657,6 +657,9 @@
       "title": "Gå LIVE",
       "titleLabel": "Titel",
       "titlePlaceholder": "Hvad handler din LIVE om?",
+      "permissionHint": "Giv Vibely adgang til dit kamera og din mikrofon for at gå LIVE.",
+      "defaultTitle": "{{name}}s LIVE",
+      "defaultTitleAnonymous": "Ny LIVE",
       "allowComments": "Tillad kommentarer",
       "allowGifts": "Tillad gaver",
       "cancel": "Ophæve",
@@ -692,6 +695,51 @@
       "actionFailed": "Noget gik galt. Prøv venligst igen.",
       "notOwnerTitle": "Du kan ikke administrere dette LIVE",
       "notOwnerDescription": "Kun værten kan åbne LIVE Studio for denne LIVE."
+    },
+    "media": {
+      "retry": "Prøv igen",
+      "host": {
+        "requestingAccess": "Venter på adgang til kamera og mikrofon…",
+        "previewUnavailable": "Kameravisning er ikke tilgængelig",
+        "connecting": "Forbinder din video…",
+        "reconnecting": "Forbindelsen blev afbrudt. Genopretter ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Forbinder til LIVE…",
+        "waiting": "Venter på værtens video…",
+        "reconnecting": "Genopretter forbindelsen…",
+        "hostReconnecting": "Værtens forbindelse er ustabil…",
+        "failed": "Denne LIVE kunne ikke afspilles.",
+        "tapToPlay": "Tryk for at afspille",
+        "tapToUnmute": "Tryk for at slå lyden til"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofon"
+      },
+      "errors": {
+        "permissionDenied": "Adgang til kamera eller mikrofon blev blokeret. Tillad det i browserens webstedsindstillinger, og prøv igen.",
+        "deviceNotFound": "Der blev ikke fundet noget kamera eller nogen mikrofon. Tilslut en, og prøv igen.",
+        "deviceBusy": "Dit kamera eller din mikrofon bruges af en anden app eller fane.",
+        "deviceLost": "Dit kamera eller din mikrofon blev frakoblet. Vælg en anden enhed i LIVE-indstillingerne.",
+        "unsupported": "Denne browser understøtter ikke LIVE-video. Prøv den nyeste Chrome, Edge, Firefox eller Safari.",
+        "insecureContext": "LIVE-video kræver en sikker forbindelse (HTTPS).",
+        "codecUnsupported": "Denne browser kan ikke kode H.264-video, som LIVE kræver.",
+        "publishRejected": "Medieserveren afviste streamen. Prøv igen.",
+        "publisherBusy": "Denne LIVE streames allerede fra en anden fane eller enhed.",
+        "serverUnavailable": "Medieserveren er ikke tilgængelig lige nu.",
+        "connectionFailed": "Videoforbindelsen mislykkedes. Tjek dit netværk.",
+        "mediaDisabled": "LIVE-video er ikke aktiveret på denne server.",
+        "liveEnded": "Denne LIVE er slut.",
+        "notFound": "Denne LIVE blev ikke fundet.",
+        "forbidden": "Du har ikke adgang til denne LIVEs video.",
+        "playbackFailed": "Denne LIVE kunne ikke afspilles."
+      },
+      "endReason": {
+        "admin": "Denne LIVE blev afsluttet af en moderator.",
+        "hostDisconnected": "Denne LIVE sluttede, fordi værten mistede forbindelsen.",
+        "publishTimeout": "Denne LIVE sluttede, fordi værtens video aldrig startede."
+      }
     }
   },
   "messagesPage": {

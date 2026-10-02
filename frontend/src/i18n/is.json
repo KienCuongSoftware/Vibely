@@ -657,6 +657,9 @@
       "title": "Farðu í BEINN",
       "titleLabel": "Titill",
       "titlePlaceholder": "Um hvað snýst LIVE þitt?",
+      "permissionHint": "Leyfðu Vibely að nota myndavélina og hljóðnemann til að fara í LIVE.",
+      "defaultTitle": "LIVE hjá {{name}}",
+      "defaultTitleAnonymous": "Nýtt LIVE",
       "allowComments": "Leyfa athugasemdir",
       "allowGifts": "Leyfa gjafir",
       "cancel": "Hætta við",
@@ -692,6 +695,51 @@
       "actionFailed": "Eitthvað fór úrskeiðis. Vinsamlegast reyndu aftur.",
       "notOwnerTitle": "Þú getur ekki stjórnað þessu LIVE",
       "notOwnerDescription": "Aðeins gestgjafinn getur opnað LIVE Studio fyrir þetta LIVE."
+    },
+    "media": {
+      "retry": "Reyna aftur",
+      "host": {
+        "requestingAccess": "Bíður eftir aðgangi að myndavél og hljóðnema…",
+        "previewUnavailable": "Forskoðun myndavélar er ekki tiltæk",
+        "connecting": "Tengir myndbandið þitt…",
+        "reconnecting": "Tenging rofnaði. Tengist aftur ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Tengist LIVE…",
+        "waiting": "Bíður eftir myndbandi gestgjafans…",
+        "reconnecting": "Tengist aftur…",
+        "hostReconnecting": "Tenging gestgjafans er óstöðug…",
+        "failed": "Ekki tókst að spila þetta LIVE.",
+        "tapToPlay": "Ýttu til að spila",
+        "tapToUnmute": "Ýttu til að kveikja á hljóði"
+      },
+      "devices": {
+        "camera": "Myndavél",
+        "microphone": "Hljóðnemi"
+      },
+      "errors": {
+        "permissionDenied": "Lokað var á aðgang að myndavél eða hljóðnema. Leyfðu hann í vefsvæðisstillingum vafrans og reyndu aftur.",
+        "deviceNotFound": "Engin myndavél eða hljóðnemi fannst. Tengdu tæki og reyndu aftur.",
+        "deviceBusy": "Annað forrit eða flipi er að nota myndavélina eða hljóðnemann.",
+        "deviceLost": "Myndavélin eða hljóðneminn aftengdist. Veldu annað tæki í LIVE-stillingum.",
+        "unsupported": "Þessi vafri styður ekki LIVE-myndband. Prófaðu nýjustu útgáfu Chrome, Edge, Firefox eða Safari.",
+        "insecureContext": "LIVE-myndband krefst öruggrar tengingar (HTTPS).",
+        "codecUnsupported": "Þessi vafri getur ekki kóðað H.264-myndband sem LIVE krefst.",
+        "publishRejected": "Miðlaþjónninn hafnaði streyminu. Reyndu aftur.",
+        "publisherBusy": "Þessu LIVE er þegar streymt úr öðrum flipa eða tæki.",
+        "serverUnavailable": "Miðlaþjónninn er ekki tiltækur núna.",
+        "connectionFailed": "Myndbandstenging mistókst. Athugaðu netið þitt.",
+        "mediaDisabled": "LIVE-myndband er ekki virkt á þessum þjóni.",
+        "liveEnded": "Þessu LIVE er lokið.",
+        "notFound": "Þetta LIVE fannst ekki.",
+        "forbidden": "Þú hefur ekki aðgang að myndbandi þessa LIVE.",
+        "playbackFailed": "Ekki tókst að spila þetta LIVE."
+      },
+      "endReason": {
+        "admin": "Umsjónarmaður lauk þessu LIVE.",
+        "hostDisconnected": "Þessu LIVE lauk vegna þess að gestgjafinn missti tenginguna.",
+        "publishTimeout": "Þessu LIVE lauk vegna þess að myndband gestgjafans fór aldrei af stað."
+      }
     }
   },
   "messagesPage": {

@@ -657,6 +657,9 @@
       "title": "Go LIVE",
       "titleLabel": "judhul",
       "titlePlaceholder": "Apa LIVE sampeyan?",
+      "permissionHint": "Idinke Vibely nggunakake kamera lan mikrofon kanggo miwiti LIVE.",
+      "defaultTitle": "LIVE {{name}}",
+      "defaultTitleAnonymous": "LIVE anyar",
       "allowComments": "Allow komentar",
       "allowGifts": "Ngidini hadiah",
       "cancel": "Batal",
@@ -692,6 +695,51 @@
       "actionFailed": "Ana sing salah. Coba maneh.",
       "notOwnerTitle": "Sampeyan ora bisa ngatur LIVE iki",
       "notOwnerDescription": "Mung host sing bisa mbukak LIVE Studio kanggo LIVE iki."
+    },
+    "media": {
+      "retry": "Coba maneh",
+      "host": {
+        "requestingAccess": "Ngenteni akses kamera lan mikrofon…",
+        "previewUnavailable": "Pratinjau kamera ora kasedhiya",
+        "connecting": "Nyambungake videomu…",
+        "reconnecting": "Sambungan pedhot. Nyambung maneh ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Nyambung menyang LIVE…",
+        "waiting": "Ngenteni video host…",
+        "reconnecting": "Nyambung maneh…",
+        "hostReconnecting": "Sambungan host ora stabil…",
+        "failed": "LIVE iki ora bisa diputer.",
+        "tapToPlay": "Tutul kanggo muter",
+        "tapToUnmute": "Tutul kanggo nguripake swara"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofon"
+      },
+      "errors": {
+        "permissionDenied": "Akses kamera utawa mikrofon diblokir. Idinke ing setelan situs browser, banjur coba maneh.",
+        "deviceNotFound": "Ora ana kamera utawa mikrofon sing ditemokake. Sambungake piranti lan coba maneh.",
+        "deviceBusy": "Kamera utawa mikrofonmu lagi dienggo aplikasi utawa tab liya.",
+        "deviceLost": "Kamera utawa mikrofonmu pedhot. Pilih piranti liya ing setelan LIVE.",
+        "unsupported": "Browser iki ora ndhukung video LIVE. Coba Chrome, Edge, Firefox, utawa Safari versi paling anyar.",
+        "insecureContext": "Video LIVE mbutuhake sambungan aman (HTTPS).",
+        "codecUnsupported": "Browser iki ora bisa ngenkode video H.264 sing dibutuhake LIVE.",
+        "publishRejected": "Server media nolak siaran. Coba maneh.",
+        "publisherBusy": "LIVE iki wis disiarake saka tab utawa piranti liya.",
+        "serverUnavailable": "Server media saiki ora kasedhiya.",
+        "connectionFailed": "Sambungan video gagal. Priksa jaringanmu.",
+        "mediaDisabled": "Video LIVE ora diaktifake ing server iki.",
+        "liveEnded": "LIVE iki wis rampung.",
+        "notFound": "LIVE iki ora ditemokake.",
+        "forbidden": "Kowe ora duwe akses menyang video LIVE iki.",
+        "playbackFailed": "LIVE iki ora bisa diputer."
+      },
+      "endReason": {
+        "admin": "LIVE iki dipungkasi dening moderator.",
+        "hostDisconnected": "LIVE iki rampung amarga sambungan host pedhot.",
+        "publishTimeout": "LIVE iki rampung amarga video host ora tau diwiwiti."
+      }
     }
   },
   "messagesPage": {

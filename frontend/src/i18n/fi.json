@@ -657,6 +657,9 @@
       "title": "Siirry LIVE-lähetykseen",
       "titleLabel": "Otsikko",
       "titlePlaceholder": "Mistä LIVE-tilassasi on kyse?",
+      "permissionHint": "Salli Vibelyn käyttää kameraa ja mikrofonia, jotta voit aloittaa LIVEn.",
+      "defaultTitle": "Käyttäjän {{name}} LIVE",
+      "defaultTitleAnonymous": "Uusi LIVE",
       "allowComments": "Salli kommentit",
       "allowGifts": "Salli lahjat",
       "cancel": "Peruuttaa",
@@ -692,6 +695,51 @@
       "actionFailed": "Jotain meni pieleen. Yritä uudelleen.",
       "notOwnerTitle": "Et voi hallita tätä LIVE-lähetystä",
       "notOwnerDescription": "Vain isäntä voi avata LIVE Studion tälle LIVElle."
+    },
+    "media": {
+      "retry": "Yritä uudelleen",
+      "host": {
+        "requestingAccess": "Odotetaan kameran ja mikrofonin käyttöoikeutta…",
+        "previewUnavailable": "Kameran esikatselu ei ole käytettävissä",
+        "connecting": "Yhdistetään videotasi…",
+        "reconnecting": "Yhteys katkesi. Yhdistetään uudelleen ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Yhdistetään LIVEen…",
+        "waiting": "Odotetaan isännän videota…",
+        "reconnecting": "Yhdistetään uudelleen…",
+        "hostReconnecting": "Isännän yhteys on epävakaa…",
+        "failed": "Tätä LIVEä ei voi toistaa.",
+        "tapToPlay": "Toista napauttamalla",
+        "tapToUnmute": "Napauta ottaaksesi äänen käyttöön"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofoni"
+      },
+      "errors": {
+        "permissionDenied": "Kameran tai mikrofonin käyttö estettiin. Salli se selaimen sivustoasetuksista ja yritä uudelleen.",
+        "deviceNotFound": "Kameraa tai mikrofonia ei löytynyt. Liitä laite ja yritä uudelleen.",
+        "deviceBusy": "Toinen sovellus tai välilehti käyttää kameraa tai mikrofonia.",
+        "deviceLost": "Kameran tai mikrofonin yhteys katkesi. Valitse toinen laite LIVE-asetuksista.",
+        "unsupported": "Tämä selain ei tue LIVE-videota. Kokeile uusinta Chromea, Edgeä, Firefoxia tai Safaria.",
+        "insecureContext": "LIVE-video vaatii suojatun yhteyden (HTTPS).",
+        "codecUnsupported": "Tämä selain ei pysty koodaamaan LIVEn vaatimaa H.264-videota.",
+        "publishRejected": "Mediapalvelin hylkäsi lähetyksen. Yritä uudelleen.",
+        "publisherBusy": "Tätä LIVEä lähetetään jo toisesta välilehdestä tai laitteesta.",
+        "serverUnavailable": "Mediapalvelin ei ole juuri nyt käytettävissä.",
+        "connectionFailed": "Videoyhteys epäonnistui. Tarkista verkkoyhteytesi.",
+        "mediaDisabled": "LIVE-video ei ole käytössä tällä palvelimella.",
+        "liveEnded": "Tämä LIVE on päättynyt.",
+        "notFound": "Tätä LIVEä ei löytynyt.",
+        "forbidden": "Sinulla ei ole pääsyä tämän LIVEn videoon.",
+        "playbackFailed": "Tätä LIVEä ei voi toistaa."
+      },
+      "endReason": {
+        "admin": "Moderaattori lopetti tämän LIVEn.",
+        "hostDisconnected": "Tämä LIVE päättyi, koska isännän yhteys katkesi.",
+        "publishTimeout": "Tämä LIVE päättyi, koska isännän video ei koskaan alkanut."
+      }
     }
   },
   "messagesPage": {

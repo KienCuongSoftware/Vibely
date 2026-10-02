@@ -573,6 +573,13 @@
     "openLiveStudio": "เปิด LIVE Studio",
     "watching": "กำลังดู",
     "unmute": "เปิดเสียง",
+    "mute": "Mute",
+    "heroHeadline": "ดูตอนนี้และโต้ตอบกับผู้อื่นแบบเรียลไทม์",
+    "clickToWatchLive": "คลิกชมสด",
+    "viewersLabel": "{{count}} watching",
+    "previousLive": "Previous LIVE",
+    "nextLive": "Next LIVE",
+    "refreshLive": "Switch LIVE",
     "seeAll": "ดูทั้งหมด",
     "scrollCategoriesLeft": "เลื่อนหมวดหมู่ไปทางซ้าย",
     "scrollCategoriesRight": "เลื่อนหมวดหมู่ไปทางขวา",
@@ -595,13 +602,6 @@
       "lifestyle": "ไลฟ์สไตล์",
       "recommended": "แนะนำสำหรับคุณ"
     },
-    "mute": "Mute",
-    "heroHeadline": "ดูตอนนี้และโต้ตอบกับผู้อื่นแบบเรียลไทม์",
-    "clickToWatchLive": "คลิกชมสด",
-    "viewersLabel": "{{count}} watching",
-    "previousLive": "Previous LIVE",
-    "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE",
     "verified": "บัญชีที่ตรวจสอบแล้ว",
     "card": {
       "watchAria": "ชมสด: {{title}} โดย {{host}}"
@@ -657,6 +657,9 @@
       "title": "ถ่ายทอดสด",
       "titleLabel": "ชื่อ",
       "titlePlaceholder": "LIVE ของคุณเกี่ยวกับอะไร?",
+      "permissionHint": "อนุญาตให้ Vibely ใช้กล้องและไมโครโฟนเพื่อเริ่ม LIVE",
+      "defaultTitle": "LIVE ของ {{name}}",
+      "defaultTitleAnonymous": "LIVE ใหม่",
       "allowComments": "ขออนุญาติแสดงความคิดเห็น.",
       "allowGifts": "อนุญาตให้ของขวัญ",
       "cancel": "ยกเลิก",
@@ -692,6 +695,51 @@
       "actionFailed": "มีบางอย่างผิดพลาด โปรดลองอีกครั้ง",
       "notOwnerTitle": "คุณไม่สามารถจัดการ LIVE นี้",
       "notOwnerDescription": "มีเพียงเจ้าภาพเท่านั้นที่สามารถเปิด LIVE Studio สำหรับ LIVE นี้"
+    },
+    "media": {
+      "retry": "ลองอีกครั้ง",
+      "host": {
+        "requestingAccess": "กำลังรอสิทธิ์เข้าถึงกล้องและไมโครโฟน…",
+        "previewUnavailable": "ไม่สามารถแสดงตัวอย่างกล้องได้",
+        "connecting": "กำลังเชื่อมต่อวิดีโอของคุณ…",
+        "reconnecting": "การเชื่อมต่อขาดหาย กำลังเชื่อมต่อใหม่ ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "กำลังเชื่อมต่อกับ LIVE…",
+        "waiting": "กำลังรอวิดีโอของโฮสต์…",
+        "reconnecting": "กำลังเชื่อมต่อใหม่…",
+        "hostReconnecting": "การเชื่อมต่อของโฮสต์ไม่เสถียร…",
+        "failed": "ไม่สามารถเล่น LIVE นี้ได้",
+        "tapToPlay": "แตะเพื่อเล่น",
+        "tapToUnmute": "แตะเพื่อเปิดเสียง"
+      },
+      "devices": {
+        "camera": "กล้อง",
+        "microphone": "ไมโครโฟน"
+      },
+      "errors": {
+        "permissionDenied": "การเข้าถึงกล้องหรือไมโครโฟนถูกบล็อก โปรดอนุญาตในการตั้งค่าเว็บไซต์ของเบราว์เซอร์ แล้วลองอีกครั้ง",
+        "deviceNotFound": "ไม่พบกล้องหรือไมโครโฟน โปรดเชื่อมต่ออุปกรณ์แล้วลองอีกครั้ง",
+        "deviceBusy": "กล้องหรือไมโครโฟนของคุณกำลังถูกใช้งานโดยแอปหรือแท็บอื่น",
+        "deviceLost": "กล้องหรือไมโครโฟนของคุณถูกตัดการเชื่อมต่อ โปรดเลือกอุปกรณ์อื่นในการตั้งค่า LIVE",
+        "unsupported": "เบราว์เซอร์นี้ไม่รองรับวิดีโอ LIVE โปรดใช้ Chrome, Edge, Firefox หรือ Safari เวอร์ชันล่าสุด",
+        "insecureContext": "วิดีโอ LIVE ต้องใช้การเชื่อมต่อที่ปลอดภัย (HTTPS)",
+        "codecUnsupported": "เบราว์เซอร์นี้ไม่สามารถเข้ารหัสวิดีโอ H.264 ที่ LIVE ต้องใช้ได้",
+        "publishRejected": "เซิร์ฟเวอร์สื่อปฏิเสธสตรีม โปรดลองอีกครั้ง",
+        "publisherBusy": "LIVE นี้กำลังสตรีมจากแท็บหรืออุปกรณ์อื่นอยู่แล้ว",
+        "serverUnavailable": "เซิร์ฟเวอร์สื่อไม่พร้อมใช้งานในขณะนี้",
+        "connectionFailed": "การเชื่อมต่อวิดีโอล้มเหลว โปรดตรวจสอบเครือข่ายของคุณ",
+        "mediaDisabled": "เซิร์ฟเวอร์นี้ไม่ได้เปิดใช้วิดีโอ LIVE",
+        "liveEnded": "LIVE นี้จบแล้ว",
+        "notFound": "ไม่พบ LIVE นี้",
+        "forbidden": "คุณไม่มีสิทธิ์เข้าถึงวิดีโอของ LIVE นี้",
+        "playbackFailed": "ไม่สามารถเล่น LIVE นี้ได้"
+      },
+      "endReason": {
+        "admin": "LIVE นี้ถูกปิดโดยผู้ดูแล",
+        "hostDisconnected": "LIVE นี้จบลงเพราะโฮสต์ขาดการเชื่อมต่อ",
+        "publishTimeout": "LIVE นี้จบลงเพราะวิดีโอของโฮสต์ไม่เคยเริ่ม"
+      }
     }
   },
   "messagesPage": {

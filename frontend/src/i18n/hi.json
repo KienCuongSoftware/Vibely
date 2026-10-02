@@ -573,6 +573,13 @@
     "openLiveStudio": "LIVE Studio खोलें",
     "watching": "देख रहे हैं",
     "unmute": "आवाज़ चालू करें",
+    "mute": "Mute",
+    "heroHeadline": "अभी देखें और वास्तविक समय में दूसरों के साथ बातचीत करें",
+    "clickToWatchLive": "लाइव देखने के लिए क्लिक करें",
+    "viewersLabel": "{{count}} watching",
+    "previousLive": "Previous LIVE",
+    "nextLive": "Next LIVE",
+    "refreshLive": "Switch LIVE",
     "seeAll": "सभी देखें",
     "scrollCategoriesLeft": "श्रेणियाँ बाएँ स्क्रॉल करें",
     "scrollCategoriesRight": "श्रेणियाँ दाएँ स्क्रॉल करें",
@@ -595,13 +602,6 @@
       "lifestyle": "लाइफ़स्टाइल",
       "recommended": "आप के लिए अनुशंसित"
     },
-    "mute": "Mute",
-    "heroHeadline": "अभी देखें और वास्तविक समय में दूसरों के साथ बातचीत करें",
-    "clickToWatchLive": "लाइव देखने के लिए क्लिक करें",
-    "viewersLabel": "{{count}} watching",
-    "previousLive": "Previous LIVE",
-    "nextLive": "Next LIVE",
-    "refreshLive": "Switch LIVE",
     "verified": "सत्यापित खाते",
     "card": {
       "watchAria": "लाइव देखें: {{title}} द्वारा {{host}}"
@@ -657,6 +657,9 @@
       "title": "रहने जाओ",
       "titleLabel": "शीर्षक",
       "titlePlaceholder": "आपका लाइव किस बारे में है?",
+      "permissionHint": "LIVE होने के लिए Vibely को अपना कैमरा और माइक्रोफ़ोन इस्तेमाल करने की अनुमति दें।",
+      "defaultTitle": "{{name}} का LIVE",
+      "defaultTitleAnonymous": "नया LIVE",
       "allowComments": "टिप्पणियों की अनुमति दें",
       "allowGifts": "उपहारों की अनुमति दें",
       "cancel": "रद्द करना",
@@ -692,6 +695,51 @@
       "actionFailed": "कुछ गलत हो गया। कृपया पुन: प्रयास करें।",
       "notOwnerTitle": "आप इस लाइव को प्रबंधित नहीं कर सकते",
       "notOwnerDescription": "इस लाइव के लिए केवल होस्ट ही लाइव स्टूडियो खोल सकता है।"
+    },
+    "media": {
+      "retry": "फिर से कोशिश करें",
+      "host": {
+        "requestingAccess": "कैमरा और माइक्रोफ़ोन की अनुमति का इंतज़ार…",
+        "previewUnavailable": "कैमरा प्रीव्यू उपलब्ध नहीं है",
+        "connecting": "आपका वीडियो कनेक्ट हो रहा है…",
+        "reconnecting": "कनेक्शन टूट गया। फिर से कनेक्ट हो रहा है ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "LIVE से कनेक्ट हो रहा है…",
+        "waiting": "होस्ट के वीडियो का इंतज़ार…",
+        "reconnecting": "फिर से कनेक्ट हो रहा है…",
+        "hostReconnecting": "होस्ट का कनेक्शन अस्थिर है…",
+        "failed": "यह LIVE चलाया नहीं जा सका।",
+        "tapToPlay": "चलाने के लिए टैप करें",
+        "tapToUnmute": "आवाज़ चालू करने के लिए टैप करें"
+      },
+      "devices": {
+        "camera": "कैमरा",
+        "microphone": "माइक्रोफ़ोन"
+      },
+      "errors": {
+        "permissionDenied": "कैमरा या माइक्रोफ़ोन की अनुमति ब्लॉक है। ब्राउज़र की साइट सेटिंग में अनुमति दें, फिर से कोशिश करें।",
+        "deviceNotFound": "कोई कैमरा या माइक्रोफ़ोन नहीं मिला। एक डिवाइस जोड़ें और फिर से कोशिश करें।",
+        "deviceBusy": "आपका कैमरा या माइक्रोफ़ोन किसी दूसरे ऐप या टैब में इस्तेमाल हो रहा है।",
+        "deviceLost": "आपका कैमरा या माइक्रोफ़ोन डिस्कनेक्ट हो गया। LIVE सेटिंग में दूसरा डिवाइस चुनें।",
+        "unsupported": "यह ब्राउज़र LIVE वीडियो सपोर्ट नहीं करता। Chrome, Edge, Firefox या Safari का नया वर्शन आज़माएँ।",
+        "insecureContext": "LIVE वीडियो के लिए सुरक्षित (HTTPS) कनेक्शन ज़रूरी है।",
+        "codecUnsupported": "यह ब्राउज़र H.264 वीडियो एन्कोड नहीं कर सकता, जो LIVE के लिए ज़रूरी है।",
+        "publishRejected": "मीडिया सर्वर ने स्ट्रीम अस्वीकार कर दी। कृपया फिर से कोशिश करें।",
+        "publisherBusy": "यह LIVE पहले से किसी दूसरे टैब या डिवाइस से स्ट्रीम हो रहा है।",
+        "serverUnavailable": "मीडिया सर्वर अभी उपलब्ध नहीं है।",
+        "connectionFailed": "वीडियो कनेक्शन विफल रहा। अपना नेटवर्क जाँचें।",
+        "mediaDisabled": "इस सर्वर पर LIVE वीडियो चालू नहीं है।",
+        "liveEnded": "यह LIVE समाप्त हो गया है।",
+        "notFound": "यह LIVE नहीं मिला।",
+        "forbidden": "आपके पास इस LIVE के वीडियो की अनुमति नहीं है।",
+        "playbackFailed": "यह LIVE चलाया नहीं जा सका।"
+      },
+      "endReason": {
+        "admin": "इस LIVE को एक मॉडरेटर ने समाप्त किया।",
+        "hostDisconnected": "यह LIVE समाप्त हो गया क्योंकि होस्ट का कनेक्शन टूट गया।",
+        "publishTimeout": "यह LIVE समाप्त हो गया क्योंकि होस्ट का वीडियो कभी शुरू नहीं हुआ।"
+      }
     }
   },
   "messagesPage": {

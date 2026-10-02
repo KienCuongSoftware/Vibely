@@ -657,6 +657,9 @@
       "title": "Eiti TIESIOGIAI",
       "titleLabel": "Pavadinimas",
       "titlePlaceholder": "Apie ką tavo LIVE?",
+      "permissionHint": "Leiskite Vibely naudoti kamerą ir mikrofoną, kad galėtumėte pradėti LIVE.",
+      "defaultTitle": "{{name}} LIVE",
+      "defaultTitleAnonymous": "Naujas LIVE",
       "allowComments": "Leisti komentuoti",
       "allowGifts": "Leiskite dovanoti",
       "cancel": "Atšaukti",
@@ -692,6 +695,51 @@
       "actionFailed": "Kažkas nutiko. Bandykite dar kartą.",
       "notOwnerTitle": "Negalite valdyti šio LIVE",
       "notOwnerDescription": "Tik rengėjas gali atidaryti LIVE Studio šiam LIVE."
+    },
+    "media": {
+      "retry": "Bandyti dar kartą",
+      "host": {
+        "requestingAccess": "Laukiama prieigos prie kameros ir mikrofono…",
+        "previewUnavailable": "Kameros peržiūra nepasiekiama",
+        "connecting": "Jungiamas jūsų vaizdo įrašas…",
+        "reconnecting": "Ryšys nutrūko. Jungiamasi iš naujo ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Jungiamasi prie LIVE…",
+        "waiting": "Laukiama vedėjo vaizdo…",
+        "reconnecting": "Jungiamasi iš naujo…",
+        "hostReconnecting": "Vedėjo ryšys nestabilus…",
+        "failed": "Nepavyko paleisti šio LIVE.",
+        "tapToPlay": "Bakstelėkite, kad paleistumėte",
+        "tapToUnmute": "Bakstelėkite, kad įjungtumėte garsą"
+      },
+      "devices": {
+        "camera": "Kamera",
+        "microphone": "Mikrofonas"
+      },
+      "errors": {
+        "permissionDenied": "Prieiga prie kameros ar mikrofono buvo užblokuota. Leiskite ją naršyklės svetainės nustatymuose ir bandykite dar kartą.",
+        "deviceNotFound": "Nerasta kameros ar mikrofono. Prijunkite įrenginį ir bandykite dar kartą.",
+        "deviceBusy": "Jūsų kamerą ar mikrofoną naudoja kita programa ar skirtukas.",
+        "deviceLost": "Jūsų kamera ar mikrofonas buvo atjungtas. LIVE nustatymuose pasirinkite kitą įrenginį.",
+        "unsupported": "Ši naršyklė nepalaiko LIVE vaizdo. Išbandykite naujausią Chrome, Edge, Firefox ar Safari.",
+        "insecureContext": "LIVE vaizdui reikalingas saugus ryšys (HTTPS).",
+        "codecUnsupported": "Ši naršyklė negali koduoti H.264 vaizdo, kurio reikia LIVE.",
+        "publishRejected": "Medijos serveris atmetė srautą. Bandykite dar kartą.",
+        "publisherBusy": "Šis LIVE jau transliuojamas iš kito skirtuko ar įrenginio.",
+        "serverUnavailable": "Medijos serveris šiuo metu nepasiekiamas.",
+        "connectionFailed": "Vaizdo ryšys nepavyko. Patikrinkite tinklą.",
+        "mediaDisabled": "LIVE vaizdas šiame serveryje neįjungtas.",
+        "liveEnded": "Šis LIVE baigėsi.",
+        "notFound": "Šio LIVE rasti nepavyko.",
+        "forbidden": "Neturite prieigos prie šio LIVE vaizdo.",
+        "playbackFailed": "Nepavyko paleisti šio LIVE."
+      },
+      "endReason": {
+        "admin": "Šį LIVE užbaigė moderatorius.",
+        "hostDisconnected": "Šis LIVE baigėsi, nes vedėjas prarado ryšį.",
+        "publishTimeout": "Šis LIVE baigėsi, nes vedėjo vaizdas taip ir neprasidėjo."
+      }
     }
   },
   "messagesPage": {
