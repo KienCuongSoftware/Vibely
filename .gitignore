@@ -12,6 +12,7 @@ logs/
 # Environment and secrets
 .env
 .env.*
+deploy/vps/*.env
 *.pem
 *.key
 *.p12

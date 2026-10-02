@@ -20,6 +20,30 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     profiles: ["kafka"]
 
+  # LIVE media server (phase 3): docker compose --profile live up -d srs
+  # Requires LIVE_MEDIA_ENABLED=true and LIVE_MEDIA_API_URL=http://127.0.0.1:1985 on the backend.
+  srs:
+    image: ossrs/srs:v6.0-r1
+    profiles: ["live"]
+    command: ["./objs/srs", "-c", "conf/vibely.conf"]
+    volumes:
+      - ./deploy/srs/srs.conf:/usr/local/srs/conf/vibely.conf:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      # Address the browser uses to reach port 8000. Use your LAN IP to test from another device.
+      CANDIDATE: ${SRS_CANDIDATE:-127.0.0.1}
+      SRS_VHOST_HTTP_HOOKS_ON_PUBLISH: http://host.docker.internal:8080/api/internal/live/media/srs-hooks?hook_token=${LIVE_MEDIA_HOOK_TOKEN:-vibely-dev-live-media-hook-token}
+      SRS_VHOST_HTTP_HOOKS_ON_UNPUBLISH: http://host.docker.internal:8080/api/internal/live/media/srs-hooks?hook_token=${LIVE_MEDIA_HOOK_TOKEN:-vibely-dev-live-media-hook-token}
+      SRS_VHOST_HTTP_HOOKS_ON_PLAY: http://host.docker.internal:8080/api/internal/live/media/srs-hooks?hook_token=${LIVE_MEDIA_HOOK_TOKEN:-vibely-dev-live-media-hook-token}
+      SRS_VHOST_HTTP_HOOKS_ON_STOP: http://host.docker.internal:8080/api/internal/live/media/srs-hooks?hook_token=${LIVE_MEDIA_HOOK_TOKEN:-vibely-dev-live-media-hook-token}
+    ports:
+      # HTTP API + WHIP/WHEP: local machine only (Vite proxies /rtc to it).
+      - "127.0.0.1:1985:1985"
+      # WebRTC media.
+      - "${SRS_MEDIA_BIND:-127.0.0.1}:8000:8000/udp"
+      - "${SRS_MEDIA_BIND:-127.0.0.1}:8000:8000/tcp"
+
   redis:
     image: redis:7-alpine
     ports:

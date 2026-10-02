@@ -1,6 +1,7 @@
 # Production VPS — /opt/vibely/docker-compose.yml
 # Postgres on the VPS host listens on 127.0.0.1 only — backend uses host network so localhost:5432 works.
-# Host nginx: /api/ → 127.0.0.1:8080 (backend), SPA → /var/www/vibely or 127.0.0.1:8081 (frontend).
+# Host nginx: /api/ → 127.0.0.1:8080 (backend), SPA → /var/www/vibely or 127.0.0.1:8081 (frontend),
+# /rtc/v1/whip/ + /rtc/v1/whep/ → 127.0.0.1:1985 (SRS, LIVE video signaling).
 
 services:
   backend:
@@ -18,6 +19,20 @@ services:
       timeout: 5s
       retries: 3
       start_period: 90s
+
+  # LIVE media server (WebRTC WHIP/WHEP). Host network so UDP/TCP 8000 needs no NAT and the
+  # HTTP API/hooks stay on 127.0.0.1. All addresses and the hook token come from srs.env.
+  # Firewall: open 8000/udp and 8000/tcp only; never open 1985 or 1935.
+  srs:
+    image: ossrs/srs:v6.0-r1
+    container_name: vibely-srs
+    restart: unless-stopped
+    network_mode: host
+    command: ["./objs/srs", "-c", "conf/vibely.conf"]
+    env_file:
+      - srs.env
+    volumes:
+      - /opt/vibely/srs/srs.conf:/usr/local/srs/conf/vibely.conf:ro
 
   frontend:
     image: kiencuongsoftware/vibely-frontend:latest
