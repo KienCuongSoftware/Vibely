@@ -16,6 +16,9 @@ import com.vibely.backend.live.entity.LiveStatus;
 import com.vibely.backend.live.entity.LiveVisibility;
 import com.vibely.backend.live.exception.LiveErrorCode;
 import com.vibely.backend.live.exception.LiveException;
+import com.vibely.backend.live.media.LiveMediaService;
+import com.vibely.backend.live.media.dto.LivePlaybackResponse;
+import com.vibely.backend.live.media.dto.LivePublishCredentialResponse;
 import com.vibely.backend.live.realtime.LiveCounterBroadcaster;
 import com.vibely.backend.live.realtime.LiveEventPublisher;
 import com.vibely.backend.live.realtime.LiveEventType;
@@ -52,6 +55,11 @@ public class LiveService {
 
     private static final Logger log = LoggerFactory.getLogger(LiveService.class);
 
+    public static final String END_REASON_HOST = "host";
+    public static final String END_REASON_ADMIN = "admin";
+    public static final String END_REASON_HOST_DISCONNECTED = "host_disconnected";
+    public static final String END_REASON_PUBLISH_TIMEOUT = "publish_timeout";
+
     private final LiveRepository liveRepository;
     private final FollowRepository followRepository;
     private final LiveActorResolver actorResolver;
@@ -64,6 +72,7 @@ public class LiveService {
     private final LiveResponseMapper mapper;
     private final S3OwnedMediaValidator mediaValidator;
     private final LiveProperties properties;
+    private final LiveMediaService mediaService;
 
     public LiveService(
         LiveRepository liveRepository,
@@ -77,8 +86,10 @@ public class LiveService {
         LiveEventPublisher publisher,
         LiveResponseMapper mapper,
         S3OwnedMediaValidator mediaValidator,
-        LiveProperties properties
+        LiveProperties properties,
+        LiveMediaService mediaService
     ) {
+        this.mediaService = mediaService;
         this.liveRepository = liveRepository;
         this.followRepository = followRepository;
         this.actorResolver = actorResolver;
@@ -200,7 +211,13 @@ public class LiveService {
             log.warn("live.realtime.activate_failed live={} reason={}", live.getPublicId(), ex.getClass().getSimpleName());
         }
         Live started = reload(live);
-        publisher.publish(started.getPublicId(), LiveEventType.LIVE_STARTED, statusPayload(started));
+        try {
+            mediaService.createSession(started);
+        } catch (RuntimeException ex) {
+            // The publish-credential endpoint creates the session lazily if this failed.
+            log.warn("live.media.session_create_failed live={} reason={}", started.getPublicId(), ex.getClass().getSimpleName());
+        }
+        publisher.publish(started.getPublicId(), LiveEventType.LIVE_STARTED, statusPayload(started, null));
         log.info("live.started live={} hostId={}", started.getPublicId(), actor.getId());
         return toDetail(started, actor);
     }
@@ -226,6 +243,39 @@ public class LiveService {
             }
         }
 
+        boolean byHost = live.isHostedBy(actor);
+        Live ended = finish(live, byHost ? END_REASON_HOST : END_REASON_ADMIN);
+        log.info("live.ended live={} actorId={} byHost={}", ended.getPublicId(), actor.getId(), byHost);
+        return toDetail(ended, actor);
+    }
+
+    /**
+     * Ends a LIVE without a user action (host stream lost beyond the reconnect grace period, host never
+     * started publishing). A LIVE that is already finished only gets its media session closed.
+     */
+    public void endBySystem(long liveId, String reason) {
+        Live live = liveRepository.findWithHostById(liveId).orElse(null);
+        if (live == null) {
+            return;
+        }
+        if (live.getStatus() != LiveStatus.LIVE) {
+            mediaService.endSession(live);
+            return;
+        }
+        try {
+            Live ended = finish(live, reason);
+            log.info("live.ended live={} actor=system reason={}", ended.getPublicId(), reason);
+        } catch (LiveException ex) {
+            // Ended concurrently by the host or another node.
+            log.debug("live.end_by_system.skipped live={} code={}", live.getPublicId(), ex.getCode());
+        }
+    }
+
+    /**
+     * LIVE -> ENDED: final statistics, media revocation and SRS cleanup, then LIVE_ENDED broadcast and
+     * realtime cleanup. Media cleanup failures never undo the business transition; they are retried.
+     */
+    private Live finish(Live live, String reason) {
         long peak = live.getPeakViewerCount();
         long likes = live.getLikeCount();
         try {
@@ -250,18 +300,34 @@ public class LiveService {
         }
 
         likeService.flushLikeCount(live.getId());
+        // Release viewer slots before SRS disconnects players, so their on_stop hooks are no-ops.
         viewerService.onLiveEnded(live.getId(), endedAt);
+        mediaService.endSession(live);
+
+        Live ended = reload(live);
+        publisher.publish(ended.getPublicId(), LiveEventType.LIVE_ENDED, statusPayload(ended, reason));
         counterBroadcaster.forget(live.getId());
         try {
             store.clear(live.getId());
         } catch (RuntimeException ex) {
             log.warn("live.realtime.clear_failed live={} reason={}", live.getPublicId(), ex.getClass().getSimpleName());
         }
+        return ended;
+    }
 
-        Live ended = reload(live);
-        publisher.publish(ended.getPublicId(), LiveEventType.LIVE_ENDED, statusPayload(ended));
-        log.info("live.ended live={} actorId={} byHost={}", ended.getPublicId(), actor.getId(), live.isHostedBy(actor));
-        return toDetail(ended, actor);
+    /** Host only: a fresh single-use WHIP credential for (re)publishing the camera/microphone stream. */
+    public LivePublishCredentialResponse publishCredential(Authentication authentication, String liveId) {
+        User actor = actorResolver.require(authentication);
+        Live live = accessService.requireExisting(liveId);
+        requireHostOrHide(live, actor);
+        return mediaService.getPublishInfo(live);
+    }
+
+    /** Anyone allowed to see the LIVE (guests included): WHEP endpoint while the host is publishing. */
+    public LivePlaybackResponse playback(Authentication authentication, String liveId) {
+        User viewer = actorResolver.optional(authentication).orElse(null);
+        Live live = accessService.requireViewable(liveId, viewer);
+        return mediaService.getPlaybackInfo(live, viewer);
     }
 
     /** CREATED -> CANCELLED (host only). */
@@ -331,11 +397,18 @@ public class LiveService {
         User viewer = actorResolver.optional(authentication).orElse(null);
         Live live = accessService.requireViewable(liveId, viewer);
         LiveResponse response = mapper.toResponse(live, counters(live), realtimePeak(live), false, false, false);
+        Boolean publishing;
+        try {
+            publishing = mediaService.isPublishing(live);
+        } catch (RuntimeException ex) {
+            publishing = null;
+        }
         return new LiveStatsResponse(
             response.status(),
             response.viewerCount(),
             response.peakViewerCount(),
-            response.likeCount()
+            response.likeCount(),
+            publishing
         );
     }
 
@@ -432,13 +505,16 @@ public class LiveService {
             .orElseThrow(() -> new LiveException(LiveErrorCode.LIVE_NOT_FOUND));
     }
 
-    private static Map<String, Object> statusPayload(Live live) {
+    private static Map<String, Object> statusPayload(Live live, String reason) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("status", live.getStatus().name());
         payload.put("startedAt", live.getStartedAt());
         payload.put("endedAt", live.getEndedAt());
         payload.put("peakViewerCount", live.getPeakViewerCount());
         payload.put("likeCount", live.getLikeCount());
+        if (reason != null) {
+            payload.put("reason", reason);
+        }
         return payload;
     }
 

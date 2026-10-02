@@ -225,6 +225,31 @@ live:
     default-page-size: ${LIVE_DISCOVERY_DEFAULT_PAGE_SIZE:20}
     max-page-size: ${LIVE_DISCOVERY_MAX_PAGE_SIZE:50}
     max-search-length: ${LIVE_DISCOVERY_MAX_SEARCH_LENGTH:80}
+  # Phase 3: real WebRTC media through SRS (WHIP publish / WHEP play). Video never reaches this service.
+  media:
+    enabled: ${LIVE_MEDIA_ENABLED:false}
+    # Empty = same origin; the reverse proxy forwards /rtc/v1/whip/ and /rtc/v1/whep/ to SRS.
+    public-url: ${LIVE_MEDIA_PUBLIC_URL:}
+    # SRS HTTP API, reachable only from the backend host (never exposed publicly).
+    api-url: ${LIVE_MEDIA_API_URL:}
+    api-username: ${LIVE_MEDIA_API_USERNAME:}
+    api-password: ${LIVE_MEDIA_API_PASSWORD:}
+    app: ${LIVE_MEDIA_APP:live}
+    hook-token: ${LIVE_MEDIA_HOOK_TOKEN:vibely-dev-live-media-hook-token}
+    token-secret: ${LIVE_MEDIA_TOKEN_SECRET:}
+    publish-token-ttl-seconds: ${LIVE_MEDIA_PUBLISH_TOKEN_TTL_SECONDS:300}
+    playback-token-ttl-seconds: ${LIVE_MEDIA_PLAYBACK_TOKEN_TTL_SECONDS:120}
+    reconnect-grace-seconds: ${LIVE_MEDIA_RECONNECT_GRACE_SECONDS:60}
+    publish-start-timeout-seconds: ${LIVE_MEDIA_PUBLISH_START_TIMEOUT_SECONDS:180}
+    health-check-interval-ms: ${LIVE_MEDIA_HEALTH_CHECK_INTERVAL_MS:5000}
+    api-connect-timeout-ms: ${LIVE_MEDIA_API_CONNECT_TIMEOUT_MS:2000}
+    api-read-timeout-ms: ${LIVE_MEDIA_API_READ_TIMEOUT_MS:3000}
+    cleanup-retry-minutes: ${LIVE_MEDIA_CLEANUP_RETRY_MINUTES:10}
+    # Comma-separated. TURN is not deployed in phase 3; leave empty unless a TURN server exists.
+    stun-urls: ${LIVE_MEDIA_STUN_URLS:}
+    turn-urls: ${LIVE_MEDIA_TURN_URLS:}
+    turn-username: ${LIVE_MEDIA_TURN_USERNAME:}
+    turn-credential: ${LIVE_MEDIA_TURN_CREDENTIAL:}
 ---
 spring:
   config:

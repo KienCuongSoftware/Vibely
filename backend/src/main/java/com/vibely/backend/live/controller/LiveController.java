@@ -13,12 +13,15 @@ import com.vibely.backend.live.dto.LiveResponse;
 import com.vibely.backend.live.dto.LiveStatsResponse;
 import com.vibely.backend.live.dto.UpdateLiveRequest;
 import com.vibely.backend.live.gift.LiveGift;
+import com.vibely.backend.live.media.dto.LivePlaybackResponse;
+import com.vibely.backend.live.media.dto.LivePublishCredentialResponse;
 import com.vibely.backend.live.service.LiveCommentService;
 import com.vibely.backend.live.service.LiveGiftActionService;
 import com.vibely.backend.live.service.LiveLikeService;
 import com.vibely.backend.live.service.LiveService;
 import jakarta.validation.Valid;
 import java.util.List;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -115,6 +118,27 @@ public class LiveController {
     @PreAuthorize("hasRole('USER')")
     public ApiResponse<LiveResponse> cancel(Authentication authentication, @PathVariable String liveId) {
         return ApiResponse.success(liveService.cancel(authentication, liveId));
+    }
+
+    /** Host only: single-use WHIP endpoint for publishing camera/microphone to the media server. */
+    @PostMapping("/{liveId}/publish-credential")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<LivePublishCredentialResponse> publishCredential(
+        Authentication authentication,
+        @PathVariable String liveId
+    ) {
+        return ApiResponse.success(liveService.publishCredential(authentication, liveId));
+    }
+
+    /** Public (subject to LIVE visibility): WHEP endpoint while the host is publishing. */
+    @GetMapping("/{liveId}/playback")
+    public ResponseEntity<ApiResponse<LivePlaybackResponse>> playback(
+        Authentication authentication,
+        @PathVariable String liveId
+    ) {
+        return ResponseEntity.ok()
+            .cacheControl(CacheControl.noStore())
+            .body(ApiResponse.success(liveService.playback(authentication, liveId)));
     }
 
     @GetMapping("/{liveId}/stats")

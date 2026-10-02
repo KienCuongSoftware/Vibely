@@ -4,8 +4,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * LIVE metadata for clients. Deliberately has no ingest/stream credentials; {@code playback} stays
- * null until the media server (SRS/WebRTC) is integrated.
+ * LIVE metadata for clients. Deliberately has no ingest/stream credentials. {@code playback} is
+ * {@code {"type":"webrtc"}} while real media (SRS) is enabled and the LIVE is upcoming or live, null
+ * otherwise; endpoints and tokens are issued separately per request.
  */
 public record LiveResponse(
     UUID id,

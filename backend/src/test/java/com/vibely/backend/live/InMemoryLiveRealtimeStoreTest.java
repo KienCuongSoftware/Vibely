@@ -1,6 +1,7 @@
 package com.vibely.backend.live;
 
 import com.vibely.backend.live.realtime.InMemoryLiveRealtimeStore;
+import com.vibely.backend.live.realtime.LiveRealtimeStore;
 import com.vibely.backend.live.realtime.LiveRealtimeStore.ViewerChange;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -18,6 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 class InMemoryLiveRealtimeStoreTest {
 
     private static final long LIVE_ID = 42L;
+    private static final String ALICE = LiveRealtimeStore.userKey(1L);
+    private static final String BOB = LiveRealtimeStore.userKey(2L);
+    private static final String GUEST = "g0123456789ab";
 
     private InMemoryLiveRealtimeStore store;
 
@@ -29,9 +33,9 @@ class InMemoryLiveRealtimeStoreTest {
 
     @Test
     void joinIncrementsUniqueViewersAndTracksPeak() {
-        ViewerChange first = store.join(LIVE_ID, 1L);
-        ViewerChange secondTab = store.join(LIVE_ID, 1L);
-        ViewerChange other = store.join(LIVE_ID, 2L);
+        ViewerChange first = store.join(LIVE_ID, ALICE);
+        ViewerChange secondTab = store.join(LIVE_ID, ALICE);
+        ViewerChange other = store.join(LIVE_ID, BOB);
 
         assertThat(first.accepted()).isTrue();
         assertThat(first.countChanged()).isTrue();
@@ -42,40 +46,50 @@ class InMemoryLiveRealtimeStoreTest {
     }
 
     @Test
-    void leaveDecrementsOnlyWhenLastConnectionCloses() {
-        store.join(LIVE_ID, 1L);
-        store.join(LIVE_ID, 1L);
+    void guestKeysCountSeparatelyFromUsers() {
+        store.join(LIVE_ID, ALICE);
+        store.join(LIVE_ID, GUEST);
 
-        assertThat(store.leave(LIVE_ID, 1L).countChanged()).isFalse();
+        assertThat(store.viewerCount(LIVE_ID)).isEqualTo(2);
+        assertThat(store.leave(LIVE_ID, GUEST).countChanged()).isTrue();
         assertThat(store.viewerCount(LIVE_ID)).isEqualTo(1);
-        assertThat(store.leave(LIVE_ID, 1L).countChanged()).isTrue();
+    }
+
+    @Test
+    void leaveDecrementsOnlyWhenLastConnectionCloses() {
+        store.join(LIVE_ID, ALICE);
+        store.join(LIVE_ID, ALICE);
+
+        assertThat(store.leave(LIVE_ID, ALICE).countChanged()).isFalse();
+        assertThat(store.viewerCount(LIVE_ID)).isEqualTo(1);
+        assertThat(store.leave(LIVE_ID, ALICE).countChanged()).isTrue();
         assertThat(store.viewerCount(LIVE_ID)).isZero();
         assertThat(store.peakViewerCount(LIVE_ID)).isEqualTo(1);
     }
 
     @Test
     void viewerCountNeverGoesNegative() {
-        ViewerChange stray = store.leave(LIVE_ID, 99L);
-        store.join(LIVE_ID, 1L);
-        store.leave(LIVE_ID, 1L);
-        store.leave(LIVE_ID, 1L);
+        ViewerChange stray = store.leave(LIVE_ID, LiveRealtimeStore.userKey(99L));
+        store.join(LIVE_ID, ALICE);
+        store.leave(LIVE_ID, ALICE);
+        store.leave(LIVE_ID, ALICE);
 
         assertThat(stray.accepted()).isFalse();
         assertThat(store.viewerCount(LIVE_ID)).isZero();
-        assertThat(store.leave(7L, 1L).viewerCount()).isZero();
+        assertThat(store.leave(7L, ALICE).viewerCount()).isZero();
     }
 
     @Test
     void rejectsJoinsOnceDeactivated() {
-        store.join(LIVE_ID, 1L);
+        store.join(LIVE_ID, ALICE);
         store.deactivate(LIVE_ID);
 
-        assertThat(store.join(LIVE_ID, 2L).accepted()).isFalse();
+        assertThat(store.join(LIVE_ID, BOB).accepted()).isFalse();
         assertThat(store.viewerCount(LIVE_ID)).isEqualTo(1);
 
         store.clear(LIVE_ID);
         assertThat(store.viewerCount(LIVE_ID)).isZero();
-        assertThat(store.join(LIVE_ID, 3L).accepted()).isFalse();
+        assertThat(store.join(LIVE_ID, LiveRealtimeStore.userKey(3L)).accepted()).isFalse();
     }
 
     @Test
@@ -84,7 +98,7 @@ class InMemoryLiveRealtimeStoreTest {
         CountDownLatch go = new CountDownLatch(1);
         List<Future<?>> tasks = new ArrayList<>();
         for (long user = 1; user <= 200; user++) {
-            long viewer = user;
+            String viewer = LiveRealtimeStore.userKey(user);
             tasks.add(pool.submit(() -> {
                 go.await();
                 store.join(LIVE_ID, viewer);

@@ -10,5 +10,7 @@ public enum LiveEventType {
     LIKE_UPDATED,
     USER_JOINED,
     USER_LEFT,
-    USER_RESTRICTED
+    USER_RESTRICTED,
+    /** The host's media stream started or stopped on SRS (payload: publishing, reconnectDeadline). */
+    STREAM_STATE_UPDATED
 }

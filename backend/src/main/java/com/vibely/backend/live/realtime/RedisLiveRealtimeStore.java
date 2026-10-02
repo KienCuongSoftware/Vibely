@@ -111,7 +111,7 @@ public class RedisLiveRealtimeStore implements LiveRealtimeStore {
     }
 
     @Override
-    public ViewerChange join(long liveId, long viewerId) {
+    public ViewerChange join(long liveId, String viewerKey) {
         List<?> result = redis.execute(
             JOIN,
             List.of(
@@ -119,7 +119,7 @@ public class RedisLiveRealtimeStore implements LiveRealtimeStore {
                 key(LiveRedisKeys.viewers(liveId)),
                 key(LiveRedisKeys.peak(liveId))
             ),
-            Long.toString(viewerId),
+            viewerKey,
             Long.toString(ttl().toMillis())
         );
         long count = asLong(result, 0);
@@ -130,11 +130,11 @@ public class RedisLiveRealtimeStore implements LiveRealtimeStore {
     }
 
     @Override
-    public ViewerChange leave(long liveId, long viewerId) {
+    public ViewerChange leave(long liveId, String viewerKey) {
         List<?> result = redis.execute(
             LEAVE,
             List.of(key(LiveRedisKeys.viewers(liveId))),
-            Long.toString(viewerId)
+            viewerKey
         );
         long remaining = asLong(result, 1);
         return new ViewerChange(remaining >= 0, asLong(result, 0), remaining == 0L);

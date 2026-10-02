@@ -23,11 +23,19 @@ public interface LiveRealtimeStore {
     /** Refreshes TTLs of the LIVE keys so long broadcasts do not expire. */
     void touch(long liveId);
 
-    /** Adds one connection for the viewer. Rejected (accepted=false) when the LIVE is not active. */
-    ViewerChange join(long liveId, long viewerId);
+    /**
+     * Adds one connection for the viewer. Rejected (accepted=false) when the LIVE is not active.
+     * {@code viewerKey} identifies a unique viewer ({@link #userKey(long)} for signed-in users, an
+     * opaque per-playback key for guests).
+     */
+    ViewerChange join(long liveId, String viewerKey);
 
     /** Removes one connection for the viewer; a viewer without connections is a no-op. */
-    ViewerChange leave(long liveId, long viewerId);
+    ViewerChange leave(long liveId, String viewerKey);
+
+    static String userKey(long userId) {
+        return "u" + userId;
+    }
 
     long viewerCount(long liveId);
 

@@ -15,6 +15,7 @@ public final class InternalTokenSecurity {
         "vibely-dev-cu-token",
         "vibely-dev-enhance-token",
         "vibely-dev-translation-token",
+        "vibely-dev-live-media-hook-token",
         "changeme",
         "secret",
         "token"

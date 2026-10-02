@@ -35,7 +35,9 @@ public class SecurityStartupValidator {
         @Value("${app.moderation.internal-token:}") String moderationToken,
         @Value("${app.content-understanding.internal-token:}") String contentUnderstandingToken,
         @Value("${app.enhancement.internal-token:}") String enhancementToken,
-        @Value("${app.translation.internal-token:}") String translationToken
+        @Value("${app.translation.internal-token:}") String translationToken,
+        @Value("${live.media.enabled:false}") boolean liveMediaEnabled,
+        @Value("${live.media.hook-token:}") String liveMediaHookToken
     ) {
         this.environment = environment;
         this.jwtSecret = jwtSecret == null ? "" : jwtSecret.trim();
@@ -46,6 +48,9 @@ public class SecurityStartupValidator {
         tokens.put("app.content-understanding.internal-token", contentUnderstandingToken);
         tokens.put("app.enhancement.internal-token", enhancementToken);
         tokens.put("app.translation.internal-token", translationToken);
+        if (liveMediaEnabled) {
+            tokens.put("live.media.hook-token", liveMediaHookToken);
+        }
         this.internalTokens = Map.copyOf(tokens);
     }
 

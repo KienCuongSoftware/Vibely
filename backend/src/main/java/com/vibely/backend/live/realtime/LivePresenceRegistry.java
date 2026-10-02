@@ -11,8 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Component;
 
 /**
- * STOMP subscriptions to LIVE topics on this node, keyed by WebSocket session and subscription id,
- * so UNSUBSCRIBE / disconnect / LIVE end release exactly the viewer slots that were taken.
+ * Viewer presences on this node, keyed by session and subscription id, so UNSUBSCRIBE / disconnect /
+ * LIVE end release exactly the viewer slots that were taken. Sessions are STOMP WebSocket sessions or,
+ * with real media enabled, SRS playback clients (session id {@code srs:<client_id>}).
  */
 @Component
 public class LivePresenceRegistry {
@@ -55,6 +56,33 @@ public class LivePresenceRegistry {
         return removed;
     }
 
+    public boolean contains(String sessionId) {
+        return sessions.containsKey(sessionId);
+    }
+
+    /** Removes every session whose id starts with {@code prefix} (e.g. all SRS playback clients). */
+    public List<LivePresence> removeSessionsWithPrefix(String prefix) {
+        List<LivePresence> removed = new ArrayList<>();
+        for (String sessionId : List.copyOf(sessions.keySet())) {
+            if (sessionId.startsWith(prefix)) {
+                removed.addAll(removeSession(sessionId));
+            }
+        }
+        return removed;
+    }
+
+    /** Session ids (with {@code prefix}) through which the user is present in the LIVE. */
+    public List<String> findSessions(String prefix, long liveId, long userId) {
+        List<String> found = new ArrayList<>();
+        sessions.forEach((sessionId, subscriptions) -> {
+            if (sessionId.startsWith(prefix) && subscriptions.values().stream()
+                .anyMatch(presence -> presence.liveId() == liveId && Long.valueOf(userId).equals(presence.userId()))) {
+                found.add(sessionId);
+            }
+        });
+        return found;
+    }
+
     public boolean isSubscribed(String sessionId, long liveId) {
         Map<String, LivePresence> subscriptions = sessions.get(sessionId);
         return subscriptions != null && subscriptions.values().stream().anyMatch(presence -> presence.liveId() == liveId);
@@ -62,13 +90,16 @@ public class LivePresenceRegistry {
 
     /**
      * @param counted whether this subscription holds a viewer slot (the host and uncounted fallbacks do not)
+     * @param viewerKey unique-viewer key in the realtime store
+     * @param userId signed-in viewer, or null for a guest
      */
     public record LivePresence(
         String sessionId,
         String subscriptionId,
         long liveId,
         UUID livePublicId,
-        long userId,
+        String viewerKey,
+        Long userId,
         LiveUserResponse profile,
         boolean counted,
         LocalDateTime joinedAt

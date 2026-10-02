@@ -26,7 +26,9 @@ public enum LiveErrorCode {
     INVALID_MODERATOR(HttpStatus.BAD_REQUEST, "This user cannot be a moderator"),
     ALREADY_REPORTED(HttpStatus.BAD_REQUEST, "You have already reported this"),
     RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "You are sending messages too fast"),
-    GIFTS_UNAVAILABLE(HttpStatus.NOT_IMPLEMENTED, "Gifts are not available yet");
+    GIFTS_UNAVAILABLE(HttpStatus.NOT_IMPLEMENTED, "Gifts are not available yet"),
+    MEDIA_DISABLED(HttpStatus.NOT_IMPLEMENTED, "LIVE video streaming is not enabled"),
+    MEDIA_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "LIVE video is not available right now");
 
     private final HttpStatus status;
     private final String defaultMessage;

@@ -21,6 +21,9 @@ public interface LiveRepository extends JpaRepository<Live, Long> {
     @Query("select l from Live l join fetch l.host where l.publicId = :publicId")
     Optional<Live> findWithHostByPublicId(@Param("publicId") UUID publicId);
 
+    @Query("select l from Live l join fetch l.host where l.id = :id")
+    Optional<Live> findWithHostById(@Param("id") Long id);
+
     @Query("select l.publicId from Live l where l.id = :id")
     Optional<UUID> findPublicIdById(@Param("id") Long id);
 

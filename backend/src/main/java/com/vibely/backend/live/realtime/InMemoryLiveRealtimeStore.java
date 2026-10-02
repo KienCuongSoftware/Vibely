@@ -54,7 +54,7 @@ public class InMemoryLiveRealtimeStore implements LiveRealtimeStore {
     }
 
     @Override
-    public ViewerChange join(long liveId, long viewerId) {
+    public ViewerChange join(long liveId, String viewerId) {
         LiveState state = lives.get(liveId);
         if (state == null) {
             return ViewerChange.rejected();
@@ -71,7 +71,7 @@ public class InMemoryLiveRealtimeStore implements LiveRealtimeStore {
     }
 
     @Override
-    public ViewerChange leave(long liveId, long viewerId) {
+    public ViewerChange leave(long liveId, String viewerId) {
         LiveState state = lives.get(liveId);
         if (state == null) {
             return new ViewerChange(false, 0, false);
@@ -207,7 +207,7 @@ public class InMemoryLiveRealtimeStore implements LiveRealtimeStore {
 
     private static final class LiveState {
         private boolean active;
-        private final Map<Long, Long> viewers = new HashMap<>();
+        private final Map<String, Long> viewers = new HashMap<>();
         private long peak;
         private Long likes;
         private final Map<Long, Long> pendingLikes = new HashMap<>();

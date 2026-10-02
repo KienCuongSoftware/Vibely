@@ -1,6 +1,7 @@
 package com.vibely.backend.live.service;
 
 import com.vibely.backend.auth.service.UserAvatarResolver;
+import com.vibely.backend.live.config.LiveProperties;
 import com.vibely.backend.live.dto.LiveCommentResponse;
 import com.vibely.backend.live.dto.LiveResponse;
 import com.vibely.backend.live.dto.LiveUserResponse;
@@ -11,24 +12,30 @@ import com.vibely.backend.live.gift.GiftService;
 import com.vibely.backend.live.realtime.LiveRealtimeStore.CounterSnapshot;
 import com.vibely.backend.storage.MediaUrlPresigner;
 import com.vibely.backend.user.entity.User;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @Component
 public class LiveResponseMapper {
 
+    private static final Map<String, String> WEBRTC_PLAYBACK = Map.of("type", "webrtc");
+
     private final UserAvatarResolver avatarResolver;
     private final MediaUrlPresigner mediaUrlPresigner;
     private final GiftService giftService;
+    private final boolean mediaEnabled;
 
     public LiveResponseMapper(
         UserAvatarResolver avatarResolver,
         MediaUrlPresigner mediaUrlPresigner,
-        GiftService giftService
+        GiftService giftService,
+        LiveProperties properties
     ) {
         this.avatarResolver = avatarResolver;
         this.mediaUrlPresigner = mediaUrlPresigner;
         this.giftService = giftService;
+        this.mediaEnabled = properties.getMedia().isEnabled();
     }
 
     /**
@@ -76,8 +83,22 @@ public class LiveResponseMapper {
             isOwner,
             isFollowing,
             canModerate,
-            null
+            playbackDescriptor(live)
         );
+    }
+
+    /**
+     * Tells clients which player/publisher to use. Never carries an endpoint or credential: those are
+     * issued per request by {@code /playback} and {@code /publish-credential}.
+     */
+    private Map<String, String> playbackDescriptor(Live live) {
+        if (!mediaEnabled) {
+            return null;
+        }
+        if (live.getStatus() != LiveStatus.CREATED && live.getStatus() != LiveStatus.LIVE) {
+            return null;
+        }
+        return WEBRTC_PLAYBACK;
     }
 
     public LiveUserResponse toUser(User user) {

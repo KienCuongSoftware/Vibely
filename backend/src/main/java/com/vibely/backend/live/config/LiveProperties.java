@@ -1,5 +1,7 @@
 package com.vibely.backend.live.config;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +13,11 @@ public class LiveProperties {
     private final Like like = new Like();
     private final Realtime realtime = new Realtime();
     private final Discovery discovery = new Discovery();
+    private final Media media = new Media();
+
+    public Media getMedia() {
+        return media;
+    }
 
     public Chat getChat() {
         return chat;
@@ -176,6 +183,204 @@ public class LiveProperties {
 
         public void setMaxSearchLength(int maxSearchLength) {
             this.maxSearchLength = maxSearchLength;
+        }
+    }
+
+    /**
+     * SRS (WebRTC WHIP/WHEP) integration. Media never passes through this service; these settings
+     * only describe where browsers send SDP offers and how SRS hooks are authenticated.
+     */
+    public static class Media {
+        /** When false the LIVE module behaves as in phase 2 (no playback descriptor, no hooks). */
+        private boolean enabled;
+        /**
+         * Public origin prefixed to WHIP/WHEP paths handed to browsers. Empty means same origin
+         * (the reverse proxy forwards /rtc/v1/whip/ and /rtc/v1/whep/ to SRS).
+         */
+        private String publicUrl = "";
+        /** SRS HTTP API base used server-side for stream listing and client kicks. */
+        private String apiUrl = "";
+        private String apiUsername = "";
+        private String apiPassword = "";
+        private String app = "live";
+        /** Shared secret SRS sends back in the hook URL (hook_token query parameter). */
+        private String hookToken = "";
+        /** HMAC key for playback tokens; a random per-process key is used when empty. */
+        private String tokenSecret = "";
+        private int publishTokenTtlSeconds = 300;
+        private int playbackTokenTtlSeconds = 120;
+        /** How long an interrupted host may reconnect before the LIVE is ended automatically. */
+        private int reconnectGraceSeconds = 60;
+        /** How long a started LIVE may stay without any published stream before it is ended. */
+        private int publishStartTimeoutSeconds = 180;
+        private long healthCheckIntervalMs = 5000;
+        private int apiConnectTimeoutMs = 2000;
+        private int apiReadTimeoutMs = 3000;
+        /** Ended sessions whose SRS cleanup failed are retried for this long, then given up. */
+        private int cleanupRetryMinutes = 10;
+        private List<String> stunUrls = new ArrayList<>();
+        private List<String> turnUrls = new ArrayList<>();
+        private String turnUsername = "";
+        private String turnCredential = "";
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getPublicUrl() {
+            return publicUrl;
+        }
+
+        public void setPublicUrl(String publicUrl) {
+            this.publicUrl = publicUrl;
+        }
+
+        public String getApiUrl() {
+            return apiUrl;
+        }
+
+        public void setApiUrl(String apiUrl) {
+            this.apiUrl = apiUrl;
+        }
+
+        public String getApiUsername() {
+            return apiUsername;
+        }
+
+        public void setApiUsername(String apiUsername) {
+            this.apiUsername = apiUsername;
+        }
+
+        public String getApiPassword() {
+            return apiPassword;
+        }
+
+        public void setApiPassword(String apiPassword) {
+            this.apiPassword = apiPassword;
+        }
+
+        public String getApp() {
+            return app;
+        }
+
+        public void setApp(String app) {
+            this.app = app;
+        }
+
+        public String getHookToken() {
+            return hookToken;
+        }
+
+        public void setHookToken(String hookToken) {
+            this.hookToken = hookToken;
+        }
+
+        public String getTokenSecret() {
+            return tokenSecret;
+        }
+
+        public void setTokenSecret(String tokenSecret) {
+            this.tokenSecret = tokenSecret;
+        }
+
+        public int getPublishTokenTtlSeconds() {
+            return publishTokenTtlSeconds;
+        }
+
+        public void setPublishTokenTtlSeconds(int publishTokenTtlSeconds) {
+            this.publishTokenTtlSeconds = publishTokenTtlSeconds;
+        }
+
+        public int getPlaybackTokenTtlSeconds() {
+            return playbackTokenTtlSeconds;
+        }
+
+        public void setPlaybackTokenTtlSeconds(int playbackTokenTtlSeconds) {
+            this.playbackTokenTtlSeconds = playbackTokenTtlSeconds;
+        }
+
+        public int getReconnectGraceSeconds() {
+            return reconnectGraceSeconds;
+        }
+
+        public void setReconnectGraceSeconds(int reconnectGraceSeconds) {
+            this.reconnectGraceSeconds = reconnectGraceSeconds;
+        }
+
+        public int getPublishStartTimeoutSeconds() {
+            return publishStartTimeoutSeconds;
+        }
+
+        public void setPublishStartTimeoutSeconds(int publishStartTimeoutSeconds) {
+            this.publishStartTimeoutSeconds = publishStartTimeoutSeconds;
+        }
+
+        public long getHealthCheckIntervalMs() {
+            return healthCheckIntervalMs;
+        }
+
+        public void setHealthCheckIntervalMs(long healthCheckIntervalMs) {
+            this.healthCheckIntervalMs = healthCheckIntervalMs;
+        }
+
+        public int getApiConnectTimeoutMs() {
+            return apiConnectTimeoutMs;
+        }
+
+        public void setApiConnectTimeoutMs(int apiConnectTimeoutMs) {
+            this.apiConnectTimeoutMs = apiConnectTimeoutMs;
+        }
+
+        public int getApiReadTimeoutMs() {
+            return apiReadTimeoutMs;
+        }
+
+        public void setApiReadTimeoutMs(int apiReadTimeoutMs) {
+            this.apiReadTimeoutMs = apiReadTimeoutMs;
+        }
+
+        public int getCleanupRetryMinutes() {
+            return cleanupRetryMinutes;
+        }
+
+        public void setCleanupRetryMinutes(int cleanupRetryMinutes) {
+            this.cleanupRetryMinutes = cleanupRetryMinutes;
+        }
+
+        public List<String> getStunUrls() {
+            return stunUrls;
+        }
+
+        public void setStunUrls(List<String> stunUrls) {
+            this.stunUrls = stunUrls;
+        }
+
+        public List<String> getTurnUrls() {
+            return turnUrls;
+        }
+
+        public void setTurnUrls(List<String> turnUrls) {
+            this.turnUrls = turnUrls;
+        }
+
+        public String getTurnUsername() {
+            return turnUsername;
+        }
+
+        public void setTurnUsername(String turnUsername) {
+            this.turnUsername = turnUsername;
+        }
+
+        public String getTurnCredential() {
+            return turnCredential;
+        }
+
+        public void setTurnCredential(String turnCredential) {
+            this.turnCredential = turnCredential;
         }
     }
 }

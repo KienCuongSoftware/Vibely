@@ -11,6 +11,7 @@ import com.vibely.backend.live.entity.LiveRestrictionType;
 import com.vibely.backend.live.entity.LiveUserRestriction;
 import com.vibely.backend.live.exception.LiveErrorCode;
 import com.vibely.backend.live.exception.LiveException;
+import com.vibely.backend.live.media.LiveMediaService;
 import com.vibely.backend.live.realtime.LiveEventPublisher;
 import com.vibely.backend.live.realtime.LiveEventType;
 import com.vibely.backend.live.repository.LiveCommentRepository;
@@ -49,6 +50,7 @@ public class LiveModerationService {
     private final UserRepository userRepository;
     private final LiveEventPublisher publisher;
     private final LiveResponseMapper mapper;
+    private final LiveMediaService mediaService;
 
     public LiveModerationService(
         LiveActorResolver actorResolver,
@@ -59,8 +61,10 @@ public class LiveModerationService {
         LiveCommentRepository commentRepository,
         UserRepository userRepository,
         LiveEventPublisher publisher,
-        LiveResponseMapper mapper
+        LiveResponseMapper mapper,
+        LiveMediaService mediaService
     ) {
+        this.mediaService = mediaService;
         this.actorResolver = actorResolver;
         this.accessService = accessService;
         this.restrictionRepository = restrictionRepository;
@@ -94,6 +98,9 @@ public class LiveModerationService {
         payload.put("type", type.name());
         payload.put("expiresAt", expiresAt);
         publisher.publish(live.getPublicId(), LiveEventType.USER_RESTRICTED, payload);
+        if (type == LiveRestrictionType.BAN) {
+            mediaService.disconnectViewer(live, target.getId());
+        }
         log.info("live.restriction.applied live={} type={} targetId={} actorId={}", live.getPublicId(), type, target.getId(), actor.getId());
         return new LiveRestrictionResponse(target.getId(), type.name(), restriction.getExpiresAt());
     }
