@@ -2,7 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { LiveStreamCard } from '@/features/live/components/LiveStreamCard.jsx'
 
-export function LiveStreamRow({ title, streams, onSelectStream, onSeeAll }) {
+export function LiveStreamRow({ title, streams, onSelectStream, onStreamEnded, onSeeAll }) {
   const { t } = useTranslation()
 
   if (!streams?.length) return null
@@ -28,6 +28,7 @@ export function LiveStreamRow({ title, streams, onSelectStream, onSeeAll }) {
             key={stream.id}
             stream={stream}
             onSelect={onSelectStream}
+            onEnded={onStreamEnded}
           />
         ))}
       </div>

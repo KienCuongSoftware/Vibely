@@ -8,7 +8,7 @@ import { LIVE_DISCOVERY } from '@/features/live/constants/liveConstants.js'
 import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 
 /** @param {{ stream: import('../api/liveContracts.js').LiveSummary, onSelect?: (stream) => void }} props */
-export const LiveStreamCard = memo(function LiveStreamCard({ stream, onSelect }) {
+export const LiveStreamCard = memo(function LiveStreamCard({ stream, onSelect, onEnded }) {
   const { t } = useTranslation()
   const hostName = stream.host?.displayName || stream.host?.username
   const [previewing, setPreviewing] = useState(false)
@@ -68,7 +68,12 @@ export const LiveStreamCard = memo(function LiveStreamCard({ stream, onSelect })
           </div>
         )}
         {previewing ? (
-          <LivePlayer live={stream} muted className="pointer-events-none absolute inset-0" />
+          <LivePlayer
+            live={stream}
+            muted
+            className="pointer-events-none absolute inset-0"
+            onEnded={() => onEnded?.(stream)}
+          />
         ) : null}
         <div className="pointer-events-none absolute left-2 top-2 flex items-center gap-1.5">
           <LiveBadge compact />

@@ -2,6 +2,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { appendChatMessages, markChatMessageFailed } from '@/features/live/utils/chatBuffer.js'
 import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 import { createLikeBatcher } from '@/features/live/utils/likeBatcher.js'
+import { removeFromDiscovery } from '@/features/live/utils/removeFromDiscovery.js'
+
+describe('removeFromDiscovery', () => {
+  it('drops an ended LIVE from every rail', () => {
+    const a = { id: 'a' }
+    const b = { id: 'b' }
+    const result = removeFromDiscovery(
+      { featured: [a, b], recommended: [b], sections: [{ id: 'gaming', items: [a] }], recommendedHosts: [a, b] },
+      'a',
+    )
+    expect(result).toEqual({
+      featured: [b],
+      recommended: [b],
+      sections: [{ id: 'gaming', items: [] }],
+      recommendedHosts: [b],
+    })
+    expect(removeFromDiscovery(null, 'a')).toBeNull()
+  })
+})
 
 describe('formatLiveViewerCount', () => {
   it.each([

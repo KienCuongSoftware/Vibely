@@ -27,13 +27,19 @@ function Overlay({ children }) {
  * Autoplay: the stream starts muted (always allowed); unmuting comes from a user gesture.
  * If the browser still blocks playback, a tap-to-play / tap-to-unmute button is shown.
  */
-export function WebRtcLivePlayer({ live, muted = true, ended = false, streamSignal = null }) {
+export function WebRtcLivePlayer({ live, muted = true, ended = false, streamSignal = null, onEnded = null }) {
   const { t } = useTranslation()
   const { state, retry } = useWebRtcPlayback({ liveId: live?.id, ended, streamSignal })
   const videoRef = useRef(null)
   const [blocked, setBlocked] = useState(null)
   const backdrop = live?.coverUrl ?? live?.portraitCoverUrl ?? live?.host?.avatarUrl ?? null
   const playing = state.status === 'playing' && Boolean(state.stream)
+  const onEndedRef = useRef(onEnded)
+  onEndedRef.current = onEnded
+
+  useEffect(() => {
+    if (state.status === 'ended') onEndedRef.current?.()
+  }, [state.status])
 
   useEffect(() => {
     const video = videoRef.current

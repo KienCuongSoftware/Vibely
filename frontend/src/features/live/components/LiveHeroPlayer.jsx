@@ -44,7 +44,7 @@ function HeroNavButton({ label, onClick, children }) {
   )
 }
 
-export function LiveHeroPlayer({ streams, onWatch }) {
+export function LiveHeroPlayer({ streams, onWatch, onStreamEnded }) {
   const { t } = useTranslation()
   const [index, setIndex] = useState(0)
   const [hovered, setHovered] = useState(false)
@@ -93,7 +93,13 @@ export function LiveHeroPlayer({ streams, onWatch }) {
         {/* The featured LIVE itself, always playing (muted until the viewer unmutes) */}
         <div className="absolute inset-0 flex items-center justify-center px-14 pb-12 pt-4">
           <div className="relative aspect-[9/16] h-full max-h-[calc(100%-8px)] overflow-hidden rounded-md shadow-[0_8px_32px_rgba(0,0,0,0.55)] ring-1 ring-white/10">
-            <LivePlayer key={stream.id} live={stream} muted={muted} className="h-full w-full" />
+            <LivePlayer
+              key={stream.id}
+              live={stream}
+              muted={muted}
+              className="h-full w-full"
+              onEnded={() => onStreamEnded?.(stream)}
+            />
             <button
               type="button"
               onClick={watch}

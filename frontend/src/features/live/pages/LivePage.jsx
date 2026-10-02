@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IoArrowBack } from 'react-icons/io5'
 import { LiveCategoryTabs } from '@/features/live/components/LiveCategoryTabs.jsx'
@@ -18,6 +18,7 @@ import { useLiveDiscovery } from '@/features/live/hooks/useLiveData.js'
 import { useLiveMobileLayout } from '@/features/live/hooks/useLiveMobileLayout.js'
 import { useLiveNavigation } from '@/features/live/hooks/useLiveNavigation.js'
 import { RESOURCE_STATUS } from '@/features/live/hooks/useLiveResource.js'
+import { removeFromDiscovery } from '@/features/live/utils/removeFromDiscovery.js'
 import { MobileFeedBottomNav } from '@/features/feed/components/MobileFeedShell.jsx'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 
@@ -29,7 +30,11 @@ export function LivePage() {
   const isMobile = useLiveMobileLayout()
   const discovery = useLiveDiscovery({ category: activeCategory, token })
   const data = discovery.data
-  const { refresh } = discovery
+  const { refresh, setData } = discovery
+  const removeEndedLive = useCallback(
+    (live) => setData((current) => removeFromDiscovery(current, live.id)),
+    [setData],
+  )
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -72,11 +77,12 @@ export function LivePage() {
     }
     return (
       <div className={discovery.status === RESOURCE_STATUS.LOADING ? 'opacity-60 transition-opacity' : ''}>
-        <LiveHeroPlayer streams={data.featured} onWatch={openLive} />
+        <LiveHeroPlayer streams={data.featured} onWatch={openLive} onStreamEnded={removeEndedLive} />
         <LiveStreamRow
           title={t('livePage.sections.recommended')}
           streams={data.recommended}
           onSelectStream={openLive}
+          onStreamEnded={removeEndedLive}
         />
         {LIVE_DISCOVERY_SECTIONS.map((section) => (
           <LiveStreamRow
@@ -84,6 +90,7 @@ export function LivePage() {
             title={t(section.titleKey)}
             streams={sectionsById.get(section.id)}
             onSelectStream={openLive}
+            onStreamEnded={removeEndedLive}
             onSeeAll={
               activeCategory === section.seeAllCategory
                 ? undefined
