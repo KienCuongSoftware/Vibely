@@ -29,6 +29,19 @@ export function useLiveResource(loader, { enabled = true } = {}) {
     }
   }, [loader])
 
+  /** Background update: keeps the current data on screen and ignores failures. */
+  const refresh = useCallback(async () => {
+    const requestId = ++requestIdRef.current
+    try {
+      const data = await loader()
+      if (requestId === requestIdRef.current) {
+        setState({ status: RESOURCE_STATUS.SUCCESS, data, error: null })
+      }
+    } catch {
+      // keep showing the last successful data
+    }
+  }, [loader])
+
   useEffect(() => {
     if (!enabled) return undefined
     void load()
@@ -44,5 +57,5 @@ export function useLiveResource(loader, { enabled = true } = {}) {
     }))
   }, [])
 
-  return { ...state, reload: load, setData }
+  return { ...state, reload: load, refresh, setData }
 }

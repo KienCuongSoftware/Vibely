@@ -78,6 +78,10 @@ export const LIVE_DISCOVERY = Object.freeze({
   HERO_LIMIT: 4,
   SECTION_LIMIT: 8,
   SIDEBAR_CREATOR_LIMIT: 5,
+  /** Viewer counts and the list of broadcasting LIVEs are refreshed in the background. */
+  REFRESH_MS: 20_000,
+  /** Hovering a card this long starts its live preview (quick mouse passes open no connection). */
+  HOVER_PREVIEW_DELAY_MS: 350,
 })
 
 export const LIVE_ROOM_EVENT = Object.freeze({

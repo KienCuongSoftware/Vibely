@@ -98,6 +98,21 @@ describe('API LIVE room channel', () => {
     channel.disconnect()
   })
 
+  it('reads the current counts once subscribed, so a join broadcast sent earlier is not lost', async () => {
+    const onEvent = vi.fn()
+    const channel = createApiLiveRoomChannel({ liveId: LIVE_ID, token: 'tkn' })
+    channel.connect({ onEvent })
+    await flushPromises()
+    expect(liveApi.getStats).not.toHaveBeenCalled()
+
+    stomp.onConnect(stomp.client)
+    await flushPromises()
+
+    expect(liveApi.getStats).toHaveBeenCalledWith(LIVE_ID, 'tkn')
+    expect(onEvent).toHaveBeenCalledWith({ type: LIVE_ROOM_EVENT.VIEWER_COUNT, payload: { count: 3 } })
+    channel.disconnect()
+  })
+
   it('polls REST for guests without opening a socket', async () => {
     const onEvent = vi.fn()
     const channel = createApiLiveRoomChannel({ liveId: LIVE_ID, token: null })

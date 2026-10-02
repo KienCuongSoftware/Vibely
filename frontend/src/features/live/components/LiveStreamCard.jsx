@@ -1,19 +1,46 @@
-import React, { memo } from 'react'
+import React, { memo, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AvatarImage } from '@/shared/components/AvatarImage.jsx'
 import { LiveBadge } from '@/features/live/components/LiveBadge.jsx'
 import { LiveVerifiedBadge } from '@/features/live/components/LiveVerifiedBadge.jsx'
+import { LivePlayer } from '@/features/live/components/player/LivePlayer.jsx'
+import { LIVE_DISCOVERY } from '@/features/live/constants/liveConstants.js'
 import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 
 /** @param {{ stream: import('../api/liveContracts.js').LiveSummary, onSelect?: (stream) => void }} props */
 export const LiveStreamCard = memo(function LiveStreamCard({ stream, onSelect }) {
   const { t } = useTranslation()
   const hostName = stream.host?.displayName || stream.host?.username
+  const [previewing, setPreviewing] = useState(false)
+  const hoverTimerRef = useRef(0)
 
+  useEffect(() => () => clearTimeout(hoverTimerRef.current), [])
+
+  const startPreview = () => {
+    clearTimeout(hoverTimerRef.current)
+    hoverTimerRef.current = setTimeout(() => setPreviewing(true), LIVE_DISCOVERY.HOVER_PREVIEW_DELAY_MS)
+  }
+
+  const stopPreview = () => {
+    clearTimeout(hoverTimerRef.current)
+    setPreviewing(false)
+  }
+
+  const select = () => onSelect?.(stream)
+
+  // A div, not a <button>: the live preview player renders its own buttons.
   return (
-    <button
-      type="button"
-      onClick={() => onSelect?.(stream)}
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={select}
+      onKeyDown={(event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return
+        event.preventDefault()
+        select()
+      }}
+      onMouseEnter={startPreview}
+      onMouseLeave={stopPreview}
       aria-label={t('livePage.card.watchAria', { title: stream.title, host: hostName })}
       className="live-stream-card group w-full cursor-pointer text-left"
     >
@@ -40,6 +67,9 @@ export const LiveStreamCard = memo(function LiveStreamCard({ stream, onSelect })
             />
           </div>
         )}
+        {previewing ? (
+          <LivePlayer live={stream} muted className="pointer-events-none absolute inset-0" />
+        ) : null}
         <div className="pointer-events-none absolute left-2 top-2 flex items-center gap-1.5">
           <LiveBadge compact />
           <span className="text-[11px] font-semibold tabular-nums text-white drop-shadow-md">
@@ -64,6 +94,6 @@ export const LiveStreamCard = memo(function LiveStreamCard({ stream, onSelect })
           </p>
         </div>
       </div>
-    </button>
+    </div>
   )
 })

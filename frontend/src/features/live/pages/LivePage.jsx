@@ -10,6 +10,7 @@ import { LiveStreamRow } from '@/features/live/components/LiveStreamRow.jsx'
 import {
   getLiveCategoryLabelKey,
   LIVE_CATEGORIES,
+  LIVE_DISCOVERY,
   LIVE_DISCOVERY_SECTIONS,
   LIVE_FEED_FILTER,
 } from '@/features/live/constants/liveConstants.js'
@@ -28,6 +29,14 @@ export function LivePage() {
   const isMobile = useLiveMobileLayout()
   const discovery = useLiveDiscovery({ category: activeCategory, token })
   const data = discovery.data
+  const { refresh } = discovery
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (document.visibilityState === 'visible') void refresh()
+    }, LIVE_DISCOVERY.REFRESH_MS)
+    return () => clearInterval(id)
+  }, [refresh])
 
   useEffect(() => {
     document.title = t('livePage.pageTitle', { category: t(getLiveCategoryLabelKey(activeCategory)) })

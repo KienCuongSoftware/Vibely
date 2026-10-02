@@ -113,18 +113,28 @@ export function createApiLiveRoomChannel({ liveId, token }) {
     pollTimer = 0
   }
 
+  const applyStats = (stats) => {
+    emit(LIVE_ROOM_EVENT.VIEWER_COUNT, { count: stats.viewerCount })
+    emit(LIVE_ROOM_EVENT.LIKE_COUNT, { count: stats.likeCount })
+    if (typeof stats.publishing === 'boolean') {
+      emit(LIVE_ROOM_EVENT.STREAM, { publishing: stats.publishing, reconnectDeadline: null })
+    }
+    if (stats.status !== LIVE_STATUS.LIVE) applyStatus(stats.status)
+  }
+
+  /** Counter broadcasts sent before the subscription was active are missed; read the current values once. */
+  const catchUpStats = async () => {
+    const stats = await liveApi.getStats(liveId, token)
+    if (!disposed && !ended) applyStats(stats)
+  }
+
   const poll = async () => {
     pollTimer = 0
     if (disposed || ended || client) return
     try {
       const [, stats] = await Promise.all([catchUpComments(), liveApi.getStats(liveId, token)])
       if (disposed || client) return
-      emit(LIVE_ROOM_EVENT.VIEWER_COUNT, { count: stats.viewerCount })
-      emit(LIVE_ROOM_EVENT.LIKE_COUNT, { count: stats.likeCount })
-      if (typeof stats.publishing === 'boolean') {
-        emit(LIVE_ROOM_EVENT.STREAM, { publishing: stats.publishing, reconnectDeadline: null })
-      }
-      if (stats.status !== LIVE_STATUS.LIVE) applyStatus(stats.status)
+      applyStats(stats)
       setState(LIVE_CONNECTION_STATE.CONNECTED)
     } catch {
       if (!disposed) setState(LIVE_CONNECTION_STATE.ERROR)
@@ -159,6 +169,7 @@ export function createApiLiveRoomChannel({ liveId, token }) {
         stopPolling()
         setState(LIVE_CONNECTION_STATE.CONNECTED)
         void catchUpComments().catch(() => {})
+        void catchUpStats().catch(() => {})
       },
       {
         onDisconnect: () => {

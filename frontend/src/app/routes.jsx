@@ -98,9 +98,9 @@ export function GuestRoutes() {
       <Route path="/legal/page/row/privacy-policy" element={<PrivacyPolicyPage />} />
       <Route path="/sound" element={<SoundPage />} />
       <Route path="/explore" element={<ExplorePage />} />
-      <Route path="/live" element={<LivePage />} />
+      <Route path="/live" element={<RedirectToHomeLogin />} />
       <Route path="/live/create" element={<RedirectToHomeLogin />} />
-      <Route path="/live/:liveId" element={<LiveDetailPage />} />
+      <Route path="/live/:liveId" element={<RedirectToHomeLogin />} />
       <Route path="/live/:liveId/host" element={<RedirectToHomeLogin />} />
       <Route path="/support" element={<SupportPage />} />
       <Route path="/promote" element={<RedirectToHomeLogin />} />
