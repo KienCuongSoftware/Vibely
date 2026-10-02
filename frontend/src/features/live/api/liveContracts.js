@@ -99,6 +99,7 @@
  * @property {LiveSummary[]} recommended       personalised rail (excludes featured)
  * @property {{ id: string, items: LiveSummary[] }[]} sections   per-category rails
  * @property {LiveSummary[]} recommendedHosts
+ * @property {LiveSummary[]} allLives          every broadcasting LIVE, whatever the active filter
  */
 
 /**

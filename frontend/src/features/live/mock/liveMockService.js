@@ -113,6 +113,7 @@ export const liveMockService = {
       recommendedHosts: publicLiveList()
         .slice(0, LIVE_DISCOVERY.SIDEBAR_CREATOR_LIMIT)
         .map(toSummary),
+      allLives: publicLiveList().map(toSummary),
     }
   },
 

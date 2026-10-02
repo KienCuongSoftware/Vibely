@@ -12,5 +12,6 @@ export function removeFromDiscovery(discovery, liveId) {
     recommended: discovery.recommended.filter(keep),
     sections: discovery.sections.map((section) => ({ ...section, items: section.items.filter(keep) })),
     recommendedHosts: discovery.recommendedHosts.filter(keep),
+    allLives: (discovery.allLives ?? []).filter(keep),
   }
 }

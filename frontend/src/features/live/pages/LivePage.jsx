@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IoArrowBack } from 'react-icons/io5'
 import { LiveCategoryTabs } from '@/features/live/components/LiveCategoryTabs.jsx'
@@ -9,7 +9,6 @@ import { LiveStateView } from '@/features/live/components/LiveStateView.jsx'
 import { LiveStreamRow } from '@/features/live/components/LiveStreamRow.jsx'
 import {
   getLiveCategoryLabelKey,
-  LIVE_CATEGORIES,
   LIVE_DISCOVERY,
   LIVE_DISCOVERY_SECTIONS,
   LIVE_FEED_FILTER,
@@ -18,6 +17,7 @@ import { useLiveDiscovery } from '@/features/live/hooks/useLiveData.js'
 import { useLiveMobileLayout } from '@/features/live/hooks/useLiveMobileLayout.js'
 import { useLiveNavigation } from '@/features/live/hooks/useLiveNavigation.js'
 import { RESOURCE_STATUS } from '@/features/live/hooks/useLiveResource.js'
+import { availableLiveCategories } from '@/features/live/utils/availableLiveCategories.js'
 import { removeFromDiscovery } from '@/features/live/utils/removeFromDiscovery.js'
 import { MobileFeedBottomNav } from '@/features/feed/components/MobileFeedShell.jsx'
 import { useAuth } from '@/features/auth/hooks/useAuth'
@@ -35,6 +35,15 @@ export function LivePage() {
     (live) => setData((current) => removeFromDiscovery(current, live.id)),
     [setData],
   )
+  const allLives = data?.allLives
+  const categories = useMemo(() => availableLiveCategories(allLives), [allLives])
+
+  useEffect(() => {
+    if (!allLives || activeCategory === LIVE_FEED_FILTER.RECOMMENDED) return
+    if (!categories.some((category) => category.id === activeCategory)) {
+      setActiveCategory(LIVE_FEED_FILTER.RECOMMENDED)
+    }
+  }, [allLives, categories, activeCategory])
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -68,9 +77,11 @@ export function LivePage() {
         <LiveStateView
           variant="empty"
           description={
-            activeCategory === LIVE_FEED_FILTER.FOLLOWING
-              ? t('livePage.states.emptyFollowing')
-              : t('livePage.states.emptyCategory')
+            !categories.length
+              ? undefined
+              : activeCategory === LIVE_FEED_FILTER.FOLLOWING
+                ? t('livePage.states.emptyFollowing')
+                : t('livePage.states.emptyCategory')
           }
         />
       )
@@ -137,11 +148,13 @@ export function LivePage() {
           </header>
         ) : null}
 
-        <LiveCategoryTabs
-          categories={LIVE_CATEGORIES}
-          activeId={activeCategory}
-          onSelect={setActiveCategory}
-        />
+        {categories.length ? (
+          <LiveCategoryTabs
+            categories={categories}
+            activeId={activeCategory}
+            onSelect={setActiveCategory}
+          />
+        ) : null}
 
         <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-3 pb-6 pt-4 lg:px-6 lg:pb-8 lg:pt-5">
           {renderContent()}

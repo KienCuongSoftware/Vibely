@@ -125,6 +125,7 @@ export function ExplorePage() {
   const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout())
 
   const menuItems = useMemo(() => buildMainSidebarMenuItems(token), [token])
+  const showCategoryBar = tabs.length === 0 || tabs.length > 1 || items.length > 0
 
   useEffect(() => {
     document.title = t('explorePage.pageTitle')
@@ -196,7 +197,7 @@ export function ExplorePage() {
     const handleResize = () => updateCategoryScrollState()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [updateCategoryScrollState, tabs.length])
+  }, [updateCategoryScrollState, tabs.length, showCategoryBar])
 
   const load = React.useCallback((nextCursor = null, append = false) => {
     const generation = ++loadGenerationRef.current
@@ -315,53 +316,55 @@ export function ExplorePage() {
           <div className="mx-auto w-full max-w-[1240px]">
             <h1 className="hidden text-3xl font-extrabold lg:block">{t('explorePage.title')}</h1>
 
-            <div className="mt-0 flex items-start gap-2 lg:mt-3">
-              <button
-                type="button"
-                onClick={() => scrollCategories(-1)}
-                disabled={!canScrollLeft}
-                aria-label="Cuộn danh mục sang trái"
-                className="mt-0.5 hidden h-8 w-8 shrink-0 place-items-center rounded-full border border-zinc-700 bg-zinc-900 text-base font-bold text-zinc-100 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 lg:grid"
-              >
-                <IoChevronBack />
-              </button>
-              <div
-                ref={categoryScrollRef}
-                onScroll={updateCategoryScrollState}
-                className="scrollbar-none min-w-0 flex-1 overflow-x-auto"
-              >
-                <div className="flex w-max gap-2 pb-1">
-                  {tabs.length === 0 ? (
-                    <ExploreTabsSkeleton />
-                  ) : (
-                    tabs.map((tab, index) => (
-                      <button
-                        key={`${tab.kind}:${tab.slug}`}
-                        ref={tab.slug === 'all' ? allCategoryButtonRef : undefined}
-                        type="button"
-                        onClick={() => handleSelectTab(tab, index)}
-                        className={`cursor-pointer whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition lg:px-4 lg:text-sm ${
-                          activeTab.slug === tab.slug && activeTab.kind === (tab.kind ?? 'category')
-                            ? 'border-white bg-white font-bold text-black'
-                            : 'border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-800'
-                        }`}
-                      >
-                        {localizeExploreTabName(tab, t)}
-                      </button>
-                    ))
-                  )}
+            {showCategoryBar ? (
+              <div className="mt-0 flex items-start gap-2 lg:mt-3">
+                <button
+                  type="button"
+                  onClick={() => scrollCategories(-1)}
+                  disabled={!canScrollLeft}
+                  aria-label="Cuộn danh mục sang trái"
+                  className="mt-0.5 hidden h-8 w-8 shrink-0 place-items-center rounded-full border border-zinc-700 bg-zinc-900 text-base font-bold text-zinc-100 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 lg:grid"
+                >
+                  <IoChevronBack />
+                </button>
+                <div
+                  ref={categoryScrollRef}
+                  onScroll={updateCategoryScrollState}
+                  className="scrollbar-none min-w-0 flex-1 overflow-x-auto"
+                >
+                  <div className="flex w-max gap-2 pb-1">
+                    {tabs.length === 0 ? (
+                      <ExploreTabsSkeleton />
+                    ) : (
+                      tabs.map((tab, index) => (
+                        <button
+                          key={`${tab.kind}:${tab.slug}`}
+                          ref={tab.slug === 'all' ? allCategoryButtonRef : undefined}
+                          type="button"
+                          onClick={() => handleSelectTab(tab, index)}
+                          className={`cursor-pointer whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition lg:px-4 lg:text-sm ${
+                            activeTab.slug === tab.slug && activeTab.kind === (tab.kind ?? 'category')
+                              ? 'border-white bg-white font-bold text-black'
+                              : 'border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-800'
+                          }`}
+                        >
+                          {localizeExploreTabName(tab, t)}
+                        </button>
+                      ))
+                    )}
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => scrollCategories(1)}
+                  disabled={!canScrollRight}
+                  aria-label="Cuộn danh mục sang phải"
+                  className="mt-0.5 hidden h-8 w-8 shrink-0 place-items-center rounded-full border border-zinc-700 bg-zinc-900 text-base font-bold text-zinc-100 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 lg:grid"
+                >
+                  <IoChevronForward />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => scrollCategories(1)}
-                disabled={!canScrollRight}
-                aria-label="Cuộn danh mục sang phải"
-                className="mt-0.5 hidden h-8 w-8 shrink-0 place-items-center rounded-full border border-zinc-700 bg-zinc-900 text-base font-bold text-zinc-100 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 lg:grid"
-              >
-                <IoChevronForward />
-              </button>
-            </div>
+            ) : null}
 
             {loading && items.length === 0 ? (
               <ExplorePageSkeleton mobile={mobileLayout} count={mobileLayout ? 8 : 12} />

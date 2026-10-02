@@ -3,13 +3,40 @@ import { appendChatMessages, markChatMessageFailed } from '@/features/live/utils
 import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 import { createLikeBatcher } from '@/features/live/utils/likeBatcher.js'
 import { removeFromDiscovery } from '@/features/live/utils/removeFromDiscovery.js'
+import { availableLiveCategories } from '@/features/live/utils/availableLiveCategories.js'
+
+describe('availableLiveCategories', () => {
+  const ids = (lives) => availableLiveCategories(lives).map((category) => category.id)
+
+  it('shows no tab when nobody is live', () => {
+    expect(ids([])).toEqual([])
+    expect(ids(undefined)).toEqual([])
+  })
+
+  it('keeps only tabs with a broadcasting LIVE, groups included', () => {
+    expect(ids([{ id: '1', categoryId: 'pubg', host: { followedByViewer: false } }])).toEqual([
+      'recommended',
+      'gaming',
+      'pubg',
+    ])
+  })
+
+  it('shows Following only when a followed host is live', () => {
+    expect(ids([{ id: '1', categoryId: 'chat', host: { followedByViewer: true } }])).toEqual([
+      'recommended',
+      'following',
+      'lifestyle',
+      'chat',
+    ])
+  })
+})
 
 describe('removeFromDiscovery', () => {
   it('drops an ended LIVE from every rail', () => {
     const a = { id: 'a' }
     const b = { id: 'b' }
     const result = removeFromDiscovery(
-      { featured: [a, b], recommended: [b], sections: [{ id: 'gaming', items: [a] }], recommendedHosts: [a, b] },
+      { featured: [a, b], recommended: [b], sections: [{ id: 'gaming', items: [a] }], recommendedHosts: [a, b], allLives: [a, b] },
       'a',
     )
     expect(result).toEqual({
@@ -17,6 +44,7 @@ describe('removeFromDiscovery', () => {
       recommended: [b],
       sections: [{ id: 'gaming', items: [] }],
       recommendedHosts: [b],
+      allLives: [b],
     })
     expect(removeFromDiscovery(null, 'a')).toBeNull()
   })

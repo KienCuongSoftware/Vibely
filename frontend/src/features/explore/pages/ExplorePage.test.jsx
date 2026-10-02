@@ -1,4 +1,5 @@
 import React from 'react'
+import i18n from '@/i18n/i18n.js'
 import { render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
@@ -18,7 +19,8 @@ vi.mock('@/shared/api/client', () => ({
 import { apiClient } from '@/shared/api/client'
 
 describe('ExplorePage', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('vi')
     vi.clearAllMocks()
     window.matchMedia = vi.fn().mockImplementation((query) => ({
       matches: false,
@@ -52,6 +54,25 @@ describe('ExplorePage', () => {
     expect(screen.getByRole('button', { name: 'Tất cả' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Anime' })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Công nghệ' })).toBeInTheDocument()
+  })
+
+  it('hides the category bar when there are no videos at all', async () => {
+    apiClient.getExploreTabs.mockResolvedValue([{ slug: 'all', name: 'Tất cả', kind: 'category', videoCount: 0 }])
+
+    render(
+      <MemoryRouter initialEntries={['/explore']}>
+        <AuthContext.Provider value={{ token: null, refreshToken: null, user: null, login: vi.fn(), register: vi.fn(), refreshSession: vi.fn(), refreshProfile: vi.fn(), logout: vi.fn(), authReady: true }}>
+          <ExplorePage />
+        </AuthContext.Provider>
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => {
+      expect(apiClient.getExploreTrending).toHaveBeenCalled()
+    })
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Tất cả' })).not.toBeInTheDocument()
+    })
   })
 
   it('shows mobile search link on small screens', async () => {

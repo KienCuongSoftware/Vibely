@@ -129,7 +129,11 @@ export const liveApi = {
     const needsAll = Boolean(category) && category !== LIVE_FEED_FILTER.RECOMMENDED
     if (category === LIVE_FEED_FILTER.FOLLOWING && !token) {
       const all = await fetchLivePage({ size: DISCOVERY_FETCH_SIZE }, token)
-      return { ...empty, recommendedHosts: all.items.filter((live) => !live.isOwner).slice(0, LIVE_DISCOVERY.SIDEBAR_CREATOR_LIMIT) }
+      return {
+        ...empty,
+        recommendedHosts: all.items.filter((live) => !live.isOwner).slice(0, LIVE_DISCOVERY.SIDEBAR_CREATOR_LIMIT),
+        allLives: all.items,
+      }
     }
     const [filtered, all] = await Promise.all([
       fetchLivePage(discoveryQuery(category, DISCOVERY_FETCH_SIZE), token),
@@ -150,6 +154,7 @@ export const liveApi = {
       recommendedHosts: (all ?? filtered).items
         .filter((live) => !live.isOwner)
         .slice(0, LIVE_DISCOVERY.SIDEBAR_CREATOR_LIMIT),
+      allLives: (all ?? filtered).items,
     }
   },
 
