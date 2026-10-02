@@ -1,8 +1,9 @@
 import React from 'react'
 import i18n from 'i18next'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createFakeMediaDevices, installMediaGlobals } from '@/features/live/media/webrtc/webrtcTestDoubles.js'
 import { AuthContext } from '@/features/auth/store/auth-context'
 import { ThemeProvider } from '@/shared/theme/ThemeContext.jsx'
 import { CreateLivePage } from '@/features/live/pages/CreateLivePage.jsx'
@@ -36,23 +37,32 @@ function renderAt(path) {
 }
 
 describe('LIVE flow', () => {
-  it('validates, creates, starts and ends a LIVE', async () => {
+  let mediaDevices
+
+  beforeEach(() => {
+    installMediaGlobals()
+    mediaDevices = createFakeMediaDevices()
+    Object.defineProperty(navigator, 'mediaDevices', { value: mediaDevices, configurable: true })
+  })
+
+  afterEach(() => {
+    delete navigator.mediaDevices
+    vi.unstubAllGlobals()
+  })
+
+  it('goes LIVE from the camera preview in one tap, then ends the LIVE', async () => {
     await i18n.changeLanguage('en')
     renderAt('/live/create')
-    fireEvent.click(await screen.findByRole('button', { name: 'Create LIVE' }))
-    expect(await screen.findByText('Please enter a title.')).toBeInTheDocument()
-    expect(screen.getByText('Please choose a category.')).toBeInTheDocument()
 
-    fireEvent.change(screen.getByLabelText(/^Title/), { target: { value: 'My first LIVE' } })
-    fireEvent.click(screen.getByRole('radio', { name: 'Gaming' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Create LIVE' }))
-
-    expect((await screen.findAllByText('Ready', {}, { timeout: 3000 })).length).toBeGreaterThan(0)
-    expect(screen.getAllByText('My first LIVE').length).toBeGreaterThan(0)
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument()
+    await waitFor(() => expect(mediaDevices.getUserMedia).toHaveBeenCalled())
+    fireEvent.change(screen.getByLabelText('LIVE title'), { target: { value: 'My first LIVE' } })
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Turn off camera' })).toBeEnabled())
     const goLiveButtons = screen.getAllByRole('button', { name: 'Go LIVE' })
     fireEvent.click(goLiveButtons[goLiveButtons.length - 1])
 
     const endBtn = await screen.findByRole('button', { name: 'End LIVE' }, { timeout: 3000 })
+    expect(screen.getAllByText('My first LIVE').length).toBeGreaterThan(0)
     fireEvent.click(endBtn)
     const dialog = await screen.findByRole('dialog')
     fireEvent.click(within(dialog).getByRole('button', { name: 'End LIVE' }))

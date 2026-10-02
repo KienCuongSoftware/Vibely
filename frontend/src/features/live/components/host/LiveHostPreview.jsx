@@ -21,9 +21,18 @@ function placeholderKeys({ cameraEnabled, mediaKind, mediaStatus, mediaError }) 
  * Host preview surface. Renders the controller's MediaStream (local, muted) when one
  * exists; otherwise the cover with the reason the camera is not showing.
  */
-export function LiveHostPreview({ live, previewStream, cameraEnabled, mediaKind = null, mediaStatus = 'idle', mediaError = null }) {
+export function LiveHostPreview({
+  live,
+  previewStream,
+  cameraEnabled,
+  mediaKind = null,
+  mediaStatus = 'idle',
+  mediaError = null,
+  videoRef: externalVideoRef = null,
+}) {
   const { t } = useTranslation()
-  const videoRef = useRef(null)
+  const internalVideoRef = useRef(null)
+  const videoRef = externalVideoRef ?? internalVideoRef
   const showVideo = Boolean(previewStream) && cameraEnabled
 
   // The <video> unmounts while the camera is off, so the stream is re-attached when it comes back.
@@ -34,7 +43,7 @@ export function LiveHostPreview({ live, previewStream, cameraEnabled, mediaKind 
     return () => {
       video.srcObject = null
     }
-  }, [previewStream, showVideo])
+  }, [previewStream, showVideo, videoRef])
 
   const cover = live?.portraitCoverUrl ?? live?.coverUrl
   const keys = placeholderKeys({ cameraEnabled, mediaKind, mediaStatus, mediaError })

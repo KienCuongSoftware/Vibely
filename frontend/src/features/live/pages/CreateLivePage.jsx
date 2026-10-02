@@ -1,63 +1,46 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { IoArrowBack, IoCloseCircle, IoImageOutline } from 'react-icons/io5'
+import { IoArrowBack, IoPricetagOutline } from 'react-icons/io5'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import {
-  LiveCharCounter,
-  LiveFieldError,
-  LiveFormSection,
-  LiveToggle,
-} from '@/features/live/components/create/LiveFormControls.jsx'
+import { LiveDeviceSelects } from '@/features/live/components/host/LiveDeviceSelects.jsx'
+import { LiveHostControls } from '@/features/live/components/host/LiveHostControls.jsx'
+import { LiveHostMediaStatus } from '@/features/live/components/host/LiveHostMediaStatus.jsx'
+import { LiveHostPreview } from '@/features/live/components/host/LiveHostPreview.jsx'
 import { LiveSidebar } from '@/features/live/components/LiveSidebar.jsx'
-import { LiveSpinner } from '@/features/live/components/LiveStateView.jsx'
-import {
-  LIVE_LIMITS,
-  LIVE_PATHS,
-  LIVE_SELECTABLE_CATEGORIES,
-  LIVE_VISIBILITY_OPTIONS,
-} from '@/features/live/constants/liveConstants.js'
-import { useCreateLiveForm } from '@/features/live/hooks/useCreateLiveForm.js'
+import { LIVE_LIMITS, LIVE_PATHS, LIVE_STATUS } from '@/features/live/constants/liveConstants.js'
+import { useGoLive } from '@/features/live/hooks/useGoLive.js'
+import { useHostMedia } from '@/features/live/hooks/useLiveHost.js'
 import { useLiveNavigation } from '@/features/live/hooks/useLiveNavigation.js'
+import { captureVideoFrame } from '@/features/live/utils/captureVideoFrame.js'
 
-const FIELD_IDS = {
-  coverFile: 'live-create-cover',
-  title: 'live-create-title',
-  description: 'live-create-description',
-  categoryId: 'live-create-category',
-}
-
-const errorId = (field) => `${FIELD_IDS[field]}-error`
-
+/**
+ * Go LIVE: camera/mic preview and a single "Go LIVE" action. The title is optional and the
+ * category is assigned by the backend (same classifier as Explore).
+ */
 export function CreateLivePage() {
   const { t } = useTranslation()
-  const { token, logout } = useAuth()
+  const { token, user, logout } = useAuth()
   const { navigate, openLive, back } = useLiveNavigation()
-  const form = useCreateLiveForm({ token })
-  const { values, errors } = form
-  const fileInputRef = useRef(null)
+  const media = useHostMedia({ token, previewOnly: true })
+  const videoRef = useRef(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+
+  const hostName = user?.displayName || user?.fullName || user?.username || ''
+  const defaultTitle = hostName
+    ? t('livePage.create.defaultTitle', { name: hostName })
+    : t('livePage.create.defaultTitleAnonymous')
+  const getCoverFrame = useCallback(() => captureVideoFrame(videoRef.current), [])
+  const goLive = useGoLive({ token, media, defaultTitle, getCoverFrame })
+  const capturePending = media.state.status === 'idle' || media.state.status === 'preparing'
 
   useEffect(() => {
     document.title = t('livePage.create.pageTitle')
   }, [t])
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    const live = await form.submit()
-    if (live?.id) {
-      navigate(LIVE_PATHS.host(live.id), { replace: true })
-      return
-    }
-    if (form.firstInvalidField) {
-      document.getElementById(FIELD_IDS[form.firstInvalidField])?.focus()
-    }
+  const handleGoLive = async () => {
+    const live = await goLive.goLive()
+    if (live?.id) navigate(LIVE_PATHS.host(live.id), { replace: true })
   }
-
-  const clearCover = () => {
-    form.setCover(null)
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
-
-  const describedBy = (field) => (errors[field] ? errorId(field) : undefined)
 
   return (
     <section className="vibely-live-page flex h-dvh max-h-dvh min-h-0 flex-col bg-black text-zinc-100 lg:flex-row">
@@ -84,209 +67,72 @@ export function CreateLivePage() {
           <h1 className="text-[17px] font-bold">{t('livePage.create.title')}</h1>
         </header>
 
-        <form
-          noValidate
-          onSubmit={handleSubmit}
-          className="scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-3 pb-28 pt-4 lg:px-6"
-        >
-          <div className="mx-auto flex max-w-[640px] flex-col gap-4">
-            <LiveFormSection title={t('livePage.create.coverLabel')} description={t('livePage.create.coverHint', { max: LIVE_LIMITS.COVER_MAX_BYTES / (1024 * 1024) })}>
-              <div className="flex items-start gap-4">
-                <div className="relative aspect-[9/16] w-28 shrink-0 overflow-hidden rounded-lg bg-zinc-800">
-                  {form.coverPreviewUrl ? (
-                    <>
-                      <img src={form.coverPreviewUrl} alt={t('livePage.create.coverPreviewAlt')} className="h-full w-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={clearCover}
-                        aria-label={t('livePage.create.removeCover')}
-                        className="absolute right-1 top-1 cursor-pointer text-white drop-shadow"
-                      >
-                        <IoCloseCircle className="text-2xl" aria-hidden />
-                      </button>
-                    </>
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-zinc-500">
-                      <IoImageOutline className="text-3xl" aria-hidden />
-                    </div>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <input
-                    ref={fileInputRef}
-                    id={FIELD_IDS.coverFile}
-                    type="file"
-                    accept={LIVE_LIMITS.COVER_ACCEPTED_TYPES.join(',')}
-                    className="sr-only"
-                    aria-describedby={describedBy('coverFile')}
-                    aria-invalid={Boolean(errors.coverFile)}
-                    onChange={(event) => form.setCover(event.target.files?.[0] ?? null)}
-                  />
-                  <label
-                    htmlFor={FIELD_IDS.coverFile}
-                    className="live-secondary-btn inline-flex cursor-pointer items-center rounded-lg bg-white/10 px-4 py-2 text-[14px] font-semibold text-zinc-100 transition hover:bg-white/15"
-                  >
-                    {values.coverFile ? t('livePage.create.changeCover') : t('livePage.create.chooseCover')}
-                  </label>
-                  {values.coverFile ? <p className="mt-2 truncate text-[12px] text-zinc-500">{values.coverFile.name}</p> : null}
-                  <LiveFieldError id={errorId('coverFile')} error={errors.coverFile} />
-                </div>
-              </div>
-            </LiveFormSection>
-
-            <LiveFormSection title={t('livePage.create.detailsSection')}>
-              <div className="mb-1 flex items-center justify-between">
-                <label htmlFor={FIELD_IDS.title} className="text-[13px] font-semibold text-zinc-100">
-                  {t('livePage.create.titleLabel')} <span className="text-[#fe2c55]">*</span>
-                </label>
-                <LiveCharCounter value={values.title} max={LIVE_LIMITS.TITLE_MAX} />
-              </div>
-              <input
-                id={FIELD_IDS.title}
-                type="text"
-                value={values.title}
-                onChange={(event) => form.setField('title', event.target.value)}
-                onBlur={() => form.touch('title')}
-                placeholder={t('livePage.create.titlePlaceholder')}
-                aria-invalid={Boolean(errors.title)}
-                aria-describedby={describedBy('title')}
-                aria-required="true"
-                className="live-input h-11 w-full rounded-lg border border-white/10 bg-zinc-800 px-3 text-[14px] text-zinc-100 placeholder:text-zinc-500 focus:border-[#fe2c55] focus:outline-none"
+        {/* Camera surface and controls stay dark in the light theme too, like the studio. */}
+        <div className="flex min-h-0 flex-1 flex-col bg-zinc-950 text-white">
+          <div className="flex min-h-0 flex-1 items-center justify-center p-3 lg:p-6">
+            <div className="vibely-keep-dark relative aspect-[9/16] h-full max-h-full max-w-full overflow-hidden rounded-2xl ring-1 ring-white/10">
+              <LiveHostPreview
+                live={null}
+                videoRef={videoRef}
+                previewStream={media.state.previewStream}
+                cameraEnabled={media.state.cameraEnabled}
+                mediaKind={media.kind}
+                mediaStatus={media.state.status}
+                mediaError={media.state.error}
               />
-              <LiveFieldError id={errorId('title')} error={errors.title} />
-
-              <div className="mb-1 mt-4 flex items-center justify-between">
-                <label htmlFor={FIELD_IDS.description} className="text-[13px] font-semibold text-zinc-100">
-                  {t('livePage.create.descriptionLabel')}
+              <div className="absolute inset-x-0 top-0 bg-linear-to-b from-black/70 to-transparent p-3">
+                <label htmlFor="live-create-title" className="sr-only">
+                  {t('livePage.create.titleLabel')}
                 </label>
-                <LiveCharCounter value={values.description} max={LIVE_LIMITS.DESCRIPTION_MAX} />
-              </div>
-              <textarea
-                id={FIELD_IDS.description}
-                rows={3}
-                value={values.description}
-                onChange={(event) => form.setField('description', event.target.value)}
-                onBlur={() => form.touch('description')}
-                placeholder={t('livePage.create.descriptionPlaceholder')}
-                aria-invalid={Boolean(errors.description)}
-                aria-describedby={describedBy('description')}
-                className="live-input w-full resize-none rounded-lg border border-white/10 bg-zinc-800 px-3 py-2.5 text-[14px] text-zinc-100 placeholder:text-zinc-500 focus:border-[#fe2c55] focus:outline-none"
-              />
-              <LiveFieldError id={errorId('description')} error={errors.description} />
-            </LiveFormSection>
-
-            <LiveFormSection title={<>{t('livePage.create.categoryLabel')} <span className="text-[#fe2c55]">*</span></>}>
-              <div
-                id={FIELD_IDS.categoryId}
-                role="radiogroup"
-                tabIndex={-1}
-                aria-label={t('livePage.create.categoryLabel')}
-                aria-describedby={describedBy('categoryId')}
-                className="flex flex-wrap gap-2 focus:outline-none"
-              >
-                {LIVE_SELECTABLE_CATEGORIES.map((category) => {
-                  const active = values.categoryId === category.id
-                  return (
-                    <button
-                      key={category.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={active}
-                      onClick={() => {
-                        form.setField('categoryId', category.id)
-                        form.touch('categoryId')
-                      }}
-                      className={`live-category-tab cursor-pointer rounded-full px-4 py-2 text-[13px] font-semibold transition ${
-                        active
-                          ? 'live-category-tab--active bg-white text-black'
-                          : 'live-category-tab--inactive bg-zinc-800/90 text-zinc-100 hover:bg-zinc-700'
-                      }`}
-                    >
-                      {t(category.labelKey)}
-                    </button>
-                  )
-                })}
-              </div>
-              <LiveFieldError id={errorId('categoryId')} error={errors.categoryId} />
-            </LiveFormSection>
-
-            <LiveFormSection title={t('livePage.create.visibilityLabel')}>
-              <div role="radiogroup" aria-label={t('livePage.create.visibilityLabel')} className="flex flex-col gap-1">
-                {LIVE_VISIBILITY_OPTIONS.map((option) => (
-                  <label key={option.id} className="flex cursor-pointer items-center gap-3 py-1.5 text-[14px] text-zinc-100">
-                    <input
-                      type="radio"
-                      name="live-visibility"
-                      value={option.id}
-                      checked={values.visibility === option.id}
-                      onChange={() => form.setField('visibility', option.id)}
-                      className="h-4 w-4 accent-[#fe2c55]"
-                    />
-                    {t(option.labelKey)}
-                  </label>
-                ))}
-              </div>
-            </LiveFormSection>
-
-            <LiveFormSection title={t('livePage.create.interactionSection')}>
-              <div className="divide-y divide-white/5">
-                <LiveToggle
-                  id="live-create-allow-comments"
-                  label={t('livePage.create.allowComments')}
-                  checked={values.allowComments}
-                  onChange={(checked) => form.setField('allowComments', checked)}
+                <input
+                  id="live-create-title"
+                  type="text"
+                  value={goLive.title}
+                  maxLength={LIVE_LIMITS.TITLE_MAX}
+                  onChange={(event) => goLive.setTitle(event.target.value)}
+                  placeholder={t('livePage.create.titlePlaceholder')}
+                  className="h-10 w-full rounded-lg border border-white/15 bg-black/40 px-3 text-[14px] font-semibold text-white placeholder:text-zinc-300 backdrop-blur focus:border-[#fe2c55] focus:outline-none"
                 />
-                <LiveToggle
-                  id="live-create-allow-gifts"
-                  label={t('livePage.create.allowGifts')}
-                  description={t('livePage.create.allowGiftsHint')}
-                  checked={values.allowGifts}
-                  onChange={(checked) => form.setField('allowGifts', checked)}
-                />
-                <LiveToggle
-                  id="live-create-allow-guests"
-                  label={t('livePage.create.allowGuests')}
-                  description={t('livePage.create.allowGuestsHint')}
-                  checked={values.allowGuests}
-                  onChange={(checked) => form.setField('allowGuests', checked)}
-                />
-                <LiveToggle
-                  id="live-create-mature"
-                  label={t('livePage.create.matureContent')}
-                  description={t('livePage.create.matureContentHint')}
-                  checked={values.matureContent}
-                  onChange={(checked) => form.setField('matureContent', checked)}
-                />
+                <p className="mt-1.5 flex items-start gap-1.5 text-[11px] leading-snug text-zinc-200 drop-shadow">
+                  <IoPricetagOutline className="mt-px shrink-0" aria-hidden />
+                  {t('livePage.create.autoCategoryHint')}
+                </p>
               </div>
-            </LiveFormSection>
-
-            {form.submitError ? (
-              <p className="rounded-lg bg-[#fe2c55]/10 px-4 py-3 text-[13px] text-[#fe2c55]" role="alert">
-                {form.submitError.message || t('livePage.create.errors.submitFailed')}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="live-create-footer fixed inset-x-0 bottom-0 z-10 border-t border-white/10 bg-black/90 px-3 py-3 backdrop-blur lg:left-[220px] lg:px-6">
-            <div className="mx-auto flex max-w-[640px] items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={back}
-                className="live-secondary-btn cursor-pointer rounded-lg bg-white/10 px-5 py-2.5 text-[14px] font-semibold text-zinc-100 transition hover:bg-white/15"
-              >
-                {t('livePage.create.cancel')}
-              </button>
-              <button
-                type="submit"
-                disabled={form.submitting}
-                className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#fe2c55] px-6 py-2.5 text-[14px] font-semibold text-white transition hover:bg-[#e6284c] disabled:cursor-wait disabled:opacity-70"
-              >
-                {form.submitting ? <LiveSpinner className="h-4 w-4" /> : null}
-                {form.submitting ? t('livePage.create.submitting') : t('livePage.create.submit')}
-              </button>
             </div>
           </div>
-        </form>
+
+          <footer className="shrink-0 px-3 py-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:px-6">
+            <div className="mx-auto flex w-full max-w-[560px] flex-col gap-3">
+              {capturePending ? (
+                <p className="text-center text-[12px] text-zinc-400">{t('livePage.create.permissionHint')}</p>
+              ) : null}
+              <LiveHostMediaStatus state={media.state} isLive={false} onRetry={() => void media.retry()} />
+              {goLive.error ? (
+                <p className="rounded-lg bg-[#fe2c55]/15 px-3 py-2 text-[12px] text-[#fe2c55]" role="alert">
+                  {goLive.error.message || t('livePage.create.errors.submitFailed')}
+                </p>
+              ) : null}
+              {settingsOpen ? (
+                <div className="rounded-xl border border-white/10 bg-zinc-900/80 px-4 py-2">
+                  <LiveDeviceSelects media={media} idPrefix="live-create" />
+                </div>
+              ) : null}
+              <LiveHostControls
+                status={LIVE_STATUS.SCHEDULED}
+                micEnabled={media.state.micEnabled}
+                cameraEnabled={media.state.cameraEnabled}
+                mediaReady={Boolean(media.state.previewStream)}
+                onToggleMic={() => media.setMicEnabled(!media.state.micEnabled)}
+                onToggleCamera={() => media.setCameraEnabled(!media.state.cameraEnabled)}
+                onOpenSettings={() => setSettingsOpen((open) => !open)}
+                settingsOpen={settingsOpen}
+                onStart={handleGoLive}
+                onEnd={() => {}}
+                action={goLive.busy ? 'start' : null}
+              />
+            </div>
+          </footer>
+        </div>
       </div>
     </section>
   )

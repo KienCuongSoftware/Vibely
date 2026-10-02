@@ -136,7 +136,7 @@ export const liveMockService = {
       id,
       title,
       description,
-      categoryId,
+      categoryId: categoryId || 'lifestyle',
       status: LIVE_STATUS.SCHEDULED,
       coverUrl,
       portraitCoverUrl: coverUrl,

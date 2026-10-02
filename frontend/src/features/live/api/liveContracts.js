@@ -104,10 +104,10 @@
 /**
  * @typedef {Object} CreateLivePayload
  * @property {string} title
- * @property {string} description
- * @property {string} categoryId
- * @property {File|null} coverFile     uploaded via presigned URL by the real client
- * @property {LiveSettings} settings
+ * @property {string} [description]
+ * @property {string} [categoryId]     omitted: the backend classifies the LIVE from its title
+ * @property {File|null} [coverFile]   uploaded via presigned URL by the real client (best effort)
+ * @property {Partial<LiveSettings>} [settings]
  */
 
 /**

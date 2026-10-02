@@ -4,6 +4,7 @@ import { IoArrowBack, IoHeart, IoTimeOutline } from 'react-icons/io5'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { LiveToggle } from '@/features/live/components/create/LiveFormControls.jsx'
+import { LiveDeviceSelects } from '@/features/live/components/host/LiveDeviceSelects.jsx'
 import { LiveHostControls } from '@/features/live/components/host/LiveHostControls.jsx'
 import { LiveHostMediaStatus } from '@/features/live/components/host/LiveHostMediaStatus.jsx'
 import { LiveHostPreview } from '@/features/live/components/host/LiveHostPreview.jsx'
@@ -56,47 +57,11 @@ function EndLiveDialog({ open, onCancel, onConfirm, busy }) {
   )
 }
 
-function DeviceSelect({ id, label, devices, value, onChange }) {
-  if (!devices?.length) return null
-  return (
-    <label htmlFor={id} className="flex items-center justify-between gap-3 py-2 text-[13px]">
-      <span className="shrink-0 text-zinc-300">{label}</span>
-      <select
-        id={id}
-        value={value ?? ''}
-        onChange={(event) => onChange(event.target.value)}
-        className="min-w-0 max-w-[60%] cursor-pointer truncate rounded-md bg-white/10 px-2 py-1 text-[12px] text-white outline-none focus:ring-1 focus:ring-white/30"
-      >
-        {value ? null : <option value="" disabled>—</option>}
-        {devices.map((device) => (
-          <option key={device.deviceId} value={device.deviceId} className="bg-zinc-900">
-            {device.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  )
-}
-
 function HostSettingsPanel({ settings, onChange, media }) {
   const { t } = useTranslation()
-  const devices = media.state.devices
   return (
     <div className="rounded-xl border border-white/10 bg-zinc-900/80 px-4 py-2">
-      <DeviceSelect
-        id="live-host-camera"
-        label={t('livePage.media.devices.camera')}
-        devices={devices?.videoinput}
-        value={media.state.selectedDeviceIds?.videoinput}
-        onChange={(deviceId) => void media.switchDevice('videoinput', deviceId)}
-      />
-      <DeviceSelect
-        id="live-host-microphone"
-        label={t('livePage.media.devices.microphone')}
-        devices={devices?.audioinput}
-        value={media.state.selectedDeviceIds?.audioinput}
-        onChange={(deviceId) => void media.switchDevice('audioinput', deviceId)}
-      />
+      <LiveDeviceSelects media={media} idPrefix="live-host" />
       <LiveToggle
         id="live-host-allow-comments"
         label={t('livePage.create.allowComments')}

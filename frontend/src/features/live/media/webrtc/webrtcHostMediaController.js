@@ -74,8 +74,9 @@ function waitUntilOnline(signal) {
  * @param {() => Promise<import('../../api/liveContracts.js').LivePublishInfo>} options.getPublishInfo
  * @param {Partial<typeof LIVE_MEDIA>} [options.timing]   overrides for tests
  * @param {MediaDevices} [options.mediaDevices]
+ * @param {import('../hostMediaPreferences.js').HostMediaPreferences|null} [options.initial]
  */
-export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, mediaDevices } = {}) {
+export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, mediaDevices, initial = null } = {}) {
   const config = { ...LIVE_MEDIA, ...timing }
   const devicesApi = mediaDevices ?? (typeof navigator !== 'undefined' ? navigator.mediaDevices : undefined)
   const backoff = createReconnectBackoff({
@@ -84,7 +85,17 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
     maxAttempts: config.RECONNECT_MAX_ATTEMPTS,
   })
 
-  let state = { ...INITIAL_STATE, maxReconnectAttempts: config.RECONNECT_MAX_ATTEMPTS }
+  let state = {
+    ...INITIAL_STATE,
+    maxReconnectAttempts: config.RECONNECT_MAX_ATTEMPTS,
+    ...(initial
+      ? {
+          micEnabled: initial.micEnabled !== false,
+          cameraEnabled: initial.cameraEnabled !== false,
+          selectedDeviceIds: { ...INITIAL_STATE.selectedDeviceIds, ...initial.selectedDeviceIds },
+        }
+      : null),
+  }
   const listeners = new Set()
   let stream = null
   let pc = null
@@ -355,10 +366,22 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
 
       setState({ status: 'preparing', error: null })
       try {
-        const captured = await devicesApi.getUserMedia({
-          audio: constraintFor('audioinput'),
-          video: constraintFor('videoinput'),
-        })
+        let captured
+        try {
+          captured = await devicesApi.getUserMedia({
+            audio: constraintFor('audioinput'),
+            video: constraintFor('videoinput'),
+          })
+        } catch (error) {
+          // A remembered device may have been unplugged; fall back to the browser defaults once.
+          const pinned = state.selectedDeviceIds.audioinput || state.selectedDeviceIds.videoinput
+          if (!pinned || !['OverconstrainedError', 'NotFoundError'].includes(error?.name)) throw error
+          setState({ selectedDeviceIds: { audioinput: null, videoinput: null } })
+          captured = await devicesApi.getUserMedia({
+            audio: constraintFor('audioinput', null),
+            video: constraintFor('videoinput', null),
+          })
+        }
         if (disposed) {
           stopTracks(captured)
           return

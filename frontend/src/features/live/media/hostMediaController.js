@@ -90,9 +90,19 @@ export function createMockHostMediaController() {
  * Without a media server (or for an ended LIVE) the mock keeps the studio usable
  * and never opens the camera.
  */
-export function createHostMediaController({ playbackType, getPublishInfo } = {}) {
+export function createHostMediaController({ playbackType, getPublishInfo, initial = null } = {}) {
   if (playbackType === LIVE_PLAYBACK_TYPE.WEBRTC && typeof getPublishInfo === 'function') {
-    return createWebRtcHostMediaController({ getPublishInfo })
+    return createWebRtcHostMediaController({ getPublishInfo, initial })
   }
   return createMockHostMediaController()
+}
+
+/**
+ * Camera/mic preview before a LIVE exists (the Go LIVE screen). It never publishes: the
+ * credential is only issued for a created LIVE, whose studio opens its own controller.
+ */
+export function createHostPreviewController() {
+  return createWebRtcHostMediaController({
+    getPublishInfo: () => Promise.reject(new Error('A preview controller cannot publish')),
+  })
 }

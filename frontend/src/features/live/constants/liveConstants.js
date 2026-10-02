@@ -17,32 +17,25 @@ export const LIVE_VISIBILITY = Object.freeze({
   FRIENDS: 'FRIENDS',
 })
 
-export const LIVE_VISIBILITY_OPTIONS = [
-  { id: LIVE_VISIBILITY.PUBLIC, labelKey: 'livePage.create.visibility.public' },
-  { id: LIVE_VISIBILITY.FOLLOWERS, labelKey: 'livePage.create.visibility.followers' },
-  { id: LIVE_VISIBILITY.FRIENDS, labelKey: 'livePage.create.visibility.friends' },
-]
-
-/** `following` and `recommended` are feed filters, not categories a host can pick. */
+/** `following` and `recommended` are feed filters, not LIVE categories. */
 export const LIVE_FEED_FILTER = Object.freeze({
   RECOMMENDED: 'recommended',
   FOLLOWING: 'following',
 })
 
+/** The backend assigns the category from the LIVE title (same classifier as Explore). */
 export const LIVE_CATEGORIES = [
-  { id: LIVE_FEED_FILTER.RECOMMENDED, labelKey: 'livePage.categories.recommended', selectable: false },
-  { id: LIVE_FEED_FILTER.FOLLOWING, labelKey: 'livePage.categories.following', selectable: false },
-  { id: 'gaming', labelKey: 'livePage.categories.gaming', selectable: true },
-  { id: 'lifestyle', labelKey: 'livePage.categories.lifestyle', selectable: true },
-  { id: 'freefire', labelKey: 'livePage.categories.freeFire', selectable: true },
-  { id: 'pubg', labelKey: 'livePage.categories.pubg', selectable: true },
-  { id: 'music', labelKey: 'livePage.categories.music', selectable: true },
-  { id: 'outdoor', labelKey: 'livePage.categories.outdoor', selectable: true },
-  { id: 'chat', labelKey: 'livePage.categories.chat', selectable: true },
-  { id: 'food', labelKey: 'livePage.categories.food', selectable: true },
+  { id: LIVE_FEED_FILTER.RECOMMENDED, labelKey: 'livePage.categories.recommended' },
+  { id: LIVE_FEED_FILTER.FOLLOWING, labelKey: 'livePage.categories.following' },
+  { id: 'gaming', labelKey: 'livePage.categories.gaming' },
+  { id: 'lifestyle', labelKey: 'livePage.categories.lifestyle' },
+  { id: 'freefire', labelKey: 'livePage.categories.freeFire' },
+  { id: 'pubg', labelKey: 'livePage.categories.pubg' },
+  { id: 'music', labelKey: 'livePage.categories.music' },
+  { id: 'outdoor', labelKey: 'livePage.categories.outdoor' },
+  { id: 'chat', labelKey: 'livePage.categories.chat' },
+  { id: 'food', labelKey: 'livePage.categories.food' },
 ]
-
-export const LIVE_SELECTABLE_CATEGORIES = LIVE_CATEGORIES.filter((category) => category.selectable)
 
 export function getLiveCategoryLabelKey(categoryId) {
   return (
@@ -62,10 +55,14 @@ export const LIVE_DISCOVERY_SECTIONS = [
 
 export const LIVE_LIMITS = Object.freeze({
   TITLE_MAX: 80,
-  DESCRIPTION_MAX: 300,
   COMMENT_MAX: 150,
-  COVER_MAX_BYTES: 5 * 1024 * 1024,
-  COVER_ACCEPTED_TYPES: ['image/jpeg', 'image/png', 'image/webp'],
+})
+
+/** Cover snapshot taken from the camera preview when the host goes LIVE. */
+export const LIVE_COVER_SNAPSHOT = Object.freeze({
+  MAX_WIDTH: 720,
+  TYPE: 'image/jpeg',
+  QUALITY: 0.82,
 })
 
 export const LIVE_CHAT = Object.freeze({

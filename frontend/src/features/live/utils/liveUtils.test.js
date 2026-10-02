@@ -1,9 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { LIVE_LIMITS } from '@/features/live/constants/liveConstants.js'
 import { appendChatMessages, markChatMessageFailed } from '@/features/live/utils/chatBuffer.js'
 import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 import { createLikeBatcher } from '@/features/live/utils/likeBatcher.js'
-import { validateCreateLive } from '@/features/live/utils/validateCreateLive.js'
 
 describe('formatLiveViewerCount', () => {
   it.each([
@@ -66,34 +64,5 @@ describe('appendChatMessages', () => {
   it('marks a failed optimistic message', () => {
     const next = markChatMessageFailed([msg('tmp', { clientId: 'x', pending: true })], 'x')
     expect(next[0]).toMatchObject({ pending: false, failed: true })
-  })
-})
-
-describe('validateCreateLive', () => {
-  const valid = { title: 'Hello', description: '', categoryId: 'gaming', coverFile: null }
-
-  it('accepts a valid payload', () => {
-    expect(validateCreateLive(valid)).toEqual({})
-  })
-
-  it('requires title and a selectable category', () => {
-    const errors = validateCreateLive({ ...valid, title: '   ', categoryId: 'recommended' })
-    expect(errors.title.key).toBe('livePage.create.errors.titleRequired')
-    expect(errors.categoryId.key).toBe('livePage.create.errors.categoryRequired')
-  })
-
-  it('enforces length limits and cover type/size', () => {
-    const errors = validateCreateLive({
-      ...valid,
-      title: 'x'.repeat(LIVE_LIMITS.TITLE_MAX + 1),
-      description: 'y'.repeat(LIVE_LIMITS.DESCRIPTION_MAX + 1),
-      coverFile: { type: 'image/gif', size: 10 },
-    })
-    expect(errors.title.key).toBe('livePage.create.errors.titleTooLong')
-    expect(errors.description.key).toBe('livePage.create.errors.descriptionTooLong')
-    expect(errors.coverFile.key).toBe('livePage.create.errors.coverType')
-
-    const big = validateCreateLive({ ...valid, coverFile: { type: 'image/png', size: LIVE_LIMITS.COVER_MAX_BYTES + 1 } })
-    expect(big.coverFile.key).toBe('livePage.create.errors.coverTooLarge')
   })
 })

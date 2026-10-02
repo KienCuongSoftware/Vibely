@@ -166,17 +166,25 @@ export const liveApi = {
   /**
    * The cover is uploaded to storage first (presigned URL, like video thumbnails);
    * only the resulting URL is sent, never the file itself. The host comes from the session.
+   * Without `categoryId` the backend classifies the LIVE from its title.
    * @returns {Promise<import('./liveContracts.js').LiveDetail>}
    */
   async createLive({ title, description, categoryId, coverFile, settings = {} }, token) {
-    const coverUrl = coverFile ? await uploadThumbnailToStorage(token, coverFile, coverFile.name) : null
+    let coverUrl = null
+    if (coverFile) {
+      try {
+        coverUrl = await uploadThumbnailToStorage(token, coverFile, coverFile.name)
+      } catch {
+        // The cover is decoration; a failed upload must not keep the host from going LIVE.
+      }
+    }
     const dto = await request('/api/lives', {
       method: 'POST',
       token,
       body: {
         title,
         description,
-        category: categoryId,
+        category: categoryId || undefined,
         coverUrl,
         visibility: settings.visibility,
         allowComments: settings.allowComments,

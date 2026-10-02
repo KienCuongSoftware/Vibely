@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { LIVE_STATUS } from '@/features/live/constants/liveConstants.js'
-import { createHostMediaController } from '@/features/live/media/hostMediaController.js'
+import { createHostMediaController, createHostPreviewController } from '@/features/live/media/hostMediaController.js'
+import { hostMediaPreferencesFor } from '@/features/live/media/hostMediaPreferences.js'
 import { liveService } from '@/features/live/services/liveService.js'
 
 const ELAPSED_TICK_MS = 1000
@@ -19,25 +20,28 @@ const idleSnapshot = () => IDLE_MEDIA_STATE
  * Media controller lifecycle bound to the host page. Created inside the effect
  * so every mount owns (and disposes) its own devices. The implementation follows
  * `live.playback.type`: an ended LIVE has no descriptor, which swaps in the mock and
- * releases the camera.
+ * releases the camera. `previewOnly` is the Go LIVE screen: capture without a LIVE.
  */
-export function useHostMedia({ liveId, token, playbackType } = {}) {
+export function useHostMedia({ liveId, token, playbackType, previewOnly = false } = {}) {
   const [controller, setController] = useState(null)
   const tokenRef = useRef(token)
   tokenRef.current = token
 
   useEffect(() => {
-    const next = createHostMediaController({
-      playbackType,
-      getPublishInfo: liveId ? () => liveService.getPublishInfo(liveId, tokenRef.current) : undefined,
-    })
+    const next = previewOnly
+      ? createHostPreviewController()
+      : createHostMediaController({
+          playbackType,
+          getPublishInfo: liveId ? () => liveService.getPublishInfo(liveId, tokenRef.current) : undefined,
+          initial: liveId ? hostMediaPreferencesFor(liveId) : null,
+        })
     setController(next)
     void next.prepare()
     return () => {
       next.dispose()
       setController(null)
     }
-  }, [liveId, playbackType])
+  }, [liveId, playbackType, previewOnly])
 
   const state = useSyncExternalStore(
     controller?.subscribe ?? noopSubscribe,

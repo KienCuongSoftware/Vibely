@@ -242,6 +242,42 @@ describe('WebRTC host publisher', () => {
     controller.dispose()
   })
 
+  it('starts with the choices handed over from the Go LIVE preview', async () => {
+    const mediaDevices = createFakeMediaDevices()
+    const controller = createWebRtcHostMediaController({
+      getPublishInfo: vi.fn(),
+      timing: TIMING,
+      mediaDevices,
+      initial: { micEnabled: false, cameraEnabled: true, selectedDeviceIds: { videoinput: 'video-usb', audioinput: null } },
+    })
+    await controller.prepare()
+
+    const [constraints] = mediaDevices.getUserMedia.mock.calls[0]
+    expect(constraints.video.deviceId).toEqual({ exact: 'video-usb' })
+    expect(constraints.audio.deviceId).toBeUndefined()
+    const state = controller.getState()
+    expect(state).toMatchObject({ status: 'ready', micEnabled: false, cameraEnabled: true })
+    expect(state.previewStream.getAudioTracks()[0].enabled).toBe(false)
+    controller.dispose()
+  })
+
+  it('falls back to the default devices when a remembered one is gone', async () => {
+    const mediaDevices = createFakeMediaDevices()
+    mediaDevices.getUserMedia.mockRejectedValueOnce(Object.assign(new Error('gone'), { name: 'OverconstrainedError' }))
+    const controller = createWebRtcHostMediaController({
+      getPublishInfo: vi.fn(),
+      timing: TIMING,
+      mediaDevices,
+      initial: { micEnabled: true, cameraEnabled: true, selectedDeviceIds: { videoinput: 'unplugged', audioinput: null } },
+    })
+    await controller.prepare()
+
+    expect(mediaDevices.getUserMedia).toHaveBeenCalledTimes(2)
+    expect(mediaDevices.getUserMedia.mock.calls[1][0].video.deviceId).toBeUndefined()
+    expect(controller.getState().status).toBe('ready')
+    controller.dispose()
+  })
+
   it('refuses to capture outside a secure context', async () => {
     Object.defineProperty(window, 'isSecureContext', { value: false, configurable: true })
     try {
