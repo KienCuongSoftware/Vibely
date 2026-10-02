@@ -461,6 +461,51 @@
       "actionFailed": "Something went wrong. Please try again.",
       "notOwnerTitle": "You can't manage this LIVE",
       "notOwnerDescription": "Only the host can open LIVE Studio for this LIVE."
+    },
+    "media": {
+      "retry": "Try again",
+      "host": {
+        "requestingAccess": "Waiting for camera and microphone access…",
+        "previewUnavailable": "Camera preview is unavailable",
+        "connecting": "Connecting your video…",
+        "reconnecting": "Connection lost. Reconnecting ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Connecting to the LIVE…",
+        "waiting": "Waiting for the host's video…",
+        "reconnecting": "Reconnecting…",
+        "hostReconnecting": "The host's connection is unstable…",
+        "failed": "Couldn't play this LIVE.",
+        "tapToPlay": "Tap to play",
+        "tapToUnmute": "Tap to unmute"
+      },
+      "devices": {
+        "camera": "Camera",
+        "microphone": "Microphone"
+      },
+      "errors": {
+        "permissionDenied": "Camera or microphone access was blocked. Allow it in your browser's site settings, then try again.",
+        "deviceNotFound": "No camera or microphone was found. Connect one and try again.",
+        "deviceBusy": "Your camera or microphone is being used by another app or tab.",
+        "deviceLost": "Your camera or microphone was disconnected. Pick another device in LIVE settings.",
+        "unsupported": "This browser doesn't support LIVE video. Try the latest Chrome, Edge, Firefox or Safari.",
+        "insecureContext": "LIVE video needs a secure (HTTPS) connection.",
+        "codecUnsupported": "This browser can't encode H.264 video, which LIVE requires.",
+        "publishRejected": "The media server refused the stream. Please try again.",
+        "publisherBusy": "This LIVE is already streaming from another tab or device.",
+        "serverUnavailable": "The media server is unavailable right now.",
+        "connectionFailed": "The video connection failed. Check your network.",
+        "mediaDisabled": "LIVE video isn't enabled on this server.",
+        "liveEnded": "This LIVE has ended.",
+        "notFound": "This LIVE could not be found.",
+        "forbidden": "You don't have access to this LIVE's video.",
+        "playbackFailed": "Couldn't play this LIVE."
+      },
+      "endReason": {
+        "admin": "This LIVE was ended by a moderator.",
+        "hostDisconnected": "This LIVE ended because the host lost connection.",
+        "publishTimeout": "This LIVE ended because the host's video never started."
+      }
     }
   },
   "supportPage": {

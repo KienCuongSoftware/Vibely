@@ -24,12 +24,32 @@
  */
 
 /**
- * Playback descriptor issued by the backend once a media server session exists.
- * `type: null` means no media is available yet (mock / pre-start).
+ * Playback descriptor on LIVE metadata. `type` selects the player/publisher implementation;
+ * `type: null` means the backend has no media server enabled (mock UI).
+ * Endpoints are never part of the metadata: they are issued per viewer/attempt below.
  * @typedef {Object} LivePlayback
- * @property {'webrtc'|'hls'|null} type
- * @property {string|null} url            WHEP/HLS endpoint from the media server
- * @property {string|null} [token]        short-lived playback token
+ * @property {'webrtc'|null} type
+ */
+
+/**
+ * `POST /api/lives/{id}/publish-credential` (host only). The WHIP URL embeds a single-use
+ * token that is revoked by the next request, so it is fetched for every connection attempt.
+ * @typedef {Object} LivePublishInfo
+ * @property {string|null} whipUrl
+ * @property {RTCIceServer[]} iceServers
+ * @property {string|null} expiresAt
+ * @property {boolean} activePublisher     SRS already has a publisher (another tab/device, or a stale session)
+ */
+
+/**
+ * `GET /api/lives/{id}/playback`. `whepUrl` (short-lived, per viewer) is null until the host publishes.
+ * @typedef {Object} LivePlaybackInfo
+ * @property {'webrtc'|null} type
+ * @property {'SCHEDULED'|'LIVE'|'ENDED'} status
+ * @property {boolean} publishing
+ * @property {string|null} whepUrl
+ * @property {RTCIceServer[]} iceServers
+ * @property {string|null} expiresAt
  */
 
 /**
@@ -116,7 +136,8 @@
  *   | { type: 'viewerCount', payload: { count: number } }
  *   | { type: 'likeCount', payload: { count: number } }
  *   | { type: 'gift', payload: { gift: LiveGift, sender: LiveComment['author'] } }
- *   | { type: 'status', payload: { status: string } }} LiveRoomEvent
+ *   | { type: 'status', payload: { status: string, reason?: string } }
+ *   | { type: 'stream', payload: { publishing: boolean, reconnectDeadline: string|null } }} LiveRoomEvent
  */
 
 export {}

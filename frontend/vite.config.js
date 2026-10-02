@@ -183,6 +183,19 @@ export default defineConfig({
           configureBenignProxyErrors(proxy)
         },
       },
+      // LIVE WHIP/WHEP signaling → local SRS (docker compose --profile live up -d srs).
+      '/rtc/v1/whip/': {
+        target: 'http://localhost:1985',
+        configure: (proxy) => {
+          configureBenignProxyErrors(proxy)
+        },
+      },
+      '/rtc/v1/whep/': {
+        target: 'http://localhost:1985',
+        configure: (proxy) => {
+          configureBenignProxyErrors(proxy)
+        },
+      },
     },
   },
   test: {

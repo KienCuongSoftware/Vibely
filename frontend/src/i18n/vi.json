@@ -461,6 +461,51 @@
       "actionFailed": "Đã xảy ra lỗi. Vui lòng thử lại.",
       "notOwnerTitle": "Bạn không thể quản lý phiên LIVE này",
       "notOwnerDescription": "Chỉ host mới có thể mở LIVE Studio cho phiên LIVE này."
+    },
+    "media": {
+      "retry": "Thử lại",
+      "host": {
+        "requestingAccess": "Đang chờ quyền truy cập camera và micro…",
+        "previewUnavailable": "Không thể xem trước camera",
+        "connecting": "Đang kết nối video của bạn…",
+        "reconnecting": "Mất kết nối. Đang kết nối lại ({{attempt}}/{{max}})…"
+      },
+      "viewer": {
+        "connecting": "Đang kết nối tới LIVE…",
+        "waiting": "Đang chờ video từ host…",
+        "reconnecting": "Đang kết nối lại…",
+        "hostReconnecting": "Kết nối của host đang không ổn định…",
+        "failed": "Không thể phát phiên LIVE này.",
+        "tapToPlay": "Chạm để phát",
+        "tapToUnmute": "Chạm để bật tiếng"
+      },
+      "devices": {
+        "camera": "Camera",
+        "microphone": "Micro"
+      },
+      "errors": {
+        "permissionDenied": "Quyền camera hoặc micro đã bị chặn. Hãy cho phép trong cài đặt trang của trình duyệt rồi thử lại.",
+        "deviceNotFound": "Không tìm thấy camera hoặc micro. Hãy kết nối thiết bị rồi thử lại.",
+        "deviceBusy": "Camera hoặc micro đang được ứng dụng hoặc tab khác sử dụng.",
+        "deviceLost": "Camera hoặc micro đã bị ngắt. Hãy chọn thiết bị khác trong Cài đặt LIVE.",
+        "unsupported": "Trình duyệt này không hỗ trợ video LIVE. Hãy dùng Chrome, Edge, Firefox hoặc Safari mới nhất.",
+        "insecureContext": "Video LIVE cần kết nối bảo mật (HTTPS).",
+        "codecUnsupported": "Trình duyệt này không mã hoá được video H.264 mà LIVE yêu cầu.",
+        "publishRejected": "Media server từ chối luồng phát. Vui lòng thử lại.",
+        "publisherBusy": "Phiên LIVE này đang được phát từ một tab hoặc thiết bị khác.",
+        "serverUnavailable": "Media server hiện không khả dụng.",
+        "connectionFailed": "Kết nối video thất bại. Hãy kiểm tra mạng.",
+        "mediaDisabled": "Máy chủ này chưa bật video LIVE.",
+        "liveEnded": "Phiên LIVE này đã kết thúc.",
+        "notFound": "Không tìm thấy phiên LIVE này.",
+        "forbidden": "Bạn không có quyền xem video của phiên LIVE này.",
+        "playbackFailed": "Không thể phát phiên LIVE này."
+      },
+      "endReason": {
+        "admin": "Phiên LIVE này đã bị kiểm duyệt viên kết thúc.",
+        "hostDisconnected": "Phiên LIVE đã kết thúc vì host mất kết nối.",
+        "publishTimeout": "Phiên LIVE đã kết thúc vì video của host không bắt đầu."
+      }
     }
   },
   "supportPage": {

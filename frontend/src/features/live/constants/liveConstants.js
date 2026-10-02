@@ -97,6 +97,45 @@ export const LIVE_ROOM_EVENT = Object.freeze({
   LIKE_COUNT: 'likeCount',
   GIFT: 'gift',
   STATUS: 'status',
+  /** Host media went up/down on the media server: `{ publishing, reconnectDeadline }`. */
+  STREAM: 'stream',
+})
+
+/** `live.playback.type` values the backend can announce. */
+export const LIVE_PLAYBACK_TYPE = Object.freeze({
+  WEBRTC: 'webrtc',
+})
+
+/** Backend `reason` on LIVE_ENDED. */
+export const LIVE_END_REASON = Object.freeze({
+  HOST: 'host',
+  ADMIN: 'admin',
+  HOST_DISCONNECTED: 'host_disconnected',
+  PUBLISH_TIMEOUT: 'publish_timeout',
+})
+
+export const LIVE_MEDIA = Object.freeze({
+  /** Reconnect backoff: 1s, 2s, 4s, 8s, 16s (capped), then give up and offer a manual retry. */
+  RECONNECT_BASE_MS: 1000,
+  RECONNECT_MAX_DELAY_MS: 16000,
+  RECONNECT_MAX_ATTEMPTS: 6,
+  /** How long ICE/DTLS may take before an attempt counts as failed. */
+  CONNECT_TIMEOUT_MS: 15000,
+  /** A `disconnected` peer often recovers by itself; only reconnect when it lasts longer. */
+  DISCONNECTED_GRACE_MS: 4000,
+  /** Viewer re-checks whether the host is publishing while waiting. */
+  PLAYBACK_WAIT_POLL_MS: 5000,
+  /** Capture defaults; the browser picks the closest mode the device supports. */
+  VIDEO_CONSTRAINTS: Object.freeze({
+    width: { ideal: 1280 },
+    height: { ideal: 720 },
+    frameRate: { ideal: 30, max: 30 },
+  }),
+  AUDIO_CONSTRAINTS: Object.freeze({
+    echoCancellation: true,
+    noiseSuppression: true,
+    autoGainControl: true,
+  }),
 })
 
 export const LIVE_CONNECTION_STATE = Object.freeze({

@@ -81,6 +81,24 @@ export function normalizeLiveComment(dto, liveId) {
   }
 }
 
+/** Only well-formed entries reach RTCPeerConnection (it throws on malformed ICE servers). */
+function normalizeIceServers(list) {
+  if (!Array.isArray(list)) return []
+  return list
+    .map((server) => {
+      const urls = (Array.isArray(server?.urls) ? server.urls : [server?.urls]).filter(
+        (url) => typeof url === 'string' && /^(stun|stuns|turn|turns):/i.test(url),
+      )
+      if (!urls.length) return null
+      return {
+        urls,
+        ...(server.username ? { username: server.username } : {}),
+        ...(server.credential ? { credential: server.credential } : {}),
+      }
+    })
+    .filter(Boolean)
+}
+
 function normalizeGift(gift) {
   return { id: gift.id, name: gift.name, icon: gift.iconUrl ?? '', coinPrice: Number(gift.coinCost) || 0 }
 }
@@ -209,6 +227,39 @@ export const liveApi = {
       status: normalizeLiveStatus(stats?.status),
       viewerCount: Number(stats?.viewerCount) || 0,
       likeCount: Number(stats?.likeCount) || 0,
+      publishing: typeof stats?.publishing === 'boolean' ? stats.publishing : null,
+    }
+  },
+
+  /**
+   * Host only. Issues a fresh single-use WHIP endpoint for this LIVE's media session;
+   * every call revokes the previous credential, so it is requested per connection attempt.
+   * @returns {Promise<import('./liveContracts.js').LivePublishInfo>}
+   */
+  async getPublishInfo(liveId, token) {
+    const dto = await request(livePath(liveId, '/publish-credential'), { method: 'POST', token })
+    return {
+      whipUrl: dto?.whipUrl ?? null,
+      iceServers: normalizeIceServers(dto?.iceServers),
+      expiresAt: dto?.expiresAt ?? null,
+      activePublisher: Boolean(dto?.activePublisher),
+    }
+  },
+
+  /**
+   * Short-lived WHEP endpoint for the current viewer. `whepUrl` is null while the host
+   * is not publishing yet (or is reconnecting).
+   * @returns {Promise<import('./liveContracts.js').LivePlaybackInfo>}
+   */
+  async getPlayback(liveId, token) {
+    const dto = await request(livePath(liveId, '/playback'), { token })
+    return {
+      type: dto?.type ?? null,
+      status: normalizeLiveStatus(dto?.status),
+      publishing: Boolean(dto?.publishing),
+      whepUrl: dto?.whepUrl ?? null,
+      iceServers: normalizeIceServers(dto?.iceServers),
+      expiresAt: dto?.expiresAt ?? null,
     }
   },
 

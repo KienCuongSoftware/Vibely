@@ -78,7 +78,8 @@ describe('API LIVE room channel', () => {
     deliver(frame('VIEWER_COUNT_UPDATED', { viewerCount: 5 }))
     deliver(frame('LIKE_UPDATED', { likeCount: 20 }))
     deliver(frame('COMMENT_DELETED', { commentId: 41 }))
-    deliver(frame('LIVE_ENDED', { status: 'ENDED' }))
+    deliver(frame('STREAM_STATE_UPDATED', { publishing: false, reconnectDeadline: '2026-01-01T00:01:00Z' }))
+    deliver(frame('LIVE_ENDED', { status: 'ENDED', reason: 'host_disconnected' }))
 
     const events = onEvent.mock.calls.map(([event]) => event)
     expect(events).toContainEqual({
@@ -88,7 +89,11 @@ describe('API LIVE room channel', () => {
     expect(events).toContainEqual({ type: LIVE_ROOM_EVENT.VIEWER_COUNT, payload: { count: 5 } })
     expect(events).toContainEqual({ type: LIVE_ROOM_EVENT.LIKE_COUNT, payload: { count: 20 } })
     expect(events).toContainEqual({ type: LIVE_ROOM_EVENT.COMMENT_DELETED, payload: { id: '41' } })
-    expect(events).toContainEqual({ type: LIVE_ROOM_EVENT.STATUS, payload: { status: 'ENDED' } })
+    expect(events).toContainEqual({
+      type: LIVE_ROOM_EVENT.STREAM,
+      payload: { publishing: false, reconnectDeadline: '2026-01-01T00:01:00Z' },
+    })
+    expect(events).toContainEqual({ type: LIVE_ROOM_EVENT.STATUS, payload: { status: 'ENDED', reason: 'host_disconnected' } })
     expect(stomp.client.deactivate).toHaveBeenCalled()
     channel.disconnect()
   })

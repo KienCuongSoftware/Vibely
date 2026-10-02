@@ -60,13 +60,22 @@ function LiveRoom({ live, token, user, isMobile, onBack, onOpenHost, onStatusCha
   const { share, copied } = useLiveShare({ liveId: live.id, title: live.title })
   const [giftOpen, setGiftOpen] = useState(false)
   const [muted, setMuted] = useState(true)
+  const [streamSignal, setStreamSignal] = useState(null)
 
   useEffect(
     () =>
       room.subscribe(LIVE_ROOM_EVENT.STATUS, (payload) => {
-        if (payload?.status) onStatusChange(payload.status)
+        if (payload?.status) onStatusChange(payload.status, payload.reason)
       }),
     [room.subscribe, onStatusChange],
+  )
+
+  useEffect(
+    () =>
+      room.subscribe(LIVE_ROOM_EVENT.STREAM, (payload) => {
+        if (typeof payload?.publishing === 'boolean') setStreamSignal({ publishing: payload.publishing })
+      }),
+    [room.subscribe],
   )
 
   const commentsEnabled = Boolean(live.settings?.allowComments) && !isEnded
@@ -144,7 +153,7 @@ function LiveRoom({ live, token, user, isMobile, onBack, onOpenHost, onStatusCha
   if (isMobile) {
     return (
       <section className="vibely-keep-dark live-room-mobile relative h-dvh max-h-dvh overflow-hidden bg-black text-white">
-        <LivePlayer live={live} muted={muted} className="absolute inset-0" />
+        <LivePlayer live={live} muted={muted} streamSignal={streamSignal} className="absolute inset-0" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-linear-to-b from-black/70 to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-linear-to-t from-black/85 via-black/40 to-transparent" />
 
@@ -207,7 +216,7 @@ function LiveRoom({ live, token, user, isMobile, onBack, onOpenHost, onStatusCha
 
         <div className="relative flex min-h-0 flex-1 items-center justify-center p-4">
           <div className="relative aspect-[9/16] h-full max-w-full overflow-hidden rounded-2xl ring-1 ring-white/10">
-            <LivePlayer live={live} muted={muted} className="absolute inset-0" />
+            <LivePlayer live={live} muted={muted} streamSignal={streamSignal} className="absolute inset-0" />
             <div className="absolute left-3 top-3 flex items-center gap-2">
               <LiveBadge />
             </div>
@@ -243,7 +252,10 @@ export function LiveDetailPage() {
   const live = detail.data
   const { setData } = detail
   const handleStatusChange = useCallback(
-    (status) => setData((prev) => (prev && prev.status !== status ? { ...prev, status } : prev)),
+    (status, reason) =>
+      setData((prev) =>
+        prev && prev.status !== status ? { ...prev, status, endReason: reason ?? prev.endReason ?? null } : prev,
+      ),
     [setData],
   )
 

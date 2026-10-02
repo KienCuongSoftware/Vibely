@@ -29,8 +29,10 @@ import { resolveRealtimeWsToken } from '@/shared/realtime/wsAuth.js'
  *     COMMENT_DELETED       -> LIVE_ROOM_EVENT.COMMENT_DELETED
  *     VIEWER_COUNT_UPDATED  -> LIVE_ROOM_EVENT.VIEWER_COUNT
  *     LIKE_UPDATED          -> LIVE_ROOM_EVENT.LIKE_COUNT
- *     LIVE_STARTED/ENDED    -> LIVE_ROOM_EVENT.STATUS
- *   Subscribing is what counts a viewer; comments are sent over REST (validated, persisted, then broadcast).
+ *     LIVE_STARTED/ENDED    -> LIVE_ROOM_EVENT.STATUS (`reason` on LIVE_ENDED)
+ *     STREAM_STATE_UPDATED  -> LIVE_ROOM_EVENT.STREAM (host media up/down on SRS)
+ *   Without a media server, subscribing is what counts a viewer; with one, starting WebRTC playback does.
+ *   Comments are sent over REST (validated, persisted, then broadcast).
  *   Guests have no WebSocket session, so they (and anyone whose socket drops) poll REST instead.
  */
 
@@ -60,8 +62,8 @@ export function createApiLiveRoomChannel({ liveId, token }) {
     emit(LIVE_ROOM_EVENT.COMMENT, comment)
   }
 
-  const applyStatus = (status) => {
-    emit(LIVE_ROOM_EVENT.STATUS, { status })
+  const applyStatus = (status, reason) => {
+    emit(LIVE_ROOM_EVENT.STATUS, reason ? { status, reason } : { status })
     if (status !== LIVE_STATUS.ENDED) return
     ended = true
     stopPolling()
@@ -87,7 +89,13 @@ export function createApiLiveRoomChannel({ liveId, token }) {
         break
       case 'LIVE_STARTED':
       case 'LIVE_ENDED':
-        applyStatus(normalizeLiveStatus(payload.status))
+        applyStatus(normalizeLiveStatus(payload.status), payload.reason)
+        break
+      case 'STREAM_STATE_UPDATED':
+        emit(LIVE_ROOM_EVENT.STREAM, {
+          publishing: Boolean(payload.publishing),
+          reconnectDeadline: payload.reconnectDeadline ?? null,
+        })
         break
       default:
         break
@@ -113,6 +121,9 @@ export function createApiLiveRoomChannel({ liveId, token }) {
       if (disposed || client) return
       emit(LIVE_ROOM_EVENT.VIEWER_COUNT, { count: stats.viewerCount })
       emit(LIVE_ROOM_EVENT.LIKE_COUNT, { count: stats.likeCount })
+      if (typeof stats.publishing === 'boolean') {
+        emit(LIVE_ROOM_EVENT.STREAM, { publishing: stats.publishing, reconnectDeadline: null })
+      }
       if (stats.status !== LIVE_STATUS.LIVE) applyStatus(stats.status)
       setState(LIVE_CONNECTION_STATE.CONNECTED)
     } catch {

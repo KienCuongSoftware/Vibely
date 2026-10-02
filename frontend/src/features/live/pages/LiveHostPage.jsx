@@ -5,12 +5,13 @@ import { useParams } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { LiveToggle } from '@/features/live/components/create/LiveFormControls.jsx'
 import { LiveHostControls } from '@/features/live/components/host/LiveHostControls.jsx'
+import { LiveHostMediaStatus } from '@/features/live/components/host/LiveHostMediaStatus.jsx'
 import { LiveHostPreview } from '@/features/live/components/host/LiveHostPreview.jsx'
 import { LiveBadge } from '@/features/live/components/LiveBadge.jsx'
 import { LiveStateView } from '@/features/live/components/LiveStateView.jsx'
 import { LiveChat } from '@/features/live/components/room/LiveChat.jsx'
 import { LiveViewerCount } from '@/features/live/components/room/LiveViewerCount.jsx'
-import { LIVE_PATHS, LIVE_STATUS } from '@/features/live/constants/liveConstants.js'
+import { LIVE_PATHS, LIVE_ROOM_EVENT, LIVE_STATUS } from '@/features/live/constants/liveConstants.js'
 import { useLiveChat } from '@/features/live/hooks/useLiveChat.js'
 import { useLiveDetail } from '@/features/live/hooks/useLiveData.js'
 import { useHostMedia, useLiveHostSession } from '@/features/live/hooks/useLiveHost.js'
@@ -19,6 +20,7 @@ import { useLiveMobileLayout } from '@/features/live/hooks/useLiveMobileLayout.j
 import { useLiveNavigation } from '@/features/live/hooks/useLiveNavigation.js'
 import { RESOURCE_STATUS } from '@/features/live/hooks/useLiveResource.js'
 import { useLiveRoom } from '@/features/live/hooks/useLiveRoom.js'
+import { endReasonMessageKey } from '@/features/live/media/mediaErrorMessages.js'
 import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 import { formatLiveDuration } from '@/features/live/utils/formatLiveDuration.js'
 
@@ -54,10 +56,47 @@ function EndLiveDialog({ open, onCancel, onConfirm, busy }) {
   )
 }
 
-function HostSettingsPanel({ settings, onChange }) {
+function DeviceSelect({ id, label, devices, value, onChange }) {
+  if (!devices?.length) return null
+  return (
+    <label htmlFor={id} className="flex items-center justify-between gap-3 py-2 text-[13px]">
+      <span className="shrink-0 text-zinc-300">{label}</span>
+      <select
+        id={id}
+        value={value ?? ''}
+        onChange={(event) => onChange(event.target.value)}
+        className="min-w-0 max-w-[60%] cursor-pointer truncate rounded-md bg-white/10 px-2 py-1 text-[12px] text-white outline-none focus:ring-1 focus:ring-white/30"
+      >
+        {value ? null : <option value="" disabled>—</option>}
+        {devices.map((device) => (
+          <option key={device.deviceId} value={device.deviceId} className="bg-zinc-900">
+            {device.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
+function HostSettingsPanel({ settings, onChange, media }) {
   const { t } = useTranslation()
+  const devices = media.state.devices
   return (
     <div className="rounded-xl border border-white/10 bg-zinc-900/80 px-4 py-2">
+      <DeviceSelect
+        id="live-host-camera"
+        label={t('livePage.media.devices.camera')}
+        devices={devices?.videoinput}
+        value={media.state.selectedDeviceIds?.videoinput}
+        onChange={(deviceId) => void media.switchDevice('videoinput', deviceId)}
+      />
+      <DeviceSelect
+        id="live-host-microphone"
+        label={t('livePage.media.devices.microphone')}
+        devices={devices?.audioinput}
+        value={media.state.selectedDeviceIds?.audioinput}
+        onChange={(deviceId) => void media.switchDevice('audioinput', deviceId)}
+      />
       <LiveToggle
         id="live-host-allow-comments"
         label={t('livePage.create.allowComments')}
@@ -77,7 +116,7 @@ function HostSettingsPanel({ settings, onChange }) {
 
 function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit }) {
   const { t } = useTranslation()
-  const media = useHostMedia()
+  const media = useHostMedia({ liveId: live.id, token, playbackType: live.playback?.type })
   const session = useLiveHostSession({ live, setLive, token, media })
   const isLive = live.status === LIVE_STATUS.LIVE
   const isEnded = live.status === LIVE_STATUS.ENDED
@@ -85,6 +124,20 @@ function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit }
   const room = useLiveRoom({ liveId: live.id, token, enabled: isLive, initialViewerCount: live.viewerCount })
   const viewerCount = useLiveViewerCount({ room, initialCount: live.viewerCount })
   const chat = useLiveChat({ room, user })
+
+  // The LIVE can also be ended by the system (host connection lost too long) or a moderator.
+  useEffect(
+    () =>
+      room.subscribe(LIVE_ROOM_EVENT.STATUS, (payload) => {
+        if (!payload?.status) return
+        setLive((prev) =>
+          prev && prev.status !== payload.status
+            ? { ...prev, status: payload.status, endReason: payload.reason ?? prev.endReason ?? null }
+            : prev,
+        )
+      }),
+    [room.subscribe, setLive],
+  )
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settings, setSettings] = useState(() => ({
     allowComments: Boolean(live.settings?.allowComments),
@@ -113,7 +166,7 @@ function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit }
       status={live.status}
       micEnabled={media.state.micEnabled}
       cameraEnabled={media.state.cameraEnabled}
-      mediaReady={media.ready}
+      mediaReady={media.ready && (!media.requiresCapture || Boolean(media.state.previewStream))}
       onToggleMic={() => media.setMicEnabled(!media.state.micEnabled)}
       onToggleCamera={() => media.setCameraEnabled(!media.state.cameraEnabled)}
       onOpenSettings={() => setSettingsOpen((open) => !open)}
@@ -141,6 +194,9 @@ function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit }
     <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/75 px-6">
       <div className="w-full max-w-xs rounded-2xl bg-zinc-900 p-5 text-center">
         <h2 className="text-[17px] font-bold">{t('livePage.host.endedTitle')}</h2>
+        {endReasonMessageKey(live.endReason) ? (
+          <p className="mt-2 text-[12px] text-zinc-400">{t(endReasonMessageKey(live.endReason))}</p>
+        ) : null}
         <dl className="mt-4 grid grid-cols-2 gap-3 text-left">
           <div className="rounded-lg bg-white/5 p-3">
             <dt className="text-[11px] text-zinc-400">{t('livePage.host.summaryViewers')}</dt>
@@ -161,10 +217,29 @@ function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit }
     </div>
   ) : null
 
-  const errorBanner = session.error ? (
-    <p className="rounded-lg bg-[#fe2c55]/15 px-3 py-2 text-[12px] text-[#fe2c55]" role="alert">
-      {session.error.message || t('livePage.host.actionFailed')}
-    </p>
+  const errorBanner = (
+    <>
+      {session.error ? (
+        <p className="rounded-lg bg-[#fe2c55]/15 px-3 py-2 text-[12px] text-[#fe2c55]" role="alert">
+          {session.error.message || t('livePage.host.actionFailed')}
+        </p>
+      ) : null}
+      {isEnded ? null : <LiveHostMediaStatus state={media.state} isLive={isLive} onRetry={() => void media.retry()} />}
+    </>
+  )
+
+  const preview = (
+    <LiveHostPreview
+      live={live}
+      previewStream={media.state.previewStream}
+      cameraEnabled={media.state.cameraEnabled}
+      mediaKind={media.kind}
+      mediaStatus={media.state.status}
+      mediaError={media.state.error}
+    />
+  )
+  const settingsPanel = settingsOpen ? (
+    <HostSettingsPanel settings={settings} media={media} onChange={(patch) => setSettings((prev) => ({ ...prev, ...patch }))} />
   ) : null
 
   const dialog = (
@@ -200,15 +275,13 @@ function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit }
   if (isMobile) {
     return (
       <section className="vibely-keep-dark relative h-dvh max-h-dvh overflow-hidden bg-black text-white">
-        <div className="absolute inset-0">
-          <LiveHostPreview live={live} previewStream={media.state.previewStream} cameraEnabled={media.state.cameraEnabled} />
-        </div>
+        <div className="absolute inset-0">{preview}</div>
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-black/85 to-transparent" />
         <div className="relative z-10 flex h-full flex-col pt-[env(safe-area-inset-top)] pb-[max(12px,env(safe-area-inset-bottom))]">
           {header}
           <div className="mt-auto flex flex-col gap-3 px-3">
             {errorBanner}
-            {settingsOpen ? <HostSettingsPanel settings={settings} onChange={(patch) => setSettings((prev) => ({ ...prev, ...patch }))} /> : null}
+            {settingsPanel}
             {isLive ? chatView(true, 'h-[30dvh]') : null}
             {controls}
           </div>
@@ -225,13 +298,13 @@ function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit }
         {header}
         <div className="flex min-h-0 flex-1 items-center justify-center p-4">
           <div className="relative aspect-[9/16] h-full max-w-full overflow-hidden rounded-2xl ring-1 ring-white/10">
-            <LiveHostPreview live={live} previewStream={media.state.previewStream} cameraEnabled={media.state.cameraEnabled} />
+            {preview}
             {endedSummary}
           </div>
         </div>
         <footer className="flex shrink-0 flex-col gap-3 border-t border-white/10 px-6 py-3">
           {errorBanner}
-          {settingsOpen ? <HostSettingsPanel settings={settings} onChange={(patch) => setSettings((prev) => ({ ...prev, ...patch }))} /> : null}
+          {settingsPanel}
           {controls}
         </footer>
       </main>
