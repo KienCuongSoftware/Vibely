@@ -58,13 +58,6 @@ export const LIVE_LIMITS = Object.freeze({
   COMMENT_MAX: 150,
 })
 
-/** Cover snapshot taken from the camera preview when the host goes LIVE. */
-export const LIVE_COVER_SNAPSHOT = Object.freeze({
-  MAX_WIDTH: 720,
-  TYPE: 'image/jpeg',
-  QUALITY: 0.82,
-})
-
 export const LIVE_CHAT = Object.freeze({
   /** Messages kept in memory; older ones are dropped so long streams stay light. */
   MAX_BUFFERED_MESSAGES: 200,

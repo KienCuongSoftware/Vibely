@@ -9,7 +9,7 @@ import { LiveBadge } from '@/features/live/components/LiveBadge.jsx'
 export function MockLivePlayer({ live, ended = false }) {
   const { t } = useTranslation()
   const portrait = live?.portraitCoverUrl ?? live?.coverUrl ?? null
-  const backdrop = live?.coverUrl ?? portrait
+  const backdrop = live?.coverUrl ?? portrait ?? live?.host?.avatarUrl ?? null
 
   return (
     <div className="vibely-keep-dark relative h-full w-full overflow-hidden bg-zinc-950">

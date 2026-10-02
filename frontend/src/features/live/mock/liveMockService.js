@@ -127,19 +127,18 @@ export const liveMockService = {
     return toDetail(requireLive(liveId))
   },
 
-  async createLive({ title, description, categoryId, coverFile, settings }) {
+  async createLive({ title, description, categoryId, settings }) {
     await delay()
     store.sequence += 1
     const id = `mock-live-${Date.now().toString(36)}-${store.sequence}`
-    const coverUrl = coverFile ? URL.createObjectURL(coverFile) : null
     const live = {
       id,
       title,
       description,
       categoryId: categoryId || 'lifestyle',
       status: LIVE_STATUS.SCHEDULED,
-      coverUrl,
-      portraitCoverUrl: coverUrl,
+      coverUrl: null,
+      portraitCoverUrl: null,
       viewerCount: 0,
       likeCount: 0,
       startedAt: null,

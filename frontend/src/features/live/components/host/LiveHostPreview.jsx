@@ -28,11 +28,9 @@ export function LiveHostPreview({
   mediaKind = null,
   mediaStatus = 'idle',
   mediaError = null,
-  videoRef: externalVideoRef = null,
 }) {
   const { t } = useTranslation()
-  const internalVideoRef = useRef(null)
-  const videoRef = externalVideoRef ?? internalVideoRef
+  const videoRef = useRef(null)
   const showVideo = Boolean(previewStream) && cameraEnabled
 
   // The <video> unmounts while the camera is off, so the stream is re-attached when it comes back.
@@ -43,9 +41,9 @@ export function LiveHostPreview({
     return () => {
       video.srcObject = null
     }
-  }, [previewStream, showVideo, videoRef])
+  }, [previewStream, showVideo])
 
-  const cover = live?.portraitCoverUrl ?? live?.coverUrl
+  const cover = live?.portraitCoverUrl ?? live?.coverUrl ?? live?.host?.avatarUrl
   const keys = placeholderKeys({ cameraEnabled, mediaKind, mediaStatus, mediaError })
 
   return (
@@ -55,7 +53,7 @@ export function LiveHostPreview({
       ) : (
         <>
           {cover ? (
-            <img src={cover} alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" referrerPolicy="no-referrer" />
+            <img src={cover} alt="" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-xl" referrerPolicy="no-referrer" />
           ) : null}
           <div className="relative flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
             <IoVideocamOffOutline className="text-4xl text-zinc-400" aria-hidden />

@@ -30,9 +30,8 @@ function fakeMedia(status = 'ready', overrides = {}) {
 const created = { id: 'live-9', status: 'SCHEDULED' }
 const started = { ...created, status: 'LIVE' }
 
-function setup(media, { getCoverFrame = vi.fn(async () => 'frame') } = {}) {
-  const hook = renderHook(() => useGoLive({ token: 't', media, defaultTitle: "Kien's LIVE", getCoverFrame }))
-  return { ...hook, getCoverFrame }
+function setup(media) {
+  return renderHook(() => useGoLive({ token: 't', media, defaultTitle: "Kien's LIVE" }))
 }
 
 describe('useGoLive', () => {
@@ -54,19 +53,18 @@ describe('useGoLive', () => {
     expect(live).toBeNull()
   })
 
-  it('creates the LIVE without a category, with the default title and a preview cover, then starts it', async () => {
+  it('creates the LIVE without a category, with the default title, then starts it', async () => {
     service.createLive.mockResolvedValue(created)
     service.startLive.mockResolvedValue(started)
     const media = fakeMedia('ready', { micEnabled: false })
-    const { result, getCoverFrame } = setup(media)
+    const { result } = setup(media)
 
     let live
     await act(async () => {
       live = await result.current.goLive()
     })
 
-    expect(getCoverFrame).toHaveBeenCalled()
-    expect(service.createLive).toHaveBeenCalledWith({ title: "Kien's LIVE", coverFile: 'frame' }, 't')
+    expect(service.createLive).toHaveBeenCalledWith({ title: "Kien's LIVE" }, 't')
     expect(service.startLive).toHaveBeenCalledWith('live-9', 't')
     expect(live).toEqual(started)
     expect(hostMediaPreferencesFor('live-9')).toEqual({
@@ -76,18 +74,17 @@ describe('useGoLive', () => {
     })
   })
 
-  it('uses the typed title and skips the cover while the camera is off', async () => {
+  it('uses the typed title, trimmed', async () => {
     service.createLive.mockResolvedValue(created)
     service.startLive.mockResolvedValue(started)
-    const { result, getCoverFrame } = setup(fakeMedia('ready', { cameraEnabled: false }))
+    const { result } = setup(fakeMedia('ready'))
 
     act(() => result.current.setTitle('  Free Fire tối nay  '))
     await act(async () => {
       await result.current.goLive()
     })
 
-    expect(getCoverFrame).not.toHaveBeenCalled()
-    expect(service.createLive).toHaveBeenCalledWith({ title: 'Free Fire tối nay', coverFile: null }, 't')
+    expect(service.createLive).toHaveBeenCalledWith({ title: 'Free Fire tối nay' }, 't')
   })
 
   it('retries the same LIVE when starting fails instead of creating another one', async () => {

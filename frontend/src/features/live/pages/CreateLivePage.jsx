@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IoArrowBack } from 'react-icons/io5'
 import { useAuth } from '@/features/auth/hooks/useAuth'
@@ -11,7 +11,6 @@ import { LIVE_LIMITS, LIVE_PATHS, LIVE_STATUS } from '@/features/live/constants/
 import { useGoLive } from '@/features/live/hooks/useGoLive.js'
 import { useHostMedia } from '@/features/live/hooks/useLiveHost.js'
 import { useLiveNavigation } from '@/features/live/hooks/useLiveNavigation.js'
-import { captureVideoFrame } from '@/features/live/utils/captureVideoFrame.js'
 
 /**
  * Go LIVE: camera/mic preview and a single "Go LIVE" action. The title is optional and the
@@ -22,15 +21,13 @@ export function CreateLivePage() {
   const { token, user, logout } = useAuth()
   const { navigate, openLive, back } = useLiveNavigation()
   const media = useHostMedia({ token, previewOnly: true })
-  const videoRef = useRef(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   const hostName = user?.displayName || user?.fullName || user?.username || ''
   const defaultTitle = hostName
     ? t('livePage.create.defaultTitle', { name: hostName })
     : t('livePage.create.defaultTitleAnonymous')
-  const getCoverFrame = useCallback(() => captureVideoFrame(videoRef.current), [])
-  const goLive = useGoLive({ token, media, defaultTitle, getCoverFrame })
+  const goLive = useGoLive({ token, media, defaultTitle })
   const capturePending = media.state.status === 'idle' || media.state.status === 'preparing'
 
   useEffect(() => {
@@ -72,8 +69,7 @@ export function CreateLivePage() {
           <div className="flex min-h-0 flex-1 items-center justify-center p-3 lg:p-6">
             <div className="vibely-keep-dark relative aspect-[9/16] h-full max-h-full max-w-full overflow-hidden rounded-2xl ring-1 ring-white/10">
               <LiveHostPreview
-                live={null}
-                videoRef={videoRef}
+                live={{ host: { avatarUrl: user?.avatarUrl ?? null } }}
                 previewStream={media.state.previewStream}
                 cameraEnabled={media.state.cameraEnabled}
                 mediaKind={media.kind}

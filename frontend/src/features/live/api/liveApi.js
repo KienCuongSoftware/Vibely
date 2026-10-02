@@ -1,5 +1,4 @@
 import { followApi } from '@/features/follow/api/followApi.js'
-import { uploadThumbnailToStorage } from '@/features/upload/api/uploadApi.js'
 import {
   LIVE_DISCOVERY,
   LIVE_DISCOVERY_SECTIONS,
@@ -164,20 +163,11 @@ export const liveApi = {
   getLive: async (liveId, token) => normalizeLive(await request(livePath(liveId), { token })),
 
   /**
-   * The cover is uploaded to storage first (presigned URL, like video thumbnails);
-   * only the resulting URL is sent, never the file itself. The host comes from the session.
+   * The host comes from the session and the host's avatar serves as the cover.
    * Without `categoryId` the backend classifies the LIVE from its title.
    * @returns {Promise<import('./liveContracts.js').LiveDetail>}
    */
-  async createLive({ title, description, categoryId, coverFile, settings = {} }, token) {
-    let coverUrl = null
-    if (coverFile) {
-      try {
-        coverUrl = await uploadThumbnailToStorage(token, coverFile, coverFile.name)
-      } catch {
-        // The cover is decoration; a failed upload must not keep the host from going LIVE.
-      }
-    }
+  async createLive({ title, description, categoryId, settings = {} }, token) {
     const dto = await request('/api/lives', {
       method: 'POST',
       token,
@@ -185,7 +175,6 @@ export const liveApi = {
         title,
         description,
         category: categoryId || undefined,
-        coverUrl,
         visibility: settings.visibility,
         allowComments: settings.allowComments,
         allowGifts: settings.allowGifts,

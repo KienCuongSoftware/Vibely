@@ -32,7 +32,7 @@ export function WebRtcLivePlayer({ live, muted = true, ended = false, streamSign
   const { state, retry } = useWebRtcPlayback({ liveId: live?.id, ended, streamSignal })
   const videoRef = useRef(null)
   const [blocked, setBlocked] = useState(null)
-  const backdrop = live?.coverUrl ?? live?.portraitCoverUrl ?? null
+  const backdrop = live?.coverUrl ?? live?.portraitCoverUrl ?? live?.host?.avatarUrl ?? null
   const playing = state.status === 'playing' && Boolean(state.stream)
 
   useEffect(() => {
