@@ -128,6 +128,89 @@ SRS has a public IP, so most clients connect directly (UDP, then TCP 8000). If a
 restrictive network cannot connect while others can, the cause is NAT/firewall traversal: add a TURN
 server through `LIVE_MEDIA_TURN_*`. Do not change frontend code to work around it.
 
+## Phase 4: recording, replay, HLS fallback, limits
+
+Every Phase 4 feature is behind a backend flag that defaults to off. With the flags off, LIVE behaves
+exactly as in Phase 3. `GET /api/lives/capabilities` tells the frontend what is enabled
+(`media`, `recording`, `hlsFallback`, `maxDurationMinutes`, `maxReplaySeconds`).
+
+### Recording → replay
+
+```
+SRS (rtc_to_rtmp + DVR, plan session) ── one FLV per publish ──▶ /var/lib/vibely/live-dvr (host disk)
+      │ on_dvr hook (cwd, file)
+      ▼
+backend LiveRecordingService ── LIVE ended + settle delay ──▶ LiveRecordingWorker (1 thread, FFmpeg remux/concat)
+      ──▶ S3 uploads/{hostId}/live-{livePublicId}.mp4 ──▶ existing video pipeline (draft, host-only video)
+```
+
+- The host opts in when creating the LIVE (`recordingEnabled`; the toggle only shows when
+  `capabilities.recording`). Without `LIVE_RECORDING_ENABLED=true` and S3, the flag is ignored.
+- Starting the LIVE creates a `live_recordings` row (`RECORDING`). Each `on_dvr` adds a
+  `live_recording_segments` row. The hook is idempotent (unique file path) and only accepts files
+  inside `LIVE_RECORDING_DVR_DIR`. Files of LIVEs that did not opt in are deleted right away.
+- After the LIVE ends and `LIVE_RECORDING_SETTLE_SECONDS` have passed, the worker concatenates the
+  segments with FFmpeg (stream copy, capped at `LIVE_RECORDING_MAX_REPLAY_SECONDS`), uploads the MP4
+  and creates a **draft video owned by the host** through the normal video pipeline.
+  The status goes `PROCESSING` → `READY` when the pipeline finishes. `FAILED` happens after
+  `LIVE_RECORDING_MAX_ATTEMPTS` attempts or when processing times out.
+- Recording never affects the LIVE: hook and worker errors are logged and retried, and ending a LIVE
+  never waits for them.
+- `GET /api/lives/{id}/replay` returns the status and, once ready, a short-lived presigned playback URL.
+  It is visible to the host always, and to others only after the host publishes the video from Studio.
+  The response is `no-store`, URLs are never stored, and `404 REPLAY_NOT_FOUND` means there is no recording.
+  The frontend page is `/replay/:liveId`.
+- Unclaimed DVR files are removed after `LIVE_RECORDING_ORPHAN_FILE_RETENTION_HOURS`. Only one backend
+  instance (the one sharing the DVR directory with SRS) should run with recording on.
+
+### HLS fallback
+
+- SRS also writes HLS (`hls_fragment 2`, `hls_window 12`, cleanup on) to `/var/lib/vibely/live-hls`. Host
+  nginx serves it at `/live-hls/`. Video never goes through the backend and the S3 bucket stays private.
+- `GET /api/lives/{id}/playback` adds `hlsUrl` (playlist + an HMAC token scoped to that stream, TTL
+  `LIVE_HLS_TOKEN_TTL_SECONDS`). WHEP tokens and HLS tokens cannot be used for each other.
+- nginx checks every playlist request with `auth_request` → `GET /api/live-media/hls-auth`. The check
+  needs a valid token for that stream and an open media session (publishing or interrupted). Segments
+  are only listed in an authorized playlist and SRS deletes them shortly afterwards.
+- The player switches to HLS **once**: after `HLS_FALLBACK_AFTER_ATTEMPTS` (3) failed WebRTC
+  reconnects, or straight away when the browser has no WebRTC. A fatal HLS error ends in `failed`;
+  the manual retry starts over with WebRTC. Nothing switches automatically in the other direction, so
+  the player cannot loop. HLS viewers are not counted in the viewer count (it is driven by `on_play`).
+
+### Other Phase 4 behaviour
+
+- **Interrupted UI.** While the host's media is down (grace period), playback reports `interrupted` and
+  viewers see "the LIVE is having connection problems".
+- **Screen share.** The host can share a screen, window or tab instead of the camera (`getDisplayMedia`,
+  same sender, `replaceTrack`, no renegotiation). The browser's "Stop sharing" switches back to the camera.
+- **Connection quality.** Shown on the host page and in the viewer room: three bars computed from
+  `RTCPeerConnection.getStats()` every 2 s (loss, RTT, bitrate). Nothing is sent to the server.
+- **Analytics.** `live_analytics` is written once when a LIVE ends (duration, unique viewers, watch
+  time, peak/average viewers, likes, comments, reconnects, end reason). `GET /api/lives/{id}/analytics`
+  is host-only and only available after the end; the host's end screen shows it.
+- **Max duration.** `LiveLimitsScheduler` ends LIVEs older than `LIVE_MAX_DURATION_MINUTES`
+  (end reason `max_duration`; idempotent, safe on several nodes).
+
+### Enabling on the VPS
+
+1. Directories (the backend container runs as a non-root user and must delete DVR files):
+   ```bash
+   GID=$(docker exec vibely-backend id -g)
+   sudo install -d -m 2770 -g "$GID" /var/lib/vibely/live-dvr
+   sudo install -d -m 0755 /var/lib/vibely/live-hls
+   ```
+2. `srs.env`: uncomment the Phase 4 block (`SRS_VHOST_RTC_RTC_TO_RTMP=on`, DVR and/or HLS) from
+   `deploy/vps/srs.env.example`, using the same hook token.
+3. `vibely.env`: `LIVE_RECORDING_ENABLED=true` and/or `LIVE_HLS_ENABLED=true` (see
+   `deploy/vps/live-media.env.example`). Recording also needs S3.
+4. Copy `deploy/srs/srs.conf` and the compose file, then add the `/live-hls/` block from
+   `deploy/nginx/vibely.conf` (nginx needs `--with-http_auth_request_module`, which Ubuntu's package
+   includes) and run `nginx -t && systemctl reload nginx`.
+5. `docker compose up -d srs backend`.
+
+Locally (Windows) the backend runs outside Docker, so the DVR path that SRS reports cannot be resolved.
+Test recording and HLS on Linux/VPS.
+
 ## Manual test checklist
 
 1. Host signs in, creates a LIVE, grants camera/mic, sees the local preview, starts the LIVE.
@@ -136,6 +219,10 @@ server through `LIVE_MEDIA_TURN_*`. Do not change frontend code to work around i
 4. Viewer closes the tab: the viewer count drops.
 5. Host goes offline briefly: viewers see "host reconnecting"; back within the grace, the LIVE continues.
 6. Host ends the LIVE: viewers get `LIVE_ENDED`, and playback of the ended LIVE is refused.
+7. (Phase 4) Host shares a screen and stops it from the browser bar: viewers see the screen, then the camera.
+8. (Recording on) Create a LIVE with "record replay", end it: the end screen shows stats and the replay
+   goes RECORDING → PROCESSING → READY, then appears as a draft in Studio.
+9. (HLS on) Block UDP+TCP 8000 for a viewer: after the reconnect attempts it plays over HLS ("HLS" badge).
 
 ## Troubleshooting
 
@@ -144,3 +231,7 @@ server through `LIVE_MEDIA_TURN_*`. Do not change frontend code to work around i
 | WHIP/WHEP succeed but the peer never connects | 8000/udp+tcp open on all firewalls (hPanel synced), `CANDIDATE` = public IPv4 |
 | `on_publish` rejected | hook token mismatch between `vibely.env` and `srs.env`, or an expired/reused credential |
 | LIVE ends ~60 s after host leaves | expected: reconnect grace elapsed |
+| Replay stuck in RECORDING / no segments | `SRS_VHOST_RTC_RTC_TO_RTMP=on`, `SRS_VHOST_DVR_ENABLED=on`, `ON_DVR` hook URL set, same DVR path mounted in both containers |
+| Replay FAILED, `AccessDeniedException` in backend logs | DVR directory group/permissions (step 1 above) |
+| HLS playlist 403 | token expired or LIVE no longer open; `LIVE_HLS_ENABLED=true` on the backend |
+| HLS playlist 404 | SRS HLS not enabled, or `LIVE_MEDIA_APP` is not `live` (nginx alias path) |

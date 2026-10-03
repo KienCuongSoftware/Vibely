@@ -1,7 +1,8 @@
 # Production VPS — /opt/vibely/docker-compose.yml
 # Postgres on the VPS host listens on 127.0.0.1 only — backend uses host network so localhost:5432 works.
 # Host nginx: /api/ → 127.0.0.1:8080 (backend), SPA → /var/www/vibely or 127.0.0.1:8081 (frontend),
-# /rtc/v1/whip/ + /rtc/v1/whep/ → 127.0.0.1:1985 (SRS, LIVE video signaling).
+# /rtc/v1/whip/ + /rtc/v1/whep/ → 127.0.0.1:1985 (SRS, LIVE video signaling),
+# /live-hls/ → /var/lib/vibely/live-hls on disk (optional HLS fallback, playlist checked by the backend).
 
 services:
   backend:
@@ -13,6 +14,9 @@ services:
       - vibely.env
     volumes:
       - /opt/vibely/config/application-local.yaml:/opt/vibely/config/application-local.yaml:ro
+      # LIVE recordings written by SRS (same path in both containers). Create it before the first
+      # start, group-writable for the backend user: see docs/live/README.md (Phase 4).
+      - /var/lib/vibely/live-dvr:/var/lib/vibely/live-dvr
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/actuator/health"]
       interval: 30s
@@ -33,6 +37,9 @@ services:
       - srs.env
     volumes:
       - /opt/vibely/srs/srs.conf:/usr/local/srs/conf/vibely.conf:ro
+      # Phase 4: DVR output (read and removed by the backend) and HLS output (served by host nginx).
+      - /var/lib/vibely/live-dvr:/var/lib/vibely/live-dvr
+      - /var/lib/vibely/live-hls:/var/lib/vibely/live-hls
 
   frontend:
     image: kiencuongsoftware/vibely-frontend:latest
