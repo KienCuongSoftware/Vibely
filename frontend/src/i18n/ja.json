@@ -665,7 +665,9 @@
       "cancel": "キャンセル",
       "errors": {
         "submitFailed": "LIVEを作成できませんでした。もう一度試してください。"
-      }
+      },
+      "recordReplay": "このLIVEを録画",
+      "recordReplayHint": "最大{{minutes}}分をStudioに下書き動画として保存し、後で投稿できます。"
     },
     "host": {
       "pageTitle": "ライブスタジオ |ヴァイブリー",
@@ -694,7 +696,14 @@
       "chatEnded": "このLIVEは終了したためチャットは閉じています。",
       "actionFailed": "何か問題が発生しました。もう一度試してください。",
       "notOwnerTitle": "これをLIVEで管理することはできません",
-      "notOwnerDescription": "このLIVEではホストのみがLIVE Studioを開くことができます。"
+      "notOwnerDescription": "このLIVEではホストのみがLIVE Studioを開くことができます。",
+      "startScreenShare": "画面を共有",
+      "stopScreenShare": "画面共有を停止",
+      "recording": "REC",
+      "summaryDuration": "配信時間",
+      "summaryPeakViewers": "最大視聴者数",
+      "summaryAverageWatch": "平均視聴時間",
+      "summaryComments": "コメント"
     },
     "media": {
       "retry": "再試行",
@@ -719,7 +728,10 @@
         "hostReconnecting": "ホストの接続が不安定です…",
         "failed": "このLIVEを再生できませんでした。",
         "tapToPlay": "タップして再生",
-        "tapToUnmute": "タップしてミュート解除"
+        "tapToUnmute": "タップしてミュート解除",
+        "interrupted": "ライブ配信で接続の問題が発生しています...",
+        "hlsMode": "互換モード",
+        "hlsModeHint": "リアルタイム接続が不安定なため、HLSで再生しています。遅延が少し大きくなります。"
       },
       "devices": {
         "camera": "カメラ",
@@ -741,13 +753,40 @@
         "liveEnded": "このLIVEは終了しました。",
         "notFound": "このLIVEが見つかりませんでした。",
         "forbidden": "このLIVEの映像にアクセスする権限がありません。",
-        "playbackFailed": "このLIVEを再生できませんでした。"
+        "playbackFailed": "このLIVEを再生できませんでした。",
+        "screenShareFailed": "画面を共有できませんでした。もう一度お試しください。"
       },
       "endReason": {
         "admin": "このLIVEはモデレーターによって終了されました。",
         "hostDisconnected": "ホストの接続が切れたため、このLIVEは終了しました。",
-        "publishTimeout": "ホストの映像が開始されなかったため、このLIVEは終了しました。"
+        "publishTimeout": "ホストの映像が開始されなかったため、このLIVEは終了しました。",
+        "maxDuration": "最大配信時間に達したため、このLIVEは終了しました。"
+      },
+      "quality": {
+        "label": "接続品質: {{quality}}",
+        "excellent": "非常に良好",
+        "good": "良好",
+        "poor": "不安定",
+        "reconnecting": "再接続中",
+        "unknown": "不明",
+        "loss": "損失"
       }
+    },
+    "replay": {
+      "title": "LIVEのリプレイ",
+      "pageTitle": "{{title}} · リプレイ",
+      "watchReplay": "リプレイを見る",
+      "playbackFailed": "リプレイを再生できませんでした。リンクの有効期限が切れている可能性があります。",
+      "recordingTitle": "このLIVEは録画中です",
+      "processingTitle": "録画を処理中",
+      "pendingBody": "リプレイは数分で準備できます。このページは自動的に更新されます。",
+      "failedTitle": "リプレイを作成できませんでした",
+      "deletedTitle": "リプレイは削除されました",
+      "notFoundTitle": "リプレイはありません",
+      "notFoundBody": "このLIVEにはリプレイがないか、まだ公開されていません。",
+      "draftNotice": "このリプレイはあなただけが見られる下書きです。共有するにはStudioから投稿してください。",
+      "publishInStudio": "Studioで投稿",
+      "openVideo": "動画を開く"
     }
   },
   "messagesPage": {

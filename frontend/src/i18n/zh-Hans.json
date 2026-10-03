@@ -665,7 +665,9 @@
       "cancel": "取消",
       "errors": {
         "submitFailed": "无法创建您的 LIVE。请再试一次。"
-      }
+      },
+      "recordReplay": "录制此 LIVE",
+      "recordReplayHint": "最多将 {{minutes}} 分钟保存为 Studio 中的草稿视频，方便你稍后发布。"
     },
     "host": {
       "pageTitle": "现场工作室 |维贝利",
@@ -694,7 +696,14 @@
       "chatEnded": "聊天已关闭，因为此 LIVE 已结束。",
       "actionFailed": "出了点问题。请再试一次。",
       "notOwnerTitle": "您无法管理此 LIVE",
-      "notOwnerDescription": "只有主持人才能为此 LIVE 打开 LIVE Studio。"
+      "notOwnerDescription": "只有主持人才能为此 LIVE 打开 LIVE Studio。",
+      "startScreenShare": "共享屏幕",
+      "stopScreenShare": "停止共享屏幕",
+      "recording": "REC",
+      "summaryDuration": "时长",
+      "summaryPeakViewers": "观看人数峰值",
+      "summaryAverageWatch": "平均观看时长",
+      "summaryComments": "评论"
     },
     "media": {
       "retry": "重试",
@@ -719,7 +728,10 @@
         "hostReconnecting": "主播的网络不稳定…",
         "failed": "无法播放此 LIVE。",
         "tapToPlay": "点按播放",
-        "tapToUnmute": "点按取消静音"
+        "tapToUnmute": "点按取消静音",
+        "interrupted": "直播出现连接问题...",
+        "hlsMode": "兼容模式",
+        "hlsModeHint": "实时连接不稳定，正在通过 HLS 播放。延迟会稍高一些。"
       },
       "devices": {
         "camera": "摄像头",
@@ -741,13 +753,40 @@
         "liveEnded": "此 LIVE 已结束。",
         "notFound": "找不到此 LIVE。",
         "forbidden": "你无权观看此 LIVE 的视频。",
-        "playbackFailed": "无法播放此 LIVE。"
+        "playbackFailed": "无法播放此 LIVE。",
+        "screenShareFailed": "无法共享屏幕，请重试。"
       },
       "endReason": {
         "admin": "此 LIVE 已被管理员结束。",
         "hostDisconnected": "主播连接中断，此 LIVE 已结束。",
-        "publishTimeout": "主播的视频始终未开始，此 LIVE 已结束。"
+        "publishTimeout": "主播的视频始终未开始，此 LIVE 已结束。",
+        "maxDuration": "此 LIVE 已达到最长时长，已结束。"
+      },
+      "quality": {
+        "label": "连接质量：{{quality}}",
+        "excellent": "极佳",
+        "good": "良好",
+        "poor": "较差",
+        "reconnecting": "正在重新连接",
+        "unknown": "未知",
+        "loss": "丢包"
       }
+    },
+    "replay": {
+      "title": "LIVE 回放",
+      "pageTitle": "{{title}} · 回放",
+      "watchReplay": "观看回放",
+      "playbackFailed": "无法播放回放。链接可能已过期。",
+      "recordingTitle": "此 LIVE 正在录制",
+      "processingTitle": "正在处理录制内容",
+      "pendingBody": "回放将在几分钟后准备就绪。此页面会自动更新。",
+      "failedTitle": "无法生成回放",
+      "deletedTitle": "回放已删除",
+      "notFoundTitle": "暂无回放",
+      "notFoundBody": "此 LIVE 没有回放，或回放尚未公开发布。",
+      "draftNotice": "此回放是仅你可见的草稿。在 Studio 中发布即可分享。",
+      "publishInStudio": "在 Studio 中发布",
+      "openVideo": "打开视频"
     }
   },
   "messagesPage": {

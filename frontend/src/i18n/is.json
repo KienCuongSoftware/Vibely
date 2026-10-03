@@ -665,7 +665,9 @@
       "cancel": "Hætta við",
       "errors": {
         "submitFailed": "Gat ekki búið til LIVE. Vinsamlegast reyndu aftur."
-      }
+      },
+      "recordReplay": "Taka upp þetta LIVE",
+      "recordReplayHint": "Vistar allt að {{minutes}} mínútur sem drög að myndskeiði í Studio svo þú getir birt það síðar."
     },
     "host": {
       "pageTitle": "LIVE Stúdíó | Hressandi",
@@ -694,7 +696,14 @@
       "chatEnded": "Spjallinu er lokað vegna þess að þessu LIVE er lokið.",
       "actionFailed": "Eitthvað fór úrskeiðis. Vinsamlegast reyndu aftur.",
       "notOwnerTitle": "Þú getur ekki stjórnað þessu LIVE",
-      "notOwnerDescription": "Aðeins gestgjafinn getur opnað LIVE Studio fyrir þetta LIVE."
+      "notOwnerDescription": "Aðeins gestgjafinn getur opnað LIVE Studio fyrir þetta LIVE.",
+      "startScreenShare": "Deila skjá",
+      "stopScreenShare": "Hætta að deila skjá",
+      "recording": "REC",
+      "summaryDuration": "Lengd",
+      "summaryPeakViewers": "Mesti áhorfendafjöldi",
+      "summaryAverageWatch": "Meðaláhorfstími",
+      "summaryComments": "Athugasemdir"
     },
     "media": {
       "retry": "Reyna aftur",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Tenging gestgjafans er óstöðug…",
         "failed": "Ekki tókst að spila þetta LIVE.",
         "tapToPlay": "Ýttu til að spila",
-        "tapToUnmute": "Ýttu til að kveikja á hljóði"
+        "tapToUnmute": "Ýttu til að kveikja á hljóði",
+        "interrupted": "Beina útsendingin á í tengingarvandræðum...",
+        "hlsMode": "Samhæfnihamur",
+        "hlsModeHint": "Spilað um HLS þar sem rauntímatengingin er óstöðug. Seinkunin er aðeins meiri."
       },
       "devices": {
         "camera": "Myndavél",
@@ -741,13 +753,40 @@
         "liveEnded": "Þessu LIVE er lokið.",
         "notFound": "Þetta LIVE fannst ekki.",
         "forbidden": "Þú hefur ekki aðgang að myndbandi þessa LIVE.",
-        "playbackFailed": "Ekki tókst að spila þetta LIVE."
+        "playbackFailed": "Ekki tókst að spila þetta LIVE.",
+        "screenShareFailed": "Ekki tókst að deila skjánum. Reyndu aftur."
       },
       "endReason": {
         "admin": "Umsjónarmaður lauk þessu LIVE.",
         "hostDisconnected": "Þessu LIVE lauk vegna þess að gestgjafinn missti tenginguna.",
-        "publishTimeout": "Þessu LIVE lauk vegna þess að myndband gestgjafans fór aldrei af stað."
+        "publishTimeout": "Þessu LIVE lauk vegna þess að myndband gestgjafans fór aldrei af stað.",
+        "maxDuration": "Þessu LIVE lauk þar sem það náði hámarkslengd."
+      },
+      "quality": {
+        "label": "Gæði tengingar: {{quality}}",
+        "excellent": "Frábær",
+        "good": "Góð",
+        "poor": "Léleg",
+        "reconnecting": "Tengist aftur",
+        "unknown": "Óþekkt",
+        "loss": "Tap"
       }
+    },
+    "replay": {
+      "title": "Endursýning LIVE",
+      "pageTitle": "{{title}} · Endursýning",
+      "watchReplay": "Horfa á endursýningu",
+      "playbackFailed": "Ekki tókst að spila endursýninguna. Tengillinn gæti hafa runnið út.",
+      "recordingTitle": "Verið er að taka upp þetta LIVE",
+      "processingTitle": "Verið er að vinna úr upptökunni",
+      "pendingBody": "Endursýningin verður tilbúin eftir nokkrar mínútur. Síðan uppfærist sjálfkrafa.",
+      "failedTitle": "Ekki tókst að búa til endursýningu",
+      "deletedTitle": "Endursýningunni var eytt",
+      "notFoundTitle": "Engin endursýning í boði",
+      "notFoundBody": "Þetta LIVE er ekki með endursýningu eða hún hefur ekki verið birt.",
+      "draftNotice": "Þessi endursýning er drög sem aðeins þú sérð. Birtu hana úr Studio til að deila henni.",
+      "publishInStudio": "Birta í Studio",
+      "openVideo": "Opna myndskeið"
     }
   },
   "messagesPage": {

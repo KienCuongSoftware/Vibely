@@ -665,7 +665,9 @@
       "cancel": "Cancelar",
       "errors": {
         "submitFailed": "Não foi possível criar o seu LIVE. Por favor, tente novamente."
-      }
+      },
+      "recordReplay": "Gravar este LIVE",
+      "recordReplayHint": "Guarda até {{minutes}} minutos como vídeo em rascunho no Studio para publicares mais tarde."
     },
     "host": {
       "pageTitle": "Estúdio AO VIVO | Vibrantemente",
@@ -694,7 +696,14 @@
       "chatEnded": "O chat está fechado porque este LIVE terminou.",
       "actionFailed": "Algo correu mal. Por favor, tente novamente.",
       "notOwnerTitle": "Não pode gerir esta LIVE",
-      "notOwnerDescription": "Apenas o anfitrião pode abrir o LIVE Studio para este LIVE."
+      "notOwnerDescription": "Apenas o anfitrião pode abrir o LIVE Studio para este LIVE.",
+      "startScreenShare": "Partilhar ecrã",
+      "stopScreenShare": "Parar partilha de ecrã",
+      "recording": "REC",
+      "summaryDuration": "Duração",
+      "summaryPeakViewers": "Pico de espectadores",
+      "summaryAverageWatch": "Tempo médio de visualização",
+      "summaryComments": "Comentários"
     },
     "media": {
       "retry": "Tentar novamente",
@@ -719,7 +728,10 @@
         "hostReconnecting": "A ligação do anfitrião está instável…",
         "failed": "Não foi possível reproduzir este LIVE.",
         "tapToPlay": "Toca para reproduzir",
-        "tapToUnmute": "Toca para ativar o som"
+        "tapToUnmute": "Toca para ativar o som",
+        "interrupted": "O livestream está com problemas de ligação...",
+        "hlsMode": "Modo de compatibilidade",
+        "hlsModeHint": "A reproduzir via HLS porque a ligação em tempo real está instável. O atraso é um pouco maior."
       },
       "devices": {
         "camera": "Câmara",
@@ -741,13 +753,40 @@
         "liveEnded": "Este LIVE terminou.",
         "notFound": "Não foi possível encontrar este LIVE.",
         "forbidden": "Não tens acesso ao vídeo deste LIVE.",
-        "playbackFailed": "Não foi possível reproduzir este LIVE."
+        "playbackFailed": "Não foi possível reproduzir este LIVE.",
+        "screenShareFailed": "Não foi possível partilhar o ecrã. Tenta novamente."
       },
       "endReason": {
         "admin": "Este LIVE foi terminado por um moderador.",
         "hostDisconnected": "Este LIVE terminou porque o anfitrião perdeu a ligação.",
-        "publishTimeout": "Este LIVE terminou porque o vídeo do anfitrião nunca começou."
+        "publishTimeout": "Este LIVE terminou porque o vídeo do anfitrião nunca começou.",
+        "maxDuration": "Este LIVE terminou porque atingiu a duração máxima."
+      },
+      "quality": {
+        "label": "Qualidade da ligação: {{quality}}",
+        "excellent": "Excelente",
+        "good": "Boa",
+        "poor": "Fraca",
+        "reconnecting": "A religar",
+        "unknown": "Desconhecida",
+        "loss": "Perda"
       }
+    },
+    "replay": {
+      "title": "Repetição do LIVE",
+      "pageTitle": "{{title}} · Repetição",
+      "watchReplay": "Ver repetição",
+      "playbackFailed": "Não foi possível reproduzir a repetição. A ligação pode ter expirado.",
+      "recordingTitle": "Este LIVE está a ser gravado",
+      "processingTitle": "A processar a gravação",
+      "pendingBody": "A repetição estará pronta dentro de alguns minutos. Esta página atualiza-se automaticamente.",
+      "failedTitle": "Não foi possível criar a repetição",
+      "deletedTitle": "A repetição foi eliminada",
+      "notFoundTitle": "Nenhuma repetição disponível",
+      "notFoundBody": "Este LIVE não tem repetição ou ainda não foi publicada.",
+      "draftNotice": "Esta repetição é um rascunho que só tu podes ver. Publica-a no Studio para a partilhar.",
+      "publishInStudio": "Publicar no Studio",
+      "openVideo": "Abrir vídeo"
     }
   },
   "messagesPage": {

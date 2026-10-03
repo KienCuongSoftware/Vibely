@@ -665,7 +665,9 @@
       "cancel": "Batal",
       "errors": {
         "submitFailed": "Tidak dapat membuat LIVE anda. Sila cuba lagi."
-      }
+      },
+      "recordReplay": "Rakam LIVE ini",
+      "recordReplayHint": "Menyimpan sehingga {{minutes}} minit sebagai video draf dalam Studio untuk anda siarkan kemudian."
     },
     "host": {
       "pageTitle": "Studio LIVE | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Sembang ditutup kerana LIVE ini telah tamat.",
       "actionFailed": "Sesuatu telah berlaku. Sila cuba lagi.",
       "notOwnerTitle": "Anda tidak boleh mengurus LIVE ini",
-      "notOwnerDescription": "Hanya hos boleh membuka LIVE Studio untuk LIVE ini."
+      "notOwnerDescription": "Hanya hos boleh membuka LIVE Studio untuk LIVE ini.",
+      "startScreenShare": "Kongsi skrin",
+      "stopScreenShare": "Henti berkongsi skrin",
+      "recording": "REC",
+      "summaryDuration": "Tempoh",
+      "summaryPeakViewers": "Puncak penonton",
+      "summaryAverageWatch": "Purata masa tontonan",
+      "summaryComments": "Komen"
     },
     "media": {
       "retry": "Cuba lagi",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Sambungan hos tidak stabil…",
         "failed": "LIVE ini tidak dapat dimainkan.",
         "tapToPlay": "Ketik untuk main",
-        "tapToUnmute": "Ketik untuk hidupkan bunyi"
+        "tapToUnmute": "Ketik untuk hidupkan bunyi",
+        "interrupted": "Strim langsung mengalami masalah sambungan...",
+        "hlsMode": "Mod keserasian",
+        "hlsModeHint": "Dimainkan melalui HLS kerana sambungan masa nyata tidak stabil. Kelewatannya sedikit lebih lama."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "LIVE ini telah tamat.",
         "notFound": "LIVE ini tidak ditemui.",
         "forbidden": "Anda tiada akses kepada video LIVE ini.",
-        "playbackFailed": "LIVE ini tidak dapat dimainkan."
+        "playbackFailed": "LIVE ini tidak dapat dimainkan.",
+        "screenShareFailed": "Tidak dapat berkongsi skrin. Sila cuba lagi."
       },
       "endReason": {
         "admin": "LIVE ini telah ditamatkan oleh moderator.",
         "hostDisconnected": "LIVE ini tamat kerana hos terputus sambungan.",
-        "publishTimeout": "LIVE ini tamat kerana video hos tidak pernah bermula."
+        "publishTimeout": "LIVE ini tamat kerana video hos tidak pernah bermula.",
+        "maxDuration": "LIVE ini tamat kerana mencapai tempoh maksimum."
+      },
+      "quality": {
+        "label": "Kualiti sambungan: {{quality}}",
+        "excellent": "Cemerlang",
+        "good": "Baik",
+        "poor": "Lemah",
+        "reconnecting": "Menyambung semula",
+        "unknown": "Tidak diketahui",
+        "loss": "Kehilangan"
       }
+    },
+    "replay": {
+      "title": "Main semula LIVE",
+      "pageTitle": "{{title}} · Main semula",
+      "watchReplay": "Tonton main semula",
+      "playbackFailed": "Tidak dapat memainkan main semula. Pautan mungkin telah tamat tempoh.",
+      "recordingTitle": "LIVE ini sedang dirakam",
+      "processingTitle": "Memproses rakaman",
+      "pendingBody": "Main semula akan sedia dalam beberapa minit. Halaman ini dikemas kini secara automatik.",
+      "failedTitle": "Tidak dapat mencipta main semula",
+      "deletedTitle": "Main semula telah dipadamkan",
+      "notFoundTitle": "Tiada main semula",
+      "notFoundBody": "LIVE ini tiada main semula atau ia belum diterbitkan.",
+      "draftNotice": "Main semula ini ialah draf yang hanya anda boleh lihat. Siarkannya dari Studio untuk berkongsi.",
+      "publishInStudio": "Siarkan dalam Studio",
+      "openVideo": "Buka video"
     }
   },
   "messagesPage": {

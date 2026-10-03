@@ -665,7 +665,9 @@
       "cancel": "Cealaigh",
       "errors": {
         "submitFailed": "Níorbh fhéidir do BEO a chruthú. Bain triail eile as."
-      }
+      },
+      "recordReplay": "Taifead an LIVE seo",
+      "recordReplayHint": "Sábhálann suas le {{minutes}} nóiméad mar dhréachtfhíseán in Studio ionas gur féidir leat é a phostáil níos déanaí."
     },
     "host": {
       "pageTitle": "Stiúideo BEO | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Tá an comhrá dúnta toisc go bhfuil deireadh leis an mBEO seo.",
       "actionFailed": "Chuaigh rud éigin mícheart. Bain triail eile as.",
       "notOwnerTitle": "Ní féidir leat é seo a bhainistiú BEO",
-      "notOwnerDescription": "Ní féidir ach leis an óstach Stiúideo BEO a oscailt don BEO seo."
+      "notOwnerDescription": "Ní féidir ach leis an óstach Stiúideo BEO a oscailt don BEO seo.",
+      "startScreenShare": "Roinn an scáileán",
+      "stopScreenShare": "Stop ag roinnt an scáileáin",
+      "recording": "REC",
+      "summaryDuration": "Fad",
+      "summaryPeakViewers": "Buaicbhreathnóirí",
+      "summaryAverageWatch": "Meán-am féachana",
+      "summaryComments": "Tuairimí"
     },
     "media": {
       "retry": "Bain triail eile as",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Tá nasc an óstaigh éagobhsaí…",
         "failed": "Níorbh fhéidir an LIVE seo a sheinm.",
         "tapToPlay": "Tapáil chun seinm",
-        "tapToUnmute": "Tapáil chun an fhuaim a chasadh air"
+        "tapToUnmute": "Tapáil chun an fhuaim a chasadh air",
+        "interrupted": "Tá fadhbanna ceangail ag an sruth beo...",
+        "hlsMode": "Mód comhoiriúnachta",
+        "hlsModeHint": "Á sheinm trí HLS toisc go bhfuil an ceangal fíor-ama éagobhsaí. Tá an mhoill beagán níos faide."
       },
       "devices": {
         "camera": "Ceamara",
@@ -741,13 +753,40 @@
         "liveEnded": "Tá deireadh leis an LIVE seo.",
         "notFound": "Níorbh fhéidir an LIVE seo a aimsiú.",
         "forbidden": "Níl rochtain agat ar fhíseán an LIVE seo.",
-        "playbackFailed": "Níorbh fhéidir an LIVE seo a sheinm."
+        "playbackFailed": "Níorbh fhéidir an LIVE seo a sheinm.",
+        "screenShareFailed": "Níorbh fhéidir an scáileán a roinnt. Bain triail eile as."
       },
       "endReason": {
         "admin": "Chuir modhnóir deireadh leis an LIVE seo.",
         "hostDisconnected": "Tháinig deireadh leis an LIVE seo mar gur chaill an t-óstach an nasc.",
-        "publishTimeout": "Tháinig deireadh leis an LIVE seo mar nár thosaigh físeán an óstaigh riamh."
+        "publishTimeout": "Tháinig deireadh leis an LIVE seo mar nár thosaigh físeán an óstaigh riamh.",
+        "maxDuration": "Chríochnaigh an LIVE seo toisc gur shroich sé an fad uasta."
+      },
+      "quality": {
+        "label": "Cáilíocht an cheangail: {{quality}}",
+        "excellent": "Ar fheabhas",
+        "good": "Maith",
+        "poor": "Lag",
+        "reconnecting": "Ag athcheangal",
+        "unknown": "Anaithnid",
+        "loss": "Caillteanas"
       }
+    },
+    "replay": {
+      "title": "Athsheinm LIVE",
+      "pageTitle": "{{title}} · Athsheinm",
+      "watchReplay": "Féach ar an athsheinm",
+      "playbackFailed": "Níorbh fhéidir an t-athsheinm a sheinm. B'fhéidir go bhfuil an nasc imithe in éag.",
+      "recordingTitle": "Tá an LIVE seo á thaifeadadh",
+      "processingTitle": "An taifeadadh á phróiseáil",
+      "pendingBody": "Beidh an t-athsheinm réidh i gceann cúpla nóiméad. Nuashonraítear an leathanach seo go huathoibríoch.",
+      "failedTitle": "Níorbh fhéidir an t-athsheinm a chruthú",
+      "deletedTitle": "Scriosadh an t-athsheinm",
+      "notFoundTitle": "Níl athsheinm ar fáil",
+      "notFoundBody": "Níl athsheinm ag an LIVE seo nó níor foilsíodh é fós.",
+      "draftNotice": "Is dréacht é an t-athsheinm seo nach bhfeiceann ach tusa. Postáil é ó Studio chun é a roinnt.",
+      "publishInStudio": "Postáil in Studio",
+      "openVideo": "Oscail an físeán"
     }
   },
   "messagesPage": {

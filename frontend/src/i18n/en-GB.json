@@ -665,7 +665,9 @@
       "cancel": "Cancel",
       "errors": {
         "submitFailed": "Couldn't create your LIVE. Please try again."
-      }
+      },
+      "recordReplay": "Record this LIVE",
+      "recordReplayHint": "Saves up to {{minutes}} minutes as a draft video in Studio so you can post it later."
     },
     "host": {
       "pageTitle": "LIVE Studio | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Chat is closed because this LIVE has ended.",
       "actionFailed": "Something went wrong. Please try again.",
       "notOwnerTitle": "You can't manage this LIVE",
-      "notOwnerDescription": "Only the host can open LIVE Studio for this LIVE."
+      "notOwnerDescription": "Only the host can open LIVE Studio for this LIVE.",
+      "startScreenShare": "Share screen",
+      "stopScreenShare": "Stop sharing screen",
+      "recording": "REC",
+      "summaryDuration": "Duration",
+      "summaryPeakViewers": "Peak viewers",
+      "summaryAverageWatch": "Avg. watch time",
+      "summaryComments": "Comments"
     },
     "media": {
       "retry": "Try again",
@@ -719,7 +728,10 @@
         "hostReconnecting": "The host's connection is unstable…",
         "failed": "Couldn't play this LIVE.",
         "tapToPlay": "Tap to play",
-        "tapToUnmute": "Tap to unmute"
+        "tapToUnmute": "Tap to unmute",
+        "interrupted": "The livestream is having connection problems...",
+        "hlsMode": "Compatibility mode",
+        "hlsModeHint": "Playing over HLS because the real-time connection is unstable. The delay is a little longer."
       },
       "devices": {
         "camera": "Camera",
@@ -741,13 +753,40 @@
         "liveEnded": "This LIVE has ended.",
         "notFound": "This LIVE could not be found.",
         "forbidden": "You don't have access to this LIVE's video.",
-        "playbackFailed": "Couldn't play this LIVE."
+        "playbackFailed": "Couldn't play this LIVE.",
+        "screenShareFailed": "Couldn't share your screen. Please try again."
       },
       "endReason": {
         "admin": "This LIVE was ended by a moderator.",
         "hostDisconnected": "This LIVE ended because the host lost connection.",
-        "publishTimeout": "This LIVE ended because the host's video never started."
+        "publishTimeout": "This LIVE ended because the host's video never started.",
+        "maxDuration": "This LIVE ended because it reached the maximum duration."
+      },
+      "quality": {
+        "label": "Connection quality: {{quality}}",
+        "excellent": "Excellent",
+        "good": "Good",
+        "poor": "Poor",
+        "reconnecting": "Reconnecting",
+        "unknown": "Unknown",
+        "loss": "Loss"
       }
+    },
+    "replay": {
+      "title": "LIVE replay",
+      "pageTitle": "{{title}} · Replay",
+      "watchReplay": "Watch replay",
+      "playbackFailed": "Couldn't play the replay. The link may have expired.",
+      "recordingTitle": "This LIVE is being recorded",
+      "processingTitle": "Processing the recording",
+      "pendingBody": "The replay will be ready in a few minutes. This page updates automatically.",
+      "failedTitle": "Couldn't create the replay",
+      "deletedTitle": "The replay was deleted",
+      "notFoundTitle": "No replay available",
+      "notFoundBody": "This LIVE has no replay, or the replay hasn't been published.",
+      "draftNotice": "This replay is a draft that only you can see. Post it from Studio to share it.",
+      "publishInStudio": "Post in Studio",
+      "openVideo": "Open video"
     }
   },
   "messagesPage": {

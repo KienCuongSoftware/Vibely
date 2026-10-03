@@ -665,7 +665,9 @@
       "cancel": "Membatalkan",
       "errors": {
         "submitFailed": "Tidak dapat membuat LIVE Anda. Silakan coba lagi."
-      }
+      },
+      "recordReplay": "Rekam LIVE ini",
+      "recordReplayHint": "Menyimpan hingga {{minutes}} menit sebagai video draf di Studio agar bisa kamu posting nanti."
     },
     "host": {
       "pageTitle": "Studio LANGSUNG | Rupanya",
@@ -694,7 +696,14 @@
       "chatEnded": "Chat ditutup karena LIVE ini telah berakhir.",
       "actionFailed": "Ada yang tidak beres. Silakan coba lagi.",
       "notOwnerTitle": "Anda tidak dapat mengelola LIVE ini",
-      "notOwnerDescription": "Hanya tuan rumah yang dapat membuka LIVE Studio untuk LIVE ini."
+      "notOwnerDescription": "Hanya tuan rumah yang dapat membuka LIVE Studio untuk LIVE ini.",
+      "startScreenShare": "Bagikan layar",
+      "stopScreenShare": "Berhenti membagikan layar",
+      "recording": "REC",
+      "summaryDuration": "Durasi",
+      "summaryPeakViewers": "Puncak penonton",
+      "summaryAverageWatch": "Rata-rata waktu tonton",
+      "summaryComments": "Komentar"
     },
     "media": {
       "retry": "Coba lagi",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Koneksi host tidak stabil…",
         "failed": "LIVE ini tidak dapat diputar.",
         "tapToPlay": "Ketuk untuk memutar",
-        "tapToUnmute": "Ketuk untuk menyalakan suara"
+        "tapToUnmute": "Ketuk untuk menyalakan suara",
+        "interrupted": "Livestream mengalami masalah koneksi...",
+        "hlsMode": "Mode kompatibilitas",
+        "hlsModeHint": "Diputar melalui HLS karena koneksi real-time tidak stabil. Penundaannya sedikit lebih lama."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "LIVE ini telah berakhir.",
         "notFound": "LIVE ini tidak ditemukan.",
         "forbidden": "Kamu tidak memiliki akses ke video LIVE ini.",
-        "playbackFailed": "LIVE ini tidak dapat diputar."
+        "playbackFailed": "LIVE ini tidak dapat diputar.",
+        "screenShareFailed": "Tidak dapat membagikan layar. Coba lagi."
       },
       "endReason": {
         "admin": "LIVE ini diakhiri oleh moderator.",
         "hostDisconnected": "LIVE ini berakhir karena koneksi host terputus.",
-        "publishTimeout": "LIVE ini berakhir karena video host tidak pernah dimulai."
+        "publishTimeout": "LIVE ini berakhir karena video host tidak pernah dimulai.",
+        "maxDuration": "LIVE ini berakhir karena mencapai durasi maksimum."
+      },
+      "quality": {
+        "label": "Kualitas koneksi: {{quality}}",
+        "excellent": "Sangat baik",
+        "good": "Baik",
+        "poor": "Buruk",
+        "reconnecting": "Menyambung ulang",
+        "unknown": "Tidak diketahui",
+        "loss": "Kehilangan"
       }
+    },
+    "replay": {
+      "title": "Tayangan ulang LIVE",
+      "pageTitle": "{{title}} · Tayangan ulang",
+      "watchReplay": "Tonton tayangan ulang",
+      "playbackFailed": "Tidak dapat memutar tayangan ulang. Tautan mungkin sudah kedaluwarsa.",
+      "recordingTitle": "LIVE ini sedang direkam",
+      "processingTitle": "Memproses rekaman",
+      "pendingBody": "Tayangan ulang akan siap dalam beberapa menit. Halaman ini diperbarui otomatis.",
+      "failedTitle": "Tidak dapat membuat tayangan ulang",
+      "deletedTitle": "Tayangan ulang telah dihapus",
+      "notFoundTitle": "Tidak ada tayangan ulang",
+      "notFoundBody": "LIVE ini tidak memiliki tayangan ulang atau belum dipublikasikan.",
+      "draftNotice": "Tayangan ulang ini adalah draf yang hanya bisa kamu lihat. Posting dari Studio untuk membagikannya.",
+      "publishInStudio": "Posting di Studio",
+      "openVideo": "Buka video"
     }
   },
   "messagesPage": {

@@ -665,7 +665,9 @@
       "cancel": "取消",
       "errors": {
         "submitFailed": "無法建立您的 LIVE。請再試一次。"
-      }
+      },
+      "recordReplay": "錄製此 LIVE",
+      "recordReplayHint": "最多將 {{minutes}} 分鐘儲存為 Studio 中的草稿影片，方便你稍後發佈。"
     },
     "host": {
       "pageTitle": "現場工作室 |維貝利",
@@ -694,7 +696,14 @@
       "chatEnded": "聊天已關閉，因為此 LIVE 已結束。",
       "actionFailed": "出了點問題。請再試一次。",
       "notOwnerTitle": "您無法管理此 LIVE",
-      "notOwnerDescription": "只有主持人才能為此 LIVE 開啟 LIVE Studio。"
+      "notOwnerDescription": "只有主持人才能為此 LIVE 開啟 LIVE Studio。",
+      "startScreenShare": "分享螢幕",
+      "stopScreenShare": "停止分享螢幕",
+      "recording": "REC",
+      "summaryDuration": "時長",
+      "summaryPeakViewers": "觀看人數高峰",
+      "summaryAverageWatch": "平均觀看時長",
+      "summaryComments": "留言"
     },
     "media": {
       "retry": "重試",
@@ -719,7 +728,10 @@
         "hostReconnecting": "主播的網路不穩定…",
         "failed": "無法播放這個 LIVE。",
         "tapToPlay": "點一下即可播放",
-        "tapToUnmute": "點一下即可取消靜音"
+        "tapToUnmute": "點一下即可取消靜音",
+        "interrupted": "直播發生連線問題...",
+        "hlsMode": "相容模式",
+        "hlsModeHint": "即時連線不穩定，正在透過 HLS 播放。延遲會稍高一些。"
       },
       "devices": {
         "camera": "相機",
@@ -741,13 +753,40 @@
         "liveEnded": "這個 LIVE 已結束。",
         "notFound": "找不到這個 LIVE。",
         "forbidden": "你沒有權限觀看這個 LIVE 的影片。",
-        "playbackFailed": "無法播放這個 LIVE。"
+        "playbackFailed": "無法播放這個 LIVE。",
+        "screenShareFailed": "無法分享螢幕，請再試一次。"
       },
       "endReason": {
         "admin": "這個 LIVE 已被管理員結束。",
         "hostDisconnected": "主播連線中斷，這個 LIVE 已結束。",
-        "publishTimeout": "主播的影片始終沒有開始，這個 LIVE 已結束。"
+        "publishTimeout": "主播的影片始終沒有開始，這個 LIVE 已結束。",
+        "maxDuration": "此 LIVE 已達最長時長，已結束。"
+      },
+      "quality": {
+        "label": "連線品質：{{quality}}",
+        "excellent": "極佳",
+        "good": "良好",
+        "poor": "較差",
+        "reconnecting": "正在重新連線",
+        "unknown": "未知",
+        "loss": "封包遺失"
       }
+    },
+    "replay": {
+      "title": "LIVE 重播",
+      "pageTitle": "{{title}} · 重播",
+      "watchReplay": "觀看重播",
+      "playbackFailed": "無法播放重播。連結可能已過期。",
+      "recordingTitle": "此 LIVE 正在錄製",
+      "processingTitle": "正在處理錄製內容",
+      "pendingBody": "重播將在幾分鐘後準備就緒。此頁面會自動更新。",
+      "failedTitle": "無法產生重播",
+      "deletedTitle": "重播已刪除",
+      "notFoundTitle": "沒有重播",
+      "notFoundBody": "此 LIVE 沒有重播，或重播尚未公開發佈。",
+      "draftNotice": "此重播是只有你看得到的草稿。在 Studio 中發佈即可分享。",
+      "publishInStudio": "在 Studio 中發佈",
+      "openVideo": "開啟影片"
     }
   },
   "messagesPage": {

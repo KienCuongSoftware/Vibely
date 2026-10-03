@@ -665,7 +665,9 @@
       "cancel": "Mégse",
       "errors": {
         "submitFailed": "Nem sikerült létrehozni az ÉLŐT. Kérjük, próbálja újra."
-      }
+      },
+      "recordReplay": "LIVE rögzítése",
+      "recordReplayHint": "Legfeljebb {{minutes}} percet ment vázlatvideóként a Studióba, hogy később közzétehesd."
     },
     "host": {
       "pageTitle": "ÉLŐ Stúdió | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "A csevegés le van zárva, mert ez az ÉLŐKÖR véget ért.",
       "actionFailed": "Valami elromlott. Kérjük, próbálja újra.",
       "notOwnerTitle": "Ezt az ÉLŐBEN nem tudod kezelni",
-      "notOwnerDescription": "Csak a házigazda nyithatja meg a LIVE Stúdiót erre az ÉLŐ-re."
+      "notOwnerDescription": "Csak a házigazda nyithatja meg a LIVE Stúdiót erre az ÉLŐ-re.",
+      "startScreenShare": "Képernyő megosztása",
+      "stopScreenShare": "Képernyőmegosztás leállítása",
+      "recording": "REC",
+      "summaryDuration": "Időtartam",
+      "summaryPeakViewers": "Nézőcsúcs",
+      "summaryAverageWatch": "Átl. nézési idő",
+      "summaryComments": "Hozzászólások"
     },
     "media": {
       "retry": "Újra",
@@ -719,7 +728,10 @@
         "hostReconnecting": "A házigazda kapcsolata instabil…",
         "failed": "Ez a LIVE nem játszható le.",
         "tapToPlay": "Koppints a lejátszáshoz",
-        "tapToUnmute": "Koppints a hang bekapcsolásához"
+        "tapToUnmute": "Koppints a hang bekapcsolásához",
+        "interrupted": "Az élő közvetítésnél kapcsolódási problémák vannak...",
+        "hlsMode": "Kompatibilitási mód",
+        "hlsModeHint": "Lejátszás HLS-en keresztül, mert a valós idejű kapcsolat instabil. A késés kicsit nagyobb."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Ez a LIVE véget ért.",
         "notFound": "Ez a LIVE nem található.",
         "forbidden": "Nincs hozzáférésed ennek a LIVE-nak a videójához.",
-        "playbackFailed": "Ez a LIVE nem játszható le."
+        "playbackFailed": "Ez a LIVE nem játszható le.",
+        "screenShareFailed": "Nem sikerült megosztani a képernyőt. Próbáld újra."
       },
       "endReason": {
         "admin": "Ezt a LIVE-ot egy moderátor fejezte be.",
         "hostDisconnected": "Ez a LIVE véget ért, mert a házigazda elvesztette a kapcsolatot.",
-        "publishTimeout": "Ez a LIVE véget ért, mert a házigazda videója el sem indult."
+        "publishTimeout": "Ez a LIVE véget ért, mert a házigazda videója el sem indult.",
+        "maxDuration": "Ez a LIVE véget ért, mert elérte a maximális időtartamot."
+      },
+      "quality": {
+        "label": "Kapcsolat minősége: {{quality}}",
+        "excellent": "Kiváló",
+        "good": "Jó",
+        "poor": "Gyenge",
+        "reconnecting": "Újracsatlakozás",
+        "unknown": "Ismeretlen",
+        "loss": "Veszteség"
       }
+    },
+    "replay": {
+      "title": "LIVE visszajátszás",
+      "pageTitle": "{{title}} · Visszajátszás",
+      "watchReplay": "Visszajátszás megtekintése",
+      "playbackFailed": "A visszajátszás nem indítható el. Lehet, hogy a link lejárt.",
+      "recordingTitle": "Ez a LIVE rögzítés alatt áll",
+      "processingTitle": "A felvétel feldolgozása folyamatban",
+      "pendingBody": "A visszajátszás néhány perc múlva elkészül. Az oldal automatikusan frissül.",
+      "failedTitle": "Nem sikerült létrehozni a visszajátszást",
+      "deletedTitle": "A visszajátszás törölve lett",
+      "notFoundTitle": "Nincs elérhető visszajátszás",
+      "notFoundBody": "Ehhez a LIVE-hoz nincs visszajátszás, vagy még nem tették közzé.",
+      "draftNotice": "Ez a visszajátszás egy vázlat, amelyet csak te látsz. Tedd közzé a Studióban a megosztáshoz.",
+      "publishInStudio": "Közzététel a Studióban",
+      "openVideo": "Videó megnyitása"
     }
   },
   "messagesPage": {

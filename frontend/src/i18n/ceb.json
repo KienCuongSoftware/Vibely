@@ -665,7 +665,9 @@
       "cancel": "Pagkanselar",
       "errors": {
         "submitFailed": "Dili makahimo sa imong LIVE. Palihug sulayi pag-usab."
-      }
+      },
+      "recordReplay": "I-record kining LIVE",
+      "recordReplayHint": "Mag-save hangtod {{minutes}} ka minuto isip draft nga video sa Studio aron imong ma-post unya."
     },
     "host": {
       "pageTitle": "LIVE Studio | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Sirado na ang chat kay nahuman na ning LIVE.",
       "actionFailed": "Naay nahitabo. Palihug sulayi pag-usab.",
       "notOwnerTitle": "Dili nimo madumala kini nga LIVE",
-      "notOwnerDescription": "Ang host ra ang makaabli sa LIVE Studio para niining LIVE."
+      "notOwnerDescription": "Ang host ra ang makaabli sa LIVE Studio para niining LIVE.",
+      "startScreenShare": "I-share ang screen",
+      "stopScreenShare": "Hunonga ang pag-share sa screen",
+      "recording": "REC",
+      "summaryDuration": "Gidugayon",
+      "summaryPeakViewers": "Pinakadaghang tumatan-aw",
+      "summaryAverageWatch": "Kasagarang oras sa pagtan-aw",
+      "summaryComments": "Mga komento"
     },
     "media": {
       "retry": "Sulayi pag-usab",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Dili lig-on ang koneksyon sa host…",
         "failed": "Dili ma-play kining LIVE.",
         "tapToPlay": "I-tap aron i-play",
-        "tapToUnmute": "I-tap aron i-unmute"
+        "tapToUnmute": "I-tap aron i-unmute",
+        "interrupted": "Adunay problema sa koneksyon ang livestream...",
+        "hlsMode": "Compatibility mode",
+        "hlsModeHint": "Nag-play pinaagi sa HLS kay dili lig-on ang real-time nga koneksyon. Mas dugay gamay ang delay."
       },
       "devices": {
         "camera": "Camera",
@@ -741,13 +753,40 @@
         "liveEnded": "Nahuman na kining LIVE.",
         "notFound": "Dili makit-an kining LIVE.",
         "forbidden": "Wala kay access sa video niining LIVE.",
-        "playbackFailed": "Dili ma-play kining LIVE."
+        "playbackFailed": "Dili ma-play kining LIVE.",
+        "screenShareFailed": "Dili ma-share ang screen. Palihug sulayi pag-usab."
       },
       "endReason": {
         "admin": "Gitapos sa usa ka moderator kining LIVE.",
         "hostDisconnected": "Nahuman kining LIVE kay nawad-an og koneksyon ang host.",
-        "publishTimeout": "Nahuman kining LIVE kay wala gyud nagsugod ang video sa host."
+        "publishTimeout": "Nahuman kining LIVE kay wala gyud nagsugod ang video sa host.",
+        "maxDuration": "Natapos kining LIVE kay naabot na ang pinakataas nga gidugayon."
+      },
+      "quality": {
+        "label": "Kalidad sa koneksyon: {{quality}}",
+        "excellent": "Maayo kaayo",
+        "good": "Maayo",
+        "poor": "Huyang",
+        "reconnecting": "Nagkonektar pag-usab",
+        "unknown": "Wala mahibaloi",
+        "loss": "Nawala"
       }
+    },
+    "replay": {
+      "title": "Replay sa LIVE",
+      "pageTitle": "{{title}} · Replay",
+      "watchReplay": "Tan-awa ang replay",
+      "playbackFailed": "Dili ma-play ang replay. Basin na-expire na ang link.",
+      "recordingTitle": "Gi-record kining LIVE",
+      "processingTitle": "Gi-proseso ang recording",
+      "pendingBody": "Andam na ang replay sulod sa pipila ka minuto. Awtomatikong mag-update kini nga panid.",
+      "failedTitle": "Dili mahimo ang replay",
+      "deletedTitle": "Natangtang na ang replay",
+      "notFoundTitle": "Walay replay",
+      "notFoundBody": "Walay replay kining LIVE o wala pa kini ma-publish.",
+      "draftNotice": "Draft kini nga replay nga ikaw ra ang makakita. I-post kini gikan sa Studio aron i-share.",
+      "publishInStudio": "I-post sa Studio",
+      "openVideo": "Ablihi ang video"
     }
   },
   "messagesPage": {

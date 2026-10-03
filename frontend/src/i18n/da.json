@@ -665,7 +665,9 @@
       "cancel": "Ophæve",
       "errors": {
         "submitFailed": "Kunne ikke oprette din LIVE. Prøv venligst igen."
-      }
+      },
+      "recordReplay": "Optag denne LIVE",
+      "recordReplayHint": "Gemmer op til {{minutes}} minutter som videokladde i Studio, så du kan slå den op senere."
     },
     "host": {
       "pageTitle": "LIVE Studio | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Chatten er lukket, fordi denne LIVE er afsluttet.",
       "actionFailed": "Noget gik galt. Prøv venligst igen.",
       "notOwnerTitle": "Du kan ikke administrere dette LIVE",
-      "notOwnerDescription": "Kun værten kan åbne LIVE Studio for denne LIVE."
+      "notOwnerDescription": "Kun værten kan åbne LIVE Studio for denne LIVE.",
+      "startScreenShare": "Del skærm",
+      "stopScreenShare": "Stop skærmdeling",
+      "recording": "REC",
+      "summaryDuration": "Varighed",
+      "summaryPeakViewers": "Højeste antal seere",
+      "summaryAverageWatch": "Gns. visningstid",
+      "summaryComments": "Kommentarer"
     },
     "media": {
       "retry": "Prøv igen",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Værtens forbindelse er ustabil…",
         "failed": "Denne LIVE kunne ikke afspilles.",
         "tapToPlay": "Tryk for at afspille",
-        "tapToUnmute": "Tryk for at slå lyden til"
+        "tapToUnmute": "Tryk for at slå lyden til",
+        "interrupted": "Livestreamen har forbindelsesproblemer...",
+        "hlsMode": "Kompatibilitetstilstand",
+        "hlsModeHint": "Afspiller via HLS, fordi realtidsforbindelsen er ustabil. Forsinkelsen er lidt længere."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Denne LIVE er slut.",
         "notFound": "Denne LIVE blev ikke fundet.",
         "forbidden": "Du har ikke adgang til denne LIVEs video.",
-        "playbackFailed": "Denne LIVE kunne ikke afspilles."
+        "playbackFailed": "Denne LIVE kunne ikke afspilles.",
+        "screenShareFailed": "Kunne ikke dele skærmen. Prøv igen."
       },
       "endReason": {
         "admin": "Denne LIVE blev afsluttet af en moderator.",
         "hostDisconnected": "Denne LIVE sluttede, fordi værten mistede forbindelsen.",
-        "publishTimeout": "Denne LIVE sluttede, fordi værtens video aldrig startede."
+        "publishTimeout": "Denne LIVE sluttede, fordi værtens video aldrig startede.",
+        "maxDuration": "Denne LIVE er slut, fordi den nåede den maksimale varighed."
+      },
+      "quality": {
+        "label": "Forbindelseskvalitet: {{quality}}",
+        "excellent": "Fremragende",
+        "good": "God",
+        "poor": "Dårlig",
+        "reconnecting": "Genopretter forbindelse",
+        "unknown": "Ukendt",
+        "loss": "Tab"
       }
+    },
+    "replay": {
+      "title": "LIVE-genudsendelse",
+      "pageTitle": "{{title}} · Genudsendelse",
+      "watchReplay": "Se genudsendelse",
+      "playbackFailed": "Genudsendelsen kunne ikke afspilles. Linket kan være udløbet.",
+      "recordingTitle": "Denne LIVE bliver optaget",
+      "processingTitle": "Optagelsen behandles",
+      "pendingBody": "Genudsendelsen er klar om få minutter. Siden opdateres automatisk.",
+      "failedTitle": "Genudsendelsen kunne ikke oprettes",
+      "deletedTitle": "Genudsendelsen er slettet",
+      "notFoundTitle": "Ingen genudsendelse tilgængelig",
+      "notFoundBody": "Denne LIVE har ingen genudsendelse, eller den er ikke udgivet endnu.",
+      "draftNotice": "Denne genudsendelse er en kladde, som kun du kan se. Slå den op fra Studio for at dele den.",
+      "publishInStudio": "Slå op i Studio",
+      "openVideo": "Åbn video"
     }
   },
   "messagesPage": {

@@ -665,7 +665,9 @@
       "cancel": "বাতিল করুন",
       "errors": {
         "submitFailed": "আপনার লাইভ তৈরি করা যায়নি. আবার চেষ্টা করুন."
-      }
+      },
+      "recordReplay": "এই LIVE রেকর্ড করুন",
+      "recordReplayHint": "পরে পোস্ট করার জন্য {{minutes}} মিনিট পর্যন্ত Studio-তে খসড়া ভিডিও হিসেবে সেভ করে।"
     },
     "host": {
       "pageTitle": "লাইভ স্টুডিও | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "চ্যাট বন্ধ আছে কারণ এই লাইভটি শেষ হয়েছে৷",
       "actionFailed": "কিছু ভুল হয়েছে আবার চেষ্টা করুন.",
       "notOwnerTitle": "আপনি এই লাইভ পরিচালনা করতে পারবেন না",
-      "notOwnerDescription": "শুধুমাত্র হোস্ট এই লাইভের জন্য লাইভ স্টুডিও খুলতে পারে।"
+      "notOwnerDescription": "শুধুমাত্র হোস্ট এই লাইভের জন্য লাইভ স্টুডিও খুলতে পারে।",
+      "startScreenShare": "স্ক্রিন শেয়ার করুন",
+      "stopScreenShare": "স্ক্রিন শেয়ার বন্ধ করুন",
+      "recording": "REC",
+      "summaryDuration": "সময়কাল",
+      "summaryPeakViewers": "সর্বোচ্চ দর্শক",
+      "summaryAverageWatch": "গড় দেখার সময়",
+      "summaryComments": "মন্তব্য"
     },
     "media": {
       "retry": "আবার চেষ্টা করুন",
@@ -719,7 +728,10 @@
         "hostReconnecting": "হোস্টের সংযোগ অস্থির…",
         "failed": "এই LIVE চালানো যায়নি।",
         "tapToPlay": "চালাতে ট্যাপ করুন",
-        "tapToUnmute": "শব্দ চালু করতে ট্যাপ করুন"
+        "tapToUnmute": "শব্দ চালু করতে ট্যাপ করুন",
+        "interrupted": "লাইভস্ট্রিমে সংযোগে সমস্যা হচ্ছে...",
+        "hlsMode": "সামঞ্জস্য মোড",
+        "hlsModeHint": "রিয়েল-টাইম সংযোগ অস্থির হওয়ায় HLS দিয়ে চলছে। বিলম্ব একটু বেশি।"
       },
       "devices": {
         "camera": "ক্যামেরা",
@@ -741,13 +753,40 @@
         "liveEnded": "এই LIVE শেষ হয়েছে।",
         "notFound": "এই LIVE খুঁজে পাওয়া যায়নি।",
         "forbidden": "এই LIVE-এর ভিডিওতে আপনার অ্যাক্সেস নেই।",
-        "playbackFailed": "এই LIVE চালানো যায়নি।"
+        "playbackFailed": "এই LIVE চালানো যায়নি।",
+        "screenShareFailed": "স্ক্রিন শেয়ার করা যায়নি। আবার চেষ্টা করুন।"
       },
       "endReason": {
         "admin": "একজন মডারেটর এই LIVE শেষ করেছেন।",
         "hostDisconnected": "হোস্টের সংযোগ বিচ্ছিন্ন হওয়ায় এই LIVE শেষ হয়েছে।",
-        "publishTimeout": "হোস্টের ভিডিও কখনো শুরু না হওয়ায় এই LIVE শেষ হয়েছে।"
+        "publishTimeout": "হোস্টের ভিডিও কখনো শুরু না হওয়ায় এই LIVE শেষ হয়েছে।",
+        "maxDuration": "সর্বোচ্চ সময়সীমায় পৌঁছানোয় এই LIVE শেষ হয়েছে।"
+      },
+      "quality": {
+        "label": "সংযোগের মান: {{quality}}",
+        "excellent": "চমৎকার",
+        "good": "ভালো",
+        "poor": "দুর্বল",
+        "reconnecting": "আবার সংযোগ হচ্ছে",
+        "unknown": "অজানা",
+        "loss": "ক্ষতি"
       }
+    },
+    "replay": {
+      "title": "LIVE রিপ্লে",
+      "pageTitle": "{{title}} · রিপ্লে",
+      "watchReplay": "রিপ্লে দেখুন",
+      "playbackFailed": "রিপ্লে চালানো যায়নি। লিংকের মেয়াদ শেষ হয়ে থাকতে পারে।",
+      "recordingTitle": "এই LIVE রেকর্ড হচ্ছে",
+      "processingTitle": "রেকর্ডিং প্রসেস হচ্ছে",
+      "pendingBody": "কয়েক মিনিটের মধ্যে রিপ্লে তৈরি হবে। এই পেজ নিজে থেকেই আপডেট হয়।",
+      "failedTitle": "রিপ্লে তৈরি করা যায়নি",
+      "deletedTitle": "রিপ্লে মুছে ফেলা হয়েছে",
+      "notFoundTitle": "কোনো রিপ্লে নেই",
+      "notFoundBody": "এই LIVE-এর কোনো রিপ্লে নেই বা এখনো প্রকাশ করা হয়নি।",
+      "draftNotice": "এই রিপ্লে একটি খসড়া যা শুধু আপনি দেখতে পান। শেয়ার করতে Studio থেকে পোস্ট করুন।",
+      "publishInStudio": "Studio-তে পোস্ট করুন",
+      "openVideo": "ভিডিও খুলুন"
     }
   },
   "messagesPage": {

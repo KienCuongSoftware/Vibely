@@ -665,7 +665,9 @@
       "cancel": "לְבַטֵל",
       "errors": {
         "submitFailed": "לא ניתן ליצור את ה-LIVE שלך. אנא נסה שוב."
-      }
+      },
+      "recordReplay": "הקלטת ה-LIVE הזה",
+      "recordReplayHint": "שומר עד {{minutes}} דקות כסרטון טיוטה ב-Studio כדי לפרסם אותו מאוחר יותר."
     },
     "host": {
       "pageTitle": "סטודיו LIVE | ברוגז",
@@ -694,7 +696,14 @@
       "chatEnded": "הצ'אט נסגר כי ה-LIB הזה הסתיים.",
       "actionFailed": "משהו השתבש. אנא נסה שוב.",
       "notOwnerTitle": "אתה לא יכול לנהל את זה LIVE",
-      "notOwnerDescription": "רק המארח יכול לפתוח את LIVE Studio עבור LIVE זה."
+      "notOwnerDescription": "רק המארח יכול לפתוח את LIVE Studio עבור LIVE זה.",
+      "startScreenShare": "שיתוף מסך",
+      "stopScreenShare": "הפסקת שיתוף המסך",
+      "recording": "REC",
+      "summaryDuration": "משך",
+      "summaryPeakViewers": "שיא צופים",
+      "summaryAverageWatch": "זמן צפייה ממוצע",
+      "summaryComments": "תגובות"
     },
     "media": {
       "retry": "לנסות שוב",
@@ -719,7 +728,10 @@
         "hostReconnecting": "החיבור של המארח אינו יציב…",
         "failed": "לא ניתן להפעיל את ה-LIVE הזה.",
         "tapToPlay": "הקישו להפעלה",
-        "tapToUnmute": "הקישו להפעלת הקול"
+        "tapToUnmute": "הקישו להפעלת הקול",
+        "interrupted": "בשידור החי יש בעיות חיבור...",
+        "hlsMode": "מצב תאימות",
+        "hlsModeHint": "מתנגן דרך HLS כי החיבור בזמן אמת לא יציב. ההשהיה מעט ארוכה יותר."
       },
       "devices": {
         "camera": "מצלמה",
@@ -741,13 +753,40 @@
         "liveEnded": "ה-LIVE הזה הסתיים.",
         "notFound": "ה-LIVE הזה לא נמצא.",
         "forbidden": "אין לך גישה לווידאו של ה-LIVE הזה.",
-        "playbackFailed": "לא ניתן להפעיל את ה-LIVE הזה."
+        "playbackFailed": "לא ניתן להפעיל את ה-LIVE הזה.",
+        "screenShareFailed": "לא ניתן היה לשתף את המסך. נסו שוב."
       },
       "endReason": {
         "admin": "ה-LIVE הזה הופסק על ידי מנחה.",
         "hostDisconnected": "ה-LIVE הזה הסתיים כי המארח איבד את החיבור.",
-        "publishTimeout": "ה-LIVE הזה הסתיים כי הווידאו של המארח לא התחיל מעולם."
+        "publishTimeout": "ה-LIVE הזה הסתיים כי הווידאו של המארח לא התחיל מעולם.",
+        "maxDuration": "ה-LIVE הזה הסתיים כי הגיע למשך המרבי."
+      },
+      "quality": {
+        "label": "איכות החיבור: {{quality}}",
+        "excellent": "מצוינת",
+        "good": "טובה",
+        "poor": "חלשה",
+        "reconnecting": "מתחבר מחדש",
+        "unknown": "לא ידועה",
+        "loss": "אובדן"
       }
+    },
+    "replay": {
+      "title": "שידור חוזר של LIVE",
+      "pageTitle": "{{title}} · שידור חוזר",
+      "watchReplay": "צפייה בשידור החוזר",
+      "playbackFailed": "לא ניתן להפעיל את השידור החוזר. ייתכן שתוקף הקישור פג.",
+      "recordingTitle": "ה-LIVE הזה מוקלט",
+      "processingTitle": "ההקלטה בעיבוד",
+      "pendingBody": "השידור החוזר יהיה מוכן בעוד כמה דקות. הדף מתעדכן אוטומטית.",
+      "failedTitle": "לא ניתן היה ליצור את השידור החוזר",
+      "deletedTitle": "השידור החוזר נמחק",
+      "notFoundTitle": "אין שידור חוזר זמין",
+      "notFoundBody": "ל-LIVE הזה אין שידור חוזר, או שהוא עדיין לא פורסם.",
+      "draftNotice": "השידור החוזר הזה הוא טיוטה שרק אתם רואים. פרסמו אותו מ-Studio כדי לשתף.",
+      "publishInStudio": "פרסום ב-Studio",
+      "openVideo": "פתיחת הסרטון"
     }
   },
   "messagesPage": {

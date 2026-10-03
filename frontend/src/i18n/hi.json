@@ -665,7 +665,9 @@
       "cancel": "रद्द करना",
       "errors": {
         "submitFailed": "आपका लाइव नहीं बनाया जा सका. कृपया पुन: प्रयास करें।"
-      }
+      },
+      "recordReplay": "यह LIVE रिकॉर्ड करें",
+      "recordReplayHint": "बाद में पोस्ट करने के लिए {{minutes}} मिनट तक Studio में ड्राफ़्ट वीडियो के रूप में सेव करता है।"
     },
     "host": {
       "pageTitle": "लाइव स्टूडियो | जीवंत",
@@ -694,7 +696,14 @@
       "chatEnded": "चैट बंद है क्योंकि यह लाइव समाप्त हो गया है।",
       "actionFailed": "कुछ गलत हो गया। कृपया पुन: प्रयास करें।",
       "notOwnerTitle": "आप इस लाइव को प्रबंधित नहीं कर सकते",
-      "notOwnerDescription": "इस लाइव के लिए केवल होस्ट ही लाइव स्टूडियो खोल सकता है।"
+      "notOwnerDescription": "इस लाइव के लिए केवल होस्ट ही लाइव स्टूडियो खोल सकता है।",
+      "startScreenShare": "स्क्रीन शेयर करें",
+      "stopScreenShare": "स्क्रीन शेयर करना बंद करें",
+      "recording": "REC",
+      "summaryDuration": "अवधि",
+      "summaryPeakViewers": "अधिकतम दर्शक",
+      "summaryAverageWatch": "औसत देखने का समय",
+      "summaryComments": "कमेंट"
     },
     "media": {
       "retry": "फिर से कोशिश करें",
@@ -719,7 +728,10 @@
         "hostReconnecting": "होस्ट का कनेक्शन अस्थिर है…",
         "failed": "यह LIVE चलाया नहीं जा सका।",
         "tapToPlay": "चलाने के लिए टैप करें",
-        "tapToUnmute": "आवाज़ चालू करने के लिए टैप करें"
+        "tapToUnmute": "आवाज़ चालू करने के लिए टैप करें",
+        "interrupted": "लाइवस्ट्रीम में कनेक्शन की समस्या आ रही है...",
+        "hlsMode": "संगतता मोड",
+        "hlsModeHint": "रियल-टाइम कनेक्शन अस्थिर होने के कारण HLS से चल रहा है। देरी थोड़ी ज़्यादा है।"
       },
       "devices": {
         "camera": "कैमरा",
@@ -741,13 +753,40 @@
         "liveEnded": "यह LIVE समाप्त हो गया है।",
         "notFound": "यह LIVE नहीं मिला।",
         "forbidden": "आपके पास इस LIVE के वीडियो की अनुमति नहीं है।",
-        "playbackFailed": "यह LIVE चलाया नहीं जा सका।"
+        "playbackFailed": "यह LIVE चलाया नहीं जा सका।",
+        "screenShareFailed": "स्क्रीन शेयर नहीं हो सकी। कृपया फिर से कोशिश करें।"
       },
       "endReason": {
         "admin": "इस LIVE को एक मॉडरेटर ने समाप्त किया।",
         "hostDisconnected": "यह LIVE समाप्त हो गया क्योंकि होस्ट का कनेक्शन टूट गया।",
-        "publishTimeout": "यह LIVE समाप्त हो गया क्योंकि होस्ट का वीडियो कभी शुरू नहीं हुआ।"
+        "publishTimeout": "यह LIVE समाप्त हो गया क्योंकि होस्ट का वीडियो कभी शुरू नहीं हुआ।",
+        "maxDuration": "यह LIVE अधिकतम अवधि तक पहुँचने के कारण समाप्त हो गया।"
+      },
+      "quality": {
+        "label": "कनेक्शन की गुणवत्ता: {{quality}}",
+        "excellent": "बेहतरीन",
+        "good": "अच्छी",
+        "poor": "कमज़ोर",
+        "reconnecting": "फिर से कनेक्ट हो रहा है",
+        "unknown": "अज्ञात",
+        "loss": "हानि"
       }
+    },
+    "replay": {
+      "title": "LIVE रीप्ले",
+      "pageTitle": "{{title}} · रीप्ले",
+      "watchReplay": "रीप्ले देखें",
+      "playbackFailed": "रीप्ले नहीं चल सका। लिंक की समय-सीमा खत्म हो गई होगी।",
+      "recordingTitle": "यह LIVE रिकॉर्ड हो रहा है",
+      "processingTitle": "रिकॉर्डिंग प्रोसेस हो रही है",
+      "pendingBody": "रीप्ले कुछ मिनटों में तैयार हो जाएगा। यह पेज अपने-आप अपडेट होता है।",
+      "failedTitle": "रीप्ले नहीं बन सका",
+      "deletedTitle": "रीप्ले हटा दिया गया",
+      "notFoundTitle": "कोई रीप्ले उपलब्ध नहीं है",
+      "notFoundBody": "इस LIVE का कोई रीप्ले नहीं है या उसे अभी तक पब्लिश नहीं किया गया है।",
+      "draftNotice": "यह रीप्ले एक ड्राफ़्ट है जिसे सिर्फ़ आप देख सकते हैं। शेयर करने के लिए इसे Studio से पोस्ट करें।",
+      "publishInStudio": "Studio में पोस्ट करें",
+      "openVideo": "वीडियो खोलें"
     }
   },
   "messagesPage": {

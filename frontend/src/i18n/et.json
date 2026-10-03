@@ -665,7 +665,9 @@
       "cancel": "Tühista",
       "errors": {
         "submitFailed": "Teie otseülekannet ei saanud luua. Palun proovi uuesti."
-      }
+      },
+      "recordReplay": "Salvesta see LIVE",
+      "recordReplayHint": "Salvestab kuni {{minutes}} minutit Studios videomustandina, et saaksid selle hiljem postitada."
     },
     "host": {
       "pageTitle": "LIVE Stuudio | Eluliselt",
@@ -694,7 +696,14 @@
       "chatEnded": "Vestlus on suletud, kuna see LIVE on lõppenud.",
       "actionFailed": "Midagi läks valesti. Palun proovi uuesti.",
       "notOwnerTitle": "Te ei saa seda otseülekannet hallata",
-      "notOwnerDescription": "Selle LIVE jaoks saab LIVE Studio avada ainult host."
+      "notOwnerDescription": "Selle LIVE jaoks saab LIVE Studio avada ainult host.",
+      "startScreenShare": "Jaga ekraani",
+      "stopScreenShare": "Lõpeta ekraani jagamine",
+      "recording": "REC",
+      "summaryDuration": "Kestus",
+      "summaryPeakViewers": "Vaatajate tipp",
+      "summaryAverageWatch": "Keskm. vaatamisaeg",
+      "summaryComments": "Kommentaarid"
     },
     "media": {
       "retry": "Proovi uuesti",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Saatejuhi ühendus on ebastabiilne…",
         "failed": "Seda LIVE-i ei saa esitada.",
         "tapToPlay": "Puuduta esitamiseks",
-        "tapToUnmute": "Puuduta heli sisselülitamiseks"
+        "tapToUnmute": "Puuduta heli sisselülitamiseks",
+        "interrupted": "Otseülekandel on ühendusprobleeme...",
+        "hlsMode": "Ühilduvusrežiim",
+        "hlsModeHint": "Esitatakse HLS-i kaudu, sest reaalajas ühendus on ebastabiilne. Viivitus on veidi suurem."
       },
       "devices": {
         "camera": "Kaamera",
@@ -741,13 +753,40 @@
         "liveEnded": "See LIVE on lõppenud.",
         "notFound": "Seda LIVE-i ei leitud.",
         "forbidden": "Sul pole juurdepääsu selle LIVE-i videole.",
-        "playbackFailed": "Seda LIVE-i ei saa esitada."
+        "playbackFailed": "Seda LIVE-i ei saa esitada.",
+        "screenShareFailed": "Ekraani jagamine ebaõnnestus. Proovi uuesti."
       },
       "endReason": {
         "admin": "Moderaator lõpetas selle LIVE-i.",
         "hostDisconnected": "See LIVE lõppes, sest saatejuhi ühendus katkes.",
-        "publishTimeout": "See LIVE lõppes, sest saatejuhi video ei alanud kunagi."
+        "publishTimeout": "See LIVE lõppes, sest saatejuhi video ei alanud kunagi.",
+        "maxDuration": "See LIVE lõppes, sest saavutati maksimaalne kestus."
+      },
+      "quality": {
+        "label": "Ühenduse kvaliteet: {{quality}}",
+        "excellent": "Suurepärane",
+        "good": "Hea",
+        "poor": "Nõrk",
+        "reconnecting": "Ühendatakse uuesti",
+        "unknown": "Teadmata",
+        "loss": "Kadu"
       }
+    },
+    "replay": {
+      "title": "LIVE-i kordus",
+      "pageTitle": "{{title}} · Kordus",
+      "watchReplay": "Vaata kordust",
+      "playbackFailed": "Kordust ei saanud esitada. Link võib olla aegunud.",
+      "recordingTitle": "Seda LIVE-i salvestatakse",
+      "processingTitle": "Salvestist töödeldakse",
+      "pendingBody": "Kordus on mõne minuti pärast valmis. See leht värskendub automaatselt.",
+      "failedTitle": "Kordust ei saanud luua",
+      "deletedTitle": "Kordus on kustutatud",
+      "notFoundTitle": "Kordus pole saadaval",
+      "notFoundBody": "Sellel LIVE-il pole kordust või seda pole veel avaldatud.",
+      "draftNotice": "See kordus on mustand, mida näed ainult sina. Jagamiseks postita see Studiost.",
+      "publishInStudio": "Postita Studios",
+      "openVideo": "Ava video"
     }
   },
   "messagesPage": {

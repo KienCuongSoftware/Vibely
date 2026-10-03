@@ -665,7 +665,9 @@
       "cancel": "취소",
       "errors": {
         "submitFailed": "LIVE를 만들 수 없습니다. 다시 시도해 주세요."
-      }
+      },
+      "recordReplay": "이 LIVE 녹화",
+      "recordReplayHint": "최대 {{minutes}}분을 Studio에 임시 저장 동영상으로 저장해 나중에 게시할 수 있습니다."
     },
     "host": {
       "pageTitle": "라이브 스튜디오 | 바이브리",
@@ -694,7 +696,14 @@
       "chatEnded": "본 LIVE가 종료되어 채팅이 종료되었습니다.",
       "actionFailed": "문제가 발생했습니다. 다시 시도해 주세요.",
       "notOwnerTitle": "이 라이브를 관리할 수 없습니다.",
-      "notOwnerDescription": "이 LIVE에서는 호스트만 LIVE Studio를 열 수 있습니다."
+      "notOwnerDescription": "이 LIVE에서는 호스트만 LIVE Studio를 열 수 있습니다.",
+      "startScreenShare": "화면 공유",
+      "stopScreenShare": "화면 공유 중지",
+      "recording": "REC",
+      "summaryDuration": "방송 시간",
+      "summaryPeakViewers": "최대 시청자",
+      "summaryAverageWatch": "평균 시청 시간",
+      "summaryComments": "댓글"
     },
     "media": {
       "retry": "다시 시도",
@@ -719,7 +728,10 @@
         "hostReconnecting": "호스트의 연결이 불안정해요…",
         "failed": "이 LIVE를 재생할 수 없어요.",
         "tapToPlay": "탭하여 재생",
-        "tapToUnmute": "탭하여 음소거 해제"
+        "tapToUnmute": "탭하여 음소거 해제",
+        "interrupted": "라이브 방송에 연결 문제가 있습니다...",
+        "hlsMode": "호환 모드",
+        "hlsModeHint": "실시간 연결이 불안정해 HLS로 재생 중입니다. 지연이 조금 더 깁니다."
       },
       "devices": {
         "camera": "카메라",
@@ -741,13 +753,40 @@
         "liveEnded": "이 LIVE는 종료되었어요.",
         "notFound": "이 LIVE를 찾을 수 없어요.",
         "forbidden": "이 LIVE 영상에 접근할 권한이 없어요.",
-        "playbackFailed": "이 LIVE를 재생할 수 없어요."
+        "playbackFailed": "이 LIVE를 재생할 수 없어요.",
+        "screenShareFailed": "화면을 공유할 수 없습니다. 다시 시도해 주세요."
       },
       "endReason": {
         "admin": "운영자가 이 LIVE를 종료했어요.",
         "hostDisconnected": "호스트의 연결이 끊겨 이 LIVE가 종료되었어요.",
-        "publishTimeout": "호스트의 영상이 시작되지 않아 이 LIVE가 종료되었어요."
+        "publishTimeout": "호스트의 영상이 시작되지 않아 이 LIVE가 종료되었어요.",
+        "maxDuration": "최대 방송 시간에 도달하여 이 LIVE가 종료되었습니다."
+      },
+      "quality": {
+        "label": "연결 품질: {{quality}}",
+        "excellent": "매우 좋음",
+        "good": "좋음",
+        "poor": "나쁨",
+        "reconnecting": "다시 연결 중",
+        "unknown": "알 수 없음",
+        "loss": "손실"
       }
+    },
+    "replay": {
+      "title": "LIVE 다시보기",
+      "pageTitle": "{{title}} · 다시보기",
+      "watchReplay": "다시보기",
+      "playbackFailed": "다시보기를 재생할 수 없습니다. 링크가 만료되었을 수 있습니다.",
+      "recordingTitle": "이 LIVE를 녹화 중입니다",
+      "processingTitle": "녹화본 처리 중",
+      "pendingBody": "몇 분 후 다시보기가 준비됩니다. 이 페이지는 자동으로 업데이트됩니다.",
+      "failedTitle": "다시보기를 만들 수 없습니다",
+      "deletedTitle": "다시보기가 삭제되었습니다",
+      "notFoundTitle": "다시보기가 없습니다",
+      "notFoundBody": "이 LIVE에는 다시보기가 없거나 아직 공개되지 않았습니다.",
+      "draftNotice": "이 다시보기는 나만 볼 수 있는 임시 저장본입니다. 공유하려면 Studio에서 게시하세요.",
+      "publishInStudio": "Studio에서 게시",
+      "openVideo": "동영상 열기"
     }
   },
   "messagesPage": {

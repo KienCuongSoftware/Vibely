@@ -665,7 +665,9 @@
       "cancel": "Avboka",
       "errors": {
         "submitFailed": "Det gick inte att skapa din LIVE. Försök igen."
-      }
+      },
+      "recordReplay": "Spela in den här LIVE",
+      "recordReplayHint": "Sparar upp till {{minutes}} minuter som videoutkast i Studio så att du kan publicera det senare."
     },
     "host": {
       "pageTitle": "LIVE Studio | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Chatten är stängd eftersom denna LIVE har avslutats.",
       "actionFailed": "Något gick fel. Försök igen.",
       "notOwnerTitle": "Du kan inte hantera detta LIVE",
-      "notOwnerDescription": "Endast värden kan öppna LIVE Studio för denna LIVE."
+      "notOwnerDescription": "Endast värden kan öppna LIVE Studio för denna LIVE.",
+      "startScreenShare": "Dela skärm",
+      "stopScreenShare": "Sluta dela skärm",
+      "recording": "REC",
+      "summaryDuration": "Längd",
+      "summaryPeakViewers": "Flest tittare",
+      "summaryAverageWatch": "Genomsnittlig visningstid",
+      "summaryComments": "Kommentarer"
     },
     "media": {
       "retry": "Försök igen",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Värdens anslutning är instabil…",
         "failed": "Det gick inte att spela upp denna LIVE.",
         "tapToPlay": "Tryck för att spela upp",
-        "tapToUnmute": "Tryck för att slå på ljudet"
+        "tapToUnmute": "Tryck för att slå på ljudet",
+        "interrupted": "Livestreamen har anslutningsproblem...",
+        "hlsMode": "Kompatibilitetsläge",
+        "hlsModeHint": "Spelas upp via HLS eftersom realtidsanslutningen är instabil. Fördröjningen är lite längre."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Denna LIVE har avslutats.",
         "notFound": "Denna LIVE hittades inte.",
         "forbidden": "Du har inte åtkomst till videon i denna LIVE.",
-        "playbackFailed": "Det gick inte att spela upp denna LIVE."
+        "playbackFailed": "Det gick inte att spela upp denna LIVE.",
+        "screenShareFailed": "Det gick inte att dela skärmen. Försök igen."
       },
       "endReason": {
         "admin": "Denna LIVE avslutades av en moderator.",
         "hostDisconnected": "Denna LIVE avslutades eftersom värden tappade anslutningen.",
-        "publishTimeout": "Denna LIVE avslutades eftersom värdens video aldrig startade."
+        "publishTimeout": "Denna LIVE avslutades eftersom värdens video aldrig startade.",
+        "maxDuration": "Den här LIVE avslutades eftersom den nådde maximal längd."
+      },
+      "quality": {
+        "label": "Anslutningskvalitet: {{quality}}",
+        "excellent": "Utmärkt",
+        "good": "Bra",
+        "poor": "Dålig",
+        "reconnecting": "Återansluter",
+        "unknown": "Okänd",
+        "loss": "Förlust"
       }
+    },
+    "replay": {
+      "title": "LIVE-repris",
+      "pageTitle": "{{title}} · Repris",
+      "watchReplay": "Se repris",
+      "playbackFailed": "Det gick inte att spela upp reprisen. Länken kan ha gått ut.",
+      "recordingTitle": "Den här LIVE spelas in",
+      "processingTitle": "Inspelningen bearbetas",
+      "pendingBody": "Reprisen är klar om några minuter. Sidan uppdateras automatiskt.",
+      "failedTitle": "Det gick inte att skapa reprisen",
+      "deletedTitle": "Reprisen har tagits bort",
+      "notFoundTitle": "Ingen repris tillgänglig",
+      "notFoundBody": "Den här LIVE har ingen repris, eller så har den inte publicerats.",
+      "draftNotice": "Den här reprisen är ett utkast som bara du kan se. Publicera den från Studio för att dela den.",
+      "publishInStudio": "Publicera i Studio",
+      "openVideo": "Öppna video"
     }
   },
   "messagesPage": {

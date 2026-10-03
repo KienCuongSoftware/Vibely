@@ -665,7 +665,9 @@
       "cancel": "يلغي",
       "errors": {
         "submitFailed": "تعذر إنشاء البث المباشر الخاص بك. يرجى المحاولة مرة أخرى."
-      }
+      },
+      "recordReplay": "تسجيل هذا الـ LIVE",
+      "recordReplayHint": "يحفظ ما يصل إلى {{minutes}} دقيقة كفيديو مسودة في Studio لتنشره لاحقًا."
     },
     "host": {
       "pageTitle": "ستوديو مباشر | مفعم بالحيوية",
@@ -694,7 +696,14 @@
       "chatEnded": "تم إغلاق الدردشة لأن هذا البث المباشر قد انتهى.",
       "actionFailed": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
       "notOwnerTitle": "لا يمكنك إدارة هذا البث المباشر",
-      "notOwnerDescription": "يمكن للمضيف فقط فتح LIVE Studio لهذا البث المباشر."
+      "notOwnerDescription": "يمكن للمضيف فقط فتح LIVE Studio لهذا البث المباشر.",
+      "startScreenShare": "مشاركة الشاشة",
+      "stopScreenShare": "إيقاف مشاركة الشاشة",
+      "recording": "REC",
+      "summaryDuration": "المدة",
+      "summaryPeakViewers": "ذروة المشاهدين",
+      "summaryAverageWatch": "متوسط وقت المشاهدة",
+      "summaryComments": "التعليقات"
     },
     "media": {
       "retry": "حاول مرة أخرى",
@@ -719,7 +728,10 @@
         "hostReconnecting": "اتصال المضيف غير مستقر…",
         "failed": "تعذّر تشغيل هذا الـ LIVE.",
         "tapToPlay": "انقر للتشغيل",
-        "tapToUnmute": "انقر لتشغيل الصوت"
+        "tapToUnmute": "انقر لتشغيل الصوت",
+        "interrupted": "يواجه البث المباشر مشكلات في الاتصال...",
+        "hlsMode": "وضع التوافق",
+        "hlsModeHint": "يتم التشغيل عبر HLS لأن الاتصال في الوقت الفعلي غير مستقر. التأخير أطول قليلًا."
       },
       "devices": {
         "camera": "الكاميرا",
@@ -741,13 +753,40 @@
         "liveEnded": "انتهى هذا الـ LIVE.",
         "notFound": "تعذّر العثور على هذا الـ LIVE.",
         "forbidden": "ليس لديك إذن بالوصول إلى فيديو هذا الـ LIVE.",
-        "playbackFailed": "تعذّر تشغيل هذا الـ LIVE."
+        "playbackFailed": "تعذّر تشغيل هذا الـ LIVE.",
+        "screenShareFailed": "تعذّرت مشاركة الشاشة. يُرجى المحاولة مرة أخرى."
       },
       "endReason": {
         "admin": "أنهى أحد المشرفين هذا الـ LIVE.",
         "hostDisconnected": "انتهى هذا الـ LIVE لأن المضيف فقد الاتصال.",
-        "publishTimeout": "انتهى هذا الـ LIVE لأن فيديو المضيف لم يبدأ أبدًا."
+        "publishTimeout": "انتهى هذا الـ LIVE لأن فيديو المضيف لم يبدأ أبدًا.",
+        "maxDuration": "انتهى هذا الـ LIVE لأنه بلغ المدة القصوى."
+      },
+      "quality": {
+        "label": "جودة الاتصال: {{quality}}",
+        "excellent": "ممتازة",
+        "good": "جيدة",
+        "poor": "ضعيفة",
+        "reconnecting": "جارٍ إعادة الاتصال",
+        "unknown": "غير معروفة",
+        "loss": "الفقد"
       }
+    },
+    "replay": {
+      "title": "إعادة عرض الـ LIVE",
+      "pageTitle": "{{title}} · إعادة العرض",
+      "watchReplay": "مشاهدة الإعادة",
+      "playbackFailed": "تعذّر تشغيل الإعادة. ربما انتهت صلاحية الرابط.",
+      "recordingTitle": "يتم تسجيل هذا الـ LIVE",
+      "processingTitle": "جارٍ معالجة التسجيل",
+      "pendingBody": "ستكون الإعادة جاهزة خلال بضع دقائق. يتم تحديث هذه الصفحة تلقائيًا.",
+      "failedTitle": "تعذّر إنشاء الإعادة",
+      "deletedTitle": "تم حذف الإعادة",
+      "notFoundTitle": "لا تتوفر إعادة",
+      "notFoundBody": "لا توجد إعادة لهذا الـ LIVE أو لم يتم نشرها بعد.",
+      "draftNotice": "هذه الإعادة مسودة لا يراها سواك. انشرها من Studio لمشاركتها.",
+      "publishInStudio": "النشر في Studio",
+      "openVideo": "فتح الفيديو"
     }
   },
   "messagesPage": {

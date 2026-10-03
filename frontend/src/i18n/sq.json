@@ -665,7 +665,9 @@
       "cancel": "Anulo",
       "errors": {
         "submitFailed": "Nuk mund të krijohej LIVE. Ju lutemi provoni përsëri."
-      }
+      },
+      "recordReplay": "Regjistro këtë LIVE",
+      "recordReplayHint": "Ruan deri në {{minutes}} minuta si video draft në Studio që ta postosh më vonë."
     },
     "host": {
       "pageTitle": "Studio LIVE | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Biseda është mbyllur sepse kjo LIVE ka përfunduar.",
       "actionFailed": "Diçka shkoi keq. Ju lutemi provoni përsëri.",
       "notOwnerTitle": "Nuk mund ta menaxhosh këtë LIVE",
-      "notOwnerDescription": "Vetëm hosti mund të hapë LIVE Studio për këtë LIVE."
+      "notOwnerDescription": "Vetëm hosti mund të hapë LIVE Studio për këtë LIVE.",
+      "startScreenShare": "Ndaj ekranin",
+      "stopScreenShare": "Ndalo ndarjen e ekranit",
+      "recording": "REC",
+      "summaryDuration": "Kohëzgjatja",
+      "summaryPeakViewers": "Kulmi i shikuesve",
+      "summaryAverageWatch": "Koha mesatare e shikimit",
+      "summaryComments": "Komente"
     },
     "media": {
       "retry": "Provo përsëri",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Lidhja e organizatorit është e paqëndrueshme…",
         "failed": "Ky LIVE nuk mund të luhet.",
         "tapToPlay": "Prek për ta luajtur",
-        "tapToUnmute": "Prek për të aktivizuar zërin"
+        "tapToUnmute": "Prek për të aktivizuar zërin",
+        "interrupted": "Transmetimi live ka probleme lidhjeje...",
+        "hlsMode": "Modaliteti i përputhshmërisë",
+        "hlsModeHint": "Po luhet përmes HLS sepse lidhja në kohë reale është e paqëndrueshme. Vonesa është pak më e madhe."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Ky LIVE ka përfunduar.",
         "notFound": "Ky LIVE nuk u gjet.",
         "forbidden": "Nuk ke qasje në videon e këtij LIVE.",
-        "playbackFailed": "Ky LIVE nuk mund të luhet."
+        "playbackFailed": "Ky LIVE nuk mund të luhet.",
+        "screenShareFailed": "Ekrani nuk u nda dot. Provo përsëri."
       },
       "endReason": {
         "admin": "Ky LIVE u përfundua nga një moderator.",
         "hostDisconnected": "Ky LIVE përfundoi sepse organizatori humbi lidhjen.",
-        "publishTimeout": "Ky LIVE përfundoi sepse videoja e organizatorit nuk nisi kurrë."
+        "publishTimeout": "Ky LIVE përfundoi sepse videoja e organizatorit nuk nisi kurrë.",
+        "maxDuration": "Ky LIVE përfundoi sepse arriti kohëzgjatjen maksimale."
+      },
+      "quality": {
+        "label": "Cilësia e lidhjes: {{quality}}",
+        "excellent": "Shkëlqyer",
+        "good": "Mirë",
+        "poor": "Dobët",
+        "reconnecting": "Po rilidhet",
+        "unknown": "E panjohur",
+        "loss": "Humbje"
       }
+    },
+    "replay": {
+      "title": "Rishfaqja e LIVE",
+      "pageTitle": "{{title}} · Rishfaqje",
+      "watchReplay": "Shiko rishfaqjen",
+      "playbackFailed": "Rishfaqja nuk u luajt dot. Lidhja mund të ketë skaduar.",
+      "recordingTitle": "Ky LIVE po regjistrohet",
+      "processingTitle": "Regjistrimi po përpunohet",
+      "pendingBody": "Rishfaqja do të jetë gati për pak minuta. Kjo faqe përditësohet automatikisht.",
+      "failedTitle": "Rishfaqja nuk u krijua dot",
+      "deletedTitle": "Rishfaqja u fshi",
+      "notFoundTitle": "Nuk ka rishfaqje",
+      "notFoundBody": "Ky LIVE nuk ka rishfaqje ose ajo ende nuk është publikuar.",
+      "draftNotice": "Kjo rishfaqje është një draft që e sheh vetëm ti. Postoje nga Studio për ta ndarë.",
+      "publishInStudio": "Posto në Studio",
+      "openVideo": "Hap videon"
     }
   },
   "messagesPage": {

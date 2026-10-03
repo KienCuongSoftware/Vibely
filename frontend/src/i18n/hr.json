@@ -665,7 +665,9 @@
       "cancel": "Otkazati",
       "errors": {
         "submitFailed": "Nije moguće stvoriti vaš LIVE. Molimo pokušajte ponovo."
-      }
+      },
+      "recordReplay": "Snimi ovaj LIVE",
+      "recordReplayHint": "Sprema do {{minutes}} min kao skicu videozapisa u Studiju da ga objavite kasnije."
     },
     "host": {
       "pageTitle": "UŽIVO Studio | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Chat je zatvoren jer je ovaj UŽIVO završio.",
       "actionFailed": "Nešto nije u redu. Molimo pokušajte ponovo.",
       "notOwnerTitle": "Ne možete upravljati ovim UŽIVO",
-      "notOwnerDescription": "Samo domaćin može otvoriti LIVE Studio za ovaj LIVE."
+      "notOwnerDescription": "Samo domaćin može otvoriti LIVE Studio za ovaj LIVE.",
+      "startScreenShare": "Dijeli zaslon",
+      "stopScreenShare": "Zaustavi dijeljenje zaslona",
+      "recording": "REC",
+      "summaryDuration": "Trajanje",
+      "summaryPeakViewers": "Najviše gledatelja",
+      "summaryAverageWatch": "Prosj. vrijeme gledanja",
+      "summaryComments": "Komentari"
     },
     "media": {
       "retry": "Pokušaj ponovno",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Veza domaćina je nestabilna…",
         "failed": "Ovaj LIVE nije moguće reproducirati.",
         "tapToPlay": "Dodirnite za reprodukciju",
-        "tapToUnmute": "Dodirnite za uključivanje zvuka"
+        "tapToUnmute": "Dodirnite za uključivanje zvuka",
+        "interrupted": "Prijenos uživo ima problema s vezom...",
+        "hlsMode": "Način kompatibilnosti",
+        "hlsModeHint": "Reprodukcija putem HLS-a jer je veza u stvarnom vremenu nestabilna. Kašnjenje je nešto veće."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Ovaj LIVE je završio.",
         "notFound": "Ovaj LIVE nije pronađen.",
         "forbidden": "Nemate pristup videu ovog LIVE-a.",
-        "playbackFailed": "Ovaj LIVE nije moguće reproducirati."
+        "playbackFailed": "Ovaj LIVE nije moguće reproducirati.",
+        "screenShareFailed": "Dijeljenje zaslona nije uspjelo. Pokušajte ponovno."
       },
       "endReason": {
         "admin": "Ovaj LIVE prekinuo je moderator.",
         "hostDisconnected": "Ovaj LIVE je završio jer je domaćin izgubio vezu.",
-        "publishTimeout": "Ovaj LIVE je završio jer se video domaćina nikad nije pokrenuo."
+        "publishTimeout": "Ovaj LIVE je završio jer se video domaćina nikad nije pokrenuo.",
+        "maxDuration": "Ovaj LIVE je završio jer je dosegnuo najveće trajanje."
+      },
+      "quality": {
+        "label": "Kvaliteta veze: {{quality}}",
+        "excellent": "Izvrsna",
+        "good": "Dobra",
+        "poor": "Loša",
+        "reconnecting": "Ponovno povezivanje",
+        "unknown": "Nepoznata",
+        "loss": "Gubitak"
       }
+    },
+    "replay": {
+      "title": "Snimka LIVE-a",
+      "pageTitle": "{{title}} · Snimka",
+      "watchReplay": "Pogledaj snimku",
+      "playbackFailed": "Snimku nije moguće reproducirati. Poveznica je možda istekla.",
+      "recordingTitle": "Ovaj LIVE se snima",
+      "processingTitle": "Obrada snimke",
+      "pendingBody": "Snimka će biti spremna za nekoliko minuta. Stranica se automatski ažurira.",
+      "failedTitle": "Snimku nije moguće izraditi",
+      "deletedTitle": "Snimka je izbrisana",
+      "notFoundTitle": "Snimka nije dostupna",
+      "notFoundBody": "Ovaj LIVE nema snimku ili ona još nije objavljena.",
+      "draftNotice": "Ova snimka je skica koju vidite samo vi. Objavite je u Studiju da je podijelite.",
+      "publishInStudio": "Objavi u Studiju",
+      "openVideo": "Otvori videozapis"
     }
   },
   "messagesPage": {

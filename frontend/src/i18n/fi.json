@@ -665,7 +665,9 @@
       "cancel": "Peruuttaa",
       "errors": {
         "submitFailed": "LIVE-lähetystäsi ei voitu luoda. Yritä uudelleen."
-      }
+      },
+      "recordReplay": "Tallenna tämä LIVE",
+      "recordReplayHint": "Tallentaa enintään {{minutes}} minuuttia luonnosvideona Studioon, jotta voit julkaista sen myöhemmin."
     },
     "host": {
       "pageTitle": "LIVE Studio | Elävästi",
@@ -694,7 +696,14 @@
       "chatEnded": "Chat on suljettu, koska tämä LIVE on päättynyt.",
       "actionFailed": "Jotain meni pieleen. Yritä uudelleen.",
       "notOwnerTitle": "Et voi hallita tätä LIVE-lähetystä",
-      "notOwnerDescription": "Vain isäntä voi avata LIVE Studion tälle LIVElle."
+      "notOwnerDescription": "Vain isäntä voi avata LIVE Studion tälle LIVElle.",
+      "startScreenShare": "Jaa näyttö",
+      "stopScreenShare": "Lopeta näytön jakaminen",
+      "recording": "REC",
+      "summaryDuration": "Kesto",
+      "summaryPeakViewers": "Katsojahuippu",
+      "summaryAverageWatch": "Keskim. katseluaika",
+      "summaryComments": "Kommentit"
     },
     "media": {
       "retry": "Yritä uudelleen",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Isännän yhteys on epävakaa…",
         "failed": "Tätä LIVEä ei voi toistaa.",
         "tapToPlay": "Toista napauttamalla",
-        "tapToUnmute": "Napauta ottaaksesi äänen käyttöön"
+        "tapToUnmute": "Napauta ottaaksesi äänen käyttöön",
+        "interrupted": "Livestreamissa on yhteysongelmia...",
+        "hlsMode": "Yhteensopivuustila",
+        "hlsModeHint": "Toistetaan HLS:n kautta, koska reaaliaikainen yhteys on epävakaa. Viive on hieman pidempi."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Tämä LIVE on päättynyt.",
         "notFound": "Tätä LIVEä ei löytynyt.",
         "forbidden": "Sinulla ei ole pääsyä tämän LIVEn videoon.",
-        "playbackFailed": "Tätä LIVEä ei voi toistaa."
+        "playbackFailed": "Tätä LIVEä ei voi toistaa.",
+        "screenShareFailed": "Näytön jakaminen epäonnistui. Yritä uudelleen."
       },
       "endReason": {
         "admin": "Moderaattori lopetti tämän LIVEn.",
         "hostDisconnected": "Tämä LIVE päättyi, koska isännän yhteys katkesi.",
-        "publishTimeout": "Tämä LIVE päättyi, koska isännän video ei koskaan alkanut."
+        "publishTimeout": "Tämä LIVE päättyi, koska isännän video ei koskaan alkanut.",
+        "maxDuration": "Tämä LIVE päättyi, koska se saavutti enimmäiskeston."
+      },
+      "quality": {
+        "label": "Yhteyden laatu: {{quality}}",
+        "excellent": "Erinomainen",
+        "good": "Hyvä",
+        "poor": "Heikko",
+        "reconnecting": "Yhdistetään uudelleen",
+        "unknown": "Tuntematon",
+        "loss": "Häviö"
       }
+    },
+    "replay": {
+      "title": "LIVE-uusinta",
+      "pageTitle": "{{title}} · Uusinta",
+      "watchReplay": "Katso uusinta",
+      "playbackFailed": "Uusintaa ei voitu toistaa. Linkki on ehkä vanhentunut.",
+      "recordingTitle": "Tätä LIVEä tallennetaan",
+      "processingTitle": "Tallennetta käsitellään",
+      "pendingBody": "Uusinta on valmis muutaman minuutin kuluttua. Sivu päivittyy automaattisesti.",
+      "failedTitle": "Uusintaa ei voitu luoda",
+      "deletedTitle": "Uusinta on poistettu",
+      "notFoundTitle": "Uusintaa ei ole saatavilla",
+      "notFoundBody": "Tällä LIVEllä ei ole uusintaa, tai sitä ei ole vielä julkaistu.",
+      "draftNotice": "Tämä uusinta on luonnos, jonka vain sinä näet. Julkaise se Studiosta jakaaksesi sen.",
+      "publishInStudio": "Julkaise Studiossa",
+      "openVideo": "Avaa video"
     }
   },
   "messagesPage": {

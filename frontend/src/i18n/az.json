@@ -665,7 +665,9 @@
       "cancel": "Ləğv et",
       "errors": {
         "submitFailed": "CANLI YAYINI yaratmaq mümkün olmadı. Yenidən cəhd edin."
-      }
+      },
+      "recordReplay": "Bu LIVE-ı yazmaq",
+      "recordReplayHint": "Sonra paylaşmaq üçün {{minutes}} dəqiqəyədək Studio-da qaralama video kimi saxlayır."
     },
     "host": {
       "pageTitle": "CANLI Studio | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Bu CANLI yayım bitdiyi üçün söhbət bağlanıb.",
       "actionFailed": "Nəsə xəta baş verdi. Yenidən cəhd edin.",
       "notOwnerTitle": "Siz bu CANLI yayımı idarə edə bilməzsiniz",
-      "notOwnerDescription": "Bu CANLI üçün LIVE Studio-nu yalnız ev sahibi aça bilər."
+      "notOwnerDescription": "Bu CANLI üçün LIVE Studio-nu yalnız ev sahibi aça bilər.",
+      "startScreenShare": "Ekranı paylaş",
+      "stopScreenShare": "Ekran paylaşımını dayandır",
+      "recording": "REC",
+      "summaryDuration": "Müddət",
+      "summaryPeakViewers": "Ən çox izləyici",
+      "summaryAverageWatch": "Orta baxış vaxtı",
+      "summaryComments": "Şərhlər"
     },
     "media": {
       "retry": "Yenidən cəhd et",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Aparıcının bağlantısı qeyri-sabitdir…",
         "failed": "Bu LIVE-ı oynatmaq mümkün olmadı.",
         "tapToPlay": "Oynatmaq üçün toxunun",
-        "tapToUnmute": "Səsi açmaq üçün toxunun"
+        "tapToUnmute": "Səsi açmaq üçün toxunun",
+        "interrupted": "Canlı yayımda bağlantı problemləri var...",
+        "hlsMode": "Uyğunluq rejimi",
+        "hlsModeHint": "Real vaxt bağlantısı qeyri-sabit olduğu üçün HLS ilə oynadılır. Gecikmə bir az çoxdur."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Bu LIVE başa çatıb.",
         "notFound": "Bu LIVE tapılmadı.",
         "forbidden": "Bu LIVE-ın videosuna girişiniz yoxdur.",
-        "playbackFailed": "Bu LIVE-ı oynatmaq mümkün olmadı."
+        "playbackFailed": "Bu LIVE-ı oynatmaq mümkün olmadı.",
+        "screenShareFailed": "Ekranı paylaşmaq mümkün olmadı. Yenidən cəhd edin."
       },
       "endReason": {
         "admin": "Bu LIVE moderator tərəfindən dayandırıldı.",
         "hostDisconnected": "Aparıcının bağlantısı kəsildiyi üçün bu LIVE başa çatdı.",
-        "publishTimeout": "Aparıcının videosu heç başlamadığı üçün bu LIVE başa çatdı."
+        "publishTimeout": "Aparıcının videosu heç başlamadığı üçün bu LIVE başa çatdı.",
+        "maxDuration": "Bu LIVE maksimum müddətə çatdığı üçün başa çatdı."
+      },
+      "quality": {
+        "label": "Bağlantı keyfiyyəti: {{quality}}",
+        "excellent": "Əla",
+        "good": "Yaxşı",
+        "poor": "Zəif",
+        "reconnecting": "Yenidən qoşulur",
+        "unknown": "Naməlum",
+        "loss": "İtki"
       }
+    },
+    "replay": {
+      "title": "LIVE təkrarı",
+      "pageTitle": "{{title}} · Təkrar",
+      "watchReplay": "Təkrara bax",
+      "playbackFailed": "Təkrarı oynatmaq mümkün olmadı. Linkin vaxtı bitmiş ola bilər.",
+      "recordingTitle": "Bu LIVE yazılır",
+      "processingTitle": "Yazı emal olunur",
+      "pendingBody": "Təkrar bir neçə dəqiqəyə hazır olacaq. Bu səhifə avtomatik yenilənir.",
+      "failedTitle": "Təkrarı yaratmaq mümkün olmadı",
+      "deletedTitle": "Təkrar silindi",
+      "notFoundTitle": "Təkrar mövcud deyil",
+      "notFoundBody": "Bu LIVE-ın təkrarı yoxdur və ya hələ dərc olunmayıb.",
+      "draftNotice": "Bu təkrar yalnız sizin görə biləcəyiniz qaralamadır. Paylaşmaq üçün onu Studio-dan dərc edin.",
+      "publishInStudio": "Studio-da dərc et",
+      "openVideo": "Videonu aç"
     }
   },
   "messagesPage": {

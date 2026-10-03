@@ -665,7 +665,9 @@
       "cancel": "Anula",
       "errors": {
         "submitFailed": "Nu s-a putut crea LIVE. Vă rugăm să încercați din nou."
-      }
+      },
+      "recordReplay": "Înregistrează acest LIVE",
+      "recordReplayHint": "Salvează până la {{minutes}} minute ca videoclip ciornă în Studio, ca să îl postezi mai târziu."
     },
     "host": {
       "pageTitle": "LIVE Studio | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Chatul este închis deoarece acest LIVE s-a încheiat.",
       "actionFailed": "Ceva a mers prost. Vă rugăm să încercați din nou.",
       "notOwnerTitle": "Nu poți gestiona acest LIVE",
-      "notOwnerDescription": "Doar gazda poate deschide LIVE Studio pentru acest LIVE."
+      "notOwnerDescription": "Doar gazda poate deschide LIVE Studio pentru acest LIVE.",
+      "startScreenShare": "Partajează ecranul",
+      "stopScreenShare": "Oprește partajarea ecranului",
+      "recording": "REC",
+      "summaryDuration": "Durată",
+      "summaryPeakViewers": "Vârf de spectatori",
+      "summaryAverageWatch": "Timp mediu de vizionare",
+      "summaryComments": "Comentarii"
     },
     "media": {
       "retry": "Încearcă din nou",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Conexiunea gazdei este instabilă…",
         "failed": "Acest LIVE nu poate fi redat.",
         "tapToPlay": "Atinge pentru redare",
-        "tapToUnmute": "Atinge pentru a activa sunetul"
+        "tapToUnmute": "Atinge pentru a activa sunetul",
+        "interrupted": "Transmisiunea live are probleme de conexiune...",
+        "hlsMode": "Mod de compatibilitate",
+        "hlsModeHint": "Redare prin HLS deoarece conexiunea în timp real este instabilă. Întârzierea este puțin mai mare."
       },
       "devices": {
         "camera": "Cameră",
@@ -741,13 +753,40 @@
         "liveEnded": "Acest LIVE s-a încheiat.",
         "notFound": "Acest LIVE nu a fost găsit.",
         "forbidden": "Nu ai acces la videoclipul acestui LIVE.",
-        "playbackFailed": "Acest LIVE nu poate fi redat."
+        "playbackFailed": "Acest LIVE nu poate fi redat.",
+        "screenShareFailed": "Nu s-a putut partaja ecranul. Încearcă din nou."
       },
       "endReason": {
         "admin": "Acest LIVE a fost încheiat de un moderator.",
         "hostDisconnected": "Acest LIVE s-a încheiat deoarece gazda a pierdut conexiunea.",
-        "publishTimeout": "Acest LIVE s-a încheiat deoarece videoclipul gazdei nu a pornit niciodată."
+        "publishTimeout": "Acest LIVE s-a încheiat deoarece videoclipul gazdei nu a pornit niciodată.",
+        "maxDuration": "Acest LIVE s-a încheiat deoarece a atins durata maximă."
+      },
+      "quality": {
+        "label": "Calitatea conexiunii: {{quality}}",
+        "excellent": "Excelentă",
+        "good": "Bună",
+        "poor": "Slabă",
+        "reconnecting": "Reconectare",
+        "unknown": "Necunoscută",
+        "loss": "Pierdere"
       }
+    },
+    "replay": {
+      "title": "Reluarea LIVE",
+      "pageTitle": "{{title}} · Reluare",
+      "watchReplay": "Vezi reluarea",
+      "playbackFailed": "Reluarea nu a putut fi redată. Linkul poate să fi expirat.",
+      "recordingTitle": "Acest LIVE este înregistrat",
+      "processingTitle": "Se procesează înregistrarea",
+      "pendingBody": "Reluarea va fi gata în câteva minute. Pagina se actualizează automat.",
+      "failedTitle": "Reluarea nu a putut fi creată",
+      "deletedTitle": "Reluarea a fost ștearsă",
+      "notFoundTitle": "Nicio reluare disponibilă",
+      "notFoundBody": "Acest LIVE nu are reluare sau aceasta nu a fost publicată.",
+      "draftNotice": "Această reluare este o ciornă vizibilă doar pentru tine. Postează-o din Studio ca să o distribui.",
+      "publishInStudio": "Postează în Studio",
+      "openVideo": "Deschide videoclipul"
     }
   },
   "messagesPage": {

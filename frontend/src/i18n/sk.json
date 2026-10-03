@@ -665,7 +665,9 @@
       "cancel": "Zrušiť",
       "errors": {
         "submitFailed": "Nepodarilo sa vytvoriť váš LIVE. Skúste to znova."
-      }
+      },
+      "recordReplay": "Nahrať toto LIVE",
+      "recordReplayHint": "Uloží až {{minutes}} min ako koncept videa v Studiu, aby ste ho mohli zverejniť neskôr."
     },
     "host": {
       "pageTitle": "LIVE Studio | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Čet je zatvorený, pretože tento LIVE skončil.",
       "actionFailed": "Niečo sa pokazilo. Skúste to znova.",
       "notOwnerTitle": "Toto nemôžete spravovať NAŽIVO",
-      "notOwnerDescription": "Iba hostiteľ môže otvoriť LIVE Studio pre tento LIVE."
+      "notOwnerDescription": "Iba hostiteľ môže otvoriť LIVE Studio pre tento LIVE.",
+      "startScreenShare": "Zdieľať obrazovku",
+      "stopScreenShare": "Ukončiť zdieľanie obrazovky",
+      "recording": "REC",
+      "summaryDuration": "Dĺžka",
+      "summaryPeakViewers": "Max. divákov",
+      "summaryAverageWatch": "Priem. čas sledovania",
+      "summaryComments": "Komentáre"
     },
     "media": {
       "retry": "Skúsiť znova",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Pripojenie hostiteľa je nestabilné…",
         "failed": "Toto LIVE sa nedá prehrať.",
         "tapToPlay": "Ťuknutím prehráte",
-        "tapToUnmute": "Ťuknutím zapnete zvuk"
+        "tapToUnmute": "Ťuknutím zapnete zvuk",
+        "interrupted": "Živé vysielanie má problémy s pripojením...",
+        "hlsMode": "Režim kompatibility",
+        "hlsModeHint": "Prehrávanie cez HLS, pretože pripojenie v reálnom čase je nestabilné. Oneskorenie je o niečo väčšie."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Toto LIVE sa skončilo.",
         "notFound": "Toto LIVE sa nenašlo.",
         "forbidden": "Nemáte prístup k videu tohto LIVE.",
-        "playbackFailed": "Toto LIVE sa nedá prehrať."
+        "playbackFailed": "Toto LIVE sa nedá prehrať.",
+        "screenShareFailed": "Obrazovku sa nepodarilo zdieľať. Skúste to znova."
       },
       "endReason": {
         "admin": "Toto LIVE ukončil moderátor.",
         "hostDisconnected": "Toto LIVE sa skončilo, pretože hostiteľ stratil pripojenie.",
-        "publishTimeout": "Toto LIVE sa skončilo, pretože video hostiteľa sa nikdy nespustilo."
+        "publishTimeout": "Toto LIVE sa skončilo, pretože video hostiteľa sa nikdy nespustilo.",
+        "maxDuration": "Toto LIVE sa skončilo, pretože dosiahlo maximálnu dĺžku."
+      },
+      "quality": {
+        "label": "Kvalita pripojenia: {{quality}}",
+        "excellent": "Výborná",
+        "good": "Dobrá",
+        "poor": "Slabá",
+        "reconnecting": "Opätovné pripájanie",
+        "unknown": "Neznáma",
+        "loss": "Strata"
       }
+    },
+    "replay": {
+      "title": "Záznam LIVE",
+      "pageTitle": "{{title}} · Záznam",
+      "watchReplay": "Prehrať záznam",
+      "playbackFailed": "Záznam sa nedá prehrať. Platnosť odkazu mohla vypršať.",
+      "recordingTitle": "Toto LIVE sa nahráva",
+      "processingTitle": "Spracúva sa záznam",
+      "pendingBody": "Záznam bude pripravený o niekoľko minút. Stránka sa aktualizuje automaticky.",
+      "failedTitle": "Záznam sa nepodarilo vytvoriť",
+      "deletedTitle": "Záznam bol odstránený",
+      "notFoundTitle": "Záznam nie je k dispozícii",
+      "notFoundBody": "Toto LIVE nemá záznam alebo ešte nebol zverejnený.",
+      "draftNotice": "Tento záznam je koncept, ktorý vidíte len vy. Zverejnite ho v Studiu, aby ste ho mohli zdieľať.",
+      "publishInStudio": "Zverejniť v Studiu",
+      "openVideo": "Otvoriť video"
     }
   },
   "messagesPage": {

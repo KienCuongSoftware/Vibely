@@ -665,7 +665,9 @@
       "cancel": "ยกเลิก",
       "errors": {
         "submitFailed": "ไม่สามารถสร้าง LIVE ของคุณได้ โปรดลองอีกครั้ง"
-      }
+      },
+      "recordReplay": "บันทึก LIVE นี้",
+      "recordReplayHint": "บันทึกได้สูงสุด {{minutes}} นาทีเป็นวิดีโอฉบับร่างใน Studio เพื่อโพสต์ภายหลัง"
     },
     "host": {
       "pageTitle": "ไลฟ์สตูดิโอ | มีชีวิตชีวา",
@@ -694,7 +696,14 @@
       "chatEnded": "แชทถูกปิดเนื่องจาก LIVE นี้สิ้นสุดแล้ว",
       "actionFailed": "มีบางอย่างผิดพลาด โปรดลองอีกครั้ง",
       "notOwnerTitle": "คุณไม่สามารถจัดการ LIVE นี้",
-      "notOwnerDescription": "มีเพียงเจ้าภาพเท่านั้นที่สามารถเปิด LIVE Studio สำหรับ LIVE นี้"
+      "notOwnerDescription": "มีเพียงเจ้าภาพเท่านั้นที่สามารถเปิด LIVE Studio สำหรับ LIVE นี้",
+      "startScreenShare": "แชร์หน้าจอ",
+      "stopScreenShare": "หยุดแชร์หน้าจอ",
+      "recording": "REC",
+      "summaryDuration": "ระยะเวลา",
+      "summaryPeakViewers": "ผู้ชมสูงสุด",
+      "summaryAverageWatch": "เวลาดูเฉลี่ย",
+      "summaryComments": "ความคิดเห็น"
     },
     "media": {
       "retry": "ลองอีกครั้ง",
@@ -719,7 +728,10 @@
         "hostReconnecting": "การเชื่อมต่อของโฮสต์ไม่เสถียร…",
         "failed": "ไม่สามารถเล่น LIVE นี้ได้",
         "tapToPlay": "แตะเพื่อเล่น",
-        "tapToUnmute": "แตะเพื่อเปิดเสียง"
+        "tapToUnmute": "แตะเพื่อเปิดเสียง",
+        "interrupted": "ไลฟ์สตรีมมีปัญหาการเชื่อมต่อ...",
+        "hlsMode": "โหมดความเข้ากันได้",
+        "hlsModeHint": "กำลังเล่นผ่าน HLS เนื่องจากการเชื่อมต่อแบบเรียลไทม์ไม่เสถียร ความหน่วงจะมากขึ้นเล็กน้อย"
       },
       "devices": {
         "camera": "กล้อง",
@@ -741,13 +753,40 @@
         "liveEnded": "LIVE นี้จบแล้ว",
         "notFound": "ไม่พบ LIVE นี้",
         "forbidden": "คุณไม่มีสิทธิ์เข้าถึงวิดีโอของ LIVE นี้",
-        "playbackFailed": "ไม่สามารถเล่น LIVE นี้ได้"
+        "playbackFailed": "ไม่สามารถเล่น LIVE นี้ได้",
+        "screenShareFailed": "ไม่สามารถแชร์หน้าจอได้ โปรดลองอีกครั้ง"
       },
       "endReason": {
         "admin": "LIVE นี้ถูกปิดโดยผู้ดูแล",
         "hostDisconnected": "LIVE นี้จบลงเพราะโฮสต์ขาดการเชื่อมต่อ",
-        "publishTimeout": "LIVE นี้จบลงเพราะวิดีโอของโฮสต์ไม่เคยเริ่ม"
+        "publishTimeout": "LIVE นี้จบลงเพราะวิดีโอของโฮสต์ไม่เคยเริ่ม",
+        "maxDuration": "LIVE นี้สิ้นสุดลงเนื่องจากถึงระยะเวลาสูงสุดแล้ว"
+      },
+      "quality": {
+        "label": "คุณภาพการเชื่อมต่อ: {{quality}}",
+        "excellent": "ดีมาก",
+        "good": "ดี",
+        "poor": "แย่",
+        "reconnecting": "กำลังเชื่อมต่อใหม่",
+        "unknown": "ไม่ทราบ",
+        "loss": "การสูญหาย"
       }
+    },
+    "replay": {
+      "title": "รีเพลย์ LIVE",
+      "pageTitle": "{{title}} · รีเพลย์",
+      "watchReplay": "ดูรีเพลย์",
+      "playbackFailed": "ไม่สามารถเล่นรีเพลย์ได้ ลิงก์อาจหมดอายุแล้ว",
+      "recordingTitle": "กำลังบันทึก LIVE นี้",
+      "processingTitle": "กำลังประมวลผลการบันทึก",
+      "pendingBody": "รีเพลย์จะพร้อมในไม่กี่นาที หน้านี้จะอัปเดตโดยอัตโนมัติ",
+      "failedTitle": "ไม่สามารถสร้างรีเพลย์ได้",
+      "deletedTitle": "รีเพลย์ถูกลบแล้ว",
+      "notFoundTitle": "ไม่มีรีเพลย์",
+      "notFoundBody": "LIVE นี้ไม่มีรีเพลย์ หรือยังไม่ได้เผยแพร่",
+      "draftNotice": "รีเพลย์นี้เป็นฉบับร่างที่มีเพียงคุณที่เห็น โพสต์จาก Studio เพื่อแชร์",
+      "publishInStudio": "โพสต์ใน Studio",
+      "openVideo": "เปิดวิดีโอ"
     }
   },
   "messagesPage": {

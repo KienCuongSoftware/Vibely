@@ -665,7 +665,9 @@
       "cancel": "Atšaukti",
       "errors": {
         "submitFailed": "Nepavyko sukurti jūsų LIVE. Bandykite dar kartą."
-      }
+      },
+      "recordReplay": "Įrašyti šį LIVE",
+      "recordReplayHint": "Išsaugo iki {{minutes}} min. kaip vaizdo įrašo juodraštį „Studio“, kad galėtumėte paskelbti vėliau."
     },
     "host": {
       "pageTitle": "LIVE studija | Ryškiai",
@@ -694,7 +696,14 @@
       "chatEnded": "Pokalbis uždarytas, nes šis LIVE baigėsi.",
       "actionFailed": "Kažkas nutiko. Bandykite dar kartą.",
       "notOwnerTitle": "Negalite valdyti šio LIVE",
-      "notOwnerDescription": "Tik rengėjas gali atidaryti LIVE Studio šiam LIVE."
+      "notOwnerDescription": "Tik rengėjas gali atidaryti LIVE Studio šiam LIVE.",
+      "startScreenShare": "Bendrinti ekraną",
+      "stopScreenShare": "Nebebendrinti ekrano",
+      "recording": "REC",
+      "summaryDuration": "Trukmė",
+      "summaryPeakViewers": "Daugiausia žiūrovų",
+      "summaryAverageWatch": "Vid. žiūrėjimo laikas",
+      "summaryComments": "Komentarai"
     },
     "media": {
       "retry": "Bandyti dar kartą",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Vedėjo ryšys nestabilus…",
         "failed": "Nepavyko paleisti šio LIVE.",
         "tapToPlay": "Bakstelėkite, kad paleistumėte",
-        "tapToUnmute": "Bakstelėkite, kad įjungtumėte garsą"
+        "tapToUnmute": "Bakstelėkite, kad įjungtumėte garsą",
+        "interrupted": "Tiesioginėje transliacijoje kilo ryšio problemų...",
+        "hlsMode": "Suderinamumo režimas",
+        "hlsModeHint": "Leidžiama per HLS, nes realaus laiko ryšys nestabilus. Delsa šiek tiek didesnė."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Šis LIVE baigėsi.",
         "notFound": "Šio LIVE rasti nepavyko.",
         "forbidden": "Neturite prieigos prie šio LIVE vaizdo.",
-        "playbackFailed": "Nepavyko paleisti šio LIVE."
+        "playbackFailed": "Nepavyko paleisti šio LIVE.",
+        "screenShareFailed": "Nepavyko bendrinti ekrano. Bandykite dar kartą."
       },
       "endReason": {
         "admin": "Šį LIVE užbaigė moderatorius.",
         "hostDisconnected": "Šis LIVE baigėsi, nes vedėjas prarado ryšį.",
-        "publishTimeout": "Šis LIVE baigėsi, nes vedėjo vaizdas taip ir neprasidėjo."
+        "publishTimeout": "Šis LIVE baigėsi, nes vedėjo vaizdas taip ir neprasidėjo.",
+        "maxDuration": "Šis LIVE baigėsi, nes pasiekė maksimalią trukmę."
+      },
+      "quality": {
+        "label": "Ryšio kokybė: {{quality}}",
+        "excellent": "Puiki",
+        "good": "Gera",
+        "poor": "Prasta",
+        "reconnecting": "Jungiamasi iš naujo",
+        "unknown": "Nežinoma",
+        "loss": "Praradimas"
       }
+    },
+    "replay": {
+      "title": "LIVE pakartojimas",
+      "pageTitle": "{{title}} · Pakartojimas",
+      "watchReplay": "Žiūrėti pakartojimą",
+      "playbackFailed": "Nepavyko paleisti pakartojimo. Gali būti, kad nuorodos galiojimas baigėsi.",
+      "recordingTitle": "Šis LIVE įrašomas",
+      "processingTitle": "Įrašas apdorojamas",
+      "pendingBody": "Pakartojimas bus paruoštas po kelių minučių. Šis puslapis atnaujinamas automatiškai.",
+      "failedTitle": "Nepavyko sukurti pakartojimo",
+      "deletedTitle": "Pakartojimas ištrintas",
+      "notFoundTitle": "Pakartojimo nėra",
+      "notFoundBody": "Šis LIVE neturi pakartojimo arba jis dar nepaskelbtas.",
+      "draftNotice": "Šis pakartojimas yra juodraštis, kurį matote tik jūs. Paskelbkite jį „Studio“, kad pasidalintumėte.",
+      "publishInStudio": "Paskelbti „Studio“",
+      "openVideo": "Atidaryti vaizdo įrašą"
     }
   },
   "messagesPage": {

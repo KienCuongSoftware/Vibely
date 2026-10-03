@@ -665,7 +665,9 @@
       "cancel": "Cancel·la",
       "errors": {
         "submitFailed": "No s'ha pogut crear el teu LIVE. Si us plau, torna-ho a provar."
-      }
+      },
+      "recordReplay": "Enregistra aquest LIVE",
+      "recordReplayHint": "Desa fins a {{minutes}} minuts com a vídeo esborrany a Studio perquè el publiquis més tard."
     },
     "host": {
       "pageTitle": "LIVE Studio | Vibrant",
@@ -694,7 +696,14 @@
       "chatEnded": "El xat està tancat perquè aquest LIVE ha finalitzat.",
       "actionFailed": "Alguna cosa va fallar. Si us plau, torna-ho a provar.",
       "notOwnerTitle": "No pots gestionar aquest EN DIRECTE",
-      "notOwnerDescription": "Només l'amfitrió pot obrir LIVE Studio per a aquest LIVE."
+      "notOwnerDescription": "Només l'amfitrió pot obrir LIVE Studio per a aquest LIVE.",
+      "startScreenShare": "Comparteix la pantalla",
+      "stopScreenShare": "Deixa de compartir la pantalla",
+      "recording": "REC",
+      "summaryDuration": "Durada",
+      "summaryPeakViewers": "Pic d'espectadors",
+      "summaryAverageWatch": "Temps mitjà de visualització",
+      "summaryComments": "Comentaris"
     },
     "media": {
       "retry": "Torna-ho a provar",
@@ -719,7 +728,10 @@
         "hostReconnecting": "La connexió de l'amfitrió és inestable…",
         "failed": "No es pot reproduir aquest LIVE.",
         "tapToPlay": "Toca per reproduir",
-        "tapToUnmute": "Toca per activar el so"
+        "tapToUnmute": "Toca per activar el so",
+        "interrupted": "El directe té problemes de connexió...",
+        "hlsMode": "Mode de compatibilitat",
+        "hlsModeHint": "Es reprodueix per HLS perquè la connexió en temps real és inestable. El retard és una mica més gran."
       },
       "devices": {
         "camera": "Càmera",
@@ -741,13 +753,40 @@
         "liveEnded": "Aquest LIVE ha acabat.",
         "notFound": "No s'ha trobat aquest LIVE.",
         "forbidden": "No tens accés al vídeo d'aquest LIVE.",
-        "playbackFailed": "No es pot reproduir aquest LIVE."
+        "playbackFailed": "No es pot reproduir aquest LIVE.",
+        "screenShareFailed": "No s'ha pogut compartir la pantalla. Torna-ho a provar."
       },
       "endReason": {
         "admin": "Un moderador ha finalitzat aquest LIVE.",
         "hostDisconnected": "Aquest LIVE ha acabat perquè l'amfitrió ha perdut la connexió.",
-        "publishTimeout": "Aquest LIVE ha acabat perquè el vídeo de l'amfitrió no va començar mai."
+        "publishTimeout": "Aquest LIVE ha acabat perquè el vídeo de l'amfitrió no va començar mai.",
+        "maxDuration": "Aquest LIVE ha acabat perquè ha arribat a la durada màxima."
+      },
+      "quality": {
+        "label": "Qualitat de la connexió: {{quality}}",
+        "excellent": "Excel·lent",
+        "good": "Bona",
+        "poor": "Dolenta",
+        "reconnecting": "S'està reconnectant",
+        "unknown": "Desconeguda",
+        "loss": "Pèrdua"
       }
+    },
+    "replay": {
+      "title": "Repetició del LIVE",
+      "pageTitle": "{{title}} · Repetició",
+      "watchReplay": "Mira la repetició",
+      "playbackFailed": "No s'ha pogut reproduir la repetició. Pot ser que l'enllaç hagi caducat.",
+      "recordingTitle": "Aquest LIVE s'està enregistrant",
+      "processingTitle": "S'està processant l'enregistrament",
+      "pendingBody": "La repetició estarà a punt d'aquí a uns minuts. Aquesta pàgina s'actualitza automàticament.",
+      "failedTitle": "No s'ha pogut crear la repetició",
+      "deletedTitle": "S'ha suprimit la repetició",
+      "notFoundTitle": "No hi ha cap repetició",
+      "notFoundBody": "Aquest LIVE no té repetició o encara no s'ha publicat.",
+      "draftNotice": "Aquesta repetició és un esborrany que només veus tu. Publica-la des de Studio per compartir-la.",
+      "publishInStudio": "Publica a Studio",
+      "openVideo": "Obre el vídeo"
     }
   },
   "messagesPage": {

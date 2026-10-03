@@ -665,7 +665,9 @@
       "cancel": "Kanselahin",
       "errors": {
         "submitFailed": "Hindi magawa ang iyong LIVE. Pakisubukang muli."
-      }
+      },
+      "recordReplay": "I-record ang LIVE na ito",
+      "recordReplayHint": "Nagse-save ng hanggang {{minutes}} minuto bilang draft na video sa Studio para mai-post mo mamaya."
     },
     "host": {
       "pageTitle": "LIVE Studio | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Sarado ang chat dahil natapos na ang LIVE na ito.",
       "actionFailed": "Nagkaproblema. Pakisubukang muli.",
       "notOwnerTitle": "Hindi mo mapapamahalaan itong LIVE",
-      "notOwnerDescription": "Ang host lang ang makakapagbukas ng LIVE Studio para sa LIVE na ito."
+      "notOwnerDescription": "Ang host lang ang makakapagbukas ng LIVE Studio para sa LIVE na ito.",
+      "startScreenShare": "I-share ang screen",
+      "stopScreenShare": "Ihinto ang pag-share ng screen",
+      "recording": "REC",
+      "summaryDuration": "Tagal",
+      "summaryPeakViewers": "Pinakamaraming manonood",
+      "summaryAverageWatch": "Average na oras ng panonood",
+      "summaryComments": "Mga komento"
     },
     "media": {
       "retry": "Subukan ulit",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Hindi stable ang koneksyon ng host…",
         "failed": "Hindi ma-play ang LIVE na ito.",
         "tapToPlay": "I-tap para i-play",
-        "tapToUnmute": "I-tap para i-unmute"
+        "tapToUnmute": "I-tap para i-unmute",
+        "interrupted": "May problema sa koneksyon ang livestream...",
+        "hlsMode": "Compatibility mode",
+        "hlsModeHint": "Nagpe-play sa HLS dahil hindi stable ang real-time na koneksyon. Medyo mas mahaba ang delay."
       },
       "devices": {
         "camera": "Camera",
@@ -741,13 +753,40 @@
         "liveEnded": "Tapos na ang LIVE na ito.",
         "notFound": "Hindi mahanap ang LIVE na ito.",
         "forbidden": "Wala kang access sa video ng LIVE na ito.",
-        "playbackFailed": "Hindi ma-play ang LIVE na ito."
+        "playbackFailed": "Hindi ma-play ang LIVE na ito.",
+        "screenShareFailed": "Hindi ma-share ang screen. Pakisubukan ulit."
       },
       "endReason": {
         "admin": "Tinapos ng isang moderator ang LIVE na ito.",
         "hostDisconnected": "Natapos ang LIVE na ito dahil nawalan ng koneksyon ang host.",
-        "publishTimeout": "Natapos ang LIVE na ito dahil hindi nagsimula ang video ng host."
+        "publishTimeout": "Natapos ang LIVE na ito dahil hindi nagsimula ang video ng host.",
+        "maxDuration": "Natapos ang LIVE na ito dahil naabot nito ang maximum na tagal."
+      },
+      "quality": {
+        "label": "Kalidad ng koneksyon: {{quality}}",
+        "excellent": "Napakahusay",
+        "good": "Mabuti",
+        "poor": "Mahina",
+        "reconnecting": "Kumokonekta ulit",
+        "unknown": "Hindi alam",
+        "loss": "Nawala"
       }
+    },
+    "replay": {
+      "title": "Replay ng LIVE",
+      "pageTitle": "{{title}} · Replay",
+      "watchReplay": "Panoorin ang replay",
+      "playbackFailed": "Hindi ma-play ang replay. Maaaring nag-expire na ang link.",
+      "recordingTitle": "Nire-record ang LIVE na ito",
+      "processingTitle": "Pinoproseso ang recording",
+      "pendingBody": "Magiging handa ang replay sa loob ng ilang minuto. Awtomatikong nag-a-update ang page na ito.",
+      "failedTitle": "Hindi magawa ang replay",
+      "deletedTitle": "Na-delete ang replay",
+      "notFoundTitle": "Walang available na replay",
+      "notFoundBody": "Walang replay ang LIVE na ito o hindi pa ito na-publish.",
+      "draftNotice": "Draft ang replay na ito na ikaw lang ang nakakakita. I-post ito mula sa Studio para i-share.",
+      "publishInStudio": "I-post sa Studio",
+      "openVideo": "Buksan ang video"
     }
   },
   "messagesPage": {

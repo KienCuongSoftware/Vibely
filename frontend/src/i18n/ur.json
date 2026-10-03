@@ -665,7 +665,9 @@
       "cancel": "منسوخ کریں۔",
       "errors": {
         "submitFailed": "آپ کا لائیو نہیں بنایا جا سکا۔ براہ کرم دوبارہ کوشش کریں۔"
-      }
+      },
+      "recordReplay": "یہ LIVE ریکارڈ کریں",
+      "recordReplayHint": "بعد میں پوسٹ کرنے کے لیے {{minutes}} منٹ تک Studio میں ڈرافٹ ویڈیو کے طور پر محفوظ کرتا ہے۔"
     },
     "host": {
       "pageTitle": "لائیو اسٹوڈیو | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "چیٹ بند ہے کیونکہ یہ لائیو ختم ہو گیا ہے۔",
       "actionFailed": "کچھ غلط ہو گیا۔ براہ کرم دوبارہ کوشش کریں۔",
       "notOwnerTitle": "آپ اس لائیو کا نظم نہیں کر سکتے",
-      "notOwnerDescription": "اس لائیو کے لیے صرف میزبان ہی لائیو اسٹوڈیو کھول سکتا ہے۔"
+      "notOwnerDescription": "اس لائیو کے لیے صرف میزبان ہی لائیو اسٹوڈیو کھول سکتا ہے۔",
+      "startScreenShare": "اسکرین شیئر کریں",
+      "stopScreenShare": "اسکرین شیئرنگ بند کریں",
+      "recording": "REC",
+      "summaryDuration": "دورانیہ",
+      "summaryPeakViewers": "زیادہ سے زیادہ ناظرین",
+      "summaryAverageWatch": "اوسط دیکھنے کا وقت",
+      "summaryComments": "تبصرے"
     },
     "media": {
       "retry": "دوبارہ کوشش کریں",
@@ -719,7 +728,10 @@
         "hostReconnecting": "میزبان کا کنکشن غیر مستحکم ہے…",
         "failed": "یہ LIVE نہیں چلایا جا سکا۔",
         "tapToPlay": "چلانے کے لیے ٹیپ کریں",
-        "tapToUnmute": "آواز کھولنے کے لیے ٹیپ کریں"
+        "tapToUnmute": "آواز کھولنے کے لیے ٹیپ کریں",
+        "interrupted": "لائیو اسٹریم میں کنکشن کے مسائل ہیں...",
+        "hlsMode": "مطابقت موڈ",
+        "hlsModeHint": "ریئل ٹائم کنکشن غیر مستحکم ہونے کی وجہ سے HLS کے ذریعے چل رہا ہے۔ تاخیر تھوڑی زیادہ ہے۔"
       },
       "devices": {
         "camera": "کیمرہ",
@@ -741,13 +753,40 @@
         "liveEnded": "یہ LIVE ختم ہو گیا ہے۔",
         "notFound": "یہ LIVE نہیں ملا۔",
         "forbidden": "آپ کو اس LIVE کی ویڈیو تک رسائی نہیں ہے۔",
-        "playbackFailed": "یہ LIVE نہیں چلایا جا سکا۔"
+        "playbackFailed": "یہ LIVE نہیں چلایا جا سکا۔",
+        "screenShareFailed": "اسکرین شیئر نہیں ہو سکی۔ دوبارہ کوشش کریں۔"
       },
       "endReason": {
         "admin": "یہ LIVE ایک ماڈریٹر نے ختم کر دیا۔",
         "hostDisconnected": "یہ LIVE ختم ہو گیا کیونکہ میزبان کا کنکشن ٹوٹ گیا۔",
-        "publishTimeout": "یہ LIVE ختم ہو گیا کیونکہ میزبان کی ویڈیو کبھی شروع نہیں ہوئی۔"
+        "publishTimeout": "یہ LIVE ختم ہو گیا کیونکہ میزبان کی ویڈیو کبھی شروع نہیں ہوئی۔",
+        "maxDuration": "یہ LIVE زیادہ سے زیادہ دورانیے تک پہنچنے کی وجہ سے ختم ہو گیا۔"
+      },
+      "quality": {
+        "label": "کنکشن کا معیار: {{quality}}",
+        "excellent": "بہترین",
+        "good": "اچھا",
+        "poor": "کمزور",
+        "reconnecting": "دوبارہ منسلک ہو رہا ہے",
+        "unknown": "نامعلوم",
+        "loss": "نقصان"
       }
+    },
+    "replay": {
+      "title": "LIVE ری پلے",
+      "pageTitle": "{{title}} · ری پلے",
+      "watchReplay": "ری پلے دیکھیں",
+      "playbackFailed": "ری پلے نہیں چل سکا۔ لنک کی میعاد ختم ہو چکی ہو سکتی ہے۔",
+      "recordingTitle": "یہ LIVE ریکارڈ ہو رہا ہے",
+      "processingTitle": "ریکارڈنگ پر کارروائی ہو رہی ہے",
+      "pendingBody": "ری پلے چند منٹوں میں تیار ہو جائے گا۔ یہ صفحہ خود بخود اپ ڈیٹ ہوتا ہے۔",
+      "failedTitle": "ری پلے نہیں بن سکا",
+      "deletedTitle": "ری پلے حذف کر دیا گیا",
+      "notFoundTitle": "کوئی ری پلے دستیاب نہیں",
+      "notFoundBody": "اس LIVE کا کوئی ری پلے نہیں ہے یا ابھی شائع نہیں ہوا۔",
+      "draftNotice": "یہ ری پلے ایک ڈرافٹ ہے جو صرف آپ دیکھ سکتے ہیں۔ شیئر کرنے کے لیے اسے Studio سے پوسٹ کریں۔",
+      "publishInStudio": "Studio میں پوسٹ کریں",
+      "openVideo": "ویڈیو کھولیں"
     }
   },
   "messagesPage": {

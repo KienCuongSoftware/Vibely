@@ -404,7 +404,9 @@
       "cancel": "Huỷ",
       "errors": {
         "submitFailed": "Không thể bắt đầu LIVE. Vui lòng thử lại."
-      }
+      },
+      "recordReplay": "Ghi lại LIVE này",
+      "recordReplayHint": "Lưu tối đa {{minutes}} phút thành video nháp trong Studio để bạn đăng sau."
     },
     "host": {
       "pageTitle": "LIVE Studio | Vibely",
@@ -433,7 +435,14 @@
       "chatEnded": "Trò chuyện đã đóng vì phiên LIVE đã kết thúc.",
       "actionFailed": "Đã xảy ra lỗi. Vui lòng thử lại.",
       "notOwnerTitle": "Bạn không thể quản lý phiên LIVE này",
-      "notOwnerDescription": "Chỉ host mới có thể mở LIVE Studio cho phiên LIVE này."
+      "notOwnerDescription": "Chỉ host mới có thể mở LIVE Studio cho phiên LIVE này.",
+      "startScreenShare": "Chia sẻ màn hình",
+      "stopScreenShare": "Dừng chia sẻ màn hình",
+      "recording": "REC",
+      "summaryDuration": "Thời lượng",
+      "summaryPeakViewers": "Người xem cao nhất",
+      "summaryAverageWatch": "Thời gian xem TB",
+      "summaryComments": "Bình luận"
     },
     "media": {
       "retry": "Thử lại",
@@ -458,7 +467,10 @@
         "hostReconnecting": "Kết nối của host đang không ổn định…",
         "failed": "Không thể phát phiên LIVE này.",
         "tapToPlay": "Chạm để phát",
-        "tapToUnmute": "Chạm để bật tiếng"
+        "tapToUnmute": "Chạm để bật tiếng",
+        "interrupted": "Livestream đang gặp sự cố kết nối...",
+        "hlsMode": "Chế độ tương thích",
+        "hlsModeHint": "Đang phát qua HLS vì kết nối thời gian thực không ổn định. Độ trễ sẽ cao hơn một chút."
       },
       "devices": {
         "camera": "Camera",
@@ -480,13 +492,40 @@
         "liveEnded": "Phiên LIVE này đã kết thúc.",
         "notFound": "Không tìm thấy phiên LIVE này.",
         "forbidden": "Bạn không có quyền xem video của phiên LIVE này.",
-        "playbackFailed": "Không thể phát phiên LIVE này."
+        "playbackFailed": "Không thể phát phiên LIVE này.",
+        "screenShareFailed": "Không thể chia sẻ màn hình. Vui lòng thử lại."
       },
       "endReason": {
         "admin": "Phiên LIVE này đã bị kiểm duyệt viên kết thúc.",
         "hostDisconnected": "Phiên LIVE đã kết thúc vì host mất kết nối.",
-        "publishTimeout": "Phiên LIVE đã kết thúc vì video của host không bắt đầu."
+        "publishTimeout": "Phiên LIVE đã kết thúc vì video của host không bắt đầu.",
+        "maxDuration": "LIVE đã kết thúc vì đạt thời lượng tối đa."
+      },
+      "quality": {
+        "label": "Chất lượng kết nối: {{quality}}",
+        "excellent": "Rất tốt",
+        "good": "Tốt",
+        "poor": "Kém",
+        "reconnecting": "Đang kết nối lại",
+        "unknown": "Không xác định",
+        "loss": "Mất gói"
       }
+    },
+    "replay": {
+      "title": "Xem lại LIVE",
+      "pageTitle": "{{title}} · Xem lại",
+      "watchReplay": "Xem lại",
+      "playbackFailed": "Không phát được bản ghi. Liên kết có thể đã hết hạn.",
+      "recordingTitle": "LIVE đang được ghi lại",
+      "processingTitle": "Đang xử lý bản ghi",
+      "pendingBody": "Bản ghi sẽ sẵn sàng sau vài phút. Trang này sẽ tự cập nhật.",
+      "failedTitle": "Không thể tạo bản ghi",
+      "deletedTitle": "Bản ghi đã bị xóa",
+      "notFoundTitle": "Không có bản ghi",
+      "notFoundBody": "LIVE này không có bản ghi hoặc bản ghi chưa được đăng công khai.",
+      "draftNotice": "Bản ghi đang là bản nháp, chỉ bạn xem được. Hãy đăng trong Studio để chia sẻ.",
+      "publishInStudio": "Đăng trong Studio",
+      "openVideo": "Mở video"
     }
   },
   "supportPage": {

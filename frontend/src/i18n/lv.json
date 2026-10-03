@@ -665,7 +665,9 @@
       "cancel": "Atcelt",
       "errors": {
         "submitFailed": "Nevarēja izveidot jūsu LIVE. Lūdzu, mēģiniet vēlreiz."
-      }
+      },
+      "recordReplay": "Ierakstīt šo LIVE",
+      "recordReplayHint": "Saglabā līdz {{minutes}} minūtēm kā video melnrakstu Studio, lai jūs to varētu publicēt vēlāk."
     },
     "host": {
       "pageTitle": "LIVE Studio | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Tērzēšana ir slēgta, jo šī TIEŠRAIDE ir beigusies.",
       "actionFailed": "Kaut kas nogāja greizi. Lūdzu, mēģiniet vēlreiz.",
       "notOwnerTitle": "Jūs nevarat pārvaldīt šo LIVE",
-      "notOwnerDescription": "Tikai saimnieks var atvērt LIVE Studio šim LIVE."
+      "notOwnerDescription": "Tikai saimnieks var atvērt LIVE Studio šim LIVE.",
+      "startScreenShare": "Kopīgot ekrānu",
+      "stopScreenShare": "Pārtraukt ekrāna kopīgošanu",
+      "recording": "REC",
+      "summaryDuration": "Ilgums",
+      "summaryPeakViewers": "Skatītāju maksimums",
+      "summaryAverageWatch": "Vid. skatīšanās laiks",
+      "summaryComments": "Komentāri"
     },
     "media": {
       "retry": "Mēģināt vēlreiz",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Vadītāja savienojums ir nestabils…",
         "failed": "Šo LIVE nevar atskaņot.",
         "tapToPlay": "Pieskarieties, lai atskaņotu",
-        "tapToUnmute": "Pieskarieties, lai ieslēgtu skaņu"
+        "tapToUnmute": "Pieskarieties, lai ieslēgtu skaņu",
+        "interrupted": "Tiešraidei ir savienojuma problēmas...",
+        "hlsMode": "Saderības režīms",
+        "hlsModeHint": "Atskaņo, izmantojot HLS, jo reāllaika savienojums ir nestabils. Aizkave ir nedaudz lielāka."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Šis LIVE ir beidzies.",
         "notFound": "Šo LIVE nevarēja atrast.",
         "forbidden": "Jums nav piekļuves šī LIVE video.",
-        "playbackFailed": "Šo LIVE nevar atskaņot."
+        "playbackFailed": "Šo LIVE nevar atskaņot.",
+        "screenShareFailed": "Neizdevās kopīgot ekrānu. Mēģiniet vēlreiz."
       },
       "endReason": {
         "admin": "Šo LIVE beidza moderators.",
         "hostDisconnected": "Šis LIVE beidzās, jo vadītājs zaudēja savienojumu.",
-        "publishTimeout": "Šis LIVE beidzās, jo vadītāja video tā arī nesākās."
+        "publishTimeout": "Šis LIVE beidzās, jo vadītāja video tā arī nesākās.",
+        "maxDuration": "Šis LIVE beidzās, jo sasniedza maksimālo ilgumu."
+      },
+      "quality": {
+        "label": "Savienojuma kvalitāte: {{quality}}",
+        "excellent": "Izcila",
+        "good": "Laba",
+        "poor": "Vāja",
+        "reconnecting": "Atkārtoti savieno",
+        "unknown": "Nezināma",
+        "loss": "Zudums"
       }
+    },
+    "replay": {
+      "title": "LIVE atkārtojums",
+      "pageTitle": "{{title}} · Atkārtojums",
+      "watchReplay": "Skatīt atkārtojumu",
+      "playbackFailed": "Neizdevās atskaņot atkārtojumu. Iespējams, saitei beidzies derīgums.",
+      "recordingTitle": "Šis LIVE tiek ierakstīts",
+      "processingTitle": "Ieraksts tiek apstrādāts",
+      "pendingBody": "Atkārtojums būs gatavs pēc dažām minūtēm. Šī lapa tiek atjaunināta automātiski.",
+      "failedTitle": "Neizdevās izveidot atkārtojumu",
+      "deletedTitle": "Atkārtojums ir izdzēsts",
+      "notFoundTitle": "Atkārtojums nav pieejams",
+      "notFoundBody": "Šim LIVE nav atkārtojuma, vai tas vēl nav publicēts.",
+      "draftNotice": "Šis atkārtojums ir melnraksts, ko redzat tikai jūs. Publicējiet to no Studio, lai kopīgotu.",
+      "publishInStudio": "Publicēt Studio",
+      "openVideo": "Atvērt video"
     }
   },
   "messagesPage": {

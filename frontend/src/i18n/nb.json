@@ -665,7 +665,9 @@
       "cancel": "Kansellere",
       "errors": {
         "submitFailed": "Kunne ikke opprette LIVE. Vennligst prøv igjen."
-      }
+      },
+      "recordReplay": "Ta opp denne LIVE",
+      "recordReplayHint": "Lagrer opptil {{minutes}} minutter som videoutkast i Studio, slik at du kan publisere det senere."
     },
     "host": {
       "pageTitle": "LIVE Studio | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Chatten er stengt fordi denne LIVE er avsluttet.",
       "actionFailed": "Noe gikk galt. Vennligst prøv igjen.",
       "notOwnerTitle": "Du kan ikke administrere dette LIVE",
-      "notOwnerDescription": "Bare verten kan åpne LIVE Studio for denne LIVE."
+      "notOwnerDescription": "Bare verten kan åpne LIVE Studio for denne LIVE.",
+      "startScreenShare": "Del skjerm",
+      "stopScreenShare": "Stopp skjermdeling",
+      "recording": "REC",
+      "summaryDuration": "Varighet",
+      "summaryPeakViewers": "Flest seere",
+      "summaryAverageWatch": "Gj.sn. visningstid",
+      "summaryComments": "Kommentarer"
     },
     "media": {
       "retry": "Prøv igjen",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Vertens tilkobling er ustabil…",
         "failed": "Kunne ikke spille av denne LIVE-en.",
         "tapToPlay": "Trykk for å spille av",
-        "tapToUnmute": "Trykk for å slå på lyden"
+        "tapToUnmute": "Trykk for å slå på lyden",
+        "interrupted": "Livestreamen har tilkoblingsproblemer...",
+        "hlsMode": "Kompatibilitetsmodus",
+        "hlsModeHint": "Spilles av via HLS fordi sanntidstilkoblingen er ustabil. Forsinkelsen er litt lengre."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Denne LIVE-en er avsluttet.",
         "notFound": "Fant ikke denne LIVE-en.",
         "forbidden": "Du har ikke tilgang til videoen i denne LIVE-en.",
-        "playbackFailed": "Kunne ikke spille av denne LIVE-en."
+        "playbackFailed": "Kunne ikke spille av denne LIVE-en.",
+        "screenShareFailed": "Kunne ikke dele skjermen. Prøv igjen."
       },
       "endReason": {
         "admin": "Denne LIVE-en ble avsluttet av en moderator.",
         "hostDisconnected": "Denne LIVE-en ble avsluttet fordi verten mistet tilkoblingen.",
-        "publishTimeout": "Denne LIVE-en ble avsluttet fordi vertens video aldri startet."
+        "publishTimeout": "Denne LIVE-en ble avsluttet fordi vertens video aldri startet.",
+        "maxDuration": "Denne LIVE ble avsluttet fordi den nådde maksimal varighet."
+      },
+      "quality": {
+        "label": "Tilkoblingskvalitet: {{quality}}",
+        "excellent": "Utmerket",
+        "good": "God",
+        "poor": "Dårlig",
+        "reconnecting": "Kobler til på nytt",
+        "unknown": "Ukjent",
+        "loss": "Tap"
       }
+    },
+    "replay": {
+      "title": "LIVE-reprise",
+      "pageTitle": "{{title}} · Reprise",
+      "watchReplay": "Se reprise",
+      "playbackFailed": "Kunne ikke spille av reprisen. Lenken kan ha utløpt.",
+      "recordingTitle": "Denne LIVE blir tatt opp",
+      "processingTitle": "Opptaket behandles",
+      "pendingBody": "Reprisen er klar om noen minutter. Siden oppdateres automatisk.",
+      "failedTitle": "Kunne ikke lage reprisen",
+      "deletedTitle": "Reprisen er slettet",
+      "notFoundTitle": "Ingen reprise tilgjengelig",
+      "notFoundBody": "Denne LIVE har ingen reprise, eller den er ikke publisert ennå.",
+      "draftNotice": "Denne reprisen er et utkast som bare du kan se. Publiser den fra Studio for å dele den.",
+      "publishInStudio": "Publiser i Studio",
+      "openVideo": "Åpne video"
     }
   },
   "messagesPage": {

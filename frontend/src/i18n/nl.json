@@ -665,7 +665,9 @@
       "cancel": "Annuleren",
       "errors": {
         "submitFailed": "Kan je LIVE niet maken. Probeer het opnieuw."
-      }
+      },
+      "recordReplay": "Deze LIVE opnemen",
+      "recordReplayHint": "Slaat tot {{minutes}} minuten op als conceptvideo in Studio, zodat je die later kunt posten."
     },
     "host": {
       "pageTitle": "LIVE-studio | Levendig",
@@ -694,7 +696,14 @@
       "chatEnded": "Chat is gesloten omdat deze LIVE is afgelopen.",
       "actionFailed": "Er is iets misgegaan. Probeer het opnieuw.",
       "notOwnerTitle": "Je kunt dit niet LIVE beheren",
-      "notOwnerDescription": "Alleen de host kan LIVE Studio openen voor deze LIVE."
+      "notOwnerDescription": "Alleen de host kan LIVE Studio openen voor deze LIVE.",
+      "startScreenShare": "Scherm delen",
+      "stopScreenShare": "Scherm delen stoppen",
+      "recording": "REC",
+      "summaryDuration": "Duur",
+      "summaryPeakViewers": "Piek kijkers",
+      "summaryAverageWatch": "Gem. kijktijd",
+      "summaryComments": "Reacties"
     },
     "media": {
       "retry": "Opnieuw proberen",
@@ -719,7 +728,10 @@
         "hostReconnecting": "De verbinding van de host is instabiel…",
         "failed": "Kan deze LIVE niet afspelen.",
         "tapToPlay": "Tik om af te spelen",
-        "tapToUnmute": "Tik om het geluid aan te zetten"
+        "tapToUnmute": "Tik om het geluid aan te zetten",
+        "interrupted": "De livestream heeft verbindingsproblemen...",
+        "hlsMode": "Compatibiliteitsmodus",
+        "hlsModeHint": "Afspelen via HLS omdat de realtime verbinding instabiel is. De vertraging is iets groter."
       },
       "devices": {
         "camera": "Camera",
@@ -741,13 +753,40 @@
         "liveEnded": "Deze LIVE is beëindigd.",
         "notFound": "Deze LIVE is niet gevonden.",
         "forbidden": "Je hebt geen toegang tot de video van deze LIVE.",
-        "playbackFailed": "Kan deze LIVE niet afspelen."
+        "playbackFailed": "Kan deze LIVE niet afspelen.",
+        "screenShareFailed": "Kan je scherm niet delen. Probeer het opnieuw."
       },
       "endReason": {
         "admin": "Deze LIVE is beëindigd door een moderator.",
         "hostDisconnected": "Deze LIVE is beëindigd omdat de host de verbinding verloor.",
-        "publishTimeout": "Deze LIVE is beëindigd omdat de video van de host nooit is gestart."
+        "publishTimeout": "Deze LIVE is beëindigd omdat de video van de host nooit is gestart.",
+        "maxDuration": "Deze LIVE is beëindigd omdat de maximale duur is bereikt."
+      },
+      "quality": {
+        "label": "Verbindingskwaliteit: {{quality}}",
+        "excellent": "Uitstekend",
+        "good": "Goed",
+        "poor": "Slecht",
+        "reconnecting": "Opnieuw verbinden",
+        "unknown": "Onbekend",
+        "loss": "Verlies"
       }
+    },
+    "replay": {
+      "title": "LIVE-herhaling",
+      "pageTitle": "{{title}} · Herhaling",
+      "watchReplay": "Herhaling bekijken",
+      "playbackFailed": "Kan de herhaling niet afspelen. De link is mogelijk verlopen.",
+      "recordingTitle": "Deze LIVE wordt opgenomen",
+      "processingTitle": "Opname wordt verwerkt",
+      "pendingBody": "De herhaling is over een paar minuten klaar. Deze pagina wordt automatisch bijgewerkt.",
+      "failedTitle": "Kan de herhaling niet maken",
+      "deletedTitle": "De herhaling is verwijderd",
+      "notFoundTitle": "Geen herhaling beschikbaar",
+      "notFoundBody": "Deze LIVE heeft geen herhaling of de herhaling is niet gepubliceerd.",
+      "draftNotice": "Deze herhaling is een concept dat alleen jij kunt zien. Post het via Studio om het te delen.",
+      "publishInStudio": "Posten in Studio",
+      "openVideo": "Video openen"
     }
   },
   "messagesPage": {

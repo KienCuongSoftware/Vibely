@@ -665,7 +665,9 @@
       "cancel": "Stornieren",
       "errors": {
         "submitFailed": "Ihr LIVE konnte nicht erstellt werden. Bitte versuchen Sie es erneut."
-      }
+      },
+      "recordReplay": "Dieses LIVE aufzeichnen",
+      "recordReplayHint": "Speichert bis zu {{minutes}} Minuten als Videoentwurf in Studio, damit du es später posten kannst."
     },
     "host": {
       "pageTitle": "LIVE-Studio | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Der Chat ist geschlossen, da dieses LIVE beendet ist.",
       "actionFailed": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",
       "notOwnerTitle": "Das können Sie nicht LIVE verwalten",
-      "notOwnerDescription": "Nur der Gastgeber kann LIVE Studio für dieses LIVE öffnen."
+      "notOwnerDescription": "Nur der Gastgeber kann LIVE Studio für dieses LIVE öffnen.",
+      "startScreenShare": "Bildschirm teilen",
+      "stopScreenShare": "Bildschirmfreigabe beenden",
+      "recording": "REC",
+      "summaryDuration": "Dauer",
+      "summaryPeakViewers": "Max. Zuschauer",
+      "summaryAverageWatch": "Ø Wiedergabezeit",
+      "summaryComments": "Kommentare"
     },
     "media": {
       "retry": "Erneut versuchen",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Die Verbindung des Hosts ist instabil…",
         "failed": "Dieses LIVE kann nicht abgespielt werden.",
         "tapToPlay": "Zum Abspielen tippen",
-        "tapToUnmute": "Zum Einschalten des Tons tippen"
+        "tapToUnmute": "Zum Einschalten des Tons tippen",
+        "interrupted": "Beim Livestream gibt es Verbindungsprobleme...",
+        "hlsMode": "Kompatibilitätsmodus",
+        "hlsModeHint": "Wiedergabe über HLS, weil die Echtzeitverbindung instabil ist. Die Verzögerung ist etwas größer."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Dieses LIVE ist beendet.",
         "notFound": "Dieses LIVE wurde nicht gefunden.",
         "forbidden": "Du hast keinen Zugriff auf das Video dieses LIVE.",
-        "playbackFailed": "Dieses LIVE kann nicht abgespielt werden."
+        "playbackFailed": "Dieses LIVE kann nicht abgespielt werden.",
+        "screenShareFailed": "Bildschirm konnte nicht geteilt werden. Bitte versuche es erneut."
       },
       "endReason": {
         "admin": "Dieses LIVE wurde von einem Moderator beendet.",
         "hostDisconnected": "Dieses LIVE wurde beendet, weil der Host die Verbindung verloren hat.",
-        "publishTimeout": "Dieses LIVE wurde beendet, weil das Video des Hosts nie gestartet ist."
+        "publishTimeout": "Dieses LIVE wurde beendet, weil das Video des Hosts nie gestartet ist.",
+        "maxDuration": "Dieses LIVE wurde beendet, weil die maximale Dauer erreicht wurde."
+      },
+      "quality": {
+        "label": "Verbindungsqualität: {{quality}}",
+        "excellent": "Sehr gut",
+        "good": "Gut",
+        "poor": "Schlecht",
+        "reconnecting": "Verbindet neu",
+        "unknown": "Unbekannt",
+        "loss": "Verlust"
       }
+    },
+    "replay": {
+      "title": "LIVE-Wiederholung",
+      "pageTitle": "{{title}} · Wiederholung",
+      "watchReplay": "Wiederholung ansehen",
+      "playbackFailed": "Die Wiederholung konnte nicht abgespielt werden. Der Link ist möglicherweise abgelaufen.",
+      "recordingTitle": "Dieses LIVE wird aufgezeichnet",
+      "processingTitle": "Aufzeichnung wird verarbeitet",
+      "pendingBody": "Die Wiederholung ist in wenigen Minuten bereit. Diese Seite aktualisiert sich automatisch.",
+      "failedTitle": "Wiederholung konnte nicht erstellt werden",
+      "deletedTitle": "Die Wiederholung wurde gelöscht",
+      "notFoundTitle": "Keine Wiederholung verfügbar",
+      "notFoundBody": "Für dieses LIVE gibt es keine Wiederholung oder sie wurde nicht veröffentlicht.",
+      "draftNotice": "Diese Wiederholung ist ein Entwurf, den nur du sehen kannst. Poste sie in Studio, um sie zu teilen.",
+      "publishInStudio": "In Studio posten",
+      "openVideo": "Video öffnen"
     }
   },
   "messagesPage": {

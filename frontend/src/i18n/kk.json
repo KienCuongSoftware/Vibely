@@ -665,7 +665,9 @@
       "cancel": "Болдырмау",
       "errors": {
         "submitFailed": "LIVE жасау мүмкін болмады. Қайталап көріңіз."
-      }
+      },
+      "recordReplay": "Бұл LIVE-ты жазу",
+      "recordReplayHint": "Кейін жариялау үшін {{minutes}} минутқа дейін Studio-да жоба бейне ретінде сақтайды."
     },
     "host": {
       "pageTitle": "LIVE Studio | Күшті",
@@ -694,7 +696,14 @@
       "chatEnded": "Чат жабылды, себебі бұл ТІКЕЛЕЙ ЭФИР аяқталды.",
       "actionFailed": "Бірдеңе дұрыс болмады. Қайталап көріңіз.",
       "notOwnerTitle": "Сіз бұл LIVE басқару мүмкін емес",
-      "notOwnerDescription": "Осы LIVE үшін LIVE Studio қолданбасын тек хост аша алады."
+      "notOwnerDescription": "Осы LIVE үшін LIVE Studio қолданбасын тек хост аша алады.",
+      "startScreenShare": "Экранды бөлісу",
+      "stopScreenShare": "Экранды бөлісуді тоқтату",
+      "recording": "REC",
+      "summaryDuration": "Ұзақтығы",
+      "summaryPeakViewers": "Ең көп көрермен",
+      "summaryAverageWatch": "Орташа көру уақыты",
+      "summaryComments": "Пікірлер"
     },
     "media": {
       "retry": "Қайталау",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Жүргізушінің байланысы тұрақсыз…",
         "failed": "Бұл LIVE ойнатылмады.",
         "tapToPlay": "Ойнату үшін түртіңіз",
-        "tapToUnmute": "Дыбысты қосу үшін түртіңіз"
+        "tapToUnmute": "Дыбысты қосу үшін түртіңіз",
+        "interrupted": "Тікелей эфирде байланыс ақаулары бар...",
+        "hlsMode": "Үйлесімділік режимі",
+        "hlsModeHint": "Нақты уақыттағы байланыс тұрақсыз болғандықтан HLS арқылы ойнатылуда. Кідіріс сәл көбірек."
       },
       "devices": {
         "camera": "Камера",
@@ -741,13 +753,40 @@
         "liveEnded": "Бұл LIVE аяқталды.",
         "notFound": "Бұл LIVE табылмады.",
         "forbidden": "Бұл LIVE бейнесіне рұқсатыңыз жоқ.",
-        "playbackFailed": "Бұл LIVE ойнатылмады."
+        "playbackFailed": "Бұл LIVE ойнатылмады.",
+        "screenShareFailed": "Экранды бөлісу мүмкін болмады. Қайталап көріңіз."
       },
       "endReason": {
         "admin": "Бұл LIVE-ты модератор аяқтады.",
         "hostDisconnected": "Жүргізушінің байланысы үзілгендіктен бұл LIVE аяқталды.",
-        "publishTimeout": "Жүргізушінің бейнесі басталмағандықтан бұл LIVE аяқталды."
+        "publishTimeout": "Жүргізушінің бейнесі басталмағандықтан бұл LIVE аяқталды.",
+        "maxDuration": "Бұл LIVE ең ұзақ уақытқа жеткендіктен аяқталды."
+      },
+      "quality": {
+        "label": "Байланыс сапасы: {{quality}}",
+        "excellent": "Өте жақсы",
+        "good": "Жақсы",
+        "poor": "Нашар",
+        "reconnecting": "Қайта қосылуда",
+        "unknown": "Белгісіз",
+        "loss": "Жоғалту"
       }
+    },
+    "replay": {
+      "title": "LIVE жазбасы",
+      "pageTitle": "{{title}} · Жазба",
+      "watchReplay": "Жазбаны көру",
+      "playbackFailed": "Жазбаны ойнату мүмкін болмады. Сілтеменің мерзімі өтіп кеткен болуы мүмкін.",
+      "recordingTitle": "Бұл LIVE жазылуда",
+      "processingTitle": "Жазба өңделуде",
+      "pendingBody": "Жазба бірнеше минуттан кейін дайын болады. Бұл бет автоматты түрде жаңартылады.",
+      "failedTitle": "Жазбаны жасау мүмкін болмады",
+      "deletedTitle": "Жазба жойылды",
+      "notFoundTitle": "Жазба жоқ",
+      "notFoundBody": "Бұл LIVE-тың жазбасы жоқ немесе ол әлі жарияланбаған.",
+      "draftNotice": "Бұл жазба тек сіз көре алатын жоба. Бөлісу үшін оны Studio-дан жариялаңыз.",
+      "publishInStudio": "Studio-да жариялау",
+      "openVideo": "Бейнені ашу"
     }
   },
   "messagesPage": {

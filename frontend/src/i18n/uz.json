@@ -665,7 +665,9 @@
       "cancel": "Bekor qilish",
       "errors": {
         "submitFailed": "LIVE yaratib bo‘lmadi. Iltimos, qayta urinib koʻring."
-      }
+      },
+      "recordReplay": "Bu LIVE'ni yozib olish",
+      "recordReplayHint": "Keyinroq joylash uchun {{minutes}} daqiqagacha Studio'da qoralama video sifatida saqlaydi."
     },
     "host": {
       "pageTitle": "LIVE Studio | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Chat yopildi, chunki bu LIVE tugadi.",
       "actionFailed": "Nimadir xato ketdi. Iltimos, qayta urinib koʻring.",
       "notOwnerTitle": "Siz bu LIVEni boshqara olmaysiz",
-      "notOwnerDescription": "Bu LIVE uchun LIVE Studioni faqat xost ochishi mumkin."
+      "notOwnerDescription": "Bu LIVE uchun LIVE Studioni faqat xost ochishi mumkin.",
+      "startScreenShare": "Ekranni ulashish",
+      "stopScreenShare": "Ekran ulashishni to'xtatish",
+      "recording": "REC",
+      "summaryDuration": "Davomiyligi",
+      "summaryPeakViewers": "Eng ko'p tomoshabin",
+      "summaryAverageWatch": "O'rtacha tomosha vaqti",
+      "summaryComments": "Izohlar"
     },
     "media": {
       "retry": "Qayta urinish",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Boshlovchining aloqasi beqaror…",
         "failed": "Bu LIVE’ni ijro etib bo‘lmadi.",
         "tapToPlay": "Ijro etish uchun bosing",
-        "tapToUnmute": "Ovozni yoqish uchun bosing"
+        "tapToUnmute": "Ovozni yoqish uchun bosing",
+        "interrupted": "Jonli efirda ulanish bilan muammolar bor...",
+        "hlsMode": "Moslik rejimi",
+        "hlsModeHint": "Real vaqt ulanishi beqaror bo'lgani uchun HLS orqali ijro etilmoqda. Kechikish biroz ko'proq."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Bu LIVE tugadi.",
         "notFound": "Bu LIVE topilmadi.",
         "forbidden": "Bu LIVE videosiga ruxsatingiz yo‘q.",
-        "playbackFailed": "Bu LIVE’ni ijro etib bo‘lmadi."
+        "playbackFailed": "Bu LIVE’ni ijro etib bo‘lmadi.",
+        "screenShareFailed": "Ekranni ulashib bo'lmadi. Qaytadan urinib ko'ring."
       },
       "endReason": {
         "admin": "Bu LIVE moderator tomonidan yakunlandi.",
         "hostDisconnected": "Boshlovchining aloqasi uzilgani sababli bu LIVE tugadi.",
-        "publishTimeout": "Boshlovchining videosi hech boshlanmagani sababli bu LIVE tugadi."
+        "publishTimeout": "Boshlovchining videosi hech boshlanmagani sababli bu LIVE tugadi.",
+        "maxDuration": "Bu LIVE maksimal davomiylikka yetgani uchun yakunlandi."
+      },
+      "quality": {
+        "label": "Ulanish sifati: {{quality}}",
+        "excellent": "A'lo",
+        "good": "Yaxshi",
+        "poor": "Yomon",
+        "reconnecting": "Qayta ulanmoqda",
+        "unknown": "Noma'lum",
+        "loss": "Yo'qotish"
       }
+    },
+    "replay": {
+      "title": "LIVE yozuvi",
+      "pageTitle": "{{title}} · Yozuv",
+      "watchReplay": "Yozuvni ko'rish",
+      "playbackFailed": "Yozuvni ijro etib bo'lmadi. Havolaning muddati tugagan bo'lishi mumkin.",
+      "recordingTitle": "Bu LIVE yozib olinmoqda",
+      "processingTitle": "Yozuv qayta ishlanmoqda",
+      "pendingBody": "Yozuv bir necha daqiqada tayyor bo'ladi. Bu sahifa avtomatik yangilanadi.",
+      "failedTitle": "Yozuvni yaratib bo'lmadi",
+      "deletedTitle": "Yozuv o'chirildi",
+      "notFoundTitle": "Yozuv mavjud emas",
+      "notFoundBody": "Bu LIVE'ning yozuvi yo'q yoki u hali joylanmagan.",
+      "draftNotice": "Bu yozuv faqat siz ko'ra oladigan qoralama. Ulashish uchun uni Studio'dan joylang.",
+      "publishInStudio": "Studio'da joylash",
+      "openVideo": "Videoni ochish"
     }
   },
   "messagesPage": {

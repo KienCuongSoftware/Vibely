@@ -665,7 +665,9 @@
       "cancel": "Anulować",
       "errors": {
         "submitFailed": "Nie udało się utworzyć transmisji NA ŻYWO. Spróbuj ponownie."
-      }
+      },
+      "recordReplay": "Nagraj ten LIVE",
+      "recordReplayHint": "Zapisuje do {{minutes}} min jako wersję roboczą wideo w Studio, aby opublikować ją później."
     },
     "host": {
       "pageTitle": "Studio NA ŻYWO | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Czat jest zamknięty, ponieważ ten LIVE się zakończył.",
       "actionFailed": "Coś poszło nie tak. Spróbuj ponownie.",
       "notOwnerTitle": "Nie możesz tego zarządzać NA ŻYWO",
-      "notOwnerDescription": "Tylko gospodarz może otworzyć LIVE Studio dla tego LIVE."
+      "notOwnerDescription": "Tylko gospodarz może otworzyć LIVE Studio dla tego LIVE.",
+      "startScreenShare": "Udostępnij ekran",
+      "stopScreenShare": "Zatrzymaj udostępnianie ekranu",
+      "recording": "REC",
+      "summaryDuration": "Czas trwania",
+      "summaryPeakViewers": "Szczyt widzów",
+      "summaryAverageWatch": "Śr. czas oglądania",
+      "summaryComments": "Komentarze"
     },
     "media": {
       "retry": "Spróbuj ponownie",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Połączenie prowadzącego jest niestabilne…",
         "failed": "Nie można odtworzyć tego LIVE.",
         "tapToPlay": "Dotknij, aby odtworzyć",
-        "tapToUnmute": "Dotknij, aby włączyć dźwięk"
+        "tapToUnmute": "Dotknij, aby włączyć dźwięk",
+        "interrupted": "Transmisja na żywo ma problemy z połączeniem...",
+        "hlsMode": "Tryb zgodności",
+        "hlsModeHint": "Odtwarzanie przez HLS, ponieważ połączenie w czasie rzeczywistym jest niestabilne. Opóźnienie jest nieco większe."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Ten LIVE się zakończył.",
         "notFound": "Nie znaleziono tego LIVE.",
         "forbidden": "Nie masz dostępu do wideo tego LIVE.",
-        "playbackFailed": "Nie można odtworzyć tego LIVE."
+        "playbackFailed": "Nie można odtworzyć tego LIVE.",
+        "screenShareFailed": "Nie udało się udostępnić ekranu. Spróbuj ponownie."
       },
       "endReason": {
         "admin": "Ten LIVE został zakończony przez moderatora.",
         "hostDisconnected": "Ten LIVE zakończył się, ponieważ prowadzący utracił połączenie.",
-        "publishTimeout": "Ten LIVE zakończył się, ponieważ wideo prowadzącego nigdy się nie rozpoczęło."
+        "publishTimeout": "Ten LIVE zakończył się, ponieważ wideo prowadzącego nigdy się nie rozpoczęło.",
+        "maxDuration": "Ten LIVE zakończył się, ponieważ osiągnął maksymalny czas trwania."
+      },
+      "quality": {
+        "label": "Jakość połączenia: {{quality}}",
+        "excellent": "Doskonała",
+        "good": "Dobra",
+        "poor": "Słaba",
+        "reconnecting": "Ponowne łączenie",
+        "unknown": "Nieznana",
+        "loss": "Utrata"
       }
+    },
+    "replay": {
+      "title": "Powtórka LIVE",
+      "pageTitle": "{{title}} · Powtórka",
+      "watchReplay": "Obejrzyj powtórkę",
+      "playbackFailed": "Nie można odtworzyć powtórki. Link mógł wygasnąć.",
+      "recordingTitle": "Ten LIVE jest nagrywany",
+      "processingTitle": "Przetwarzanie nagrania",
+      "pendingBody": "Powtórka będzie gotowa za kilka minut. Ta strona odświeży się automatycznie.",
+      "failedTitle": "Nie udało się utworzyć powtórki",
+      "deletedTitle": "Powtórka została usunięta",
+      "notFoundTitle": "Brak powtórki",
+      "notFoundBody": "Ten LIVE nie ma powtórki lub nie została ona opublikowana.",
+      "draftNotice": "Ta powtórka jest wersją roboczą widoczną tylko dla Ciebie. Opublikuj ją w Studio, aby ją udostępnić.",
+      "publishInStudio": "Opublikuj w Studio",
+      "openVideo": "Otwórz wideo"
     }
   },
   "messagesPage": {

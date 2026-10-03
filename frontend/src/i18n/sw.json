@@ -665,7 +665,9 @@
       "cancel": "Ghairi",
       "errors": {
         "submitFailed": "Haikuweza kuunda LIVE yako. Tafadhali jaribu tena."
-      }
+      },
+      "recordReplay": "Rekodi LIVE hii",
+      "recordReplayHint": "Huhifadhi hadi dakika {{minutes}} kama video ya rasimu katika Studio ili uichapishe baadaye."
     },
     "host": {
       "pageTitle": "LIVE Studio | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Gumzo limefungwa kwa sababu LIVE hii imeisha.",
       "actionFailed": "Hitilafu fulani imetokea. Tafadhali jaribu tena.",
       "notOwnerTitle": "Huwezi kudhibiti hili LIVE",
-      "notOwnerDescription": "Ni mwenyeji pekee anayeweza kufungua LIVE Studio kwa hii LIVE."
+      "notOwnerDescription": "Ni mwenyeji pekee anayeweza kufungua LIVE Studio kwa hii LIVE.",
+      "startScreenShare": "Shiriki skrini",
+      "stopScreenShare": "Acha kushiriki skrini",
+      "recording": "REC",
+      "summaryDuration": "Muda",
+      "summaryPeakViewers": "Kilele cha watazamaji",
+      "summaryAverageWatch": "Wastani wa muda wa kutazama",
+      "summaryComments": "Maoni"
     },
     "media": {
       "retry": "Jaribu tena",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Muunganisho wa mwenyeji si thabiti…",
         "failed": "Imeshindwa kucheza LIVE hii.",
         "tapToPlay": "Gusa ili kucheza",
-        "tapToUnmute": "Gusa ili kuwasha sauti"
+        "tapToUnmute": "Gusa ili kuwasha sauti",
+        "interrupted": "Mtiririko wa moja kwa moja una matatizo ya muunganisho...",
+        "hlsMode": "Hali ya uoanifu",
+        "hlsModeHint": "Inacheza kupitia HLS kwa sababu muunganisho wa wakati halisi si thabiti. Ucheleweshaji ni mkubwa kidogo."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "LIVE hii imeisha.",
         "notFound": "LIVE hii haikupatikana.",
         "forbidden": "Huna ruhusa ya kufikia video ya LIVE hii.",
-        "playbackFailed": "Imeshindwa kucheza LIVE hii."
+        "playbackFailed": "Imeshindwa kucheza LIVE hii.",
+        "screenShareFailed": "Imeshindwa kushiriki skrini. Tafadhali jaribu tena."
       },
       "endReason": {
         "admin": "LIVE hii ilisitishwa na msimamizi.",
         "hostDisconnected": "LIVE hii iliisha kwa sababu mwenyeji alipoteza muunganisho.",
-        "publishTimeout": "LIVE hii iliisha kwa sababu video ya mwenyeji haikuanza kamwe."
+        "publishTimeout": "LIVE hii iliisha kwa sababu video ya mwenyeji haikuanza kamwe.",
+        "maxDuration": "LIVE hii imeisha kwa sababu imefikia muda wa juu zaidi."
+      },
+      "quality": {
+        "label": "Ubora wa muunganisho: {{quality}}",
+        "excellent": "Bora sana",
+        "good": "Nzuri",
+        "poor": "Duni",
+        "reconnecting": "Inaunganisha upya",
+        "unknown": "Haijulikani",
+        "loss": "Upotevu"
       }
+    },
+    "replay": {
+      "title": "Marudio ya LIVE",
+      "pageTitle": "{{title}} · Marudio",
+      "watchReplay": "Tazama marudio",
+      "playbackFailed": "Imeshindwa kucheza marudio. Huenda kiungo kimeisha muda.",
+      "recordingTitle": "LIVE hii inarekodiwa",
+      "processingTitle": "Inachakata rekodi",
+      "pendingBody": "Marudio yatakuwa tayari baada ya dakika chache. Ukurasa huu husasishwa kiotomatiki.",
+      "failedTitle": "Imeshindwa kuunda marudio",
+      "deletedTitle": "Marudio yamefutwa",
+      "notFoundTitle": "Hakuna marudio",
+      "notFoundBody": "LIVE hii haina marudio au bado hayajachapishwa.",
+      "draftNotice": "Marudio haya ni rasimu unayoweza kuona wewe tu. Yachapishe kutoka Studio ili kuyashiriki.",
+      "publishInStudio": "Chapisha katika Studio",
+      "openVideo": "Fungua video"
     }
   },
   "messagesPage": {

@@ -665,7 +665,9 @@
       "cancel": "Batal",
       "errors": {
         "submitFailed": "Ora bisa nggawe LIVE sampeyan. Coba maneh."
-      }
+      },
+      "recordReplay": "Rekam LIVE iki",
+      "recordReplayHint": "Nyimpen nganti {{minutes}} menit dadi video draf ing Studio supaya bisa kokposting mengko."
     },
     "host": {
       "pageTitle": "LIVE Studio | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Obrolan ditutup amarga LIVE iki wis rampung.",
       "actionFailed": "Ana sing salah. Coba maneh.",
       "notOwnerTitle": "Sampeyan ora bisa ngatur LIVE iki",
-      "notOwnerDescription": "Mung host sing bisa mbukak LIVE Studio kanggo LIVE iki."
+      "notOwnerDescription": "Mung host sing bisa mbukak LIVE Studio kanggo LIVE iki.",
+      "startScreenShare": "Tuduhake layar",
+      "stopScreenShare": "Mandheg nuduhake layar",
+      "recording": "REC",
+      "summaryDuration": "Durasi",
+      "summaryPeakViewers": "Puncak penonton",
+      "summaryAverageWatch": "Rata-rata wektu nonton",
+      "summaryComments": "Komentar"
     },
     "media": {
       "retry": "Coba maneh",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Sambungan host ora stabil…",
         "failed": "LIVE iki ora bisa diputer.",
         "tapToPlay": "Tutul kanggo muter",
-        "tapToUnmute": "Tutul kanggo nguripake swara"
+        "tapToUnmute": "Tutul kanggo nguripake swara",
+        "interrupted": "Livestream lagi ngalami masalah sambungan...",
+        "hlsMode": "Mode kompatibilitas",
+        "hlsModeHint": "Diputer liwat HLS amarga sambungan real-time ora stabil. Telaté rada luwih suwé."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "LIVE iki wis rampung.",
         "notFound": "LIVE iki ora ditemokake.",
         "forbidden": "Kowe ora duwe akses menyang video LIVE iki.",
-        "playbackFailed": "LIVE iki ora bisa diputer."
+        "playbackFailed": "LIVE iki ora bisa diputer.",
+        "screenShareFailed": "Ora bisa nuduhake layar. Coba manèh."
       },
       "endReason": {
         "admin": "LIVE iki dipungkasi dening moderator.",
         "hostDisconnected": "LIVE iki rampung amarga sambungan host pedhot.",
-        "publishTimeout": "LIVE iki rampung amarga video host ora tau diwiwiti."
+        "publishTimeout": "LIVE iki rampung amarga video host ora tau diwiwiti.",
+        "maxDuration": "LIVE iki rampung amarga wis tekan durasi maksimal."
+      },
+      "quality": {
+        "label": "Kualitas sambungan: {{quality}}",
+        "excellent": "Apik banget",
+        "good": "Apik",
+        "poor": "Ala",
+        "reconnecting": "Nyambung manèh",
+        "unknown": "Ora dingerteni",
+        "loss": "Ilang"
       }
+    },
+    "replay": {
+      "title": "Tayangan ulang LIVE",
+      "pageTitle": "{{title}} · Tayangan ulang",
+      "watchReplay": "Tonton tayangan ulang",
+      "playbackFailed": "Ora bisa muter tayangan ulang. Link-é bisa uga wis kedaluwarsa.",
+      "recordingTitle": "LIVE iki lagi direkam",
+      "processingTitle": "Lagi ngolah rekaman",
+      "pendingBody": "Tayangan ulang bakal siap sawetara menit manèh. Kaca iki dianyari kanthi otomatis.",
+      "failedTitle": "Ora bisa nggawe tayangan ulang",
+      "deletedTitle": "Tayangan ulang wis dibusak",
+      "notFoundTitle": "Ora ana tayangan ulang",
+      "notFoundBody": "LIVE iki ora duwé tayangan ulang utawa durung diterbitaké.",
+      "draftNotice": "Tayangan ulang iki draf sing mung kowé sing bisa ndeleng. Posting saka Studio kanggo nuduhaké.",
+      "publishInStudio": "Posting ing Studio",
+      "openVideo": "Bukak video"
     }
   },
   "messagesPage": {

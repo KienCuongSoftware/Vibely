@@ -665,7 +665,9 @@
       "cancel": "İptal etmek",
       "errors": {
         "submitFailed": "CANLI yayınınız oluşturulamadı. Lütfen tekrar deneyin."
-      }
+      },
+      "recordReplay": "Bu LIVE'ı kaydet",
+      "recordReplayHint": "Daha sonra paylaşabilmen için en fazla {{minutes}} dakikayı Studio'da taslak video olarak kaydeder."
     },
     "host": {
       "pageTitle": "CANLI Stüdyo | Canlı bir şekilde",
@@ -694,7 +696,14 @@
       "chatEnded": "Bu CANLI sona erdiğinden sohbet kapatıldı.",
       "actionFailed": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
       "notOwnerTitle": "Bu CANLI'yı yönetemezsiniz",
-      "notOwnerDescription": "Bu LIVE için yalnızca toplantı sahibi LIVE Studio'yu açabilir."
+      "notOwnerDescription": "Bu LIVE için yalnızca toplantı sahibi LIVE Studio'yu açabilir.",
+      "startScreenShare": "Ekranı paylaş",
+      "stopScreenShare": "Ekran paylaşımını durdur",
+      "recording": "REC",
+      "summaryDuration": "Süre",
+      "summaryPeakViewers": "En yüksek izleyici",
+      "summaryAverageWatch": "Ort. izlenme süresi",
+      "summaryComments": "Yorumlar"
     },
     "media": {
       "retry": "Tekrar dene",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Yayıncının bağlantısı dengesiz…",
         "failed": "Bu LIVE oynatılamadı.",
         "tapToPlay": "Oynatmak için dokun",
-        "tapToUnmute": "Sesi açmak için dokun"
+        "tapToUnmute": "Sesi açmak için dokun",
+        "interrupted": "Canlı yayında bağlantı sorunları yaşanıyor...",
+        "hlsMode": "Uyumluluk modu",
+        "hlsModeHint": "Gerçek zamanlı bağlantı kararsız olduğu için HLS üzerinden oynatılıyor. Gecikme biraz daha fazla."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Bu LIVE sona erdi.",
         "notFound": "Bu LIVE bulunamadı.",
         "forbidden": "Bu LIVE'ın videosuna erişimin yok.",
-        "playbackFailed": "Bu LIVE oynatılamadı."
+        "playbackFailed": "Bu LIVE oynatılamadı.",
+        "screenShareFailed": "Ekran paylaşılamadı. Lütfen tekrar dene."
       },
       "endReason": {
         "admin": "Bu LIVE bir moderatör tarafından sonlandırıldı.",
         "hostDisconnected": "Yayıncının bağlantısı kesildiği için bu LIVE sona erdi.",
-        "publishTimeout": "Yayıncının videosu hiç başlamadığı için bu LIVE sona erdi."
+        "publishTimeout": "Yayıncının videosu hiç başlamadığı için bu LIVE sona erdi.",
+        "maxDuration": "Bu LIVE maksimum süreye ulaştığı için sona erdi."
+      },
+      "quality": {
+        "label": "Bağlantı kalitesi: {{quality}}",
+        "excellent": "Mükemmel",
+        "good": "İyi",
+        "poor": "Zayıf",
+        "reconnecting": "Yeniden bağlanıyor",
+        "unknown": "Bilinmiyor",
+        "loss": "Kayıp"
       }
+    },
+    "replay": {
+      "title": "LIVE tekrarı",
+      "pageTitle": "{{title}} · Tekrar",
+      "watchReplay": "Tekrarı izle",
+      "playbackFailed": "Tekrar oynatılamadı. Bağlantının süresi dolmuş olabilir.",
+      "recordingTitle": "Bu LIVE kaydediliyor",
+      "processingTitle": "Kayıt işleniyor",
+      "pendingBody": "Tekrar birkaç dakika içinde hazır olacak. Bu sayfa otomatik olarak güncellenir.",
+      "failedTitle": "Tekrar oluşturulamadı",
+      "deletedTitle": "Tekrar silindi",
+      "notFoundTitle": "Kullanılabilir tekrar yok",
+      "notFoundBody": "Bu LIVE'ın tekrarı yok veya henüz yayınlanmadı.",
+      "draftNotice": "Bu tekrar yalnızca senin görebildiğin bir taslak. Paylaşmak için Studio'dan yayınla.",
+      "publishInStudio": "Studio'da yayınla",
+      "openVideo": "Videoyu aç"
     }
   },
   "messagesPage": {

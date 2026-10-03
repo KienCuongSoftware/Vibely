@@ -665,7 +665,9 @@
       "cancel": "Cancellare",
       "errors": {
         "submitFailed": "Impossibile creare il tuo LIVE. Per favore riprova."
-      }
+      },
+      "recordReplay": "Registra questo LIVE",
+      "recordReplayHint": "Salva fino a {{minutes}} minuti come video in bozza in Studio da pubblicare in seguito."
     },
     "host": {
       "pageTitle": "Studio LIVE | Vibilmente",
@@ -694,7 +696,14 @@
       "chatEnded": "La chat è chiusa perché questa LIVE è terminata.",
       "actionFailed": "Qualcosa è andato storto. Per favore riprova.",
       "notOwnerTitle": "Non puoi gestire questa LIVE",
-      "notOwnerDescription": "Solo l'host può aprire LIVE Studio per questo LIVE."
+      "notOwnerDescription": "Solo l'host può aprire LIVE Studio per questo LIVE.",
+      "startScreenShare": "Condividi schermo",
+      "stopScreenShare": "Interrompi condivisione schermo",
+      "recording": "REC",
+      "summaryDuration": "Durata",
+      "summaryPeakViewers": "Picco spettatori",
+      "summaryAverageWatch": "Tempo medio di visione",
+      "summaryComments": "Commenti"
     },
     "media": {
       "retry": "Riprova",
@@ -719,7 +728,10 @@
         "hostReconnecting": "La connessione dell'host è instabile…",
         "failed": "Impossibile riprodurre questa LIVE.",
         "tapToPlay": "Tocca per riprodurre",
-        "tapToUnmute": "Tocca per attivare l'audio"
+        "tapToUnmute": "Tocca per attivare l'audio",
+        "interrupted": "Il livestream ha problemi di connessione...",
+        "hlsMode": "Modalità compatibilità",
+        "hlsModeHint": "Riproduzione tramite HLS perché la connessione in tempo reale è instabile. Il ritardo è un po' maggiore."
       },
       "devices": {
         "camera": "Fotocamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Questa LIVE è terminata.",
         "notFound": "Impossibile trovare questa LIVE.",
         "forbidden": "Non hai accesso al video di questa LIVE.",
-        "playbackFailed": "Impossibile riprodurre questa LIVE."
+        "playbackFailed": "Impossibile riprodurre questa LIVE.",
+        "screenShareFailed": "Impossibile condividere lo schermo. Riprova."
       },
       "endReason": {
         "admin": "Questa LIVE è stata terminata da un moderatore.",
         "hostDisconnected": "Questa LIVE è terminata perché l'host ha perso la connessione.",
-        "publishTimeout": "Questa LIVE è terminata perché il video dell'host non è mai partito."
+        "publishTimeout": "Questa LIVE è terminata perché il video dell'host non è mai partito.",
+        "maxDuration": "Questo LIVE è terminato perché ha raggiunto la durata massima."
+      },
+      "quality": {
+        "label": "Qualità della connessione: {{quality}}",
+        "excellent": "Ottima",
+        "good": "Buona",
+        "poor": "Scarsa",
+        "reconnecting": "Riconnessione",
+        "unknown": "Sconosciuta",
+        "loss": "Perdita"
       }
+    },
+    "replay": {
+      "title": "Replica del LIVE",
+      "pageTitle": "{{title}} · Replica",
+      "watchReplay": "Guarda la replica",
+      "playbackFailed": "Impossibile riprodurre la replica. Il link potrebbe essere scaduto.",
+      "recordingTitle": "Questo LIVE è in registrazione",
+      "processingTitle": "Elaborazione della registrazione",
+      "pendingBody": "La replica sarà pronta tra pochi minuti. Questa pagina si aggiorna automaticamente.",
+      "failedTitle": "Impossibile creare la replica",
+      "deletedTitle": "La replica è stata eliminata",
+      "notFoundTitle": "Nessuna replica disponibile",
+      "notFoundBody": "Questo LIVE non ha una replica oppure non è stata pubblicata.",
+      "draftNotice": "Questa replica è una bozza visibile solo a te. Pubblicala da Studio per condividerla.",
+      "publishInStudio": "Pubblica in Studio",
+      "openVideo": "Apri video"
     }
   },
   "messagesPage": {

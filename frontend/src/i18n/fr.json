@@ -665,7 +665,9 @@
       "cancel": "Annuler",
       "errors": {
         "submitFailed": "Impossible de créer votre LIVE. Veuillez réessayer."
-      }
+      },
+      "recordReplay": "Enregistrer ce LIVE",
+      "recordReplayHint": "Enregistre jusqu'à {{minutes}} minutes en vidéo brouillon dans Studio pour la publier plus tard."
     },
     "host": {
       "pageTitle": "Studio EN DIRECT | Vibement",
@@ -694,7 +696,14 @@
       "chatEnded": "Le chat est fermé car ce LIVE est terminé.",
       "actionFailed": "Quelque chose s'est mal passé. Veuillez réessayer.",
       "notOwnerTitle": "Vous ne pouvez pas gérer ça en direct",
-      "notOwnerDescription": "Seul l'hôte peut ouvrir LIVE Studio pour ce LIVE."
+      "notOwnerDescription": "Seul l'hôte peut ouvrir LIVE Studio pour ce LIVE.",
+      "startScreenShare": "Partager l'écran",
+      "stopScreenShare": "Arrêter le partage d'écran",
+      "recording": "REC",
+      "summaryDuration": "Durée",
+      "summaryPeakViewers": "Pic de spectateurs",
+      "summaryAverageWatch": "Temps de visionnage moyen",
+      "summaryComments": "Commentaires"
     },
     "media": {
       "retry": "Réessayer",
@@ -719,7 +728,10 @@
         "hostReconnecting": "La connexion de l'hôte est instable…",
         "failed": "Impossible de lire ce LIVE.",
         "tapToPlay": "Appuyez pour lire",
-        "tapToUnmute": "Appuyez pour activer le son"
+        "tapToUnmute": "Appuyez pour activer le son",
+        "interrupted": "Le livestream rencontre des problèmes de connexion...",
+        "hlsMode": "Mode compatibilité",
+        "hlsModeHint": "Lecture via HLS car la connexion en temps réel est instable. Le délai est un peu plus long."
       },
       "devices": {
         "camera": "Caméra",
@@ -741,13 +753,40 @@
         "liveEnded": "Ce LIVE est terminé.",
         "notFound": "Ce LIVE est introuvable.",
         "forbidden": "Vous n'avez pas accès à la vidéo de ce LIVE.",
-        "playbackFailed": "Impossible de lire ce LIVE."
+        "playbackFailed": "Impossible de lire ce LIVE.",
+        "screenShareFailed": "Impossible de partager votre écran. Veuillez réessayer."
       },
       "endReason": {
         "admin": "Ce LIVE a été arrêté par un modérateur.",
         "hostDisconnected": "Ce LIVE s'est terminé car l'hôte a perdu la connexion.",
-        "publishTimeout": "Ce LIVE s'est terminé car la vidéo de l'hôte n'a jamais démarré."
+        "publishTimeout": "Ce LIVE s'est terminé car la vidéo de l'hôte n'a jamais démarré.",
+        "maxDuration": "Ce LIVE s'est terminé car il a atteint la durée maximale."
+      },
+      "quality": {
+        "label": "Qualité de connexion : {{quality}}",
+        "excellent": "Excellente",
+        "good": "Bonne",
+        "poor": "Faible",
+        "reconnecting": "Reconnexion",
+        "unknown": "Inconnue",
+        "loss": "Perte"
       }
+    },
+    "replay": {
+      "title": "Rediffusion du LIVE",
+      "pageTitle": "{{title}} · Rediffusion",
+      "watchReplay": "Voir la rediffusion",
+      "playbackFailed": "Impossible de lire la rediffusion. Le lien a peut-être expiré.",
+      "recordingTitle": "Ce LIVE est en cours d'enregistrement",
+      "processingTitle": "Traitement de l'enregistrement",
+      "pendingBody": "La rediffusion sera prête dans quelques minutes. Cette page se met à jour automatiquement.",
+      "failedTitle": "Impossible de créer la rediffusion",
+      "deletedTitle": "La rediffusion a été supprimée",
+      "notFoundTitle": "Aucune rediffusion disponible",
+      "notFoundBody": "Ce LIVE n'a pas de rediffusion, ou elle n'a pas été publiée.",
+      "draftNotice": "Cette rediffusion est un brouillon visible uniquement par vous. Publiez-la depuis Studio pour la partager.",
+      "publishInStudio": "Publier dans Studio",
+      "openVideo": "Ouvrir la vidéo"
     }
   },
   "messagesPage": {

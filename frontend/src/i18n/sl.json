@@ -665,7 +665,9 @@
       "cancel": "Prekliči",
       "errors": {
         "submitFailed": "Vašega V ŽIVO ni bilo mogoče ustvariti. prosim poskusite ponovno"
-      }
+      },
+      "recordReplay": "Posnemi ta LIVE",
+      "recordReplayHint": "Shrani do {{minutes}} min kot osnutek videa v Studiu, da ga objavite pozneje."
     },
     "host": {
       "pageTitle": "Studio V ŽIVO | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Klepet je zaprt, ker se je ta V ŽIVO končal.",
       "actionFailed": "Nekaj ​​je šlo narobe. prosim poskusite ponovno",
       "notOwnerTitle": "Tega ne morete upravljati V ŽIVO",
-      "notOwnerDescription": "Samo gostitelj lahko odpre LIVE Studio za ta LIVE."
+      "notOwnerDescription": "Samo gostitelj lahko odpre LIVE Studio za ta LIVE.",
+      "startScreenShare": "Deli zaslon",
+      "stopScreenShare": "Ustavi deljenje zaslona",
+      "recording": "REC",
+      "summaryDuration": "Trajanje",
+      "summaryPeakViewers": "Največ gledalcev",
+      "summaryAverageWatch": "Povpr. čas ogleda",
+      "summaryComments": "Komentarji"
     },
     "media": {
       "retry": "Poskusi znova",
@@ -719,7 +728,10 @@
         "hostReconnecting": "Povezava gostitelja je nestabilna…",
         "failed": "Tega LIVE ni mogoče predvajati.",
         "tapToPlay": "Tapnite za predvajanje",
-        "tapToUnmute": "Tapnite za vklop zvoka"
+        "tapToUnmute": "Tapnite za vklop zvoka",
+        "interrupted": "Prenos v živo ima težave s povezavo...",
+        "hlsMode": "Združljivostni način",
+        "hlsModeHint": "Predvajanje prek HLS, ker je povezava v realnem času nestabilna. Zakasnitev je nekoliko večja."
       },
       "devices": {
         "camera": "Kamera",
@@ -741,13 +753,40 @@
         "liveEnded": "Ta LIVE se je končal.",
         "notFound": "Tega LIVE ni bilo mogoče najti.",
         "forbidden": "Nimate dostopa do videa tega LIVE.",
-        "playbackFailed": "Tega LIVE ni mogoče predvajati."
+        "playbackFailed": "Tega LIVE ni mogoče predvajati.",
+        "screenShareFailed": "Zaslona ni bilo mogoče deliti. Poskusite znova."
       },
       "endReason": {
         "admin": "Ta LIVE je končal moderator.",
         "hostDisconnected": "Ta LIVE se je končal, ker je gostitelj izgubil povezavo.",
-        "publishTimeout": "Ta LIVE se je končal, ker se video gostitelja ni nikoli začel."
+        "publishTimeout": "Ta LIVE se je končal, ker se video gostitelja ni nikoli začel.",
+        "maxDuration": "Ta LIVE se je končal, ker je dosegel največje trajanje."
+      },
+      "quality": {
+        "label": "Kakovost povezave: {{quality}}",
+        "excellent": "Odlična",
+        "good": "Dobra",
+        "poor": "Slaba",
+        "reconnecting": "Ponovno povezovanje",
+        "unknown": "Neznana",
+        "loss": "Izguba"
       }
+    },
+    "replay": {
+      "title": "Posnetek LIVE",
+      "pageTitle": "{{title}} · Posnetek",
+      "watchReplay": "Oglej si posnetek",
+      "playbackFailed": "Posnetka ni mogoče predvajati. Povezava je morda potekla.",
+      "recordingTitle": "Ta LIVE se snema",
+      "processingTitle": "Obdelava posnetka",
+      "pendingBody": "Posnetek bo pripravljen v nekaj minutah. Stran se samodejno posodobi.",
+      "failedTitle": "Posnetka ni bilo mogoče ustvariti",
+      "deletedTitle": "Posnetek je bil izbrisan",
+      "notFoundTitle": "Posnetek ni na voljo",
+      "notFoundBody": "Ta LIVE nima posnetka ali ta še ni objavljen.",
+      "draftNotice": "Ta posnetek je osnutek, ki ga vidite samo vi. Objavite ga v Studiu, da ga delite.",
+      "publishInStudio": "Objavi v Studiu",
+      "openVideo": "Odpri video"
     }
   },
   "messagesPage": {

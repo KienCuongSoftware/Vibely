@@ -665,7 +665,9 @@
       "cancel": "Скасувати",
       "errors": {
         "submitFailed": "Не вдалося створити LIVE. Спробуйте ще раз."
-      }
+      },
+      "recordReplay": "Записати цей LIVE",
+      "recordReplayHint": "Зберігає до {{minutes}} хв як чернетку відео в Studio, щоб опублікувати пізніше."
     },
     "host": {
       "pageTitle": "Студія LIVE | Vibely",
@@ -694,7 +696,14 @@
       "chatEnded": "Чат закрито, оскільки цей ПРЯМИЙ ефір закінчився.",
       "actionFailed": "Щось пішло не так. Спробуйте ще раз.",
       "notOwnerTitle": "Ви не можете керувати цим НАЖИВО",
-      "notOwnerDescription": "Лише організатор може відкрити LIVE Studio для цього LIVE."
+      "notOwnerDescription": "Лише організатор може відкрити LIVE Studio для цього LIVE.",
+      "startScreenShare": "Показати екран",
+      "stopScreenShare": "Зупинити показ екрана",
+      "recording": "REC",
+      "summaryDuration": "Тривалість",
+      "summaryPeakViewers": "Пік глядачів",
+      "summaryAverageWatch": "Середній час перегляду",
+      "summaryComments": "Коментарі"
     },
     "media": {
       "retry": "Спробувати ще раз",
@@ -719,7 +728,10 @@
         "hostReconnecting": "З'єднання ведучого нестабільне…",
         "failed": "Не вдалося відтворити цей LIVE.",
         "tapToPlay": "Торкніться, щоб відтворити",
-        "tapToUnmute": "Торкніться, щоб увімкнути звук"
+        "tapToUnmute": "Торкніться, щоб увімкнути звук",
+        "interrupted": "У прямому ефірі проблеми зі з'єднанням...",
+        "hlsMode": "Режим сумісності",
+        "hlsModeHint": "Відтворення через HLS, оскільки з'єднання в реальному часі нестабільне. Затримка трохи більша."
       },
       "devices": {
         "camera": "Камера",
@@ -741,13 +753,40 @@
         "liveEnded": "Цей LIVE завершився.",
         "notFound": "Цей LIVE не знайдено.",
         "forbidden": "У вас немає доступу до відео цього LIVE.",
-        "playbackFailed": "Не вдалося відтворити цей LIVE."
+        "playbackFailed": "Не вдалося відтворити цей LIVE.",
+        "screenShareFailed": "Не вдалося показати екран. Спробуйте ще раз."
       },
       "endReason": {
         "admin": "Цей LIVE завершив модератор.",
         "hostDisconnected": "Цей LIVE завершився, бо ведучий втратив з'єднання.",
-        "publishTimeout": "Цей LIVE завершився, бо відео ведучого так і не почалося."
+        "publishTimeout": "Цей LIVE завершився, бо відео ведучого так і не почалося.",
+        "maxDuration": "Цей LIVE завершено, бо досягнуто максимальної тривалості."
+      },
+      "quality": {
+        "label": "Якість з'єднання: {{quality}}",
+        "excellent": "Відмінна",
+        "good": "Добра",
+        "poor": "Погана",
+        "reconnecting": "Повторне підключення",
+        "unknown": "Невідомо",
+        "loss": "Втрати"
       }
+    },
+    "replay": {
+      "title": "Запис LIVE",
+      "pageTitle": "{{title}} · Запис",
+      "watchReplay": "Дивитися запис",
+      "playbackFailed": "Не вдалося відтворити запис. Можливо, посилання застаріло.",
+      "recordingTitle": "Цей LIVE записується",
+      "processingTitle": "Запис обробляється",
+      "pendingBody": "Запис буде готовий за кілька хвилин. Сторінка оновиться автоматично.",
+      "failedTitle": "Не вдалося створити запис",
+      "deletedTitle": "Запис видалено",
+      "notFoundTitle": "Запис недоступний",
+      "notFoundBody": "Цей LIVE не має запису, або його ще не опубліковано.",
+      "draftNotice": "Цей запис — чернетка, яку бачите лише ви. Опублікуйте його в Studio, щоб поділитися.",
+      "publishInStudio": "Опублікувати в Studio",
+      "openVideo": "Відкрити відео"
     }
   },
   "messagesPage": {
