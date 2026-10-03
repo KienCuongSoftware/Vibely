@@ -42,6 +42,7 @@ Start with [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md).
 | Search | [search/README.md](search/README.md) |
 | Notification | [notification/README.md](notification/README.md) |
 | Chat | [chat/README.md](chat/README.md) |
+| LIVE (WebRTC + SRS) | [live/README.md](live/README.md) |
 | Moderation | [moderation/README.md](moderation/README.md) |
 | Analytics | [analytics/README.md](analytics/README.md) |
 | Infra | [infra/README.md](infra/README.md) |
