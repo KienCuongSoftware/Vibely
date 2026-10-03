@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Provo përsëri",
+      "connection": {
+        "connecting": "Po lidhet",
+        "connected": "I lidhur",
+        "disconnected": "I shkëputur",
+        "reconnecting": "Po rilidhet",
+        "failed": "Lidhja dështoi",
+        "ended": "Përfundoi"
+      },
       "host": {
         "requestingAccess": "Në pritje të qasjes në kamerë dhe mikrofon…",
         "previewUnavailable": "Pamja paraprake e kamerës nuk është e disponueshme",

@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Bandyti dar kartą",
+      "connection": {
+        "connecting": "Jungiamasi",
+        "connected": "Prisijungta",
+        "disconnected": "Atsijungta",
+        "reconnecting": "Jungiamasi iš naujo",
+        "failed": "Nepavyko prisijungti",
+        "ended": "Baigta"
+      },
       "host": {
         "requestingAccess": "Laukiama prieigos prie kameros ir mikrofono…",
         "previewUnavailable": "Kameros peržiūra nepasiekiama",

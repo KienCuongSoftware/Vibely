@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Újra",
+      "connection": {
+        "connecting": "Csatlakozás",
+        "connected": "Csatlakozva",
+        "disconnected": "Megszakadt",
+        "reconnecting": "Újracsatlakozás",
+        "failed": "A csatlakozás sikertelen",
+        "ended": "Véget ért"
+      },
       "host": {
         "requestingAccess": "Várakozás a kamera és a mikrofon hozzáférésére…",
         "previewUnavailable": "A kamera előnézete nem érhető el",

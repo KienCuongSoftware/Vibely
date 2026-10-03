@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Повторить",
+      "connection": {
+        "connecting": "Подключение",
+        "connected": "Подключено",
+        "disconnected": "Нет соединения",
+        "reconnecting": "Переподключение",
+        "failed": "Не удалось подключиться",
+        "ended": "Завершено"
+      },
       "host": {
         "requestingAccess": "Ожидание доступа к камере и микрофону…",
         "previewUnavailable": "Предпросмотр камеры недоступен",

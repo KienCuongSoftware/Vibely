@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Δοκίμασε ξανά",
+      "connection": {
+        "connecting": "Σύνδεση",
+        "connected": "Συνδέθηκε",
+        "disconnected": "Αποσυνδέθηκε",
+        "reconnecting": "Επανασύνδεση",
+        "failed": "Η σύνδεση απέτυχε",
+        "ended": "Έληξε"
+      },
       "host": {
         "requestingAccess": "Αναμονή για πρόσβαση σε κάμερα και μικρόφωνο…",
         "previewUnavailable": "Η προεπισκόπηση κάμερας δεν είναι διαθέσιμη",

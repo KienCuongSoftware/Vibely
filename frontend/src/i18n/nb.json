@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Prøv igjen",
+      "connection": {
+        "connecting": "Kobler til",
+        "connected": "Tilkoblet",
+        "disconnected": "Frakoblet",
+        "reconnecting": "Kobler til på nytt",
+        "failed": "Tilkoblingen mislyktes",
+        "ended": "Avsluttet"
+      },
       "host": {
         "requestingAccess": "Venter på tilgang til kamera og mikrofon…",
         "previewUnavailable": "Forhåndsvisning av kamera er ikke tilgjengelig",

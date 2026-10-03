@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "לנסות שוב",
+      "connection": {
+        "connecting": "מתחבר",
+        "connected": "מחובר",
+        "disconnected": "מנותק",
+        "reconnecting": "מתחבר מחדש",
+        "failed": "החיבור נכשל",
+        "ended": "הסתיים"
+      },
       "host": {
         "requestingAccess": "ממתין לגישה למצלמה ולמיקרופון…",
         "previewUnavailable": "תצוגה מקדימה של המצלמה אינה זמינה",

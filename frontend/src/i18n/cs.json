@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Zkusit znovu",
+      "connection": {
+        "connecting": "Připojování",
+        "connected": "Připojeno",
+        "disconnected": "Odpojeno",
+        "reconnecting": "Opětovné připojování",
+        "failed": "Připojení selhalo",
+        "ended": "Ukončeno"
+      },
       "host": {
         "requestingAccess": "Čekání na přístup ke kameře a mikrofonu…",
         "previewUnavailable": "Náhled kamery není k dispozici",

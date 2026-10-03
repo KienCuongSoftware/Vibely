@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Réessayer",
+      "connection": {
+        "connecting": "Connexion",
+        "connected": "Connecté",
+        "disconnected": "Déconnecté",
+        "reconnecting": "Reconnexion",
+        "failed": "Échec de la connexion",
+        "ended": "Terminé"
+      },
       "host": {
         "requestingAccess": "En attente de l'accès à la caméra et au micro…",
         "previewUnavailable": "L'aperçu de la caméra n'est pas disponible",

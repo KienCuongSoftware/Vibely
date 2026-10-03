@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Mēģināt vēlreiz",
+      "connection": {
+        "connecting": "Savieno",
+        "connected": "Savienots",
+        "disconnected": "Atvienots",
+        "reconnecting": "Atkārtoti savieno",
+        "failed": "Savienojums neizdevās",
+        "ended": "Beidzies"
+      },
       "host": {
         "requestingAccess": "Gaida piekļuvi kamerai un mikrofonam…",
         "previewUnavailable": "Kameras priekšskatījums nav pieejams",

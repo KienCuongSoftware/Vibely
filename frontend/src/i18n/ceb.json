@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Sulayi pag-usab",
+      "connection": {
+        "connecting": "Nagkonektar",
+        "connected": "Konektado",
+        "disconnected": "Naputol",
+        "reconnecting": "Nagkonektar pag-usab",
+        "failed": "Napakyas ang koneksyon",
+        "ended": "Nahuman"
+      },
       "host": {
         "requestingAccess": "Naghulat sa access sa camera ug mikropono…",
         "previewUnavailable": "Dili magamit ang preview sa camera",

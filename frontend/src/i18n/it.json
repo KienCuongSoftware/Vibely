@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Riprova",
+      "connection": {
+        "connecting": "Connessione in corso",
+        "connected": "Connesso",
+        "disconnected": "Disconnesso",
+        "reconnecting": "Riconnessione in corso",
+        "failed": "Connessione non riuscita",
+        "ended": "Terminato"
+      },
       "host": {
         "requestingAccess": "In attesa dell'accesso a fotocamera e microfono…",
         "previewUnavailable": "Anteprima della fotocamera non disponibile",

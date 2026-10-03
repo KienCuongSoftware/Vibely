@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Torna-ho a provar",
+      "connection": {
+        "connecting": "Connectant",
+        "connected": "Connectat",
+        "disconnected": "Desconnectat",
+        "reconnecting": "Reconnectant",
+        "failed": "Error de connexió",
+        "ended": "Finalitzat"
+      },
       "host": {
         "requestingAccess": "Esperant l'accés a la càmera i al micròfon…",
         "previewUnavailable": "La previsualització de la càmera no està disponible",

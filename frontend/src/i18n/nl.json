@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Opnieuw proberen",
+      "connection": {
+        "connecting": "Verbinden",
+        "connected": "Verbonden",
+        "disconnected": "Verbinding verbroken",
+        "reconnecting": "Opnieuw verbinden",
+        "failed": "Verbinding mislukt",
+        "ended": "Beëindigd"
+      },
       "host": {
         "requestingAccess": "Wachten op toegang tot camera en microfoon…",
         "previewUnavailable": "Cameravoorbeeld is niet beschikbaar",

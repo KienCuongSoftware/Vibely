@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Încearcă din nou",
+      "connection": {
+        "connecting": "Se conectează",
+        "connected": "Conectat",
+        "disconnected": "Deconectat",
+        "reconnecting": "Se reconectează",
+        "failed": "Conectarea a eșuat",
+        "ended": "Încheiat"
+      },
       "host": {
         "requestingAccess": "Se așteaptă accesul la cameră și microfon…",
         "previewUnavailable": "Previzualizarea camerei nu este disponibilă",

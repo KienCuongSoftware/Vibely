@@ -64,6 +64,24 @@ describe('WebRTC viewer playback', () => {
     controller.dispose()
   })
 
+  it('keeps an attached video element on the current stream and clears it on detach', async () => {
+    const controller = createWebRtcPlaybackController({ getPlaybackInfo: vi.fn(async () => playing), timing: TIMING })
+    const video = { srcObject: null }
+    controller.attach(video)
+    expect(controller.getConnectionState()).toBe('DISCONNECTED')
+
+    controller.start()
+    await flushMicrotasks(20)
+    expect(controller.getConnectionState()).toBe('CONNECTED')
+    expect(video.srcObject).toBe(controller.getState().stream)
+
+    controller.detach()
+    expect(video.srcObject).toBeNull()
+    controller.notifyEnded()
+    expect(controller.getConnectionState()).toBe('ENDED')
+    controller.dispose()
+  })
+
   it('does not connect at all for an ended LIVE', async () => {
     const controller = createWebRtcPlaybackController({
       getPlaybackInfo: vi.fn(async () => ({ ...notPublishing, status: 'ENDED' })),

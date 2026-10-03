@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Yritä uudelleen",
+      "connection": {
+        "connecting": "Yhdistetään",
+        "connected": "Yhdistetty",
+        "disconnected": "Yhteys katkesi",
+        "reconnecting": "Yhdistetään uudelleen",
+        "failed": "Yhteys epäonnistui",
+        "ended": "Päättynyt"
+      },
       "host": {
         "requestingAccess": "Odotetaan kameran ja mikrofonin käyttöoikeutta…",
         "previewUnavailable": "Kameran esikatselu ei ole käytettävissä",

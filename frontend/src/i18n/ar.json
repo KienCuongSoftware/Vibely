@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "حاول مرة أخرى",
+      "connection": {
+        "connecting": "جارٍ الاتصال",
+        "connected": "متصل",
+        "disconnected": "غير متصل",
+        "reconnecting": "جارٍ إعادة الاتصال",
+        "failed": "فشل الاتصال",
+        "ended": "انتهى"
+      },
       "host": {
         "requestingAccess": "في انتظار الوصول إلى الكاميرا والميكروفون…",
         "previewUnavailable": "معاينة الكاميرا غير متاحة",

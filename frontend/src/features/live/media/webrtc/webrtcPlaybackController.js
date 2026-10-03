@@ -1,4 +1,5 @@
 import { LIVE_MEDIA, LIVE_STATUS } from '@/features/live/constants/liveConstants.js'
+import { playbackConnectionState } from '@/features/live/media/connectionState.js'
 import { LIVE_MEDIA_ERROR, LiveMediaError, toBackendMediaError } from '@/features/live/media/mediaErrors.js'
 import { createReconnectBackoff } from '@/features/live/media/webrtc/reconnectBackoff.js'
 import { deleteSdpResource, exchangeSdp } from '@/features/live/media/webrtc/sdpSignaling.js'
@@ -12,7 +13,10 @@ import { closePeer, isWebRtcSupported, waitForConnected } from '@/features/live/
  * @property {MediaStream|null} stream
  * @property {string|null} errorCode          one of LIVE_MEDIA_ERROR when failed/unavailable
  * @property {boolean} hostReconnecting       host media dropped; the backend grace period is running
+ * @property {boolean} peerDisconnected       this viewer's peer dropped and may still recover
  * @property {number} reconnectAttempt
+ *
+ * `attach(video)` keeps the element's `srcObject` in sync with the remote stream until `detach()`.
  *
  * Starting playback is what counts this viewer (backend `on_play` hook), so a mounted page
  * that never connects is not counted. `waiting` re-checks every PLAYBACK_WAIT_POLL_MS (or
@@ -24,6 +28,7 @@ const INITIAL_STATE = Object.freeze({
   stream: null,
   errorCode: null,
   hostReconnecting: false,
+  peerDisconnected: false,
   reconnectAttempt: 0,
 })
 
@@ -53,10 +58,17 @@ export function createWebRtcPlaybackController({ getPlaybackInfo, timing = {} } 
   let unloadAttached = false
   /** Last known host publishing flag; stream signals only act on changes, so repeats cannot loop. */
   let lastPublishing = null
+  /** @type {HTMLMediaElement|null} */
+  let mediaElement = null
+
+  const syncMediaElement = () => {
+    if (mediaElement && mediaElement.srcObject !== state.stream) mediaElement.srcObject = state.stream ?? null
+  }
 
   const setState = (patch) => {
     if (disposed) return
     state = { ...state, ...patch }
+    syncMediaElement()
     listeners.forEach((listener) => listener(state))
   }
 
@@ -103,7 +115,7 @@ export function createWebRtcPlaybackController({ getPlaybackInfo, timing = {} } 
     timer = 0
     teardownPeer()
     detachUnload()
-    setState({ stream: null, hostReconnecting: false, reconnectAttempt: 0, ...patch })
+    setState({ stream: null, hostReconnecting: false, peerDisconnected: false, reconnectAttempt: 0, ...patch })
   }
 
   const scheduleReconnect = (code) => {
@@ -112,7 +124,13 @@ export function createWebRtcPlaybackController({ getPlaybackInfo, timing = {} } 
       halt({ status: 'failed', errorCode: code })
       return
     }
-    setState({ status: 'reconnecting', stream: null, errorCode: code, reconnectAttempt: backoff.attempts })
+    setState({
+      status: 'reconnecting',
+      stream: null,
+      errorCode: code,
+      peerDisconnected: false,
+      reconnectAttempt: backoff.attempts,
+    })
     schedule(delay)
   }
 
@@ -141,9 +159,11 @@ export function createWebRtcPlaybackController({ getPlaybackInfo, timing = {} } 
     if (peer.connectionState === 'connected') {
       clearTimeout(graceTimer)
       graceTimer = 0
+      setState({ peerDisconnected: false })
     } else if (peer.connectionState === 'failed' || peer.connectionState === 'closed') {
       reconnectNow()
     } else if (peer.connectionState === 'disconnected' && !graceTimer) {
+      setState({ peerDisconnected: true })
       graceTimer = setTimeout(() => {
         graceTimer = 0
         if (peer === pc && peer.connectionState !== 'connected') reconnectNow()
@@ -208,7 +228,14 @@ export function createWebRtcPlaybackController({ getPlaybackInfo, timing = {} } 
       if (id !== runId) return
 
       backoff.reset()
-      setState({ status: 'playing', stream: remote, errorCode: null, hostReconnecting: false, reconnectAttempt: 0 })
+      setState({
+        status: 'playing',
+        stream: remote,
+        errorCode: null,
+        hostReconnecting: false,
+        peerDisconnected: false,
+        reconnectAttempt: 0,
+      })
     } catch (error) {
       if (id !== runId || error?.name === 'AbortError') return
       handleFailure(error)
@@ -217,9 +244,24 @@ export function createWebRtcPlaybackController({ getPlaybackInfo, timing = {} } 
 
   const controller = {
     getState: () => state,
+    getConnectionState: () => playbackConnectionState(state),
     subscribe(listener) {
       listeners.add(listener)
       return () => listeners.delete(listener)
+    },
+
+    /** @param {HTMLMediaElement} element */
+    attach(element) {
+      if (disposed || !element) return
+      if (mediaElement && mediaElement !== element) mediaElement.srcObject = null
+      mediaElement = element
+      syncMediaElement()
+    },
+
+    detach() {
+      if (!mediaElement) return
+      mediaElement.srcObject = null
+      mediaElement = null
     },
 
     start() {
@@ -274,6 +316,7 @@ export function createWebRtcPlaybackController({ getPlaybackInfo, timing = {} } 
 
     dispose() {
       halt({ status: 'idle', errorCode: null })
+      controller.detach()
       disposed = true
       listeners.clear()
     },

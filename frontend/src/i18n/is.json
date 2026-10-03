@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Reyna aftur",
+      "connection": {
+        "connecting": "Tengist",
+        "connected": "Tengt",
+        "disconnected": "Aftengt",
+        "reconnecting": "Tengist aftur",
+        "failed": "Tenging mistókst",
+        "ended": "Lokið"
+      },
       "host": {
         "requestingAccess": "Bíður eftir aðgangi að myndavél og hljóðnema…",
         "previewUnavailable": "Forskoðun myndavélar er ekki tiltæk",

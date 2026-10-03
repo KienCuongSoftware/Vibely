@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Subukan ulit",
+      "connection": {
+        "connecting": "Kumokonekta",
+        "connected": "Nakakonekta",
+        "disconnected": "Nadiskonekta",
+        "reconnecting": "Muling kumokonekta",
+        "failed": "Nabigo ang koneksyon",
+        "ended": "Natapos na"
+      },
       "host": {
         "requestingAccess": "Hinihintay ang access sa camera at mikropono…",
         "previewUnavailable": "Hindi available ang preview ng camera",

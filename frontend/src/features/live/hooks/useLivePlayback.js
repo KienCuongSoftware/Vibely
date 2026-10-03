@@ -8,6 +8,7 @@ const IDLE_PLAYBACK_STATE = Object.freeze({
   stream: null,
   errorCode: null,
   hostReconnecting: false,
+  peerDisconnected: false,
   reconnectAttempt: 0,
 })
 const noopSubscribe = () => () => {}
@@ -53,5 +54,5 @@ export function useWebRtcPlayback({ liveId, ended = false, streamSignal = null }
   )
   const retry = useCallback(() => controller?.retry(), [controller])
 
-  return { state, retry }
+  return { state, retry, controller }
 }

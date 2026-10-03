@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Coba lagi",
+      "connection": {
+        "connecting": "Menghubungkan",
+        "connected": "Terhubung",
+        "disconnected": "Terputus",
+        "reconnecting": "Menghubungkan ulang",
+        "failed": "Koneksi gagal",
+        "ended": "Berakhir"
+      },
       "host": {
         "requestingAccess": "Menunggu akses kamera dan mikrofon…",
         "previewUnavailable": "Pratinjau kamera tidak tersedia",

@@ -4,6 +4,7 @@ import { IoArrowBack, IoHeart, IoTimeOutline } from 'react-icons/io5'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { LiveToggle } from '@/features/live/components/create/LiveFormControls.jsx'
+import { LiveConnectionStatus } from '@/features/live/components/host/LiveConnectionStatus.jsx'
 import { LiveDeviceSelects } from '@/features/live/components/host/LiveDeviceSelects.jsx'
 import { LiveHostControls } from '@/features/live/components/host/LiveHostControls.jsx'
 import { LiveHostMediaStatus } from '@/features/live/components/host/LiveHostMediaStatus.jsx'
@@ -21,6 +22,7 @@ import { useLiveMobileLayout } from '@/features/live/hooks/useLiveMobileLayout.j
 import { useLiveNavigation } from '@/features/live/hooks/useLiveNavigation.js'
 import { RESOURCE_STATUS } from '@/features/live/hooks/useLiveResource.js'
 import { useLiveRoom } from '@/features/live/hooks/useLiveRoom.js'
+import { hostConnectionState } from '@/features/live/media/connectionState.js'
 import { endReasonMessageKey } from '@/features/live/media/mediaErrorMessages.js'
 import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 import { formatLiveDuration } from '@/features/live/utils/formatLiveDuration.js'
@@ -123,6 +125,7 @@ function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit }
           {formatLiveDuration(session.elapsedMs)}
         </span>
       ) : null}
+      {isLive && media.kind === 'webrtc' ? <LiveConnectionStatus state={hostConnectionState(media.state)} /> : null}
     </div>
   )
 

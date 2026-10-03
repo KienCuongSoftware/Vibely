@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Опитай отново",
+      "connection": {
+        "connecting": "Свързване",
+        "connected": "Свързан",
+        "disconnected": "Няма връзка",
+        "reconnecting": "Повторно свързване",
+        "failed": "Неуспешна връзка",
+        "ended": "Приключи"
+      },
       "host": {
         "requestingAccess": "Изчакване на достъп до камерата и микрофона…",
         "previewUnavailable": "Визуализацията на камерата не е налична",

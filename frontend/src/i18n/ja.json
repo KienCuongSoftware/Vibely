@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "再試行",
+      "connection": {
+        "connecting": "接続中",
+        "connected": "接続済み",
+        "disconnected": "切断されました",
+        "reconnecting": "再接続中",
+        "failed": "接続に失敗しました",
+        "ended": "終了"
+      },
       "host": {
         "requestingAccess": "カメラとマイクへのアクセスを待っています…",
         "previewUnavailable": "カメラのプレビューを表示できません",

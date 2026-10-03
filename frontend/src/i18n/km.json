@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "ព្យាយាមម្តងទៀត",
+      "connection": {
+        "connecting": "កំពុងភ្ជាប់",
+        "connected": "បានភ្ជាប់",
+        "disconnected": "បានផ្ដាច់",
+        "reconnecting": "កំពុងភ្ជាប់ឡើងវិញ",
+        "failed": "ការភ្ជាប់បានបរាជ័យ",
+        "ended": "បានបញ្ចប់"
+      },
       "host": {
         "requestingAccess": "កំពុងរង់ចាំការអនុញ្ញាតកាមេរ៉ា និងមីក្រូហ្វូន…",
         "previewUnavailable": "មិនអាចមើលរូបភាពកាមេរ៉ាជាមុនបានទេ",

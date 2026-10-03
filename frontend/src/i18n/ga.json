@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Bain triail eile as",
+      "connection": {
+        "connecting": "Ag nascadh",
+        "connected": "Nasctha",
+        "disconnected": "Dínasctha",
+        "reconnecting": "Ag athnascadh",
+        "failed": "Theip ar an nasc",
+        "ended": "Críochnaithe"
+      },
       "host": {
         "requestingAccess": "Ag fanacht ar rochtain ar an gceamara agus ar an micreafón…",
         "previewUnavailable": "Níl réamhamharc an cheamara ar fáil",

@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Poskusi znova",
+      "connection": {
+        "connecting": "Povezovanje",
+        "connected": "Povezano",
+        "disconnected": "Prekinjeno",
+        "reconnecting": "Vnovično povezovanje",
+        "failed": "Povezava ni uspela",
+        "ended": "Končano"
+      },
       "host": {
         "requestingAccess": "Čakanje na dostop do kamere in mikrofona…",
         "previewUnavailable": "Predogled kamere ni na voljo",

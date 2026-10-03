@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Proovi uuesti",
+      "connection": {
+        "connecting": "Ühendamine",
+        "connected": "Ühendatud",
+        "disconnected": "Ühendus katkes",
+        "reconnecting": "Taasühendamine",
+        "failed": "Ühendus ebaõnnestus",
+        "ended": "Lõppenud"
+      },
       "host": {
         "requestingAccess": "Ootan juurdepääsu kaamerale ja mikrofonile…",
         "previewUnavailable": "Kaamera eelvaade pole saadaval",

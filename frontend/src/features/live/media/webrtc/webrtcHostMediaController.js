@@ -1,4 +1,5 @@
 import { LIVE_MEDIA } from '@/features/live/constants/liveConstants.js'
+import { hostConnectionState } from '@/features/live/media/connectionState.js'
 import {
   captureErrorCode,
   LIVE_MEDIA_ERROR,
@@ -38,6 +39,7 @@ const INITIAL_STATE = Object.freeze({
   cameraEnabled: true,
   previewStream: null,
   error: null,
+  peerDisconnected: false,
   reconnectAttempt: 0,
   maxReconnectAttempts: LIVE_MEDIA.RECONNECT_MAX_ATTEMPTS,
   devices: Object.freeze({ audioinput: [], videoinput: [] }),
@@ -263,9 +265,11 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
     if (peer.connectionState === 'connected') {
       clearTimeout(graceTimer)
       graceTimer = 0
+      setState({ peerDisconnected: false })
     } else if (peer.connectionState === 'failed' || peer.connectionState === 'closed') {
       reconnectNow()
     } else if (peer.connectionState === 'disconnected' && !graceTimer) {
+      setState({ peerDisconnected: true })
       graceTimer = setTimeout(() => {
         graceTimer = 0
         if (peer === pc && peer.connectionState !== 'connected') reconnectNow()
@@ -279,7 +283,11 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
     teardownPeer()
     abort = new AbortController()
     const { signal } = abort
-    setState({ status: backoff.attempts ? 'reconnecting' : 'connecting', reconnectAttempt: backoff.attempts })
+    setState({
+      status: backoff.attempts ? 'reconnecting' : 'connecting',
+      peerDisconnected: false,
+      reconnectAttempt: backoff.attempts,
+    })
 
     try {
       await waitUntilOnline(signal)
@@ -346,12 +354,14 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
     retryTimer = 0
     teardownPeer()
     detachUnload()
+    setState({ peerDisconnected: false })
   }
 
   const controller = {
     kind: 'webrtc',
     requiresCapture: true,
     getState: () => state,
+    getConnectionState: () => hostConnectionState(state),
     subscribe(listener) {
       listeners.add(listener)
       return () => listeners.delete(listener)

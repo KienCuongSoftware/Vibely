@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Qayta urinish",
+      "connection": {
+        "connecting": "Ulanmoqda",
+        "connected": "Ulandi",
+        "disconnected": "Aloqa uzildi",
+        "reconnecting": "Qayta ulanmoqda",
+        "failed": "Ulanib bo‘lmadi",
+        "ended": "Tugadi"
+      },
       "host": {
         "requestingAccess": "Kamera va mikrofonga ruxsat kutilmoqda…",
         "previewUnavailable": "Kamera oldindan ko‘rinishi mavjud emas",

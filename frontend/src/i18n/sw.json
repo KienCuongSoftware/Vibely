@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Jaribu tena",
+      "connection": {
+        "connecting": "Inaunganisha",
+        "connected": "Imeunganishwa",
+        "disconnected": "Imekatika",
+        "reconnecting": "Inaunganisha upya",
+        "failed": "Muunganisho umeshindwa",
+        "ended": "Imeisha"
+      },
       "host": {
         "requestingAccess": "Inasubiri ruhusa ya kamera na maikrofoni…",
         "previewUnavailable": "Onyesho la awali la kamera halipatikani",

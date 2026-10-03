@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Försök igen",
+      "connection": {
+        "connecting": "Ansluter",
+        "connected": "Ansluten",
+        "disconnected": "Frånkopplad",
+        "reconnecting": "Återansluter",
+        "failed": "Anslutningen misslyckades",
+        "ended": "Avslutad"
+      },
       "host": {
         "requestingAccess": "Väntar på åtkomst till kamera och mikrofon…",
         "previewUnavailable": "Kameraförhandsvisningen är inte tillgänglig",

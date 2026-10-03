@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "আবার চেষ্টা করুন",
+      "connection": {
+        "connecting": "সংযোগ হচ্ছে",
+        "connected": "সংযুক্ত",
+        "disconnected": "সংযোগ বিচ্ছিন্ন",
+        "reconnecting": "পুনরায় সংযোগ হচ্ছে",
+        "failed": "সংযোগ ব্যর্থ",
+        "ended": "শেষ হয়েছে"
+      },
       "host": {
         "requestingAccess": "ক্যামেরা ও মাইক্রোফোনের অনুমতির অপেক্ষায়…",
         "previewUnavailable": "ক্যামেরা প্রিভিউ উপলভ্য নয়",

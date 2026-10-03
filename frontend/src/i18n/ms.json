@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Cuba lagi",
+      "connection": {
+        "connecting": "Menyambung",
+        "connected": "Disambungkan",
+        "disconnected": "Terputus",
+        "reconnecting": "Menyambung semula",
+        "failed": "Sambungan gagal",
+        "ended": "Tamat"
+      },
       "host": {
         "requestingAccess": "Menunggu akses kamera dan mikrofon…",
         "previewUnavailable": "Pratonton kamera tidak tersedia",

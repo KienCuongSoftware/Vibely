@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Prøv igen",
+      "connection": {
+        "connecting": "Opretter forbindelse",
+        "connected": "Forbundet",
+        "disconnected": "Afbrudt",
+        "reconnecting": "Genopretter forbindelse",
+        "failed": "Forbindelsen mislykkedes",
+        "ended": "Afsluttet"
+      },
       "host": {
         "requestingAccess": "Venter på adgang til kamera og mikrofon…",
         "previewUnavailable": "Kameravisning er ikke tilgængelig",

@@ -29,7 +29,7 @@ function Overlay({ children }) {
  */
 export function WebRtcLivePlayer({ live, muted = true, ended = false, streamSignal = null, onEnded = null }) {
   const { t } = useTranslation()
-  const { state, retry } = useWebRtcPlayback({ liveId: live?.id, ended, streamSignal })
+  const { state, retry, controller } = useWebRtcPlayback({ liveId: live?.id, ended, streamSignal })
   const videoRef = useRef(null)
   const [blocked, setBlocked] = useState(null)
   const backdrop = live?.coverUrl ?? live?.portraitCoverUrl ?? live?.host?.avatarUrl ?? null
@@ -43,12 +43,10 @@ export function WebRtcLivePlayer({ live, muted = true, ended = false, streamSign
 
   useEffect(() => {
     const video = videoRef.current
-    if (!video) return undefined
-    video.srcObject = state.stream ?? null
-    return () => {
-      video.srcObject = null
-    }
-  }, [state.stream])
+    if (!video || !controller) return undefined
+    controller.attach(video)
+    return () => controller.detach()
+  }, [controller])
 
   useEffect(() => {
     const video = videoRef.current

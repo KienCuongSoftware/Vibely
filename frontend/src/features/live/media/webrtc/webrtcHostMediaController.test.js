@@ -128,6 +128,7 @@ describe('WebRTC host publisher', () => {
 
     first.setConnectionState('failed')
     expect(controller.getState()).toMatchObject({ status: 'reconnecting', reconnectAttempt: 1 })
+    expect(controller.getConnectionState()).toBe('RECONNECTING')
     expect(first.closed).toBe(true)
 
     await vi.advanceTimersByTimeAsync(TIMING.RECONNECT_BASE_MS)
@@ -145,14 +146,17 @@ describe('WebRTC host publisher', () => {
     await controller.publish()
     await flushMicrotasks()
     const peer = FakePeerConnection.last
+    expect(controller.getConnectionState()).toBe('CONNECTED')
 
     peer.setConnectionState('disconnected')
+    expect(controller.getConnectionState()).toBe('DISCONNECTED')
     await vi.advanceTimersByTimeAsync(TIMING.DISCONNECTED_GRACE_MS / 2)
     peer.setConnectionState('connected')
     await vi.advanceTimersByTimeAsync(TIMING.DISCONNECTED_GRACE_MS)
 
     expect(getPublishInfo).toHaveBeenCalledTimes(1)
     expect(controller.getState().status).toBe('publishing')
+    expect(controller.getConnectionState()).toBe('CONNECTED')
     controller.dispose()
   })
 

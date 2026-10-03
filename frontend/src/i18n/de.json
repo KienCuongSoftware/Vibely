@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Erneut versuchen",
+      "connection": {
+        "connecting": "Verbindung wird hergestellt",
+        "connected": "Verbunden",
+        "disconnected": "Getrennt",
+        "reconnecting": "Verbindung wird wiederhergestellt",
+        "failed": "Verbindung fehlgeschlagen",
+        "ended": "Beendet"
+      },
       "host": {
         "requestingAccess": "Warte auf Zugriff auf Kamera und Mikrofon…",
         "previewUnavailable": "Kameravorschau nicht verfügbar",

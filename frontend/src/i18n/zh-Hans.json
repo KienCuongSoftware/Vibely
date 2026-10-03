@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "重试",
+      "connection": {
+        "connecting": "正在连接",
+        "connected": "已连接",
+        "disconnected": "连接已断开",
+        "reconnecting": "正在重新连接",
+        "failed": "连接失败",
+        "ended": "已结束"
+      },
       "host": {
         "requestingAccess": "正在等待摄像头和麦克风权限…",
         "previewUnavailable": "摄像头预览不可用",

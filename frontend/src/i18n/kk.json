@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Қайталау",
+      "connection": {
+        "connecting": "Қосылуда",
+        "connected": "Қосылды",
+        "disconnected": "Байланыс үзілді",
+        "reconnecting": "Қайта қосылуда",
+        "failed": "Қосылу сәтсіз аяқталды",
+        "ended": "Аяқталды"
+      },
       "host": {
         "requestingAccess": "Камера мен микрофонға рұқсат күтілуде…",
         "previewUnavailable": "Камераны алдын ала қарау қолжетімсіз",

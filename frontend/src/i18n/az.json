@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Yenidən cəhd et",
+      "connection": {
+        "connecting": "Qoşulur",
+        "connected": "Qoşuldu",
+        "disconnected": "Bağlantı kəsildi",
+        "reconnecting": "Yenidən qoşulur",
+        "failed": "Bağlantı alınmadı",
+        "ended": "Bitdi"
+      },
       "host": {
         "requestingAccess": "Kamera və mikrofona giriş gözlənilir…",
         "previewUnavailable": "Kamera önizləməsi əlçatan deyil",

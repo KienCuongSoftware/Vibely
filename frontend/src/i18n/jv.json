@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Coba maneh",
+      "connection": {
+        "connecting": "Nyambungake",
+        "connected": "Kesambung",
+        "disconnected": "Pedhot",
+        "reconnecting": "Nyambungake maneh",
+        "failed": "Sambungan gagal",
+        "ended": "Rampung"
+      },
       "host": {
         "requestingAccess": "Ngenteni akses kamera lan mikrofon…",
         "previewUnavailable": "Pratinjau kamera ora kasedhiya",

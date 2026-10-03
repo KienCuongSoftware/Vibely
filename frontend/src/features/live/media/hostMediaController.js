@@ -1,4 +1,5 @@
 import { LIVE_PLAYBACK_TYPE } from '@/features/live/constants/liveConstants.js'
+import { hostConnectionState } from '@/features/live/media/connectionState.js'
 import { createWebRtcHostMediaController } from '@/features/live/media/webrtc/webrtcHostMediaController.js'
 
 /**
@@ -14,6 +15,7 @@ import { createWebRtcHostMediaController } from '@/features/live/media/webrtc/we
  * @property {boolean} cameraEnabled
  * @property {MediaStream|null} previewStream   null while no real capture exists
  * @property {HostMediaError|null} [error]
+ * @property {boolean} [peerDisconnected]      the peer dropped while publishing and may still recover
  * @property {number} [reconnectAttempt]
  * @property {number} [maxReconnectAttempts]
  * @property {{ audioinput: Array<{deviceId: string, label: string}>, videoinput: Array<{deviceId: string, label: string}> }} [devices]
@@ -23,6 +25,7 @@ import { createWebRtcHostMediaController } from '@/features/live/media/webrtc/we
  * @property {'mock'|'webrtc'} kind
  * @property {boolean} requiresCapture          true when going LIVE needs camera/mic access first
  * @property {() => HostMediaState} getState
+ * @property {() => string} getConnectionState  one of LIVE_CONNECTION_STATE
  * @property {(listener: (state: HostMediaState) => void) => () => void} subscribe
  * @property {() => Promise<void>} prepare        acquire devices / show preview
  * @property {() => Promise<void>} publish        publish to the media server (credential fetched per attempt)
@@ -52,6 +55,7 @@ export function createMockHostMediaController() {
     kind: 'mock',
     requiresCapture: false,
     getState: () => state,
+    getConnectionState: () => hostConnectionState(state),
     subscribe(listener) {
       listeners.add(listener)
       return () => listeners.delete(listener)

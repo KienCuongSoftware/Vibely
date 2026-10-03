@@ -437,6 +437,14 @@
     },
     "media": {
       "retry": "Thử lại",
+      "connection": {
+        "connecting": "Đang kết nối",
+        "connected": "Đã kết nối",
+        "disconnected": "Mất kết nối",
+        "reconnecting": "Đang kết nối lại",
+        "failed": "Kết nối thất bại",
+        "ended": "Đã kết thúc"
+      },
       "host": {
         "requestingAccess": "Đang chờ quyền truy cập camera và micro…",
         "previewUnavailable": "Không thể xem trước camera",

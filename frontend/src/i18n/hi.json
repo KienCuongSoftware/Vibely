@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "फिर से कोशिश करें",
+      "connection": {
+        "connecting": "कनेक्ट हो रहा है",
+        "connected": "कनेक्ट हो गया",
+        "disconnected": "डिस्कनेक्ट हो गया",
+        "reconnecting": "फिर से कनेक्ट हो रहा है",
+        "failed": "कनेक्शन विफल",
+        "ended": "समाप्त"
+      },
       "host": {
         "requestingAccess": "कैमरा और माइक्रोफ़ोन की अनुमति का इंतज़ार…",
         "previewUnavailable": "कैमरा प्रीव्यू उपलब्ध नहीं है",

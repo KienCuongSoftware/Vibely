@@ -698,6 +698,14 @@
     },
     "media": {
       "retry": "Tentar novamente",
+      "connection": {
+        "connecting": "A ligar",
+        "connected": "Ligado",
+        "disconnected": "Desligado",
+        "reconnecting": "A restabelecer ligação",
+        "failed": "Falha na ligação",
+        "ended": "Terminado"
+      },
       "host": {
         "requestingAccess": "A aguardar acesso à câmara e ao microfone…",
         "previewUnavailable": "A pré-visualização da câmara não está disponível",
