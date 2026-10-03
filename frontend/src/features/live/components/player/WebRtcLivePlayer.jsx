@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IoPlay, IoVolumeHighOutline } from 'react-icons/io5'
+import { LiveConnectionQuality } from '@/features/live/components/LiveConnectionQuality.jsx'
 import { LiveSpinner } from '@/features/live/components/LiveStateView.jsx'
+import { useConnectionQuality } from '@/features/live/hooks/useConnectionQuality.js'
 import { useWebRtcPlayback } from '@/features/live/hooks/useLivePlayback.js'
 import { endReasonMessageKey, mediaErrorMessageKey } from '@/features/live/media/mediaErrorMessages.js'
 
@@ -21,19 +23,33 @@ function Overlay({ children }) {
 }
 
 /**
- * WebRTC (WHEP) LIVE player. Same props as every LivePlayer implementation, plus the
- * optional `streamSignal` from the room channel.
+ * WebRTC (WHEP) LIVE player with the controller's HLS fallback. Same props as every LivePlayer
+ * implementation, plus the optional `streamSignal` from the room channel.
  *
  * Autoplay: the stream starts muted (always allowed); unmuting comes from a user gesture.
  * If the browser still blocks playback, a tap-to-play / tap-to-unmute button is shown.
  */
-export function WebRtcLivePlayer({ live, muted = true, ended = false, streamSignal = null, onEnded = null }) {
+export function WebRtcLivePlayer({
+  live,
+  muted = true,
+  ended = false,
+  streamSignal = null,
+  onEnded = null,
+  showQuality = false,
+}) {
   const { t } = useTranslation()
   const { state, retry, controller } = useWebRtcPlayback({ liveId: live?.id, ended, streamSignal })
   const videoRef = useRef(null)
   const [blocked, setBlocked] = useState(null)
   const backdrop = live?.coverUrl ?? live?.portraitCoverUrl ?? live?.host?.avatarUrl ?? null
-  const playing = state.status === 'playing' && Boolean(state.stream)
+  const overHls = state.transport === 'hls' && Boolean(state.hlsUrl)
+  const playing = state.status === 'playing' && (Boolean(state.stream) || overHls)
+  const quality = useConnectionQuality({
+    controller,
+    direction: 'inbound',
+    active: showQuality && playing && !overHls,
+    reconnecting: state.status === 'reconnecting',
+  })
   const onEndedRef = useRef(onEnded)
   onEndedRef.current = onEnded
 
@@ -50,7 +66,7 @@ export function WebRtcLivePlayer({ live, muted = true, ended = false, streamSign
 
   useEffect(() => {
     const video = videoRef.current
-    if (!video || !state.stream) return
+    if (!video || (!state.stream && !state.hlsUrl)) return
     video.muted = muted
     const attempt = video.play?.()
     if (!attempt || typeof attempt.then !== 'function') return
@@ -67,7 +83,7 @@ export function WebRtcLivePlayer({ live, muted = true, ended = false, streamSign
           setBlocked('play')
         }
       })
-  }, [muted, state.stream])
+  }, [muted, state.stream, state.hlsUrl])
 
   const resumeFromGesture = () => {
     const video = videoRef.current
@@ -113,10 +129,13 @@ export function WebRtcLivePlayer({ live, muted = true, ended = false, streamSign
       )
     }
     if (PROGRESS_KEYS[state.status]) {
+      const interrupted = state.status === 'waiting' && state.hostReconnecting
       return (
         <Overlay>
           <LiveSpinner className="h-6 w-6" />
-          <p className="max-w-xs text-[13px] text-zinc-200" role="status" aria-live="polite">{t(PROGRESS_KEYS[state.status])}</p>
+          <p className="max-w-xs text-[13px] text-zinc-200" role="status" aria-live="polite">
+            {t(interrupted ? 'livePage.media.viewer.interrupted' : PROGRESS_KEYS[state.status])}
+          </p>
         </Overlay>
       )
     }
@@ -156,8 +175,19 @@ export function WebRtcLivePlayer({ live, muted = true, ended = false, streamSign
       />
       {playing && state.hostReconnecting ? (
         <p className="absolute inset-x-3 top-14 mx-auto w-fit rounded-full bg-black/70 px-3 py-1 text-[12px] text-zinc-200" role="status">
-          {t('livePage.media.viewer.hostReconnecting')}
+          {t('livePage.media.viewer.interrupted')}
         </p>
+      ) : null}
+      {showQuality && playing && !state.hostReconnecting ? (
+        <div className="absolute right-3 top-16 flex items-center gap-1.5 rounded-full bg-black/55 px-2 py-1 text-white">
+          {overHls ? (
+            <span className="text-[11px] font-semibold text-zinc-200" title={t('livePage.media.viewer.hlsModeHint')}>
+              {t('livePage.media.viewer.hlsMode')}
+            </span>
+          ) : (
+            <LiveConnectionQuality sample={quality} compact />
+          )}
+        </div>
       ) : null}
       {overlay}
     </div>

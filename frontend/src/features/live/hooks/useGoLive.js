@@ -7,9 +7,10 @@ import { liveService } from '@/features/live/services/liveService.js'
  * One-tap Go LIVE from the camera preview: camera/mic must be granted, then the LIVE is
  * created (title optional, category classified by the backend, the host's avatar is the
  * cover) and started. If starting fails, the next tap retries the same LIVE instead of
- * creating another one.
+ * creating another one. `recordingEnabled` asks for a replay recording (only offered when
+ * the deployment supports it; the backend ignores it otherwise).
  */
-export function useGoLive({ token, media, defaultTitle }) {
+export function useGoLive({ token, media, defaultTitle, recordingEnabled = false }) {
   const [title, setTitle] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
@@ -29,7 +30,10 @@ export function useGoLive({ token, media, defaultTitle }) {
       let created = createdRef.current
       if (!created) {
         const finalTitle = title.trim().slice(0, LIVE_LIMITS.TITLE_MAX) || defaultTitle
-        created = await liveService.createLive({ title: finalTitle }, token)
+        created = await liveService.createLive(
+          recordingEnabled ? { title: finalTitle, settings: { recordingEnabled: true } } : { title: finalTitle },
+          token,
+        )
         createdRef.current = created
       }
       rememberHostMediaPreferences(created.id, media.getState())
@@ -41,7 +45,7 @@ export function useGoLive({ token, media, defaultTitle }) {
       busyRef.current = false
       setBusy(false)
     }
-  }, [defaultTitle, media, title, token])
+  }, [defaultTitle, media, recordingEnabled, title, token])
 
   return { title, setTitle, goLive, busy, error }
 }

@@ -16,6 +16,7 @@ export const LIVE_MEDIA_ERROR = Object.freeze({
   NOT_FOUND: 'not-found',
   FORBIDDEN: 'forbidden',
   PLAYBACK_FAILED: 'playback-failed',
+  SCREEN_SHARE_FAILED: 'screen-share-failed',
 })
 
 /** Codes that a new attempt cannot fix; the controller stops instead of retrying. */

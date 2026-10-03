@@ -212,4 +212,38 @@ export const liveMockService = {
     if (!gift) throw notFound()
     return { gift: { ...gift } }
   },
+
+  /** No media server in mock mode: no recording, no HLS. */
+  async getCapabilities() {
+    return { media: false, recording: false, hlsFallback: false, maxDurationMinutes: 0, maxReplaySeconds: 0 }
+  },
+
+  async getReplay(liveId) {
+    await delay()
+    requireLive(liveId)
+    const error = notFound()
+    error.code = 'REPLAY_NOT_FOUND'
+    throw error
+  },
+
+  async getAnalytics(liveId) {
+    await delay()
+    const live = requireLive(liveId)
+    const durationSeconds = live.startedAt && live.endedAt
+      ? Math.max(0, Math.round((Date.parse(live.endedAt) - Date.parse(live.startedAt)) / 1000))
+      : 0
+    return {
+      liveId: live.id,
+      durationSeconds,
+      uniqueViewers: 0,
+      totalWatchSeconds: 0,
+      averageWatchSeconds: 0,
+      averageViewers: 0,
+      peakViewers: live.viewerCount,
+      likeCount: live.likeCount,
+      commentCount: 0,
+      reconnectCount: 0,
+      endReason: null,
+    }
+  },
 }

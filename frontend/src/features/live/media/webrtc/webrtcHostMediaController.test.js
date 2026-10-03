@@ -4,7 +4,9 @@ import { createWebRtcHostMediaController } from '@/features/live/media/webrtc/we
 import {
   createFakeMediaDevices,
   createFakeSignalingFetch,
+  FakeMediaStream,
   FakePeerConnection,
+  FakeTrack,
   flushMicrotasks,
   installMediaGlobals,
 } from '@/features/live/media/webrtc/webrtcTestDoubles.js'
@@ -279,6 +281,141 @@ describe('WebRTC host publisher', () => {
     expect(mediaDevices.getUserMedia).toHaveBeenCalledTimes(2)
     expect(mediaDevices.getUserMedia.mock.calls[1][0].video.deviceId).toBeUndefined()
     expect(controller.getState().status).toBe('ready')
+    controller.dispose()
+  })
+
+  describe('screen share', () => {
+    const withDisplayMedia = () => {
+      const mediaDevices = createFakeMediaDevices()
+      const screens = []
+      mediaDevices.getDisplayMedia = vi.fn(async () => {
+        const track = new FakeTrack('video', 'screen')
+        screens.push(track)
+        return new FakeMediaStream([track, new FakeTrack('audio', 'tab-audio')])
+      })
+      return { mediaDevices, screens }
+    }
+
+    it('replaces the camera with the screen without renegotiating, then switches back', async () => {
+      const { mediaDevices, screens } = withDisplayMedia()
+      const { controller } = setup({ mediaDevices })
+      await controller.prepare()
+      expect(controller.getState()).toMatchObject({ screenShareSupported: true, videoSource: 'camera' })
+      await controller.publish()
+      await flushMicrotasks()
+      const camera = controller.getState().previewStream.getVideoTracks()[0]
+      const videoSender = FakePeerConnection.last.transceivers[1].sender
+
+      await controller.startScreenShare()
+
+      const [screen] = screens
+      expect(videoSender.replaceTrack).toHaveBeenLastCalledWith(screen)
+      expect(camera.stop).toHaveBeenCalled()
+      expect(controller.getState().videoSource).toBe('screen')
+      expect(controller.getState().previewStream.getVideoTracks()).toEqual([screen])
+      expect(controller.getState().previewStream.getAudioTracks()).toHaveLength(1)
+      expect(FakePeerConnection.instances).toHaveLength(1)
+
+      await controller.stopScreenShare()
+
+      expect(screen.stop).toHaveBeenCalled()
+      const restored = controller.getState().previewStream.getVideoTracks()[0]
+      expect(restored).not.toBe(screen)
+      expect(videoSender.replaceTrack).toHaveBeenLastCalledWith(restored)
+      expect(controller.getState()).toMatchObject({ videoSource: 'camera', error: null })
+      expect(FakePeerConnection.instances).toHaveLength(1)
+      controller.dispose()
+    })
+
+    it('goes back to the camera when the browser stops the capture', async () => {
+      const { mediaDevices, screens } = withDisplayMedia()
+      const { controller } = setup({ mediaDevices })
+      await controller.prepare()
+      await controller.startScreenShare()
+      expect(controller.getState().videoSource).toBe('screen')
+
+      screens[0].emit('ended')
+      await flushMicrotasks(20)
+
+      expect(controller.getState()).toMatchObject({ videoSource: 'camera', error: null })
+      controller.dispose()
+    })
+
+    it('treats a cancelled picker as no-op and reports other failures', async () => {
+      const { mediaDevices } = withDisplayMedia()
+      const { controller } = setup({ mediaDevices })
+      await controller.prepare()
+
+      mediaDevices.getDisplayMedia.mockRejectedValueOnce(Object.assign(new Error('cancel'), { name: 'NotAllowedError' }))
+      await controller.startScreenShare()
+      expect(controller.getState()).toMatchObject({ videoSource: 'camera', error: null })
+
+      mediaDevices.getDisplayMedia.mockRejectedValueOnce(Object.assign(new Error('boom'), { name: 'NotReadableError' }))
+      await controller.startScreenShare()
+      expect(controller.getState()).toMatchObject({
+        videoSource: 'camera',
+        error: { code: LIVE_MEDIA_ERROR.SCREEN_SHARE_FAILED, stage: 'device' },
+      })
+      controller.dispose()
+    })
+
+    it('stops sending video when the camera cannot be restored', async () => {
+      const { mediaDevices, screens } = withDisplayMedia()
+      const { controller } = setup({ mediaDevices })
+      await controller.prepare()
+      await controller.publish()
+      await flushMicrotasks()
+      const videoSender = FakePeerConnection.last.transceivers[1].sender
+      await controller.startScreenShare()
+
+      mediaDevices.getUserMedia.mockRejectedValueOnce(Object.assign(new Error('busy'), { name: 'NotReadableError' }))
+      await controller.stopScreenShare()
+
+      expect(screens[0].stop).toHaveBeenCalled()
+      expect(videoSender.replaceTrack).toHaveBeenLastCalledWith(null)
+      expect(controller.getState()).toMatchObject({ videoSource: 'camera', cameraEnabled: false, error: { stage: 'device' } })
+      expect(controller.getState().previewStream.getVideoTracks()).toHaveLength(0)
+      expect(controller.getState().status).toBe('publishing')
+      controller.dispose()
+    })
+
+    it('remembers a camera picked while sharing and release stops the screen', async () => {
+      const { mediaDevices, screens } = withDisplayMedia()
+      const { controller } = setup({ mediaDevices })
+      await controller.prepare()
+      await controller.startScreenShare()
+      const calls = mediaDevices.getUserMedia.mock.calls.length
+
+      await controller.switchDevice('videoinput', 'video-usb')
+      expect(mediaDevices.getUserMedia).toHaveBeenCalledTimes(calls)
+      expect(controller.getState().selectedDeviceIds.videoinput).toBe('video-usb')
+
+      controller.release()
+      expect(screens[0].stop).toHaveBeenCalled()
+      expect(controller.getState()).toMatchObject({ status: 'idle', videoSource: 'camera' })
+      controller.dispose()
+    })
+
+    it('is unsupported without getDisplayMedia', async () => {
+      const { controller, mediaDevices } = setup()
+      await controller.prepare()
+      expect(controller.getState().screenShareSupported).toBe(false)
+      await controller.startScreenShare()
+      expect(mediaDevices.getDisplayMedia).toBeUndefined()
+      expect(controller.getState().videoSource).toBe('camera')
+      controller.dispose()
+    })
+  })
+
+  it('exposes peer stats only while a peer exists', async () => {
+    const { controller } = setup()
+    await expect(controller.getStats()).resolves.toBeNull()
+    await controller.prepare()
+    await controller.publish()
+    await flushMicrotasks()
+    const report = new Map()
+    FakePeerConnection.last.getStats = vi.fn(async () => report)
+    await expect(controller.getStats()).resolves.toBe(report)
     controller.dispose()
   })
 

@@ -49,6 +49,7 @@ const LivePage = lazyNamed(() => import('@/features/live/pages/LivePage.jsx'), '
 const LiveDetailPage = lazyNamed(() => import('@/features/live/pages/LiveDetailPage.jsx'), 'LiveDetailPage')
 const CreateLivePage = lazyNamed(() => import('@/features/live/pages/CreateLivePage.jsx'), 'CreateLivePage')
 const LiveHostPage = lazyNamed(() => import('@/features/live/pages/LiveHostPage.jsx'), 'LiveHostPage')
+const ReplayPage = lazyNamed(() => import('@/features/live/pages/ReplayPage.jsx'), 'ReplayPage')
 const SupportPage = lazyNamed(() => import('@/features/support/pages/SupportPage.jsx'), 'SupportPage')
 const PromotePage = lazyNamed(() => import('@/features/promote/pages/PromotePage.jsx'), 'PromotePage')
 const NotFoundPage = lazyNamed(() => import('@/features/support/pages/NotFoundPage.jsx'), 'NotFoundPage')
@@ -102,6 +103,7 @@ export function GuestRoutes() {
       <Route path="/live/create" element={<RedirectToHomeLogin />} />
       <Route path="/live/:liveId" element={<RedirectToHomeLogin />} />
       <Route path="/live/:liveId/host" element={<RedirectToHomeLogin />} />
+      <Route path="/replay/:liveId" element={<RedirectToHomeLogin />} />
       <Route path="/support" element={<SupportPage />} />
       <Route path="/promote" element={<RedirectToHomeLogin />} />
       <Route path="/explore/view/:publicId" element={<ExploreViewerPage />} />
@@ -242,6 +244,10 @@ export function AuthenticatedRoutes({ user, isAdmin }) {
       <Route
         path="/live/:liveId/host"
         element={<UserOnlyRoute user={user}><LiveHostPage /></UserOnlyRoute>}
+      />
+      <Route
+        path="/replay/:liveId"
+        element={<UserOnlyRoute user={user}><ReplayPage /></UserOnlyRoute>}
       />
       <Route path="/support" element={<SupportPage />} />
       <Route

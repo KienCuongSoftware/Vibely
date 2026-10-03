@@ -28,6 +28,9 @@ import {
  *   peer connection stays up and no renegotiation is needed.
  * - Peer `failed`, or `disconnected` for longer than DISCONNECTED_GRACE_MS, reconnects with
  *   bounded exponential backoff; the old peer and its SRS session are always torn down first.
+ * - Screen share is camera OR screen: the screen track replaces the camera track (replaceTrack,
+ *   no renegotiation) and the camera is released; stopping (or the browser's "Stop sharing")
+ *   re-acquires the camera. Reconnects publish whichever source is active.
  * - Device ids live in memory only.
  */
 
@@ -44,6 +47,8 @@ const INITIAL_STATE = Object.freeze({
   maxReconnectAttempts: LIVE_MEDIA.RECONNECT_MAX_ATTEMPTS,
   devices: Object.freeze({ audioinput: [], videoinput: [] }),
   selectedDeviceIds: Object.freeze({ audioinput: null, videoinput: null }),
+  videoSource: 'camera',
+  screenShareSupported: false,
 })
 
 function stopTracks(stream) {
@@ -90,6 +95,7 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
   let state = {
     ...INITIAL_STATE,
     maxReconnectAttempts: config.RECONNECT_MAX_ATTEMPTS,
+    screenShareSupported: typeof devicesApi?.getDisplayMedia === 'function',
     ...(initial
       ? {
           micEnabled: initial.micEnabled !== false,
@@ -111,6 +117,9 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
   let disposed = false
   let unloadAttached = false
   let deviceWatchAttached = false
+  /** Active screen capture track (part of `stream` while sharing). */
+  let screenTrack = null
+  let screenShareBusy = false
 
   const setState = (patch) => {
     if (disposed) return
@@ -141,7 +150,10 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
     setState({ error: { code: LIVE_MEDIA_ERROR.DEVICE_LOST, stage: 'device' } })
   }
 
-  const watchTrack = (track) => track.addEventListener?.('ended', onTrackEnded)
+  // The screen track has its own `ended` handling (the user stopped sharing), not DEVICE_LOST.
+  const watchTrack = (track) => {
+    if (track !== screenTrack) track.addEventListener?.('ended', onTrackEnded)
+  }
   const unwatchTrack = (track) => track.removeEventListener?.('ended', onTrackEnded)
 
   const currentDeviceId = (kind) => {
@@ -184,6 +196,29 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
     stream?.getTracks().forEach(unwatchTrack)
     stream = next
     stream?.getTracks().forEach(watchTrack)
+  }
+
+  /* ---------- screen share ---------- */
+
+  const onScreenEnded = () => {
+    void controller.stopScreenShare()
+  }
+
+  const forgetScreenTrack = () => {
+    screenTrack?.removeEventListener?.('ended', onScreenEnded)
+    screenTrack = null
+  }
+
+  /** Swaps the outgoing video track (null sends no video) and stops the previous one. */
+  const replaceVideoTrack = async (nextTrack) => {
+    if (senders.video) await senders.video.replaceTrack(nextTrack)
+    const previous = stream.getVideoTracks()
+    const kept = stream.getTracks().filter((track) => !previous.includes(track))
+    previous.forEach((track) => {
+      unwatchTrack(track)
+      track.stop()
+    })
+    setStream(new MediaStream(nextTrack ? [...kept, nextTrack] : kept))
   }
 
   /* ---------- publishing ---------- */
@@ -362,6 +397,8 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
     requiresCapture: true,
     getState: () => state,
     getConnectionState: () => hostConnectionState(state),
+    /** Stats of the publishing peer; null when not connected. */
+    getStats: () => (pc ? pc.getStats() : Promise.resolve(null)),
     subscribe(listener) {
       listeners.add(listener)
       return () => listeners.delete(listener)
@@ -396,10 +433,11 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
           stopTracks(captured)
           return
         }
+        forgetScreenTrack()
         stopTracks(stream)
         setStream(captured)
         applyEnabled()
-        setState({ status: 'ready', previewStream: stream, error: null })
+        setState({ status: 'ready', previewStream: stream, error: null, videoSource: 'camera' })
         attachDeviceWatch()
         await refreshDevices()
       } catch (error) {
@@ -450,6 +488,11 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
     async switchDevice(kind, deviceId) {
       if (disposed || !stream || !DEVICE_KINDS.includes(kind) || !deviceId) return
       const isVideo = kind === 'videoinput'
+      if (isVideo && screenTrack) {
+        // Sharing the screen: remember the camera for when sharing stops.
+        setState({ selectedDeviceIds: { ...state.selectedDeviceIds, videoinput: deviceId } })
+        return
+      }
       let captured = null
       try {
         captured = await devicesApi.getUserMedia(
@@ -481,13 +524,95 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
       }
     },
 
+    /**
+     * Replaces the camera with a screen/window/tab capture. Cancelling the browser picker is not
+     * an error. Requires a capture (prepare) first.
+     */
+    async startScreenShare() {
+      if (disposed || !stream || screenTrack || screenShareBusy || !state.screenShareSupported) return
+      screenShareBusy = true
+      let display = null
+      try {
+        display = await devicesApi.getDisplayMedia({ video: { ...config.SCREEN_CONSTRAINTS }, audio: false })
+        const track = display.getVideoTracks()[0]
+        display.getAudioTracks().forEach((extra) => extra.stop())
+        if (disposed || !stream || !track) {
+          stopTracks(display)
+          return
+        }
+        // Without a video sender the running peer cannot switch tracks without renegotiation.
+        if (pc && !senders.video) throw new Error('No video sender to replace')
+        if ('contentHint' in track) track.contentHint = 'detail'
+        track.enabled = true
+        screenTrack = track
+        track.addEventListener?.('ended', onScreenEnded)
+        await replaceVideoTrack(track)
+        setState({
+          videoSource: 'screen',
+          cameraEnabled: true,
+          previewStream: stream,
+          error: state.error?.stage === 'device' ? null : state.error,
+        })
+      } catch (error) {
+        if (screenTrack && !stream?.getVideoTracks().includes(screenTrack)) forgetScreenTrack()
+        stopTracks(display)
+        if (error?.name === 'NotAllowedError' || error?.name === 'AbortError') return
+        setState({ error: { code: LIVE_MEDIA_ERROR.SCREEN_SHARE_FAILED, stage: 'device' } })
+      } finally {
+        screenShareBusy = false
+      }
+    },
+
+    /** Back to the camera (also called when the browser ends the screen capture). */
+    async stopScreenShare() {
+      if (disposed || !screenTrack || screenShareBusy) return
+      screenShareBusy = true
+      const sharing = screenTrack
+      let captured = null
+      try {
+        captured = await devicesApi.getUserMedia({ video: constraintFor('videoinput') })
+        const camera = captured.getVideoTracks()[0]
+        if (disposed || !stream || screenTrack !== sharing || !camera) {
+          stopTracks(captured)
+          return
+        }
+        camera.enabled = state.cameraEnabled
+        forgetScreenTrack()
+        await replaceVideoTrack(camera)
+        setState({
+          videoSource: 'camera',
+          previewStream: stream,
+          selectedDeviceIds: { ...state.selectedDeviceIds, videoinput: currentDeviceId('videoinput') ?? state.selectedDeviceIds.videoinput },
+        })
+      } catch (error) {
+        stopTracks(captured)
+        if (disposed || !stream || screenTrack !== sharing) return
+        // The camera is gone or busy: stop sharing anyway and send no video until a camera is picked.
+        forgetScreenTrack()
+        try {
+          await replaceVideoTrack(null)
+        } catch {
+          // the peer is being torn down
+        }
+        setState({
+          videoSource: 'camera',
+          cameraEnabled: false,
+          previewStream: stream,
+          error: { code: captureErrorCode(error), stage: 'device' },
+        })
+      } finally {
+        screenShareBusy = false
+      }
+    },
+
     /** Stops publishing and releases camera/mic (LIVE ended). The controller can prepare again. */
     release() {
       stopPublishing()
+      forgetScreenTrack()
       stopTracks(stream)
       setStream(null)
       detachDeviceWatch()
-      setState({ status: 'idle', previewStream: null, reconnectAttempt: 0 })
+      setState({ status: 'idle', previewStream: null, reconnectAttempt: 0, videoSource: 'camera' })
     },
 
     dispose() {

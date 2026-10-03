@@ -21,6 +21,7 @@
  * @property {boolean} allowGifts
  * @property {boolean} allowGuests
  * @property {boolean} [matureContent]
+ * @property {boolean} [recordingEnabled]   create only: request a replay recording
  */
 
 /**
@@ -50,6 +51,54 @@
  * @property {string|null} whepUrl
  * @property {RTCIceServer[]} iceServers
  * @property {string|null} expiresAt
+ * @property {boolean} interrupted     host media dropped; the reconnect grace period is running
+ * @property {string|null} hlsUrl      HLS fallback playlist (tokenized), only when the deployment enables HLS
+ */
+
+/**
+ * `GET /api/lives/capabilities`.
+ * @typedef {Object} LiveCapabilities
+ * @property {boolean} media
+ * @property {boolean} recording        recording can be requested when creating a LIVE
+ * @property {boolean} hlsFallback
+ * @property {number} maxDurationMinutes   0 = unlimited
+ * @property {number} maxReplaySeconds
+ */
+
+/**
+ * `GET /api/lives/{id}/replay`. The replay is a regular video of the host (a Studio draft until
+ * the host publishes it). `playbackUrl` is a short-lived signed URL, only when READY.
+ * @typedef {Object} LiveReplay
+ * @property {string} liveId
+ * @property {string} title
+ * @property {'RECORDING'|'PROCESSING'|'READY'|'FAILED'|'DELETED'|null} status
+ * @property {boolean} isOwner
+ * @property {boolean} published
+ * @property {string|null} videoId          public id of the replay video
+ * @property {string|null} authorUsername
+ * @property {string|null} playbackUrl
+ * @property {string|null} thumbnailUrl
+ * @property {number|null} durationSeconds
+ * @property {string|null} expiresAt
+ * @property {string|null} liveStartedAt
+ * @property {string|null} liveEndedAt
+ * @property {string|null} failureReason    host only
+ */
+
+/**
+ * `GET /api/lives/{id}/analytics` (host only, after the end).
+ * @typedef {Object} LiveAnalytics
+ * @property {string} liveId
+ * @property {number} durationSeconds
+ * @property {number} uniqueViewers
+ * @property {number} totalWatchSeconds
+ * @property {number} averageWatchSeconds
+ * @property {number} averageViewers
+ * @property {number} peakViewers
+ * @property {number} likeCount
+ * @property {number} commentCount
+ * @property {number} reconnectCount
+ * @property {string|null} endReason
  */
 
 /**
@@ -76,6 +125,7 @@
  *   peakViewerCount?: number,
  *   giftsAvailable?: boolean,   false while the platform has no gift wallet (settings.allowGifts is then false too)
  *   canModerate?: boolean,
+ *   recordingEnabled?: boolean, the host asked for a replay recording (and the deployment supports it)
  * }} LiveDetail
  */
 

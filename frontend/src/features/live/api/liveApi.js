@@ -62,9 +62,54 @@ export function normalizeLive(dto) {
       matureContent: Boolean(dto.matureContent),
     },
     giftsAvailable,
+    recordingEnabled: Boolean(dto.recordingEnabled),
     playback: dto.playback ?? { type: null, url: null },
     isOwner: Boolean(dto.isOwner),
     canModerate: Boolean(dto.canModerate),
+  }
+}
+
+/** Media URLs from the backend are relative to this origin or absolute http(s). */
+function safeMediaUrl(url) {
+  return typeof url === 'string' && /^(\/(?!\/)|https?:\/\/)/i.test(url) ? url : null
+}
+
+const toNumberOrNull = (value) => (value == null || !Number.isFinite(Number(value)) ? null : Number(value))
+
+/** @returns {import('./liveContracts.js').LiveReplay} */
+export function normalizeLiveReplay(dto) {
+  return {
+    liveId: String(dto?.liveId ?? ''),
+    title: dto?.title ?? '',
+    status: dto?.status ?? null,
+    isOwner: Boolean(dto?.isOwner),
+    published: Boolean(dto?.published),
+    videoId: dto?.videoId ?? null,
+    authorUsername: dto?.authorUsername ?? null,
+    playbackUrl: safeMediaUrl(dto?.playbackUrl),
+    thumbnailUrl: safeMediaUrl(dto?.thumbnailUrl),
+    durationSeconds: toNumberOrNull(dto?.durationSeconds),
+    expiresAt: dto?.expiresAt ?? null,
+    liveStartedAt: dto?.liveStartedAt ?? null,
+    liveEndedAt: dto?.liveEndedAt ?? null,
+    failureReason: dto?.failureReason ?? null,
+  }
+}
+
+/** @returns {import('./liveContracts.js').LiveAnalytics} */
+export function normalizeLiveAnalytics(dto) {
+  return {
+    liveId: String(dto?.liveId ?? ''),
+    durationSeconds: Number(dto?.durationSeconds) || 0,
+    uniqueViewers: Number(dto?.uniqueViewers) || 0,
+    totalWatchSeconds: Number(dto?.totalWatchSeconds) || 0,
+    averageWatchSeconds: Number(dto?.averageWatchSeconds) || 0,
+    averageViewers: Number(dto?.averageViewers) || 0,
+    peakViewers: Number(dto?.peakViewers) || 0,
+    likeCount: Number(dto?.likeCount) || 0,
+    commentCount: Number(dto?.commentCount) || 0,
+    reconnectCount: Number(dto?.reconnectCount) || 0,
+    endReason: dto?.endReason ?? null,
   }
 }
 
@@ -185,10 +230,36 @@ export const liveApi = {
         allowGifts: settings.allowGifts,
         allowGuests: settings.allowGuests,
         matureContent: settings.matureContent,
+        recordingEnabled: settings.recordingEnabled || undefined,
       },
     })
     return normalizeLive(dto)
   },
+
+  /**
+   * What the deployment supports (recording, HLS fallback, limits). Public, cheap.
+   * @returns {Promise<import('./liveContracts.js').LiveCapabilities>}
+   */
+  async getCapabilities(token) {
+    const dto = await request('/api/lives/capabilities', { token })
+    return {
+      media: Boolean(dto?.media),
+      recording: Boolean(dto?.recording),
+      hlsFallback: Boolean(dto?.hlsFallback),
+      maxDurationMinutes: Number(dto?.maxDurationMinutes) || 0,
+      maxReplaySeconds: Number(dto?.maxReplaySeconds) || 0,
+    }
+  },
+
+  /**
+   * Replay of an ended LIVE. The host sees every state; others only a published replay
+   * (404 `REPLAY_NOT_FOUND` otherwise). `playbackUrl` is a short-lived signed URL.
+   * @returns {Promise<import('./liveContracts.js').LiveReplay>}
+   */
+  getReplay: async (liveId, token) => normalizeLiveReplay(await request(livePath(liveId, '/replay'), { token })),
+
+  /** Host only, after the LIVE ended. */
+  getAnalytics: async (liveId, token) => normalizeLiveAnalytics(await request(livePath(liveId, '/analytics'), { token })),
 
   startLive: async (liveId, token) =>
     normalizeLive(await request(livePath(liveId, '/start'), { method: 'POST', token })),
@@ -250,7 +321,8 @@ export const liveApi = {
 
   /**
    * Short-lived WHEP endpoint for the current viewer. `whepUrl` is null while the host
-   * is not publishing yet (or is reconnecting).
+   * is not publishing yet (or is reconnecting: `interrupted`). `hlsUrl` is the optional
+   * fallback playlist (only when the deployment enables HLS).
    * @returns {Promise<import('./liveContracts.js').LivePlaybackInfo>}
    */
   async getPlayback(liveId, token) {
@@ -262,6 +334,8 @@ export const liveApi = {
       whepUrl: dto?.whepUrl ?? null,
       iceServers: normalizeIceServers(dto?.iceServers),
       expiresAt: dto?.expiresAt ?? null,
+      interrupted: Boolean(dto?.interrupted),
+      hlsUrl: safeMediaUrl(dto?.hlsUrl),
     }
   },
 

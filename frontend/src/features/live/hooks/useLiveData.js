@@ -13,3 +13,15 @@ export function useLiveDetail({ liveId, token }) {
   const loader = useCallback(() => liveService.getLive(liveId, token), [liveId, token])
   return useLiveResource(loader, { enabled: Boolean(liveId) })
 }
+
+/** Replay state of an ended LIVE (404 `REPLAY_NOT_FOUND` when there is none for this viewer). */
+export function useLiveReplay({ liveId, token, enabled = true }) {
+  const loader = useCallback(() => liveService.getReplay(liveId, token), [liveId, token])
+  return useLiveResource(loader, { enabled: Boolean(liveId) && enabled })
+}
+
+/** Host-only statistics, available once the LIVE ended. */
+export function useLiveAnalytics({ liveId, token, enabled = true }) {
+  const loader = useCallback(() => liveService.getAnalytics(liveId, token), [liveId, token])
+  return useLiveResource(loader, { enabled: Boolean(liveId) && enabled })
+}

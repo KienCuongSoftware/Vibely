@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { IoArrowBack, IoHeart, IoTimeOutline } from 'react-icons/io5'
+import { IoArrowBack, IoTimeOutline } from 'react-icons/io5'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { LiveToggle } from '@/features/live/components/create/LiveFormControls.jsx'
 import { LiveConnectionStatus } from '@/features/live/components/host/LiveConnectionStatus.jsx'
 import { LiveDeviceSelects } from '@/features/live/components/host/LiveDeviceSelects.jsx'
 import { LiveHostControls } from '@/features/live/components/host/LiveHostControls.jsx'
+import { LiveHostEndedSummary } from '@/features/live/components/host/LiveHostEndedSummary.jsx'
 import { LiveHostMediaStatus } from '@/features/live/components/host/LiveHostMediaStatus.jsx'
 import { LiveHostPreview } from '@/features/live/components/host/LiveHostPreview.jsx'
 import { LiveBadge } from '@/features/live/components/LiveBadge.jsx'
+import { LiveConnectionQuality } from '@/features/live/components/LiveConnectionQuality.jsx'
 import { LiveStateView } from '@/features/live/components/LiveStateView.jsx'
 import { LiveChat } from '@/features/live/components/room/LiveChat.jsx'
 import { LiveViewerCount } from '@/features/live/components/room/LiveViewerCount.jsx'
 import { LIVE_PATHS, LIVE_ROOM_EVENT, LIVE_STATUS } from '@/features/live/constants/liveConstants.js'
+import { useConnectionQuality } from '@/features/live/hooks/useConnectionQuality.js'
 import { useLiveChat } from '@/features/live/hooks/useLiveChat.js'
 import { useLiveDetail } from '@/features/live/hooks/useLiveData.js'
 import { useHostMedia, useLiveHostSession } from '@/features/live/hooks/useLiveHost.js'
@@ -23,8 +26,6 @@ import { useLiveNavigation } from '@/features/live/hooks/useLiveNavigation.js'
 import { RESOURCE_STATUS } from '@/features/live/hooks/useLiveResource.js'
 import { useLiveRoom } from '@/features/live/hooks/useLiveRoom.js'
 import { hostConnectionState } from '@/features/live/media/connectionState.js'
-import { endReasonMessageKey } from '@/features/live/media/mediaErrorMessages.js'
-import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 import { formatLiveDuration } from '@/features/live/utils/formatLiveDuration.js'
 
 const STATUS_LABEL_KEYS = {
@@ -81,12 +82,20 @@ function HostSettingsPanel({ settings, onChange, media }) {
   )
 }
 
-function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit }) {
+function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit, onNavigate }) {
   const { t } = useTranslation()
   const media = useHostMedia({ liveId: live.id, token, playbackType: live.playback?.type })
   const session = useLiveHostSession({ live, setLive, token, media })
   const isLive = live.status === LIVE_STATUS.LIVE
   const isEnded = live.status === LIVE_STATUS.ENDED
+  const isWebRtc = media.kind === 'webrtc'
+  const screenSharing = media.state.videoSource === 'screen'
+  const quality = useConnectionQuality({
+    controller: media.controller,
+    direction: 'outbound',
+    active: isLive && isWebRtc && media.state.status === 'publishing',
+    reconnecting: media.state.status === 'reconnecting',
+  })
 
   const room = useLiveRoom({ liveId: live.id, token, enabled: isLive, initialViewerCount: live.viewerCount })
   const viewerCount = useLiveViewerCount({ room, initialCount: live.viewerCount })
@@ -125,7 +134,14 @@ function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit }
           {formatLiveDuration(session.elapsedMs)}
         </span>
       ) : null}
-      {isLive && media.kind === 'webrtc' ? <LiveConnectionStatus state={hostConnectionState(media.state)} /> : null}
+      {isLive && isWebRtc ? <LiveConnectionStatus state={hostConnectionState(media.state)} /> : null}
+      {isLive && isWebRtc ? <LiveConnectionQuality sample={quality} className="text-zinc-300" /> : null}
+      {isLive && live.recordingEnabled ? (
+        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#fe2c55]" title={t('livePage.create.recordReplay')}>
+          <span className="h-2 w-2 rounded-full bg-[#fe2c55]" aria-hidden />
+          {t('livePage.host.recording')}
+        </span>
+      ) : null}
     </div>
   )
 
@@ -142,6 +158,9 @@ function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit }
       onStart={session.start}
       onEnd={() => setConfirmEnd(true)}
       action={session.action}
+      screenShareSupported={isWebRtc && Boolean(media.state.screenShareSupported)}
+      screenSharing={screenSharing}
+      onToggleScreenShare={() => void (screenSharing ? media.stopScreenShare() : media.startScreenShare())}
     />
   )
 
@@ -159,30 +178,7 @@ function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit }
   )
 
   const endedSummary = isEnded ? (
-    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/75 px-6">
-      <div className="w-full max-w-xs rounded-2xl bg-zinc-900 p-5 text-center">
-        <h2 className="text-[17px] font-bold">{t('livePage.host.endedTitle')}</h2>
-        {endReasonMessageKey(live.endReason) ? (
-          <p className="mt-2 text-[12px] text-zinc-400">{t(endReasonMessageKey(live.endReason))}</p>
-        ) : null}
-        <dl className="mt-4 grid grid-cols-2 gap-3 text-left">
-          <div className="rounded-lg bg-white/5 p-3">
-            <dt className="text-[11px] text-zinc-400">{t('livePage.host.summaryViewers')}</dt>
-            <dd className="text-[17px] font-bold tabular-nums">{formatLiveViewerCount(viewerCount)}</dd>
-          </div>
-          <div className="rounded-lg bg-white/5 p-3">
-            <dt className="text-[11px] text-zinc-400">{t('livePage.host.summaryLikes')}</dt>
-            <dd className="inline-flex items-center gap-1 text-[17px] font-bold tabular-nums">
-              <IoHeart className="text-[#fe2c55]" aria-hidden />
-              {formatLiveViewerCount(live.likeCount)}
-            </dd>
-          </div>
-        </dl>
-        <button type="button" onClick={onExit} className="mt-5 w-full cursor-pointer rounded-lg bg-[#fe2c55] py-2.5 text-[14px] font-semibold hover:bg-[#e6284c]">
-          {t('livePage.states.backToDiscovery')}
-        </button>
-      </div>
-    </div>
+    <LiveHostEndedSummary live={live} token={token} viewerCount={viewerCount} onExit={onExit} onNavigate={onNavigate} />
   ) : null
 
   const errorBanner = (
@@ -204,6 +200,7 @@ function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit }
       mediaKind={media.kind}
       mediaStatus={media.state.status}
       mediaError={media.state.error}
+      videoSource={media.state.videoSource}
     />
   )
   const settingsPanel = settingsOpen ? (
@@ -336,6 +333,7 @@ export function LiveHostPage() {
       isMobile={isMobile}
       onBack={back}
       onExit={() => navigate(LIVE_PATHS.discovery)}
+      onNavigate={navigate}
     />
   )
 }

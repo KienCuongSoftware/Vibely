@@ -18,7 +18,7 @@ import {
   LIVE_STATUS,
 } from '@/features/live/constants/liveConstants.js'
 import { useLiveChat } from '@/features/live/hooks/useLiveChat.js'
-import { useLiveDetail } from '@/features/live/hooks/useLiveData.js'
+import { useLiveDetail, useLiveReplay } from '@/features/live/hooks/useLiveData.js'
 import {
   useLiveAuthGate,
   useLiveFollow,
@@ -45,8 +45,26 @@ function RoomIconButton({ label, onClick, children }) {
   )
 }
 
+/** Offered on an ended LIVE when a replay exists for this viewer (the host also sees pending ones). */
+function ReplayButton({ live, token, onOpen }) {
+  const { t } = useTranslation()
+  const replay = useLiveReplay({ liveId: live.id, token, enabled: Boolean(live.recordingEnabled) })
+  if (!replay.data) return null
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-1/2 z-10 flex translate-y-14 justify-center">
+      <button
+        type="button"
+        onClick={onOpen}
+        className="pointer-events-auto cursor-pointer rounded-full bg-[#fe2c55] px-5 py-2 text-[13px] font-semibold text-white hover:bg-[#e6284c]"
+      >
+        {t('livePage.replay.watchReplay')}
+      </button>
+    </div>
+  )
+}
+
 /** All interactive room state; rendered only once metadata is loaded. */
-function LiveRoom({ live, token, user, isMobile, onBack, onOpenHost, onStatusChange }) {
+function LiveRoom({ live, token, user, isMobile, onBack, onOpenHost, onOpenReplay, onStatusChange }) {
   const { t } = useTranslation()
   const requireAuth = useLiveAuthGate()
   const isEnded = live.status === LIVE_STATUS.ENDED
@@ -73,7 +91,9 @@ function LiveRoom({ live, token, user, isMobile, onBack, onOpenHost, onStatusCha
   useEffect(
     () =>
       room.subscribe(LIVE_ROOM_EVENT.STREAM, (payload) => {
-        if (typeof payload?.publishing === 'boolean') setStreamSignal({ publishing: payload.publishing })
+        if (typeof payload?.publishing === 'boolean') {
+          setStreamSignal({ publishing: payload.publishing, reconnectDeadline: payload.reconnectDeadline ?? null })
+        }
       }),
     [room.subscribe],
   )
@@ -144,6 +164,8 @@ function LiveRoom({ live, token, user, isMobile, onBack, onOpenHost, onStatusCha
     />
   )
 
+  const replayButton = isEnded ? <ReplayButton live={live} token={token} onOpen={onOpenReplay} /> : null
+
   const muteButton = (
     <RoomIconButton label={muted ? t('livePage.unmute') : t('livePage.mute')} onClick={() => setMuted((value) => !value)}>
       {muted ? <IoVolumeMuteOutline className="text-lg" aria-hidden /> : <IoVolumeHighOutline className="text-lg" aria-hidden />}
@@ -153,7 +175,8 @@ function LiveRoom({ live, token, user, isMobile, onBack, onOpenHost, onStatusCha
   if (isMobile) {
     return (
       <section className="vibely-keep-dark live-room-mobile relative h-dvh max-h-dvh overflow-hidden bg-black text-white">
-        <LivePlayer live={live} muted={muted} streamSignal={streamSignal} className="absolute inset-0" />
+        <LivePlayer live={live} muted={muted} streamSignal={streamSignal} showQuality className="absolute inset-0" />
+        {replayButton}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-linear-to-b from-black/70 to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-linear-to-t from-black/85 via-black/40 to-transparent" />
 
@@ -216,7 +239,8 @@ function LiveRoom({ live, token, user, isMobile, onBack, onOpenHost, onStatusCha
 
         <div className="relative flex min-h-0 flex-1 items-center justify-center p-4">
           <div className="relative aspect-[9/16] h-full max-w-full overflow-hidden rounded-2xl ring-1 ring-white/10">
-            <LivePlayer live={live} muted={muted} streamSignal={streamSignal} className="absolute inset-0" />
+            <LivePlayer live={live} muted={muted} streamSignal={streamSignal} showQuality className="absolute inset-0" />
+            {replayButton}
             <div className="absolute left-3 top-3 flex items-center gap-2">
               <LiveBadge />
             </div>
@@ -296,6 +320,7 @@ export function LiveDetailPage() {
       isMobile={isMobile}
       onBack={back}
       onOpenHost={() => navigate(LIVE_PATHS.host(live.id))}
+      onOpenReplay={() => navigate(LIVE_PATHS.replay(live.id))}
       onStatusChange={handleStatusChange}
     />
   )

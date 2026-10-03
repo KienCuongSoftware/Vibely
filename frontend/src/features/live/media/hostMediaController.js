@@ -20,6 +20,8 @@ import { createWebRtcHostMediaController } from '@/features/live/media/webrtc/we
  * @property {number} [maxReconnectAttempts]
  * @property {{ audioinput: Array<{deviceId: string, label: string}>, videoinput: Array<{deviceId: string, label: string}> }} [devices]
  * @property {{ audioinput: string|null, videoinput: string|null }} [selectedDeviceIds]
+ * @property {'camera'|'screen'} [videoSource]
+ * @property {boolean} [screenShareSupported]
  *
  * @typedef {Object} HostMediaController
  * @property {'mock'|'webrtc'} kind
@@ -34,6 +36,9 @@ import { createWebRtcHostMediaController } from '@/features/live/media/webrtc/we
  * @property {(enabled: boolean) => void} setMicEnabled
  * @property {(enabled: boolean) => void} setCameraEnabled
  * @property {(kind: 'audioinput'|'videoinput', deviceId: string) => Promise<void>} switchDevice
+ * @property {() => Promise<void>} startScreenShare   replace the camera with a screen capture
+ * @property {() => Promise<void>} stopScreenShare    back to the camera
+ * @property {() => Promise<RTCStatsReport|null>} getStats
  * @property {() => void} release                 stop publishing and release devices
  * @property {() => void} dispose                 must stop every MediaStreamTrack
  *
@@ -43,7 +48,15 @@ import { createWebRtcHostMediaController } from '@/features/live/media/webrtc/we
 
 /** Placeholder controller: tracks toggle state only, never touches the camera or mic. */
 export function createMockHostMediaController() {
-  let state = { status: 'idle', micEnabled: true, cameraEnabled: true, previewStream: null, error: null }
+  let state = {
+    status: 'idle',
+    micEnabled: true,
+    cameraEnabled: true,
+    previewStream: null,
+    error: null,
+    videoSource: 'camera',
+    screenShareSupported: false,
+  }
   const listeners = new Set()
 
   const setState = (patch) => {
@@ -79,6 +92,9 @@ export function createMockHostMediaController() {
       setState({ cameraEnabled: Boolean(enabled) })
     },
     async switchDevice() {},
+    async startScreenShare() {},
+    async stopScreenShare() {},
+    getStats: () => Promise.resolve(null),
     release() {
       setState({ status: 'idle' })
     },

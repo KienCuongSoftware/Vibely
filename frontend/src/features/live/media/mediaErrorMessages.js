@@ -18,12 +18,14 @@ const ERROR_KEYS = {
   [LIVE_MEDIA_ERROR.NOT_FOUND]: 'livePage.media.errors.notFound',
   [LIVE_MEDIA_ERROR.FORBIDDEN]: 'livePage.media.errors.forbidden',
   [LIVE_MEDIA_ERROR.PLAYBACK_FAILED]: 'livePage.media.errors.playbackFailed',
+  [LIVE_MEDIA_ERROR.SCREEN_SHARE_FAILED]: 'livePage.media.errors.screenShareFailed',
 }
 
 const END_REASON_KEYS = {
   [LIVE_END_REASON.ADMIN]: 'livePage.media.endReason.admin',
   [LIVE_END_REASON.HOST_DISCONNECTED]: 'livePage.media.endReason.hostDisconnected',
   [LIVE_END_REASON.PUBLISH_TIMEOUT]: 'livePage.media.endReason.publishTimeout',
+  [LIVE_END_REASON.MAX_DURATION]: 'livePage.media.endReason.maxDuration',
 }
 
 export function mediaErrorMessageKey(code) {

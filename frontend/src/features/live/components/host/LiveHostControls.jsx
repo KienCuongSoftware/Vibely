@@ -7,17 +7,18 @@ import {
   IoVideocam,
   IoVideocamOffOutline,
 } from 'react-icons/io5'
+import { MdScreenShare, MdStopScreenShare } from 'react-icons/md'
 import { LiveSpinner } from '@/features/live/components/LiveStateView.jsx'
 import { LIVE_STATUS } from '@/features/live/constants/liveConstants.js'
 
-function ControlButton({ label, active, onClick, disabled, children }) {
+function ControlButton({ label, active, pressed, onClick, disabled, children }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      aria-pressed={active}
+      aria-pressed={pressed ?? active}
       title={label}
       className={`flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-40 ${
         active ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-[#fe2c55]/20 text-[#fe2c55] hover:bg-[#fe2c55]/30'
@@ -28,7 +29,11 @@ function ControlButton({ label, active, onClick, disabled, children }) {
   )
 }
 
-/** Mic / camera / settings toggles and the primary start-or-end action. */
+/**
+ * Mic / camera / screen share / settings toggles and the primary start-or-end action.
+ * The screen share button only appears when `onToggleScreenShare` is given and the browser
+ * supports it (no getDisplayMedia on most mobile browsers).
+ */
 export function LiveHostControls({
   status,
   micEnabled,
@@ -41,6 +46,9 @@ export function LiveHostControls({
   onStart,
   onEnd,
   action,
+  screenShareSupported = false,
+  screenSharing = false,
+  onToggleScreenShare = null,
 }) {
   const { t } = useTranslation()
   const isLive = status === LIVE_STATUS.LIVE
@@ -64,6 +72,17 @@ export function LiveHostControls({
       >
         {cameraEnabled ? <IoVideocam className="text-xl" aria-hidden /> : <IoVideocamOffOutline className="text-xl" aria-hidden />}
       </ControlButton>
+      {screenShareSupported && onToggleScreenShare ? (
+        <ControlButton
+          label={screenSharing ? t('livePage.host.stopScreenShare') : t('livePage.host.startScreenShare')}
+          active={!screenSharing}
+          pressed={screenSharing}
+          onClick={onToggleScreenShare}
+          disabled={!mediaReady || isEnded}
+        >
+          {screenSharing ? <MdStopScreenShare className="text-xl" aria-hidden /> : <MdScreenShare className="text-xl" aria-hidden />}
+        </ControlButton>
+      ) : null}
       <ControlButton label={t('livePage.host.settings')} active onClick={onOpenSettings} disabled={isEnded}>
         <IoSettingsOutline className={`text-xl ${settingsOpen ? 'text-[#fe2c55]' : ''}`} aria-hidden />
       </ControlButton>

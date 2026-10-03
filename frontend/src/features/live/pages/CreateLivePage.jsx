@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IoArrowBack } from 'react-icons/io5'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { LiveToggle } from '@/features/live/components/create/LiveFormControls.jsx'
 import { LiveDeviceSelects } from '@/features/live/components/host/LiveDeviceSelects.jsx'
 import { LiveHostControls } from '@/features/live/components/host/LiveHostControls.jsx'
 import { LiveHostMediaStatus } from '@/features/live/components/host/LiveHostMediaStatus.jsx'
@@ -9,6 +10,7 @@ import { LiveHostPreview } from '@/features/live/components/host/LiveHostPreview
 import { LiveSidebar } from '@/features/live/components/LiveSidebar.jsx'
 import { LIVE_LIMITS, LIVE_PATHS, LIVE_STATUS } from '@/features/live/constants/liveConstants.js'
 import { useGoLive } from '@/features/live/hooks/useGoLive.js'
+import { useLiveCapabilities } from '@/features/live/hooks/useLiveCapabilities.js'
 import { useHostMedia } from '@/features/live/hooks/useLiveHost.js'
 import { useLiveNavigation } from '@/features/live/hooks/useLiveNavigation.js'
 
@@ -21,13 +23,15 @@ export function CreateLivePage() {
   const { token, user, logout } = useAuth()
   const { navigate, openLive, back } = useLiveNavigation()
   const media = useHostMedia({ token, previewOnly: true })
+  const capabilities = useLiveCapabilities(token)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [recordReplay, setRecordReplay] = useState(false)
 
   const hostName = user?.displayName || user?.fullName || user?.username || ''
   const defaultTitle = hostName
     ? t('livePage.create.defaultTitle', { name: hostName })
     : t('livePage.create.defaultTitleAnonymous')
-  const goLive = useGoLive({ token, media, defaultTitle })
+  const goLive = useGoLive({ token, media, defaultTitle, recordingEnabled: capabilities.recording && recordReplay })
   const capturePending = media.state.status === 'idle' || media.state.status === 'preparing'
 
   useEffect(() => {
@@ -93,6 +97,20 @@ export function CreateLivePage() {
               {settingsOpen ? (
                 <div className="rounded-xl border border-white/10 bg-zinc-900/80 px-4 py-2">
                   <LiveDeviceSelects media={media} idPrefix="live-create" />
+                </div>
+              ) : null}
+              {capabilities.recording ? (
+                <div className="rounded-xl border border-white/10 bg-zinc-900/80 px-4">
+                  <LiveToggle
+                    id="live-create-record"
+                    label={t('livePage.create.recordReplay')}
+                    description={t('livePage.create.recordReplayHint', {
+                      minutes: Math.round((capabilities.maxReplaySeconds || 3600) / 60),
+                    })}
+                    checked={recordReplay}
+                    onChange={setRecordReplay}
+                    disabled={goLive.busy}
+                  />
                 </div>
               ) : null}
               <label htmlFor="live-create-title" className="sr-only">

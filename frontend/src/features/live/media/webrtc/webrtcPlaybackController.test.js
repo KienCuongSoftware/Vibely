@@ -176,10 +176,168 @@ describe('WebRTC viewer playback', () => {
   it('detects browsers without WebRTC', () => {
     vi.stubGlobal('RTCPeerConnection', undefined)
     const getPlaybackInfo = vi.fn()
-    const controller = createWebRtcPlaybackController({ getPlaybackInfo, timing: TIMING })
+    const controller = createWebRtcPlaybackController({
+      getPlaybackInfo,
+      timing: TIMING,
+      hlsSupported: () => false,
+    })
     controller.start()
     expect(controller.getState().status).toBe('unsupported')
     expect(getPlaybackInfo).not.toHaveBeenCalled()
+    controller.dispose()
+  })
+
+  it('shows the interrupted state while the host reconnects', async () => {
+    const getPlaybackInfo = vi.fn(async () => ({ ...notPublishing, interrupted: true }))
+    const controller = createWebRtcPlaybackController({ getPlaybackInfo, timing: TIMING })
+    controller.start()
+    await flushMicrotasks()
+    expect(controller.getState()).toMatchObject({ status: 'waiting', hostReconnecting: true })
+    controller.dispose()
+  })
+
+  it('marks a waiting viewer as interrupted from the room event', async () => {
+    const controller = createWebRtcPlaybackController({ getPlaybackInfo: vi.fn(async () => notPublishing), timing: TIMING })
+    controller.start()
+    await flushMicrotasks()
+    expect(controller.getState().hostReconnecting).toBe(false)
+    controller.notifyStreamState({ publishing: false, reconnectDeadline: '2026-01-01T00:01:00Z' })
+    expect(controller.getState()).toMatchObject({ status: 'waiting', hostReconnecting: true })
+    controller.dispose()
+  })
+})
+
+describe('HLS fallback', () => {
+  const HLS_TIMING = { ...TIMING, RECONNECT_MAX_ATTEMPTS: 4, HLS_FALLBACK_AFTER_ATTEMPTS: 2 }
+  const withHls = { ...playing, hlsUrl: 'https://example.test/live-hls/sabc.m3u8?token=hls-token' }
+  let fetchMock
+
+  const createHlsDouble = () => {
+    const handles = []
+    const attachHls = vi.fn((element, url, { onFatal }) => {
+      const handle = { element, url, onFatal, detach: vi.fn() }
+      handles.push(handle)
+      return handle.detach
+    })
+    return { attachHls, handles }
+  }
+
+  beforeEach(() => {
+    installMediaGlobals()
+    fetchMock = createFakeSignalingFetch()
+    vi.stubGlobal('fetch', fetchMock)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  it('switches to HLS once after repeated WebRTC failures and never loops back by itself', async () => {
+    vi.useFakeTimers()
+    const { attachHls, handles } = createHlsDouble()
+    const getPlaybackInfo = vi.fn(async () => withHls)
+    const controller = createWebRtcPlaybackController({ getPlaybackInfo, timing: HLS_TIMING, attachHls })
+    const video = { srcObject: null }
+    controller.attach(video)
+    controller.start()
+    await flushMicrotasks(20)
+    expect(controller.getState()).toMatchObject({ status: 'playing', transport: 'webrtc' })
+    expect(attachHls).not.toHaveBeenCalled()
+
+    FakePeerConnection.autoConnect = false
+    FakePeerConnection.last.setConnectionState('failed')
+    await vi.advanceTimersByTimeAsync(5000)
+    await flushMicrotasks(20)
+
+    expect(controller.getState()).toMatchObject({ status: 'playing', transport: 'hls', hlsUrl: withHls.hlsUrl, stream: null })
+    expect(video.srcObject).toBeNull()
+    expect(attachHls).toHaveBeenCalledTimes(1)
+    expect(handles[0]).toMatchObject({ element: video, url: withHls.hlsUrl })
+    const peersAfterSwitch = FakePeerConnection.instances.length
+    expect(FakePeerConnection.instances.every((peer) => peer.closed)).toBe(true)
+    await expect(controller.getStats()).resolves.toBeNull()
+
+    handles[0].onFatal()
+    expect(controller.getState()).toMatchObject({ status: 'failed', errorCode: LIVE_MEDIA_ERROR.PLAYBACK_FAILED, transport: 'hls' })
+    expect(handles[0].detach).toHaveBeenCalled()
+    const callsWhenFailed = getPlaybackInfo.mock.calls.length
+    await vi.advanceTimersByTimeAsync(20000)
+    expect(getPlaybackInfo).toHaveBeenCalledTimes(callsWhenFailed)
+    expect(FakePeerConnection.instances).toHaveLength(peersAfterSwitch)
+    expect(attachHls).toHaveBeenCalledTimes(1)
+
+    FakePeerConnection.autoConnect = true
+    controller.retry()
+    await flushMicrotasks(20)
+    expect(controller.getState()).toMatchObject({ status: 'playing', transport: 'webrtc', hlsUrl: null })
+    expect(video.srcObject).toBe(controller.getState().stream)
+    controller.dispose()
+  })
+
+  it('ignores a late fatal error from an HLS player that was already replaced', async () => {
+    vi.useFakeTimers()
+    const { attachHls, handles } = createHlsDouble()
+    const controller = createWebRtcPlaybackController({ getPlaybackInfo: vi.fn(async () => withHls), timing: HLS_TIMING, attachHls })
+    controller.attach({ srcObject: null })
+    controller.start()
+    await flushMicrotasks(20)
+    FakePeerConnection.autoConnect = false
+    FakePeerConnection.last.setConnectionState('failed')
+    await vi.advanceTimersByTimeAsync(5000)
+    await flushMicrotasks(20)
+    expect(controller.getState().transport).toBe('hls')
+
+    controller.detach()
+    handles[0].onFatal()
+    expect(controller.getState()).toMatchObject({ status: 'playing', transport: 'hls' })
+    controller.dispose()
+  })
+
+  it('stays on WebRTC retries when the backend offers no HLS playlist', async () => {
+    vi.useFakeTimers()
+    const { attachHls } = createHlsDouble()
+    const controller = createWebRtcPlaybackController({ getPlaybackInfo: vi.fn(async () => playing), timing: HLS_TIMING, attachHls })
+    controller.start()
+    await flushMicrotasks(20)
+    FakePeerConnection.autoConnect = false
+    FakePeerConnection.last.setConnectionState('failed')
+    await vi.advanceTimersByTimeAsync(20000)
+    await flushMicrotasks(20)
+    expect(controller.getState()).toMatchObject({ status: 'failed', transport: 'webrtc' })
+    expect(attachHls).not.toHaveBeenCalled()
+    controller.dispose()
+  })
+
+  it('plays over HLS straight away when the browser has no WebRTC', async () => {
+    vi.stubGlobal('RTCPeerConnection', undefined)
+    const { attachHls } = createHlsDouble()
+    const controller = createWebRtcPlaybackController({
+      getPlaybackInfo: vi.fn(async () => withHls),
+      timing: HLS_TIMING,
+      attachHls,
+      hlsSupported: () => true,
+    })
+    const video = { srcObject: null }
+    controller.attach(video)
+    controller.start()
+    await flushMicrotasks()
+    expect(controller.getState()).toMatchObject({ status: 'playing', transport: 'hls' })
+    expect(attachHls).toHaveBeenCalledWith(video, withHls.hlsUrl, expect.any(Object))
+    controller.dispose()
+  })
+
+  it('reports unsupported when neither WebRTC nor an HLS playlist is available', async () => {
+    vi.stubGlobal('RTCPeerConnection', undefined)
+    const controller = createWebRtcPlaybackController({
+      getPlaybackInfo: vi.fn(async () => playing),
+      timing: HLS_TIMING,
+      attachHls: vi.fn(),
+      hlsSupported: () => true,
+    })
+    controller.start()
+    await flushMicrotasks()
+    expect(controller.getState()).toMatchObject({ status: 'unsupported', errorCode: LIVE_MEDIA_ERROR.UNSUPPORTED })
     controller.dispose()
   })
 })

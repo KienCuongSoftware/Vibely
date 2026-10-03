@@ -58,6 +58,8 @@ export function useHostMedia({ liveId, token, playbackType, previewOnly = false 
   const setMicEnabled = useCallback((enabled) => controller?.setMicEnabled(enabled), [controller])
   const setCameraEnabled = useCallback((enabled) => controller?.setCameraEnabled(enabled), [controller])
   const switchDevice = useCallback((kind, deviceId) => controller?.switchDevice(kind, deviceId), [controller])
+  const startScreenShare = useCallback(() => controller?.startScreenShare?.(), [controller])
+  const stopScreenShare = useCallback(() => controller?.stopScreenShare?.(), [controller])
 
   return {
     controller,
@@ -74,6 +76,8 @@ export function useHostMedia({ liveId, token, playbackType, previewOnly = false 
     setMicEnabled,
     setCameraEnabled,
     switchDevice,
+    startScreenShare,
+    stopScreenShare,
   }
 }
 

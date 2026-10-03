@@ -19,7 +19,8 @@ function placeholderKeys({ cameraEnabled, mediaKind, mediaStatus, mediaError }) 
 
 /**
  * Host preview surface. Renders the controller's MediaStream (local, muted) when one
- * exists; otherwise the cover with the reason the camera is not showing.
+ * exists; otherwise the cover with the reason the camera is not showing. The camera is
+ * mirrored like a selfie view; a shared screen is shown as-is and uncropped.
  */
 export function LiveHostPreview({
   live,
@@ -28,6 +29,7 @@ export function LiveHostPreview({
   mediaKind = null,
   mediaStatus = 'idle',
   mediaError = null,
+  videoSource = 'camera',
 }) {
   const { t } = useTranslation()
   const videoRef = useRef(null)
@@ -49,7 +51,13 @@ export function LiveHostPreview({
   return (
     <div className="vibely-keep-dark relative h-full w-full overflow-hidden bg-zinc-950">
       {showVideo ? (
-        <video ref={videoRef} autoPlay playsInline muted className="h-full w-full -scale-x-100 object-cover" />
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className={`h-full w-full ${videoSource === 'screen' ? 'bg-black object-contain' : '-scale-x-100 object-cover'}`}
+        />
       ) : (
         <>
           {cover ? (

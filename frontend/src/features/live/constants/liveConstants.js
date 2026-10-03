@@ -3,6 +3,16 @@ export const LIVE_PATHS = Object.freeze({
   create: '/live/create',
   detail: (liveId) => `/live/${encodeURIComponent(liveId)}`,
   host: (liveId) => `/live/${encodeURIComponent(liveId)}/host`,
+  replay: (liveId) => `/replay/${encodeURIComponent(liveId)}`,
+})
+
+/** Backend `live_recordings.status` as exposed by `GET /api/lives/{id}/replay`. */
+export const LIVE_REPLAY_STATUS = Object.freeze({
+  RECORDING: 'RECORDING',
+  PROCESSING: 'PROCESSING',
+  READY: 'READY',
+  FAILED: 'FAILED',
+  DELETED: 'DELETED',
 })
 
 export const LIVE_STATUS = Object.freeze({
@@ -106,6 +116,7 @@ export const LIVE_END_REASON = Object.freeze({
   ADMIN: 'admin',
   HOST_DISCONNECTED: 'host_disconnected',
   PUBLISH_TIMEOUT: 'publish_timeout',
+  MAX_DURATION: 'max_duration',
 })
 
 export const LIVE_MEDIA = Object.freeze({
@@ -119,6 +130,10 @@ export const LIVE_MEDIA = Object.freeze({
   DISCONNECTED_GRACE_MS: 4000,
   /** Viewer re-checks whether the host is publishing while waiting. */
   PLAYBACK_WAIT_POLL_MS: 5000,
+  /** Failed WebRTC reconnects before a viewer switches to HLS (once, when the backend offers it). */
+  HLS_FALLBACK_AFTER_ATTEMPTS: 3,
+  /** Connection quality sampling (RTCPeerConnection.getStats). */
+  STATS_INTERVAL_MS: 2000,
   /** Capture defaults; the browser picks the closest mode the device supports. */
   VIDEO_CONSTRAINTS: Object.freeze({
     width: { ideal: 1280 },
@@ -129,6 +144,12 @@ export const LIVE_MEDIA = Object.freeze({
     echoCancellation: true,
     noiseSuppression: true,
     autoGainControl: true,
+  }),
+  /** Screen share replaces the camera track; capped so a 4K screen does not flood the uplink. */
+  SCREEN_CONSTRAINTS: Object.freeze({
+    width: { ideal: 1920, max: 1920 },
+    height: { ideal: 1080, max: 1080 },
+    frameRate: { ideal: 15, max: 30 },
   }),
 })
 
