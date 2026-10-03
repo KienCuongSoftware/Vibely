@@ -1849,6 +1849,9 @@ html[data-vibely-theme="light"] .vibely-live-page .live-create-footer {
 html[data-vibely-theme="light"] .vibely-live-page .peer:not(:checked) + .live-switch {
   background-color: #d4d4d8;
 }
+html[data-vibely-theme="light"] .peer:checked + .live-switch {
+  background-color: #fe2c55;
+}
 html[data-vibely-theme="light"] .vibely-live-page .live-skeleton {
   background-color: #f1f1f2;
 }
