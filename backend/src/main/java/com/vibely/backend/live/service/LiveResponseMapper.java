@@ -72,6 +72,7 @@ public class LiveResponseMapper {
             live.isAllowGifts(),
             live.isAllowGuests(),
             live.isMatureContent(),
+            live.isRecordingEnabled(),
             giftsAvailable && live.isAllowGifts(),
             viewers,
             peak,

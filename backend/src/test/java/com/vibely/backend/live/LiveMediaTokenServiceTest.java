@@ -41,6 +41,22 @@ class LiveMediaTokenServiceTest {
     }
 
     @Test
+    void hlsTokensAreScopedToHlsAndExpire() {
+        Instant now = Instant.now();
+        String hls = tokens.issueHlsToken(7L, now.plusSeconds(60));
+
+        assertThat(tokens.verifyHlsToken(hls, now)).contains(7L);
+        assertThat(tokens.verifyHlsToken(hls, now.plusSeconds(61))).isEmpty();
+        assertThat(tokens.verifyHlsToken(hls.substring(0, hls.length() - 2) + "xx", now)).isEmpty();
+        assertThat(tokens.verifyHlsToken(null, now)).isEmpty();
+
+        // Neither credential can be used for the other transport.
+        String whep = tokens.issuePlaybackToken(7L, "u42", now.plusSeconds(60));
+        assertThat(tokens.verifyPlaybackToken(hls, now)).isEmpty();
+        assertThat(tokens.verifyHlsToken(whep, now)).isEmpty();
+    }
+
+    @Test
     void publishTokensAndStreamNamesAreRandomAndHashed() {
         Set<String> seen = new HashSet<>();
         for (int index = 0; index < 50; index++) {

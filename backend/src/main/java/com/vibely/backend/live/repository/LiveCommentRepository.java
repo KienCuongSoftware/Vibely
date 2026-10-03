@@ -43,6 +43,8 @@ public interface LiveCommentRepository extends JpaRepository<LiveComment, Long> 
         Pageable pageable
     );
 
+    long countByLive_IdAndDeletedAtIsNull(Long liveId);
+
     @Query("select c from LiveComment c join fetch c.author where c.id = :id and c.live.id = :liveId")
     Optional<LiveComment> findInLive(@Param("id") Long id, @Param("liveId") Long liveId);
 

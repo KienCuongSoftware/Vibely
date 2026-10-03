@@ -20,5 +20,7 @@ public record CreateLiveRequest(
     Boolean allowComments,
     Boolean allowGifts,
     Boolean allowGuests,
-    Boolean matureContent
+    Boolean matureContent,
+    /** Ignored (false) while recording is disabled on the server. */
+    Boolean recordingEnabled
 ) {}

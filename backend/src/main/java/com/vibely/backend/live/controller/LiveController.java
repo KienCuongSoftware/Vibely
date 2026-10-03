@@ -2,6 +2,8 @@ package com.vibely.backend.live.controller;
 
 import com.vibely.backend.common.ApiResponse;
 import com.vibely.backend.live.dto.CreateLiveRequest;
+import com.vibely.backend.live.dto.LiveAnalyticsResponse;
+import com.vibely.backend.live.dto.LiveCapabilitiesResponse;
 import com.vibely.backend.live.dto.LiveCommentPageResponse;
 import com.vibely.backend.live.dto.LiveCommentRequest;
 import com.vibely.backend.live.dto.LiveCommentResponse;
@@ -9,12 +11,15 @@ import com.vibely.backend.live.dto.LiveGiftRequest;
 import com.vibely.backend.live.dto.LiveLikeRequest;
 import com.vibely.backend.live.dto.LiveLikeResponse;
 import com.vibely.backend.live.dto.LivePageResponse;
+import com.vibely.backend.live.dto.LiveReplayResponse;
 import com.vibely.backend.live.dto.LiveResponse;
 import com.vibely.backend.live.dto.LiveStatsResponse;
 import com.vibely.backend.live.dto.UpdateLiveRequest;
 import com.vibely.backend.live.gift.LiveGift;
 import com.vibely.backend.live.media.dto.LivePlaybackResponse;
 import com.vibely.backend.live.media.dto.LivePublishCredentialResponse;
+import com.vibely.backend.live.recording.LiveRecordingService;
+import com.vibely.backend.live.service.LiveAnalyticsService;
 import com.vibely.backend.live.service.LiveCommentService;
 import com.vibely.backend.live.service.LiveGiftActionService;
 import com.vibely.backend.live.service.LiveLikeService;
@@ -45,17 +50,23 @@ public class LiveController {
     private final LiveCommentService commentService;
     private final LiveLikeService likeService;
     private final LiveGiftActionService giftActionService;
+    private final LiveRecordingService recordingService;
+    private final LiveAnalyticsService analyticsService;
 
     public LiveController(
         LiveService liveService,
         LiveCommentService commentService,
         LiveLikeService likeService,
-        LiveGiftActionService giftActionService
+        LiveGiftActionService giftActionService,
+        LiveRecordingService recordingService,
+        LiveAnalyticsService analyticsService
     ) {
         this.liveService = liveService;
         this.commentService = commentService;
         this.likeService = likeService;
         this.giftActionService = giftActionService;
+        this.recordingService = recordingService;
+        this.analyticsService = analyticsService;
     }
 
     @PostMapping
@@ -144,6 +155,27 @@ public class LiveController {
     @GetMapping("/{liveId}/stats")
     public ApiResponse<LiveStatsResponse> stats(Authentication authentication, @PathVariable String liveId) {
         return ApiResponse.success(liveService.stats(authentication, liveId));
+    }
+
+    /** Server toggles (recording, HLS fallback, limits) the clients adapt to. */
+    @GetMapping("/capabilities")
+    public ApiResponse<LiveCapabilitiesResponse> capabilities() {
+        return ApiResponse.success(liveService.capabilities());
+    }
+
+    /** Host: replay state (processing/failed/draft). Others: only a replay the host published publicly. */
+    @GetMapping("/{liveId}/replay")
+    public ResponseEntity<ApiResponse<LiveReplayResponse>> replay(Authentication authentication, @PathVariable String liveId) {
+        return ResponseEntity.ok()
+            .cacheControl(CacheControl.noStore())
+            .body(ApiResponse.success(recordingService.replay(authentication, liveId)));
+    }
+
+    /** Host (or admin) only, once the LIVE has ended. */
+    @GetMapping("/{liveId}/analytics")
+    @PreAuthorize("hasRole('USER')")
+    public ApiResponse<LiveAnalyticsResponse> analytics(Authentication authentication, @PathVariable String liveId) {
+        return ApiResponse.success(analyticsService.get(authentication, liveId));
     }
 
     @GetMapping("/{liveId}/comments")

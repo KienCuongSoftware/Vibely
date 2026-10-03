@@ -48,6 +48,7 @@ public class SrsLiveMediaService implements LiveMediaService {
     private final SrsClient srsClient;
     private final LiveViewerService viewerService;
     private final LiveProperties.Media config;
+    private final LiveProperties.Hls hls;
 
     public SrsLiveMediaService(
         LiveMediaSessionRepository sessionRepository,
@@ -61,6 +62,7 @@ public class SrsLiveMediaService implements LiveMediaService {
         this.srsClient = srsClient;
         this.viewerService = viewerService;
         this.config = properties.getMedia();
+        this.hls = properties.getHls();
     }
 
     @Override
@@ -99,11 +101,12 @@ public class SrsLiveMediaService implements LiveMediaService {
     @Override
     public LivePlaybackResponse getPlaybackInfo(Live live, User viewer) {
         if (live.getStatus() != LiveStatus.LIVE) {
-            return new LivePlaybackResponse(PLAYBACK_TYPE, live.getStatus().name(), false, null, null, null);
+            return new LivePlaybackResponse(PLAYBACK_TYPE, live.getStatus().name(), false, null, null, null, false, null);
         }
         Optional<LiveMediaSession> session = sessionRepository.findByLiveId(live.getId());
         if (session.isEmpty() || session.get().getStatus() != LiveMediaSessionStatus.PUBLISHING) {
-            return new LivePlaybackResponse(PLAYBACK_TYPE, live.getStatus().name(), false, null, iceServers(), null);
+            boolean interrupted = session.isPresent() && session.get().getStatus() == LiveMediaSessionStatus.INTERRUPTED;
+            return new LivePlaybackResponse(PLAYBACK_TYPE, live.getStatus().name(), false, null, iceServers(), null, interrupted, null);
         }
         String viewerKey = viewer == null ? tokens.newGuestViewerKey() : LiveRealtimeStore.userKey(viewer.getId());
         Instant expiresAt = Instant.now().plusSeconds(Math.max(15, config.getPlaybackTokenTtlSeconds()));
@@ -114,8 +117,24 @@ public class SrsLiveMediaService implements LiveMediaService {
             true,
             endpoint(WHEP_PATH, session.get().getStreamName(), token),
             iceServers(),
-            expiresAt
+            expiresAt,
+            false,
+            hlsUrl(session.get())
         );
+    }
+
+    /** Null unless the HLS fallback is enabled; SRS writes the playlist as {@code <stream>.m3u8}. */
+    private String hlsUrl(LiveMediaSession session) {
+        if (!hls.isEnabled()) {
+            return null;
+        }
+        Instant expiresAt = Instant.now().plusSeconds(Math.max(60, hls.getTokenTtlSeconds()));
+        String token = tokens.issueHlsToken(session.getId(), expiresAt);
+        String path = StringUtils.hasText(hls.getPublicPath()) ? hls.getPublicPath().trim() : "/live-hls/";
+        if (!path.endsWith("/")) {
+            path = path + "/";
+        }
+        return publicBase() + path + encode(session.getStreamName()) + ".m3u8?token=" + encode(token);
     }
 
     @Override
@@ -217,12 +236,16 @@ public class SrsLiveMediaService implements LiveMediaService {
         }
     }
 
-    private String endpoint(String path, String streamName, String token) {
+    private String publicBase() {
         String base = config.getPublicUrl() == null ? "" : config.getPublicUrl().trim();
         if (base.endsWith("/")) {
             base = base.substring(0, base.length() - 1);
         }
-        return base + path
+        return base;
+    }
+
+    private String endpoint(String path, String streamName, String token) {
+        return publicBase() + path
             + "?app=" + encode(config.getApp())
             + "&stream=" + encode(streamName)
             + "&token=" + encode(token);

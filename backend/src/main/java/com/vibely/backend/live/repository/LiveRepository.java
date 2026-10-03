@@ -32,6 +32,14 @@ public interface LiveRepository extends JpaRepository<Live, Long> {
     @Query("select l.id from Live l where l.status = :status")
     List<Long> findIdsByStatus(@Param("status") LiveStatus status);
 
+    @Query("""
+        select l.id from Live l
+        where l.status = com.vibely.backend.live.entity.LiveStatus.LIVE
+          and l.startedAt is not null
+          and l.startedAt < :startedBefore
+        """)
+    List<Long> findLiveIdsStartedBefore(@Param("startedBefore") LocalDateTime startedBefore);
+
     /** CREATED -> LIVE; returns 0 when another request already moved the LIVE out of CREATED. */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional

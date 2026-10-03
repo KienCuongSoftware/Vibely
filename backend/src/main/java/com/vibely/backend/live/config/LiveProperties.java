@@ -14,9 +14,24 @@ public class LiveProperties {
     private final Realtime realtime = new Realtime();
     private final Discovery discovery = new Discovery();
     private final Media media = new Media();
+    private final Recording recording = new Recording();
+    private final Hls hls = new Hls();
+    private final Limits limits = new Limits();
 
     public Media getMedia() {
         return media;
+    }
+
+    public Recording getRecording() {
+        return recording;
+    }
+
+    public Hls getHls() {
+        return hls;
+    }
+
+    public Limits getLimits() {
+        return limits;
     }
 
     public Chat getChat() {
@@ -381,6 +396,167 @@ public class LiveProperties {
 
         public void setTurnCredential(String turnCredential) {
             this.turnCredential = turnCredential;
+        }
+    }
+
+    /**
+     * LIVE recording (SRS DVR). SRS writes FLV files into {@code dvrDir}; the same directory must be
+     * mounted at the same absolute path in the backend container. Requires live.media.enabled and S3.
+     */
+    public static class Recording {
+        private boolean enabled;
+        /** Absolute directory shared with SRS; hook paths outside it are rejected. */
+        private String dvrDir = "/var/lib/vibely/live-dvr";
+        /** Wait after the LIVE ends so SRS can close the last file and send on_dvr. */
+        private int settleSeconds = 30;
+        /** Replays longer than this are cut; never above the video pipeline limit (3600). */
+        private int maxReplaySeconds = 3600;
+        private long workerIntervalMs = 15000;
+        /** A remux/upload that has not finished after this long is retried (process crash). */
+        private int processingTimeoutMinutes = 30;
+        private int maxAttempts = 3;
+        /** Gives up on a replay video that never leaves the pipeline. */
+        private int videoPipelineTimeoutHours = 6;
+        /** Unreferenced DVR files older than this are deleted. */
+        private int orphanFileRetentionHours = 24;
+        private int ffmpegTimeoutMinutes = 20;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getDvrDir() {
+            return dvrDir;
+        }
+
+        public void setDvrDir(String dvrDir) {
+            this.dvrDir = dvrDir;
+        }
+
+        public int getSettleSeconds() {
+            return settleSeconds;
+        }
+
+        public void setSettleSeconds(int settleSeconds) {
+            this.settleSeconds = settleSeconds;
+        }
+
+        public int getMaxReplaySeconds() {
+            return maxReplaySeconds;
+        }
+
+        public void setMaxReplaySeconds(int maxReplaySeconds) {
+            this.maxReplaySeconds = maxReplaySeconds;
+        }
+
+        public long getWorkerIntervalMs() {
+            return workerIntervalMs;
+        }
+
+        public void setWorkerIntervalMs(long workerIntervalMs) {
+            this.workerIntervalMs = workerIntervalMs;
+        }
+
+        public int getProcessingTimeoutMinutes() {
+            return processingTimeoutMinutes;
+        }
+
+        public void setProcessingTimeoutMinutes(int processingTimeoutMinutes) {
+            this.processingTimeoutMinutes = processingTimeoutMinutes;
+        }
+
+        public int getMaxAttempts() {
+            return maxAttempts;
+        }
+
+        public void setMaxAttempts(int maxAttempts) {
+            this.maxAttempts = maxAttempts;
+        }
+
+        public int getVideoPipelineTimeoutHours() {
+            return videoPipelineTimeoutHours;
+        }
+
+        public void setVideoPipelineTimeoutHours(int videoPipelineTimeoutHours) {
+            this.videoPipelineTimeoutHours = videoPipelineTimeoutHours;
+        }
+
+        public int getOrphanFileRetentionHours() {
+            return orphanFileRetentionHours;
+        }
+
+        public void setOrphanFileRetentionHours(int orphanFileRetentionHours) {
+            this.orphanFileRetentionHours = orphanFileRetentionHours;
+        }
+
+        public int getFfmpegTimeoutMinutes() {
+            return ffmpegTimeoutMinutes;
+        }
+
+        public void setFfmpegTimeoutMinutes(int ffmpegTimeoutMinutes) {
+            this.ffmpegTimeoutMinutes = ffmpegTimeoutMinutes;
+        }
+    }
+
+    /**
+     * HLS fallback for viewers whose network blocks WebRTC. SRS writes the HLS files; the reverse
+     * proxy serves them from disk under {@code publicPath} after checking the playlist token.
+     */
+    public static class Hls {
+        private boolean enabled;
+        /** Path prefix (same origin unless live.media.public-url is set) ending with '/'. */
+        private String publicPath = "/live-hls/";
+        /** Playlist token lifetime; the token also stops working as soon as the LIVE ends. */
+        private int tokenTtlSeconds = 21600;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getPublicPath() {
+            return publicPath;
+        }
+
+        public void setPublicPath(String publicPath) {
+            this.publicPath = publicPath;
+        }
+
+        public int getTokenTtlSeconds() {
+            return tokenTtlSeconds;
+        }
+
+        public void setTokenTtlSeconds(int tokenTtlSeconds) {
+            this.tokenTtlSeconds = tokenTtlSeconds;
+        }
+    }
+
+    public static class Limits {
+        /** A LIVE is ended automatically after this many minutes; 0 disables the limit. */
+        private int maxDurationMinutes = 240;
+        private long checkIntervalMs = 60000;
+
+        public int getMaxDurationMinutes() {
+            return maxDurationMinutes;
+        }
+
+        public void setMaxDurationMinutes(int maxDurationMinutes) {
+            this.maxDurationMinutes = maxDurationMinutes;
+        }
+
+        public long getCheckIntervalMs() {
+            return checkIntervalMs;
+        }
+
+        public void setCheckIntervalMs(long checkIntervalMs) {
+            this.checkIntervalMs = checkIntervalMs;
         }
     }
 }

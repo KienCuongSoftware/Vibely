@@ -28,7 +28,8 @@ public enum LiveErrorCode {
     RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "You are sending messages too fast"),
     GIFTS_UNAVAILABLE(HttpStatus.NOT_IMPLEMENTED, "Gifts are not available yet"),
     MEDIA_DISABLED(HttpStatus.NOT_IMPLEMENTED, "LIVE video streaming is not enabled"),
-    MEDIA_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "LIVE video is not available right now");
+    MEDIA_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "LIVE video is not available right now"),
+    REPLAY_NOT_FOUND(HttpStatus.NOT_FOUND, "No replay is available for this LIVE");
 
     private final HttpStatus status;
     private final String defaultMessage;

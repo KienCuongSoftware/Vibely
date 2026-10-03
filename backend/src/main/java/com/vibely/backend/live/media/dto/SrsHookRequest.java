@@ -4,8 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Body of an SRS v6 HTTP hook (on_publish, on_unpublish, on_play, on_stop). For WebRTC
- * {@code param} is the full WHIP/WHEP query string, which carries the Vibely token.
+ * Body of an SRS v6 HTTP hook (on_publish, on_unpublish, on_play, on_stop, on_dvr). For WebRTC
+ * {@code param} is the full WHIP/WHEP query string, which carries the Vibely token. {@code cwd} and
+ * {@code file} are only sent by on_dvr ({@code file} may be relative to {@code cwd}).
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record SrsHookRequest(
@@ -16,5 +17,7 @@ public record SrsHookRequest(
     String app,
     String stream,
     String param,
-    @JsonProperty("server_id") String serverId
+    @JsonProperty("server_id") String serverId,
+    String cwd,
+    String file
 ) {}

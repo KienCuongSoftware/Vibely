@@ -250,6 +250,26 @@ live:
     turn-urls: ${LIVE_MEDIA_TURN_URLS:}
     turn-username: ${LIVE_MEDIA_TURN_USERNAME:}
     turn-credential: ${LIVE_MEDIA_TURN_CREDENTIAL:}
+  # Phase 4: SRS DVR -> replay video. Needs live.media.enabled, S3 and SRS rtc_to_rtmp + dvr (see srs.env).
+  recording:
+    enabled: ${LIVE_RECORDING_ENABLED:false}
+    dvr-dir: ${LIVE_RECORDING_DVR_DIR:/var/lib/vibely/live-dvr}
+    settle-seconds: ${LIVE_RECORDING_SETTLE_SECONDS:30}
+    max-replay-seconds: ${LIVE_RECORDING_MAX_REPLAY_SECONDS:3600}
+    worker-interval-ms: ${LIVE_RECORDING_WORKER_INTERVAL_MS:15000}
+    processing-timeout-minutes: ${LIVE_RECORDING_PROCESSING_TIMEOUT_MINUTES:30}
+    max-attempts: ${LIVE_RECORDING_MAX_ATTEMPTS:3}
+    video-pipeline-timeout-hours: ${LIVE_RECORDING_VIDEO_PIPELINE_TIMEOUT_HOURS:6}
+    orphan-file-retention-hours: ${LIVE_RECORDING_ORPHAN_FILE_RETENTION_HOURS:24}
+    ffmpeg-timeout-minutes: ${LIVE_RECORDING_FFMPEG_TIMEOUT_MINUTES:20}
+  # Phase 4: HLS fallback served by the reverse proxy from the SRS HLS directory.
+  hls:
+    enabled: ${LIVE_HLS_ENABLED:false}
+    public-path: ${LIVE_HLS_PUBLIC_PATH:/live-hls/}
+    token-ttl-seconds: ${LIVE_HLS_TOKEN_TTL_SECONDS:21600}
+  limits:
+    max-duration-minutes: ${LIVE_MAX_DURATION_MINUTES:240}
+    check-interval-ms: ${LIVE_LIMITS_CHECK_INTERVAL_MS:60000}
 ---
 spring:
   config:

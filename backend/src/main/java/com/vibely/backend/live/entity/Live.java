@@ -69,6 +69,10 @@ public class Live {
     @Column(name = "mature_content", nullable = false)
     private boolean matureContent;
 
+    /** Chosen at creation; fixed once the LIVE starts (the recording covers the whole broadcast). */
+    @Column(name = "recording_enabled", nullable = false)
+    private boolean recordingEnabled;
+
     @Column(name = "viewer_count", nullable = false, updatable = false)
     private long viewerCount;
 
@@ -201,6 +205,14 @@ public class Live {
 
     public void setMatureContent(boolean matureContent) {
         this.matureContent = matureContent;
+    }
+
+    public boolean isRecordingEnabled() {
+        return recordingEnabled;
+    }
+
+    public void setRecordingEnabled(boolean recordingEnabled) {
+        this.recordingEnabled = recordingEnabled;
     }
 
     public long getViewerCount() {

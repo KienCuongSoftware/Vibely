@@ -8,6 +8,7 @@ import com.vibely.backend.live.exception.LiveException;
 import com.vibely.backend.live.media.LiveMediaTokenService.PlaybackClaims;
 import com.vibely.backend.live.media.dto.SrsHookRequest;
 import com.vibely.backend.live.realtime.LiveEventPublisher;
+import com.vibely.backend.live.recording.LiveRecordingService;
 import com.vibely.backend.live.realtime.LiveEventType;
 import com.vibely.backend.live.repository.LiveMediaSessionRepository;
 import com.vibely.backend.live.repository.LiveRepository;
@@ -49,6 +50,7 @@ public class LiveMediaHookService {
     private final LiveEventPublisher publisher;
     private final LiveMediaMetrics metrics;
     private final LiveProperties.Media config;
+    private final LiveRecordingService recordingService;
 
     public LiveMediaHookService(
         LiveMediaService mediaService,
@@ -60,7 +62,8 @@ public class LiveMediaHookService {
         LiveMediaTokenService tokens,
         LiveEventPublisher publisher,
         LiveMediaMetrics metrics,
-        LiveProperties properties
+        LiveProperties properties,
+        LiveRecordingService recordingService
     ) {
         this.mediaService = mediaService;
         this.sessionRepository = sessionRepository;
@@ -72,6 +75,7 @@ public class LiveMediaHookService {
         this.publisher = publisher;
         this.metrics = metrics;
         this.config = properties.getMedia();
+        this.recordingService = recordingService;
     }
 
     /** @return true to let SRS accept the client */
@@ -86,6 +90,10 @@ public class LiveMediaHookService {
             case "on_play" -> onPlay(hook);
             case "on_stop" -> {
                 onStop(hook);
+                yield true;
+            }
+            case "on_dvr" -> {
+                onDvr(hook);
                 yield true;
             }
             default -> {
@@ -186,6 +194,15 @@ public class LiveMediaHookService {
         if (StringUtils.hasText(hook.clientId())) {
             viewerService.leaveMediaViewer(hook.clientId());
         }
+    }
+
+    /** A notification: the file is already closed, so the answer cannot affect the stream. */
+    private void onDvr(SrsHookRequest hook) {
+        if (!config.getApp().equals(hook.app())) {
+            log.warn("live.media.dvr_unknown_app app={}", hook.app());
+            return;
+        }
+        recordingService.onDvr(hook.stream(), hook.cwd(), hook.file());
     }
 
     private Optional<Target> resolve(SrsHookRequest hook) {

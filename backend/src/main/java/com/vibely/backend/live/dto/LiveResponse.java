@@ -20,6 +20,7 @@ public record LiveResponse(
     boolean allowGifts,
     boolean allowGuests,
     boolean matureContent,
+    boolean recordingEnabled,
     boolean giftsAvailable,
     long viewerCount,
     long peakViewerCount,

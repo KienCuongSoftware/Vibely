@@ -6,6 +6,7 @@ import com.vibely.backend.common.UnauthorizedException;
 import com.vibely.backend.interaction.repository.FollowRepository;
 import com.vibely.backend.live.config.LiveProperties;
 import com.vibely.backend.live.dto.CreateLiveRequest;
+import com.vibely.backend.live.dto.LiveCapabilitiesResponse;
 import com.vibely.backend.live.dto.LivePageResponse;
 import com.vibely.backend.live.dto.LiveResponse;
 import com.vibely.backend.live.dto.LiveStatsResponse;
@@ -19,6 +20,8 @@ import com.vibely.backend.live.exception.LiveException;
 import com.vibely.backend.live.media.LiveMediaService;
 import com.vibely.backend.live.media.dto.LivePlaybackResponse;
 import com.vibely.backend.live.media.dto.LivePublishCredentialResponse;
+import com.vibely.backend.live.recording.LiveRecordingProcessor;
+import com.vibely.backend.live.recording.LiveRecordingService;
 import com.vibely.backend.live.realtime.LiveCounterBroadcaster;
 import com.vibely.backend.live.realtime.LiveEventPublisher;
 import com.vibely.backend.live.realtime.LiveEventType;
@@ -59,6 +62,7 @@ public class LiveService {
     public static final String END_REASON_ADMIN = "admin";
     public static final String END_REASON_HOST_DISCONNECTED = "host_disconnected";
     public static final String END_REASON_PUBLISH_TIMEOUT = "publish_timeout";
+    public static final String END_REASON_MAX_DURATION = "max_duration";
 
     private final LiveRepository liveRepository;
     private final FollowRepository followRepository;
@@ -74,6 +78,8 @@ public class LiveService {
     private final LiveProperties properties;
     private final LiveMediaService mediaService;
     private final LiveCategoryClassifier categoryClassifier;
+    private final LiveRecordingService recordingService;
+    private final LiveAnalyticsService analyticsService;
 
     public LiveService(
         LiveRepository liveRepository,
@@ -89,10 +95,14 @@ public class LiveService {
         S3OwnedMediaValidator mediaValidator,
         LiveProperties properties,
         LiveMediaService mediaService,
-        LiveCategoryClassifier categoryClassifier
+        LiveCategoryClassifier categoryClassifier,
+        LiveRecordingService recordingService,
+        LiveAnalyticsService analyticsService
     ) {
         this.mediaService = mediaService;
         this.categoryClassifier = categoryClassifier;
+        this.recordingService = recordingService;
+        this.analyticsService = analyticsService;
         this.liveRepository = liveRepository;
         this.followRepository = followRepository;
         this.actorResolver = actorResolver;
@@ -122,10 +132,22 @@ public class LiveService {
         live.setAllowGifts(request.allowGifts() == null || request.allowGifts());
         live.setAllowGuests(Boolean.TRUE.equals(request.allowGuests()));
         live.setMatureContent(Boolean.TRUE.equals(request.matureContent()));
+        live.setRecordingEnabled(Boolean.TRUE.equals(request.recordingEnabled()) && recordingService.isAvailable());
 
         Live saved = liveRepository.save(live);
         log.info("live.created live={} hostId={}", saved.getPublicId(), host.getId());
         return toDetail(reload(saved), host);
+    }
+
+    public LiveCapabilitiesResponse capabilities() {
+        boolean media = mediaService.isEnabled();
+        return new LiveCapabilitiesResponse(
+            media,
+            recordingService.isAvailable(),
+            media && properties.getHls().isEnabled(),
+            Math.max(0, properties.getLimits().getMaxDurationMinutes()),
+            Math.min(properties.getRecording().getMaxReplaySeconds(), LiveRecordingProcessor.PIPELINE_SAFE_MAX_SECONDS)
+        );
     }
 
     public LiveResponse get(Authentication authentication, String liveId) {
@@ -222,6 +244,7 @@ public class LiveService {
             // The publish-credential endpoint creates the session lazily if this failed.
             log.warn("live.media.session_create_failed live={} reason={}", started.getPublicId(), ex.getClass().getSimpleName());
         }
+        recordingService.onLiveStarted(started);
         publisher.publish(started.getPublicId(), LiveEventType.LIVE_STARTED, statusPayload(started, null));
         log.info("live.started live={} hostId={}", started.getPublicId(), actor.getId());
         return toDetail(started, actor);
@@ -310,6 +333,8 @@ public class LiveService {
         mediaService.endSession(live);
 
         Live ended = reload(live);
+        recordingService.onLiveEnded(ended);
+        analyticsService.recordQuietly(ended, reason);
         publisher.publish(ended.getPublicId(), LiveEventType.LIVE_ENDED, statusPayload(ended, reason));
         counterBroadcaster.forget(live.getId());
         try {

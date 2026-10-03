@@ -29,6 +29,7 @@ public class LiveMediaTokenService {
     private static final String HMAC = "HmacSHA256";
     private static final Base64.Encoder B64 = Base64.getUrlEncoder().withoutPadding();
     private static final Base64.Decoder B64_DECODER = Base64.getUrlDecoder();
+    private static final String HLS_MARKER = "hls";
 
     private final SecureRandom random = new SecureRandom();
     private final byte[] hmacKey;
@@ -94,6 +95,52 @@ public class LiveMediaTokenService {
                 return Optional.empty();
             }
             return Optional.of(new PlaybackClaims(Long.parseLong(parts[0]), parts[1], expiresAt));
+        } catch (IllegalArgumentException ex) {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * HLS playlist token: longer-lived (the playlist is reloaded for the whole viewing) and scoped to
+     * HLS. Its payload starts with a literal marker, so it is never accepted as a WHEP token, and
+     * a WHEP token is never accepted here.
+     */
+    public String issueHlsToken(long sessionId, Instant expiresAt) {
+        byte[] payloadBytes = (HLS_MARKER + "." + sessionId + "." + expiresAt.getEpochSecond()).getBytes(StandardCharsets.UTF_8);
+        return B64.encodeToString(payloadBytes) + "." + B64.encodeToString(hmac(payloadBytes));
+    }
+
+    /** The media session id when the signature is valid, the token is an HLS token and not expired. */
+    public Optional<Long> verifyHlsToken(String token, Instant now) {
+        Optional<String[]> parts = verifiedParts(token);
+        if (parts.isEmpty() || parts.get().length != 3 || !HLS_MARKER.equals(parts.get()[0])) {
+            return Optional.empty();
+        }
+        try {
+            if (!Instant.ofEpochSecond(Long.parseLong(parts.get()[2])).isAfter(now)) {
+                return Optional.empty();
+            }
+            return Optional.of(Long.parseLong(parts.get()[1]));
+        } catch (NumberFormatException ex) {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<String[]> verifiedParts(String token) {
+        if (!StringUtils.hasText(token)) {
+            return Optional.empty();
+        }
+        int dot = token.indexOf('.');
+        if (dot <= 0 || dot != token.lastIndexOf('.')) {
+            return Optional.empty();
+        }
+        try {
+            byte[] payloadBytes = B64_DECODER.decode(token.substring(0, dot));
+            byte[] signature = B64_DECODER.decode(token.substring(dot + 1));
+            if (!MessageDigest.isEqual(hmac(payloadBytes), signature)) {
+                return Optional.empty();
+            }
+            return Optional.of(new String(payloadBytes, StandardCharsets.UTF_8).split("\\."));
         } catch (IllegalArgumentException ex) {
             return Optional.empty();
         }
