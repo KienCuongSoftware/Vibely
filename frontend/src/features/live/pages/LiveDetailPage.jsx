@@ -4,6 +4,7 @@ import { IoArrowBack, IoClose, IoVolumeHighOutline, IoVolumeMuteOutline } from '
 import { useParams } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { LiveBadge } from '@/features/live/components/LiveBadge.jsx'
+import { LiveSidebar } from '@/features/live/components/LiveSidebar.jsx'
 import { LiveStateView } from '@/features/live/components/LiveStateView.jsx'
 import { LivePlayer } from '@/features/live/components/player/LivePlayer.jsx'
 import { LiveActionBar } from '@/features/live/components/room/LiveActionBar.jsx'
@@ -13,12 +14,13 @@ import { LiveHostInfo } from '@/features/live/components/room/LiveHostInfo.jsx'
 import { LiveViewerCount } from '@/features/live/components/room/LiveViewerCount.jsx'
 import {
   getLiveCategoryLabelKey,
+  LIVE_FEED_FILTER,
   LIVE_PATHS,
   LIVE_ROOM_EVENT,
   LIVE_STATUS,
 } from '@/features/live/constants/liveConstants.js'
 import { useLiveChat } from '@/features/live/hooks/useLiveChat.js'
-import { useLiveDetail, useLiveReplay } from '@/features/live/hooks/useLiveData.js'
+import { useLiveDetail, useLiveDiscovery, useLiveReplay } from '@/features/live/hooks/useLiveData.js'
 import {
   useLiveAuthGate,
   useLiveFollow,
@@ -29,6 +31,7 @@ import {
 } from '@/features/live/hooks/useLiveInteractions.js'
 import { useLiveMobileLayout } from '@/features/live/hooks/useLiveMobileLayout.js'
 import { useLiveNavigation } from '@/features/live/hooks/useLiveNavigation.js'
+import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 import { RESOURCE_STATUS } from '@/features/live/hooks/useLiveResource.js'
 import { useLiveRoom } from '@/features/live/hooks/useLiveRoom.js'
 
@@ -66,6 +69,9 @@ function ReplayButton({ live, token, onOpen }) {
 /** All interactive room state; rendered only once metadata is loaded. */
 function LiveRoom({ live, token, user, isMobile, onBack, onOpenReplay, onStatusChange }) {
   const { t } = useTranslation()
+  const { logout } = useAuth()
+  const { openLive, goLive } = useLiveNavigation()
+  const discovery = useLiveDiscovery({ category: LIVE_FEED_FILTER.RECOMMENDED, token })
   const requireAuth = useLiveAuthGate()
   const isEnded = live.status === LIVE_STATUS.ENDED
 
@@ -211,48 +217,59 @@ function LiveRoom({ live, token, user, isMobile, onBack, onOpenReplay, onStatusC
   }
 
   return (
-    <section className="vibely-keep-dark live-room-desktop flex h-dvh max-h-dvh min-h-0 bg-black text-white">
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <header className="flex shrink-0 items-center gap-4 border-b border-white/10 px-6 py-3">
-          <button
-            type="button"
-            onClick={onBack}
-            aria-label={t('nav.back')}
-            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition hover:bg-white/10"
-          >
-            <IoArrowBack className="text-xl" aria-hidden />
-          </button>
-          <div className="min-w-0 max-w-md flex-1">{hostInfo(false)}</div>
-          <div className="ml-auto flex items-center gap-3">
-            <LiveViewerCount count={viewerCount} />
-          </div>
-        </header>
+    <section className="vibely-live-page live-watch flex h-dvh max-h-dvh min-h-0 bg-black text-zinc-100 lg:flex-row">
+      <div className="hidden shrink-0 lg:flex">
+        <LiveSidebar
+          activeNav="explore"
+          recommendedLives={discovery.data?.recommendedHosts ?? []}
+          onSelectLive={openLive}
+          onGoLive={goLive}
+          token={token}
+          onLogout={token ? logout : undefined}
+        />
+      </div>
 
-        <div className="relative flex min-h-0 flex-1 items-center justify-center p-4">
-          <div className="relative aspect-[9/16] h-full max-w-full overflow-hidden rounded-2xl ring-1 ring-white/10">
-            <LivePlayer live={live} muted={muted} streamSignal={streamSignal} showQuality className="absolute inset-0" />
-            {replayButton}
-            <div className="absolute left-3 top-3 flex items-center gap-2">
-              <LiveBadge />
+      <div className="flex min-h-0 min-w-0 flex-1">
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <div className="flex min-h-0 flex-1 items-center justify-center px-3 pt-3 lg:px-5 lg:pt-4">
+            <div className="vibely-keep-dark relative aspect-video h-full max-h-full w-full max-w-full overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
+              <LivePlayer live={live} muted={muted} streamSignal={streamSignal} showQuality className="absolute inset-0" />
+              {replayButton}
+              <div className="absolute left-3 top-3 z-10 max-w-[calc(100%-1.5rem)]">
+                {hostInfo(true)}
+              </div>
+              <div className="absolute bottom-3 left-3 z-10">
+                <LiveBadge />
+              </div>
+              <div className="absolute bottom-3 right-3 z-10">{muteButton}</div>
+              {giftPanel}
             </div>
-            <div className="absolute bottom-3 right-3">{muteButton}</div>
-            {giftPanel}
           </div>
-        </div>
 
-        <footer className="flex shrink-0 items-center gap-4 border-t border-white/10 px-6 py-3">
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-[16px] font-bold">{live.title}</h1>
-            <p className="truncate text-[12px] text-zinc-400">{categoryLabel}</p>
-          </div>
-          {actionBar(false)}
-        </footer>
-      </main>
+          <footer className="live-watch-bar flex shrink-0 items-center gap-4 px-3 py-3 lg:px-5">
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label={t('nav.back')}
+              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition hover:bg-white/10"
+            >
+              <IoArrowBack className="text-xl" aria-hidden />
+            </button>
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-[16px] font-bold">{live.title}</h1>
+              <p className="truncate text-[12px] text-zinc-400">{categoryLabel}</p>
+            </div>
+            {actionBar(false)}
+          </footer>
+        </main>
 
-      <aside className="flex w-[360px] shrink-0 flex-col border-l border-white/10">
-        <h2 className="shrink-0 border-b border-white/10 px-4 py-3 text-[15px] font-bold">{t('livePage.chat.title')}</h2>
-        {chatView(false, 'min-h-0 flex-1')}
-      </aside>
+        <aside className="live-watch-chat flex w-[min(380px,34vw)] shrink-0 flex-col border-l border-white/10">
+          <h2 className="shrink-0 border-b border-white/10 px-4 py-3 text-[15px] font-bold">
+            {t('livePage.viewersLabel', { count: formatLiveViewerCount(viewerCount) })}
+          </h2>
+          {chatView(false, 'min-h-0 flex-1')}
+        </aside>
+      </div>
     </section>
   )
 }
@@ -282,7 +299,7 @@ export function LiveDetailPage() {
 
   if (detail.status === RESOURCE_STATUS.LOADING && !live) {
     return (
-      <div className="vibely-keep-dark flex h-dvh items-center justify-center bg-black">
+      <div className="vibely-live-page flex h-dvh items-center justify-center bg-black">
         <LiveStateView variant="loading" />
       </div>
     )
@@ -291,7 +308,7 @@ export function LiveDetailPage() {
   if (detail.status === RESOURCE_STATUS.ERROR || !live) {
     const notFound = detail.error?.status === 404
     return (
-      <div className="vibely-keep-dark flex h-dvh items-center justify-center bg-black text-white">
+      <div className="vibely-live-page flex h-dvh items-center justify-center bg-black text-zinc-100">
         <LiveStateView
           variant="error"
           title={notFound ? t('livePage.states.notFoundTitle') : undefined}
