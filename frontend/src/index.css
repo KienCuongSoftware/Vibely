@@ -1827,28 +1827,44 @@ html[data-vibely-theme="light"]
 }
 
 html[data-vibely-theme="light"] .vibely-live-page.live-watch,
+html[data-vibely-theme="light"] .vibely-live-page.live-host,
 html[data-vibely-theme="light"] .vibely-live-page .live-watch-chat,
-html[data-vibely-theme="light"] .vibely-live-page .live-watch-bar {
+html[data-vibely-theme="light"] .vibely-live-page .live-host-chat,
+html[data-vibely-theme="light"] .vibely-live-page .live-watch-bar,
+html[data-vibely-theme="light"] .vibely-live-page .live-host-bar {
   background-color: #fff;
   color: #161823;
 }
 html[data-vibely-theme="light"] .vibely-live-page .live-watch-chat,
+html[data-vibely-theme="light"] .vibely-live-page .live-host-chat,
 html[data-vibely-theme="light"] .vibely-live-page .live-watch-chat .border-white\/10,
-html[data-vibely-theme="light"] .vibely-live-page .live-watch-bar {
+html[data-vibely-theme="light"] .vibely-live-page .live-host-chat .border-white\/10,
+html[data-vibely-theme="light"] .vibely-live-page .live-host-bar .border-white\/10,
+html[data-vibely-theme="light"] .vibely-live-page .live-watch-bar,
+html[data-vibely-theme="light"] .vibely-live-page .live-host-bar {
   border-color: #ebebec;
 }
 html[data-vibely-theme="light"] .vibely-live-page .live-watch-chat .text-white,
+html[data-vibely-theme="light"] .vibely-live-page .live-host-chat .text-white,
 html[data-vibely-theme="light"] .vibely-live-page .live-watch-chat .text-zinc-100,
+html[data-vibely-theme="light"] .vibely-live-page .live-host-chat .text-zinc-100,
 html[data-vibely-theme="light"] .vibely-live-page .live-watch-bar .text-white,
-html[data-vibely-theme="light"] .vibely-live-page .live-watch-bar .live-action-btn {
+html[data-vibely-theme="light"] .vibely-live-page .live-host-bar .text-white,
+html[data-vibely-theme="light"] .vibely-live-page .live-watch-bar .live-action-btn,
+html[data-vibely-theme="light"] .vibely-live-page .live-host-bar .live-action-btn {
   color: #161823;
 }
 html[data-vibely-theme="light"] .vibely-live-page .live-watch-chat .bg-white\/10,
+html[data-vibely-theme="light"] .vibely-live-page .live-host-chat .bg-white\/10,
 html[data-vibely-theme="light"] .vibely-live-page .live-watch-bar .bg-white\/10,
-html[data-vibely-theme="light"] .vibely-live-page .live-watch-bar .hover\:bg-white\/15:hover {
+html[data-vibely-theme="light"] .vibely-live-page .live-host-bar .bg-white\/10,
+html[data-vibely-theme="light"] .vibely-live-page .live-host-bar .bg-white\/15,
+html[data-vibely-theme="light"] .vibely-live-page .live-watch-bar .hover\:bg-white\/15:hover,
+html[data-vibely-theme="light"] .vibely-live-page .live-host-bar .hover\:bg-white\/25:hover {
   background-color: #f1f1f2;
 }
-html[data-vibely-theme="light"] .vibely-live-page .live-watch-chat .hover\:bg-white\/5:hover {
+html[data-vibely-theme="light"] .vibely-live-page .live-watch-chat .hover\:bg-white\/5:hover,
+html[data-vibely-theme="light"] .vibely-live-page .live-host-chat .hover\:bg-white\/5:hover {
   background-color: #f8f8f8;
 }
 

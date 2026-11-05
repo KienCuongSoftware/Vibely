@@ -19,16 +19,22 @@ export function useLiveAuthGate() {
   }, [guestUi, token])
 }
 
-/** Viewer count: initial value from metadata, then pushed by the room channel. */
+/** Viewer count: metadata until the room reports a count, which then stays authoritative. */
 export function useLiveViewerCount({ room, initialCount }) {
   const [count, setCount] = useState(initialCount ?? 0)
+  const liveReport = useRef(false)
 
   useEffect(() => {
+    if (liveReport.current) return
     setCount(initialCount ?? 0)
   }, [initialCount])
 
   useEffect(
-    () => room.subscribe(LIVE_ROOM_EVENT.VIEWER_COUNT, (payload) => setCount(Number(payload?.count) || 0)),
+    () =>
+      room.subscribe(LIVE_ROOM_EVENT.VIEWER_COUNT, (payload) => {
+        liveReport.current = true
+        setCount(Number(payload?.count) || 0)
+      }),
     [room.subscribe],
   )
 

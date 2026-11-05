@@ -221,7 +221,9 @@ function LiveRoom({ live, token, user, isMobile, onBack, onOpenReplay, onStatusC
       <div className="hidden shrink-0 lg:flex">
         <LiveSidebar
           activeNav="explore"
-          recommendedLives={discovery.data?.recommendedHosts ?? []}
+          recommendedLives={(discovery.data?.recommendedHosts ?? []).map((item) =>
+            item.id === live.id ? { ...item, viewerCount } : item,
+          )}
           onSelectLive={openLive}
           onGoLive={goLive}
           token={token}

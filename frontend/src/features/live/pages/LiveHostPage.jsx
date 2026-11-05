@@ -27,6 +27,7 @@ import { RESOURCE_STATUS } from '@/features/live/hooks/useLiveResource.js'
 import { useLiveRoom } from '@/features/live/hooks/useLiveRoom.js'
 import { hostConnectionState } from '@/features/live/media/connectionState.js'
 import { formatLiveDuration } from '@/features/live/utils/formatLiveDuration.js'
+import { formatLiveViewerCount } from '@/features/live/utils/formatLiveCount.js'
 
 const STATUS_LABEL_KEYS = {
   [LIVE_STATUS.SCHEDULED]: 'livePage.host.status.scheduled',
@@ -233,7 +234,7 @@ function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit, 
         <h1 className="truncate text-[15px] font-bold drop-shadow">{live.title}</h1>
         {statusPill}
       </div>
-      <LiveViewerCount count={viewerCount} compact={isMobile} />
+      {isMobile ? <LiveViewerCount count={viewerCount} compact /> : null}
     </header>
   )
 
@@ -258,23 +259,25 @@ function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit, 
   }
 
   return (
-    <section className="vibely-keep-dark flex h-dvh max-h-dvh min-h-0 bg-black text-white">
+    <section className="vibely-live-page live-host flex h-dvh max-h-dvh min-h-0 bg-black text-zinc-100">
       <main className="flex min-h-0 min-w-0 flex-1 flex-col">
-        {header}
+        <div className="live-host-bar">{header}</div>
         <div className="flex min-h-0 flex-1 items-center justify-center p-4">
-          <div className="relative aspect-[9/16] h-full max-w-full overflow-hidden rounded-2xl ring-1 ring-white/10">
+          <div className="vibely-keep-dark relative aspect-[9/16] h-full max-w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/10">
             {preview}
             {endedSummary}
           </div>
         </div>
-        <footer className="flex shrink-0 flex-col gap-3 border-t border-white/10 px-6 py-3">
+        <footer className="live-host-bar flex shrink-0 flex-col gap-3 border-t border-white/10 px-6 py-3">
           {errorBanner}
           {settingsPanel}
           {controls}
         </footer>
       </main>
-      <aside className="flex w-[360px] shrink-0 flex-col border-l border-white/10">
-        <h2 className="shrink-0 border-b border-white/10 px-4 py-3 text-[15px] font-bold">{t('livePage.chat.title')}</h2>
+      <aside className="live-host-chat flex w-[360px] shrink-0 flex-col border-l border-white/10">
+        <h2 className="shrink-0 border-b border-white/10 px-4 py-3 text-[15px] font-bold">
+          {t('livePage.viewersLabel', { count: formatLiveViewerCount(viewerCount) })}
+        </h2>
         {isLive ? (
           chatView(false, 'min-h-0 flex-1')
         ) : (
@@ -303,7 +306,7 @@ export function LiveHostPage() {
 
   if (detail.status === RESOURCE_STATUS.LOADING && !live) {
     return (
-      <div className="vibely-keep-dark flex h-dvh items-center justify-center bg-black">
+      <div className="vibely-live-page flex h-dvh items-center justify-center bg-black">
         <LiveStateView variant="loading" />
       </div>
     )
@@ -312,7 +315,7 @@ export function LiveHostPage() {
   if (detail.status === RESOURCE_STATUS.ERROR || !live || !live.isOwner) {
     const forbidden = live && !live.isOwner
     return (
-      <div className="vibely-keep-dark flex h-dvh items-center justify-center bg-black text-white">
+      <div className="vibely-live-page flex h-dvh items-center justify-center bg-black text-zinc-100">
         <LiveStateView
           variant="error"
           title={forbidden ? t('livePage.host.notOwnerTitle') : undefined}

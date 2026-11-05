@@ -48,6 +48,7 @@ export function createApiLiveRoomChannel({ liveId, token }) {
   let listener = null
   let client = null
   let pollTimer = 0
+  let reconcileTimer = 0
   let retryTimer = 0
   let disposed = false
   let ended = false
@@ -67,6 +68,7 @@ export function createApiLiveRoomChannel({ liveId, token }) {
     if (status !== LIVE_STATUS.ENDED) return
     ended = true
     stopPolling()
+    stopReconcile()
     clearTimeout(retryTimer)
     void client?.deactivate()
     client = null
@@ -111,6 +113,28 @@ export function createApiLiveRoomChannel({ liveId, token }) {
   function stopPolling() {
     clearTimeout(pollTimer)
     pollTimer = 0
+  }
+
+  function stopReconcile() {
+    clearTimeout(reconcileTimer)
+    reconcileTimer = 0
+  }
+
+  /**
+   * A count broadcast can land before the other screen has subscribed, so the socket
+   * alone leaves one page on 0 and the other on 1. Re-read the same stats while connected.
+   */
+  function scheduleReconcile() {
+    stopReconcile()
+    reconcileTimer = setTimeout(() => {
+      reconcileTimer = 0
+      if (disposed || ended || !client) return
+      void catchUpStats()
+        .catch(() => {})
+        .finally(() => {
+          if (!disposed && !ended && client) scheduleReconcile()
+        })
+    }, LIVE_REALTIME.POLL_INTERVAL_MS)
   }
 
   const applyStats = (stats) => {
@@ -170,10 +194,12 @@ export function createApiLiveRoomChannel({ liveId, token }) {
         setState(LIVE_CONNECTION_STATE.CONNECTED)
         void catchUpComments().catch(() => {})
         void catchUpStats().catch(() => {})
+        scheduleReconcile()
       },
       {
         onDisconnect: () => {
           if (client === stomp) client = null
+          stopReconcile()
           if (disposed || ended) return
           startPolling()
           scheduleSocketRetry()
@@ -199,6 +225,7 @@ export function createApiLiveRoomChannel({ liveId, token }) {
       disposed = true
       listener = null
       stopPolling()
+      stopReconcile()
       clearTimeout(retryTimer)
       void client?.deactivate()
       client = null
