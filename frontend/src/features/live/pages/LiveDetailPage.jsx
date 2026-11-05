@@ -64,7 +64,7 @@ function ReplayButton({ live, token, onOpen }) {
 }
 
 /** All interactive room state; rendered only once metadata is loaded. */
-function LiveRoom({ live, token, user, isMobile, onBack, onOpenHost, onOpenReplay, onStatusChange }) {
+function LiveRoom({ live, token, user, isMobile, onBack, onOpenReplay, onStatusChange }) {
   const { t } = useTranslation()
   const requireAuth = useLiveAuthGate()
   const isEnded = live.status === LIVE_STATUS.ENDED
@@ -225,15 +225,6 @@ function LiveRoom({ live, token, user, isMobile, onBack, onOpenHost, onOpenRepla
           <div className="min-w-0 max-w-md flex-1">{hostInfo(false)}</div>
           <div className="ml-auto flex items-center gap-3">
             <LiveViewerCount count={viewerCount} />
-            {live.isOwner ? (
-              <button
-                type="button"
-                onClick={onOpenHost}
-                className="cursor-pointer rounded-full bg-white/10 px-4 py-2 text-[13px] font-semibold hover:bg-white/15"
-              >
-                {t('livePage.room.openHostControls')}
-              </button>
-            ) : null}
           </div>
         </header>
 
@@ -319,7 +310,6 @@ export function LiveDetailPage() {
       user={user}
       isMobile={isMobile}
       onBack={back}
-      onOpenHost={() => navigate(LIVE_PATHS.host(live.id))}
       onOpenReplay={() => navigate(LIVE_PATHS.replay(live.id))}
       onStatusChange={handleStatusChange}
     />
