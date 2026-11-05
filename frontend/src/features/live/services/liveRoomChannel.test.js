@@ -47,6 +47,8 @@ describe('normalizeLive', () => {
     expect(live.host).toMatchObject({ id: '7', displayName: 'kien', followedByViewer: true })
     expect(live.settings.allowGifts).toBe(false)
     expect(live.playback).toEqual({ type: null, url: null })
+    expect(live.coverUrl).toBeNull()
+    expect(normalizeLive({ id: 'x', host: { avatarUrl: 'https://cdn.example/a.jpg' } }).coverUrl).toBe('https://cdn.example/a.jpg')
     expect(normalizeLive({ id: 'x', status: 'CANCELLED' }).status).toBe('ENDED')
   })
 })

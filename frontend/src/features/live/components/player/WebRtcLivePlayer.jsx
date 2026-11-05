@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IoPlay, IoVolumeHighOutline } from 'react-icons/io5'
 import { LiveConnectionQuality } from '@/features/live/components/LiveConnectionQuality.jsx'
+import { AvatarImage } from '@/shared/components/AvatarImage.jsx'
 import { LiveSpinner } from '@/features/live/components/LiveStateView.jsx'
 import { useConnectionQuality } from '@/features/live/hooks/useConnectionQuality.js'
 import { useWebRtcPlayback } from '@/features/live/hooks/useLivePlayback.js'
@@ -41,7 +42,7 @@ export function WebRtcLivePlayer({
   const { state, retry, controller } = useWebRtcPlayback({ liveId: live?.id, ended, streamSignal })
   const videoRef = useRef(null)
   const [blocked, setBlocked] = useState(null)
-  const backdrop = live?.coverUrl ?? live?.portraitCoverUrl ?? live?.host?.avatarUrl ?? null
+  const backdrop = live?.coverUrl || live?.portraitCoverUrl || live?.host?.avatarUrl || null
   const overHls = state.transport === 'hls' && Boolean(state.hlsUrl)
   const playing = state.status === 'playing' && (Boolean(state.stream) || overHls)
   const quality = useConnectionQuality({
@@ -158,13 +159,15 @@ export function WebRtcLivePlayer({
 
   return (
     <div className="vibely-keep-dark relative h-full w-full overflow-hidden bg-zinc-950">
-      {backdrop && !playing ? (
-        <img
-          src={backdrop}
-          alt=""
-          className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl brightness-[0.35]"
-          referrerPolicy="no-referrer"
-        />
+      {!playing ? (
+        <>
+          <AvatarImage
+            src={backdrop}
+            alt=""
+            className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl brightness-[0.35]"
+          />
+          <AvatarImage src={backdrop} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        </>
       ) : null}
       <video
         ref={videoRef}
