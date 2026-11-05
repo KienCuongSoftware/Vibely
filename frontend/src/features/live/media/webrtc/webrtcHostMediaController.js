@@ -136,6 +136,14 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
     return deviceId ? { ...base, deviceId: { exact: deviceId } } : { ...base }
   }
 
+  /** Ask the camera to stay in focus and tell the encoder to keep detail instead of dropping resolution. */
+  const sharpenCameraTrack = (track) => {
+    if (!track || track.kind !== 'video') return
+    if ('contentHint' in track) track.contentHint = 'detail'
+    if (typeof track.applyConstraints !== 'function') return
+    void track.applyConstraints({ focusMode: 'continuous' }).catch(() => {})
+  }
+
   const applyEnabled = () => {
     stream?.getAudioTracks().forEach((track) => {
       track.enabled = state.micEnabled
@@ -344,9 +352,22 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
         senders.audio = peer.addTransceiver(audioTrack, { direction: 'sendonly', streams: [stream] }).sender
       }
       if (videoTrack) {
-        const transceiver = peer.addTransceiver(videoTrack, { direction: 'sendonly', streams: [stream] })
+        const transceiver = peer.addTransceiver(videoTrack, {
+          direction: 'sendonly',
+          streams: [stream],
+          sendEncodings: [{
+            maxBitrate: config.VIDEO_MAX_BITRATE,
+            maxFramerate: 30,
+            scaleResolutionDownBy: 1,
+          }],
+        })
         preferH264(transceiver)
         senders.video = transceiver.sender
+        const params = transceiver.sender.getParameters?.()
+        if (params) {
+          params.degradationPreference = 'maintain-resolution'
+          void transceiver.sender.setParameters?.(params).catch(() => {})
+        }
       }
       peer.onconnectionstatechange = () => onPeerStateChange(peer, id)
 
@@ -436,6 +457,7 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
         forgetScreenTrack()
         stopTracks(stream)
         setStream(captured)
+        sharpenCameraTrack(captured.getVideoTracks()[0])
         applyEnabled()
         setState({ status: 'ready', previewStream: stream, error: null, videoSource: 'camera' })
         attachDeviceWatch()
@@ -503,6 +525,7 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
           stopTracks(captured)
           return
         }
+        if (isVideo) sharpenCameraTrack(nextTrack)
         nextTrack.enabled = isVideo ? state.cameraEnabled : state.micEnabled
         const sender = isVideo ? senders.video : senders.audio
         if (sender) await sender.replaceTrack(nextTrack)
@@ -576,6 +599,7 @@ export function createWebRtcHostMediaController({ getPublishInfo, timing = {}, m
           stopTracks(captured)
           return
         }
+        sharpenCameraTrack(camera)
         camera.enabled = state.cameraEnabled
         forgetScreenTrack()
         await replaceVideoTrack(camera)

@@ -136,10 +136,13 @@ export const LIVE_MEDIA = Object.freeze({
   STATS_INTERVAL_MS: 2000,
   /** Capture defaults; the browser picks the closest mode the device supports. */
   VIDEO_CONSTRAINTS: Object.freeze({
-    width: { ideal: 1280 },
-    height: { ideal: 720 },
+    width: { ideal: 1920 },
+    height: { ideal: 1080 },
     frameRate: { ideal: 30, max: 30 },
+    aspectRatio: { ideal: 16 / 9 },
   }),
+  /** Outbound video cap. 1080p30 stays sharp around 6 Mbit/s; the browser still drops it if the uplink cannot. */
+  VIDEO_MAX_BITRATE: 6_000_000,
   AUDIO_CONSTRAINTS: Object.freeze({
     echoCancellation: true,
     noiseSuppression: true,
