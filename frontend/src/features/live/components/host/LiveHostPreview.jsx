@@ -56,7 +56,7 @@ export function LiveHostPreview({
           autoPlay
           playsInline
           muted
-          className={`h-full w-full ${videoSource === 'screen' ? 'bg-black object-contain' : '-scale-x-100 object-cover'}`}
+          className={`h-full w-full bg-black object-contain ${videoSource === 'screen' ? '' : '-scale-x-100'}`}
         />
       ) : (
         <>

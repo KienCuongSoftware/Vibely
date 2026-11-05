@@ -262,8 +262,8 @@ function LiveHostStudio({ live, setLive, token, user, isMobile, onBack, onExit, 
     <section className="vibely-live-page live-host flex h-dvh max-h-dvh min-h-0 bg-black text-zinc-100">
       <main className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="live-host-bar">{header}</div>
-        <div className="flex min-h-0 flex-1 items-center justify-center p-4">
-          <div className="vibely-keep-dark relative aspect-[9/16] h-full max-w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/10">
+        <div className="flex min-h-0 flex-1 items-center justify-center px-3 pt-3 lg:px-5 lg:pt-4">
+          <div className="vibely-keep-dark relative aspect-video h-full max-h-full w-full max-w-full overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
             {preview}
             {endedSummary}
           </div>
