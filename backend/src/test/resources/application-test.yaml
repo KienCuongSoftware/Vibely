@@ -11,6 +11,8 @@ spring:
       ddl-auto: create-drop
     show-sql: false
 app:
+  oauth2:
+    enabled: false
   jwt:
     secret: test-secret-key-with-at-least-thirty-two-chars
     expiration-seconds: 3600

@@ -14,7 +14,7 @@ Deliver TikTok-class UX (instant playback, infinite scroll, realtime chat) on an
 flowchart TB
   subgraph clients [Clients]
     Web[React SPA]
-    MobileFuture[Mobile Web / Future Apps]
+    Mobile[Flutter app — feed, auth, profile, search]
   end
 
   subgraph edge [Edge]

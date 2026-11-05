@@ -160,8 +160,9 @@ backend LiveRecordingService ── LIVE ended + settle delay ──▶ LiveReco
   It is visible to the host always, and to others only after the host publishes the video from Studio.
   The response is `no-store`, URLs are never stored, and `404 REPLAY_NOT_FOUND` means there is no recording.
   The frontend page is `/replay/:liveId`.
-- Unclaimed DVR files are removed after `LIVE_RECORDING_ORPHAN_FILE_RETENTION_HOURS`. Only one backend
-  instance (the one sharing the DVR directory with SRS) should run with recording on.
+- Unclaimed DVR files are removed after `LIVE_RECORDING_ORPHAN_FILE_RETENTION_HOURS`. Enable recording
+  only on the backend that mounts the DVR directory. Its tick also holds a Postgres advisory lock
+  (`ClusterJobGuard`, name `live-recording`) so a second instance does not claim the same files.
 
 ### HLS fallback
 

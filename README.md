@@ -41,7 +41,7 @@ xychart-beta
   <img src="https://img.shields.io/badge/Flutter-Mobile-02569B?logo=flutter&logoColor=white" alt="Flutter"/>
   <img src="https://img.shields.io/badge/PostgreSQL-16+-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL"/>
   <img src="https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white" alt="Redis"/>
-  <img src="https://img.shields.io/badge/Flyway-V97-CC0200?logo=flyway&logoColor=white" alt="Flyway V97"/>
+  <img src="https://img.shields.io/badge/Flyway-V104-CC0200?logo=flyway&logoColor=white" alt="Flyway V104"/>
   <img src="https://img.shields.io/badge/i18n-56%20locales-blueviolet" alt="56 locales"/>
 </p>
 
@@ -98,7 +98,7 @@ docker compose up -d redis
 
 ### 2 · Database
 
-Create PostgreSQL database `vibely`. Flyway runs on backend startup — tip migration **`V97`** (`intended_privacy` for Studio review hold). See [docs/database/](docs/database/).
+Create PostgreSQL database `vibely`. Flyway runs on backend startup through **`V104`** (LIVE recording and analytics). `V97` still holds `intended_privacy` for Studio review. See [docs/database/](docs/database/).
 
 ### 3 · Backend
 
@@ -297,10 +297,10 @@ Vibely/
 │       ├── processing/ share/ studio/ admin/ video/
 │       ├── moderation/      # AI + human review, publication hold
 │       ├── contentunderstanding/ originality/ translation/
-│       └── resources/db/migration/   # Flyway V1…V97
+│       └── resources/db/migration/   # Flyway V1…V104
 ├── frontend/                # React + Vite SPA (feature-first)
-│   └── src/features/        # auth feed post profile studio search chat …
-│       └── i18n/            # 56 locale JSON files
+│   ├── src/features/        # auth feed post profile studio search chat …
+│   └── src/i18n/            # 56 locale JSON files; en and vi ship in the main bundle
 ├── mobile/                  # Flutter client
 ├── ai-workers/
 │   ├── content-understanding/

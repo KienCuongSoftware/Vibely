@@ -1,5 +1,6 @@
 package com.vibely.backend.live.recording;
 
+import com.vibely.backend.common.ClusterJobGuard;
 import com.vibely.backend.live.config.LiveProperties;
 import com.vibely.backend.live.entity.Live;
 import com.vibely.backend.live.entity.LiveRecording;
@@ -40,8 +41,9 @@ import org.springframework.stereotype.Component;
  * dedicated thread, PROCESSING -> READY/FAILED from the replay video's pipeline state, and cleanup
  * of DVR files nobody references.
  *
- * <p>DVR files are on the local disk of the SRS host, so exactly one backend instance (the one
- * sharing the DVR directory with SRS) should run with recording enabled.
+ * <p>DVR files are on the local disk of the SRS host. Enable recording only on the instance that
+ * mounts that directory. The tick also takes a Postgres advisory lock so a second instance with the
+ * flag on does not claim the same files.
  */
 @Component
 @ConditionalOnProperty(name = "live.recording.enabled", havingValue = "true")
@@ -56,6 +58,7 @@ public class LiveRecordingWorker {
     private final VideoRepository videoRepository;
     private final LiveRecordingProcessor processor;
     private final LiveRecordingService recordingService;
+    private final ClusterJobGuard clusterJobs;
     private final LiveProperties.Recording config;
     private final Path dvrRoot;
     private final ExecutorService executor;
@@ -69,7 +72,8 @@ public class LiveRecordingWorker {
         VideoRepository videoRepository,
         LiveRecordingProcessor processor,
         LiveRecordingService recordingService,
-        LiveProperties properties
+        LiveProperties properties,
+        ClusterJobGuard clusterJobs
     ) {
         this.recordingRepository = recordingRepository;
         this.segmentRepository = segmentRepository;
@@ -77,6 +81,7 @@ public class LiveRecordingWorker {
         this.videoRepository = videoRepository;
         this.processor = processor;
         this.recordingService = recordingService;
+        this.clusterJobs = clusterJobs;
         this.config = properties.getRecording();
         this.dvrRoot = LiveRecordingFiles.root(config.getDvrDir());
         this.executor = Executors.newSingleThreadExecutor(runnable -> {
@@ -94,14 +99,16 @@ public class LiveRecordingWorker {
         if (!recordingService.isAvailable()) {
             return;
         }
-        try {
-            finalizeEnded();
-            resumeProcessing();
-            syncReplayVideos();
-            cleanupIfDue();
-        } catch (RuntimeException ex) {
-            log.warn("live.recording.worker_failed reason={}", ex.getClass().getSimpleName(), ex);
-        }
+        clusterJobs.runExclusive("live-recording", () -> {
+            try {
+                finalizeEnded();
+                resumeProcessing();
+                syncReplayVideos();
+                cleanupIfDue();
+            } catch (RuntimeException ex) {
+                log.warn("live.recording.worker_failed reason={}", ex.getClass().getSimpleName(), ex);
+            }
+        });
     }
 
     @PreDestroy

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useContext } from 'react'
-import { saveLocale } from './i18n.js'
+import { ensureLocale, saveLocale } from './i18n.js'
 import { AuthContext } from '@/features/auth/store/auth-context'
 import { apiClient } from '@/shared/api/client'
 
@@ -81,10 +81,12 @@ export function useLocale() {
 
   const changeLanguage = (lang) => {
     saveLocale(lang)
-    i18n.changeLanguage(lang)
-    if (auth?.token) {
-      void apiClient.updatePreferredLocale(auth.token, { preferredLocale: lang })
-    }
+    void ensureLocale(lang).then(() => {
+      void i18n.changeLanguage(lang)
+      if (auth?.token) {
+        void apiClient.updatePreferredLocale(auth.token, { preferredLocale: lang })
+      }
+    })
   }
 
   return {
