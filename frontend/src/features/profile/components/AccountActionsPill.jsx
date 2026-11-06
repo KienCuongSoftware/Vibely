@@ -24,13 +24,13 @@ function HeaderLabelChip({ icon, label }) {
 }
 
 /**
- * Thanh pill góc phải (desktop ≥1024px): Nhận xu / Tải ứng dụng (icon + chữ i18n), avatar.
+ * Thanh pill góc phải (desktop ≥1024px): avatar. Nhận Xu / Tải ứng dụng nằm cuối sidebar.
  */
 export function AccountActionsPill({
   children,
   className = "",
   tone = "feed",
-  showCoinAndApp = true,
+  showCoinAndApp = false,
 }) {
   const { t } = useTranslation();
   const getCoins = t("moreMenu.getCoins");

@@ -17,6 +17,8 @@ import { UploadTypeFlyout } from "@/features/upload/components/UploadTypeFlyout.
 import { useMainSidebarCollapse } from "@/shared/store/MainSidebarCollapseContext.jsx";
 import { goStudioUpload } from "@/shared/utils/sidebarNavigation.js";
 import {
+  IoCashOutline,
+  IoPhonePortraitOutline,
   IoSearchOutline,
 } from "react-icons/io5";
 
@@ -196,6 +198,7 @@ export function Sidebar({
           )
         ) : null}
 
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         <nav className="space-y-1">
           {menuItems.map((item) => {
             const label = t(item.labelKey || item.label);
@@ -327,18 +330,62 @@ export function Sidebar({
           </div>
         ) : null}
 
-        {!collapsed ? (
-          <div
-            className={`mt-auto space-y-2 text-xs text-zinc-500 ${
-              token ? "border-t border-zinc-900 pt-4" : ""
-            }`}
-          >
-            <p>{t("nav.company")}</p>
-            <p>{t("nav.program")}</p>
-            <p>{t("nav.termsAndPolicies")}</p>
-            <p>{t("nav.copyright")}</p>
+        </div>
+
+        <div className="mt-3 shrink-0">
+          {!collapsed ? (
+            <div
+              className={`mb-3 space-y-2 text-xs text-zinc-500 ${
+                token ? "border-t border-zinc-900 pt-4" : ""
+              }`}
+            >
+              <p>{t("nav.company")}</p>
+              <p>{t("nav.program")}</p>
+              <p>{t("nav.termsAndPolicies")}</p>
+              <p>{t("nav.copyright")}</p>
+            </div>
+          ) : null}
+          <div className={collapsed ? "flex flex-col items-center gap-2" : "flex flex-col gap-2"}>
+            <TooltipHoverWrap
+              tip={t("moreMenu.getCoins")}
+              hoverOnly
+              portal
+              className={collapsed ? "" : "w-full"}
+            >
+              <button
+                type="button"
+                className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-zinc-900 font-semibold text-zinc-100 transition-colors hover:bg-zinc-800 ${
+                  collapsed ? "h-10 w-10" : "h-9 w-full px-2 text-[13px]"
+                }`}
+                aria-label={t("moreMenu.getCoins")}
+              >
+                <IoCashOutline className="shrink-0 text-base" aria-hidden />
+                {collapsed ? null : (
+                  <span className="truncate">{t("moreMenu.getCoins")}</span>
+                )}
+              </button>
+            </TooltipHoverWrap>
+            <TooltipHoverWrap
+              tip={t("common.downloadApp")}
+              hoverOnly
+              portal
+              className={collapsed ? "" : "w-full"}
+            >
+              <button
+                type="button"
+                className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-zinc-900 font-semibold text-zinc-100 transition-colors hover:bg-zinc-800 ${
+                  collapsed ? "h-10 w-10" : "h-9 w-full px-2 text-[13px]"
+                }`}
+                aria-label={t("common.downloadApp")}
+              >
+                <IoPhonePortraitOutline className="shrink-0 text-base" aria-hidden />
+                {collapsed ? null : (
+                  <span className="truncate">{t("common.downloadApp")}</span>
+                )}
+              </button>
+            </TooltipHoverWrap>
           </div>
-        ) : null}
+        </div>
       </aside>
 
       {searchOpen ? (

@@ -62,11 +62,13 @@ export const FEED_CHEVRON_COLUMN_PX = 52;
 /** Lề phải ngoài cùng — tránh chật giữa cột nút và mũi tên. */
 export const FEED_RIGHT_OUTER_GAP_PX = 28;
 
-/** Tổng chiều ngang bên phải video (cột tương tác + mũi tên + khoảng cách). */
+/**
+ * Chỗ chừa bên phải khung. Avatar / tim / bình luận / chia sẻ nằm trong video,
+ * nên chỉ còn cột mũi tên chuyển video.
+ */
 export const FEED_ACTION_RAIL_PX =
-  FEED_ACTION_COLUMN_PX +
   FEED_CHEVRON_COLUMN_PX +
-  FEED_STAGE_EDGE_GAP_PX * 2 +
+  FEED_STAGE_EDGE_GAP_PX +
   FEED_RIGHT_OUTER_GAP_PX;
 
 /** Panel bình luận dock bên phải — rộng hơn, gần TikTok web (~420px). */
@@ -94,7 +96,7 @@ export const FEED_LANDSCAPE_MAX_WIDTH_PX = 1020;
  * Trần rộng khung feed desktop. Cùng một kích thước cho video dọc và ngang:
  * video nằm giữa, phần thừa là nền mờ (TikTok web).
  */
-export const FEED_UNIFIED_STAGE_MAX_WIDTH_PX = 1280;
+export const FEED_UNIFIED_STAGE_MAX_WIDTH_PX = 1680;
 
 function feedStageReservedWidthPx(
   commentsOpen,

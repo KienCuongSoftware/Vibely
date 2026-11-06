@@ -1899,9 +1899,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   mobileLayout
                     ? "relative min-h-0 flex-1 overflow-hidden"
                     : feedCommentsOpen && !mobileLayout && feedDockLandscape
-                      ? "relative flex min-h-0 w-full flex-col items-start justify-center max-lg:h-full max-lg:flex-1"
+                      ? "relative flex min-h-0 w-auto flex-col items-start justify-center max-lg:h-full max-lg:w-full max-lg:flex-1"
                       : feedCommentsOpen && !mobileLayout
-                        ? "relative flex min-h-0 w-full flex-col items-center justify-center max-lg:h-full max-lg:flex-1"
+                        ? "relative flex min-h-0 w-auto flex-col items-center justify-center max-lg:h-full max-lg:w-full max-lg:flex-1"
                         : "relative max-lg:h-full max-lg:w-full max-lg:flex-1 lg:w-auto lg:shrink-0"
                 }
               >
@@ -1992,17 +1992,14 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     </span>
                   </div>
                 ) : null}
-              </div>
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-15 h-28 bg-linear-to-t from-black/80 via-black/35 to-transparent max-lg:block lg:hidden" />
               <div
                 className={
                   mobileLayout
-                    ? `vibely-feed-chrome-rail pointer-events-auto z-30 flex h-full shrink-0 flex-col items-center justify-end gap-3 px-2 pb-10${
+                    ? `vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-2 bottom-16 z-40 flex flex-col items-center gap-3${
                         feedCommentsOpen ? " hidden" : ""
                       }`
-                    : `vibely-feed-chrome-rail pointer-events-auto z-30 ml-3 flex shrink-0 flex-col items-center gap-4 pb-6 ${
-                        feedCommentsOpen ? "self-center pb-0" : "self-end"
-                      }`
+                    : "vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-3 bottom-20 z-40 flex flex-col items-center gap-3"
                 }
               >
                 <div
@@ -2149,6 +2146,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   />
                 </button>
                 </div>
+              </div>
               </div>
               <div className="hidden lg:contents">
                 <FeedChevronNav
