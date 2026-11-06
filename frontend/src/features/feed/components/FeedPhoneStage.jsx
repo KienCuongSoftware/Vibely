@@ -1073,7 +1073,7 @@ export function FeedPhoneStage({
 
   const stageOuterSurfaceClass = mobileFullBleed
     ? "relative h-full w-full overflow-hidden bg-black vibely-keep-dark"
-    : `${stageWidthClass} relative overflow-hidden bg-black vibely-keep-dark`;
+    : `${stageWidthClass} relative overflow-hidden rounded-2xl bg-black vibely-keep-dark`;
 
   /** Giữ activeIndex ổn định khi chiều cao khung đổi (phát hiện 16:9). */
   const [stageHeightSettle, setStageHeightSettle] = useState(false);

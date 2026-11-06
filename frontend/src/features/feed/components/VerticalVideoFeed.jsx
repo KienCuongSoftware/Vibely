@@ -17,7 +17,6 @@ import {
 } from "@/features/feed/components/MobileFeedShell.jsx";
 import { MobileFollowingEmptyState } from "@/features/feed/components/MobileFollowingEmptyState.jsx";
 import { Sidebar } from "@/shared/components/Sidebar";
-import { TooltipHoverWrap } from "@/shared/components/TooltipControls";
 import { AccountActionsPill } from "@/features/profile/components/AccountActionsPill";
 import { GuestLoginTrigger } from "@/features/auth/store/GuestAuthUiContext.jsx";
 import { VideoShareModal } from "@/features/post/components/VideoShareModal";
@@ -54,8 +53,6 @@ import {
   IoChevronUp,
   IoCheckmark,
   IoHeart,
-  IoLogOutOutline,
-  IoPerson,
   IoVideocam,
 } from "react-icons/io5";
 import { FaComment } from "react-icons/fa6";
@@ -90,10 +87,8 @@ import { redirectGuestToLogin } from "@/features/auth/utils/guestAuthGate.js";
 import { buildProfilePath } from "@/features/profile/utils/buildProfilePath.js";
 import { buildMainSidebarMenuItems } from "@/shared/utils/mainSidebarMenuItems.js";
 import { recordProfileLastWatchedFromVideo } from "@/features/profile/utils/profileLastWatched.js";
-import { AvatarImage, DEFAULT_AVATAR_URL } from "@/shared/components/AvatarImage.jsx";
+import { AvatarImage } from "@/shared/components/AvatarImage.jsx";
 import { sanitizeAvatarUrl } from "@/features/profile/utils/avatarUrl.js";
-
-const DEFAULT_USER_AVATAR_URL = DEFAULT_AVATAR_URL;
 
 function formatCompactCount(value) {
   const count = Number(value ?? 0);
@@ -364,9 +359,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const [bookmarkManageOpen, setBookmarkManageOpen] = useState(false);
   const [newCollectionOpen, setNewCollectionOpen] = useState(false);
   const bookmarkButtonRef = useRef(null);
-  const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const accountMenuRef = useRef(null);
   const feedVideoRef = useRef(null);
   /** 0–1; khi bật tiếng dùng max. */
   const [feedVolume, setFeedVolume] = useState(1);
@@ -1321,7 +1314,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
       if (
         shareModalOpen ||
         feedMoreMenuOpen ||
-        showAccountMenu ||
         showLogoutConfirm ||
         mobileMenuOpen
       ) {
@@ -1340,7 +1332,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     mobileMenuOpen,
     requestFeedStep,
     shareModalOpen,
-    showAccountMenu,
     showLogoutConfirm,
   ])
 
@@ -1558,29 +1549,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   }, [activeIndex, activeVideo?.publicId, activeVideo?.videoUrl]);
 
   useEffect(() => {
-    if (!showAccountMenu) return undefined;
-
-    const handleOutsideClick = (event) => {
-      if (!accountMenuRef.current?.contains(event.target)) {
-        setShowAccountMenu(false);
-      }
-    };
-    const handleEscape = (event) => {
-      if (event.key === "Escape") {
-        setShowAccountMenu(false);
-        setShowLogoutConfirm(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleOutsideClick);
-    document.addEventListener("keydown", handleEscape);
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [showAccountMenu]);
-
-  useEffect(() => {
     if (!showLogoutConfirm) return undefined;
     const handleEscape = (event) => {
       if (event.key === "Escape") {
@@ -1722,60 +1690,16 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
             : "lg:items-center lg:justify-center"
         }`}
       >
-        <AccountActionsPill
-          className="absolute right-8 top-5 z-100 max-lg:hidden"
-          tone="profile"
-        >
-          {!token ? (
+        {!token ? (
+          <AccountActionsPill
+            className="absolute right-8 top-5 z-100 max-lg:hidden"
+            tone="profile"
+          >
             <GuestLoginTrigger className="ml-0.5 cursor-pointer rounded-full bg-red-600 px-3.5 py-2 text-xs font-semibold leading-none text-white hover:bg-red-500">
               {t('nav.login')}
             </GuestLoginTrigger>
-          ) : (
-            <div className="relative" ref={accountMenuRef}>
-              <TooltipHoverWrap tip={t('common.account')} tipHidden={showAccountMenu} hoverOnly>
-                <button
-                  type="button"
-                  className="flex cursor-pointer rounded-full p-0.5 transition hover:bg-zinc-800"
-                  aria-label={t('common.accountMenu')}
-                  onClick={() => setShowAccountMenu((prev) => !prev)}
-                >
-                  <AvatarImage
-                    className="h-7 w-7 rounded-full object-cover"
-                    src={
-                      user?.avatarUrl && user.avatarUrl.trim()
-                        ? user.avatarUrl
-                        : DEFAULT_USER_AVATAR_URL
-                    }
-                    alt={t('common.userAvatar')}
-                    fallbackSrc={DEFAULT_USER_AVATAR_URL}
-                  />
-                </button>
-              </TooltipHoverWrap>
-              {showAccountMenu ? (
-                <div className="absolute right-0 z-110 mt-2 w-44 overflow-hidden rounded-xl bg-zinc-800 py-1 shadow-2xl">
-                  <Link
-                    to={buildProfilePath(token, user)}
-                    className="vibely-account-menu-item flex items-center gap-2 px-3 py-2 text-sm text-zinc-100 hover:bg-zinc-700"
-                    onClick={() => setShowAccountMenu(false)}
-                  >
-                    <IoPerson className="text-base" />
-                    {t('common.viewProfile')}
-                  </Link>
-                  <button
-                    className="vibely-account-menu-item flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-100 hover:bg-zinc-700"
-                    onClick={() => {
-                      setShowAccountMenu(false);
-                      setShowLogoutConfirm(true);
-                    }}
-                  >
-                    <IoLogOutOutline className="text-base" />
-                    {t('common.logout')}
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          )}
-        </AccountActionsPill>
+          </AccountActionsPill>
+        ) : null}
 
         <div
           className={`relative flex min-h-0 min-w-0 flex-1 ${
