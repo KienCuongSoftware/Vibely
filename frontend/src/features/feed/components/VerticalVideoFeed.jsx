@@ -181,17 +181,19 @@ function filterOutUnpublishedOwnVideos(items) {
 
 function FeedChevronNav({ activeIndex, videoCount, onStep, busy, className }) {
   const { t } = useTranslation();
+  const chevronBtnClass =
+    "flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center bg-transparent text-[22px] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)] transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-35";
   return (
     <div
       className={
         className ??
-        "vibely-feed-chrome-rail ml-2 flex shrink-0 flex-col justify-center gap-2.5 self-center sm:ml-3"
+        "vibely-feed-chrome-rail flex flex-col items-center gap-1.5"
       }
     >
       <button
         type="button"
-        aria-label={t('feed.prevVideo')}
-        className={FEED_ROUND_ICON_BUTTON}
+        aria-label={t("feed.prevVideo")}
+        className={chevronBtnClass}
         disabled={busy || activeIndex === 0}
         onClick={() => onStep(-1)}
       >
@@ -199,8 +201,8 @@ function FeedChevronNav({ activeIndex, videoCount, onStep, busy, className }) {
       </button>
       <button
         type="button"
-        aria-label={t('feed.nextVideo')}
-        className={FEED_ROUND_ICON_BUTTON}
+        aria-label={t("feed.nextVideo")}
+        className={chevronBtnClass}
         disabled={busy || activeIndex >= videoCount - 1}
         onClick={() => onStep(1)}
       >
@@ -1856,13 +1858,22 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   </div>
                 ) : null}
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-15 h-28 bg-linear-to-t from-black/80 via-black/35 to-transparent max-lg:block lg:hidden" />
+              {!mobileLayout ? (
+                <FeedChevronNav
+                  activeIndex={activeIndex}
+                  videoCount={videos.length}
+                  onStep={requestFeedStep}
+                  busy={feedStepBusy}
+                  className="vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-3 top-1/2 z-40 flex -translate-y-1/2 flex-col items-center gap-1.5 bg-transparent"
+                />
+              ) : null}
               <div
                 className={
                   mobileLayout
-                    ? `vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-2 bottom-16 z-40 flex flex-col items-center gap-3 bg-transparent${
+                    ? `vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-2 bottom-14 z-40 flex flex-col items-center gap-2.5 bg-transparent${
                         feedCommentsOpen ? " hidden" : ""
                       }`
-                    : "vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-3 bottom-20 z-40 flex flex-col items-center gap-3 bg-transparent"
+                    : "vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-3 bottom-12 z-40 flex flex-col items-center gap-2.5 bg-transparent"
                 }
               >
                 <div className={FEED_ACTION_ITEM_CLASS}>
@@ -1878,7 +1889,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                       aria-hidden
                     />
                   </button>
-                  <span className="text-xs leading-none text-white">
+                  <span className="text-[11px] leading-none text-white">
                     {formatCompactCount(activeVideo?.likeCount)}
                   </span>
                 </div>
@@ -1886,14 +1897,14 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   <button
                     type="button"
                     data-testid="feed-comment-button"
-                    className={`${FEED_ROUND_ICON_BUTTON} ${feedCommentsOpen ? "ring-2 ring-white/50" : ""}`}
+                    className={`${FEED_ROUND_ICON_BUTTON} ${feedCommentsOpen ? "opacity-80" : ""}`}
                     aria-label={t("feed.comment")}
                     aria-expanded={feedCommentsOpen}
                     onClick={toggleFeedComments}
                   >
-                    <FaComment className="text-lg text-white" aria-hidden />
+                    <FaComment className="text-[20px] text-white" aria-hidden />
                   </button>
-                  <span className="text-xs leading-none text-white">
+                  <span className="text-[11px] leading-none text-white">
                     {formatCompactCount(activeVideo?.commentCount)}
                   </span>
                 </div>
@@ -1911,13 +1922,13 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     <IoBookmark
                       className={
                         bookmarked
-                          ? "text-xl text-[#FACE15]"
-                          : "text-xl text-white"
+                          ? "text-[20px] text-[#FACE15]"
+                          : "text-[20px] text-white"
                       }
                       aria-hidden
                     />
                   </button>
-                  <span className="text-xs leading-none text-white">
+                  <span className="text-[11px] leading-none text-white">
                     {formatCompactCount(activeVideo?.bookmarkCount)}
                   </span>
                 </div>
@@ -1929,21 +1940,13 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     aria-expanded={shareModalOpen}
                     onClick={openShareModal}
                   >
-                    <IoArrowRedo aria-hidden />
+                    <IoArrowRedo className="text-[20px]" aria-hidden />
                   </button>
-                  <span className="text-xs leading-none text-white">
+                  <span className="text-[11px] leading-none text-white">
                     {formatCompactCount(activeVideo?.shareCount)}
                   </span>
                 </div>
               </div>
-              </div>
-              <div className="hidden lg:contents">
-                <FeedChevronNav
-                  activeIndex={activeIndex}
-                  videoCount={videos.length}
-                  onStep={requestFeedStep}
-                  busy={feedStepBusy}
-                />
               </div>
               </div>
             </div>

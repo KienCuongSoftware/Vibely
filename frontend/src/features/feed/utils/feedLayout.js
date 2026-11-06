@@ -2,13 +2,13 @@
 export const FEED_VIDEO_OVERLAY_BTN_CLASS =
   "rounded-full bg-black/30 p-2.5 text-xl text-white backdrop-blur-md transition-colors hover:bg-white/20 active:bg-white/25";
 
-/** Nút tròn cột tương tác (thích / bình luận / …) — không nền đen đặc. */
+/** Nút cột tương tác (thích / bình luận / …) — nhỏ, không viền tròn. */
 export const FEED_ROUND_ICON_BUTTON_CLASS =
-  "flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/55 bg-transparent text-xl text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-35";
+  "flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center bg-transparent text-[22px] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)] transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-35";
 
 /** Icon tương tác + số đếm xếp dọc, căn giữa (mobile rail). */
 export const FEED_ACTION_ITEM_CLASS =
-  "flex min-w-10 flex-col items-center gap-0.5";
+  "flex min-w-8 flex-col items-center gap-0.5";
 
 /** Panel menu ⋯ — nền xám đậm đặc kiểu TikTok web. */
 export const FEED_MORE_PANEL_SURFACE_CLASS =
@@ -63,13 +63,10 @@ export const FEED_CHEVRON_COLUMN_PX = 52;
 export const FEED_RIGHT_OUTER_GAP_PX = 12;
 
 /**
- * Chỗ chừa bên phải khung. Avatar / tim / bình luận / chia sẻ nằm trong video,
- * nên chỉ còn cột mũi tên chuyển video.
+ * Chỗ chừa bên phải khung. Tim / bình luận / chia sẻ / mũi tên đều nằm trong video.
  */
 export const FEED_ACTION_RAIL_PX =
-  FEED_CHEVRON_COLUMN_PX +
-  FEED_STAGE_EDGE_GAP_PX +
-  FEED_RIGHT_OUTER_GAP_PX;
+  FEED_STAGE_EDGE_GAP_PX + FEED_RIGHT_OUTER_GAP_PX;
 
 /** Panel bình luận dock bên phải — rộng hơn, gần TikTok web (~420px). */
 export const FEED_COMMENTS_PANEL_MIN_PX = 380;
