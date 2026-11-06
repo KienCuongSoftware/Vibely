@@ -50,12 +50,10 @@ import {
   IoBookmark,
   IoChevronDown,
   IoChevronUp,
-  IoCheckmark,
   IoHeart,
   IoVideocam,
 } from "react-icons/io5";
 import { FaComment } from "react-icons/fa6";
-import { LuRepeat2 } from "react-icons/lu";
 import { MdOutlineFileUpload } from "react-icons/md";
 import { buildShareableVideoUrl } from "@/features/post/utils/shareUrl.js";
 import {
@@ -86,7 +84,6 @@ import { redirectGuestToLogin } from "@/features/auth/utils/guestAuthGate.js";
 import { buildProfilePath } from "@/features/profile/utils/buildProfilePath.js";
 import { buildMainSidebarMenuItems } from "@/shared/utils/mainSidebarMenuItems.js";
 import { recordProfileLastWatchedFromVideo } from "@/features/profile/utils/profileLastWatched.js";
-import { AvatarImage } from "@/shared/components/AvatarImage.jsx";
 import { sanitizeAvatarUrl } from "@/features/profile/utils/avatarUrl.js";
 
 function formatCompactCount(value) {
@@ -1607,28 +1604,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     });
   }, [activeVideo, liked, navigate, patchVideoByPublicId, token]);
 
-  const handleSoundNavigate = useCallback(() => {
-    if (redirectGuestToLogin(navigate, token)) return;
-    const rawAudioUrl = String(activeVideo?.audioUrl ?? "").trim();
-    if (!rawAudioUrl) return;
-    const q = new URLSearchParams({
-      audioUrl: rawAudioUrl,
-      title: String(activeVideo?.audioTitle ?? "").trim(),
-      creator: resolveFeedAuthorDisplayName(activeVideo),
-    });
-    const av = String(activeVideo?.avatarUrl ?? "").trim();
-    if (av) q.set("creatorAvatar", av);
-    const un = String(activeVideo?.authorUsername ?? "")
-      .trim()
-      .replace(/^@/, "");
-    if (un) q.set("creatorUsername", un);
-    const sid = activeVideo?.publicId;
-    if (isVideoPublicId(sid)) {
-      q.set("sourceVideoId", String(sid).toLowerCase());
-    }
-    navigate(`/sound?${q.toString()}`);
-  }, [activeVideo, navigate, token]);
-
   return (
     <section className="flex h-dvh max-h-dvh min-h-0 w-full flex-col overflow-hidden bg-black text-zinc-100">
       <MobileFeedMenuDrawer
@@ -1884,155 +1859,81 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               <div
                 className={
                   mobileLayout
-                    ? `vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-2 bottom-16 z-40 flex flex-col items-center gap-3${
+                    ? `vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-2 bottom-16 z-40 flex flex-col items-center gap-3 bg-transparent${
                         feedCommentsOpen ? " hidden" : ""
                       }`
-                    : "vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-3 bottom-20 z-40 flex flex-col items-center gap-3"
+                    : "vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-3 bottom-20 z-40 flex flex-col items-center gap-3 bg-transparent"
                 }
               >
-                <div
-                  className={
-                    mobileLayout
-                      ? "flex flex-col items-center gap-3"
-                      : "contents"
-                  }
-                >
-                <div className="relative h-12 w-12">
-                  <Link
-                    to={activeAuthorProfilePath || "#"}
-                    aria-label={t('feed.viewProfileOf', { user: activeVideo?.authorUsername ?? 'user' })}
-                    className={`block h-12 w-12 rounded-full ${
-                      activeAuthorProfilePath ? "cursor-pointer" : "pointer-events-none"
-                    }`}
-                  >
-                    <AvatarImage
-                      className="h-full w-full rounded-full object-cover"
-                      src={activeVideo?.avatarUrl ?? FEED_DEFAULT_AUTHOR_AVATAR}
-                      alt={`avatar-${activeVideo?.authorUsername ?? "user"}`}
-                      fallbackSrc={FEED_DEFAULT_AUTHOR_AVATAR}
-                    />
-                  </Link>
-                  {showActiveAuthorFollowSuccess ? (
-                    <span
-                      aria-label={t('feed.followingUser', { user: activeVideo?.authorUsername ?? 'user' })}
-                      className="absolute bottom-0 left-1/2 flex h-6 w-6 -translate-x-1/2 translate-y-[38%] items-center justify-center rounded-full border border-zinc-500 bg-zinc-200 text-sm text-red-500 shadow-[0_3px_10px_rgba(0,0,0,0.45)]"
-                    >
-                      <IoCheckmark aria-hidden />
-                    </span>
-                  ) : null}
-                  {showActiveAuthorFollowBadge && !showActiveAuthorFollowSuccess ? (
-                    <button
-                      type="button"
-                      aria-label={t('feed.followUser', { user: activeVideo?.authorUsername ?? 'user' })}
-                      className="absolute bottom-0 left-1/2 flex h-6 w-6 -translate-x-1/2 translate-y-[38%] cursor-pointer items-center justify-center rounded-full border-2 border-black bg-red-500 text-base leading-none text-white shadow-[0_3px_10px_rgba(0,0,0,0.45)] disabled:cursor-wait disabled:opacity-75"
-                      onClick={handleActiveAuthorFollow}
-                      disabled={followBusyAuthorId === Number(activeVideo?.authorId)}
-                    >
-                      <span className="-translate-y-px">+</span>
-                    </button>
-                  ) : null}
-                </div>
                 <div className={FEED_ACTION_ITEM_CLASS}>
-                <button
-                  type="button"
-                  className={FEED_ROUND_ICON_BUTTON}
-                  aria-pressed={liked}
-                  aria-label={liked ? t('feed.unlike') : t('feed.like')}
-                  onClick={handleFeedLikeToggle}
-                >
-                  <IoHeart
-                    className={liked ? "text-red-500" : "text-zinc-100"}
-                    aria-hidden
-                  />
-                </button>
-                <span className="text-xs leading-none text-zinc-300">
-                  {formatCompactCount(activeVideo?.likeCount)}
-                </span>
-                </div>
-                <div className={FEED_ACTION_ITEM_CLASS}>
-                <button
-                  type="button"
-                  data-testid="feed-comment-button"
-                  className={`${FEED_ROUND_ICON_BUTTON} ${feedCommentsOpen ? "ring-2 ring-white/35 ring-offset-2 ring-offset-black" : ""}`}
-                  aria-label={t('feed.comment')}
-                  aria-expanded={feedCommentsOpen}
-                  onClick={toggleFeedComments}
-                >
-                  <FaComment className="text-lg text-zinc-100" aria-hidden />
-                </button>
-                <span className="text-xs leading-none text-zinc-300">
-                  {formatCompactCount(activeVideo?.commentCount)}
-                </span>
-                </div>
-                <div className={FEED_ACTION_ITEM_CLASS}>
-                <button
-                  ref={bookmarkButtonRef}
-                  type="button"
-                  className={FEED_ROUND_ICON_BUTTON}
-                  aria-pressed={bookmarked}
-                  aria-label={bookmarked ? t('feed.unbookmark') : t('feed.bookmark')}
-                  onClick={handleBookmarkToggle}
-                >
-                  <IoBookmark
-                    className={
-                      bookmarked
-                        ? "text-xl text-[#FACE15]"
-                        : "text-xl text-white"
-                    }
-                    aria-hidden
-                  />
-                </button>
-                <span className="text-xs leading-none text-zinc-300">
-                  {formatCompactCount(activeVideo?.bookmarkCount)}
-                </span>
-                </div>
-                {!isForYouFeed ? (
                   <button
                     type="button"
                     className={FEED_ROUND_ICON_BUTTON}
-                    aria-pressed={reposted}
-                    aria-label={reposted ? t('feed.unrepost') : t('feed.repost')}
-                    disabled={repostBusy}
-                    onClick={handleRepostToggle}
+                    aria-pressed={liked}
+                    aria-label={liked ? t("feed.unlike") : t("feed.like")}
+                    onClick={handleFeedLikeToggle}
                   >
-                    <LuRepeat2
-                      className={
-                        reposted
-                          ? "text-xl text-[#FACE15]"
-                          : "text-xl text-white"
-                      }
-                      strokeWidth={2.25}
+                    <IoHeart
+                      className={liked ? "text-red-500" : "text-white"}
                       aria-hidden
                     />
                   </button>
-                ) : null}
-                <div className={FEED_ACTION_ITEM_CLASS}>
-                <button
-                  type="button"
-                  className={FEED_ROUND_ICON_BUTTON}
-                  aria-label={t('feed.share')}
-                  aria-expanded={shareModalOpen}
-                  onClick={openShareModal}
-                >
-                  <IoArrowRedo aria-hidden />
-                </button>
-                <span className="text-xs leading-none text-zinc-300">
-                  {formatCompactCount(activeVideo?.shareCount)}
-                </span>
+                  <span className="text-xs leading-none text-white">
+                    {formatCompactCount(activeVideo?.likeCount)}
+                  </span>
                 </div>
-                <button
-                  type="button"
-                  aria-label={t('feed.soundPlaying')}
-                  className="relative mt-1 flex h-11 w-11 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-white/35 bg-zinc-950 shadow-lg"
-                  onClick={handleSoundNavigate}
-                >
-                  <AvatarImage
-                    src={activeVideo?.avatarUrl ?? FEED_DEFAULT_AUTHOR_AVATAR}
-                    alt=""
-                    fallbackSrc={FEED_DEFAULT_AUTHOR_AVATAR}
-                    className="h-full w-full scale-110 object-cover animate-[spin_12s_linear_infinite]"
-                  />
-                </button>
+                <div className={FEED_ACTION_ITEM_CLASS}>
+                  <button
+                    type="button"
+                    data-testid="feed-comment-button"
+                    className={`${FEED_ROUND_ICON_BUTTON} ${feedCommentsOpen ? "ring-2 ring-white/50" : ""}`}
+                    aria-label={t("feed.comment")}
+                    aria-expanded={feedCommentsOpen}
+                    onClick={toggleFeedComments}
+                  >
+                    <FaComment className="text-lg text-white" aria-hidden />
+                  </button>
+                  <span className="text-xs leading-none text-white">
+                    {formatCompactCount(activeVideo?.commentCount)}
+                  </span>
+                </div>
+                <div className={FEED_ACTION_ITEM_CLASS}>
+                  <button
+                    ref={bookmarkButtonRef}
+                    type="button"
+                    className={FEED_ROUND_ICON_BUTTON}
+                    aria-pressed={bookmarked}
+                    aria-label={
+                      bookmarked ? t("feed.unbookmark") : t("feed.bookmark")
+                    }
+                    onClick={handleBookmarkToggle}
+                  >
+                    <IoBookmark
+                      className={
+                        bookmarked
+                          ? "text-xl text-[#FACE15]"
+                          : "text-xl text-white"
+                      }
+                      aria-hidden
+                    />
+                  </button>
+                  <span className="text-xs leading-none text-white">
+                    {formatCompactCount(activeVideo?.bookmarkCount)}
+                  </span>
+                </div>
+                <div className={FEED_ACTION_ITEM_CLASS}>
+                  <button
+                    type="button"
+                    className={FEED_ROUND_ICON_BUTTON}
+                    aria-label={t("feed.share")}
+                    aria-expanded={shareModalOpen}
+                    onClick={openShareModal}
+                  >
+                    <IoArrowRedo aria-hidden />
+                  </button>
+                  <span className="text-xs leading-none text-white">
+                    {formatCompactCount(activeVideo?.shareCount)}
+                  </span>
                 </div>
               </div>
               </div>

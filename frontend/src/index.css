@@ -1911,6 +1911,11 @@ html[data-vibely-theme="light"] .vibely-keep-dark.bg-black,
 html[data-vibely-theme="light"] .vibely-keep-dark .bg-black {
   background-color: #000 !important;
 }
+/* Cột nút trên video: giữ chữ trắng nhưng không tô nền đen cả cột. */
+html[data-vibely-theme="light"] .vibely-feed-chrome-rail.vibely-keep-dark,
+html[data-vibely-theme="light"] .vibely-feed-chrome-rail.vibely-keep-dark.bg-transparent {
+  background-color: transparent !important;
+}
 html[data-vibely-theme="light"] .vibely-keep-dark .bg-black\/70 {
   background-color: rgba(0, 0, 0, 0.7) !important;
 }

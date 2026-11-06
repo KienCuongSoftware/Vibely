@@ -2,9 +2,9 @@
 export const FEED_VIDEO_OVERLAY_BTN_CLASS =
   "rounded-full bg-black/30 p-2.5 text-xl text-white backdrop-blur-md transition-colors hover:bg-white/20 active:bg-white/25";
 
-/** Nút tròn cột tương tác (thích / bình luận / …). */
+/** Nút tròn cột tương tác (thích / bình luận / …) — không nền đen đặc. */
 export const FEED_ROUND_ICON_BUTTON_CLASS =
-  "flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/25 bg-black/30 text-xl text-white shadow-[0_2px_12px_rgba(0,0,0,0.22)] backdrop-blur-md transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-35";
+  "flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/55 bg-transparent text-xl text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-35";
 
 /** Icon tương tác + số đếm xếp dọc, căn giữa (mobile rail). */
 export const FEED_ACTION_ITEM_CLASS =
