@@ -66,9 +66,7 @@ import {
   FEED_MORE_SPEED_PILL_IDLE_CLASS,
   FEED_MORE_SPEED_TRACK_CLASS,
   FEED_VIDEO_OVERLAY_BTN_CLASS,
-  computeFeedLandscapeStageWidthPx,
-  computeFeedPortraitStageSizePx,
-  FEED_STAGE_HEIGHT_RATIO,
+  computeFeedUnifiedStageSizePx,
 } from "@/features/feed/utils/feedLayout.js";
 
 /** Track cách đáy card — knob 14px căn giữa track, mép dưới trùng đáy card (không clip). */
@@ -409,6 +407,20 @@ function FeedSlideAuthorMeta({
 
 /** Re-export — dùng feedLayout.js làm nguồn duy nhất. */
 export { FEED_COMMENTS_PANEL_WIDTH_PX } from "@/features/feed/utils/feedLayout.js";
+
+function feedCellIsLandscape(video) {
+  const w = Number(video?.sourceWidthPx);
+  const h = Number(video?.sourceHeightPx);
+  return w > 0 && h > 0 && w >= h;
+}
+
+/** Video sắc nét nằm giữa khung; phần thừa để lộ nền mờ. */
+function feedSharpVideoClass(landscape) {
+  if (landscape) {
+    return "absolute z-1 top-1/2 left-0 h-auto max-h-full w-full -translate-y-1/2 aspect-video object-contain";
+  }
+  return "absolute z-1 top-0 left-1/2 h-full w-auto max-w-full -translate-x-1/2 aspect-[9/16] object-contain";
+}
 
 /** Cột feed hẹp — video dọc (mặc định, gần TikTok web). */
 export const FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT =
@@ -1034,53 +1046,22 @@ export function FeedPhoneStage({
   void viewportWidthTick;
 
   /**
-   * Mobile full-bleed: luôn full viewport — không thu khung 16:9 kiểu desktop
-   * (tránh video ~280px góc trái + vuốt feed hỏng trên điện thoại).
+   * Mobile full-bleed: luôn full viewport.
+   * Desktop: một khung cho cả video dọc và ngang (cao gần hết màn, rộng hết chỗ trống).
    */
-  const landscapeStageWidthPx =
-    mobileFullBleed || !effectiveStageWide
-      ? null
-      : computeFeedLandscapeStageWidthPx({
-          commentsOpen: commentsDockOpen,
-          slotHeightPx: feedSlotHeightPx,
-          sidebarWidthPx,
-        });
-
-  const landscapeVideoHeightPx =
-    landscapeStageWidthPx != null
-      ? Math.round((landscapeStageWidthPx * 9) / 16)
-      : null;
-
-  const portraitStageSizePx =
-    mobileFullBleed || effectiveStageWide || theaterMode
-      ? null
-      : computeFeedPortraitStageSizePx({
-          slotHeightPx: feedSlotHeightPx,
-          viewportWidth:
-            typeof window !== "undefined" ? window.innerWidth : undefined,
-          commentsOpen: commentsDockOpen,
-          sidebarWidthPx,
-        });
-
-  /** Theater: khung cao gần full viewport, rộng đúng tỉ lệ 9:16 như TikTok watch. */
-  const theaterStageWidthPx =
-    theaterMode && !mobileFullBleed && !effectiveStageWide
-      ? Math.round(
-          Math.min(
-            Math.round(feedSlotHeightPx * FEED_STAGE_HEIGHT_RATIO * (9 / 16)),
-            typeof window !== "undefined"
-              ? Math.max(320, window.innerWidth - 32)
-              : 720,
-          ),
-        )
-      : null;
+  const unifiedStageSizePx = mobileFullBleed
+    ? null
+    : computeFeedUnifiedStageSizePx({
+        slotHeightPx: feedSlotHeightPx,
+        viewportWidth:
+          typeof window !== "undefined" ? window.innerWidth : undefined,
+        commentsOpen: commentsDockOpen,
+        sidebarWidthPx,
+      });
 
   const stageOuterHeightPx = mobileFullBleed
     ? mobileMeasuredSlotPx
-    : effectiveStageWide && landscapeVideoHeightPx != null
-      ? landscapeVideoHeightPx
-      : portraitStageSizePx?.height ??
-        Math.round(feedSlotHeightPx * FEED_STAGE_HEIGHT_RATIO);
+    : unifiedStageSizePx.height;
 
   const virtualSlotHeightPx = mobileFullBleed
     ? mobileMeasuredSlotPx
@@ -1088,15 +1069,11 @@ export function FeedPhoneStage({
 
   const stageWidthClass = mobileFullBleed
     ? "relative h-full w-full shrink-0"
-    : effectiveStageWide || theaterMode || portraitStageSizePx
-      ? "relative shrink-0"
-      : FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT;
+    : "relative shrink-0";
 
   const stageOuterSurfaceClass = mobileFullBleed
     ? "relative h-full w-full overflow-hidden bg-black vibely-keep-dark"
-    : theaterMode
-      ? `${stageWidthClass} relative overflow-hidden bg-black vibely-keep-dark`
-      : `${stageWidthClass} relative overflow-hidden rounded-xl border border-white/10 bg-black sm:rounded-2xl vibely-keep-dark`;
+    : `${stageWidthClass} relative overflow-hidden bg-black vibely-keep-dark`;
 
   /** Giữ activeIndex ổn định khi chiều cao khung đổi (phát hiện 16:9). */
   const [stageHeightSettle, setStageHeightSettle] = useState(false);
@@ -1140,10 +1117,38 @@ export function FeedPhoneStage({
     commentsDockOpen,
     activeIndex,
     virtualSlotHeightPx,
-    landscapeStageWidthPx,
+    unifiedStageSizePx?.width,
   ]);
 
   useFeedPrefetch(videos, activeIndex);
+
+  const feedBlurVideoRef = useRef(null);
+  useEffect(() => {
+    if (mobileFullBleed) return undefined;
+    const main = feedVideoRef?.current;
+    const bg = feedBlurVideoRef.current;
+    if (!main || !bg) return undefined;
+    const attach = () => {
+      const capture = main.captureStream || main.mozCaptureStream;
+      if (typeof capture !== "function") return;
+      try {
+        const stream = capture.call(main);
+        if (bg.srcObject !== stream) bg.srcObject = stream;
+        const play = bg.play?.();
+        if (play?.catch) play.catch(() => {});
+      } catch {
+        /* Poster blur stays until the browser can mirror the playing frame. */
+      }
+    };
+    main.addEventListener("playing", attach);
+    main.addEventListener("loadeddata", attach);
+    if (!main.paused) attach();
+    return () => {
+      main.removeEventListener("playing", attach);
+      main.removeEventListener("loadeddata", attach);
+      bg.srcObject = null;
+    };
+  }, [mobileFullBleed, activeIndex, feedVideoRef]);
 
   return (
     <div
@@ -1157,11 +1162,7 @@ export function FeedPhoneStage({
         mobileFullBleed
           ? undefined
           : {
-              width:
-                landscapeStageWidthPx ??
-                theaterStageWidthPx ??
-                portraitStageSizePx?.width ??
-                undefined,
+              width: unifiedStageSizePx?.width,
               height: stageOuterHeightPx,
             }
       }
@@ -1217,11 +1218,11 @@ export function FeedPhoneStage({
             >
               {hasPlayback ? (
                 <div
-                  className={`absolute inset-x-0 top-0 isolate overflow-hidden ${
-                    mobileFullBleed || theaterMode
-                      ? ""
-                      : "rounded-xl sm:rounded-2xl"
-                  }`}
+                  className="absolute inset-x-0 top-0 isolate overflow-hidden"
+                  onClick={(event) => {
+                    if (event.target !== event.currentTarget) return;
+                    toggleFeedPlayback(event);
+                  }}
                   style={{
                     bottom:
                       theaterMode || isPhotoPost ? 0 : FEED_PROGRESS_TRACK_BOTTOM_PX,
@@ -1235,6 +1236,24 @@ export function FeedPhoneStage({
                       onClick={toggleFeedPlayback}
                     />
                   ) : (
+                  <>
+                  {!mobileFullBleed && poster ? (
+                    <div
+                      className="pointer-events-none absolute inset-0 z-0 scale-110 bg-cover bg-center blur-3xl brightness-75"
+                      style={{ backgroundImage: `url(${poster})` }}
+                      aria-hidden
+                    />
+                  ) : null}
+                  {!mobileFullBleed && isActive ? (
+                    <video
+                      ref={feedBlurVideoRef}
+                      muted
+                      playsInline
+                      tabIndex={-1}
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 z-0 h-full w-full scale-110 object-cover blur-3xl brightness-75"
+                    />
+                  ) : null}
                   <FeedVideoPlayer
                     key={String(video.publicId)}
                     ref={isActive ? feedVideoRef : undefined}
@@ -1260,9 +1279,19 @@ export function FeedPhoneStage({
                     onPlaybackEnded={
                       isActive ? onActiveFeedPlaybackEnded : undefined
                     }
-                    className="relative z-0 h-full w-full cursor-pointer"
-                    fitContain={mobileFullBleed}
-                    onClick={toggleFeedPlayback}
+                    className={
+                      mobileFullBleed
+                        ? "relative z-1 h-full w-full cursor-pointer"
+                        : `cursor-pointer bg-transparent ${feedSharpVideoClass(
+                            feedCellIsLandscape(video) ||
+                              (isActive && effectiveStageWide),
+                          )}`
+                    }
+                    fitContain
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      toggleFeedPlayback(event);
+                    }}
                     onIntrinsicLandscape={
                       isActive
                         ? (wide) =>
@@ -1270,6 +1299,7 @@ export function FeedPhoneStage({
                         : undefined
                     }
                   />
+                  </>
                   )}
                   {video?.aiEnhanced ? (
                     <div className="pointer-events-none absolute top-3 left-3 z-20 rounded-md bg-black/55 px-2 py-1 text-[11px] font-medium tracking-wide text-white/95 backdrop-blur-[2px]">
@@ -1618,8 +1648,15 @@ export function FeedPhoneStage({
                   onPlaybackEnded={
                     isActive ? onActiveFeedPlaybackEnded : undefined
                   }
-                  className="relative z-0 h-full w-full cursor-pointer"
-                  fitContain={mobileFullBleed}
+                  className={
+                    mobileFullBleed
+                      ? "relative z-1 h-full w-full cursor-pointer"
+                      : `cursor-pointer bg-transparent ${feedSharpVideoClass(
+                          feedCellIsLandscape(video) ||
+                            (isActive && effectiveStageWide),
+                        )}`
+                  }
+                  fitContain
                   onClick={toggleFeedPlayback}
                   onIntrinsicLandscape={
                     isActive

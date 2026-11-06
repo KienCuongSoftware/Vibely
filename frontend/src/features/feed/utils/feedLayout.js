@@ -90,6 +90,12 @@ export const FEED_STAGE_DISPLAY_SCALE = FEED_STAGE_HEIGHT_RATIO;
 /** Trần rộng khung 16:9 trên màn hình rất rộng. */
 export const FEED_LANDSCAPE_MAX_WIDTH_PX = 1020;
 
+/**
+ * Trần rộng khung feed desktop. Cùng một kích thước cho video dọc và ngang:
+ * video nằm giữa, phần thừa là nền mờ (TikTok web).
+ */
+export const FEED_UNIFIED_STAGE_MAX_WIDTH_PX = 1280;
+
 function feedStageReservedWidthPx(
   commentsOpen,
   sidebarWidthPx = FEED_SIDEBAR_WIDTH_PX,
@@ -148,4 +154,30 @@ export function computeFeedLandscapeStageWidthPx({
   const stageHeight = Math.round(slotH * FEED_STAGE_HEIGHT_RATIO);
   const byAspect = Math.round((stageHeight * 16) / 9);
   return Math.min(byViewport, byAspect, FEED_LANDSCAPE_MAX_WIDTH_PX);
+}
+
+/**
+ * Desktop For You: một khung cao gần hết viewport, rộng hết chỗ giữa sidebar và
+ * cột nút. Video dọc và ngang dùng cùng khung; lớp mờ lấp phần thừa.
+ */
+export function computeFeedUnifiedStageSizePx({
+  slotHeightPx,
+  viewportWidth,
+  commentsOpen = false,
+  sidebarWidthPx = FEED_SIDEBAR_WIDTH_PX,
+}) {
+  const vw =
+    viewportWidth ?? (typeof window !== "undefined" ? window.innerWidth : 1280);
+  const slotH =
+    slotHeightPx ??
+    (typeof window !== "undefined"
+      ? Math.max(320, window.innerHeight - FEED_VIEWPORT_INSET_PX)
+      : 760);
+  const height = Math.round(slotH * FEED_STAGE_HEIGHT_RATIO);
+  const available = Math.max(
+    280,
+    vw - feedStageReservedWidthPx(commentsOpen, sidebarWidthPx) - 16,
+  );
+  const width = Math.min(available, FEED_UNIFIED_STAGE_MAX_WIDTH_PX);
+  return { width, height };
 }
