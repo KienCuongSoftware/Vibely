@@ -1,5 +1,6 @@
 import React from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import i18n from "@/i18n/i18n.js";
@@ -8,6 +9,11 @@ import {
   FeedPhoneStage,
   FEED_STAGE_OUTER_WIDTH_CLASS,
 } from "@/features/feed/components/FeedPhoneStage";
+import { FeedFloatingPlayer } from "@/features/feed/components/FeedFloatingPlayer.jsx";
+import {
+  isDocumentPipSupported,
+  openDocumentPipWindow,
+} from "@/features/feed/utils/documentPip.js";
 import { FeedCommentsPanel } from "@/features/comment/components/FeedCommentsPanel.jsx";
 import {
   computeMobileFeedCommentsLayout,
@@ -359,6 +365,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const bookmarkButtonRef = useRef(null);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const feedVideoRef = useRef(null);
+  /** Document PiP window (TikTok-style floating player); null when closed. */
+  const [docPipWindow, setDocPipWindow] = useState(null);
+  const docPipWindowRef = useRef(null);
   /** 0–1; khi bật tiếng dùng max. */
   const [feedVolume, setFeedVolume] = useState(1);
   /** Tắt tiếng mặc định để autoplay ổn định (TikTok-style). */
@@ -1562,16 +1571,66 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     }
   }, []);
 
-  const toggleFeedPictureInPicture = async () => {
-    const el = feedVideoRef.current;
-    if (!el || typeof el.requestPictureInPicture !== "function") return;
+  const closeDocumentPip = useCallback(() => {
+    const win = docPipWindowRef.current;
+    docPipWindowRef.current = null;
+    setDocPipWindow(null);
     try {
-      if (document.pictureInPictureElement === el) {
-        await document.exitPictureInPicture?.();
-      } else {
-        await el.requestPictureInPicture();
+      win?.close?.();
+    } catch {
+      /* already closed */
+    }
+  }, []);
+
+  useEffect(() => {
+    docPipWindowRef.current = docPipWindow;
+  }, [docPipWindow]);
+
+  useEffect(() => {
+    if (!docPipWindow) return undefined;
+    const onHide = () => {
+      docPipWindowRef.current = null;
+      setDocPipWindow(null);
+    };
+    docPipWindow.addEventListener("pagehide", onHide);
+    return () => {
+      docPipWindow.removeEventListener("pagehide", onHide);
+    };
+  }, [docPipWindow]);
+
+  useEffect(() => {
+    return () => {
+      try {
+        docPipWindowRef.current?.close?.();
+      } catch {
+        /* ignore */
       }
-      setFeedMoreMenuOpen(false);
+      docPipWindowRef.current = null;
+    };
+  }, []);
+
+  const toggleFeedPictureInPicture = async () => {
+    setFeedMoreMenuOpen(false);
+    try {
+      if (docPipWindowRef.current) {
+        closeDocumentPip();
+        return;
+      }
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture?.();
+      }
+      if (isDocumentPipSupported()) {
+        const pipWin = await openDocumentPipWindow({
+          width: 320,
+          height: 568,
+        });
+        docPipWindowRef.current = pipWin;
+        setDocPipWindow(pipWin);
+        return;
+      }
+      const el = feedVideoRef.current;
+      if (!el || typeof el.requestPictureInPicture !== "function") return;
+      await el.requestPictureInPicture();
     } catch {
       /* PiP không khả dụng hoặc trình duyệt chặn */
     }
@@ -2045,6 +2104,30 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
           });
         }}
       />
+
+      {docPipWindow?.document?.body
+        ? createPortal(
+            <FeedFloatingPlayer
+              sourceVideoRef={feedVideoRef}
+              activeVideo={activeVideo}
+              activeIndex={activeIndex}
+              videoCount={videos.length}
+              liked={liked}
+              bookmarked={bookmarked}
+              muted={playbackMuted}
+              onToggleMute={() => {
+                setSoundUnlocked(true);
+                setFeedSoundOn((on) => !on);
+              }}
+              onLike={handleFeedLikeToggle}
+              onBookmark={handleBookmarkToggle}
+              onShare={openShareModal}
+              onStep={requestFeedStep}
+              stepBusy={feedStepBusy}
+            />,
+            docPipWindow.document.body,
+          )
+        : null}
     </section>
   );
 }

@@ -59,10 +59,13 @@ import {
 
 /** Thanh nút dưới progress (play / time / speed / CC / mute / more). */
 const FEED_CONTROL_BAR_HEIGHT_PX = 40;
-/** Track progress nằm ngay trên thanh nút. */
-const FEED_PROGRESS_TRACK_BOTTOM_PX = FEED_CONTROL_BAR_HEIGHT_PX;
+/**
+ * Track progress nằm trên thanh nút; cộng thêm ~knob radius để nút tròn
+ * không bị thanh control đè mất nửa dưới.
+ */
+const FEED_PROGRESS_TRACK_BOTTOM_PX = FEED_CONTROL_BAR_HEIGHT_PX + 8;
 /** Padding đáy overlay caption — trên thanh progress + control bar. */
-const FEED_CAPTION_PROGRESS_PAD_PX = FEED_CONTROL_BAR_HEIGHT_PX + 14;
+const FEED_CAPTION_PROGRESS_PAD_PX = FEED_PROGRESS_TRACK_BOTTOM_PX + 14;
 
 function feedAuthorProfilePath(video) {
   const raw = String(video?.authorUsername ?? "vibely")
@@ -1495,13 +1498,13 @@ export function FeedPhoneStage({
           ref={progressTrackRef}
           className={
             theaterMode
-              ? "group/progress pointer-events-auto absolute inset-x-0 bottom-0 z-70 h-4 cursor-pointer"
-              : "group/progress pointer-events-auto absolute inset-x-0 z-70 h-4 w-full cursor-pointer"
+              ? "group/progress pointer-events-auto absolute inset-x-0 bottom-0 z-80 h-4 cursor-pointer"
+              : "group/progress pointer-events-auto absolute inset-x-0 z-80 h-4 w-full cursor-pointer"
           }
           style={
             theaterMode
               ? undefined
-              : { bottom: FEED_PROGRESS_TRACK_BOTTOM_PX - 2 }
+              : { bottom: FEED_PROGRESS_TRACK_BOTTOM_PX }
           }
           role="slider"
           tabIndex={0}
@@ -1566,7 +1569,7 @@ export function FeedPhoneStage({
             />
             <div
               ref={progressKnobRef}
-              className={`pointer-events-none absolute top-1/2 left-0 z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-200 ease-out ${progressScrubbing ? "opacity-100" : "opacity-0 group-hover/progress:opacity-100"}`}
+              className={`pointer-events-none absolute top-1/2 left-0 z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-[60%] transition-opacity duration-200 ease-out ${progressScrubbing ? "opacity-100" : "opacity-0 group-hover/progress:opacity-100"}`}
               style={{ left: "0%" }}
               aria-hidden
             >
