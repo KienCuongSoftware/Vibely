@@ -342,6 +342,16 @@ public class VideoCommandService {
             }
             video.setThumbnailUrl(request.getThumbnailUrl());
         }
+        // Privacy must be applied while the row is still a draft. Clearing studioDraft
+        // first makes a RAW/PROCESSING upload look "under review" and rejects the
+        // creator's publish-time privacy (Đăng on Studio).
+        if (request.getPrivacy() != null && !request.getPrivacy().isBlank()) {
+            boolean reviewRequired = moderationDecisionRepository.findByVideo_Id(video.getId())
+                .map(d -> d.isReviewRequired())
+                .orElse(false);
+            privacyHoldService.assertPrivacyChangeAllowed(video, reviewRequired);
+            video.setPrivacy(resolvePrivacy(request.getPrivacy()));
+        }
         if (keepAsDraft) {
             video.setStudioDraft(true);
             video.setScheduledAt(null);
@@ -350,13 +360,6 @@ public class VideoCommandService {
             if (applySchedule) {
                 video.setScheduledAt(scheduledAt);
             }
-        }
-        if (request.getPrivacy() != null && !request.getPrivacy().isBlank()) {
-            boolean reviewRequired = moderationDecisionRepository.findByVideo_Id(video.getId())
-                .map(d -> d.isReviewRequired())
-                .orElse(false);
-            privacyHoldService.assertPrivacyChangeAllowed(video, reviewRequired);
-            video.setPrivacy(resolvePrivacy(request.getPrivacy()));
         }
         if (!keepAsDraft && wasDraft) {
             privacyHoldService.applyHoldOnPublish(video);
