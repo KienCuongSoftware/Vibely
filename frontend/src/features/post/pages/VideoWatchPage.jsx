@@ -501,9 +501,9 @@ function resolveWatchOrientation(video, intrinsic) {
 
 function watchMediaPlacementClass(orientation) {
   if (orientation === "landscape") {
-    return "inset-x-0 top-1/2 max-h-full w-full -translate-y-1/2";
+    return "inset-x-0 top-1/2 h-auto max-h-full w-full -translate-y-1/2";
   }
-  return "inset-y-0 left-1/2 h-full w-auto max-w-full -translate-x-1/2";
+  return "top-0 left-1/2 h-full aspect-[9/16] max-w-full -translate-x-1/2";
 }
 
 function resolveWatchPlaybackUrl(video) {
@@ -681,6 +681,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
   const navigate = useNavigate();
   const { token, user } = useAuth();
   const videoRef = useRef(null);
+  const blurVideoRef = useRef(null);
   /** Một lần / clip: qualify (~2s) và một lần gần xem hết (Studio % xem hết). */
   const watchQualifySentRef = useRef(false);
   const watchPlaythroughSentRef = useRef(false);
@@ -1083,9 +1084,33 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
     [activeVideo, intrinsicSize],
   );
 
-  const watchPosterSizing = `${watchMediaPlacementClass(watchOrientation)} z-1 ${
-    watchOrientation === "landscape" ? "object-contain" : "object-cover"
-  }`;
+  const watchPosterSizing = `${watchMediaPlacementClass(watchOrientation)} z-1 object-contain`;
+
+  useEffect(() => {
+    const main = videoRef.current;
+    const bg = blurVideoRef.current;
+    if (!main || !bg || !activePlaybackUrl) return undefined;
+    const attach = () => {
+      const capture = main.captureStream || main.mozCaptureStream;
+      if (typeof capture !== "function") return;
+      try {
+        const stream = capture.call(main);
+        if (bg.srcObject !== stream) bg.srcObject = stream;
+        const play = bg.play?.();
+        if (play?.catch) play.catch(() => {});
+      } catch {
+        /* The poster blur stays until the browser can mirror the playing frame. */
+      }
+    };
+    main.addEventListener("playing", attach);
+    main.addEventListener("loadeddata", attach);
+    if (!main.paused) attach();
+    return () => {
+      main.removeEventListener("playing", attach);
+      main.removeEventListener("loadeddata", attach);
+      bg.srcObject = null;
+    };
+  }, [activePlaybackUrl, isVideoFrameReady]);
 
   const backPath = isFromExplore ? "/explore" : profileBackPath;
   const exploreContext = isFromExplore ? location.state?.exploreContext : null;
@@ -2012,11 +2037,19 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                 >
                   {displayPosterUrl ? (
                     <div
-                      className="pointer-events-none absolute inset-0 scale-110 bg-cover bg-center opacity-40 blur-3xl"
+                      className="pointer-events-none absolute inset-0 scale-110 bg-cover bg-center blur-3xl brightness-75"
                       style={{ backgroundImage: `url(${displayPosterUrl})` }}
                       aria-hidden
                     />
                   ) : null}
+                  <video
+                    ref={blurVideoRef}
+                    muted
+                    playsInline
+                    tabIndex={-1}
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 z-0 h-full w-full scale-110 object-cover blur-3xl brightness-75"
+                  />
                   {!isVideoFrameReady && displayPosterUrl ? (
                     <img
                       src={displayPosterUrl}

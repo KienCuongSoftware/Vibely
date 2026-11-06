@@ -264,15 +264,28 @@ export function LoginPage({ asModal = false }) {
       );
       return;
     }
+    const exchangeKey = "vibely.oauth.exchange";
+    let alreadySent = false;
+    try {
+      alreadySent = sessionStorage.getItem(exchangeKey) === oneTimeCode;
+    } catch {
+      alreadySent = false;
+    }
     if (
       oauthInFlightRef.current ||
-      processedOAuthCodeRef.current === oneTimeCode
+      processedOAuthCodeRef.current === oneTimeCode ||
+      alreadySent
     ) {
       return;
     }
 
     oauthInFlightRef.current = true;
     processedOAuthCodeRef.current = oneTimeCode;
+    try {
+      sessionStorage.setItem(exchangeKey, oneTimeCode);
+    } catch {
+      /* Private mode can block storage; the in-memory ref still blocks this mount. */
+    }
 
     apiClient
       .exchangeOAuthCode(oneTimeCode)
@@ -353,6 +366,14 @@ export function LoginPage({ asModal = false }) {
       })
       .catch((error) => {
         oauthInFlightRef.current = false;
+        processedOAuthCodeRef.current = null;
+        try {
+          if (sessionStorage.getItem(exchangeKey) === oneTimeCode) {
+            sessionStorage.removeItem(exchangeKey);
+          }
+        } catch {
+          /* ignore */
+        }
         if (error.code === "ACCOUNT_BANNED") {
           openBannedModal(error.data);
           navigate("/login", { replace: true });
