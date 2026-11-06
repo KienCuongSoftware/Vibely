@@ -50,6 +50,7 @@ import { FeedReportedVideoOverlay } from "@/features/feed/components/FeedReporte
 import { normalizeVideoPublicId } from "@/features/post/utils/videoPublicId.js";
 import { resolveDisplayCaption } from "@/features/post/utils/videoCaption.js";
 import { SelfRepostIndicator } from "@/features/feed/components/SelfRepostIndicator.jsx";
+import { AvatarImage } from "@/shared/components/AvatarImage.jsx";
 import { TooltipHoverWrap } from "@/shared/components/TooltipControls.jsx";
 import { useMainSidebarCollapse } from "@/shared/store/MainSidebarCollapseContext.jsx";
 import {
@@ -299,16 +300,21 @@ function formatPlaybackTime(seconds) {
   )}`;
 }
 
-/** Vibely ID + caption overlay đáy video (dọc & ngang). */
+/** Avatar + tên + Follow + caption — góc trái dưới kiểu TikTok web. */
 function FeedSlideAuthorMeta({
   rawVibelyUser,
   authorProfilePath,
+  authorAvatarUrl,
+  defaultAuthorAvatar,
   captionText,
   videoPublicId,
   descriptionLang,
   authToken,
   captionActive = true,
   compact = false,
+  showFollow = false,
+  followBusy = false,
+  onFollow,
   repostedByDisplayName,
   repostedByUsername,
   selfReposted = false,
@@ -321,23 +327,25 @@ function FeedSlideAuthorMeta({
 }) {
   const { t } = useTranslation();
   const [captionWash, setCaptionWash] = useState("none");
+  const displayName = rawVibelyUser || "vibely";
   const nameClass =
-    "inline-block max-w-full truncate text-[15px] font-bold leading-snug text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]";
-  const displayVibelyId = rawVibelyUser ? `@${rawVibelyUser}` : "@vibely";
+    "min-w-0 truncate text-[15px] font-bold leading-none text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]";
   const repostLabel = repostedByUsername
     ? String(repostedByDisplayName ?? repostedByUsername).trim() ||
       repostedByUsername
     : "";
+  const avatarSrc =
+    String(authorAvatarUrl ?? "").trim() || defaultAuthorAvatar || undefined;
   const nameEl = authorProfilePath ? (
     <Link
       to={authorProfilePath}
       onClick={(e) => e.stopPropagation()}
       className={`${nameClass} hover:underline`}
     >
-      {displayVibelyId}
+      {displayName}
     </Link>
   ) : (
-    <p className={nameClass}>{displayVibelyId}</p>
+    <span className={nameClass}>{displayName}</span>
   );
 
   const padClass = compact
@@ -364,7 +372,7 @@ function FeedSlideAuthorMeta({
       {washClass ? (
         <div className={washClass} style={washStyle} aria-hidden />
       ) : null}
-      <div className="relative z-10 max-w-[92%]">
+      <div className="relative z-10 max-w-[min(92%,28rem)]">
         {selfReposted ? (
           <SelfRepostIndicator
             avatarUrl={selfRepostAvatarUrl}
@@ -376,7 +384,7 @@ function FeedSlideAuthorMeta({
             theme="overlay"
           />
         ) : repostLabel ? (
-          <p className="mb-1 flex items-center gap-1 text-xs font-semibold text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.55)]">
+          <p className="mb-1.5 flex items-center gap-1 text-xs font-semibold text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.55)]">
             <LuRepeat2
               className="shrink-0 text-sm text-[#FACE15]"
               aria-hidden
@@ -384,8 +392,51 @@ function FeedSlideAuthorMeta({
             <span className="truncate">{t('feed.nameReposted', { name: repostLabel })}</span>
           </p>
         ) : null}
-        <div className="inline-flex max-w-full">{nameEl}</div>
-        <div className="mt-0.5 min-w-0">
+        <div className="flex min-w-0 items-center gap-2.5">
+          {authorProfilePath ? (
+            <Link
+              to={authorProfilePath}
+              onClick={(e) => e.stopPropagation()}
+              aria-label={t("feed.viewProfileOf", { user: displayName })}
+              className="h-10 w-10 shrink-0 overflow-hidden rounded-full ring-1 ring-white/25"
+            >
+              <AvatarImage
+                className="h-full w-full object-cover"
+                src={avatarSrc}
+                alt=""
+                fallbackSrc={defaultAuthorAvatar}
+              />
+            </Link>
+          ) : (
+            <span className="h-10 w-10 shrink-0 overflow-hidden rounded-full ring-1 ring-white/25">
+              <AvatarImage
+                className="h-full w-full object-cover"
+                src={avatarSrc}
+                alt=""
+                fallbackSrc={defaultAuthorAvatar}
+              />
+            </span>
+          )}
+          <div className="flex min-w-0 flex-1 items-center gap-2.5">
+            {nameEl}
+            {showFollow ? (
+              <button
+                type="button"
+                aria-label={t("feed.followUser", { user: displayName })}
+                disabled={followBusy}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onFollow?.(e);
+                }}
+                className="shrink-0 cursor-pointer rounded-md bg-[#fe2c55] px-3 py-1 text-[13px] font-bold leading-none text-white transition hover:bg-[#e6284c] disabled:cursor-wait disabled:opacity-75"
+              >
+                {t("profile.follow")}
+              </button>
+            ) : null}
+          </div>
+        </div>
+        <div className="mt-1.5 min-w-0">
           <FeedTranslatedCaption
             videoPublicId={videoPublicId}
             captionText={captionText}
@@ -640,6 +691,9 @@ export function FeedPhoneStage({
   selfRepostProfilePath,
   onSelfUnrepost,
   selfRepostBusy = false,
+  showAuthorFollow = false,
+  authorFollowBusy = false,
+  onAuthorFollow,
 }) {
   const { t } = useTranslation();
   const { sidebarWidthPx } = useMainSidebarCollapse();
@@ -1675,12 +1729,17 @@ export function FeedPhoneStage({
                   <FeedSlideAuthorMeta
                     rawVibelyUser={rawVibelyUser}
                     authorProfilePath={authorProfilePath}
+                    authorAvatarUrl={video?.avatarUrl}
+                    defaultAuthorAvatar={feedDefaultAuthorAvatar}
                     captionText={captionText}
                     videoPublicId={video?.publicId}
                     descriptionLang={video?.descriptionLang}
                     authToken={reportToken || contextMenuToken}
                     captionActive={isActive}
                     compact={effectiveStageWide}
+                    showFollow={showAuthorFollow}
+                    followBusy={authorFollowBusy}
+                    onFollow={onAuthorFollow}
                     repostedByDisplayName={video?.repostedByDisplayName}
                     repostedByUsername={video?.repostedByUsername}
                     selfReposted={selfReposted}

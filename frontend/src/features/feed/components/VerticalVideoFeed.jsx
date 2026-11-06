@@ -1890,6 +1890,13 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                     const publicId = videoPublicIdOf(videos[idx]);
                     if (publicId) markVideoNotInterested(publicId);
                   }}
+                  showAuthorFollow={
+                    showActiveAuthorFollowBadge && !showActiveAuthorFollowSuccess
+                  }
+                  authorFollowBusy={
+                    followBusyAuthorId === Number(activeVideo?.authorId)
+                  }
+                  onAuthorFollow={handleActiveAuthorFollow}
                 />
                 <BookmarkSaveToast
                   open={bookmarkToastOpen}
