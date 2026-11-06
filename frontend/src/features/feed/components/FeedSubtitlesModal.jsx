@@ -145,7 +145,7 @@ function readPrefs() {
   return readFeedSubtitlesPrefs();
 }
 
-function writePrefs(prefs) {
+export function writeFeedSubtitlesPrefs(prefs) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
     if (typeof window !== "undefined") {
@@ -156,6 +156,10 @@ function writePrefs(prefs) {
   } catch {
     /* ignore */
   }
+}
+
+function writePrefs(prefs) {
+  writeFeedSubtitlesPrefs(prefs);
 }
 
 function CyanToggle({ checked, onChange, ariaLabel }) {

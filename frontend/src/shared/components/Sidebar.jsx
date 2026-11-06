@@ -321,9 +321,6 @@ export function Sidebar({
 
         {!token && !collapsed ? (
           <div className="my-5 border-t border-zinc-900 pt-4">
-            <p className="mb-3 text-sm text-zinc-400">
-              {t("nav.loginPrompt")}
-            </p>
             <GuestLoginTrigger className="flex h-11 w-full items-center justify-center rounded-md bg-red-600 px-4 text-[15px] font-semibold text-white hover:bg-red-500">
               {t("nav.login")}
             </GuestLoginTrigger>

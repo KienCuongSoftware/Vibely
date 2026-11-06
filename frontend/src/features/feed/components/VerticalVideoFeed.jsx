@@ -414,7 +414,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   );
   const feedViewQualifySentRef = useRef(new Set());
   const feedViewPlaythroughSentRef = useRef(new Set());
-  const playbackFlashTimerRef = useRef(null);
   const followBadgeTimerRef = useRef(null);
 
   useEffect(() => {
@@ -456,8 +455,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     },
     [],
   );
-  /** TikTok-style: brief center icon after tap — 'play' | 'pause' */
-  const [playbackFlash, setPlaybackFlash] = useState(null);
   /** false cho đến khi lần fetch feed (theo token/menu/location) chạy xong — tránh flash “feed trống” khi reload. */
   const [feedHydrated, setFeedHydrated] = useState(false);
 
@@ -485,23 +482,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
       }
     };
   }, [activeVideo?.publicId]);
-
-  useEffect(() => {
-    setPlaybackFlash(null);
-    if (playbackFlashTimerRef.current != null) {
-      clearTimeout(playbackFlashTimerRef.current);
-      playbackFlashTimerRef.current = null;
-    }
-  }, [activeVideo?.publicId]);
-
-  useEffect(
-    () => () => {
-      if (playbackFlashTimerRef.current != null) {
-        clearTimeout(playbackFlashTimerRef.current);
-      }
-    },
-    [],
-  );
 
   const patchVideoByPublicId = useCallback((publicId, patch) => {
     const key = normalizeVideoPublicId(publicId);
@@ -1574,23 +1554,13 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const toggleFeedPlayback = useCallback(() => {
     const el = feedVideoRef.current;
     if (!el) return;
-    const wasPaused = el.paused;
-    if (wasPaused) {
+    if (el.paused) {
       setUserPaused(false);
       void el.play().catch(() => {});
-      setPlaybackFlash("play");
     } else {
       setUserPaused(true);
       el.pause();
-      setPlaybackFlash("pause");
     }
-    if (playbackFlashTimerRef.current != null) {
-      clearTimeout(playbackFlashTimerRef.current);
-    }
-    playbackFlashTimerRef.current = setTimeout(() => {
-      setPlaybackFlash(null);
-      playbackFlashTimerRef.current = null;
-    }, 620);
   }, []);
 
   const toggleFeedPictureInPicture = async () => {
@@ -1848,7 +1818,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   resolveFeedAuthorDisplayName={resolveFeedAuthorDisplayName}
                   feedDefaultAuthorAvatar={FEED_DEFAULT_AUTHOR_AVATAR}
                   thumbnailFallbackUrl={undefined}
-                  playbackFlash={playbackFlash}
                   onActiveFeedPlaybackTick={onActiveFeedPlaybackTick}
                   onActiveFeedPlaybackEnded={onActiveFeedPlaybackEnded}
                   commentsDockOpen={feedCommentsOpen}
