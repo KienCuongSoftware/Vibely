@@ -345,46 +345,43 @@ export function Sidebar({
               <p>{t("nav.copyright")}</p>
             </div>
           ) : null}
-          <div className={collapsed ? "flex flex-col items-center gap-2" : "flex flex-col gap-2"}>
-            <TooltipHoverWrap
-              tip={t("moreMenu.getCoins")}
-              hoverOnly
-              portal
-              className={collapsed ? "" : "w-full"}
-            >
+          {collapsed ? (
+            <div className="flex items-center justify-center gap-1">
+              <TooltipHoverWrap tip={t("moreMenu.getCoins")} hoverOnly portal>
+                <button
+                  type="button"
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center text-zinc-500 hover:text-zinc-100"
+                  aria-label={t("moreMenu.getCoins")}
+                >
+                  <IoCashOutline className="text-base" aria-hidden />
+                </button>
+              </TooltipHoverWrap>
+              <TooltipHoverWrap tip={t("common.downloadApp")} hoverOnly portal>
+                <button
+                  type="button"
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center text-zinc-500 hover:text-zinc-100"
+                  aria-label={t("common.downloadApp")}
+                >
+                  <IoPhonePortraitOutline className="text-base" aria-hidden />
+                </button>
+              </TooltipHoverWrap>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 text-xs text-zinc-500">
               <button
                 type="button"
-                className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-zinc-900 font-semibold text-zinc-100 transition-colors hover:bg-zinc-800 ${
-                  collapsed ? "h-10 w-10" : "h-9 w-full px-2 text-[13px]"
-                }`}
-                aria-label={t("moreMenu.getCoins")}
+                className="cursor-pointer hover:text-zinc-200 hover:underline"
               >
-                <IoCashOutline className="shrink-0 text-base" aria-hidden />
-                {collapsed ? null : (
-                  <span className="truncate">{t("moreMenu.getCoins")}</span>
-                )}
+                {t("moreMenu.getCoins")}
               </button>
-            </TooltipHoverWrap>
-            <TooltipHoverWrap
-              tip={t("common.downloadApp")}
-              hoverOnly
-              portal
-              className={collapsed ? "" : "w-full"}
-            >
               <button
                 type="button"
-                className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-zinc-900 font-semibold text-zinc-100 transition-colors hover:bg-zinc-800 ${
-                  collapsed ? "h-10 w-10" : "h-9 w-full px-2 text-[13px]"
-                }`}
-                aria-label={t("common.downloadApp")}
+                className="cursor-pointer hover:text-zinc-200 hover:underline"
               >
-                <IoPhonePortraitOutline className="shrink-0 text-base" aria-hidden />
-                {collapsed ? null : (
-                  <span className="truncate">{t("common.downloadApp")}</span>
-                )}
+                {t("common.downloadApp")}
               </button>
-            </TooltipHoverWrap>
-          </div>
+            </div>
+          )}
         </div>
       </aside>
 
