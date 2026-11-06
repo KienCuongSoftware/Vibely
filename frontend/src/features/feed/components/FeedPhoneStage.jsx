@@ -431,7 +431,7 @@ function FeedSlideAuthorMeta({
                 }}
                 className="shrink-0 cursor-pointer rounded-md bg-[#fe2c55] px-3 py-1 text-[13px] font-bold leading-none text-white transition hover:bg-[#e6284c] disabled:cursor-wait disabled:opacity-75"
               >
-                {t("profile.follow")}
+                {t("profilePage.follow")}
               </button>
             ) : null}
           </div>

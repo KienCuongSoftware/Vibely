@@ -17,7 +17,6 @@ import {
 } from "@/features/feed/components/MobileFeedShell.jsx";
 import { MobileFollowingEmptyState } from "@/features/feed/components/MobileFollowingEmptyState.jsx";
 import { Sidebar } from "@/shared/components/Sidebar";
-import { AccountActionsPill } from "@/features/profile/components/AccountActionsPill";
 import { GuestLoginTrigger } from "@/features/auth/store/GuestAuthUiContext.jsx";
 import { VideoShareModal } from "@/features/post/components/VideoShareModal";
 import {
@@ -1690,17 +1689,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
             : "lg:items-center lg:justify-center"
         }`}
       >
-        {!token ? (
-          <AccountActionsPill
-            className="absolute right-8 top-5 z-100 max-lg:hidden"
-            tone="profile"
-          >
-            <GuestLoginTrigger className="ml-0.5 cursor-pointer rounded-full bg-red-600 px-3.5 py-2 text-xs font-semibold leading-none text-white hover:bg-red-500">
-              {t('nav.login')}
-            </GuestLoginTrigger>
-          </AccountActionsPill>
-        ) : null}
-
         <div
           className={`relative flex min-h-0 min-w-0 flex-1 ${
             mobileLayout && videos.length === 0
