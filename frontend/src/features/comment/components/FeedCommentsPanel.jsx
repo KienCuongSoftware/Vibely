@@ -494,7 +494,7 @@ export function FeedCommentsPanel({
         className={`flex min-h-0 flex-col bg-[#121212] text-zinc-100 ${
           mobileSheet
             ? 'fixed inset-x-0 bottom-0 z-[90] w-full rounded-t-2xl border-t border-white/[0.08] shadow-[0_-12px_40px_rgba(0,0,0,0.45)]'
-            : `relative z-0 h-full shrink-0 border-l border-white/[0.08] pt-[4.5rem]`
+            : `relative z-0 h-full shrink-0 border-l border-white/[0.08]`
         }`}
         style={
           mobileSheet
@@ -509,7 +509,7 @@ export function FeedCommentsPanel({
       >
       <div
         className={`relative z-10 flex shrink-0 flex-col border-b border-white/[0.08] ${
-          mobileSheet ? 'px-4 pb-3 pt-2' : 'px-4 py-3.5'
+          mobileSheet ? 'px-4 pb-3 pt-2' : 'px-4 pt-2.5 pb-2'
         }`}
       >
         {mobileSheet ? (
@@ -518,7 +518,7 @@ export function FeedCommentsPanel({
             aria-hidden
           />
         ) : null}
-        <div className="flex items-center justify-between">
+        <div className="flex h-10 items-center justify-between">
         <h2 className="min-w-0 text-[16px] font-bold tracking-tight text-white">
           {t("comments.title")}
           <span className="ml-1.5 font-semibold text-zinc-400">
@@ -527,11 +527,11 @@ export function FeedCommentsPanel({
         </h2>
         <button
           type="button"
-          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white"
+          className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white"
           aria-label={t("comments.close")}
           onClick={onClose}
         >
-          <IoClose className="text-2xl" aria-hidden />
+          <IoClose className="text-xl" aria-hidden />
         </button>
         </div>
       </div>
