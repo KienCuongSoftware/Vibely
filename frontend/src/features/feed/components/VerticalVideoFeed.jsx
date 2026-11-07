@@ -1917,24 +1917,24 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   </div>
                 ) : null}
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-15 h-28 bg-linear-to-t from-black/80 via-black/35 to-transparent max-lg:block lg:hidden" />
+              {!mobileLayout ? (
+                <FeedChevronNav
+                  activeIndex={activeIndex}
+                  videoCount={videos.length}
+                  onStep={requestFeedStep}
+                  busy={feedStepBusy}
+                  className="vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-3 top-1/2 z-40 flex -translate-y-1/2 flex-col items-center gap-0.5 bg-transparent"
+                />
+              ) : null}
               <div
                 className={
                   mobileLayout
-                    ? `vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-2 bottom-14 z-40 flex flex-col items-center gap-1 bg-transparent${
+                    ? `vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-2 bottom-20 z-40 flex flex-col items-center gap-1 bg-transparent${
                         feedCommentsOpen ? " hidden" : ""
                       }`
-                    : "vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-3 bottom-12 z-40 flex flex-col items-center gap-1 bg-transparent"
+                    : "vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-3 bottom-20 z-40 flex flex-col items-center gap-1 bg-transparent"
                 }
               >
-                {!mobileLayout ? (
-                  <FeedChevronNav
-                    activeIndex={activeIndex}
-                    videoCount={videos.length}
-                    onStep={requestFeedStep}
-                    busy={feedStepBusy}
-                    className="mb-0.5 flex flex-col items-center gap-0.5"
-                  />
-                ) : null}
                 <div className={FEED_ACTION_ITEM_CLASS}>
                   <button
                     type="button"
