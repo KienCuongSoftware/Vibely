@@ -12,7 +12,6 @@ import { FeedVideoPlayer } from "@/features/feed/components/FeedVideoPlayer";
 import { FeedPhotoCarousel, photoUrlsOf } from "@/features/feed/components/FeedPhotoCarousel.jsx";
 import {
   IoEllipsisHorizontal,
-  IoExpandOutline,
   IoPause,
   IoPlay,
   IoVolumeHigh,
@@ -53,7 +52,6 @@ import { TooltipHoverWrap } from "@/shared/components/TooltipControls.jsx";
 import { useMainSidebarCollapse } from "@/shared/store/MainSidebarCollapseContext.jsx";
 import {
   FEED_COMMENTS_PANEL_WIDTH_PX,
-  FEED_VIDEO_OVERLAY_BTN_CLASS,
   computeFeedUnifiedStageSizePx,
 } from "@/features/feed/utils/feedLayout.js";
 
@@ -626,8 +624,6 @@ export function FeedPhoneStage({
   /** Desktop watch chrome — ẩn sidebar-style overlays trong khung (X/volume do parent render). */
   theaterMode = false,
   onTheaterModeChange,
-  /** For You: mở trang /@user/video/{id} thay vì theater overlay. */
-  onEnterFullscreen,
   /** Báo parent biết khung đang ở chế độ ngang (16:9). */
   onStageWideChange,
   /** Menu chuột phải video (TikTok-style). */
@@ -1344,38 +1340,6 @@ export function FeedPhoneStage({
                     aria-hidden
                   />
 
-                  {isActive &&
-                  !mobileFullBleed &&
-                  !theaterMode &&
-                  (onEnterFullscreen || onTheaterModeChange) ? (
-                    <div className="pointer-events-none absolute top-3 right-3 z-50">
-                      <TooltipHoverWrap
-                        tip={t("feed.fullscreen")}
-                        placement="bottom"
-                        hoverOnly
-                        className="pointer-events-auto opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100"
-                      >
-                        <button
-                          type="button"
-                          aria-label={t("feed.fullscreen")}
-                          className={`cursor-pointer ${FEED_VIDEO_OVERLAY_BTN_CLASS}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setFeedMoreMenuOpen(false);
-                            setSpeedMenuOpen(false);
-                            if (onEnterFullscreen) {
-                              onEnterFullscreen();
-                              return;
-                            }
-                            onTheaterModeChange?.(true);
-                          }}
-                        >
-                          <IoExpandOutline aria-hidden />
-                        </button>
-                      </TooltipHoverWrap>
-                    </div>
-                  ) : null}
-
                   {feedMoreMenuOpen || speedMenuOpen ? (
                     <button
                       type="button"
@@ -1607,10 +1571,17 @@ export function FeedPhoneStage({
             </div>
 
             <div className="relative flex shrink-0 items-center gap-0.5">
-              <div className="relative">
+              <div
+                className="relative"
+                onMouseEnter={() => {
+                  setFeedMoreMenuOpen(false);
+                  setSpeedMenuOpen(true);
+                }}
+                onMouseLeave={() => setSpeedMenuOpen(false)}
+              >
                 <button
                   type="button"
-                  aria-label={t("feedMenu.speed")}
+                  aria-label={t("feedMenu.speedGroup")}
                   aria-expanded={speedMenuOpen}
                   className="flex h-8 min-w-8 cursor-pointer items-center justify-center rounded-md px-1.5 text-[12px] font-bold text-white hover:bg-white/10"
                   onClick={(e) => {
@@ -1624,9 +1595,13 @@ export function FeedPhoneStage({
                 {speedMenuOpen ? (
                   <div
                     role="menu"
-                    className="absolute bottom-[calc(100%+8px)] right-0 z-80 min-w-[4.5rem] overflow-hidden rounded-xl bg-white py-1 shadow-[0_8px_28px_rgba(0,0,0,0.28)]"
+                    aria-label={t("feedMenu.speedGroup")}
+                    className="absolute bottom-[calc(100%+8px)] left-1/2 z-80 min-w-[5.5rem] -translate-x-1/2 overflow-hidden rounded-xl bg-[#2f2f2f] py-1 shadow-[0_8px_28px_rgba(0,0,0,0.45)]"
                     onMouseDown={(e) => e.stopPropagation()}
                   >
+                    <p className="px-3 py-1.5 text-[11px] font-medium text-white/55">
+                      {t("feedMenu.speedGroup")}
+                    </p>
                     {FEED_PLAYBACK_SPEEDS.map((rate) => {
                       const selected = feedPlaybackSpeed === rate;
                       return (
@@ -1637,8 +1612,8 @@ export function FeedPhoneStage({
                           aria-checked={selected}
                           className={`flex w-full items-center justify-center px-3 py-2 text-[13px] font-semibold tabular-nums transition-colors ${
                             selected
-                              ? "bg-zinc-100 text-[#fe2c55]"
-                              : "text-zinc-800 hover:bg-zinc-50"
+                              ? "bg-white/10 text-[#fe2c55]"
+                              : "text-white hover:bg-white/[0.06]"
                           }`}
                           onClick={() => {
                             setFeedPlaybackSpeed(rate);
@@ -1653,30 +1628,37 @@ export function FeedPhoneStage({
                 ) : null}
               </div>
 
-              <button
-                type="button"
-                aria-label={t("feedMenu.subtitles")}
-                aria-pressed={captionsEnabled}
-                className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-[11px] font-bold tracking-wide hover:bg-white/10 ${
-                  captionsEnabled ? "text-white" : "text-white/45"
-                }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const next = !captionsEnabled;
-                  writeFeedSubtitlesPrefs({
-                    ...readFeedSubtitlesPrefs(),
-                    captionsEnabled: next,
-                  });
-                }}
+              <TooltipHoverWrap
+                tip={t("feedMenu.noSubtitles")}
+                placement="top"
+                hoverOnly
+                className="pointer-events-auto"
               >
-                <span
-                  className={`rounded-[3px] border px-[3px] py-px leading-none ${
-                    captionsEnabled ? "border-white" : "border-white/45"
+                <button
+                  type="button"
+                  aria-label={t("feedMenu.noSubtitles")}
+                  aria-pressed={captionsEnabled}
+                  className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-[11px] font-bold tracking-wide hover:bg-white/10 ${
+                    captionsEnabled ? "text-white" : "text-white/45"
                   }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const next = !captionsEnabled;
+                    writeFeedSubtitlesPrefs({
+                      ...readFeedSubtitlesPrefs(),
+                      captionsEnabled: next,
+                    });
+                  }}
                 >
-                  CC
-                </span>
-              </button>
+                  <span
+                    className={`rounded-[3px] border px-[3px] py-px leading-none ${
+                      captionsEnabled ? "border-white" : "border-white/45"
+                    }`}
+                  >
+                    CC
+                  </span>
+                </button>
+              </TooltipHoverWrap>
 
               <button
                 type="button"

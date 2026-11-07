@@ -63,7 +63,6 @@ import { FaComment } from "react-icons/fa6";
 import { MdOutlineFileUpload } from "react-icons/md";
 import { buildShareableVideoUrl } from "@/features/post/utils/shareUrl.js";
 import {
-  buildProfileVideoUrl,
   isVideoPublicId,
   normalizeVideoPublicId,
   videoPublicIdOf,
@@ -1166,37 +1165,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     await navigator.clipboard.writeText(url);
   }, []);
 
-  const enterActiveVideoFullscreen = useCallback(() => {
-    const path = buildProfileVideoUrl(
-      activeVideo?.authorUsername,
-      activeVideo?.publicId,
-    );
-    if (!path) return;
-    const attribution = resolveViewTrafficAttribution({
-      pathname: location.pathname,
-      search: location.search,
-      state: location.state,
-      feedMode,
-      videoPublicId: activeVideo?.publicId,
-    });
-    navigate(path, {
-      state: {
-        viewTrafficSource: attribution.source,
-        ...(attribution.searchQuery
-          ? { viewSearchQuery: attribution.searchQuery }
-          : {}),
-      },
-    });
-  }, [
-    activeVideo?.authorUsername,
-    activeVideo?.publicId,
-    feedMode,
-    location.pathname,
-    location.search,
-    location.state,
-    navigate,
-  ]);
-
   useEffect(() => {
     if (!authReady || !token || !isVideoPublicId(activeVideo?.publicId)) {
       return;
@@ -1825,7 +1793,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
               >
                 <FeedPhoneStage
                   mobileFullBleed={mobileLayout}
-                  onEnterFullscreen={enterActiveVideoFullscreen}
                   videos={videos}
                   activeIndex={activeIndex}
                   setActiveIndex={setActiveIndex}
