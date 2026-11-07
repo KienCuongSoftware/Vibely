@@ -682,12 +682,69 @@ export function FeedPhoneStage({
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [speedMenuOpen, setSpeedMenuOpen] = useState(false);
   const [volumeMenuOpen, setVolumeMenuOpen] = useState(false);
+  const speedHoverCloseTimerRef = useRef(null);
+  const volumeHoverCloseTimerRef = useRef(null);
   void hlsQualityOptions;
   void _feedMoreMenuSubpage;
   void _setFeedVideoQuality;
   void feedVideoQuality;
   const { prefs: subtitlePrefs } = useFeedSubtitlesPrefs();
   const captionsEnabled = Boolean(subtitlePrefs?.captionsEnabled);
+  const controlPopoverOpen =
+    speedMenuOpen || volumeMenuOpen || feedMoreMenuOpen;
+
+  const clearSpeedHoverClose = useCallback(() => {
+    if (speedHoverCloseTimerRef.current != null) {
+      window.clearTimeout(speedHoverCloseTimerRef.current);
+      speedHoverCloseTimerRef.current = null;
+    }
+  }, []);
+
+  const clearVolumeHoverClose = useCallback(() => {
+    if (volumeHoverCloseTimerRef.current != null) {
+      window.clearTimeout(volumeHoverCloseTimerRef.current);
+      volumeHoverCloseTimerRef.current = null;
+    }
+  }, []);
+
+  const openSpeedMenu = useCallback(() => {
+    clearSpeedHoverClose();
+    clearVolumeHoverClose();
+    setFeedMoreMenuOpen(false);
+    setVolumeMenuOpen(false);
+    setSpeedMenuOpen(true);
+  }, [clearSpeedHoverClose, clearVolumeHoverClose, setFeedMoreMenuOpen]);
+
+  const scheduleCloseSpeedMenu = useCallback(() => {
+    clearSpeedHoverClose();
+    speedHoverCloseTimerRef.current = window.setTimeout(() => {
+      setSpeedMenuOpen(false);
+      speedHoverCloseTimerRef.current = null;
+    }, 180);
+  }, [clearSpeedHoverClose]);
+
+  const openVolumeMenu = useCallback(() => {
+    clearVolumeHoverClose();
+    clearSpeedHoverClose();
+    setFeedMoreMenuOpen(false);
+    setSpeedMenuOpen(false);
+    setVolumeMenuOpen(true);
+  }, [clearSpeedHoverClose, clearVolumeHoverClose, setFeedMoreMenuOpen]);
+
+  const scheduleCloseVolumeMenu = useCallback(() => {
+    clearVolumeHoverClose();
+    volumeHoverCloseTimerRef.current = window.setTimeout(() => {
+      setVolumeMenuOpen(false);
+      volumeHoverCloseTimerRef.current = null;
+    }, 180);
+  }, [clearVolumeHoverClose]);
+
+  useEffect(() => {
+    return () => {
+      clearSpeedHoverClose();
+      clearVolumeHoverClose();
+    };
+  }, [clearSpeedHoverClose, clearVolumeHoverClose]);
   /** publicId video đã báo cáo — ẩn media, hiện overlay kiểu TikTok. */
   const [reportHiddenIds, setReportHiddenIds] = useState(() => new Set());
 
@@ -1464,8 +1521,8 @@ export function FeedPhoneStage({
           ref={progressTrackRef}
           className={
             theaterMode
-              ? "group/progress pointer-events-auto absolute inset-x-0 bottom-0 z-80 h-4 cursor-pointer"
-              : "group/progress pointer-events-auto absolute inset-x-0 z-80 h-4 w-full cursor-pointer"
+              ? `group/progress absolute inset-x-0 bottom-0 z-80 h-4 cursor-pointer ${controlPopoverOpen ? "pointer-events-none" : "pointer-events-auto"}`
+              : `group/progress absolute inset-x-0 z-80 h-4 w-full cursor-pointer ${controlPopoverOpen ? "pointer-events-none" : "pointer-events-auto"}`
           }
           style={
             theaterMode
@@ -1546,7 +1603,9 @@ export function FeedPhoneStage({
 
         {theaterMode ? null : (
           <div
-            className="vibely-keep-dark pointer-events-auto absolute inset-x-0 bottom-0 z-70 flex items-center justify-between gap-2 px-2.5 text-white"
+            className={`vibely-keep-dark pointer-events-auto absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-2.5 text-white ${
+              controlPopoverOpen ? "z-90" : "z-70"
+            }`}
             style={{ height: FEED_CONTROL_BAR_HEIGHT_PX }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -1575,12 +1634,8 @@ export function FeedPhoneStage({
             <div className="relative flex shrink-0 items-center gap-0.5">
               <div
                 className="relative"
-                onMouseEnter={() => {
-                  setFeedMoreMenuOpen(false);
-                  setVolumeMenuOpen(false);
-                  setSpeedMenuOpen(true);
-                }}
-                onMouseLeave={() => setSpeedMenuOpen(false)}
+                onMouseEnter={openSpeedMenu}
+                onMouseLeave={scheduleCloseSpeedMenu}
               >
                 <button
                   type="button"
@@ -1589,16 +1644,19 @@ export function FeedPhoneStage({
                   className="flex h-8 min-w-8 cursor-pointer items-center justify-center rounded-md px-1.5 text-[12px] font-bold text-white hover:bg-white/10"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setFeedMoreMenuOpen(false);
-                    setVolumeMenuOpen(false);
-                    setSpeedMenuOpen((open) => !open);
+                    if (speedMenuOpen) {
+                      clearSpeedHoverClose();
+                      setSpeedMenuOpen(false);
+                      return;
+                    }
+                    openSpeedMenu();
                   }}
                 >
                   {formatPlaybackSpeedBadge(feedPlaybackSpeed)}
                 </button>
                 {speedMenuOpen ? (
                   <div
-                    className="absolute bottom-full left-1/2 z-80 -translate-x-1/2 pb-4"
+                    className="absolute bottom-full left-1/2 z-80 -translate-x-1/2 pb-6"
                     onMouseDown={(e) => e.stopPropagation()}
                   >
                     <div
@@ -1670,12 +1728,8 @@ export function FeedPhoneStage({
 
               <div
                 className="relative"
-                onMouseEnter={() => {
-                  setFeedMoreMenuOpen(false);
-                  setSpeedMenuOpen(false);
-                  setVolumeMenuOpen(true);
-                }}
-                onMouseLeave={() => setVolumeMenuOpen(false)}
+                onMouseEnter={openVolumeMenu}
+                onMouseLeave={scheduleCloseVolumeMenu}
               >
                 <button
                   type="button"
@@ -1708,7 +1762,7 @@ export function FeedPhoneStage({
                 </button>
                 {volumeMenuOpen ? (
                   <div
-                    className="absolute bottom-full left-1/2 z-80 flex -translate-x-1/2 flex-col items-center pb-4"
+                    className="absolute bottom-full left-1/2 z-80 flex -translate-x-1/2 flex-col items-center pb-6"
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => e.stopPropagation()}
                   >
