@@ -596,7 +596,7 @@ export function FeedPhoneStage({
   loadMoreFeed,
   feedVideoRef,
   feedVolume,
-  setFeedVolume: _setFeedVolume,
+  setFeedVolume,
   feedSoundOn,
   setFeedSoundOn,
   playbackMuted,
@@ -681,8 +681,8 @@ export function FeedPhoneStage({
   const [subtitlesModalOpen, setSubtitlesModalOpen] = useState(false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [speedMenuOpen, setSpeedMenuOpen] = useState(false);
+  const [volumeMenuOpen, setVolumeMenuOpen] = useState(false);
   void hlsQualityOptions;
-  void _setFeedVolume;
   void _feedMoreMenuSubpage;
   void _setFeedVideoQuality;
   void feedVideoQuality;
@@ -976,6 +976,7 @@ export function FeedPhoneStage({
     setPlaybackClock({ current: 0, duration: 0 });
     setFeedMoreMenuOpen(false);
     setSpeedMenuOpen(false);
+    setVolumeMenuOpen(false);
   }, [activeIndex, activeVideoPublicId, setFeedMoreMenuOpen]);
 
   useEffect(() => {
@@ -1340,7 +1341,7 @@ export function FeedPhoneStage({
                     aria-hidden
                   />
 
-                  {feedMoreMenuOpen || speedMenuOpen ? (
+                  {feedMoreMenuOpen || speedMenuOpen || volumeMenuOpen ? (
                     <button
                       type="button"
                       aria-label={t("feed.closeMenu")}
@@ -1349,6 +1350,7 @@ export function FeedPhoneStage({
                         e.preventDefault();
                         setFeedMoreMenuOpen(false);
                         setSpeedMenuOpen(false);
+                        setVolumeMenuOpen(false);
                       }}
                     />
                   ) : null}
@@ -1575,6 +1577,7 @@ export function FeedPhoneStage({
                 className="relative"
                 onMouseEnter={() => {
                   setFeedMoreMenuOpen(false);
+                  setVolumeMenuOpen(false);
                   setSpeedMenuOpen(true);
                 }}
                 onMouseLeave={() => setSpeedMenuOpen(false)}
@@ -1587,6 +1590,7 @@ export function FeedPhoneStage({
                   onClick={(e) => {
                     e.stopPropagation();
                     setFeedMoreMenuOpen(false);
+                    setVolumeMenuOpen(false);
                     setSpeedMenuOpen((open) => !open);
                   }}
                 >
@@ -1594,36 +1598,40 @@ export function FeedPhoneStage({
                 </button>
                 {speedMenuOpen ? (
                   <div
-                    role="menu"
-                    aria-label={t("feedMenu.speedGroup")}
-                    className="absolute bottom-[calc(100%+8px)] left-1/2 z-80 min-w-[5.5rem] -translate-x-1/2 overflow-hidden rounded-xl bg-[#2f2f2f] py-1 shadow-[0_8px_28px_rgba(0,0,0,0.45)]"
+                    className="absolute bottom-full left-1/2 z-80 -translate-x-1/2 pb-4"
                     onMouseDown={(e) => e.stopPropagation()}
                   >
-                    <p className="px-3 py-1.5 text-[11px] font-medium text-white/55">
-                      {t("feedMenu.speedGroup")}
-                    </p>
-                    {FEED_PLAYBACK_SPEEDS.map((rate) => {
-                      const selected = feedPlaybackSpeed === rate;
-                      return (
-                        <button
-                          key={rate}
-                          type="button"
-                          role="menuitemradio"
-                          aria-checked={selected}
-                          className={`flex w-full items-center justify-center px-3 py-2 text-[13px] font-semibold tabular-nums transition-colors ${
-                            selected
-                              ? "bg-white/10 text-[#fe2c55]"
-                              : "text-white hover:bg-white/[0.06]"
-                          }`}
-                          onClick={() => {
-                            setFeedPlaybackSpeed(rate);
-                            setSpeedMenuOpen(false);
-                          }}
-                        >
-                          {formatPlaybackSpeedBadge(rate)}
-                        </button>
-                      );
-                    })}
+                    <div
+                      role="menu"
+                      aria-label={t("feedMenu.speedGroup")}
+                      className="min-w-[5.5rem] overflow-hidden rounded-xl bg-[#2f2f2f] py-1 shadow-[0_8px_28px_rgba(0,0,0,0.45)]"
+                    >
+                      <p className="px-3 py-1.5 text-[11px] font-medium text-white/55">
+                        {t("feedMenu.speedGroup")}
+                      </p>
+                      {FEED_PLAYBACK_SPEEDS.map((rate) => {
+                        const selected = feedPlaybackSpeed === rate;
+                        return (
+                          <button
+                            key={rate}
+                            type="button"
+                            role="menuitemradio"
+                            aria-checked={selected}
+                            className={`flex w-full items-center justify-center px-3 py-2 text-[13px] font-semibold tabular-nums transition-colors ${
+                              selected
+                                ? "bg-white/10 text-[#fe2c55]"
+                                : "text-white hover:bg-white/[0.06]"
+                            }`}
+                            onClick={() => {
+                              setFeedPlaybackSpeed(rate);
+                              setSpeedMenuOpen(false);
+                            }}
+                          >
+                            {formatPlaybackSpeedBadge(rate)}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -1660,27 +1668,73 @@ export function FeedPhoneStage({
                 </button>
               </TooltipHoverWrap>
 
-              <button
-                type="button"
-                aria-label={feedSoundOn ? t("feed.mute") : t("feed.unmute")}
-                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-white hover:bg-white/10"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFeedSoundOn(!feedSoundOn);
+              <div
+                className="relative"
+                onMouseEnter={() => {
+                  setFeedMoreMenuOpen(false);
+                  setSpeedMenuOpen(false);
+                  setVolumeMenuOpen(true);
                 }}
+                onMouseLeave={() => setVolumeMenuOpen(false)}
               >
-                {feedSoundOn && feedVolume > 0 ? (
-                  feedVolume < 0.35 ? (
-                    <IoVolumeLow className="h-5 w-5" aria-hidden />
-                  ) : feedVolume < 0.7 ? (
-                    <IoVolumeMedium className="h-5 w-5" aria-hidden />
+                <button
+                  type="button"
+                  aria-label={feedSoundOn ? t("feed.mute") : t("feed.unmute")}
+                  aria-expanded={volumeMenuOpen}
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-white hover:bg-white/10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (feedSoundOn && feedVolume > 0) {
+                      setFeedSoundOn(false);
+                      return;
+                    }
+                    setFeedSoundOn(true);
+                    if ((Number(feedVolume) || 0) <= 0) {
+                      setFeedVolume?.(FEED_VOLUME_DEFAULT);
+                    }
+                  }}
+                >
+                  {feedSoundOn && feedVolume > 0 ? (
+                    feedVolume < 0.35 ? (
+                      <IoVolumeLow className="h-5 w-5" aria-hidden />
+                    ) : feedVolume < 0.7 ? (
+                      <IoVolumeMedium className="h-5 w-5" aria-hidden />
+                    ) : (
+                      <IoVolumeHigh className="h-5 w-5" aria-hidden />
+                    )
                   ) : (
-                    <IoVolumeHigh className="h-5 w-5" aria-hidden />
-                  )
-                ) : (
-                  <IoVolumeMute className="h-5 w-5" aria-hidden />
-                )}
-              </button>
+                    <IoVolumeMute className="h-5 w-5" aria-hidden />
+                  )}
+                </button>
+                {volumeMenuOpen ? (
+                  <div
+                    className="absolute bottom-full left-1/2 z-80 flex -translate-x-1/2 flex-col items-center pb-4"
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex h-[7.75rem] w-11 items-center justify-center rounded-xl bg-[#2f2f2f] py-3 shadow-[0_8px_28px_rgba(0,0,0,0.45)]">
+                      <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        value={
+                          feedSoundOn
+                            ? Math.min(1, Math.max(0, Number(feedVolume) || 0))
+                            : 0
+                        }
+                        aria-label={t("feed.volume")}
+                        className="watch-volume-slider-vertical"
+                        onChange={(e) => {
+                          const v = Number(e.target.value);
+                          setFeedVolume?.(v);
+                          setFeedSoundOn(v > 0);
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+              </div>
 
               <div className="relative">
                 <button
@@ -1692,6 +1746,7 @@ export function FeedPhoneStage({
                   onClick={(e) => {
                     e.stopPropagation();
                     setSpeedMenuOpen(false);
+                    setVolumeMenuOpen(false);
                     setFeedMoreMenuOpen((open) => !open);
                     setFeedMoreMenuSubpage("main");
                   }}

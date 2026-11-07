@@ -6,7 +6,8 @@ const tipBaseClasses =
 
 const tipPlacementClasses = {
   bottom: "top-full mt-2",
-  top: "bottom-full mb-2",
+  /** mb lớn hơn để tip không dính thanh progress / control bar feed. */
+  top: "bottom-full mb-5",
 };
 
 const iconBtnSizeClasses = {
