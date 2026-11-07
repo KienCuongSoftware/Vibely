@@ -40,7 +40,7 @@ def transcribe_video(video_path: Path, work_dir: Path) -> dict[str, Any]:
         }
 
     wav_path = work_dir / "audio.wav"
-    max_sec = int(os.environ.get("CU_WHISPER_MAX_SECONDS", "120"))
+    max_sec = int(os.environ.get("CU_WHISPER_MAX_SECONDS", "600"))
     try:
         extract_audio_wav(video_path, wav_path, max_seconds=max_sec)
     except Exception as exc:  # noqa: BLE001
@@ -97,8 +97,9 @@ def transcribe_video(video_path: Path, work_dir: Path) -> dict[str, Any]:
                 "modelId": _WHISPER_ID,
                 "language": getattr(info, "language", None),
                 "languageProbability": round(float(getattr(info, "language_probability", 0) or 0), 3),
-                "transcript": transcript[:4000],
-                "segments": texts[:40],
+                "transcript": transcript[:12000],
+                # Timed CC needs full segment list (cap via env for runaway videos).
+                "segments": texts[: int(os.environ.get("CU_WHISPER_MAX_SEGMENTS", "500"))],
                 "segmentCount": len(texts),
             },
             "speechTags": speech_tags,

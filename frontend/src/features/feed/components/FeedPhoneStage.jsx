@@ -40,8 +40,13 @@ import { createPhotoAudioBoostController } from "@/features/feed/utils/photoFeed
 import { sortQualityOptions } from "@/features/feed/utils/hlsQualityUtils.js";
 import { downloadWatermarkedVideo } from "@/features/feed/utils/videoDownload.js";
 import { FeedTranslatedCaption } from "@/features/feed/components/FeedTranslatedCaption.jsx";
+import { FeedTimedCaptions } from "@/features/feed/components/FeedTimedCaptions.jsx";
 import { useFeedPrefetch } from "@/features/feed/hooks/useFeedPrefetch.js";
 import { VideoContextMenu } from "@/features/feed/components/VideoContextMenu.jsx";
+import {
+  localeCodeToSubtitleIso,
+  subtitleLangToIso,
+} from "@/features/feed/utils/subtitleLangMap.js";
 import { FeedReportModal } from "@/features/report/components/FeedReportModal.jsx";
 import { FeedReportedVideoOverlay } from "@/features/feed/components/FeedReportedVideoOverlay.jsx";
 import { normalizeVideoPublicId } from "@/features/post/utils/videoPublicId.js";
@@ -651,7 +656,7 @@ export function FeedPhoneStage({
   authorFollowBusy = false,
   onAuthorFollow,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { sidebarWidthPx } = useMainSidebarCollapse();
   /** Khung rộng từ trình duyệt (videoWidth/Height sau decode). */
   const [clientWideForLandscape, setClientWideForLandscape] = useState(false);
@@ -682,14 +687,20 @@ export function FeedPhoneStage({
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [speedMenuOpen, setSpeedMenuOpen] = useState(false);
   const [volumeMenuOpen, setVolumeMenuOpen] = useState(false);
+  const [timedCaptionsAvailable, setTimedCaptionsAvailable] = useState(false);
   const speedHoverCloseTimerRef = useRef(null);
   const volumeHoverCloseTimerRef = useRef(null);
   void hlsQualityOptions;
   void _feedMoreMenuSubpage;
   void _setFeedVideoQuality;
   void feedVideoQuality;
-  const { prefs: subtitlePrefs } = useFeedSubtitlesPrefs();
+  const { prefs: subtitlePrefs, targetLangIso } = useFeedSubtitlesPrefs();
   const captionsEnabled = Boolean(subtitlePrefs?.captionsEnabled);
+  const subtitleLangIso =
+    targetLangIso ||
+    localeCodeToSubtitleIso(i18n.language) ||
+    subtitleLangToIso(subtitlePrefs?.translateTo) ||
+    "vi";
   const controlPopoverOpen =
     speedMenuOpen || volumeMenuOpen || feedMoreMenuOpen;
 
@@ -1017,6 +1028,10 @@ export function FeedPhoneStage({
   /** Tránh callback từ slide cũ (RAF/HLS) ghi đè slide đang active. */
   const activeSlideVideoIdRef = useRef(activeVideoPublicId);
   activeSlideVideoIdRef.current = activeVideoPublicId;
+
+  useEffect(() => {
+    setTimedCaptionsAvailable(false);
+  }, [activeVideoPublicId]);
 
   const onActiveIntrinsicLandscape = useCallback((isLandscape, fromVideoId) => {
     if (fromVideoId == null || fromVideoId !== activeSlideVideoIdRef.current) {
@@ -1458,35 +1473,46 @@ export function FeedPhoneStage({
               )}
 
               {isActive && hasPlayback && !theaterMode ? (
-                <div
-                  className="pointer-events-none absolute inset-x-0 bottom-0 z-50 max-h-[42%] overflow-hidden **:pointer-events-auto"
-                  style={{ paddingBottom: FEED_CAPTION_PROGRESS_PAD_PX }}
-                >
-                  <FeedSlideAuthorMeta
-                    rawVibelyUser={rawVibelyUser}
-                    authorProfilePath={authorProfilePath}
-                    authorAvatarUrl={video?.avatarUrl}
-                    defaultAuthorAvatar={feedDefaultAuthorAvatar}
-                    captionText={captionText}
-                    videoPublicId={video?.publicId}
-                    descriptionLang={video?.descriptionLang}
-                    authToken={reportToken || contextMenuToken}
-                    captionActive={isActive}
-                    compact={effectiveStageWide}
-                    showFollow={showAuthorFollow}
-                    followBusy={authorFollowBusy}
-                    onFollow={onAuthorFollow}
-                    repostedByDisplayName={video?.repostedByDisplayName}
-                    repostedByUsername={video?.repostedByUsername}
-                    selfReposted={selfReposted}
-                    selfRepostAvatarUrl={selfRepostAvatarUrl}
-                    selfRepostDisplayName={selfRepostDisplayName}
-                    selfRepostUsername={selfRepostUsername}
-                    selfRepostProfilePath={selfRepostProfilePath}
-                    onSelfUnrepost={onSelfUnrepost}
-                    selfRepostBusy={selfRepostBusy}
+                <>
+                  <FeedTimedCaptions
+                    videoPublicId={normalizeVideoPublicId(video?.publicId)}
+                    lang={subtitleLangIso}
+                    enabled={captionsEnabled}
+                    videoRef={feedVideoRef}
+                    token={reportToken || contextMenuToken}
+                    bottomPadPx={FEED_CAPTION_PROGRESS_PAD_PX + 72}
+                    onAvailabilityChange={setTimedCaptionsAvailable}
                   />
-                </div>
+                  <div
+                    className="pointer-events-none absolute inset-x-0 bottom-0 z-50 max-h-[42%] overflow-hidden **:pointer-events-auto"
+                    style={{ paddingBottom: FEED_CAPTION_PROGRESS_PAD_PX }}
+                  >
+                    <FeedSlideAuthorMeta
+                      rawVibelyUser={rawVibelyUser}
+                      authorProfilePath={authorProfilePath}
+                      authorAvatarUrl={video?.avatarUrl}
+                      defaultAuthorAvatar={feedDefaultAuthorAvatar}
+                      captionText={captionText}
+                      videoPublicId={video?.publicId}
+                      descriptionLang={video?.descriptionLang}
+                      authToken={reportToken || contextMenuToken}
+                      captionActive={isActive}
+                      compact={effectiveStageWide}
+                      showFollow={showAuthorFollow}
+                      followBusy={authorFollowBusy}
+                      onFollow={onAuthorFollow}
+                      repostedByDisplayName={video?.repostedByDisplayName}
+                      repostedByUsername={video?.repostedByUsername}
+                      selfReposted={selfReposted}
+                      selfRepostAvatarUrl={selfRepostAvatarUrl}
+                      selfRepostDisplayName={selfRepostDisplayName}
+                      selfRepostUsername={selfRepostUsername}
+                      selfRepostProfilePath={selfRepostProfilePath}
+                      onSelfUnrepost={onSelfUnrepost}
+                      selfRepostBusy={selfRepostBusy}
+                    />
+                  </div>
+                </>
               ) : null}
 
               {!hasPlayback && !theaterMode ? (
@@ -1693,17 +1719,27 @@ export function FeedPhoneStage({
               </div>
 
               <TooltipHoverWrap
-                tip={t("feedMenu.noSubtitles")}
+                tip={
+                  timedCaptionsAvailable
+                    ? t("feedMenu.subtitles")
+                    : t("feedMenu.noSubtitles")
+                }
                 placement="top"
                 hoverOnly
                 className="pointer-events-auto"
               >
                 <button
                   type="button"
-                  aria-label={t("feedMenu.noSubtitles")}
+                  aria-label={
+                    timedCaptionsAvailable
+                      ? t("feedMenu.subtitles")
+                      : t("feedMenu.noSubtitles")
+                  }
                   aria-pressed={captionsEnabled}
                   className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-[11px] font-bold tracking-wide hover:bg-white/10 ${
-                    captionsEnabled ? "text-white" : "text-white/45"
+                    captionsEnabled && timedCaptionsAvailable
+                      ? "text-white"
+                      : "text-white/45"
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();

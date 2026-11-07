@@ -78,11 +78,92 @@ export const SUBTITLE_LANG_TO_ISO = {
   "中文 (繁體)": "zh-hant",
   "中文 (简体)": "zh",
   한국어: "ko",
+  // Vibely SUPPORTED_LANGUAGES nativeLabel extras
+  "English (US)": "en",
+  "English (UK)": "en",
+  "Español (Latinoamérica)": "es",
+  "Français (Canada)": "fr",
+  "Português (Brasil)": "pt",
+  हिंदी: "hi",
+  বাংলা: "bn",
+  Български: "bg",
+  Slovenčina: "sk",
+  Slovenščina: "sl",
+};
+
+/** Map Vibely locale code → canonical subtitle ISO. */
+export const LOCALE_CODE_TO_SUBTITLE_ISO = {
+  az: "az",
+  id: "id",
+  ms: "ms",
+  jv: "jv",
+  ca: "ca",
+  ceb: "ceb",
+  cs: "cs",
+  da: "da",
+  de: "de",
+  et: "et",
+  "en-GB": "en",
+  en: "en",
+  es: "es",
+  "es-419": "es",
+  fil: "tl",
+  fr: "fr",
+  "fr-CA": "fr",
+  ga: "ga",
+  hr: "hr",
+  is: "is",
+  it: "it",
+  sw: "sw",
+  lv: "lv",
+  lt: "lt",
+  hu: "hu",
+  nl: "nl",
+  nb: "nb",
+  uz: "uz",
+  pl: "pl",
+  pt: "pt",
+  "pt-BR": "pt",
+  ro: "ro",
+  sq: "sq",
+  sk: "sk",
+  sl: "sl",
+  fi: "fi",
+  sv: "sv",
+  vi: "vi",
+  tr: "tr",
+  el: "el",
+  bg: "bg",
+  kk: "kk",
+  ru: "ru",
+  uk: "uk",
+  he: "he",
+  ur: "ur",
+  ar: "ar",
+  hi: "hi",
+  bn: "bn",
+  th: "th",
+  my: "my",
+  km: "km",
+  ja: "ja",
+  "zh-Hant": "zh-hant",
+  "zh-Hans": "zh",
+  ko: "ko",
 };
 
 export function subtitleLangToIso(name) {
   if (!name) return null;
-  return SUBTITLE_LANG_TO_ISO[name] || null;
+  const raw = String(name).trim();
+  if (SUBTITLE_LANG_TO_ISO[raw]) return SUBTITLE_LANG_TO_ISO[raw];
+  if (LOCALE_CODE_TO_SUBTITLE_ISO[raw]) return LOCALE_CODE_TO_SUBTITLE_ISO[raw];
+  const lower = raw.toLowerCase();
+  if (LOCALE_CODE_TO_SUBTITLE_ISO[lower]) return LOCALE_CODE_TO_SUBTITLE_ISO[lower];
+  return null;
+}
+
+export function localeCodeToSubtitleIso(code) {
+  if (!code) return null;
+  return LOCALE_CODE_TO_SUBTITLE_ISO[code] || subtitleLangToIso(code);
 }
 
 export function normalizeIsoLang(code) {

@@ -57,4 +57,17 @@ export const postApi = {
       })}`,
       token ? { token } : {},
     ),
+  getVideoSubtitles: (publicId, lang, { request: doRequest = false, token } = {}) =>
+    request(
+      `/api/videos/${encodeURIComponent(publicId)}/subtitles${toQuery({
+        lang,
+        request: doRequest ? true : undefined,
+      })}`,
+      token ? { token } : {},
+    ),
+  getVideoSubtitleLanguages: (publicId, token) =>
+    request(
+      `/api/videos/${encodeURIComponent(publicId)}/subtitles/languages`,
+      token ? { token } : {},
+    ),
 };

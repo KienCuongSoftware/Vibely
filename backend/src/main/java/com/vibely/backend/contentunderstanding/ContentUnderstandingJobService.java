@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vibely.backend.common.BadRequestException;
 import com.vibely.backend.common.NotFoundException;
 import com.vibely.backend.moderation.ModerationJoinService;
+import com.vibely.backend.subtitle.VideoSubtitlePersistService;
 import com.vibely.backend.video.Video;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ public class ContentUnderstandingJobService {
     private final JdbcTemplate jdbcTemplate;
     private final SemanticTopicProjectionService topicProjectionService;
     private final ObjectProvider<ModerationJoinService> moderationJoinService;
+    private final ObjectProvider<VideoSubtitlePersistService> subtitlePersistService;
 
     public ContentUnderstandingJobService(
         AnalysisJobRepository jobRepository,
@@ -39,7 +41,8 @@ public class ContentUnderstandingJobService {
         ObjectMapper objectMapper,
         JdbcTemplate jdbcTemplate,
         SemanticTopicProjectionService topicProjectionService,
-        ObjectProvider<ModerationJoinService> moderationJoinService
+        ObjectProvider<ModerationJoinService> moderationJoinService,
+        ObjectProvider<VideoSubtitlePersistService> subtitlePersistService
     ) {
         this.jobRepository = jobRepository;
         this.semanticTagRepository = semanticTagRepository;
@@ -48,6 +51,7 @@ public class ContentUnderstandingJobService {
         this.objectMapper = objectMapper;
         this.jdbcTemplate = jdbcTemplate;
         this.topicProjectionService = topicProjectionService;
+        this.subtitlePersistService = subtitlePersistService;
         this.moderationJoinService = moderationJoinService;
     }
 
@@ -193,6 +197,11 @@ public class ContentUnderstandingJobService {
             objectJson,
             sceneJson
         );
+
+        VideoSubtitlePersistService persist = subtitlePersistService.getIfAvailable();
+        if (persist != null) {
+            persist.persistFromSpeechFeatures(videoId, request.getSpeechFeatures());
+        }
 
         projectCategories(videoId, tagScores);
         topicProjectionService.projectTopicsFromTags(video, topicTags);
