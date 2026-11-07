@@ -59,14 +59,14 @@ export const FEED_ACTION_COLUMN_PX = 56;
 /** Hai nút mũi tên chuyển video — đặt cạnh cột tương tác, không float. */
 export const FEED_CHEVRON_COLUMN_PX = 52;
 
-/** Lề phải ngoài cùng — chỉ chừa cột mũi tên chuyển video. */
-export const FEED_RIGHT_OUTER_GAP_PX = 12;
+/** Lề phải ngoài cùng — icon nằm trong video nên chỉ cần thở nhẹ. */
+export const FEED_RIGHT_OUTER_GAP_PX = 4;
 
 /**
- * Chỗ chừa bên phải khung. Tim / bình luận / chia sẻ / mũi tên đều nằm trong video.
+ * Chỗ chừa bên phải khung. Tim / bình luận / chia sẻ / mũi tên đều nằm trong video
+ * → không còn cột ngoài; chỉ giữ lề mỏng sát mép viewport.
  */
-export const FEED_ACTION_RAIL_PX =
-  FEED_STAGE_EDGE_GAP_PX + FEED_RIGHT_OUTER_GAP_PX;
+export const FEED_ACTION_RAIL_PX = FEED_RIGHT_OUTER_GAP_PX;
 
 /** Panel bình luận dock bên phải — rộng hơn, gần TikTok web (~420px). */
 export const FEED_COMMENTS_PANEL_MIN_PX = 380;
@@ -78,10 +78,10 @@ export function feedCommentsPanelWidthCss() {
 }
 
 /** Chiều cao slot feed (px dưới viewport). */
-export const FEED_VIEWPORT_INSET_PX = 8;
+export const FEED_VIEWPORT_INSET_PX = 4;
 
 /** TikTok web: khung 9:16 gần full chiều cao vùng nội dung (đỉnh/đáy sát lề). */
-export const FEED_STAGE_HEIGHT_RATIO = 0.995;
+export const FEED_STAGE_HEIGHT_RATIO = 1;
 
 /** @deprecated — dùng FEED_STAGE_HEIGHT_RATIO */
 export const FEED_STAGE_DISPLAY_SCALE = FEED_STAGE_HEIGHT_RATIO;
@@ -102,8 +102,8 @@ function feedStageReservedWidthPx(
 ) {
   return (
     sidebarWidthPx +
-    FEED_ACTION_RAIL_PX +
     FEED_STAGE_EDGE_GAP_PX +
+    FEED_ACTION_RAIL_PX +
     (commentsOpen ? FEED_COMMENTS_PANEL_WIDTH_PX + FEED_STAGE_EDGE_GAP_PX : 0)
   );
 }
@@ -126,7 +126,7 @@ export function computeFeedPortraitStageSizePx({
   let width = Math.round((maxHeight * 9) / 16);
   const clusterMaxWidth = Math.max(
     260,
-    vw - feedStageReservedWidthPx(commentsOpen, sidebarWidthPx) - 16,
+    vw - feedStageReservedWidthPx(commentsOpen, sidebarWidthPx),
   );
   if (width > clusterMaxWidth) {
     width = clusterMaxWidth;
@@ -176,7 +176,7 @@ export function computeFeedUnifiedStageSizePx({
   const height = Math.round(slotH * FEED_STAGE_HEIGHT_RATIO);
   const available = Math.max(
     280,
-    vw - feedStageReservedWidthPx(commentsOpen, sidebarWidthPx) - 16,
+    vw - feedStageReservedWidthPx(commentsOpen, sidebarWidthPx),
   );
   const width = Math.min(available, FEED_UNIFIED_STAGE_MAX_WIDTH_PX);
   return { width, height };
