@@ -67,8 +67,8 @@ const FEED_CONTROL_BAR_HEIGHT_PX = 40;
  * không bị thanh control đè mất nửa dưới.
  */
 const FEED_PROGRESS_TRACK_BOTTOM_PX = FEED_CONTROL_BAR_HEIGHT_PX + 8;
-/** Padding đáy overlay caption — trên thanh progress + control bar. */
-const FEED_CAPTION_PROGRESS_PAD_PX = FEED_PROGRESS_TRACK_BOTTOM_PX + 14;
+/** Padding đáy overlay caption — sát thanh progress kiểu TikTok. */
+const FEED_CAPTION_PROGRESS_PAD_PX = FEED_PROGRESS_TRACK_BOTTOM_PX + 4;
 
 function feedAuthorProfilePath(video) {
   const raw = String(video?.authorUsername ?? "vibely")
@@ -288,6 +288,8 @@ function FeedSlideAuthorMeta({
   selfRepostProfilePath,
   onSelfUnrepost,
   selfRepostBusy = false,
+  /** Timed CC — xếp trên avatar/tên trong cùng cột meta. */
+  timedCaptions = null,
 }) {
   const { t } = useTranslation();
   const [captionWash, setCaptionWash] = useState("none");
@@ -313,8 +315,8 @@ function FeedSlideAuthorMeta({
   );
 
   const padClass = compact
-    ? "px-3 pb-0 pt-1.5 sm:px-4"
-    : "px-3 pb-0 pt-2 sm:px-4 sm:pt-2.5";
+    ? "px-3 pb-0 pt-0.5 sm:px-4"
+    : "px-3 pb-0 pt-1 sm:px-4";
 
   /** Wash kéo xuống sát thanh tiến trình (bù padding đáy caption). */
   const washBottomPx = FEED_CAPTION_PROGRESS_PAD_PX;
@@ -337,6 +339,7 @@ function FeedSlideAuthorMeta({
         <div className={washClass} style={washStyle} aria-hidden />
       ) : null}
       <div className="relative z-10 max-w-[min(92%,28rem)]">
+        {timedCaptions}
         {selfReposted ? (
           <SelfRepostIndicator
             avatarUrl={selfRepostAvatarUrl}
@@ -400,21 +403,23 @@ function FeedSlideAuthorMeta({
             ) : null}
           </div>
         </div>
-        <div className="mt-1.5 min-w-0">
-          <FeedTranslatedCaption
-            videoPublicId={videoPublicId}
-            captionText={captionText}
-            descriptionLang={descriptionLang}
-            token={authToken}
-            active={captionActive}
-            renderCaption={(text) => (
-              <FeedVideoCaption
-                caption={text}
-                onNeedsGradientChange={setCaptionWash}
-              />
-            )}
-          />
-        </div>
+        {String(captionText ?? "").trim() ? (
+          <div className="mt-1 min-w-0">
+            <FeedTranslatedCaption
+              videoPublicId={videoPublicId}
+              captionText={captionText}
+              descriptionLang={descriptionLang}
+              token={authToken}
+              active={captionActive}
+              renderCaption={(text) => (
+                <FeedVideoCaption
+                  caption={text}
+                  onNeedsGradientChange={setCaptionWash}
+                />
+              )}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -1473,46 +1478,46 @@ export function FeedPhoneStage({
               )}
 
               {isActive && hasPlayback && !theaterMode ? (
-                <>
-                  <FeedTimedCaptions
-                    videoPublicId={normalizeVideoPublicId(video?.publicId)}
-                    lang={subtitleLangIso}
-                    enabled={captionsEnabled}
-                    videoRef={feedVideoRef}
-                    token={reportToken || contextMenuToken}
-                    bottomPadPx={FEED_CAPTION_PROGRESS_PAD_PX + 72}
-                    onAvailabilityChange={setTimedCaptionsAvailable}
+                <div
+                  className="pointer-events-none absolute inset-x-0 bottom-0 z-50 max-h-[42%] overflow-hidden **:pointer-events-auto"
+                  style={{ paddingBottom: FEED_CAPTION_PROGRESS_PAD_PX }}
+                >
+                  <FeedSlideAuthorMeta
+                    rawVibelyUser={rawVibelyUser}
+                    authorProfilePath={authorProfilePath}
+                    authorAvatarUrl={video?.avatarUrl}
+                    defaultAuthorAvatar={feedDefaultAuthorAvatar}
+                    captionText={captionText}
+                    videoPublicId={video?.publicId}
+                    descriptionLang={video?.descriptionLang}
+                    authToken={reportToken || contextMenuToken}
+                    captionActive={isActive}
+                    compact={effectiveStageWide}
+                    showFollow={showAuthorFollow}
+                    followBusy={authorFollowBusy}
+                    onFollow={onAuthorFollow}
+                    repostedByDisplayName={video?.repostedByDisplayName}
+                    repostedByUsername={video?.repostedByUsername}
+                    selfReposted={selfReposted}
+                    selfRepostAvatarUrl={selfRepostAvatarUrl}
+                    selfRepostDisplayName={selfRepostDisplayName}
+                    selfRepostUsername={selfRepostUsername}
+                    selfRepostProfilePath={selfRepostProfilePath}
+                    onSelfUnrepost={onSelfUnrepost}
+                    selfRepostBusy={selfRepostBusy}
+                    timedCaptions={
+                      <FeedTimedCaptions
+                        videoPublicId={normalizeVideoPublicId(video?.publicId)}
+                        lang={subtitleLangIso}
+                        enabled={captionsEnabled}
+                        videoRef={feedVideoRef}
+                        token={reportToken || contextMenuToken}
+                        layout="stack"
+                        onAvailabilityChange={setTimedCaptionsAvailable}
+                      />
+                    }
                   />
-                  <div
-                    className="pointer-events-none absolute inset-x-0 bottom-0 z-50 max-h-[42%] overflow-hidden **:pointer-events-auto"
-                    style={{ paddingBottom: FEED_CAPTION_PROGRESS_PAD_PX }}
-                  >
-                    <FeedSlideAuthorMeta
-                      rawVibelyUser={rawVibelyUser}
-                      authorProfilePath={authorProfilePath}
-                      authorAvatarUrl={video?.avatarUrl}
-                      defaultAuthorAvatar={feedDefaultAuthorAvatar}
-                      captionText={captionText}
-                      videoPublicId={video?.publicId}
-                      descriptionLang={video?.descriptionLang}
-                      authToken={reportToken || contextMenuToken}
-                      captionActive={isActive}
-                      compact={effectiveStageWide}
-                      showFollow={showAuthorFollow}
-                      followBusy={authorFollowBusy}
-                      onFollow={onAuthorFollow}
-                      repostedByDisplayName={video?.repostedByDisplayName}
-                      repostedByUsername={video?.repostedByUsername}
-                      selfReposted={selfReposted}
-                      selfRepostAvatarUrl={selfRepostAvatarUrl}
-                      selfRepostDisplayName={selfRepostDisplayName}
-                      selfRepostUsername={selfRepostUsername}
-                      selfRepostProfilePath={selfRepostProfilePath}
-                      onSelfUnrepost={onSelfUnrepost}
-                      selfRepostBusy={selfRepostBusy}
-                    />
-                  </div>
-                </>
+                </div>
               ) : null}
 
               {!hasPlayback && !theaterMode ? (

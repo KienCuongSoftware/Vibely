@@ -5,7 +5,7 @@ import {
 } from "@/features/feed/hooks/useVideoSubtitles.js";
 
 /**
- * TikTok-style timed CC overlay — white text, bottom-left above author meta.
+ * TikTok-style timed CC — chữ trắng trong nền đen bo góc, xếp trên avatar/tên.
  */
 export function FeedTimedCaptions({
   videoPublicId,
@@ -13,7 +13,10 @@ export function FeedTimedCaptions({
   enabled,
   videoRef,
   token,
+  /** "stack" = flow trong cột meta; "absolute" = neo bottom (legacy). */
+  layout = "stack",
   bottomPadPx = 96,
+  className = "",
   onAvailabilityChange,
 }) {
   const { cues, available, status } = useVideoSubtitles({
@@ -57,18 +60,38 @@ export function FeedTimedCaptions({
     return null;
   }
 
+  const cueEl = (
+    <p
+      className="inline-block max-w-full rounded-[4px] bg-black/70 px-2 py-[3px] text-left text-[15px] font-semibold leading-snug text-white sm:text-[16px]"
+    >
+      {activeText}
+    </p>
+  );
+
+  if (layout === "absolute") {
+    return (
+      <div
+        className={`pointer-events-none absolute inset-x-0 z-[55] px-3 sm:px-4 ${className}`}
+        style={{ bottom: bottomPadPx }}
+        data-testid="feed-timed-captions"
+        data-status={status}
+        data-available={available ? "1" : "0"}
+        aria-live="polite"
+      >
+        <div className="max-w-[min(92%,28rem)]">{cueEl}</div>
+      </div>
+    );
+  }
+
   return (
     <div
-      className="pointer-events-none absolute inset-x-0 z-[55] px-3 sm:px-4"
-      style={{ bottom: bottomPadPx }}
+      className={`pointer-events-none mb-1.5 max-w-[min(92%,28rem)] ${className}`}
       data-testid="feed-timed-captions"
       data-status={status}
       data-available={available ? "1" : "0"}
       aria-live="polite"
     >
-      <p className="max-w-[min(92%,28rem)] text-left text-[15px] font-semibold leading-snug text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.85),0_0_8px_rgba(0,0,0,0.45)] sm:text-[16px]">
-        {activeText}
-      </p>
+      {cueEl}
     </div>
   );
 }
