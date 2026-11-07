@@ -8,7 +8,7 @@ export const FEED_ROUND_ICON_BUTTON_CLASS =
 
 /** Icon tương tác + số đếm xếp dọc, căn giữa (mobile rail). */
 export const FEED_ACTION_ITEM_CLASS =
-  "flex min-w-8 flex-col items-center gap-0.5";
+  "flex min-w-8 flex-col items-center gap-0";
 
 /** Panel menu ⋯ — nền xám đậm đặc kiểu TikTok web. */
 export const FEED_MORE_PANEL_SURFACE_CLASS =
@@ -78,10 +78,10 @@ export function feedCommentsPanelWidthCss() {
 }
 
 /** Chiều cao slot feed (px dưới viewport). */
-export const FEED_VIEWPORT_INSET_PX = 12;
+export const FEED_VIEWPORT_INSET_PX = 8;
 
 /** TikTok web: khung 9:16 gần full chiều cao vùng nội dung (đỉnh/đáy sát lề). */
-export const FEED_STAGE_HEIGHT_RATIO = 0.98;
+export const FEED_STAGE_HEIGHT_RATIO = 0.995;
 
 /** @deprecated — dùng FEED_STAGE_HEIGHT_RATIO */
 export const FEED_STAGE_DISPLAY_SCALE = FEED_STAGE_HEIGHT_RATIO;

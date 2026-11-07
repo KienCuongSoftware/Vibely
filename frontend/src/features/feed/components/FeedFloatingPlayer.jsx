@@ -294,8 +294,8 @@ export function FeedFloatingPlayer({
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-36 bg-linear-to-t from-black/75 via-black/25 to-transparent" />
 
-      <div className="absolute right-2.5 bottom-10 z-30 flex flex-col items-center gap-2.5">
-        <div className="mb-1 flex flex-col items-center gap-1.5">
+      <div className="absolute right-2.5 bottom-10 z-30 flex flex-col items-center gap-1">
+        <div className="mb-0.5 flex flex-col items-center gap-0.5">
           <button
             type="button"
             className={chevronClass}

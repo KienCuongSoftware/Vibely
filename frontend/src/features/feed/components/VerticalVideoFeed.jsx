@@ -188,12 +188,12 @@ function filterOutUnpublishedOwnVideos(items) {
 function FeedChevronNav({ activeIndex, videoCount, onStep, busy, className }) {
   const { t } = useTranslation();
   const chevronBtnClass =
-    "flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center bg-transparent text-[22px] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)] transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-35";
+    "flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center bg-transparent text-[20px] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)] transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-35";
   return (
     <div
       className={
         className ??
-        "vibely-feed-chrome-rail flex flex-col items-center gap-1.5"
+        "vibely-feed-chrome-rail flex flex-col items-center gap-0.5"
       }
     >
       <button
@@ -1917,24 +1917,24 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   </div>
                 ) : null}
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-15 h-28 bg-linear-to-t from-black/80 via-black/35 to-transparent max-lg:block lg:hidden" />
-              {!mobileLayout ? (
-                <FeedChevronNav
-                  activeIndex={activeIndex}
-                  videoCount={videos.length}
-                  onStep={requestFeedStep}
-                  busy={feedStepBusy}
-                  className="vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-3 top-1/2 z-40 flex -translate-y-1/2 flex-col items-center gap-1.5 bg-transparent"
-                />
-              ) : null}
               <div
                 className={
                   mobileLayout
-                    ? `vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-2 bottom-14 z-40 flex flex-col items-center gap-2.5 bg-transparent${
+                    ? `vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-2 bottom-14 z-40 flex flex-col items-center gap-1 bg-transparent${
                         feedCommentsOpen ? " hidden" : ""
                       }`
-                    : "vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-3 bottom-12 z-40 flex flex-col items-center gap-2.5 bg-transparent"
+                    : "vibely-feed-chrome-rail vibely-keep-dark pointer-events-auto absolute right-3 bottom-12 z-40 flex flex-col items-center gap-1 bg-transparent"
                 }
               >
+                {!mobileLayout ? (
+                  <FeedChevronNav
+                    activeIndex={activeIndex}
+                    videoCount={videos.length}
+                    onStep={requestFeedStep}
+                    busy={feedStepBusy}
+                    className="mb-0.5 flex flex-col items-center gap-0.5"
+                  />
+                ) : null}
                 <div className={FEED_ACTION_ITEM_CLASS}>
                   <button
                     type="button"
