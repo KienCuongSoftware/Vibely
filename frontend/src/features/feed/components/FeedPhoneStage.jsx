@@ -1662,9 +1662,9 @@ export function FeedPhoneStage({
                     <div
                       role="menu"
                       aria-label={t("feedMenu.speedGroup")}
-                      className="vibely-keep-dark min-w-[5.5rem] overflow-hidden rounded-xl bg-[#2f2f2f] py-1 shadow-[0_8px_28px_rgba(0,0,0,0.45)]"
+                      className="feed-dark-popover min-w-[5.5rem] overflow-hidden rounded-xl py-1 shadow-[0_8px_28px_rgba(0,0,0,0.45)]"
                     >
-                      <p className="px-3 py-1.5 text-[11px] font-medium text-white/55">
+                      <p className="feed-dark-popover-label px-3 py-1.5 text-[11px] font-medium">
                         {t("feedMenu.speedGroup")}
                       </p>
                       {FEED_PLAYBACK_SPEEDS.map((rate) => {
@@ -1675,10 +1675,8 @@ export function FeedPhoneStage({
                             type="button"
                             role="menuitemradio"
                             aria-checked={selected}
-                            className={`flex w-full items-center justify-center px-3 py-2 text-[13px] font-semibold tabular-nums text-white transition-colors ${
-                              selected
-                                ? "bg-[#3a3a3a] text-[#fe2c55]"
-                                : "hover:bg-[#3a3a3a]"
+                            className={`feed-dark-popover-item flex w-full items-center justify-center px-3 py-2 text-[13px] font-semibold tabular-nums transition-colors ${
+                              selected ? "is-selected" : ""
                             }`}
                             onClick={() => {
                               setFeedPlaybackSpeed(rate);
@@ -1766,7 +1764,7 @@ export function FeedPhoneStage({
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="flex h-[7.75rem] w-11 items-center justify-center rounded-xl bg-[#2f2f2f] py-3 shadow-[0_8px_28px_rgba(0,0,0,0.45)]">
+                    <div className="feed-dark-popover flex h-[7.75rem] w-11 items-center justify-center rounded-xl py-3 shadow-[0_8px_28px_rgba(0,0,0,0.45)]">
                       <input
                         type="range"
                         min={0}
