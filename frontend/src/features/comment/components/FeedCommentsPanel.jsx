@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   IoArrowUp,
+  IoChatbubbleEllipses,
   IoChevronDown,
   IoClose,
   IoHeart,
@@ -27,6 +28,7 @@ import { buildProfileHref } from "@/features/search/utils/searchUtils.js";
 import { feedCommentsPanelWidthCss } from "@/features/feed/utils/feedLayout.js";
 import { MOBILE_FEED_TOP_BAR_PX } from "@/features/feed/components/MobileFeedShell.jsx";
 import { CommentInputAccessoryButtons } from "@/features/comment/components/CommentInputAccessory.jsx";
+import { GuestLoginTrigger } from "@/features/auth/store/GuestAuthUiContext.jsx";
 
 const DEFAULT_USER_AVATAR = "/images/users/default-avatar.jpeg";
 const FEED_DEFAULT_AUTHOR_AVATAR = "/images/users/default-avatar.jpeg";
@@ -658,6 +660,11 @@ export function FeedCommentsPanel({
           <p className="py-3 text-center text-sm leading-relaxed text-zinc-400">
             {t("comments.restricted")}
           </p>
+        ) : !token ? (
+          <GuestLoginTrigger className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-[#fe2c55] px-4 py-3 text-[15px] font-semibold text-white transition hover:bg-[#e6284c]">
+            <IoChatbubbleEllipses className="text-lg" aria-hidden />
+            <span>{t("comments.loginToComment").replace(/\.\.\.$/, "")}</span>
+          </GuestLoginTrigger>
         ) : (
           <>
             {commentPostError ? (
@@ -684,12 +691,8 @@ export function FeedCommentsPanel({
                   data-testid="feed-comment-input"
                   value={commentDraft}
                   onChange={handleCommentDraftChange}
-                  placeholder={
-                    token
-                      ? t("comments.add")
-                      : t("comments.loginToComment")
-                  }
-                  disabled={!token || !isVideoPublicId(activeVideo?.publicId)}
+                  placeholder={t("comments.add")}
+                  disabled={!isVideoPublicId(activeVideo?.publicId)}
                   className="w-full rounded-lg border border-transparent bg-[#252525] py-2.5 pl-3.5 pr-[4.75rem] text-[15px] text-zinc-100 placeholder:text-zinc-500 outline-none transition focus:border-zinc-600 disabled:opacity-50"
                   onKeyDown={(e) => {
                     if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
@@ -714,7 +717,6 @@ export function FeedCommentsPanel({
                 aria-label={t("comments.sendComment")}
                 disabled={
                   !commentDraft.trim() ||
-                  !token ||
                   !isVideoPublicId(activeVideo?.publicId)
                 }
                 onClick={() => void submitComment()}

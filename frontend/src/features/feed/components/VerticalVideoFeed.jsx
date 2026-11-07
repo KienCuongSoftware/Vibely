@@ -1637,9 +1637,9 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   };
 
   const toggleFeedComments = useCallback(() => {
-    if (redirectGuestToLogin(navigate, token)) return;
+    // Guest cũng được xem panel bình luận (TikTok-style); đăng nhập chỉ khi muốn đăng.
     setFeedCommentsOpen((open) => !open);
-  }, [navigate, token]);
+  }, []);
 
   const openShareModal = useCallback(() => {
     if (!isVideoPublicId(activeVideo?.publicId)) return;
