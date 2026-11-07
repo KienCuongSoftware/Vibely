@@ -1662,7 +1662,7 @@ export function FeedPhoneStage({
                     <div
                       role="menu"
                       aria-label={t("feedMenu.speedGroup")}
-                      className="min-w-[5.5rem] overflow-hidden rounded-xl bg-[#2f2f2f] py-1 shadow-[0_8px_28px_rgba(0,0,0,0.45)]"
+                      className="vibely-keep-dark min-w-[5.5rem] overflow-hidden rounded-xl bg-[#2f2f2f] py-1 shadow-[0_8px_28px_rgba(0,0,0,0.45)]"
                     >
                       <p className="px-3 py-1.5 text-[11px] font-medium text-white/55">
                         {t("feedMenu.speedGroup")}
@@ -1675,10 +1675,10 @@ export function FeedPhoneStage({
                             type="button"
                             role="menuitemradio"
                             aria-checked={selected}
-                            className={`flex w-full items-center justify-center px-3 py-2 text-[13px] font-semibold tabular-nums transition-colors ${
+                            className={`flex w-full items-center justify-center px-3 py-2 text-[13px] font-semibold tabular-nums text-white transition-colors ${
                               selected
-                                ? "bg-white/10 text-[#fe2c55]"
-                                : "text-white hover:bg-white/[0.06]"
+                                ? "bg-[#3a3a3a] text-[#fe2c55]"
+                                : "hover:bg-[#3a3a3a]"
                             }`}
                             onClick={() => {
                               setFeedPlaybackSpeed(rate);
