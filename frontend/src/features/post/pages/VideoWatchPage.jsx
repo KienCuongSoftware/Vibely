@@ -76,6 +76,7 @@ import {
 import { FeedReportedVideoOverlay } from "@/features/feed/components/FeedReportedVideoOverlay.jsx";
 import { WatchShareStrip } from "@/features/post/components/WatchShareStrip.jsx";
 import { SelfRepostIndicator } from "@/features/feed/components/SelfRepostIndicator.jsx";
+import { VideoLocationBadge } from "@/features/post/components/VideoLocationBadge.jsx";
 import { buildProfilePath } from "@/features/profile/utils/buildProfilePath.js";
 import { sortQualityOptions } from "@/features/feed/utils/hlsQualityUtils.js";
 import { usePersistedFeedVideoQuality } from "@/features/feed/hooks/usePersistedFeedVideoQuality.js";
@@ -2292,6 +2293,11 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                     />
                   </Link>
                   <div className="min-w-0 flex-1">
+                    {panelVideo.locationName ? (
+                      <div className="mb-2">
+                        <VideoLocationBadge name={panelVideo.locationName} />
+                      </div>
+                    ) : null}
                     <div className="flex items-start gap-2">
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">

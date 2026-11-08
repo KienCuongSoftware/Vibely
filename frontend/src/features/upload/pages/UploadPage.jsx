@@ -8,6 +8,7 @@ import { CoverPickerModal } from '@/features/upload/components/CoverPickerModal'
 import { CuHashtagSuggestions } from '@/features/upload/components/CuHashtagSuggestions'
 import { LocationPicker } from '@/features/upload/components/LocationPicker.jsx'
 import { toLocationPayload } from '@/features/upload/utils/recentLocations.js'
+import { VideoLocationBadge } from '@/features/post/components/VideoLocationBadge.jsx'
 import {
   SchedulePickers,
   SCHEDULE_MIN_LEAD_MINUTES,
@@ -59,7 +60,6 @@ import {
   IoHeartOutline,
   IoHomeOutline,
   IoInformationCircleOutline,
-  IoLocationOutline,
   IoMusicalNotesOutline,
   IoPaperPlaneOutline,
   IoPause,
@@ -2624,18 +2624,17 @@ export function UploadPage() {
                                     "0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 rgba(0,0,0,0.9)",
                                 }}
                               >
+                                {selectedLocation?.name ? (
+                                  <div className="mb-1.5">
+                                    <VideoLocationBadge name={selectedLocation.name} />
+                                  </div>
+                                ) : null}
                                 <p className="truncate text-[15px] font-bold leading-tight text-white">
                                   {user?.displayName || studioPreviewHandle}
                                 </p>
                                 {previewCaption ? (
                                   <p className="mt-1 line-clamp-2 text-[13px] font-semibold leading-snug text-white">
                                     {highlightTags(previewCaption)}
-                                  </p>
-                                ) : null}
-                                {selectedLocation?.name ? (
-                                  <p className="mt-1 flex items-center gap-0.5 truncate text-[12px] font-semibold text-white">
-                                    <IoLocationOutline className="shrink-0 text-sm text-white" aria-hidden />
-                                    <span className="truncate">{selectedLocation.name}</span>
                                   </p>
                                 ) : null}
                                 <p className="mt-1.5 flex items-center gap-1 truncate text-[12px] font-semibold text-white">

@@ -21,6 +21,7 @@ import {
   ExploreTabsSkeleton,
 } from '@/features/explore/components/ExplorePageSkeleton.jsx'
 import { localizeExploreTabName } from '@/features/explore/utils/localizeExploreTab.js'
+import { VideoLocationBadge } from '@/features/post/components/VideoLocationBadge.jsx'
 
 const ALL_TAB_BASE = { slug: 'all', kind: 'category', videoCount: 0 }
 
@@ -78,6 +79,11 @@ function ExploreMobileVideoCard({ video, coverFallback, onOpen }) {
           }}
         />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 via-black/20 to-transparent px-2.5 pb-2 pt-8">
+          {video?.locationName ? (
+            <div className="mb-1.5">
+              <VideoLocationBadge name={video.locationName} size="sm" />
+            </div>
+          ) : null}
           <div className="inline-flex items-center gap-1 text-[13px] font-semibold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
             <IoHeartOutline className="text-[15px]" aria-hidden />
             <span>{formatCompactCount(video?.likeCount ?? 0)}</span>

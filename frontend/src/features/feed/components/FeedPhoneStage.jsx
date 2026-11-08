@@ -12,7 +12,6 @@ import { FeedVideoPlayer } from "@/features/feed/components/FeedVideoPlayer";
 import { FeedPhotoCarousel, photoUrlsOf } from "@/features/feed/components/FeedPhotoCarousel.jsx";
 import {
   IoEllipsisHorizontal,
-  IoLocationOutline,
   IoPause,
   IoPlay,
   IoVolumeHigh,
@@ -20,6 +19,7 @@ import {
   IoVolumeMedium,
   IoVolumeMute,
 } from "react-icons/io5";
+import { VideoLocationBadge } from "@/features/post/components/VideoLocationBadge.jsx";
 import {
   LuFlag,
   LuHeartOff,
@@ -362,6 +362,11 @@ function FeedSlideAuthorMeta({
             <span className="truncate">{t('feed.nameReposted', { name: repostLabel })}</span>
           </p>
         ) : null}
+        {locationLabel ? (
+          <div className="mb-1.5">
+            <VideoLocationBadge name={locationLabel} />
+          </div>
+        ) : null}
         <div className="flex min-w-0 items-center gap-2.5">
           {authorProfilePath ? (
             <Link
@@ -406,12 +411,6 @@ function FeedSlideAuthorMeta({
             ) : null}
           </div>
         </div>
-        {locationLabel ? (
-          <p className="mt-1 flex min-w-0 items-center gap-0.5 text-[12px] font-semibold text-white/95 [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]">
-            <IoLocationOutline className="shrink-0 text-sm" aria-hidden />
-            <span className="truncate">{locationLabel}</span>
-          </p>
-        ) : null}
         {String(captionText ?? "").trim() ? (
           <div className="mt-1 min-w-0">
             <FeedTranslatedCaption

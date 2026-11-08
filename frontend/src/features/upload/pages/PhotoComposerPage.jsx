@@ -12,7 +12,6 @@ import {
   IoEllipsisHorizontal,
   IoHeartOutline,
   IoHomeOutline,
-  IoLocationOutline,
   IoMusicalNotesOutline,
   IoPeopleOutline,
   IoPersonOutline,
@@ -44,6 +43,7 @@ import { SoundPickerModal } from '@/features/upload/components/SoundPickerModal.
 import { LocationPicker } from '@/features/upload/components/LocationPicker.jsx'
 import { formatSoundDuration } from '@/features/upload/utils/soundLibraryStore.js'
 import { toLocationPayload } from '@/features/upload/utils/recentLocations.js'
+import { VideoLocationBadge } from '@/features/post/components/VideoLocationBadge.jsx'
 import {
   localizeAudioTitle,
 } from '@/features/post/utils/localizeAudioTitle.js'
@@ -79,6 +79,11 @@ const PREVIEW_CAPTION_SHADOW =
 function CaptionStack({ displayName, description, locationQuery, soundLabel, photoBadge }) {
   return (
     <div className={`min-w-0 text-left text-white ${PREVIEW_CAPTION_SHADOW}`}>
+      {locationQuery ? (
+        <div className="mb-1">
+          <VideoLocationBadge name={locationQuery} />
+        </div>
+      ) : null}
       <p className="flex min-w-0 items-center gap-1.5 text-[13px] font-bold">
         <span className="truncate">{displayName}</span>
         <PhotoBadge label={photoBadge} />
@@ -86,12 +91,6 @@ function CaptionStack({ displayName, description, locationQuery, soundLabel, pho
       {description ? (
         <p className="mt-0.5 line-clamp-2 text-[12px] font-normal leading-snug text-white">
           {description}
-        </p>
-      ) : null}
-      {locationQuery ? (
-        <p className="mt-0.5 flex items-center gap-0.5 truncate text-[11px] text-white">
-          <IoLocationOutline className="shrink-0" aria-hidden />
-          {locationQuery}
         </p>
       ) : null}
       <p className="mt-1 flex items-center gap-1 truncate text-[12px] text-white">

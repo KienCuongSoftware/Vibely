@@ -22,6 +22,7 @@ import {
 } from '@/features/post/utils/videoPublicId.js'
 import { localizeAudioTitle } from '@/features/post/utils/localizeAudioTitle.js'
 import { VideoShareModal } from '@/features/post/components/VideoShareModal'
+import { VideoLocationBadge } from '@/features/post/components/VideoLocationBadge.jsx'
 import { FeedReportModal } from '@/features/report'
 import { Sidebar } from '@/shared/components/Sidebar'
 import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
@@ -485,6 +486,11 @@ export function SoundGridVideoCard({
       </div>
       {isExplore ? (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-linear-to-t from-black/70 via-black/20 to-transparent px-2.5 pb-2 pt-8">
+          {video?.locationName ? (
+            <div className="mb-1.5">
+              <VideoLocationBadge name={video.locationName} size="sm" />
+            </div>
+          ) : null}
           <div className="inline-flex items-center gap-1 text-[13px] font-semibold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
             <IoHeartOutline className="text-[15px]" aria-hidden />
             <span>{likeLabel}</span>
