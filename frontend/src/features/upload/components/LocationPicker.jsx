@@ -15,27 +15,91 @@ import {
   rememberLocation,
 } from "@/features/upload/utils/recentLocations.js";
 
-const CURATED_FALLBACK = [
+/** Instant chips while API loads — specific POIs, not only city names. */
+const INSTANT_CHIPS = [
   {
-    placeId: "curated:hanoi",
-    name: "Hanoi",
-    address: "Vietnam",
-    lat: 21.0285,
-    lng: 105.8542,
+    placeId: "popular:vinhomes-smart-city",
+    name: "Vinhomes Smart City",
+    address: "ĐL Thăng Long, Tây Mỗ, Nam Từ Liêm, Hà Nội",
+    lat: 21.0046,
+    lng: 105.736,
   },
   {
-    placeId: "curated:hcm",
-    name: "Ho Chi Minh City",
-    address: "Vietnam",
-    lat: 10.8231,
-    lng: 106.6297,
+    placeId: "popular:hanoi-old-quarter",
+    name: "Hanoi Old Quarter",
+    address: "Phố cổ Hà Nội, Hoàn Kiếm, Hà Nội",
+    lat: 21.034,
+    lng: 105.85,
   },
   {
-    placeId: "curated:danang",
-    name: "Da Nang",
-    address: "Vietnam",
-    lat: 16.0544,
-    lng: 108.2022,
+    placeId: "popular:ho-guom",
+    name: "Hồ Hoàn Kiếm",
+    address: "Hoàn Kiếm, Hà Nội",
+    lat: 21.0287,
+    lng: 105.8522,
+  },
+  {
+    placeId: "popular:landmark-81",
+    name: "Landmark 81",
+    address: "Bình Thạnh, TP. Hồ Chí Minh",
+    lat: 10.795,
+    lng: 106.722,
+  },
+  {
+    placeId: "popular:nguyen-hue",
+    name: "Phố đi bộ Nguyễn Huệ",
+    address: "Quận 1, TP. Hồ Chí Minh",
+    lat: 10.7735,
+    lng: 106.703,
+  },
+  {
+    placeId: "popular:ben-thanh",
+    name: "Chợ Bến Thành",
+    address: "Quận 1, TP. Hồ Chí Minh",
+    lat: 10.7725,
+    lng: 106.698,
+  },
+  {
+    placeId: "popular:cau-rong",
+    name: "Cầu Rồng",
+    address: "Hải Châu, Đà Nẵng",
+    lat: 16.061,
+    lng: 108.2275,
+  },
+  {
+    placeId: "popular:my-khe",
+    name: "Bãi biển Mỹ Khê",
+    address: "Sơn Trà, Đà Nẵng",
+    lat: 16.06,
+    lng: 108.247,
+  },
+  {
+    placeId: "popular:hoi-an",
+    name: "Phố cổ Hội An",
+    address: "Hội An, Quảng Nam",
+    lat: 15.8801,
+    lng: 108.338,
+  },
+  {
+    placeId: "popular:ba-na",
+    name: "Bà Nà Hills",
+    address: "Hòa Vang, Đà Nẵng",
+    lat: 15.995,
+    lng: 107.988,
+  },
+  {
+    placeId: "popular:da-lat-center",
+    name: "Chợ Đà Lạt",
+    address: "Đà Lạt, Lâm Đồng",
+    lat: 11.9404,
+    lng: 108.438,
+  },
+  {
+    placeId: "popular:ha-long",
+    name: "Vịnh Hạ Long",
+    address: "Hạ Long, Quảng Ninh",
+    lat: 20.9101,
+    lng: 107.1839,
   },
 ];
 
@@ -53,7 +117,7 @@ function readCoords() {
         });
       },
       () => resolve(null),
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 120000 },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 180000 },
     );
   });
 }
@@ -84,8 +148,8 @@ export function LocationPicker({
   const [error, setError] = useState("");
   const [recent, setRecent] = useState(() => loadRecentLocations());
   const [coords, setCoords] = useState(null);
-  const [nearby, setNearby] = useState([]);
-  const [nearbyLoading, setNearbyLoading] = useState(true);
+  const [suggested, setSuggested] = useState(INSTANT_CHIPS);
+  const [suggestLoading, setSuggestLoading] = useState(true);
 
   const isDark = variant === "dark";
 
@@ -96,28 +160,30 @@ export function LocationPicker({
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      setNearbyLoading(true);
+      setSuggestLoading(true);
       const pos = await readCoords();
       if (cancelled) return;
       setCoords(pos);
-      if (!pos || !token) {
-        setNearby([]);
-        setNearbyLoading(false);
+
+      if (!token) {
+        setSuggested(INSTANT_CHIPS);
+        setSuggestLoading(false);
         return;
       }
       try {
-        const data = await placesApi.nearbyPlaces({
-          lat: pos.lat,
-          lng: pos.lng,
-          limit: 14,
+        const data = await placesApi.suggestPlaces({
+          lat: pos?.lat,
+          lng: pos?.lng,
+          limit: 18,
           token,
         });
         if (cancelled) return;
-        setNearby(Array.isArray(data) ? data : []);
+        const list = Array.isArray(data) ? data.filter((p) => p?.name) : [];
+        setSuggested(list.length ? list : INSTANT_CHIPS);
       } catch {
-        if (!cancelled) setNearby([]);
+        if (!cancelled) setSuggested(INSTANT_CHIPS);
       } finally {
-        if (!cancelled) setNearbyLoading(false);
+        if (!cancelled) setSuggestLoading(false);
       }
     })();
     return () => {
@@ -181,15 +247,15 @@ export function LocationPicker({
   const chips = useMemo(() => {
     const seen = new Set();
     const out = [];
-    for (const item of [...nearby, ...recent, ...CURATED_FALLBACK]) {
+    for (const item of [...recent, ...suggested, ...INSTANT_CHIPS]) {
       if (!item?.name) continue;
       const key = `${item.placeId || ""}|${item.name}`;
       if (seen.has(key)) continue;
       seen.add(key);
       out.push(item);
     }
-    return out.slice(0, 16);
-  }, [nearby, recent]);
+    return out.slice(0, 20);
+  }, [suggested, recent]);
 
   const selectPlace = (place) => {
     if (!place?.name) return;
@@ -220,7 +286,7 @@ export function LocationPicker({
   const scrollChips = (dir) => {
     const el = chipsRef.current;
     if (!el) return;
-    el.scrollBy({ left: dir * 160, behavior: "smooth" });
+    el.scrollBy({ left: dir * 180, behavior: "smooth" });
   };
 
   const labelCls = isDark
@@ -349,7 +415,7 @@ export function LocationPicker({
           ref={chipsRef}
           className="flex min-w-0 flex-1 gap-2 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {nearbyLoading ? (
+          {suggestLoading ? (
             <span className={`shrink-0 px-2 py-1.5 text-xs ${addrCls}`}>
               {t("upload.locationNearbyLoading")}
             </span>
@@ -363,13 +429,14 @@ export function LocationPicker({
                 key={`${place.placeId || ""}|${place.name}`}
                 type="button"
                 onClick={() => selectPlace(place)}
+                title={place.address || place.name}
                 className={`shrink-0 cursor-pointer rounded-full px-3 py-1.5 text-xs font-medium transition ${chipCls} ${
                   selected ? "ring-1 ring-[#fe2c55]" : ""
                 }`}
               >
-                <span className="inline-flex items-center gap-1">
-                  <IoLocationOutline className="text-sm opacity-70" aria-hidden />
-                  {place.name}
+                <span className="inline-flex max-w-[11rem] items-center gap-1">
+                  <IoLocationOutline className="shrink-0 text-sm opacity-70" aria-hidden />
+                  <span className="truncate">{place.name}</span>
                 </span>
               </button>
             );

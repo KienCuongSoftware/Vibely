@@ -16,4 +16,13 @@ export const placesApi = {
       `/api/places/nearby${toQuery({ lat, lng, limit })}`,
       token ? { token } : {},
     ),
+  suggestPlaces: ({ lat, lng, limit = 16, token } = {}) =>
+    request(
+      `/api/places/suggestions${toQuery({
+        lat: lat ?? undefined,
+        lng: lng ?? undefined,
+        limit,
+      })}`,
+      token ? { token } : {},
+    ),
 };

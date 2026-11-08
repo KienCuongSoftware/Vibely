@@ -140,6 +140,41 @@ public class NominatimPlacesSearchService {
         return results;
     }
 
+    /**
+     * Chip suggestions: nearby (GPS or IP coords) merged with curated VN POIs so the row
+     * never collapses to only a few city names.
+     */
+    public List<PlaceSuggestionResponse> suggestions(Double lat, Double lng, int limit) {
+        int capped = Math.min(Math.max(limit, 1), MAX_NEARBY_LIMIT);
+        Map<String, PlaceSuggestionResponse> merged = new LinkedHashMap<>();
+        if (validCoord(lat, lng)) {
+            for (PlaceSuggestionResponse place : nearby(lat, lng, capped)) {
+                merged.putIfAbsent(dedupeKey(place), place);
+            }
+            for (PlaceSuggestionResponse place : closestPopular(lat, lng, capped)) {
+                merged.putIfAbsent(dedupeKey(place), place);
+                if (merged.size() >= capped) {
+                    break;
+                }
+            }
+        } else {
+            for (PlaceSuggestionResponse place : PopularPlacesCatalog.all()) {
+                merged.putIfAbsent(dedupeKey(place), place);
+                if (merged.size() >= capped) {
+                    break;
+                }
+            }
+        }
+        return List.copyOf(merged.values().stream().limit(capped).toList());
+    }
+
+    private List<PlaceSuggestionResponse> closestPopular(double lat, double lng, int limit) {
+        return PopularPlacesCatalog.all().stream()
+            .sorted(Comparator.comparingDouble(p -> distanceMeters(lat, lng, p.lat(), p.lng())))
+            .limit(limit)
+            .toList();
+    }
+
     private PlaceSuggestionResponse reverseAsPlace(double lat, double lng) {
         URI uri = UriComponentsBuilder
             .fromUriString("https://nominatim.openstreetmap.org/reverse")

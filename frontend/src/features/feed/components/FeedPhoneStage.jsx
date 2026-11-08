@@ -1650,6 +1650,25 @@ export function FeedPhoneStage({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex min-w-0 items-center gap-2">
+              <button
+                type="button"
+                aria-label={userPaused ? t("upload.play") : t("upload.pause")}
+                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-white hover:bg-white/10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFeedPlayback?.(e);
+                }}
+              >
+                {userPaused ? (
+                  <IoPlay className="ml-0.5 h-5 w-5" aria-hidden />
+                ) : (
+                  <IoPause className="h-5 w-5" aria-hidden />
+                )}
+              </button>
+              <span className="truncate text-[12px] font-semibold tabular-nums text-white/95">
+                {formatPlaybackTime(playbackClock.current)} /{" "}
+                {formatPlaybackTime(playbackClock.duration)}
+              </span>
               <div className="flex shrink-0 items-center gap-1.5">
                 <span className="text-[12px] font-medium leading-none whitespace-nowrap text-white/95">
                   {t("feedMenu.autoScroll")}
@@ -1676,25 +1695,6 @@ export function FeedPhoneStage({
                   />
                 </button>
               </div>
-              <button
-                type="button"
-                aria-label={userPaused ? t("upload.play") : t("upload.pause")}
-                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-white hover:bg-white/10"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleFeedPlayback?.(e);
-                }}
-              >
-                {userPaused ? (
-                  <IoPlay className="ml-0.5 h-5 w-5" aria-hidden />
-                ) : (
-                  <IoPause className="h-5 w-5" aria-hidden />
-                )}
-              </button>
-              <span className="truncate text-[12px] font-semibold tabular-nums text-white/95">
-                {formatPlaybackTime(playbackClock.current)} /{" "}
-                {formatPlaybackTime(playbackClock.duration)}
-              </span>
             </div>
 
             <div className="relative flex shrink-0 items-center gap-0.5">

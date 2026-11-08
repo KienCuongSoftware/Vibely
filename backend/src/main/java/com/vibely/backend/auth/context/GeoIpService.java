@@ -45,6 +45,31 @@ public class GeoIpService {
         }
     }
 
+    /** City-level lat/lng from MaxMind (nulls when DB/IP unavailable). */
+    public double[] resolveCoordinates(String ipAddress) {
+        if (ipAddress == null || ipAddress.isBlank() || isPrivateIp(ipAddress)) {
+            return null;
+        }
+        DatabaseReader databaseReader = reader();
+        if (databaseReader == null) {
+            return null;
+        }
+        try {
+            CityResponse response = databaseReader.city(InetAddress.getByName(ipAddress));
+            if (response.getLocation() == null
+                || response.getLocation().getLatitude() == null
+                || response.getLocation().getLongitude() == null) {
+                return null;
+            }
+            return new double[] {
+                response.getLocation().getLatitude(),
+                response.getLocation().getLongitude()
+            };
+        } catch (IOException | GeoIp2Exception ex) {
+            return null;
+        }
+    }
+
     private DatabaseReader reader() {
         if (reader != null) {
             return reader;
