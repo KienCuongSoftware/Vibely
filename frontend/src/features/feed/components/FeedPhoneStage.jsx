@@ -1641,6 +1641,32 @@ export function FeedPhoneStage({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex min-w-0 items-center gap-2">
+              <div className="flex shrink-0 items-center gap-1.5">
+                <span className="text-[12px] font-medium leading-none whitespace-nowrap text-white/95">
+                  {t("feedMenu.autoScroll")}
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={Boolean(feedAutoScrollEnabled)}
+                  aria-label={t("feedMenu.autoScroll")}
+                  className={`relative h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full transition-colors ${
+                    feedAutoScrollEnabled ? "bg-[#fe2c55]" : "bg-white/25"
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setFeedAutoScrollEnabled?.((prev) => !prev);
+                  }}
+                >
+                  <span
+                    className={`absolute top-[2px] left-[2px] h-[18px] w-[18px] rounded-full bg-white shadow transition-transform duration-200 ${
+                      feedAutoScrollEnabled
+                        ? "translate-x-[18px]"
+                        : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
               <button
                 type="button"
                 aria-label={userPaused ? t("upload.play") : t("upload.pause")}

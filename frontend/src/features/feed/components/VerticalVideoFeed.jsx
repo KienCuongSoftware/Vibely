@@ -32,6 +32,7 @@ import {
 } from "@/features/bookmark/components/BookmarkSaveFeedback";
 import { usePersistedFeedPlaybackSpeed } from "@/features/feed/hooks/usePersistedFeedPlaybackSpeed.js";
 import { usePersistedFeedVideoQuality } from "@/features/feed/hooks/usePersistedFeedVideoQuality.js";
+import { usePersistedFeedAutoScroll } from "@/features/feed/hooks/usePersistedFeedAutoScroll.js";
 import {
   watchTimeNearPlaythroughEnd,
   watchTimeQualifiesForViewRecord,
@@ -381,7 +382,8 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   /** HLS: 'auto' | '540' | '720' (hls.js); Safari native HLS không đổi rendition qua UI này */
   const [feedVideoQuality, setFeedVideoQuality] = usePersistedFeedVideoQuality();
   const [feedPlaybackSpeed, setFeedPlaybackSpeed] = usePersistedFeedPlaybackSpeed();
-  const [feedAutoScrollEnabled, setFeedAutoScrollEnabled] = useState(false);
+  const [feedAutoScrollEnabled, setFeedAutoScrollEnabled] =
+    usePersistedFeedAutoScroll();
   const [, setFeedPaused] = useState(true);
   const [userPaused, setUserPaused] = useState(false);
   const [feedCommentsOpen, setFeedCommentsOpen] = useState(false);

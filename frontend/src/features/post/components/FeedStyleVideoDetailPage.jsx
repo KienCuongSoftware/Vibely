@@ -39,6 +39,7 @@ import { TooltipHoverWrap } from '@/shared/components/TooltipControls.jsx'
 import { VideoShareModal } from '@/features/post/components/VideoShareModal.jsx'
 import { usePersistedFeedPlaybackSpeed } from '@/features/feed/hooks/usePersistedFeedPlaybackSpeed.js'
 import { usePersistedFeedVideoQuality } from '@/features/feed/hooks/usePersistedFeedVideoQuality.js'
+import { usePersistedFeedAutoScroll } from '@/features/feed/hooks/usePersistedFeedAutoScroll.js'
 import { markVideoNotInterested } from '@/features/feed/utils/feedNotInterestedStorage.js'
 import { resolveDisplayCaption } from '@/features/post/utils/videoCaption.js'
 import { useAuth } from '@/features/auth/hooks/useAuth.js'
@@ -292,7 +293,8 @@ export function FeedStyleVideoDetailPage({
   const [feedMoreMenuSubpage, setFeedMoreMenuSubpage] = useState('main')
   const [feedVideoQuality, setFeedVideoQuality] = usePersistedFeedVideoQuality()
   const [feedPlaybackSpeed, setFeedPlaybackSpeed] = usePersistedFeedPlaybackSpeed()
-  const [feedAutoScrollEnabled, setFeedAutoScrollEnabled] = useState(false)
+  const [feedAutoScrollEnabled, setFeedAutoScrollEnabled] =
+    usePersistedFeedAutoScroll()
   const [userPaused, setUserPaused] = useState(false)
   const [playbackFlash, setPlaybackFlash] = useState(null)
 
