@@ -67,9 +67,12 @@ export const EXPLORE_CATEGORY_I18N_KEYS = {
 
 export function localizeExploreTabName(tab, t) {
   if (!tab) return ''
-  if (tab.slug === 'all') return t('explorePage.all')
-  if (tab.kind === 'for_you' || tab.slug === 'for-you') return t('explorePage.forYou')
-  const key = EXPLORE_CATEGORY_I18N_KEYS[tab.slug]
+  const slug = String(tab.slug ?? '')
+    .trim()
+    .toLowerCase()
+  if (slug === 'all') return t('explorePage.all')
+  if (tab.kind === 'for_you' || slug === 'for-you') return t('explorePage.forYou')
+  const key = EXPLORE_CATEGORY_I18N_KEYS[slug]
   if (key) {
     const translated = t(key)
     if (translated && translated !== key) return translated

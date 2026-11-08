@@ -859,12 +859,12 @@
     "movies": "Phim ảnh",
     "documentary": "Phim tài liệu",
     "meme": "Meme",
-    "prank": "Prank",
+    "prank": "Trò đùa",
     "challenge": "Thử thách",
-    "reaction": "Reaction",
+    "reaction": "Phản ứng",
     "asmr": "ASMR",
     "motivation": "Động lực",
-    "diy": "DIY",
+    "diy": "Tự làm",
     "nature": "Thiên nhiên",
     "photography": "Nhiếp ảnh",
     "magic": "Ảo thuật",
@@ -881,7 +881,7 @@
     "camping": "Cắm trại",
     "fishing": "Câu cá",
     "farming": "Nông nghiệp",
-    "unboxing": "Unboxing",
+    "unboxing": "Đập hộp",
     "review": "Đánh giá",
     "podcast": "Podcast",
     "instruments": "Nhạc cụ",
@@ -890,7 +890,7 @@
     "mukbang": "Mukbang",
     "streetfood": "Ẩm thực đường phố",
     "spirituality": "Tâm linh",
-    "viral": "Viral"
+    "viral": "Xu hướng"
   },
   "settings": {
     "title": "Cài đặt",
