@@ -45,8 +45,12 @@ function ReviewStepper({ activeStep, t }) {
                   aria-hidden
                 />
                 <span
-                  className={`mt-2 text-[11px] leading-snug ${
-                    active ? "font-semibold text-zinc-900" : "text-zinc-500"
+                  className={`mt-2 text-[12px] leading-snug ${
+                    active
+                      ? "font-semibold text-zinc-900"
+                      : done
+                        ? "font-medium text-zinc-700"
+                        : "font-medium text-zinc-600"
                   }`}
                 >
                   {label}
@@ -109,7 +113,9 @@ export function StudioReviewStatusModal({ open, activeStep, onClose }) {
             id="studio-review-modal-title"
             className="mt-5 text-xl font-bold text-zinc-900"
           >
-            {t("studio.posts.reviewingContent")}
+            {activeStep >= 1
+              ? t("studio.posts.reviewingContent")
+              : t("studio.posts.pendingReview")}
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-zinc-600">
             {t("studio.posts.reviewModal.subtitle")}

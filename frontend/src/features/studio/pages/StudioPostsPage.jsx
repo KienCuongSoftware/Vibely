@@ -143,17 +143,34 @@ function isContentUnderReview(video, optimisticPublicIds) {
   return false;
 }
 
+/**
+ * TikTok-style review stepper for Studio:
+ * 0 = Đang chờ xét duyệt (mới đăng / còn encode)
+ * 1 = Đang xét duyệt (đang hold kiểm duyệt / hàng đợi human)
+ * 2 = Đã xét duyệt xong (không mở modal khi đã xong)
+ */
 function reviewProgressStep(video) {
-  // reviewRequired = AI/human queue flag, not "admin is actively reviewing".
-  // Stay on step 0 until backend exposes an explicit in-review-by-admin signal.
-  void video;
+  if (!video || video.studioDraft) return 0;
+  const status = String(video.status || "").toUpperCase();
+  if (status === "REMOVED") return 0;
+  // Còn encode — chưa vào vòng kiểm duyệt nội dung.
+  if (status === "RAW" || status === "PROCESSING") return 0;
+  // Đã vào hold / cần duyệt / đang chờ xuất bản sau kiểm duyệt.
+  if (
+    video.reviewRequired ||
+    video.moderationReviewPending ||
+    video.intendedPrivacy ||
+    status === "HIDDEN"
+  ) {
+    return 1;
+  }
   return 0;
 }
 
 function reviewStatusLabelKey(video) {
-  // Same rule: freshly published and queued posts are "waiting", not "under review".
-  void video;
-  return "studio.posts.pendingReview";
+  return reviewProgressStep(video) >= 1
+    ? "studio.posts.underReview"
+    : "studio.posts.pendingReview";
 }
 
 function displayPrivacyForVideo(video, optimisticReviewIds) {
