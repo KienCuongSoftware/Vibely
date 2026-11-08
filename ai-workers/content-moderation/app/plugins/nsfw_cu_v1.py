@@ -60,7 +60,8 @@ _TEXT_PATTERNS = [
     (r"child\s*porn|underage\s*sex|teen\s*porn|cp\s*trade", 0.95),
     # Vietnamese sexual / vulgar (no ASCII \b — diacritics)
     (
-        r"đầu\s*buồi|dau\s*buoi|buồi|\bbuoi\b|cặc|\bcak\b|lồn|\bloz\b|\blìn\b|"
+        # No bare \\bbuoi\\b — accent-stripped "Buổi" (session) false-positives.
+        r"đầu\s*buồi|dau\s*buoi|buồi|cặc|\bcak\b|lồn|\bloz\b|\blìn\b|"
         r"địt|đụ|\bchịch\b|\bchich\b|đéo|\bđcm\b|\bdcm\b",
         0.85,
     ),

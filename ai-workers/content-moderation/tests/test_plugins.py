@@ -121,7 +121,7 @@ def test_lex_sexual_vi_blocks_vietnamese_caption():
                 "match": {
                     "type": "lexicon",
                     "fields": ["title", "description"],
-                    "patterns": ["đầu\\s*buồi", "buồi", "buoi"],
+                    "patterns": ["đầu\\s*buồi", "buồi"],
                     "flags": "i",
                 },
                 "severity": "HIGH",

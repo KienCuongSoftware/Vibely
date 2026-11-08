@@ -41,7 +41,8 @@ public class ModerationCaptionGateService {
         Pattern.compile(
             "follow\\s*(?:for|of|4)\\s*nudes?|free\\s*nudes?|send\\s*nudes|only\\s*fans|pornhub|"
                 + "\\bfuck(?:ing)?\\b|\\bcunt\\b|\\bpussy\\b|\\bdick\\b|\\bwhore\\b|\\bslut\\b|"
-                + "đầu\\s*buồi|dau\\s*buoi|buồi|\\bbuoi\\b|cặc|\\bcak\\b|lồn|\\bloz\\b|"
+                // Do NOT add bare \\bbuoi\\b — accent-stripped "Buổi" (session) would false-positive.
+                + "đầu\\s*buồi|dau\\s*buoi|buồi|cặc|\\bcak\\b|lồn|\\bloz\\b|"
                 + "địt|đụ|chịch|đéo|con\\s*đĩ|đĩ\\b|điếm|bú\\s*cu|làm\\s*tình|ảnh\\s*nóng|clip\\s*sex|"
                 + "tinh[\\s_\\-]*duc|tình[\\s_\\-]*dục|quan[\\s_\\-]*he[\\s_\\-]*tinh[\\s_\\-]*duc",
             RE_FLAGS
