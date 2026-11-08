@@ -12,6 +12,7 @@ import { FeedVideoPlayer } from "@/features/feed/components/FeedVideoPlayer";
 import { FeedPhotoCarousel, photoUrlsOf } from "@/features/feed/components/FeedPhotoCarousel.jsx";
 import {
   IoEllipsisHorizontal,
+  IoLocationOutline,
   IoPause,
   IoPlay,
   IoVolumeHigh,
@@ -290,10 +291,12 @@ function FeedSlideAuthorMeta({
   selfRepostBusy = false,
   /** Timed CC — xếp trên avatar/tên trong cùng cột meta. */
   timedCaptions = null,
+  locationName = null,
 }) {
   const { t } = useTranslation();
   const [captionWash, setCaptionWash] = useState("none");
   const displayName = rawVibelyUser || "vibely";
+  const locationLabel = String(locationName ?? "").trim();
   const nameClass =
     "min-w-0 truncate text-[15px] font-bold leading-none text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]";
   const repostLabel = repostedByUsername
@@ -403,6 +406,12 @@ function FeedSlideAuthorMeta({
             ) : null}
           </div>
         </div>
+        {locationLabel ? (
+          <p className="mt-1 flex min-w-0 items-center gap-0.5 text-[12px] font-semibold text-white/95 [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]">
+            <IoLocationOutline className="shrink-0 text-sm" aria-hidden />
+            <span className="truncate">{locationLabel}</span>
+          </p>
+        ) : null}
         {String(captionText ?? "").trim() ? (
           <div className="mt-1 min-w-0">
             <FeedTranslatedCaption
@@ -1505,6 +1514,7 @@ export function FeedPhoneStage({
                     selfRepostProfilePath={selfRepostProfilePath}
                     onSelfUnrepost={onSelfUnrepost}
                     selfRepostBusy={selfRepostBusy}
+                    locationName={video?.locationName}
                     timedCaptions={
                       <FeedTimedCaptions
                         videoPublicId={normalizeVideoPublicId(video?.publicId)}

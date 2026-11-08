@@ -125,6 +125,21 @@ public class Video {
     @Column(name = "photo_urls", columnDefinition = "TEXT")
     private String photoUrls;
 
+    @Column(name = "location_name", length = 180)
+    private String locationName;
+
+    @Column(name = "location_address", length = 400)
+    private String locationAddress;
+
+    @Column(name = "location_lat")
+    private Double locationLat;
+
+    @Column(name = "location_lng")
+    private Double locationLng;
+
+    @Column(name = "location_place_id", length = 64)
+    private String locationPlaceId;
+
     @PrePersist
     void prePersist() {
         if (publicId == null) {
@@ -356,5 +371,45 @@ public class Video {
 
     public void setPhotoUrls(String photoUrls) {
         this.photoUrls = photoUrls;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+    }
+
+    public String getLocationAddress() {
+        return locationAddress;
+    }
+
+    public void setLocationAddress(String locationAddress) {
+        this.locationAddress = locationAddress;
+    }
+
+    public Double getLocationLat() {
+        return locationLat;
+    }
+
+    public void setLocationLat(Double locationLat) {
+        this.locationLat = locationLat;
+    }
+
+    public Double getLocationLng() {
+        return locationLng;
+    }
+
+    public void setLocationLng(Double locationLng) {
+        this.locationLng = locationLng;
+    }
+
+    public String getLocationPlaceId() {
+        return locationPlaceId;
+    }
+
+    public void setLocationPlaceId(String locationPlaceId) {
+        this.locationPlaceId = locationPlaceId;
     }
 }

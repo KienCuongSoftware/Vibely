@@ -6,6 +6,8 @@ import { apiClient, uploadThumbnailToStorage, uploadVideoFile } from '@/shared/a
 import { loadStudioSettings, saveStudioSettings } from '@/features/studio/utils/studioSettings.js'
 import { CoverPickerModal } from '@/features/upload/components/CoverPickerModal'
 import { CuHashtagSuggestions } from '@/features/upload/components/CuHashtagSuggestions'
+import { LocationPicker } from '@/features/upload/components/LocationPicker.jsx'
+import { toLocationPayload } from '@/features/upload/utils/recentLocations.js'
 import {
   SchedulePickers,
   SCHEDULE_MIN_LEAD_MINUTES,
@@ -57,6 +59,7 @@ import {
   IoHeartOutline,
   IoHomeOutline,
   IoInformationCircleOutline,
+  IoLocationOutline,
   IoMusicalNotesOutline,
   IoPaperPlaneOutline,
   IoPause,
@@ -279,7 +282,7 @@ export function UploadPage() {
   const [allowReuse, setAllowReuse] = useState(true)
   const [discloseContent, setDiscloseContent] = useState(false)
   const [aiContent, setAiContent] = useState(false)
-  const [locationText, setLocationText] = useState('')
+  const [selectedLocation, setSelectedLocation] = useState(null)
   const [thumbnailUrl, setThumbnailUrl] = useState('')
   const [coverModalOpen, setCoverModalOpen] = useState(false)
   const [previewCurrentTime, setPreviewCurrentTime] = useState(0)
@@ -1449,6 +1452,7 @@ export function UploadPage() {
             privacy,
             studioDraft: false,
             scheduledAt: scheduledAtPayload,
+            ...toLocationPayload(selectedLocation),
           },
           token,
         )
@@ -1467,6 +1471,7 @@ export function UploadPage() {
             studioDraft: false,
             privacy,
             scheduledAt: scheduledAtPayload,
+            ...toLocationPayload(selectedLocation),
           },
           token,
         )
@@ -1540,6 +1545,7 @@ export function UploadPage() {
           privacy,
           studioDraft: true,
           scheduledAt: null,
+          ...toLocationPayload(selectedLocation),
         },
         token,
       )
@@ -2243,16 +2249,11 @@ export function UploadPage() {
                   </div>
 
                   <div className="mt-6">
-                    <div className="mb-2 flex items-center gap-1">
-                      <span className="text-sm font-medium text-zinc-300">{t('upload.location')}</span>
-                      <IoInformationCircleOutline className="text-zinc-500" aria-hidden />
-                    </div>
-                    <input
-                      type="text"
-                      value={locationText}
-                      onChange={(e) => setLocationText(e.target.value)}
-                      placeholder={t('upload.locationPlaceholder')}
-                      className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600"
+                    <LocationPicker
+                      value={selectedLocation}
+                      onChange={setSelectedLocation}
+                      token={token}
+                      variant="dark"
                     />
                   </div>
 
@@ -2629,6 +2630,12 @@ export function UploadPage() {
                                 {previewCaption ? (
                                   <p className="mt-1 line-clamp-2 text-[13px] font-semibold leading-snug text-white">
                                     {highlightTags(previewCaption)}
+                                  </p>
+                                ) : null}
+                                {selectedLocation?.name ? (
+                                  <p className="mt-1 flex items-center gap-0.5 truncate text-[12px] font-semibold text-white">
+                                    <IoLocationOutline className="shrink-0 text-sm text-white" aria-hidden />
+                                    <span className="truncate">{selectedLocation.name}</span>
                                   </p>
                                 ) : null}
                                 <p className="mt-1.5 flex items-center gap-1 truncate text-[12px] font-semibold text-white">

@@ -220,6 +220,14 @@ public class VideoCommandService {
             video.setMediaKind("VIDEO");
             video.setStatus(VideoStatus.RAW);
         }
+        applyLocation(
+            video,
+            request.getLocationName(),
+            request.getLocationAddress(),
+            request.getLocationLat(),
+            request.getLocationLng(),
+            request.getLocationPlaceId()
+        );
         if (!draft) {
             privacyHoldService.applyHoldOnPublish(video);
         }
@@ -361,6 +369,16 @@ public class VideoCommandService {
                 video.setScheduledAt(scheduledAt);
             }
         }
+        if (request.isLocationPresent()) {
+            applyLocation(
+                video,
+                request.getLocationName(),
+                request.getLocationAddress(),
+                request.getLocationLat(),
+                request.getLocationLng(),
+                request.getLocationPlaceId()
+            );
+        }
         if (!keepAsDraft && wasDraft) {
             privacyHoldService.applyHoldOnPublish(video);
         }
@@ -383,6 +401,53 @@ public class VideoCommandService {
             moderationJoinService.tryEnqueue(saved.getId(), photoPost);
         }
         return responseMapper.toResponse(saved);
+    }
+
+    private static void applyLocation(
+        Video video,
+        String locationName,
+        String locationAddress,
+        Double locationLat,
+        Double locationLng,
+        String locationPlaceId
+    ) {
+        String name = VideoMediaUtils.normalizeText(locationName);
+        if (name == null) {
+            video.setLocationName(null);
+            video.setLocationAddress(null);
+            video.setLocationLat(null);
+            video.setLocationLng(null);
+            video.setLocationPlaceId(null);
+            return;
+        }
+        if (name.length() > 180) {
+            name = name.substring(0, 180);
+        }
+        String address = VideoMediaUtils.normalizeText(locationAddress);
+        if (address != null && address.length() > 400) {
+            address = address.substring(0, 400);
+        }
+        String placeId = VideoMediaUtils.normalizeText(locationPlaceId);
+        if (placeId != null && placeId.length() > 64) {
+            placeId = placeId.substring(0, 64);
+        }
+        Double lat = validCoord(locationLat, -90, 90);
+        Double lng = validCoord(locationLng, -180, 180);
+        video.setLocationName(name);
+        video.setLocationAddress(address);
+        video.setLocationLat(lat);
+        video.setLocationLng(lng);
+        video.setLocationPlaceId(placeId);
+    }
+
+    private static Double validCoord(Double value, double min, double max) {
+        if (value == null || Double.isNaN(value) || Double.isInfinite(value)) {
+            return null;
+        }
+        if (value < min || value > max) {
+            return null;
+        }
+        return value;
     }
 
     /**

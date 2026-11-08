@@ -1851,7 +1851,7 @@
       "learnMore": "了解更多",
       "appealPlaceholder": "說明你申訴此決定的原因（至少 10 個字符）…",
       "descriptionPlaceholder": "為視頻添加簡介…",
-      "locationPlaceholder": "添加地點（不會保存到服務器 — 上傳步骤界麵）",
+      "locationPlaceholder": "添加地點",
       "toggleFullscreen": "切換全屏",
       "unmute": "取消靜音",
       "mute": "靜音",

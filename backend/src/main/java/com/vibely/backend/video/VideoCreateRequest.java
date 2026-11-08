@@ -54,6 +54,19 @@ public class VideoCreateRequest {
     /** Public thumbnail URLs for PHOTO posts (1–35). */
     private List<String> photoUrls;
 
+    @Size(max = 180, message = "Location name must be at most 180 characters")
+    private String locationName;
+
+    @Size(max = 400, message = "Location address must be at most 400 characters")
+    private String locationAddress;
+
+    private Double locationLat;
+
+    private Double locationLng;
+
+    @Size(max = 64, message = "Location place id must be at most 64 characters")
+    private String locationPlaceId;
+
     public String getTitle() {
         return title;
     }
@@ -148,5 +161,45 @@ public class VideoCreateRequest {
 
     public void setPhotoUrls(List<String> photoUrls) {
         this.photoUrls = photoUrls;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+    }
+
+    public String getLocationAddress() {
+        return locationAddress;
+    }
+
+    public void setLocationAddress(String locationAddress) {
+        this.locationAddress = locationAddress;
+    }
+
+    public Double getLocationLat() {
+        return locationLat;
+    }
+
+    public void setLocationLat(Double locationLat) {
+        this.locationLat = locationLat;
+    }
+
+    public Double getLocationLng() {
+        return locationLng;
+    }
+
+    public void setLocationLng(Double locationLng) {
+        this.locationLng = locationLng;
+    }
+
+    public String getLocationPlaceId() {
+        return locationPlaceId;
+    }
+
+    public void setLocationPlaceId(String locationPlaceId) {
+        this.locationPlaceId = locationPlaceId;
     }
 }

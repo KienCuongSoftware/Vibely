@@ -37,6 +37,22 @@ public class VideoUpdateRequest {
     @JsonIgnore
     private boolean scheduledAtPresent;
 
+    @Size(max = 180, message = "Location name must be at most 180 characters")
+    private String locationName;
+
+    @Size(max = 400, message = "Location address must be at most 400 characters")
+    private String locationAddress;
+
+    private Double locationLat;
+
+    private Double locationLng;
+
+    @Size(max = 64, message = "Location place id must be at most 64 characters")
+    private String locationPlaceId;
+
+    @JsonIgnore
+    private boolean locationPresent;
+
     public String getTitle() {
         return title;
     }
@@ -92,5 +108,53 @@ public class VideoUpdateRequest {
     @JsonIgnore
     public boolean isScheduledAtPresent() {
         return scheduledAtPresent;
+    }
+
+    @JsonProperty("locationName")
+    public String getLocationName() {
+        return locationName;
+    }
+
+    @JsonSetter("locationName")
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+        this.locationPresent = true;
+    }
+
+    public String getLocationAddress() {
+        return locationAddress;
+    }
+
+    public void setLocationAddress(String locationAddress) {
+        this.locationAddress = locationAddress;
+    }
+
+    public Double getLocationLat() {
+        return locationLat;
+    }
+
+    public void setLocationLat(Double locationLat) {
+        this.locationLat = locationLat;
+    }
+
+    public Double getLocationLng() {
+        return locationLng;
+    }
+
+    public void setLocationLng(Double locationLng) {
+        this.locationLng = locationLng;
+    }
+
+    public String getLocationPlaceId() {
+        return locationPlaceId;
+    }
+
+    public void setLocationPlaceId(String locationPlaceId) {
+        this.locationPlaceId = locationPlaceId;
+    }
+
+    @JsonIgnore
+    public boolean isLocationPresent() {
+        return locationPresent;
     }
 }

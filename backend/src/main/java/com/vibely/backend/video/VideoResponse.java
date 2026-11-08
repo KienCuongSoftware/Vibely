@@ -63,6 +63,11 @@ public record VideoResponse(
     /** Future publish time (ISO-8601); null when not scheduled. */
     Instant scheduledAt,
     String mediaKind,
-    List<String> photoUrls
+    List<String> photoUrls,
+    String locationName,
+    String locationAddress,
+    Double locationLat,
+    Double locationLng,
+    String locationPlaceId
 ) {
 }

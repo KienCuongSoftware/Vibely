@@ -41,7 +41,9 @@ import {
   isScheduleAtLeastLeadAhead,
 } from '@/features/upload/components/SchedulePickers.jsx'
 import { SoundPickerModal } from '@/features/upload/components/SoundPickerModal.jsx'
+import { LocationPicker } from '@/features/upload/components/LocationPicker.jsx'
 import { formatSoundDuration } from '@/features/upload/utils/soundLibraryStore.js'
+import { toLocationPayload } from '@/features/upload/utils/recentLocations.js'
 import {
   localizeAudioTitle,
 } from '@/features/post/utils/localizeAudioTitle.js'
@@ -160,7 +162,7 @@ export function PhotoComposerPage() {
   const [previewIndex, setPreviewIndex] = useState(0)
   const [previewTab, setPreviewTab] = useState('feed')
   const [showMoreSettings, setShowMoreSettings] = useState(false)
-  const [locationQuery, setLocationQuery] = useState('')
+  const [selectedLocation, setSelectedLocation] = useState(null)
   const [dragOverIndex, setDragOverIndex] = useState(null)
   const dragFromRef = useRef(null)
   const [soundPickerOpen, setSoundPickerOpen] = useState(false)
@@ -281,6 +283,7 @@ export function PhotoComposerPage() {
           audioTitle: selectedSound?.audioTitle || undefined,
           scheduledAt:
             !asDraft && postTiming === 'schedule' ? scheduleAt.toISOString() : undefined,
+          ...toLocationPayload(selectedLocation),
         },
         token,
       )
@@ -305,11 +308,7 @@ export function PhotoComposerPage() {
 
   if (!files.length) return null
 
-  const suggestedPlaces = [
-    t('upload.photo.placeHint1'),
-    t('upload.photo.placeHint2'),
-    t('upload.photo.placeHint3'),
-  ]
+  const locationLabel = selectedLocation?.name || ''
 
   return (
     <StudioLayout active="upload" hidePageHeader theme="light">
@@ -493,27 +492,13 @@ export function PhotoComposerPage() {
                 }}
               />
 
-              <CardTitle className="mt-8">{t('upload.location')}</CardTitle>
-              <div className="relative mt-3">
-                <IoLocationOutline className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8a8b91]" />
-                <input
-                  value={locationQuery}
-                  onChange={(e) => setLocationQuery(e.target.value)}
-                  placeholder={t('upload.photo.locationSearch')}
-                  className="w-full rounded-lg bg-[#f8f8f8] py-2.5 pr-3 pl-9 text-sm text-[#161823] outline-none placeholder:text-[#8a8b91]"
+              <div className="mt-8">
+                <LocationPicker
+                  value={selectedLocation}
+                  onChange={setSelectedLocation}
+                  token={token}
+                  variant="light"
                 />
-              </div>
-              <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
-                {suggestedPlaces.map((place) => (
-                  <button
-                    key={place}
-                    type="button"
-                    className="shrink-0 cursor-pointer rounded-full bg-[#f8f8f8] px-3 py-1 text-xs font-medium text-[#161823] hover:bg-[#f1f1f2]"
-                    onClick={() => setLocationQuery(place)}
-                  >
-                    {place}
-                  </button>
-                ))}
               </div>
             </Card>
 
@@ -681,7 +666,7 @@ export function PhotoComposerPage() {
                     <CaptionStack
                       displayName={displayName}
                       description={captionText}
-                      locationQuery={locationQuery}
+                      locationQuery={locationLabel}
                       soundLabel={soundLabel}
                       photoBadge={t('upload.photo.photoBadge')}
                     />
@@ -824,7 +809,7 @@ export function PhotoComposerPage() {
                     <CaptionStack
                       displayName={displayName}
                       description={captionText}
-                      locationQuery={locationQuery}
+                      locationQuery={locationLabel}
                       soundLabel={soundLabel}
                       photoBadge={t('upload.photo.photoBadge')}
                     />

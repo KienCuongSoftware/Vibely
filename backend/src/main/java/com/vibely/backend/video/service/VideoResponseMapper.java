@@ -380,7 +380,12 @@ public class VideoResponseMapper {
             video.isStudioDraft(),
             video.getScheduledAt(),
             video.getMediaKind(),
-            VideoPhotoUrls.parse(video.getPhotoUrls())
+            VideoPhotoUrls.parse(video.getPhotoUrls()),
+            video.getLocationName(),
+            video.getLocationAddress(),
+            video.getLocationLat(),
+            video.getLocationLng(),
+            video.getLocationPlaceId()
         );
     }
 

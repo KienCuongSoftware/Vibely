@@ -9,6 +9,7 @@ import { postApi } from "@/features/post/api/postApi.js";
 import { exploreApi } from "@/features/explore/api/exploreApi.js";
 import { searchApi } from "@/features/search/api/searchApi.js";
 import { uploadApi, uploadThumbnailToStorage } from "@/features/upload/api/uploadApi.js";
+import { placesApi } from "@/features/upload/api/placesApi.js";
 import { uploadVideoFile } from "@/features/upload/utils/multipartVideoUpload.js";
 import { reactionApi } from "@/features/reaction/api/reactionApi.js";
 import { bookmarkApi } from "@/features/bookmark/api/bookmarkApi.js";
@@ -39,6 +40,7 @@ export const apiClient = {
   ...exploreApi,
   ...searchApi,
   ...uploadApi,
+  ...placesApi,
   ...reactionApi,
   ...bookmarkApi,
   ...commentApi,
