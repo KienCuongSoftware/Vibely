@@ -5,7 +5,11 @@ import {
 } from "@/features/feed/hooks/useVideoSubtitles.js";
 
 /**
- * TikTok-style timed CC — chữ trắng trong nền đen bo góc, xếp trên avatar/tên.
+ * TikTok-style timed CC — chữ trắng trong nền đen bo góc.
+ * layout:
+ *  - "stack" = flow trong cột meta (For You)
+ *  - "absolute" = neo bottom (legacy)
+ *  - "detailBottomCenter" = dưới–giữa khung video (trang chi tiết desktop)
  */
 export function FeedTimedCaptions({
   videoPublicId,
@@ -13,7 +17,6 @@ export function FeedTimedCaptions({
   enabled,
   videoRef,
   token,
-  /** "stack" = flow trong cột meta; "absolute" = neo bottom (legacy). */
   layout = "stack",
   bottomPadPx = 96,
   className = "",
@@ -62,11 +65,30 @@ export function FeedTimedCaptions({
 
   const cueEl = (
     <p
-      className="inline-block max-w-full rounded-[4px] bg-black/70 px-2 py-[3px] text-left text-[15px] font-semibold leading-snug text-white sm:text-[16px]"
+      className={`inline-block max-w-full rounded-[4px] bg-black/70 px-2 py-[3px] font-semibold leading-snug text-white ${
+        layout === "detailBottomCenter"
+          ? "text-center text-[16px] sm:text-[17px]"
+          : "text-left text-[15px] sm:text-[16px]"
+      }`}
     >
       {activeText}
     </p>
   );
+
+  if (layout === "detailBottomCenter") {
+    return (
+      <div
+        className={`pointer-events-none absolute inset-x-0 z-[55] flex justify-center px-4 ${className}`}
+        style={{ bottom: "20%" }}
+        data-testid="feed-timed-captions"
+        data-status={status}
+        data-available={available ? "1" : "0"}
+        aria-live="polite"
+      >
+        <div className="max-w-[min(90%,36rem)] text-center">{cueEl}</div>
+      </div>
+    );
+  }
 
   if (layout === "absolute") {
     return (

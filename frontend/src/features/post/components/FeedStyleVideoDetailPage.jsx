@@ -24,7 +24,7 @@ import {
   NewCollectionModal,
 } from '@/features/bookmark/components/BookmarkSaveFeedback.jsx'
 import { CommentInputAccessoryButtons } from '@/features/comment/components/CommentInputAccessory.jsx'
-import { FeedPhoneStage, FeedVolumeControl, FeedVideoCaption } from '@/features/feed/components/FeedPhoneStage.jsx'
+import { FeedPhoneStage, FeedVolumeControl } from '@/features/feed/components/FeedPhoneStage.jsx'
 import { FeedTranslatedCaption } from '@/features/feed/components/FeedTranslatedCaption.jsx'
 import {
   isMobileFeedLayout,
@@ -134,7 +134,7 @@ function videoDocumentTitle(video, forYouStyle) {
   return forYouStyle ? desc : `${desc} | Vibely`
 }
 
-function RelatedVideoTile({ video, onSelect }) {
+function RelatedVideoTile({ video, onSelect, light = false }) {
   const thumb = String(video?.thumbnailUrl ?? '').trim()
   const views = formatCompactCount(video?.viewCount ?? video?.views ?? 0)
   const label = resolveDisplayCaption(video) || 'Video'
@@ -145,9 +145,15 @@ function RelatedVideoTile({ video, onSelect }) {
     <button
       type="button"
       onClick={() => onSelect(video)}
-      className="group flex w-full cursor-pointer gap-2 rounded-md p-1 text-left transition hover:bg-white/5"
+      className={`group flex w-full cursor-pointer gap-2 rounded-md p-1 text-left transition ${
+        light ? 'hover:bg-zinc-100' : 'hover:bg-white/5'
+      }`}
     >
-      <div className="relative aspect-[3/4] w-[72px] shrink-0 overflow-hidden rounded-md bg-zinc-900 ring-1 ring-white/10">
+      <div
+        className={`relative aspect-[3/4] w-[72px] shrink-0 overflow-hidden rounded-md bg-zinc-900 ring-1 ${
+          light ? 'ring-zinc-200' : 'ring-white/10'
+        }`}
+      >
         {thumb ? (
           <img
             src={thumb}
@@ -166,7 +172,11 @@ function RelatedVideoTile({ video, onSelect }) {
         </span>
       </div>
       <div className="min-w-0 flex-1 py-0.5">
-        <p className="line-clamp-2 text-xs font-medium leading-snug text-zinc-100">
+        <p
+          className={`line-clamp-2 text-xs font-medium leading-snug ${
+            light ? 'text-zinc-900' : 'text-zinc-100'
+          }`}
+        >
           {label}
         </p>
         {author ? (
@@ -258,7 +268,9 @@ export function FeedStyleVideoDetailPage({
   const [repostBusy, setRepostBusy] = useState(false)
   const [repostToastOpen, setRepostToastOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
-  const [sidebarTab, setSidebarTab] = useState('related')
+  const [sidebarTab, setSidebarTab] = useState(() =>
+    forYouStyle ? 'comments' : 'related',
+  )
   const [comments, setComments] = useState([])
   const [commentsLoading, setCommentsLoading] = useState(false)
   const [commentsError, setCommentsError] = useState('')
@@ -309,11 +321,20 @@ export function FeedStyleVideoDetailPage({
     ? `/@${encodeURIComponent(String(feedVideo.authorUsername).replace(/^@/, ''))}`
     : '/foryou'
   const feedDockLandscape = stageWide
-  const watchChrome = forYouStyle && !mobileLayout
+  /** Desktop chi tiết (profile/explore) — layout video + panel phải kiểu TikTok. */
+  const tiktokDetailDesktop = Boolean(forYouStyle && !mobileLayout)
 
-  const exitWatchToForYou = useCallback(() => {
-    navigate('/foryou')
-  }, [navigate])
+  const exitDetailPage = useCallback(() => {
+    if (location.state?.fromExplore) {
+      navigate('/explore')
+      return
+    }
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      navigate(-1)
+      return
+    }
+    navigate(authorProfilePath || '/foryou')
+  }, [authorProfilePath, location.state?.fromExplore, navigate])
 
   const handleNotInterested = useCallback(() => {
     const id = videoPublicIdOf(feedVideo)
@@ -509,13 +530,13 @@ export function FeedStyleVideoDetailPage({
   }, [mobileLayout, forYouStyle])
 
   useEffect(() => {
-    if (!watchChrome) return undefined
+    if (!tiktokDetailDesktop) return undefined
     const onKey = (e) => {
-      if (e.key === 'Escape' && !feedMoreMenuOpen) exitWatchToForYou()
+      if (e.key === 'Escape' && !feedMoreMenuOpen) exitDetailPage()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [watchChrome, feedMoreMenuOpen, exitWatchToForYou])
+  }, [tiktokDetailDesktop, feedMoreMenuOpen, exitDetailPage])
 
   useEffect(() => {
     const unlock = () => setSoundUnlocked(true)
@@ -661,7 +682,7 @@ export function FeedStyleVideoDetailPage({
   }, [publicId])
 
   useEffect(() => {
-    setSidebarTab('related')
+    setSidebarTab(forYouStyle ? 'comments' : 'related')
     setLiked(false)
     setBookmarked(false)
     setReposted(false)
@@ -672,7 +693,7 @@ export function FeedStyleVideoDetailPage({
     setMobilePanelOpen(false)
     detailViewQualifySentRef.current = false
     detailViewPlaythroughSentRef.current = false
-  }, [publicId])
+  }, [publicId, forYouStyle])
 
   const onActiveFeedPlaybackTick = useCallback(
     (e) => {
@@ -876,7 +897,7 @@ export function FeedStyleVideoDetailPage({
 
   const openSidePanel = useCallback((tab) => {
     setSidebarTab(tab)
-    if (isMobileFeedLayout() || (forYouStyle && !isMobileFeedLayout())) {
+    if (isMobileFeedLayout()) {
       setMobilePanelOpen(true)
       if (tab === 'comments') {
         window.requestAnimationFrame(() => commentInputRef.current?.focus())
@@ -884,9 +905,9 @@ export function FeedStyleVideoDetailPage({
       return
     }
     if (tab === 'comments') {
-      commentInputRef.current?.focus()
+      window.requestAnimationFrame(() => commentInputRef.current?.focus())
     }
-  }, [forYouStyle])
+  }, [])
 
   const openBookmarkManagePopover = useCallback(() => {
     setBookmarkToastOpen(false)
@@ -926,7 +947,7 @@ export function FeedStyleVideoDetailPage({
         activeFeedTab="for-you"
       />
 
-      <div className={`hidden shrink-0 lg:block${watchChrome ? ' lg:hidden' : ''}`}>
+      <div className={`hidden shrink-0 lg:block${tiktokDetailDesktop ? ' lg:hidden' : ''}`}>
         <Sidebar
           menuItems={menuItems}
           activeMenu={activeMenu}
@@ -938,7 +959,7 @@ export function FeedStyleVideoDetailPage({
       </div>
 
       <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden lg:flex-row">
-        {!watchChrome ? (
+        {!tiktokDetailDesktop ? (
         <AccountActionsPill className="absolute right-3 top-3 z-[100] lg:right-8 lg:top-5" tone="profile">
           {!token ? (
             <GuestLoginTrigger className="ml-0.5 cursor-pointer rounded-full bg-red-600 px-3.5 py-2 text-xs font-semibold leading-none text-white hover:bg-red-500">
@@ -994,7 +1015,7 @@ export function FeedStyleVideoDetailPage({
 
         <div
           className={`relative flex min-h-0 min-w-0 flex-1 items-stretch justify-stretch ${
-            watchChrome
+            tiktokDetailDesktop
               ? 'h-full items-center justify-center bg-black'
               : 'lg:items-center lg:justify-center lg:px-1 lg:py-1'
           }`}
@@ -1022,7 +1043,7 @@ export function FeedStyleVideoDetailPage({
           ) : feedVideo ? (
             <div
               className={`relative h-full min-h-0 w-full max-lg:flex-1 ${
-                watchChrome
+                tiktokDetailDesktop
                   ? 'flex items-center justify-center'
                   : feedDockLandscape
                     ? 'min-w-0 items-center justify-start lg:flex lg:flex-row'
@@ -1031,14 +1052,14 @@ export function FeedStyleVideoDetailPage({
             >
               <div
                 className={
-                  watchChrome
+                  tiktokDetailDesktop
                     ? 'vibely-feed-stage-cluster relative flex max-h-full shrink-0 items-end'
                     : 'contents'
                 }
               >
               <div
                 className={
-                  watchChrome
+                  tiktokDetailDesktop
                     ? 'relative flex max-h-full min-h-0 flex-col items-center justify-center lg:w-auto lg:shrink-0'
                     : feedDockLandscape
                       ? 'relative flex h-full min-h-0 w-full flex-col items-start justify-center max-lg:flex-1'
@@ -1047,10 +1068,11 @@ export function FeedStyleVideoDetailPage({
               >
                 <FeedPhoneStage
                   mobileFullBleed={mobileLayout}
-                  theaterMode={watchChrome}
-                  onTheaterModeChange={(open) => {
-                    if (!open) exitWatchToForYou()
-                  }}
+                  theaterMode={false}
+                  hideAuthorMeta={tiktokDetailDesktop}
+                  detailCaptionsLayout={
+                    tiktokDetailDesktop ? 'detailBottomCenter' : null
+                  }
                   videos={feedVideos}
                   activeIndex={0}
                   setActiveIndex={() => {}}
@@ -1076,12 +1098,14 @@ export function FeedStyleVideoDetailPage({
                   toggleFeedPlayback={toggleFeedPlayback}
                   userPaused={userPaused}
                   toggleFeedPictureInPicture={toggleFeedPictureInPicture}
-                  resolveFeedAuthorDisplayName={resolveFeedAuthorDisplayName}
                   feedDefaultAuthorAvatar={FEED_DEFAULT_AUTHOR_AVATAR}
                   thumbnailFallbackUrl={undefined}
                   playbackFlash={playbackFlash}
                   onActiveFeedPlaybackTick={onActiveFeedPlaybackTick}
-                  commentsDockOpen={!mobileLayout && !watchChrome && sidebarTab === 'comments'}
+                  commentsDockOpen={
+                    tiktokDetailDesktop ||
+                    (!mobileLayout && sidebarTab === 'comments')
+                  }
                   onStageWideChange={setStageWide}
                   contextMenuToken={forYouStyle ? token : undefined}
                   onVideoContextShare={forYouStyle ? handleVideoContextShare : undefined}
@@ -1110,14 +1134,14 @@ export function FeedStyleVideoDetailPage({
                     if (id) markVideoNotInterested(id)
                   }}
                 />
-                {watchChrome ? (
+                {tiktokDetailDesktop ? (
                   <div className="pointer-events-auto absolute top-4 left-4 z-80 flex items-center gap-2 sm:left-5">
                     <button
                       type="button"
-                      aria-label={t('watch.backToForYou')}
-                      title={t('watch.backToForYou')}
+                      aria-label={t('common.close')}
+                      title={t('common.close')}
                       className={`cursor-pointer ${FEED_VIDEO_OVERLAY_BTN_CLASS}`}
-                      onClick={exitWatchToForYou}
+                      onClick={exitDetailPage}
                     >
                       <IoClose aria-hidden />
                     </button>
@@ -1128,31 +1152,6 @@ export function FeedStyleVideoDetailPage({
                       onSoundOnChange={setFeedSoundOn}
                       alwaysVisible
                     />
-                  </div>
-                ) : null}
-                {watchChrome && feedVideo ? (
-                  <div className="pointer-events-auto absolute bottom-10 left-4 z-80 w-[min(17.5rem,calc(100%-5rem))] max-w-[280px] sm:left-5">
-                    <Link
-                      to={authorProfilePath}
-                      className="inline-block max-w-full truncate text-[15px] font-bold leading-snug text-white hover:underline"
-                    >
-                      @
-                      {String(feedVideo.authorUsername ?? 'vibely')
-                        .trim()
-                        .replace(/^@/, '') || 'vibely'}
-                    </Link>
-                    <div className="mt-1.5 text-sm leading-snug text-white/90">
-                      <FeedTranslatedCaption
-                        videoPublicId={feedVideo.publicId}
-                        captionText={resolveDisplayCaption(feedVideo)}
-                        descriptionLang={feedVideo.descriptionLang}
-                        token={token}
-                        active
-                        renderCaption={(text) => (
-                          <FeedVideoCaption caption={text} />
-                        )}
-                      />
-                    </div>
                   </div>
                 ) : null}
                 {forYouStyle && repostToastOpen ? (
@@ -1178,7 +1177,7 @@ export function FeedStyleVideoDetailPage({
 
               <div
                 className={
-                  watchChrome
+                  tiktokDetailDesktop
                     ? 'vibely-feed-chrome-rail pointer-events-auto relative z-30 ml-3 flex shrink-0 flex-col items-center gap-3.5 self-end pb-6'
                     : 'vibely-feed-chrome-rail pointer-events-none absolute right-2 bottom-[3.25rem] z-30 lg:pointer-events-auto lg:static lg:ml-3 lg:flex lg:shrink-0 lg:flex-col lg:items-center lg:gap-4 lg:self-end lg:pb-6'
                 }
@@ -1341,52 +1340,158 @@ export function FeedStyleVideoDetailPage({
         {mobilePanelOpen ? (
           <button
             type="button"
-            className={`fixed inset-0 z-[80] bg-black/60 ${watchChrome ? '' : 'lg:hidden'}`}
+            className="fixed inset-0 z-[80] bg-black/60 lg:hidden"
             aria-label={t('watch.closeComments')}
             onClick={() => setMobilePanelOpen(false)}
           />
         ) : null}
 
         <aside
-          className={`relative z-0 flex h-full min-h-0 shrink-0 flex-col border-white/[0.08] bg-[#121212] text-zinc-100 ${
-            mobilePanelOpen ? 'max-lg:fixed max-lg:inset-0 max-lg:z-[90] max-lg:flex max-lg:w-full max-lg:border-l-0 max-lg:pt-14' : 'max-lg:hidden'
+          className={`relative z-0 flex h-full min-h-0 shrink-0 flex-col ${
+            tiktokDetailDesktop
+              ? 'border-zinc-200 bg-white text-zinc-900'
+              : 'border-white/[0.08] bg-[#121212] text-zinc-100'
           } ${
-            watchChrome
-              ? mobilePanelOpen
-                ? 'lg:fixed lg:inset-y-0 lg:right-0 lg:z-[90] lg:flex lg:w-[clamp(380px,34vw,420px)] lg:border-l lg:pt-4'
-                : 'lg:hidden'
-              : 'lg:flex lg:border-l lg:pt-[4.5rem] lg:w-[clamp(380px,34vw,420px)]'
+            mobilePanelOpen
+              ? 'max-lg:fixed max-lg:inset-0 max-lg:z-[90] max-lg:flex max-lg:w-full max-lg:border-l-0 max-lg:pt-14'
+              : 'max-lg:hidden'
+          } lg:flex lg:w-[clamp(360px,32vw,400px)] lg:border-l ${
+            tiktokDetailDesktop ? '' : 'lg:pt-[4.5rem]'
           }`}
           aria-label={t('watch.commentsAndSuggestions')}
         >
           <div
-            className={`flex shrink-0 items-center justify-end border-b border-white/[0.08] px-3 py-2 ${
-              watchChrome ? '' : 'lg:hidden'
+            className={`flex shrink-0 items-center justify-end border-b px-3 py-2 lg:hidden ${
+              tiktokDetailDesktop ? 'border-zinc-200' : 'border-white/[0.08]'
             }`}
           >
             <button
               type="button"
-              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-zinc-200 transition hover:bg-white/10"
+              className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-full transition ${
+                tiktokDetailDesktop
+                  ? 'text-zinc-700 hover:bg-zinc-100'
+                  : 'text-zinc-200 hover:bg-white/10'
+              }`}
               aria-label={t('common.close')}
               onClick={() => setMobilePanelOpen(false)}
             >
               <IoClose className="text-2xl" aria-hidden />
             </button>
           </div>
-          <div role="tablist" className="flex shrink-0 border-b border-white/[0.08] px-2">
+
+          {tiktokDetailDesktop && feedVideo ? (
+            <div className="shrink-0 border-b border-zinc-200 px-4 py-3">
+              <div className="flex items-start gap-3">
+                <Link
+                  to={authorProfilePath}
+                  className="shrink-0 overflow-hidden rounded-full ring-1 ring-zinc-200"
+                >
+                  <AvatarImage
+                    className="h-11 w-11 object-cover"
+                    src={feedVideo.avatarUrl ?? FEED_DEFAULT_AUTHOR_AVATAR}
+                    alt=""
+                    fallbackSrc={FEED_DEFAULT_AUTHOR_AVATAR}
+                  />
+                </Link>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={authorProfilePath}
+                      className="min-w-0 truncate text-[15px] font-bold text-zinc-900 hover:underline"
+                    >
+                      {String(feedVideo.authorDisplayName ?? '').trim() ||
+                        String(feedVideo.authorUsername ?? 'vibely')
+                          .replace(/^@/, '')}
+                    </Link>
+                    {showActiveAuthorFollowBadge && !showActiveAuthorFollowSuccess ? (
+                      <button
+                        type="button"
+                        className="shrink-0 cursor-pointer rounded-md bg-[#fe2c55] px-3 py-1 text-[13px] font-bold text-white hover:bg-[#e6284c] disabled:opacity-75"
+                        disabled={followBusyAuthorId === Number(feedVideo?.authorId)}
+                        onClick={() => void handleActiveAuthorFollow()}
+                      >
+                        {t('profilePage.follow')}
+                      </button>
+                    ) : null}
+                  </div>
+                  <p className="truncate text-xs text-zinc-500">
+                    @
+                    {String(feedVideo.authorUsername ?? 'vibely')
+                      .trim()
+                      .replace(/^@/, '') || 'vibely'}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-3 text-sm leading-snug text-zinc-800">
+                <FeedTranslatedCaption
+                  videoPublicId={feedVideo.publicId}
+                  captionText={resolveDisplayCaption(feedVideo)}
+                  descriptionLang={feedVideo.descriptionLang}
+                  token={token}
+                  active
+                  renderCaption={(text) => (
+                    <p className="line-clamp-4 whitespace-pre-wrap text-sm leading-snug text-zinc-800">
+                      {text}
+                    </p>
+                  )}
+                />
+              </div>
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-zinc-600">
+                <span>
+                  <strong className="font-bold text-zinc-900">
+                    {formatCompactCount(feedVideo.likeCount)}
+                  </strong>{' '}
+                  {t('feed.like')}
+                </span>
+                <span>
+                  <strong className="font-bold text-zinc-900">
+                    {formatCompactCount(feedVideo.commentCount)}
+                  </strong>{' '}
+                  {t('feed.comment')}
+                </span>
+                <span>
+                  <strong className="font-bold text-zinc-900">
+                    {formatCompactCount(feedVideo.bookmarkCount)}
+                  </strong>{' '}
+                  {t('feed.bookmark')}
+                </span>
+                <span>
+                  <strong className="font-bold text-zinc-900">
+                    {formatCompactCount(feedVideo.shareCount)}
+                  </strong>{' '}
+                  {t('feed.share')}
+                </span>
+              </div>
+            </div>
+          ) : null}
+
+          <div
+            role="tablist"
+            className={`flex shrink-0 border-b px-2 ${
+              tiktokDetailDesktop ? 'border-zinc-200' : 'border-white/[0.08]'
+            }`}
+          >
             <button
               type="button"
               role="tab"
               aria-selected={sidebarTab === 'comments'}
               className={`flex-1 border-b-2 px-2 py-3.5 text-[15px] font-semibold ${
                 sidebarTab === 'comments'
-                  ? 'border-white text-white'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                  ? tiktokDetailDesktop
+                    ? 'border-zinc-900 text-zinc-900'
+                    : 'border-white text-white'
+                  : tiktokDetailDesktop
+                    ? 'border-transparent text-zinc-500 hover:text-zinc-800'
+                    : 'border-transparent text-zinc-500 hover:text-zinc-300'
               }`}
               onClick={() => openSidePanel('comments')}
             >
               {t('watch.commentsPanel')}
-              <span className="ml-1 font-normal text-zinc-400">
+              <span
+                className={`ml-1 font-normal ${
+                  tiktokDetailDesktop ? 'text-zinc-500' : 'text-zinc-400'
+                }`}
+              >
                 ({formatCompactCount(video?.commentCount ?? comments.length)})
               </span>
             </button>
@@ -1396,8 +1501,12 @@ export function FeedStyleVideoDetailPage({
               aria-selected={sidebarTab === 'related'}
               className={`flex-1 border-b-2 px-2 py-3.5 text-[15px] font-semibold ${
                 sidebarTab === 'related'
-                  ? 'border-white text-white'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                  ? tiktokDetailDesktop
+                    ? 'border-zinc-900 text-zinc-900'
+                    : 'border-white text-white'
+                  : tiktokDetailDesktop
+                    ? 'border-transparent text-zinc-500 hover:text-zinc-800'
+                    : 'border-transparent text-zinc-500 hover:text-zinc-300'
               }`}
               onClick={() => openSidePanel('related')}
             >
@@ -1412,7 +1521,7 @@ export function FeedStyleVideoDetailPage({
                   {t('watch.loadingComments')}
                 </p>
               ) : commentsError ? (
-                <p className="px-3 py-12 text-center text-sm text-red-400">{commentsError}</p>
+                <p className="px-3 py-12 text-center text-sm text-red-500">{commentsError}</p>
               ) : comments.length === 0 ? (
                 <div className="flex flex-col items-center px-3 py-12 text-center text-sm text-zinc-500">
                   <p>{t('watch.noComments')}</p>
@@ -1439,7 +1548,9 @@ export function FeedStyleVideoDetailPage({
                             <img
                               src={avatarSrc}
                               alt=""
-                              className="h-9 w-9 rounded-full object-cover ring-1 ring-zinc-800"
+                              className={`h-9 w-9 rounded-full object-cover ring-1 ${
+                                tiktokDetailDesktop ? 'ring-zinc-200' : 'ring-zinc-800'
+                              }`}
                               referrerPolicy="no-referrer"
                               onError={(e) => {
                                 e.currentTarget.src = DEFAULT_AVATAR
@@ -1450,7 +1561,9 @@ export function FeedStyleVideoDetailPage({
                           <img
                             src={avatarSrc}
                             alt=""
-                            className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-zinc-800"
+                            className={`h-9 w-9 shrink-0 rounded-full object-cover ring-1 ${
+                              tiktokDetailDesktop ? 'ring-zinc-200' : 'ring-zinc-800'
+                            }`}
                             referrerPolicy="no-referrer"
                             onError={(e) => {
                               e.currentTarget.src = DEFAULT_AVATAR
@@ -1458,7 +1571,11 @@ export function FeedStyleVideoDetailPage({
                           />
                         )}
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-zinc-300">
+                          <p
+                            className={`text-xs font-semibold ${
+                              tiktokDetailDesktop ? 'text-zinc-700' : 'text-zinc-300'
+                            }`}
+                          >
                             {profileHref ? (
                               <Link
                                 to={profileHref}
@@ -1469,11 +1586,15 @@ export function FeedStyleVideoDetailPage({
                             ) : (
                               <span>@{displayName}</span>
                             )}
-                            <span className="ml-2 font-normal text-zinc-600">
+                            <span className="ml-2 font-normal text-zinc-500">
                               {formatRelativeTimeVi(comment.createdAt)}
                             </span>
                           </p>
-                          <p className="mt-0.5 whitespace-pre-wrap text-sm text-zinc-100">
+                          <p
+                            className={`mt-0.5 whitespace-pre-wrap text-sm ${
+                              tiktokDetailDesktop ? 'text-zinc-900' : 'text-zinc-100'
+                            }`}
+                          >
                             {comment.content}
                           </p>
                         </div>
@@ -1507,7 +1628,11 @@ export function FeedStyleVideoDetailPage({
                   const id = videoPublicIdOf(row)
                   return (
                     <li key={id ?? row.id}>
-                      <RelatedVideoTile video={row} onSelect={openRelatedVideo} />
+                      <RelatedVideoTile
+                        video={row}
+                        onSelect={openRelatedVideo}
+                        light={tiktokDetailDesktop}
+                      />
                     </li>
                   )
                 })}
@@ -1516,21 +1641,27 @@ export function FeedStyleVideoDetailPage({
           </div>
 
           {sidebarTab === 'comments' ? (
-            <div className="shrink-0 border-t border-white/[0.08] px-3 py-3">
+            <div
+              className={`shrink-0 border-t px-3 py-3 ${
+                tiktokDetailDesktop ? 'border-zinc-200' : 'border-white/[0.08]'
+              }`}
+            >
               {token && video?.viewerCanComment === false ? (
-                <p className="py-3 text-center text-sm leading-relaxed text-zinc-400">
+                <p className="py-3 text-center text-sm leading-relaxed text-zinc-500">
                   {t('comments.restricted')}
                 </p>
               ) : (
                 <>
               {commentPostError ? (
-                <p className="mb-1 text-xs text-red-400">{commentPostError}</p>
+                <p className="mb-1 text-xs text-red-500">{commentPostError}</p>
               ) : null}
               <div className="flex items-end gap-2">
                 <img
                   src={user?.avatarUrl?.trim() || DEFAULT_AVATAR}
                   alt=""
-                  className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-zinc-700"
+                  className={`h-9 w-9 shrink-0 rounded-full object-cover ring-1 ${
+                    tiktokDetailDesktop ? 'ring-zinc-200' : 'ring-zinc-700'
+                  }`}
                   referrerPolicy="no-referrer"
                   onError={(e) => {
                     e.currentTarget.src = DEFAULT_AVATAR
@@ -1563,7 +1694,11 @@ export function FeedStyleVideoDetailPage({
                     }}
                     placeholder={token ? t('comments.add') : t('comments.loginToComment')}
                     disabled={!token || !isVideoPublicId(publicId)}
-                    className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-2.5 pl-4 pr-[4.75rem] text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-zinc-600 disabled:opacity-50"
+                    className={`w-full rounded-full border py-2.5 pl-4 pr-[4.75rem] text-sm outline-none disabled:opacity-50 ${
+                      tiktokDetailDesktop
+                        ? 'border-zinc-200 bg-zinc-100 text-zinc-900 placeholder:text-zinc-500 focus:border-zinc-400'
+                        : 'border-zinc-700 bg-zinc-900 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-600'
+                    }`}
                     onKeyDown={(e) => {
                       if (!isEnterKey(e) || e.nativeEvent.isComposing || e.shiftKey) return
                       e.preventDefault()

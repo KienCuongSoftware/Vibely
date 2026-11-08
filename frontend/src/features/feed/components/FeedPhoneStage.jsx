@@ -642,6 +642,10 @@ export function FeedPhoneStage({
   /** Desktop watch chrome — ẩn sidebar-style overlays trong khung (X/volume do parent render). */
   theaterMode = false,
   onTheaterModeChange,
+  /** Trang chi tiết: ẩn meta @/caption trên video (chuyển sang panel phải). */
+  hideAuthorMeta = false,
+  /** Trang chi tiết: neo timed CC dưới–giữa video (`detailBottomCenter`). */
+  detailCaptionsLayout = null,
   /** Báo parent biết khung đang ở chế độ ngang (16:9). */
   onStageWideChange,
   /** Menu chuột phải video (TikTok-style). */
@@ -1485,7 +1489,7 @@ export function FeedPhoneStage({
                 />
               )}
 
-              {isActive && hasPlayback && !theaterMode ? (
+              {isActive && hasPlayback && !theaterMode && !hideAuthorMeta ? (
                 <div
                   className="pointer-events-none absolute inset-x-0 bottom-0 z-50 max-h-[42%] overflow-hidden **:pointer-events-auto"
                   style={{ paddingBottom: FEED_CAPTION_PROGRESS_PAD_PX }}
@@ -1515,21 +1519,35 @@ export function FeedPhoneStage({
                     selfRepostBusy={selfRepostBusy}
                     locationName={video?.locationName}
                     timedCaptions={
-                      <FeedTimedCaptions
-                        videoPublicId={normalizeVideoPublicId(video?.publicId)}
-                        lang={subtitleLangIso}
-                        enabled={captionsEnabled}
-                        videoRef={feedVideoRef}
-                        token={reportToken || contextMenuToken}
-                        layout="stack"
-                        onAvailabilityChange={setTimedCaptionsAvailable}
-                      />
+                      detailCaptionsLayout ? null : (
+                        <FeedTimedCaptions
+                          videoPublicId={normalizeVideoPublicId(video?.publicId)}
+                          lang={subtitleLangIso}
+                          enabled={captionsEnabled}
+                          videoRef={feedVideoRef}
+                          token={reportToken || contextMenuToken}
+                          layout="stack"
+                          onAvailabilityChange={setTimedCaptionsAvailable}
+                        />
+                      )
                     }
                   />
                 </div>
               ) : null}
 
-              {!hasPlayback && !theaterMode ? (
+              {isActive && hasPlayback && detailCaptionsLayout ? (
+                <FeedTimedCaptions
+                  videoPublicId={normalizeVideoPublicId(video?.publicId)}
+                  lang={subtitleLangIso}
+                  enabled={captionsEnabled}
+                  videoRef={feedVideoRef}
+                  token={reportToken || contextMenuToken}
+                  layout={detailCaptionsLayout}
+                  onAvailabilityChange={setTimedCaptionsAvailable}
+                />
+              ) : null}
+
+              {!hasPlayback && !theaterMode && !hideAuthorMeta ? (
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 pb-5">
                   <p className="truncate text-sm font-semibold text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]">
                     @{rawVibelyUser}
