@@ -70,9 +70,9 @@ function PhotoBadge({ label }) {
   )
 }
 
-/** Overlay copy stays readable on light photos (no soft white glow). */
+/** Hard outline — soft blur shadow looks “mờ” on small preview. */
 const PREVIEW_CAPTION_SHADOW =
-  '[text-shadow:0_1px_1px_rgba(0,0,0,0.95),0_0_2px_rgba(0,0,0,0.9),0_2px_6px_rgba(0,0,0,0.65)]'
+  'antialiased [text-shadow:0_1px_0_#000,1px_0_0_#000,-1px_0_0_#000,0_-1px_0_rgba(0,0,0,0.85)]'
 
 function CaptionStack({ displayName, description, locationQuery, soundLabel, photoBadge }) {
   return (
@@ -665,7 +665,7 @@ export function PhotoComposerPage() {
                   <div className="pointer-events-none absolute right-1.5 bottom-[54px] z-20">
                     <SideActions avatarSrc={avatarSrc} />
                   </div>
-                  <div className="pointer-events-none absolute right-14 bottom-[54px] left-2.5 z-20">
+                  <div className="pointer-events-none absolute right-14 bottom-[58px] left-2.5 z-20">
                     <CaptionStack
                       displayName={displayName}
                       description={captionText}

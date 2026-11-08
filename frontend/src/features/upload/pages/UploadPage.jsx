@@ -2581,21 +2581,21 @@ export function UploadPage() {
                           />
                           {!isPreviewFullscreen ? (
                             <>
-                              {/* Gradient đáy luôn hiện để chữ meta đọc rõ trên video sáng */}
+                              {/* Gradient đáy — meta nằm trên vùng tối, không đè control */}
                               <div
-                                className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-40 bg-linear-to-t from-black/85 via-black/35 to-transparent"
+                                className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-48 bg-linear-to-t from-black via-black/55 to-transparent"
                                 aria-hidden
                               />
                               {/* Top: LIVE + tabs (giống TikTok) + search */}
-                              <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between px-2.5 pt-2.5 text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.85)]">
+                              <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between px-2.5 pt-2.5 text-white">
                                 <span
-                                  className="mt-0.5 flex shrink-0 items-center gap-0.5 rounded border border-white/40 bg-black/35 px-1 py-0.5 text-[8px] font-extrabold leading-none tracking-wide text-white"
+                                  className="mt-0.5 flex shrink-0 items-center gap-0.5 rounded border border-white/50 bg-black/50 px-1 py-0.5 text-[8px] font-extrabold leading-none tracking-wide text-white"
                                   aria-hidden
                                 >
                                   LIVE
                                 </span>
-                                <div className="pointer-events-none absolute left-1/2 top-2.5 flex -translate-x-1/2 items-end gap-5 text-[13px] font-semibold leading-none">
-                                  <span className="pb-1.5 text-white/80">
+                                <div className="pointer-events-none absolute left-1/2 top-2.5 flex -translate-x-1/2 items-end gap-4 text-[12px] font-semibold leading-none antialiased">
+                                  <span className="pb-1.5 text-white/90">
                                     {t('nav.following')}
                                   </span>
                                   <span className="relative pb-1.5 font-bold text-white">
@@ -2605,21 +2605,21 @@ export function UploadPage() {
                                 </div>
                                 <IoSearchOutline className="mt-0.5 shrink-0 text-lg text-white" aria-hidden />
                               </div>
-                              {/* Meta trái — phía trên thanh tab dưới */}
-                              <div className="pointer-events-none absolute bottom-[54px] left-3 right-17 z-20 text-[13px] leading-snug text-white [text-shadow:0_1px_1px_rgba(0,0,0,0.95),0_0_2px_rgba(0,0,0,0.9),0_2px_6px_rgba(0,0,0,0.65)]">
+                              {/* Meta trái — cao hơn control bar để không bị đè / chồng chữ */}
+                              <div className="pointer-events-none absolute right-14 bottom-[102px] left-3 z-20 text-[13px] leading-snug text-white antialiased [text-shadow:0_1px_0_#000,1px_0_0_#000,-1px_0_0_#000,0_-1px_0_rgba(0,0,0,0.85)]">
                                 <p
-                                  className="flex min-w-0 max-w-full items-baseline gap-0 font-bold"
+                                  className="flex min-w-0 max-w-full items-baseline gap-0 text-[14px] font-bold"
                                   dir="ltr"
                                 >
                                   <span className="shrink-0">@</span>
                                   <span className="min-w-0 flex-1 truncate">{studioPreviewHandle}</span>
                                 </p>
                                 {previewCaption ? (
-                                  <p className="mt-0.5 line-clamp-2 text-[12px] font-normal text-white">
+                                  <p className="mt-1 line-clamp-2 text-[13px] font-semibold text-white">
                                     {highlightTags(previewCaption)}
                                   </p>
                                 ) : null}
-                                <p className="mt-1 flex items-center gap-1 truncate text-[12px] text-white">
+                                <p className="mt-1.5 flex items-center gap-1 truncate text-[12px] font-medium text-white">
                                   <IoMusicalNotesOutline className="shrink-0 text-sm" aria-hidden />
                                   <span className="truncate">
                                     {localizeAudioTitle(uploadedVideo?.audioTitle, t, {
@@ -2630,7 +2630,7 @@ export function UploadPage() {
                                 </p>
                               </div>
                               {/* Cột icon phải (TikTok) */}
-                              <div className="pointer-events-none absolute bottom-[58px] right-1.5 z-20 flex w-12 flex-col items-center gap-[14px] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
+                              <div className="pointer-events-none absolute right-1.5 bottom-[102px] z-20 flex w-12 flex-col items-center gap-[14px] text-white">
                                 <div className="relative flex flex-col items-center">
                                   <img
                                     src={avatarSrc}
@@ -2653,15 +2653,16 @@ export function UploadPage() {
                                   <div className="h-[15px] w-[15px] rounded-full border border-dashed border-white/55" />
                                 </div>
                               </div>
+                              {/* Control playback — riêng tầng trên nav, không đè caption */}
                               <div
-                                className="absolute inset-x-2 bottom-[50px] z-30 opacity-0 transition-opacity duration-150 pointer-events-none group-hover/preview:pointer-events-auto group-hover/preview:opacity-100"
+                                className="absolute inset-x-0 bottom-[50px] z-30 bg-black/55 px-2.5 pt-1.5 pb-1.5 opacity-0 transition-opacity duration-150 pointer-events-none group-hover/preview:pointer-events-auto group-hover/preview:opacity-100"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <div className="flex items-center justify-between gap-2 pb-1 text-white">
+                                <div className="flex items-center justify-between gap-2 text-white">
                                   <div className="flex min-w-0 flex-1 items-center gap-2">
                                     <button
                                       type="button"
-                                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25"
+                                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-black/70 text-white transition hover:bg-black/85"
                                       aria-label={previewUiPlaying ? t('upload.pause') : t('upload.play')}
                                       onClick={(e) => {
                                         e.stopPropagation()
@@ -2674,7 +2675,7 @@ export function UploadPage() {
                                         <IoPlay className="h-4 w-4 pl-0.5" aria-hidden />
                                       )}
                                     </button>
-                                    <span className="truncate text-[10px] font-medium tabular-nums tracking-tight text-white/95">
+                                    <span className="truncate text-[11px] font-semibold tabular-nums tracking-tight text-white antialiased">
                                       {formatStudioPreviewClock(previewCurrentTime)} /{' '}
                                       {formatStudioPreviewClock(previewDuration)}
                                     </span>
@@ -2682,7 +2683,7 @@ export function UploadPage() {
                                   <div className="flex shrink-0 items-center gap-1">
                                     <button
                                       type="button"
-                                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25"
+                                      className="flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white transition hover:bg-black/85"
                                       aria-label={isPreviewMuted ? t('upload.unmute') : t('upload.mute')}
                                       onClick={(e) => {
                                         e.stopPropagation()
@@ -2697,7 +2698,7 @@ export function UploadPage() {
                                     </button>
                                     <button
                                       type="button"
-                                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25"
+                                      className="flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white transition hover:bg-black/85"
                                       aria-label={t('upload.fullscreen')}
                                       onClick={(e) => {
                                         e.stopPropagation()
@@ -2724,21 +2725,21 @@ export function UploadPage() {
                                   }}
                                   onClick={(e) => e.stopPropagation()}
                                   onPointerDown={(e) => e.stopPropagation()}
-                                  className="h-1 w-full cursor-pointer accent-white"
+                                  className="mt-1 h-1 w-full cursor-pointer accent-white"
                                 />
                               </div>
                               {/* Thanh điều hướng dưới (TikTok) */}
                               <nav
-                                className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex h-[50px] items-end justify-between border-t border-white/6 bg-black px-0.5 pb-1.5 pt-1 text-white"
+                                className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex h-[50px] items-end justify-between border-t border-white/10 bg-black px-0.5 pb-1.5 pt-1 text-white"
                                 aria-hidden
                               >
-                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5 opacity-95">
+                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5">
                                   <IoHomeOutline className="text-[22px] text-white" />
-                                  <span className="text-[9px] font-semibold tracking-tight text-white/90">Home</span>
+                                  <span className="text-[9px] font-semibold tracking-tight text-white">Home</span>
                                 </div>
-                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5 opacity-95">
+                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5">
                                   <IoPeopleOutline className="text-[21px] text-white" />
-                                  <span className="text-[9px] font-semibold tracking-tight text-white/90">Friends</span>
+                                  <span className="text-[9px] font-semibold tracking-tight text-white">Friends</span>
                                 </div>
                                 <div className="flex min-w-0 flex-none flex-col items-center justify-end px-1 pb-0.5">
                                   <div className="flex items-center gap-px">
@@ -2749,13 +2750,13 @@ export function UploadPage() {
                                     <span className="h-7 w-[2.5px] shrink-0 rounded-sm bg-[#fe2c55]" />
                                   </div>
                                 </div>
-                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5 opacity-95">
+                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5">
                                   <IoPaperPlaneOutline className="text-[20px] text-white" />
-                                  <span className="text-[9px] font-semibold tracking-tight text-white/90">Inbox</span>
+                                  <span className="text-[9px] font-semibold tracking-tight text-white">Inbox</span>
                                 </div>
-                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5 opacity-95">
+                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5">
                                   <IoPersonOutline className="text-[21px] text-white" />
-                                  <span className="text-[9px] font-semibold tracking-tight text-white/90">Me</span>
+                                  <span className="text-[9px] font-semibold tracking-tight text-white">Me</span>
                                 </div>
                               </nav>
                             </>
