@@ -15,7 +15,7 @@ import {
   rememberLocation,
 } from "@/features/upload/utils/recentLocations.js";
 
-const CURATED = [
+const CURATED_FALLBACK = [
   {
     placeId: "curated:hanoi",
     name: "Hanoi",
@@ -38,6 +38,25 @@ const CURATED = [
     lng: 108.2022,
   },
 ];
+
+function readCoords() {
+  return new Promise((resolve) => {
+    if (!navigator?.geolocation) {
+      resolve(null);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        resolve({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        });
+      },
+      () => resolve(null),
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 120000 },
+    );
+  });
+}
 
 /**
  * @param {{
@@ -64,12 +83,47 @@ export function LocationPicker({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [recent, setRecent] = useState(() => loadRecentLocations());
+  const [coords, setCoords] = useState(null);
+  const [nearby, setNearby] = useState([]);
+  const [nearbyLoading, setNearbyLoading] = useState(true);
 
   const isDark = variant === "dark";
 
   useEffect(() => {
     setQuery(value?.name || "");
   }, [value?.name, value?.placeId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setNearbyLoading(true);
+      const pos = await readCoords();
+      if (cancelled) return;
+      setCoords(pos);
+      if (!pos || !token) {
+        setNearby([]);
+        setNearbyLoading(false);
+        return;
+      }
+      try {
+        const data = await placesApi.nearbyPlaces({
+          lat: pos.lat,
+          lng: pos.lng,
+          limit: 14,
+          token,
+        });
+        if (cancelled) return;
+        setNearby(Array.isArray(data) ? data : []);
+      } catch {
+        if (!cancelled) setNearby([]);
+      } finally {
+        if (!cancelled) setNearbyLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -102,7 +156,12 @@ export function LocationPicker({
       setLoading(true);
       setError("");
       try {
-        const data = await placesApi.searchPlaces(q, { limit: 8, token });
+        const data = await placesApi.searchPlaces(q, {
+          limit: 10,
+          lat: coords?.lat,
+          lng: coords?.lng,
+          token,
+        });
         if (cancelled) return;
         setResults(Array.isArray(data) ? data : []);
       } catch {
@@ -117,19 +176,20 @@ export function LocationPicker({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [query, open, token, t, value?.name]);
+  }, [query, open, token, t, value?.name, coords?.lat, coords?.lng]);
 
   const chips = useMemo(() => {
     const seen = new Set();
     const out = [];
-    for (const item of [...recent, ...CURATED]) {
+    for (const item of [...nearby, ...recent, ...CURATED_FALLBACK]) {
+      if (!item?.name) continue;
       const key = `${item.placeId || ""}|${item.name}`;
       if (seen.has(key)) continue;
       seen.add(key);
       out.push(item);
     }
-    return out.slice(0, 10);
-  }, [recent]);
+    return out.slice(0, 16);
+  }, [nearby, recent]);
 
   const selectPlace = (place) => {
     if (!place?.name) return;
@@ -289,6 +349,11 @@ export function LocationPicker({
           ref={chipsRef}
           className="flex min-w-0 flex-1 gap-2 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
+          {nearbyLoading ? (
+            <span className={`shrink-0 px-2 py-1.5 text-xs ${addrCls}`}>
+              {t("upload.locationNearbyLoading")}
+            </span>
+          ) : null}
           {chips.map((place) => {
             const selected =
               value?.name === place.name &&

@@ -2931,6 +2931,7 @@
     "locationPlaceholder": "Add a location",
     "locationSearchPlaceholder": "Search for location",
     "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
     "locationEmpty": "No locations found",
     "locationSearchFailed": "Couldn’t search locations. Try again later.",
     "locationClear": "Clear location",

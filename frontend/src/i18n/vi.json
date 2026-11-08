@@ -2931,6 +2931,7 @@
     "locationPlaceholder": "Thêm vị trí",
     "locationSearchPlaceholder": "Tìm kiếm vị trí",
     "locationSearching": "Đang tìm vị trí…",
+    "locationNearbyLoading": "Đang lấy vị trí gần bạn…",
     "locationEmpty": "Không tìm thấy vị trí",
     "locationSearchFailed": "Không tìm được vị trí. Thử lại sau.",
     "locationClear": "Xóa vị trí",
