@@ -105,7 +105,7 @@ function SideActions({ avatarSrc, showDisc = true }) {
     <div
       className={`flex w-11 flex-col items-center gap-3 text-white ${PREVIEW_CAPTION_SHADOW}`}
     >
-      <div className="relative">
+      <div className="relative mb-0.5">
         <img
           src={avatarSrc}
           alt=""
@@ -115,10 +115,22 @@ function SideActions({ avatarSrc, showDisc = true }) {
           +
         </span>
       </div>
-      <IoHeartOutline className="text-[26px]" aria-hidden />
-      <IoChatbubbleEllipsesOutline className="text-[25px]" aria-hidden />
-      <IoBookmarkOutline className="text-[24px]" aria-hidden />
-      <IoArrowRedoOutline className="text-[26px]" aria-hidden />
+      <div className="flex flex-col items-center gap-0.5">
+        <IoHeartOutline className="text-[26px]" aria-hidden />
+        <span className="text-[10px] font-semibold leading-none">…</span>
+      </div>
+      <div className="flex flex-col items-center gap-0.5">
+        <IoChatbubbleEllipsesOutline className="text-[25px]" aria-hidden />
+        <span className="text-[10px] font-semibold leading-none">…</span>
+      </div>
+      <div className="flex flex-col items-center gap-0.5">
+        <IoBookmarkOutline className="text-[24px]" aria-hidden />
+        <span className="text-[10px] font-semibold leading-none">…</span>
+      </div>
+      <div className="flex flex-col items-center gap-0.5">
+        <IoArrowRedoOutline className="text-[26px]" aria-hidden />
+        <span className="text-[10px] font-semibold leading-none">…</span>
+      </div>
       {showDisc ? (
         <div
           className="mt-0.5 flex h-8 w-8 animate-[spin_9s_linear_infinite] items-center justify-center rounded-full bg-zinc-950 ring-[1.5px] ring-white/90"
@@ -639,9 +651,9 @@ export function PhotoComposerPage() {
                       LIVE
                     </span>
                     <div className="flex items-end gap-5 text-[13px] font-semibold">
-                      <span className="pb-1.5 text-white/80">{t('nav.following')}</span>
+                      <span className="pb-1.5 text-white/75">Following</span>
                       <span className="relative pb-1.5 font-bold">
-                        {t('nav.forYou')}
+                        For You
                         <span className="absolute bottom-0 left-1/2 h-[2.5px] w-7 -translate-x-1/2 rounded-full bg-white" />
                       </span>
                     </div>

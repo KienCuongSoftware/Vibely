@@ -2573,7 +2573,7 @@ export function UploadPage() {
                             playsInline
                             preload="auto"
                             loop
-                            className="h-full w-full bg-black object-cover"
+                            className="h-full w-full bg-black object-contain"
                             autoPlay
                             onPlay={() => setPreviewUiPlaying(true)}
                             onPause={() => setPreviewUiPlaying(false)}
@@ -2581,41 +2581,42 @@ export function UploadPage() {
                           />
                           {!isPreviewFullscreen ? (
                             <>
-                              {/* Gradient đáy — meta nằm trên vùng tối, không đè control */}
                               <div
-                                className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-48 bg-linear-to-t from-black via-black/55 to-transparent"
+                                className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-44 bg-linear-to-t from-black via-black/50 to-transparent"
                                 aria-hidden
                               />
-                              {/* Top: LIVE + tabs (giống TikTok) + search */}
-                              <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between px-2.5 pt-2.5 text-white">
+                              {/* Status bar kiểu điện thoại */}
+                              <div
+                                className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between px-3 pt-1.5 text-[10px] font-semibold text-white"
+                                aria-hidden
+                              >
+                                <span>8:00</span>
+                                <span className="tracking-tight opacity-90">●●● Wi‑Fi</span>
+                              </div>
+                              {/* LIVE + Following / For You + search — chrome TikTok */}
+                              <div className="pointer-events-none absolute inset-x-0 top-6 z-20 flex items-start justify-between px-2.5 text-white">
                                 <span
-                                  className="mt-0.5 flex shrink-0 items-center gap-0.5 rounded border border-white/50 bg-black/50 px-1 py-0.5 text-[8px] font-extrabold leading-none tracking-wide text-white"
+                                  className="mt-0.5 flex shrink-0 items-center rounded border border-white/45 bg-black/40 px-1 py-0.5 text-[8px] font-extrabold leading-none tracking-wide"
                                   aria-hidden
                                 >
                                   LIVE
                                 </span>
-                                <div className="pointer-events-none absolute left-1/2 top-2.5 flex -translate-x-1/2 items-end gap-4 text-[12px] font-semibold leading-none antialiased">
-                                  <span className="pb-1.5 text-white/90">
-                                    {t('nav.following')}
-                                  </span>
+                                <div className="flex items-end gap-5 text-[13px] font-semibold leading-none antialiased">
+                                  <span className="pb-1.5 text-white/75">Following</span>
                                   <span className="relative pb-1.5 font-bold text-white">
-                                    {t('nav.forYou')}
+                                    For You
                                     <span className="absolute bottom-0 left-1/2 h-[2.5px] w-7 -translate-x-1/2 rounded-full bg-white" />
                                   </span>
                                 </div>
                                 <IoSearchOutline className="mt-0.5 shrink-0 text-lg text-white" aria-hidden />
                               </div>
-                              {/* Meta trái — cao hơn control bar để không bị đè / chồng chữ */}
-                              <div className="pointer-events-none absolute right-14 bottom-[102px] left-3 z-20 text-[13px] leading-snug text-white antialiased [text-shadow:0_1px_0_#000,1px_0_0_#000,-1px_0_0_#000,0_-1px_0_rgba(0,0,0,0.85)]">
-                                <p
-                                  className="flex min-w-0 max-w-full items-baseline gap-0 text-[14px] font-bold"
-                                  dir="ltr"
-                                >
-                                  <span className="shrink-0">@</span>
-                                  <span className="min-w-0 flex-1 truncate">{studioPreviewHandle}</span>
+                              {/* Meta trái — sát Home tab như TikTok */}
+                              <div className="pointer-events-none absolute right-[3.25rem] bottom-[52px] left-2.5 z-20 text-white antialiased [text-shadow:0_1px_0_#000,1px_0_0_#000,-1px_0_0_#000,0_-1px_0_rgba(0,0,0,0.85)]">
+                                <p className="truncate text-[15px] font-bold leading-tight">
+                                  {user?.displayName || studioPreviewHandle}
                                 </p>
                                 {previewCaption ? (
-                                  <p className="mt-1 line-clamp-2 text-[13px] font-semibold text-white">
+                                  <p className="mt-1 line-clamp-2 text-[13px] font-medium leading-snug text-white">
                                     {highlightTags(previewCaption)}
                                   </p>
                                 ) : null}
@@ -2629,9 +2630,9 @@ export function UploadPage() {
                                   </span>
                                 </p>
                               </div>
-                              {/* Cột icon phải (TikTok) */}
-                              <div className="pointer-events-none absolute right-1.5 bottom-[102px] z-20 flex w-12 flex-col items-center gap-[14px] text-white">
-                                <div className="relative flex flex-col items-center">
+                              {/* Cột icon phải + count … */}
+                              <div className="pointer-events-none absolute right-1.5 bottom-[52px] z-20 flex w-12 flex-col items-center gap-3 text-white">
+                                <div className="relative mb-1 flex flex-col items-center">
                                   <img
                                     src={avatarSrc}
                                     alt=""
@@ -2642,20 +2643,32 @@ export function UploadPage() {
                                     +
                                   </span>
                                 </div>
-                                <IoHeartOutline className="h-[26px] w-[26px]" strokeWidth={22} aria-hidden />
-                                <IoChatbubbleEllipsesOutline className="h-[25px] w-[25px]" strokeWidth={22} aria-hidden />
-                                <IoBookmarkOutline className="h-[24px] w-[24px]" strokeWidth={22} aria-hidden />
-                                <IoArrowRedoOutline className="mb-0.5 h-[26px] w-[26px]" strokeWidth={22} aria-hidden />
+                                <div className="flex flex-col items-center gap-0.5">
+                                  <IoHeartOutline className="h-[28px] w-[28px]" strokeWidth={22} aria-hidden />
+                                  <span className="text-[11px] font-semibold leading-none">…</span>
+                                </div>
+                                <div className="flex flex-col items-center gap-0.5">
+                                  <IoChatbubbleEllipsesOutline className="h-[26px] w-[26px]" strokeWidth={22} aria-hidden />
+                                  <span className="text-[11px] font-semibold leading-none">…</span>
+                                </div>
+                                <div className="flex flex-col items-center gap-0.5">
+                                  <IoBookmarkOutline className="h-[25px] w-[25px]" strokeWidth={22} aria-hidden />
+                                  <span className="text-[11px] font-semibold leading-none">…</span>
+                                </div>
+                                <div className="flex flex-col items-center gap-0.5">
+                                  <IoArrowRedoOutline className="h-[27px] w-[27px]" strokeWidth={22} aria-hidden />
+                                  <span className="text-[11px] font-semibold leading-none">…</span>
+                                </div>
                                 <div
-                                  className="mt-0.5 flex h-[34px] w-[34px] shrink-0 animate-[spin_9s_linear_infinite] items-center justify-center rounded-full bg-zinc-950 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35)] ring-[1.5px] ring-white/90"
+                                  className="mt-1 flex h-[34px] w-[34px] shrink-0 animate-[spin_9s_linear_infinite] items-center justify-center rounded-full bg-zinc-950 ring-[1.5px] ring-white/90"
                                   aria-hidden
                                 >
                                   <div className="h-[15px] w-[15px] rounded-full border border-dashed border-white/55" />
                                 </div>
                               </div>
-                              {/* Control playback — riêng tầng trên nav, không đè caption */}
+                              {/* Control playback — hover only */}
                               <div
-                                className="absolute inset-x-0 bottom-[50px] z-30 bg-black/55 px-2.5 pt-1.5 pb-1.5 opacity-0 transition-opacity duration-150 pointer-events-none group-hover/preview:pointer-events-auto group-hover/preview:opacity-100"
+                                className="absolute inset-x-0 bottom-[50px] z-30 bg-black/70 px-2.5 pt-1.5 pb-1.5 opacity-0 transition-opacity duration-150 pointer-events-none group-hover/preview:pointer-events-auto group-hover/preview:opacity-100"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 <div className="flex items-center justify-between gap-2 text-white">
@@ -2737,9 +2750,9 @@ export function UploadPage() {
                                   <IoHomeOutline className="text-[22px] text-white" />
                                   <span className="text-[9px] font-semibold tracking-tight text-white">Home</span>
                                 </div>
-                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5">
-                                  <IoPeopleOutline className="text-[21px] text-white" />
-                                  <span className="text-[9px] font-semibold tracking-tight text-white">Friends</span>
+                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5 text-white/70">
+                                  <IoPeopleOutline className="text-[21px]" />
+                                  <span className="text-[9px] font-semibold tracking-tight">Friends</span>
                                 </div>
                                 <div className="flex min-w-0 flex-none flex-col items-center justify-end px-1 pb-0.5">
                                   <div className="flex items-center gap-px">
@@ -2750,13 +2763,13 @@ export function UploadPage() {
                                     <span className="h-7 w-[2.5px] shrink-0 rounded-sm bg-[#fe2c55]" />
                                   </div>
                                 </div>
-                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5">
-                                  <IoPaperPlaneOutline className="text-[20px] text-white" />
-                                  <span className="text-[9px] font-semibold tracking-tight text-white">Inbox</span>
+                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5 text-white/70">
+                                  <IoPaperPlaneOutline className="text-[20px]" />
+                                  <span className="text-[9px] font-semibold tracking-tight">Inbox</span>
                                 </div>
-                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5">
-                                  <IoPersonOutline className="text-[21px] text-white" />
-                                  <span className="text-[9px] font-semibold tracking-tight text-white">Me</span>
+                                <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5 text-white/70">
+                                  <IoPersonOutline className="text-[21px]" />
+                                  <span className="text-[9px] font-semibold tracking-tight">Me</span>
                                 </div>
                               </nav>
                             </>
