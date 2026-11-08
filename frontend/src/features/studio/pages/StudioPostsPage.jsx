@@ -145,30 +145,40 @@ function isContentUnderReview(video, optimisticPublicIds) {
 
 /**
  * TikTok-style review stepper for Studio:
- * 0 = Đang chờ xét duyệt (mới đăng / còn encode)
- * 1 = Đang xét duyệt (đang hold kiểm duyệt / hàng đợi human)
- * 2 = Đã xét duyệt xong (không mở modal khi đã xong)
+ * 0 = Đang chờ xét duyệt (mới navigate / optimistic, chưa có hold từ server)
+ * 1 = Đang xét duyệt (encode + publication hold / human queue)
+ * 2 = Đã xét duyệt xong (modal không còn mở khi đã xong)
+ *
+ * Note: do NOT early-return on RAW/PROCESSING — those still have
+ * moderationReviewPending=true after publish, and skipping them made the UI
+ * stuck on "Đang chờ" until READY (jump straight to done).
  */
-function reviewProgressStep(video) {
+function reviewProgressStep(video, optimisticPublicIds) {
   if (!video || video.studioDraft) return 0;
   const status = String(video.status || "").toUpperCase();
   if (status === "REMOVED") return 0;
-  // Còn encode — chưa vào vòng kiểm duyệt nội dung.
-  if (status === "RAW" || status === "PROCESSING") return 0;
-  // Đã vào hold / cần duyệt / đang chờ xuất bản sau kiểm duyệt.
-  if (
-    video.reviewRequired ||
-    video.moderationReviewPending ||
-    video.intendedPrivacy ||
-    status === "HIDDEN"
-  ) {
+
+  const serverInReviewPipeline =
+    Boolean(video.reviewRequired) ||
+    Boolean(video.moderationReviewPending) ||
+    Boolean(video.intendedPrivacy) ||
+    status === "HIDDEN" ||
+    status === "RAW" ||
+    status === "PROCESSING";
+
+  if (serverInReviewPipeline) {
     return 1;
+  }
+
+  // Chỉ còn optimistic id (chưa refetch) → bước chờ ngắn.
+  if (optimisticPublicIds?.has?.(video.publicId)) {
+    return 0;
   }
   return 0;
 }
 
-function reviewStatusLabelKey(video) {
-  return reviewProgressStep(video) >= 1
+function reviewStatusLabelKey(video, optimisticPublicIds) {
+  return reviewProgressStep(video, optimisticPublicIds) >= 1
     ? "studio.posts.underReview"
     : "studio.posts.pendingReview";
 }
@@ -709,7 +719,11 @@ export function StudioPostsPage() {
                                   className="shrink-0 text-sm"
                                   aria-hidden
                                 />
-                                <span>{t(reviewStatusLabelKey(v))}</span>
+                                <span>
+                                  {t(
+                                    reviewStatusLabelKey(v, optimisticReviewIds),
+                                  )}
+                                </span>
                               </button>
                             ) : null}
                           </div>
@@ -922,7 +936,11 @@ export function StudioPostsPage() {
 
       <StudioReviewStatusModal
         open={reviewModalVideo != null}
-        activeStep={reviewModalVideo ? reviewProgressStep(reviewModalVideo) : 0}
+        activeStep={
+          reviewModalVideo
+            ? reviewProgressStep(reviewModalVideo, optimisticReviewIds)
+            : 0
+        }
         onClose={() => setReviewModalVideo(null)}
       />
 
