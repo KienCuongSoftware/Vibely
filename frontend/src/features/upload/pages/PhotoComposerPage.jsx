@@ -77,22 +77,22 @@ const PREVIEW_CAPTION_SHADOW =
 function CaptionStack({ displayName, description, locationQuery, soundLabel, photoBadge }) {
   return (
     <div className={`min-w-0 text-left text-white ${PREVIEW_CAPTION_SHADOW}`}>
-      <p className="flex min-w-0 items-center gap-1.5 text-[12px] font-bold">
+      <p className="flex min-w-0 items-center gap-1.5 text-[13px] font-bold">
         <span className="truncate">{displayName}</span>
         <PhotoBadge label={photoBadge} />
       </p>
       {description ? (
-        <p className="mt-0.5 line-clamp-2 text-[11px] font-normal leading-snug text-white">
+        <p className="mt-0.5 line-clamp-2 text-[12px] font-normal leading-snug text-white">
           {description}
         </p>
       ) : null}
       {locationQuery ? (
-        <p className="mt-0.5 flex items-center gap-0.5 truncate text-[10px] text-white">
+        <p className="mt-0.5 flex items-center gap-0.5 truncate text-[11px] text-white">
           <IoLocationOutline className="shrink-0" aria-hidden />
           {locationQuery}
         </p>
       ) : null}
-      <p className="mt-1 flex items-center gap-1 truncate text-[11px] text-white">
+      <p className="mt-1 flex items-center gap-1 truncate text-[12px] text-white">
         <IoMusicalNotesOutline className="shrink-0 text-sm" aria-hidden />
         <span className="truncate">{soundLabel}</span>
       </p>
@@ -626,19 +626,23 @@ export function PhotoComposerPage() {
                       <img
                         src={previews[previewIndex]}
                         alt=""
-                        className="h-full w-full object-contain"
+                        className="h-full w-full object-cover"
                       />
                     </button>
                   ) : null}
-                  <div className="pointer-events-none absolute inset-x-0 top-6 z-20 flex items-start justify-between px-2.5 text-white">
-                    <span className="mt-0.5 rounded border border-white/35 px-1 py-0.5 text-[8px] font-extrabold tracking-wide">
+                  <div
+                    className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-36 bg-linear-to-t from-black/85 via-black/35 to-transparent"
+                    aria-hidden
+                  />
+                  <div className="pointer-events-none absolute inset-x-0 top-6 z-20 flex items-start justify-between px-2.5 text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.85)]">
+                    <span className="mt-0.5 rounded border border-white/40 bg-black/35 px-1 py-0.5 text-[8px] font-extrabold tracking-wide">
                       LIVE
                     </span>
-                    <div className="flex items-end gap-5 text-[12px] font-semibold">
-                      <span className="pb-1.5 text-white/45">Following</span>
-                      <span className="relative pb-1.5">
-                        For You
-                        <span className="absolute bottom-0 left-1/2 h-[2px] w-6 -translate-x-1/2 rounded-full bg-white" />
+                    <div className="flex items-end gap-5 text-[13px] font-semibold">
+                      <span className="pb-1.5 text-white/80">{t('nav.following')}</span>
+                      <span className="relative pb-1.5 font-bold">
+                        {t('nav.forYou')}
+                        <span className="absolute bottom-0 left-1/2 h-[2.5px] w-7 -translate-x-1/2 rounded-full bg-white" />
                       </span>
                     </div>
                     <IoSearchOutline className="mt-0.5 text-lg" aria-hidden />

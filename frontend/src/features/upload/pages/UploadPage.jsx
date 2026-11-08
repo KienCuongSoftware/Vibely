@@ -2573,7 +2573,7 @@ export function UploadPage() {
                             playsInline
                             preload="auto"
                             loop
-                            className="h-full w-full bg-black object-contain"
+                            className="h-full w-full bg-black object-cover"
                             autoPlay
                             onPlay={() => setPreviewUiPlaying(true)}
                             onPause={() => setPreviewUiPlaying(false)}
@@ -2581,26 +2581,32 @@ export function UploadPage() {
                           />
                           {!isPreviewFullscreen ? (
                             <>
-                              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-32 bg-linear-to-t from-black/75 via-black/20 to-transparent opacity-0 transition-opacity duration-150 group-hover/preview:opacity-100" />
+                              {/* Gradient đáy luôn hiện để chữ meta đọc rõ trên video sáng */}
+                              <div
+                                className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-40 bg-linear-to-t from-black/85 via-black/35 to-transparent"
+                                aria-hidden
+                              />
                               {/* Top: LIVE + tabs (giống TikTok) + search */}
-                              <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between px-2.5 pt-2.5 text-white">
+                              <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between px-2.5 pt-2.5 text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.85)]">
                                 <span
-                                  className="mt-0.5 flex shrink-0 items-center gap-0.5 rounded border border-white/30 bg-white/10 px-1 py-0.5 text-[8px] font-extrabold leading-none tracking-wide text-white shadow-sm"
+                                  className="mt-0.5 flex shrink-0 items-center gap-0.5 rounded border border-white/40 bg-black/35 px-1 py-0.5 text-[8px] font-extrabold leading-none tracking-wide text-white"
                                   aria-hidden
                                 >
                                   LIVE
                                 </span>
-                                <div className="pointer-events-none absolute left-1/2 top-2.5 flex -translate-x-1/2 items-end gap-7 text-[12px] font-semibold leading-none">
-                                  <span className="pb-1.5 text-white/45">Following</span>
-                                  <span className="relative pb-1.5 text-white">
-                                    For You
-                                    <span className="absolute bottom-0 left-1/2 h-[2px] w-6 -translate-x-1/2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
+                                <div className="pointer-events-none absolute left-1/2 top-2.5 flex -translate-x-1/2 items-end gap-5 text-[13px] font-semibold leading-none">
+                                  <span className="pb-1.5 text-white/80">
+                                    {t('nav.following')}
+                                  </span>
+                                  <span className="relative pb-1.5 font-bold text-white">
+                                    {t('nav.forYou')}
+                                    <span className="absolute bottom-0 left-1/2 h-[2.5px] w-7 -translate-x-1/2 rounded-full bg-white" />
                                   </span>
                                 </div>
-                                <IoSearchOutline className="mt-0.5 shrink-0 text-lg text-white drop-shadow-sm" aria-hidden />
+                                <IoSearchOutline className="mt-0.5 shrink-0 text-lg text-white" aria-hidden />
                               </div>
                               {/* Meta trái — phía trên thanh tab dưới */}
-                              <div className="pointer-events-none absolute bottom-[54px] left-3 right-17 z-20 text-[12px] leading-snug text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+                              <div className="pointer-events-none absolute bottom-[54px] left-3 right-17 z-20 text-[13px] leading-snug text-white [text-shadow:0_1px_1px_rgba(0,0,0,0.95),0_0_2px_rgba(0,0,0,0.9),0_2px_6px_rgba(0,0,0,0.65)]">
                                 <p
                                   className="flex min-w-0 max-w-full items-baseline gap-0 font-bold"
                                   dir="ltr"
@@ -2609,12 +2615,12 @@ export function UploadPage() {
                                   <span className="min-w-0 flex-1 truncate">{studioPreviewHandle}</span>
                                 </p>
                                 {previewCaption ? (
-                                  <p className="mt-0.5 line-clamp-2 text-[11px] font-normal opacity-95">
+                                  <p className="mt-0.5 line-clamp-2 text-[12px] font-normal text-white">
                                     {highlightTags(previewCaption)}
                                   </p>
                                 ) : null}
-                                <p className="mt-1 flex items-center gap-1 truncate text-[11px] opacity-85">
-                                  <IoMusicalNotesOutline className="shrink-0 text-sm opacity-90" aria-hidden />
+                                <p className="mt-1 flex items-center gap-1 truncate text-[12px] text-white">
+                                  <IoMusicalNotesOutline className="shrink-0 text-sm" aria-hidden />
                                   <span className="truncate">
                                     {localizeAudioTitle(uploadedVideo?.audioTitle, t, {
                                       name: user?.displayName || user?.username || 'Vibely',
