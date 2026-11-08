@@ -2,12 +2,17 @@ import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { IoClose, IoTimeOutline } from "react-icons/io5";
 
+const REVIEW_ACCENT = "#ff7a00";
+
 function ReviewStepper({ activeStep, t }) {
   const steps = [
     t("studio.posts.reviewModal.stepPending"),
     t("studio.posts.reviewModal.stepReviewing"),
     t("studio.posts.reviewModal.stepDone"),
   ];
+  // Track fill reaches the active node (0 → first, 1 → middle, 2 → end).
+  const progressPct =
+    activeStep <= 0 ? "0%" : activeStep === 1 ? "38%" : "76%";
 
   return (
     <div className="mt-6">
@@ -20,10 +25,8 @@ function ReviewStepper({ activeStep, t }) {
           aria-hidden
         />
         <div
-          className="absolute top-[7px] left-[12%] h-0.5 bg-zinc-900 transition-all duration-300"
-          style={{
-            width: activeStep <= 0 ? "0%" : activeStep === 1 ? "38%" : "76%",
-          }}
+          className="absolute top-[7px] left-[12%] h-0.5 transition-all duration-300"
+          style={{ width: progressPct, backgroundColor: REVIEW_ACCENT }}
           aria-hidden
         />
         <ol className="relative flex justify-between gap-2">
@@ -38,20 +41,20 @@ function ReviewStepper({ activeStep, t }) {
               >
                 <span
                   className={`relative z-10 h-4 w-4 rounded-full border-2 ${
-                    filled
-                      ? "border-zinc-900 bg-zinc-900"
-                      : "border-zinc-300 bg-white"
+                    filled ? "border-transparent" : "border-zinc-300 bg-white"
                   }`}
+                  style={
+                    filled
+                      ? { backgroundColor: REVIEW_ACCENT, borderColor: REVIEW_ACCENT }
+                      : undefined
+                  }
                   aria-hidden
                 />
                 <span
                   className={`mt-2 text-[12px] leading-snug ${
-                    active
-                      ? "font-semibold text-zinc-900"
-                      : done
-                        ? "font-medium text-zinc-700"
-                        : "font-medium text-zinc-600"
+                    filled ? "font-semibold" : "font-medium text-zinc-500"
                   }`}
+                  style={filled ? { color: REVIEW_ACCENT } : undefined}
                 >
                   {label}
                 </span>
