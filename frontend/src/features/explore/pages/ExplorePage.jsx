@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { IoChevronBack, IoChevronForward, IoHeartOutline, IoSearch } from 'react-icons/io5'
+import { IoChevronBack, IoChevronForward, IoPlay, IoSearch } from 'react-icons/io5'
 import { apiClient } from '@/shared/api/client'
 import { Sidebar } from '@/shared/components/Sidebar'
 import {
@@ -85,8 +85,8 @@ function ExploreMobileVideoCard({ video, coverFallback, onOpen }) {
             </div>
           ) : null}
           <div className="inline-flex items-center gap-1 text-[13px] font-semibold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
-            <IoHeartOutline className="text-[15px]" aria-hidden />
-            <span>{formatCompactCount(video?.likeCount ?? 0)}</span>
+            <IoPlay className="text-[14px]" aria-hidden />
+            <span>{formatCompactCount(video?.viewCount ?? 0)}</span>
           </div>
         </div>
       </div>

@@ -468,6 +468,7 @@ export function SoundGridVideoCard({
     '\u00A0'
   const overlayAvatar = resolveGridAuthorAvatar(video)
   const likeLabel = formatCompactCount(video?.likeCount ?? 0)
+  const viewLabel = formatCompactCount(video?.viewCount ?? 0)
 
   const thumb = (
     <>
@@ -492,8 +493,8 @@ export function SoundGridVideoCard({
             </div>
           ) : null}
           <div className="inline-flex items-center gap-1 text-[13px] font-semibold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
-            <IoHeartOutline className="text-[15px]" aria-hidden />
-            <span>{likeLabel}</span>
+            <IoPlay className="text-[14px]" aria-hidden />
+            <span>{viewLabel}</span>
           </div>
         </div>
       ) : (
