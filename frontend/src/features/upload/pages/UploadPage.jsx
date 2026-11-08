@@ -2545,11 +2545,11 @@ export function UploadPage() {
                 </div>
 
                 <div className="rounded-2xl border border-zinc-800 bg-[#0f0f11] p-3 shadow-2xl">
-                  <div className="mx-auto w-full max-w-[304px] overflow-hidden rounded-[26px] border-2 border-zinc-700 bg-zinc-950">
+                  <div className="vibely-keep-dark mx-auto w-full max-w-[304px] overflow-hidden rounded-[26px] border-2 border-zinc-700 bg-black">
                     {previewTab === 'feed' ? (
                       <div
                         ref={previewFrameRef}
-                        className={`group/preview relative bg-black ${
+                        className={`vibely-keep-dark group/preview relative bg-black text-white ${
                           isPreviewFullscreen ? 'flex h-full w-full items-center justify-center' : 'aspect-9/16'
                         }`}
                         onClick={togglePreviewPlayback}
@@ -2582,7 +2582,11 @@ export function UploadPage() {
                           {!isPreviewFullscreen ? (
                             <>
                               <div
-                                className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-44 bg-linear-to-t from-black via-black/50 to-transparent"
+                                className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-44"
+                                style={{
+                                  background:
+                                    "linear-gradient(to top, #000 0%, rgba(0,0,0,0.55) 42%, transparent 100%)",
+                                }}
                                 aria-hidden
                               />
                               {/* Status bar kiểu điện thoại */}
@@ -2610,19 +2614,26 @@ export function UploadPage() {
                                 </div>
                                 <IoSearchOutline className="mt-0.5 shrink-0 text-lg text-white" aria-hidden />
                               </div>
-                              {/* Meta trái — sát Home tab như TikTok */}
-                              <div className="pointer-events-none absolute right-[3.25rem] bottom-[52px] left-2.5 z-20 text-white antialiased [text-shadow:0_1px_0_#000,1px_0_0_#000,-1px_0_0_#000,0_-1px_0_rgba(0,0,0,0.85)]">
-                                <p className="truncate text-[15px] font-bold leading-tight">
+                              {/* Meta trái — sát Home tab; chữ trắng cứng trên nền đen */}
+                              <div
+                                className="pointer-events-none absolute right-[3.25rem] bottom-[52px] left-2.5 z-20 antialiased"
+                                style={{
+                                  color: "#fff",
+                                  textShadow:
+                                    "0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 rgba(0,0,0,0.9)",
+                                }}
+                              >
+                                <p className="truncate text-[15px] font-bold leading-tight text-white">
                                   {user?.displayName || studioPreviewHandle}
                                 </p>
                                 {previewCaption ? (
-                                  <p className="mt-1 line-clamp-2 text-[13px] font-medium leading-snug text-white">
+                                  <p className="mt-1 line-clamp-2 text-[13px] font-semibold leading-snug text-white">
                                     {highlightTags(previewCaption)}
                                   </p>
                                 ) : null}
-                                <p className="mt-1.5 flex items-center gap-1 truncate text-[12px] font-medium text-white">
-                                  <IoMusicalNotesOutline className="shrink-0 text-sm" aria-hidden />
-                                  <span className="truncate">
+                                <p className="mt-1.5 flex items-center gap-1 truncate text-[12px] font-semibold text-white">
+                                  <IoMusicalNotesOutline className="shrink-0 text-sm text-white" aria-hidden />
+                                  <span className="truncate text-white">
                                     {localizeAudioTitle(uploadedVideo?.audioTitle, t, {
                                       name: user?.displayName || user?.username || 'Vibely',
                                       key: 'upload.photo.originalSound',
@@ -2631,7 +2642,10 @@ export function UploadPage() {
                                 </p>
                               </div>
                               {/* Cột icon phải + count … */}
-                              <div className="pointer-events-none absolute right-1.5 bottom-[52px] z-20 flex w-12 flex-col items-center gap-3 text-white">
+                              <div
+                                className="pointer-events-none absolute right-1.5 bottom-[52px] z-20 flex w-12 flex-col items-center gap-3 text-white"
+                                style={{ color: "#fff" }}
+                              >
                                 <div className="relative mb-1 flex flex-col items-center">
                                   <img
                                     src={avatarSrc}
@@ -2744,6 +2758,7 @@ export function UploadPage() {
                               {/* Thanh điều hướng dưới (TikTok) */}
                               <nav
                                 className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex h-[50px] items-end justify-between border-t border-white/10 bg-black px-0.5 pb-1.5 pt-1 text-white"
+                                style={{ backgroundColor: "#000", color: "#fff" }}
                                 aria-hidden
                               >
                                 <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5">

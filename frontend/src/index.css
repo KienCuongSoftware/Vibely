@@ -2044,8 +2044,21 @@ html[data-vibely-theme="light"] .vibely-keep-dark .border-b-2.border-white {
 html[data-vibely-theme="light"] .vibely-keep-dark,
 html[data-vibely-theme="light"] .vibely-keep-dark .text-zinc-100,
 html[data-vibely-theme="light"] .vibely-keep-dark .text-zinc-200,
-html[data-vibely-theme="light"] .vibely-keep-dark .text-white {
-  color: #f4f4f5 !important;
+html[data-vibely-theme="light"] .vibely-keep-dark .text-white,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-white\/75,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-white\/70,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-white\/90,
+html[data-vibely-theme="light"] .vibely-keep-dark .text-white\/95 {
+  color: #fff !important;
+}
+/* Studio TikTok phone preview: gradient đáy luôn đen (không remap light). */
+html[data-vibely-theme="light"] .vibely-keep-dark .from-black {
+  --tw-gradient-from: #000 !important;
+  --tw-gradient-to: rgb(0 0 0 / 0) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+html[data-vibely-theme="light"] .vibely-keep-dark .via-black\/50 {
+  --tw-gradient-via: rgb(0 0 0 / 0.5) !important;
 }
 html[data-vibely-theme="light"] .vibely-keep-dark .text-zinc-300,
 html[data-vibely-theme="light"] .vibely-keep-dark .text-zinc-400,
