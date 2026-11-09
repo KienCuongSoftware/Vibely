@@ -1911,7 +1911,7 @@ export function FeedPhoneStage({
                   >
                     <button
                       type="button"
-                      className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors hover:bg-white/10"
+                      className="feed-more-menu-row flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors"
                       onClick={() => {
                         setFeedMoreMenuOpen(false);
                         void toggleFeedPictureInPicture();
@@ -1926,7 +1926,7 @@ export function FeedPhoneStage({
                     </button>
                     <button
                       type="button"
-                      className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors hover:bg-white/10"
+                      className="feed-more-menu-row flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors"
                       onClick={() => {
                         setFeedMoreMenuOpen(false);
                         setSubtitlesModalOpen(true);
@@ -1946,7 +1946,7 @@ export function FeedPhoneStage({
                     />
                     <button
                       type="button"
-                      className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors hover:bg-white/10"
+                      className="feed-more-menu-row flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors"
                       onClick={() => {
                         setFeedMoreMenuOpen(false);
                         onNotInterested?.();
@@ -1963,7 +1963,7 @@ export function FeedPhoneStage({
                     </button>
                     <button
                       type="button"
-                      className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors hover:bg-white/10"
+                      className="feed-more-menu-row flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors"
                       onClick={() => {
                         setFeedMoreMenuOpen(false);
                         setReportModalOpen(true);

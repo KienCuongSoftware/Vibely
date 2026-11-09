@@ -16,9 +16,9 @@ export const FEED_MORE_PANEL_SURFACE_CLASS =
 
 export const FEED_MORE_PANEL_CARET_CLASS = "feed-dark-popover vibely-keep-dark";
 
-/** Hàng menu trong panel ⋯ — TikTok: không kẻ từng dòng, chữ ~14px. */
+/** Hàng menu trong panel ⋯ — hover xám đậm (xem .feed-more-menu-row trong index.css). */
 export const FEED_MORE_MENU_ROW_CLASS =
-  "flex w-full items-center gap-3 px-3.5 py-3 text-left text-[14px] leading-tight text-white transition-colors hover:bg-white/[0.06] active:bg-white/[0.09]";
+  "feed-more-menu-row flex w-full items-center gap-3 px-3.5 py-3 text-left text-[14px] leading-tight text-white transition-colors";
 
 export const FEED_MORE_MENU_BADGE_ICON_CLASS =
   "flex h-5 w-5 shrink-0 items-center justify-center text-[11px] font-semibold tracking-wide text-white/90";
@@ -32,7 +32,7 @@ export const FEED_MORE_MENU_VALUE_CLASS = "shrink-0 text-[14px] text-white/55";
 
 /** Pill tốc độ trong khung bao (TikTok segmented control). */
 export const FEED_MORE_SPEED_TRACK_CLASS =
-  "ml-auto flex shrink-0 items-center gap-0.5 rounded-full bg-black/50 p-0.5";
+  "ml-auto flex shrink-0 items-center gap-0.5 rounded-full bg-black/35 p-0.5";
 
 export const FEED_MORE_SPEED_PILL_CLASS =
   "min-w-[2.15rem] rounded-full px-1.5 py-1 text-center text-[12px] font-semibold tabular-nums transition-colors";

@@ -229,18 +229,17 @@ html[data-vibely-theme="light"] {
 }
 
 /**
- * Popover tốc độ / âm lượng trên thanh điều khiển feed.
- * Dùng class riêng để light theme không remap #2f2f2f/#3a3a3a → xám trắng
- * (chữ trắng sẽ bị ám và khó đọc).
+ * Popover tốc độ / âm lượng / menu ⋯ — nền xám TikTok, hover xám đậm hơn.
+ * Class riêng để light theme không remap sang trắng.
  */
 .feed-dark-popover {
-  background-color: #2f2f2f !important;
+  background-color: #3a3a3a !important;
   color: #fff !important;
 }
-/* Light theme remap hay làm “trắng” shell âm lượng / menu ⋯ — giữ nền tối + chữ trắng. */
 html[data-vibely-theme="light"] .feed-dark-popover,
+html[data-vibely-theme="light"] .feed-dark-popover.vibely-keep-dark,
 html[data-vibely-theme="light"] .feed-volume-control-shell {
-  background-color: #2f2f2f !important;
+  background-color: #3a3a3a !important;
   color: #fff !important;
 }
 html[data-vibely-theme="light"] .feed-dark-popover .text-white,
@@ -254,18 +253,15 @@ html[data-vibely-theme="light"] .feed-dark-popover span,
 html[data-vibely-theme="light"] .feed-dark-popover svg {
   color: #fff !important;
 }
-/* Pill tốc độ đang chọn: nền trắng / chữ đen (giữ nguyên). */
+/* Pill tốc độ đang chọn: nền trắng / chữ đen. */
 html[data-vibely-theme="light"] .feed-dark-popover .bg-white.text-black,
 html[data-vibely-theme="light"] .feed-dark-popover button.bg-white {
   background-color: #fff !important;
   color: #000 !important;
 }
 .feed-volume-control-shell {
-  background-color: rgba(0, 0, 0, 0.62) !important;
+  background-color: #3a3a3a !important;
   color: #fff !important;
-}
-html[data-vibely-theme="light"] .feed-volume-control-shell {
-  background-color: rgba(20, 20, 22, 0.82) !important;
 }
 html[data-vibely-theme="light"] .feed-volume-control-shell,
 html[data-vibely-theme="light"] .feed-volume-control-shell button,
@@ -281,17 +277,23 @@ html[data-vibely-theme="light"] .feed-volume-control-shell svg {
 }
 .feed-dark-popover-item:hover,
 .feed-dark-popover-item:focus-visible {
-  background-color: #3a3a3a !important;
+  background-color: #2a2a2a !important;
   color: #fff !important;
 }
 .feed-dark-popover-item.is-selected {
-  background-color: #3a3a3a !important;
+  background-color: #2a2a2a !important;
   color: #fe2c55 !important;
 }
 .feed-dark-popover-item.is-selected:hover,
 .feed-dark-popover-item.is-selected:focus-visible {
-  background-color: #454545 !important;
+  background-color: #222 !important;
   color: #fe2c55 !important;
+}
+/* Hàng menu context / ⋯ : hover xám đậm hơn nền panel. */
+.feed-dark-popover .feed-more-menu-row:hover,
+.feed-dark-popover .feed-more-menu-row:focus-visible,
+.feed-dark-popover button.feed-more-menu-row:hover {
+  background-color: #2a2a2a !important;
 }
 
 .share-modal-panel {
@@ -2102,6 +2104,13 @@ html[data-vibely-theme="light"] .vibely-keep-dark .text-white\/75,
 html[data-vibely-theme="light"] .vibely-keep-dark .text-white\/70,
 html[data-vibely-theme="light"] .vibely-keep-dark .text-white\/90,
 html[data-vibely-theme="light"] .vibely-keep-dark .text-white\/95 {
+  color: #fff !important;
+}
+/* Menu tốc độ / volume / ⋯: xám #3a3a3a — không để vibely-keep-dark ép thành #000. */
+html[data-vibely-theme="light"] .feed-dark-popover.vibely-keep-dark,
+html[data-vibely-theme="light"] .feed-dark-popover,
+html[data-vibely-theme="light"] .feed-volume-control-shell {
+  background-color: #3a3a3a !important;
   color: #fff !important;
 }
 /* Studio TikTok phone preview: gradient đáy luôn đen (không remap light). */
