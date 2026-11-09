@@ -158,7 +158,9 @@ html[data-vibely-theme="light"] {
   border: none;
   border-radius: 999px;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.55),
+    0 1px 4px rgba(0, 0, 0, 0.4);
 }
 .feed-volume-slider::-moz-range-track {
   height: 4px;
@@ -172,7 +174,9 @@ html[data-vibely-theme="light"] {
   border: none;
   border-radius: 999px;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.55),
+    0 1px 4px rgba(0, 0, 0, 0.4);
 }
 .feed-volume-slider:focus-visible {
   outline: none;
@@ -187,10 +191,14 @@ html[data-vibely-theme="light"] {
 .watch-volume-slider-vertical {
   -webkit-appearance: none;
   appearance: none;
-  width: 3px;
+  width: 4px;
   height: 5.25rem;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.28);
+  /* Track xám đậm + viền — vẫn thấy trên nền sáng / color bars */
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   writing-mode: vertical-lr;
   direction: rtl;
@@ -201,7 +209,9 @@ html[data-vibely-theme="light"] {
   height: 14px;
   border-radius: 50%;
   background: #fff;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.65),
+    0 1px 4px rgba(0, 0, 0, 0.45);
 }
 .watch-volume-slider-vertical::-moz-range-thumb {
   width: 14px;
@@ -209,7 +219,9 @@ html[data-vibely-theme="light"] {
   border: none;
   border-radius: 50%;
   background: #fff;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.65),
+    0 1px 4px rgba(0, 0, 0, 0.45);
 }
 .watch-volume-slider-vertical:focus-visible {
   outline: 2px solid rgba(255, 255, 255, 0.45);
@@ -224,6 +236,19 @@ html[data-vibely-theme="light"] {
 .feed-dark-popover {
   background-color: #2f2f2f !important;
   color: #fff !important;
+}
+/* Light theme remap hay làm “trắng” các shell âm lượng — giữ popover tối. */
+html[data-vibely-theme="light"] .feed-dark-popover,
+html[data-vibely-theme="light"] .feed-volume-control-shell {
+  background-color: #2f2f2f !important;
+  color: #fff !important;
+}
+.feed-volume-control-shell {
+  background-color: rgba(0, 0, 0, 0.62) !important;
+  color: #fff !important;
+}
+html[data-vibely-theme="light"] .feed-volume-control-shell {
+  background-color: rgba(20, 20, 22, 0.82) !important;
 }
 .feed-dark-popover-label {
   color: rgba(255, 255, 255, 0.55) !important;

@@ -823,6 +823,19 @@ export function FeedStyleVideoDetailPage({
     }, 620)
   }, [])
 
+  /** HLS thường bỏ qua attribute loop — tự tua lại khi hết (trừ khi user pause). */
+  const onActiveFeedPlaybackEnded = useCallback(() => {
+    if (userPaused) return
+    const el = feedVideoRef.current
+    if (!el) return
+    try {
+      el.currentTime = 0
+      void el.play().catch(() => {})
+    } catch {
+      /* ignore */
+    }
+  }, [userPaused])
+
   const toggleFeedPictureInPicture = async () => {
     const el = feedVideoRef.current
     if (!el || typeof el.requestPictureInPicture !== 'function') return
@@ -1102,6 +1115,7 @@ export function FeedStyleVideoDetailPage({
                   thumbnailFallbackUrl={undefined}
                   playbackFlash={playbackFlash}
                   onActiveFeedPlaybackTick={onActiveFeedPlaybackTick}
+                  onActiveFeedPlaybackEnded={onActiveFeedPlaybackEnded}
                   commentsDockOpen={
                     tiktokDetailDesktop ||
                     (!mobileLayout && sidebarTab === 'comments')

@@ -554,10 +554,10 @@ export function FeedVolumeControl({
       onMouseLeave={() => setHovered(false)}
     >
       <div
-        className={`flex h-10 items-center overflow-hidden rounded-full transition-[max-width,background-color,padding,box-shadow] duration-200 ease-out ${
+        className={`feed-volume-control-shell flex h-10 items-center overflow-hidden rounded-full transition-[max-width,padding,box-shadow] duration-200 ease-out ${
           expanded
-            ? "max-w-[11.5rem] bg-black/55 py-0 pl-1.5 pr-3 shadow-[0_4px_18px_rgba(0,0,0,0.35)] backdrop-blur-md"
-            : "max-w-10 bg-black/45 p-0 shadow-[0_2px_10px_rgba(0,0,0,0.28)] backdrop-blur-[2px]"
+            ? "max-w-[11.5rem] py-0 pl-1.5 pr-3 shadow-[0_4px_18px_rgba(0,0,0,0.35)] backdrop-blur-md"
+            : "max-w-10 p-0 shadow-[0_2px_10px_rgba(0,0,0,0.28)] backdrop-blur-[2px]"
         }`}
       >
         <button
@@ -720,6 +720,8 @@ export function FeedPhoneStage({
     "vi";
   const controlPopoverOpen =
     speedMenuOpen || volumeMenuOpen || feedMoreMenuOpen;
+  /** Chi tiết / feed 1 video: luôn loop (auto-scroll không có video kế tiếp). */
+  const loopActiveVideo = !feedAutoScrollEnabled || videos.length <= 1;
 
   const clearSpeedHoverClose = useCallback(() => {
     if (speedHoverCloseTimerRef.current != null) {
@@ -1378,7 +1380,7 @@ export function FeedPhoneStage({
                     videoUrl={playbackUrl}
                     poster={poster}
                     muted={!isActive || playbackMuted}
-                    loop={!feedAutoScrollEnabled}
+                    loop={loopActiveVideo}
                     loadMedia={loadMedia && hasPlayback && !reportedHidden}
                     isActive={isActive && !reportedHidden}
                     userPaused={isActive && (userPaused || reportedHidden)}
@@ -1451,7 +1453,7 @@ export function FeedPhoneStage({
                   videoUrl={playbackUrl}
                   poster={poster}
                   muted={!isActive || playbackMuted}
-                  loop={!feedAutoScrollEnabled}
+                  loop={loopActiveVideo}
                   loadMedia={loadMedia && hasPlayback}
                   isActive={isActive}
                   userPaused={isActive && userPaused}
@@ -1858,7 +1860,7 @@ export function FeedPhoneStage({
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="feed-dark-popover flex h-[7.75rem] w-11 items-center justify-center rounded-xl py-3 shadow-[0_8px_28px_rgba(0,0,0,0.45)]">
+                    <div className="feed-dark-popover vibely-keep-dark flex h-[7.75rem] w-11 items-center justify-center rounded-xl py-3 shadow-[0_8px_28px_rgba(0,0,0,0.45)]">
                       <input
                         type="range"
                         min={0}
