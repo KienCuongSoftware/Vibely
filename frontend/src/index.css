@@ -237,11 +237,28 @@ html[data-vibely-theme="light"] {
   background-color: #2f2f2f !important;
   color: #fff !important;
 }
-/* Light theme remap hay làm “trắng” các shell âm lượng — giữ popover tối. */
+/* Light theme remap hay làm “trắng” shell âm lượng / menu ⋯ — giữ nền tối + chữ trắng. */
 html[data-vibely-theme="light"] .feed-dark-popover,
 html[data-vibely-theme="light"] .feed-volume-control-shell {
   background-color: #2f2f2f !important;
   color: #fff !important;
+}
+html[data-vibely-theme="light"] .feed-dark-popover .text-white,
+html[data-vibely-theme="light"] .feed-dark-popover .text-white\/95,
+html[data-vibely-theme="light"] .feed-dark-popover .text-white\/90,
+html[data-vibely-theme="light"] .feed-dark-popover .text-white\/85,
+html[data-vibely-theme="light"] .feed-dark-popover .text-white\/55,
+html[data-vibely-theme="light"] .feed-dark-popover .text-white\/45,
+html[data-vibely-theme="light"] .feed-dark-popover button,
+html[data-vibely-theme="light"] .feed-dark-popover span,
+html[data-vibely-theme="light"] .feed-dark-popover svg {
+  color: #fff !important;
+}
+/* Pill tốc độ đang chọn: nền trắng / chữ đen (giữ nguyên). */
+html[data-vibely-theme="light"] .feed-dark-popover .bg-white.text-black,
+html[data-vibely-theme="light"] .feed-dark-popover button.bg-white {
+  background-color: #fff !important;
+  color: #000 !important;
 }
 .feed-volume-control-shell {
   background-color: rgba(0, 0, 0, 0.62) !important;
@@ -249,6 +266,11 @@ html[data-vibely-theme="light"] .feed-volume-control-shell {
 }
 html[data-vibely-theme="light"] .feed-volume-control-shell {
   background-color: rgba(20, 20, 22, 0.82) !important;
+}
+html[data-vibely-theme="light"] .feed-volume-control-shell,
+html[data-vibely-theme="light"] .feed-volume-control-shell button,
+html[data-vibely-theme="light"] .feed-volume-control-shell svg {
+  color: #fff !important;
 }
 .feed-dark-popover-label {
   color: rgba(255, 255, 255, 0.55) !important;

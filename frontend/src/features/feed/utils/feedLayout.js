@@ -10,11 +10,11 @@ export const FEED_ROUND_ICON_BUTTON_CLASS =
 export const FEED_ACTION_ITEM_CLASS =
   "flex min-w-8 flex-col items-center gap-0";
 
-/** Panel menu ⋯ — nền xám đậm đặc kiểu TikTok web. */
+/** Panel menu ⋯ — nền tối cố định (feed-dark-popover chống light-theme remap). */
 export const FEED_MORE_PANEL_SURFACE_CLASS =
-  "overflow-hidden rounded-xl bg-[#2f2f2f] py-1 shadow-[0_12px_40px_rgba(0,0,0,0.55)]";
+  "feed-dark-popover vibely-keep-dark overflow-hidden rounded-xl py-1 text-white shadow-[0_12px_40px_rgba(0,0,0,0.55)]";
 
-export const FEED_MORE_PANEL_CARET_CLASS = "bg-[#2f2f2f]";
+export const FEED_MORE_PANEL_CARET_CLASS = "feed-dark-popover vibely-keep-dark";
 
 /** Hàng menu trong panel ⋯ — TikTok: không kẻ từng dòng, chữ ~14px. */
 export const FEED_MORE_MENU_ROW_CLASS =

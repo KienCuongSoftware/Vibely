@@ -125,20 +125,35 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
     if (!el || el.tagName !== 'VIDEO') return
     if (!loopRef.current || userPausedRef.current || !isActiveRef.current) return
     const now = Date.now()
-    if (now - loopRestartAtRef.current < 450) return
+    if (now - loopRestartAtRef.current < 500) return
     loopRestartAtRef.current = now
-    const hls = hlsRef.current
     try {
-      // HLS/MSE: sau ended thường cần startLoad lại rồi seek.
-      if (hls) {
-        try {
-          hls.startLoad(0)
-        } catch {
-          /* noop */
-        }
+      // HLS.js: chỉ seek + play — đừng startLoad(0) (dễ buffer stall / không loop).
+      const playAfterSeek = () => {
+        if (!loopRef.current || userPausedRef.current || !isActiveRef.current) return
+        void playWithAutoplayPolicy(el, !mutedRef.current)
       }
-      el.currentTime = 0
-      void playWithAutoplayPolicy(el, !mutedRef.current)
+      if (el.currentTime > 0.05 || el.ended || el.paused) {
+        const onSeeked = () => {
+          el.removeEventListener('seeked', onSeeked)
+          playAfterSeek()
+        }
+        el.addEventListener('seeked', onSeeked)
+        try {
+          el.currentTime = 0
+        } catch {
+          el.removeEventListener('seeked', onSeeked)
+          playAfterSeek()
+          return
+        }
+        // Fallback nếu seeked không fire (một số MSE).
+        window.setTimeout(() => {
+          el.removeEventListener('seeked', onSeeked)
+          if (el.currentTime < 0.35) playAfterSeek()
+        }, 250)
+      } else {
+        playAfterSeek()
+      }
     } catch {
       /* noop */
     }
@@ -454,8 +469,8 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
   }, [isActive, loadMedia, videoUrl, visibilityRatio, muted, userPaused])
 
   /**
-   * Loop thật sự: HLS/MSE thường bỏ qua attribute `loop` và đôi khi không fire `ended`.
-   * Restart bằng JS (+ startLoad cho hls.js); timeupdate bắt case kẹt cuối clip.
+   * Loop thật sự: HLS/MSE bỏ qua `loop` và hay không fire `ended`.
+   * Chỉ restart khi đã ended / pause-at-end (không cắt sớm lúc còn đang phát).
    */
   useEffect(() => {
     const el = innerRef.current
@@ -477,13 +492,10 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
       return Number.isFinite(dur) && dur > 0 ? dur : 0
     }
 
-    const maybeRestartAtEnd = () => {
-      if (!loopRef.current || userPausedRef.current || !isActiveRef.current) return
+    const isAtEnd = () => {
       const dur = resolveDuration()
-      if (!(dur > 1)) return
-      if (el.currentTime >= dur - 0.35) {
-        restartLoopPlayback()
-      }
+      if (!(dur > 0.5)) return Boolean(el.ended)
+      return el.ended || el.currentTime >= dur - 0.4
     }
 
     const onEnded = (e) => {
@@ -492,29 +504,31 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
       restartLoopPlayback()
     }
 
-    const onTimeUpdate = () => {
-      maybeRestartAtEnd()
-    }
-
-    // HLS hay pause cuối clip mà không fire `ended` → bắt pause-at-end.
     // Defer: click pause set userPaused rồi mới el.pause(); cần chờ ref kịp true.
     let pauseTimer = null
     const onPause = () => {
       if (pauseTimer != null) window.clearTimeout(pauseTimer)
       pauseTimer = window.setTimeout(() => {
         pauseTimer = null
-        if (userPausedRef.current) return
-        maybeRestartAtEnd()
-      }, 60)
+        if (userPausedRef.current || !isActiveRef.current) return
+        if (isAtEnd()) restartLoopPlayback()
+      }, 80)
     }
 
+    // Poll: một số HLS pause cuối clip không fire ended/pause ổn định.
+    const pollId = window.setInterval(() => {
+      if (!loopRef.current || userPausedRef.current || !isActiveRef.current) return
+      if ((el.ended || el.paused) && isAtEnd()) {
+        restartLoopPlayback()
+      }
+    }, 400)
+
     el.addEventListener('ended', onEnded)
-    el.addEventListener('timeupdate', onTimeUpdate)
     el.addEventListener('pause', onPause)
     return () => {
       if (pauseTimer != null) window.clearTimeout(pauseTimer)
+      window.clearInterval(pollId)
       el.removeEventListener('ended', onEnded)
-      el.removeEventListener('timeupdate', onTimeUpdate)
       el.removeEventListener('pause', onPause)
     }
   }, [loadMedia, loop, isActive, videoUrl, restartLoopPlayback])

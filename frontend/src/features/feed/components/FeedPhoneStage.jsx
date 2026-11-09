@@ -1748,7 +1748,7 @@ export function FeedPhoneStage({
                     <div
                       role="menu"
                       aria-label={t("feedMenu.speedGroup")}
-                      className="feed-dark-popover min-w-[5.5rem] overflow-hidden rounded-xl py-1 shadow-[0_8px_28px_rgba(0,0,0,0.45)]"
+                      className="feed-dark-popover vibely-keep-dark min-w-[5.5rem] overflow-hidden rounded-xl py-1 text-white shadow-[0_8px_28px_rgba(0,0,0,0.45)]"
                     >
                       <p className="feed-dark-popover-label px-3 py-1.5 text-[11px] font-medium">
                         {t("feedMenu.speedGroup")}
@@ -1906,12 +1906,12 @@ export function FeedPhoneStage({
                     role="dialog"
                     aria-modal="true"
                     aria-label="Menu video"
-                    className="absolute bottom-[calc(100%+10px)] right-0 z-80 w-[min(240px,calc(100vw-24px))] overflow-hidden rounded-xl bg-white py-1 shadow-[0_12px_40px_rgba(0,0,0,0.28)]"
+                    className="feed-dark-popover vibely-keep-dark absolute bottom-[calc(100%+10px)] right-0 z-80 w-[min(240px,calc(100vw-24px))] overflow-hidden rounded-xl py-1 text-white shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
                     onMouseDown={(e) => e.stopPropagation()}
                   >
                     <button
                       type="button"
-                      className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-zinc-900 transition-colors hover:bg-zinc-100"
+                      className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors hover:bg-white/10"
                       onClick={() => {
                         setFeedMoreMenuOpen(false);
                         void toggleFeedPictureInPicture();
@@ -1919,21 +1919,21 @@ export function FeedPhoneStage({
                     >
                       <LuPictureInPicture2
                         strokeWidth={1.75}
-                        className="h-[18px] w-[18px] shrink-0 text-zinc-800"
+                        className="h-[18px] w-[18px] shrink-0 text-white/95"
                         aria-hidden
                       />
                       <span className="flex-1">{t("feedMenu.pip")}</span>
                     </button>
                     <button
                       type="button"
-                      className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-zinc-900 transition-colors hover:bg-zinc-100"
+                      className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors hover:bg-white/10"
                       onClick={() => {
                         setFeedMoreMenuOpen(false);
                         setSubtitlesModalOpen(true);
                       }}
                     >
                       <span
-                        className="flex h-[18px] w-[18px] shrink-0 items-center justify-center text-[11px] font-semibold text-zinc-800"
+                        className="flex h-[18px] w-[18px] shrink-0 items-center justify-center text-[11px] font-semibold text-white/95"
                         aria-hidden
                       >
                         Aa
@@ -1941,12 +1941,12 @@ export function FeedPhoneStage({
                       <span className="flex-1">{t("feedMenu.subtitles")}</span>
                     </button>
                     <div
-                      className="mx-3 my-1 border-t border-zinc-200"
+                      className="mx-3 my-1 border-t border-white/10"
                       aria-hidden
                     />
                     <button
                       type="button"
-                      className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-zinc-900 transition-colors hover:bg-zinc-100"
+                      className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors hover:bg-white/10"
                       onClick={() => {
                         setFeedMoreMenuOpen(false);
                         onNotInterested?.();
@@ -1954,7 +1954,7 @@ export function FeedPhoneStage({
                     >
                       <LuHeartOff
                         strokeWidth={1.75}
-                        className="h-[18px] w-[18px] shrink-0 text-zinc-800"
+                        className="h-[18px] w-[18px] shrink-0 text-white/95"
                         aria-hidden
                       />
                       <span className="flex-1">
@@ -1963,7 +1963,7 @@ export function FeedPhoneStage({
                     </button>
                     <button
                       type="button"
-                      className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-zinc-900 transition-colors hover:bg-zinc-100"
+                      className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors hover:bg-white/10"
                       onClick={() => {
                         setFeedMoreMenuOpen(false);
                         setReportModalOpen(true);
@@ -1971,7 +1971,7 @@ export function FeedPhoneStage({
                     >
                       <LuFlag
                         strokeWidth={1.75}
-                        className="h-[18px] w-[18px] shrink-0 text-zinc-800"
+                        className="h-[18px] w-[18px] shrink-0 text-white/95"
                         aria-hidden
                       />
                       <span className="flex-1">{t("feedMenu.report")}</span>
