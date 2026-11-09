@@ -1510,6 +1510,12 @@ html[data-vibely-theme="light"] .border-b-2.border-white {
 }
 html[data-vibely-theme="light"] .bg-red-600,
 html[data-vibely-theme="light"] .bg-red-500,
+html[data-vibely-theme="light"] .bg-rose-600,
+html[data-vibely-theme="light"] .bg-rose-500,
+html[data-vibely-theme="light"] .bg-rose-600.text-white,
+html[data-vibely-theme="light"] .bg-rose-500.text-white,
+html[data-vibely-theme="light"] .hover\:bg-rose-500:hover,
+html[data-vibely-theme="light"] .hover\:bg-rose-600:hover,
 html[data-vibely-theme="light"] .bg-\[\#FE2C55\],
 html[data-vibely-theme="light"] .bg-\[\#FE2C55\]\/50,
 html[data-vibely-theme="light"] .bg-\[\#fe2c55\],
