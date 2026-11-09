@@ -110,7 +110,39 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
   userPausedRef.current = userPaused
   const mutedRef = useRef(muted)
   mutedRef.current = muted
+  const loopRef = useRef(loop)
+  loopRef.current = loop
+  const onPlaybackEndedRef = useRef(onPlaybackEnded)
+  onPlaybackEndedRef.current = onPlaybackEnded
+  const onPlaybackTickRef = useRef(onPlaybackTick)
+  onPlaybackTickRef.current = onPlaybackTick
+  const loopRestartAtRef = useRef(0)
   const [isWideAspect, setIsWideAspect] = useState(false)
+  const isHls = isHlsUrl(videoUrl)
+
+  const restartLoopPlayback = useCallback(() => {
+    const el = innerRef.current
+    if (!el || el.tagName !== 'VIDEO') return
+    if (!loopRef.current || userPausedRef.current || !isActiveRef.current) return
+    const now = Date.now()
+    if (now - loopRestartAtRef.current < 450) return
+    loopRestartAtRef.current = now
+    const hls = hlsRef.current
+    try {
+      // HLS/MSE: sau ended thường cần startLoad lại rồi seek.
+      if (hls) {
+        try {
+          hls.startLoad(0)
+        } catch {
+          /* noop */
+        }
+      }
+      el.currentTime = 0
+      void playWithAutoplayPolicy(el, !mutedRef.current)
+    } catch {
+      /* noop */
+    }
+  }, [])
 
   useEffect(() => {
     const el = innerRef.current
@@ -421,6 +453,72 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
     return undefined
   }, [isActive, loadMedia, videoUrl, visibilityRatio, muted, userPaused])
 
+  /**
+   * Loop thật sự: HLS/MSE thường bỏ qua attribute `loop` và đôi khi không fire `ended`.
+   * Restart bằng JS (+ startLoad cho hls.js); timeupdate bắt case kẹt cuối clip.
+   */
+  useEffect(() => {
+    const el = innerRef.current
+    if (!el || el.tagName !== 'VIDEO' || !loadMedia || !loop || !isActive) {
+      return undefined
+    }
+
+    const resolveDuration = () => {
+      let dur = el.duration
+      if (!Number.isFinite(dur) || dur <= 0) {
+        try {
+          if (el.seekable?.length) {
+            dur = el.seekable.end(el.seekable.length - 1)
+          }
+        } catch {
+          /* noop */
+        }
+      }
+      return Number.isFinite(dur) && dur > 0 ? dur : 0
+    }
+
+    const maybeRestartAtEnd = () => {
+      if (!loopRef.current || userPausedRef.current || !isActiveRef.current) return
+      const dur = resolveDuration()
+      if (!(dur > 1)) return
+      if (el.currentTime >= dur - 0.35) {
+        restartLoopPlayback()
+      }
+    }
+
+    const onEnded = (e) => {
+      onPlaybackTickRef.current?.(e)
+      onPlaybackEndedRef.current?.(e)
+      restartLoopPlayback()
+    }
+
+    const onTimeUpdate = () => {
+      maybeRestartAtEnd()
+    }
+
+    // HLS hay pause cuối clip mà không fire `ended` → bắt pause-at-end.
+    // Defer: click pause set userPaused rồi mới el.pause(); cần chờ ref kịp true.
+    let pauseTimer = null
+    const onPause = () => {
+      if (pauseTimer != null) window.clearTimeout(pauseTimer)
+      pauseTimer = window.setTimeout(() => {
+        pauseTimer = null
+        if (userPausedRef.current) return
+        maybeRestartAtEnd()
+      }, 60)
+    }
+
+    el.addEventListener('ended', onEnded)
+    el.addEventListener('timeupdate', onTimeUpdate)
+    el.addEventListener('pause', onPause)
+    return () => {
+      if (pauseTimer != null) window.clearTimeout(pauseTimer)
+      el.removeEventListener('ended', onEnded)
+      el.removeEventListener('timeupdate', onTimeUpdate)
+      el.removeEventListener('pause', onPause)
+    }
+  }, [loadMedia, loop, isActive, videoUrl, restartLoopPlayback])
+
   useEffect(() => {
     if (!loadMedia || !videoUrl || !isActive) return undefined
     onIntrinsicLandscapeRef.current?.(
@@ -518,7 +616,8 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
       poster={poster || undefined}
       playsInline={playsInline}
       muted={muted}
-      loop={loop}
+      /* HLS/MSE: native loop không đáng tin — JS restart ở effect phía trên. */
+      loop={loop && !isHls}
       preload={isActive ? 'auto' : loadMedia ? 'metadata' : 'none'}
       data-feed-video-id={feedVideoId != null ? String(feedVideoId) : undefined}
       onLoadedMetadata={handleLoadedMetadata}
@@ -527,8 +626,10 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
       onTimeUpdate={onPlaybackTick}
       onSeeked={onPlaybackTick}
       onEnded={(e) => {
+        // Progressive + native loop: rarely fires. HLS: effect listener also handles.
         onPlaybackTick?.(e)
         onPlaybackEnded?.(e)
+        if (loop) restartLoopPlayback()
       }}
       onClick={onClick}
     />

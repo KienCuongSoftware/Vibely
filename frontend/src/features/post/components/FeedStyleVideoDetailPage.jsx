@@ -1106,7 +1106,7 @@ export function FeedStyleVideoDetailPage({
                   setFeedVideoQuality={setFeedVideoQuality}
                   feedPlaybackSpeed={feedPlaybackSpeed}
                   setFeedPlaybackSpeed={setFeedPlaybackSpeed}
-                  feedAutoScrollEnabled={feedAutoScrollEnabled}
+                  feedAutoScrollEnabled={false}
                   setFeedAutoScrollEnabled={setFeedAutoScrollEnabled}
                   toggleFeedPlayback={toggleFeedPlayback}
                   userPaused={userPaused}
