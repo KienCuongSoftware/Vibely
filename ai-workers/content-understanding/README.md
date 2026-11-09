@@ -9,7 +9,7 @@
 | Visual | OpenCLIP ViT-B-32 zero-shot (same tag catalog) | `visualFeatures`, visual tags |
 | Objects | YOLOv8n lite | `objectFeatures`, object tags |
 | Scene | YOLO indoor/outdoor heuristic | `sceneFeatures`, scene tags |
-| Speech | faster-whisper Small | `speechFeatures`, speech tags |
+| Speech | faster-whisper Medium (beam 5) | `speechFeatures`, speech tags |
 | Fusion | Late weighted evidential (`fusion.py`) | fused `semanticTags` |
 | Vectors | Qdrant `vibely_cu_frame` + `vibely_cu_video` | related-video foundation (`video_id` point id) |
 
@@ -32,8 +32,12 @@ That regenerates the catalog + Flyway `V64__cu_vocab_expansion.sql` (tags, alias
 |-----|---------|---------|
 | `CU_CLIP_ENABLED` | `true` | OpenCLIP tag priors + embeddings |
 | `CU_WHISPER_ENABLED` | `true` | ASR transcript |
-| `CU_WHISPER_MODEL` | `small` | faster-whisper model size |
-| `CU_WHISPER_MAX_SECONDS` | `120` | Max audio analyzed |
+| `CU_WHISPER_MODEL` | `medium` | faster-whisper model size (`small` / `medium` / `large-v3`) |
+| `CU_WHISPER_BEAM` | `5` | Beam search width (higher = more accurate, slower) |
+| `CU_WHISPER_LANGUAGE` | *(empty = auto)* | Force ISO-639-1 (e.g. `vi`, `en`); empty/`auto` = detect |
+| `CU_WHISPER_DEVICE` | `cpu` | Set `cuda` when GPU available |
+| `CU_WHISPER_COMPUTE` | `int8` (cpu) / `float16` (cuda) | Compute type |
+| `CU_WHISPER_MAX_SECONDS` | `600` (code) / `120` (image ENV) | Max audio analyzed |
 | `CU_YOLO_ENABLED` | `true` | YOLOv8n object detection |
 | `CU_YOLO_WEIGHTS` | `yolov8n.pt` | Ultralytics weights (auto-download) |
 | `CU_YOLO_CONF` | `0.35` | Detection confidence floor |
@@ -62,6 +66,9 @@ docker run -d --name vibely-cu-worker-poll --restart unless-stopped \
   -e CU_POLL_SECONDS=5 \
   -e CU_COMPLETE_TIMEOUT=600 \
   -e CU_YOLO_ENABLED=true \
+  -e CU_WHISPER_MODEL=medium \
+  -e CU_WHISPER_BEAM=5 \
+  -e CU_WHISPER_LANGUAGE=vi \
   --env-file /opt/vibely/vibely.env \
   kiencuongsoftware/vibely-cu-worker:latest
 ```

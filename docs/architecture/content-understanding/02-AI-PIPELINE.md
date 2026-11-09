@@ -153,11 +153,11 @@ Accuracy: sufficient for tags. Cost: ~5–15× cheaper than dense sampling.
 |-------|----------|----|---------|------|----------------|
 | Tiny | Low | Low | Fast | ~1GB | Dev only |
 | Base | Medium | Weak–Med | Fast | ~1GB | Edge CPU |
-| **Small** | Good | Acceptable | Medium | ~2GB | **Default prod** |
-| Medium | Better | Better | Slow | ~5GB | GPU fleet |
+| Small | Good | Acceptable | Medium | ~2GB | CPU fallback / latency |
+| **Medium** | Better | Better | Slow | ~5GB | **Default prod** (`CU_WHISPER_MODEL`) |
 | Large | Best | Best | Slowest | ≥10GB | Offline / premium |
 
-**Policy:** Whisper **Small** + `vad_filter`; language auto; store transcript + word timestamps when available. Empty speech → skip without failing job.
+**Policy:** Whisper **Medium** + `vad_filter` + beam **5**; optional `CU_WHISPER_LANGUAGE` pin (else auto); store transcript + segment timestamps (word-level when available later). Empty speech → skip without failing job.
 
 ### 3.5 Visual understanding
 

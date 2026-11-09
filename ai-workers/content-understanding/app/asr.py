@@ -1,4 +1,4 @@
-"""Whisper-small speech recognition (faster-whisper on CPU/GPU)."""
+"""Whisper speech recognition (faster-whisper on CPU/GPU). Default: medium, beam 5."""
 
 from __future__ import annotations
 
@@ -16,18 +16,32 @@ _WHISPER = None
 _WHISPER_ID = None
 
 
+def _whisper_language() -> str | None:
+    """ISO-639-1 pin (e.g. vi, en). Empty / auto / unset → language detection."""
+    raw = (os.environ.get("CU_WHISPER_LANGUAGE") or "").strip().lower()
+    if not raw or raw in {"auto", "detect", "none"}:
+        return None
+    # faster-whisper expects 2-letter codes (zh for Chinese, etc.)
+    return raw[:16]
+
+
 def _load_whisper():
     global _WHISPER, _WHISPER_ID
     if _WHISPER is not None:
         return _WHISPER
     from faster_whisper import WhisperModel
 
-    model_size = os.environ.get("CU_WHISPER_MODEL", "small")
+    model_size = os.environ.get("CU_WHISPER_MODEL", "medium")
     device = "cuda" if os.environ.get("CU_WHISPER_DEVICE") == "cuda" else "cpu"
     compute = os.environ.get("CU_WHISPER_COMPUTE", "int8" if device == "cpu" else "float16")
     _WHISPER = WhisperModel(model_size, device=device, compute_type=compute)
     _WHISPER_ID = f"faster-whisper:{model_size}:{device}:{compute}"
-    LOG.info("Loaded Whisper %s", _WHISPER_ID)
+    LOG.info(
+        "Loaded Whisper %s language=%s beam=%s",
+        _WHISPER_ID,
+        _whisper_language() or "auto",
+        os.environ.get("CU_WHISPER_BEAM", "5"),
+    )
     return _WHISPER
 
 
@@ -60,10 +74,12 @@ def transcribe_video(video_path: Path, work_dir: Path) -> dict[str, Any]:
 
     try:
         model = _load_whisper()
+        language = _whisper_language()
         segments, info = model.transcribe(
             str(wav_path),
+            language=language,
             vad_filter=True,
-            beam_size=int(os.environ.get("CU_WHISPER_BEAM", "1")),
+            beam_size=int(os.environ.get("CU_WHISPER_BEAM", "5")),
         )
         texts: list[dict[str, Any]] = []
         full_parts: list[str] = []
