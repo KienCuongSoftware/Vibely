@@ -1860,7 +1860,10 @@ export function FeedPhoneStage({
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="feed-dark-popover vibely-keep-dark flex h-[7.75rem] w-11 items-center justify-center rounded-xl py-3 shadow-[0_8px_28px_rgba(0,0,0,0.45)]">
+                    <div
+                      className="feed-volume-popover feed-dark-popover flex h-[7.75rem] w-11 items-center justify-center rounded-xl py-3 shadow-[0_8px_28px_rgba(0,0,0,0.45)]"
+                      style={{ backgroundColor: "#3a3a3a", colorScheme: "dark" }}
+                    >
                       <input
                         type="range"
                         min={0}

@@ -187,31 +187,55 @@ html[data-vibely-theme="light"] {
     0 0 0 2px rgba(255, 255, 255, 0.45);
 }
 
-/* Thanh âm lượng dọc trang xem video (TikTok-style). */
+/* Thanh âm lượng dọc — ẩn chrome native (Windows hay tô trắng cả control). */
+.feed-volume-popover {
+  background-color: #3a3a3a !important;
+  color-scheme: dark;
+}
+html[data-vibely-theme="light"] .feed-volume-popover,
+html[data-vibely-theme="light"] .feed-volume-popover.feed-dark-popover,
+html[data-vibely-theme="light"] .feed-volume-popover.vibely-keep-dark {
+  background-color: #3a3a3a !important;
+  color: #fff !important;
+}
 .watch-volume-slider-vertical {
   -webkit-appearance: none;
   appearance: none;
-  width: 4px;
+  width: 18px;
   height: 5.25rem;
-  border-radius: 9999px;
-  /* Track xám đậm + viền — vẫn thấy trên nền sáng / color bars */
-  background: rgba(255, 255, 255, 0.35);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.55),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent !important;
+  color-scheme: dark;
   cursor: pointer;
   writing-mode: vertical-lr;
   direction: rtl;
 }
+.watch-volume-slider-vertical::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  width: 4px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.35);
+}
 .watch-volume-slider-vertical::-webkit-slider-thumb {
   -webkit-appearance: none;
+  appearance: none;
   width: 14px;
   height: 14px;
+  margin-left: -5px;
+  border: none;
   border-radius: 50%;
   background: #fff;
   box-shadow:
-    0 0 0 2px rgba(0, 0, 0, 0.65),
-    0 1px 4px rgba(0, 0, 0, 0.45);
+    0 0 0 2px rgba(0, 0, 0, 0.55),
+    0 1px 4px rgba(0, 0, 0, 0.4);
+}
+.watch-volume-slider-vertical::-moz-range-track {
+  width: 4px;
+  border: none;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.35);
 }
 .watch-volume-slider-vertical::-moz-range-thumb {
   width: 14px;
@@ -220,8 +244,11 @@ html[data-vibely-theme="light"] {
   border-radius: 50%;
   background: #fff;
   box-shadow:
-    0 0 0 2px rgba(0, 0, 0, 0.65),
-    0 1px 4px rgba(0, 0, 0, 0.45);
+    0 0 0 2px rgba(0, 0, 0, 0.55),
+    0 1px 4px rgba(0, 0, 0, 0.4);
+}
+.watch-volume-slider-vertical:focus {
+  outline: none;
 }
 .watch-volume-slider-vertical:focus-visible {
   outline: 2px solid rgba(255, 255, 255, 0.45);
@@ -2109,7 +2136,8 @@ html[data-vibely-theme="light"] .vibely-keep-dark .text-white\/95 {
 /* Menu tốc độ / volume / ⋯: xám #3a3a3a — không để vibely-keep-dark ép thành #000. */
 html[data-vibely-theme="light"] .feed-dark-popover.vibely-keep-dark,
 html[data-vibely-theme="light"] .feed-dark-popover,
-html[data-vibely-theme="light"] .feed-volume-control-shell {
+html[data-vibely-theme="light"] .feed-volume-control-shell,
+html[data-vibely-theme="light"] .feed-volume-popover {
   background-color: #3a3a3a !important;
   color: #fff !important;
 }
