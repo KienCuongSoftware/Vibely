@@ -65,7 +65,7 @@ export function FeedTimedCaptions({
 
   const cueEl = (
     <p
-      className={`inline-block max-w-full rounded-[4px] bg-black/70 px-2 py-[3px] font-semibold leading-snug text-white ${
+      className={`inline-block max-w-full rounded-[4px] bg-black/40 px-2 py-[3px] font-semibold leading-snug text-white ${
         layout === "detailBottomCenter"
           ? "text-center text-[16px] sm:text-[17px]"
           : "text-left text-[15px] sm:text-[16px]"
