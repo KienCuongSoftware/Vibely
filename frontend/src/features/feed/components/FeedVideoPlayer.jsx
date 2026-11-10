@@ -9,6 +9,7 @@ import {
   getAvailableQualitiesFromSourceHeight,
 } from '@/features/feed/utils/hlsQualityUtils.js'
 import { detectLetterboxedLandscapeLayout } from '@/features/feed/utils/feedLetterboxLayout'
+import { getVideoDurationSeconds } from '@/features/feed/utils/videoDuration.js'
 
 function buildHlsInstance({ prefetch = false } = {}) {
   return new Hls({
@@ -478,22 +479,8 @@ export const FeedVideoPlayer = React.memo(React.forwardRef(function FeedVideoPla
       return undefined
     }
 
-    const resolveDuration = () => {
-      let dur = el.duration
-      if (!Number.isFinite(dur) || dur <= 0) {
-        try {
-          if (el.seekable?.length) {
-            dur = el.seekable.end(el.seekable.length - 1)
-          }
-        } catch {
-          /* noop */
-        }
-      }
-      return Number.isFinite(dur) && dur > 0 ? dur : 0
-    }
-
     const isAtEnd = () => {
-      const dur = resolveDuration()
+      const dur = getVideoDurationSeconds(el)
       if (!(dur > 0.5)) return Boolean(el.ended)
       return el.ended || el.currentTime >= dur - 0.4
     }

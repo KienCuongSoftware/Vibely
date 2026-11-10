@@ -36,6 +36,7 @@ import {
   watchTimeNearPlaythroughEnd,
   watchTimeQualifiesForViewRecord,
 } from "@/features/post/utils/watchQualifiesForViewRecord";
+import { getVideoDurationSeconds } from "@/features/feed/utils/videoDuration.js";
 import {
   resolveViewTrafficAttribution,
   withViewTrafficFields,
@@ -1275,22 +1276,12 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
     const idAttr = el.getAttribute("data-feed-video-id");
     if (idAttr == null || !String(idAttr).trim()) return;
 
-    let dur = el.duration;
-    if (!Number.isFinite(dur) || dur <= 0) {
-      try {
-        if (el.seekable?.length) {
-          dur = el.seekable.end(el.seekable.length - 1);
-        }
-      } catch {
-        /* noop */
-      }
-    }
+    const dur = getVideoDurationSeconds(el);
     const id = String(idAttr);
     if (!isVideoPublicId(id)) return;
 
     const watchedMs = Math.floor(el.currentTime * 1000);
-    const durationMs =
-      Number.isFinite(dur) && dur > 0 ? Math.floor(dur * 1000) : null;
+    const durationMs = dur > 0 ? Math.floor(dur * 1000) : null;
 
     if (
       durationMs != null &&

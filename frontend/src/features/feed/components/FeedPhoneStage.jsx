@@ -8,33 +8,16 @@ import React, {
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { VirtualizedFeed } from "@/features/feed/components/VirtualizedFeed";
-import { FeedVideoPlayer } from "@/features/feed/components/FeedVideoPlayer";
 import { FeedPhotoCarousel, photoUrlsOf } from "@/features/feed/components/FeedPhotoCarousel.jsx";
 import {
-  IoEllipsisHorizontal,
-  IoPause,
-  IoPlay,
   IoVolumeHigh,
   IoVolumeLow,
   IoVolumeMedium,
   IoVolumeMute,
 } from "react-icons/io5";
 import { VideoLocationBadge } from "@/features/post/components/VideoLocationBadge.jsx";
-import {
-  LuFlag,
-  LuHeartOff,
-  LuPictureInPicture2,
-  LuRepeat2,
-} from "react-icons/lu";
-import {
-  FEED_PLAYBACK_SPEEDS,
-  formatPlaybackSpeedBadge,
-} from "@/features/feed/utils/feedPlaybackSpeedStorage.js";
-import {
-  FeedSubtitlesModal,
-  readFeedSubtitlesPrefs,
-  writeFeedSubtitlesPrefs,
-} from "@/features/feed/components/FeedSubtitlesModal.jsx";
+import { LuRepeat2 } from "react-icons/lu";
+import { FeedSubtitlesModal } from "@/features/feed/components/FeedSubtitlesModal.jsx";
 import { useFeedSubtitlesPrefs } from "@/features/feed/hooks/useFeedSubtitlesPrefs.js";
 import { resolveFeedPlaybackUrl } from "@/features/feed/utils/feedPlayback.js";
 import { createPhotoAudioBoostController } from "@/features/feed/utils/photoFeedAudioBoost.js";
@@ -43,11 +26,9 @@ import { FeedTranslatedCaption } from "@/features/feed/components/FeedTranslated
 import { FeedTimedCaptions } from "@/features/feed/components/FeedTimedCaptions.jsx";
 import { useFeedPrefetch } from "@/features/feed/hooks/useFeedPrefetch.js";
 import { VideoContextMenu } from "@/features/feed/components/VideoContextMenu.jsx";
-import {
-  FeedMoreMenuDivider,
-  FeedMoreMenuRowButton,
-  FeedMoreSubtitlesIcon,
-} from "@/features/feed/components/FeedMoreMenuPrimitives.jsx";
+import { FeedProgressBar } from "@/features/feed/components/FeedProgressBar.jsx";
+import { FeedControlBar } from "@/features/feed/components/FeedControlBar.jsx";
+import { FeedSlideVideoPlayer } from "@/features/feed/components/FeedSlideVideoPlayer.jsx";
 import {
   localeCodeToSubtitleIso,
   subtitleLangToIso,
@@ -58,23 +39,14 @@ import { normalizeVideoPublicId } from "@/features/post/utils/videoPublicId.js";
 import { resolveDisplayCaption } from "@/features/post/utils/videoCaption.js";
 import { SelfRepostIndicator } from "@/features/feed/components/SelfRepostIndicator.jsx";
 import { AvatarImage } from "@/shared/components/AvatarImage.jsx";
-import { TooltipHoverWrap } from "@/shared/components/TooltipControls.jsx";
 import { useMainSidebarCollapse } from "@/shared/store/MainSidebarCollapseContext.jsx";
 import {
+  FEED_CAPTION_PROGRESS_PAD_PX,
   FEED_COMMENTS_PANEL_WIDTH_PX,
-  FEED_MORE_MENU_INLINE_ICON_CLASS,
+  FEED_PROGRESS_TRACK_BOTTOM_PX,
   computeFeedUnifiedStageSizePx,
 } from "@/features/feed/utils/feedLayout.js";
-
-/** Thanh nút dưới progress (play / time / speed / CC / mute / more). */
-const FEED_CONTROL_BAR_HEIGHT_PX = 40;
-/**
- * Track progress nằm trên thanh nút; cộng thêm ~knob radius để nút tròn
- * không bị thanh control đè mất nửa dưới.
- */
-const FEED_PROGRESS_TRACK_BOTTOM_PX = FEED_CONTROL_BAR_HEIGHT_PX + 8;
-/** Padding đáy overlay caption — sát thanh progress kiểu TikTok. */
-const FEED_CAPTION_PROGRESS_PAD_PX = FEED_PROGRESS_TRACK_BOTTOM_PX + 4;
+import { getVideoDurationSeconds } from "@/features/feed/utils/videoDuration.js";
 
 function feedAuthorProfilePath(video) {
   const raw = String(video?.authorUsername ?? "vibely")
@@ -237,37 +209,6 @@ export function FeedVideoCaption({ caption, onNeedsGradientChange }) {
       ) : null}
     </div>
   );
-}
-
-function resolveVideoDurationSeconds(el) {
-  if (!el || el.tagName !== "VIDEO") return 0;
-  if (Number.isFinite(el.duration) && el.duration > 0) return el.duration;
-  try {
-    if (el.seekable?.length) {
-      const end = el.seekable.end(el.seekable.length - 1);
-      if (Number.isFinite(end) && end > 0) return end;
-    }
-  } catch {
-    /* noop */
-  }
-  return 0;
-}
-
-function formatPlaybackTime(seconds) {
-  const total = Math.max(0, Math.floor(Number(seconds) || 0));
-  const hour = Math.floor(total / 3600);
-  const minute = Math.floor((total % 3600) / 60);
-  const second = total % 60;
-  if (hour > 0) {
-    return `${String(hour).padStart(2, "0")}:${String(minute).padStart(
-      2,
-      "0",
-    )}:${String(second).padStart(2, "0")}`;
-  }
-  return `${String(minute).padStart(2, "0")}:${String(second).padStart(
-    2,
-    "0",
-  )}`;
 }
 
 /** Avatar + tên + Follow + caption — góc trái dưới kiểu TikTok web. */
@@ -440,20 +381,6 @@ function FeedSlideAuthorMeta({
 
 /** Re-export — dùng feedLayout.js làm nguồn duy nhất. */
 export { FEED_COMMENTS_PANEL_WIDTH_PX } from "@/features/feed/utils/feedLayout.js";
-
-function feedCellIsLandscape(video) {
-  const w = Number(video?.sourceWidthPx);
-  const h = Number(video?.sourceHeightPx);
-  return w > 0 && h > 0 && w >= h;
-}
-
-/** Video sắc nét nằm giữa khung; phần thừa để lộ nền mờ. */
-function feedSharpVideoClass(landscape) {
-  if (landscape) {
-    return "absolute z-1 top-1/2 left-0 h-auto max-h-full w-full -translate-y-1/2 aspect-video object-contain";
-  }
-  return "absolute z-1 top-0 left-1/2 h-full w-auto max-w-full -translate-x-1/2 aspect-[9/16] object-contain";
-}
 
 /** Cột feed hẹp — video dọc (mặc định, gần TikTok web). */
 export const FEED_STAGE_OUTER_WIDTH_CLASS_PORTRAIT =
@@ -698,11 +625,9 @@ export function FeedPhoneStage({
   const [videoDownloadBusy, setVideoDownloadBusy] = useState(false);
   const [subtitlesModalOpen, setSubtitlesModalOpen] = useState(false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
-  const [speedMenuOpen, setSpeedMenuOpen] = useState(false);
-  const [volumeMenuOpen, setVolumeMenuOpen] = useState(false);
   const [timedCaptionsAvailable, setTimedCaptionsAvailable] = useState(false);
-  const speedHoverCloseTimerRef = useRef(null);
-  const volumeHoverCloseTimerRef = useRef(null);
+  const [localControlPopoverOpen, setLocalControlPopoverOpen] = useState(false);
+  const [controlDismissEpoch, setControlDismissEpoch] = useState(0);
   const { prefs: subtitlePrefs, targetLangIso } = useFeedSubtitlesPrefs();
   const captionsEnabled = Boolean(subtitlePrefs?.captionsEnabled);
   const subtitleLangIso =
@@ -711,62 +636,10 @@ export function FeedPhoneStage({
     subtitleLangToIso(subtitlePrefs?.translateTo) ||
     "vi";
   const controlPopoverOpen =
-    speedMenuOpen || volumeMenuOpen || feedMoreMenuOpen;
+    localControlPopoverOpen || feedMoreMenuOpen;
   /** Chi tiết / feed 1 video: luôn loop (auto-scroll không có video kế tiếp). */
   const loopActiveVideo = !feedAutoScrollEnabled || videos.length <= 1;
 
-  const clearSpeedHoverClose = useCallback(() => {
-    if (speedHoverCloseTimerRef.current != null) {
-      window.clearTimeout(speedHoverCloseTimerRef.current);
-      speedHoverCloseTimerRef.current = null;
-    }
-  }, []);
-
-  const clearVolumeHoverClose = useCallback(() => {
-    if (volumeHoverCloseTimerRef.current != null) {
-      window.clearTimeout(volumeHoverCloseTimerRef.current);
-      volumeHoverCloseTimerRef.current = null;
-    }
-  }, []);
-
-  const openSpeedMenu = useCallback(() => {
-    clearSpeedHoverClose();
-    clearVolumeHoverClose();
-    setFeedMoreMenuOpen(false);
-    setVolumeMenuOpen(false);
-    setSpeedMenuOpen(true);
-  }, [clearSpeedHoverClose, clearVolumeHoverClose, setFeedMoreMenuOpen]);
-
-  const scheduleCloseSpeedMenu = useCallback(() => {
-    clearSpeedHoverClose();
-    speedHoverCloseTimerRef.current = window.setTimeout(() => {
-      setSpeedMenuOpen(false);
-      speedHoverCloseTimerRef.current = null;
-    }, 180);
-  }, [clearSpeedHoverClose]);
-
-  const openVolumeMenu = useCallback(() => {
-    clearVolumeHoverClose();
-    clearSpeedHoverClose();
-    setFeedMoreMenuOpen(false);
-    setSpeedMenuOpen(false);
-    setVolumeMenuOpen(true);
-  }, [clearSpeedHoverClose, clearVolumeHoverClose, setFeedMoreMenuOpen]);
-
-  const scheduleCloseVolumeMenu = useCallback(() => {
-    clearVolumeHoverClose();
-    volumeHoverCloseTimerRef.current = window.setTimeout(() => {
-      setVolumeMenuOpen(false);
-      volumeHoverCloseTimerRef.current = null;
-    }, 180);
-  }, [clearVolumeHoverClose]);
-
-  useEffect(() => {
-    return () => {
-      clearSpeedHoverClose();
-      clearVolumeHoverClose();
-    };
-  }, [clearSpeedHoverClose, clearVolumeHoverClose]);
   /** publicId video đã báo cáo — ẩn media, hiện overlay kiểu TikTok. */
   const [reportHiddenIds, setReportHiddenIds] = useState(() => new Set());
 
@@ -861,17 +734,8 @@ export function FeedPhoneStage({
       if (!el || el.tagName !== "VIDEO" || progressScrubbingRef.current) {
         return;
       }
-      let dur = el.duration;
-      if (!Number.isFinite(dur) || dur <= 0) {
-        try {
-          if (el.seekable?.length) {
-            dur = el.seekable.end(el.seekable.length - 1);
-          }
-        } catch {
-          /* noop */
-        }
-      }
-      if (Number.isFinite(dur) && dur > 0) {
+      const dur = getVideoDurationSeconds(el);
+      if (dur > 0) {
         setProgressPct((el.currentTime / dur) * 100);
         setPlaybackClock({
           current: el.currentTime,
@@ -896,7 +760,7 @@ export function FeedPhoneStage({
       let pct = (clientX - rect.left) / w;
       pct = Math.min(1, Math.max(0, pct));
 
-      const duration = resolveVideoDurationSeconds(el);
+      const duration = getVideoDurationSeconds(el);
       const current = duration > 0 ? pct * duration : 0;
       if (duration > 0) el.currentTime = current;
 
@@ -906,6 +770,33 @@ export function FeedPhoneStage({
         visible: true,
         pct: pct * 100,
         current,
+        duration,
+      });
+    },
+    [feedVideoRef, setProgressPct],
+  );
+
+  const handleProgressScrubStart = useCallback(
+    (clientX) => {
+      progressScrubbingRef.current = true;
+      setProgressScrubbing(true);
+      seekFeedVideo(clientX, progressInnerRef.current);
+    },
+    [seekFeedVideo],
+  );
+
+  const handleProgressKeySeek = useCallback(
+    (deltaSeconds) => {
+      const el = feedVideoRef.current;
+      const duration = getVideoDurationSeconds(el);
+      if (!(duration > 0)) return;
+      el.currentTime = Math.min(
+        duration,
+        Math.max(0, el.currentTime + deltaSeconds),
+      );
+      setProgressPct((el.currentTime / duration) * 100);
+      setPlaybackClock({
+        current: el.currentTime,
         duration,
       });
     },
@@ -1051,8 +942,8 @@ export function FeedPhoneStage({
     setThumbWideForLandscape(false);
     setPlaybackClock({ current: 0, duration: 0 });
     setFeedMoreMenuOpen(false);
-    setSpeedMenuOpen(false);
-    setVolumeMenuOpen(false);
+    setLocalControlPopoverOpen(false);
+    setControlDismissEpoch((n) => n + 1);
   }, [activeIndex, activeVideoPublicId, setFeedMoreMenuOpen]);
 
   useEffect(() => {
@@ -1359,50 +1250,28 @@ export function FeedPhoneStage({
                       className="pointer-events-none absolute inset-0 z-0 h-full w-full scale-110 object-cover blur-3xl brightness-75"
                     />
                   ) : null}
-                  <FeedVideoPlayer
-                    key={String(video.publicId)}
+                  <FeedSlideVideoPlayer
                     ref={isActive ? feedVideoRef : undefined}
-                    videoUrl={playbackUrl}
+                    video={video}
+                    playbackUrl={playbackUrl}
                     poster={poster}
-                    muted={!isActive || playbackMuted}
+                    isActive={isActive}
+                    reportedHidden={reportedHidden}
+                    userPaused={userPaused}
+                    playbackMuted={playbackMuted}
                     loop={loopActiveVideo}
-                    loadMedia={loadMedia && hasPlayback && !reportedHidden}
-                    isActive={isActive && !reportedHidden}
-                    userPaused={isActive && (userPaused || reportedHidden)}
-                    visibilityRatio={
-                      (mobileFullBleed || commentsDockOpen) && isActive
-                        ? 1
-                        : visibilityRatio
-                    }
-                    feedVideoId={video.publicId}
-                    streamQuality={feedVideoQuality}
-                    sourceHeightPx={video?.sourceHeightPx}
-                    onHlsQualitiesAvailable={undefined}
-                    onPlaybackTick={
-                      isActive ? handleActivePlaybackTick : undefined
-                    }
-                    onPlaybackEnded={
-                      isActive ? onActiveFeedPlaybackEnded : undefined
-                    }
-                    className={
-                      mobileFullBleed
-                        ? "relative z-1 h-full w-full cursor-pointer"
-                        : `cursor-pointer bg-transparent ${feedSharpVideoClass(
-                            feedCellIsLandscape(video) ||
-                              (isActive && effectiveStageWide),
-                          )}`
-                    }
-                    fitContain
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      toggleFeedPlayback(event);
-                    }}
-                    onIntrinsicLandscape={
-                      isActive
-                        ? (wide) =>
-                            onActiveIntrinsicLandscape(wide, video.publicId)
-                        : undefined
-                    }
+                    loadMedia={loadMedia}
+                    hasPlayback={hasPlayback}
+                    mobileFullBleed={mobileFullBleed}
+                    commentsDockOpen={commentsDockOpen}
+                    visibilityRatio={visibilityRatio}
+                    feedVideoQuality={feedVideoQuality}
+                    effectiveStageWide={effectiveStageWide}
+                    onPlaybackTick={handleActivePlaybackTick}
+                    onPlaybackEnded={onActiveFeedPlaybackEnded}
+                    onTogglePlayback={toggleFeedPlayback}
+                    onIntrinsicLandscape={onActiveIntrinsicLandscape}
+                    stopPropagationOnClick
                   />
                   </>
                   )}
@@ -1417,7 +1286,7 @@ export function FeedPhoneStage({
                     aria-hidden
                   />
 
-                  {feedMoreMenuOpen || speedMenuOpen || volumeMenuOpen ? (
+                  {controlPopoverOpen ? (
                     <button
                       type="button"
                       aria-label={t("feed.closeMenu")}
@@ -1425,54 +1294,33 @@ export function FeedPhoneStage({
                       onMouseDown={(e) => {
                         e.preventDefault();
                         setFeedMoreMenuOpen(false);
-                        setSpeedMenuOpen(false);
-                        setVolumeMenuOpen(false);
+                        setControlDismissEpoch((n) => n + 1);
                       }}
                     />
                   ) : null}
                 </div>
               ) : (
-                <FeedVideoPlayer
-                  key={String(video.publicId)}
+                <FeedSlideVideoPlayer
                   ref={isActive ? feedVideoRef : undefined}
-                  videoUrl={playbackUrl}
+                  video={video}
+                  playbackUrl={playbackUrl}
                   poster={poster}
-                  muted={!isActive || playbackMuted}
-                  loop={loopActiveVideo}
-                  loadMedia={loadMedia && hasPlayback}
                   isActive={isActive}
-                  userPaused={isActive && userPaused}
-                  visibilityRatio={
-                    (mobileFullBleed || commentsDockOpen) && isActive
-                      ? 1
-                      : visibilityRatio
-                  }
-                  feedVideoId={video.publicId}
-                  streamQuality={feedVideoQuality}
-                  sourceHeightPx={video?.sourceHeightPx}
-                  onHlsQualitiesAvailable={undefined}
-                  onPlaybackTick={
-                    isActive ? handleActivePlaybackTick : undefined
-                  }
-                  onPlaybackEnded={
-                    isActive ? onActiveFeedPlaybackEnded : undefined
-                  }
-                  className={
-                    mobileFullBleed
-                      ? "relative z-1 h-full w-full cursor-pointer"
-                      : `cursor-pointer bg-transparent ${feedSharpVideoClass(
-                          feedCellIsLandscape(video) ||
-                            (isActive && effectiveStageWide),
-                        )}`
-                  }
-                  fitContain
-                  onClick={toggleFeedPlayback}
-                  onIntrinsicLandscape={
-                    isActive
-                      ? (wide) =>
-                          onActiveIntrinsicLandscape(wide, video.publicId)
-                      : undefined
-                  }
+                  reportedHidden={false}
+                  userPaused={userPaused}
+                  playbackMuted={playbackMuted}
+                  loop={loopActiveVideo}
+                  loadMedia={loadMedia}
+                  hasPlayback={hasPlayback}
+                  mobileFullBleed={mobileFullBleed}
+                  commentsDockOpen={commentsDockOpen}
+                  visibilityRatio={visibilityRatio}
+                  feedVideoQuality={feedVideoQuality}
+                  effectiveStageWide={effectiveStageWide}
+                  onPlaybackTick={handleActivePlaybackTick}
+                  onPlaybackEnded={onActiveFeedPlaybackEnded}
+                  onTogglePlayback={toggleFeedPlayback}
+                  onIntrinsicLandscape={onActiveIntrinsicLandscape}
                 />
               )}
 
@@ -1562,400 +1410,44 @@ export function FeedPhoneStage({
         normalizeVideoPublicId(activeVideo?.publicId) || "",
       ) ? (
         <>
-        <div
-          ref={progressTrackRef}
-          className={
-            theaterMode
-              ? `group/progress absolute inset-x-0 bottom-0 z-80 h-4 cursor-pointer ${controlPopoverOpen ? "pointer-events-none" : "pointer-events-auto"}`
-              : `group/progress absolute inset-x-0 z-80 h-4 w-full cursor-pointer ${controlPopoverOpen ? "pointer-events-none" : "pointer-events-auto"}`
-          }
-          style={
-            theaterMode
-              ? undefined
-              : { bottom: FEED_PROGRESS_TRACK_BOTTOM_PX }
-          }
-          role="slider"
-          tabIndex={0}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={0}
-          aria-label={t('feed.progress')}
-          onMouseDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            progressScrubbingRef.current = true;
-            setProgressScrubbing(true);
-            seekFeedVideo(e.clientX, progressInnerRef.current);
-          }}
-          onTouchStart={(e) => {
-            e.stopPropagation();
-            progressScrubbingRef.current = true;
-            setProgressScrubbing(true);
-            const cx = e.touches[0]?.clientX;
-            if (cx != null) seekFeedVideo(cx, progressInnerRef.current);
-          }}
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => {
-            if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-            e.preventDefault();
-            const el = feedVideoRef.current;
-            if (!el?.duration || !Number.isFinite(el.duration)) return;
-            const delta = e.key === "ArrowLeft" ? -5 : 5;
-            el.currentTime = Math.min(
-              el.duration,
-              Math.max(0, el.currentTime + delta),
-            );
-            setProgressPct((el.currentTime / el.duration) * 100);
-            setPlaybackClock({
-              current: el.currentTime,
-              duration: el.duration,
-            });
-          }}
-        >
-          <div
-            className={`pointer-events-none absolute bottom-[calc(100%+26px)] left-1/2 z-30 -translate-x-1/2 text-[2rem] leading-none font-semibold text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.85)] transition-opacity duration-150 ${
-              progressScrubbing ? "opacity-100" : "opacity-0"
-            }`}
-            aria-hidden
-          >
-            {formatPlaybackTime(progressPreview.current)} /{" "}
-            {formatPlaybackTime(progressPreview.duration)}
-          </div>
-          <div
-            ref={progressInnerRef}
-            className={
-              theaterMode
-                ? "absolute inset-x-0 bottom-1 h-[3px] transition-[height] duration-150 ease-out group-hover/progress:h-[5px]"
-                : "absolute inset-x-0 bottom-0 h-[3px] transition-[height] duration-150 ease-out group-hover/progress:h-[5px]"
-            }
-          >
-            <div className="absolute inset-0 bg-white/40" aria-hidden />
-            <div
-              ref={progressFillRef}
-              className={`absolute inset-0 origin-left bg-[#fe2c55] will-change-transform ${progressScrubbing ? "" : "transition-transform duration-150 ease-out"}`}
-              style={{ transform: "scaleX(0)" }}
+          <FeedProgressBar
+            theaterMode={theaterMode}
+            controlPopoverOpen={controlPopoverOpen}
+            progressScrubbing={progressScrubbing}
+            progressPreview={progressPreview}
+            trackRef={progressTrackRef}
+            innerRef={progressInnerRef}
+            fillRef={progressFillRef}
+            knobRef={progressKnobRef}
+            onScrubStart={handleProgressScrubStart}
+            onKeySeek={handleProgressKeySeek}
+          />
+          {theaterMode ? null : (
+            <FeedControlBar
+              controlPopoverOpen={controlPopoverOpen}
+              userPaused={userPaused}
+              playbackClock={playbackClock}
+              toggleFeedPlayback={toggleFeedPlayback}
+              feedAutoScrollEnabled={feedAutoScrollEnabled}
+              setFeedAutoScrollEnabled={setFeedAutoScrollEnabled}
+              feedPlaybackSpeed={feedPlaybackSpeed}
+              setFeedPlaybackSpeed={setFeedPlaybackSpeed}
+              captionsEnabled={captionsEnabled}
+              timedCaptionsAvailable={timedCaptionsAvailable}
+              feedSoundOn={feedSoundOn}
+              setFeedSoundOn={setFeedSoundOn}
+              feedVolume={feedVolume}
+              setFeedVolume={setFeedVolume}
+              feedMoreMenuOpen={feedMoreMenuOpen}
+              setFeedMoreMenuOpen={setFeedMoreMenuOpen}
+              toggleFeedPictureInPicture={toggleFeedPictureInPicture}
+              onOpenSubtitles={() => setSubtitlesModalOpen(true)}
+              onNotInterested={onNotInterested}
+              onOpenReport={() => setReportModalOpen(true)}
+              onLocalPopoverChange={setLocalControlPopoverOpen}
+              dismissEpoch={controlDismissEpoch}
             />
-            <div
-              ref={progressKnobRef}
-              className={`pointer-events-none absolute top-1/2 left-0 z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-[60%] transition-opacity duration-200 ease-out ${progressScrubbing ? "opacity-100" : "opacity-0 group-hover/progress:opacity-100"}`}
-              style={{ left: "0%" }}
-              aria-hidden
-            >
-              <div className="h-full w-full rounded-full bg-white shadow-[0_0_0_1.5px_rgba(0,0,0,0.5),0_1px_4px_rgba(0,0,0,0.35)] transition-transform duration-200 ease-out group-hover/progress:scale-110" />
-            </div>
-          </div>
-        </div>
-
-        {theaterMode ? null : (
-          <div
-            className={`vibely-keep-dark pointer-events-auto absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-2.5 text-white ${
-              controlPopoverOpen ? "z-90" : "z-70"
-            }`}
-            style={{ height: FEED_CONTROL_BAR_HEIGHT_PX }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex min-w-0 items-center gap-2">
-              <button
-                type="button"
-                aria-label={userPaused ? t("upload.play") : t("upload.pause")}
-                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-white hover:bg-white/10"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleFeedPlayback?.(e);
-                }}
-              >
-                {userPaused ? (
-                  <IoPlay className="ml-0.5 h-5 w-5" aria-hidden />
-                ) : (
-                  <IoPause className="h-5 w-5" aria-hidden />
-                )}
-              </button>
-              <span className="truncate text-[12px] font-semibold tabular-nums text-white/95">
-                {formatPlaybackTime(playbackClock.current)} /{" "}
-                {formatPlaybackTime(playbackClock.duration)}
-              </span>
-            </div>
-
-            <div className="relative flex shrink-0 items-center gap-1.5">
-              <div className="flex shrink-0 items-center gap-1.5 pr-0.5">
-                <span className="text-[12px] font-medium leading-none whitespace-nowrap text-white/95">
-                  {t("feedMenu.autoScroll")}
-                </span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={Boolean(feedAutoScrollEnabled)}
-                  aria-label={t("feedMenu.autoScroll")}
-                  className={`relative h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full transition-colors ${
-                    feedAutoScrollEnabled ? "bg-[#fe2c55]" : "bg-white/25"
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setFeedAutoScrollEnabled?.((prev) => !prev);
-                  }}
-                >
-                  <span
-                    className={`absolute top-[2px] left-[2px] h-[18px] w-[18px] rounded-full bg-white shadow transition-transform duration-200 ${
-                      feedAutoScrollEnabled
-                        ? "translate-x-[18px]"
-                        : "translate-x-0"
-                    }`}
-                  />
-                </button>
-              </div>
-              <div
-                className="relative"
-                onMouseEnter={openSpeedMenu}
-                onMouseLeave={scheduleCloseSpeedMenu}
-              >
-                <button
-                  type="button"
-                  aria-label={t("feedMenu.speedGroup")}
-                  aria-expanded={speedMenuOpen}
-                  className="flex h-8 min-w-8 cursor-pointer items-center justify-center rounded-md px-1.5 text-[12px] font-bold text-white hover:bg-white/10"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (speedMenuOpen) {
-                      clearSpeedHoverClose();
-                      setSpeedMenuOpen(false);
-                      return;
-                    }
-                    openSpeedMenu();
-                  }}
-                >
-                  {formatPlaybackSpeedBadge(feedPlaybackSpeed)}
-                </button>
-                {speedMenuOpen ? (
-                  <div
-                    className="absolute bottom-full left-1/2 z-80 -translate-x-1/2 pb-6"
-                    onMouseDown={(e) => e.stopPropagation()}
-                  >
-                    <div
-                      role="menu"
-                      aria-label={t("feedMenu.speedGroup")}
-                      className="feed-dark-popover vibely-keep-dark min-w-[5.5rem] overflow-hidden rounded-xl py-1 text-white shadow-[0_8px_28px_rgba(0,0,0,0.45)]"
-                    >
-                      <p className="feed-dark-popover-label px-3 py-1.5 text-[11px] font-medium">
-                        {t("feedMenu.speedGroup")}
-                      </p>
-                      {FEED_PLAYBACK_SPEEDS.map((rate) => {
-                        const selected = feedPlaybackSpeed === rate;
-                        return (
-                          <button
-                            key={rate}
-                            type="button"
-                            role="menuitemradio"
-                            aria-checked={selected}
-                            className={`feed-dark-popover-item flex w-full items-center justify-center px-3 py-2 text-[13px] font-semibold tabular-nums transition-colors ${
-                              selected ? "is-selected" : ""
-                            }`}
-                            onClick={() => {
-                              setFeedPlaybackSpeed(rate);
-                              setSpeedMenuOpen(false);
-                            }}
-                          >
-                            {formatPlaybackSpeedBadge(rate)}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-
-              <TooltipHoverWrap
-                tip={
-                  timedCaptionsAvailable
-                    ? t("feedMenu.subtitles")
-                    : t("feedMenu.noSubtitles")
-                }
-                placement="top"
-                hoverOnly
-                className="pointer-events-auto"
-              >
-                <button
-                  type="button"
-                  aria-label={
-                    timedCaptionsAvailable
-                      ? t("feedMenu.subtitles")
-                      : t("feedMenu.noSubtitles")
-                  }
-                  aria-pressed={captionsEnabled}
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-[11px] font-bold tracking-wide text-white hover:bg-white/10"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const next = !captionsEnabled;
-                    writeFeedSubtitlesPrefs({
-                      ...readFeedSubtitlesPrefs(),
-                      captionsEnabled: next,
-                    });
-                  }}
-                >
-                  {/* Bật: viền sáng · Tắt: khối đặc sáng (TikTok), không xám */}
-                  <span
-                    className={`rounded-[3px] px-[3px] py-px leading-none ${
-                      captionsEnabled
-                        ? "border border-white bg-transparent text-white"
-                        : "border border-transparent bg-white text-[#121212]"
-                    }${!timedCaptionsAvailable ? " opacity-50" : ""}`}
-                  >
-                    CC
-                  </span>
-                </button>
-              </TooltipHoverWrap>
-
-              <div
-                className="relative"
-                onMouseEnter={openVolumeMenu}
-                onMouseLeave={scheduleCloseVolumeMenu}
-              >
-                <button
-                  type="button"
-                  aria-label={feedSoundOn ? t("feed.mute") : t("feed.unmute")}
-                  aria-expanded={volumeMenuOpen}
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-white hover:bg-white/10"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (feedSoundOn && feedVolume > 0) {
-                      setFeedSoundOn(false);
-                      return;
-                    }
-                    setFeedSoundOn(true);
-                    if ((Number(feedVolume) || 0) <= 0) {
-                      setFeedVolume?.(FEED_VOLUME_DEFAULT);
-                    }
-                  }}
-                >
-                  {feedSoundOn && feedVolume > 0 ? (
-                    feedVolume < 0.35 ? (
-                      <IoVolumeLow className="h-5 w-5" aria-hidden />
-                    ) : feedVolume < 0.7 ? (
-                      <IoVolumeMedium className="h-5 w-5" aria-hidden />
-                    ) : (
-                      <IoVolumeHigh className="h-5 w-5" aria-hidden />
-                    )
-                  ) : (
-                    <IoVolumeMute className="h-5 w-5" aria-hidden />
-                  )}
-                </button>
-                {volumeMenuOpen ? (
-                  <div
-                    className="absolute bottom-full left-1/2 z-80 flex -translate-x-1/2 flex-col items-center pb-6"
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div
-                      className="feed-volume-popover feed-dark-popover flex h-[7.75rem] w-11 items-center justify-center rounded-xl py-3 shadow-[0_8px_28px_rgba(0,0,0,0.45)]"
-                      style={{ backgroundColor: "#3a3a3a", colorScheme: "dark" }}
-                    >
-                      <input
-                        type="range"
-                        min={0}
-                        max={1}
-                        step={0.01}
-                        value={
-                          feedSoundOn
-                            ? Math.min(1, Math.max(0, Number(feedVolume) || 0))
-                            : 0
-                        }
-                        aria-label={t("feed.volume")}
-                        className="watch-volume-slider-vertical"
-                        onChange={(e) => {
-                          const v = Number(e.target.value);
-                          setFeedVolume?.(v);
-                          setFeedSoundOn(v > 0);
-                        }}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="relative">
-                <button
-                  type="button"
-                  aria-label="Menu video"
-                  aria-expanded={feedMoreMenuOpen}
-                  aria-haspopup="dialog"
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-white hover:bg-white/10"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSpeedMenuOpen(false);
-                    setVolumeMenuOpen(false);
-                    setFeedMoreMenuOpen((open) => !open);
-                  }}
-                >
-                  <IoEllipsisHorizontal className="h-5 w-5" aria-hidden />
-                </button>
-                {feedMoreMenuOpen ? (
-                  <div
-                    role="dialog"
-                    aria-modal="true"
-                    aria-label="Menu video"
-                    className="feed-dark-popover vibely-keep-dark absolute bottom-[calc(100%+10px)] right-0 z-80 w-[min(240px,calc(100vw-24px))] overflow-hidden rounded-xl py-1 text-white shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
-                    onMouseDown={(e) => e.stopPropagation()}
-                  >
-                    <FeedMoreMenuRowButton
-                      role={undefined}
-                      icon={
-                        <LuPictureInPicture2
-                          strokeWidth={1.75}
-                          className={FEED_MORE_MENU_INLINE_ICON_CLASS}
-                          aria-hidden
-                        />
-                      }
-                      label={t("feedMenu.pip")}
-                      onClick={() => {
-                        setFeedMoreMenuOpen(false);
-                        void toggleFeedPictureInPicture();
-                      }}
-                    />
-                    <FeedMoreMenuRowButton
-                      role={undefined}
-                      icon={<FeedMoreSubtitlesIcon />}
-                      label={t("feedMenu.subtitles")}
-                      onClick={() => {
-                        setFeedMoreMenuOpen(false);
-                        setSubtitlesModalOpen(true);
-                      }}
-                    />
-                    <FeedMoreMenuDivider />
-                    <FeedMoreMenuRowButton
-                      role={undefined}
-                      icon={
-                        <LuHeartOff
-                          strokeWidth={1.75}
-                          className={FEED_MORE_MENU_INLINE_ICON_CLASS}
-                          aria-hidden
-                        />
-                      }
-                      label={t("feedMenu.notInterested")}
-                      onClick={() => {
-                        setFeedMoreMenuOpen(false);
-                        onNotInterested?.();
-                      }}
-                    />
-                    <FeedMoreMenuRowButton
-                      role={undefined}
-                      icon={
-                        <LuFlag
-                          strokeWidth={1.75}
-                          className={FEED_MORE_MENU_INLINE_ICON_CLASS}
-                          aria-hidden
-                        />
-                      }
-                      label={t("feedMenu.report")}
-                      onClick={() => {
-                        setFeedMoreMenuOpen(false);
-                        setReportModalOpen(true);
-                      }}
-                    />
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        )}
+          )}
         </>
       ) : null}
       <VideoContextMenu

@@ -78,6 +78,7 @@ import {
   resolveViewTrafficAttribution,
   withViewTrafficFields,
 } from '@/features/post/utils/viewTrafficAttribution.js'
+import { getVideoDurationSeconds } from '@/features/feed/utils/videoDuration.js'
 
 const DEFAULT_AVATAR = '/images/users/default-avatar.jpeg'
 const FEED_DEFAULT_AUTHOR_AVATAR = '/images/users/default-avatar.jpeg'
@@ -697,19 +698,9 @@ export function FeedStyleVideoDetailPage({
     (e) => {
       const el = e.currentTarget
       if (!el || el.tagName !== 'VIDEO' || !publicId) return
-      let dur = el.duration
-      if (!Number.isFinite(dur) || dur <= 0) {
-        try {
-          if (el.seekable?.length) {
-            dur = el.seekable.end(el.seekable.length - 1)
-          }
-        } catch {
-          /* noop */
-        }
-      }
+      const dur = getVideoDurationSeconds(el)
       const watchedMs = Math.floor(el.currentTime * 1000)
-      const durationMs =
-        Number.isFinite(dur) && dur > 0 ? Math.floor(dur * 1000) : null
+      const durationMs = dur > 0 ? Math.floor(dur * 1000) : null
       const attribution = resolveViewTrafficAttribution({
         pathname: location.pathname,
         search: location.search,

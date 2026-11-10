@@ -72,6 +72,18 @@ export const FEED_ACTION_RAIL_PX = FEED_RIGHT_OUTER_GAP_PX;
 export const FEED_COMMENTS_PANEL_MIN_PX = 380;
 export const FEED_COMMENTS_PANEL_WIDTH_PX = 420;
 
+/** Thanh nút dưới progress (play / time / speed / CC / mute / more). */
+export const FEED_CONTROL_BAR_HEIGHT_PX = 40;
+
+/**
+ * Track progress nằm trên thanh nút; cộng thêm ~knob radius để nút tròn
+ * không bị thanh control đè mất nửa dưới.
+ */
+export const FEED_PROGRESS_TRACK_BOTTOM_PX = FEED_CONTROL_BAR_HEIGHT_PX + 8;
+
+/** Padding đáy overlay caption — sát thanh progress kiểu TikTok. */
+export const FEED_CAPTION_PROGRESS_PAD_PX = FEED_PROGRESS_TRACK_BOTTOM_PX + 4;
+
 /** CSS width cho panel bình luận (responsive nhưng không hẹp quá 300px). */
 export function feedCommentsPanelWidthCss() {
   return `clamp(${FEED_COMMENTS_PANEL_MIN_PX}px, 34vw, ${FEED_COMMENTS_PANEL_WIDTH_PX}px)`;
