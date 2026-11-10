@@ -6,49 +6,23 @@ import {
   IoLinkOutline,
   IoShareSocialOutline,
 } from 'react-icons/io5'
+import { LuPictureInPicture2 } from 'react-icons/lu'
 import {
-  LuArrowDownToLine,
-  LuGauge,
-  LuPictureInPicture2,
-} from 'react-icons/lu'
+  FeedMoreAutoScrollRow,
+  FeedMoreMenuDivider,
+  FeedMoreMenuRowButton,
+  FeedMoreSpeedRow,
+  FeedMoreSubtitlesIcon,
+} from '@/features/feed/components/FeedMoreMenuPrimitives.jsx'
 import {
-  FEED_MORE_MENU_BADGE_ICON_CLASS,
   FEED_MORE_MENU_INLINE_ICON_CLASS,
-  FEED_MORE_MENU_ROW_CLASS,
   FEED_MORE_PANEL_SURFACE_CLASS,
-  FEED_MORE_SPEED_PILL_ACTIVE_CLASS,
-  FEED_MORE_SPEED_PILL_CLASS,
-  FEED_MORE_SPEED_PILL_IDLE_CLASS,
-  FEED_MORE_SPEED_TRACK_CLASS,
 } from '@/features/feed/utils/feedLayout.js'
-import { FEED_PLAYBACK_SPEEDS } from '@/features/feed/utils/feedPlaybackSpeedStorage.js'
 
 const MENU_MIN_WIDTH_PX = 300
 
-function formatSpeedPillLabel(rate) {
-  return Number(rate) === 1 ? '1.0' : String(rate)
-}
-
 /**
  * Menu chuột phải trên video — layout TikTok web.
- *
- * @param {{
- *   open: boolean
- *   x: number
- *   y: number
- *   onClose: () => void
- *   playbackSpeed?: number
- *   onPlaybackSpeedChange?: (rate: number) => void
- *   autoScrollEnabled?: boolean
- *   onAutoScrollChange?: (next: boolean | ((prev: boolean) => boolean)) => void
- *   showAutoScroll?: boolean
- *   onTogglePip?: () => void | Promise<void>
- *   onOpenSubtitles?: () => void
- *   onDownload?: () => void | Promise<void>
- *   onShare?: () => void
- *   onCopyLink?: () => void | Promise<void>
- *   downloading?: boolean
- * }} props
  */
 export function VideoContextMenu({
   open,
@@ -113,140 +87,88 @@ export function VideoContextMenu({
       style={{ left: position.left, top: position.top, minWidth: MENU_MIN_WIDTH_PX }}
       onContextMenu={(event) => event.preventDefault()}
     >
-      <div className={FEED_MORE_MENU_ROW_CLASS}>
-        <LuGauge
-          strokeWidth={1.75}
-          className={FEED_MORE_MENU_INLINE_ICON_CLASS}
-          aria-hidden
-        />
-        <span className="shrink-0">{t('feedMenu.speed')}</span>
-        <div
-          className={FEED_MORE_SPEED_TRACK_CLASS}
-          role="group"
-          aria-label={t('feedMenu.speedGroup')}
-        >
-          {FEED_PLAYBACK_SPEEDS.map((rate) => {
-            const selected = playbackSpeed === rate
-            return (
-              <button
-                key={rate}
-                type="button"
-                role="menuitemradio"
-                aria-checked={selected}
-                className={`${FEED_MORE_SPEED_PILL_CLASS} ${
-                  selected
-                    ? FEED_MORE_SPEED_PILL_ACTIVE_CLASS
-                    : FEED_MORE_SPEED_PILL_IDLE_CLASS
-                }`}
-                onClick={() => onPlaybackSpeedChange?.(rate)}
-              >
-                {formatSpeedPillLabel(rate)}
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      <FeedMoreSpeedRow
+        playbackSpeed={playbackSpeed}
+        onPlaybackSpeedChange={onPlaybackSpeedChange}
+        radio
+      />
 
       {showAutoScroll ? (
-        <div className={FEED_MORE_MENU_ROW_CLASS}>
-          <LuArrowDownToLine
+        <FeedMoreAutoScrollRow
+          autoScrollEnabled={autoScrollEnabled}
+          onAutoScrollChange={onAutoScrollChange}
+        />
+      ) : null}
+
+      <FeedMoreMenuRowButton
+        icon={
+          <LuPictureInPicture2
             strokeWidth={1.75}
             className={FEED_MORE_MENU_INLINE_ICON_CLASS}
             aria-hidden
           />
-          <span className="min-w-0 flex-1">{t('feedMenu.autoScroll')}</span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={autoScrollEnabled}
-            className={`relative h-[22px] w-[40px] shrink-0 rounded-full transition-colors ${
-              autoScrollEnabled ? 'bg-[#fe2c55]' : 'bg-white/25'
-            }`}
-            onClick={() => onAutoScrollChange?.((prev) => !prev)}
-          >
-            <span
-              className={`absolute top-[2px] left-[2px] h-[18px] w-[18px] rounded-full bg-white shadow transition-transform duration-200 ${
-                autoScrollEnabled ? 'translate-x-[18px]' : 'translate-x-0'
-              }`}
-            />
-          </button>
-        </div>
-      ) : null}
-
-      <button
-        type="button"
-        role="menuitem"
-        className={FEED_MORE_MENU_ROW_CLASS}
+        }
+        label={t('feedMenu.pip')}
         onClick={() => {
           void onTogglePip?.()
           onClose()
         }}
-      >
-        <LuPictureInPicture2
-          strokeWidth={1.75}
-          className={FEED_MORE_MENU_INLINE_ICON_CLASS}
-          aria-hidden
-        />
-        <span className="flex-1">{t('feedMenu.pip')}</span>
-      </button>
+      />
 
-      <button
-        type="button"
-        role="menuitem"
-        className={FEED_MORE_MENU_ROW_CLASS}
+      <FeedMoreMenuRowButton
+        icon={<FeedMoreSubtitlesIcon />}
+        label={t('feedMenu.subtitles')}
         onClick={() => {
           onClose()
           onOpenSubtitles?.()
         }}
-      >
-        <span className={FEED_MORE_MENU_BADGE_ICON_CLASS} aria-hidden>
-          Aa
-        </span>
-        <span className="flex-1">{t('feedMenu.subtitles')}</span>
-      </button>
+      />
 
-      <div className="mx-3 my-1 border-t border-white/10" aria-hidden />
+      <FeedMoreMenuDivider />
 
-      <button
-        type="button"
-        role="menuitem"
-        className={FEED_MORE_MENU_ROW_CLASS}
+      <FeedMoreMenuRowButton
+        icon={
+          <IoDownloadOutline
+            className={FEED_MORE_MENU_INLINE_ICON_CLASS}
+            aria-hidden
+          />
+        }
+        label={
+          downloading ? t('feedMenu.preparingDownload') : t('feedMenu.download')
+        }
         disabled={downloading}
         onClick={() => {
           void onDownload?.()
         }}
-      >
-        <IoDownloadOutline className={FEED_MORE_MENU_INLINE_ICON_CLASS} aria-hidden />
-        <span className="flex-1">
-          {downloading ? t('feedMenu.preparingDownload') : t('feedMenu.download')}
-        </span>
-      </button>
+      />
 
-      <button
-        type="button"
-        role="menuitem"
-        className={FEED_MORE_MENU_ROW_CLASS}
+      <FeedMoreMenuRowButton
+        icon={
+          <IoShareSocialOutline
+            className={FEED_MORE_MENU_INLINE_ICON_CLASS}
+            aria-hidden
+          />
+        }
+        label={t('feedMenu.share')}
         onClick={() => {
           onShare?.()
           onClose()
         }}
-      >
-        <IoShareSocialOutline className={FEED_MORE_MENU_INLINE_ICON_CLASS} aria-hidden />
-        <span className="flex-1">{t('feedMenu.share')}</span>
-      </button>
+      />
 
-      <button
-        type="button"
-        role="menuitem"
-        className={FEED_MORE_MENU_ROW_CLASS}
+      <FeedMoreMenuRowButton
+        icon={
+          <IoLinkOutline
+            className={FEED_MORE_MENU_INLINE_ICON_CLASS}
+            aria-hidden
+          />
+        }
+        label={t('feedMenu.copyLink')}
         onClick={() => {
           void onCopyLink?.()
           onClose()
         }}
-      >
-        <IoLinkOutline className={FEED_MORE_MENU_INLINE_ICON_CLASS} aria-hidden />
-        <span className="flex-1">{t('feedMenu.copyLink')}</span>
-      </button>
+      />
     </div>,
     document.body,
   )

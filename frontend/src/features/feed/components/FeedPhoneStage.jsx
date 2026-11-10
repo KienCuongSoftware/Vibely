@@ -38,12 +38,16 @@ import {
 import { useFeedSubtitlesPrefs } from "@/features/feed/hooks/useFeedSubtitlesPrefs.js";
 import { resolveFeedPlaybackUrl } from "@/features/feed/utils/feedPlayback.js";
 import { createPhotoAudioBoostController } from "@/features/feed/utils/photoFeedAudioBoost.js";
-import { sortQualityOptions } from "@/features/feed/utils/hlsQualityUtils.js";
 import { downloadWatermarkedVideo } from "@/features/feed/utils/videoDownload.js";
 import { FeedTranslatedCaption } from "@/features/feed/components/FeedTranslatedCaption.jsx";
 import { FeedTimedCaptions } from "@/features/feed/components/FeedTimedCaptions.jsx";
 import { useFeedPrefetch } from "@/features/feed/hooks/useFeedPrefetch.js";
 import { VideoContextMenu } from "@/features/feed/components/VideoContextMenu.jsx";
+import {
+  FeedMoreMenuDivider,
+  FeedMoreMenuRowButton,
+  FeedMoreSubtitlesIcon,
+} from "@/features/feed/components/FeedMoreMenuPrimitives.jsx";
 import {
   localeCodeToSubtitleIso,
   subtitleLangToIso,
@@ -58,6 +62,7 @@ import { TooltipHoverWrap } from "@/shared/components/TooltipControls.jsx";
 import { useMainSidebarCollapse } from "@/shared/store/MainSidebarCollapseContext.jsx";
 import {
   FEED_COMMENTS_PANEL_WIDTH_PX,
+  FEED_MORE_MENU_INLINE_ICON_CLASS,
   computeFeedUnifiedStageSizePx,
 } from "@/features/feed/utils/feedLayout.js";
 
@@ -620,10 +625,7 @@ export function FeedPhoneStage({
   playbackMuted,
   feedMoreMenuOpen,
   setFeedMoreMenuOpen,
-  feedMoreMenuSubpage: _feedMoreMenuSubpage,
-  setFeedMoreMenuSubpage,
   feedVideoQuality,
-  setFeedVideoQuality: _setFeedVideoQuality,
   feedPlaybackSpeed,
   setFeedPlaybackSpeed,
   feedAutoScrollEnabled,
@@ -641,7 +643,6 @@ export function FeedPhoneStage({
   mobileFullBleed = false,
   /** Desktop watch chrome — ẩn sidebar-style overlays trong khung (X/volume do parent render). */
   theaterMode = false,
-  onTheaterModeChange,
   /** Trang chi tiết: ẩn meta @/caption trên video (chuyển sang panel phải). */
   hideAuthorMeta = false,
   /** Trang chi tiết: neo timed CC dưới–giữa video (`detailBottomCenter`). */
@@ -652,10 +653,6 @@ export function FeedPhoneStage({
   contextMenuToken,
   onVideoContextShare,
   onVideoContextCopyLink,
-  onVideoContextRepost,
-  videoContextReposted = false,
-  videoContextRepostBusy = false,
-  onVideoContextViewDetails,
   /** Menu ⋯ — Không quan tâm (ẩn khỏi Đề xuất). */
   onNotInterested,
   /** Báo cáo video — cần token để gọi API. */
@@ -697,7 +694,6 @@ export function FeedPhoneStage({
     current: 0,
     duration: 0,
   });
-  const [hlsQualityOptions, setHlsQualityOptions] = useState(["auto"]);
   const [videoContextMenu, setVideoContextMenu] = useState(null);
   const [videoDownloadBusy, setVideoDownloadBusy] = useState(false);
   const [subtitlesModalOpen, setSubtitlesModalOpen] = useState(false);
@@ -707,10 +703,6 @@ export function FeedPhoneStage({
   const [timedCaptionsAvailable, setTimedCaptionsAvailable] = useState(false);
   const speedHoverCloseTimerRef = useRef(null);
   const volumeHoverCloseTimerRef = useRef(null);
-  void hlsQualityOptions;
-  void _feedMoreMenuSubpage;
-  void _setFeedVideoQuality;
-  void feedVideoQuality;
   const { prefs: subtitlePrefs, targetLangIso } = useFeedSubtitlesPrefs();
   const captionsEnabled = Boolean(subtitlePrefs?.captionsEnabled);
   const subtitleLangIso =
@@ -848,12 +840,6 @@ export function FeedPhoneStage({
     videoContextMenu?.video,
     videoDownloadBusy,
   ]);
-
-  const handleHlsQualitiesAvailable = useCallback((options) => {
-    setHlsQualityOptions(
-      sortQualityOptions(options?.length ? options : ["auto"]),
-    );
-  }, []);
 
   const setProgressPct = useCallback((pct) => {
     const p = Math.min(100, Math.max(0, pct));
@@ -1063,7 +1049,6 @@ export function FeedPhoneStage({
   useLayoutEffect(() => {
     setClientWideForLandscape(false);
     setThumbWideForLandscape(false);
-    setHlsQualityOptions(["auto"]);
     setPlaybackClock({ current: 0, duration: 0 });
     setFeedMoreMenuOpen(false);
     setSpeedMenuOpen(false);
@@ -1392,7 +1377,7 @@ export function FeedPhoneStage({
                     feedVideoId={video.publicId}
                     streamQuality={feedVideoQuality}
                     sourceHeightPx={video?.sourceHeightPx}
-                    onHlsQualitiesAvailable={handleHlsQualitiesAvailable}
+                    onHlsQualitiesAvailable={undefined}
                     onPlaybackTick={
                       isActive ? handleActivePlaybackTick : undefined
                     }
@@ -1465,7 +1450,7 @@ export function FeedPhoneStage({
                   feedVideoId={video.publicId}
                   streamQuality={feedVideoQuality}
                   sourceHeightPx={video?.sourceHeightPx}
-                  onHlsQualitiesAvailable={handleHlsQualitiesAvailable}
+                  onHlsQualitiesAvailable={undefined}
                   onPlaybackTick={
                     isActive ? handleActivePlaybackTick : undefined
                   }
@@ -1899,7 +1884,6 @@ export function FeedPhoneStage({
                     setSpeedMenuOpen(false);
                     setVolumeMenuOpen(false);
                     setFeedMoreMenuOpen((open) => !open);
-                    setFeedMoreMenuSubpage("main");
                   }}
                 >
                   <IoEllipsisHorizontal className="h-5 w-5" aria-hidden />
@@ -1912,73 +1896,61 @@ export function FeedPhoneStage({
                     className="feed-dark-popover vibely-keep-dark absolute bottom-[calc(100%+10px)] right-0 z-80 w-[min(240px,calc(100vw-24px))] overflow-hidden rounded-xl py-1 text-white shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
                     onMouseDown={(e) => e.stopPropagation()}
                   >
-                    <button
-                      type="button"
-                      className="feed-more-menu-row flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors"
+                    <FeedMoreMenuRowButton
+                      role={undefined}
+                      icon={
+                        <LuPictureInPicture2
+                          strokeWidth={1.75}
+                          className={FEED_MORE_MENU_INLINE_ICON_CLASS}
+                          aria-hidden
+                        />
+                      }
+                      label={t("feedMenu.pip")}
                       onClick={() => {
                         setFeedMoreMenuOpen(false);
                         void toggleFeedPictureInPicture();
                       }}
-                    >
-                      <LuPictureInPicture2
-                        strokeWidth={1.75}
-                        className="h-[18px] w-[18px] shrink-0 text-white/95"
-                        aria-hidden
-                      />
-                      <span className="flex-1">{t("feedMenu.pip")}</span>
-                    </button>
-                    <button
-                      type="button"
-                      className="feed-more-menu-row flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors"
+                    />
+                    <FeedMoreMenuRowButton
+                      role={undefined}
+                      icon={<FeedMoreSubtitlesIcon />}
+                      label={t("feedMenu.subtitles")}
                       onClick={() => {
                         setFeedMoreMenuOpen(false);
                         setSubtitlesModalOpen(true);
                       }}
-                    >
-                      <span
-                        className="flex h-[18px] w-[18px] shrink-0 items-center justify-center text-[11px] font-semibold text-white/95"
-                        aria-hidden
-                      >
-                        Aa
-                      </span>
-                      <span className="flex-1">{t("feedMenu.subtitles")}</span>
-                    </button>
-                    <div
-                      className="mx-3 my-1 border-t border-white/10"
-                      aria-hidden
                     />
-                    <button
-                      type="button"
-                      className="feed-more-menu-row flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors"
+                    <FeedMoreMenuDivider />
+                    <FeedMoreMenuRowButton
+                      role={undefined}
+                      icon={
+                        <LuHeartOff
+                          strokeWidth={1.75}
+                          className={FEED_MORE_MENU_INLINE_ICON_CLASS}
+                          aria-hidden
+                        />
+                      }
+                      label={t("feedMenu.notInterested")}
                       onClick={() => {
                         setFeedMoreMenuOpen(false);
                         onNotInterested?.();
                       }}
-                    >
-                      <LuHeartOff
-                        strokeWidth={1.75}
-                        className="h-[18px] w-[18px] shrink-0 text-white/95"
-                        aria-hidden
-                      />
-                      <span className="flex-1">
-                        {t("feedMenu.notInterested")}
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      className="feed-more-menu-row flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-[14px] text-white transition-colors"
+                    />
+                    <FeedMoreMenuRowButton
+                      role={undefined}
+                      icon={
+                        <LuFlag
+                          strokeWidth={1.75}
+                          className={FEED_MORE_MENU_INLINE_ICON_CLASS}
+                          aria-hidden
+                        />
+                      }
+                      label={t("feedMenu.report")}
                       onClick={() => {
                         setFeedMoreMenuOpen(false);
                         setReportModalOpen(true);
                       }}
-                    >
-                      <LuFlag
-                        strokeWidth={1.75}
-                        className="h-[18px] w-[18px] shrink-0 text-white/95"
-                        aria-hidden
-                      />
-                      <span className="flex-1">{t("feedMenu.report")}</span>
-                    </button>
+                    />
                   </div>
                 ) : null}
               </div>

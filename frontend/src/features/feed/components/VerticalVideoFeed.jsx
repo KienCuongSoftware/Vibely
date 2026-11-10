@@ -3,7 +3,6 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import i18n from "@/i18n/i18n.js";
 import { apiClient } from "@/shared/api/client";
 import {
   FeedPhoneStage,
@@ -107,15 +106,6 @@ function formatCompactCount(value) {
     return `${formatted.replace(/\.0$/, "")}K`;
   }
   return String(count);
-}
-
-function resolveFeedAuthorDisplayName(video) {
-  const name = String(video?.authorDisplayName ?? "").trim();
-  if (name) return name;
-  const fallback = String(video?.authorUsername ?? "")
-    .trim()
-    .replace(/^@/, "");
-  return fallback || i18n.t('common.creator');
 }
 
 function feedAuthorProfilePath(video) {
@@ -377,10 +367,8 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const [soundUnlocked, setSoundUnlocked] = useState(false);
   const playbackMuted = feedMuted || (feedSoundOn && !soundUnlocked);
   const [feedMoreMenuOpen, setFeedMoreMenuOpen] = useState(false);
-  /** 'main' | 'quality' — màn phụ chọn chất lượng trong menu ⋯ */
-  const [feedMoreMenuSubpage, setFeedMoreMenuSubpage] = useState("main");
   /** HLS: 'auto' | '540' | '720' (hls.js); Safari native HLS không đổi rendition qua UI này */
-  const [feedVideoQuality, setFeedVideoQuality] = usePersistedFeedVideoQuality();
+  const [feedVideoQuality] = usePersistedFeedVideoQuality();
   const [feedPlaybackSpeed, setFeedPlaybackSpeed] = usePersistedFeedPlaybackSpeed();
   const [feedAutoScrollEnabled, setFeedAutoScrollEnabled] =
     usePersistedFeedAutoScroll();
@@ -1247,24 +1235,13 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   }, [feedCommentsOpen]);
 
   useEffect(() => {
-    if (!feedMoreMenuOpen) {
-      setFeedMoreMenuSubpage("main");
-    }
-  }, [feedMoreMenuOpen]);
-
-  useEffect(() => {
     if (!feedMoreMenuOpen) return undefined;
     const onKey = (e) => {
-      if (e.key !== "Escape") return;
-      if (feedMoreMenuSubpage === "quality" || feedMoreMenuSubpage === "speed") {
-        setFeedMoreMenuSubpage("main");
-      } else {
-        setFeedMoreMenuOpen(false);
-      }
+      if (e.key === "Escape") setFeedMoreMenuOpen(false);
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [feedMoreMenuOpen, feedMoreMenuSubpage]);
+  }, [feedMoreMenuOpen]);
 
   useEffect(() => {
     const onKeyDown = (e) => {
@@ -1809,10 +1786,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   playbackMuted={playbackMuted}
                   feedMoreMenuOpen={feedMoreMenuOpen}
                   setFeedMoreMenuOpen={setFeedMoreMenuOpen}
-                  feedMoreMenuSubpage={feedMoreMenuSubpage}
-                  setFeedMoreMenuSubpage={setFeedMoreMenuSubpage}
                   feedVideoQuality={feedVideoQuality}
-                  setFeedVideoQuality={setFeedVideoQuality}
                   feedPlaybackSpeed={feedPlaybackSpeed}
                   setFeedPlaybackSpeed={setFeedPlaybackSpeed}
                   feedAutoScrollEnabled={feedAutoScrollEnabled}
@@ -1820,7 +1794,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   toggleFeedPlayback={toggleFeedPlayback}
                   userPaused={userPaused}
                   toggleFeedPictureInPicture={toggleFeedPictureInPicture}
-                  resolveFeedAuthorDisplayName={resolveFeedAuthorDisplayName}
                   feedDefaultAuthorAvatar={FEED_DEFAULT_AUTHOR_AVATAR}
                   thumbnailFallbackUrl={undefined}
                   onActiveFeedPlaybackTick={onActiveFeedPlaybackTick}
@@ -1830,9 +1803,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
                   contextMenuToken={token}
                   onVideoContextShare={handleVideoContextShare}
                   onVideoContextCopyLink={handleVideoContextCopyLink}
-                  onVideoContextRepost={() => handleRepostToggle()}
-                  videoContextReposted={reposted}
-                  videoContextRepostBusy={repostBusy}
                   selfReposted={reposted}
                   selfRepostAvatarUrl={user?.avatarUrl}
                   selfRepostDisplayName={user?.displayName}

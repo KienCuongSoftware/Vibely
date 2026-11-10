@@ -302,11 +302,9 @@ export function FeedStyleVideoDetailPage({
   const feedMuted = !feedSoundOn || feedVolume === 0
   const playbackMuted = feedMuted || (feedSoundOn && !soundUnlocked)
   const [feedMoreMenuOpen, setFeedMoreMenuOpen] = useState(false)
-  const [feedMoreMenuSubpage, setFeedMoreMenuSubpage] = useState('main')
-  const [feedVideoQuality, setFeedVideoQuality] = usePersistedFeedVideoQuality()
+  const [feedVideoQuality] = usePersistedFeedVideoQuality()
   const [feedPlaybackSpeed, setFeedPlaybackSpeed] = usePersistedFeedPlaybackSpeed()
-  const [feedAutoScrollEnabled, setFeedAutoScrollEnabled] =
-    usePersistedFeedAutoScroll()
+  const [, setFeedAutoScrollEnabled] = usePersistedFeedAutoScroll()
   const [userPaused, setUserPaused] = useState(false)
   const [playbackFlash, setPlaybackFlash] = useState(null)
 
@@ -1100,10 +1098,7 @@ export function FeedStyleVideoDetailPage({
                   playbackMuted={playbackMuted}
                   feedMoreMenuOpen={feedMoreMenuOpen}
                   setFeedMoreMenuOpen={setFeedMoreMenuOpen}
-                  feedMoreMenuSubpage={feedMoreMenuSubpage}
-                  setFeedMoreMenuSubpage={setFeedMoreMenuSubpage}
                   feedVideoQuality={feedVideoQuality}
-                  setFeedVideoQuality={setFeedVideoQuality}
                   feedPlaybackSpeed={feedPlaybackSpeed}
                   setFeedPlaybackSpeed={setFeedPlaybackSpeed}
                   feedAutoScrollEnabled={false}
@@ -1124,9 +1119,6 @@ export function FeedStyleVideoDetailPage({
                   contextMenuToken={forYouStyle ? token : undefined}
                   onVideoContextShare={forYouStyle ? handleVideoContextShare : undefined}
                   onVideoContextCopyLink={forYouStyle ? handleVideoContextCopyLink : undefined}
-                  onVideoContextRepost={forYouStyle ? () => handleRepostToggle() : undefined}
-                  videoContextReposted={forYouStyle ? reposted : undefined}
-                  videoContextRepostBusy={forYouStyle ? repostBusy : undefined}
                   selfReposted={forYouStyle ? reposted : false}
                   selfRepostAvatarUrl={forYouStyle ? user?.avatarUrl : undefined}
                   selfRepostDisplayName={forYouStyle ? user?.displayName : undefined}
