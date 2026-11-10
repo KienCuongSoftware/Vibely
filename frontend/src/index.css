@@ -192,12 +192,6 @@ html[data-vibely-theme="light"] {
   background-color: #3a3a3a !important;
   color-scheme: dark;
 }
-html[data-vibely-theme="light"] .feed-volume-popover,
-html[data-vibely-theme="light"] .feed-volume-popover.feed-dark-popover,
-html[data-vibely-theme="light"] .feed-volume-popover.vibely-keep-dark {
-  background-color: #3a3a3a !important;
-  color: #fff !important;
-}
 .watch-volume-slider-vertical {
   -webkit-appearance: none;
   appearance: none;
@@ -256,15 +250,19 @@ html[data-vibely-theme="light"] .feed-volume-popover.vibely-keep-dark {
 }
 
 /**
- * Popover tốc độ / âm lượng / menu ⋯ — nền xám TikTok, hover xám đậm hơn.
- * Class riêng để light theme không remap sang trắng.
+ * Popover tốc độ / âm lượng / menu ⋯ — nền xám TikTok (#3a3a3a).
+ * Một block duy nhất cho dark + light (không remap sang trắng / đen).
  */
-.feed-dark-popover {
+.feed-dark-popover,
+.feed-volume-control-shell {
   background-color: #3a3a3a !important;
   color: #fff !important;
 }
 html[data-vibely-theme="light"] .feed-dark-popover,
 html[data-vibely-theme="light"] .feed-dark-popover.vibely-keep-dark,
+html[data-vibely-theme="light"] .feed-volume-popover,
+html[data-vibely-theme="light"] .feed-volume-popover.feed-dark-popover,
+html[data-vibely-theme="light"] .feed-volume-popover.vibely-keep-dark,
 html[data-vibely-theme="light"] .feed-volume-control-shell {
   background-color: #3a3a3a !important;
   color: #fff !important;
@@ -277,7 +275,9 @@ html[data-vibely-theme="light"] .feed-dark-popover .text-white\/55,
 html[data-vibely-theme="light"] .feed-dark-popover .text-white\/45,
 html[data-vibely-theme="light"] .feed-dark-popover button,
 html[data-vibely-theme="light"] .feed-dark-popover span,
-html[data-vibely-theme="light"] .feed-dark-popover svg {
+html[data-vibely-theme="light"] .feed-dark-popover svg,
+html[data-vibely-theme="light"] .feed-volume-control-shell button,
+html[data-vibely-theme="light"] .feed-volume-control-shell svg {
   color: #fff !important;
 }
 /* Pill tốc độ đang chọn: nền trắng / chữ đen. */
@@ -285,15 +285,6 @@ html[data-vibely-theme="light"] .feed-dark-popover .bg-white.text-black,
 html[data-vibely-theme="light"] .feed-dark-popover button.bg-white {
   background-color: #fff !important;
   color: #000 !important;
-}
-.feed-volume-control-shell {
-  background-color: #3a3a3a !important;
-  color: #fff !important;
-}
-html[data-vibely-theme="light"] .feed-volume-control-shell,
-html[data-vibely-theme="light"] .feed-volume-control-shell button,
-html[data-vibely-theme="light"] .feed-volume-control-shell svg {
-  color: #fff !important;
 }
 .feed-dark-popover-label {
   color: rgba(255, 255, 255, 0.55) !important;
@@ -2131,14 +2122,6 @@ html[data-vibely-theme="light"] .vibely-keep-dark .text-white\/75,
 html[data-vibely-theme="light"] .vibely-keep-dark .text-white\/70,
 html[data-vibely-theme="light"] .vibely-keep-dark .text-white\/90,
 html[data-vibely-theme="light"] .vibely-keep-dark .text-white\/95 {
-  color: #fff !important;
-}
-/* Menu tốc độ / volume / ⋯: xám #3a3a3a — không để vibely-keep-dark ép thành #000. */
-html[data-vibely-theme="light"] .feed-dark-popover.vibely-keep-dark,
-html[data-vibely-theme="light"] .feed-dark-popover,
-html[data-vibely-theme="light"] .feed-volume-control-shell,
-html[data-vibely-theme="light"] .feed-volume-popover {
-  background-color: #3a3a3a !important;
   color: #fff !important;
 }
 /* Studio TikTok phone preview: gradient đáy luôn đen (không remap light). */

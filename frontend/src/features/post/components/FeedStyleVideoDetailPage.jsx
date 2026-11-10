@@ -14,7 +14,6 @@ import {
   IoPlayOutline,
 } from 'react-icons/io5'
 import { FaComment } from 'react-icons/fa6'
-import { apiClient } from '@/shared/api/client.js'
 import { AccountActionsPill } from '@/features/profile/components/AccountActionsPill.jsx'
 import { GuestLoginTrigger } from '@/features/auth/store/GuestAuthUiContext.jsx'
 import { AvatarImage } from '@/shared/components/AvatarImage.jsx'
@@ -24,7 +23,8 @@ import {
   NewCollectionModal,
 } from '@/features/bookmark/components/BookmarkSaveFeedback.jsx'
 import { CommentInputAccessoryButtons } from '@/features/comment/components/CommentInputAccessory.jsx'
-import { FeedPhoneStage, FeedVolumeControl } from '@/features/feed/components/FeedPhoneStage.jsx'
+import { FeedPhoneStage } from '@/features/feed/components/FeedPhoneStage.jsx'
+import { FeedVolumeControl } from '@/features/feed/components/FeedVolumeControl.jsx'
 import { FeedTranslatedCaption } from '@/features/feed/components/FeedTranslatedCaption.jsx'
 import {
   isMobileFeedLayout,
@@ -46,13 +46,8 @@ import { useAuth } from '@/features/auth/hooks/useAuth.js'
 import { useActivityModal } from '@/features/notification/store/ActivityModalContext.jsx'
 import { useNotificationUnread } from '@/features/notification/store/NotificationUnreadContext.jsx'
 import { buildProfilePath } from '@/features/profile/utils/buildProfilePath.js'
-import {
-  readFeedFollowedAuthorIds,
-  writeFeedFollowedAuthorIds,
-} from '@/features/follow/utils/feedFollowState.js'
 import { buildMainSidebarMenuItems } from '@/shared/utils/mainSidebarMenuItems.js'
 import { redirectGuestToLogin } from '@/features/auth/utils/guestAuthGate.js'
-import { buildShareableVideoUrl } from '@/features/post/utils/shareUrl.js'
 import { handleSidebarMenuSelect } from '@/shared/utils/sidebarNavigation.js'
 import {
   FEED_ACTION_ITEM_CLASS,
@@ -70,15 +65,8 @@ import { absoluteUrl } from '@/shared/seo/seoConfig.js'
 import { buildProfileHref } from '@/features/search/utils/searchUtils.js'
 import { formatRelativeTimeVi } from '@/shared/utils/relativeTimeVi.js'
 import { isEnterKey } from '@/shared/utils/keyboardShortcuts.js'
-import {
-  watchTimeNearPlaythroughEnd,
-  watchTimeQualifiesForViewRecord,
-} from '@/features/post/utils/watchQualifiesForViewRecord.js'
-import {
-  resolveViewTrafficAttribution,
-  withViewTrafficFields,
-} from '@/features/post/utils/viewTrafficAttribution.js'
-import { getVideoDurationSeconds } from '@/features/feed/utils/videoDuration.js'
+import { useFeedStyleVideoDetailData } from '@/features/post/hooks/useFeedStyleVideoDetailData.js'
+import { useFeedStyleVideoEngagement } from '@/features/post/hooks/useFeedStyleVideoEngagement.js'
 
 const DEFAULT_AVATAR = '/images/users/default-avatar.jpeg'
 const FEED_DEFAULT_AUTHOR_AVATAR = '/images/users/default-avatar.jpeg'
@@ -96,11 +84,6 @@ function formatCompactCount(value) {
   return String(count)
 }
 
-function isPendingModerationStatus(status) {
-  const s = String(status || '').toUpperCase()
-  return s === 'HIDDEN' || s === 'PROCESSING' || s === 'RAW'
-}
-
 function resolveFeedAuthorDisplayName(video) {
   const name = String(video?.authorDisplayName ?? '').trim()
   if (name) return name
@@ -108,31 +91,6 @@ function resolveFeedAuthorDisplayName(video) {
     .trim()
     .replace(/^@/, '')
   return fallback || i18n.t('common.creator')
-}
-
-function normalizeFeedVideo(row, followedAuthorIds) {
-  if (!row) return null
-  const rawAvatar = row?.authorAvatarUrl ?? row?.avatarUrl
-  const authorId = Number(row?.authorId)
-  const isAuthorFollowed =
-    Boolean(row?.isAuthorFollowed) ||
-    (Number.isFinite(authorId) && authorId > 0 && followedAuthorIds.has(authorId))
-  return {
-    ...row,
-    isAuthorFollowed,
-    avatarUrl:
-      rawAvatar != null && String(rawAvatar).trim()
-        ? String(rawAvatar).trim()
-        : FEED_DEFAULT_AUTHOR_AVATAR,
-    shareCount: Number(row.shareCount ?? 0),
-    bookmarkCount: Number(row.bookmarkCount ?? 0),
-  }
-}
-
-function videoDocumentTitle(video, forYouStyle) {
-  const desc = resolveDisplayCaption(video)
-  if (!desc) return 'Vibely'
-  return forYouStyle ? desc : `${desc} | Vibely`
 }
 
 function RelatedVideoTile({ video, onSelect, light = false }) {
@@ -255,42 +213,88 @@ export function FeedStyleVideoDetailPage({
   const commentAccessoryRef = useRef(null)
   const playbackFlashTimerRef = useRef(null)
   const bookmarkButtonRef = useRef(null)
-  const followBadgeTimerRef = useRef(null)
-  const repostToastTimerRef = useRef(null)
-  const detailViewQualifySentRef = useRef(false)
-  const detailViewPlaythroughSentRef = useRef(false)
 
-  const [video, setVideo] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState('')
-  const [liked, setLiked] = useState(false)
-  const [bookmarked, setBookmarked] = useState(false)
-  const [reposted, setReposted] = useState(false)
-  const [repostBusy, setRepostBusy] = useState(false)
-  const [repostToastOpen, setRepostToastOpen] = useState(false)
-  const [shareOpen, setShareOpen] = useState(false)
-  const [sidebarTab, setSidebarTab] = useState(() =>
-    forYouStyle ? 'comments' : 'related',
-  )
-  const [comments, setComments] = useState([])
-  const [commentsLoading, setCommentsLoading] = useState(false)
-  const [commentsError, setCommentsError] = useState('')
-  const [commentDraft, setCommentDraft] = useState('')
-  const [commentPostError, setCommentPostError] = useState('')
-  const [related, setRelated] = useState([])
-  const [relatedLoading, setRelatedLoading] = useState(false)
+  const {
+    video,
+    loading,
+    loadError,
+    comments,
+    commentsLoading,
+    commentsError,
+    commentDraft,
+    setCommentDraft,
+    commentPostError,
+    related,
+    relatedLoading,
+    patchVideo,
+    markAuthorFollowedInSession,
+    submitComment,
+    feedVideo,
+    feedVideos,
+    pendingModeration,
+    authorProfilePath,
+    videoSeoTitle,
+    videoSeoDescription,
+    videoSeoCanonical,
+    videoSeoImage,
+  } = useFeedStyleVideoDetailData({
+    publicId,
+    routeUsername,
+    token,
+    buildDetailVideoUrl,
+    navigate,
+    notificationId,
+    useActivitySidebar,
+    refreshUnreadCount,
+    decrementUnreadCount,
+  })
+
+  const {
+    liked,
+    bookmarked,
+    reposted,
+    repostBusy,
+    repostToastOpen,
+    shareOpen,
+    setShareOpen,
+    followBusyAuthorId,
+    bookmarkToastOpen,
+    setBookmarkToastOpen,
+    bookmarkManageOpen,
+    setBookmarkManageOpen,
+    newCollectionOpen,
+    setNewCollectionOpen,
+    mobilePanelOpen,
+    setMobilePanelOpen,
+    sidebarTab,
+    setSidebarTab,
+    showActiveAuthorFollowBadge,
+    showActiveAuthorFollowSuccess,
+    handleActiveAuthorFollow,
+    handleRepostToggle,
+    handleVideoContextShare,
+    handleVideoContextCopyLink,
+    onActiveFeedPlaybackTick,
+    toggleLike,
+    toggleBookmark,
+    openBookmarkManagePopover,
+    openNewCollectionModal,
+  } = useFeedStyleVideoEngagement({
+    publicId,
+    token,
+    forYouStyle,
+    navigate,
+    location,
+    user,
+    video,
+    patchVideo,
+    feedVideo,
+    markAuthorFollowedInSession,
+  })
+
   const [showAccountMenu, setShowAccountMenu] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [stageWide, setStageWide] = useState(false)
-  const [followedAuthorIds, setFollowedAuthorIds] = useState(() =>
-    readFeedFollowedAuthorIds(token),
-  )
-  const [followBusyAuthorId, setFollowBusyAuthorId] = useState(null)
-  const [followSuccessPublicId, setFollowSuccessPublicId] = useState(null)
-  const [bookmarkToastOpen, setBookmarkToastOpen] = useState(false)
-  const [bookmarkManageOpen, setBookmarkManageOpen] = useState(false)
-  const [newCollectionOpen, setNewCollectionOpen] = useState(false)
-  const [mobilePanelOpen, setMobilePanelOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mobileLayout, setMobileLayout] = useState(() => isMobileFeedLayout())
 
@@ -310,15 +314,6 @@ export function FeedStyleVideoDetailPage({
   const [playbackFlash, setPlaybackFlash] = useState(null)
 
   const menuItems = useMemo(() => buildMainSidebarMenuItems(token), [token])
-  const feedVideo = useMemo(
-    () => normalizeFeedVideo(video, followedAuthorIds),
-    [video, followedAuthorIds],
-  )
-  const feedVideos = useMemo(() => (feedVideo ? [feedVideo] : []), [feedVideo])
-  const pendingModeration = isPendingModerationStatus(feedVideo?.status)
-  const authorProfilePath = feedVideo?.authorUsername
-    ? `/@${encodeURIComponent(String(feedVideo.authorUsername).replace(/^@/, ''))}`
-    : '/foryou'
   const feedDockLandscape = stageWide
   /** Desktop chi tiết (profile/explore) — layout video + panel phải kiểu TikTok. */
   const tiktokDetailDesktop = Boolean(forYouStyle && !mobileLayout)
@@ -345,10 +340,6 @@ export function FeedStyleVideoDetailPage({
     }
   }, [feedVideo, forYouStyle, navigate])
 
-  const patchVideo = useCallback((patch) => {
-    setVideo((prev) => (prev ? { ...prev, ...patch } : prev))
-  }, [])
-
   const handleSidebarSelect = (id) => {
     handleSidebarMenuSelect(navigate, id, {
       token,
@@ -364,140 +355,6 @@ export function FeedStyleVideoDetailPage({
     },
     [buildDetailVideoUrl, navigate],
   )
-
-  const markAuthorFollowedInSession = useCallback(
-    (authorId) => {
-      const key = Number(authorId)
-      if (!Number.isFinite(key) || key <= 0) return
-      setFollowedAuthorIds((prev) => {
-        const next = new Set(prev)
-        next.add(key)
-        writeFeedFollowedAuthorIds(token, next)
-        return next
-      })
-    },
-    [token],
-  )
-
-  const startFollowSuccessFlash = useCallback((vid) => {
-    const key = normalizeVideoPublicId(vid)
-    if (!key) return
-    if (followBadgeTimerRef.current != null) {
-      clearTimeout(followBadgeTimerRef.current)
-    }
-    setFollowSuccessPublicId(key)
-    followBadgeTimerRef.current = setTimeout(() => {
-      setFollowSuccessPublicId((current) => (current === key ? null : current))
-      followBadgeTimerRef.current = null
-    }, 500)
-  }, [])
-
-  const clearFollowSuccessFlash = useCallback((vid) => {
-    const key = normalizeVideoPublicId(vid)
-    if (!key) return
-    if (followBadgeTimerRef.current != null) {
-      clearTimeout(followBadgeTimerRef.current)
-      followBadgeTimerRef.current = null
-    }
-    setFollowSuccessPublicId((current) => (current === key ? null : current))
-  }, [])
-
-  const showActiveAuthorFollowBadge = useMemo(() => {
-    if (!forYouStyle || !feedVideo) return false
-    const authorId = Number(feedVideo.authorId)
-    if (!Number.isFinite(authorId) || authorId <= 0) return false
-    if (Number(user?.id) === authorId) return false
-    return !feedVideo.isAuthorFollowed
-  }, [feedVideo, forYouStyle, user?.id])
-
-  const showActiveAuthorFollowSuccess = useMemo(() => {
-    return (
-      normalizeVideoPublicId(feedVideo?.publicId) != null &&
-      normalizeVideoPublicId(feedVideo?.publicId) === followSuccessPublicId
-    )
-  }, [feedVideo?.publicId, followSuccessPublicId])
-
-  const handleActiveAuthorFollow = useCallback(async () => {
-    const authorId = Number(feedVideo?.authorId)
-    if (!Number.isFinite(authorId) || authorId <= 0) return
-    if (!token) {
-      navigate('/login')
-      return
-    }
-    if (followBusyAuthorId === authorId) return
-    setFollowBusyAuthorId(authorId)
-    markAuthorFollowedInSession(authorId)
-    patchVideo({ isAuthorFollowed: true })
-    startFollowSuccessFlash(publicId)
-    try {
-      await apiClient.follow(authorId, token)
-    } catch {
-      clearFollowSuccessFlash(publicId)
-      patchVideo({ isAuthorFollowed: false })
-    } finally {
-      setFollowBusyAuthorId(null)
-    }
-  }, [
-    clearFollowSuccessFlash,
-    feedVideo?.authorId,
-    followBusyAuthorId,
-    markAuthorFollowedInSession,
-    navigate,
-    patchVideo,
-    publicId,
-    startFollowSuccessFlash,
-    token,
-  ])
-
-  const handleRepostToggle = useCallback(() => {
-    if (!isVideoPublicId(publicId)) return
-    if (!token) {
-      navigate('/login')
-      return
-    }
-    if (repostBusy) return
-    const next = !reposted
-    setRepostBusy(true)
-    setReposted(next)
-    if (next) {
-      setRepostToastOpen(true)
-      if (repostToastTimerRef.current) {
-        window.clearTimeout(repostToastTimerRef.current)
-      }
-      repostToastTimerRef.current = window.setTimeout(() => {
-        setRepostToastOpen(false)
-      }, 2500)
-    } else {
-      setRepostToastOpen(false)
-    }
-    const req = next
-      ? apiClient.repostVideo(publicId, token)
-      : apiClient.unrepostVideo(publicId, token)
-    req
-      .catch(() => {
-        setReposted(!next)
-        if (next) setRepostToastOpen(false)
-      })
-      .finally(() => {
-        setRepostBusy(false)
-      })
-  }, [navigate, publicId, repostBusy, reposted, token])
-
-  const handleVideoContextShare = useCallback(() => {
-    setShareOpen(true)
-  }, [])
-
-  const handleVideoContextCopyLink = useCallback(async () => {
-    const url = buildShareableVideoUrl(video?.publicId, video?.authorUsername, {
-      shareMethod: 'copy_link',
-    })
-    if (!url) return
-    await navigator.clipboard.writeText(url)
-  }, [video?.authorUsername, video?.publicId])
-
-  useEffect(() => {
-    setFollowedAuthorIds(readFeedFollowedAuthorIds(token))
-  }, [token])
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 1023px)')
@@ -543,212 +400,6 @@ export function FeedStyleVideoDetailPage({
     return () => window.removeEventListener('pointerdown', unlock, { capture: true })
   }, [])
 
-  const videoSeoTitle = videoDocumentTitle(video, false)
-  const videoSeoDescription = t('watchPage.seoDescription')
-  const videoSeoCanonical =
-    buildDetailVideoUrl(video?.authorUsername ?? routeUsername, videoPublicIdOf(video) ?? publicId) ||
-    (publicId ? `/watch/${publicId}` : '/foryou')
-  const videoSeoImage = video?.thumbnailUrl || video?.authorAvatarUrl || DEFAULT_AVATAR
-
-  useEffect(() => {
-    if (!token || !notificationId || !useActivitySidebar) {
-      void refreshUnreadCount()
-      return undefined
-    }
-    let cancelled = false
-    ;(async () => {
-      try {
-        await apiClient.markNotificationRead(notificationId, token)
-        if (!cancelled) decrementUnreadCount(1)
-      } catch {
-        /* inbox click should have marked already */
-      } finally {
-        if (!cancelled) void refreshUnreadCount()
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [
-    decrementUnreadCount,
-    notificationId,
-    refreshUnreadCount,
-    token,
-    useActivitySidebar,
-  ])
-
-  useEffect(() => {
-    if (!publicId) {
-      setLoadError(t('watch.invalidLink'))
-      setVideo(null)
-      setLoading(false)
-      return undefined
-    }
-    let cancelled = false
-    setLoading(true)
-    setLoadError('')
-    apiClient
-      .getVideo(publicId, { token })
-      .then((row) => {
-        if (cancelled) return
-        setVideo(row)
-        const authorKey = String(row?.authorUsername ?? '')
-          .trim()
-          .replace(/^@/, '')
-          .toLowerCase()
-        const routeKey = String(routeUsername ?? '')
-          .trim()
-          .replace(/^@/, '')
-          .toLowerCase()
-        const canonical = buildDetailVideoUrl(authorKey, videoPublicIdOf(row))
-        if (canonical && authorKey && routeKey && authorKey !== routeKey) {
-          navigate(canonical, { replace: true })
-        }
-      })
-      .catch((err) => {
-        if (cancelled) return
-        setVideo(null)
-        setLoadError(err instanceof Error ? err.message : t('watch.loadFailed'))
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [buildDetailVideoUrl, navigate, publicId, routeUsername, token])
-
-  useEffect(() => {
-    if (!token || !publicId) return undefined
-    let cancelled = false
-    apiClient
-      .getVideoMeState(publicId, token)
-      .then((state) => {
-        if (cancelled || !state) return
-        setLiked(Boolean(state.liked))
-        setBookmarked(Boolean(state.bookmarked))
-        if (forYouStyle) setReposted(Boolean(state.reposted))
-      })
-      .catch(() => {})
-    return () => {
-      cancelled = true
-    }
-  }, [forYouStyle, publicId, token])
-
-  useEffect(() => {
-    if (!publicId) return undefined
-    let cancelled = false
-    setCommentsLoading(true)
-    setCommentsError('')
-    apiClient
-      .getComments(publicId, { token })
-      .then((list) => {
-        if (!cancelled) setComments(Array.isArray(list) ? list : [])
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setCommentsError(err instanceof Error ? err.message : t('watch.loadCommentsFailed'))
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setCommentsLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [publicId, token])
-
-  useEffect(() => {
-    if (!publicId) return undefined
-    let cancelled = false
-    setRelatedLoading(true)
-    apiClient
-      .getExploreRelated(publicId, { size: 18 })
-      .then((page) => {
-        if (cancelled) return
-        const items = Array.isArray(page?.items) ? page.items : []
-        setRelated(items.filter((row) => normalizeVideoPublicId(row?.publicId) !== publicId))
-      })
-      .catch(() => {
-        if (!cancelled) setRelated([])
-      })
-      .finally(() => {
-        if (!cancelled) setRelatedLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [publicId])
-
-  useEffect(() => {
-    setSidebarTab(forYouStyle ? 'comments' : 'related')
-    setLiked(false)
-    setBookmarked(false)
-    setReposted(false)
-    setShareOpen(false)
-    setBookmarkToastOpen(false)
-    setBookmarkManageOpen(false)
-    setRepostToastOpen(false)
-    setMobilePanelOpen(false)
-    detailViewQualifySentRef.current = false
-    detailViewPlaythroughSentRef.current = false
-  }, [publicId, forYouStyle])
-
-  const onActiveFeedPlaybackTick = useCallback(
-    (e) => {
-      const el = e.currentTarget
-      if (!el || el.tagName !== 'VIDEO' || !publicId) return
-      const dur = getVideoDurationSeconds(el)
-      const watchedMs = Math.floor(el.currentTime * 1000)
-      const durationMs = dur > 0 ? Math.floor(dur * 1000) : null
-      const attribution = resolveViewTrafficAttribution({
-        pathname: location.pathname,
-        search: location.search,
-        state: location.state,
-        videoPublicId: publicId,
-        forYouStyle,
-      })
-
-      if (
-        durationMs != null &&
-        !detailViewPlaythroughSentRef.current &&
-        watchTimeNearPlaythroughEnd(watchedMs, durationMs)
-      ) {
-        detailViewPlaythroughSentRef.current = true
-        apiClient
-          .recordVideoView(
-            publicId,
-            withViewTrafficFields({ watchedMs, durationMs }, attribution),
-            { token },
-          )
-          .catch(() => {
-            detailViewPlaythroughSentRef.current = false
-          })
-        return
-      }
-
-      if (detailViewQualifySentRef.current) return
-      if (!watchTimeQualifiesForViewRecord(watchedMs, durationMs)) return
-      detailViewQualifySentRef.current = true
-      apiClient
-        .recordVideoView(
-          publicId,
-          withViewTrafficFields(
-            {
-              watchedMs,
-              ...(durationMs != null ? { durationMs } : {}),
-            },
-            attribution,
-          ),
-          { token },
-        )
-        .catch(() => {
-          detailViewQualifySentRef.current = false
-        })
-    },
-    [forYouStyle, location.pathname, location.search, location.state, publicId, token],
-  )
-
   useEffect(() => {
     if (!showAccountMenu) return undefined
     const onPointerDown = (event) => {
@@ -772,12 +423,6 @@ export function FeedStyleVideoDetailPage({
     () => () => {
       if (playbackFlashTimerRef.current != null) {
         clearTimeout(playbackFlashTimerRef.current)
-      }
-      if (followBadgeTimerRef.current != null) {
-        clearTimeout(followBadgeTimerRef.current)
-      }
-      if (repostToastTimerRef.current != null) {
-        window.clearTimeout(repostToastTimerRef.current)
       }
     },
     [],
@@ -840,63 +485,6 @@ export function FeedStyleVideoDetailPage({
     }
   }
 
-  const toggleLike = () => {
-    if (!token || !isVideoPublicId(publicId)) {
-      if (!token) navigate('/login')
-      return
-    }
-    const next = !liked
-    const prevCount = Number(video?.likeCount ?? 0)
-    setLiked(next)
-    patchVideo({ likeCount: Math.max(0, prevCount + (next ? 1 : -1)) })
-    const req = next
-      ? apiClient.likeVideo(publicId, token)
-      : apiClient.unlikeVideo(publicId, token)
-    req.catch(() => {
-      setLiked(!next)
-      patchVideo({ likeCount: prevCount })
-    })
-  }
-
-  const toggleBookmark = () => {
-    if (!token || !isVideoPublicId(publicId)) {
-      if (!token) navigate('/login')
-      return
-    }
-    const next = !bookmarked
-    const prevCount = Number(video?.bookmarkCount ?? 0)
-    setBookmarked(next)
-    patchVideo({ bookmarkCount: Math.max(0, prevCount + (next ? 1 : -1)) })
-    if (forYouStyle && next) {
-      setBookmarkToastOpen(true)
-    } else if (forYouStyle) {
-      setBookmarkToastOpen(false)
-      setBookmarkManageOpen(false)
-    }
-    const req = next
-      ? apiClient.bookmarkVideo(publicId, token)
-      : apiClient.unbookmarkVideo(publicId, token)
-    req.catch(() => {
-      setBookmarked(!next)
-      patchVideo({ bookmarkCount: prevCount })
-      if (forYouStyle && next) setBookmarkToastOpen(false)
-    })
-  }
-
-  const submitComment = async () => {
-    const text = commentDraft.trim()
-    if (!text || !token || !isVideoPublicId(publicId)) return
-    setCommentPostError('')
-    try {
-      const created = await apiClient.addComment(publicId, text, token)
-      setCommentDraft('')
-      setComments((prev) => [created, ...prev])
-      patchVideo({ commentCount: Number(video?.commentCount ?? 0) + 1 })
-    } catch (err) {
-      setCommentPostError(err instanceof Error ? err.message : t('watch.sendCommentFailed'))
-    }
-  }
-
   const openSidePanel = useCallback((tab) => {
     setSidebarTab(tab)
     if (isMobileFeedLayout()) {
@@ -909,17 +497,7 @@ export function FeedStyleVideoDetailPage({
     if (tab === 'comments') {
       window.requestAnimationFrame(() => commentInputRef.current?.focus())
     }
-  }, [])
-
-  const openBookmarkManagePopover = useCallback(() => {
-    setBookmarkToastOpen(false)
-    setBookmarkManageOpen(true)
-  }, [])
-
-  const openNewCollectionModal = useCallback(() => {
-    setBookmarkManageOpen(false)
-    setNewCollectionOpen(true)
-  }, [])
+  }, [setMobilePanelOpen, setSidebarTab])
 
   return (
     <section className="vibely-keep-dark flex h-dvh max-h-dvh min-h-0 w-full flex-col overflow-hidden bg-black text-zinc-100 lg:flex-row">
