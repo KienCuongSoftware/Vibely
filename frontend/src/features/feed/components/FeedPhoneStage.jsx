@@ -1781,11 +1781,7 @@ export function FeedPhoneStage({
                       : t("feedMenu.noSubtitles")
                   }
                   aria-pressed={captionsEnabled}
-                  className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-[11px] font-bold tracking-wide hover:bg-white/10 ${
-                    captionsEnabled && timedCaptionsAvailable
-                      ? "text-white"
-                      : "text-white/45"
-                  }`}
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-[11px] font-bold tracking-wide text-white hover:bg-white/10"
                   onClick={(e) => {
                     e.stopPropagation();
                     const next = !captionsEnabled;
@@ -1795,10 +1791,13 @@ export function FeedPhoneStage({
                     });
                   }}
                 >
+                  {/* Bật: viền sáng · Tắt: khối đặc sáng (TikTok), không xám */}
                   <span
-                    className={`rounded-[3px] border px-[3px] py-px leading-none ${
-                      captionsEnabled ? "border-white" : "border-white/45"
-                    }`}
+                    className={`rounded-[3px] px-[3px] py-px leading-none ${
+                      captionsEnabled
+                        ? "border border-white bg-transparent text-white"
+                        : "border border-transparent bg-white text-[#121212]"
+                    }${!timedCaptionsAvailable ? " opacity-50" : ""}`}
                   >
                     CC
                   </span>
