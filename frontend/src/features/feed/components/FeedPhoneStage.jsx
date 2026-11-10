@@ -1689,7 +1689,10 @@ export function FeedPhoneStage({
                 {formatPlaybackTime(playbackClock.current)} /{" "}
                 {formatPlaybackTime(playbackClock.duration)}
               </span>
-              <div className="flex shrink-0 items-center gap-1.5">
+            </div>
+
+            <div className="relative flex shrink-0 items-center gap-1.5">
+              <div className="flex shrink-0 items-center gap-1.5 pr-0.5">
                 <span className="text-[12px] font-medium leading-none whitespace-nowrap text-white/95">
                   {t("feedMenu.autoScroll")}
                 </span>
@@ -1715,9 +1718,6 @@ export function FeedPhoneStage({
                   />
                 </button>
               </div>
-            </div>
-
-            <div className="relative flex shrink-0 items-center gap-0.5">
               <div
                 className="relative"
                 onMouseEnter={openSpeedMenu}
