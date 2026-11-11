@@ -81,8 +81,8 @@ export const FEED_CONTROL_BAR_HEIGHT_PX = 40;
  */
 export const FEED_PROGRESS_TRACK_BOTTOM_PX = FEED_CONTROL_BAR_HEIGHT_PX + 8;
 
-/** Padding đáy overlay caption — sát thanh progress kiểu TikTok. */
-export const FEED_CAPTION_PROGRESS_PAD_PX = FEED_PROGRESS_TRACK_BOTTOM_PX + 4;
+/** Padding đáy overlay caption — cách thanh progress để avatar/tên/tiêu đề không dính track. */
+export const FEED_CAPTION_PROGRESS_PAD_PX = FEED_PROGRESS_TRACK_BOTTOM_PX + 22;
 
 /** CSS width cho panel bình luận (responsive nhưng không hẹp quá 300px). */
 export function feedCommentsPanelWidthCss() {
