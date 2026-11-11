@@ -86,7 +86,6 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
   const light = theme === 'light'
   const location = useLocation()
   const navigate = useNavigate()
-  const onUpload = /^\/vibelystudio\/upload\/?$/.test(location.pathname)
   const onCommentPostPath = /^\/vibelystudio\/comment\/\d+/.test(location.pathname)
   const postsNavActive =
     !onCommentPostPath &&
@@ -110,10 +109,6 @@ export function StudioSidebar({ active = 'home', theme = 'dark', className = '',
     }
     navigate(tab === 'photo' ? STUDIO_UPLOAD_PHOTO_PATH : STUDIO_UPLOAD_VIDEO_PATH)
     onNavigate?.()
-  }
-
-  const handleUploadClick = () => {
-    goUpload('video')
   }
 
   const asideClass = light

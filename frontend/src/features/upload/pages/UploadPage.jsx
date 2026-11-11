@@ -92,7 +92,7 @@ function formatDurationTikTok(totalSeconds) {
   return `${m}m${String(s).padStart(2, '0')}s`
 }
 
-function formatEtaLabel(etaMs, tEta = (k, v) => k) {
+function formatEtaLabel(etaMs, tEta = (k) => k) {
   if (!Number.isFinite(etaMs) || etaMs <= 0) return ''
   const sec = Math.max(1, Math.ceil(etaMs / 1000))
   if (sec < 60) return tEta('upload.etaSeconds', { sec })
@@ -166,7 +166,7 @@ function buildOriginalityViolationCopy(originalityStatus, t) {
   return { reasonTitle, reasonBody }
 }
 
-function readVideoMetadata(file, timeoutMs = 25000) {
+function readVideoMetadata(file, tRead, timeoutMs = 25000) {
   return new Promise((resolve, reject) => {
     const v = document.createElement('video')
     const url = URL.createObjectURL(file)
@@ -390,7 +390,7 @@ export function UploadPage() {
   const uploadEtaLabel = useMemo(() => {
     if (uploadProgress == null || uploadProgress >= 100 || !uploadStartedAt) return ''
     if (!uploadLoadedBytes || !uploadTotalBytes || uploadLoadedBytes <= 0) return ''
-    const elapsed = Date.now() - uploadStartedAt
+    const elapsed = nowTick - uploadStartedAt
     if (elapsed < 400) return ''
     const rate = uploadLoadedBytes / elapsed
     if (rate <= 0) return ''
@@ -1168,7 +1168,7 @@ export function UploadPage() {
       const displayStem = String(file.name ?? 'Video')
         .replace(/\.[^/.]+$/, '')
         .trim()
-      const meta = await readVideoMetadata(file)
+      const meta = await readVideoMetadata(file, t)
       const metaError = validateVideoMetadata(meta)
       if (metaError) {
         resetUploadSession()

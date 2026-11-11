@@ -467,7 +467,6 @@ export function SoundGridVideoCard({
     String(video.title ?? '').trim() ||
     '\u00A0'
   const overlayAvatar = resolveGridAuthorAvatar(video)
-  const likeLabel = formatCompactCount(video?.likeCount ?? 0)
   const viewLabel = formatCompactCount(video?.viewCount ?? 0)
 
   const thumb = (

@@ -48,7 +48,6 @@ import {
 } from "@/features/post/utils/videoSchedule.js";
 import { formatRelativeTimeVi } from "@/shared/utils/relativeTimeVi.js";
 import {
-  isEnterKey,
   isSpaceKey,
   shouldHandleGlobalShortcut,
 } from "@/shared/utils/keyboardShortcuts.js";
@@ -109,13 +108,6 @@ function formatCompactCount(value) {
   return String(count);
 }
 
-function feedAuthorProfilePath(video) {
-  const raw = String(video?.authorUsername ?? "")
-    .trim()
-    .replace(/^@/, "");
-  return raw ? `/@${encodeURIComponent(raw)}` : "";
-}
-
 function mergeVideosByPublicId(prev, incoming) {
   const seen = new Set(prev.map((v) => videoPublicIdOf(v)).filter(Boolean));
   const out = [...prev];
@@ -162,7 +154,7 @@ function normalizeVideoItem(item) {
 /** Studio drafts must never appear on For You / Following feeds. */
 function filterOutStudioDrafts(items) {
   return (Array.isArray(items) ? items : []).filter(
-    (video) => !Boolean(video?.studioDraft),
+    (video) => !video?.studioDraft,
   );
 }
 
@@ -459,10 +451,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const activeVideo = videos[activeIndex] ?? null;
   const [stageWide, setStageWide] = useState(false);
   const feedDockLandscape = feedCommentsOpen && stageWide;
-  const activeAuthorProfilePath = useMemo(
-    () => feedAuthorProfilePath(activeVideo),
-    [activeVideo],
-  );
 
   useEffect(() => {
     recordProfileLastWatchedFromVideo(activeVideo, { tab: "videos" });

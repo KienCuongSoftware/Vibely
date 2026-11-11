@@ -316,7 +316,7 @@ export function MessagesPage() {
           const shouldIncreaseUnread =
             Number(activeConversationRef.current) !== conversationId &&
             Number(incoming?.senderId) !== Number(user?.id) &&
-            !Boolean(conv.muted);
+            !conv.muted;
           return {
             ...conv,
             lastMessage: incoming?.content ?? conv.lastMessage,
@@ -647,7 +647,7 @@ export function MessagesPage() {
   const togglePinConversation = async (conv) => {
     if (!token || !conv?.id) return;
     const conversationId = Number(conv.id);
-    const nextPinned = !Boolean(conv.pinned);
+    const nextPinned = !conv.pinned;
     setMenuConversationId(null);
     try {
       const updated = nextPinned
@@ -670,7 +670,7 @@ export function MessagesPage() {
   const toggleMuteConversation = async (conv) => {
     if (!token || !conv?.id) return;
     const conversationId = Number(conv.id);
-    const nextMuted = !Boolean(conv.muted);
+    const nextMuted = !conv.muted;
     setMenuConversationId(null);
     try {
       const updated = nextMuted

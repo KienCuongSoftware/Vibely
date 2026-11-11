@@ -121,7 +121,7 @@ export function useDescriptionTranslation({
         );
         const next = apply(data);
         shouldPoll = next === "poll";
-      } catch (err) {
+      } catch {
         // POST 500 / mạng — vẫn thử GET (job có thể đã enqueue)
         if (!cancelled && reqId === reqIdRef.current) {
           setStatus("pending");

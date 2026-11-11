@@ -1,4 +1,4 @@
-import { request, toQuery } from "@/shared/api/http.js";
+import { request } from "@/shared/api/http.js";
 import { getSavedLocale } from "@/i18n/i18n.js";
 
 export const authApi = {

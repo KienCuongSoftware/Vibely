@@ -1,4 +1,4 @@
-import { request, toQuery } from "@/shared/api/http.js";
+import { request } from "@/shared/api/http.js";
 
 export const settingsApi = {
   updatePrivacySettings: (token, payload) =>

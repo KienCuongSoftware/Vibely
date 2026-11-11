@@ -126,6 +126,7 @@ function StudioCommentRow({
   onDelete,
   deletingId,
 }) {
+  const { t } = useTranslation()
   const handle = String(comment.username ?? 'user')
     .trim()
     .replace(/^@/, '')

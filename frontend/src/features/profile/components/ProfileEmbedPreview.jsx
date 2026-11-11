@@ -115,13 +115,13 @@ export function ProfileEmbedPreview({
 
         {previewVideos.length > 0 ? (
           <div className="mt-4 grid grid-cols-3 gap-1">
-            {previewVideos.map((video) => {
+            {previewVideos.map((video, index) => {
               const thumb = String(video?.thumbnailUrl ?? "").trim();
               const views = formatEmbedCompactCount(
                 video?.viewCount ?? video?.views ?? 0,
                 locale,
               );
-              const key = String(video?.publicId ?? video?.id ?? Math.random());
+              const key = String(video?.publicId ?? video?.id ?? `preview-${index}`);
               return (
                 <a
                   key={key}

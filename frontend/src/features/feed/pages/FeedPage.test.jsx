@@ -22,6 +22,31 @@ vi.mock('@/shared/api/client', () => ({
   },
 }))
 
+/** jsdom không đo được layout — virtualizer không mount slide; render thẳng children. */
+vi.mock('@/features/feed/components/VirtualizedFeed', () => ({
+  VirtualizedFeed: function MockVirtualizedFeed({
+    videos = [],
+    activeIndex = 0,
+    children,
+  }) {
+    return (
+      <div data-testid="mock-virtualized-feed">
+        {videos.map((video, index) => (
+          <div key={video?.publicId ?? index} data-feed-index={index}>
+            {children({
+              video,
+              index,
+              loadMedia: true,
+              isActive: index === activeIndex,
+              visibilityRatio: index === activeIndex ? 1 : 0,
+            })}
+          </div>
+        ))}
+      </div>
+    )
+  },
+}))
+
 import { apiClient } from '@/shared/api/client'
 
 describe('FeedPage', () => {
@@ -200,7 +225,7 @@ describe('FeedPage', () => {
     expect(profileLink).toHaveAttribute('href', '/@demo_creator')
   })
 
-  it('shows a follow success tick for one second after clicking the plus badge', async () => {
+  it('hides the follow button after following the author', async () => {
     apiClient.getForYouFeed.mockResolvedValue({
       items: [
         {
@@ -261,17 +286,11 @@ describe('FeedPage', () => {
     await userEvent.click(followBadge)
 
     expect(apiClient.follow).toHaveBeenCalledWith(7, 'token')
-    expect(
-      await screen.findByLabelText(/đã theo dõi demo_creator/i),
-    ).toBeInTheDocument()
     await waitFor(() => {
       expect(
         screen.queryByRole('button', { name: /theo dõi demo_creator/i }),
       ).not.toBeInTheDocument()
-      expect(
-        screen.queryByLabelText(/đã theo dõi demo_creator/i),
-      ).not.toBeInTheDocument()
-    }, { timeout: 1000 })
+    })
   })
 
   it('keeps the plus badge hidden after returning to feed', async () => {

@@ -265,7 +265,7 @@ export function LoginPage({ asModal = false }) {
       return;
     }
     const exchangeKey = "vibely.oauth.exchange";
-    let alreadySent = false;
+    let alreadySent;
     try {
       alreadySent = sessionStorage.getItem(exchangeKey) === oneTimeCode;
     } catch {
@@ -460,8 +460,7 @@ export function LoginPage({ asModal = false }) {
     if (pending) {
       openBannedModal(pending);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- show mid-session ban modal once on mount
-  }, []);
+    }, []);
 
   const closeBannedModal = () => {
     setBannedOpen(false);

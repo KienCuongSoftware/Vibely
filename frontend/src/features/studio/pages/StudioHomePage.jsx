@@ -124,7 +124,7 @@ export function StudioHomePage() {
               : [];
         if (!cancelled) {
           setRecentPosts(
-            items.filter((video) => !Boolean(video?.studioDraft)).slice(0, 6),
+            items.filter((video) => !video?.studioDraft).slice(0, 6),
           );
         }
       } catch {

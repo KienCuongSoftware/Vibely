@@ -1274,7 +1274,7 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
         const visible = isOwnCreatorProfile
           ? rows.filter(
               (video) =>
-                !Boolean(video?.studioDraft) &&
+                !video?.studioDraft &&
                 !isFutureSchedule(readScheduledAt(video)),
             )
           : rows.filter((video) => {

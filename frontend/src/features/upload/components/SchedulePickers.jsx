@@ -99,8 +99,9 @@ export function SchedulePickers({ value, onChange, error }) {
   const selected = value instanceof Date && !Number.isNaN(value.getTime())
     ? value
     : defaultScheduleDate();
+  const selectedTime = selected?.getTime();
 
-  const now = useMemo(() => new Date(), [open, selected?.getTime()]);
+  const now = useMemo(() => new Date(), [open, selectedTime]);
   const todayStart = startOfLocalDay(now);
   const minAllowed = addMinutes(now, SCHEDULE_MIN_LEAD_MINUTES);
 

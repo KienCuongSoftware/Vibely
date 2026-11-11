@@ -34,7 +34,7 @@ function resolveAdminAvatarUrl(avatarUrl, userId) {
 }
 
 /** Hide leaked regex / engine tokens in ban_reason (legacy rows). */
-function formatBanReasonDisplay(raw) {
+function formatBanReasonDisplay(raw, t) {
   const text = String(raw ?? '').trim()
   if (!text) return '—'
   if (
@@ -79,7 +79,7 @@ function UnbanConfirmModal({ user, submitting, error, onClose, onConfirm }) {
           {user?.banReason ? (
             <p className="mt-3 text-emerald-200/90">
               {t('admin.banned.previousReason')}{' '}
-              <span className="text-emerald-50">{formatBanReasonDisplay(user.banReason)}</span>
+              <span className="text-emerald-50">{formatBanReasonDisplay(user.banReason, t)}</span>
             </p>
           ) : null}
         </div>
@@ -268,7 +268,7 @@ export function AdminBannedUsersPage() {
                         </td>
                         <td className="max-w-xs px-3 py-3 text-zinc-300">
                           <p className="line-clamp-3 whitespace-pre-wrap text-sm">
-                            {formatBanReasonDisplay(item.banReason)}
+                            {formatBanReasonDisplay(item.banReason, t)}
                           </p>
                         </td>
                         <td className="whitespace-nowrap px-3 py-3 text-xs text-zinc-400">

@@ -1272,6 +1272,15 @@ export function FeedPhoneStage({
             controlPopoverOpen={controlPopoverOpen}
             progressScrubbing={progressScrubbing}
             progressPreview={progressPreview}
+            valueNow={
+              progressScrubbing
+                ? Math.round(Number(progressPreview.pct) || 0)
+                : playbackClock.duration > 0
+                  ? Math.round(
+                      (playbackClock.current / playbackClock.duration) * 100,
+                    )
+                  : 0
+            }
             trackRef={progressTrackRef}
             innerRef={progressInnerRef}
             fillRef={progressFillRef}

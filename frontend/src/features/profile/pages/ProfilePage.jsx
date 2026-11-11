@@ -574,7 +574,7 @@ export function ProfilePage() {
     }
 
     let cancelled = false;
-    let viewerKey = null;
+    let viewerKey;
     try {
       viewerKey = localStorage.getItem("vibely:viewer-key");
       if (!viewerKey) {

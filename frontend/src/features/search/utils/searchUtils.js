@@ -5,14 +5,27 @@ export const SEARCH_DEBOUNCE_MS = 300
 /** Max length stored/sent for search queries (defense in depth). */
 export const SEARCH_QUERY_MAX_LENGTH = 200
 
+function stripDisallowedSearchControlChars(text) {
+  let out = ''
+  for (const ch of text) {
+    const code = ch.charCodeAt(0)
+    if (code === 0x7f) continue
+    if (code <= 0x1f) {
+      if (code === 0x09 || code === 0x0a || code === 0x0d) out += ch
+      continue
+    }
+    out += ch
+  }
+  return out
+}
+
 /**
  * Canonical search text: trim, collapse spaces, strip # / controls / markup,
  * lowercase, length cap. Keeps Vietnamese accents.
  */
 export function normalizeSearchQuery(raw) {
-  let text = String(raw ?? '')
+  let text = stripDisallowedSearchControlChars(String(raw ?? ''))
   // Strip control chars; map newlines/tabs to space
-  text = text.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
   text = text.replace(/[\n\r\t]+/g, ' ')
   // Strip characters that are useless in search and risky when reflected in HTML/URLs
   text = text.replace(/[<>"'`]/g, '')

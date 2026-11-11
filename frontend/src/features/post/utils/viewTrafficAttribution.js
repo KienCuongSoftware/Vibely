@@ -6,13 +6,21 @@
 const ALLOWED_SOURCES = new Set(["foryou", "profile", "search", "other", "studio"]);
 const SEARCH_QUERY_MAX = 80;
 
+function replaceControlCharsWithSpace(text) {
+  let out = "";
+  for (const ch of text) {
+    const code = ch.charCodeAt(0);
+    out += code < 32 || code === 127 ? " " : ch;
+  }
+  return out;
+}
+
 /**
  * @param {unknown} raw
  * @returns {string | undefined}
  */
 export function sanitizeSearchQuery(raw) {
-  const text = String(raw ?? "")
-    .replace(/[\u0000-\u001f\u007f]/g, " ")
+  const text = replaceControlCharsWithSpace(String(raw ?? ""))
     .replace(/\s+/g, " ")
     .trim();
   if (!text) return undefined;

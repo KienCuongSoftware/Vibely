@@ -41,17 +41,6 @@ function persistUserCache(meLike) {
   }
 }
 
-function readCachedUserPayload() {
-  try {
-    const raw = localStorage.getItem(USER_CACHE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    return typeof parsed === "object" && parsed !== null ? parsed : null;
-  } catch {
-    return null;
-  }
-}
-
 function clearLegacyTokenStorage() {
   try {
     localStorage.removeItem(LEGACY_TOKEN_KEY);

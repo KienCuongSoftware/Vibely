@@ -23,7 +23,7 @@ async function antiBotRequest(path, { method = "GET", body } = {}) {
     headers: { "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
   });
-  let payload = null;
+  let payload;
   try {
     payload = await response.json();
   } catch {

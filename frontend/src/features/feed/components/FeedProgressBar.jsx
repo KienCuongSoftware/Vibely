@@ -17,6 +17,7 @@ export function FeedProgressBar({
   knobRef,
   onScrubStart,
   onKeySeek,
+  valueNow = 0,
 }) {
   const { t } = useTranslation()
   const pointerClass = controlPopoverOpen
@@ -36,7 +37,7 @@ export function FeedProgressBar({
       tabIndex={0}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-valuenow={0}
+      aria-valuenow={valueNow}
       aria-label={t('feed.progress')}
       onMouseDown={(e) => {
         e.preventDefault()
