@@ -1053,6 +1053,11 @@ export function FeedPhoneStage({
           const rawVibelyUser = String(video.authorUsername ?? "vibely")
             .trim()
             .replace(/^@/, "");
+          /** Hiển thị tên người dùng; fallback Vibely ID nếu chưa có display name. */
+          const authorDisplayLabel =
+            String(video.authorDisplayName ?? "").trim() ||
+            rawVibelyUser ||
+            "vibely";
           const authorProfilePath = feedAuthorProfilePath(video);
           const captionText = resolveDisplayCaption(video);
           const playbackUrl = resolveFeedPlaybackUrl(video);
@@ -1187,7 +1192,7 @@ export function FeedPhoneStage({
                   style={{ paddingBottom: FEED_CAPTION_PROGRESS_PAD_PX }}
                 >
                   <FeedSlideAuthorMeta
-                    rawVibelyUser={rawVibelyUser}
+                    rawVibelyUser={authorDisplayLabel}
                     authorProfilePath={authorProfilePath}
                     authorAvatarUrl={video?.avatarUrl}
                     defaultAuthorAvatar={feedDefaultAuthorAvatar}

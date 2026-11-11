@@ -219,7 +219,7 @@ describe('FeedPage', () => {
     )
 
     const profileLink = await screen.findByRole('link', {
-      name: /xem hồ sơ demo_creator/i,
+      name: /xem hồ sơ demo/i,
     })
 
     expect(profileLink).toHaveAttribute('href', '/@demo_creator')
@@ -280,7 +280,7 @@ describe('FeedPage', () => {
     )
 
     const followBadge = await screen.findByRole('button', {
-      name: /theo dõi demo_creator/i,
+      name: /theo dõi demo/i,
     })
 
     await userEvent.click(followBadge)
@@ -288,7 +288,7 @@ describe('FeedPage', () => {
     expect(apiClient.follow).toHaveBeenCalledWith(7, 'token')
     await waitFor(() => {
       expect(
-        screen.queryByRole('button', { name: /theo dõi demo_creator/i }),
+        screen.queryByRole('button', { name: /theo dõi demo/i }),
       ).not.toBeInTheDocument()
     })
   })
@@ -349,7 +349,7 @@ describe('FeedPage', () => {
     )
 
     await userEvent.click(
-      await screen.findByRole('button', { name: /theo dõi demo_creator/i }),
+      await screen.findByRole('button', { name: /theo dõi demo/i }),
     )
     await waitFor(() => {
       expect(apiClient.follow).toHaveBeenCalledWith(7, 'token')
@@ -369,7 +369,7 @@ describe('FeedPage', () => {
       expect(apiClient.getForYouFeed.mock.calls.length).toBeGreaterThanOrEqual(2)
     })
     expect(
-      screen.queryByRole('button', { name: /theo dõi demo_creator/i }),
+      screen.queryByRole('button', { name: /theo dõi demo/i }),
     ).not.toBeInTheDocument()
   })
 })
