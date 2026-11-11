@@ -1008,8 +1008,8 @@ export function FeedPhoneStage({
       ref={stageOuterRef}
       className={
         mobileFullBleed
-          ? "relative h-full w-full overflow-hidden bg-black"
-          : stageOuterSurfaceClass
+          ? "group/stage relative h-full w-full overflow-hidden bg-black"
+          : `group/stage ${stageOuterSurfaceClass}`
       }
       style={
         mobileFullBleed

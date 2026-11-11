@@ -135,9 +135,14 @@ export function FeedControlBar({
     setVolumeMenuOpen(false)
   }, [dismissEpoch])
 
+  const idleDimClass =
+    controlPopoverOpen || speedMenuOpen || volumeMenuOpen || feedMoreMenuOpen
+      ? 'opacity-100'
+      : 'opacity-100 [@media(hover:hover)]:opacity-50 group-hover/stage:opacity-100 focus-within:opacity-100'
+
   return (
     <div
-      className={`vibely-keep-dark pointer-events-auto absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-2.5 text-white ${
+      className={`vibely-keep-dark pointer-events-auto absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-2.5 text-white transition-opacity duration-200 ease-out ${idleDimClass} ${
         controlPopoverOpen ? 'z-90' : 'z-70'
       }`}
       style={{ height: FEED_CONTROL_BAR_HEIGHT_PX }}

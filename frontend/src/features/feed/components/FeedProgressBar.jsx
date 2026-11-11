@@ -23,14 +23,19 @@ export function FeedProgressBar({
   const pointerClass = controlPopoverOpen
     ? 'pointer-events-none'
     : 'pointer-events-auto'
+  /** Desktop: mờ như TikTok khi không hover khung video; sáng khi hover / scrub / popover. */
+  const idleDimClass =
+    progressScrubbing || controlPopoverOpen
+      ? 'opacity-100'
+      : 'opacity-100 [@media(hover:hover)]:opacity-50 group-hover/stage:opacity-100 focus-within:opacity-100'
 
   return (
     <div
       ref={trackRef}
       className={
         theaterMode
-          ? `group/progress absolute inset-x-0 bottom-0 z-80 h-4 cursor-pointer ${pointerClass}`
-          : `group/progress absolute inset-x-0 z-80 h-4 w-full cursor-pointer ${pointerClass}`
+          ? `group/progress absolute inset-x-0 bottom-0 z-80 h-4 cursor-pointer transition-opacity duration-200 ease-out ${idleDimClass} ${pointerClass}`
+          : `group/progress absolute inset-x-0 z-80 h-4 w-full cursor-pointer transition-opacity duration-200 ease-out ${idleDimClass} ${pointerClass}`
       }
       style={theaterMode ? undefined : { bottom: FEED_PROGRESS_TRACK_BOTTOM_PX }}
       role="slider"
