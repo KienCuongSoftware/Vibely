@@ -17,7 +17,9 @@ import { FeedCommentsPanel } from "@/features/comment/components/FeedCommentsPan
 import {
   computeMobileFeedCommentsLayout,
   isMobileFeedLayout,
+  MOBILE_FEED_BOTTOM_NAV_PX,
   MOBILE_FEED_VIDEO_TOP_INSET_PX,
+  MobileFeedBottomNav,
   MobileFeedMenuDrawer,
 } from "@/features/feed/components/MobileFeedShell.jsx";
 import { MobileFollowingEmptyState } from "@/features/feed/components/MobileFollowingEmptyState.jsx";
@@ -273,7 +275,11 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
         window.visualViewport?.height ?? window.innerHeight;
       return Math.max(
         320,
-        Math.round(viewportH - MOBILE_FEED_VIDEO_TOP_INSET_PX),
+        Math.round(
+          viewportH -
+            MOBILE_FEED_VIDEO_TOP_INSET_PX -
+            MOBILE_FEED_BOTTOM_NAV_PX,
+        ),
       );
     }
     const insetPx = 12;
@@ -369,13 +375,13 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
   const [userPaused, setUserPaused] = useState(false);
   const [feedCommentsOpen, setFeedCommentsOpen] = useState(false);
   const [mobileCommentsLayout, setMobileCommentsLayout] = useState(() =>
-    computeMobileFeedCommentsLayout({ includeBottomNav: false, includeTopBar: true }),
+    computeMobileFeedCommentsLayout({ includeBottomNav: true, includeTopBar: true }),
   );
   useEffect(() => {
     if (!mobileLayout) return undefined;
     const sync = () => {
       setMobileCommentsLayout(
-        computeMobileFeedCommentsLayout({ includeBottomNav: false, includeTopBar: true }),
+        computeMobileFeedCommentsLayout({ includeBottomNav: true, includeTopBar: true }),
       );
     };
     sync();
@@ -1602,7 +1608,7 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
       />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden">
-      <div className="flex h-full min-h-0 shrink-0 overflow-hidden">
+      <div className="hidden h-full min-h-0 shrink-0 overflow-hidden lg:flex">
         <Sidebar
           menuItems={mainMenuItems}
           activeMenu={activeMenu}
@@ -1610,7 +1616,6 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
           token={token}
           user={user}
           onLogout={token ? onLogout : undefined}
-          forceCollapsed={mobileLayout}
         />
       </div>
 
@@ -1961,6 +1966,17 @@ export function VerticalVideoFeed({ token, user, onLogout, authReady, feedMode =
 
       </div>
       </div>
+
+      {mobileLayout ? (
+        <div className="shrink-0 lg:hidden">
+          <MobileFeedBottomNav
+            token={token}
+            user={user}
+            activeId="latest"
+            onSelectMenu={handleSidebarSelect}
+          />
+        </div>
+      ) : null}
 
       {showLogoutConfirm ? (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/55 px-4">
