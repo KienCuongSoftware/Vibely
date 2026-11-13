@@ -2058,11 +2058,11 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
                       videoUrl={activePlaybackUrl}
                       poster={displayPosterUrl || undefined}
                       muted={watchMuted}
-                      loop={false}
+                      loop={!watchAutoScroll || !hasNextWatch}
                       loadMedia={Boolean(activePlaybackUrl)}
                       isActive={Boolean(activePlaybackUrl)}
                       userPaused={watchUserPaused}
-                      visibilityRatio={mobileLayout ? 1 : 0}
+                      visibilityRatio={1}
                       streamQuality={watchVideoQuality}
                       sourceHeightPx={activeVideo?.sourceHeightPx}
                       containLandscape={watchOrientation === "landscape"}
