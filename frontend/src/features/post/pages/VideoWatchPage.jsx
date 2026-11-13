@@ -902,28 +902,87 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
     el.playbackRate = Number.isFinite(rate) && rate > 0 ? rate : 1;
   }, [watchPlaybackSpeed, activePlaybackUrl, publicIdFromRoute]);
 
-  const handleWatchPlaybackTick = useCallback((e) => {
-    if (watchScrubbingRef.current) return;
-    const el = e?.currentTarget ?? videoRef.current;
-    if (!el || el.tagName !== "VIDEO") return;
-    setWatchPlayback({
-      current: el.currentTime || 0,
-      duration: Number.isFinite(el.duration) ? el.duration : 0,
-    });
-    if (
-      e?.type === "loadedmetadata" ||
-      e?.type === "canplay" ||
-      e?.type === "loadeddata"
-    ) {
-      setVideoReady(true);
-      if (el.videoWidth > 0 && el.videoHeight > 0) {
-        setIntrinsicSize({
-          width: el.videoWidth,
-          height: el.videoHeight,
-        });
+  const handleWatchPlaybackTick = useCallback(
+    (e) => {
+      if (watchScrubbingRef.current) return;
+      const el = e?.currentTarget ?? videoRef.current;
+      if (!el || el.tagName !== "VIDEO") return;
+      setWatchPlayback({
+        current: el.currentTime || 0,
+        duration: Number.isFinite(el.duration) ? el.duration : 0,
+      });
+      if (
+        e?.type === "loadedmetadata" ||
+        e?.type === "canplay" ||
+        e?.type === "loadeddata"
+      ) {
+        setVideoReady(true);
+        if (el.videoWidth > 0 && el.videoHeight > 0) {
+          setIntrinsicSize({
+            width: el.videoWidth,
+            height: el.videoHeight,
+          });
+        }
       }
-    }
-  }, []);
+
+      const routeId = publicIdFromRoute;
+      if (!routeId) return;
+      const watchedMs = Math.floor(el.currentTime * 1000);
+      const d = el.duration;
+      const durationMs =
+        Number.isFinite(d) && d > 0 ? Math.floor(d * 1000) : null;
+      const attribution = resolveViewTrafficAttribution({
+        pathname: location.pathname,
+        search: location.search,
+        state: location.state,
+        videoPublicId: routeId,
+      });
+
+      if (
+        durationMs != null &&
+        !watchPlaythroughSentRef.current &&
+        watchTimeNearPlaythroughEnd(watchedMs, durationMs)
+      ) {
+        watchPlaythroughSentRef.current = true;
+        apiClient
+          .recordVideoView(
+            routeId,
+            withViewTrafficFields({ watchedMs, durationMs }, attribution),
+            { token },
+          )
+          .catch(() => {
+            watchPlaythroughSentRef.current = false;
+          });
+        return;
+      }
+
+      if (watchQualifySentRef.current) return;
+      if (!watchTimeQualifiesForViewRecord(watchedMs, durationMs)) return;
+      watchQualifySentRef.current = true;
+      apiClient
+        .recordVideoView(
+          routeId,
+          withViewTrafficFields(
+            {
+              watchedMs,
+              ...(durationMs != null ? { durationMs } : {}),
+            },
+            attribution,
+          ),
+          { token },
+        )
+        .catch(() => {
+          watchQualifySentRef.current = false;
+        });
+    },
+    [
+      location.pathname,
+      location.search,
+      location.state,
+      publicIdFromRoute,
+      token,
+    ],
+  );
 
   useEffect(() => {
     if (
@@ -1389,77 +1448,11 @@ export function VideoWatchPage({ sidebarVariant = "creator" } = {}) {
     routeSlug,
   ]);
 
+  /** Reset cờ view khi đổi clip — ghi view nằm trong handleWatchPlaybackTick (tránh race mount <video>). */
   useEffect(() => {
     watchQualifySentRef.current = false;
     watchPlaythroughSentRef.current = false;
-    const el = videoRef.current;
-    const routeId = publicIdFromRoute;
-    if (!el || !routeId) return undefined;
-    const key = routeId;
-    const onPlaybackSample = () => {
-      const watchedMs = Math.floor(el.currentTime * 1000);
-      const d = el.duration;
-      const durationMs =
-        Number.isFinite(d) && d > 0 ? Math.floor(d * 1000) : null;
-
-      if (
-        durationMs != null &&
-        !watchPlaythroughSentRef.current &&
-        watchTimeNearPlaythroughEnd(watchedMs, durationMs)
-      ) {
-        watchPlaythroughSentRef.current = true;
-        apiClient
-          .recordVideoView(
-            key,
-            withViewTrafficFields(
-              {
-                watchedMs,
-                durationMs,
-              },
-              resolveViewTrafficAttribution({
-                pathname: location.pathname,
-                search: location.search,
-                state: location.state,
-                videoPublicId: key,
-              }),
-            ),
-            { token },
-          )
-          .catch(() => {});
-        return;
-      }
-
-      if (watchQualifySentRef.current) return;
-      if (!watchTimeQualifiesForViewRecord(watchedMs, durationMs)) return;
-      watchQualifySentRef.current = true;
-      apiClient
-        .recordVideoView(
-          key,
-          withViewTrafficFields(
-            {
-              watchedMs,
-              ...(durationMs != null ? { durationMs } : {}),
-            },
-            resolveViewTrafficAttribution({
-              pathname: location.pathname,
-              search: location.search,
-              state: location.state,
-              videoPublicId: key,
-            }),
-          ),
-          { token },
-        )
-        .catch(() => {});
-    };
-    el.addEventListener("timeupdate", onPlaybackSample);
-    el.addEventListener("seeked", onPlaybackSample);
-    el.addEventListener("ended", onPlaybackSample);
-    return () => {
-      el.removeEventListener("timeupdate", onPlaybackSample);
-      el.removeEventListener("seeked", onPlaybackSample);
-      el.removeEventListener("ended", onPlaybackSample);
-    };
-  }, [location.pathname, location.search, location.state, publicIdFromRoute, token]);
+  }, [publicIdFromRoute]);
 
   useEffect(() => {
     const routeId = publicIdFromRoute;
