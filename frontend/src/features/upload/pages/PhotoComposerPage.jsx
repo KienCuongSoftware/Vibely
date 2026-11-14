@@ -551,7 +551,7 @@ export function PhotoComposerPage() {
               ) : null}
             </Card>
 
-            <div className="flex flex-wrap gap-3 pt-1">
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               <button
                 type="button"
                 disabled={busy}
@@ -560,10 +560,11 @@ export function PhotoComposerPage() {
               >
                 {busy ? t('upload.posting') : t('upload.post')}
               </button>
+              {/* Nền studio light = #f1f1f2 — nút phụ dùng trắng + ring để hiện rõ như TikTok. */}
               <button
                 type="button"
                 disabled={busy}
-                className="min-w-[120px] cursor-pointer rounded-lg bg-[#f1f1f2] px-5 py-2.5 text-sm font-semibold text-[#161823] hover:bg-[#e8e8e9] disabled:opacity-50"
+                className="min-w-[120px] cursor-pointer rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-[#161823] shadow-sm ring-1 ring-black/5 hover:bg-[#fafafa] disabled:opacity-50"
                 onClick={() => void publish({ asDraft: true })}
               >
                 {t('upload.saveDraft')}
@@ -571,7 +572,7 @@ export function PhotoComposerPage() {
               <button
                 type="button"
                 disabled={busy}
-                className="min-w-[120px] cursor-pointer rounded-lg bg-[#f1f1f2] px-5 py-2.5 text-sm font-semibold text-[#161823] hover:bg-[#e8e8e9] disabled:opacity-50"
+                className="min-w-[120px] cursor-pointer rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-[#161823] shadow-sm ring-1 ring-black/5 hover:bg-[#fafafa] disabled:opacity-50"
                 onClick={() => {
                   clearPhotoDraftFiles()
                   navigate(STUDIO_UPLOAD_PHOTO_PATH)
