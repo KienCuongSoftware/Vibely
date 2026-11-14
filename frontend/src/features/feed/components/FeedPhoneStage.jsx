@@ -21,6 +21,7 @@ import { createPhotoAudioBoostController } from "@/features/feed/utils/photoFeed
 import { downloadWatermarkedVideo } from "@/features/feed/utils/videoDownload.js";
 import { FeedTranslatedCaption } from "@/features/feed/components/FeedTranslatedCaption.jsx";
 import { FeedTimedCaptions } from "@/features/feed/components/FeedTimedCaptions.jsx";
+import { isMusicVideoForCaptions } from "@/features/feed/utils/musicVideoCaptions.js";
 import { useFeedPrefetch } from "@/features/feed/hooks/useFeedPrefetch.js";
 import { VideoContextMenu } from "@/features/feed/components/VideoContextMenu.jsx";
 import { FeedProgressBar } from "@/features/feed/components/FeedProgressBar.jsx";
@@ -496,6 +497,18 @@ export function FeedPhoneStage({
     localControlPopoverOpen || feedMoreMenuOpen;
   /** Chi tiết / feed 1 video: luôn loop (auto-scroll không có video kế tiếp). */
   const loopActiveVideo = !feedAutoScrollEnabled || videos.length <= 1;
+  const activeVideoForCaptions = videos?.[activeIndex] ?? null;
+  const activeSkipMusicCaptions = isMusicVideoForCaptions(
+    activeVideoForCaptions,
+  );
+  const showTimedCaptionsAvailable =
+    timedCaptionsAvailable && !activeSkipMusicCaptions;
+
+  useEffect(() => {
+    if (activeSkipMusicCaptions) {
+      setTimedCaptionsAvailable(false);
+    }
+  }, [activeSkipMusicCaptions, activeVideoForCaptions?.publicId]);
 
   /** publicId video đã báo cáo — ẩn media, hiện overlay kiểu TikTok. */
   const [reportHiddenIds, setReportHiddenIds] = useState(() => new Set());
@@ -1067,6 +1080,9 @@ export function FeedPhoneStage({
           const cellPublicId = normalizeVideoPublicId(video.publicId);
           const reportedHidden =
             Boolean(cellPublicId) && reportHiddenIds.has(cellPublicId);
+          const skipMusicCaptions = isMusicVideoForCaptions(video);
+          const cellCaptionsEnabled =
+            captionsEnabled && !skipMusicCaptions;
           return (
             <div
               className={`relative h-full w-full overflow-hidden ${
@@ -1216,15 +1232,21 @@ export function FeedPhoneStage({
                     selfRepostBusy={selfRepostBusy}
                     locationName={video?.locationName}
                     timedCaptions={
-                      detailCaptionsLayout ? null : (
+                      detailCaptionsLayout || skipMusicCaptions ? null : (
                         <FeedTimedCaptions
                           videoPublicId={normalizeVideoPublicId(video?.publicId)}
                           lang={subtitleLangIso}
-                          enabled={captionsEnabled}
+                          enabled={cellCaptionsEnabled}
                           videoRef={feedVideoRef}
                           token={reportToken || contextMenuToken}
                           layout="stack"
-                          onAvailabilityChange={setTimedCaptionsAvailable}
+                          onAvailabilityChange={(available) => {
+                            if (isActive) {
+                              setTimedCaptionsAvailable(
+                                skipMusicCaptions ? false : available,
+                              );
+                            }
+                          }}
                         />
                       )
                     }
@@ -1232,15 +1254,22 @@ export function FeedPhoneStage({
                 </div>
               ) : null}
 
-              {isActive && hasPlayback && detailCaptionsLayout ? (
+              {isActive &&
+              hasPlayback &&
+              detailCaptionsLayout &&
+              !skipMusicCaptions ? (
                 <FeedTimedCaptions
                   videoPublicId={normalizeVideoPublicId(video?.publicId)}
                   lang={subtitleLangIso}
-                  enabled={captionsEnabled}
+                  enabled={cellCaptionsEnabled}
                   videoRef={feedVideoRef}
                   token={reportToken || contextMenuToken}
                   layout={detailCaptionsLayout}
-                  onAvailabilityChange={setTimedCaptionsAvailable}
+                  onAvailabilityChange={(available) => {
+                    setTimedCaptionsAvailable(
+                      skipMusicCaptions ? false : available,
+                    );
+                  }}
                 />
               ) : null}
 
@@ -1303,8 +1332,8 @@ export function FeedPhoneStage({
               setFeedAutoScrollEnabled={setFeedAutoScrollEnabled}
               feedPlaybackSpeed={feedPlaybackSpeed}
               setFeedPlaybackSpeed={setFeedPlaybackSpeed}
-              captionsEnabled={captionsEnabled}
-              timedCaptionsAvailable={timedCaptionsAvailable}
+              captionsEnabled={captionsEnabled && !activeSkipMusicCaptions}
+              timedCaptionsAvailable={showTimedCaptionsAvailable}
               feedSoundOn={feedSoundOn}
               setFeedSoundOn={setFeedSoundOn}
               feedVolume={feedVolume}

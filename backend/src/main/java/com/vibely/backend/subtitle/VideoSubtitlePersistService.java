@@ -2,10 +2,13 @@ package com.vibely.backend.subtitle;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vibely.backend.video.Video;
+import com.vibely.backend.video.VideoRepository;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,15 +26,26 @@ public class VideoSubtitlePersistService {
 
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
+    private final VideoRepository videoRepository;
 
-    public VideoSubtitlePersistService(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
+    public VideoSubtitlePersistService(
+        JdbcTemplate jdbcTemplate,
+        ObjectMapper objectMapper,
+        VideoRepository videoRepository
+    ) {
         this.jdbcTemplate = jdbcTemplate;
         this.objectMapper = objectMapper;
+        this.videoRepository = videoRepository;
     }
 
     @Transactional
     public void persistFromSpeechFeatures(Long videoId, Map<String, Object> speechFeatures) {
         if (videoId == null || speechFeatures == null || speechFeatures.isEmpty()) {
+            return;
+        }
+        if (isMusicVideo(videoId)) {
+            log.info("Skip ASR subtitle persist for music videoId={}", videoId);
+            clearAsrTracks(videoId);
             return;
         }
         try {
@@ -46,6 +60,10 @@ public class VideoSubtitlePersistService {
     @Transactional
     public boolean backfillFromContentFeaturesIfNeeded(Long videoId) {
         if (videoId == null) {
+            return false;
+        }
+        if (isMusicVideo(videoId)) {
+            clearAsrTracks(videoId);
             return false;
         }
         Integer count = jdbcTemplate.query(
@@ -71,6 +89,30 @@ public class VideoSubtitlePersistService {
             log.warn("Subtitle backfill failed videoId={}: {}", videoId, ex.getMessage());
             return false;
         }
+    }
+
+    boolean isMusicVideo(Long videoId) {
+        Optional<Video> video = videoRepository.findById(videoId);
+        return video.filter(MusicVideoCaptionPolicy::shouldSkipCaptions).isPresent();
+    }
+
+    /** Drop ASR tracks so music clips never surface hallucinated CC. */
+    void clearAsrTracks(Long videoId) {
+        List<Long> trackIds = jdbcTemplate.query(
+            "SELECT id FROM video_subtitle_tracks WHERE video_id = ? AND source = 'asr'",
+            (rs, i) -> rs.getLong(1),
+            videoId
+        );
+        if (trackIds.isEmpty()) {
+            return;
+        }
+        for (Long trackId : trackIds) {
+            jdbcTemplate.update("DELETE FROM video_subtitle_cues WHERE track_id = ?", trackId);
+        }
+        jdbcTemplate.update(
+            "DELETE FROM video_subtitle_tracks WHERE video_id = ? AND source = 'asr'",
+            videoId
+        );
     }
 
     private boolean persistFromSpeechNode(Long videoId, JsonNode root) {

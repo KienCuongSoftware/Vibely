@@ -67,6 +67,10 @@ public class VideoSubtitleService {
 
     public SubtitleLanguagesResponse listLanguages(UUID publicId) {
         Video video = requireWatchable(publicId);
+        if (MusicVideoCaptionPolicy.shouldSkipCaptions(video)) {
+            persistService.clearAsrTracks(video.getId());
+            return new SubtitleLanguagesResponse(List.of(), null);
+        }
         persistService.backfillFromContentFeaturesIfNeeded(video.getId());
         List<String> langs = jdbcTemplate.query(
             """
@@ -97,6 +101,10 @@ public class VideoSubtitleService {
         }
         Video video = requireWatchable(publicId);
         Long videoId = video.getId();
+        if (MusicVideoCaptionPolicy.shouldSkipCaptions(video)) {
+            persistService.clearAsrTracks(videoId);
+            return SubtitleTrackResponse.unavailable("Captions are disabled for music videos");
+        }
         persistService.backfillFromContentFeaturesIfNeeded(videoId);
 
         SubtitleTrackResponse existing = loadReadyTrack(videoId, targetLang);
