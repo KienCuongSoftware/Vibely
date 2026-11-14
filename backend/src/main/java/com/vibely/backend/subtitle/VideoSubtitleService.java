@@ -41,6 +41,7 @@ public class VideoSubtitleService {
     private final MachineTranslationClient translationClient;
     private final TranslationProperties translationProperties;
     private final VideoSubtitlePersistService persistService;
+    private final AsrCaptionEligibilityService eligibilityService;
     private final ExecutorService syncExecutor = Executors.newCachedThreadPool(r -> {
         Thread t = new Thread(r, "subtitle-translate-sync");
         t.setDaemon(true);
@@ -54,7 +55,8 @@ public class VideoSubtitleService {
         UserRepository userRepository,
         MachineTranslationClient translationClient,
         TranslationProperties translationProperties,
-        VideoSubtitlePersistService persistService
+        VideoSubtitlePersistService persistService,
+        AsrCaptionEligibilityService eligibilityService
     ) {
         this.jdbcTemplate = jdbcTemplate;
         this.videoRepository = videoRepository;
@@ -63,11 +65,12 @@ public class VideoSubtitleService {
         this.translationClient = translationClient;
         this.translationProperties = translationProperties;
         this.persistService = persistService;
+        this.eligibilityService = eligibilityService;
     }
 
     public SubtitleLanguagesResponse listLanguages(UUID publicId) {
         Video video = requireWatchable(publicId);
-        if (MusicVideoCaptionPolicy.shouldSkipCaptions(video)) {
+        if (eligibilityService.shouldSkipCaptions(video.getId())) {
             persistService.clearAsrTracks(video.getId());
             return new SubtitleLanguagesResponse(List.of(), null);
         }
@@ -101,13 +104,13 @@ public class VideoSubtitleService {
         }
         Video video = requireWatchable(publicId);
         Long videoId = video.getId();
-        if (MusicVideoCaptionPolicy.shouldSkipCaptions(video)) {
+        if (eligibilityService.shouldSkipCaptions(videoId)) {
             persistService.clearAsrTracks(videoId);
             return SubtitleTrackResponse.unavailable("Captions are disabled for music videos");
         }
         persistService.backfillFromContentFeaturesIfNeeded(videoId);
 
-        SubtitleTrackResponse existing = loadReadyTrack(videoId, targetLang);
+        SubtitleTrackResponse existing = loadReadyTrack(videoId, targetLang, video.getDurationSeconds());
         if (existing != null) {
             return existing;
         }
@@ -118,7 +121,7 @@ public class VideoSubtitleService {
         }
 
         if (SubtitleLangNormalizer.sameLanguage(asr.lang(), targetLang)) {
-            return loadReadyTrack(videoId, asr.lang());
+            return loadReadyTrack(videoId, asr.lang(), video.getDurationSeconds());
         }
 
         if (!request) {
@@ -134,7 +137,7 @@ public class VideoSubtitleService {
 
         if (!translationProperties.isEnabled()) {
             // Fall back to source-language ASR when translation service is off.
-            return loadReadyTrack(videoId, asr.lang());
+            return loadReadyTrack(videoId, asr.lang(), video.getDurationSeconds());
         }
 
         ensurePendingTrack(videoId, targetLang, asr.id());
@@ -291,7 +294,7 @@ public class VideoSubtitleService {
         log.debug("Subtitle track failed videoId={} lang={} msg={}", videoId, lang, message);
     }
 
-    private SubtitleTrackResponse loadReadyTrack(Long videoId, String lang) {
+    private SubtitleTrackResponse loadReadyTrack(Long videoId, String lang, Integer durationSeconds) {
         TrackRow row = jdbcTemplate.query(
             """
                 SELECT id, lang, source, status FROM video_subtitle_tracks
@@ -307,7 +310,15 @@ public class VideoSubtitleService {
         if (row == null) {
             return null;
         }
-        return SubtitleTrackResponse.ready(row.lang(), row.source(), loadCues(row.id()));
+        List<SubtitleCueDto> raw = loadCues(row.id());
+        List<SubtitleCueDto> cues = AsrCaptionEligibility.filterReliableCues(raw, durationSeconds);
+        if (cues.isEmpty()) {
+            if ("asr".equalsIgnoreCase(row.source())) {
+                persistService.clearAsrTracks(videoId);
+            }
+            return null;
+        }
+        return SubtitleTrackResponse.ready(row.lang(), row.source(), cues);
     }
 
     private List<SubtitleCueDto> loadCues(Long trackId) {

@@ -204,6 +204,10 @@ public class ContentUnderstandingJobService {
         }
 
         projectCategories(videoId, tagScores);
+        if (persist != null) {
+            // Categories land after ASR persist — drop captions once marked music.
+            persist.clearIfClassifiedMusic(videoId);
+        }
         topicProjectionService.projectTopicsFromTags(video, topicTags);
 
         job.setStatus(AnalysisJobStatus.COMPLETED);

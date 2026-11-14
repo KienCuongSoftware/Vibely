@@ -2,13 +2,10 @@ package com.vibely.backend.subtitle;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vibely.backend.video.Video;
-import com.vibely.backend.video.VideoRepository;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,16 +23,16 @@ public class VideoSubtitlePersistService {
 
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
-    private final VideoRepository videoRepository;
+    private final AsrCaptionEligibilityService eligibilityService;
 
     public VideoSubtitlePersistService(
         JdbcTemplate jdbcTemplate,
         ObjectMapper objectMapper,
-        VideoRepository videoRepository
+        AsrCaptionEligibilityService eligibilityService
     ) {
         this.jdbcTemplate = jdbcTemplate;
         this.objectMapper = objectMapper;
-        this.videoRepository = videoRepository;
+        this.eligibilityService = eligibilityService;
     }
 
     @Transactional
@@ -43,8 +40,8 @@ public class VideoSubtitlePersistService {
         if (videoId == null || speechFeatures == null || speechFeatures.isEmpty()) {
             return;
         }
-        if (isMusicVideo(videoId)) {
-            log.info("Skip ASR subtitle persist for music videoId={}", videoId);
+        if (eligibilityService.shouldSkipCaptions(videoId)) {
+            log.info("Skip ASR subtitle persist for classified-music videoId={}", videoId);
             clearAsrTracks(videoId);
             return;
         }
@@ -56,13 +53,25 @@ public class VideoSubtitlePersistService {
         }
     }
 
+    /** After explore categories are written — drop ASR if clip is music. */
+    @Transactional
+    public void clearIfClassifiedMusic(Long videoId) {
+        if (videoId == null) {
+            return;
+        }
+        if (eligibilityService.isClassifiedMusic(videoId)) {
+            clearAsrTracks(videoId);
+            log.info("Cleared ASR captions after music classification videoId={}", videoId);
+        }
+    }
+
     /** Backfill from existing {@code content_features.speech} JSON for older videos. */
     @Transactional
     public boolean backfillFromContentFeaturesIfNeeded(Long videoId) {
         if (videoId == null) {
             return false;
         }
-        if (isMusicVideo(videoId)) {
+        if (eligibilityService.shouldSkipCaptions(videoId)) {
             clearAsrTracks(videoId);
             return false;
         }
@@ -91,12 +100,7 @@ public class VideoSubtitlePersistService {
         }
     }
 
-    boolean isMusicVideo(Long videoId) {
-        Optional<Video> video = videoRepository.findById(videoId);
-        return video.filter(MusicVideoCaptionPolicy::shouldSkipCaptions).isPresent();
-    }
-
-    /** Drop ASR tracks so music clips never surface hallucinated CC. */
+    /** Drop ASR tracks so music / junk clips never surface CC. */
     void clearAsrTracks(Long videoId) {
         List<Long> trackIds = jdbcTemplate.query(
             "SELECT id FROM video_subtitle_tracks WHERE video_id = ? AND source = 'asr'",
@@ -116,8 +120,17 @@ public class VideoSubtitlePersistService {
     }
 
     private boolean persistFromSpeechNode(Long videoId, JsonNode root) {
-        List<SubtitleCueDto> cues = parseSegments(root.path("segments"));
+        List<SubtitleCueDto> raw = parseSegments(root.path("segments"));
+        List<SubtitleCueDto> cues = eligibilityService.reliableCuesForVideo(videoId, raw);
         if (cues.isEmpty()) {
+            if (!raw.isEmpty()) {
+                log.info(
+                    "Skip ASR persist videoId={} — {} raw cue(s) failed speech-quality gate",
+                    videoId,
+                    raw.size()
+                );
+                clearAsrTracks(videoId);
+            }
             return false;
         }
         String lang = SubtitleLangNormalizer.normalize(textOrNull(root.path("language")));
