@@ -94,7 +94,7 @@ function CyanToggle({ checked, onChange, ariaLabel }) {
       aria-checked={checked}
       aria-label={ariaLabel}
       className={`relative h-[26px] w-[46px] shrink-0 rounded-full transition-colors ${
-        checked ? "bg-[#00f2ea]" : "bg-white/25"
+        checked ? "bg-[#00f2ea]" : "bg-[#d4d4d8]"
       }`}
       onClick={() => onChange(!checked)}
     >
@@ -111,15 +111,15 @@ function RadioRow({ label, selected, onSelect }) {
   return (
     <button
       type="button"
-      className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.04]"
+      className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-zinc-100"
       onClick={onSelect}
     >
-      <span className="min-w-0 flex-1 text-[15px] leading-snug text-white">
+      <span className="min-w-0 flex-1 text-[15px] leading-snug text-[#161823]">
         {label}
       </span>
       <span
         className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border-2 ${
-          selected ? "border-transparent" : "border-white/35 bg-transparent"
+          selected ? "border-transparent" : "border-zinc-300 bg-transparent"
         }`}
         style={
           selected
@@ -236,7 +236,7 @@ export function FeedSubtitlesModal({ open, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-label={isPicker ? pickerTitle : t('captions.title')}
-        className={`relative z-10 flex w-full flex-col overflow-hidden rounded-2xl bg-[#1e1e1e] shadow-[0_16px_48px_rgba(0,0,0,0.55)] ${
+        className={`feed-subtitles-modal relative z-10 flex w-full flex-col overflow-hidden rounded-2xl bg-white text-[#161823] shadow-[0_16px_48px_rgba(0,0,0,0.28)] ${
           isPicker
             ? "max-h-[min(78vh,640px)] max-w-[420px]"
             : "max-w-[420px]"
@@ -246,11 +246,13 @@ export function FeedSubtitlesModal({ open, onClose }) {
         {view === "main" ? (
           <>
             <div className="relative flex shrink-0 items-center justify-center px-4 pb-2 pt-4">
-              <h2 className="text-[17px] font-semibold text-white">{t('captions.title')}</h2>
+              <h2 className="text-[17px] font-semibold text-[#161823]">
+                {t('captions.title')}
+              </h2>
               <button
                 type="button"
                 aria-label={t('common.close')}
-                className="absolute right-3 top-3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/15"
+                className="absolute right-3 top-3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-zinc-100 text-zinc-700 transition hover:bg-zinc-200"
                 onClick={onClose}
               >
                 <IoClose className="text-xl" aria-hidden />
@@ -259,7 +261,7 @@ export function FeedSubtitlesModal({ open, onClose }) {
 
             <div className="px-4 pb-5 pt-2">
               <div className="flex items-center justify-between gap-4 py-3.5">
-                <span className="min-w-0 text-[15px] leading-snug text-white">
+                <span className="min-w-0 text-[15px] leading-snug text-[#161823]">
                   {t('captions.autoCaptions')}
                 </span>
                 <CyanToggle
@@ -271,10 +273,10 @@ export function FeedSubtitlesModal({ open, onClose }) {
 
               <div className="flex items-start justify-between gap-4 py-3.5">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[15px] leading-snug text-white">
+                  <p className="text-[15px] leading-snug text-[#161823]">
                     {t('captions.alwaysTranslate')}
                   </p>
-                  <p className="mt-1 text-[13px] leading-snug text-white/45">
+                  <p className="mt-1 text-[13px] leading-snug text-zinc-500">
                     {t('captions.alwaysTranslateHint')}
                   </p>
                 </div>
@@ -293,10 +295,12 @@ export function FeedSubtitlesModal({ open, onClose }) {
                   setView("exclude");
                 }}
               >
-                <span className="text-[15px] text-white">{t('captions.doNotTranslate')}</span>
+                <span className="text-[15px] text-[#161823]">
+                  {t('captions.doNotTranslate')}
+                </span>
                 <span
                   className={`flex min-w-0 max-w-[58%] shrink-0 cursor-pointer items-center gap-1 text-[15px] ${
-                    excludeSummary ? "text-white/55" : ""
+                    excludeSummary ? "text-zinc-500" : ""
                   }`}
                   style={excludeSummary ? undefined : { color: ACCENT }}
                 >
@@ -304,7 +308,7 @@ export function FeedSubtitlesModal({ open, onClose }) {
                     {excludeSummary ?? t('captions.chooseLanguage')}
                   </span>
                   <IoChevronForward
-                    className="h-4 w-4 shrink-0 text-white/40"
+                    className="h-4 w-4 shrink-0 text-zinc-400"
                     aria-hidden
                   />
                 </span>
@@ -318,11 +322,13 @@ export function FeedSubtitlesModal({ open, onClose }) {
                   setView("translateTo");
                 }}
               >
-                <span className="text-[15px] text-white">{t('captions.translateTo')}</span>
-                <span className="flex shrink-0 items-center gap-1 text-[15px] text-white/55">
+                <span className="text-[15px] text-[#161823]">
+                  {t('captions.translateTo')}
+                </span>
+                <span className="flex shrink-0 items-center gap-1 text-[15px] text-zinc-500">
                   {prefs.translateTo}
                   <IoChevronForward
-                    className="h-4 w-4 text-white/40"
+                    className="h-4 w-4 text-zinc-400"
                     aria-hidden
                   />
                 </span>
@@ -335,18 +341,18 @@ export function FeedSubtitlesModal({ open, onClose }) {
               <button
                 type="button"
                 aria-label={t('common.back')}
-                className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-white transition hover:bg-white/10"
+                className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-[#161823] transition hover:bg-zinc-100"
                 onClick={() => setView("main")}
               >
                 <IoChevronBack className="h-5 w-5" aria-hidden />
               </button>
-              <h2 className="min-w-0 flex-1 text-center text-[17px] font-semibold text-white">
+              <h2 className="min-w-0 flex-1 text-center text-[17px] font-semibold text-[#161823]">
                 {pickerTitle}
               </h2>
               <button
                 type="button"
                 aria-label={t('common.close')}
-                className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/15"
+                className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-zinc-100 text-zinc-700 transition hover:bg-zinc-200"
                 onClick={onClose}
               >
                 <IoClose className="text-xl" aria-hidden />
@@ -379,11 +385,10 @@ export function FeedSubtitlesModal({ open, onClose }) {
               </ul>
             </div>
 
-            <div className="shrink-0 border-t border-white/10 px-4 pb-4 pt-3">
+            <div className="shrink-0 border-t border-zinc-200 px-4 pb-4 pt-3">
               <button
                 type="button"
-                className="w-full cursor-pointer rounded-full py-3 text-[16px] font-bold text-white transition hover:brightness-110"
-                style={{ backgroundColor: BRAND_RED }}
+                className="w-full cursor-pointer rounded-full bg-[#fe2c55] py-3 text-[16px] font-bold text-white transition hover:brightness-110"
                 onClick={() => {
                   if (view === "exclude") confirmExclude();
                   else confirmTranslateTo();

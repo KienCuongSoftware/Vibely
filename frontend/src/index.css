@@ -286,6 +286,35 @@ html[data-vibely-theme="light"] .feed-dark-popover button.bg-white {
   background-color: #fff !important;
   color: #000 !important;
 }
+/* Modal Phụ đề — luôn nền sáng / chữ đậm (kiểu TikTok), tránh remap light-theme. */
+.feed-subtitles-modal {
+  background-color: #fff !important;
+  color: #161823 !important;
+}
+.feed-subtitles-modal .text-\[\#161823\],
+.feed-subtitles-modal h2,
+.feed-subtitles-modal p,
+.feed-subtitles-modal span,
+.feed-subtitles-modal button {
+  color: inherit;
+}
+.feed-subtitles-modal .text-zinc-500 {
+  color: #71717a !important;
+}
+.feed-subtitles-modal .text-zinc-400,
+.feed-subtitles-modal .text-zinc-700 {
+  color: #52525b !important;
+}
+.feed-subtitles-modal .bg-\[\#fe2c55\].text-white,
+.feed-subtitles-modal button.bg-\[\#fe2c55\] {
+  background-color: #fe2c55 !important;
+  color: #fff !important;
+}
+html[data-vibely-theme="light"] .feed-subtitles-modal .bg-\[\#fe2c55\].text-white,
+html[data-vibely-theme="light"] .feed-subtitles-modal button.bg-\[\#fe2c55\] {
+  color: #fff !important;
+}
+
 .feed-dark-popover-label {
   color: rgba(255, 255, 255, 0.55) !important;
 }
