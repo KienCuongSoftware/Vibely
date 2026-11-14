@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import {
   IoAdd,
   IoArrowRedoOutline,
@@ -12,55 +12,60 @@ import {
   IoEllipsisHorizontal,
   IoHeartOutline,
   IoHomeOutline,
+  IoInformationCircleOutline,
   IoMusicalNotesOutline,
   IoPeopleOutline,
   IoPersonOutline,
   IoSearchOutline,
   IoTrashOutline,
-} from 'react-icons/io5'
-import { StudioLayout } from '@/features/studio/components/StudioLayout.jsx'
-import { useAuth } from '@/features/auth/hooks/useAuth.js'
-import { DEFAULT_AVATAR_URL } from '@/features/profile/utils/avatarUrl.js'
-import { apiClient, uploadThumbnailToStorage } from '@/shared/api/client'
+} from "react-icons/io5";
+import { StudioLayout } from "@/features/studio/components/StudioLayout.jsx";
+import { useAuth } from "@/features/auth/hooks/useAuth.js";
+import { DEFAULT_AVATAR_URL } from "@/features/profile/utils/avatarUrl.js";
+import { apiClient, uploadThumbnailToStorage } from "@/shared/api/client";
 import {
   PHOTO_UPLOAD_ACCEPT,
   PHOTO_UPLOAD_MAX_FILES,
   STUDIO_UPLOAD_PHOTO_PATH,
   isAllowedPhotoFile,
-} from '@/features/upload/utils/studioUploadPaths.js'
+} from "@/features/upload/utils/studioUploadPaths.js";
 import {
   clearPhotoDraftFiles,
   getPhotoDraftFiles,
   setPhotoDraftFiles,
-} from '@/features/upload/utils/photoDraftStore.js'
+} from "@/features/upload/utils/photoDraftStore.js";
 import {
   SCHEDULE_MIN_LEAD_MINUTES,
   SchedulePickers,
   defaultScheduleDate,
   isScheduleAtLeastLeadAhead,
-} from '@/features/upload/components/SchedulePickers.jsx'
-import { SoundPickerModal } from '@/features/upload/components/SoundPickerModal.jsx'
-import { LocationPicker } from '@/features/upload/components/LocationPicker.jsx'
-import { formatSoundDuration } from '@/features/upload/utils/soundLibraryStore.js'
-import { toLocationPayload } from '@/features/upload/utils/recentLocations.js'
-import { VideoLocationBadge } from '@/features/post/components/VideoLocationBadge.jsx'
-import {
-  localizeAudioTitle,
-} from '@/features/post/utils/localizeAudioTitle.js'
+} from "@/features/upload/components/SchedulePickers.jsx";
+import { SoundPickerModal } from "@/features/upload/components/SoundPickerModal.jsx";
+import { LocationPicker } from "@/features/upload/components/LocationPicker.jsx";
+import { formatSoundDuration } from "@/features/upload/utils/soundLibraryStore.js";
+import { toLocationPayload } from "@/features/upload/utils/recentLocations.js";
+import { VideoLocationBadge } from "@/features/post/components/VideoLocationBadge.jsx";
+import { localizeAudioTitle } from "@/features/post/utils/localizeAudioTitle.js";
 
-const TITLE_MAX = 90
-const DESC_MAX = 1000
+const TITLE_MAX = 90;
+const DESC_MAX = 1000;
 
-function Card({ children, className = '' }) {
+function Card({ children, className = "" }) {
   return (
-    <section className={`rounded-xl border border-[#e8e8e9] bg-white p-5 ${className}`}>
+    <section
+      className={`rounded-xl border border-[#e8e8e9] bg-white p-5 ${className}`}
+    >
       {children}
     </section>
-  )
+  );
 }
 
-function CardTitle({ children, className = '' }) {
-  return <h2 className={`text-[15px] font-semibold text-[#161823] ${className}`}>{children}</h2>
+function CardTitle({ children, className = "" }) {
+  return (
+    <h2 className={`text-[15px] font-semibold text-[#161823] ${className}`}>
+      {children}
+    </h2>
+  );
 }
 
 function PhotoBadge({ label }) {
@@ -69,14 +74,20 @@ function PhotoBadge({ label }) {
       <IoCameraOutline className="text-[10px]" aria-hidden />
       {label}
     </span>
-  )
+  );
 }
 
 /** Hard outline — soft blur shadow looks “mờ” on small preview. */
 const PREVIEW_CAPTION_SHADOW =
-  'antialiased [text-shadow:0_1px_0_#000,1px_0_0_#000,-1px_0_0_#000,0_-1px_0_rgba(0,0,0,0.85)]'
+  "antialiased [text-shadow:0_1px_0_#000,1px_0_0_#000,-1px_0_0_#000,0_-1px_0_rgba(0,0,0,0.85)]";
 
-function CaptionStack({ displayName, description, locationQuery, soundLabel, photoBadge }) {
+function CaptionStack({
+  displayName,
+  description,
+  locationQuery,
+  soundLabel,
+  photoBadge,
+}) {
   return (
     <div className={`min-w-0 text-left text-white ${PREVIEW_CAPTION_SHADOW}`}>
       {locationQuery ? (
@@ -98,7 +109,7 @@ function CaptionStack({ displayName, description, locationQuery, soundLabel, pho
         <span className="truncate">{soundLabel}</span>
       </p>
     </div>
-  )
+  );
 }
 
 function SideActions({ avatarSrc, showDisc = true }) {
@@ -141,132 +152,154 @@ function SideActions({ avatarSrc, showDisc = true }) {
         </div>
       ) : null}
     </div>
-  )
+  );
 }
 
 export function PhotoComposerPage() {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const { token, user } = useAuth()
-  const fileInputRef = useRef(null)
-  const [files, setFiles] = useState(() => getPhotoDraftFiles())
-  const [previews, setPreviews] = useState([])
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [privacy, setPrivacy] = useState('everyone')
-  const [postTiming, setPostTiming] = useState('now')
-  const [scheduleAt, setScheduleAt] = useState(() => defaultScheduleDate())
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  const [previewIndex, setPreviewIndex] = useState(0)
-  const [previewTab, setPreviewTab] = useState('feed')
-  const [showMoreSettings, setShowMoreSettings] = useState(false)
-  const [selectedLocation, setSelectedLocation] = useState(null)
-  const [dragOverIndex, setDragOverIndex] = useState(null)
-  const dragFromRef = useRef(null)
-  const [soundPickerOpen, setSoundPickerOpen] = useState(false)
-  const [selectedSound, setSelectedSound] = useState(null)
-  const previewAudioRef = useRef(null)
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { token, user } = useAuth();
+  const fileInputRef = useRef(null);
+  const [files, setFiles] = useState(() => getPhotoDraftFiles());
+  const [previews, setPreviews] = useState([]);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [privacy, setPrivacy] = useState("everyone");
+  const [postTiming, setPostTiming] = useState("now");
+  const [scheduleAt, setScheduleAt] = useState(() => defaultScheduleDate());
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const [previewTab, setPreviewTab] = useState("feed");
+  const [showMoreSettings, setShowMoreSettings] = useState(false);
+  const [allowComment, setAllowComment] = useState(true);
+  const [allowReuse, setAllowReuse] = useState(true);
+  const [discloseContent, setDiscloseContent] = useState(false);
+  const [aiContent, setAiContent] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
+  const dragFromRef = useRef(null);
+  const [soundPickerOpen, setSoundPickerOpen] = useState(false);
+  const [selectedSound, setSelectedSound] = useState(null);
+  const previewAudioRef = useRef(null);
 
-  const handle = `@${user?.username || 'vibely'}`
-  const displayName = user?.displayName || user?.username || 'Vibely'
-  const avatarSrc = user?.avatarUrl || DEFAULT_AVATAR_URL
+  const handle = `@${user?.username || "vibely"}`;
+  const displayName = user?.displayName || user?.username || "Vibely";
+  const avatarSrc = user?.avatarUrl || DEFAULT_AVATAR_URL;
   const soundLabel = localizeAudioTitle(selectedSound?.audioTitle, t, {
     name: displayName,
-    key: 'upload.photo.originalSound',
-  })
+    key: "upload.photo.originalSound",
+  });
   const soundMeta = selectedSound
     ? [
         formatSoundDuration(selectedSound.durationSeconds),
         selectedSound.authorDisplayName?.trim() || displayName,
       ]
         .filter(Boolean)
-        .join(' · ')
-    : ''
-  const captionText = description.trim() || title.trim()
+        .join(" · ")
+    : "";
+  const captionText = description.trim() || title.trim();
 
   useEffect(() => {
-    if (!files.length) navigate(STUDIO_UPLOAD_PHOTO_PATH, { replace: true })
-  }, [files.length, navigate])
+    if (!files.length) navigate(STUDIO_UPLOAD_PHOTO_PATH, { replace: true });
+  }, [files.length, navigate]);
 
   useEffect(() => {
-    const urls = files.map((file) => URL.createObjectURL(file))
-    setPreviews(urls)
-    return () => urls.forEach((url) => URL.revokeObjectURL(url))
-  }, [files])
+    const urls = files.map((file) => URL.createObjectURL(file));
+    setPreviews(urls);
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, [files]);
 
   useEffect(() => {
-    setPreviewIndex((i) => Math.min(i, Math.max(0, files.length - 1)))
-  }, [files.length])
+    setPreviewIndex((i) => Math.min(i, Math.max(0, files.length - 1)));
+  }, [files.length]);
 
   useEffect(() => {
-    const el = previewAudioRef.current
-    if (!el) return undefined
+    const el = previewAudioRef.current;
+    if (!el) return undefined;
     if (!selectedSound?.audioUrl) {
-      el.pause()
-      el.removeAttribute('src')
-      return undefined
+      el.pause();
+      el.removeAttribute("src");
+      return undefined;
     }
-    el.src = selectedSound.audioUrl
-    el.loop = true
+    el.src = selectedSound.audioUrl;
+    el.loop = true;
     const play = () => {
-      el.play().catch(() => {})
-    }
-    play()
+      el.play().catch(() => {});
+    };
+    play();
     return () => {
-      el.pause()
-    }
-  }, [selectedSound?.audioUrl])
+      el.pause();
+    };
+  }, [selectedSound?.audioUrl]);
 
   const addFiles = (incoming) => {
-    const next = [...files]
+    const next = [...files];
     for (const file of incoming) {
-      if (!isAllowedPhotoFile(file)) continue
-      if (next.length >= PHOTO_UPLOAD_MAX_FILES) break
-      next.push(file)
+      if (!isAllowedPhotoFile(file)) continue;
+      if (next.length >= PHOTO_UPLOAD_MAX_FILES) break;
+      next.push(file);
     }
-    setPhotoDraftFiles(next)
-    setFiles(next)
-  }
+    setPhotoDraftFiles(next);
+    setFiles(next);
+  };
 
   const removeAt = (index) => {
-    const next = files.filter((_, i) => i !== index)
-    setPhotoDraftFiles(next)
-    setFiles(next)
-  }
+    const next = files.filter((_, i) => i !== index);
+    setPhotoDraftFiles(next);
+    setFiles(next);
+  };
 
   const reorderFiles = (from, to) => {
-    if (from === to || from < 0 || to < 0 || from >= files.length || to >= files.length) return
-    const next = [...files]
-    const [picked] = next.splice(from, 1)
-    next.splice(to, 0, picked)
-    setPhotoDraftFiles(next)
-    setFiles(next)
-  }
+    if (
+      from === to ||
+      from < 0 ||
+      to < 0 ||
+      from >= files.length ||
+      to >= files.length
+    )
+      return;
+    const next = [...files];
+    const [picked] = next.splice(from, 1);
+    next.splice(to, 0, picked);
+    setPhotoDraftFiles(next);
+    setFiles(next);
+  };
 
   const insertToken = (tokenText) => {
-    setDescription((prev) => `${prev}${prev && !prev.endsWith(' ') ? ' ' : ''}${tokenText}`)
-  }
+    setDescription(
+      (prev) => `${prev}${prev && !prev.endsWith(" ") ? " " : ""}${tokenText}`,
+    );
+  };
 
   const publish = async ({ asDraft }) => {
-    if (!token || !files.length || busy) return
+    if (!token || !files.length || busy) return;
     if (description.length > DESC_MAX) {
-      setError(t('upload.descTooLong', { max: DESC_MAX }))
-      return
+      setError(t("upload.descTooLong", { max: DESC_MAX }));
+      return;
     }
-    if (!asDraft && postTiming === 'schedule' && !isScheduleAtLeastLeadAhead(scheduleAt)) {
-      setError(t('upload.scheduleLead', { minutes: SCHEDULE_MIN_LEAD_MINUTES }))
-      return
+    if (
+      !asDraft &&
+      postTiming === "schedule" &&
+      !isScheduleAtLeastLeadAhead(scheduleAt)
+    ) {
+      setError(
+        t("upload.scheduleLead", { minutes: SCHEDULE_MIN_LEAD_MINUTES }),
+      );
+      return;
     }
-    setBusy(true)
-    setError('')
+    setBusy(true);
+    setError("");
     try {
-      const urls = []
+      const urls = [];
       for (const file of files) {
-        urls.push(await uploadThumbnailToStorage(token, file, file.name))
+        urls.push(await uploadThumbnailToStorage(token, file, file.name));
       }
-      const caption = description.trim()
-      const heading = (title.trim() || caption.slice(0, 80) || 'Photo').slice(0, 120)
+      const caption = description.trim();
+      const heading = (title.trim() || caption.slice(0, 80) || "Photo").slice(
+        0,
+        120,
+      );
       const created = await apiClient.createVideo(
         {
           title: heading,
@@ -276,57 +309,70 @@ export function PhotoComposerPage() {
           durationSeconds: Math.max(1, urls.length),
           studioDraft: asDraft,
           privacy,
-          mediaKind: 'PHOTO',
+          mediaKind: "PHOTO",
           photoUrls: urls,
           audioUrl: selectedSound?.audioUrl || undefined,
           audioTitle: selectedSound?.audioTitle || undefined,
           scheduledAt:
-            !asDraft && postTiming === 'schedule' ? scheduleAt.toISOString() : undefined,
+            !asDraft && postTiming === "schedule"
+              ? scheduleAt.toISOString()
+              : undefined,
           ...toLocationPayload(selectedLocation),
         },
         token,
-      )
-      clearPhotoDraftFiles()
-      const scheduledLater = !asDraft && postTiming === 'schedule'
-      navigate(asDraft ? '/vibelystudio/posts?tab=drafts' : '/vibelystudio/posts', {
-        state: asDraft
-          ? undefined
-          : {
-              pendingReview:
-                !scheduledLater && created?.publicId
-                  ? { publicIds: [created.publicId], privacy }
-                  : undefined,
-            },
-      })
+      );
+      clearPhotoDraftFiles();
+      const scheduledLater = !asDraft && postTiming === "schedule";
+      navigate(
+        asDraft ? "/vibelystudio/posts?tab=drafts" : "/vibelystudio/posts",
+        {
+          state: asDraft
+            ? undefined
+            : {
+                pendingReview:
+                  !scheduledLater && created?.publicId
+                    ? { publicIds: [created.publicId], privacy }
+                    : undefined,
+              },
+        },
+      );
     } catch (err) {
-      setError(err?.message || t('upload.uploadFailed'))
+      setError(err?.message || t("upload.uploadFailed"));
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
-  }
+  };
 
-  if (!files.length) return null
+  if (!files.length) return null;
 
-  const locationLabel = selectedLocation?.name || ''
+  const locationLabel = selectedLocation?.name || "";
 
   return (
     <StudioLayout active="upload" hidePageHeader theme="light">
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {error ? (
-          <p className="mb-3 shrink-0 rounded-lg bg-[#fff1f2] px-3 py-2 text-sm text-[#fe2c55]">{error}</p>
+          <p className="mb-3 shrink-0 rounded-lg bg-[#fff1f2] px-3 py-2 text-sm text-[#fe2c55]">
+            {error}
+          </p>
         ) : null}
         <div className="grid min-h-0 flex-1 gap-6 overflow-y-auto lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-4 pb-8">
             <Card>
-              <h1 className="text-xl font-bold text-[#161823]">{t('upload.photo.detailsTitle')}</h1>
+              <h1 className="text-xl font-bold text-[#161823]">
+                {t("upload.photo.detailsTitle")}
+              </h1>
 
-              <CardTitle className="mt-6">{t('upload.photo.captionLabel')}</CardTitle>
+              <CardTitle className="mt-6">
+                {t("upload.photo.captionLabel")}
+              </CardTitle>
               <div className="mt-3 rounded-lg bg-[#f8f8f8] px-3 py-2">
                 <div className="flex items-start justify-between gap-3">
                   <input
                     value={title}
-                    onChange={(e) => setTitle(e.target.value.slice(0, TITLE_MAX))}
-                    placeholder={t('upload.photo.titlePlaceholder')}
+                    onChange={(e) =>
+                      setTitle(e.target.value.slice(0, TITLE_MAX))
+                    }
+                    placeholder={t("upload.photo.titlePlaceholder")}
                     className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-[#161823] outline-none placeholder:text-[#8a8b91]"
                   />
                   <span className="shrink-0 text-xs text-[#8a8b91]">
@@ -335,9 +381,11 @@ export function PhotoComposerPage() {
                 </div>
                 <textarea
                   value={description}
-                  onChange={(e) => setDescription(e.target.value.slice(0, DESC_MAX))}
+                  onChange={(e) =>
+                    setDescription(e.target.value.slice(0, DESC_MAX))
+                  }
                   rows={4}
-                  placeholder={t('upload.photo.captionPlaceholder')}
+                  placeholder={t("upload.photo.captionPlaceholder")}
                   className="mt-2 w-full resize-none bg-transparent text-sm text-[#161823] outline-none placeholder:text-[#8a8b91]"
                 />
                 <div className="flex items-center justify-between gap-2">
@@ -345,16 +393,16 @@ export function PhotoComposerPage() {
                     <button
                       type="button"
                       className="cursor-pointer rounded-md px-2 py-1 text-sm font-semibold text-[#161823] hover:bg-[#f1f1f2]"
-                      onClick={() => insertToken('#')}
+                      onClick={() => insertToken("#")}
                     >
                       # Hashtag
                     </button>
                     <button
                       type="button"
                       className="cursor-pointer rounded-md px-2 py-1 text-sm font-semibold text-[#161823] hover:bg-[#f1f1f2]"
-                      onClick={() => insertToken('@')}
+                      onClick={() => insertToken("@")}
                     >
-                      @ {t('upload.photo.mention')}
+                      @ {t("upload.photo.mention")}
                     </button>
                   </div>
                   <span className="text-xs text-[#8a8b91]">
@@ -363,7 +411,9 @@ export function PhotoComposerPage() {
                 </div>
               </div>
 
-              <CardTitle className="mt-8">{t('upload.photo.soundLabel')}</CardTitle>
+              <CardTitle className="mt-8">
+                {t("upload.photo.soundLabel")}
+              </CardTitle>
               {selectedSound ? (
                 <div className="mt-3 flex items-center gap-3 rounded-xl bg-[#f1f1f2] px-3 py-2.5">
                   <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#e3e3e4]">
@@ -375,21 +425,28 @@ export function PhotoComposerPage() {
                       />
                     ) : (
                       <span className="flex h-full w-full items-center justify-center text-[#8a8b91]">
-                        <IoMusicalNotesOutline className="text-xl" aria-hidden />
+                        <IoMusicalNotesOutline
+                          className="text-xl"
+                          aria-hidden
+                        />
                       </span>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-[#161823]">{soundLabel}</p>
+                    <p className="truncate text-sm font-semibold text-[#161823]">
+                      {soundLabel}
+                    </p>
                     {soundMeta ? (
-                      <p className="mt-0.5 truncate text-xs text-[#8a8b91]">{soundMeta}</p>
+                      <p className="mt-0.5 truncate text-xs text-[#8a8b91]">
+                        {soundMeta}
+                      </p>
                     ) : null}
                   </div>
                   <button
                     type="button"
                     className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white text-[#161823] shadow-sm ring-1 ring-black/5 hover:bg-[#fafafa]"
                     onClick={() => setSelectedSound(null)}
-                    aria-label={t('upload.photo.removeSound')}
+                    aria-label={t("upload.photo.removeSound")}
                   >
                     <IoTrashOutline className="text-lg" aria-hidden />
                   </button>
@@ -398,7 +455,7 @@ export function PhotoComposerPage() {
                     className="shrink-0 cursor-pointer rounded-lg bg-white px-3.5 py-2 text-sm font-semibold text-[#161823] shadow-sm ring-1 ring-black/5 hover:bg-[#fafafa]"
                     onClick={() => setSoundPickerOpen(true)}
                   >
-                    {t('upload.photo.replaceSound')}
+                    {t("upload.photo.replaceSound")}
                   </button>
                 </div>
               ) : (
@@ -407,14 +464,16 @@ export function PhotoComposerPage() {
                   className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#f8f8f8] px-3 py-2 text-sm font-medium text-[#161823] hover:bg-[#f1f1f2]"
                   onClick={() => setSoundPickerOpen(true)}
                 >
-                  <IoMusicalNotesOutline aria-hidden />
-                  + {t('upload.photo.addSound')}
+                  <IoMusicalNotesOutline aria-hidden />+{" "}
+                  {t("upload.photo.addSound")}
                 </button>
               )}
 
-              <CardTitle className="mt-8">{t('upload.photo.photosLabel')}</CardTitle>
+              <CardTitle className="mt-8">
+                {t("upload.photo.photosLabel")}
+              </CardTitle>
               <p className="mt-1 text-sm text-[#8a8b91]">
-                {t('upload.photo.gridHint', { count: files.length })}
+                {t("upload.photo.gridHint", { count: files.length })}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {previews.map((src, index) => (
@@ -422,37 +481,44 @@ export function PhotoComposerPage() {
                     key={`${files[index]?.name}-${files[index]?.lastModified}-${index}`}
                     draggable
                     onDragStart={(e) => {
-                      dragFromRef.current = index
-                      e.dataTransfer.effectAllowed = 'move'
-                      e.dataTransfer.setData('text/plain', String(index))
+                      dragFromRef.current = index;
+                      e.dataTransfer.effectAllowed = "move";
+                      e.dataTransfer.setData("text/plain", String(index));
                     }}
                     onDragOver={(e) => {
-                      e.preventDefault()
-                      e.dataTransfer.dropEffect = 'move'
-                      setDragOverIndex(index)
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                      setDragOverIndex(index);
                     }}
                     onDragLeave={() => {
-                      setDragOverIndex((current) => (current === index ? null : current))
+                      setDragOverIndex((current) =>
+                        current === index ? null : current,
+                      );
                     }}
                     onDrop={(e) => {
-                      e.preventDefault()
-                      const from = dragFromRef.current
-                      dragFromRef.current = null
-                      setDragOverIndex(null)
-                      if (typeof from === 'number') reorderFiles(from, index)
+                      e.preventDefault();
+                      const from = dragFromRef.current;
+                      dragFromRef.current = null;
+                      setDragOverIndex(null);
+                      if (typeof from === "number") reorderFiles(from, index);
                     }}
                     onDragEnd={() => {
-                      dragFromRef.current = null
-                      setDragOverIndex(null)
+                      dragFromRef.current = null;
+                      setDragOverIndex(null);
                     }}
                     className={`relative h-22 w-22 cursor-grab overflow-hidden rounded-lg bg-[#f8f8f8] active:cursor-grabbing ${
-                      dragOverIndex === index ? 'ring-2 ring-[#fe2c55]' : ''
+                      dragOverIndex === index ? "ring-2 ring-[#fe2c55]" : ""
                     }`}
                   >
-                    <img src={src} alt="" draggable={false} className="h-full w-full object-cover" />
+                    <img
+                      src={src}
+                      alt=""
+                      draggable={false}
+                      className="h-full w-full object-cover"
+                    />
                     {index === 0 ? (
                       <span className="absolute top-1.5 left-1.5 rounded-md bg-[#161823]/80 px-1.5 py-0.5 text-[10px] leading-none font-semibold text-white">
-                        {t('upload.photo.cover')}
+                        {t("upload.photo.cover")}
                       </span>
                     ) : null}
                     <button
@@ -460,10 +526,10 @@ export function PhotoComposerPage() {
                       className="absolute top-1 right-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-[#b0b0b4] text-white hover:bg-[#9a9a9e]"
                       onMouseDown={(e) => e.stopPropagation()}
                       onClick={(e) => {
-                        e.stopPropagation()
-                        removeAt(index)
+                        e.stopPropagation();
+                        removeAt(index);
                       }}
-                      aria-label={t('upload.photo.remove')}
+                      aria-label={t("upload.photo.remove")}
                     >
                       <IoClose className="text-[11px]" />
                     </button>
@@ -486,8 +552,8 @@ export function PhotoComposerPage() {
                 multiple
                 className="hidden"
                 onChange={(e) => {
-                  addFiles(Array.from(e.target.files || []))
-                  e.target.value = ''
+                  addFiles(Array.from(e.target.files || []));
+                  e.target.value = "";
                 }}
               />
 
@@ -502,53 +568,150 @@ export function PhotoComposerPage() {
             </Card>
 
             <Card>
-              <CardTitle>{t('upload.photo.settings')}</CardTitle>
-              <p className="mt-4 text-sm font-medium text-[#161823]">{t('upload.photo.when')}</p>
+              <CardTitle>{t("upload.photo.settings")}</CardTitle>
+              <p className="mt-4 text-sm font-medium text-[#161823]">
+                {t("upload.photo.when")}
+              </p>
               <div className="mt-2 flex gap-6">
                 <label className="flex cursor-pointer items-center gap-2 text-sm text-[#161823]">
                   <input
                     type="radio"
                     className="accent-[#fe2c55]"
-                    checked={postTiming === 'now'}
-                    onChange={() => setPostTiming('now')}
+                    checked={postTiming === "now"}
+                    onChange={() => setPostTiming("now")}
                   />
-                  {t('upload.photo.now')}
+                  {t("upload.photo.now")}
                 </label>
                 <label className="flex cursor-pointer items-center gap-2 text-sm text-[#161823]">
                   <input
                     type="radio"
                     className="accent-[#fe2c55]"
-                    checked={postTiming === 'schedule'}
-                    onChange={() => setPostTiming('schedule')}
+                    checked={postTiming === "schedule"}
+                    onChange={() => setPostTiming("schedule")}
                   />
-                  {t('upload.schedule')}
+                  {t("upload.schedule")}
                 </label>
               </div>
-              {postTiming === 'schedule' ? (
+              {postTiming === "schedule" ? (
                 <div className="mt-3">
-                  <SchedulePickers value={scheduleAt} onChange={setScheduleAt} />
+                  <SchedulePickers
+                    value={scheduleAt}
+                    onChange={setScheduleAt}
+                  />
                 </div>
               ) : null}
-              <p className="mt-4 text-sm font-medium text-[#161823]">{t('upload.photo.privacy')}</p>
+              <p className="mt-4 text-sm font-medium text-[#161823]">
+                {t("upload.photo.privacy")}
+              </p>
               <select
                 value={privacy}
                 onChange={(e) => setPrivacy(e.target.value)}
                 className="mt-2 w-full max-w-sm cursor-pointer rounded-lg bg-[#f8f8f8] px-3 py-2.5 text-sm text-[#161823] outline-none"
               >
-                <option value="everyone">{t('upload.privacy.everyone')}</option>
-                <option value="friends">{t('upload.privacy.friends')}</option>
-                <option value="onlyYou">{t('upload.privacy.onlyYou')}</option>
+                <option value="everyone">{t("upload.privacy.everyone")}</option>
+                <option value="friends">{t("upload.privacy.friends")}</option>
+                <option value="onlyYou">{t("upload.privacy.onlyYou")}</option>
               </select>
+
+              {showMoreSettings ? (
+                <div className="mt-5 space-y-5 border-t border-[#f1f1f2] pt-5">
+                  <div>
+                    <p className="text-sm font-semibold text-[#161823]">
+                      {t("upload.allowUsers")}
+                    </p>
+                    <label className="mt-2.5 flex cursor-pointer items-center gap-2.5 text-sm text-[#161823]">
+                      <input
+                        type="checkbox"
+                        checked={allowComment}
+                        onChange={(e) => setAllowComment(e.target.checked)}
+                        className="h-4 w-4 rounded border-[#c6c6c8] accent-[#fe2c55]"
+                      />
+                      {t("upload.comments")}
+                    </label>
+                    <label className="mt-2.5 flex cursor-pointer items-center gap-2.5 text-sm text-[#161823]">
+                      <input
+                        type="checkbox"
+                        checked={allowReuse}
+                        onChange={(e) => setAllowReuse(e.target.checked)}
+                        className="h-4 w-4 rounded border-[#c6c6c8] accent-[#fe2c55]"
+                      />
+                      {t("upload.reuse")}
+                      <IoInformationCircleOutline
+                        className="text-[#8a8b91]"
+                        aria-hidden
+                      />
+                    </label>
+                  </div>
+
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[#161823]">
+                        {t("upload.disclose")}
+                      </p>
+                      <p className="mt-1 text-xs leading-snug text-[#8a8b91]">
+                        {t("upload.discloseHint")}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={discloseContent}
+                      onClick={() => setDiscloseContent((v) => !v)}
+                      className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors ${
+                        discloseContent ? "bg-[#fe2c55]" : "bg-[#d0d0d2]"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                          discloseContent ? "translate-x-5" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[#161823]">
+                        {t("upload.aiGenerated")}
+                      </p>
+                      <p className="mt-1 text-xs leading-snug text-[#8a8b91]">
+                        {t("upload.photo.aiGeneratedHint")}{" "}
+                        <span className="cursor-pointer text-[#fe2c55] hover:underline">
+                          {t("upload.photo.learnMore")}
+                        </span>
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={aiContent}
+                      onClick={() => setAiContent((v) => !v)}
+                      className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors ${
+                        aiContent ? "bg-[#fe2c55]" : "bg-[#d0d0d2]"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                          aiContent ? "translate-x-5" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+
               <button
                 type="button"
-                className="mt-3 cursor-pointer text-sm font-medium text-[#8a8b91] hover:text-[#161823]"
+                className="mt-5 flex w-full cursor-pointer items-center justify-center gap-1 border-t border-[#f1f1f2] pt-4 text-sm font-medium text-[#8a8b91] hover:text-[#161823]"
                 onClick={() => setShowMoreSettings((v) => !v)}
               >
-                {showMoreSettings ? t('upload.photo.showLess') : t('upload.photo.showMore')}
+                {showMoreSettings
+                  ? t("upload.photo.showLess")
+                  : t("upload.photo.showMore")}
+                <span aria-hidden className="text-[10px]">
+                  {showMoreSettings ? "▲" : "▼"}
+                </span>
               </button>
-              {showMoreSettings ? (
-                <p className="mt-2 text-xs text-[#8a8b91]">{t('upload.photo.moreSettingsHint')}</p>
-              ) : null}
             </Card>
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
@@ -558,27 +721,26 @@ export function PhotoComposerPage() {
                 className="min-w-[120px] cursor-pointer rounded-lg bg-[#fe2c55] px-8 py-2.5 text-sm font-semibold text-white hover:bg-[#e62a4d] disabled:opacity-50"
                 onClick={() => void publish({ asDraft: false })}
               >
-                {busy ? t('upload.posting') : t('upload.post')}
+                {busy ? t("upload.posting") : t("upload.post")}
               </button>
-              {/* Nền studio light = #f1f1f2 — nút phụ dùng trắng + ring để hiện rõ như TikTok. */}
               <button
                 type="button"
                 disabled={busy}
-                className="min-w-[120px] cursor-pointer rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-[#161823] shadow-sm ring-1 ring-black/5 hover:bg-[#fafafa] disabled:opacity-50"
+                className="min-w-[120px] cursor-pointer rounded-lg bg-[#e3e3e4] px-5 py-2.5 text-sm font-semibold text-[#161823] hover:bg-[#d8d8d9] disabled:opacity-50"
                 onClick={() => void publish({ asDraft: true })}
               >
-                {t('upload.saveDraft')}
+                {t("upload.saveDraft")}
               </button>
               <button
                 type="button"
                 disabled={busy}
-                className="min-w-[120px] cursor-pointer rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-[#161823] shadow-sm ring-1 ring-black/5 hover:bg-[#fafafa] disabled:opacity-50"
+                className="min-w-[120px] cursor-pointer rounded-lg bg-[#e3e3e4] px-5 py-2.5 text-sm font-semibold text-[#161823] hover:bg-[#d8d8d9] disabled:opacity-50"
                 onClick={() => {
-                  clearPhotoDraftFiles()
-                  navigate(STUDIO_UPLOAD_PHOTO_PATH)
+                  clearPhotoDraftFiles();
+                  navigate(STUDIO_UPLOAD_PHOTO_PATH);
                 }}
               >
-                {t('upload.cancel')}
+                {t("upload.cancel")}
               </button>
             </div>
           </div>
@@ -586,17 +748,17 @@ export function PhotoComposerPage() {
           <aside className="hidden pb-8 lg:block">
             <div className="mb-3 flex rounded-lg bg-[#f1f1f2] p-0.5 text-sm">
               {[
-                ['feed', t('upload.photo.previewFeed')],
-                ['profile', t('upload.photo.previewProfile')],
-                ['web', t('upload.photo.previewWeb')],
+                ["feed", t("upload.photo.previewFeed")],
+                ["profile", t("upload.photo.previewProfile")],
+                ["web", t("upload.photo.previewWeb")],
               ].map(([id, label]) => (
                 <button
                   key={id}
                   type="button"
                   className={`min-w-0 flex-1 cursor-pointer rounded-md px-2 py-1.5 font-medium ${
                     previewTab === id
-                      ? 'bg-white text-[#161823] shadow-sm'
-                      : 'text-[#8a8b91]'
+                      ? "bg-white text-[#161823] shadow-sm"
+                      : "text-[#8a8b91]"
                   }`}
                   onClick={() => setPreviewTab(id)}
                 >
@@ -605,19 +767,23 @@ export function PhotoComposerPage() {
               ))}
             </div>
 
-            {previewTab === 'feed' ? (
+            {previewTab === "feed" ? (
               <div className="vibely-keep-dark mx-auto w-[260px] overflow-hidden rounded-[28px] border-[7px] border-[#161823] bg-black shadow-xl">
                 <div className="relative aspect-9/16 bg-black text-white">
                   <div className="absolute inset-x-0 top-0 z-30 flex items-center justify-between px-3 pt-1 text-[10px] font-medium">
                     <span>8:00</span>
-                    <span className="flex items-center gap-0.5 opacity-90">●●● Wi‑Fi</span>
+                    <span className="flex items-center gap-0.5 opacity-90">
+                      ●●● Wi‑Fi
+                    </span>
                   </div>
                   {previews[previewIndex] ? (
                     <button
                       type="button"
                       className="absolute inset-0 cursor-pointer"
                       onClick={() =>
-                        setPreviewIndex((i) => (previews.length ? (i + 1) % previews.length : 0))
+                        setPreviewIndex((i) =>
+                          previews.length ? (i + 1) % previews.length : 0,
+                        )
                       }
                     >
                       <img
@@ -654,7 +820,7 @@ export function PhotoComposerPage() {
                       {previews.map((_, i) => (
                         <span
                           key={i}
-                          className={`h-1 w-1 rounded-full ${i === previewIndex ? 'bg-white' : 'bg-white/40'}`}
+                          className={`h-1 w-1 rounded-full ${i === previewIndex ? "bg-white" : "bg-white/40"}`}
                         />
                       ))}
                     </div>
@@ -668,7 +834,7 @@ export function PhotoComposerPage() {
                       description={captionText}
                       locationQuery={locationLabel}
                       soundLabel={soundLabel}
-                      photoBadge={t('upload.photo.photoBadge')}
+                      photoBadge={t("upload.photo.photoBadge")}
                     />
                   </div>
                   <nav
@@ -703,7 +869,7 @@ export function PhotoComposerPage() {
               </div>
             ) : null}
 
-            {previewTab === 'profile' ? (
+            {previewTab === "profile" ? (
               <div className="mx-auto w-[260px] overflow-hidden rounded-[28px] border-[7px] border-[#161823] bg-white shadow-xl">
                 <div className="aspect-9/16 overflow-hidden bg-white text-[#161823]">
                   <div className="flex items-center justify-between px-3 pt-2 text-[10px] text-[#161823]">
@@ -742,7 +908,9 @@ export function PhotoComposerPage() {
                     </div>
                   </div>
                   <div className="mt-3 flex justify-around border-b border-[#e8e8e9] pb-1 text-[#8a8b91]">
-                    <span className="border-b-2 border-[#161823] px-4 pb-1 text-[#161823]">▦</span>
+                    <span className="border-b-2 border-[#161823] px-4 pb-1 text-[#161823]">
+                      ▦
+                    </span>
                     <span>↻</span>
                     <span>♡</span>
                   </div>
@@ -751,11 +919,17 @@ export function PhotoComposerPage() {
                       <button
                         type="button"
                         className="relative aspect-square cursor-pointer bg-black"
-                        onClick={() => setPreviewTab('feed')}
+                        onClick={() => setPreviewTab("feed")}
                       >
-                        <img src={previews[0]} alt="" className="h-full w-full object-cover" />
+                        <img
+                          src={previews[0]}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
                         {previews.length > 1 ? (
-                          <span className="absolute top-1 right-1 text-[10px] text-white drop-shadow">☰</span>
+                          <span className="absolute top-1 right-1 text-[10px] text-white drop-shadow">
+                            ☰
+                          </span>
                         ) : null}
                       </button>
                     ) : null}
@@ -767,7 +941,7 @@ export function PhotoComposerPage() {
               </div>
             ) : null}
 
-            {previewTab === 'web' ? (
+            {previewTab === "web" ? (
               <div className="vibely-keep-dark overflow-hidden rounded-2xl bg-black shadow-xl">
                 <div className="relative aspect-video w-full bg-black">
                   {previews[previewIndex] ? (
@@ -775,7 +949,9 @@ export function PhotoComposerPage() {
                       type="button"
                       className="absolute inset-0 cursor-pointer"
                       onClick={() =>
-                        setPreviewIndex((i) => (previews.length ? (i + 1) % previews.length : 0))
+                        setPreviewIndex((i) =>
+                          previews.length ? (i + 1) % previews.length : 0,
+                        )
                       }
                     >
                       <img
@@ -796,7 +972,7 @@ export function PhotoComposerPage() {
                         <span
                           key={i}
                           className={`h-1.5 w-1.5 rounded-full ${
-                            i === previewIndex ? 'bg-white' : 'bg-white/40'
+                            i === previewIndex ? "bg-white" : "bg-white/40"
                           }`}
                         />
                       ))}
@@ -811,7 +987,7 @@ export function PhotoComposerPage() {
                       description={captionText}
                       locationQuery={locationLabel}
                       soundLabel={soundLabel}
-                      photoBadge={t('upload.photo.photoBadge')}
+                      photoBadge={t("upload.photo.photoBadge")}
                     />
                   </div>
                 </div>
@@ -827,5 +1003,5 @@ export function PhotoComposerPage() {
       />
       <audio ref={previewAudioRef} className="hidden" loop />
     </StudioLayout>
-  )
+  );
 }
