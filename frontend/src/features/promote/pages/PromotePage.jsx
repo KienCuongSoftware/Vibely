@@ -127,22 +127,22 @@ function WelcomePromoteModal({ open, onClose, onCreate, t }) {
         <button
           type="button"
           aria-label={t("nav.close")}
-          className="promote-welcome-close absolute left-4 top-4 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white/90"
+          className="promote-welcome-close absolute left-4 top-4 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full"
           onClick={onClose}
         >
           <IoClose className="text-2xl" />
         </button>
 
-        <div className="promote-welcome-art-wrap flex h-[220px] w-full shrink-0 items-center justify-center sm:h-[260px]">
-          <img
-            src="/images/menu_creator_tool.png"
-            alt=""
-            className="promote-welcome-art h-full w-full object-contain object-center"
-            draggable={false}
-          />
-        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-7 pb-7 pt-12 sm:px-10">
+          <div className="promote-welcome-art-wrap mx-auto mb-2 flex h-[180px] w-full max-w-[360px] items-center justify-center sm:h-[210px]">
+            <img
+              src="/images/menu_creator_tool.png"
+              alt=""
+              className="promote-welcome-art h-full w-full object-contain object-center"
+              draggable={false}
+            />
+          </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-7 pb-7 pt-5 sm:px-10">
           <h2
             id="promote-welcome-title"
             className="text-center text-[22px] font-bold leading-snug tracking-tight sm:text-[24px]"
