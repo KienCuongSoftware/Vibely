@@ -1108,11 +1108,11 @@ html[data-vibely-theme="light"] .vibely-account-actions-divider {
 
 html[data-vibely-theme="light"] .vibely-promote-page {
   --promote-divider: #f1f1f2;
-  background-color: #fff;
+  background-color: #f1f1f2;
   color: #161823;
 }
 html[data-vibely-theme="light"] .vibely-promote-page .promote-header {
-  border-color: #f1f1f2;
+  border-color: #e3e3e4;
   background-color: rgba(255, 255, 255, 0.96);
 }
 html[data-vibely-theme="light"] .vibely-promote-page .promote-icon-btn {
@@ -1149,8 +1149,8 @@ html[data-vibely-theme="light"] .vibely-promote-page .promote-sidebar-footer {
 }
 html[data-vibely-theme="light"] .vibely-promote-page .promote-card {
   background-color: #fff;
-  border-color: transparent;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e8e8e9;
+  box-shadow: 0 1px 3px rgba(22, 24, 35, 0.04);
 }
 html[data-vibely-theme="light"] .vibely-promote-page .promote-muted {
   color: #757575;

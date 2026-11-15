@@ -587,9 +587,13 @@ export function PromotePage() {
                 </ul>
               </section>
 
-              <section className="promote-card rounded-xl px-5 py-10 text-center sm:px-6">
-                <p className="text-[17px] font-bold">{t("promotePage.noVideoTitle")}</p>
-                <p className="promote-muted mt-1 text-[14px]">{t("promotePage.noVideoHint")}</p>
+              <section className="promote-card rounded-xl px-5 py-12 text-center sm:px-6">
+                <div className="mx-auto max-w-md">
+                  <p className="text-[17px] font-bold">{t("promotePage.noVideoTitle")}</p>
+                  <p className="promote-muted mt-1.5 text-[14px]">
+                    {t("promotePage.noVideoHint")}
+                  </p>
+                </div>
               </section>
 
               <section className="promote-card rounded-xl p-5 sm:p-6">
