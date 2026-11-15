@@ -134,11 +134,13 @@ function WelcomePromoteModal({ open, onClose, onCreate, t }) {
         </button>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-7 pb-7 pt-12 sm:px-10">
-          <div className="promote-welcome-art-wrap mx-auto mb-2 flex h-[180px] w-full max-w-[360px] items-center justify-center sm:h-[210px]">
+          <div className="promote-welcome-art-wrap mx-auto mb-1 flex w-full max-w-[360px] items-center justify-center">
             <img
               src="/images/menu_creator_tool.png"
               alt=""
-              className="promote-welcome-art h-full w-full object-contain object-center"
+              className="promote-welcome-art"
+              width={516}
+              height={291}
               draggable={false}
             />
           </div>

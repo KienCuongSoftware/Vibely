@@ -1068,13 +1068,13 @@ html[data-vibely-theme="light"] .vibely-account-actions-divider {
   color: #161823;
 }
 .vibely-promote-page .promote-welcome-art-wrap {
-  background-color: #fff;
+  background-color: transparent;
 }
-/* PNG nền đen — screen để chỉ còn icon (viền đen nét vẽ), nền modal trắng */
 .vibely-promote-page .promote-welcome-art {
   display: block;
+  width: 100%;
   max-width: 360px;
-  mix-blend-mode: screen;
+  height: auto;
 }
 .vibely-promote-page .promote-welcome-close {
   color: #161823;
