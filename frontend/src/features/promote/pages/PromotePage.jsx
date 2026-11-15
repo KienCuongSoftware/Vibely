@@ -76,6 +76,113 @@ function PromoteSlider({ value, min, max, step, onChange, ariaLabel }) {
   );
 }
 
+const PROMOTE_WELCOME_KEY = "vibely.promote.welcomeSeen";
+
+function WelcomePromoteModal({ open, onClose, onCreate, t }) {
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  const steps = [
+    {
+      title: t("promotePage.welcome.step1Title"),
+      body: t("promotePage.welcome.step1Body"),
+    },
+    {
+      title: t("promotePage.welcome.step2Title"),
+      body: t("promotePage.welcome.step2Body"),
+    },
+    {
+      title: t("promotePage.welcome.step3Title"),
+      body: t("promotePage.welcome.step3Body"),
+    },
+  ];
+
+  return (
+    <div
+      className="promote-modal-backdrop fixed inset-0 z-[60] flex items-center justify-center p-4"
+      role="presentation"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="promote-welcome-title"
+        className="promote-welcome-modal relative w-full max-w-[440px] overflow-hidden rounded-2xl px-6 pb-6 pt-5 shadow-2xl"
+      >
+        <button
+          type="button"
+          aria-label={t("nav.close")}
+          className="promote-welcome-close absolute left-3 top-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full"
+          onClick={onClose}
+        >
+          <IoClose className="text-xl" />
+        </button>
+
+        <div className="mx-auto mt-2 flex h-[120px] w-full max-w-[280px] items-center justify-center">
+          <img
+            src="/images/menu_creator_tool.png"
+            alt=""
+            className="promote-welcome-art h-full w-full object-contain"
+            draggable={false}
+          />
+        </div>
+
+        <h2
+          id="promote-welcome-title"
+          className="mt-3 text-center text-[20px] font-bold leading-snug tracking-tight"
+        >
+          {t("promotePage.welcome.title")}
+        </h2>
+        <p className="promote-welcome-desc mt-2 text-center text-[14px] leading-relaxed">
+          {t("promotePage.welcome.description")}
+        </p>
+
+        <ol className="mt-5 space-y-4">
+          {steps.map((step, index) => (
+            <li key={step.title} className="flex gap-3">
+              <span
+                className="promote-welcome-step-num flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] font-bold"
+                aria-hidden
+              >
+                {index + 1}
+              </span>
+              <div className="min-w-0 pt-0.5">
+                <p className="text-[14px] font-bold leading-snug">{step.title}</p>
+                <p className="promote-welcome-desc mt-0.5 text-[13px] leading-snug">
+                  {step.body}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+
+        <button
+          type="button"
+          className="mt-6 flex h-12 w-full cursor-pointer items-center justify-center rounded-lg bg-[#fe2c55] text-[15px] font-bold text-white hover:bg-[#e62a4d]"
+          onClick={onCreate}
+        >
+          {t("promotePage.welcome.cta")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function PriceDetailsModal({ open, onClose, budget, canStart, onStart, t }) {
   useEffect(() => {
     if (!open) return undefined;
@@ -171,6 +278,22 @@ export function PromotePage() {
   const [duration, setDuration] = useState(DURATION_DEFAULT);
   const [priceOpen, setPriceOpen] = useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const [welcomeOpen, setWelcomeOpen] = useState(() => {
+    try {
+      return localStorage.getItem(PROMOTE_WELCOME_KEY) !== "1";
+    } catch {
+      return true;
+    }
+  });
+
+  const dismissWelcome = () => {
+    setWelcomeOpen(false);
+    try {
+      localStorage.setItem(PROMOTE_WELCOME_KEY, "1");
+    } catch {
+      /* ignore */
+    }
+  };
 
   useEffect(() => {
     document.title = t("promotePage.pageTitle");
@@ -456,6 +579,16 @@ export function PromotePage() {
           </div>
         </div>
       ) : null}
+
+      <WelcomePromoteModal
+        open={welcomeOpen}
+        onClose={dismissWelcome}
+        onCreate={() => {
+          dismissWelcome();
+          setNav("create");
+        }}
+        t={t}
+      />
 
       <PriceDetailsModal
         open={priceOpen}

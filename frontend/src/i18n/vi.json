@@ -291,7 +291,18 @@
     "startPromote": "Bắt đầu quảng bá",
     "emptyCampaigns": "Bạn chưa có chiến dịch quảng bá nào.",
     "programTerms": "Chương trình Quảng bá và Điều khoản Thanh toán của Vibely",
-    "adsPolicy": "Chính sách quảng cáo"
+    "adsPolicy": "Chính sách quảng cáo",
+    "welcome": {
+      "title": "Chào mừng đến với tính năng Quảng bá trên Vibely",
+      "description": "Quảng bá là công cụ quảng cáo giúp bạn cải thiện mức độ tương tác và tăng khả năng hiển thị của bài đăng.",
+      "step1Title": "Chọn nội dung của bạn",
+      "step1Body": "Chọn video hiện có hoặc tải video bạn muốn quảng bá lên.",
+      "step2Title": "Đặt mục tiêu, đối tượng khán giả, ngân sách và lịch của bạn",
+      "step2Body": "Chọn một mục tiêu và gói quảng cáo hoặc tùy chỉnh theo cách của bạn.",
+      "step3Title": "Theo dõi quá trình quảng bá trên thiết bị di động",
+      "step3Body": "Tạo một sự kiện và chờ xét duyệt.",
+      "cta": "Tạo kế hoạch quảng bá"
+    }
   },
   "explorePage": {
     "title": "Khám phá",

@@ -291,7 +291,18 @@
     "startPromote": "Start promoting",
     "emptyCampaigns": "You don’t have any promotions yet.",
     "programTerms": "Vibely Promote Program and Payment Terms",
-    "adsPolicy": "Advertising Policy"
+    "adsPolicy": "Advertising Policy",
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan"
+    }
   },
   "explorePage": {
     "title": "Explore",

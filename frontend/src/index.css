@@ -1063,6 +1063,26 @@ html[data-vibely-theme="light"] .vibely-account-actions-divider {
 .vibely-promote-page .promote-price-row {
   border-color: #27272a;
 }
+.vibely-promote-page .promote-welcome-modal {
+  background-color: #fff;
+  color: #161823;
+}
+.vibely-promote-page .promote-welcome-close {
+  color: #161823;
+}
+.vibely-promote-page .promote-welcome-close:hover {
+  background-color: #f1f1f2;
+}
+.vibely-promote-page .promote-welcome-desc {
+  color: #8a8b91;
+}
+.vibely-promote-page .promote-welcome-step-num {
+  background-color: #f1f1f2;
+  color: #161823;
+}
+.vibely-promote-page .promote-welcome-art {
+  mix-blend-mode: screen;
+}
 
 html[data-vibely-theme="light"] .vibely-promote-page {
   --promote-divider: #e3e3e4;
