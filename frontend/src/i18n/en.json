@@ -251,11 +251,14 @@
     "create": "Create",
     "dashboard": "Dashboard",
     "mine": "Mine",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
     "chooseGoal": "Choose your goal",
     "tabs": {
       "boostAccount": "Boost account",
       "increaseSales": "Increase sales",
-      "attractLeads": "Attract leads"
+      "boostLive": "Boost LIVE",
+      "attractLeads": "Attract customers"
     },
     "goals": {
       "likesComments": "More likes and comments",
@@ -264,12 +267,41 @@
       "profileViews": "More profile views",
       "websiteTraffic": "More website traffic",
       "productSales": "More product sales",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE",
       "leadForm": "More lead form submissions",
       "messageLeads": "More message leads"
     },
     "noVideoTitle": "No video yet",
     "noVideoHint": "...time to create some content!",
     "uploadContent": "Upload content",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
     "customPromote": "Custom promotion",
     "estimatesHint": "Shown results are estimates",
     "estimateRange": "{{min}} – {{max}}",

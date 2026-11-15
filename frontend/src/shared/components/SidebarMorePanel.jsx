@@ -274,7 +274,7 @@ export function SidebarMorePanel({ onClose, token, onLogout, showTools = true })
                         navigate("/login");
                         return;
                       }
-                      navigate("/promote");
+                      navigate("/promote/web/main?enter_from=menu_creator_tool");
                     }}
                   />
                   <MoreRow

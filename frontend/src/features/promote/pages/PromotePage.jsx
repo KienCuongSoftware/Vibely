@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
+  IoCheckmarkCircle,
   IoClose,
   IoCloudUploadOutline,
   IoCreateOutline,
@@ -11,25 +12,24 @@ import {
   IoInformationCircleOutline,
   IoPersonOutline,
   IoPlayOutline,
-  IoThumbsUpOutline,
+  IoRadioOutline,
+  IoWalletOutline,
 } from "react-icons/io5";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { AccountAvatarMenu } from "@/shared/components/AccountAvatarMenu.jsx";
 import { AvatarImage } from "@/shared/components/AvatarImage";
 import { VibelyWordmark } from "@/shared/components/VibelyWordmark.jsx";
 
-const BUDGET_MIN = 50_000;
-const BUDGET_MAX = 2_000_000;
-const BUDGET_STEP = 10_000;
-const BUDGET_DEFAULT = 169_000;
-
-const DURATION_MIN = 6;
-const DURATION_MAX = 24;
-const DURATION_DEFAULT = 12;
+export const PROMOTE_ENTRY_PATH =
+  "/promote/web/main?enter_from=menu_creator_tool";
 
 const GOAL_TABS = [
-  { id: "boostAccount", goals: ["likesComments", "videoViews", "followers", "profileViews"] },
+  {
+    id: "boostAccount",
+    goals: ["likesComments", "videoViews", "followers", "profileViews"],
+  },
   { id: "increaseSales", goals: ["websiteTraffic", "productSales"] },
+  { id: "boostLive", goals: ["liveViewers", "liveFollowers"] },
   { id: "attractLeads", goals: ["leadForm", "messageLeads"] },
 ];
 
@@ -40,40 +40,91 @@ const GOAL_ICONS = {
   profileViews: IoEyeOutline,
   websiteTraffic: IoEyeOutline,
   productSales: IoPlayOutline,
+  liveViewers: IoRadioOutline,
+  liveFollowers: IoPersonOutline,
   leadForm: IoPersonOutline,
   messageLeads: IoHeartOutline,
 };
 
-/** TikTok-style VND: đ69,000 */
+/** Packages shaped like TikTok Promote presets (estimates + price). */
+const PACKAGES_BY_GOAL = {
+  likesComments: [
+    {
+      id: "mid",
+      min: 1130,
+      max: 4510,
+      hours: 12,
+      price: 197_272,
+      recommended: true,
+    },
+    { id: "low", min: 131, max: 525, hours: 12, price: 23_000 },
+    { id: "high", min: 1970, max: 7890, hours: 12, price: 345_226 },
+  ],
+  videoViews: [
+    {
+      id: "mid",
+      min: 5200,
+      max: 18_000,
+      hours: 12,
+      price: 197_272,
+      recommended: true,
+    },
+    { id: "low", min: 800, max: 2800, hours: 12, price: 23_000 },
+    { id: "high", min: 9000, max: 32_000, hours: 12, price: 345_226 },
+  ],
+  followers: [
+    {
+      id: "mid",
+      min: 45,
+      max: 180,
+      hours: 12,
+      price: 197_272,
+      recommended: true,
+    },
+    { id: "low", min: 8, max: 30, hours: 12, price: 23_000 },
+    { id: "high", min: 80, max: 320, hours: 12, price: 345_226 },
+  ],
+  profileViews: [
+    {
+      id: "mid",
+      min: 900,
+      max: 3600,
+      hours: 12,
+      price: 197_272,
+      recommended: true,
+    },
+    { id: "low", min: 120, max: 480, hours: 12, price: 23_000 },
+    { id: "high", min: 1600, max: 6400, hours: 12, price: 345_226 },
+  ],
+};
+
+const DEFAULT_PACKAGES = PACKAGES_BY_GOAL.likesComments;
+
+for (const goalId of [
+  "websiteTraffic",
+  "productSales",
+  "liveViewers",
+  "liveFollowers",
+  "leadForm",
+  "messageLeads",
+]) {
+  if (!PACKAGES_BY_GOAL[goalId]) {
+    PACKAGES_BY_GOAL[goalId] = DEFAULT_PACKAGES.map((pkg) => ({ ...pkg }));
+  }
+}
+
+/** TikTok-style VND: ₫197,272 */
 function formatDong(amount) {
   const n = Math.max(0, Math.round(Number(amount) || 0));
-  return `đ${n.toLocaleString("vi-VN")}`;
+  return `₫${n.toLocaleString("en-US")}`;
 }
 
-function estimateReach(budget, durationHours) {
-  if (!budget || !durationHours) return null;
-  const base = Math.round((budget / 1000) * 18 + durationHours * 40);
-  return {
-    min: Math.max(50, Math.round(base * 0.7)),
-    max: Math.round(base * 1.35),
-  };
-}
-
-function PromoteSlider({ value, min, max, step, onChange, ariaLabel }) {
-  const pct = ((value - min) / (max - min)) * 100;
-  return (
-    <input
-      type="range"
-      min={min}
-      max={max}
-      step={step}
-      value={value}
-      aria-label={ariaLabel}
-      onChange={(e) => onChange(Number(e.target.value))}
-      className="promote-slider w-full cursor-pointer"
-      style={{ "--promote-pct": `${pct}%` }}
-    />
-  );
+function formatCompact(n) {
+  const v = Math.max(0, Math.round(Number(n) || 0));
+  if (v < 1000) return String(v);
+  const k = v / 1000;
+  const s = k >= 10 ? k.toFixed(0) : k.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+  return `${s}K`;
 }
 
 const PROMOTE_WELCOME_KEY = "vibely.promote.welcomeSeen";
@@ -281,22 +332,24 @@ function PriceDetailsModal({ open, onClose, budget, canStart, onStart, t }) {
 export function PromotePage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { token, user, logout } = useAuth();
   const activeLocale = i18n.resolvedLanguage || i18n.language;
+  const enterFrom = searchParams.get("enter_from") || "";
 
   const [nav, setNav] = useState("create");
   const [goalTab, setGoalTab] = useState("boostAccount");
   const [goal, setGoal] = useState("likesComments");
-  const [budget, setBudget] = useState(BUDGET_DEFAULT);
-  const [duration, setDuration] = useState(DURATION_DEFAULT);
+  const [packageId, setPackageId] = useState("mid");
   const [priceOpen, setPriceOpen] = useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const [welcomeOpen, setWelcomeOpen] = useState(() => {
     try {
-      return localStorage.getItem(PROMOTE_WELCOME_KEY) !== "1";
+      if (localStorage.getItem(PROMOTE_WELCOME_KEY) === "1") return false;
     } catch {
-      return true;
+      /* ignore */
     }
+    return true;
   });
 
   const dismissWelcome = () => {
@@ -313,14 +366,39 @@ export function PromotePage() {
   }, [t, activeLocale]);
 
   useEffect(() => {
+    if (enterFrom === "menu_creator_tool") {
+      try {
+        if (localStorage.getItem(PROMOTE_WELCOME_KEY) !== "1") {
+          setWelcomeOpen(true);
+        }
+      } catch {
+        setWelcomeOpen(true);
+      }
+    }
+  }, [enterFrom]);
+
+  useEffect(() => {
     const tab = GOAL_TABS.find((item) => item.id === goalTab);
     if (tab && !tab.goals.includes(goal)) {
       setGoal(tab.goals[0]);
     }
   }, [goalTab, goal]);
 
-  const localeTag = String(activeLocale || "vi").startsWith("vi") ? "vi-VN" : activeLocale;
-  const reach = useMemo(() => estimateReach(budget, duration), [budget, duration]);
+  const packages = useMemo(
+    () => PACKAGES_BY_GOAL[goal] || DEFAULT_PACKAGES,
+    [goal],
+  );
+
+  useEffect(() => {
+    if (!packages.some((item) => item.id === packageId)) {
+      const recommended = packages.find((item) => item.recommended) || packages[0];
+      setPackageId(recommended?.id || "mid");
+    }
+  }, [packages, packageId]);
+
+  const selectedPackage =
+    packages.find((item) => item.id === packageId) || packages[0];
+  const budget = selectedPackage?.price || 0;
   const activeGoals = GOAL_TABS.find((item) => item.id === goalTab)?.goals ?? [];
   const hasVideo = false;
   const canStart = hasVideo;
@@ -332,7 +410,7 @@ export function PromotePage() {
   return (
     <section className="vibely-chrome vibely-promote-page min-h-dvh">
       <header className="promote-header sticky top-0 z-40 border-b">
-        <div className="mx-auto flex h-14 max-w-[980px] items-center justify-between gap-4 px-4">
+        <div className="mx-auto flex h-14 max-w-[1100px] items-center justify-between gap-4 px-4">
           <Link to="/" className="shrink-0" aria-label="Vibely">
             <VibelyWordmark className="h-8 w-auto" />
           </Link>
@@ -374,12 +452,12 @@ export function PromotePage() {
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-[980px] gap-5 px-4 py-5">
-        <aside className="promote-sidebar hidden w-[180px] shrink-0 flex-col lg:flex">
+      <div className="mx-auto flex max-w-[1100px] gap-8 px-4 py-5">
+        <aside className="promote-sidebar hidden w-[200px] shrink-0 flex-col lg:flex">
           <button
             type="button"
-            className="promote-create-btn mb-3 flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-lg text-[14px] font-semibold"
-            onClick={() => navigate("/vibelystudio/upload")}
+            className="promote-create-btn mb-4 flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-full text-[14px] font-semibold"
+            onClick={() => setNav("create")}
           >
             <IoCreateOutline className="text-lg" aria-hidden />
             {t("promotePage.create")}
@@ -387,7 +465,7 @@ export function PromotePage() {
           <nav className="flex flex-col gap-0.5">
             <button
               type="button"
-              className={`promote-nav-item flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[14px] ${
+              className={`promote-nav-item flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-[14px] ${
                 nav === "dashboard" ? "is-active" : ""
               }`}
               onClick={() => setNav("dashboard")}
@@ -397,13 +475,23 @@ export function PromotePage() {
             </button>
             <button
               type="button"
-              className={`promote-nav-item flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[14px] ${
+              className={`promote-nav-item flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-[14px] ${
                 nav === "mine" ? "is-active" : ""
               }`}
               onClick={() => setNav("mine")}
             >
               <IoPersonOutline className="text-lg" aria-hidden />
               {t("promotePage.mine")}
+            </button>
+            <button
+              type="button"
+              className={`promote-nav-item flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-[14px] ${
+                nav === "payment" ? "is-active" : ""
+              }`}
+              onClick={() => setNav("payment")}
+            >
+              <IoWalletOutline className="text-lg" aria-hidden />
+              {t("promotePage.payment")}
             </button>
           </nav>
           <div className="promote-sidebar-footer mt-auto space-y-2 pt-8 text-[11px] leading-relaxed">
@@ -413,13 +501,21 @@ export function PromotePage() {
           </div>
         </aside>
 
-        <main className="mx-auto min-w-0 w-full max-w-[640px] flex-1 pb-24">
+        <main className="mx-auto min-w-0 w-full max-w-[680px] flex-1 pb-24">
           {nav !== "create" ? (
             <div className="promote-card rounded-xl p-7 text-center">
               <h1 className="text-lg font-bold">
-                {nav === "dashboard" ? t("promotePage.dashboard") : t("promotePage.mine")}
+                {nav === "dashboard"
+                  ? t("promotePage.dashboard")
+                  : nav === "payment"
+                    ? t("promotePage.payment")
+                    : t("promotePage.mine")}
               </h1>
-              <p className="promote-muted mt-2 text-sm">{t("promotePage.emptyCampaigns")}</p>
+              <p className="promote-muted mt-2 text-sm">
+                {nav === "payment"
+                  ? t("promotePage.emptyPayment")
+                  : t("promotePage.emptyCampaigns")}
+              </p>
               <button
                 type="button"
                 className="mt-5 cursor-pointer rounded-lg bg-[#fe2c55] px-5 py-2.5 text-sm font-semibold text-white"
@@ -429,22 +525,22 @@ export function PromotePage() {
               </button>
             </div>
           ) : (
-            <div className="space-y-3">
-              <section className="promote-card rounded-xl p-4 sm:p-5">
-                <div className="mb-3 flex items-center gap-1.5">
-                  <h2 className="text-[16px] font-bold">{t("promotePage.chooseGoal")}</h2>
+            <div className="space-y-4">
+              <section className="promote-card rounded-xl p-5 sm:p-6">
+                <div className="mb-4 flex items-center gap-1.5">
+                  <h2 className="text-[17px] font-bold">{t("promotePage.chooseGoal")}</h2>
                   <IoInformationCircleOutline className="promote-muted text-base" aria-hidden />
                 </div>
-                <div className="mb-3 flex flex-wrap gap-2">
+                <div className="mb-4 flex flex-wrap gap-2">
                   {GOAL_TABS.map((tab) => {
                     const active = goalTab === tab.id;
                     return (
                       <button
                         key={tab.id}
                         type="button"
-                        className={`cursor-pointer rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
+                        className={`cursor-pointer rounded-md border px-3 py-1.5 text-[13px] font-semibold transition ${
                           active
-                            ? "border-[#fe2c55] bg-[#fe2c55] text-white"
+                            ? "border-[#fe2c55] bg-white text-[#fe2c55]"
                             : "promote-pill"
                         }`}
                         onClick={() => setGoalTab(tab.id)}
@@ -454,7 +550,7 @@ export function PromotePage() {
                     );
                   })}
                 </div>
-                <ul className="divide-y divide-[color:var(--promote-divider)]">
+                <ul>
                   {activeGoals.map((goalId) => {
                     const Icon = GOAL_ICONS[goalId] || IoHeartOutline;
                     const selected = goal === goalId;
@@ -462,11 +558,14 @@ export function PromotePage() {
                       <li key={goalId}>
                         <button
                           type="button"
-                          className="flex w-full cursor-pointer items-center gap-3 py-3 text-left"
+                          className="flex w-full cursor-pointer items-center gap-3 py-3.5 text-left"
                           onClick={() => setGoal(goalId)}
                         >
-                          <Icon className="promote-muted shrink-0 text-[20px]" aria-hidden />
-                          <span className="min-w-0 flex-1 text-[14px]">
+                          <Icon
+                            className={`shrink-0 text-[22px] ${selected ? "text-[#fe2c55]" : "promote-muted"}`}
+                            aria-hidden
+                          />
+                          <span className="min-w-0 flex-1 text-[15px]">
                             {t(`promotePage.goals.${goalId}`)}
                           </span>
                           <span
@@ -488,75 +587,82 @@ export function PromotePage() {
                 </ul>
               </section>
 
-              <section className="promote-card rounded-xl px-4 py-8 text-center sm:px-5">
-                <p className="text-[16px] font-bold">{t("promotePage.noVideoTitle")}</p>
-                <p className="promote-muted mt-1 text-[13px]">{t("promotePage.noVideoHint")}</p>
-                <button
-                  type="button"
-                  className="mt-4 cursor-pointer rounded-lg border border-[#fe2c55] px-4 py-2 text-[13px] font-semibold text-[#fe2c55]"
-                  onClick={() => navigate("/vibelystudio/upload")}
-                >
-                  {t("promotePage.uploadContent")}
-                </button>
+              <section className="promote-card rounded-xl px-5 py-10 text-center sm:px-6">
+                <p className="text-[17px] font-bold">{t("promotePage.noVideoTitle")}</p>
+                <p className="promote-muted mt-1 text-[14px]">{t("promotePage.noVideoHint")}</p>
               </section>
 
-              <section className="promote-card rounded-xl p-4 sm:p-5">
-                <div className="mb-1">
-                  <h2 className="text-[16px] font-bold">{t("promotePage.customPromote")}</h2>
-                  <p className="promote-muted text-[12px]">{t("promotePage.estimatesHint")}</p>
-                </div>
-                <div className="promote-estimate mt-3 flex min-h-20 items-center justify-center rounded-lg text-xl font-semibold">
-                  {hasVideo && reach
-                    ? t("promotePage.estimateRange", {
-                        min: reach.min.toLocaleString(localeTag),
-                        max: reach.max.toLocaleString(localeTag),
-                      })
-                    : "—"}
-                </div>
-
-                <h3 className="mt-5 text-[14px] font-bold">{t("promotePage.budgetDuration")}</h3>
-
-                <div className="mt-3">
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <span className="text-[13px] font-semibold">{t("promotePage.budget")}</span>
-                    <span className="text-[14px] font-bold tabular-nums">
-                      {formatDong(budget)}
-                    </span>
-                  </div>
-                  <PromoteSlider
-                    value={budget}
-                    min={BUDGET_MIN}
-                    max={BUDGET_MAX}
-                    step={BUDGET_STEP}
-                    ariaLabel={t("promotePage.budget")}
-                    onChange={setBudget}
-                  />
-                  <div className="promote-budget-tip mt-3 flex items-start gap-2 rounded-lg px-3 py-2 text-[12px]">
-                    <IoThumbsUpOutline className="mt-0.5 shrink-0 text-base text-[#fe2c55]" aria-hidden />
-                    <span>{t("promotePage.budgetTip")}</span>
-                  </div>
-                </div>
-
-                <div className="mt-5">
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <span className="text-[13px] font-semibold">{t("promotePage.duration")}</span>
-                    <span className="text-[14px] font-bold">
-                      {t("promotePage.durationHours", { count: duration })}
-                    </span>
-                  </div>
-                  <PromoteSlider
-                    value={duration}
-                    min={DURATION_MIN}
-                    max={DURATION_MAX}
-                    step={1}
-                    ariaLabel={t("promotePage.duration")}
-                    onChange={setDuration}
-                  />
+              <section className="promote-card rounded-xl p-5 sm:p-6">
+                <h2 className="mb-4 text-[17px] font-bold">
+                  {t("promotePage.choosePackage")}
+                </h2>
+                <div className="space-y-3">
+                  {packages.map((pkg) => {
+                    const selected = packageId === pkg.id;
+                    return (
+                      <button
+                        key={pkg.id}
+                        type="button"
+                        className={`promote-package w-full overflow-hidden rounded-xl border text-left transition ${
+                          selected
+                            ? "border-[#fe2c55] shadow-[0_0_0_1px_#fe2c55]"
+                            : "promote-package-idle"
+                        }`}
+                        onClick={() => setPackageId(pkg.id)}
+                      >
+                        {pkg.recommended ? (
+                          <div className="flex items-center justify-between gap-2 bg-[#fe2c55] px-4 py-2 text-[13px] font-semibold text-white">
+                            <span>{t(`promotePage.packageFit.${goal}`, {
+                              defaultValue: t("promotePage.packageFit.likesComments"),
+                            })}</span>
+                          </div>
+                        ) : null}
+                        <div className="flex items-center gap-3 px-4 py-4">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[15px] font-semibold leading-snug">
+                              {t("promotePage.packageRange", {
+                                min: formatCompact(pkg.min),
+                                max: formatCompact(pkg.max),
+                                metric: t(`promotePage.packageMetric.${goal}`, {
+                                  defaultValue: t(
+                                    "promotePage.packageMetric.likesComments",
+                                  ),
+                                }),
+                                hours: pkg.hours,
+                              })}
+                            </p>
+                            <p className="mt-2 text-[15px] font-bold tabular-nums">
+                              {formatDong(pkg.price)}
+                            </p>
+                          </div>
+                          {pkg.recommended ? (
+                            <span className="inline-flex shrink-0 items-center gap-1 text-[13px] font-semibold text-[#fe2c55]">
+                              <IoCheckmarkCircle className="text-base" aria-hidden />
+                              {t("promotePage.recommended")}
+                            </span>
+                          ) : (
+                            <span
+                              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+                                selected
+                                  ? "border-[#fe2c55] bg-[#fe2c55]"
+                                  : "border-zinc-400 bg-transparent"
+                              }`}
+                              aria-hidden
+                            >
+                              {selected ? (
+                                <span className="h-2 w-2 rounded-full bg-white" />
+                              ) : null}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </section>
 
-              <section className="promote-card rounded-xl p-4 sm:p-5">
-                <h2 className="text-[16px] font-bold">{t("promotePage.termsTitle")}</h2>
+              <section className="promote-card rounded-xl p-5 sm:p-6">
+                <h2 className="text-[17px] font-bold">{t("promotePage.termsTitle")}</h2>
                 <p className="promote-muted mt-2.5 text-[12px] leading-relaxed">
                   {t("promotePage.termsP1")}
                 </p>
@@ -571,7 +677,7 @@ export function PromotePage() {
 
       {nav === "create" ? (
         <div className="promote-footer fixed inset-x-0 bottom-0 z-30 border-t">
-          <div className="mx-auto flex max-w-[980px] items-center justify-between gap-4 px-4 py-3 lg:pl-[204px]">
+          <div className="mx-auto flex max-w-[1100px] items-center justify-between gap-4 px-4 py-3 lg:pl-[232px]">
             <div className="min-w-0 flex-1">
               <button
                 type="button"
@@ -584,7 +690,7 @@ export function PromotePage() {
             <button
               type="button"
               disabled={!canStart}
-              className="cursor-pointer rounded-lg bg-[#fe2c55] px-7 py-2.5 text-[14px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
+              className="cursor-pointer rounded-full bg-[#fe2c55] px-10 py-2.5 text-[15px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
               onClick={() => setPriceOpen(true)}
             >
               {t("promotePage.start")}

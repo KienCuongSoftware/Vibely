@@ -1869,7 +1869,11 @@ export function ProfilePage() {
                           <button
                             type="button"
                             className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"
-                            onClick={() => navigate("/promote")}
+                            onClick={() =>
+                              navigate(
+                                "/promote/web/main?enter_from=menu_creator_tool",
+                              )
+                            }
                           >
                             {t("moreMenu.promotePost")}
                           </button>

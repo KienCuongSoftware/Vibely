@@ -106,6 +106,7 @@ export function GuestRoutes() {
       <Route path="/replay/:liveId" element={<RedirectToHomeLogin />} />
       <Route path="/support" element={<SupportPage />} />
       <Route path="/promote" element={<RedirectToHomeLogin />} />
+      <Route path="/promote/web/main" element={<RedirectToHomeLogin />} />
       <Route path="/explore/view/:publicId" element={<ExploreViewerPage />} />
       <Route path="/search" element={<SearchResultsPage />} />
       <Route path="/tag/:tag" element={<HashtagPage />} />
@@ -252,6 +253,10 @@ export function AuthenticatedRoutes({ user, isAdmin }) {
       <Route path="/support" element={<SupportPage />} />
       <Route
         path="/promote"
+        element={<Navigate to="/promote/web/main?enter_from=menu_creator_tool" replace />}
+      />
+      <Route
+        path="/promote/web/main"
         element={<UserOnlyRoute user={user}><PromotePage /></UserOnlyRoute>}
       />
       <Route
