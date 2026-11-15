@@ -112,7 +112,7 @@ function WelcomePromoteModal({ open, onClose, onCreate, t }) {
 
   return (
     <div
-      className="promote-modal-backdrop fixed inset-0 z-[60] flex items-center justify-center p-4"
+      className="promote-modal-backdrop fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6"
       role="presentation"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -122,62 +122,73 @@ function WelcomePromoteModal({ open, onClose, onCreate, t }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="promote-welcome-title"
-        className="promote-welcome-modal relative w-full max-w-[440px] overflow-hidden rounded-2xl px-6 pb-6 pt-5 shadow-2xl"
+        className="promote-welcome-modal relative flex max-h-[min(920px,calc(100dvh-2rem))] w-full max-w-[560px] flex-col overflow-hidden rounded-2xl shadow-2xl"
       >
         <button
           type="button"
           aria-label={t("nav.close")}
-          className="promote-welcome-close absolute left-3 top-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full"
+          className="promote-welcome-close absolute left-4 top-4 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white/90"
           onClick={onClose}
         >
-          <IoClose className="text-xl" />
+          <IoClose className="text-2xl" />
         </button>
 
-        <div className="mx-auto mt-2 flex h-[120px] w-full max-w-[280px] items-center justify-center">
+        <div className="promote-welcome-art-wrap flex h-[220px] w-full shrink-0 items-center justify-center sm:h-[260px]">
           <img
             src="/images/menu_creator_tool.png"
             alt=""
-            className="promote-welcome-art h-full w-full object-contain"
+            className="promote-welcome-art h-full w-full object-contain object-center"
             draggable={false}
           />
         </div>
 
-        <h2
-          id="promote-welcome-title"
-          className="mt-3 text-center text-[20px] font-bold leading-snug tracking-tight"
-        >
-          {t("promotePage.welcome.title")}
-        </h2>
-        <p className="promote-welcome-desc mt-2 text-center text-[14px] leading-relaxed">
-          {t("promotePage.welcome.description")}
-        </p>
+        <div className="min-h-0 flex-1 overflow-y-auto px-7 pb-7 pt-5 sm:px-10">
+          <h2
+            id="promote-welcome-title"
+            className="text-center text-[22px] font-bold leading-snug tracking-tight sm:text-[24px]"
+          >
+            {t("promotePage.welcome.title")}
+          </h2>
+          <p className="promote-welcome-desc mt-3 text-center text-[15px] leading-relaxed">
+            {t("promotePage.welcome.description")}
+          </p>
 
-        <ol className="mt-5 space-y-4">
-          {steps.map((step, index) => (
-            <li key={step.title} className="flex gap-3">
-              <span
-                className="promote-welcome-step-num flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] font-bold"
-                aria-hidden
-              >
-                {index + 1}
-              </span>
-              <div className="min-w-0 pt-0.5">
-                <p className="text-[14px] font-bold leading-snug">{step.title}</p>
-                <p className="promote-welcome-desc mt-0.5 text-[13px] leading-snug">
-                  {step.body}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ol>
+          <ol className="mt-7 space-y-5">
+            {steps.map((step, index) => (
+              <li key={step.title} className="flex gap-3.5">
+                <span
+                  className="promote-welcome-step-num flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[14px] font-bold"
+                  aria-hidden
+                >
+                  {index + 1}
+                </span>
+                <div className="min-w-0 pt-0.5">
+                  <p className="text-[15px] font-bold leading-snug">{step.title}</p>
+                  <p className="promote-welcome-desc mt-1 text-[14px] leading-snug">
+                    {step.body}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
 
-        <button
-          type="button"
-          className="mt-6 flex h-12 w-full cursor-pointer items-center justify-center rounded-lg bg-[#fe2c55] text-[15px] font-bold text-white hover:bg-[#e62a4d]"
-          onClick={onCreate}
-        >
-          {t("promotePage.welcome.cta")}
-        </button>
+          <div className="mt-8 space-y-3">
+            <button
+              type="button"
+              className="flex h-12 w-full cursor-pointer items-center justify-center rounded-lg bg-[#fe2c55] text-[16px] font-bold text-white hover:bg-[#e62a4d]"
+              onClick={onCreate}
+            >
+              {t("promotePage.welcome.cta")}
+            </button>
+            <button
+              type="button"
+              className="promote-welcome-cancel flex h-12 w-full cursor-pointer items-center justify-center rounded-lg text-[16px] font-bold"
+              onClick={onClose}
+            >
+              {t("promotePage.welcome.cancel")}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

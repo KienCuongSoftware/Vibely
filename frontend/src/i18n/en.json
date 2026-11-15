@@ -301,7 +301,8 @@
       "step2Body": "Pick a goal and ad package, or customize it your way.",
       "step3Title": "Track your promotion on mobile",
       "step3Body": "Create a campaign and wait for review.",
-      "cta": "Create a promotion plan"
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
     }
   },
   "explorePage": {
