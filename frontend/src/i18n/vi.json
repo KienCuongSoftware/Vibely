@@ -278,6 +278,7 @@
     "choosePackage": "Chọn một gói quảng bá",
     "recommended": "Đề xuất",
     "packageRange": "{{min}} - {{max}} {{metric}} trong {{hours}} giờ",
+    "packageMetricInHours": "{{metric}} trong {{hours}} giờ",
     "packageMetric": {
       "likesComments": "Lượt thích và lượt bình luận",
       "videoViews": "Lượt xem video",

@@ -278,6 +278,7 @@
     "choosePackage": "Choose a promotion package",
     "recommended": "Recommended",
     "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
     "packageMetric": {
       "likesComments": "likes and comments",
       "videoViews": "video views",

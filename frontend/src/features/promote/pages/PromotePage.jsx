@@ -596,53 +596,67 @@ export function PromotePage() {
                 <h2 className="mb-4 text-[17px] font-bold">
                   {t("promotePage.choosePackage")}
                 </h2>
+                <p className="promote-muted mb-3 text-[12px]">
+                  {t("promotePage.estimatesHint")}
+                </p>
                 <div className="space-y-3">
                   {packages.map((pkg) => {
                     const selected = packageId === pkg.id;
+                    const metric = t(`promotePage.packageMetric.${goal}`, {
+                      defaultValue: t("promotePage.packageMetric.likesComments"),
+                    });
                     return (
                       <button
                         key={pkg.id}
                         type="button"
                         className={`promote-package w-full overflow-hidden rounded-xl border text-left transition ${
                           selected
-                            ? "border-[#fe2c55] shadow-[0_0_0_1px_#fe2c55]"
+                            ? "border-[#fe2c55] bg-[#fff1f4] shadow-[0_0_0_1px_#fe2c55]"
                             : "promote-package-idle"
                         }`}
                         onClick={() => setPackageId(pkg.id)}
                       >
                         {pkg.recommended ? (
-                          <div className="flex items-center justify-between gap-2 bg-[#fe2c55] px-4 py-2 text-[13px] font-semibold text-white">
-                            <span>{t(`promotePage.packageFit.${goal}`, {
-                              defaultValue: t("promotePage.packageFit.likesComments"),
-                            })}</span>
+                          <div
+                            className={`px-4 py-2 text-[13px] font-semibold ${
+                              selected
+                                ? "bg-[#fe2c55] text-white"
+                                : "promote-package-fit-muted"
+                            }`}
+                          >
+                            {t(`promotePage.packageFit.${goal}`, {
+                              defaultValue: t(
+                                "promotePage.packageFit.likesComments",
+                              ),
+                            })}
                           </div>
                         ) : null}
-                        <div className="flex items-center gap-3 px-4 py-4">
+                        <div className="flex items-start gap-3 px-4 py-4">
                           <div className="min-w-0 flex-1">
-                            <p className="text-[15px] font-semibold leading-snug">
-                              {t("promotePage.packageRange", {
-                                min: formatCompact(pkg.min),
-                                max: formatCompact(pkg.max),
-                                metric: t(`promotePage.packageMetric.${goal}`, {
-                                  defaultValue: t(
-                                    "promotePage.packageMetric.likesComments",
-                                  ),
-                                }),
+                            <div className="flex items-start justify-between gap-3">
+                              <p className="text-[18px] font-bold leading-none tabular-nums">
+                                {formatCompact(pkg.min)} - {formatCompact(pkg.max)}
+                              </p>
+                              <p className="shrink-0 text-[15px] font-bold tabular-nums">
+                                {formatDong(pkg.price)}
+                              </p>
+                            </div>
+                            <p className="promote-muted mt-1.5 text-[13px] leading-snug">
+                              {t("promotePage.packageMetricInHours", {
+                                metric,
                                 hours: pkg.hours,
                               })}
                             </p>
-                            <p className="mt-2 text-[15px] font-bold tabular-nums">
-                              {formatDong(pkg.price)}
-                            </p>
+                            {pkg.recommended ? (
+                              <span className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-[#fe2c55]">
+                                <IoCheckmarkCircle className="text-base" aria-hidden />
+                                {t("promotePage.recommended")}
+                              </span>
+                            ) : null}
                           </div>
-                          {pkg.recommended ? (
-                            <span className="inline-flex shrink-0 items-center gap-1 text-[13px] font-semibold text-[#fe2c55]">
-                              <IoCheckmarkCircle className="text-base" aria-hidden />
-                              {t("promotePage.recommended")}
-                            </span>
-                          ) : (
+                          {!pkg.recommended ? (
                             <span
-                              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+                              className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
                                 selected
                                   ? "border-[#fe2c55] bg-[#fe2c55]"
                                   : "border-zinc-400 bg-transparent"
@@ -653,7 +667,7 @@ export function PromotePage() {
                                 <span className="h-2 w-2 rounded-full bg-white" />
                               ) : null}
                             </span>
-                          )}
+                          ) : null}
                         </div>
                       </button>
                     );
