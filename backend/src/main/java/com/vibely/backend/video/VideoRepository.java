@@ -555,5 +555,22 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     long countByIdNotAndStatusNotAndAudioUrl(Long id, VideoStatus status, String audioUrl);
 
     long countByAuthor_IdAndStatusNotAndIdNot(Long authorId, VideoStatus status, Long id);
+
+    long countByStatus(VideoStatus status);
+
+    long countByStudioDraftTrue();
+
+    long countByCreatedAtLessThan(java.time.LocalDateTime createdAt);
+
+    @Query("""
+        select cast(v.createdAt as date) as day, count(v.id) as total
+        from Video v
+        where v.createdAt >= :from
+        group by cast(v.createdAt as date)
+        order by cast(v.createdAt as date)
+        """)
+    List<com.vibely.backend.studio.DailyCountProjection> countDailyCreatedSince(
+        @Param("from") java.time.LocalDateTime from
+    );
 }
 

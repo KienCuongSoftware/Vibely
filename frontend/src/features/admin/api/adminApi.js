@@ -1,6 +1,8 @@
 import { request, toQuery } from "@/shared/api/http.js";
 
 export const adminApi = {
+  getAdminDashboard: (token, { days = 14 } = {}) =>
+    request(`/api/admin/dashboard${toQuery({ days })}`, { token }),
   getAdminUsers: (token, { page = 0, size = 20 } = {}) =>
     request(`/api/admin/users${toQuery({ page, size })}`, { token }),
   getAdminPosts: (token, { page = 0, size = 20, query, status } = {}) =>

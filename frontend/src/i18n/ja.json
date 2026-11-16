@@ -2600,7 +2600,8 @@
         "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
         "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
         "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
-        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal.",
+        "empty": "Not enough data in this period for trend analysis."
       }
     }
   },

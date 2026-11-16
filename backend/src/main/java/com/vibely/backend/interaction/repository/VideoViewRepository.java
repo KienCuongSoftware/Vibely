@@ -16,6 +16,17 @@ import org.springframework.data.repository.query.Param;
 public interface VideoViewRepository extends JpaRepository<VideoViewEntity, Long> {
     long countByVideo_Id(Long videoId);
 
+    long countByCreatedAtGreaterThanEqual(LocalDateTime createdAt);
+
+    @Query("""
+        select cast(vv.createdAt as date) as day, count(vv.id) as total
+        from VideoViewEntity vv
+        where vv.createdAt >= :from
+        group by cast(vv.createdAt as date)
+        order by cast(vv.createdAt as date)
+        """)
+    List<DailyCountProjection> countDailyViewsSince(@Param("from") LocalDateTime from);
+
     @Query("SELECT vv.video.id, COUNT(vv) FROM VideoViewEntity vv WHERE vv.video.id IN :ids GROUP BY vv.video.id")
     List<Object[]> countGroupedByVideoIds(@Param("ids") Collection<Long> ids);
 

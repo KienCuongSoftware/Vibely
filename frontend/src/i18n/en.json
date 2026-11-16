@@ -2302,8 +2302,8 @@
       "kpi": {
         "users": "Total users",
         "videos": "Total videos",
-        "reports": "Reports (period)",
-        "views": "Views (period)"
+        "reports": "Moderation reports (14 days)",
+        "views": "Views (14 days)"
       },
       "charts": {
         "usersGrowth": "User growth",
@@ -2315,8 +2315,8 @@
         "totalUsers": "Total users",
         "newUsers": "New users / day",
         "newVideos": "New videos",
-        "reports": "Reports",
-        "views": "Views (thousands)"
+        "reports": "Moderation reports",
+        "views": "Views"
       },
       "axis": {
         "totalUsers": "Total",
@@ -2330,12 +2330,13 @@
       },
       "ai": {
         "title": "AI trend analysis",
-        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "intro": "Based on real data from the last 14 days: compares the first and second half of the period.",
+        "empty": "Not enough data in this period for trend analysis.",
         "up": "up",
         "down": "down",
         "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
         "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
-        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "moderationTrend": "Moderation reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak day: {{peak}}.",
         "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
       }
     },
