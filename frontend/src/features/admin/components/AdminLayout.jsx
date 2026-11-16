@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { IoMenu, IoMoonOutline, IoSunnyOutline } from "react-icons/io5";
+import { IoMenu } from "react-icons/io5";
 import { AdminSidebar } from "@/features/admin/components/AdminSidebar.jsx";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { AccountAvatarMenu } from "@/shared/components/AccountAvatarMenu.jsx";
@@ -13,7 +13,7 @@ import { useTheme } from "@/shared/theme/ThemeContext.jsx";
 
 export function AdminLayout({ active = "dashboard", title, subtitle, children }) {
   const { t } = useTranslation();
-  const { resolved, setPreference } = useTheme();
+  const { resolved } = useTheme();
   const isLight = resolved === "light";
   const { user, token, logout } = useAuth();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -46,10 +46,6 @@ export function AdminLayout({ active = "dashboard", title, subtitle, children })
       setShowAccountMenu(false);
       hoverCloseTimer.current = null;
     }, 180);
-  };
-
-  const toggleTheme = () => {
-    setPreference(isLight ? "dark" : "light");
   };
 
   useEffect(() => {
@@ -97,9 +93,6 @@ export function AdminLayout({ active = "dashboard", title, subtitle, children })
   const iconBtn = isLight
     ? "text-zinc-700 hover:bg-zinc-200/80"
     : "text-zinc-200 hover:bg-zinc-900";
-  const titleCard = isLight
-    ? "border-zinc-200 bg-white"
-    : "border-zinc-800/80 bg-zinc-900/50";
   const subtitleText = isLight ? "text-zinc-500" : "text-zinc-400";
   const avatarRing = isLight
     ? "ring-zinc-300 hover:ring-zinc-400"
@@ -132,7 +125,7 @@ export function AdminLayout({ active = "dashboard", title, subtitle, children })
         className={`flex h-dvh min-w-0 flex-1 flex-col overflow-hidden p-3 sm:p-6 lg:p-8 ${mainBg}`}
       >
         <div
-          className={`mb-4 flex shrink-0 items-center justify-between gap-3 border-b pb-3 sm:mb-6 sm:gap-4 sm:pb-4 ${topBorder}`}
+          className={`mb-4 flex shrink-0 items-center justify-between gap-3 border-b pb-3 sm:mb-5 sm:gap-4 sm:pb-4 ${topBorder}`}
         >
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <button
@@ -150,70 +143,46 @@ export function AdminLayout({ active = "dashboard", title, subtitle, children })
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div
+            className="relative shrink-0"
+            ref={accountMenuRef}
+            onMouseEnter={openMenu}
+            onMouseLeave={scheduleCloseMenu}
+          >
             <button
               type="button"
-              className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-lg ${iconBtn}`}
-              aria-label={
-                isLight
-                  ? t("appearance.darkMode")
-                  : t("appearance.lightMode")
-              }
-              title={
-                isLight
-                  ? t("appearance.darkMode")
-                  : t("appearance.lightMode")
-              }
-              onClick={toggleTheme}
+              className={`flex cursor-pointer rounded-full p-0.5 ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fe2c55] ${avatarRing}`}
+              aria-label={t("common.accountMenu")}
+              aria-expanded={showAccountMenu}
+              aria-haspopup="menu"
+              onClick={() => setShowAccountMenu((prev) => !prev)}
             >
-              {isLight ? (
-                <IoMoonOutline aria-hidden />
-              ) : (
-                <IoSunnyOutline aria-hidden />
-              )}
-            </button>
-
-            <div
-              className="relative shrink-0"
-              ref={accountMenuRef}
-              onMouseEnter={openMenu}
-              onMouseLeave={scheduleCloseMenu}
-            >
-              <button
-                type="button"
-                className={`flex cursor-pointer rounded-full p-0.5 ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fe2c55] ${avatarRing}`}
-                aria-label={t("common.accountMenu")}
-                aria-expanded={showAccountMenu}
-                aria-haspopup="menu"
-                onClick={() => setShowAccountMenu((prev) => !prev)}
-              >
-                <AvatarImage
-                  src={avatarSrc}
-                  alt=""
-                  className={`h-9 w-9 rounded-full border object-cover ${avatarBorder}`}
-                />
-              </button>
-              <AccountAvatarMenu
-                open={showAccountMenu}
-                onClose={() => setShowAccountMenu(false)}
-                user={user}
-                token={token}
-                className="absolute right-0 top-full z-50 mt-2"
-                onLogout={() => {
-                  setShowAccountMenu(false);
-                  setShowLogoutConfirm(true);
-                }}
+              <AvatarImage
+                src={avatarSrc}
+                alt=""
+                className={`h-9 w-9 rounded-full border object-cover ${avatarBorder}`}
               />
-            </div>
+            </button>
+            <AccountAvatarMenu
+              open={showAccountMenu}
+              onClose={() => setShowAccountMenu(false)}
+              user={user}
+              token={token}
+              className="absolute right-0 top-full z-50 mt-2"
+              onLogout={() => {
+                setShowAccountMenu(false);
+                setShowLogoutConfirm(true);
+              }}
+            />
           </div>
         </div>
 
-        <header
-          className={`mb-4 rounded-xl border px-4 py-3 sm:mb-6 ${titleCard}`}
-        >
-          <h1 className="text-xl font-bold sm:text-2xl">{title}</h1>
+        <header className="mb-4 shrink-0 sm:mb-5">
+          <h1 className="text-[22px] font-bold tracking-tight sm:text-2xl">
+            {title}
+          </h1>
           {subtitle ? (
-            <p className={`mt-1 text-sm ${subtitleText}`}>{subtitle}</p>
+            <p className={`mt-1 max-w-2xl text-sm ${subtitleText}`}>{subtitle}</p>
           ) : null}
         </header>
 

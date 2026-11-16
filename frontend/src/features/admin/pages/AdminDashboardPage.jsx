@@ -1,55 +1,34 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from "chart.js";
-import { Bar, Doughnut, Line } from "react-chartjs-2";
-import {
-  IoBarChartOutline,
   IoPeopleOutline,
   IoPulseOutline,
   IoSparklesOutline,
-  IoStatsChartOutline,
   IoVideocamOutline,
   IoWarningOutline,
 } from "react-icons/io5";
 import { adminApi } from "@/features/admin/api";
+import {
+  AdminGroupedBars,
+  AdminShareBars,
+  AdminTrendChart,
+  formatAdminCompact,
+} from "@/features/admin/components/AdminDashboardCharts.jsx";
 import { AdminLayout } from "@/features/admin/components/AdminLayout.jsx";
 import { useAuth } from "@/features/auth/hooks/useAuth.js";
 import { useTheme } from "@/shared/theme/ThemeContext.jsx";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-);
-
-const COLORS = {
-  users: "#7b61ff",
-  videos: "#38bdf8",
-  reports: "#ff6b6b",
-  views: "#34d399",
-  published: "#34d399",
-  draft: "#a1a1aa",
-  flagged: "#f59e0b",
-  removed: "#fe2c55",
+const ACCENT = {
+  users: "#7B61FF",
+  usersFill: "rgba(123, 97, 255, 0.12)",
+  videos: "#20D5EC",
+  reports: "#FE2C55",
+  views: "#20D5EC",
+  viewsFill: "rgba(32, 213, 236, 0.12)",
+  published: "#20D5EC",
+  draft: "#A1A1AA",
+  flagged: "#F59E0B",
+  removed: "#FE2C55",
 };
 
 function pctChange(arr) {
@@ -65,13 +44,6 @@ function formatDayLabel(isoDay) {
   const raw = String(isoDay || "");
   const m = raw.match(/^\d{4}-(\d{2})-(\d{2})$/);
   return m ? `${m[1]}-${m[2]}` : raw;
-}
-
-function formatCompact(n) {
-  const v = Math.round(Number(n) || 0);
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `${(v / 1_000).toFixed(v >= 10_000 ? 0 : 1)}K`;
-  return String(v);
 }
 
 function buildAiInsights(series, t) {
@@ -131,92 +103,6 @@ function buildAiInsights(series, t) {
   ];
 }
 
-function chartTheme(isLight) {
-  return {
-    tick: isLight ? "#71717a" : "#94a3b8",
-    grid: isLight ? "rgba(113, 113, 122, 0.18)" : "rgba(148, 163, 184, 0.18)",
-    tooltipBg: isLight ? "rgba(255,255,255,0.96)" : "rgba(15, 17, 23, 0.95)",
-    tooltipTitle: isLight ? "#18181b" : "#f1f5f9",
-    tooltipBody: isLight ? "#3f3f46" : "#e2e8f0",
-    tooltipBorder: isLight ? "rgba(0,0,0,0.08)" : "rgba(148, 163, 184, 0.25)",
-    pointFill: isLight ? "#ffffff" : "#0f1117",
-    card: isLight
-      ? "rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5"
-      : "rounded-2xl border border-zinc-700/70 bg-[#1e222d] p-4 shadow-[0_8px_24px_rgba(0,0,0,0.28)] sm:p-5",
-    cardTitle: isLight
-      ? "mb-3 flex items-center gap-2 text-[15px] font-semibold text-zinc-900"
-      : "mb-3 flex items-center gap-2 text-[15px] font-semibold text-zinc-100",
-    cardIcon: isLight ? "text-lg text-zinc-500" : "text-lg text-zinc-300",
-    kpi: isLight
-      ? "rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-sm"
-      : "rounded-xl border border-zinc-700/70 bg-[#1e222d] px-4 py-3",
-    kpiLabel: isLight ? "text-xs text-zinc-500" : "text-xs text-zinc-400",
-    kpiValue: isLight
-      ? "mt-1 text-2xl font-bold text-zinc-900 tabular-nums"
-      : "mt-1 text-2xl font-bold text-white tabular-nums",
-    insight: isLight
-      ? "rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5"
-      : "rounded-2xl border border-zinc-700/70 bg-[#1e222d] p-4 shadow-[0_8px_24px_rgba(0,0,0,0.28)] sm:p-5",
-  };
-}
-
-function baseOptions(theme, { suggestedMax } = {}) {
-  return {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: { mode: "index", intersect: false },
-    plugins: {
-      legend: {
-        position: "bottom",
-        labels: {
-          color: theme.tick,
-          boxWidth: 12,
-          boxHeight: 12,
-          padding: 16,
-          font: { size: 12 },
-        },
-      },
-      tooltip: {
-        backgroundColor: theme.tooltipBg,
-        titleColor: theme.tooltipTitle,
-        bodyColor: theme.tooltipBody,
-        borderColor: theme.tooltipBorder,
-        borderWidth: 1,
-        padding: 10,
-      },
-    },
-    scales: {
-      x: {
-        grid: { color: theme.grid, borderDash: [4, 4], drawBorder: false },
-        ticks: {
-          color: theme.tick,
-          maxRotation: 0,
-          autoSkip: true,
-          maxTicksLimit: 8,
-        },
-      },
-      y: {
-        beginAtZero: true,
-        suggestedMax,
-        grid: { color: theme.grid, borderDash: [4, 4], drawBorder: false },
-        ticks: { color: theme.tick, precision: 0 },
-      },
-    },
-  };
-}
-
-function ChartCard({ theme, icon: Icon, title, children }) {
-  return (
-    <section className={`${theme.card} flex min-h-[320px] flex-col`}>
-      <div className={theme.cardTitle}>
-        <Icon className={theme.cardIcon} aria-hidden />
-        <h2>{title}</h2>
-      </div>
-      <div className="relative min-h-0 flex-1">{children}</div>
-    </section>
-  );
-}
-
 function emptyDashboard() {
   return {
     days: 14,
@@ -226,16 +112,45 @@ function emptyDashboard() {
   };
 }
 
+function Panel({ isLight, title, icon: Icon, children, className = "" }) {
+  return (
+    <section
+      className={`rounded-xl border p-4 sm:p-5 ${
+        isLight
+          ? "border-zinc-200 bg-white"
+          : "border-zinc-800 bg-zinc-950/60"
+      } ${className}`}
+    >
+      {title ? (
+        <div
+          className={`mb-4 flex items-center gap-2 text-[15px] font-semibold ${
+            isLight ? "text-[#161823]" : "text-white"
+          }`}
+        >
+          {Icon ? (
+            <Icon
+              className={isLight ? "text-lg text-zinc-500" : "text-lg text-zinc-400"}
+              aria-hidden
+            />
+          ) : null}
+          <h2>{title}</h2>
+        </div>
+      ) : null}
+      {children}
+    </section>
+  );
+}
+
 export function AdminDashboardPage() {
   const { t } = useTranslation();
   const { token, authReady } = useAuth();
   const { resolved } = useTheme();
   const isLight = resolved === "light";
-  const theme = useMemo(() => chartTheme(isLight), [isLight]);
 
   const [data, setData] = useState(emptyDashboard);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [metric, setMetric] = useState("views");
 
   useEffect(() => {
     document.title = t("admin.docTitle.dashboard");
@@ -287,141 +202,77 @@ export function AdminDashboardPage() {
     };
   }, [authReady, token, t]);
 
-  const labels = useMemo(
-    () => data.series.map((d) => formatDayLabel(d.day)),
-    [data.series],
-  );
   const insights = useMemo(
     () => (data.series.length ? buildAiInsights(data.series, t) : []),
     [data.series, t],
   );
 
-  const usersLine = useMemo(
-    () => ({
-      labels,
-      datasets: [
-        {
-          label: t("admin.dashboard.series.totalUsers"),
-          data: data.series.map((d) => Number(d.totalUsers) || 0),
-          borderColor: COLORS.users,
-          backgroundColor: "rgba(123, 97, 255, 0.15)",
-          fill: true,
-          tension: 0.35,
-          pointRadius: 3,
-          pointBackgroundColor: theme.pointFill,
-          pointBorderColor: COLORS.users,
-          pointBorderWidth: 2,
-          borderWidth: 2.5,
-        },
-        {
-          label: t("admin.dashboard.series.newUsers"),
-          data: data.series.map((d) => Number(d.newUsers) || 0),
-          borderColor: "#c4b5fd",
-          backgroundColor: "#c4b5fd",
-          fill: false,
-          tension: 0.35,
-          pointRadius: 2,
-          borderWidth: 2,
-          yAxisID: "y1",
-        },
-      ],
-    }),
-    [data.series, labels, t, theme.pointFill],
-  );
-
-  const usersOptions = useMemo(() => {
-    const base = baseOptions(theme);
-    return {
-      ...base,
-      scales: {
-        ...base.scales,
-        y: {
-          ...base.scales.y,
-          title: {
-            display: true,
-            text: t("admin.dashboard.axis.totalUsers"),
-            color: theme.tick,
-          },
-        },
-        y1: {
-          position: "right",
-          beginAtZero: true,
-          grid: { drawOnChartArea: false },
-          ticks: { color: theme.tick, precision: 0 },
-          title: {
-            display: true,
-            text: t("admin.dashboard.axis.newUsers"),
-            color: theme.tick,
-          },
-        },
+  const metricTabs = useMemo(
+    () => [
+      {
+        id: "users",
+        label: t("admin.dashboard.kpi.users"),
+        value: data.totals.users,
+        icon: IoPeopleOutline,
+        accent: ACCENT.users,
+        seriesKey: "newUsers",
+        color: ACCENT.users,
+        fill: ACCENT.usersFill,
       },
-    };
-  }, [theme, t]);
-
-  const videosBar = useMemo(
-    () => ({
-      labels,
-      datasets: [
-        {
-          label: t("admin.dashboard.series.newVideos"),
-          data: data.series.map((d) => Number(d.newVideos) || 0),
-          backgroundColor: COLORS.videos,
-          borderRadius: 4,
-          barPercentage: 0.75,
-        },
-        {
-          label: t("admin.dashboard.series.reports"),
-          data: data.series.map((d) => Number(d.reports) || 0),
-          backgroundColor: COLORS.reports,
-          borderRadius: 4,
-          barPercentage: 0.75,
-        },
-      ],
-    }),
-    [data.series, labels, t],
+      {
+        id: "videos",
+        label: t("admin.dashboard.kpi.videos"),
+        value: data.totals.videos,
+        icon: IoVideocamOutline,
+        accent: ACCENT.videos,
+        seriesKey: "newVideos",
+        color: ACCENT.videos,
+        fill: "rgba(32, 213, 236, 0.12)",
+      },
+      {
+        id: "reports",
+        label: t("admin.dashboard.kpi.reports"),
+        value: data.totals.reports,
+        icon: IoWarningOutline,
+        accent: ACCENT.reports,
+        seriesKey: "reports",
+        color: ACCENT.reports,
+        fill: "rgba(254, 44, 85, 0.12)",
+      },
+      {
+        id: "views",
+        label: t("admin.dashboard.kpi.views"),
+        value: data.totals.views,
+        icon: IoPulseOutline,
+        accent: ACCENT.views,
+        seriesKey: "views",
+        color: ACCENT.views,
+        fill: ACCENT.viewsFill,
+      },
+    ],
+    [data.totals, t],
   );
 
-  const videosOptions = useMemo(() => {
-    const maxVal = Math.max(
-      0,
-      ...data.series.map((d) => Number(d.newVideos) || 0),
-      ...data.series.map((d) => Number(d.reports) || 0),
-    );
-    return baseOptions(theme, { suggestedMax: maxVal > 0 ? maxVal + 2 : 5 });
-  }, [theme, data.series]);
+  const activeTab = metricTabs.find((tab) => tab.id === metric) || metricTabs[3];
 
-  const viewsLine = useMemo(
-    () => ({
-      labels,
-      datasets: [
-        {
-          label: t("admin.dashboard.series.views"),
-          data: data.series.map((d) => Number(d.views) || 0),
-          borderColor: COLORS.views,
-          backgroundColor: "rgba(52, 211, 153, 0.18)",
-          fill: true,
-          tension: 0.4,
-          pointRadius: 3,
-          pointBackgroundColor: theme.pointFill,
-          pointBorderColor: COLORS.views,
-          pointBorderWidth: 2,
-          borderWidth: 2.5,
-        },
-      ],
-    }),
-    [data.series, labels, t, theme.pointFill],
+  const trendPoints = useMemo(
+    () =>
+      data.series.map((d) => ({
+        day: d.day,
+        value: Number(d[activeTab.seriesKey]) || 0,
+      })),
+    [data.series, activeTab.seriesKey],
   );
 
-  const viewsOptions = useMemo(() => {
-    const maxVal = Math.max(0, ...data.series.map((d) => Number(d.views) || 0));
-    const base = baseOptions(theme, {
-      suggestedMax: maxVal > 0 ? Math.ceil(maxVal * 1.1) : 5,
-    });
-    return {
-      ...base,
-      plugins: { ...base.plugins, legend: { display: false } },
-    };
-  }, [theme, data.series]);
+  const barPoints = useMemo(
+    () =>
+      data.series.map((d) => ({
+        day: d.day,
+        newVideos: Number(d.newVideos) || 0,
+        reports: Number(d.reports) || 0,
+      })),
+    [data.series],
+  );
 
   const statusTotal =
     data.statusMix.published +
@@ -429,67 +280,53 @@ export function AdminDashboardPage() {
     data.statusMix.flagged +
     data.statusMix.removed;
 
-  const statusDonut = useMemo(() => {
+  const statusRows = useMemo(() => {
     const toPct = (n) =>
-      statusTotal > 0 ? Math.round((Number(n) / statusTotal) * 1000) / 10 : 0;
-    return {
-      labels: [
-        t("admin.dashboard.status.published"),
-        t("admin.dashboard.status.draft"),
-        t("admin.dashboard.status.flagged"),
-        t("admin.dashboard.status.removed"),
-      ],
-      datasets: [
-        {
-          data: [
-            toPct(data.statusMix.published),
-            toPct(data.statusMix.draft),
-            toPct(data.statusMix.flagged),
-            toPct(data.statusMix.removed),
-          ],
-          backgroundColor: [
-            COLORS.published,
-            COLORS.draft,
-            COLORS.flagged,
-            COLORS.removed,
-          ],
-          borderWidth: 0,
-          hoverOffset: 6,
-        },
-      ],
-    };
-  }, [data.statusMix, statusTotal, t]);
-
-  const donutOptions = useMemo(
-    () => ({
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: "bottom",
-          labels: { color: theme.tick, padding: 14, boxWidth: 12 },
-        },
-        tooltip: {
-          backgroundColor: theme.tooltipBg,
-          titleColor: theme.tooltipTitle,
-          bodyColor: theme.tooltipBody,
-          borderColor: theme.tooltipBorder,
-          borderWidth: 1,
-          callbacks: {
-            label: (ctx) => ` ${ctx.label}: ${ctx.parsed}%`,
-          },
-        },
+      statusTotal > 0 ? (Number(n) / statusTotal) * 100 : 0;
+    return [
+      {
+        id: "published",
+        label: t("admin.dashboard.status.published"),
+        value: data.statusMix.published,
+        percent: toPct(data.statusMix.published),
+        color: ACCENT.published,
       },
-      cutout: "62%",
-    }),
-    [theme],
-  );
+      {
+        id: "draft",
+        label: t("admin.dashboard.status.draft"),
+        value: data.statusMix.draft,
+        percent: toPct(data.statusMix.draft),
+        color: ACCENT.draft,
+      },
+      {
+        id: "flagged",
+        label: t("admin.dashboard.status.flagged"),
+        value: data.statusMix.flagged,
+        percent: toPct(data.statusMix.flagged),
+        color: ACCENT.flagged,
+      },
+      {
+        id: "removed",
+        label: t("admin.dashboard.status.removed"),
+        value: data.statusMix.removed,
+        percent: toPct(data.statusMix.removed),
+        color: ACCENT.removed,
+      },
+    ];
+  }, [data.statusMix, statusTotal, t]);
 
   const toneClass = (tone) => {
     if (tone === "up") return "text-emerald-500";
-    if (tone === "down") return "text-rose-500";
+    if (tone === "down") return "text-[#FE2C55]";
     return isLight ? "text-zinc-500" : "text-zinc-400";
   };
+
+  const panelBorder = isLight ? "border-zinc-200 bg-white" : "border-zinc-800 bg-zinc-950/60";
+  const muted = isLight ? "text-zinc-500" : "text-zinc-400";
+  const strong = isLight ? "text-[#161823]" : "text-zinc-100";
+  const cellHover = isLight ? "hover:bg-zinc-50" : "hover:bg-zinc-900/40";
+  const cellActive = isLight ? "bg-zinc-50" : "bg-zinc-900/70";
+  const cellSplit = isLight ? "border-zinc-200" : "border-zinc-800/80";
 
   return (
     <AdminLayout
@@ -498,116 +335,128 @@ export function AdminDashboardPage() {
       subtitle={t("admin.dashboard.subtitle")}
     >
       {loading ? (
-        <p className={isLight ? "text-zinc-500" : "text-zinc-400"}>
-          {t("admin.loading")}
-        </p>
+        <p className={muted}>{t("admin.loading")}</p>
       ) : error ? (
-        <p className="text-rose-500">{error}</p>
+        <p className="text-[#FE2C55]">{error}</p>
       ) : (
-        <div className="space-y-4 pb-4">
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className={theme.kpi}>
-              <p className={`${theme.kpiLabel} flex items-center gap-1.5`}>
-                <IoPeopleOutline aria-hidden />
-                {t("admin.dashboard.kpi.users")}
-              </p>
-              <p className={theme.kpiValue}>
-                {formatCompact(data.totals.users)}
-              </p>
+        <div className="space-y-4 pb-6">
+          {/* Key metrics + primary trend — Studio / Explore style */}
+          <section className={`overflow-hidden rounded-xl border ${panelBorder}`}>
+            <div
+              className={`grid grid-cols-2 border-b sm:grid-cols-4 ${cellSplit}`}
+            >
+              {metricTabs.map((tab) => {
+                const active = metric === tab.id;
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setMetric(tab.id)}
+                    className={`relative cursor-pointer px-3 py-3.5 text-left transition sm:px-4 ${
+                      active ? cellActive : cellHover
+                    }`}
+                  >
+                    {active ? (
+                      <span
+                        className="absolute inset-x-0 top-0 h-0.5"
+                        style={{ backgroundColor: tab.accent }}
+                      />
+                    ) : null}
+                    <p className={`flex items-center gap-1.5 text-xs ${muted}`}>
+                      <Icon className="text-sm" aria-hidden />
+                      <span className="truncate">{tab.label}</span>
+                    </p>
+                    <p
+                      className={`mt-1.5 text-2xl font-bold tabular-nums ${
+                        active ? "" : strong
+                      }`}
+                      style={active ? { color: tab.accent } : undefined}
+                    >
+                      {formatAdminCompact(tab.value)}
+                    </p>
+                  </button>
+                );
+              })}
             </div>
-            <div className={theme.kpi}>
-              <p className={`${theme.kpiLabel} flex items-center gap-1.5`}>
-                <IoVideocamOutline aria-hidden />
-                {t("admin.dashboard.kpi.videos")}
-              </p>
-              <p className={theme.kpiValue}>
-                {formatCompact(data.totals.videos)}
-              </p>
-            </div>
-            <div className={theme.kpi}>
-              <p className={`${theme.kpiLabel} flex items-center gap-1.5`}>
-                <IoWarningOutline aria-hidden />
-                {t("admin.dashboard.kpi.reports")}
-              </p>
-              <p className={`${theme.kpiValue} !text-[#ff6b6b]`}>
-                {formatCompact(data.totals.reports)}
-              </p>
-            </div>
-            <div className={theme.kpi}>
-              <p className={`${theme.kpiLabel} flex items-center gap-1.5`}>
-                <IoPulseOutline aria-hidden />
-                {t("admin.dashboard.kpi.views")}
-              </p>
-              <p className={`${theme.kpiValue} !text-[#34d399]`}>
-                {formatCompact(data.totals.views)}
-              </p>
-            </div>
-          </div>
 
-          <section className={theme.insight}>
-            <div className="mb-3 flex items-center gap-2 text-[15px] font-semibold">
-              <IoSparklesOutline className="text-lg text-[#fe2c55]" aria-hidden />
+            <div className="p-4 pt-8 sm:p-5 sm:pt-10">
+              <AdminTrendChart
+                points={trendPoints}
+                color={activeTab.color}
+                fill={activeTab.fill}
+                isLight={isLight}
+                emptyHint={t("admin.dashboard.ai.empty")}
+              />
+            </div>
+          </section>
+
+          {/* AI insights */}
+          <Panel isLight={isLight}>
+            <div
+              className={`mb-3 flex items-center gap-2 text-[15px] font-semibold ${strong}`}
+            >
+              <IoSparklesOutline className="text-lg text-[#FE2C55]" aria-hidden />
               <h2>{t("admin.dashboard.ai.title")}</h2>
             </div>
-            <p
-              className={`mb-3 text-[13px] ${isLight ? "text-zinc-500" : "text-zinc-400"}`}
-            >
+            <p className={`mb-3 text-[13px] ${muted}`}>
               {t("admin.dashboard.ai.intro")}
             </p>
             {insights.length ? (
-              <ul className="space-y-2.5">
+              <ul className="space-y-2">
                 {insights.map((item) => (
                   <li
                     key={item.id}
-                    className={`rounded-lg px-3 py-2.5 text-[13px] leading-relaxed ${
-                      isLight
-                        ? "bg-zinc-50 text-zinc-700"
-                        : "bg-zinc-900/60 text-zinc-200"
+                    className={`flex gap-2.5 text-[13px] leading-relaxed ${
+                      isLight ? "text-zinc-700" : "text-zinc-200"
                     }`}
                   >
-                    <span className={`mr-2 font-semibold ${toneClass(item.tone)}`}>
-                      ●
-                    </span>
-                    {item.text}
+                    <span
+                      className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${toneClass(item.tone)}`}
+                      style={{ backgroundColor: "currentColor" }}
+                      aria-hidden
+                    />
+                    <span>{item.text}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className={isLight ? "text-zinc-500" : "text-zinc-400"}>
-                {t("admin.dashboard.ai.empty")}
-              </p>
+              <p className={muted}>{t("admin.dashboard.ai.empty")}</p>
             )}
-          </section>
+          </Panel>
 
           <div className="grid gap-4 xl:grid-cols-2">
-            <ChartCard
-              theme={theme}
-              icon={IoPeopleOutline}
-              title={t("admin.dashboard.charts.usersGrowth")}
-            >
-              <Line data={usersLine} options={usersOptions} />
-            </ChartCard>
-            <ChartCard
-              theme={theme}
-              icon={IoBarChartOutline}
+            <Panel
+              isLight={isLight}
               title={t("admin.dashboard.charts.videosReports")}
             >
-              <Bar data={videosBar} options={videosOptions} />
-            </ChartCard>
-            <ChartCard
-              theme={theme}
-              icon={IoStatsChartOutline}
-              title={t("admin.dashboard.charts.viewsTrend")}
-            >
-              <Line data={viewsLine} options={viewsOptions} />
-            </ChartCard>
-            <ChartCard
-              theme={theme}
-              icon={IoVideocamOutline}
+              <AdminGroupedBars
+                points={barPoints}
+                seriesA={{
+                  key: "newVideos",
+                  color: ACCENT.videos,
+                  label: t("admin.dashboard.series.newVideos"),
+                }}
+                seriesB={{
+                  key: "reports",
+                  color: ACCENT.reports,
+                  label: t("admin.dashboard.series.reports"),
+                }}
+                isLight={isLight}
+              />
+            </Panel>
+
+            <Panel
+              isLight={isLight}
               title={t("admin.dashboard.charts.contentMix")}
             >
-              <Doughnut data={statusDonut} options={donutOptions} />
-            </ChartCard>
+              <AdminShareBars rows={statusRows} isLight={isLight} />
+              {statusTotal === 0 ? (
+                <p className={`mt-4 text-center text-xs ${muted}`}>
+                  {t("admin.dashboard.ai.empty")}
+                </p>
+              ) : null}
+            </Panel>
           </div>
         </div>
       )}
