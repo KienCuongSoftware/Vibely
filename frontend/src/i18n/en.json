@@ -2280,6 +2280,7 @@
     "noEmail": "No email",
     "vibelyUser": "Vibely user",
     "docTitle": {
+      "dashboard": "Vibely Admin | Dashboard",
       "users": "Vibely Admin | User management",
       "posts": "Vibely Admin | Post management",
       "postDetail": "Vibely Admin | Post detail",
@@ -2288,11 +2289,23 @@
       "appeals": "Vibely Admin | Ban appeals"
     },
     "nav": {
+      "dashboard": "Dashboard",
       "users": "User management",
       "posts": "Post management",
       "moderation": "Content moderation",
       "banned": "Banned accounts",
       "appeals": "Ban appeals"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Overview of moderation and posting activity on Vibely.",
+      "barTitle": "Bar chart: Daily test count",
+      "lineTitle": "Line chart: Test trend",
+      "totalSeries": "Total tests",
+      "severeSeries": "Severe tests",
+      "statTotal": "Total in period",
+      "statSevere": "Severe",
+      "statDays": "Days"
     },
     "pagination": {
       "aria": "Pagination",

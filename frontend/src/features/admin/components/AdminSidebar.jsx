@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   IoChatbubbleEllipsesOutline,
+  IoGridOutline,
   IoPeopleOutline,
   IoShieldCheckmarkOutline,
   IoShieldOutline,
@@ -11,6 +12,12 @@ import {
 import { VibelyWordmark } from "@/shared/components/VibelyWordmark.jsx";
 
 const ADMIN_NAV_ITEMS = [
+  {
+    id: "dashboard",
+    to: "/admin/dashboard",
+    labelKey: "admin.nav.dashboard",
+    icon: IoGridOutline,
+  },
   {
     id: "users",
     to: "/admin/users",
@@ -43,7 +50,7 @@ const ADMIN_NAV_ITEMS = [
   },
 ];
 
-export function AdminSidebar({ active = "users", className = "", onNavigate }) {
+export function AdminSidebar({ active = "dashboard", className = "", onNavigate }) {
   const { t } = useTranslation();
   const location = useLocation();
   const asideClass =
@@ -52,7 +59,7 @@ export function AdminSidebar({ active = "users", className = "", onNavigate }) {
   return (
     <aside className={className ? `${asideClass} ${className}` : asideClass}>
       <Link
-        to="/admin/users"
+        to="/admin/dashboard"
         onClick={() => onNavigate?.()}
         className="mb-4 flex h-11 items-center pl-1 text-zinc-100 hover:text-white"
       >
@@ -67,7 +74,10 @@ export function AdminSidebar({ active = "users", className = "", onNavigate }) {
           const Icon = item.icon;
           const label = t(item.labelKey);
           const isActive =
-            active === item.id || location.pathname.startsWith(item.to);
+            active === item.id ||
+            location.pathname === item.to ||
+            (item.to !== "/admin/dashboard" &&
+              location.pathname.startsWith(`${item.to}/`));
           return (
             <Link
               key={item.id}

@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom'
 import { userNeedsOnboarding } from '@/features/auth/utils/onboarding.js'
 import { FOR_YOU_PATH } from '@/shared/config/routes.js'
 
-const ADMIN_HOME = '/admin/users'
+const ADMIN_HOME = '/admin/dashboard'
 
 function isAdminUser(user) {
   return String(user?.role ?? '').toUpperCase() === 'ADMIN'

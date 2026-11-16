@@ -10,7 +10,7 @@ import {
   sanitizeAvatarUrl,
 } from "@/features/profile/utils/avatarUrl.js";
 
-export function AdminLayout({ active = "users", title, subtitle, children }) {
+export function AdminLayout({ active = "dashboard", title, subtitle, children }) {
   const { t } = useTranslation();
   const { user, token, logout } = useAuth();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);

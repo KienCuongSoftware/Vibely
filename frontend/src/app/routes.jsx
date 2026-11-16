@@ -54,6 +54,7 @@ const SupportPage = lazyNamed(() => import('@/features/support/pages/SupportPage
 const PromotePage = lazyNamed(() => import('@/features/promote/pages/PromotePage.jsx'), 'PromotePage')
 const NotFoundPage = lazyNamed(() => import('@/features/support/pages/NotFoundPage.jsx'), 'NotFoundPage')
 const SearchResultsPage = lazyNamed(() => import('@/features/search/pages/SearchResultsPage.jsx'), 'SearchResultsPage')
+const AdminDashboardPage = lazyNamed(() => import('@/features/admin/pages/AdminDashboardPage.jsx'), 'AdminDashboardPage')
 const AdminUsersPage = lazyNamed(() => import('@/features/admin/pages/AdminUsersPage.jsx'), 'AdminUsersPage')
 const AdminBannedUsersPage = lazyNamed(() => import('@/features/admin/pages/AdminBannedUsersPage.jsx'), 'AdminBannedUsersPage')
 const AdminBanAppealsPage = lazyNamed(() => import('@/features/admin/pages/AdminBanAppealsPage.jsx'), 'AdminBanAppealsPage')
@@ -125,6 +126,7 @@ export function GuestRoutes() {
       <Route path="/vibelystudio/comments" element={<RedirectToHomeLogin />} />
       <Route path="/vibelystudio/inspiration" element={<RedirectToHomeLogin />} />
       <Route path="/admin" element={<RedirectToHomeLogin />} />
+      <Route path="/admin/dashboard" element={<RedirectToHomeLogin />} />
       <Route path="/admin/users" element={<RedirectToHomeLogin />} />
       <Route path="/admin/posts" element={<RedirectToHomeLogin />} />
       <Route path="/admin/posts/:publicId" element={<RedirectToHomeLogin />} />
@@ -155,11 +157,11 @@ export function OnboardingRoutes() {
 export function AuthenticatedRoutes({ user, isAdmin }) {
   return (
     <Routes>
-      {/* Trang chủ — admin redirect về /admin/users, user thường xem feed */}
+      {/* Trang chủ — admin redirect về dashboard, user thường xem feed */}
       <Route
         path="/"
         element={
-          isAdmin ? <Navigate to="/admin/users" replace /> : <FeedPage />
+          isAdmin ? <Navigate to="/admin/dashboard" replace /> : <FeedPage />
         }
       />
       <Route path="/foryou" element={<Navigate to="/" replace />} />
@@ -267,7 +269,15 @@ export function AuthenticatedRoutes({ user, isAdmin }) {
         path="/admin"
         element={
           <AdminRoute user={user}>
-            <Navigate to="/admin/users" replace />
+            <Navigate to="/admin/dashboard" replace />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminRoute user={user}>
+            <AdminDashboardPage />
           </AdminRoute>
         }
       />

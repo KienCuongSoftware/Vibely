@@ -2280,6 +2280,7 @@
     "noEmail": "Không có email",
     "vibelyUser": "Người dùng Vibely",
     "docTitle": {
+      "dashboard": "Vibely Admin | Dashboard",
       "users": "Vibely Admin | Quản lý tài khoản",
       "posts": "Vibely Admin | Quản lý bài đăng",
       "postDetail": "Vibely Admin | Chi tiết bài đăng",
@@ -2288,11 +2289,23 @@
       "appeals": "Vibely Admin | Khiếu nại cấm"
     },
     "nav": {
+      "dashboard": "Dashboard",
       "users": "Quản lý tài khoản",
       "posts": "Quản lý bài đăng",
       "moderation": "Kiểm duyệt nội dung",
       "banned": "Tài khoản bị cấm",
       "appeals": "Khiếu nại cấm"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Tổng quan hoạt động kiểm duyệt và bài đăng trên Vibely.",
+      "barTitle": "Biểu đồ cột: Số lượng kiểm tra mỗi ngày",
+      "lineTitle": "Biểu đồ đường: Xu hướng kiểm tra",
+      "totalSeries": "Tổng kiểm tra",
+      "severeSeries": "Nghiêm trọng",
+      "statTotal": "Tổng trong kỳ",
+      "statSevere": "Nghiêm trọng",
+      "statDays": "Số ngày"
     },
     "pagination": {
       "aria": "Phân trang",

@@ -47,6 +47,6 @@ export function resolveSafeLoginRedirect(searchParams) {
 }
 
 export function resolvePostLoginDestination(searchParams, role) {
-  if (String(role ?? "").toUpperCase() === "ADMIN") return "/admin";
+  if (String(role ?? "").toUpperCase() === "ADMIN") return "/admin/dashboard";
   return resolveSafeLoginRedirect(searchParams) || "/";
 }
