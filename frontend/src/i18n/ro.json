@@ -1198,7 +1198,8 @@
     "menuAria": "Opțiuni video",
     "closeMenu": "Închide meniul",
     "volume": "Volum",
-    "fullscreen": "Intrați pe ecran complet"
+    "fullscreen": "Intrați pe ecran complet",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "Căutare",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "Vibely examinează conținutul pentru a menține comunitatea în siguranță și aliniată la Regulile comunității. Acest lucru este valabil pentru fiecare postare nouă.",
         "faqEngagementTitle": "Afectează acest lucru implicarea în postarea mea?",
         "faqEngagementBody": "În timp ce revizuirea este în curs, postarea dvs. poate avea vizibilitate publică limitată. După aprobare, setarea de confidențialitate aleasă de dvs. se aplică pe deplin."
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "Comentarii",
@@ -2090,14 +2092,16 @@
       "postDetail": "Administrator Vibely | Detaliu post",
       "moderation": "Administrator Vibely | Moderarea conținutului",
       "banned": "Administrator Vibely | Conturi interzise",
-      "appeals": "Administrator Vibely | Apeluri de interdicție"
+      "appeals": "Administrator Vibely | Apeluri de interdicție",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "Managementul utilizatorilor",
       "posts": "Managementul postului",
       "moderation": "Moderarea conținutului",
       "banned": "Conturi interzise",
-      "appeals": "Apeluri de interdicție"
+      "appeals": "Apeluri de interdicție",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "Paginare",
@@ -2512,6 +2516,49 @@
       "views": "vederi",
       "likeViews": "place",
       "viewsHeader": "Vizualizări"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -2861,7 +2908,9 @@
           "favorites": "Sunetele tale favorite vor apărea aici.",
           "recent": "Sunetele folosite recent vor apărea aici."
         }
-      }
+      },
+      "aiGeneratedHint": "Add this label for AI-generated content.",
+      "learnMore": "Learn more"
     },
     "selectedFile": "Selectat: {{name}}",
     "durationLabel": "Durata: {{duration}}",
@@ -2916,7 +2965,16 @@
       "followers": "Urmaritori",
       "likes": "Like",
       "defaultText": "Text"
-    }
+    },
+    "locationSearchPlaceholder": "Search for location",
+    "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
+    "locationEmpty": "No locations found",
+    "locationSearchFailed": "Couldn’t search locations. Try again later.",
+    "locationClear": "Clear location",
+    "locationCollapse": "Collapse location suggestions",
+    "locationExpand": "Expand location suggestions",
+    "locationScrollChips": "See more suggested locations"
   },
   "profileShare": {
     "shareTo": "Distribuie la",
@@ -3028,7 +3086,8 @@
     "tabs": {
       "boostAccount": "Boost contul",
       "increaseSales": "Creșteți vânzările",
-      "attractLeads": "Atrageți clienți potențiali"
+      "attractLeads": "Atrageți clienți potențiali",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "Mai multe aprecieri și comentarii",
@@ -3038,7 +3097,9 @@
       "websiteTraffic": "Mai mult trafic pe site",
       "productSales": "Mai multe vânzări de produse",
       "leadForm": "Mai multe trimiteri de formulare de clienți potențiali",
-      "messageLeads": "Mai multe piste de mesaje"
+      "messageLeads": "Mai multe piste de mesaje",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "Niciun videoclip încă",
     "noVideoHint": "... este timpul să creați conținut!",
@@ -3064,6 +3125,48 @@
     "priceDetailsTitle": "Detalii pret",
     "subtotal": "Subtotal",
     "insufficientPoints": "Puncte insuficiente",
-    "total": "Total"
+    "total": "Total",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
+    }
   }
 }

@@ -1198,7 +1198,8 @@
     "menuAria": "Myndbandsvalkostir",
     "closeMenu": "Loka valmynd",
     "volume": "Bindi",
-    "fullscreen": "Sláðu inn allan skjáinn"
+    "fullscreen": "Sláðu inn allan skjáinn",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "Leita",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "Farið yfir efni á lifandi hátt til að halda samfélaginu öruggu og í samræmi við reglur netsamfélagsins. Þetta á við um hverja nýja færslu.",
         "faqEngagementTitle": "Hefur þetta áhrif á þátttöku í færslunni minni?",
         "faqEngagementBody": "Á meðan yfirferð stendur yfir gæti færslan þín haft takmarkaðan sýnileika almennings. Eftir samþykki gildir valin persónuverndarstilling þín að fullu."
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "Athugasemdir",
@@ -2090,14 +2092,16 @@
       "postDetail": "Vibely Admin | Upplýsingar um færslu",
       "moderation": "Vibely Admin | Innihaldsstjórn",
       "banned": "Vibely Admin | Bannaðir reikningar",
-      "appeals": "Vibely Admin | Bannáfrýjun"
+      "appeals": "Vibely Admin | Bannáfrýjun",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "Notendastjórnun",
       "posts": "Póststjórnun",
       "moderation": "Innihaldsstjórn",
       "banned": "Bannaðir reikningar",
-      "appeals": "Bannáfrýjun"
+      "appeals": "Bannáfrýjun",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "Síðuskipting",
@@ -2512,6 +2516,49 @@
       "views": "skoðanir",
       "likeViews": "líkar við",
       "viewsHeader": "Útsýni"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -2861,7 +2908,9 @@
           "favorites": "Eftirlætishljóðin þín birtast hér.",
           "recent": "Nýlega notuð hljóð birtast hér."
         }
-      }
+      },
+      "aiGeneratedHint": "Add this label for AI-generated content.",
+      "learnMore": "Learn more"
     },
     "selectedFile": "Valið: {{name}}",
     "durationLabel": "Lengd: {{duration}}",
@@ -2916,7 +2965,16 @@
       "followers": "Fylgjendur",
       "likes": "Líkar við",
       "defaultText": "Texti"
-    }
+    },
+    "locationSearchPlaceholder": "Search for location",
+    "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
+    "locationEmpty": "No locations found",
+    "locationSearchFailed": "Couldn’t search locations. Try again later.",
+    "locationClear": "Clear location",
+    "locationCollapse": "Collapse location suggestions",
+    "locationExpand": "Expand location suggestions",
+    "locationScrollChips": "See more suggested locations"
   },
   "profileShare": {
     "shareTo": "Deildu til",
@@ -3028,7 +3086,8 @@
     "tabs": {
       "boostAccount": "Auka reikning",
       "increaseSales": "Auka sölu",
-      "attractLeads": "Laða að leiðarljósi"
+      "attractLeads": "Laða að leiðarljósi",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "Fleiri líkar og athugasemdir",
@@ -3038,7 +3097,9 @@
       "websiteTraffic": "Meiri umferð á vefsíðu",
       "productSales": "Meiri vörusala",
       "leadForm": "Fleiri innsendingar á eyðublöðum",
-      "messageLeads": "Fleiri skilaboð leiða"
+      "messageLeads": "Fleiri skilaboð leiða",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "Ekkert myndband ennþá",
     "noVideoHint": "...tími til að búa til efni!",
@@ -3064,6 +3125,48 @@
     "priceDetailsTitle": "Upplýsingar um verð",
     "subtotal": "Samtala",
     "insufficientPoints": "Ófullnægjandi stig",
-    "total": "Samtals"
+    "total": "Samtals",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
+    }
   }
 }

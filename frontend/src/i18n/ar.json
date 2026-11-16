@@ -1198,7 +1198,8 @@
     "menuAria": "خيارات الفيديو",
     "closeMenu": "إغلاق القائمة",
     "volume": "الصوت",
-    "fullscreen": "ملء الشاشة"
+    "fullscreen": "ملء الشاشة",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "بحث",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "تقوم Vibely بمراجعة المحتوى للحفاظ على أمان المجتمع وتوافقه مع إرشادات المجتمع الخاصة بنا. وهذا ينطبق على كل مشاركة جديدة.",
         "faqEngagementTitle": "هل يؤثر هذا على التفاعل مع منشوراتي؟",
         "faqEngagementBody": "أثناء عملية المراجعة، قد يكون منشورك محدود الرؤية العامة. بعد الموافقة، سيتم تطبيق إعداد الخصوصية الذي اخترته بالكامل."
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "التعليقات",
@@ -2090,14 +2092,16 @@
       "postDetail": "Vibely Admin | تفاصيل المنشور",
       "moderation": "Vibely Admin | إشراف المحتوى",
       "banned": "Vibely Admin | الحسابات المحظورة",
-      "appeals": "Vibely Admin | استئنافات الحظر"
+      "appeals": "Vibely Admin | استئنافات الحظر",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "إدارة المستخدمين",
       "posts": "إدارة المنشورات",
       "moderation": "إشراف المحتوى",
       "banned": "الحسابات المحظورة",
-      "appeals": "استئنافات الحظر"
+      "appeals": "استئنافات الحظر",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "ترقيم الصفحات",
@@ -2512,6 +2516,49 @@
       "views": "مشاهدات",
       "likeViews": "إعجابات",
       "viewsHeader": "المشاهدات"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -2861,7 +2908,9 @@
           "favorites": "ستظهر الأصوات المفضلة لديك هنا.",
           "recent": "ستظهر الأصوات المستخدمة مؤخرًا هنا."
         }
-      }
+      },
+      "aiGeneratedHint": "Add this label for AI-generated content.",
+      "learnMore": "Learn more"
     },
     "selectedFile": "المحدد: {{name}}",
     "durationLabel": "المدة: {{duration}}",
@@ -2916,7 +2965,16 @@
       "followers": "المتابعون",
       "likes": "الإعجابات",
       "defaultText": "نص"
-    }
+    },
+    "locationSearchPlaceholder": "Search for location",
+    "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
+    "locationEmpty": "No locations found",
+    "locationSearchFailed": "Couldn’t search locations. Try again later.",
+    "locationClear": "Clear location",
+    "locationCollapse": "Collapse location suggestions",
+    "locationExpand": "Expand location suggestions",
+    "locationScrollChips": "See more suggested locations"
   },
   "profileShare": {
     "shareTo": "مشاركة إلى",
@@ -3028,7 +3086,8 @@
     "tabs": {
       "boostAccount": "تعزيز الحساب",
       "increaseSales": "زيادة المبيعات",
-      "attractLeads": "جذب العملاء المتوقعين"
+      "attractLeads": "جذب العملاء المتوقعين",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "المزيد من الإعجابات والتعليقات",
@@ -3038,7 +3097,9 @@
       "websiteTraffic": "المزيد من حركة المرور على الموقع",
       "productSales": "المزيد من مبيعات المنتجات",
       "leadForm": "المزيد من عمليات تقديم نماذج العملاء المحتملين",
-      "messageLeads": "المزيد من الرسائل تؤدي"
+      "messageLeads": "المزيد من الرسائل تؤدي",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "لا يوجد فيديو بعد",
     "noVideoHint": "...حان الوقت لإنشاء بعض المحتوى!",
@@ -3064,6 +3125,48 @@
     "priceDetailsTitle": "تفاصيل الأسعار",
     "subtotal": "المجموع الفرعي",
     "insufficientPoints": "نقاط غير كافية",
-    "total": "المجموع"
+    "total": "المجموع",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
+    }
   }
 }

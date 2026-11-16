@@ -1198,7 +1198,8 @@
     "menuAria": "Chaguzi za video",
     "closeMenu": "Funga menyu",
     "volume": "Kiasi",
-    "fullscreen": "Ingiza skrini nzima"
+    "fullscreen": "Ingiza skrini nzima",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "Tafuta",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "Vibely hukagua maudhui ili kuweka jumuiya salama na kupatana na Miongozo yetu ya Jumuiya. Hii inatumika kwa kila chapisho jipya.",
         "faqEngagementTitle": "Je, hii inaathiri ushiriki kwenye chapisho langu?",
         "faqEngagementBody": "Wakati ukaguzi unaendelea, chapisho lako linaweza kuwa na mwonekano mdogo wa umma. Baada ya kuidhinishwa, mipangilio ya faragha uliyochagua itatumika kikamilifu."
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "Maoni",
@@ -2090,14 +2092,16 @@
       "postDetail": "Vibely Admin | Maelezo ya chapisho",
       "moderation": "Vibely Admin | Udhibiti wa maudhui",
       "banned": "Vibely Admin | Akaunti zilizopigwa marufuku",
-      "appeals": "Vibely Admin | Piga marufuku rufaa"
+      "appeals": "Vibely Admin | Piga marufuku rufaa",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "Usimamizi wa mtumiaji",
       "posts": "Usimamizi wa posta",
       "moderation": "Udhibiti wa maudhui",
       "banned": "Akaunti zilizopigwa marufuku",
-      "appeals": "Piga marufuku rufaa"
+      "appeals": "Piga marufuku rufaa",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "Pagination",
@@ -2512,6 +2516,49 @@
       "views": "maoni",
       "likeViews": "anapenda",
       "viewsHeader": "Maoni"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -2861,7 +2908,9 @@
           "favorites": "Sauti unazopenda zitaonekana hapa.",
           "recent": "Sauti ulizotumia hivi karibuni zitaonekana hapa."
         }
-      }
+      },
+      "aiGeneratedHint": "Add this label for AI-generated content.",
+      "learnMore": "Learn more"
     },
     "selectedFile": "Dipilih: {{name}}",
     "durationLabel": "Muda: {{duration}}",
@@ -2916,7 +2965,16 @@
       "followers": "Wafuasi",
       "likes": "Anapenda",
       "defaultText": "Maandishi"
-    }
+    },
+    "locationSearchPlaceholder": "Search for location",
+    "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
+    "locationEmpty": "No locations found",
+    "locationSearchFailed": "Couldn’t search locations. Try again later.",
+    "locationClear": "Clear location",
+    "locationCollapse": "Collapse location suggestions",
+    "locationExpand": "Expand location suggestions",
+    "locationScrollChips": "See more suggested locations"
   },
   "profileShare": {
     "shareTo": "Shiriki kwa",
@@ -3028,7 +3086,8 @@
     "tabs": {
       "boostAccount": "Ongeza akaunti",
       "increaseSales": "Kuongeza mauzo",
-      "attractLeads": "Kuvutia viongozi"
+      "attractLeads": "Kuvutia viongozi",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "Kupendwa zaidi na maoni",
@@ -3038,7 +3097,9 @@
       "websiteTraffic": "Trafiki zaidi ya tovuti",
       "productSales": "Uuzaji wa bidhaa zaidi",
       "leadForm": "Uwasilishaji zaidi wa fomu ya kuongoza",
-      "messageLeads": "Ujumbe zaidi unaongoza"
+      "messageLeads": "Ujumbe zaidi unaongoza",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "Bado hakuna video",
     "noVideoHint": "...wakati wa kuunda baadhi ya maudhui!",
@@ -3064,6 +3125,48 @@
     "priceDetailsTitle": "Maelezo ya bei",
     "subtotal": "Jumla ndogo",
     "insufficientPoints": "Pointi zisizotosha",
-    "total": "Jumla"
+    "total": "Jumla",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
+    }
   }
 }

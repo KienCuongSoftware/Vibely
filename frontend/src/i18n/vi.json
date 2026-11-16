@@ -2298,14 +2298,46 @@
     },
     "dashboard": {
       "title": "Dashboard",
-      "subtitle": "Tổng quan hoạt động kiểm duyệt và bài đăng trên Vibely.",
-      "barTitle": "Biểu đồ cột: Số lượng kiểm tra mỗi ngày",
-      "lineTitle": "Biểu đồ đường: Xu hướng kiểm tra",
-      "totalSeries": "Tổng kiểm tra",
-      "severeSeries": "Nghiêm trọng",
-      "statTotal": "Tổng trong kỳ",
-      "statSevere": "Nghiêm trọng",
-      "statDays": "Số ngày"
+      "subtitle": "Tăng trưởng người dùng, video, lượt xem và phân tích xu hướng bằng AI.",
+      "kpi": {
+        "users": "Tổng người dùng",
+        "videos": "Tổng video",
+        "reports": "Báo cáo (kỳ)",
+        "views": "Lượt xem (kỳ)"
+      },
+      "charts": {
+        "usersGrowth": "Tăng trưởng người dùng",
+        "videosReports": "Video mới & báo cáo mỗi ngày",
+        "viewsTrend": "Xu hướng lượt xem",
+        "contentMix": "Cơ cấu trạng thái nội dung"
+      },
+      "series": {
+        "totalUsers": "Tổng người dùng",
+        "newUsers": "Người dùng mới / ngày",
+        "newVideos": "Video mới",
+        "reports": "Báo cáo",
+        "views": "Lượt xem (nghìn)"
+      },
+      "axis": {
+        "totalUsers": "Tổng",
+        "newUsers": "Mới / ngày"
+      },
+      "status": {
+        "published": "Đã đăng",
+        "draft": "Bản nháp",
+        "flagged": "Bị gắn cờ",
+        "removed": "Đã gỡ"
+      },
+      "ai": {
+        "title": "AI phân tích xu hướng",
+        "intro": "So sánh nửa đầu và nửa sau kỳ 14 ngày gần nhất để nêu biến động đáng chú ý.",
+        "up": "tăng",
+        "down": "giảm",
+        "usersTrend": "Người dùng mới {{dir}} {{pct}}% so với nửa kỳ trước — tín hiệu tăng trưởng cộng đồng.",
+        "videosTrend": "Video mới {{dir}} {{pct}}%. Ngày cao điểm: {{peak}}.",
+        "moderationTrend": "Báo cáo {{dir}} {{pct}}% (≈{{ratio}}% so với video mới). Cao điểm báo cáo: {{peak}}.",
+        "viewsTrend": "Lượt xem {{dir}} {{pct}}% — phản ánh mức độ tương tác feed."
+      }
     },
     "pagination": {
       "aria": "Phân trang",

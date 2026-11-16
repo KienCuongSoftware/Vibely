@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { IoMenu } from "react-icons/io5";
+import { IoMenu, IoMoonOutline, IoSunnyOutline } from "react-icons/io5";
 import { AdminSidebar } from "@/features/admin/components/AdminSidebar.jsx";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { AccountAvatarMenu } from "@/shared/components/AccountAvatarMenu.jsx";
@@ -9,9 +9,12 @@ import {
   DEFAULT_AVATAR_URL,
   sanitizeAvatarUrl,
 } from "@/features/profile/utils/avatarUrl.js";
+import { useTheme } from "@/shared/theme/ThemeContext.jsx";
 
 export function AdminLayout({ active = "dashboard", title, subtitle, children }) {
   const { t } = useTranslation();
+  const { resolved, setPreference } = useTheme();
+  const isLight = resolved === "light";
   const { user, token, logout } = useAuth();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
@@ -43,6 +46,10 @@ export function AdminLayout({ active = "dashboard", title, subtitle, children })
       setShowAccountMenu(false);
       hoverCloseTimer.current = null;
     }, 180);
+  };
+
+  const toggleTheme = () => {
+    setPreference(isLight ? "dark" : "light");
   };
 
   useEffect(() => {
@@ -81,15 +88,35 @@ export function AdminLayout({ active = "dashboard", title, subtitle, children })
     return () => document.removeEventListener("keydown", handleEscape);
   }, [showLogoutConfirm]);
 
+  const shell = isLight
+    ? "bg-[#f1f1f2] text-[#161823]"
+    : "bg-black text-zinc-100";
+  const mainBg = isLight ? "bg-[#f1f1f2]" : "bg-black";
+  const topBorder = isLight ? "border-zinc-200" : "border-zinc-800/80";
+  const brandText = isLight ? "text-[#161823]" : "text-white";
+  const iconBtn = isLight
+    ? "text-zinc-700 hover:bg-zinc-200/80"
+    : "text-zinc-200 hover:bg-zinc-900";
+  const titleCard = isLight
+    ? "border-zinc-200 bg-white"
+    : "border-zinc-800/80 bg-zinc-900/50";
+  const subtitleText = isLight ? "text-zinc-500" : "text-zinc-400";
+  const avatarRing = isLight
+    ? "ring-zinc-300 hover:ring-zinc-400"
+    : "ring-zinc-600 hover:ring-zinc-400";
+  const avatarBorder = isLight ? "border-zinc-200" : "border-zinc-800";
+
   return (
-    <section className="flex h-dvh overflow-hidden bg-black text-zinc-100">
+    <section className={`flex h-dvh overflow-hidden ${shell}`}>
       <AdminSidebar active={active} className="hidden lg:flex" />
 
       {mobileNavOpen ? (
         <>
           <button
             type="button"
-            className="fixed inset-0 z-200 bg-black/50 lg:hidden"
+            className={`fixed inset-0 z-200 lg:hidden ${
+              isLight ? "bg-black/35" : "bg-black/50"
+            }`}
             aria-label={t("admin.closeMenu")}
             onClick={() => setMobileNavOpen(false)}
           />
@@ -101,60 +128,92 @@ export function AdminLayout({ active = "dashboard", title, subtitle, children })
         </>
       ) : null}
 
-      <main className="flex h-dvh min-w-0 flex-1 flex-col overflow-hidden bg-black p-3 sm:p-6 lg:p-8">
-        <div className="mb-4 flex shrink-0 items-center justify-between gap-3 border-b border-zinc-800/80 pb-3 sm:mb-6 sm:gap-4 sm:pb-4">
+      <main
+        className={`flex h-dvh min-w-0 flex-1 flex-col overflow-hidden p-3 sm:p-6 lg:p-8 ${mainBg}`}
+      >
+        <div
+          className={`mb-4 flex shrink-0 items-center justify-between gap-3 border-b pb-3 sm:mb-6 sm:gap-4 sm:pb-4 ${topBorder}`}
+        >
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <button
               type="button"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl text-zinc-200 hover:bg-zinc-900 lg:hidden"
+              className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-xl lg:hidden ${iconBtn}`}
               aria-label={t("admin.menuAdmin")}
               onClick={() => setMobileNavOpen(true)}
             >
               <IoMenu aria-hidden />
             </button>
-            <span className="min-w-0 truncate text-base font-bold text-white sm:text-lg lg:text-xl">
+            <span
+              className={`min-w-0 truncate text-base font-bold sm:text-lg lg:text-xl ${brandText}`}
+            >
               {t("admin.brand")}
             </span>
           </div>
 
-          <div
-            className="relative shrink-0"
-            ref={accountMenuRef}
-            onMouseEnter={openMenu}
-            onMouseLeave={scheduleCloseMenu}
-          >
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              className="flex cursor-pointer rounded-full p-0.5 ring-1 ring-zinc-600 transition hover:ring-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fe2c55]"
-              aria-label={t("common.accountMenu")}
-              aria-expanded={showAccountMenu}
-              aria-haspopup="menu"
-              onClick={() => setShowAccountMenu((prev) => !prev)}
+              className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-lg ${iconBtn}`}
+              aria-label={
+                isLight
+                  ? t("appearance.darkMode")
+                  : t("appearance.lightMode")
+              }
+              title={
+                isLight
+                  ? t("appearance.darkMode")
+                  : t("appearance.lightMode")
+              }
+              onClick={toggleTheme}
             >
-              <AvatarImage
-                src={avatarSrc}
-                alt=""
-                className="h-9 w-9 rounded-full border border-zinc-800 object-cover"
-              />
+              {isLight ? (
+                <IoMoonOutline aria-hidden />
+              ) : (
+                <IoSunnyOutline aria-hidden />
+              )}
             </button>
-            <AccountAvatarMenu
-              open={showAccountMenu}
-              onClose={() => setShowAccountMenu(false)}
-              user={user}
-              token={token}
-              className="absolute right-0 top-full z-50 mt-2"
-              onLogout={() => {
-                setShowAccountMenu(false);
-                setShowLogoutConfirm(true);
-              }}
-            />
+
+            <div
+              className="relative shrink-0"
+              ref={accountMenuRef}
+              onMouseEnter={openMenu}
+              onMouseLeave={scheduleCloseMenu}
+            >
+              <button
+                type="button"
+                className={`flex cursor-pointer rounded-full p-0.5 ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fe2c55] ${avatarRing}`}
+                aria-label={t("common.accountMenu")}
+                aria-expanded={showAccountMenu}
+                aria-haspopup="menu"
+                onClick={() => setShowAccountMenu((prev) => !prev)}
+              >
+                <AvatarImage
+                  src={avatarSrc}
+                  alt=""
+                  className={`h-9 w-9 rounded-full border object-cover ${avatarBorder}`}
+                />
+              </button>
+              <AccountAvatarMenu
+                open={showAccountMenu}
+                onClose={() => setShowAccountMenu(false)}
+                user={user}
+                token={token}
+                className="absolute right-0 top-full z-50 mt-2"
+                onLogout={() => {
+                  setShowAccountMenu(false);
+                  setShowLogoutConfirm(true);
+                }}
+              />
+            </div>
           </div>
         </div>
 
-        <header className="mb-4 rounded-xl border border-zinc-800/80 bg-zinc-900/50 px-4 py-3 sm:mb-6">
+        <header
+          className={`mb-4 rounded-xl border px-4 py-3 sm:mb-6 ${titleCard}`}
+        >
           <h1 className="text-xl font-bold sm:text-2xl">{title}</h1>
           {subtitle ? (
-            <p className="mt-1 text-sm text-zinc-400">{subtitle}</p>
+            <p className={`mt-1 text-sm ${subtitleText}`}>{subtitle}</p>
           ) : null}
         </header>
 
@@ -165,21 +224,29 @@ export function AdminLayout({ active = "dashboard", title, subtitle, children })
 
       {showLogoutConfirm ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4">
-          <div className="w-full max-w-sm rounded-xl bg-zinc-800 p-6 text-center shadow-2xl">
+          <div
+            className={`w-full max-w-sm rounded-xl p-6 text-center shadow-2xl ${
+              isLight ? "bg-white text-zinc-900" : "bg-zinc-800 text-zinc-100"
+            }`}
+          >
             <p className="text-2xl font-bold leading-snug">
               {t("common.logoutConfirm")}
             </p>
             <div className="mt-5 grid grid-cols-2 gap-3 text-base">
               <button
                 type="button"
-                className="rounded-md bg-zinc-700 py-2 font-semibold text-zinc-200 hover:bg-zinc-600"
+                className={`rounded-md py-2 font-semibold ${
+                  isLight
+                    ? "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                    : "bg-zinc-700 text-zinc-200 hover:bg-zinc-600"
+                }`}
                 onClick={() => setShowLogoutConfirm(false)}
               >
                 {t("common.cancel")}
               </button>
               <button
                 type="button"
-                className="rounded-md border border-red-500 py-2 font-semibold text-red-400 hover:bg-red-500/10"
+                className="rounded-md border border-red-500 py-2 font-semibold text-red-500 hover:bg-red-500/10"
                 onClick={() => {
                   setShowLogoutConfirm(false);
                   void logout?.();

@@ -1198,7 +1198,8 @@
     "menuAria": "Video options",
     "closeMenu": "Close menu",
     "volume": "Volume",
-    "fullscreen": "Enter fullscreen"
+    "fullscreen": "Enter fullscreen",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "Search",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "Vibely reviews content to keep the community safe and aligned with our Community Guidelines. This applies to every new post.",
         "faqEngagementTitle": "Does this affect engagement on my post?",
         "faqEngagementBody": "While review is in progress, your post may have limited public visibility. After approval, your chosen privacy setting applies fully."
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "Comments",
@@ -2090,14 +2092,16 @@
       "postDetail": "Vibely Admin | Post detail",
       "moderation": "Vibely Admin | Content moderation",
       "banned": "Vibely Admin | Banned accounts",
-      "appeals": "Vibely Admin | Ban appeals"
+      "appeals": "Vibely Admin | Ban appeals",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "User management",
       "posts": "Post management",
       "moderation": "Content moderation",
       "banned": "Banned accounts",
-      "appeals": "Ban appeals"
+      "appeals": "Ban appeals",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "Pagination",
@@ -2512,6 +2516,49 @@
       "views": "views",
       "likeViews": "likes",
       "viewsHeader": "Views"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -3039,7 +3086,8 @@
     "tabs": {
       "boostAccount": "Boost account",
       "increaseSales": "Increase sales",
-      "attractLeads": "Attract leads"
+      "attractLeads": "Attract leads",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "More likes and comments",
@@ -3049,7 +3097,9 @@
       "websiteTraffic": "More website traffic",
       "productSales": "More product sales",
       "leadForm": "More lead form submissions",
-      "messageLeads": "More message leads"
+      "messageLeads": "More message leads",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "No video yet",
     "noVideoHint": "...time to create some content!",
@@ -3087,6 +3137,36 @@
       "step3Body": "Create a campaign and wait for review.",
       "cta": "Create a promotion plan",
       "cancel": "Cancel"
+    },
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
     }
   }
 }

@@ -1198,7 +1198,8 @@
     "menuAria": "Možnosti videa",
     "closeMenu": "Zavřít nabídku",
     "volume": "Objem",
-    "fullscreen": "Vstupte na celou obrazovku"
+    "fullscreen": "Vstupte na celou obrazovku",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "Vyhledávání",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "Vibely kontroluje obsah, aby byla komunita v bezpečí a v souladu s našimi pokyny pro komunitu. To platí pro každý nový příspěvek.",
         "faqEngagementTitle": "Ovlivní to zapojení na mém příspěvku?",
         "faqEngagementBody": "Zatímco probíhá kontrola, váš příspěvek může mít omezenou veřejnou viditelnost. Po schválení plně platí vámi zvolené nastavení soukromí."
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "Komentáře",
@@ -2090,14 +2092,16 @@
       "postDetail": "Vibely Admin | Detail příspěvku",
       "moderation": "Vibely Admin | Moderování obsahu",
       "banned": "Vibely Admin | Zakázané účty",
-      "appeals": "Vibely Admin | Zákaz odvolání"
+      "appeals": "Vibely Admin | Zákaz odvolání",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "Správa uživatelů",
       "posts": "Správa pošty",
       "moderation": "Moderování obsahu",
       "banned": "Zakázané účty",
-      "appeals": "Zákaz odvolání"
+      "appeals": "Zákaz odvolání",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "Stránkování",
@@ -2512,6 +2516,49 @@
       "views": "pohledy",
       "likeViews": "líbí",
       "viewsHeader": "Pohledy"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -2861,7 +2908,9 @@
           "favorites": "Vaše oblíbené zvuky se zobrazí zde.",
           "recent": "Nedávno použité zvuky se zobrazí zde."
         }
-      }
+      },
+      "aiGeneratedHint": "Add this label for AI-generated content.",
+      "learnMore": "Learn more"
     },
     "selectedFile": "Vybráno: {{name}}",
     "durationLabel": "Délka: {{duration}}",
@@ -2916,7 +2965,16 @@
       "followers": "Následovníci",
       "likes": "Líbí se",
       "defaultText": "Text"
-    }
+    },
+    "locationSearchPlaceholder": "Search for location",
+    "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
+    "locationEmpty": "No locations found",
+    "locationSearchFailed": "Couldn’t search locations. Try again later.",
+    "locationClear": "Clear location",
+    "locationCollapse": "Collapse location suggestions",
+    "locationExpand": "Expand location suggestions",
+    "locationScrollChips": "See more suggested locations"
   },
   "profileShare": {
     "shareTo": "Sdílet s",
@@ -3028,7 +3086,8 @@
     "tabs": {
       "boostAccount": "Zvýšit účet",
       "increaseSales": "Zvyšte prodeje",
-      "attractLeads": "Přitahujte potenciální zákazníky"
+      "attractLeads": "Přitahujte potenciální zákazníky",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "Více lajků a komentářů",
@@ -3038,7 +3097,9 @@
       "websiteTraffic": "Vyšší návštěvnost webu",
       "productSales": "Více prodeje produktů",
       "leadForm": "Další odeslání formuláře pro zájemce",
-      "messageLeads": "Více potenciálních zákazníků"
+      "messageLeads": "Více potenciálních zákazníků",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "Zatím žádné video",
     "noVideoHint": "...čas vytvořit nějaký obsah!",
@@ -3064,6 +3125,48 @@
     "priceDetailsTitle": "Podrobnosti o ceně",
     "subtotal": "Mezisoučet",
     "insufficientPoints": "Nedostatek bodů",
-    "total": "Celkový"
+    "total": "Celkový",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
+    }
   }
 }

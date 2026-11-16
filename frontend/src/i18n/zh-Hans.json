@@ -1198,7 +1198,8 @@
     "menuAria": "视频选项",
     "closeMenu": "关闭菜单",
     "volume": "音量",
-    "fullscreen": "进入全屏"
+    "fullscreen": "进入全屏",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "搜索",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "Vibely 审核内容以确保社区安全并符合我们的社区准则。这适用于每一个新帖子。",
         "faqEngagementTitle": "这会影响我的帖子的参与度吗？",
         "faqEngagementBody": "在审核进行期间，您的帖子的公众知名度可能有限。批准后，您选择的隐私设置将完全适用。"
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "评论",
@@ -2090,14 +2092,16 @@
       "postDetail": "Vibely Admin | 作品详情",
       "moderation": "Vibely Admin | 内容审核",
       "banned": "Vibely Admin | 封禁账号",
-      "appeals": "Vibely Admin | 封禁申诉"
+      "appeals": "Vibely Admin | 封禁申诉",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "用户管理",
       "posts": "作品管理",
       "moderation": "内容审核",
       "banned": "封禁账号",
-      "appeals": "封禁申诉"
+      "appeals": "封禁申诉",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "分页",
@@ -2512,6 +2516,49 @@
       "views": "次播放",
       "likeViews": "次点赞",
       "viewsHeader": "播放量"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -2861,7 +2908,9 @@
           "favorites": "你收藏的音乐将显示在这里。",
           "recent": "你最近使用的音乐将显示在这里。"
         }
-      }
+      },
+      "aiGeneratedHint": "Add this label for AI-generated content.",
+      "learnMore": "Learn more"
     },
     "selectedFile": "已选择：{{name}}",
     "durationLabel": "时长：{{duration}}",
@@ -2916,7 +2965,16 @@
       "followers": "粉丝",
       "likes": "点赞",
       "defaultText": "文字"
-    }
+    },
+    "locationSearchPlaceholder": "Search for location",
+    "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
+    "locationEmpty": "No locations found",
+    "locationSearchFailed": "Couldn’t search locations. Try again later.",
+    "locationClear": "Clear location",
+    "locationCollapse": "Collapse location suggestions",
+    "locationExpand": "Expand location suggestions",
+    "locationScrollChips": "See more suggested locations"
   },
   "profileShare": {
     "shareTo": "分享到",
@@ -3028,7 +3086,8 @@
     "tabs": {
       "boostAccount": "增加账户",
       "increaseSales": "增加销量",
-      "attractLeads": "吸引潜在客户"
+      "attractLeads": "吸引潜在客户",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "更多点赞和评论",
@@ -3038,7 +3097,9 @@
       "websiteTraffic": "更多网站流量",
       "productSales": "更多产品销售",
       "leadForm": "更多潜在客户表单提交",
-      "messageLeads": "更多留言线索"
+      "messageLeads": "更多留言线索",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "还没有视频",
     "noVideoHint": "...是时候创建一些内容了！",
@@ -3064,6 +3125,48 @@
     "priceDetailsTitle": "价格详情",
     "subtotal": "小计",
     "insufficientPoints": "积分不足",
-    "total": "全部的"
+    "total": "全部的",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
+    }
   }
 }

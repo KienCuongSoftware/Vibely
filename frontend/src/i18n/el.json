@@ -1198,7 +1198,8 @@
     "menuAria": "Επιλογές βίντεο",
     "closeMenu": "Κλείσιμο μενού",
     "volume": "Τόμος",
-    "fullscreen": "Μπείτε σε πλήρη οθόνη"
+    "fullscreen": "Μπείτε σε πλήρη οθόνη",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "Ερευνα",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "Το Vibely αξιολογεί το περιεχόμενο για να διατηρήσει την κοινότητα ασφαλή και ευθυγραμμισμένη με τις Οδηγίες κοινότητας. Αυτό ισχύει για κάθε νέα ανάρτηση.",
         "faqEngagementTitle": "Αυτό επηρεάζει την αφοσίωση στην ανάρτησή μου;",
         "faqEngagementBody": "Ενώ ο έλεγχος βρίσκεται σε εξέλιξη, η ανάρτησή σας μπορεί να έχει περιορισμένη δημόσια ορατότητα. Μετά την έγκριση, η επιλεγμένη ρύθμιση απορρήτου ισχύει πλήρως."
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "Σχόλια",
@@ -2090,14 +2092,16 @@
       "postDetail": "Vibely Admin | Λεπτομέρεια ανάρτησης",
       "moderation": "Vibely Admin | Μετριασμός περιεχομένου",
       "banned": "Vibely Admin | Απαγορευμένοι λογαριασμοί",
-      "appeals": "Vibely Admin | Απαγόρευση προσφυγών"
+      "appeals": "Vibely Admin | Απαγόρευση προσφυγών",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "Διαχείριση χρηστών",
       "posts": "Διαχείριση αναρτήσεων",
       "moderation": "Μετριασμός περιεχομένου",
       "banned": "Απαγορευμένοι λογαριασμοί",
-      "appeals": "Απαγόρευση προσφυγών"
+      "appeals": "Απαγόρευση προσφυγών",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "Σελιδοποίηση",
@@ -2512,6 +2516,49 @@
       "views": "απόψεις",
       "likeViews": "αρέσει",
       "viewsHeader": "Απόψεις"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -2861,7 +2908,9 @@
           "favorites": "Οι αγαπημένοι σας ήχοι θα εμφανιστούν εδώ.",
           "recent": "Οι πρόσφατα χρησιμοποιημένοι ήχοι θα εμφανιστούν εδώ."
         }
-      }
+      },
+      "aiGeneratedHint": "Add this label for AI-generated content.",
+      "learnMore": "Learn more"
     },
     "selectedFile": "Επιλεγμένα: {{name}}",
     "durationLabel": "Duración: {{duration}}",
@@ -2916,7 +2965,16 @@
       "followers": "Οπαδοί",
       "likes": "Μου αρέσει",
       "defaultText": "Κείμενο"
-    }
+    },
+    "locationSearchPlaceholder": "Search for location",
+    "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
+    "locationEmpty": "No locations found",
+    "locationSearchFailed": "Couldn’t search locations. Try again later.",
+    "locationClear": "Clear location",
+    "locationCollapse": "Collapse location suggestions",
+    "locationExpand": "Expand location suggestions",
+    "locationScrollChips": "See more suggested locations"
   },
   "profileShare": {
     "shareTo": "Κοινοποίηση σε",
@@ -3028,7 +3086,8 @@
     "tabs": {
       "boostAccount": "Ενίσχυση λογαριασμού",
       "increaseSales": "Αύξηση πωλήσεων",
-      "attractLeads": "Προσελκύστε δυνητικούς πελάτες"
+      "attractLeads": "Προσελκύστε δυνητικούς πελάτες",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "Περισσότερα likes και σχόλια",
@@ -3038,7 +3097,9 @@
       "websiteTraffic": "Περισσότερη επισκεψιμότητα ιστότοπου",
       "productSales": "Περισσότερες πωλήσεις προϊόντων",
       "leadForm": "Περισσότερες υποβολές φόρμας δυνητικού πελάτη",
-      "messageLeads": "Περισσότεροι οδηγοί μηνυμάτων"
+      "messageLeads": "Περισσότεροι οδηγοί μηνυμάτων",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "Δεν υπάρχει βίντεο ακόμα",
     "noVideoHint": "...ώρα να δημιουργήσετε λίγο περιεχόμενο!",
@@ -3064,6 +3125,48 @@
     "priceDetailsTitle": "Λεπτομέρειες τιμής",
     "subtotal": "Υποσύνολο",
     "insufficientPoints": "Ανεπαρκείς πόντοι",
-    "total": "Σύνολο"
+    "total": "Σύνολο",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
+    }
   }
 }

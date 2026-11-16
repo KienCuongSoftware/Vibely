@@ -1198,7 +1198,8 @@
     "menuAria": "ဗီဒီယို ရွေးချယ်မှုများ",
     "closeMenu": "မီနူးကိုပိတ်ပါ။",
     "volume": "အတွဲ",
-    "fullscreen": "မျက်နှာပြင်အပြည့်ထည့်ပါ။"
+    "fullscreen": "မျက်နှာပြင်အပြည့်ထည့်ပါ။",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "ရှာရန်",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "ကွန်မြူနတီကို ဘေးကင်းလုံခြုံစေပြီး ကျွန်ုပ်တို့၏ ကွန်မြူနတီလမ်းညွှန်ချက်များနှင့်အညီ လိုက်လျောညီထွေဖြစ်စေရန်အတွက် အကြောင်းအရာများကို Vibely မှ ပြန်လည်သုံးသပ်ပါသည်။ ဒါက ပို့စ်အသစ်တိုင်းနဲ့ သက်ဆိုင်ပါတယ်။",
         "faqEngagementTitle": "၎င်းသည် ကျွန်ုပ်၏ပို့စ်တွင် ပါဝင်ပတ်သက်မှုအပေါ် သက်ရောက်မှုရှိပါသလား။",
         "faqEngagementBody": "ပြန်လည်သုံးသပ်ခြင်းကို လုပ်ဆောင်နေချိန်တွင် သင့်ပို့စ်သည် အများသူငှာ မြင်နိုင်စွမ်းကို ကန့်သတ်ထားနိုင်သည်။ အတည်ပြုပြီးနောက်၊ သင်ရွေးချယ်ထားသော ကိုယ်ရေးကိုယ်တာဆက်တင်သည် အပြည့်အဝ အကျုံးဝင်ပါသည်။"
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "မှတ်ချက်များ",
@@ -2090,14 +2092,16 @@
       "postDetail": "Vibely Admin | အသေးစိတ်ကို တင်ပါ။",
       "moderation": "Vibely Admin | အကြောင်းအရာ စိစစ်မှု",
       "banned": "Vibely Admin | ပိတ်ပင်ထားသောအကောင့်များ",
-      "appeals": "Vibely Admin | အယူခံတွေကို တားမြစ်တယ်။"
+      "appeals": "Vibely Admin | အယူခံတွေကို တားမြစ်တယ်။",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "အသုံးပြုသူစီမံခန့်ခွဲမှု",
       "posts": "ပို့စ်စီမံခန့်ခွဲမှု",
       "moderation": "အကြောင်းအရာ စိစစ်မှု",
       "banned": "ပိတ်ပင်ထားသောအကောင့်များ",
-      "appeals": "အယူခံတွေကို တားမြစ်တယ်။"
+      "appeals": "အယူခံတွေကို တားမြစ်တယ်။",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "Pagination",
@@ -2512,6 +2516,49 @@
       "views": "အမြင်များ",
       "likeViews": "ကြိုက်တယ်။",
       "viewsHeader": "ရှုခင်းများ"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -2861,7 +2908,9 @@
           "favorites": "သင့်အကြိုက်ဆသံများဤနေရာတွင်ပေါ်လာမည်။",
           "recent": "မကြာသေးမီကအသုံးပြုသသံများဤနေရာတွင်ပေါ်လာမည်။"
         }
-      }
+      },
+      "aiGeneratedHint": "Add this label for AI-generated content.",
+      "learnMore": "Learn more"
     },
     "selectedFile": "ရွေးထားသည်- {{name}}",
     "durationLabel": "ကြာချိန်- {{duration}}",
@@ -2916,7 +2965,16 @@
       "followers": "နောက်လိုက်များ",
       "likes": "အကြိုက်များ",
       "defaultText": "စာသား"
-    }
+    },
+    "locationSearchPlaceholder": "Search for location",
+    "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
+    "locationEmpty": "No locations found",
+    "locationSearchFailed": "Couldn’t search locations. Try again later.",
+    "locationClear": "Clear location",
+    "locationCollapse": "Collapse location suggestions",
+    "locationExpand": "Expand location suggestions",
+    "locationScrollChips": "See more suggested locations"
   },
   "profileShare": {
     "shareTo": "မျှဝေပါ။",
@@ -3028,7 +3086,8 @@
     "tabs": {
       "boostAccount": "အကောင့်ကိုမြှင့်တင်ပါ။",
       "increaseSales": "အရောင်းမြှင့်တင်ပါ။",
-      "attractLeads": "စွဲဆောင်မှု"
+      "attractLeads": "စွဲဆောင်မှု",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "ကြိုက်နှစ်သက်မှုများနှင့် မှတ်ချက်များ ပိုများလာသည်။",
@@ -3038,7 +3097,9 @@
       "websiteTraffic": "ဝဘ်ဆိုဒ်အသွားအလာပိုများသည်။",
       "productSales": "ထုတ်ကုန်တွေ ပိုရောင်းရတယ်။",
       "leadForm": "ခဲဖောင်များ ထပ်မံတင်ပြခြင်း။",
-      "messageLeads": "မက်ဆေ့ခ်ျပိုပို့တယ်။"
+      "messageLeads": "မက်ဆေ့ခ်ျပိုပို့တယ်။",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "ဗီဒီယိုမရှိသေးပါ။",
     "noVideoHint": "... အကြောင်းအရာအချို့ကို ဖန်တီးရန် အချိန်ဖြစ်သည်။",
@@ -3064,6 +3125,48 @@
     "priceDetailsTitle": "စျေးနှုန်းအသေးစိတ်",
     "subtotal": "စုစုပေါင်း",
     "insufficientPoints": "အမှတ်မလုံလောက်ပါ။",
-    "total": "စုစုပေါင်း"
+    "total": "စုစုပေါင်း",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
+    }
   }
 }

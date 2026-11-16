@@ -1198,7 +1198,8 @@
     "menuAria": "Параметры видео",
     "closeMenu": "Закрыть меню",
     "volume": "Громкость",
-    "fullscreen": "Полноэкранный режим"
+    "fullscreen": "Полноэкранный режим",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "Поиск",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "Vibely reviews content to keep the community safe and aligned with our Community Guidelines. Это касается каждого нового поста.",
         "faqEngagementTitle": "Влияет ли это на вовлеченность моего поста?",
         "faqEngagementBody": "Пока идет проверка, ваша публикация может быть ограничена публичной видимостью. После одобрения выбранная вами настройка конфиденциальности применяется в полной мере."
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "Комментарии",
@@ -2090,14 +2092,16 @@
       "postDetail": "Vibely Admin | Сведения о публикации",
       "moderation": "Vibely Admin | Модерация контента",
       "banned": "Vibely Admin | Заблокированные аккаунты",
-      "appeals": "Vibely Admin | Апелляции по бану"
+      "appeals": "Vibely Admin | Апелляции по бану",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "Управление пользователями",
       "posts": "Управление публикациями",
       "moderation": "Модерация контента",
       "banned": "Заблокированные аккаунты",
-      "appeals": "Апелляции по бану"
+      "appeals": "Апелляции по бану",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "Пагинация",
@@ -2512,6 +2516,49 @@
       "views": "просмотров",
       "likeViews": "лайков",
       "viewsHeader": "Просмотры"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -2861,7 +2908,9 @@
           "favorites": "Избранные звуки появятся здесь.",
           "recent": "Недавно использованные звуки появятся здесь."
         }
-      }
+      },
+      "aiGeneratedHint": "Add this label for AI-generated content.",
+      "learnMore": "Learn more"
     },
     "selectedFile": "Выбрано: {{name}}",
     "durationLabel": "Длительность: {{duration}}",
@@ -2916,7 +2965,16 @@
       "followers": "Подписчики",
       "likes": "Лайки",
       "defaultText": "Текст"
-    }
+    },
+    "locationSearchPlaceholder": "Search for location",
+    "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
+    "locationEmpty": "No locations found",
+    "locationSearchFailed": "Couldn’t search locations. Try again later.",
+    "locationClear": "Clear location",
+    "locationCollapse": "Collapse location suggestions",
+    "locationExpand": "Expand location suggestions",
+    "locationScrollChips": "See more suggested locations"
   },
   "profileShare": {
     "shareTo": "Поделиться в",
@@ -3028,7 +3086,8 @@
     "tabs": {
       "boostAccount": "Буст аккаунт",
       "increaseSales": "Увеличение продаж",
-      "attractLeads": "Привлекайте потенциальных клиентов"
+      "attractLeads": "Привлекайте потенциальных клиентов",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "Больше лайков и комментариев",
@@ -3038,7 +3097,9 @@
       "websiteTraffic": "Больше трафика на сайт",
       "productSales": "Больше продаж продукции",
       "leadForm": "Больше отправок форм для потенциальных клиентов",
-      "messageLeads": "Больше потенциальных клиентов"
+      "messageLeads": "Больше потенциальных клиентов",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "Видео пока нет",
     "noVideoHint": "...время создать контент!",
@@ -3064,6 +3125,48 @@
     "priceDetailsTitle": "Подробности о цене",
     "subtotal": "Итого",
     "insufficientPoints": "Недостаточно баллов",
-    "total": "Общий"
+    "total": "Общий",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
+    }
   }
 }

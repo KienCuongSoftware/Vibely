@@ -1198,7 +1198,8 @@
     "menuAria": "אפשרויות סרטון",
     "closeMenu": "סגור תפריט",
     "volume": "עוצמת קול",
-    "fullscreen": "מסך מלא"
+    "fullscreen": "מסך מלא",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "חיפוש",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "סוקר תוכן בצורה חיונית כדי לשמור על בטיחות הקהילה ובהתאם להנחיות הקהילה שלנו. זה חל על כל פוסט חדש.",
         "faqEngagementTitle": "האם זה משפיע על המעורבות בפוסט שלי?",
         "faqEngagementBody": "בזמן שהבדיקה מתבצעת, הפוסט שלך עשוי להיות מוגבל בחשיפה ציבורית. לאחר האישור, הגדרת הפרטיות שבחרת תחול במלואה."
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "תגובות",
@@ -2090,14 +2092,16 @@
       "postDetail": "Vibely Admin | פרטי פוסט",
       "moderation": "Vibely Admin | פיקוח תוכן",
       "banned": "Vibely Admin | חשבונות חסומים",
-      "appeals": "Vibely Admin | ערעורי חסימה"
+      "appeals": "Vibely Admin | ערעורי חסימה",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "ניהול משתמשים",
       "posts": "ניהול פוסטים",
       "moderation": "פיקוח תוכן",
       "banned": "חשבונות חסומים",
-      "appeals": "ערעורי חסימה"
+      "appeals": "ערעורי חסימה",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "עימוד",
@@ -2512,6 +2516,49 @@
       "views": "צפיות",
       "likeViews": "לייקים",
       "viewsHeader": "צפיות"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -2861,7 +2908,9 @@
           "favorites": "הצלילים המועדפים שלך יופיעו כאן.",
           "recent": "צלילים שבהם השתמשת לאחרונה יופיעו כאן."
         }
-      }
+      },
+      "aiGeneratedHint": "Add this label for AI-generated content.",
+      "learnMore": "Learn more"
     },
     "selectedFile": "נבחר: {{name}}",
     "durationLabel": "משך: {{duration}}",
@@ -2916,7 +2965,16 @@
       "followers": "עוקבים",
       "likes": "לייקים",
       "defaultText": "טקסט"
-    }
+    },
+    "locationSearchPlaceholder": "Search for location",
+    "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
+    "locationEmpty": "No locations found",
+    "locationSearchFailed": "Couldn’t search locations. Try again later.",
+    "locationClear": "Clear location",
+    "locationCollapse": "Collapse location suggestions",
+    "locationExpand": "Expand location suggestions",
+    "locationScrollChips": "See more suggested locations"
   },
   "profileShare": {
     "shareTo": "שתף אל",
@@ -3028,7 +3086,8 @@
     "tabs": {
       "boostAccount": "שפר את החשבון",
       "increaseSales": "הגדל את המכירות",
-      "attractLeads": "למשוך לידים"
+      "attractLeads": "למשוך לידים",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "עוד לייקים ותגובות",
@@ -3038,7 +3097,9 @@
       "websiteTraffic": "יותר תעבורה לאתר",
       "productSales": "יותר מכירות מוצרים",
       "leadForm": "עוד הגשת טופס לידים",
-      "messageLeads": "עוד הודעה מובילה"
+      "messageLeads": "עוד הודעה מובילה",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "עדיין אין סרטון",
     "noVideoHint": "... הגיע הזמן ליצור קצת תוכן!",
@@ -3064,6 +3125,48 @@
     "priceDetailsTitle": "פרטי מחיר",
     "subtotal": "סכום משנה",
     "insufficientPoints": "אין מספיק נקודות",
-    "total": "סַך הַכֹּל"
+    "total": "סַך הַכֹּל",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
+    }
   }
 }

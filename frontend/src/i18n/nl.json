@@ -1198,7 +1198,8 @@
     "menuAria": "Video-opties",
     "closeMenu": "Menu sluiten",
     "volume": "Volume",
-    "fullscreen": "Voer volledig scherm in"
+    "fullscreen": "Voer volledig scherm in",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "Zoekopdracht",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "Vibely beoordeelt inhoud om de community veilig te houden en in lijn te houden met onze Communityrichtlijnen. Dit geldt voor elk nieuw bericht.",
         "faqEngagementTitle": "Heeft dit invloed op de betrokkenheid bij mijn bericht?",
         "faqEngagementBody": "Terwijl de beoordeling bezig is, is uw bericht mogelijk beperkt zichtbaar voor het publiek. Na goedkeuring is de door u gekozen privacyinstelling volledig van toepassing."
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "Opmerkingen",
@@ -2090,14 +2092,16 @@
       "postDetail": "Vibely-beheerder | Postdetail",
       "moderation": "Vibely-beheerder | Content moderatie",
       "banned": "Vibely-beheerder | Verboden accounts",
-      "appeals": "Vibely-beheerder | Beroep tegen verbod"
+      "appeals": "Vibely-beheerder | Beroep tegen verbod",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "Gebruikersbeheer",
       "posts": "Postbeheer",
       "moderation": "Content moderatie",
       "banned": "Verboden accounts",
-      "appeals": "Beroep tegen verbod"
+      "appeals": "Beroep tegen verbod",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "Paginering",
@@ -2512,6 +2516,49 @@
       "views": "bekeken",
       "likeViews": "houdt",
       "viewsHeader": "Bekeken"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -2861,7 +2908,9 @@
           "favorites": "Je favoriete geluiden verschijnen hier.",
           "recent": "Recent gebruikte geluiden verschijnen hier."
         }
-      }
+      },
+      "aiGeneratedHint": "Add this label for AI-generated content.",
+      "learnMore": "Learn more"
     },
     "selectedFile": "Ausgewählt: {{name}}",
     "durationLabel": "Dauer: {{duration}}",
@@ -2916,7 +2965,16 @@
       "followers": "Volgers",
       "likes": "Vind ik leuk",
       "defaultText": "Tekst"
-    }
+    },
+    "locationSearchPlaceholder": "Search for location",
+    "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
+    "locationEmpty": "No locations found",
+    "locationSearchFailed": "Couldn’t search locations. Try again later.",
+    "locationClear": "Clear location",
+    "locationCollapse": "Collapse location suggestions",
+    "locationExpand": "Expand location suggestions",
+    "locationScrollChips": "See more suggested locations"
   },
   "profileShare": {
     "shareTo": "Deel met",
@@ -3028,7 +3086,8 @@
     "tabs": {
       "boostAccount": "Boost-account",
       "increaseSales": "Verhoog de omzet",
-      "attractLeads": "Trek leads aan"
+      "attractLeads": "Trek leads aan",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "Meer likes en reacties",
@@ -3038,7 +3097,9 @@
       "websiteTraffic": "Meer websiteverkeer",
       "productSales": "Meer productverkoop",
       "leadForm": "Meer leadformulierinzendingen",
-      "messageLeads": "Meer berichtleads"
+      "messageLeads": "Meer berichtleads",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "Nog geen video",
     "noVideoHint": "...tijd om wat inhoud te creëren!",
@@ -3064,6 +3125,48 @@
     "priceDetailsTitle": "Prijsdetails",
     "subtotal": "Subtotaal",
     "insufficientPoints": "Onvoldoende punten",
-    "total": "Totaal"
+    "total": "Totaal",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
+    }
   }
 }

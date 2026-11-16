@@ -1198,7 +1198,8 @@
     "menuAria": "영상 옵션",
     "closeMenu": "메뉴 닫기",
     "volume": "음량",
-    "fullscreen": "전체 화면"
+    "fullscreen": "전체 화면",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "검색",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "커뮤니티를 안전하게 유지하고 커뮤니티 지침을 준수하기 위해 콘텐츠를 Vibely 검토합니다. 이는 모든 새 게시물에 적용됩니다.",
         "faqEngagementTitle": "이것이 내 게시물에 대한 참여에 영향을 미치나요?",
         "faqEngagementBody": "검토가 진행되는 동안 게시물의 공개 공개가 제한될 수 있습니다. 승인 후에는 선택한 개인 정보 보호 설정이 완전히 적용됩니다."
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "댓글",
@@ -2090,14 +2092,16 @@
       "postDetail": "Vibely Admin | 게시물 상세",
       "moderation": "Vibely Admin | 콘텐츠 모더레이션",
       "banned": "Vibely Admin | 차단된 계정",
-      "appeals": "Vibely Admin | 차단 이의"
+      "appeals": "Vibely Admin | 차단 이의",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "사용자 관리",
       "posts": "게시물 관리",
       "moderation": "콘텐츠 모더레이션",
       "banned": "차단된 계정",
-      "appeals": "차단 이의"
+      "appeals": "차단 이의",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "페이지네이션",
@@ -2512,6 +2516,49 @@
       "views": "조회",
       "likeViews": "좋아요",
       "viewsHeader": "조회수"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -2861,7 +2908,9 @@
           "favorites": "즐겨찾기한 사운드가 여기에 표시됩니다.",
           "recent": "최근 사용한 사운드가 여기에 표시됩니다."
         }
-      }
+      },
+      "aiGeneratedHint": "Add this label for AI-generated content.",
+      "learnMore": "Learn more"
     },
     "selectedFile": "선택됨: {{name}}",
     "durationLabel": "길이: {{duration}}",
@@ -2916,7 +2965,16 @@
       "followers": "팔로워",
       "likes": "좋아요",
       "defaultText": "텍스트"
-    }
+    },
+    "locationSearchPlaceholder": "Search for location",
+    "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
+    "locationEmpty": "No locations found",
+    "locationSearchFailed": "Couldn’t search locations. Try again later.",
+    "locationClear": "Clear location",
+    "locationCollapse": "Collapse location suggestions",
+    "locationExpand": "Expand location suggestions",
+    "locationScrollChips": "See more suggested locations"
   },
   "profileShare": {
     "shareTo": "공유",
@@ -3028,7 +3086,8 @@
     "tabs": {
       "boostAccount": "부스트 계정",
       "increaseSales": "매출 증대",
-      "attractLeads": "리드 유치"
+      "attractLeads": "리드 유치",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "좋아요와 댓글 더보기",
@@ -3038,7 +3097,9 @@
       "websiteTraffic": "더 많은 웹사이트 트래픽",
       "productSales": "더 많은 제품 판매",
       "leadForm": "더 많은 리드 양식 제출",
-      "messageLeads": "더 많은 메시지 리드"
+      "messageLeads": "더 많은 메시지 리드",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "아직 동영상이 없습니다",
     "noVideoHint": "...콘텐츠를 만들 시간입니다!",
@@ -3064,6 +3125,48 @@
     "priceDetailsTitle": "가격 세부정보",
     "subtotal": "소계",
     "insufficientPoints": "포인트 부족",
-    "total": "총"
+    "total": "총",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
+    }
   }
 }

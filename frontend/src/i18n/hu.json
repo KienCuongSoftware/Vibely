@@ -1198,7 +1198,8 @@
     "menuAria": "Videó opciók",
     "closeMenu": "Menü bezárása",
     "volume": "Kötet",
-    "fullscreen": "Lépjen be a teljes képernyőre"
+    "fullscreen": "Lépjen be a teljes képernyőre",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "Keresés",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "Élénken felülvizsgálja a tartalmat, hogy a közösség biztonságban legyen, és megfeleljen közösségi irányelveinknek. Ez minden új bejegyzésre vonatkozik.",
         "faqEngagementTitle": "Befolyásolja ez a bejegyzésemmel kapcsolatos elkötelezettséget?",
         "faqEngagementBody": "Amíg az ellenőrzés folyamatban van, bejegyzésed nyilvánosan korlátozott lehet. A jóváhagyást követően a választott adatvédelmi beállítás teljes mértékben érvényesül."
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "Megjegyzések",
@@ -2090,14 +2092,16 @@
       "postDetail": "Vibely Admin | Hozzászólás részlete",
       "moderation": "Vibely Admin | Tartalom moderálása",
       "banned": "Vibely Admin | Tiltott fiókok",
-      "appeals": "Vibely Admin | Fellebbezések tiltása"
+      "appeals": "Vibely Admin | Fellebbezések tiltása",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "Felhasználókezelés",
       "posts": "Postakezelés",
       "moderation": "Tartalom moderálása",
       "banned": "Tiltott fiókok",
-      "appeals": "Fellebbezések tiltása"
+      "appeals": "Fellebbezések tiltása",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "Lapszámozás",
@@ -2512,6 +2516,49 @@
       "views": "nézetek",
       "likeViews": "kedveli",
       "viewsHeader": "Nézetek"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -2861,7 +2908,9 @@
           "favorites": "A kedvenc hangjaid itt jelennek meg.",
           "recent": "A nemrég használt hangok itt jelennek meg."
         }
-      }
+      },
+      "aiGeneratedHint": "Add this label for AI-generated content.",
+      "learnMore": "Learn more"
     },
     "selectedFile": "Kiválasztva: {{name}}",
     "durationLabel": "Időtartam: {{duration}}",
@@ -2916,7 +2965,16 @@
       "followers": "Követői",
       "likes": "Tetszik",
       "defaultText": "Szöveg"
-    }
+    },
+    "locationSearchPlaceholder": "Search for location",
+    "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
+    "locationEmpty": "No locations found",
+    "locationSearchFailed": "Couldn’t search locations. Try again later.",
+    "locationClear": "Clear location",
+    "locationCollapse": "Collapse location suggestions",
+    "locationExpand": "Expand location suggestions",
+    "locationScrollChips": "See more suggested locations"
   },
   "profileShare": {
     "shareTo": "Megosztás erre",
@@ -3028,7 +3086,8 @@
     "tabs": {
       "boostAccount": "Boost fiók",
       "increaseSales": "Növelje az eladásokat",
-      "attractLeads": "Vonzza a leadeket"
+      "attractLeads": "Vonzza a leadeket",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "További kedvelések és kommentek",
@@ -3038,7 +3097,9 @@
       "websiteTraffic": "Több weboldal forgalom",
       "productSales": "Több termékértékesítés",
       "leadForm": "További potenciális ügyfelek űrlap beküldése",
-      "messageLeads": "További üzenetek"
+      "messageLeads": "További üzenetek",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "Még nincs videó",
     "noVideoHint": "...ideje létrehozni egy kis tartalmat!",
@@ -3064,6 +3125,48 @@
     "priceDetailsTitle": "Ár részletek",
     "subtotal": "Részösszeg",
     "insufficientPoints": "Elégtelen pont",
-    "total": "Teljes"
+    "total": "Teljes",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
+    }
   }
 }

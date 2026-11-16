@@ -1198,7 +1198,8 @@
     "menuAria": "Pilihan video",
     "closeMenu": "Tutup menu",
     "volume": "Kelantangan",
-    "fullscreen": "Masukkan skrin penuh"
+    "fullscreen": "Masukkan skrin penuh",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "Cari",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "Vibely menyemak kandungan untuk memastikan komuniti selamat dan sejajar dengan Garis Panduan Komuniti kami. Ini terpakai pada setiap siaran baharu.",
         "faqEngagementTitle": "Adakah ini menjejaskan penglibatan pada siaran saya?",
         "faqEngagementBody": "Semasa semakan sedang dijalankan, siaran anda mungkin mempunyai keterlihatan awam yang terhad. Selepas kelulusan, tetapan privasi pilihan anda digunakan sepenuhnya."
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "Komen",
@@ -2090,14 +2092,16 @@
       "postDetail": "Admin bergetar | Perincian siaran",
       "moderation": "Admin bergetar | Penyederhanaan kandungan",
       "banned": "Admin bergetar | Akaun diharamkan",
-      "appeals": "Admin bergetar | Larang rayuan"
+      "appeals": "Admin bergetar | Larang rayuan",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "Pengurusan pengguna",
       "posts": "Pengurusan pasca",
       "moderation": "Penyederhanaan kandungan",
       "banned": "Akaun diharamkan",
-      "appeals": "Larang rayuan"
+      "appeals": "Larang rayuan",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "Penomboran",
@@ -2512,6 +2516,49 @@
       "views": "pandangan",
       "likeViews": "suka",
       "viewsHeader": "Pandangan"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -2861,7 +2908,9 @@
           "favorites": "Bunyi kegemaran anda akan dipaparkan di sini.",
           "recent": "Bunyi yang digunakan baru-baru ini akan dipaparkan di sini."
         }
-      }
+      },
+      "aiGeneratedHint": "Add this label for AI-generated content.",
+      "learnMore": "Learn more"
     },
     "selectedFile": "Dipilih: {{name}}",
     "durationLabel": "Durasi: {{duration}}",
@@ -2916,7 +2965,16 @@
       "followers": "Pengikut",
       "likes": "Suka",
       "defaultText": "Teks"
-    }
+    },
+    "locationSearchPlaceholder": "Search for location",
+    "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
+    "locationEmpty": "No locations found",
+    "locationSearchFailed": "Couldn’t search locations. Try again later.",
+    "locationClear": "Clear location",
+    "locationCollapse": "Collapse location suggestions",
+    "locationExpand": "Expand location suggestions",
+    "locationScrollChips": "See more suggested locations"
   },
   "profileShare": {
     "shareTo": "Kongsi ke",
@@ -3028,7 +3086,8 @@
     "tabs": {
       "boostAccount": "Tingkatkan akaun",
       "increaseSales": "Tingkatkan jualan",
-      "attractLeads": "Tarik petunjuk"
+      "attractLeads": "Tarik petunjuk",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "Lebih suka dan komen",
@@ -3038,7 +3097,9 @@
       "websiteTraffic": "Lebih banyak trafik laman web",
       "productSales": "Lebih banyak jualan produk",
       "leadForm": "Lebih banyak penyerahan borang petunjuk",
-      "messageLeads": "Lebih banyak petunjuk mesej"
+      "messageLeads": "Lebih banyak petunjuk mesej",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "Tiada video lagi",
     "noVideoHint": "... masa untuk mencipta beberapa kandungan!",
@@ -3064,6 +3125,48 @@
     "priceDetailsTitle": "Butiran harga",
     "subtotal": "Jumlah kecil",
     "insufficientPoints": "Mata tidak mencukupi",
-    "total": "Jumlah"
+    "total": "Jumlah",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
+    }
   }
 }

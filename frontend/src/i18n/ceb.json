@@ -1198,7 +1198,8 @@
     "menuAria": "Mga kapilian sa video",
     "closeMenu": "Isira ang menu",
     "volume": "Tomo",
-    "fullscreen": "Pagsulod sa fullscreen"
+    "fullscreen": "Pagsulod sa fullscreen",
+    "noSubtitles": "No captions"
   },
   "searchUi": {
     "title": "Pangitaa",
@@ -1687,7 +1688,8 @@
         "faqWhyBody": "Vibely nagrepaso sa sulod aron magpabiling luwas ang komunidad ug nahiuyon sa among Mga Giya sa Komunidad. Kini magamit sa matag bag-ong post.",
         "faqEngagementTitle": "Nakaapekto ba kini sa engagement sa akong post?",
         "faqEngagementBody": "Samtang nagpadayon ang pagrepaso, ang imong post mahimong adunay limitado nga panan-aw sa publiko. Human sa pag-uyon, ang imong gipili nga setting sa pagkapribado magamit sa hingpit."
-      }
+      },
+      "underReview": "Under review"
     },
     "comments": {
       "title": "Mga komento",
@@ -2090,14 +2092,16 @@
       "postDetail": "Vibely Admin | I-post ang detalye",
       "moderation": "Vibely Admin | Pag-moderate sa sulod",
       "banned": "Vibely Admin | Gidili nga mga account",
-      "appeals": "Vibely Admin | Pagdili sa mga apela"
+      "appeals": "Vibely Admin | Pagdili sa mga apela",
+      "dashboard": "Vibely Admin | Dashboard"
     },
     "nav": {
       "users": "Pagdumala sa tiggamit",
       "posts": "Pagdumala sa post",
       "moderation": "Pag-moderate sa sulod",
       "banned": "Gidili nga mga account",
-      "appeals": "Pagdili sa mga apela"
+      "appeals": "Pagdili sa mga apela",
+      "dashboard": "Dashboard"
     },
     "pagination": {
       "aria": "Pagination",
@@ -2512,6 +2516,49 @@
       "views": "mga panglantaw",
       "likeViews": "ganahan",
       "viewsHeader": "Mga panan-aw"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "User and video growth, views, and AI trend analysis.",
+      "kpi": {
+        "users": "Total users",
+        "videos": "Total videos",
+        "reports": "Reports (period)",
+        "views": "Views (period)"
+      },
+      "charts": {
+        "usersGrowth": "User growth",
+        "videosReports": "New videos & reports per day",
+        "viewsTrend": "Views trend",
+        "contentMix": "Content status mix"
+      },
+      "series": {
+        "totalUsers": "Total users",
+        "newUsers": "New users / day",
+        "newVideos": "New videos",
+        "reports": "Reports",
+        "views": "Views (thousands)"
+      },
+      "axis": {
+        "totalUsers": "Total",
+        "newUsers": "New / day"
+      },
+      "status": {
+        "published": "Published",
+        "draft": "Draft",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "ai": {
+        "title": "AI trend analysis",
+        "intro": "Compares the first and second half of the last 14 days to highlight notable shifts.",
+        "up": "up",
+        "down": "down",
+        "usersTrend": "New users {{dir}} {{pct}}% vs the prior half-period — community growth signal.",
+        "videosTrend": "New videos {{dir}} {{pct}}%. Peak day: {{peak}}.",
+        "moderationTrend": "Reports {{dir}} {{pct}}% (≈{{ratio}}% of new videos). Peak report day: {{peak}}.",
+        "viewsTrend": "Views {{dir}} {{pct}}% — feed engagement signal."
+      }
     }
   },
   "report": {
@@ -2861,7 +2908,9 @@
           "favorites": "Ang imong paboritong tunog makita dinhi.",
           "recent": "Ang bag-ong gigamit nga tunog makita dinhi."
         }
-      }
+      },
+      "aiGeneratedHint": "Add this label for AI-generated content.",
+      "learnMore": "Learn more"
     },
     "selectedFile": "Dipilih: {{name}}",
     "durationLabel": "Durasi: {{duration}}",
@@ -2916,7 +2965,16 @@
       "followers": "Mga sumusunod",
       "likes": "Mga ganahan",
       "defaultText": "Text"
-    }
+    },
+    "locationSearchPlaceholder": "Search for location",
+    "locationSearching": "Searching locations…",
+    "locationNearbyLoading": "Finding places near you…",
+    "locationEmpty": "No locations found",
+    "locationSearchFailed": "Couldn’t search locations. Try again later.",
+    "locationClear": "Clear location",
+    "locationCollapse": "Collapse location suggestions",
+    "locationExpand": "Expand location suggestions",
+    "locationScrollChips": "See more suggested locations"
   },
   "profileShare": {
     "shareTo": "Share sa",
@@ -3028,7 +3086,8 @@
     "tabs": {
       "boostAccount": "Ipataas ang account",
       "increaseSales": "Dugangi ang halin",
-      "attractLeads": "Pagdani sa mga lead"
+      "attractLeads": "Pagdani sa mga lead",
+      "boostLive": "Boost LIVE"
     },
     "goals": {
       "likesComments": "More likes ug comments",
@@ -3038,7 +3097,9 @@
       "websiteTraffic": "Dugang nga trapiko sa website",
       "productSales": "Dugang nga halin sa produkto",
       "leadForm": "Dugang nga pagsumite sa lead form",
-      "messageLeads": "Dugang nga mensahe lead"
+      "messageLeads": "Dugang nga mensahe lead",
+      "liveViewers": "More LIVE viewers",
+      "liveFollowers": "More followers from LIVE"
     },
     "noVideoTitle": "Wala pay video",
     "noVideoHint": "...panahon sa paghimo og pipila ka sulod!",
@@ -3064,6 +3125,48 @@
     "priceDetailsTitle": "Mga detalye sa presyo",
     "subtotal": "Subtotal",
     "insufficientPoints": "Dili igo nga mga punto",
-    "total": "Total"
+    "total": "Total",
+    "payment": "Payment",
+    "emptyPayment": "No payment details yet.",
+    "choosePackage": "Choose a promotion package",
+    "recommended": "Recommended",
+    "packageRange": "{{min}} - {{max}} {{metric}} in {{hours}} hours",
+    "packageMetricInHours": "{{metric}} in {{hours}} hours",
+    "packageMetric": {
+      "likesComments": "likes and comments",
+      "videoViews": "video views",
+      "followers": "followers",
+      "profileViews": "profile views",
+      "websiteTraffic": "website visits",
+      "productSales": "product sales",
+      "liveViewers": "LIVE viewers",
+      "liveFollowers": "followers",
+      "leadForm": "lead forms",
+      "messageLeads": "messages"
+    },
+    "packageFit": {
+      "likesComments": "Best for likes and comments",
+      "videoViews": "Best for video views",
+      "followers": "Best for growing followers",
+      "profileViews": "Best for profile views",
+      "websiteTraffic": "Best for website traffic",
+      "productSales": "Best for product sales",
+      "liveViewers": "Best for LIVE viewers",
+      "liveFollowers": "Best for LIVE followers",
+      "leadForm": "Best for lead forms",
+      "messageLeads": "Best for message leads"
+    },
+    "welcome": {
+      "title": "Welcome to Promote on Vibely",
+      "description": "Promote is an advertising tool that helps you improve engagement and increase the visibility of your posts.",
+      "step1Title": "Choose your content",
+      "step1Body": "Select an existing video or upload the video you want to promote.",
+      "step2Title": "Set your goal, audience, budget, and schedule",
+      "step2Body": "Pick a goal and ad package, or customize it your way.",
+      "step3Title": "Track your promotion on mobile",
+      "step3Body": "Create a campaign and wait for review.",
+      "cta": "Create a promotion plan",
+      "cancel": "Cancel"
+    }
   }
 }
