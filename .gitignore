@@ -29,8 +29,8 @@ __pycache__/
 *.py[cod]
 
 # Local one-off / audit scripts (not part of the product)
-backend/scripts/
-scripts/
+/backend/scripts/
+/scripts/
 
 # Flutter/Dart local IDE options
 mobile/devtools_options.yaml

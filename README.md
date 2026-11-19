@@ -10,20 +10,20 @@
 
 | Metric | Count |
 |--------|------:|
-| Active creators | **0** |
+| Active creators | **3** |
 | Published videos | **0** |
-| Total views | **0** |
+| Total views | **144** |
 | UI locales | **56** |
-| Status | **pending deploy** |
+| Status | **online** |
 
-<sub>Updated 2026-09-01 13:52 UTC · <a href="https://vibely.sbs/api/public/stats">JSON</a> · daily GitHub Action</sub>
+<sub>Updated 2026-11-19 01:09 UTC · <a href="https://vibely.sbs/api/public/stats">JSON</a> · daily GitHub Action</sub>
 
 ```mermaid
 xychart-beta
     title "Vibely production"
     x-axis [Creators, Videos, "Views (k)", Locales]
-    y-axis "Count" 0 --> 70
-    bar [0, 0, 0, 56]
+    y-axis "Count" 0 --> 180
+    bar [3, 0, 144, 56]
 ```
 <!-- LIVE-STATS:END -->
 
@@ -378,11 +378,11 @@ The hero **table + bar chart** are refreshed by [`.github/workflows/update-readm
 | **locales** | `56` (frontend i18n files) |
 | **online** | API health (endpoint reachable) |
 
-After deploying backend, verify then run the workflow (or `node scripts/update-readme-stats.mjs` locally):
+After deploying backend, verify then run the workflow (or `node .github/scripts/update-readme-stats.mjs` locally):
 
 ```bash
 curl -sL https://vibely.sbs/api/public/stats
-node scripts/update-readme-stats.mjs
+node .github/scripts/update-readme-stats.mjs
 ```
 
 Until `/api/public/stats` is public on production, the chart shows **56 locales** and zeros for DB counters — deploy the latest backend image first.

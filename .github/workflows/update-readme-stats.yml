@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Refresh production metrics in README
-        run: node scripts/update-readme-stats.mjs
+        run: node .github/scripts/update-readme-stats.mjs
 
       - name: Commit if changed
         run: |

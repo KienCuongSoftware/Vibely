@@ -1,9 +1,9 @@
 {
-  "activeUsers": 0,
+  "activeUsers": 3,
   "publishedVideos": 0,
-  "totalViews": 0,
+  "totalViews": 144,
   "supportedLocales": 56,
-  "apiStatus": "PENDING",
-  "generatedAt": "2026-09-01T13:52:00.471Z",
-  "source": "seed"
+  "apiStatus": "UP",
+  "generatedAt": "2026-11-19T01:09:59.244608533Z",
+  "source": "api"
 }
